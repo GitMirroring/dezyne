@@ -1,0 +1,16 @@
+test/all/parse_duplicate_declaration/hello.dzn:29:1: error: identifier `ihello' declared before
+test/all/parse_duplicate_declaration/ihello.dzn:27:1: error: previous `ihello' declared here
+test/all/parse_duplicate_declaration/hello.dzn:46:7: error: identifier `b' declared before
+test/all/parse_duplicate_declaration/hello.dzn:45:7: error: previous `b' declared here
+test/all/parse_duplicate_declaration/parse_duplicate_declaration.dzn:30:1: error: identifier `ihello' declared before
+test/all/parse_duplicate_declaration/ihello.dzn:27:1: error: previous `ihello' declared here
+test/all/parse_duplicate_declaration/parse_duplicate_declaration.dzn:40:1: error: identifier `hello' declared before
+test/all/parse_duplicate_declaration/hello.dzn:39:1: error: previous `hello' declared here
+test/all/parse_duplicate_declaration/hello.dzn:26:1: error: identifier `float' declared before
+test/all/parse_duplicate_declaration/ihello.dzn:24:1: error: previous `float' declared here
+test/all/parse_duplicate_declaration/hello.dzn:27:1: error: identifier `int' declared before
+test/all/parse_duplicate_declaration/ihello.dzn:25:1: error: previous `int' declared here
+test/all/parse_duplicate_declaration/parse_duplicate_declaration.dzn:27:1: error: identifier `int' declared before
+test/all/parse_duplicate_declaration/ihello.dzn:25:1: error: previous `int' declared here
+test/all/parse_duplicate_declaration/parse_duplicate_declaration.dzn:28:1: error: identifier `float' declared before
+test/all/parse_duplicate_declaration/ihello.dzn:24:1: error: previous `float' declared here
