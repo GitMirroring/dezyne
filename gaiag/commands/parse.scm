@@ -76,6 +76,7 @@
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
+            (locations (single-char #\L))
             (preprocess (single-char #\E))
             (output (single-char #\o) (value #t))))
 	 (options (getopt-long args option-spec
@@ -89,6 +90,7 @@
 Usage: dzn parse [OPTION]... [FILE]...
   -E, --preprocess       resolve imports
   -h, --help             display this help and exit
+  -L, --locations        show locations in output AST
   -I, --import=DIR+      add DIR to import path
   -m, --model=MODEL      generate ast for MODEL
   -o, --output=FILE      write ast to FILE
@@ -154,11 +156,13 @@ Usage: dzn parse [OPTION]... [FILE]...
            (let ((ast (parse options file-name)))
              (if (option-ref options 'output #f)
                  (let* ((file-name (option-ref options 'output "-"))
-                        (sexp (om->list ast))
                         (json? (gdzn:command-line:get 'json))
+                        (locations? (command-line:get 'locations))
+                        (sexp (parameterize ((%locations? locations?))
+                                (ast:serialize ast)))
                         (output (if json? (scm->json-string sexp)
                                     (with-output-to-string
-                                      (cut pretty-print sexp)))))
+                                      (cute pretty-print sexp)))))
                    (if (equal? file-name "-") (display output)
                        (with-output-to-file file-name (cut display output))))
                  (when (gdzn:command-line:get 'verbose)
