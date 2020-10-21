@@ -35,6 +35,7 @@
   #:use-module (ice-9 pretty-print)
 
   #:use-module (gaiag command-line)
+  #:use-module (gaiag display)
   #:use-module (gaiag parse peg)
   #:use-module (gaiag parse ast)
   #:use-module (gaiag parse peg)
@@ -153,7 +154,7 @@ well-formedness checks."
        (let* ((ast (parse-tree->ast parse-tree #:string content #:file-name file-name))
               (ast (annotate-ast ast)))
          (when (> (gdzn:debugity) 1)
-           (pretty-print ast  (current-error-port)))
+           (ast:pretty-print ast (current-error-port)))
          (if skip-wfc? ast
              (ast:wfc ast)))))))
 

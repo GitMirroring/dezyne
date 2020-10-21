@@ -1003,7 +1003,6 @@
 
 (define (ast-> ast)
   ((compose
-    pretty-print
-    om->list
+    ast:pretty-print
     ast:wfc)
    ast))

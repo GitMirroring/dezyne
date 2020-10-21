@@ -804,7 +804,6 @@
   ((compose
     (lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
     add-reply-port
-    ;;(conjoin (compose (cut pretty-print <>) om->list) identity)
     triples:event-traversal
     (remove-otherwise)
     (binding-into-blocking)
