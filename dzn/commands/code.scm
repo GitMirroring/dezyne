@@ -78,6 +78,7 @@ Languages: ~a
          (file-name (car files))
          (map-files (cdr args))
          (language-opt (option-ref options 'language %default-language))
+         (locations? (option-ref options 'locations #f))
          (options (if (equal? language-opt "scheme") (acons 'behaviour #t options)
                       options))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
@@ -85,5 +86,6 @@ Languages: ~a
          (ast (parse parse-options file-name))
          (module (resolve-module `(dzn ,(string->symbol language-opt))))
          (ast-> (module-ref module 'ast->)))
-    (parameterize ((language language-opt)) (ast-> ast))
+    (parameterize ((language language-opt)
+                   (%locations? locations?)) (ast-> ast))
     *unspecified*))

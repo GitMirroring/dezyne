@@ -30,6 +30,7 @@
 
   #:use-module (dzn goops)
   #:use-module (dzn code)
+  #:use-module (dzn command-line)
   #:use-module (dzn templates)
   #:use-module (dzn command-line)
 
@@ -48,8 +49,7 @@
 
 (define-method (json:get-fields (o <ast-node>))
   (let* ((names (map slot-definition-name (class-slots (class-of o))))
-         (names (if #f
-                    ;; (%locations?)
+         (names (if (%locations?)
                     names
                     (filter (negate (cut eq? <> 'location)) names))))
   (filter-map (lambda (name)
