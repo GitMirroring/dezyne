@@ -32,8 +32,12 @@
             gdzn:debugity
             gdzn:multi-opt
             gdzn:verbosity
+            %locations?
             multi-opt
             language))
+
+(define %locations?
+  (make-parameter #f))
 
 (define multi-options
   '(import))
