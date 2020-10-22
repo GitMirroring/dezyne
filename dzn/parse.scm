@@ -139,7 +139,11 @@ well-formedness checks."
                       (parameterize ((%peg:locations? #t)
                                      (%peg:skip? peg:skip-parse)
                                      (%peg:debug? (> (gdzn:debugity) 3)))
-                        (cons file-name (peg:parse content))))
+                        (let ((parse-tree (peg:parse content)))
+                          (when (> (gdzn:debugity) 2)
+                            (format (current-error-port) "parse-tree: ~a\n" file-name)
+                            (pretty-print parse-tree (current-error-port)))
+                          (cons file-name parse-tree))))
                     (peg:handle-syntax-error file-name content #:imported-from (imported-from alist)))))
                alist))
          (ast-alist (map (match-lambda
