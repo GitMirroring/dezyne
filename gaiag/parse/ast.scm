@@ -119,11 +119,8 @@
 
         (('elements elements ...) (helper elements))
 
-        (('import name #f)
+        (('import name)
          (make <import-node> #:name (helper name) #:root (make <root-node>)))
-
-        (('import name root)
-         (make <import-node> #:name (helper name) #:root (parse-tree->ast- root string name)))
 
         (('namespace name)
          (make <namespace-node>
