@@ -1,0 +1,232 @@
+(("root"
+  (location
+    (("location"
+      (file-name
+        .
+        "test/all/parse_locations/parse_locations.dzn")
+      (line . 24)
+      (column . 1)
+      (end-line . 34)
+      (end-column . 1)
+      (offset . 823)
+      (length . 102))))
+  (("bool" (name . bool)))
+  (("void" (name . void)))
+  (("interface"
+    (location
+      (("location"
+        (file-name
+          .
+          "test/all/parse_locations/ihello.dzn")
+        (line . 24)
+        (column . 1)
+        (end-line . 32)
+        (end-column . 2)
+        (offset . 823)
+        (length . 77))))
+    (name . ihello)
+    (types ("types"))
+    (events
+      ("events"
+       (("event"
+         (location
+           (("location"
+             (file-name
+               .
+               "test/all/parse_locations/ihello.dzn")
+             (line . 26)
+             (column . 3)
+             (end-line . 26)
+             (end-column . 19)
+             (offset . 844)
+             (length . 16))))
+         (name . "hello")
+         (signature
+           ("signature"
+            (location
+              (("location"
+                (file-name
+                  .
+                  "test/all/parse_locations/ihello.dzn")
+                (line . 26)
+                (column . 6)
+                (end-line . 26)
+                (end-column . 10)
+                (offset . 847)
+                (length . 4))))
+            (type.name . void)
+            (formals ("formals"))))
+         (direction . in)))))
+    (behaviour
+      ("behaviour"
+       (location
+         (("location"
+           (file-name
+             .
+             "test/all/parse_locations/ihello.dzn")
+           (line . 28)
+           (column . 3)
+           (end-line . 32)
+           (end-column . 1)
+           (offset . 864)
+           (length . 35))))
+       (types ("types"))
+       (ports ("ports"))
+       (variables ("variables"))
+       (functions ("functions"))
+       (statement
+         ("compound"
+          (location
+            (("location"
+              (file-name
+                .
+                "test/all/parse_locations/ihello.dzn")
+              (line . 29)
+              (column . 3)
+              (end-line . 32)
+              (end-column . 1)
+              (offset . 876)
+              (length . 23))))
+          (("on"
+            (location
+              (("location"
+                (file-name
+                  .
+                  "test/all/parse_locations/ihello.dzn")
+                (line . 30)
+                (column . 5)
+                (end-line . 31)
+                (end-column . 3)
+                (offset . 882)
+                (length . 15))))
+            (triggers
+              ("triggers"
+               (("trigger"
+                 (location
+                   (("location"
+                     (file-name
+                       .
+                       "test/all/parse_locations/ihello.dzn")
+                     (line . 30)
+                     (column . 8)
+                     (end-line . 30)
+                     (end-column . 13)
+                     (offset . 885)
+                     (length . 5))))
+                 (event.name . "hello")
+                 (formals ("formals"))))))
+            (statement
+              ("compound"
+               (location
+                 (("location"
+                   (file-name
+                     .
+                     "test/all/parse_locations/ihello.dzn")
+                   (line . 30)
+                   (column . 15)
+                   (end-line . 31)
+                   (end-column . 3)
+                   (offset . 892)
+                   (length . 5))))))))))))))
+  (("component"
+    (location
+      (("location"
+        (file-name
+          .
+          "test/all/parse_locations/parse_locations.dzn")
+        (line . 26)
+        (column . 1)
+        (end-line . 33)
+        (end-column . 2)
+        (offset . 843)
+        (length . 81))))
+    (name . hello)
+    (ports ("ports"
+            (("port"
+              (location
+                (("location"
+                  (file-name
+                    .
+                    "test/all/parse_locations/parse_locations.dzn")
+                  (line . 28)
+                  (column . 3)
+                  (end-line . 28)
+                  (end-column . 21)
+                  (offset . 863)
+                  (length . 18))))
+              (name . "h")
+              (type.name . ihello)
+              (direction . provides)
+              (formals ("formals"))))))
+    (behaviour
+      ("behaviour"
+       (location
+         (("location"
+           (file-name
+             .
+             "test/all/parse_locations/parse_locations.dzn")
+           (line . 29)
+           (column . 3)
+           (end-line . 33)
+           (end-column . 1)
+           (offset . 884)
+           (length . 39))))
+       (types ("types"))
+       (ports ("ports"))
+       (variables ("variables"))
+       (functions ("functions"))
+       (statement
+         ("compound"
+          (location
+            (("location"
+              (file-name
+                .
+                "test/all/parse_locations/parse_locations.dzn")
+              (line . 30)
+              (column . 3)
+              (end-line . 33)
+              (end-column . 1)
+              (offset . 896)
+              (length . 27))))
+          (("on"
+            (location
+              (("location"
+                (file-name
+                  .
+                  "test/all/parse_locations/parse_locations.dzn")
+                (line . 31)
+                (column . 5)
+                (end-line . 32)
+                (end-column . 3)
+                (offset . 902)
+                (length . 19))))
+            (triggers
+              ("triggers"
+               (("trigger"
+                 (location
+                   (("location"
+                     (file-name
+                       .
+                       "test/all/parse_locations/parse_locations.dzn")
+                     (line . 31)
+                     (column . 8)
+                     (end-line . 31)
+                     (end-column . 17)
+                     (offset . 905)
+                     (length . 9))))
+                 (port.name . "h")
+                 (event.name . "hello")
+                 (formals ("formals"))))))
+            (statement
+              ("compound"
+               (location
+                 (("location"
+                   (file-name
+                     .
+                     "test/all/parse_locations/parse_locations.dzn")
+                   (line . 31)
+                   (column . 19)
+                   (end-line . 32)
+                   (end-column . 3)
+                   (offset . 916)
+                   (length . 5))))))))))))))))
