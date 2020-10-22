@@ -59,7 +59,6 @@
             drop-<>
             has-slot?
             is?
-            make-constants
             parent
             parent-not
             symbol->class
@@ -550,6 +549,7 @@
 (define-ast <port> (<instance>)
   (direction)                           ; symbol 'provides / 'requires
   (external)
+  (formals #:init-form (make <formals-node>))
   (injected))
 
 (define-ast <trigger> (<scope> <locationed>)
@@ -920,9 +920,6 @@
   (let ((parent (.parent o)))
     (if (not (is-a? parent class)) parent
         (parent-not parent class))))
-
-(define-method (make-constants)
-  (list (make <bool>) (make <void>)))
 
 (define (drop-<> o)
   (string-drop (string-drop-right (symbol->string o) 1) 1))
