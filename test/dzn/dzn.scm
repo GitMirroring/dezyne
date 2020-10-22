@@ -32,6 +32,7 @@
   #:use-module (dzn shell-util)
   #:use-module (dzn commands trace)
   #:export (observe
+            run-baseline
             run-build
             run-code
             run-execute
@@ -212,41 +213,52 @@ output, and standard error as three values."
 (define (verify-only? file-name)
   (directory-exists? (string-append file-name "/baseline/verify")))
 
+(define* (run-baseline file-name command #:key
+                       (baseline (string-append file-name "/baseline"))
+                       (input "")
+                       (stdout-filter identity))
+  (receive (status stdout stderr)
+      (observe command input)
+    (or (and (zero? status)
+             (not (directory-exists? baseline)))
+        (let ((out-file (string-append file-name ".out"))
+              (err-file (string-append file-name ".err")))
+          (with-output-to-file out-file
+            (cut display (stdout-filter stdout)))
+          (with-output-to-file err-file
+            (cut display stderr))
+          (let* ((base-name (basename file-name))
+                 (baseline-out (string-append baseline "/" base-name))
+                 (baseline-err (string-append baseline-out ".stderr")))
+            (and (or (and (string-null? stdout)
+                          (not (file-exists? baseline-out)))
+                     (zero? (system* "diff" "-uwB" baseline-out out-file)))
+                 (or (and (string-null? stderr)
+                          (not (file-exists? baseline-err)))
+                     (zero? (system* "diff" "-uwB"
+                                     baseline-err err-file)))))))))
+
 (define (run-verify file-name)
   (format #t "** stage: verify\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (baseline (string-append file-name "/baseline/verify"))
-         (input "")
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
                                     (cut string-split <> #\:))
                              '())))
          (includes (filter directory-exists? includes))
          (includes (append-map (cut list "-I" <>) includes))
-         (model (or (model? file-name) base-name)))
+         (model (or (model? file-name) base-name))
+         (command `("dzn" "--verbose" "verify"
+                    ,@includes
+                    "--all"
+                    ,@(if (model-unset? file-name) '() `("-m" ,model))
+                    ,dzn-name)))
     (or (skip? file-name "verify")
-        (receive (status stdout stderr)
-            (observe
-             `("dzn" "--verbose" "verify"
-               ,@includes
-               "--all"
-               ,@(if (model-unset? file-name) '() `("-m" ,model))
-               ,dzn-name) input)
-          (or (and (zero? status)
-                   (not (directory-exists? baseline)))
-              (let ((out-file (string-append file-name ".out"))
-                    (err-file (string-append file-name ".err")))
-                (with-output-to-file out-file
-                  (cut display (verification-reorder stdout)))
-                (with-output-to-file err-file
-                  (cut display stderr))
-                (let ((baseline-out (string-append baseline "/" base-name)))
-                  (and (or (and (string-null? stdout)
-                                (not (file-exists? baseline-out)))
-                           (zero? (system* "diff" "-uwB" baseline-out out-file)))
-                       (zero? (system* "diff" "-uwB"
-                                       (string-append baseline-out ".stderr") err-file))))))))))
+        (run-baseline file-name command
+                      #:baseline baseline
+                      #:stdout-filter verification-reorder))))
 
 (define (run-code file-name language)
   (format #t "** stage: code: ~a\n" language)
