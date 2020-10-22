@@ -251,6 +251,8 @@ AC_CONFIG_FILES([test/bin/reorder:test/bin/reorder.in],
                 [chmod +x test/bin/reorder])
 AC_CONFIG_FILES([test/bin/run:test/bin/run.in],
                 [chmod +x test/bin/run])
+AC_CONFIG_FILES([test/bin/run-baseline:test/bin/run-baseline.in],
+                [chmod +x test/bin/run-baseline])
 AC_CONFIG_FILES([runtime/c++/dzn/meta.hh])
 
 AC_OUTPUT
