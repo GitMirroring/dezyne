@@ -1,0 +1,3 @@
+dir=$1
+base=$(basename $1)
+exec run-baseline $dir dzn parse --parse-tree -o- $dir/$base.dzn
