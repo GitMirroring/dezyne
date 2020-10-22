@@ -104,9 +104,11 @@ Usage: dzn parse [OPTION]... [FILE]...
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
-         (ast (file->ast file-name #:skip-wfc? skip-wfc? #:imports imports)))
-    (if (not model-name) ast
-        (ast:filter-model ast (ast:get-model ast model-name)))))
+         (locations? (command-line:get 'locations)))
+    (parameterize ((%locations? locations?))
+      (let ((ast (file->ast file-name #:skip-wfc? skip-wfc? #:imports imports)))
+        (if (not model-name) ast
+            (ast:filter-model ast (ast:get-model ast model-name)))))))
 
 (define (handle-parser-exceptions file-name)
   (lambda (key . args)

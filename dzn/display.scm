@@ -29,6 +29,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 pretty-print)
 
+  #:use-module (dzn command-line)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
   #:export (ast:display
@@ -46,7 +47,9 @@
   (display #\space port)
   (write o port))
 
-(define-method (sdisplay (o <location-node>) port) #t)
+(define-method (sdisplay (o <location-node>) port)
+  (when (%locations?)
+    (next-method)))
 
 (define-method (display-slots (o <object>) port)
   (for-each
