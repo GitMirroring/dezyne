@@ -79,6 +79,7 @@
             (model (single-char #\m) (value #t))
             (locations (single-char #\L))
             (preprocess (single-char #\E))
+            (parse-tree (single-char #\t))
             (output (single-char #\o) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
@@ -94,6 +95,7 @@ Usage: dzn parse [OPTION]... [FILE]...
   -L, --locations        show locations in output AST
   -I, --import=DIR+      add DIR to import path
   -m, --model=MODEL      generate ast for MODEL
+  -t, --parse-tree       generate PEG parse tree
   -o, --output=FILE      write ast to FILE
 ")
           (exit (or (and usage? 2) 0))))
@@ -104,9 +106,13 @@ Usage: dzn parse [OPTION]... [FILE]...
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
-         (locations? (command-line:get 'locations)))
+         (locations? (command-line:get 'locations))
+         (parse-tree? (command-line:get 'parse-tree)))
     (parameterize ((%locations? locations?))
-      (let ((ast (file->ast file-name #:skip-wfc? skip-wfc? #:imports imports)))
+      (let ((ast (file->ast file-name
+                            #:imports imports
+                            #:parse-tree? parse-tree?
+                            #:skip-wfc? skip-wfc?)))
         (if (not model-name) ast
             (ast:filter-model ast (ast:get-model ast model-name)))))))
 
