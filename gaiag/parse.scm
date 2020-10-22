@@ -100,17 +100,17 @@
           (peg:syntax-error-message imported-from file-name string args)
           (apply throw key '())))))
 
-
-
-(define* (file+import-content-alist->ast alist #:key skip-wfc?)
+(define (parse-file+import-content-alist alist)
   "From ALIST of form
 
    '((FILE-NAME . CONTENT)
-     (IMPORTED-FILE-NAME . IMPORTED-CONTENT)
-      ...)
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
 
-parse CONTENT and return an ast.  When SKIP-WCF?, skip the
-well-formedness checks."
+parse CONTENT and return
+
+   '((FILE-NAME . PARSE-TREE)
+     (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...)
+"
 
   (define (imported-from alist)
     (define parse
@@ -119,9 +119,32 @@ well-formedness checks."
                           (imported-file-names content)))))
     (append-map parse alist))
 
-  (define (expand-imports parse-tree-alist)
-    (let ((file (car parse-tree-alist))
-          (imports (cdr parse-tree-alist)))
+  (map (match-lambda
+         ((file-name . content)
+          (catch 'syntax-error
+            (lambda ()
+              (parameterize ((%peg:locations? #t)
+                             (%peg:skip? peg:skip-parse)
+                             (%peg:debug? (> (gdzn:debugity) 3)))
+                (let ((parse-tree (peg:parse content)))
+                  (when (> (gdzn:debugity) 2)
+                    (format (current-error-port) "parse-tree: ~a\n" file-name)
+                    (pretty-print parse-tree (current-error-port)))
+                  (cons file-name parse-tree))))
+            (peg:handle-syntax-error file-name content #:imported-from (imported-from alist)))))
+       alist))
+
+(define* (parse-tree-alist->ast alist #:key (content-alist '()))
+  "Return an AST by merging ALIST of form
+
+   '((FILE-NAME . PARSE-TREE)
+     (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...)
+
+using CONTENT-ALIST to transform locations."
+
+  (define (expand-imports ast-alist)
+    (let ((file (car ast-alist))
+          (imports (cdr ast-alist)))
       (match file
         ((file-name . root)
          (let* ((imports (append-map (match-lambda
@@ -131,46 +154,43 @@ well-formedness checks."
                 (elements (filter (negate (is? <import>)) elements)))
            (clone root #:elements elements))))))
 
-  (let* ((parse-tree-alist
+  (let* ((ast-alist
           (map (match-lambda
-                 ((file-name . content)
-                  (catch 'syntax-error
-                    (lambda ()
-                      (parameterize ((%peg:locations? #t)
-                                     (%peg:skip? peg:skip-parse)
-                                     (%peg:debug? (> (gdzn:debugity) 3)))
-                        (let ((parse-tree (peg:parse content)))
-                          (when (> (gdzn:debugity) 2)
-                            (format (current-error-port) "parse-tree: ~a\n" file-name)
-                            (pretty-print parse-tree (current-error-port)))
-                          (cons file-name parse-tree))))
-                    (peg:handle-syntax-error file-name content #:imported-from (imported-from alist)))))
+                 ((file-name . parse-tree)
+                  (let ((content (assoc-ref content-alist file-name)))
+                    (cons file-name
+                          (parse-tree->ast parse-tree
+                                           #:string content
+                                           #:file-name file-name)))))
                alist))
-         (ast-alist (map (match-lambda
-                           ((file-name . parse-tree)
-                            (let ((content (assoc-ref alist file-name)))
-                              (cons file-name
-                                    (parse-tree->ast parse-tree #:string content #:file-name file-name)))))
-                         parse-tree-alist))
          (ast (expand-imports ast-alist))
          (ast (annotate-ast ast)))
     (when (> (gdzn:debugity) 1)
       (ast:pretty-print ast (current-error-port)))
-    (if skip-wfc? ast
-        (ast:wfc ast))))
+    ast))
 
-(define* (file->ast file-name #:key skip-wfc? (imports '()))
-  "Parse FILE-NAME and return an ast.  When SKIP-WFC?, skip the
-well-formedness checks."
+(define* (file->ast file-name #:key (imports '()) parse-tree? skip-wfc?)
+  "Parse FILE-NAME and return an ast.  When PARSE-TREE?, return the
+parse trees.  When SKIP-WFC?, skip the well-formedness checks."
   (if (equal? file-name "-") (string->ast (read-string))
-      (let ((alist (file+import-content-alist file-name imports)))
-        (file+import-content-alist->ast alist #:skip-wfc? skip-wfc?))))
+      (let* ((content-alist (file+import-content-alist file-name imports))
+             (parse-tree-alist (parse-file+import-content-alist content-alist)))
+        (if parse-tree? parse-tree-alist
+            (let ((ast (parse-tree-alist->ast parse-tree-alist
+                                              #:content-alist content-alist)))
+             (if skip-wfc? ast
+                 (ast:wfc ast)))))))
 
-(define* (string->ast string #:key skip-wfc?)
-  "Parse STRING and return an ast.  When SKIP-WFC? skip the
-well-formedness checks."
-  (let ((alist (string->file+import-content-alist string)))
-    (file+import-content-alist->ast alist #:skip-wfc? skip-wfc?)))
+(define* (string->ast string #:key parse-tree? skip-wfc?)
+  "Parse STRING and return an ast.  When PARSE-TREE?, return the parse
+trees.  When SKIP-WFC? skip the well-formedness checks."
+  (let* ((content-alist (string->file+import-content-alist string))
+         (parse-tree-alist (parse-file+import-content-alist content-alist)))
+    (if parse-tree? parse-tree-alist
+        (let ((ast (parse-tree-alist->ast parse-tree-alist
+                                          #:content-alist content-alist)))
+          (if skip-wfc? ast
+              (ast:wfc ast))))))
 
 (define (string->file+import-content-alist string)
   "Split possibly pre-processed STRING at preprocessing markers
