@@ -42,27 +42,10 @@
   #:use-module (dzn parse)
   #:use-module (dzn parse silence)
   #:export (parse-tree->ast
-            parse-root->ast))
-
-(define (ast-> o)
-  ((compose
-    pretty-print
-    om->list
-    ) o))
+            annotate-ast))
 
 (define* (parse-tree->ast o #:key string (file-name "<stdin>"))
-  (define async-interfaces
-    (let ((interfaces '()))
-      (lambda (command . rest)
-        (case command
-          ((add) (let* ((interface (car rest))
-                        (name (.name interface)))
-                   (unless (find
-                            (compose (cut ast:equal? <> name) .name)
-                            interfaces)
-                     (set! interfaces (append interfaces rest)))))
-          ((get) interfaces)))))
-
+  "Return a root AST for parse-tree O."
   (define (make-list? o) (if (pair? o) o
                              (list o)))
 
@@ -263,12 +246,7 @@
         (('port direction type name)
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
-                (type (helper type))
-                (async? (equal? (.ids type) '("dzn" "async")))
-                (async-interface (and async? (make-async-refine-interface type (make <formals>))))
-                (type (if async-interface (.name async-interface) type)))
-           (when async?
-             (async-interfaces 'add async-interface))
+                (type (helper type)))
            (make <port-node>
              #:name (helper name)
              #:type.name type
@@ -279,13 +257,13 @@
         (('port direction type formals name)
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
-                (type (helper type))
                 (formals (helper formals))
-                (async-interface (make-async-refine-interface type formals)))
-           (async-interfaces 'add async-interface)
+                (type (helper type))
+                (type (async-interface-name type formals)))
            (make <port-node>
              #:name (helper name)
-             #:type.name (.name async-interface)
+             #:type.name type
+             #:formals formals
              #:direction (if direction-list? (car direction) direction)
              #:external (and direction-list? (find (lambda (x) (eq? x 'external)) direction))
              #:injected (and direction-list? (find (lambda (x) (eq? x 'injected)) direction)))))
@@ -553,8 +531,7 @@
     (helper o))
 
   (let* ((root-node (file-helper o file-name 0))
-         (elements (append (async-interfaces 'get) (.elements root-node)))
-         (root (make <root> #:node (clone root-node #:elements elements)))
+         (root (make <root> #:node root-node))
          (imports (tree-collect-filter (disjoin (is? <import>) (is? <root>) (is? <ast-list>))
                                        (is? <import>) root))
          (root (clone root
@@ -562,11 +539,6 @@
                                          (append (.elements root)
                                                  (append-map (compose .elements .root) imports))))))
     (tree-map make-namespaces root)))
-
-(define* (parse-root->ast o #:key string (file-name "<stdin>"))
-  (let* ((root (parse-tree->ast o #:string string #:file-name file-name))
-         (elements (append (make-constants) (.elements root))))
-    (clone root #:elements elements)))
 
 (define-method (set-recursive (o <behaviour>))
   (let* ((functions (.functions o))
@@ -596,15 +568,28 @@
           (if (null? scope) o
               (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope)))))))))
 
-(define (make-async-refine-interface name formals)
+(define (async-interface-name type formals)
+  "Return a unique name for async TYPE, using the types of FORMALS."
+  (let* ((scope (ast:scope type))
+         (single (ast:name type))
+         ;; FIXME: last??
+         ;; Does 'last' mean that
+         ;;   requires dzn.async(foo.T t) defer;
+         ;;   requires dzn.async(bar.T t) defer;
+         ;; are considered to be the same?
+         ;; should they?
+         ;; Why have (dzn async), (dzn async_T) at all, why don't we
+         ;; (dzn async), (dzn async T)  (or dzn async foo T)
+         (single (string-join (cons single (map (compose last .ids .type.name) (.elements formals))) "_")))
+    (make <scope.name> #:ids (append scope (list single)))))
+
+(define (make-async-refine-interface port)
   (let* ((void (make <scope.name> #:ids '("void")))
+         (formals (.formals port))
          (signature (make <signature> #:type.name void #:formals formals))
          (true (make <literal> #:value "true"))
          (false (make <literal> #:value "false"))
-         (scope (ast:scope name))
-         (single (ast:name name))
-         (single (string-join (cons single (map (compose last .ids .type.name) (.elements formals))) "_"))
-         (name (make <scope.name> #:ids (append scope (list single)))))
+         (name (.type.name port)))
     (make <interface>
       #:name name
       #:events (make <events> #:elements
@@ -644,3 +629,23 @@
                         (list
                          (make <action> #:event.name "ack")
                          (make <assign> #:variable.name "idle" #:expression true)))))))))))))
+
+(define (annotate-ast root)
+  "Return ROOT with synthesized elements, bool, void and async
+interfaces."
+  (define (async-port-equal? a b)
+    (and
+     (equal? (ast:full-name (.type.name a))
+             (ast:full-name (.type.name b)))
+     (equal? (map .type.name (ast:formal* a))
+             (map .type.name (ast:formal* b)))))
+  (let* ((types (list (make <bool>) (make <void>)))
+         (components (filter (is? <component>) (ast:model* root)))
+         (async-ports (append-map ast:async-port* components))
+         (async-ports (delete-duplicates async-ports async-port-equal?))
+         (async-interfaces (map make-async-refine-interface async-ports))
+         (async-namespace (if (null? async-interfaces) '()
+                              (list (make <namespace>
+                                      #:name (make <scope.name> #:ids '("dzn"))
+                                      #:elements async-interfaces)))))
+    (clone root #:elements (append types async-namespace (.elements root)))))

@@ -205,6 +205,7 @@
 (define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
 (define-method (ast:formal* (o <event>)) ((compose ast:formal* .signature) o))
 (define-method (ast:formal* (o <function>)) ((compose ast:formal* .signature) o))
+(define-method (ast:formal* (o <port>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <signature>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <trigger>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <out-bindings>)) (.elements o))

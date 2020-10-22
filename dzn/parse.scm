@@ -38,6 +38,9 @@
   #:use-module (dzn parse peg)
   #:use-module (dzn wfc)
 
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (dzn goops)
+
   #:export (file->ast
             string->ast
             peg:handle-syntax-error
@@ -98,7 +101,8 @@
          (gdzn-debug? (gdzn:command-line:get 'debug)))
     (when (> (gdzn:debugity) 2)
       (pretty-print parse-tree (current-error-port)))
-    (let ((ast (parse-root->ast parse-tree #:string string #:file-name file-name)))
+    (let* ((ast (parse-tree->ast parse-tree #:string string #:file-name file-name))
+           (ast (annotate-ast ast)))
       (when (> (gdzn:debugity) 1)
         (pretty-print ast  (current-error-port)))
     ast)))
