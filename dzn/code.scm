@@ -855,8 +855,9 @@
   (map string-upcase (ast:full-name (parent o <model>))))
 
 (define-method (code:port-release o)
-  (if (null? (tree-collect (disjoin (is? <blocking>) (is? <blocking-compound>))
-                           (parent o <model>))) '()
+  (if (null? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>)))
+                                  (disjoin (is? <blocking>) (is? <blocking-compound>))
+                                  (parent o <model>))) '()
       o))
 
 (define-method (code:name.name (o <enum>)) ;; FIXME: remove code:name.name
