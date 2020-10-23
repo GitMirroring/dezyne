@@ -55,6 +55,7 @@
            ast:data*
            ast:declarative?
            ast:direction
+           ast:dotted-name
            ast:dzn-scope?
            ast:eq?
            ast:equal?
