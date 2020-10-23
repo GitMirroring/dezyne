@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -29,6 +29,7 @@
             delete-file-recursively
             copy-recursively
             find-files
+            mingw?
             set-file-time
             substitute
             substitute*
@@ -55,30 +56,39 @@
      (lambda ()
        (chdir init)))))
 
+(define (mingw?)
+  (string-suffix? "mingw32" %host-type))
+
 (define (mkdir-p dir)
   "Create directory DIR and all its ancestors."
-  (define absolute?
-    (string-prefix? "/" dir))
 
-  (define not-slash
-    (char-set-complement (char-set #\/)))
+  (define not-file-name-separator
+    (if (mingw?) (char-set-complement (char-set #\/ #\\))
+        (char-set-complement (char-set #\/))))
 
-  (let loop ((components (string-tokenize dir not-slash))
-             (root       (if absolute?
-                             ""
-                             ".")))
-    (match components
-      ((head tail ...)
-       (let ((path (string-append root "/" head)))
-         (catch 'system-error
-           (lambda ()
-             (mkdir path)
-             (loop tail path))
-           (lambda args
-             (if (= EEXIST (system-error-errno args))
-                 (loop tail path)
-                 (apply throw args))))))
-      (() #t))))
+  (let* ((components (string-tokenize dir not-file-name-separator))
+         (mingw-prefix? (and (mingw?)
+                             (pair? components)
+                             (string-suffix? ":" (car components))))
+         (root  (if (absolute-file-name? dir)
+                    (if mingw-prefix? (car components)
+                        "")
+                    "."))
+         (components (if mingw-prefix? (cdr components) components)))
+    (let loop ((components components)
+               (root root))
+      (match components
+        ((head tail ...)
+         (let ((dir (string-append root "/" head))) ;use "/" internally
+           (catch 'system-error
+             (lambda ()
+               (mkdir dir)
+               (loop tail dir))
+             (lambda args
+               (if (= EEXIST (system-error-errno args))
+                   (loop tail dir)
+                   (apply throw args))))))
+        (() #t)))))
 
 (define* (delete-file-recursively dir
                                   #:key follow-mounts?)
