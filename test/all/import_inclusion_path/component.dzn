@@ -1,0 +1,6 @@
+import interface.dzn;
+
+component C
+{
+  provides I i;
+}

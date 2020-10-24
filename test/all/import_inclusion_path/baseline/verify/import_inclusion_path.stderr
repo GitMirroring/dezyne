@@ -1,0 +1,8 @@
+In test/all/import_inclusion_path/interface.dzn:
+imported from test/all/import_inclusion_path/component.dzn:
+imported from test/all/import_inclusion_path/import_inclusion_path.dzn:
+
+test/all/import_inclusion_path/interface.dzn:8:2: error
+}
+ ^
+ `EOF' expected
