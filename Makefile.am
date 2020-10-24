@@ -140,6 +140,7 @@ EXTRA_DIST +=						\
  doc/semantics/external_multiple_out.dzn		\
  doc/semantics/indirect_blocking_multiple_external_out.dzn	\
  doc/semantics/indirect_blocking_out.dzn		\
+ doc/semantics/indirect_in.dzn				\
  doc/semantics/indirect_multiple_out1.dzn		\
  doc/semantics/indirect_multiple_out2.dzn		\
  doc/semantics/indirect_multiple_out3.dzn		\
@@ -153,6 +154,7 @@ dist_info_images_DATA =					\
  doc/images/external_multiple_out.png			\
  doc/images/indirect_blocking_multiple_external_out.png	\
  doc/images/indirect_blocking_out.png			\
+ doc/images/indirect_in.png				\
  doc/images/indirect_multiple_out1.png			\
  doc/images/indirect_multiple_out2.png			\
  doc/images/indirect_multiple_out3.png			\
