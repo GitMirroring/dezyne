@@ -84,7 +84,10 @@ Use \"dzn COMMAND --help\" for command-specific information.
 (define (run-command args)
   (let* ((command (string->symbol (car args)))
          (module (resolve-module `(dzn commands ,command)))
-         (main (module-ref module 'main)))
+         (main (and module (false-if-exception (module-ref module 'main)))))
+    (unless main
+      (format (current-error-port) "dzn: no such command: ~a\n" command)
+      (exit 1))
     (main args)))
 
 (define (main args)
