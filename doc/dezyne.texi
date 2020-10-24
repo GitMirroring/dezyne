@@ -3801,6 +3801,18 @@ component are indistinguisable looking from the outside.
 
 The third variant is left as an exercise to the reader.
 
+@section Indirect in event
+
+A requires port in-event (r.a) call resulting in a requires port
+out-event (r.b).
+
+@example
+@verbatiminclude semantics/indirect_in.dzn
+@end example
+
+@image{images/indirect_in,,,,.png}
+
+
 @section Indirect out event
 
 A requires port out-event (r.b) posted in the context of a provides port

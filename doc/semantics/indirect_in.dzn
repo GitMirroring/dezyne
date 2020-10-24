@@ -1,0 +1,31 @@
+interface U
+{
+  out void unused();
+  behaviour
+  {
+    on inevitable: unused;
+  }
+}
+
+
+interface I
+{
+  in void b();
+  out void a();
+  behaviour
+  {
+    on inevitable: a;
+    on b: {}
+  }
+}
+
+
+component indirect_in
+{
+  provides U p;
+  requires I r;
+  behaviour
+  {
+    on r.a(): r.b();
+  }
+}
