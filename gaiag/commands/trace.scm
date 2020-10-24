@@ -41,9 +41,9 @@
 
   #:use-module (json)
 
-
-  #:export (parse-opts
-            format-trace
+  #:export (format-trace
+            json-string->alist-scm
+            parse-opts
             step:format-trace
             seqdiag:format-sexp
             seqdiag:format-trace
@@ -421,6 +421,9 @@ ws               <   [ \t]
     ((h . t) (cons (json->alist-scm h) (json->alist-scm t)))
     (_ src)))
 
+(define (json-string->alist-scm src)
+  (json->alist-scm (json-string->scm src)))
+
 (define* (seqdiag:sexp->steps sexp #:key (file-name "<stdin>"))
   (let* ((sequence (json-vector->list sexp))
          (model (seqdiag:get-model sequence))
@@ -431,11 +434,11 @@ ws               <   [ \t]
   (string-prefix? "[{" string))
 
 (define (seqdiag:format-sexp sexp)
-  (let ((steps (seqdiag:sexp->steps (json->alist-scm sexp))))
+  (let ((steps (seqdiag:sexp->steps sexp)))
     (string-join (map seqdiag:step->string steps) "\n" 'suffix)))
 
 (define (seqdiag:format-trace trace)
-  (seqdiag:format-sexp (json-string->scm trace)))
+  (seqdiag:format-sexp (json-string->alist-scm trace)))
 
 (define* (step:format-trace trace #:key file-name format debug?)
   (let* ((steps (trace->steps trace #:file-name file-name))
