@@ -45,9 +45,11 @@
             json-string->alist-scm
             parse-opts
             step:format-trace
+            seqdiag:get-model
             seqdiag:format-sexp
             seqdiag:format-trace
             seqdiag:sexp->steps
+            seqdiag:sequence->trail
             main))
 
 (define (parse-opts args)
