@@ -39,9 +39,9 @@
                %peg:debug?
                %peg:error)
 
-  #:export (peg:parse
-            peg:skip-parse
-            peg:imports))
+  #:export (peg:imports
+            peg:parse
+            peg:skip-parse))
 
 (define-skip-parser peg-eol none (or "\f" "\n" "\r" "\v"))
 (define-skip-parser peg-ws none (or " " "\t"))
@@ -51,12 +51,12 @@
 
 (define (peg:imports string)
   (define-peg-string-patterns
-    "root <- (import / SKIP)*
+    "root <- (import / SKIP+)*
 import <-- IMPORT file-name SEMICOLON
 IMPORT < 'import' ![a-zA-Z_0-9]
 file-name <- (!SEMICOLON .)+
 SEMICOLON < ';'
-SKIP < .")
+SKIP < !IMPORT . 'import'*")
   (peg:tree (match-pattern root string)))
 
 (define peg:skip-parse peg-skip)
