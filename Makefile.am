@@ -154,23 +154,25 @@ doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
 
 # Release process
 #  0. Prepare for release
-#     - fix all tests, or add failing tests to XFAIL_TESTS
+#     - Fix all tests, or add failing tests to XFAIL_TESTS
 #     - doc: Release update (NEWS, etc.)
-#     - git clean -fdx
-#     - ./autogen.sh; ./configure; make
-#  1. make tag PACKAGE_VERSION=2.10.0
-#  2. make sign-dist
-#  3. make release
+#     - Generate announcement
+#       make gen-announce PACKAGE_VERSION=2.10.0
+#     - Update and commit doc/announce/ANNOUNCE-2.10.0
+#  1. Tag for release
+#     make tag PACKAGE_VERSION=2.10.0
+#     ./autogen.sh
+#  2. Create signed tarball
+#     make sign-dist
+#  3. Update Guix package description
+#     make release
 #  4. test guix package build, binary packs (see pack.git)
 #     GUIX_PACKAGE_PATH=guix build dezyne
 #     make linux
 #     make mingw
-#  5. Create announcement
-#       make gen-announce PACKAGE_VERSION=2.10.0
-#       Update and commit doc/announce/ANNOUNCE-2.10.0
-#  6. Create blog post
-#       cp doc/announce/ANNOUNCE-2.10.0 ~/src/web/dezyne.org/posts/announce-2.10.0.md
-#  7. Send mail to
+#  5. Create blog post
+#     cp doc/announce/ANNOUNCE-2.10.0 ~/src/web/dezyne.org/posts/announce-2.10.0.md
+#  6. Send mail to
 #     guile-user@gnu.org
 #     mcrl2-users@listserver.tue.nl
 #     guix formal verification interest group (guix-devel@gnu.org?)
@@ -196,12 +198,10 @@ dist-hook: gen-ChangeLog
 	git show HEAD --format=%ct --no-patch > $(distdir)/.tarball-timestamp
 	rm -rf $(distdir)/test/all/*/out
 
-# FIXME: this will only work after we switch to source tarball
-# distribution and url-feth
 release: update-hash
-	git commit -m 'guix: Update hash.'					\
-		-m '* guix/gnu/packages/dezyne.scm (dezyne): Update hash.'	\
-		guix/gnu/packages/dezyne.scm
+	git commit -m 'guix: dezyne: Update to $(PACKAGE_VERSION).'					\
+	    -m '* guix/gnu/packages/dezyne.scm (dezyne)[source]: : Update to $(PACKAGE_VERSION).'	\
+	    guix/gnu/packages/dezyne.scm
 
 GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
