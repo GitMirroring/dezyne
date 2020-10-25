@@ -330,10 +330,6 @@ XFAIL_TESTS =					\
  %D%/compliance_out_inevitable_illegal		\
  %D%/import_strip_component
 
-if have_scheme
- XFAIL_TESTS += %D%/blocking_system4
-endif
-
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
  $(HELLO_TESTS)					\
