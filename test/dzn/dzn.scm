@@ -277,7 +277,7 @@ output, and standard error as three values."
               ;; FIXME: METAs `model' is used for component/system tricksery
               (model base-name))
          (or (verify-only? file-name)
-             (skip? file-name "code" (string-append language ":code"))
+             (skip? file-name "code" language (string-append language ":code"))
              (and
               (receive (status stdout stderr)
                   (observe
@@ -350,6 +350,7 @@ output, and standard error as three values."
                     ,(string-append "OUT=" out-lang))))
     (or (verify-only? file-name)
         (skip? file-name
+               language
                "code" (string-append language ":code")
                "build" (string-append language ":build"))
         (receive (status stdout stderr)
@@ -366,6 +367,7 @@ output, and standard error as three values."
          (test (string-append out-lang "/test")))
     (or (verify-only? file-name)
         (skip? file-name
+               language
                "code" (string-append language ":code")
                "build" (string-append language ":build")
                "execute" (string-append language ":execute"))
