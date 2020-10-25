@@ -28,7 +28,7 @@ dzn = dzn || {};
 
 
 
-dzn.foreign = function (locator, meta) {
+dzn.Foreign = function (locator, meta) {
   dzn.runtime.init (this, locator, meta);
   this._dzn.meta.ports = ['w'];
   this._dzn.flushes = true;
