@@ -42,7 +42,7 @@
          (pump (make <dzn:pump>))
          (locator (dzn:set! locator runtime))
          (locator (dzn:set! locator pump))
-         (sut (make <async_prio> #:locator locator #:name 'sut))
+         (sut (make <async_prio> #:locator locator #:name "sut"))
          (trace (string-trim-right (read-string)))
          (trace-alist `(("p.c\np.return" . (,(lambda _ (action sut .p .in .c))))
                         ("p.e\np.return\np.c\np.return"
@@ -54,10 +54,10 @@
                         ("r.ping\np.ping"
                          . (,(lambda _ (action sut .r .out .ping)))))))
 
-    (set! (.name (.out (.p sut))) 'p)
-    (set! (.name (.in (.r sut))) 'r)
-    (set! (.cb (.out (.p sut))) (lambda _ (log-out 'p. 'cb)))
-    (set! (.ping (.out (.p sut))) (lambda _ (log-out 'p. 'ping)))
+    (set! (.name (.out (.p sut))) "p")
+    (set! (.name (.in (.r sut))) "r")
+    (set! (.cb (.out (.p sut))) (lambda _ (log-out "p." "cb")))
+    (set! (.ping (.out (.p sut))) (lambda _ (log-out "p." "p"ing)))
 
     (let ((proc (assoc-ref trace-alist trace)))
       (unless proc

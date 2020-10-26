@@ -37,9 +37,9 @@
   (set! (.p o)
         (make <S:I>
           #:in (make <S:I.in>
-                 #:name 'p
+                 #:name "p"
                  #:self o
-                 #:e (lambda args (call-in o (lambda _ (apply p-e (cons o args))) `(,(.p o) e)))#:f (lambda args (call-in o (lambda _ (apply p-f (cons o args))) `(,(.p o) f))))
+                 #:e (lambda args (call-in o (lambda _ (apply p-e (cons o args))) `(,(.p o) e)))#:f (lambda args (call-in o (lambda _ (apply p-f (cons o args))) `(,(.p o) "f"))))
           #:out (make <S:I.out>))))
 
 

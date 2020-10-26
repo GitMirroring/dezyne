@@ -40,9 +40,9 @@
   (set! (.w o)
     (make <library:iworld>
       #:in (make <library:iworld.in>
-        #:name 'w
+        #:name "w"
         #:self o
-        #:world (lambda args (call-in o (lambda _ (apply w-world (cons o args))) `(,(.w o) world))))
+        #:world (lambda args (call-in o (lambda _ (apply w-world (cons o args))) `(,(.w o) "world"))))
       #:out (make <library:iworld.out>))))
 
 (define-method (w-world (o <library:foreign>))
