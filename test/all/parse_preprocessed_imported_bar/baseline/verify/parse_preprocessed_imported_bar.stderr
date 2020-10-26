@@ -1,0 +1,4 @@
+test/all/parse_preprocessed_imported_bar/bar.dzn:2:1: error
+bar
+^
+`EOF' expected
