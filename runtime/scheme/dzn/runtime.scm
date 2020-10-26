@@ -78,7 +78,7 @@
 (define-class <dzn:model> ())
 
 (define-class <dzn:port> ()
-  (name #:accessor .name #:init-value (symbol) #:init-keyword #:name)
+  (name #:accessor .name #:init-value "" #:init-keyword #:name)
   (self #:accessor .self #:init-value #f #:init-keyword #:self))
 
 (define-class <dzn:interface> (<dzn:model>)
@@ -89,7 +89,7 @@
   (locator #:accessor .locator #:init-value #f #:init-keyword #:locator)
   (runtime #:accessor .runtime #:init-value #f)
   (parent #:accessor .parent #:init-value #f #:init-keyword #:parent)
-  (name #:accessor .name #:init-value (symbol) #:init-keyword #:name)
+  (name #:accessor .name #:init-value "" #:init-keyword #:name)
   (rank #:accessor .rank #:init-value 0 #:init-keyword #:rank))
 
 (define-method (initialize (o <dzn:component-model>) args)
@@ -145,7 +145,7 @@
   #t)
 
 (define (dzn:type-name o)
-  (string->symbol (string-drop-right (string-drop (symbol->string (class-name (class-of o))) 1) 1)))
+  (string-drop-right (string-drop (symbol->string (class-name (class-of o))) 1) 1))
 
 (define (dzn:path o)
   (let* ((path (let loop ((o o))
@@ -224,7 +224,7 @@
   (defer (.self (.in (car m))) o f))
 
 (define* (path o #:optional (p ""))
-  (let* ((name (or (and o (symbol->string (.name o))) ""))
+  (let* ((name (or (and o (.name o)) ""))
          (pp (string-append name
                             (if (and (not (string-null? name))
                                      (not (string-null? p))) "." "") p)))
