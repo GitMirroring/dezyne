@@ -2,6 +2,6 @@
   (make <#x:port-type >
      ##:in (make <#x:port-type .in>)
      ##:out (make <#x:port-type .out>
-     ##:name '#.name
+     ##:name "#.name "
      ##:self o
      #x:declare-method)))
