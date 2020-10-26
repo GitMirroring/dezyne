@@ -1,1 +1,1 @@
-{"skip":["scheme:build"],"comment":"partial namespace"}
+{"skip":["javascript:build","scheme:build"],"comment":"partial namespace"}
