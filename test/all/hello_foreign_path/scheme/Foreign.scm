@@ -35,9 +35,9 @@
   (set! (.w o)
         (make <iworld>
           #:in (make <iworld.in>
-                 #:name 'w
+                 #:name "w"
                  #:self o
-                 #:world (lambda args (call-in o (lambda _ (apply w-world (cons o args))) `(,(.w o) hello)))
+                 #:world (lambda args (call-in o (lambda _ (apply w-world (cons o args))) `(,(.w o) "hello")))
                  )
           #:out (make <iworld.out>))))
 
