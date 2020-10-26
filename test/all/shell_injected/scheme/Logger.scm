@@ -39,9 +39,9 @@
   (set! (.log o)
     (make <ILogger>
       #:in (make <ILogger.in>
-        #:name 'log
+        #:name "log"
         #:self o
-        #:log (lambda args (call-in o (lambda _ (apply log-log (cons o args))) `(,(.log o) log))))
+        #:log (lambda args (call-in o (lambda _ (apply log-log (cons o args))) `(,(.log o) "log"))))
       #:out (make <ILogger.out>))))
 
 (define-method (log-log (o <Logger>) m)

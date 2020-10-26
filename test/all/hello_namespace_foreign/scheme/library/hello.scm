@@ -75,18 +75,18 @@
   (set! (.h o)
     (make <library:ihello>
       #:in (make <library:ihello.in>
-        #:name 'h
+        #:name "h"
         #:self o
-        #:hello (lambda args (call-in o (lambda _ (apply h-hello (cons o args))) `(,(.h o) hello))))
+        #:hello (lambda args (call-in o (lambda _ (apply h-hello (cons o args))) `(,(.h o) "hello"))))
       #:out (make <library:ihello.out>)))
 
   (set! (.w o)
     (make <library:iworld>
       #:in (make <library:iworld.in>)
       #:out (make <library:iworld.out>
-        #:name 'w
+        #:name "w"
         #:self o
-        #:howdy (lambda args (call-out o (lambda _ (apply w-howdy (cons o args))) `(,(.w o) howdy))))))
+        #:howdy (lambda args (call-out o (lambda _ (apply w-howdy (cons o args))) `(,(.w o) "howdy"))))))
 
 
 )
