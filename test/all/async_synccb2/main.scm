@@ -32,11 +32,11 @@
   #:export (main))
 
 (define (consume-synchronous-out-events prefix event event-alist)
-  (let ((match (symbol-append prefix event)))
+  (let ((match (string-append prefix event)))
     (let loop ((s (read-line)))
       (and s
            (not (eof-object? s))
-           (not (eq? (string->symbol s) match))
+           (not (equal? s match))
            (loop (read-line)))))
   (let loop ((s (read-line)))
     (let ((event (and s
@@ -49,7 +49,7 @@
 (define (log-in prefix event event-alist)
   (stderr "<external>.~a~a -> sut.~a~a\n" prefix event prefix event)
   (consume-synchronous-out-events prefix event event-alist)
-  (stderr "<external>.~a~a -> sut.~a~a\n" prefix 'return prefix 'return))
+  (stderr "<external>.~a~a -> sut.~a~a\n" prefix "return" prefix "return"))
 
 (define (log-out prefix event)
   (stderr "<external>.~a~a <- sut.~a~a\n" prefix event prefix event)
@@ -62,7 +62,7 @@
          (pump (make <dzn:pump>))
          (locator (dzn:set! locator runtime))
          (locator (dzn:set! locator pump))
-         (sut (make <async_synccb2> #:locator locator #:name 'sut))
+         (sut (make <async_synccb2> #:locator locator #:name "sut"))
          (trace (string-trim-right (read-string)))
          (event-alist `((p.e . ,(lambda _ (apply (.e (.in (.p sut))) (list))))
                         (p.c . ,(lambda _ (apply (.c (.in (.p sut))) (list))))
@@ -85,11 +85,11 @@
                                (action sut .r .out .cb1)
                                (action sut .r .out .cb2)))))))
 
-    (set! (.name (.out (.p sut))) 'p)
-    (set! (.name (.in (.r sut))) 'r)
-    (set! (.cb (.out (.p sut))) (lambda _ (log-out 'p. 'cb)))
-    (set! (.e (.in (.r sut))) (lambda _ (log-in 'r. 'e event-alist)))
-    (set! (.c (.in (.r sut))) (lambda _ (log-in 'r. 'c event-alist)))
+    (set! (.name (.out (.p sut))) "p")
+    (set! (.name (.in (.r sut))) "r")
+    (set! (.cb (.out (.p sut))) (lambda _ (log-out "p." "cb")))
+    (set! (.e (.in (.r sut))) (lambda _ (log-in "r." "e" event-alist)))
+    (set! (.c (.in (.r sut))) (lambda _ (log-in "r." "c" event-alist)))
 
     (let ((proc (assoc-ref trace-alist trace)))
       (unless proc
