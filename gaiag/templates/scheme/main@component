@@ -18,11 +18,11 @@
       string))
 
 (define (consume-synchronous-out-events prefix event event-alist)
-  (let ((match (symbol-append prefix event)))
+  (let ((match (string-append prefix event)))
     (let loop ((s (read-line)))
       (and s
            (not (eof-object? s))
-           (not (eq? (string->symbol s) match))
+           (not (equal? s match))
            (loop (read-line)))))
   (let loop ((s (read-line)))
     (let ((event (and s
@@ -36,7 +36,7 @@
   (stderr "<external>.~a~a -> sut.~a~a\n" prefix event prefix event)
   (when (not relaxed?)
     (consume-synchronous-out-events prefix event event-alist)
-    (stderr "<external>.~a~a -> sut.~a~a\n" prefix 'return prefix 'return))
+    (stderr "<external>.~a~a -> sut.~a~a\n" prefix "return" prefix "return"))
   ##f)
 
 (define (log-out prefix event event-alist)
@@ -85,7 +85,7 @@
          (pump (make <dzn:pump>))
          (locator (dzn:set! locator runtime))
          (locator (dzn:set! locator pump))
-         (sut (make <#x:class-name > ##:locator locator ##:name 'sut))
+         (sut (make <#x:class-name > ##:locator locator ##:name "sut"))
          (event-alist (fill-event-alist sut)))
 
     (define (next-event)

@@ -1,7 +1,7 @@
 (set! (.#.name  o)
   (make <#x:port-type >
      ##:in (make <#x:port-type .in>
-     ##:name '#.name
+     ##:name "#.name "
      ##:self o
      #x:declare-method)
      ##:out (make <#x:port-type .out>)))
