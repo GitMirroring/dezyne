@@ -1,1 +1,1 @@
-(set! (.#.name  o) (make <#x:type-name > ##:locator (.locator o) ##:parent o ##:name '#.name))
+(set! (.#.name  o) (make <#x:type-name > ##:locator (.locator o) ##:parent o ##:name "#.name "))

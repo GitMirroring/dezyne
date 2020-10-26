@@ -1,1 +1,1 @@
-##:#.event.name  (lambda args (call-#ast:direction  o (lambda _ (apply #.port.name -#.event.name  (cons o args))) `(,(.#.port.name  o) #.event.name)))
+##:#.event.name  (lambda args (call-#ast:direction  o (lambda _ (apply #.port.name -#.event.name  (cons o args))) `(,(.#.port.name  o) "#.event.name ")))

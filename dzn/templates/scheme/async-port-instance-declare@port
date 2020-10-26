@@ -5,6 +5,6 @@
      #x:declare-async-req-method
      #x:declare-async-clr-method)
      ##:out (make <#x:port-type .out>
-     ##:name '#.name
+     ##:name "#.name "
      ##:self o
      #x:declare-method))))
