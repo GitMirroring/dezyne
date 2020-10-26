@@ -1,0 +1,1 @@
+../../out/javascript/name.space.js
