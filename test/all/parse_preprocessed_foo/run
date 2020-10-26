@@ -1,0 +1,7 @@
+#! /bin/sh
+set -x
+pwd
+dir=$1
+base=$(basename $dir)
+dzn parse -E -o - $dir/foo.dzn > $dir/$base.dzn
+run $dir
