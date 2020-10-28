@@ -136,9 +136,9 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-pattern var all -var-)
 
   (define-peg-string-patterns
-    "root <-- (import / data / type / namespace / interface / component / EOF)#*
+    "root <-- (import / dollars / type / namespace / interface / component / EOF)#*
 
-data <-- DOLLAR (!DOLLAR .)* DOLLAR#
+dollars <-- DOLLAR (!DOLLAR .)* DOLLAR#
 
 import <-- IMPORT file-name SEMICOLON#
 
@@ -157,7 +157,7 @@ range <-- from DOTDOT# to
 from <-- NUMBER#
 to <-- NUMBER#
 
-extern <-- EXTERN compound-name# data# SEMICOLON#
+extern <-- EXTERN compound-name# dollars# SEMICOLON#
 
 interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# behaviour# BRACE-CLOSE#
 
@@ -256,7 +256,7 @@ or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
 compare-expression <- plus-min-expression COMPARE plus-min-expression# / plus-min-expression
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
-not-expression <- not / group / data / named-expression
+not-expression <- not / group / dollars / named-expression
 not <-- NOT not-expression#
 named-expression <-  !var !is-port enum-literal / field-test / literal / var / action-or-call / interface-action / unknown-identifier
 enum-literal <-- scope name
