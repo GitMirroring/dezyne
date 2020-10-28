@@ -1,4 +1,4 @@
 test/all/parse_preprocessed_foo/foo.dzn:1:1: error
 foo
 ^
-`import, data, type, namespace, interface, component, EOF' expected
+`import, dollars, type, namespace, interface, component, EOF' expected
