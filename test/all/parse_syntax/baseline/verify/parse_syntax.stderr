@@ -1,4 +1,4 @@
 test/all/parse_syntax/parse_syntax.dzn:1:1: error
 intervaas ihello {
 ^
-`import, data, type, namespace, interface, component, EOF' expected
+`import, dollars, type, namespace, interface, component, EOF' expected
