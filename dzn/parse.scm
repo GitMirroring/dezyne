@@ -46,6 +46,7 @@
 
   #:export (file->ast
             string->ast
+            string->parse-tree
             peg:handle-syntax-error
             preprocess))
 
@@ -103,18 +104,31 @@
     (('followed-by item) (symbol->string item))
     (_ e)))
 
-(define (peg:syntax-error-message file-name string args)
+(define (peg:syntax-error-message imported-from file-name string args)
   (unless (or (null? args) (null? (car args)))
     (let* ((pos (caar args))
            (message (format #f "`~a' expected" (peg:syntax-error->message (cadar args)))))
-      (peg:error-message file-name string pos message))))
+      (peg:error-message imported-from file-name string pos message))))
 
-(define* (peg:handle-syntax-error file-name string #:key (imported-from '()))
+(define* (peg:handle-syntax-error file-name string #:optional (imported-from '()))
   (lambda (key . args)
     (if (or (null? args) (null? (car args))) (apply throw key args)
         (begin
           (peg:syntax-error-message imported-from file-name string args)
           (apply throw key '())))))
+
+(define* (string->parse-tree string #:optional (file-name "-") (imported-from '()))
+  (catch 'syntax-error
+    (lambda _
+      (parameterize ((%peg:locations? #t)
+                     (%peg:skip? peg:skip-parse)
+                     (%peg:debug? (> (dzn:debugity) 3)))
+        (let ((parse-tree (peg:parse string)))
+          (when (> (dzn:debugity) 2)
+            (format (current-error-port) "parse-tree: ~a\n" file-name)
+            (pretty-print parse-tree (current-error-port)))
+          parse-tree)))
+    (peg:handle-syntax-error file-name string imported-from)))
 
 (define (parse-file+import-content-alist alist)
   "From ALIST of form
@@ -129,17 +143,7 @@ parse CONTENT and return
 "
   (map (match-lambda
          ((file-name . content)
-          (catch 'syntax-error
-            (lambda ()
-              (parameterize ((%peg:locations? #t)
-                             (%peg:skip? peg:skip-parse)
-                             (%peg:debug? (> (dzn:debugity) 3)))
-                (let ((parse-tree (peg:parse content)))
-                  (when (> (dzn:debugity) 2)
-                    (format (current-error-port) "parse-tree: ~a\n" file-name)
-                    (pretty-print parse-tree (current-error-port)))
-                  (cons file-name parse-tree))))
-            (peg:handle-syntax-error file-name content #:imported-from (imported-from alist)))))
+          (cons file-name (string->parse-tree content file-name (imported-from alist)))))
        alist))
 
 (define* (parse-tree-alist->ast alist #:key (content-alist '()))
