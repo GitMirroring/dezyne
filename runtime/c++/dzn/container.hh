@@ -92,14 +92,13 @@ namespace dzn
       if(expect.empty()) condition.notify_one();
       return tmp;
     }
-    void match(const std::string& actual)
+    void match(const std::string& expected)
     {
-      std::string tmp = match_return();
+      std::string actual = match_return();
 
-      if(actual != tmp)
-        throw std::runtime_error("unmatched expectation: \"" + actual + "\" got: \"" + tmp + "\"");
+      if(expected != actual)
+        throw std::runtime_error("failure: expected: \"" + expected + "\" != actual: \"" + actual + "\"");
     }
-
     void operator()(std::map<std::string, Function>&& lookup, std::set<std::string>&& required_ports)
     {
       this->lookup = std::move(lookup);
