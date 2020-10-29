@@ -23,4 +23,8 @@
 #
 # Code:
 
+LANG=en_US.UTF-8
+export LANG
+for E in $(set | grep -oE LC_[^=]+); do unset $E; done
+
 autoreconf -ifv

@@ -41,7 +41,8 @@ export PREFIX
 DZN_UNINSTALLED=1
 export DZN_UNINSTALLED
 
-NODE_PATH="$HOME/.npm/lib/node_modules${NODE_PATH:+:}$NODE_PATH"
-export NODE_PATH
+LANG=en_US.UTF-8
+export LANG
+for E in $(set | grep -oE LC_[^=]+); do unset $E; done
 
 exec "$@"
