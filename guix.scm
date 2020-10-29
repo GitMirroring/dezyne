@@ -55,6 +55,7 @@
 (define-public dezyne.git
   (package
     (inherit dezyne)
+    (version "git")
     (source (local-file %source-dir
                         #:recursive? #t
                         #:select? (git-predicate %source-dir)))))
