@@ -22,11 +22,14 @@
 //
 // Code:
 
-#include <dzn/container.hh>
+//FIXME: workaround multi-threaded race condition
+//dedicated container.hh with std::this_thread::sleep_for
+#include "container.hh"
 
 #include "shell.hh"
 
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 
 int to_int(std::string s){return std::stoi (s);}
@@ -55,13 +58,14 @@ connect_ports (dzn::container< ::shell, std::function<void()>>& c)
     return to_bool(tmp.substr(tmp.rfind('.')+1));
   };
   c.system.r_outer.in.return_enum = [&] (int i,int& j) {
+    j = i;
     dzn::trace(std::clog, c.system.r_outer.meta, "return_enum");
     c.match("r_outer.return_enum"); std::string tmp = c.match_return();
     dzn::trace_out(std::clog, c.system.r_outer.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     return to_Enum(tmp.substr(tmp.rfind('.')+1));
   };
   c.system.p_outer.out.foo = [&] (int i) {
-    dzn::trace_out(std::clog, c.system.p_outer.meta, "foo"); std::clog << std::endl;
+    dzn::trace_out(std::clog, c.system.p_outer.meta, "foo");
     c.match("p_outer.foo");
   };
 }
@@ -77,11 +81,11 @@ event_map (dzn::container< ::shell, std::function<void()>>& c)
 
 
   return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}}
-    , {"r_outer.foo",[&]{int _0 = 0; c.system.r_outer.out.foo(0);}}
+    , {"r_outer.foo",[&]{c.system.r_outer.out.foo(0);}}
     , {"p_outer.return_void",[&]{std::thread([&]{c.system.p_outer.in.return_void(); c.match("p_outer.return");}).detach();}}
     , {"p_outer.return_int",[&]{std::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_int()));}).detach();}}
     , {"p_outer.return_bool",[&]{std::thread([&]{c.match("p_outer." + to_string(c.system.p_outer.in.return_bool()));}).detach();}}
-    , {"p_outer.return_enum",[&]{std::thread([&]{int _0 = 0; int _1 = 1; c.match("p_outer." + to_string(c.system.p_outer.in.return_enum(0,_1)));}).detach();}}
+    , {"p_outer.return_enum",[&]{std::thread([&]{int _1 = 1; c.match("p_outer." + to_string(c.system.p_outer.in.return_enum(0,_1))); assert(_1 == 0);}).detach();}}
     , {"r_outer.<flush>",[&]{std::clog << "r_outer.<flush>" << std::endl; c.dzn_rt.flush(&c);}}
   };
 }
