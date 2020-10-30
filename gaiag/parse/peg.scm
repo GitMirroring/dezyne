@@ -70,14 +70,14 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-pattern reset-event-names none -reset-event-names-)
 
   (define (-event-name- str len pos)
-    (let ((res (identifier str len pos)))
+    (let ((res (name str len pos)))
       (when res
         (set! interface-events (cons (substring str pos (car res)) interface-events)))
       res))
   (define-peg-pattern event-name all -event-name-)
 
   (define (-is-event- str len pos)
-    (let ((res (identifier str len pos)))
+    (let ((res (name str len pos)))
       (and res (member (substring str pos (car res)) interface-events) res)))
   (define-peg-pattern is-event body -is-event-)
 
@@ -116,7 +116,7 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-pattern exit-frame none -exit-frame-)
 
   (define (-add-var- str len pos)
-    (let ((res (identifier str len pos))
+    (let ((res (name str len pos))
           (top (or (%peg:fall-back?) (car variable-stack)))
           (bottom (or (%peg:fall-back?) (cdr variable-stack))))
       (when res
@@ -126,7 +126,7 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-pattern add-var all -add-var-)
 
   (define (-var- str len pos)
-    (let* ((res (identifier str len pos))
+    (let* ((res (name str len pos))
            (top (or (%peg:fall-back?) (car variable-stack)))
            (var-name (and res (substring str pos (car res)))))
       (and var-name
