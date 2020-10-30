@@ -136,17 +136,15 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-pattern var all -var-)
 
   (define-peg-string-patterns
-    "root <-- top* EOF#
+    "root <-- (import / data / type / namespace / interface / component / EOF)#*
 
-top <- import / scoped / data
-
-scoped <- namespace / type / interface / component
+data <-- DOLLAR (!DOLLAR .)* DOLLAR#
 
 import <-- IMPORT file-name SEMICOLON#
 
 file-name <- (!SEMICOLON .)+
 
-namespace <-- NAMESPACE compound-name# BRACE-OPEN# scoped* BRACE-CLOSE#
+namespace <-- NAMESPACE compound-name# BRACE-OPEN# (type / namespace / interface / component / &BRACE-CLOSE)#* BRACE-CLOSE#
 
 type <- enum / int / extern
 
@@ -155,9 +153,9 @@ fields <-- (name (&BRACE-CLOSE / COMMA#))+
 
 int <-- SUBINT compound-name# BRACE-OPEN# range# BRACE-CLOSE# SEMICOLON#
 
-range <-- from# DOTDOT# to#
-from <-- NUMBER
-to <-- NUMBER
+range <-- from DOTDOT# to
+from <-- NUMBER#
+to <-- NUMBER#
 
 extern <-- EXTERN compound-name# data# SEMICOLON#
 
@@ -237,8 +235,6 @@ return <-- RETURN expression? SEMICOLON#
 
 identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
 unknown-identifier <-- name
-
-data <-- DOLLAR (!DOLLAR .)* DOLLAR#
 
 compound-name <-- scope? name
 scope <-- global? (name DOT &name)+
