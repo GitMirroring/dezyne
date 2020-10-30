@@ -4,4 +4,4 @@ imported from test/all/parse_preprocessed_imported_bar/foo.dzn:
 test/all/parse_preprocessed_imported_bar/bar.dzn:2:1: error
 bar
 ^
-`EOF' expected
+`import, data, type, namespace, interface, component, EOF' expected
