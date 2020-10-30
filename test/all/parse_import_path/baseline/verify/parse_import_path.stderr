@@ -5,4 +5,4 @@ imported from test/all/parse_import_path/parse_import_path.dzn:
 test/all/parse_import_path/interface.dzn:8:2: error
 }
  ^
- `EOF' expected
+`import, data, type, namespace, interface, component, EOF' expected
