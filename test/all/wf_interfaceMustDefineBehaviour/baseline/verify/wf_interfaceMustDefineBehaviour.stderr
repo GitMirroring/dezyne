@@ -1,4 +1,4 @@
 test/all/wf_interfaceMustDefineBehaviour/wf_interfaceMustDefineBehaviour.dzn:28:23: error
   out void disabled();
                       ^
-                      `behaviour' expected
+                      `(or type event (followed-by behaviour))' expected
