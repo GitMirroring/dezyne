@@ -43,14 +43,18 @@
                  (name "void" (location 847 851))
                  (location 847 851))
                (location 847 851))
-             (event-name "hello" (location 852 857))
+             (event-name
+               (name "hello" (location 852 857))
+               (location 852 857))
              (formals (location 857 859))
              (location 844 860))
       (location 844 860))
     (behaviour
       (behaviour-compound
         (on (triggers
-              (trigger "hello" (location 885 890))
+              (trigger
+                (name "hello" (location 885 890))
+                (location 885 890))
               (location 885 890))
             (compound (location 892 897))
             (location 882 897))
