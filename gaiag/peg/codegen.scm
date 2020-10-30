@@ -188,30 +188,29 @@ return EXP."
 ;;operator / is naturally not combined with the use of #
 ;;operators '(! &) may be considered later, since they may prove useful as asserts
 
-(define (format-error missing str)
+(define (format-error missing str strlen)
   (lambda (from to)
-    (unless (and (< from to)
-                 (string-every char-set:whitespace str from (1+ to)))
-      ((%peg:error) from str
-       (if (< from to) (list 'skipped (substring str from (1+ to)))
-           (list 'missing missing))))))
+    ((%peg:error) from str
+     (if (< from to) (list 'skipped (substring str from (min strlen (1+ to))))
+         (list 'missing missing)))))
 
 (define* (fall-back-skip kernel #:optional sequence?)
   (if (not (%peg:fall-back?)) kernel
       (lambda (str strlen start)
         (catch 'syntax-error
                (lambda _
-                 (cond ((or #t (< start strlen)) (kernel str strlen start))
-                       ((not sequence?) `(,strlen ()))
-                       (else #f)))
+                 (kernel str strlen start))
                (lambda (key . args)
                  (let* ((expected (cadar args))
-                        (format-error (format-error expected str)))
+                        (format-error (format-error expected str strlen)))
                    (let loop ((at start))
-                     (cond ((or (= at strlen) ((%continuation) str strlen at)) (format-error start at) (if sequence? `(,at ()) `(,at (,expected))))
-                           (else (or (let ((res (false-if-exception (kernel str strlen (1+ at))))) (when res(format-error start at)) res)
-                                     ;;if kernel matches, we have skipped over: (substring str start (1+ at)))
-                                     (loop (1+ at))))))))))))
+                     (cond ((or (= at strlen)
+                                ((%continuation) str strlen at)) (format-error start at) (if sequence? `(,at ()) `(,at (,expected))))
+                           (else (let ((res (false-if-exception (kernel str strlen (1+ at)))))
+                                   (if res
+                                       (begin (format-error (or (string-index str (char-set-complement char-set:whitespace) start at) start) at)
+                                              res)
+                                       (loop (1+ at)))))))))))))
 
 
 (define (partial-match kernel)
@@ -409,15 +408,14 @@ return EXP."
 
 ;; Packages the results of a parser
 
-(define %peg:error (make-parameter (lambda (pos str error) #f)))
+(define %peg:error (make-parameter (lambda (pos str error)
+                                     (format (current-error-port) "~a: ~s\n" (first error) (second error)))))
 (define %peg:debug? (make-parameter #f))
 (define %peg:locations? (make-parameter #f))
 (define %peg:skip? (make-parameter (lambda (str strlen at) `(,at ()))))
 
 (define (trace? symbol)
-  (cond ((pair? (%peg:debug?)) (memq symbol (%peg:debug?)))
-        ((or (null? (%peg:debug?)) (%peg:debug?)) #t)
-        (else #f)))
+  (%peg:debug?))
 
 (define indent 0)
 
