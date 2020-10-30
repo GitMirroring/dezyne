@@ -45,25 +45,33 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - doc/dezyne.texi
     + Review and merge wip-tutorial
       - doc/dezyne-tutorial.texi
-    + Review and merge wip-release
   - Deprecate cloud-based 2.9
     + No new trial accounts
   - code
     + Review and merge wip-c++ew
+    + Review and merge wip-language
     + Review and merge wip-scheme
     + Review and merge wip-javascript
   - LSP
-    + Cleanup and split fallback into PEG patches, wip-completion, wip-lsp
-    + Review and merge wip-completion
-    + Review and merge wip-lsp
-    + Sort outp emacs/dzn-mode.el with (and without?) LSP
-    + Document LSP setup for various editors
+    + Sort out emacs/dzn-mode.el,emacs/dzn-ide.el with (and without?) LSP
+  - Support binary release
+    + Solicit and incorporate feedback on dezyne-2.11.0.rc1
+    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc1
+      (experimental: c++ew, scheme, javascript)
+  - decide on dzn or ide
+    + PATCH: dzn: Add -c,--core option; support running ide commands.
+      - collect & process feedback
+  - TFS
+    + thread pool c++ runtime (TFS only?)
+  - Digital Ocean / Sentia
+    + cleanup meuk
 
 ** Release 2.12
   - state diagram
   - LSP: highlighting & completion (80%)
   - browser click via LSP
   - hiding daemon from user
+  - adopt guile-3.0 and guile-json-4
 
 ** Release 3.0, unsorted
   - Update architecture for:
@@ -107,7 +115,12 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Review and merge wip-release
   - LSP
+    + Move wip-lsp into dezyne-ide
+    + Cleanup and split fallback into PEG patches, wip-language, wip-lsp
+    + Make parser more robust against out-of-range errors during typing
+    + Figure out why completion seems to have stopped working
     + Bring completion under test
     + Bring LSP under test
   - c++ew, javascript, scheme preview release:
