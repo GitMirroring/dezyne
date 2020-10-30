@@ -95,6 +95,54 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - thread pool c++ runtime (TFS only?)
       - package exception wrapper for TFS
 
+  - daemon/ide:
+    + daemon lifetime management: INPROGRESS
+    + fix: seqdiag missing model option error not passed to dzn simulate: DONE
+    + allow dzn simulate without model option (using something like ast:model; do not change seqdiag): DONE
+    + bring under test handling client not meeting input preconditions
+      like: parser errors, failing connections, double connections
+    + bring LSP under test: DONE
+    + bring check & simulate under test
+
+  - outcome LSP meeting
+    + make parser more robust against out-of-range errors during typing: DONE
+    + figure out why completion seems to have stopped working: DONE
+    + make dzn lsp in general more robust against crashes so lsp-mode doesn't
+      need to be restarted: DONE
+    + finalize/test/harden goto-def functionalities: DONE
+    + review/refactor current import & file content storage mechanism: DONE
+    + review/refactor +1/-1 hacks for location correctness
+    + getting-started.org w.r.t. how to set up an lsp client
+
+  - meeting 13-10-2020
+    + LSP
+      - decide on dzn or ide: TODO
+      - collect & process feedback on patches
+      - LSP extension proposal -> open source
+      - VSCode
+        + package LSP
+        + syntax highlighting package
+        + add click receive (via daemon not via browser)
+    + daemon
+      - lifetime
+      - diagram <- state
+      - onder test
+      - exit status dzn command door daemon
+      - parse blaat.dzn
+      - remove gojs watermark (html+css+webserver)
+      - catch address in use
+      - busy event when 2nd dzn command issued before first dzn command has finished
+      - determine & document daemon ports (dzn & browser)
+      - ide command-line:
+        + -d -v (position)
+        + persistent socket port across commands
+      - ide browse/view opening browser
+    + Digital Ocean / Sentia
+      - cleanup meuk
+    + TFS
+      - thread pool c++ runtime (TFS only?)
+      - package exception wrapper for TFS
+
 ** Release 2.12
   - Deprecate cloud-based 2.9
     + No new trial accounts
