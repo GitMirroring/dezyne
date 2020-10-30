@@ -397,7 +397,7 @@
 
         (('data) (make <data-node> #:value *unspecified*))
 
-        (('field-test ('var identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
+        (('field-test ('var name _ ...) field) (make <field-test-node> #:variable.name (helper name) #:field (helper field)))
         (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
 
         (('function type name formals)
