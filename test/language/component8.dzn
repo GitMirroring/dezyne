@@ -1,0 +1,21 @@
+interface I
+{
+  in void e();
+  out void f();
+  behaviour {}
+}
+
+interface J
+{
+  enum E {A, B};
+  in E e();
+  out void f();
+  behaviour {}
+}
+
+component C
+{
+  provides I p;
+  requires J r;
+
+  behaviour
