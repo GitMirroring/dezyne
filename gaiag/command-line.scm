@@ -33,6 +33,7 @@
             dzn:multi-opt
             dzn:verbosity
             %locations?
+            import-dirs
             multi-opt
             %language
             EXIT_OTHER_FAILURE))
@@ -41,6 +42,11 @@
 
 (define %locations?
   (make-parameter #f))
+
+(define (import-dirs options)
+  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
+         (imports (filter-map import-opt options)))
+    imports))
 
 (define multi-options
   '(import))
