@@ -274,6 +274,11 @@
                              (transitions . ,transitions)))))
   #f))
 
+(define (remove-flushes trace)
+  (and trace (string-join (filter (negate (cut string-contains <> "<flush>"))
+                                  (string-split trace #\newline))
+                          "\n")))
+
 (define (report-fail model-type model-name assert info trace interface-trace)
   (let* ((states (car info))
          (transitions (car (cdr info)))
@@ -299,10 +304,14 @@
                    ((second_reply) (format #f "double reply in model ~a" model-name))
                    ((incomplete) (format #f "model ~a is incomplete: event '~a' not handled" model-name second-last))
                    (else (format #f "~a in model ~a" error model-name))))
-         (trace-list (filter (negate (cut string-contains <> "<flush>")) trace-list))
          (trace (if (equal? last error)
                     (string-join (drop-right trace-list (if (equal? last 'incomplete) 2 1)) "\n")
-                    (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n"))))
+                    (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n")))
+
+         ;; XXX TODO current simulator does not expect flushes; remove
+         ;; when new simulator is in place
+         (trace (remove-flushes trace))
+         (interface-trace (remove-flushes interface-trace)))
     (if (gdzn:command-line:get 'json)
         (format #t "~a\n"
                 (scm->json-string (append
