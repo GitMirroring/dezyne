@@ -137,7 +137,7 @@
           (peg:syntax-error-message imported-from file-name string args)
           (apply throw key '())))))
 
-(define* (string->parse-tree string #:optional (file-name "-") (imported-from '()))
+(define* (string->parse-tree string #:key (file-name "-") (imported-from '()))
   (catch 'syntax-error
     (lambda _
       (parameterize ((%peg:locations? #t)
@@ -163,7 +163,10 @@ parse CONTENT and return
 "
   (map (match-lambda
          ((file-name . content)
-          (cons file-name (string->parse-tree content file-name (imported-from alist)))))
+          (cons file-name (string->parse-tree
+                           content
+                           #:file-name file-name
+                           #:imported-from (imported-from alist)))))
        alist))
 
 (define* (parse-tree-alist->ast alist #:key (content-alist '()))

@@ -173,6 +173,7 @@ The Dezyne command-line tools
 * Invoking dzn cat::
 * Invoking dzn code::
 * Invoking dzn hello::
+* Invoking dzn language::
 * Invoking dzn ls::
 * Invoking dzn lts::
 * Invoking dzn parse::
@@ -4582,6 +4583,7 @@ foreigns that use the same interfaces need to form a chain of
 * Invoking dzn cat::
 * Invoking dzn code::
 * Invoking dzn hello::
+* Invoking dzn language::
 * Invoking dzn ls::
 * Invoking dzn lts::
 * Invoking dzn parse::
@@ -4758,6 +4760,43 @@ The @var{option}s can be among the following:
 @item --help
 @itemx -h
 Display help on invoking @code{ide hello}, and then exit.
+
+@end table
+
+
+@node Invoking dzn language
+@section Invoking @command{dzn language}
+
+The @command{dzn language} command produces Dezyne language completion
+results and location information.
+
+@example
+dzn @var{dzn-option}@dots{} language @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn language}, and then exit.
+
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
+
+@item --import=@var{offset}
+Use offset @var{offset} to determine context.
+
+@item --point=@var{line},@var{column}
+@itemx -p @var{line},@var{column}
+Calculate offset from line @var{line} and column @var{column}.
+
+@c XXX TODO: is dzn lang --verbose really dzn --debug language?
+@item --verbose
+@itemx -v
+Display input, parse tree, offset, context and completions.
 
 @end table
 

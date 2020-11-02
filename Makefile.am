@@ -116,6 +116,7 @@ clean-go:
 include test/all/local.mk   # FULL_TESTS and XFAIL_TESTS
 include test/dzn/local.mk
 include test/lib/local.mk
+include test/language/local.mk
 
 TEST_EXTENSIONS = .scm
 LOG_COMPILER = $(top_builddir)/pre-inst-env run
@@ -171,6 +172,7 @@ dist_man_MANS =					\
  doc/dzn-cat.1					\
  doc/dzn-code.1					\
  doc/dzn-hello.1				\
+ doc/dzn-language.1				\
  doc/dzn-lts.1					\
  doc/dzn-ls.1					\
  doc/dzn-parse.1				\

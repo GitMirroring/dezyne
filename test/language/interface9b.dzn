@@ -1,0 +1,8 @@
+interface I
+{
+ in void foo();
+ in void bar();
+
+ behaviour
+ {
+   on 
