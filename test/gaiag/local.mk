@@ -22,6 +22,7 @@
 # Code:
 
 UNIT_TESTS =					\
+  %D%/language.scm				\
   %D%/lts.scm					\
   %D%/makreel.scm
 

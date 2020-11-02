@@ -1,0 +1,29 @@
+//guile -e '(@ (peg-example) main)' -L . peg-example.scm simple.dzn 247
+
+interface I
+{
+  typo
+  in void e();
+  typo
+  in void f();
+  typo
+
+  behaviour {
+    on e: {}
+  }
+}
+
+
+
+component C
+{
+  typo
+  provides I p;
+  typo
+  requires I r;
+  typo
+  behaviour
+  {
+    on p.e(): { [true] r.e(); }
+  }
+}

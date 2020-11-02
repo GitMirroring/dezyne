@@ -1,0 +1,5 @@
+interface I
+{
+  enum E {A,B};
+  in void e();
+  in
