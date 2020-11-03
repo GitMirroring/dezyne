@@ -10,14 +10,8 @@ test/all/wf_undefined/wf_undefined.dzn:24:12: error: no field `EN5' in enum `I1`
 test/all/wf_undefined/wf_undefined.dzn:17:3: error: enum declared here
 test/all/wf_undefined/wf_undefined.dzn:27:13: error: no field `EN0' in enum `I1`; expected EN1, EN2, EN3
 test/all/wf_undefined/wf_undefined.dzn:17:3: error: enum declared here
-test/all/wf_undefined/wf_undefined.dzn:37:17: error: undefined identifier `mundo'
-test/all/wf_undefined/wf_undefined.dzn:38:8: error: event `hola' not defined
-test/all/wf_undefined/wf_undefined.dzn:40:20: error: undefined identifier `mundo'
 test/all/wf_undefined/wf_undefined.dzn:48:3: error: undefined interface `I3'
 test/all/wf_undefined/wf_undefined.dzn:50:3: error: undefined interface `I4'
-test/all/wf_undefined/wf_undefined.dzn:54:7: error: event `hola' not defined for port `r1'
-test/all/wf_undefined/wf_undefined.dzn:49:3: error: port `r1' declared here
-test/all/wf_undefined/wf_undefined.dzn:54:7: error: undefined identifier `hola'
 test/all/wf_undefined/wf_undefined.dzn:55:7: error: event `hello' not defined for port `r2'
 test/all/wf_undefined/wf_undefined.dzn:50:3: error: port `r2' declared here
 test/all/wf_undefined/wf_undefined.dzn:55:7: error: undefined identifier `hello'
