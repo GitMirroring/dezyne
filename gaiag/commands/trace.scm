@@ -66,6 +66,8 @@
      (and help?
           (stdout "\
 Usage: dzn trace [OPTION]... FILE
+Pseudo-filter to translate between different trace formats
+
   -f, --format=FORMAT    display trace in format FORMAT [code] {code,event,sexp}
   -h, --help             display this help and exit
   -L, --locations        prepend locations to output trail
