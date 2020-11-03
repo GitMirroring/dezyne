@@ -1,4 +1,4 @@
-test/all/wf_parameterBinding/wf_parameterBinding.dzn:45:18: error
+test/all/wf_parameterBinding/wf_parameterBinding.dzn:45:16: error
       fn(number <- nr);
-                 ^
-                 `plus-min-expression' expected
+               ^
+               `comma' expected

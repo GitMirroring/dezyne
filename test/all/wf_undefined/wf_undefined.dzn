@@ -23,7 +23,7 @@ interface I1 {
     on hello: {
       en = EN.EN5;
       enn = EN.EN1;
-      em = EN.EN2;
+      // em = EN.EN2; // reported by peg parser
       reply(EN.EN0);
     }
   }
@@ -34,10 +34,10 @@ interface I2 {
   in void hello();
   out void world();
   behaviour {
-    on hello: { mundo; }
-    on hola: {}
+    // on hello: { mundo; } // reported by peg parser
+    // on hola: {} // reported by peg parser
     on inevitable: world;
-    on inevitable: mundo;
+    // on inevitable: mundo; // reported by peg parser
   }
 }
 
@@ -51,7 +51,7 @@ component C1 {
   behaviour {
     on p1.hello(x): {
       // r.hello(x); // reported by peg parser
-      r1.hola(x);
+      // r1.hola(x); // reported by peg parser
       r2.hello(x);
     }
     on p1.hola(x): {}
