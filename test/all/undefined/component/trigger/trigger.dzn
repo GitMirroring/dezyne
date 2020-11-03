@@ -1,0 +1,19 @@
+interface I
+{
+  in void e();
+
+  behaviour
+  {
+    on e: {}
+  }
+}
+
+component trigger
+{
+  provides I p;
+
+  behaviour
+  {
+    on p.a(): {}
+  }
+}

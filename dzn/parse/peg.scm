@@ -138,138 +138,118 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-string-patterns
     "root <-- (import / dollars / type / namespace / interface / component / EOF)#*
 
+import <-- IMPORT file-name SEMICOLON#
+  file-name <- (!SEMICOLON .)+
+
 dollars <-- DOLLAR (!DOLLAR .)* DOLLAR#
 
-import <-- IMPORT file-name SEMICOLON#
+type <- enum / int / extern
+  enum <-- ENUM compound-name# BRACE-OPEN# fields# BRACE-CLOSE# SEMICOLON#
+    fields <-- (name (&BRACE-CLOSE / COMMA#))+
 
-file-name <- (!SEMICOLON .)+
+  int <-- SUBINT compound-name# BRACE-OPEN# range# BRACE-CLOSE# SEMICOLON#
+    range <-- from DOTDOT# to
+    from <-- NUMBER#
+    to <-- NUMBER#
+
+  extern <-- EXTERN compound-name# dollars# SEMICOLON#
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# (type / namespace / interface / component / &BRACE-CLOSE)#* BRACE-CLOSE#
 
-type <- enum / int / extern
-
-enum <-- ENUM compound-name# BRACE-OPEN# fields# BRACE-CLOSE# SEMICOLON#
-fields <-- (name (&BRACE-CLOSE / COMMA#))+
-
-int <-- SUBINT compound-name# BRACE-OPEN# range# BRACE-CLOSE# SEMICOLON#
-
-range <-- from DOTDOT# to
-from <-- NUMBER#
-to <-- NUMBER#
-
-extern <-- EXTERN compound-name# dollars# SEMICOLON#
-
 interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# behaviour# BRACE-CLOSE#
 
-types-and-events <-- (type / event / &behaviour)#+
-
-event <-- direction type-name# event-name# formals# SEMICOLON#
+  types-and-events <-- (type / event / &behaviour)#+
+    event <-- direction type-name# event-name# formals# SEMICOLON#
+      direction <-- IN / OUT
 
 component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-OPEN# ports# body# BRACE-CLOSE#
+  body <- behaviour / system / &BRACE-CLOSE
+    system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
+      instances-and-bindings <-- (instance / binding)*
+        instance <-- compound-name name SEMICOLON#
+        binding <-- end-point BIND end-point SEMICOLON#
+          end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
 
-body <- behaviour / system / &BRACE-CLOSE
-
-ports <-- (port / &BEHAVIOUR / &SYSTEM / &BRACE-CLOSE)#*
-
-port <-- port-direction compound-name# formals? port-name# SEMICOLON#
-
-port-direction <- provides external? / requires (injected / external)?
-
-behaviour <-- BEHAVIOUR (name)? behaviour-compound
-
-behaviour-compound <-- BRACE-OPEN# enter-frame behaviour-statement* BRACE-CLOSE# exit-frame
-
-behaviour-statement <- port / function / variable / declarative-statement / type
-
-statement <- declarative-statement / imperative-statement
-
-declarative-statement <- on / blocking / guard / compound
-
-imperative-statement <- variable / assign / if-statement / illegal /
-                        return / skip-statement / compound /
-                        (reply / action-or-call / interface-action-or-call) SEMICOLON#
-
-compound <-- BRACE-OPEN enter-frame statement* BRACE-CLOSE# exit-frame
-
-on <-- ON (illegal-triggers COLON illegal / enter-frame triggers# COLON# statement# exit-frame)
-
-interface-action-or-call <- (interface-action / interface-call)
-interface-action <-- is-event
-interface-call <-- name
-
-arguments <-- PAREN-OPEN (argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
-argument <-- expression
-
-action-or-call <- (action / call)
-action <-- is-port DOT# name# arguments#
-call <-- name arguments
-
-
-guard <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
-
-skip-statement <-- SEMICOLON
-
-triggers <-- (trigger (&COLON / COMMA)#)+
-trigger <-- is-port DOT# name# trigger-formals# / OPTIONAL / INEVITABLE / is-event / unknown-identifier
-
-formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
-formal <-- (INOUT / IN / OUT)? type-name add-var
-
-trigger-formals <-- PAREN-OPEN (trigger-formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
-trigger-formal <-- add-var (LEFT-ARROW (var / unknown-identifier))?
-
-illegal-triggers <-- (illegal-trigger (&COLON / COMMA)#)+
-illegal-trigger <-- is-port DOT# name# trigger-formals? / is-event / unknown-identifier
-
-blocking <-- BLOCKING statement
-
-illegal <-- ILLEGAL SEMICOLON# / BRACE-OPEN ILLEGAL SEMICOLON BRACE-CLOSE#
-
-assign <-- name ASSIGN expression SEMICOLON#
-
-if-statement <-- IF PAREN-OPEN# expression PAREN-CLOSE# imperative-statement# (ELSE imperative-statement#)?
-
-reply <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE#
-
-return <-- RETURN expression? SEMICOLON#
-
-identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
-unknown-identifier <-- name
-
-compound-name <-- scope? name
-scope <-- global? (name DOT &name)+
-global <-- DOT
-
-name <-- identifier
-
-direction <-- IN / OUT
+  ports <-- (port / &BEHAVIOUR / &SYSTEM / &BRACE-CLOSE)#*
+    port <-- port-direction compound-name# formals? port-name# SEMICOLON#
+      port-direction <- provides external? / requires (injected / external)?
+      formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
+        formal <-- (INOUT / IN / OUT)? type-name add-var
 
 type-name <-- compound-name / BOOL / VOID
 
-function <-- type-name name &(formals BRACE-OPEN) enter-frame formals BRACE-OPEN# imperative-statement* BRACE-CLOSE# exit-frame
+behaviour <-- BEHAVIOUR (name)? behaviour-compound
+  behaviour-compound <-- BRACE-OPEN# enter-frame behaviour-statement* BRACE-CLOSE# exit-frame
+    behaviour-statement <- port / function / variable / declarative-statement / type
+      function <-- type-name name &(formals BRACE-OPEN) enter-frame formals BRACE-OPEN# (imperative-statement  / !unknown-identifier)#* BRACE-CLOSE# exit-frame
 
-variable <-- type-name add-var (ASSIGN expression#)? SEMICOLON#
+declarative-statement <- on / blocking / guard / compound
+  on <-- ON (illegal-triggers COLON# illegal /
+             enter-frame triggers# COLON# (statement / !unknown-identifier)# exit-frame)
 
+    illegal-triggers <-- (illegal-trigger (&COLON / COMMA)#)+
+      illegal-trigger <-- is-port DOT# name# trigger-formals? / is-event
+
+    triggers <-- ((trigger / !unknown-identifier) (&COLON / COMMA)#)#+
+      trigger <-- is-port DOT# name# trigger-formals# / OPTIONAL / INEVITABLE / is-event
+        trigger-formals <-- PAREN-OPEN (trigger-formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
+          trigger-formal <-- add-var (LEFT-ARROW var)?
+
+  guard <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
+
+compound <-- BRACE-OPEN enter-frame (statement / !unknown-identifier)#* BRACE-CLOSE# exit-frame
+  statement <- (declarative-statement / imperative-statement / !unknown-identifier)#
+
+imperative-statement <- variable / assign / if-statement / illegal /
+                        return / skip-statement / compound /
+                        reply / action-or-call / interface-action SEMICOLON#
+
+  interface-action <-- is-event
+
+  action-or-call <- (action / call) SEMICOLON#
+    action <-- is-port DOT# name# arguments#
+    call <-- name arguments
+      arguments <-- PAREN-OPEN (argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
+        argument <-- expression
+
+  skip-statement <-- SEMICOLON
+
+  blocking <-- BLOCKING statement
+
+  illegal <-- ILLEGAL SEMICOLON# / BRACE-OPEN ILLEGAL SEMICOLON# BRACE-CLOSE#
+
+  assign <-- var ASSIGN expression SEMICOLON#
+
+  if-statement <-- IF PAREN-OPEN# expression PAREN-CLOSE# imperative-statement# (ELSE imperative-statement#)?
+
+  reply <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE# SEMICOLON#
+
+  return <-- RETURN expression? SEMICOLON#
+
+  variable <-- type-name add-var (ASSIGN expression#)? SEMICOLON#
 
 expression <-- or-expression
 or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
-compare-expression <- plus-min-expression COMPARE plus-min-expression# / plus-min-expression
+compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
-not-expression <- not / group / dollars / named-expression
+not-expression <- not / group / dollars / (!var !is-port enum-literal / field-test / literal / var !DOT / action / call / interface-action / !unknown-identifier)#
 not <-- NOT not-expression#
-named-expression <-  !var !is-port enum-literal / field-test / literal / var / action-or-call / interface-action / unknown-identifier
 enum-literal <-- scope name
-field-test <-- !is-port (var / unknown-identifier) DOT name
+field-test <-- !is-port var DOT name
 literal <-- NUMBER / FALSE / TRUE
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 
-system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
+name <-- identifier
 
-instances-and-bindings <-- (instance / binding)*
-instance <-- compound-name name SEMICOLON#
-binding <-- end-point BIND end-point SEMICOLON#
-end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
+compound-name <-- scope? name
+
+scope <-- global? (name DOT &name)+
+  global <-- DOT
+
+identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
+
+unknown-identifier <- identifier
 
 otherwise <-- OTHERWISE
 provides <-- PROVIDES

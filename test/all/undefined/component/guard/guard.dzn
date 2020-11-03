@@ -1,0 +1,19 @@
+interface I
+{
+  in void e();
+
+  behaviour
+  {
+    on e: {}
+  }
+}
+
+component guard
+{
+  provides I p;
+
+  behaviour
+  {
+    [g] on p.e(): {}
+  }
+}

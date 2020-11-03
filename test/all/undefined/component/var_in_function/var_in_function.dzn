@@ -1,0 +1,23 @@
+interface I
+{
+  in void e();
+
+  behaviour
+  {
+    on e: {}
+  }
+}
+
+component function
+{
+  provides I p;
+
+  behaviour
+  {
+    on p.e(): f();
+
+    void f() {
+      a = true;
+    }
+  }
+}

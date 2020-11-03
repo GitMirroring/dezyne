@@ -289,8 +289,7 @@
          (make <on-node> #:triggers (helper triggers) #:statement (helper statement)))
 
         (('action-or-call action-or-call)
-         (let ((action-or-call (helper action-or-call)))
-           (make <action-node> #:port.name (car (.ids action-or-call)) #:event.name (cadr (.ids action-or-call)))))
+         (helper action-or-call))
 
         (('triggers triggers ...)
          (make <triggers-node> #:elements (helper triggers)))
@@ -346,7 +345,7 @@
         (('action port event arguments) (make <action-node> #:port.name (helper port) #:event.name (helper event) #:arguments (helper arguments)))
 
         (('assign var expression) (make <assign-node>
-                                    #:variable.name (helper var)
+                                    #:variable.name (.name (helper var))
                                     #:expression (helper expression)))
 
         (('behaviour-compound statement ...)

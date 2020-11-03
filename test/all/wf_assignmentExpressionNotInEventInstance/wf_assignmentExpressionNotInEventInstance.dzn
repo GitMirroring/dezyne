@@ -37,7 +37,7 @@ component SensorComp {
     Sensor.Status s = Sensor.Status.OK;
     bool b= true;
     on sensor1.activate(l): {
-      Sensor.Status s2 = sensor2.activate(u <- l);
+      Sensor.Status s2 = sensor2.activate(b <- l);
       if (s2 == Sensor.Status.OK) { }
       reply(s2);
     }

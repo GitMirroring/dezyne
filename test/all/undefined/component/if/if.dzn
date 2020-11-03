@@ -1,0 +1,19 @@
+interface I
+{
+  in void e();
+
+  behaviour
+  {
+    on e: {}
+  }
+}
+
+component If
+{
+  provides I p;
+
+  behaviour
+  {
+    on p.e(): if(g) {}
+  }
+}

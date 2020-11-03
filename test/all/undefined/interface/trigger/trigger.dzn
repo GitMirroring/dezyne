@@ -1,0 +1,9 @@
+interface trigger
+{
+  in void e();
+
+  behaviour
+  {
+    on a: {}
+  }
+}

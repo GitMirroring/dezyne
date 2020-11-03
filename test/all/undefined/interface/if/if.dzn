@@ -1,0 +1,9 @@
+interface If
+{
+  in void e();
+
+  behaviour
+  {
+    on e: if(p) {}
+  }
+}

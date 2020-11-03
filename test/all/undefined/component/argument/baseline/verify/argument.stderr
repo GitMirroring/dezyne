@@ -1,0 +1,4 @@
+test/all/undefined/component/argument/argument.dzn:17:17: error
+    on p.e(): f(a);
+                ^
+                `unknown identifier; enum-literal, field-test, literal, var, action, call, interface-action' expected

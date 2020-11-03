@@ -1,4 +1,4 @@
-test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:37:14: error
-    bool b = c;
+test/all/undefined/interface/if/if.dzn:7:14: error
+    on e: if(p) {}
              ^
              `unknown identifier; enum-literal, field-test, literal, var, action, call, interface-action' expected

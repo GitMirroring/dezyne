@@ -46,6 +46,10 @@ Makefile.in
 /test/all/*.err
 /test/all/*.out
 /test/all/*/out/
+/test/all/*/*/*.log
+/test/all/*/*/*.trs
+/test/all/*/*/*.err
+/test/all/*/*/*.out
 /test/bin/reorder
 /test/bin/run
 /test/bin/run-baseline

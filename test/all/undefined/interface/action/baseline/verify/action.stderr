@@ -1,0 +1,4 @@
+test/all/undefined/interface/action/action.dzn:7:11: error
+    on e: a;
+          ^
+          `unknown identifier; declarative-statement, imperative-statement' expected

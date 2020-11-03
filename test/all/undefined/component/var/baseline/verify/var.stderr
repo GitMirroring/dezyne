@@ -1,0 +1,4 @@
+test/all/undefined/component/var/var.dzn:17:15: error
+    on p.e(): a = true;
+              ^
+              `unknown identifier; declarative-statement, imperative-statement' expected

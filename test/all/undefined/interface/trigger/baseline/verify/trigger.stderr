@@ -1,0 +1,4 @@
+test/all/undefined/interface/trigger/trigger.dzn:7:8: error
+    on a: {}
+       ^
+       `unknown identifier; trigger :, comma' expected
