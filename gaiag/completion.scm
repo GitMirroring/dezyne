@@ -104,25 +104,6 @@
   (if (predicate o) (cons o (append-map (cute tree-collect <> predicate) o))
       '()))
 
-(define (context o at)
-  (let ((narrow (conjoin incomplete? (negate symbol?) (negate location?)))
-        (context (reverse (tree-collect o (cute at-location? <> at)))))
-    (if (null? context) `(,o)
-        (let ((narrow (find narrow (cdar context))))
-          (if narrow (cons narrow context)
-              context)))))
-
-(define (complete? o)
-  ((disjoin string?
-            (conjoin pair?
-                     (compose symbol? first)
-                     (compose (is? 'location) last)
-                     (compose (cute every complete? <>)
-                              (cute drop-right <> 1)
-                              cdr))) o))
-
-(define incomplete? (negate complete?))
-
 (define (list-ports o)
   (match
    o
@@ -237,6 +218,25 @@
 (define (list-formals port event context)
   (list-actions context))
 
+(define (context o at)
+  (let ((narrow (conjoin incomplete? (negate symbol?) (negate location?)))
+        (context (reverse (tree-collect o (cute at-location? <> at)))))
+    (if (null? context) `(,o)
+        (let ((narrow (find narrow (cdar context))))
+          (if narrow (cons narrow context)
+              context)))))
+
+(define (complete? o)
+  ((disjoin string?
+            (conjoin pair?
+                     (compose symbol? first)
+                     (compose (is? 'location) last)
+                     (compose (cute every complete? <>)
+                              (cute drop-right <> 1)
+                              cdr))) o))
+
+(define incomplete? (negate complete?))
+
 (define (complete o context offset)
   (match
    o
@@ -250,12 +250,10 @@
    ('body '("behaviour" "provides" "requires" "system"))
    ('behaviour '("behaviour" "bool" "enum" "in" "out"))
    (('behaviour-compound (? (disjoin incomplete? location?)) ...) '("on"))
-   (('triggers (? (is? 'trigger)) (? (disjoin incomplete? location?)) ...) (complete (second o) context offset))
-   (('triggers (? (disjoin incomplete? location?)) ...) (list-triggers context))
 
+   (('triggers (? (disjoin incomplete? location?)) ...) (list-triggers context))
    (('trigger port event (? (disjoin incomplete? location?)) ...) (list-formals port event context))
-   (('trigger (? (is? 'name)) (? (disjoin incomplete? location?)) ...) (list-triggers context))
-   (('trigger (? (disjoin incomplete? location?)) ...) (list-triggers context))
+   (('on (? (is? 'triggers)) (? location?)) (list-actions context))
 
    ('statement (list-actions context))
    (('compound (? location?)) '("on")) ;;FIXME point solution: fixes component7.dzn
