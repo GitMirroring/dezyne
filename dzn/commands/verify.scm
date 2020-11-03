@@ -59,7 +59,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
-            (queue_size (single-char #\q) (value #t))))
+            (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -73,7 +73,7 @@ Usage: dzn verify [OPTION]... DZN-FILE
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL
-  -q, --queue_size=SIZE       use queue size=SIZE for verification [3]
+  -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
 	   (exit (or (and usage? 2) 0)))
      options)))

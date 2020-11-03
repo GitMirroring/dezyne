@@ -485,7 +485,7 @@
   (if (pair? (ast:requires+async-ports o)) '() o))
 
 (define-method (makreel:queue-length (o <component>))
-  (command-line:get 'queue_size 3))
+  (command-line:get 'queue-size 3))
 
 (define-method (makreel:event-act (o <component>))
   (append

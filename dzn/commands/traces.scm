@@ -70,7 +70,7 @@
             (lts (single-char #\l))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
-            (queue_size (single-char #\q) (value #t))))
+            (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec
                                #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
@@ -87,7 +87,7 @@ Usage: dzn traces [OPTION]... DZN-FILE
   -l, --lts                   generate lts
   -m, --model=MODEL           generate traces for model MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
-  -q, --queue_size=SIZE       use queue size=SIZE for generation
+  -q, --queue-size=SIZE       use queue size=SIZE for generation
 ")
           (exit (or (and usage? 2) 0)))
      options)))

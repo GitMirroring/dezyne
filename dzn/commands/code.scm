@@ -45,7 +45,7 @@
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
-            (queue_size (single-char #\q) (value #t))
+            (queue-size (single-char #\q) (value #t))
             (shell (single-char #\s) (value #t))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
@@ -64,7 +64,7 @@ Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
   -L, --locations             prepend locations to output trace
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
-  -q, --queue_size=SIZE       use queue size SIZE
+  -q, --queue-size=SIZE       use queue size SIZE
   -s, --shell=MODEL           generate thread safe system shell for MODEL
 
 Languages: ~a
