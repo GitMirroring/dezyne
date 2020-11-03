@@ -162,7 +162,14 @@ Code Integration
 The Dezyne command-line tools
 
 * Invoking dzn::
+* Invoking dzn cat::
 * Invoking dzn code::
+* Invoking dzn hello::
+* Invoking dzn ls::
+* Invoking dzn lts::
+* Invoking dzn parse::
+* Invoking dzn trace::
+* Invoking dzn traces::
 * Invoking dzn verify::
 
 Dezyne Syntax
@@ -4491,7 +4498,14 @@ void SYS::dump_tree(std::ostream& os) const
 
 @menu
 * Invoking dzn::
+* Invoking dzn cat::
 * Invoking dzn code::
+* Invoking dzn hello::
+* Invoking dzn ls::
+* Invoking dzn lts::
+* Invoking dzn parse::
+* Invoking dzn trace::
+* Invoking dzn traces::
 * Invoking dzn verify::
 @end menu
 
@@ -4522,11 +4536,12 @@ Display help on invoking @code{dzn}, and then exit.
 @c XXX move to structured output, recutils?
 @item --json
 @itemx -j
-Output json
+For internal use: output data as JSON.
 
 @item --peg
 @itemx -p
-Use plain @var{peg} parser, skip Well-formedness checking.
+Use plain @var{peg} parser, skip Well-formedness
+(@xref{Well-formedness}) checking.
 
 @item --verbose
 @itemx -v
@@ -4538,7 +4553,61 @@ Display the current version of @code{dzn}, and then exit.
 
 @end table
 
-@c XXX do not describe cat and ls -- rethink these.
+Running @code{dzn} without @var{command} shows a list of available dzn
+commands:
+
+@example
+Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
+  -c, --core             run core commands only
+  -d, --debug            enable debug ouput
+  -h, --help             display this help
+  -j, --json             output json
+  -p, --peg              use plain PEG, skip well-formedness
+  -v, --verbose          be more verbose, show progress
+  -V, --version          display version
+
+Commands:
+  cat
+  code
+  hello
+  ls
+  lts
+  parse
+  trace
+  traces
+  verify
+
+Use "dzn COMMAND --help" for command-specific information.
+@end example
+
+
+@node Invoking dzn cat
+@section Invoking @command{dzn cat}
+
+@c XXX should we deprecate CAT already?  I would like to, but we
+@c lack a good alternative for people (read: Windows users) to find
+@c e.g. runtime.cc in the installation tree.
+The @command{dzn cat} command@footnote{The @command{cat} is inherited
+from the cloud-based 2.9 implementation.  Runtime files can be copied
+and retrieved directly from the installation tree.} can be used to copy
+a Dezyne runtime support file to standard output.  @xref{Invoking dzn
+ls}.
+
+@example
+dzn @var{dzn-option}@dots{} cat @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn cat}, and then exit.
+
+@end table
+
+
 @node Invoking dzn code
 @section Invoking @command{dzn code}
 
@@ -4553,45 +4622,311 @@ The @var{option}s can be among the following:
 
 @table @code
 
-@item --calling-context=@var{TYPE}
-@itemx -c @var{TYPE}
+@item --calling-context=@var{type}
+@itemx -c @var{type}
 Generate extra parameter of @var{type} for every event.
 
-@item --glue=@var{TYPE}
-@itemx -g @var{TYPE}
-Generate glue for @var{TYPE} var.
+@item --glue=@var{type}
+@itemx -g @var{type}
+Generate glue for @var{type} var.
 
-@item --import=@var{DIR}
-@itemx -I @var{DIR}
-Add directory @var{DIR} to import path.
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
 
 @item --help
 @itemx -h
 Display help on invoking @code{dzn code}, and then exit.
 
-@item --language=@var{LANG}
-@itemx -l @var{LANG}
-Generate code for language @var{LANG} var.
+@item --language=@var{language}
+@itemx -l @var{language}
+Generate code for language @var{language} var.
 
-@item --model=@var{MODEL}
-@itemx -m @var{MODEL}
-Generate main for @var{MODEL}.
+@item --model=@var{model}
+@itemx -m @var{model}
+Generate main for @var{model}.
 
-@item --output=@var{DIR}
-@itemx -o @var{DIR}
-Write output to directory @var{DIR} (use @code{-} for stdout).
+@item --output=@var{dir}
+@itemx -o @var{dir}
+Write output to directory @var{dir} (use @code{-} for stadard output).
 
-@item --shell=@var{MODEL}
-@itemx -s @var{MODEL}
-Generate thread-safe system shell for @var{MODEL}.  @xref{Thread-safe Shell}.
+@item --queue-size=@var{size}
+@itemx -q @var{size}
+Use queue size @var{size} for verification, the default is @code{3}.
+
+@item --shell=@var{model}
+@itemx -s @var{model}
+Generate thread-safe system shell for model @var{model}.
+@xref{Thread-safe Shell}.
 
 @end table
+
+@node Invoking dzn hello
+@section Invoking @command{dzn hello}
+
+The @command{dzn hello} command can be used to test your installation;
+it echos ``hello'' to standard output.
+
+@example
+dzn @var{dzn-option}@dots{} hello
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{ide hello}, and then exit.
+
+@end table
+
+
+@node Invoking dzn ls
+@section Invoking @command{dzn ls}
+
+@c XXX should we deprecate LS already?  I would like to, but we
+@c lack a good alternative for people (read: Windows users) to find
+@c e.g. runtime.cc in the installation tree.
+The @command{dzn ls} command@footnote{The @command{ls} is inherited from
+the cloud-based 2.9 implementation.  Runtime files can be found and and
+listed directly from the installation tree.} can be used to list the
+available Dezyne runtime support files in your installation.
+@xref{Invoking dzn cat}.
+
+@example
+dzn @var{dzn-option}@dots{} ls @var{option}@dots{} @file{FILE}@dots{}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn ls}, and then exit.
+
+@item --recursive
+@itemx -R
+List subdirectories recursively.
+
+@end table
+
+
+@node Invoking dzn lts
+@section Invoking @command{dzn lts}
+
+The @command{dzn lts} command can be used t navigate and query an @var{lts} in
+Aldebaran (@code{aut}) format.
+
+@example
+dzn @var{dzn-option}@dots{} lts @var{option}@dots{} [@file{FILE}]@dots{}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --accepts
+@itemx -a
+List acceptance sets for state reachable by @var{trace}.
+
+
+@item --deadlock
+@itemx -d
+Detect deadlock in @var{lts} (after failures introduction).
+
+@item --deterministic
+Detect non-determinism in @var{lts} with respect to all labels.
+
+@item --events
+@itemx -e
+List event alphabet (edge labels) for each @var{file}.
+
+@item --exclude-illegal
+Remove edges leading to illegal (in combination with --failures).
+
+@item --failures
+@itemx -f
+Introduce a failure for each 'optional' event.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn lts}, and then exit.
+
+@item --illegal=@var{label}[,@var{label}@dots{}]
+@itemx -i @var{label}[,@var{label}@dots{}]
+Detect whether lts contains the labels from @var{label}s.
+
+@item --livelock
+@itemx -l
+Detect tau-loops in @var{lts}.
+
+@item --metrics
+@itemx -m
+Number of states and number of transitions.
+
+@item --nondet=@var{label}[,@var{label}@dots{}]
+@itemx -n @var{label}[,@var{label}@dots{}]
+Assert non-determinism by detecting multiple edges of @var{label} from a
+single state.
+
+@item --prefix=@var{event}[,@var{event}@dots{}]
+@itemx -p @var{event}[,@var{event}@dots{}]
+Find states reachable by @var{event}s.  The default is: empty trace =>
+initial state.
+
+@item --tau=@var{event}[,@var{event}@dots{}]
+@itemx -t @var{event}[,@var{event}@dots{}]
+Hide all @var{event}s.
+
+@item --single-line
+@itemx -s
+Report an error including trace on a single line.
+
+@item --validate
+@itemx -v
+Validate Aldebaran (@var{aut}) files.
+
+@end table
+
+
+@node Invoking dzn parse
+@section Invoking @command{dzn parse}
+
+The @command{dzn parse} command parses a Dezyne file and reports any
+errors, both syntax errors as Well-formedness (@xref{Well-formedness})
+errors.
+
+@example
+dzn @var{dzn-option}@dots{} parse @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --preprocess
+@itemx -E
+Resolve imports imports and produce content stream.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn parse}, and then exit.
+
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
+
+@item --locations
+@itemx -L
+Show locations in output @var{ast}.
+
+@item --model=@var{model}
+@itemx -m @var{model}
+Only output @var{ast} for model @var{model}.
+
+@item --parse-tree
+@itemx -t
+Instead of writing a full @var{ast}, write the @var{peg} parse tree.
+
+@item --output=@var{file}
+@itemx -o @var{file}
+Write @var{ast} to @var{file}, use ``-'' for standard output.
+
+@end table
+
+
+@node Invoking dzn trace
+@section Invoking @command{dzn trace}
+
+The @command{dzn trace} command is a pseudo-filter to translate between
+different trace formats.
+
+@example
+dzn @var{dzn-option}@dots{} trace @var{option}@dots{} [@file{FILE}]
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --format=@var{format}
+@itemx -f @var{format}
+Display trace in format @var{format}.  The default is @var{code}, other
+choices are @var{event} and @var {sexp}.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn trace}, and then exit.
+
+@item --locations
+@itemx -L
+Show locations in output.
+
+@item --trail=@var{trail}
+@itemx -t @var{trail}
+Use trail @var{trail}.  The default is to read from standard input.
+
+@end table
+
+
+@node Invoking dzn traces
+@section Invoking @command{dzn traces}
+
+The @command{dzn traces} command generates an exhaustive set of traces
+for a Dezyne model.  It can also be used to generate an @var{lts}
+(@xref{Invoking dzn lts}).
+
+@example
+dzn @var{dzn-option}@dots{} traces @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --flush
+@itemx -f
+Include @code{<flush>} events in trace.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn traces}, and then exit.
+
+@item --illegal
+@itemx -i
+Include traces that lead to an illegal.
+
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
+
+@c XXX TODO: --lts seems broken, but is still used internally??
+@item --lts
+@itemx -l
+Generate @var{lts}.
+
+@item --model=@var{model}
+@itemx -m @var{model}
+Generate traces for model @var{model}.
+
+@item --output=@var{dir}
+@itemx -o @var{dir}
+Write output to directory @var{dir}.
+
+@item --queue-size=@var{size}
+@itemx -q @var{size}
+Use queue size @var{size} for generation, the default is @code{3}.
+
+@end table
+
 
 @node Invoking dzn verify
 @section Invoking @command{dzn verify}
 
-The @command{dzn verify} command checks a Dezyne file for models with
-verification problems.  @xref{Verifying Models}.
+The @command{dzn verify} command checks a Dezyne file for verification
+errors in Dezyne models.  @xref{Verifying Models}.
 
 @example
 dzn @var{dzn-option}@dots{} verify @var{option}@dots{} @file{FILE}
@@ -4606,27 +4941,31 @@ The @var{option}s can be among the following:
 Show all errors, i.e., keep going after finding an error.  By default,
 verification stops after finding a verification error.
 
-XXX: --all is more like make's --keep-going.
-
 @item --help
 @itemx -h
 Display help on invoking @code{dzn verify}, and then exit.
 
-@item --model=@var{MODEL}
-@itemx -m @var{MODEL}
-Limit verification to @var{MODEL}, and for behavioural component model,
-to its interfaces.
+@item --model=@var{model}
+@itemx -m @var{model}
+Limit verification to @var{model}, and for a behavioural component
+model, to its interfaces.
 
-XXX: Verification cannot be limited to system components models;
-verifying a system model is a no-op.  XXX
+@quotation Note
+Verification cannot be limited to @code{system} component models;
+verifying a system model is a no-op@footnote{The compositional property
+of the Dezyne component-based programming paradigm guarantees that the
+verification of a @code{system} component model amounts to the
+verification of all its @code{interface} models and behavioral
+@code{component} models.}.
+@c XXX TODO: reference to compositional quality/property
+@end quotation
 
-@item --queue_size=@var{SIZE}
-@itemx -q @var{SIZE}
-Use queue size @var{SIZE} for verification, the default is @code{3}.
-
-XXX: the underscore in --queue_size is weirdXXX
+@item --queue-size=@var{size}
+@itemx -q @var{size}
+Use queue size @var{size} for verification, the default is @code{3}.
 
 @end table
+
 
 @node Dezyne Syntax
 @chapter Dezyne Syntax
