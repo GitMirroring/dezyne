@@ -52,38 +52,33 @@
                         (prefix (single-char #\p) (value #t))
                         (single-line (single-char #\s))
                         (tau (single-char #\t) (value #t))
-                        (validate (single-char #\v))
-                        (version (single-char #\V))))
+                        (validate (single-char #\v))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) #f))
-         (version? (option-ref options 'version #f)))
-    (cond (version? (format #t "lts (Dezyne) ~a\n" %version) (exit 0))
-          ((or help? usage?) (format (if usage? (current-error-port) #t) "\
-Usage: lts [OPTION]... [FILE]...
-  Navigate and query lts from FILE in (Aldebaran) aut format.
+	 (usage? (and (not help?) #f)))
+    (cond ((or help? usage?) (format (if usage? (current-error-port) #t) "\
+Usage: dzn lts [OPTION]... [FILE]...
+Navigate and query an LTS from FILE in Aldebaran (AUT) format.
 
-  Options:
-  -a, --accepts                   List acceptance sets for state reachable by TRACE.
-  -d, --deadlock                  Detect deadlock in lts (after failures introduction).
-      --deterministic             Detect non-determinism in lts wrt all labels.
-  -e, --events                    List event alphabet (edge labels) for each FILE.
-      --exclude-illegal           Remove edges leading to illegal (in combination with
-                                  option -f)
-  -f, --failures                  Introduce a failure for each 'optional' event.
-  -h, --help                      Display this help.
-  -i, --illegal LABEL[,LABEL...]  Detect whether lts contains the labels from LABELs.
-  -l, --livelock                  Detect tau-loops in lts.
-  -m, --metrics                   Number of states and number of transitions.
-  -n, --nondet LABEL[,LABEL...]   Assert non-determinism by detecting multiple edges
-                                  of LABEL from a single state.
-  -p, --prefix EVENT[,EVENT...]   Find states reachable by EVENTs(default:
-                                  empty trace => initial state).
-  -t, --tau EVENT[,EVENT...]      Hide all EVENTs.
-  -s, --single-line               Report an error including trace on a single line.
-  -v, --validate                  Validate aut files.
-  -V, --version                   Show version and exit
+  -a, --accepts                   list acceptance sets for state reachable by TRACE
+  -d, --deadlock                  detect deadlock in LTS (after failures introduction)
+      --deterministic             detect non-determinism in LTS with respect to all labels
+  -e, --events                    list event alphabet (edge labels) for each FILE.
+      --exclude-illegal           remove edges leading to illegal (in combination with
+                                    option --failures)
+  -f, --failures                  introduce a failure for each 'optional' event
+  -h, --help                      display this help and exit
+  -i, --illegal=LABEL[,LABEL...]  detect whether LTS contains the labels from LABELs
+  -l, --livelock                  detect tau-loops in LTS
+  -m, --metrics                   number of states and number of transitions.
+  -n, --nondet=LABEL[,LABEL...]   Assert non-determinism by detecting multiple edges
+                                    of LABEL from a single state
+  -p, --prefix=EVENT[,EVENT...]   find states reachable by EVENTs
+                                    [default: empty trace => initial state]
+  -t, --tau=EVENT[,EVENT...]      hide all EVENTs
+  -s, --single-line               report an error including trace on a single line
+  -v, --validate                  validate Aldebran (AUT)-files
 ")
 	  (exit (or (and usage? 2) 0))))
      options))
