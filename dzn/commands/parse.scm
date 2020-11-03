@@ -90,13 +90,15 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: dzn parse [OPTION]... [FILE]...
-  -E, --preprocess       resolve imports
+Parse a Dezyne file and produce an AST
+
+  -E, --preprocess       resolve imports and produce content stream
   -h, --help             display this help and exit
-  -L, --locations        show locations in output AST
   -I, --import=DIR+      add DIR to import path
+  -L, --locations        show locations in output AST
   -m, --model=MODEL      generate ast for MODEL
-  -t, --parse-tree       generate PEG parse tree
-  -o, --output=FILE      write ast to FILE
+  -t, --parse-tree       write PEG parse tree
+  -o, --output=FILE      write AST to FILE (\"-\" for standard output)
 ")
           (exit (or (and usage? 2) 0))))
     options))

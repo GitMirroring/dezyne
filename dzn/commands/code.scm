@@ -56,6 +56,8 @@
      (and (or help? usage?)
           (format ((or (and usage? current-error-port) current-output-port)) "\
 Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
+Generate code for Dezyne models in DZN-FILE
+
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
   -g, --glue=TYPE             generate glue for TYPE [dzn]
   -h, --help                  display this help and exit

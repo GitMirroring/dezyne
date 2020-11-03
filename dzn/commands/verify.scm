@@ -69,6 +69,8 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: dzn verify [OPTION]... DZN-FILE
+Check DZN-FILE for verification errors in Dezyne models
+
   -a, --all                   keep going after first error
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path

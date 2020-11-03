@@ -43,6 +43,8 @@
      (and help?
           (stdout "\
 Usage: dzn cat [OPTION]... FILE
+Copy a Dezyne runtime support file to standard output
+
   -h, --help             display this help and exit
 ")
           (exit 0)))

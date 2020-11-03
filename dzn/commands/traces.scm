@@ -80,13 +80,15 @@
      (and (or help? usage?)
           ((or (and usage? stderr) stdout) "\
 Usage: dzn traces [OPTION]... DZN-FILE
-  -f, --flush                 include <flush> event in trace
+Generate exhaustive set of traces for Dezyne model
+
+  -f, --flush                 include <flush> events in trace
   -h, --help                  display this help and exit
   -i, --illegal               include traces that lead to an illegal
   -I, --import=DIR+           add DIR to import path
-  -l, --lts                   generate lts
+  -l, --lts                   generate LTS
   -m, --model=MODEL           generate traces for model MODEL
-  -o, --output=DIR            write output to DIR (use - for stdout)
+  -o, --output=DIR            write traces in directory DIR
   -q, --queue-size=SIZE       use queue size=SIZE for generation
 ")
           (exit (or (and usage? 2) 0)))
