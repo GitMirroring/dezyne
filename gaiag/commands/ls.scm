@@ -43,6 +43,8 @@
      (and help?
           (stdout "\
 Usage: dzn ls [OPTION]... [FILE]...
+List available Dezyne runtime support files
+
   -h, --help             display this help and exit
   -R, --recursive        list subdirectories recursively
 ")
