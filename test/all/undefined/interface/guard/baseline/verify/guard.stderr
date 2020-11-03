@@ -1,0 +1,4 @@
+test/all/undefined/interface/guard/guard.dzn:7:6: error
+    [foo] on e: {}
+     ^
+     `unknown identifier; enum-literal, field-test, literal, var, action, call, interface-action' expected

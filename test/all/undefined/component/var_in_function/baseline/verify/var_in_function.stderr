@@ -1,0 +1,4 @@
+test/all/undefined/component/var_in_function/var_in_function.dzn:19:15: error
+    void f() {
+              ^
+              `unknown identifier; imperative-statement' expected

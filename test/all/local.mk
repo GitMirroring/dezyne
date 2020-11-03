@@ -316,7 +316,18 @@ PARSER_TESTS =					\
  %D%/wf_systemRecursion				\
  %D%/wf_typeerror				\
  %D%/wf_undefined				\
- %D%/wf_variableInitExpression
+ %D%/wf_variableInitExpression			\
+ %D%/undefined/component/action			\
+ %D%/undefined/component/guard			\
+ %D%/undefined/component/if			\
+ %D%/undefined/component/port			\
+ %D%/undefined/component/trigger		\
+ %D%/undefined/component/var			\
+ %D%/undefined/interface/action			\
+ %D%/undefined/interface/guard			\
+ %D%/undefined/interface/if			\
+ %D%/undefined/interface/trigger		\
+ %D%/undefined/interface/var
 
 # The LTS for these tests is not generated reproducibly by mcrl22lps |
 # lps2lts across different mcrl2 builds, at least depending on how mcrl2
