@@ -76,33 +76,51 @@
 
 (define (peg:imported-from->message imported-from file-name)
   (let ((from (assoc-ref imported-from (basename file-name))))
-    (if from (string-append
-              (format #f "In ~a:\n" file-name)
-              (let loop ((from from))
-                (if from (string-append (format #f "imported from ~a:\n" from)
-                                        (loop (assoc-ref imported-from (basename from))))
-                    "\n")))
-        "")))
+    (if (not from) ""
+        (string-append
+         (format #f "In ~a:\n" file-name)
+         (let loop ((from from))
+           (if from (string-append (format #f "imported from ~a:\n" from)
+                                   (loop (assoc-ref imported-from (basename from))))
+               "\n"))))))
 
 (define (peg:error-message imported-from file-name string pos message)
   (display (peg:imported-from->message imported-from file-name) (current-error-port))
   (display (peg:message file-name string pos "error" message) (current-error-port)))
 
 (define (peg:syntax-error->message e)
-  (match e
-    ((? symbol?) (symbol->string e))
-    (('or items ...) (string-join (map peg:syntax-error->message items) ", "))
-    ('dq-string "double quoted string")
-    ('compound-name "name or dotted name")
-    ('BRACE-OPEN "{")
-    ('BRACE-OPEN "}")
-    ('SEMICOLON ";")
-    ('COMMA ",")
-    ('NUMBER "number")
-    ('DOTDOT "..")
-    ('data "dollar expression")
-    (('followed-by item) (symbol->string item))
-    (_ e)))
+  (define (unknown-identifier? e)
+    (match e
+      (('not-followed-by 'unknown-identifier) #t)
+      ((symbol items ...) (any unknown-identifier? items))
+      (_ #f)))
+
+  (define (error->string e)
+    (match e
+      ('port-trigger "trigger")
+      ('is-event "event")
+      ('OPTIONAL "optional")
+      ('INEVITABLE "inevitable")
+      ('dq-string "double quoted string")
+      ('compound-name "name or dotted name")
+      ('BRACE-OPEN "{")
+      ('BRACE-OPEN "}")
+      ('SEMICOLON ";")
+      ('COMMA "comma")
+      ('COLON ":")
+      ('NUMBER "number")
+      ('DOTDOT "..")
+      ('data "dollar expression")
+      (('followed-by item) (error->string item))
+      (('not-followed-by item) #f)
+      (('and items ...) (string-join (filter-map error->string items) " "))
+      (('or items ...) (string-join (filter-map error->string items) ", "))
+      (('expect item) (error->string item))
+      ((? symbol?) (symbol->string e))))
+
+  (let ((message (error->string e)))
+    (if (not (unknown-identifier? e))  message
+        (string-append "unknown identifier; " message))))
 
 (define (peg:syntax-error-message imported-from file-name string args)
   (unless (or (null? args) (null? (car args)))

@@ -35,11 +35,11 @@ component OutParam {
 
   behaviour
   {
+    xint nr;
+
     void fn(xint i) {
       nr = i;
     }
-    xint nr;
-
     on outParam.e_out(number):
     {
       fn(number <- nr);

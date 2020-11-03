@@ -1,0 +1,9 @@
+interface var
+{
+  in void e();
+
+  behaviour
+  {
+    on e: a = true;
+  }
+}

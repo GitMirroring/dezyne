@@ -1,0 +1,9 @@
+interface action
+{
+  in void e();
+
+  behaviour
+  {
+    on e: a;
+  }
+}
