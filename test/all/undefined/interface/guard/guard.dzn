@@ -1,0 +1,9 @@
+interface guard
+{
+  in void e();
+
+  behaviour
+  {
+    [foo] on e: {}
+  }
+}

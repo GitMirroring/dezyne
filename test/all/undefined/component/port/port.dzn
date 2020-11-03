@@ -1,0 +1,17 @@
+interface I
+{
+  in void e();
+
+  behaviour
+  {
+    on e: {}
+  }
+}
+
+component port
+{
+  behaviour
+  {
+    on p.e(): {}
+  }
+}

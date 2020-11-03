@@ -1,0 +1,4 @@
+test/all/undefined/interface/var/var.dzn:7:11: error
+    on e: a = true;
+          ^
+          `unknown identifier; declarative-statement, imperative-statement' expected
