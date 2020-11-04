@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn javascript)
+(define-module (dzn code javascript)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -35,7 +35,7 @@
   #:use-module (dzn config)
 
   #:use-module (dzn ast)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn templates))
 
@@ -49,9 +49,9 @@
                    (loop (cdr todo) namespace)))))))
 
 (define-templates-macro define-templates javascript)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/javascript.scm")
+(include-from-path "dzn/templates/dzn.scm")
+(include-from-path "dzn/templates/code.scm")
+(include-from-path "dzn/templates/javascript.scm")
 
 (define (javascript:root-> root)
   (parameterize ((language "javascript")

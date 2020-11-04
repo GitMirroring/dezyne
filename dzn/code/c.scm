@@ -24,7 +24,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn c)
+(define-module (dzn code c)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
@@ -37,15 +37,15 @@
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn goops)
   #:use-module (dzn misc)
   #:use-module (dzn templates))
 
 (define-templates-macro define-templates c)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/c.scm")
+(include-from-path "dzn/templates/dzn.scm")
+(include-from-path "dzn/templates/code.scm")
+(include-from-path "dzn/templates/c.scm")
 
 (define-method (c:models (o <root>))
   (filter (lambda (u) (not (ast:imported? u))) (dzn:model o)))

@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn c++03)
+(define-module (dzn code c++03)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -35,10 +35,10 @@
   #:use-module (dzn config)
 
   #:use-module (dzn ast)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn glue)
-  #:use-module (dzn c++)
+  #:use-module (dzn code c++)
   #:use-module (dzn templates)
   #:export (
             ast->
@@ -78,11 +78,11 @@
   (cons "" (append (ast:full-name (.type o)) (list (.field o)))))
 
 (define-templates-macro define-templates c++03)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/c++.scm")
-(include "templates/glue.scm")
-(include "templates/c++03.scm")
+(include-from-path "dzn/templates/dzn.scm")
+(include-from-path "dzn/templates/code.scm")
+(include-from-path "dzn/templates/c++.scm")
+(include-from-path "dzn/templates/glue.scm")
+(include-from-path "dzn/templates/c++03.scm")
 
 (define (c++03:root-> root)
   (parameterize ((language "c++03")

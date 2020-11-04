@@ -44,7 +44,7 @@
   #:use-module (dzn commands verify)
   #:use-module (dzn command-line)
   #:use-module (dzn lts)
-  #:use-module (dzn makreel)
+  #:use-module (dzn code makreel)
 
   #:use-module (dzn shell-util)
   #:use-module (gash job)

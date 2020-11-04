@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn cs)
+(define-module (dzn code cs)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
 
@@ -36,16 +36,16 @@
   #:use-module (dzn config)
   #:use-module (dzn command-line)
   #:use-module (dzn code)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn goops)
   #:use-module (dzn misc)
   #:use-module (dzn normalize)
   #:use-module (dzn templates))
 
 (define-templates-macro define-templates cs)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/cs.scm")
+(include-from-path "dzn/templates/dzn.scm")
+(include-from-path "dzn/templates/code.scm")
+(include-from-path "dzn/templates/cs.scm")
 
 (define-method (mark-otherwise o)
   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))

@@ -44,7 +44,7 @@
   #:use-module (dzn commands verify)
   #:use-module (dzn config)
   #:use-module (dzn goops)
-  #:use-module (dzn makreel)
+  #:use-module (dzn code makreel)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn verify traces)

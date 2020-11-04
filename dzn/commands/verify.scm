@@ -40,7 +40,7 @@
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn misc)
-  #:use-module (dzn makreel)
+  #:use-module (dzn code makreel)
   #:use-module (dzn commands parse)
   #:use-module (dzn commands code)
   #:use-module (dzn verify pipeline)

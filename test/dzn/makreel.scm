@@ -28,7 +28,7 @@
   #:use-module (oop goops)
   #:use-module (test dzn automake)
 
-  #:use-module (dzn makreel)
+  #:use-module (dzn code makreel)
   #:use-module (dzn parse)
   #:use-module (dzn goops))
 

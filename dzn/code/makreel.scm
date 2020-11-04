@@ -25,7 +25,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn makreel)
+(define-module (dzn code makreel)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 hash-table)
   #:use-module (ice-9 match)
@@ -45,7 +45,7 @@
 
   #:use-module (dzn ast)
 
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
   #:export (ast->
@@ -964,5 +964,5 @@
   (ast:full-name o))
 
 (define-templates-macro define-templates makreel)
-(include "templates/dzn.scm")
-(include "templates/makreel.scm")
+(include-from-path "dzn/templates/dzn.scm")
+(include-from-path "dzn/templates/makreel.scm")

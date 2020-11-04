@@ -22,32 +22,33 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/ast.scm					\
- %D%/code.scm					\
- %D%/command-line.scm				\
- %D%/display.scm				\
- %D%/fifo.scm					\
- %D%/gdzn.scm					\
- %D%/goops.scm					\
- %D%/indent.scm					\
- %D%/lts.scm					\
- %D%/misc.scm					\
- %D%/normalize.scm				\
- %D%/parse.scm					\
- %D%/peg.scm					\
- %D%/serialize.scm				\
- %D%/scm2json.scm				\
- %D%/shell-util.scm				\
- %D%/templates.scm				\
- %D%/wfc.scm
+ %D%/dzn.scm					\
+ %D%/json.scm					\
+ %D%/makreel.scm
 
 if have_cxx11
-dist_%C%_scm_DATA += %D%/glue.scm
+dist_%C%_scm_DATA += %D%/c++.scm
 endif
 
-EXTRA_DIST += %D%/config.scm.in
-BUILT_SOURCES += %D%/config.scm
-nodist_%C%_scm_DATA = %D%/config.scm
+if have_cxx03
+dist_%C%_scm_DATA += %D%/c++03.scm
+endif
+
+if have_cs
+dist_%C%_scm_DATA += %D%/cs.scm
+endif
+
+if have_c99
+dist_%C%_scm_DATA += %D%/c.scm
+endif
+
+if have_javascript
+dist_%C%_scm_DATA += %D%/javascript.scm
+endif
+
+if have_scheme
+dist_%C%_scm_DATA += %D%/scheme.scm
+endif
 
 dist_nocompile_%C%_scm_DATA =
 

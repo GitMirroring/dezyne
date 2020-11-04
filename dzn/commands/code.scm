@@ -86,7 +86,7 @@ Languages: ~a
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
-         (module (resolve-module `(dzn ,(string->symbol language-opt))))
+         (module (resolve-module `(dzn code ,(string->symbol language-opt))))
          (ast-> (module-ref module 'ast->)))
     (parameterize ((language language-opt)
                    (%locations? locations?)) (ast-> ast))

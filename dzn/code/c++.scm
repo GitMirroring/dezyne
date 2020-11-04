@@ -21,7 +21,7 @@
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (dzn c++)
+(define-module (dzn code c++)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -37,7 +37,7 @@
   #:use-module (dzn config)
 
   #:use-module (dzn command-line)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn glue)
   #:use-module (dzn indent)
@@ -163,18 +163,18 @@
   (filter-map (lambda (o)
                 (if (and (code:glue) (is-a? o <foreign>)) o
                     #f))
-              ((@@ (dzn c++)
+              ((@@ (dzn code c++)
                    c++:model) o)))
 
 (define-method (c++:model-glue (o <root>))
   (filter (lambda (o) (and (code:glue) (is-a? o <foreign>)))
-          ((@@ (dzn c++) c++:model) o)))
+          ((@@ (dzn code c++) c++:model) o)))
 
 (define-templates-macro define-templates c++)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/c++.scm")
-(include "templates/glue.scm")
+(include-from-path "dzn/templates/dzn.scm")
+(include-from-path "dzn/templates/code.scm")
+(include-from-path "dzn/templates/c++.scm")
+(include-from-path "dzn/templates/glue.scm")
 
 (define (c++:root-> root)
   (parameterize ((language "c++")

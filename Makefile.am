@@ -80,11 +80,12 @@ EXTRA_DIST +=					\
 
 dist_noinst_DATA =
 ALL_GO =
-include dzn/local.mk
-include gash/local.mk
-include dzn/parse/local.mk
 include dzn/peg/local.mk
+include dzn/parse/local.mk
+include dzn/code/local.mk
+include dzn/local.mk
 include dzn/commands/local.mk
+include gash/local.mk
 include runtime/local.mk
 include dzn/verify/local.mk
 include dzn/templates/local.mk

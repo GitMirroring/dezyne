@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn scheme)
+(define-module (dzn code scheme)
   #:use-module (ice-9 receive)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -36,7 +36,7 @@
   #:use-module (dzn goops)
 
   #:use-module (dzn ast)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn indent)
   #:use-module (dzn templates))
@@ -164,9 +164,9 @@
     (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event)  (parent o <model>)))))
 
 (define-templates-macro define-templates scheme)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/scheme.scm")
+(include-from-path "dzn/templates/dzn.scm")
+(include-from-path "dzn/templates/code.scm")
+(include-from-path "dzn/templates/scheme.scm")
 
 (define (scheme:root-> root)
   (parameterize ((language "scheme")

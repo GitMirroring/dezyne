@@ -612,7 +612,7 @@
   (let ((function (parent o <function>)))
     (if (or (not function) (not (.recursive function))) '()
             (let* ((continuation ((compose car wfc:continuation) o))
-                   (continuation (if (or (parent o <assign>) (parent o <variable>)) ((compose car (@@ (dzn makreel) makreel:continuation)) continuation) continuation))
+                   (continuation (if (or (parent o <assign>) (parent o <variable>)) ((compose car (@@ (dzn code makreel) makreel:continuation)) continuation) continuation))
                    (continuation (and continuation
                                       (not (ast:eq? continuation (.statement (parent o <function>))))
                                       continuation)))
@@ -952,11 +952,11 @@
      (else '()))))
 
 (define-method (wfc:continuation (o <ast>))
-  ((@@ (dzn makreel) makreel:continuation) o))
+  ((@@ (dzn code makreel) makreel:continuation) o))
 
 (define-method (wfc:continuation (o <if>))
-  (cons ((@@ (dzn makreel) makreel:then-continuation) o)
-        ((@@ (dzn makreel) makreel:else-continuation) o)))
+  (cons ((@@ (dzn code makreel) makreel:then-continuation) o)
+        ((@@ (dzn code makreel) makreel:else-continuation) o)))
 
 (define-method (recursive? (o <system>))
   (ast:graph-cyclic? ast:system* o))

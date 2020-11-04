@@ -43,7 +43,7 @@
 
   #:use-module (dzn ast)
   #:use-module (dzn code)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
 
@@ -122,12 +122,12 @@
 ;;   (filter-map (lambda (o)
 ;;                 (if (and (code:glue) (is-a? o <foreign>)) o
 ;;                     #f))
-;;               ((@@ (dzn c++)
+;;               ((@@ (dzn code c++)
 ;;                    c++:model) o)))
 
 ;; (define-method (c++:model-glue (o <root>))
 ;;   (filter (lambda (o) (and (code:glue) (is-a? o <foreign>)))
-;;           ((@@ (dzn c++) c++:model) o)))
+;;           ((@@ (dzn code c++) c++:model) o)))
 
 (define-method (c++:dump-glue (o <system>))
   (let* ((dir (command-line:get 'output "."))

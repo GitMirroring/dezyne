@@ -40,7 +40,7 @@
   #:use-module (dzn config)
 
   #:use-module (dzn ast)
-  #:use-module (dzn dzn)
+  #:use-module (dzn code dzn)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
 
@@ -828,7 +828,7 @@
 
 (define (code:module root)
   (let ((module (make-module 31 `(,(resolve-module '(dzn code))
-                                  ,(resolve-module `(dzn ,(language)))))))
+                                  ,(resolve-module `(dzn code ,(language)))))))
     (module-define! module 'root root)
     module))
 
