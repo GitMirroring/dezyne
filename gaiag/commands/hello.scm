@@ -40,7 +40,7 @@
 Usage: dzn hello [OPTION]...
   -h, --help             display this help and exit
 ")
-          (exit 0)))
+          (exit EXIT_SUCCESS)))
     options))
 
 (define (main args)
