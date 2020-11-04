@@ -29,6 +29,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (gaiag config)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:use-module (gaiag shell-util)
   #:export (main
@@ -89,7 +90,7 @@ Commands:"
 
 Use \"dzn COMMAND --help\" for command-specific information.
 ")))
-	  (exit (or (and usage? 2) 0)))
+	  (exit (or (and usage? EXIT_OTHER_FAILURE) 0)))
      options)))
 
 (define parse-opts (pure-funcq parse-opts))
@@ -102,7 +103,7 @@ Use \"dzn COMMAND --help\" for command-specific information.
                    (false-if-exception (module-ref core-module 'main)))))
     (unless main
       (format (current-error-port) "dzn: no such command: ~a\n" command)
-      (exit 1))
+      (exit EXIT_OTHER_FAILURE))
     (main args)))
 
 (define (main args)
