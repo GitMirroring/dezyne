@@ -34,7 +34,10 @@
             gdzn:verbosity
             %locations?
             multi-opt
-            %language))
+            %language
+            EXIT_OTHER_FAILURE))
+
+(define EXIT_OTHER_FAILURE 2)
 
 (define %locations?
   (make-parameter #f))

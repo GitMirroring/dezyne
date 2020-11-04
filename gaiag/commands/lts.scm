@@ -34,6 +34,7 @@
   #:use-module (ice-9 receive)
   #:use-module (gaiag lts)
   #:use-module (gaiag config)
+  #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
   #:export (main))
 
@@ -80,7 +81,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
   -s, --single-line               report an error including trace on a single line
   -v, --validate                  validate Aldebran (AUT)-files
 ")
-	  (exit (or (and usage? 2) 0))))
+	  (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
      options))
 
 (define (main args)

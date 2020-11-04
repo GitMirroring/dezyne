@@ -86,7 +86,7 @@ Generate code for Dezyne models in DZN-FILE
 
 Languages: ~a
 " %default-language (string-join %languages ", "))
-          (exit (or (and usage? 2) 0)))
+          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
      options)))
 
 (define (main args)
