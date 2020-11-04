@@ -43,7 +43,7 @@
 
   #:use-module (gaiag ast)
   #:use-module (gaiag code)
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
 
@@ -122,12 +122,12 @@
 ;;   (filter-map (lambda (o)
 ;;                 (if (and (code:glue) (is-a? o <foreign>)) o
 ;;                     #f))
-;;               ((@@ (gaiag c++)
+;;               ((@@ (gaiag code c++)
 ;;                    c++:model) o)))
 
 ;; (define-method (c++:model-glue (o <root>))
 ;;   (filter (lambda (o) (and (code:glue) (is-a? o <foreign>)))
-;;           ((@@ (gaiag c++) c++:model) o)))
+;;           ((@@ (gaiag code c++) c++:model) o)))
 
 (define-method (c++:dump-glue (o <system>))
   (let* ((dir (command-line:get 'output "."))
