@@ -22,7 +22,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gaiag gdzn)
+(define-module (gaiag script)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
   #:use-module (system repl error-handling)
