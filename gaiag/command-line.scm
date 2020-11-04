@@ -34,7 +34,7 @@
             dzn:verbosity
             %locations?
             multi-opt
-            language))
+            %language))
 
 (define %locations?
   (make-parameter #f))
@@ -78,4 +78,4 @@
 (define (dzn:verbosity)
   (dzn:multi-opt 'debug))
 
-(define language (make-parameter "c++"))
+(define %language (make-parameter "c++"))

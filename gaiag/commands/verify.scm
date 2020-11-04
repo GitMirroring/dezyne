@@ -102,7 +102,7 @@ Check DZN-FILE for verification errors in Dezyne models
 (define (model->mcrl2 root model)
   (let* ((model-name (verify:scope-name model))
          (root' (tree-filter (disjoin (negate (is? <component>)) (cut ast:eq? <> model)) root)))
-    (parameterize ((language 'makreel) (%model-name model-name))
+    (parameterize ((%language "makreel") (%model-name model-name))
       (root-> root'))))
 
 (define (verify-makreel options ast)
