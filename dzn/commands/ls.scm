@@ -59,8 +59,8 @@ List available Dezyne runtime support files
          (recursive? (option-ref options 'recursive #f))
          ;;(root (string-append %root-dir "/fs"))
          (root %root-dir)
-         (gdzn-debug? (gdzn:command-line:get 'debug)))
-    (when gdzn-debug?
+         (dzn-debug? (dzn:command-line:get 'debug)))
+    (when dzn-debug?
       (stderr "root=~a\n" root))
     (chdir root)
     (let* ((string (gulp-pipe

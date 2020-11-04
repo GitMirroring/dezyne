@@ -58,8 +58,8 @@ Copy a Dezyne runtime support file to standard output
          ;;(root (string-append %root-dir "/fs"))
          (root %root-dir)
          (file-name (string-append root "/" (car files)))
-         (gdzn-debug? (gdzn:command-line:get 'debug)))
-    (when gdzn-debug?
+         (dzn-debug? (dzn:command-line:get 'debug)))
+    (when dzn-debug?
       (stderr "root=~a\n" root))
     (chdir root)
     (let ((string (with-input-from-file file-name read-string)))

@@ -22,7 +22,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn gdzn)
+(define-module (dzn script)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
   #:use-module (system repl error-handling)

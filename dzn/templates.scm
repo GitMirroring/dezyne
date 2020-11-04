@@ -50,7 +50,7 @@
        pegsep       <   [ ]?
        escape       <   '#'
        pegprocedure <-- '#' [-!$%&'*+,./0-9:<=>?A-Z^_a-z{|}~]([-!#$%&'*+,./0-9:<=>?A-Z^_a-z{|}~])* pegsep")
-    (let* ( ;;(debug-level (length (gdzn:debugity)))
+    (let* ( ;;(debug-level (length (dzn:debugity)))
            (result (match-pattern script (with-input-from-file file-name read-string)))
            (end (peg:end result)))
       (peg:tree result)))
@@ -74,7 +74,7 @@
   (define* (display-join proc name dir o #:optional (grammar-alist '((#f . ("")))))
     "Like STRING-JOIN, allowing \"PRE\" 'pre and \"POST\" 'post in GRAMMAR"
     (define (bla o)
-      (when (and #f (is-a? o <ast>) (gdzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
+      (when (and #f (is-a? o <ast>) (dzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
         (display "/*\ndzn/")
         (display dir)
         (display name)
@@ -178,7 +178,7 @@
                   (define-method (#,tname (o <top>)) (throw 'missing-template-overload: (string-append "template: " (symbol->string '#,name) " for type: " (symbol->string (class-name (class-of o)))))))
               (define (#,xname #,o)
                 (let ((f (#,func #,o)))
-		  (when (and #f (gdzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
+		  (when (and #f (dzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
 		    (display "// ") (display '#,func) (newline))
                   (display-join #,tname '#,name #,dir f '#,grammars)))))))
 

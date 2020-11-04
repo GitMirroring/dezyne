@@ -26,12 +26,12 @@
 (define-module (dzn command-line)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 getopt-long)
-  #:use-module (dzn gdzn)
+  #:use-module (dzn script)
   #:export (command-line:get
-            gdzn:command-line:get
-            gdzn:debugity
-            gdzn:multi-opt
-            gdzn:verbosity
+            dzn:command-line:get
+            dzn:debugity
+            dzn:multi-opt
+            dzn:verbosity
             %locations?
             multi-opt
             %language
@@ -58,7 +58,7 @@
          (if (not (member option multi-options)) (option-ref options option default)
              (filter-map (multi-opt option) options)))))
 
-(define* (gdzn:command-line:get option #:optional default)
+(define* (dzn:command-line:get option #:optional default)
   (and (> (length (command-line)) 1)
        (let ((options (parse-opts (command-line))))
          (option-ref options option default))))
@@ -67,18 +67,18 @@
   (let ((opt? (lambda (o) (and (eq? (car o) name) (cdr o)))))
     (filter-map opt? options)))
 
-(define (gdzn:multi-opt name)
+(define (dzn:multi-opt name)
   (and (> (length (command-line)) 1)
        (multi-opt (parse-opts (command-line)) name)))
 
-(define (gdzn:debugity)
+(define (dzn:debugity)
   (or (and (pair? (command-line))
            (member ((compose basename car command-line))
-                   '("dzn" "gdzn" ".dzn-real" ".gdzn-real"))
-           (length (gdzn:multi-opt 'debug)))
+                   '("dzn" ".dzn-real"))
+           (and=> (dzn:multi-opt 'debug) length))
       0))
 
-(define (gdzn:verbosity)
-  (gdzn:multi-opt 'debug))
+(define (dzn:verbosity)
+  (dzn:multi-opt 'debug))
 
 (define %language (make-parameter "c++"))

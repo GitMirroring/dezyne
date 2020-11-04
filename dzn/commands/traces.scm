@@ -120,7 +120,7 @@ Generate exhaustive set of traces for Dezyne model
       lts)))
 
 (define (model->traces options root model)
-  (let* ((gdzn-debug? (gdzn:command-line:get 'debug))
+  (let* ((dzn-debug? (dzn:command-line:get 'debug))
          (lts (model->lts root model))
          (provided-ports (if (is-a? model <interface>) '()
                              (ast:provides-port* model)))
@@ -128,7 +128,7 @@ Generate exhaustive set of traces for Dezyne model
                           (map (lambda (t) (string-append (string-drop-right (.port.name t) 1) "." (.event.name t)))
                                (ast:provided-in-triggers model))
                           (map .name (filter ast:in? (ast:event* model)))))
-         (foo (if gdzn-debug? (stderr "provides: ~a\n" provided-ports)))
+         (foo (if dzn-debug? (stderr "provides: ~a\n" provided-ports)))
          (provided (map .name provided-ports))
          (tmp (tmpnam))
          (foo (mkdir tmp))
@@ -139,9 +139,9 @@ Generate exhaustive set of traces for Dezyne model
          (lts-opt (option-ref options 'lts #f))
          (dir (option-ref options 'output "."))
          (foo (mkdir-p dir))
-         (json? (gdzn:command-line:get 'json #f))
+         (json? (dzn:command-line:get 'json #f))
          (commands `(,(cut display lts)
-                     ,@(if gdzn-debug? '(("tee" "lts.aut")) '())
+                     ,@(if dzn-debug? '(("tee" "lts.aut")) '())
                      ("lts2traces"
                       ,@(if json? '() `("--out" ,dir))
                       ,@(if (not illegal-opt) '() '("--illegal"))
@@ -151,7 +151,7 @@ Generate exhaustive set of traces for Dezyne model
                       "--model" ,model-name
                       ,@(append-map (lambda (p) (list "--provides-in" p)) provides-in)
                       "-")))
-         (foo (if gdzn-debug? (stderr "commands: ~s\n" commands)))
+         (foo (if dzn-debug? (stderr "commands: ~s\n" commands)))
          (traces (with-output-to-string
                    (lambda _
                      (let* ((text (string-trim-right lts))
@@ -167,10 +167,10 @@ Generate exhaustive set of traces for Dezyne model
                                     provides-in)))))
          (traces (string-trim-right traces)))
     (when json? (display traces))
-    (when gdzn-debug?
+    (when dzn-debug?
       (stderr "provides-in=~s\n" provides-in)
       (stderr "traces=~s\n" traces))
-    (if (not gdzn-debug?)
+    (if (not dzn-debug?)
         (delete-file-recursively tmp))))
 
 (define (main args)

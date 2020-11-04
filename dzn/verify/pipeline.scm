@@ -100,8 +100,8 @@
   (let ((job-count 0))
     (lambda (procs)
       "Wrap pipeline->string, inserting a @command{tee} commands when
-@var{gdzn:debugity} is non-zero."
-      (let* ((debug? (> (gdzn:debugity) 0))
+@var{dzn:debugity} is non-zero."
+      (let* ((debug? (> (dzn:debugity) 0))
              (job-id (number->string job-count))
              (procs (if (not debug?) procs
                         (fold-right (lambda (proc id lst)
@@ -258,10 +258,10 @@
           (else #f))))
 
 (define (report-ok model-type model-name assert info)
-  (let* ((verbose? (gdzn:command-line:get 'verbose))
+  (let* ((verbose? (dzn:command-line:get 'verbose))
          (states (car info))
          (transitions (car (cdr info))))
-    (if (not (gdzn:command-line:get 'json))
+    (if (not (dzn:command-line:get 'json))
       (when verbose?
         (stdout "verify: ~a: check: ~a: ok\n" model-name assert))
       (format #t "~a\n"
@@ -312,7 +312,7 @@
          ;; when new simulator is in place
          (trace (remove-flushes trace))
          (interface-trace (remove-flushes interface-trace)))
-    (if (gdzn:command-line:get 'json)
+    (if (dzn:command-line:get 'json)
         (format #t "~a\n"
                 (scm->json-string (append
                                     `((model . ,model-name)
@@ -327,7 +327,7 @@
                                      (trace . ,trace))
                                      (if interface-trace `((interface-trace . ,interface-trace)) `()))))
         (begin
-          (when (gdzn:command-line:get 'verbose)
+          (when (dzn:command-line:get 'verbose)
             (stdout "verify: ~a: check: ~a: fail\n" model-name assert trace))
           (stderr "error: ~a\n" message)
           (unless (string-null? trace)
@@ -335,8 +335,8 @@
     #t))
 
 (define (report-skip model-type model-name assert)
-  (if (not (gdzn:command-line:get 'json))
-    (when (gdzn:command-line:get 'verbose)
+  (if (not (dzn:command-line:get 'json))
+    (when (dzn:command-line:get 'verbose)
       (stdout "verify: ~a: check: ~a: skip\n" model-name assert))
     (format #t "~a\n"
        (scm->json-string `((model . ,model-name)

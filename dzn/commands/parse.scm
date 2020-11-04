@@ -104,7 +104,7 @@ Parse a Dezyne file and produce an AST
     options))
 
 (define (parse- options file-name)
-  (let* ((skip-wfc? (gdzn:command-line:get 'peg #f))
+  (let* ((skip-wfc? (dzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (model-name (option-ref options 'model #f))
@@ -156,14 +156,14 @@ Parse a Dezyne file and produce an AST
     (handle-parser-exceptions file-name)))
 
 (define (parse options file-name)
-  (let* ((debug? (gdzn:command-line:get 'debug #f))
-         (skip-wfc? (gdzn:command-line:get 'peg #f)))
+  (let* ((debug? (dzn:command-line:get 'debug #f))
+         (skip-wfc? (dzn:command-line:get 'peg #f)))
     ((if (or debug? skip-wfc?) parse- assert-parse) options file-name)))
 
 (define (assert-preprocess options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (debug? (gdzn:command-line:get 'debug #f)))
+         (debug? (dzn:command-line:get 'debug #f)))
     (if debug? (display (preprocess file-name #:imports imports))
         (catch #t
           (lambda _ (display (preprocess file-name #:imports imports)))
@@ -180,7 +180,7 @@ Parse a Dezyne file and produce an AST
            (let ((ast (parse options file-name)))
              (if (option-ref options 'output #f)
                  (let* ((file-name (option-ref options 'output "-"))
-                        (json? (gdzn:command-line:get 'json))
+                        (json? (dzn:command-line:get 'json))
                         (locations? (command-line:get 'locations))
                         (sexp (parameterize ((%locations? locations?))
                                 (ast:serialize ast)))
@@ -189,5 +189,5 @@ Parse a Dezyne file and produce an AST
                                       (cute pretty-print sexp)))))
                    (if (equal? file-name "-") (display output)
                        (with-output-to-file file-name (cut display output))))
-                 (when (gdzn:command-line:get 'verbose)
+                 (when (dzn:command-line:get 'verbose)
                    (display "parse: no errors found\n"))))))))

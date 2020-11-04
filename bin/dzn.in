@@ -27,4 +27,4 @@
 (set! %load-path (append '("@guilemoduledir@") %load-path))
 (set! %load-compiled-path (append '("@guileobjectdir@") %load-compiled-path))
 
-((@ (dzn gdzn) main) (command-line))
+((@ (dzn script) main) (command-line))

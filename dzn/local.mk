@@ -27,7 +27,6 @@ dist_%C%_scm_DATA =				\
  %D%/command-line.scm				\
  %D%/display.scm				\
  %D%/fifo.scm					\
- %D%/gdzn.scm					\
  %D%/goops.scm					\
  %D%/indent.scm					\
  %D%/lts.scm					\
@@ -36,6 +35,7 @@ dist_%C%_scm_DATA =				\
  %D%/parse.scm					\
  %D%/peg.scm					\
  %D%/serialize.scm				\
+ %D%/script.scm					\
  %D%/scm2json.scm				\
  %D%/shell-util.scm				\
  %D%/templates.scm				\
