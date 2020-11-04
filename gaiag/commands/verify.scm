@@ -129,7 +129,7 @@ Check DZN-FILE for verification errors in Dezyne models
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
-         (debug? (gdzn:command-line:get 'debug)))
+         (debug? (dzn:command-line:get 'debug)))
     (setvbuf (current-output-port) 'line)
     (let* ((file-name (car files))
            (ast (parse options file-name)))

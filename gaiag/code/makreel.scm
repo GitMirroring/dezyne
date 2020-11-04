@@ -503,11 +503,11 @@
   o)
 
 (define-method (pretty-print-dzn (o <behaviour>))
-  (if (gdzn:command-line:get 'debug) "\n%behaviour"
+  (if (dzn:command-line:get 'debug) "\n%behaviour"
       ""))
 
 (define-method (pretty-print-dzn (o <statement>))
-  (let ((debug? (gdzn:command-line:get 'debug)))
+  (let ((debug? (dzn:command-line:get 'debug)))
     (if debug? (string-join (string-split (string-trim-right
                                            (ast->dzn o))
                                           #\newline) "\n% " 'prefix)
