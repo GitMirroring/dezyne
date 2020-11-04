@@ -754,7 +754,7 @@
                                                    (equal? base (code:file-name o)))) (ast:model* o))))
     (when (and (not (code:glue)) foreign-conflict?)
       (stderr "cowardly refusing to clobber file with basename: ~a\n" base)
-      (exit 0))
+      (exit EXIT_SUCCESS))
     (when (code:header?)
       (let* ((ext (dzn:extension (make <interface>)))
              (file-name (string-append dir base ext)))
