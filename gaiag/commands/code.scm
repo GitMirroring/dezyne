@@ -98,8 +98,8 @@ Languages: ~a
          (options (if (equal? language "scheme") (acons 'behaviour #t options)
                       options))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
-         (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
-         (ast (parse parse-options file-name))
+         (parseions (filter (negate (compose (cut eq? <> 'model) car)) options))
+         (ast (parse parseions file-name))
          (module (resolve-module `(gaiag code ,(string->symbol language))))
          (ast-> (false-if-exception (module-ref module 'ast->))))
     (unless ast->
