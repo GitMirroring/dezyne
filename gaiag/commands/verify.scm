@@ -40,7 +40,7 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag config)
   #:use-module (gaiag misc)
-  #:use-module (gaiag makreel)
+  #:use-module (gaiag code makreel)
   #:use-module (gaiag commands parse)
   #:use-module (gaiag commands code)
   #:use-module (scmcrl2 verification)
