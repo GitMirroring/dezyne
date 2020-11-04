@@ -179,7 +179,7 @@
 
 (define (cs:om ast) ;;TODO, replace me with code:om when (binding-into-blocking) is removed
   ((compose
-    (lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
+    (lambda (o) (if (dzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
     add-reply-port
     triples:event-traversal
     (remove-otherwise)
