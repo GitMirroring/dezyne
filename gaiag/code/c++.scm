@@ -21,7 +21,7 @@
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (gaiag c++)
+(define-module (gaiag code c++)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -37,7 +37,7 @@
   #:use-module (gaiag config)
 
   #:use-module (gaiag command-line)
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag code)
   #:use-module (gaiag glue)
   #:use-module (gaiag indent)
@@ -163,18 +163,18 @@
   (filter-map (lambda (o)
                 (if (and (code:glue) (is-a? o <foreign>)) o
                     #f))
-              ((@@ (gaiag c++)
+              ((@@ (gaiag code c++)
                    c++:model) o)))
 
 (define-method (c++:model-glue (o <root>))
   (filter (lambda (o) (and (code:glue) (is-a? o <foreign>)))
-          ((@@ (gaiag c++) c++:model) o)))
+          ((@@ (gaiag code c++) c++:model) o)))
 
 (define-templates-macro define-templates c++)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/c++.scm")
-(include "templates/glue.scm")
+(include-from-path "gaiag/templates/dzn.scm")
+(include-from-path "gaiag/templates/code.scm")
+(include-from-path "gaiag/templates/c++.scm")
+(include-from-path "gaiag/templates/glue.scm")
 
 (define (c++:root-> root)
   (parameterize ((language "c++")

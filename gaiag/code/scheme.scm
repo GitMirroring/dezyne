@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gaiag scheme)
+(define-module (gaiag code scheme)
   #:use-module (ice-9 receive)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -36,7 +36,7 @@
   #:use-module (gaiag goops)
 
   #:use-module (gaiag ast)
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag code)
   #:use-module (gaiag indent)
   #:use-module (gaiag templates))
@@ -164,9 +164,9 @@
     (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event)  (parent o <model>)))))
 
 (define-templates-macro define-templates scheme)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/scheme.scm")
+(include-from-path "gaiag/templates/dzn.scm")
+(include-from-path "gaiag/templates/code.scm")
+(include-from-path "gaiag/templates/scheme.scm")
 
 (define (scheme:root-> root)
   (parameterize ((language "scheme")

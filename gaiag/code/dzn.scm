@@ -26,7 +26,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gaiag dzn)
+(define-module (gaiag code dzn)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
@@ -422,7 +422,7 @@
              (dzn:indent (cut (%x:source) o))))))))
 
 (define-templates-macro define-templates dzn)
-(include "templates/dzn.scm")
+(include-from-path "gaiag/templates/dzn.scm")
 
 (define (ast-> ast)
   (let ((root (dzn:om ast)))

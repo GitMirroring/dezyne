@@ -40,7 +40,7 @@
   #:use-module (gaiag config)
 
   #:use-module (gaiag ast)
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
 
@@ -828,7 +828,7 @@
 
 (define (code:module root)
   (let ((module (make-module 31 `(,(resolve-module '(gaiag code))
-                                  ,(resolve-module `(gaiag ,(language)))))))
+                                  ,(resolve-module `(gaiag code ,(language)))))))
     (module-define! module 'root root)
     module))
 
