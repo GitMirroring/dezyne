@@ -85,7 +85,7 @@
 (include-from-path "dzn/templates/c++03.scm")
 
 (define (c++03:root-> root)
-  (parameterize ((language "c++03")
+  (parameterize ((%language "c++03")
                  (%x:header x:header)
                  (%x:source x:source)
                  (%x:glue-top-header x:glue-top-header)

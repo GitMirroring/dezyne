@@ -109,7 +109,7 @@
                   ("javascript" . ".js")
                   ("cs" . ".cs")
                   ("python" . ".py"))
-                (language)))
+                (%language)))
     ((or ($ <foreign>) ($ <component>) ($ <system>))
      (assoc-ref '(("cd" . ".yll")
                   ("c" . ".c")
@@ -124,7 +124,7 @@
                   ("javascript" . ".js")
                   ("cs" . ".cs")
                   ("python" . ".py"))
-                (language)))))
+                (%language)))))
 
 (define (dzn:om ast)
   ast)
@@ -135,13 +135,13 @@
         "dzn")))
 
 (define-method (ast->dzn (o <root>))
-  (parameterize ((language "dzn"))
+  (parameterize ((%language "dzn"))
     (with-output-to-string (dzn:indent (cut x:source o)))))
 (define-method (ast->dzn (o <statement>))
-  (parameterize ((language "dzn"))
+  (parameterize ((%language "dzn"))
     (with-output-to-string (dzn:indent (cut x:statement o)))))
 (define-method (ast->dzn (o <function>))
-  (parameterize ((language "dzn"))
+  (parameterize ((%language "dzn"))
     (with-output-to-string (dzn:indent (cut x:source o)))))
 
 ;;; dzn: generic templates
@@ -390,7 +390,7 @@
       thunk))
 
 (define (dzn:dir o)
-  (if (member (language) '("javascript")) "dzn/"
+  (if (member (%language) '("javascript")) "dzn/"
       ""))
 
 (define-method (dzn:from (o <expression>))
@@ -430,6 +430,6 @@
   "")
 
 (define (dzn:root-> root)
-  (parameterize ((language (dzn:language))
+  (parameterize ((%language (dzn:language))
                  (%x:source x:source))
     (dzn:file2file root)))

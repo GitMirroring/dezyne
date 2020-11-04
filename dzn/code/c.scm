@@ -253,7 +253,7 @@
       (c:type-name o)))
 
 (define (c:root-> root)
-  (parameterize ((language 'c)
+  (parameterize ((%language "c")
                  (%x:header x:header)
                  (%x:source x:source)
                  (%x:main x:main))

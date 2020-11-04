@@ -608,12 +608,12 @@
   o)
 
 (define-method (code:variable-name (o <variable>))
-  (cond ((member (language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
+  (cond ((member (%language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
         ((code:class-member? o) o)
         (else (make <local> #:name (.name o) #:type.name (.type.name o) #:expression (.expression o)))))
 
 (define-method (code:variable-name (o <formal>))
-  (cond ((member (language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
+  (cond ((member (%language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
         (((disjoin ast:out? ast:inout?) o) (make <out-formal> #:name (.name o) #:type.name (.type.name o)))
         (else o)))
 
@@ -657,7 +657,7 @@
   (let ((formals (ast:formal* o)))
     (map
      (lambda (f i) (cond ((ast:in? f) (clone f #:name i))
-                         ((member (language) '("c++" "c++03" "c++-msvc11" "cs")) (string-append "_" (number->string i)))
+                         ((member (%language) '("c++" "c++03" "c++-msvc11" "cs")) (string-append "_" (number->string i)))
                          (else (make <out-formal> #:name i))))
      formals (iota (length formals)))))
 
@@ -818,17 +818,17 @@
         o)))
 
 (define (code:foreign?)
-  (member (language) '("c++" "c++03" "c++-msvc11")))
+  (member (%language) '("c++" "c++03" "c++-msvc11")))
 
 (define (code:header?)
-  (member (language) '("c" "c++" "c++03" "c++-msvc11")))
+  (member (%language) '("c" "c++" "c++03" "c++-msvc11")))
 
 (define (code:dir o)
-  (if (member (language) '("javascript")) "dzn/" ""))
+  (if (member (%language) '("javascript")) "dzn/" ""))
 
 (define (code:module root)
   (let ((module (make-module 31 `(,(resolve-module '(dzn code))
-                                  ,(resolve-module `(dzn code ,(language)))))))
+                                  ,(resolve-module `(dzn code ,(%language)))))))
     (module-define! module 'root root)
     module))
 

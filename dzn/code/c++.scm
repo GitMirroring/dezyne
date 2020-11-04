@@ -177,7 +177,7 @@
 (include-from-path "dzn/templates/glue.scm")
 
 (define (c++:root-> root)
-  (parameterize ((language "c++")
+  (parameterize ((%language "c++")
                  (%x:header x:header)
                  (%x:source x:source)
                  (%x:glue-bottom-header x:glue-bottom-header)

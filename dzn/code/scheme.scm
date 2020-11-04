@@ -169,7 +169,7 @@
 (include-from-path "dzn/templates/scheme.scm")
 
 (define (scheme:root-> root)
-  (parameterize ((language "scheme")
+  (parameterize ((%language "scheme")
                  (%x:main x:main)
                  (%x:header identity)
                  (%x:source x:source)

@@ -54,7 +54,7 @@
 (include-from-path "dzn/templates/javascript.scm")
 
 (define (javascript:root-> root)
-  (parameterize ((language "javascript")
+  (parameterize ((%language "javascript")
                  (%x:main x:main)
                  (%x:header identity)
                  (%x:source x:source))
