@@ -802,7 +802,7 @@
 
 (define (code:om ast)
   ((compose
-    (lambda (o) (if (gdzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
+    (lambda (o) (if (dzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
     add-reply-port
     triples:event-traversal
     (remove-otherwise)

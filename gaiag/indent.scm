@@ -35,7 +35,7 @@
 
 (define* (indent #:key (indent 2) (open #\{) (close #\}) (no-indent "#") (port (current-input-port)))
   (let loop ((level 0))
-    (define* (space #:optional (c level)) (let ((char (if (=1 indent) #\tab #\space))) (when (not (gdzn:command-line:get 'debug)) (display (make-string c char)))))
+    (define* (space #:optional (c level)) (let ((char (if (=1 indent) #\tab #\space))) (when (not (dzn:command-line:get 'debug)) (display (make-string c char)))))
     (if (not (and-let* ((s (*eof*-is-#f (read-delimited (list->string `(#\newline ,open ,close)) port 'peek))))
                        (display s)))
         #f

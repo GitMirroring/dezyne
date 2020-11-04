@@ -122,9 +122,9 @@
     (lambda _
       (parameterize ((%peg:locations? #t)
                      (%peg:skip? peg:skip-parse)
-                     (%peg:debug? (> (gdzn:debugity) 3)))
+                     (%peg:debug? (> (dzn:debugity) 3)))
         (let ((parse-tree (peg:parse string)))
-          (when (> (gdzn:debugity) 2)
+          (when (> (dzn:debugity) 2)
             (format (current-error-port) "parse-tree: ~a\n" file-name)
             (pretty-print parse-tree (current-error-port)))
           parse-tree)))
@@ -177,7 +177,7 @@ using CONTENT-ALIST to transform locations."
                alist))
          (ast (expand-imports ast-alist))
          (ast (annotate-ast ast)))
-    (when (> (gdzn:debugity) 1)
+    (when (> (dzn:debugity) 1)
       (ast:pretty-print ast (current-error-port)))
     ast))
 
@@ -285,7 +285,7 @@ specified in IMPORTS."
 (define (imported-file-names content)
   "Return the list of file names used in import statements in content."
   (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
-                               (%peg:debug? (> (gdzn:debugity) 3)))
+                               (%peg:debug? (> (dzn:debugity) 3)))
                   (peg:imports content))))
     (match o
       (('import file-name) `(,file-name))
