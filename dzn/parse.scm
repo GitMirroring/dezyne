@@ -111,14 +111,6 @@ parse CONTENT and return
    '((FILE-NAME . PARSE-TREE)
      (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...)
 "
-
-  (define (imported-from alist)
-    (define parse
-      (match-lambda ((file-name . content)
-                     (map (cute cons <> file-name)
-                          (imported-file-names content)))))
-    (append-map parse alist))
-
   (map (match-lambda
          ((file-name . content)
           (catch 'syntax-error
@@ -256,7 +248,10 @@ specified in IMPORTS."
              (content-alist '()))
     (if (null? file-names) (reverse content-alist)
         (let* ((file-name (or (search-path imports (car file-names))
-                              (throw 'import-error (car file-names) (string-join imports))))
+                              (throw 'import-error
+                                     (car file-names)
+                                     imports
+                                     (imported-from content-alist))))
                (imports (delete-duplicates (cons (dirname file-name) imports))))
           (if (assoc-ref content-alist file-name) (loop (cdr file-names) imports content-alist)
               (let ((content (with-input-from-file file-name read-string)))
@@ -275,3 +270,10 @@ specified in IMPORTS."
     (match o
       (('import file-name) `(,file-name))
       (_ (append-map loop o)))))
+
+(define (imported-from alist)
+  (define parse
+    (match-lambda ((file-name . content)
+                   (map (cute cons <> file-name)
+                        (imported-file-names content)))))
+  (append-map parse alist))

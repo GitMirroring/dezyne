@@ -122,9 +122,19 @@ Usage: dzn parse [OPTION]... [FILE]...
       ((syntax-error)
        (exit 1))
       ((import-error)
-       (format (current-error-port)
-               "No such file: ~a: imported from ~a in: ~a\n"
-               (car args) file-name (cdr args))
+       (let ((file (first args))
+             (import-paths (second args))
+             (imported-from (third args)))
+         (cond ((string=? file-name (car args))
+                (format (current-error-port) "No such file: ~a\n" file-name))
+               (else (format (current-error-port)
+                             "No such file: ~a, in: ~a;\n"
+                             file (string-join import-paths ", "))
+                     (let ((from (assoc-ref imported-from (basename file))))
+                       (let loop ((from from))
+                         (when from
+                           (format (current-error-port) "imported from ~a\n" from)
+                           (loop (assoc-ref imported-from (basename from)))))))))
        (exit 1))
       ((well-formedness-error)
        (for-each wfc:report-error args)
