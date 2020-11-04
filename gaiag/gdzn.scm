@@ -57,7 +57,7 @@
                     (cute string-contains <> dir)
                     (conjoin (negate (const core?))
                              (cute string-contains <> "/ide/commands/")))
-                   (append-map (cut find-files <> "\\.go$")
+                   (append-map (cute find-files <> "\\.go$")
                                (filter directory-exists?
                                        %load-compiled-path)))))
 
