@@ -25,7 +25,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gaiag makreel)
+(define-module (gaiag code makreel)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 hash-table)
   #:use-module (ice-9 match)
@@ -45,7 +45,7 @@
 
   #:use-module (gaiag ast)
 
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
   #:export (ast->
@@ -964,5 +964,5 @@
   (ast:full-name o))
 
 (define-templates-macro define-templates makreel)
-(include "templates/dzn.scm")
-(include "templates/makreel.scm")
+(include-from-path "gaiag/templates/dzn.scm")
+(include-from-path "gaiag/templates/makreel.scm")

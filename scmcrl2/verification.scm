@@ -44,7 +44,7 @@
   #:use-module (gaiag commands verify)
   #:use-module (gaiag config)
   #:use-module (gaiag goops)
-  #:use-module (gaiag makreel)
+  #:use-module (gaiag code makreel)
   #:use-module (gaiag misc)
   #:use-module (gaiag shell-util)
   #:use-module (scmcrl2 traces)

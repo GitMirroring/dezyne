@@ -24,7 +24,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gaiag c)
+(define-module (gaiag code c)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
@@ -37,15 +37,15 @@
   #:use-module (gaiag code)
   #:use-module (gaiag command-line)
   #:use-module (gaiag config)
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag goops)
   #:use-module (gaiag misc)
   #:use-module (gaiag templates))
 
 (define-templates-macro define-templates c)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/c.scm")
+(include-from-path "gaiag/templates/dzn.scm")
+(include-from-path "gaiag/templates/code.scm")
+(include-from-path "gaiag/templates/c.scm")
 
 (define-method (c:models (o <root>))
   (filter (lambda (u) (not (ast:imported? u))) (dzn:model o)))

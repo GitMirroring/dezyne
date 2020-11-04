@@ -80,11 +80,12 @@ EXTRA_DIST +=					\
 
 dist_noinst_DATA =
 ALL_GO =
-include gaiag/local.mk
-include gash/local.mk
-include gaiag/parse/local.mk
 include gaiag/peg/local.mk
+include gaiag/parse/local.mk
+include gaiag/code/local.mk
+include gaiag/local.mk
 include gaiag/commands/local.mk
+include gash/local.mk
 include runtime/local.mk
 include scmcrl2/local.mk
 include gaiag/templates/local.mk

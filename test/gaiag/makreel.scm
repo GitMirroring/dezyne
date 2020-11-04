@@ -28,7 +28,7 @@
   #:use-module (oop goops)
   #:use-module (test gaiag automake)
 
-  #:use-module (gaiag makreel)
+  #:use-module (gaiag code makreel)
   #:use-module (gaiag parse)
   #:use-module (gaiag goops))
 
