@@ -72,6 +72,14 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - browser click via LSP
   - hiding daemon from user
   - adopt guile-3.0 and guile-json-4
+  - Code cleanups
+    + move dzn/ to dzn/
+    + move dzn/verify/ to dzn/verify/
+    + Refactor/remove "MORTAL SIN HERE"
+    + Remove model2file remnants, file2file procedures.
+    + Factor-out AST library?
+      - Move define-ast to define-node
+      - <foreign>, <port>?  Use node: prefixes?
 
 ** Release 3.0, unsorted
   - Update architecture for:
