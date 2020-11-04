@@ -111,14 +111,6 @@ parse CONTENT and return
    '((FILE-NAME . PARSE-TREE)
      (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...)
 "
-
-  (define (imported-from alist)
-    (define parse
-      (match-lambda ((file-name . content)
-                     (map (cute cons <> file-name)
-                          (imported-file-names content)))))
-    (append-map parse alist))
-
   (map (match-lambda
          ((file-name . content)
           (catch 'syntax-error
@@ -241,7 +233,7 @@ statements and return the expanded dezyne text, similar to @command{gcc
                   imports))
      "\n")))
 
-(define (file+import-content-alist file-name imports)
+(define (file+import-content-alist file-name import-paths)
   "Recursively resolve imports starting with FILE-NAME and return an
 alist:
 
@@ -252,19 +244,22 @@ An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
   (let loop ((file-names (list (basename file-name)))
-             (imports (cons (dirname file-name) imports))
+             (import-paths (cons (dirname file-name) import-paths))
              (content-alist '()))
     (if (null? file-names) (reverse content-alist)
-        (let* ((file-name (or (search-path imports (car file-names))
-                              (throw 'import-error (car file-names) (string-join imports))))
-               (imports (delete-duplicates (cons (dirname file-name) imports))))
-          (if (assoc-ref content-alist file-name) (loop (cdr file-names) imports content-alist)
+        (let* ((file-name (or (search-path import-paths (car file-names))
+                              (throw 'import-error
+                                     (car file-names)
+                                     import-paths
+                                     (imported-from content-alist))))
+               (import-paths (delete-duplicates (cons (dirname file-name) import-paths))))
+          (if (assoc-ref content-alist file-name) (loop (cdr file-names) import-paths content-alist)
               (let ((content (with-input-from-file file-name read-string)))
                 (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
                     (let ((content-alist (acons file-name content content-alist)))
                       (loop (append (cdr file-names)
                                     (imported-file-names content))
-                            imports
+                            import-paths
                             content-alist)))))))))
 
 (define (imported-file-names content)
@@ -275,3 +270,10 @@ specified in IMPORTS."
     (match o
       (('import file-name) `(,file-name))
       (_ (append-map loop o)))))
+
+(define (imported-from alist)
+  (define parse
+    (match-lambda ((file-name . content)
+                   (map (cute cons <> file-name)
+                        (imported-file-names content)))))
+  (append-map parse alist))
