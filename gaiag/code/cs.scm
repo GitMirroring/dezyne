@@ -187,7 +187,7 @@
    ast))
 
 (define (ast-> ast)
-  (parameterize ((language "cs")
+  (parameterize ((%language "cs")
                  (%x:header x:header)
                  (%x:source x:source)
                  (%x:main x:main))
