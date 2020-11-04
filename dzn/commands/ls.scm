@@ -48,7 +48,7 @@ List available Dezyne runtime support files
   -h, --help             display this help and exit
   -R, --recursive        list subdirectories recursively
 ")
-          (exit 0)))
+          (exit EXIT_SUCCESS)))
     options))
 
 (define (main args)

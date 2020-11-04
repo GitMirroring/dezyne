@@ -100,7 +100,7 @@ Parse a Dezyne file and produce an AST
   -t, --parse-tree       write PEG parse tree
   -o, --output=FILE      write AST to FILE (\"-\" for standard output)
 ")
-          (exit (or (and usage? 2) 0))))
+          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
 (define (parse- options file-name)
@@ -122,7 +122,7 @@ Parse a Dezyne file and produce an AST
   (lambda (key . args)
     (case key
       ((syntax-error)
-       (exit 1))
+       (exit EXIT_FAILURE))
       ((import-error)
        (let ((file (first args))
              (import-paths (second args))
@@ -137,18 +137,18 @@ Parse a Dezyne file and produce an AST
                          (when from
                            (format (current-error-port) "imported from ~a\n" from)
                            (loop (assoc-ref imported-from (basename from)))))))))
-       (exit 1))
+       (exit EXIT_FAILURE))
       ((well-formedness-error)
        (for-each wfc:report-error args)
-       (exit 1))
+       (exit EXIT_FAILURE))
       ((system-error)
        (let ((errno (system-error-errno (cons key args))))
          (format (current-error-port) "~a: ~a\n"
                  (strerror errno) file-name))
-       (exit 1))
+       (exit EXIT_FAILURE))
       (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
                     file-name key args)
-            (exit 1)))))
+            (exit EXIT_FAILURE)))))
 
 (define (assert-parse options file-name)
   (catch #t

@@ -36,5 +36,5 @@
           (flush-output-port port)
           (close port)
           (delete-file file-name)
-          (primitive-exit 0))
+          (primitive-exit EXIT_SUCCESS))
         file-name)))

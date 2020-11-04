@@ -19,6 +19,7 @@
   #:use-module (system repl error-handling)
   #:use-module (ice-9 getopt-long)
   #:use-module (json)
+  #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:export (main))
 
@@ -49,7 +50,7 @@ Examples:
   echo \"(console.arm console.disarm sensor.disabled)\" | ./scm2json
   ./dzn -l simulate -t \"$(cat examples/Alarm-trail.scm)\" examples/Alarm.dzn | ./scm2json
 ")
-	   (exit (or (and usage? 2) 0)))
+	   (exit (or (and usage? EXIT_OTHER_FAILURE) 0)))
      options)))
 
 (define (->json files)

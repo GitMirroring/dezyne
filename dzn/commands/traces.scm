@@ -91,7 +91,7 @@ Generate exhaustive set of traces for Dezyne model
   -o, --output=DIR            write traces in directory DIR
   -q, --queue-size=SIZE       use queue size=SIZE for generation
 ")
-          (exit (or (and usage? 2) 0)))
+          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
      options)))
 
 (define (mcrl2->lts ast model init)
