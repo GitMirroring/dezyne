@@ -102,7 +102,10 @@ Languages: ~a
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
          (module (resolve-module `(dzn code ,(string->symbol language))))
-         (ast-> (module-ref module 'ast->)))
+         (ast-> (false-if-exception (module-ref module 'ast->))))
+    (unless ast->
+      (format (current-error-port) "code: no such language: ~a\n" language)
+      (exit EXIT_OTHER_FAILURE))
     (parameterize ((%language language)
                    (%locations? locations?)) (ast-> ast))
     *unspecified*))
