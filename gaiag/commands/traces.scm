@@ -44,7 +44,7 @@
   #:use-module (gaiag commands verify)
   #:use-module (gaiag command-line)
   #:use-module (gaiag lts)
-  #:use-module (gaiag makreel)
+  #:use-module (gaiag code makreel)
 
   #:use-module (gaiag shell-util)
   #:use-module (gash job)

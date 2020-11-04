@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gaiag cs)
+(define-module (gaiag code cs)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
 
@@ -36,16 +36,16 @@
   #:use-module (gaiag config)
   #:use-module (gaiag command-line)
   #:use-module (gaiag code)
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag goops)
   #:use-module (gaiag misc)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates))
 
 (define-templates-macro define-templates cs)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/cs.scm")
+(include-from-path "gaiag/templates/dzn.scm")
+(include-from-path "gaiag/templates/code.scm")
+(include-from-path "gaiag/templates/cs.scm")
 
 (define-method (mark-otherwise o)
   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))

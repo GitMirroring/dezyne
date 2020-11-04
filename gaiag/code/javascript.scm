@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gaiag javascript)
+(define-module (gaiag code javascript)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -35,7 +35,7 @@
   #:use-module (gaiag config)
 
   #:use-module (gaiag ast)
-  #:use-module (gaiag dzn)
+  #:use-module (gaiag code dzn)
   #:use-module (gaiag code)
   #:use-module (gaiag templates))
 
@@ -49,9 +49,9 @@
                    (loop (cdr todo) namespace)))))))
 
 (define-templates-macro define-templates javascript)
-(include "templates/dzn.scm")
-(include "templates/code.scm")
-(include "templates/javascript.scm")
+(include-from-path "gaiag/templates/dzn.scm")
+(include-from-path "gaiag/templates/code.scm")
+(include-from-path "gaiag/templates/javascript.scm")
 
 (define (javascript:root-> root)
   (parameterize ((language "javascript")
