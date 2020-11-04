@@ -77,7 +77,7 @@ Check DZN-FILE for verification errors in Dezyne models
   -m, --model=MODEL           restrict verification to model MODEL
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
-	   (exit (or (and usage? 2) 0)))
+	   (exit (or (and usage? EXIT_OTHER_FAILURE) 0)))
      options)))
 
 (define (models-for-verification root)
@@ -117,7 +117,7 @@ Check DZN-FILE for verification errors in Dezyne models
       (when (and model (not (find (lambda (x) (equal? (verify:scope-name x) model))
                                   (ast:model* root))))
         (display (string-append "no such model: " model "\n") (current-error-port))
-        (exit 1))
+        (exit EXIT_OTHER_FAILURE))
       (let loop ((models models) (error? #f))
         (if (or (and (not all?) error?) (null? models)) (if error? 1 0)
             (let* ((model (car models))

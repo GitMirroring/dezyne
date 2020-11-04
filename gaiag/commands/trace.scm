@@ -73,7 +73,7 @@ Pseudo-filter to translate between different trace formats
   -L, --locations        prepend locations to output trail
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
 ")
-          (exit 0)))
+          (exit EXIT_SUCCESS)))
     options))
 
 (define (trace-parse ascii)
