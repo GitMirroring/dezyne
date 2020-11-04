@@ -32,7 +32,7 @@
             %dzn
             %guilemoduledir
             %guileobjectdir
-            %languages
+            %default-languages
             %package
             %prefix
             %root-dir
@@ -95,5 +95,5 @@
 (define %dzn
   (string-append %bindir "/dzn"))
 
-(define %languages
+(define %default-languages
   (string-split (string-trim-both "@languages@") #\space))

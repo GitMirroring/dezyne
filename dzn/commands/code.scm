@@ -27,13 +27,28 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 poe)
   #:use-module (dzn config)
+  #:use-module (dzn shell-util)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
-  #:export (parse-opts
+  #:export (%languages
+            parse-opts
             main))
 
 (define %default-language "c++")
+(define (list-languages dir)
+  (map (cut basename <> ".go")
+       (filter (cute string-contains <> dir)
+               (append-map (cute find-files <> "\\.go$")
+                           (filter directory-exists?
+                                   %load-compiled-path)))))
+
+(define list-languages (pure-funcq list-languages))
+
+(define %languages
+  (sort (delete-duplicates (list-languages "/dzn/code/") string=?) string<))
+
 (define (parse-opts args)
   (let* ((option-spec
           '((calling-context (single-char #\c) (value #t))
@@ -48,7 +63,7 @@
             (queue-size (single-char #\q) (value #t))
             (shell (single-char #\s) (value #t))))
 	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
+		               #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files))))
@@ -70,8 +85,8 @@ Generate code for Dezyne models in DZN-FILE
   -s, --shell=MODEL           generate thread safe system shell for MODEL
 
 Languages: ~a
-" %default-language (string-join (append %languages '("json" "makreel"))))
-	   (exit (or (and usage? 2) 0)))
+" %default-language (string-join %languages ", "))
+          (exit (or (and usage? 2) 0)))
      options)))
 
 (define (main args)
