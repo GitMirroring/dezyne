@@ -67,7 +67,9 @@
   (display (string-join (.ids o) ".") port))
 
 (define-method (serialize (o <top>) port)
-  (display o port))
+  (cond ((eq? o *unspecified*)
+         (display "*unspecified*" port))
+        (else (display o port))))
 
 (define-method (serialize (o <string>) port)
   (write o port))
