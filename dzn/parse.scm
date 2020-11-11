@@ -111,6 +111,7 @@
       ('COMMA "comma")
       ('COLON ":")
       ('NUMBER "number")
+      ('DOLLAR "$")
       ('DOTDOT "..")
       ('data "dollar expression")
       (('followed-by item) (error->string item))
