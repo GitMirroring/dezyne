@@ -135,13 +135,20 @@ SKIP < !IMPORT . 'import'*")
            res)))
   (define-peg-pattern var all -var-)
 
+  (define (dollars-no-skip str len pos)
+    (parameterize ((%peg:skip? (lambda (str strlen at) `(,at ()))))
+      (dollars- str len pos)))
+
+  ;; TODO: come up with lexical scope construct (see spirit), i.e. disable skip parser locally
+  (define-peg-pattern dollars all dollars-no-skip)
+
   (define-peg-string-patterns
     "root <-- (import / dollars / type / namespace / interface / component / EOF)#*
 
+dollars- <- DOLLAR (!DOLLAR !NEWLINE .)* DOLLAR#
+
 import <-- IMPORT file-name SEMICOLON#
   file-name <- (!SEMICOLON .)+
-
-dollars <-- DOLLAR (!DOLLAR .)* DOLLAR#
 
 type <- enum / int / extern
   enum <-- ENUM compound-name# BRACE-OPEN# fields# BRACE-CLOSE# SEMICOLON#
@@ -318,6 +325,7 @@ SUBINT              <  'subint' ![a-zA-Z_0-9]
 SYSTEM              <  'system' ![a-zA-Z_0-9]
 TRUE                <- 'true' ![a-zA-Z_0-9]
 VOID                <- 'void' ![a-zA-Z_0-9]
+NEWLINE             <- '\n'
 
 KEYWORD <
     'behaviour' ![a-zA-Z_0-9]
