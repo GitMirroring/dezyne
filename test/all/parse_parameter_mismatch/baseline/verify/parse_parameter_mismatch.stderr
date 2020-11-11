@@ -1,0 +1,10 @@
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:45:8: error: parameter count mismatch, expected 1, found: 0
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:28:3: error: for formals of event `hello' defined here
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:47:7: error: argument count mismatch, expected 1, found: 0
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:57:3: error: for formals of event `world' defined here
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:48:7: error: argument count mismatch, expected 1, found: 0
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:44:5: error: for formals of function `f' defined here
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:49:10: error: type mismatch: expected `bool', found `parse_parameter_mismatch.Bool'
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:44:13: error: for formal `b' defined here
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:50:16: error: type mismatch: expected `int', found `bool'
+test/all/parse_parameter_mismatch/parse_parameter_mismatch.dzn:57:17: error: for formal `i' defined here

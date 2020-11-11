@@ -251,6 +251,7 @@ PARSER_TESTS =					\
  %D%/parse_import_path				\
  %D%/parse_import_end				\
  %D%/parse_locations				\
+ %D%/parse_parameter_mismatch			\
  %D%/parse_peg_locations			\
  %D%/parse_preprocessed_foo			\
  %D%/parse_preprocessed_imported_bar		\

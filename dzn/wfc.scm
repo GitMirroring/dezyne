@@ -178,6 +178,67 @@
            (else '())))
    (append-map wfc (ast:formal* o))))
 
+(define (argument-type-check argument formal)
+  (let ((argument-type (ast:type argument))
+        (formal-type (ast:type formal)))
+    (if (equal-type? argument-type formal-type) '()
+        `(,(wfc-error argument (format #f "type mismatch: expected `~a', found `~a'"
+                                       (type-name formal-type)
+                                       (type-name argument-type)))
+          ,(wfc-error formal (format #f "for formal `~a' defined here" (.name formal)))))))
+
+(define-method (wfc (o <arguments>))
+  (cond
+   ((and (parent o <component>)
+         (parent o <action>))
+    =>
+    (lambda (ast)
+      (let* ((arguments (ast:argument* o))
+             (count (length arguments))
+             (event (.event ast)))
+        (if (not event) '()
+            (let* ((formals (ast:formal* event))
+                   (event-count (length formals)))
+              (append
+               (if (= count event-count) '()
+                   `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
+                     ,(wfc-error event (format #f "for formals of event `~a' defined here" (.name event)))))
+               (append-map argument-type-check arguments formals)))))))
+   ((parent o <call>)
+    =>
+    (lambda (ast)
+      (let* ((arguments (ast:argument* o))
+             (count (length arguments))
+             (function (.function ast))
+             (formals (ast:formal* function))
+             (function-count (length formals)))
+        (append
+         (if (= count function-count) '()
+             `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" function-count count))
+               ,(wfc-error function (format #f "for formals of function `~a' defined here" (.name function)))))
+         (append-map argument-type-check arguments formals)))))
+   (else
+    '())))
+
+(define-method (wfc (o <formals>))
+  (cond
+   ((and (parent o <component>)
+         (parent o <trigger>))
+    =>
+    (lambda (ast)
+      (let* ((count (length (ast:formal* o)))
+             (event (.event ast)))
+        (if (not event) '()
+            (let* ((formals (ast:formal* event))
+                   (event-count (length formals))
+                   (on (parent o <on>))
+                   (illegal? (pair? (tree-collect (is? <illegal>) on))))
+              (if (or illegal? (= count event-count)) '()
+                  `(,(wfc-error ast (format #f "parameter count mismatch, expected ~a, found: ~a" event-count count))
+                    ,(wfc-error event (format #f "for formals of event `~a' defined here" (.name event))))))))))
+   (else
+    '())))
+
 (define-method (wfc (o <formal>))
   (append
    (re-declaration o)
@@ -355,7 +416,8 @@
 (define-method (wfc (o <call>)) ;; is-a <imperative>
   (append
    (call-context o)
-   (tail-recursion o)))
+   (tail-recursion o)
+   (wfc (.arguments o))))
 
 (define-method (wfc (o <if>)) ;; is-a <imperative>
   (let ((expression (.expression o)))
@@ -472,31 +534,33 @@
 (define-method (wfc (o <trigger>))
   (let ((port (.port o))
         (model (parent o <model>)))
-    (cond ((and (is-a? model <component>) (not port))
-           `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
-          ((and (is-a? model <component>) (not (is-a? port <port>)))
-           `(,(wfc-error o (format #f "`~a' is not a port" (.port.name o)))
-             ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
-          (else (let ((event (.event o)))
-                  (cond
-                   ((and (is-a? model <interface>) (not event))
-                    `(,(wfc-error o (format #f "event `~a' not defined"
-                                            (.event.name o)))))
-                   ((and (is-a? model <component>) (not event))
-                    `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
-                                            (.event.name o) (.port.name o)))
-                      ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
-                   ((and (is-a? model <interface>) (ast:out? event))
-                    `(,(wfc-error o (format #f "cannot use ~a-event `~a' as trigger" (.direction event) (.event.name o)))
-                      ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-                   ((and (is-a? model <component>)
-                         (or (and (ast:out? event) (ast:provides? (.port o)))
-                             (and (ast:in? event) (ast:requires? (.port o)))))
-                    `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as trigger"
-                                            (.direction (.port o)) (.direction event) (.event.name o)))
-                      ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-                      ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-                   (else '())))))))
+    (append
+     (cond ((and (is-a? model <component>) (not port))
+            `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
+           ((and (is-a? model <component>) (not (is-a? port <port>)))
+            `(,(wfc-error o (format #f "`~a' is not a port" (.port.name o)))
+              ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
+           (else (let ((event (.event o)))
+                   (cond
+                    ((and (is-a? model <interface>) (not event))
+                     `(,(wfc-error o (format #f "event `~a' not defined"
+                                             (.event.name o)))))
+                    ((and (is-a? model <component>) (not event))
+                     `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
+                                             (.event.name o) (.port.name o)))
+                       ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+                    ((and (is-a? model <interface>) (ast:out? event))
+                     `(,(wfc-error o (format #f "cannot use ~a-event `~a' as trigger" (.direction event) (.event.name o)))
+                       ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+                    ((and (is-a? model <component>)
+                          (or (and (ast:out? event) (ast:provides? (.port o)))
+                              (and (ast:in? event) (ast:requires? (.port o)))))
+                     `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as trigger"
+                                             (.direction (.port o)) (.direction event) (.event.name o)))
+                       ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
+                       ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+                    (else '())))))
+     (wfc (.formals o)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; expressions
 
@@ -747,26 +811,28 @@
 (define-method (action (o <action>))
   (let ((event (.event o))
         (model (parent o <model>)))
-    (cond ((and (is-a? model <interface>) (not event))
-           `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
-          ((and (is-a? model <interface>) (ast:in? event))
-           `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          ((and (is-a? model <component>) (not event))
-           (let ((port (.port o)))
-             (if (not port)
-                 `()
-                 `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
-                                         (.event.name o) (.port.name o)))
-                   ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))
-          ((and (is-a? model <component>)
-                (or (and (ast:in? event) (ast:provides? (.port o)))
-                    (and (ast:out? event) (ast:requires? (.port o)))))
-           `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as action"
-                                   (.direction (.port o)) (.direction event) (.event.name o)))
-             ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-          (else '()))))
+    (append
+     (cond ((and (is-a? model <interface>) (not event))
+            `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
+           ((and (is-a? model <interface>) (ast:in? event))
+            `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
+              ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+           ((and (is-a? model <component>) (not event))
+            (let ((port (.port o)))
+              (if (not port)
+                  `()
+                  `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
+                                          (.event.name o) (.port.name o)))
+                    ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))
+           ((and (is-a? model <component>)
+                 (or (and (ast:in? event) (ast:provides? (.port o)))
+                     (and (ast:out? event) (ast:requires? (.port o)))))
+            `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as action"
+                                    (.direction (.port o)) (.direction event) (.event.name o)))
+              ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
+              ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+           (else '()))
+     (wfc (.arguments o)))))
 
 (define-method (binding-declaration (o <system>))
   (append-map binding-declaration (ast:binding* o)))
