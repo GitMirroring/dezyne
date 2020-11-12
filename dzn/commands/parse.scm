@@ -39,37 +39,10 @@
   #:use-module (dzn ast)
   #:use-module (dzn wfc)
 
-  #:export (dump-model-stream
-            parse
+  #:export (parse
             parse-opts
+            preprocess
             main))
-
-(define (dump-model-stream)
-  (let loop ((port #f) (files '()) (importeds '()))
-    (let ((line (read-line)))
-      (cond ((eof-object? line)
-             (begin
-               (when port (close port))
-               (values files importeds)))
-            ((string-match "^#file \"([^\"]+)\"" line)
-             => (lambda (m)
-                  (when port (close port))
-                  (let ((file-name (match:substring m 1)))
-                    (loop (open-output-file (basename file-name)) (append files (list file-name)) importeds))))
-            ((string-match "^#imported \"([^\"]+)\"" line)
-             => (lambda (m)
-                  (when port (close port))
-                  (let ((file-name (match:substring m 1)))
-                    (loop (open-output-file (basename file-name)) files (append importeds (list file-name))))))
-            ((string-match "^//#(import \\s*([^;]+)\\s*;\\s*)" line)
-             => (lambda (m)
-                  (display (match:substring m 1) port)
-                  (newline port)
-                  (loop port files importeds)))
-            (else
-             (display line port)
-             (newline port)
-             (loop port files importeds))))))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -101,71 +74,28 @@ Parse a Dezyne file and produce an AST
           (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
-(define (parse- options file-name)
-  (let* ((skip-wfc? (dzn:command-line:get 'peg #f))
+(define (parse options file-name)
+  (let* ((debug? (dzn:command-line:get 'debug #f))
+         (skip-wfc? (dzn:command-line:get 'peg #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
-         (model-name (option-ref options 'model #f))
          (locations? (command-line:get 'locations))
+         (model-name (option-ref options 'model #f))
          (parse-tree? (command-line:get 'parse-tree)))
     (parameterize ((%locations? locations?))
       (let ((ast (file->ast file-name
+                            #:debug? debug?
                             #:imports imports
                             #:parse-tree? parse-tree?
                             #:skip-wfc? skip-wfc?)))
         (if (not model-name) ast
             (ast:filter-model ast (ast:get-model ast model-name)))))))
 
-(define (handle-parser-exceptions file-name)
-  (lambda (key . args)
-    (case key
-      ((syntax-error)
-       (exit EXIT_FAILURE))
-      ((import-error)
-       (let ((file (first args))
-             (import-paths (second args))
-             (imported-from (third args)))
-         (cond ((string=? file-name (car args))
-                (format (current-error-port) "No such file: ~a\n" file-name))
-               (else (format (current-error-port)
-                             "No such file: ~a, in: ~a;\n"
-                             file (string-join import-paths ", "))
-                     (let ((from (assoc-ref imported-from (basename file))))
-                       (let loop ((from from))
-                         (when from
-                           (format (current-error-port) "imported from ~a\n" from)
-                           (loop (assoc-ref imported-from (basename from)))))))))
-       (exit EXIT_FAILURE))
-      ((well-formedness-error)
-       (for-each wfc:report-error args)
-       (exit EXIT_FAILURE))
-      ((system-error)
-       (let ((errno (system-error-errno (cons key args))))
-         (format (current-error-port) "~a: ~a\n"
-                 (strerror errno) file-name))
-       (exit EXIT_FAILURE))
-      (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
-                    file-name key args)
-            (exit EXIT_FAILURE)))))
-
-(define (assert-parse options file-name)
-  (catch #t
-    (cut parse- options file-name)
-    (handle-parser-exceptions file-name)))
-
-(define (parse options file-name)
-  (let* ((debug? (dzn:command-line:get 'debug #f))
-         (skip-wfc? (dzn:command-line:get 'peg #f)))
-    ((if (or debug? skip-wfc?) parse- assert-parse) options file-name)))
-
-(define (assert-preprocess options file-name)
+(define (preprocess options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (debug? (dzn:command-line:get 'debug #f)))
-    (if debug? (display (preprocess file-name #:imports imports))
-        (catch #t
-          (lambda _ (display (preprocess file-name #:imports imports)))
-          (handle-parser-exceptions file-name)))))
+    (file->stream file-name #:debug? debug? #:imports imports)))
 
 (define (main args)
   (let* ((options (parse-opts args))
@@ -173,7 +103,7 @@ Parse a Dezyne file and produce an AST
          (file-name (and (pair? files) (car files)))
          (preprocess? (option-ref options 'preprocess #f)))
     (cond (preprocess?
-           (assert-preprocess options file-name))
+           (display (preprocess options file-name)))
           (else
            (let ((ast (parse options file-name)))
              (if (option-ref options 'output #f)
