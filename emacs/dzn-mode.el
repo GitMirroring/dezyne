@@ -1,4 +1,4 @@
-;;; dzn-mode.el -- Minor mode for editing Dezyne files.
+;;; dzn-mode.el -- Major mode for editing Dezyne files.
 ;;;
 ;;; Dezyne --- Dezyne command line tools
 ;;;
@@ -22,17 +22,16 @@
 ;;;
 ;;; Commentary:
 
-;;; Installation
-;;;
-;;; * Add to your ~/.emacs
-;;;
-;;;   (when (require 'dzn-mode nil t)
-;;;     (push '("\\.dzn\\'" . dzn-mode) auto-mode-alist))
-;;;
-;;; * Evaluate ~/.emacs or restart Emacs
-;;;
+;; Installation
+;;
+;; * Add to your ~/.config/emacs/init.el
+;;
+;;   (when (require 'dzn-mode nil t)
+;;     (push '("\\.dzn\\'" . dzn-mode) auto-mode-alist))
+;;
+;; * Evaluate ~/.config/emacs/init.el or restart Emacs
 
-;;;; Code:
+;;; Code:
 
 (require 'compile)
 (require 'easymenu)
@@ -82,7 +81,7 @@
        (dzn-command-p (concat dzn-program " hello"))))
 
 (defun dzn-after-save ()
-  (when (eq minor-mode 'dzn-mode)
+  (when (eq major-mode 'dzn-mode)
     (if (not dzn-ticket) (message "no ticket!")
       (if (not (member 'dzn-handle-parse compilation-finish-functions))
           (push 'dzn-handle-parse compilation-finish-functions))
@@ -213,7 +212,7 @@ Toggle on/off: M-x dzn-save RET."
 
 ;;;###autoload
 (defun dzn-mode ()
-  "Minor mode for editing Dezyne files.
+  "Major mode for editing Dezyne files.
 
 COMMANDS
 \\{dzn-mode-map}
@@ -224,12 +223,14 @@ dzn-command-alist\t\talist from name to command"
   (c++-mode)
   (c-set-style "dezyne")
   (setq major-mode 'dzn-mode)
-  (setq mode-name "dzn-mode")
+  (setq mode-name "Dezyne")
   (use-local-map dzn-mode-map)
-  (dzn-save t)
+  (unless (require 'dzn-ls nil t)
+    (dzn-save t))
   (dzn-hello)
   (run-hooks 'dzn-mode-hook))
 
 (require 'dzn-ide nil t)
+(require 'dzn-ls nil t)
 (provide 'dzn-mode)
 ;;; dzn-mode.el ends here
