@@ -46,6 +46,8 @@
 
   #:export (file->ast
             file->stream
+            file+import-content-alist
+            imported-from
             parse:handle-exceptions
             peg:handle-syntax-error
             preprocess
