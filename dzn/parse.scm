@@ -46,6 +46,8 @@
 
   #:export (file->ast
             file->stream
+            file+import-content-alist
+            imported-from
             parse:handle-exceptions
             peg:handle-syntax-error
             preprocess
@@ -212,7 +214,7 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
 
   (define (helper)
     (if (equal? file-name "-") (string->ast (read-string))
-        (let* ((content-alist (file+import-content-alist file-name imports))
+        (let* ((content-alist (file+import-content-alist file-name #:imports imports))
                (parse-tree-alist (parse-file+import-content-alist content-alist)))
           (if parse-tree? parse-tree-alist
               (let ((ast (parse-tree-alist->ast parse-tree-alist
@@ -301,7 +303,7 @@ statements and return the expanded dezyne text, similar to @command{gcc
 
   (define (helper)
     (let* ((content-alist (if (equal? file-name "-") (string->file+import-content-alist (read-string))
-                              (file+import-content-alist file-name imports)))
+                              (file+import-content-alist file-name #:imports imports)))
            (file (car content-alist))
            (imports (cdr content-alist)))
       (string-join
@@ -321,7 +323,7 @@ statements and return the expanded dezyne text, similar to @command{gcc
     helper
     (parse:handle-exceptions file-name)))
 
-(define (file+import-content-alist file-name imports)
+(define* (file+import-content-alist file-name #:key (imports '()) (content-alist '()))
   "Recursively resolve imports starting with FILE-NAME and return an
 alist:
 
@@ -333,7 +335,7 @@ directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
   (let loop ((file-names (list (basename file-name)))
              (imports (cons (dirname file-name) imports))
-             (content-alist '()))
+             (content-alist content-alist))
     (if (null? file-names) (reverse content-alist)
         (let* ((file-name (or (search-path imports (car file-names))
                               (throw 'import-error
