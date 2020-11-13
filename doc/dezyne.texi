@@ -14,7 +14,7 @@
 @set OPENPGP-SIGNING-KEY-URL https://savannah.gnu.org/people/viewgpg.php?user_id=4348
 
 @c Base URL for downloads.
-@set BASE-URL https://dezyne.org/download
+@set BASE-URL https://dezyne.org/download/dezyne
 
 @copying
 Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
@@ -35,8 +35,11 @@ Documentation License''.
 
 @dircategory Software development
 @direntry
-* Dezyne: (dezyne).                Dezyne Reference Manual.
-* dzn: (dezyne)Invoking dzn.       Running Dzn.
+* Dezyne: (dezyne).                  Dezyne Reference Manual.
+* dzn: (dezyne)Invoking dzn.         Running Dezyne commands.
+* dzn: (dezyne)Invoking dzn code.    Generating code from a Dezyne file.
+* dzn: (dezyne)Invoking dzn parse.   Checking the syntax of Dezyne file.
+* dzn: (dezyne)Invoking dzn verify.  Verifying Dezyne models.
 @end direntry
 
 @titlepage
