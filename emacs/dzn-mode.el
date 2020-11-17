@@ -226,7 +226,8 @@ dzn-command-alist\t\talist from name to command"
   (setq major-mode 'dzn-mode)
   (setq mode-name "Dezyne")
   (use-local-map dzn-mode-map)
-  (dzn-save t)
+  (unless (require 'dzn-ls nil t)
+    (dzn-save t))
   (dzn-hello)
   (run-hooks 'dzn-mode-hook))
 
