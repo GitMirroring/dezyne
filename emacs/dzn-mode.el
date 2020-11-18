@@ -29,6 +29,16 @@
 ;;;   (when (require 'dzn-mode nil t)
 ;;;     (push '("\\.dzn\\'" . dzn-mode) auto-mode-alist))
 ;;;
+;;; * For development, also add something like:
+;;;
+;;;   (push "~/src/verum/dzn/wip/emacs" load-path)
+;;;
+;;; * For info docs, add:
+;;;
+;;;   (setq Info-directory-list (split-string (getenv "INFOPATH") ":"))
+;;;   (push "~/src/verum/dzn/wip/doc" Info-directory-list)
+;;;   (require 'info)
+;;;
 ;;; * Evaluate ~/.config/emacs/init.el or restart Emacs
 ;;;
 
