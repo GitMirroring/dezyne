@@ -340,7 +340,8 @@ NON_REPRODUCIBLE_TESTS =			\
 XFAIL_TESTS =					\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
- %D%/import_strip_component
+ %D%/import_strip_component			\
+ %D%/parse_parameter_mismatch
 
 if have_scheme
  XFAIL_TESTS += %D%/blocking_system4
