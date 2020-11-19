@@ -341,7 +341,8 @@ NON_REPRODUCIBLE_TESTS =			\
 XFAIL_TESTS =					\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
- %D%/import_strip_component
+ %D%/import_strip_component			\
+ %D%/parse_parameter_mismatch
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
