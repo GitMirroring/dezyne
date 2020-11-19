@@ -29,8 +29,9 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (gaiag command-line)
-  #:use-module (gaiag completion)
   #:use-module (gaiag parse)
+  #:use-module (gaiag parse complete)
+  #:use-module (gaiag parse tree)
   #:use-module (gaiag parse peg)
 
   #:export (main))
@@ -96,7 +97,7 @@ Produce Dezyne language completion and location information
                                                                    (lambda (line col) (line-col->offset line col input)))))
                          (car parse-result)))
              (parse-tree (cdr parse-result)))
-        (let ((context (context parse-tree offset)))
+        (let ((context (complete:context parse-tree offset)))
           (when verbose?
             (display "input:\n") (format #t input)
             (display "parse-tree:\n") (pretty-print parse-tree)
@@ -104,5 +105,5 @@ Produce Dezyne language completion and location information
           (when verbose?
             (display "context:\n") (pretty-print context)
             (display "completions:\n"))
-          (pretty-print (complete (car context) context offset)))))
+          (pretty-print (complete (.tree context) context offset)))))
      (else (print-help)))))

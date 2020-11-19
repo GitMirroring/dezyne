@@ -25,7 +25,6 @@ dist_%C%_scm_DATA =				\
  %D%/ast.scm					\
  %D%/code.scm					\
  %D%/command-line.scm				\
- %D%/completion.scm				\
  %D%/display.scm				\
  %D%/fifo.scm					\
  %D%/goops.scm					\
