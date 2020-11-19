@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -23,8 +23,10 @@
 
 dist_%C%_scm_DATA =				\
  %D%/ast.scm					\
+ %D%/complete.scm				\
  %D%/peg.scm					\
- %D%/silence.scm
+ %D%/silence.scm				\
+ %D%/tree.scm
 
 dist_nocompile_%C%_scm_DATA =
 
@@ -32,4 +34,5 @@ dist_nocompile_%C%_scm_DATA =
 nocompile_%C%_scmdir = $(%C%_scmdir)
 %C%_godir = $(guileobjectdir)/%D%
 %C%_go_DATA = $(dist_%C%_scm_DATA:%.scm=%.go)
+%C%_go_DATA += $(nodist_%C%_scm_DATA:%.scm=%.go)
 ALL_GO += $(%C%_go_DATA)
