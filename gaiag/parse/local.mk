@@ -27,7 +27,8 @@ dist_%C%_scm_DATA =				\
  %D%/lookup.scm					\
  %D%/peg.scm					\
  %D%/silence.scm				\
- %D%/tree.scm
+ %D%/tree.scm					\
+ %D%/util.scm
 
 dist_nocompile_%C%_scm_DATA =
 
