@@ -1,0 +1,30 @@
+interface ihello
+{
+  in void hello();
+
+  behaviour
+  {
+    on hello: {}
+  }
+}
+
+component hello
+{
+  provides ihello hh;
+
+  behaviour
+  {
+    on hh.hello(): {}
+  }
+}
+
+component system_hello
+{
+  provides ihello h;
+
+  system
+    {
+      hello c;
+      h <=> c.hh;
+    }
+}
