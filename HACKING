@@ -25,6 +25,20 @@ Run all verification failure tests
 
     make check FULL_TESTS="$(cd test/error; ls -1)"
 
+* The Perfect GNU Emacs Setup
+
+** See emacs/dzn-dzn.el
+
+** For development, also add to your ~/.config/emacs/init.el something like:
+
+   (push "~/src/dezyne/emacs" load-path)
+
+** For development info docs, add:
+
+   (setq Info-directory-list (split-string (getenv "INFOPATH") ":"))
+   (push "~/src/dezyne/doc" Info-directory-list)
+   (require 'info)
+
 * GNU/Linux binary pack (generic, relocatable)
 
     guix environment -l guix.scm
