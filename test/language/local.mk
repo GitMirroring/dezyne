@@ -22,49 +22,27 @@
 # Code:
 
 EXTRA_DIST +=					\
- %D%/component0.dzn				\
- %D%/component0.dzn.baseline			\
  %D%/component1.dzn				\
- %D%/component1.dzn.baseline			\
  %D%/component2.dzn				\
- %D%/component2.dzn.baseline			\
  %D%/component3.dzn				\
- %D%/component3.dzn.baseline			\
  %D%/component4.dzn				\
- %D%/component4.dzn.baseline			\
  %D%/component5.dzn				\
- %D%/component5.dzn.baseline			\
  %D%/component6.dzn				\
- %D%/component6.dzn.baseline			\
  %D%/component7.dzn				\
- %D%/component7.dzn.baseline			\
  %D%/component8.dzn				\
- %D%/component8.dzn.baseline			\
- %D%/interface0.dzn				\
- %D%/interface0.dzn.baseline			\
- %D%/interface1.dzn				\
- %D%/interface1.dzn.baseline			\
- %D%/interface1b.dzn				\
- %D%/interface1b.dzn.baseline			\
+ %D%/interface-I-enum-in.dzn			\
+ %D%/interface-I-in.dzn				\
+ %D%/interface-I-in2.dzn			\
+ %D%/interface-I-open.dzn			\
+ %D%/interface-I.dzn				\
  %D%/interface2.dzn				\
- %D%/interface2.dzn.baseline			\
  %D%/interface3.dzn				\
- %D%/interface3.dzn.baseline			\
  %D%/interface4.dzn				\
- %D%/interface4.dzn.baseline			\
  %D%/interface5.dzn				\
- %D%/interface5.dzn.baseline			\
  %D%/interface5b.dzn				\
- %D%/interface5b.dzn.baseline			\
  %D%/interface6.dzn				\
- %D%/interface6.dzn.baseline			\
  %D%/interface7.dzn				\
- %D%/interface7.dzn.baseline			\
  %D%/interface8.dzn				\
- %D%/interface8.dzn.baseline			\
  %D%/interface9.dzn				\
- %D%/interface9.dzn.baseline			\
  %D%/interface9b.dzn				\
- %D%/interface9b.dzn.baseline			\
- %D%/typo.dzn					\
- %D%/typo.dzn.baseline
+ %D%/typo.dzn
