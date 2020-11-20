@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <johri.van.eerd@verum.com>
+;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,99 +24,131 @@
 ;;;
 ;;; Code:
 
-;;USAGE: in dzn.git root: make check TESTS=test/dzn/language
+;; USAGE:
+;;  * ./pre-inst-env guile test/dzn/language.scm
+;;  * make check TESTS=test/dzn/language
 
 (define-module (test dzn language)
-  #:use-module (dzn commands language)
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
+  #:use-module (dzn parse)
+  #:use-module (dzn parse peg)
+  #:use-module (dzn parse complete)
+  #:use-module (dzn parse tree)
+  #:use-module (dzn parse util)
   #:use-module (test dzn automake))
 
-(define (assert-completion-options options dzn-file)
-  (let* ((output (with-output-to-string (cut main (append (list "dzn/commands/language.scm") options (list dzn-file)))))
-         (baseline (call-with-input-file (string-append dzn-file ".baseline") read-string)))
-    (unless (equal? output baseline)
-      (begin (format #t "\t\t**ERROR**\t\t\n\tExpected: ~s\n\tGot: ~s\n" baseline output) #f))))
-
-(define (assert-completion dzn-file)
-  (let ((output (with-output-to-string (cut main (list "dzn/commands/language.scm" dzn-file))))
-        (baseline (call-with-input-file (string-append dzn-file ".baseline") read-string)))
-    (equal? output baseline)))
-
-(define (assert-completion-offset offset dzn-file)
-  (assert-completion-options (list (string-append "--offset=" (number->string offset))) dzn-file))
+(define* (test-complete #:key file-name offset text)
+  (let* ((dir    "test/language")
+         (text   (or text
+                     (with-input-from-file (string-append dir "/" file-name)
+                       read-string)))
+         (root   (parameterize ((%peg:fall-back? #t))
+                   (string->parse-tree text)))
+         (offset (or offset (string-length text)))
+         (ctx    (complete:context root offset))
+         (token  (.tree ctx)))
+    (complete token ctx offset)))
 
 (test-begin "language")
 
-(test-assert "language interface0"
-  (assert-completion "test/language/interface0.dzn"))
+(test-begin "completion")
 
-(test-assert "language interface1"
-  (assert-completion "test/language/interface1.dzn"))
+(define %completion-top '("component" "interface"))
+(define %completion-interface '("bool" "enum" "in" "out"))
+(define %completion-component '("behaviour" "provides" "requires" "system"))
 
-(test-assert "language interface1b"
-  (assert-completion "test/language/interface1b.dzn"))
+(test-equal "completion empty" ;0
+  %completion-top
+  (test-complete #:text ""))
 
-(test-assert "language interface2"
-  (assert-completion "test/language/interface2.dzn"))
+(test-equal "language interf_" ;1
+  %completion-top
+  (test-complete #:text "interf"))
 
-(test-assert "language interface3"
-  (assert-completion "test/language/interface3.dzn"))
+(test-equal "language interface _" ;1b
+  '()
+  (test-complete #:text "interface "))
 
-(test-assert "language interface4"
-  (assert-completion "test/language/interface4.dzn"))
+(test-equal "language interface-I" ;2
+  %completion-top
+  (test-complete #:file-name "interface-I.dzn"))
 
-(test-assert "language interface5"
-  (assert-completion "test/language/interface5.dzn"))
+(test-equal "language interface I {" ;3
+  %completion-interface
+  (test-complete #:file-name "interface-I-open.dzn"))
 
-(test-assert "language interface5b"
-  (assert-completion "test/language/interface5b.dzn"))
+(test-equal "language interface I { in _" ;4
+  '("bool" "void")
+  (test-complete #:file-name "interface-I-in.dzn"))
 
-(test-assert "language interface6"
-  (assert-completion "test/language/interface6.dzn"))
+(test-equal "language interface I { ..; in _" ;5
+  '("bool" "void")
+  (test-complete #:file-name "interface-I-in2.dzn"))
 
-(test-assert "language interface7"
-  (assert-completion "test/language/interface7.dzn"))
+;;; XXX TODO: devise a better test naming scheme and remove all
+;;; numbering (or revert to numbering above?)
+(test-equal "language interface I { enum E; in _" ;5b
+  '("bool" "void" "E")
+  (test-complete #:file-name "interface5b.dzn"))
 
-(test-assert "language interface8"
-  (assert-completion "test/language/interface8.dzn"))
+(test-equal "language interface6"
+  '("behaviour" "bool" "enum" "in" "out")
+  (test-complete #:file-name "interface6.dzn"))
 
-(test-assert "language interface9"
-  (assert-completion "test/language/interface9.dzn"))
+(test-equal "language interface7"
+  '("on")
+  (test-complete #:file-name "interface7.dzn"))
 
-(test-assert "language interface9b"
-  (assert-completion "test/language/interface9b.dzn"))
+(test-equal "language interface8"
+  '("on")
+  (test-complete #:file-name "interface8.dzn"))
 
-(test-assert "language component0"
-  (assert-completion "test/language/component0.dzn"))
+(test-equal "language interface9"
+  '("foo")
+  (test-complete #:file-name "interface9.dzn"))
 
-(test-assert "language component1"
-  (assert-completion "test/language/component1.dzn"))
+(test-equal "language interface9b"
+  '("foo" "bar")
+  (test-complete #:file-name "interface9b.dzn"))
 
-(test-assert "language component2"
-  (assert-completion "test/language/component2.dzn"))
+(test-equal "language component1"
+  %completion-component
+  (test-complete #:file-name "component1.dzn"))
 
-(test-assert "language component3"
-  (assert-completion "test/language/component3.dzn"))
+(test-equal "language component2"
+  '("p.e" "r.f")
+  (test-complete #:file-name "component2.dzn"))
 
-(test-assert "language component4"
-  (assert-completion "test/language/component4.dzn"))
+(test-equal "language component3"
+  '("p.f" "r.e")
+  (test-complete #:file-name "component3.dzn"))
 
-(test-assert "language component5"
-  (assert-completion "test/language/component5.dzn"))
+(test-equal "language component4"
+  '("p.f" "r.e")
+  (test-complete #:file-name "component4.dzn"))
 
-(test-assert "language component6"
-  (assert-completion "test/language/component6.dzn"))
+(test-equal "language component5"
+  '("p.f" "r.e")
+  (test-complete #:file-name "component5.dzn"))
 
-(test-assert "language component7"
-  (assert-completion "test/language/component7.dzn"))
+(test-equal "language component6"
+  '("p.f" "r.e")
+  (test-complete #:file-name "component6.dzn"))
 
-(test-assert "language component8"
-  (assert-completion-offset 170 "test/language/component8.dzn"))
+(test-equal "language component7"
+  '("on")
+  (test-complete #:file-name "component7.dzn"))
 
-(test-assert "language typo"
-  (assert-completion-offset 219 "test/language/typo.dzn"))
+(test-equal "language component8"
+  '("provides" "requires")
+  (test-complete #:file-name "component8.dzn" #:offset 170))
 
+(test-equal "language typo"
+  '("provides" "requires")
+  (test-complete #:file-name "typo.dzn" #:offset 219))
+
+(test-end)
 (test-end)
