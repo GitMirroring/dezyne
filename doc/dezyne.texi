@@ -4701,6 +4701,10 @@ The @var{option}s can be among the following:
 
 @table @code
 
+@item --complete
+@itemx -c
+Show completion result; this is the default action.
+
 @item --help
 @itemx -h
 Display help on invoking @code{dzn language}, and then exit.
@@ -4711,6 +4715,10 @@ Add directory @var{dir} to the import path.
 
 @item --import=@var{offset}
 Use offset @var{offset} to determine context.
+
+@item --lookup
+@itemx -l
+Show lookup result.
 
 @item --point=@var{line},@var{column}
 @itemx -p @var{line},@var{column}
