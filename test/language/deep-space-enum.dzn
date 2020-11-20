@@ -1,0 +1,12 @@
+namespace deep { namespace space {enum Bool {True,False};}}
+
+interface ihello
+{
+  in deep.space.Bool hello();
+  out void world();
+  behaviour {
+    deep.space.Bool e = deep.space.Bool.True;
+    [e.True] on hello: {e=deep.space.Bool.False;world;reply (e);}
+    [e.False] on hello: {e=deep.space.Bool.True;world;reply (e);}
+  }
+}

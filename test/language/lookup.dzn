@@ -1,0 +1,83 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import ilookup.dzn;
+
+component hello_enum
+{
+  provides ihello p1;
+  requires ihello r1;
+
+  behaviour
+  {
+    enum E {W,T,F};
+    E e = E.W;
+    [e.W] on p1.hello(): {e=E.T; r1.hello();}
+    [e.W] on r1.world(): e = E.F;
+    [e.T] on r1.world(): {e=E.F; p1.world();}
+    [e.T] on p1.hello(): {e=E.W; r1.hello();}
+    [e.F] on p1.hello(): {e=E.T; r1.hello();}
+  }
+}
+
+component hello_bool
+{
+  provides ihello p2;
+  requires ihello_nondet r2;
+
+  behaviour
+  {
+    bool b = true;
+    on p2.hello(): {b = r2.hello();}
+    [!b] on r2.world(): {b=!b; p2.world();}
+  }
+}
+
+interface ihello_nondet
+{
+  in bool hello();
+  out void world();
+
+  behaviour
+  {
+    bool b = true;
+    on hello: {b = true; reply(true);}
+    on hello: {b = false; reply(false);}
+    [!b] on inevitable: {b=!b; world;}
+  }
+}
+
+component hello_system
+{
+  provides ihello p;
+  requires ihello_nondet r;
+
+  system
+    {
+      hello_enum e;
+      hello_bool b;
+      p <=> e.p1;
+      e.r1 <=> b.p2;
+      b.r2 <=> r;
+    }
+}

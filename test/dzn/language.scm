@@ -33,24 +33,52 @@
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
+  #:use-module (srfi srfi-71)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse complete)
+  #:use-module (dzn parse lookup)
   #:use-module (dzn parse tree)
   #:use-module (dzn parse util)
   #:use-module (test dzn automake))
 
-(define* (test-complete #:key file-name offset text)
-  (let* ((dir    "test/language")
-         (text   (or text
-                     (with-input-from-file (string-append dir "/" file-name)
-                       read-string)))
+(define (file-name->text file-name)
+  (let ((dir "test/language"))
+    (with-input-from-file (string-append dir "/" file-name)
+      read-string)))
+
+(define (file-name->parse-tree file-name)
+  (let ((text (file-name->text file-name)))
+    (parameterize ((%peg:fall-back? #t))
+      (string->parse-tree text #:file-name file-name))))
+
+(define* (test-context #:key file-name text line (column 0) offset)
+  (let* ((text   (or text (file-name->text file-name)))
          (root   (parameterize ((%peg:fall-back? #t))
                    (string->parse-tree text)))
-         (offset (or offset (string-length text)))
-         (ctx    (complete:context root offset))
-         (token  (.tree ctx)))
+         (offset (or offset
+                     (and line (line-column->offset line column text))
+                     (string-length text))))
+    (values (complete:context root offset) offset)))
+
+(define* (test-complete #:key file-name text line (column 0) offset)
+  (let* ((ctx offset (test-context #:file-name file-name #:text text
+                                   #:line line #:column column
+                                   #:offset offset))
+         (token      (.tree ctx)))
     (complete token ctx offset)))
+
+(define* (test-lookup #:key file-name text line (column 0) offset
+                      (file-name->parse-tree (const '())))
+  (let* ((ctx   (test-context #:file-name file-name #:text text
+                              #:line line #:column column
+                              #:offset offset))
+         (token (.tree ctx))
+         (loc   (lookup-location token ctx
+                                 #:file-name file-name
+                                 #:file-name->text file-name->text
+                                 #:file-name->parse-tree file-name->parse-tree)))
+    (location->string loc)))
 
 (test-begin "language")
 
@@ -99,7 +127,7 @@
   (test-complete #:file-name "interface6.dzn"))
 
 (test-equal "language interface7"
-  '("on")
+  '()
   (test-complete #:file-name "interface7.dzn"))
 
 (test-equal "language interface8"
@@ -151,4 +179,110 @@
   (test-complete #:file-name "typo.dzn" #:offset 219))
 
 (test-end)
+
+(test-begin "lookup")
+
+(test-equal "lookup port->interface"
+  "lookup.dzn:56:10"
+  (test-lookup #:file-name "lookup.dzn" #:line 46 #:column 11))
+
+(test-equal "lookup instance->component"
+  "lookup.dzn:26:10"
+  (test-lookup #:file-name "lookup.dzn" #:line 77 #:column 6))
+
+(test-equal "lookup port->imported-interface"
+  #f
+  (test-lookup #:file-name "lookup.dzn" #:line 28 #:column 13))
+
+(test-equal "lookup port->imported-interface, with fallback"
+  "ilookup.dzn:24:10"
+  (test-lookup #:file-name "lookup.dzn" #:line 28 #:column 13
+               #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "lookup trigger->event"
+  "ilookup.dzn:26:10"
+  (test-lookup #:file-name "ilookup.dzn" #:line 32 #:column 7))
+
+(test-equal "lookup action->event"
+  "ilookup.dzn:27:11"
+  (test-lookup #:file-name "ilookup.dzn" #:line 33 #:column 29))
+
+(test-equal "lookup enum variable->type"
+  "lookup.dzn:33:9"
+  (test-lookup #:file-name "lookup.dzn" #:line 34 #:column 4))
+
+(test-equal "lookup enum-literal->type"
+  "lookup.dzn:33:9"
+  (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 28))
+
+(test-equal "lookup enum-literal->field"
+  "lookup.dzn:33:14"
+  (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 30))
+
+(test-equal "lookup trigger->event"
+  "ilookup.dzn:26:10"
+  (test-lookup #:file-name "ilookup.dzn" #:line 32 #:column 7))
+
+(test-equal "lookup trigger->port"
+  "lookup.dzn:46:25"
+  (test-lookup #:file-name "lookup.dzn" #:line 52 #:column 12))
+
+(test-equal "lookup action->port"
+  "lookup.dzn:46:25"
+  (test-lookup #:file-name "lookup.dzn" #:line 51 #:column 24))
+
+(test-equal "lookup action->event"
+  "lookup.dzn:58:10"
+  (test-lookup #:file-name "lookup.dzn" #:line 51 #:column 27))
+
+(test-equal "lookup end-point->port"
+  "lookup.dzn:72:18"
+  (test-lookup #:file-name "lookup.dzn" #:line 79 #:column 6))
+
+(test-equal "lookup end-point->component.port"
+  "lookup.dzn:28:18"
+  (test-lookup #:file-name "lookup.dzn" #:line 79 #:column 14))
+
+(test-equal "lookup end-point->instance"
+  "lookup.dzn:77:17"
+  (test-lookup #:file-name "lookup.dzn" #:line 79 #:column 12))
+
+(test-equal "lookup var->enum variable"
+  "lookup.dzn:34:6"
+  (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 26))
+
+(test-equal "lookup var->int variable"
+  "int.dzn:8:8"
+  (test-lookup #:file-name "int.dzn" #:line 9 #:column 5))
+
+(test-equal "lookup variable->enum-type"
+  "lookup.dzn:33:9"
+  (test-lookup #:file-name "lookup.dzn" #:line 34 #:column 4))
+
+(test-equal "lookup variable->int-type"
+  "int.dzn:1:7"
+  (test-lookup #:file-name "int.dzn" #:line 8 #:column 4))
+
+(test-equal "lookup field-test->var"
+  "lookup.dzn:34:6"
+  (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 5))
+
+(test-equal "lookup field-test->enum-field"
+  "lookup.dzn:33:9"
+  (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 7))
+
+(test-equal "lookup variable-type->interface enum"
+  "interface-enum.dzn:3:7"
+  (test-lookup #:file-name "interface-enum.dzn" #:line 18 #:column 4))
+
+(test-equal "lookup variable-type->namespace enum"
+  "namespace-enum.dzn:1:22"
+  (test-lookup #:file-name "namespace-enum.dzn" #:line 8 #:column 4))
+
+(test-equal "lookup variable-type->deep.space enum"
+  "deep-space-enum.dzn:1:39"
+  (test-lookup #:file-name "deep-space-enum.dzn" #:line 8 #:column 4))
+
+(test-end)
+
 (test-end)

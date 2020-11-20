@@ -1,0 +1,21 @@
+interface ihello
+{
+  enum Enum {True,False};
+
+  in Enum hello();
+  out void world();
+  behaviour {
+    Enum eenum = Enum.True;
+    [eenum.True] on hello: world;
+  }
+}
+
+component hello
+{
+  provides ihello h;
+  behaviour
+  {
+    ihello.Enum e = ihello.Enum.True;
+    on h.hello (): {h.world ();reply (e);}
+  }
+}

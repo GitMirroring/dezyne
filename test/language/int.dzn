@@ -1,0 +1,12 @@
+subint int {0..1};
+
+interface ihello
+{
+  in int hello();
+  out void world();
+  behaviour {
+    int i = 0;
+    [i==0] on hello: {i=1;world;}
+    [i==1] on hello: {i=0;world;}
+  }
+}
