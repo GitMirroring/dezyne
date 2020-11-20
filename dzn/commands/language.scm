@@ -25,19 +25,21 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn command-line)
   #:use-module (dzn parse)
   #:use-module (dzn parse complete)
+  #:use-module (dzn parse lookup)
   #:use-module (dzn parse tree)
   #:use-module (dzn parse util)
   #:use-module (dzn parse peg)
 
   #:export (main))
 
-(define* (and=> value proc #:optional pred)
+(define* (and+pred=> value proc #:optional pred)
   (cond ((and value pred) (if (pred value) (proc value) #f))
         (value (proc value))
         (else #f)))
@@ -49,62 +51,111 @@
         (if (= line l) (format #f "~a:~a:~a-~a:" file-name line col c)
             (format #f "~a:~a:~a-~a:~a:" file-name line col l c)))))
 
-(define (main args)
-  (define (string->point str)
-    (apply values (map string->number (string-split str (char-set #\, #\space)))))
-
-  (let* ((options (getopt-long args
-                               '((help (single-char #\h))
-                                 (import (single-char #\I) (value #t))
-                                 (offset (value #t))
-                                 (point (single-char #\p) (value #t))
-                                 (verbose (single-char #\v)))))
-         (verbose? (option-ref options 'verbose #f))
-         (file-name (and=> (option-ref options '() #f) last pair?))
+(define (parse-opts args)
+  (let* ((option-spec
+          '((complete (single-char #\c))
+            (help (single-char #\h))
+            (import (single-char #\I) (value #t))
+            (lookup (single-char #\l))
+            (offset (value #t))
+            (point (single-char #\p) (value #t))
+            (verbose (single-char #\v))))
+         (options (getopt-long args option-spec
+		               #:stop-at-first-non-option #t))
          (help? (option-ref options 'help #f))
-         (print-help (cute format (current-output-port)
-                     "\
+	 (files (option-ref options '() '()))
+         (usage? (and (not help?) (null? files))))
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: dzn language [OPTION]... FILE
-Produce Dezyne language completion and location information
+Dezyne language tool for completion and lookup information
 
+ -c, --complete                  show completions [default]
  -h, --help                      display this help and exit
+ -l, --lookup                    show lookup
  -I, --import=DIR+               add DIR to import path
      --offset=OFFSET             use offset=OFFSET to determine context
  -p, --point=LINE,COLUMN         calculate offset from line=LINE and column=COLUMN
  -v, --verbose                   display input, parse tree, offset, context and completions
-")))
-    (cond
-     (help? (print-help))
-     (file-name
-      (let* ((input (with-input-from-file file-name read-string))
-             (errors '())
-             (parse-result (parameterize
-                               ((%peg:debug? (> (dzn:debugity) 0))
-                                (%peg:locations? #t)
-                                (%peg:skip? peg:skip-parse)
-                                (%peg:fall-back? #t)
-                                (%peg:error (lambda (pos str error)
-                                              (when (< pos (1- (string-length str)))
-                                                (set! errors (cons errors (list pos str error)))
-                                                (let ((line (1+ (string-count str #\newline 0 pos)))
-                                                      (col (- pos (or (string-rindex str #\newline 0 pos) 0))))
-                                                  (format (current-error-port) "~a ~a\n"
-                                                          (locus file-name line col (second error))
-                                                          error))))))
-                             (cons (string-length input) (string->parse-tree input #:file-name file-name))))
-             (offset (or (and=> (option-ref options 'offset #f) string->number)
-                         (and=> (option-ref options 'point #f) (lambda (str)
-                                                                 (call-with-values (cute string->point str)
-                                                                   (lambda (line col) (line-column->offset line col input)))))
-                         (car parse-result)))
-             (parse-tree (cdr parse-result)))
-        (let ((context (complete:context parse-tree offset)))
+"))
+      (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
+    options))
+
+(define (main args)
+  (define (string->point str)
+    (apply values (map string->number (string-split str (char-set #\, #\space)))))
+
+  (let* ((options (parse-opts args))
+         (verbose? (option-ref options 'verbose #f))
+         (file-name (and+pred=> (option-ref options '() #f) last pair?))
+         (imports (multi-opt options 'import))
+         (imports (delete-duplicates (cons* (dirname file-name) "." imports)))
+         (help? (option-ref options 'help #f))
+         (lookup? (option-ref options 'lookup #f)))
+
+    (define (file-name->parse-tree file-name)
+      (let* ((file (search-path imports file-name))
+             (text (with-input-from-file file
+                     read-string)))
+        (parameterize ((%peg:fall-back? #t))
+          (string->parse-tree text #:file-name file-name))))
+    (define (file-name->text file-name)
+      (let ((file-name (search-path imports file-name)))
+        (with-input-from-file file-name read-string)))
+    (let* ((input (file-name->text file-name))
+           (errors '())
+           (parse-result (parameterize
+                             ((%peg:debug? (> (dzn:debugity) 0))
+                              (%peg:locations? #t)
+                              (%peg:skip? peg:skip-parse)
+                              (%peg:fall-back? #t)
+                              (%peg:error (lambda (pos str error)
+                                            (when (< pos (1- (string-length str)))
+                                              (set! errors (cons errors (list pos str error)))
+                                              (let ((line (1+ (string-count str #\newline 0 pos)))
+                                                    (col (- pos (or (string-rindex str #\newline 0 pos) 0))))
+                                                (format (current-error-port) "~a ~a\n"
+                                                        (locus file-name line col (second error))
+                                                        error))))))
+                           (cons (string-length input) (string->parse-tree input #:file-name file-name))))
+           (offset (or (and+pred=> (option-ref options 'offset #f) string->number)
+                       (and+pred=> (option-ref options 'point #f) (lambda (str)
+                                                                    (call-with-values (cute string->point str)
+                                                                      (lambda (line col) (line-column->offset line col input)))))
+                       (car parse-result)))
+           (parse-tree (cdr parse-result)))
+      (let ((context (complete:context parse-tree offset)))
+        (when verbose?
+          (display "input:\n") (format #t input)
+          (display "parse-tree:\n") (pretty-print parse-tree)
+          (display "offset: ") (pretty-print offset))
+        (when verbose?
+          (display "context:\n") (pretty-print context))
+        (cond
+         (lookup?
+          (let* ((token (.tree context))
+                 (def   (lookup-definition
+                         token context
+                         #:file-name file-name
+                         #:file-name->parse-tree file-name->parse-tree)))
+            (when verbose?
+              (display "definition:\n")
+              (pretty-print def))
+            (when verbose?
+              (display "location:\n"))
+            (let ((loc (match def
+                         ((file declaration)
+                          (let* ((file-name (or file file-name))
+                                 (text      (file-name->text file-name)))
+                            (lookup->location def text #:file-name file-name)))
+                         (_ #f))))
+              (unless loc
+                (display "not found\n")
+                (exit EXIT_FAILURE))
+              (display (location->string loc))
+              (newline))))
+         (else
           (when verbose?
-            (display "input:\n") (format #t input)
-            (display "parse-tree:\n") (pretty-print parse-tree)
-            (display "offset: ") (pretty-print offset))
-          (when verbose?
-            (display "context:\n") (pretty-print context)
             (display "completions:\n"))
-          (pretty-print (complete (.tree context) context offset)))))
-     (else (print-help)))))
+          (pretty-print (complete (.tree context) context offset))))))))
