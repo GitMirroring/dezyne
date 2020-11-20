@@ -45,4 +45,12 @@ EXTRA_DIST +=					\
  %D%/interface8.dzn				\
  %D%/interface9.dzn				\
  %D%/interface9b.dzn				\
- %D%/typo.dzn
+ %D%/typo.dzn					\
+						\
+ %D%/deep-space-enum.dzn			\
+ %D%/ilookup.dzn        			\
+ %D%/int.dzn            			\
+ %D%/interface-enum.dzn 			\
+ %D%/lookup.dzn         			\
+ %D%/namespace-enum.dzn 			\
+ %D%/system.dzn
