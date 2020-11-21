@@ -76,9 +76,9 @@
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files))))
-    (or
-     (and (or help? usage?)
-          ((or (and usage? stderr) stdout) "\
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: dzn traces [OPTION]... DZN-FILE
 Generate exhaustive set of traces for Dezyne model
 
@@ -91,8 +91,8 @@ Generate exhaustive set of traces for Dezyne model
   -o, --output=DIR            write traces in directory DIR
   -q, --queue-size=SIZE       use queue size=SIZE for generation
 ")
-          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
-     options)))
+        (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
+    options))
 
 (define (mcrl2->lts ast model init)
   (let* ((commands `(,(cut model->mcrl2 ast model)
