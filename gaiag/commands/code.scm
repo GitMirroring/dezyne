@@ -67,9 +67,9 @@
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files))))
-    (or
-     (and (or help? usage?)
-          (format ((or (and usage? current-error-port) current-output-port)) "\
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
 Generate code for Dezyne models in DZN-FILE
 
@@ -86,8 +86,8 @@ Generate code for Dezyne models in DZN-FILE
 
 Languages: ~a
 " %default-language (string-join %languages ", "))
-          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
-     options)))
+        (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
+    options))
 
 (define (main args)
   (let* ((options (parse-opts args))
