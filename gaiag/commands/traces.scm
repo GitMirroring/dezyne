@@ -36,7 +36,6 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) 'goops:<port> x)))
 
-  #:use-module (gaiag misc)
   #:use-module (gaiag config)
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
