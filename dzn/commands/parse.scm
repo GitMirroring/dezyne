@@ -34,7 +34,6 @@
   #:use-module (json)
 
   #:use-module (dzn command-line)
-  #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn shell-util)
   #:use-module (dzn ast)
@@ -86,9 +85,9 @@
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
          (usage? (and (not help?) (null? files))))
-    (or
-     (and (or help? usage?)
-          ((or (and usage? stderr) stdout) "\
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: dzn parse [OPTION]... [FILE]...
 Parse a Dezyne file and produce an AST
 

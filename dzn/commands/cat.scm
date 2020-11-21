@@ -22,11 +22,9 @@
 
 (define-module (dzn commands cat)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 rdelim)
   #:use-module (dzn config)
-  #:use-module (dzn misc)
   #:use-module (dzn command-line)
   #:export (parse-opts
             main))
@@ -36,18 +34,19 @@
           '((recursive (single-char #\R))
             (help (single-char #\h))))
 	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
+		               #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '())))
-    (or
-     (and help?
-          (stdout "\
+	 (files (option-ref options '() '()))
+         (usage? (and (not help?) (null? files))))
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: dzn cat [OPTION]... FILE
 Copy a Dezyne runtime support file to standard output
 
   -h, --help             display this help and exit
 ")
-          (exit EXIT_SUCCESS)))
+        (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
 (define (main args)
@@ -60,7 +59,7 @@ Copy a Dezyne runtime support file to standard output
          (file-name (string-append root "/" (car files)))
          (dzn-debug? (dzn:command-line:get 'debug)))
     (when dzn-debug?
-      (stderr "root=~a\n" root))
+      (format (current-error-port) "root=~a\n" root))
     (chdir root)
     (let ((string (with-input-from-file file-name read-string)))
       (display string))))

@@ -59,12 +59,10 @@
             (locations (single-char #\L))
             (trail (single-char #\t) (value #t))))
 	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
-	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '())))
-    (or
-     (and help?
-          (stdout "\
+		               #:stop-at-first-non-option #t))
+	 (help? (option-ref options 'help #f)))
+    (when help?
+      (format #t "\
 Usage: dzn trace [OPTION]... FILE
 Pseudo-filter to translate between different trace formats
 
@@ -73,7 +71,7 @@ Pseudo-filter to translate between different trace formats
   -L, --locations        prepend locations to output trail
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
 ")
-          (exit EXIT_SUCCESS)))
+      (exit EXIT_SUCCESS))
     options))
 
 (define (trace-parse ascii)

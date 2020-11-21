@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -37,18 +37,16 @@
             (help (single-char #\h))))
 	 (options (getopt-long args option-spec
 		   #:stop-at-first-non-option #t))
-	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '())))
-    (or
-     (and help?
-          (stdout "\
+	 (help? (option-ref options 'help #f)))
+    (when help?
+        (format #t "\
 Usage: dzn ls [OPTION]... [FILE]...
 List available Dezyne runtime support files
 
   -h, --help             display this help and exit
   -R, --recursive        list subdirectories recursively
 ")
-          (exit EXIT_SUCCESS)))
+          (exit EXIT_SUCCESS))
     options))
 
 (define (main args)

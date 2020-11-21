@@ -62,19 +62,19 @@
                                (filter directory-exists?
                                        %load-compiled-path)))))
 
-    (or
-     (and version?
-	  ((stdout "dzn ~a\n" %version) (exit 0)))
-     (and (or help? usage?)
-          ((or (and usage? stderr) stdout)
-           (let* ((core-commands (list-commands "/dzn/commands/"))
-                  (ide-commands (list-commands "/ide/commands/"))
-                  (commands (sort
-                             (delete-duplicates
-                              (append core-commands ide-commands)
-                              string=?)
-                             string<)))
-             (string-append "\
+    (when version?
+      (format (current-output-port) "dzn ~a\n" %version)
+      (exit EXIT_SUCCESS))
+    (when (or help? usage?)
+      (let* ((port (if usage? (current-error-port) (current-output-port)))
+             (core-commands (list-commands "/dzn/commands/"))
+             (ide-commands (list-commands "/ide/commands/"))
+             (commands (sort
+                        (delete-duplicates
+                         (append core-commands ide-commands)
+                         string=?)
+                        string<)))
+        (format port "\
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -c, --core             run core commands only
   -d, --debug            enable debug ouput
@@ -84,14 +84,13 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -v, --verbose          be more verbose, show progress
   -V, --version          display version
 
-Commands:"
-                            (string-join commands "\n  " 'prefix)
-                            "
+Commands:~a
 
 Use \"dzn COMMAND --help\" for command-specific information.
-")))
-	  (exit (or (and usage? EXIT_OTHER_FAILURE) 0)))
-     options)))
+"
+                (string-join commands "\n  " 'prefix)))
+      (exit (or (and usage? EXIT_OTHER_FAILURE) 0)))
+    options))
 
 (define parse-opts (pure-funcq parse-opts))
 

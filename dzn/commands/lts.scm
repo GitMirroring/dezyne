@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018, 2019 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -35,7 +35,6 @@
   #:use-module (dzn lts)
   #:use-module (dzn config)
   #:use-module (dzn command-line)
-  #:use-module (dzn misc)
   #:export (main))
 
 (define (parse-opts args)
@@ -56,9 +55,9 @@
                         (validate (single-char #\v))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) #f)))
-    (cond ((or help? usage?) (format (if usage? (current-error-port) #t) "\
+	 (files (option-ref options '() '())))
+    (when help?
+      (format #t "\
 Usage: dzn lts [OPTION]... [FILE]...
 Navigate and query an LTS from FILE in Aldebaran (AUT) format.
 
@@ -81,8 +80,8 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
   -s, --single-line               report an error including trace on a single line
   -v, --validate                  validate Aldebran (AUT)-files
 ")
-	  (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
-     options))
+      (exit EXIT_SUCCESS))
+    options))
 
 (define (main args)
   (let* ((sep #\,)

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,7 +23,6 @@
 
 (define-module (dzn commands hello)
   #:use-module (ice-9 getopt-long)
-  #:use-module (dzn misc)
   #:export (parse-opts
             main))
 
@@ -31,16 +30,17 @@
   (let* ((option-spec
           '((help (single-char #\h))))
 	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
+		               #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '())))
-    (or
-     (and help?
-          (stdout "\
+	 (files (option-ref options '() '()))
+         (usage? (and (not help?) (pair? files))))
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: dzn hello [OPTION]...
   -h, --help             display this help and exit
 ")
-          (exit EXIT_SUCCESS)))
+        (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
 (define (main args)

@@ -61,13 +61,13 @@
             (model (single-char #\m) (value #t))
             (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
+		               #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files))))
-    (or
-     (and (or help? usage?)
-          ((or (and usage? stderr) stdout) "\
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: dzn verify [OPTION]... DZN-FILE
 Check DZN-FILE for verification errors in Dezyne models
 
@@ -77,8 +77,8 @@ Check DZN-FILE for verification errors in Dezyne models
   -m, --model=MODEL           restrict verification to model MODEL
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
-	   (exit (or (and usage? EXIT_OTHER_FAILURE) 0)))
-     options)))
+	(exit (or (and usage? EXIT_OTHER_FAILURE) 0))))
+    options))
 
 (define (models-for-verification root)
   (let* ((models (ast:model* root))
