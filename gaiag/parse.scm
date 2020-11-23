@@ -141,17 +141,22 @@
           (apply throw key '())))))
 
 (define* (string->parse-tree string #:key (file-name "-") (imported-from '()))
-  (catch 'syntax-error
-    (lambda _
-      (parameterize ((%peg:locations? #t)
-                     (%peg:skip? peg:skip-parse)
-                     (%peg:debug? (> (dzn:debugity) 3)))
-        (let ((parse-tree (peg:parse string)))
-          (when (> (dzn:debugity) 2)
-            (format (current-error-port) "parse-tree: ~a\n" file-name)
-            (pretty-print parse-tree (current-error-port)))
-          parse-tree)))
-    (peg:handle-syntax-error file-name string imported-from)))
+  (let ((fall-back? (%peg:fall-back?)))
+    (define (parse)
+      (let ((parse-tree (peg:parse string)))
+        (when (> (dzn:debugity) 2)
+          (format (current-error-port) "parse-tree: ~a\n" file-name)
+          (pretty-print parse-tree (current-error-port)))
+        parse-tree))
+    (parameterize ((%peg:fall-back? #f)
+                   (%peg:locations? #t)
+                   (%peg:skip? peg:skip-parse)
+                   (%peg:debug? (> (dzn:debugity) 3)))
+      (catch 'syntax-error
+        parse
+        (lambda (key . args)
+          (if fall-back? (parameterize ((%peg:fall-back? #t)) (parse))
+              (apply (peg:handle-syntax-error file-name string imported-from) key args)))))))
 
 (define (parse-file+import-content-alist alist)
   "From ALIST of form
