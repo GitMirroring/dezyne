@@ -123,7 +123,7 @@ SKIP < !IMPORT . 'import'*")
         (or (%peg:fall-back?)
             (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom))))
       res))
-  (define-peg-pattern add-var all -add-var-)
+  (define-peg-pattern add-var body -add-var-)
 
   (define (-var- str len pos)
     (let* ((res (name str len pos))
