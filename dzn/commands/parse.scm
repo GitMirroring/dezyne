@@ -35,6 +35,7 @@
 
   #:use-module (dzn command-line)
   #:use-module (dzn parse)
+  #:use-module (dzn parse peg)
   #:use-module (dzn shell-util)
   #:use-module (dzn ast)
   #:use-module (dzn wfc)
@@ -46,7 +47,8 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((help (single-char #\h))
+          '((fall-back (single-char #\f))
+            (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
             (locations (single-char #\L))
@@ -63,6 +65,7 @@
 Usage: dzn parse [OPTION]... [FILE]...
 Parse a Dezyne file and produce an AST
 
+  -f, --fall-back        use fall-back parser
   -E, --preprocess       resolve imports and produce content stream
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
@@ -81,8 +84,10 @@ Parse a Dezyne file and produce an AST
          (imports (filter-map import-opt options))
          (locations? (command-line:get 'locations))
          (model-name (option-ref options 'model #f))
-         (parse-tree? (command-line:get 'parse-tree)))
-    (parameterize ((%locations? locations?))
+         (parse-tree? (command-line:get 'parse-tree))
+         (fall-back? (command-line:get 'fall-back)))
+    (parameterize ((%locations? locations?)
+                   (%peg:fall-back? fall-back?))
       (let ((ast (file->ast file-name
                             #:debug? debug?
                             #:imports imports
