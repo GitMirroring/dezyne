@@ -325,7 +325,6 @@
         (('scope names ...) (helper names))
 
         (('name name) (helper name))
-        (('add-var name) (helper name))
 
         (('type-name name) (helper name))
         (('event-name name) (helper name))
