@@ -47,7 +47,7 @@
       "@PACKAGE@"))
 
 (define %prefix
-  (or (and (getenv "DZN_UNINSTALLED") (getenv "PREFIX"))
+  (or (and (getenv "DZN_UNINSTALLED") (getenv "DZN_PREFIX"))
       "@prefix@"))
 
 (define %datadir
