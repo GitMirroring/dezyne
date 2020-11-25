@@ -1,0 +1,23 @@
+interface I
+{
+  in void e0();
+  in void e1();
+
+  out void a0();
+  out void a1();
+
+  behaviour
+  {
+    on e0, e1: {}
+  }
+}
+
+component C
+{
+  provides I i;
+
+  behaviour
+  {
+    on i.e0(): 
+  }
+}
