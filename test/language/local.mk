@@ -30,6 +30,10 @@ EXTRA_DIST +=					\
  %D%/component6.dzn				\
  %D%/component7.dzn				\
  %D%/component8.dzn				\
+ %D%/component9.dzn				\
+ %D%/component9a.dzn				\
+ %D%/component10.dzn				\
+ %D%/component10a.dzn				\
  %D%/interface-I-enum-in.dzn			\
  %D%/interface-I-in.dzn				\
  %D%/interface-I-in2.dzn			\

@@ -180,16 +180,29 @@
     ('behaviour '("behaviour" "bool" "enum" "in" "out"))
     (('behaviour-compound (? (disjoin incomplete? tree:location?)) ...) '("on"))
 
+    ((? (is? 'name)) (complete (.tree (.parent context)) (.parent context) offset))
+
     (('triggers (? (disjoin incomplete? tree:location?)) ...) (tree:trigger-names context))
-    (('trigger port event (? (disjoin incomplete? tree:location?)) ...) (tree:formal-names port event context))
+    ((? (is? 'trigger)) (tree:trigger-names context))
+
     (('on (? (is? 'triggers)) (? tree:location?)) (tree:action-names context))
 
     ('statement (tree:action-names context))
     (('compound (? tree:location?)) '("on")) ;;FIXME point solution: fixes component7.dzn
+
     (('compound (? (disjoin incomplete? tree:location?)) ...) (tree:action-names context))
+    ((? (is? 'action)) (tree:action-names context))
+
     ('BRACE-CLOSE '())
     ('BRACE-OPEN '())
     ((? symbol?) '())
     (_ (if (complete? o) '()
            (or (complete (find incomplete? (cdr o)) context offset)
                (complete (before-location? o offset) context offset))))))
+
+;; TODO: rewrite above as:
+;; (define (complete o context offset)
+;;   (match o
+;;     ((? (is? 'trigger)) (tree:trigger-names context))
+;;     ((? (is? 'name)) (complete (.tree (.parent context)) (.parent context) offset))
+;;     (_ '())))

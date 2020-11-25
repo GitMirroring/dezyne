@@ -151,11 +151,11 @@
   (test-complete #:file-name "component2.dzn"))
 
 (test-equal "language component3"
-  '("p.f" "r.e")
+  '("p.e" "r.f")
   (test-complete #:file-name "component3.dzn"))
 
 (test-equal "language component4"
-  '("p.f" "r.e")
+  '("p.e" "r.f")
   (test-complete #:file-name "component4.dzn"))
 
 (test-equal "language component5"
@@ -173,6 +173,22 @@
 (test-equal "language component8"
   '("provides" "requires")
   (test-complete #:file-name "component8.dzn" #:offset 170))
+
+(test-equal "language component9"
+  '("i.e0" "i.e1")
+  (test-complete #:file-name "component9.dzn" #:offset 142))
+
+(test-equal "language component9a"
+  '("i.e0" "i.e1")
+  (test-complete #:file-name "component9a.dzn" #:offset 145))
+
+(test-equal "language component10"
+  '("i.a0" "i.a1")
+  (test-complete #:file-name "component10.dzn" #:offset 185))
+
+(test-equal "language component10a"
+  '("i.a0" "i.a1")
+  (test-complete #:file-name "component10a.dzn" #:offset 188))
 
 (test-equal "language typo"
   '("provides" "requires")
