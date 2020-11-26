@@ -178,6 +178,8 @@ return EXP."
 
 (define %continuation (make-parameter final-continuation))
 
+(define %fall-back-skip-at (make-parameter #f))
+
 ;;Fallback parsing is triggered by a syntax-error exception
 ;;the 'at' parameter is then pointing to "incomplete or erroneous" input
 ;;and moves ahead in the input until one of the continuations
@@ -198,22 +200,28 @@ return EXP."
   (if (not (%peg:fall-back?)) kernel
       (lambda (str strlen start)
         (catch 'syntax-error
-               (lambda _
-                 (kernel str strlen start))
-               (lambda (key . args)
-                 (let* ((expected (cadar args))
-                        (format-error (format-error expected str strlen)))
-                   (let loop ((at start))
-                     (cond ((or (= at strlen)
-                                ((%continuation) str strlen at)) (format-error start at) (if sequence? `(,at ()) `(,at (,expected))))
-                           (else (let ((res (false-if-exception (kernel str strlen (1+ at)))))
-                                   (if res
-                                       (begin (format-error (or (string-index str (char-set-complement char-set:whitespace) start at) start) at)
-                                              res)
-                                       (loop (1+ at)))))))))))))
+          (lambda _
+            (kernel str strlen start))
+          (lambda (key . args)
+            (let* ((expected (cadar args))
+                   (format-error (format-error expected str strlen)))
+              (let loop ((at start))
+                (cond ((or (= at strlen)
+                           ;; TODO: decide what to do; inspecting at might not be enough?!!
+                           (unless (and (%fall-back-skip-at) (eq? (%fall-back-skip-at) at))
+                             (parameterize ((%fall-back-skip-at at))
+                               ((%continuation) str strlen at))))
+                       (format-error start at)
+                       (if sequence? `(,at ()) `(,at (,expected))))
+                      (else
+                       (let ((res (false-if-exception (kernel str strlen (1+ at)))))
+                         (if res
+                             (begin (format-error (or (string-index str (char-set-complement char-set:whitespace) start at) start) at)
+                                    res)
+                             (loop (1+ at)))))))))))))
 
 
-(define (partial-match kernel)
+(define (partial-match kernel sym)
   (lambda (str strlen at)
     (catch 'syntax-error
            (lambda _ (kernel str strlen at))
