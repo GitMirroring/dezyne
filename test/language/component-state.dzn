@@ -1,0 +1,20 @@
+interface IHello
+{
+  in void hello();
+
+  behaviour
+  {
+    on hello: {}
+  }
+}
+
+component Hello
+{
+  provides IHello p;
+
+  behaviour
+  {
+    enum State { Uninitialized, Initialized, Active, Inactive };
+    State state = State.
+  }
+}

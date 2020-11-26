@@ -33,6 +33,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn misc)
+  #:use-module (dzn parse lookup)
   #:use-module (dzn parse tree)
 
   #:export (complete
@@ -113,6 +114,12 @@
 (define (tree:enum-names o)
   (map tree:dotted-name (tree:enum* (or (slot o 'interface) (slot o 'root)))))
 
+(define (tree:int-names o)
+  (map tree:dotted-name (tree:int* (or (slot o 'interface) (slot o 'root)))))
+
+(define (tree:type-names o)
+  (map tree:dotted-name (tree:type* (or (slot o 'interface) (slot o 'root)))))
+
 (define* (tree:event-names o event-dir)
   (let* ((events (tree:event* (find (is? 'interface) o)))
          (events (filter (compose (cute eq? event-dir <>) tree:event-dir) events)))
@@ -159,8 +166,18 @@
           ((find (is? 'component) o) (tree:port-event-names o 'action))
           (else '()))))
 
-(define (tree:formal-names port event o)
-  (tree:action-names o))
+(define (tree:enum-value-names o)
+  (assert-type o 'enum)
+  (let* ((name (.name o))
+         (fields (tree:field* o)))
+    (map (cute string-append (tree:dotted-name name) "." <>)
+         (map tree:dotted-name fields))))
+
+(define (tree:type-value-names o)
+  (cond ((is-a? o 'enum) (tree:enum-value-names o))
+        ((is-a? o 'int) (tree:int-value-names o))
+        ((is-a? o 'bool) '("false" "true"))
+        (else '())))
 
 
 ;;;
@@ -168,34 +185,68 @@
 ;;;
 
 (define (complete o context offset)
+  (define (type-names)
+    (cons* "bool" "void" (tree:type-names context)))
   (match o
-    (('root (? (disjoin complete? tree:location?)) ...) '("component" "interface"))
-    (('interface (? (disjoin incomplete? tree:location?)) ..1) '())
-    ('types-and-events '("bool" "enum" "in" "out"))
-    (('types-and-events types-events ...) '("behaviour" "bool" "enum" "in" "out"))
-    ('type-name (cons* "bool" "void" (tree:enum-names context)))
-    ((and (? (is? 'ports)) (? (cute around-location? <> offset))) '("provides" "requires"))
-    ((? (is? 'ports)) '("behaviour" "provides" "requires" "system"))
-    ('body '("behaviour" "provides" "requires" "system"))
-    ('behaviour '("behaviour" "bool" "enum" "in" "out"))
-    (('behaviour-compound (? (disjoin incomplete? tree:location?)) ...) '("on"))
+    (('root (? (disjoin complete? tree:location?)) ...)
+     '("component" "enum" "import" "interface" "namespace" "subint"))
+    (('interface (? (disjoin incomplete? tree:location?)) ..1)
+     '())
+    ;; FIXME: for component-empty
+    ((and (? (is? 'component))
+          (? complete?))
+     (cond ((and (not (.behaviour o))
+                 (not (.system o)))
+            '("behaviour" "provides" "requires" "system"))
+           (else '())))
+    ((or (? (is? 'provides)) (? (is? 'requires)))
+     (tree:interface-names (parent context 'root)))
+    ('types-and-events
+     '("bool" "enum" "in" "out"))
+    (('types-and-events types-events ...)
+     '("behaviour" "bool" "enum" "in" "out"))
+    ('type-name
+     (type-names))
+    ((and (? (is? 'ports)) (? (cute around-location? <> offset)))
+     '("provides" "requires"))
+    ((or 'body
+         (? (is? 'ports)))
+     '("behaviour" "provides" "requires" "system"))
+    ('behaviour
+     '("behaviour" "bool" "enum" "in" "out"))
+    (('behaviour-compound (? (disjoin incomplete? tree:location?)) ...)
+     (let ((incomplete (find incomplete? (cdr o))))
+       '("on")))
+    ((? (is? 'name))
+     (complete (.tree (.parent context)) (.parent context) offset))
+    (('triggers (? (disjoin incomplete? tree:location?)) ...)
+     (tree:trigger-names context))
+    ((? (is? 'trigger))
+     (tree:trigger-names context))
+    (('on (? (is? 'triggers)) (? tree:location?))
+     (tree:action-names context))
+    ((and (? (is? 'variable)) (? incomplete?))
+     (let* ((type-name (.type-name o))
+            (type (false-if-exception (tree:lookup type-name context)))
+            (expression (false-if-exception (.expression o)))
+            (expression (and expression (.value expression))))
+       (cond ((not type) (type-names))
+             ((not expression) (tree:type-value-names type))
+             (else '()))))
+    ('statement
+     (tree:action-names context))
+    (('compound (? tree:location?))
+     '("on")) ;;FIXME point solution: fixes component7.dzn
 
-    ((? (is? 'name)) (complete (.tree (.parent context)) (.parent context) offset))
+    (('compound (? (disjoin incomplete? tree:location?)) ...)
+     (tree:action-names context))
+    ((? (is? 'action))
+     (tree:action-names context))
 
-    (('triggers (? (disjoin incomplete? tree:location?)) ...) (tree:trigger-names context))
-    ((? (is? 'trigger)) (tree:trigger-names context))
-
-    (('on (? (is? 'triggers)) (? tree:location?)) (tree:action-names context))
-
-    ('statement (tree:action-names context))
-    (('compound (? tree:location?)) '("on")) ;;FIXME point solution: fixes component7.dzn
-
-    (('compound (? (disjoin incomplete? tree:location?)) ...) (tree:action-names context))
-    ((? (is? 'action)) (tree:action-names context))
-
-    ('BRACE-CLOSE '())
-    ('BRACE-OPEN '())
-    ((? symbol?) '())
+    ((or 'BRACE-CLOSE
+         'BRACE-OPEN
+         (? symbol?))
+     '())
     (_ (if (complete? o) '()
            (or (complete (find incomplete? (cdr o)) context offset)
                (complete (before-location? o offset) context offset))))))
