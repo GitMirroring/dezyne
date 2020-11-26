@@ -215,7 +215,7 @@ return EXP."
 
 (define (partial-match kernel)
   (lambda (str strlen at)
-    (catch #t
+    (catch 'syntax-error
            (lambda _ (kernel str strlen at))
            (lambda (key . args) (and (< at (caar args)) (car args))))))
 
@@ -231,16 +231,14 @@ return EXP."
     (()
      (cggr accum 'cg-and #`(reverse #,body) at))
     ((first rest ...)
-     #`(let* ( ;;(foo (warn 'and: '#,#'first))
-              (next #,(cg-or #'(rest ...) 'body))
+     #`(let* ((next #,(cg-or #'(rest ...) 'body))
               (kernel #,(compile-peg-pattern #'first accum))
               (res (parameterize ((%continuation (let ((after-that (%continuation)))
                                                    (lambda (str strlen at)
-                                                     (or ((partial-match next) str strlen at)
-                                                         ((partial-match after-that) str strlen at))))))
-                     ((fall-back-skip kernel) #,str #,strlen #,at)
-                     ;;(kernel #,str #,strlen #,at)
-                     )))
+                                                     ;;(warn 'cont '#'(rest ...) (substring str at (min strlen (+ at 10))))
+                                                     (or ((partial-match next 'next) str strlen at)
+                                                         ((partial-match after-that 'after-that) str strlen at))))))
+                     ((fall-back-skip kernel) #,str #,strlen #,at))))
          (and res
               ;; update AT and BODY then recurse
               (let ((newat (car res))
