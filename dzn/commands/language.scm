@@ -75,7 +75,7 @@ Dezyne language tool for completion and lookup information
  -l, --lookup                    show lookup
  -I, --import=DIR+               add DIR to import path
      --offset=OFFSET             use offset=OFFSET to determine context
- -p, --point=LINE,COLUMN         calculate offset from line=LINE and column=COLUMN
+ -p, --point=LINE[,COLUMN]       calculate offset from line LINE and column COLUMN [0]
  -v, --verbose                   display input, parse tree, offset, context and completions
 "))
       (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
@@ -83,7 +83,9 @@ Dezyne language tool for completion and lookup information
 
 (define (main args)
   (define (string->point str)
-    (apply values (map string->number (string-split str (char-set #\, #\space)))))
+    (match (map string->number (string-split str (char-set #\, #\space)))
+      ((line column) (values line column))
+      ((line) (values line 0))))
 
   (let* ((options (parse-opts args))
          (verbose? (option-ref options 'verbose #f))
