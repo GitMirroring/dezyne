@@ -34,6 +34,10 @@ EXTRA_DIST +=					\
  %D%/component9a.dzn				\
  %D%/component10.dzn				\
  %D%/component10a.dzn				\
+ %D%/component-behaviour.dzn			\
+ %D%/component-empty.dzn			\
+ %D%/component-provides.dzn			\
+ %D%/component-state.dzn			\
  %D%/interface-I-enum-in.dzn			\
  %D%/interface-I-in.dzn				\
  %D%/interface-I-in2.dzn			\
@@ -52,9 +56,9 @@ EXTRA_DIST +=					\
  %D%/typo.dzn					\
 						\
  %D%/deep-space-enum.dzn			\
- %D%/ilookup.dzn        			\
- %D%/int.dzn            			\
- %D%/interface-enum.dzn 			\
- %D%/lookup.dzn         			\
- %D%/namespace-enum.dzn 			\
+ %D%/ilookup.dzn				\
+ %D%/int.dzn					\
+ %D%/interface-enum.dzn				\
+ %D%/lookup.dzn					\
+ %D%/namespace-enum.dzn				\
  %D%/system.dzn

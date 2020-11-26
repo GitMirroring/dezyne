@@ -84,7 +84,8 @@
 
 (test-begin "completion")
 
-(define %completion-top '("component" "interface"))
+(define %completion-top
+  '("component" "enum" "import" "interface" "namespace" "subint"))
 (define %completion-interface '("bool" "enum" "in" "out"))
 (define %completion-component '("behaviour" "provides" "requires" "system"))
 
@@ -189,6 +190,23 @@
 (test-equal "language component10a"
   '("i.a0" "i.a1")
   (test-complete #:file-name "component10a.dzn" #:offset 188))
+
+(test-equal "completion component-empty"
+  '("behaviour" "provides" "requires" "system")
+  (test-complete #:file-name "component-empty.dzn" #:line 13))
+
+(test-equal "completion component-provides"
+  '("IHello")
+  ;; ?? "after provides"
+  (test-complete #:file-name "component-provides.dzn" #:line 13 #:column 10))
+
+(test-equal "completion component-behaviour"
+  '("behaviour" "provides" "requires" "system")
+  (test-complete #:file-name "component-behaviour.dzn" #:line 15))
+
+(test-equal "completion component-state"
+  '("State.Uninitialized" "State.Initialized" "State.Active" "State.Inactive")
+  (test-complete #:file-name "component-state.dzn" #:line 18 #:column 24))
 
 (test-equal "language typo"
   '("provides" "requires")
