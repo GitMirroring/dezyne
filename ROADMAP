@@ -31,48 +31,44 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Freenode!
 
 * TODO
-** Release 2.10, unsorted
-  - Contact users with binary release announcement
-
 ** Release 2.11, unsorted
   - Pass regression test
-    + XFAIL: notably test/all/shell
+    + XFAIL: compliance_out_inevitable_illegal
+    + XFAIL: parse_parameter_mismatch
+      - preferrable in PEG, for LSP
     + Rewrite underlapping tests from wip-test (old-regression)
       - Dataparam?
       - Injected?
   - Documentation
-    + Review and merge wip-documentation
-      - doc/dezyne.texi
     + Review and merge wip-tutorial
       - doc/dezyne-tutorial.texi
-  - Deprecate cloud-based 2.9
-    + No new trial accounts
   - code
     + Review and merge wip-c++ew
     + Review and merge wip-language
-    + Review and merge wip-scheme
-    + Review and merge wip-javascript
-  - LSP
-    + Sort out emacs/dzn-mode.el,emacs/dzn-ide.el with (and without?) LSP
   - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.11.0.rc1
-    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc1
-      (experimental: c++ew, scheme, javascript)
-  - decide on dzn or ide
-    + PATCH: dzn: Add -c,--core option; support running ide commands.
-      - collect & process feedback
+    + Solicit and incorporate feedback on dezyne-2.11.0.rc5
+    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc5
+      experimental: javascript
   - TFS
     + thread pool c++ runtime (TFS only?)
   - Digital Ocean / Sentia
     + cleanup meuk
 
 ** Release 2.12
+  - Deprecate cloud-based 2.9
+    + No new trial accounts
   - state diagram
-  - LSP: highlighting & completion (80%)
-  - browser click via LSP
-  - hiding daemon from user
   - adopt guile-3.0 and guile-json-4
+    + rebase wip-mingw-guile-2.2 on https://github.com/spk121/guile master
+  - Language packs
+    + javascript
+    + scheme
+    + cs
+      - create wip-cs branch
+   - LSP
+    + move ast/wfc.scm tests into PEG parser
   - Code cleanups
+    + cleanup and upstream PEG
     + move dzn/ to dzn/
     + move dzn/verify/ to dzn/verify/
     + Refactor/remove "MORTAL SIN HERE"
@@ -90,11 +86,13 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Debian package
     + Source build on Buster
   - Documentation
-    + Finish and merge wip-doc branch.
+    + Finish and merge wip-doc-snippets branch.
       - Merge snippets/tests with doc/dezyne.texi.
       - Remove error messages.
       - Generate images.
-  - Resurrect C++03 support
+  - Language support
+    + language packs?
+    + - Resurrect C++03 support
   - Resurrect C# support
   - Fully support IDE release
     + Finish and merge wip-namespace
@@ -123,6 +121,19 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Support binary release
+    + Solicit and incorporate feedback on dezyne-2.11.0.rc1,2,3,4
+    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc1,2,3
+      (experimental: c++ew, scheme, javascript)
+  - code
+    + merge wip-scheme
+    + merge wip-javascript
+  - Documentation
+    + merge wip-doc
+  - LSP
+    + Sort out emacs/dzn-mode.el,emacs/dzn-ide.el with, and without, LSP
+  - enable 'dzn' to run 'ide' commands
+    + Add -c,--core option; support running ide commands.
   - Review and merge wip-release
   - LSP
     + Move wip-lsp into dezyne-ide
