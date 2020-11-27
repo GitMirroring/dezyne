@@ -58,8 +58,7 @@
             (help (single-char #\h))
             (locations (single-char #\L))
             (trail (single-char #\t) (value #t))))
-	 (options (getopt-long args option-spec
-		               #:stop-at-first-non-option #t))
+	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f)))
     (when help?
       (format #t "\
