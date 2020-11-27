@@ -56,6 +56,7 @@ EXTRA_DIST +=					\
  %D%/typo.dzn					\
 						\
  %D%/deep-space-enum.dzn			\
+ %D%/enum.dzn					\
  %D%/ilookup.dzn				\
  %D%/int.dzn					\
  %D%/interface-enum.dzn				\
