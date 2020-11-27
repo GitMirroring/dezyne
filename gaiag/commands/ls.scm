@@ -35,8 +35,7 @@
   (let* ((option-spec
           '((recursive (single-char #\R))
             (help (single-char #\h))))
-	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
+	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f)))
     (when help?
         (format #t "\
