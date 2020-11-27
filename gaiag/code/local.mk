@@ -26,31 +26,43 @@ dist_%C%_scm_DATA =				\
  %D%/json.scm					\
  %D%/makreel.scm
 
+dist_nocompile_%C%_scm_DATA =
+
 if have_cxx11
 dist_%C%_scm_DATA += %D%/c++.scm
+else
+dist_nocompile_%C%_scm_DATA += %D%/c++.scm
 endif
 
 if have_cxx03
 dist_%C%_scm_DATA += %D%/c++03.scm
+else
+dist_nocompile_%C%_scm_DATA += %D%/c++03.scm
 endif
 
 if have_cs
 dist_%C%_scm_DATA += %D%/cs.scm
+else
+dist_nocompile_%C%_scm_DATA += %D%/cs.scm
 endif
 
 if have_c99
 dist_%C%_scm_DATA += %D%/c.scm
+else
+dist_nocompile_%C%_scm_DATA += %D%/c.scm
 endif
 
 if have_javascript
 dist_%C%_scm_DATA += %D%/javascript.scm
+else
+dist_nocompile_%C%_scm_DATA += %D%/javascript.scm
 endif
 
 if have_scheme
 dist_%C%_scm_DATA += %D%/scheme.scm
+else
+dist_nocompile_%C%_scm_DATA += %D%/scheme.scm
 endif
-
-dist_nocompile_%C%_scm_DATA =
 
 %C%_scmdir = $(guilemoduledir)/%D%
 nocompile_%C%_scmdir = $(%C%_scmdir)
