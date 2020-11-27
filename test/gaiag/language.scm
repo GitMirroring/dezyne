@@ -298,12 +298,12 @@
   (test-lookup #:file-name "int.dzn" #:line 8 #:column 4))
 
 (test-equal "lookup field-test->var"
-  "lookup.dzn:34:6"
-  (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 5))
+  "enum.dzn:8:9"
+  (test-lookup #:file-name "enum.dzn" #:line 9 #:column 5))
 
 (test-equal "lookup field-test->enum-field"
-  "lookup.dzn:33:9"
-  (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 7))
+  "enum.dzn:1:11"
+  (test-lookup #:file-name "enum.dzn" #:line 9 #:column 7))
 
 (test-equal "lookup variable-type->interface enum"
   "interface-enum.dzn:3:7"
