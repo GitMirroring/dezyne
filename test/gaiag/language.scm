@@ -148,23 +148,23 @@
   (test-complete #:file-name "component1.dzn"))
 
 (test-equal "language component2"
-  '("p.e" "r.f")
+  '("p.e()" "r.f()")
   (test-complete #:file-name "component2.dzn"))
 
 (test-equal "language component3"
-  '("p.e" "r.f")
+  '("p.e()" "r.f()")
   (test-complete #:file-name "component3.dzn"))
 
 (test-equal "language component4"
-  '("p.e" "r.f")
+  '("p.e()" "r.f()")
   (test-complete #:file-name "component4.dzn"))
 
 (test-equal "language component5"
-  '("p.f" "r.e")
+  '("p.f()" "r.e()")
   (test-complete #:file-name "component5.dzn"))
 
 (test-equal "language component6"
-  '("p.f" "r.e")
+  '("p.f()" "r.e()")
   (test-complete #:file-name "component6.dzn"))
 
 (test-equal "language component7"
@@ -176,19 +176,19 @@
   (test-complete #:file-name "component8.dzn" #:offset 170))
 
 (test-equal "language component9"
-  '("i.e0" "i.e1")
+  '("i.e0()" "i.e1()")
   (test-complete #:file-name "component9.dzn" #:offset 142))
 
 (test-equal "language component9a"
-  '("i.e0" "i.e1")
+  '("i.e0()" "i.e1()")
   (test-complete #:file-name "component9a.dzn" #:offset 145))
 
 (test-equal "language component10"
-  '("i.a0" "i.a1")
+  '("i.a0()" "i.a1()")
   (test-complete #:file-name "component10.dzn" #:offset 185))
 
 (test-equal "language component10a"
-  '("i.a0" "i.a1")
+  '("i.a0()" "i.a1()")
   (test-complete #:file-name "component10a.dzn" #:offset 188))
 
 (test-equal "completion component-empty"
@@ -207,6 +207,10 @@
 (test-equal "completion component-state"
   '("State.Uninitialized" "State.Initialized" "State.Active" "State.Inactive")
   (test-complete #:file-name "component-state.dzn" #:line 18 #:column 24))
+
+(test-equal "completion component-on"
+  '("p.hello(foo, bar)")
+  (test-complete #:file-name "component-on.dzn" #:line 17 #:column 7))
 
 (test-equal "language typo"
   '("provides" "requires")

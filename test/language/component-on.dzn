@@ -1,0 +1,19 @@
+interface IHello
+{
+  in void hello(bool foo, bool bar);
+
+  behaviour
+  {
+    on hello: {}
+  }
+}
+
+component Hello
+{
+  provides IHello p;
+
+  behaviour
+  {
+    on 
+  }
+}
