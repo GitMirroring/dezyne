@@ -111,21 +111,21 @@
     ((? pair?) (tree:port-dir (find tree:port-dir o)))
     (_ #f)))
 
-(define (tree:enum-names o)
+(define (context:enum-names o)
   (map tree:dotted-name (tree:enum* (or (slot o 'interface) (slot o 'root)))))
 
-(define (tree:int-names o)
+(define (context:int-names o)
   (map tree:dotted-name (tree:int* (or (slot o 'interface) (slot o 'root)))))
 
-(define (tree:type-names o)
+(define (context:type-names o)
   (map tree:dotted-name (tree:type* (or (slot o 'interface) (slot o 'root)))))
 
-(define* (tree:event-names o event-dir)
+(define (context:event-names o event-dir)
   (let* ((events (tree:event* (find (is? 'interface) o)))
          (events (filter (compose (cute eq? event-dir <>) tree:event-dir) events)))
     (map tree:dotted-name events)))
 
-(define* (tree:interface-names o)
+(define* (context:interface-names o)
   (map tree:dotted-name (tree:interface* o)))
 
 (define (port-dir->event-dir port-dir dir)
@@ -134,37 +134,41 @@
         ((and (eq? 'requires port-dir) (eq? 'trigger dir)) 'out)
         ((and (eq? 'requires port-dir) (eq? 'action dir)) 'in)))
 
-(define (tree:port-event-names o dir) ;;dir 'trigger or 'action
+(define (context:port-event-names o dir) ;'trigger or 'action
   (let* ((ports (tree:port* (find (is? 'component) o)))
          (interface-names (map tree:type-name ports))
          (interfaces (filter (compose (cute member <> interface-names string=?)
                                       tree:dotted-name)
-                             (tree:interface* (slot o 'root)))))
-    (append-map (lambda (port)
-                  (let* ((port-type (tree:type-name port))
-                         (port-dir (tree:port-dir port))
-                         (interface (find (compose (cute string=? port-type <>)
-                                                   tree:dotted-name)
-                                          interfaces))
-                         (events (filter-map
-                                  tree:dotted-name
-                                  (filter (compose (cute eq? (port-dir->event-dir port-dir dir) <>)
-                                                   tree:event-dir)
-                                          (tree:event* interface)))))
-                    (map (cute string-append (tree:dotted-name port) "." <>) events)))
-                ports)))
+                             (tree:interface* (find (is? 'root) o)))))
+    (define (port->event-names port)
+      (let* ((port-type (tree:type-name port))
+             (port-dir (tree:port-dir port))
+             (interface (find (compose (cute string=? port-type <>)
+                                       tree:dotted-name)
+                              interfaces))
+             (events (filter
+                      tree:dotted-name
+                      (filter (compose (cute eq? (port-dir->event-dir port-dir dir) <>)
+                                       tree:event-dir)
+                              (tree:event* interface)))))
+        (define (event->name event)
+          (let* ((port (tree:dotted-name port))
+                 (formals (map tree:dotted-name (tree:formal* event)))
+                 (formals (string-join formals ", "))
+                 (event (tree:dotted-name event)))
+            (format #f "~a.~a(~a)" port event formals)))
+        (map event->name events)))
+    (append-map port->event-names ports)))
 
-(define (tree:trigger-names o)
-  (let ((tree (.tree o)))
-    (cond ((find (is? 'interface) o) (tree:event-names o 'in))
-          ((find (is? 'component) o) (tree:port-event-names o 'trigger))
-          (else '()))))
+(define (context:trigger-names o)
+  (cond ((slot o 'interface) (context:event-names o 'in))
+        ((slot o 'component) (context:port-event-names o 'trigger))
+        (else '())))
 
-(define (tree:action-names o)
-  (let ((tree (.tree o)))
-    (cond ((find (is? 'interface) o) (tree:event-names o 'out))
-          ((find (is? 'component) o) (tree:port-event-names o 'action))
-          (else '()))))
+(define (context:action-names o)
+  (cond ((slot o 'interface) (context:event-names o 'out))
+        ((slot o 'component) (context:port-event-names o 'action))
+        (else '())))
 
 (define (tree:enum-value-names o)
   (assert-type o 'enum)
@@ -186,7 +190,7 @@
 
 (define (complete o context offset)
   (define (type-names)
-    (cons* "bool" "void" (tree:type-names context)))
+    (cons* "bool" "void" (context:type-names context)))
   (match o
     (('root (? (disjoin complete? tree:location?)) ...)
      '("component" "enum" "import" "interface" "namespace" "subint"))
@@ -200,7 +204,7 @@
             '("behaviour" "provides" "requires" "system"))
            (else '())))
     ((or (? (is? 'provides)) (? (is? 'requires)))
-     (tree:interface-names (parent context 'root)))
+     (context:interface-names (parent context 'root)))
     ('types-and-events
      '("bool" "enum" "in" "out"))
     (('types-and-events types-events ...)
@@ -216,15 +220,17 @@
      '("behaviour" "bool" "enum" "in" "out"))
     (('behaviour-compound (? (disjoin incomplete? tree:location?)) ...)
      (let ((incomplete (find incomplete? (cdr o))))
-       '("on")))
+       (cond ((is-a? incomplete 'on)
+              (context:trigger-names context))
+             (else '("on")))))
     ((? (is? 'name))
      (complete (.tree (.parent context)) (.parent context) offset))
     (('triggers (? (disjoin incomplete? tree:location?)) ...)
-     (tree:trigger-names context))
+     (context:trigger-names context))
     ((? (is? 'trigger))
-     (tree:trigger-names context))
+     (context:trigger-names context))
     (('on (? (is? 'triggers)) (? tree:location?))
-     (tree:action-names context))
+     (context:action-names context))
     ((and (? (is? 'variable)) (? incomplete?))
      (let* ((type-name (.type-name o))
             (type (false-if-exception (tree:lookup type-name context)))
@@ -234,14 +240,14 @@
              ((not expression) (tree:type-value-names type))
              (else '()))))
     ('statement
-     (tree:action-names context))
+     (context:action-names context))
     (('compound (? tree:location?))
      '("on")) ;;FIXME point solution: fixes component7.dzn
 
     (('compound (? (disjoin incomplete? tree:location?)) ...)
-     (tree:action-names context))
+     (context:action-names context))
     ((? (is? 'action))
-     (tree:action-names context))
+     (context:action-names context))
 
     ((or 'BRACE-CLOSE
          'BRACE-OPEN
@@ -254,6 +260,6 @@
 ;; TODO: rewrite above as:
 ;; (define (complete o context offset)
 ;;   (match o
-;;     ((? (is? 'trigger)) (tree:trigger-names context))
+;;     ((? (is? 'trigger)) (context:trigger-names context))
 ;;     ((? (is? 'name)) (complete (.tree (.parent context)) (.parent context) offset))
 ;;     (_ '())))
