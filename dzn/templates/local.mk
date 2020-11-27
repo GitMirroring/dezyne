@@ -27,10 +27,10 @@ dist_nocompile_%C%_scm_DATA =			\
  %D%/json.scm					\
  %D%/makreel.scm
 
-if have_cxx11
+#if have_cxx11
 dist_nocompile_%C%_scm_DATA += %D%/c++.scm
 dist_nocompile_%C%_scm_DATA += %D%/glue.scm
-endif
+#endif
 
 if have_cs
 dist_nocompile_%C%_scm_DATA += %D%/cs.scm
@@ -40,13 +40,13 @@ if have_c99
 dist_nocompile_%C%_scm_DATA += %D%/c.scm
 endif
 
-if have_javascript
+#if have_javascript
 dist_nocompile_%C%_scm_DATA += %D%/javascript.scm
-endif
+#endif
 
-if have_scheme
+#if have_scheme
 dist_nocompile_%C%_scm_DATA += %D%/scheme.scm
-endif
+#endif
 
 %C%_scmdir = $(guilemoduledir)/%D%
 nocompile_%C%_scmdir = $(%C%_scmdir)
@@ -56,9 +56,9 @@ EXTRA_DIST +=					\
  %D%/json					\
  %D%/makreel
 
-if have_cxx11
+#if have_cxx11
 EXTRA_DIST += %D%/c++
-endif
+#endif
 
 if have_cs
 EXTRA_DIST += %D%/cs
@@ -68,12 +68,12 @@ if have_c99
 EXTRA_DIST += %D%/c99
 endif
 
-if have_javascript
+#if have_javascript
 EXTRA_DIST += %D%/javascript
-endif
+#endif
 
-if have_scheme
+#if have_scheme
 EXTRA_DIST += %D%/scheme
-endif
+#endif
 
 %C%dir = $(pkgdatadir)/%D%
