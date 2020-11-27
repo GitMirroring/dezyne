@@ -29,8 +29,7 @@
 (define (parse-opts args)
   (let* ((option-spec
           '((help (single-char #\h))))
-	 (options (getopt-long args option-spec
-		               #:stop-at-first-non-option #t))
+	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
          (usage? (and (not help?) (pair? files))))
