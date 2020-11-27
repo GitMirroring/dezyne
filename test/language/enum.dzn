@@ -1,0 +1,11 @@
+enum Bool {True,False};
+
+interface ihello
+{
+  in Bool hello();
+  out void world();
+  behaviour {
+    Bool e = Bool.True;
+    [e.True] on hello: world;
+  }
+}

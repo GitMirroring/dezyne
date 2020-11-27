@@ -1,12 +1,12 @@
 interface ihello
 {
-  enum Enum {True,False};
+  enum Bool {True,False};
 
-  in Enum hello();
+  in Bool hello();
   out void world();
   behaviour {
-    Enum eenum = Enum.True;
-    [eenum.True] on hello: world;
+    Bool e = Bool.True;
+    [e.True] on hello: world;
   }
 }
 
@@ -15,7 +15,7 @@ component hello
   provides ihello h;
   behaviour
   {
-    ihello.Enum e = ihello.Enum.True;
+    ihello.Bool e = ihello.Bool.True;
     on h.hello (): {h.world ();reply (e);}
   }
 }
