@@ -28,8 +28,7 @@
 	  '((debug (single-char #\d))
             (help (single-char #\h))
 	    (version (single-char #\v))))
-	 (options (getopt-long (command-line) option-spec
-                               #:stop-at-first-non-option #t))
+	 (options (getopt-long (command-line) option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (>1 (length files))))
