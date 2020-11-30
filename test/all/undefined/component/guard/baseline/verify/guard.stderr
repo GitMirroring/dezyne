@@ -1,4 +1,4 @@
 test/all/undefined/component/guard/guard.dzn:17:6: error
     [g] on p.e(): {}
      ^
-     `unknown identifier; enum-literal, field-test, literal, var, action, call, interface-action' expected
+     `otherwise, expression' expected
