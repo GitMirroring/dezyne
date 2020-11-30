@@ -65,7 +65,7 @@ $(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
 $(OUT)/test: $(patsubst $(OUT)/%.cc, $(OUT)/%.o, $(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cc, %.o,$(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cpp, %.o,$(wildcard $(OUT)/*.cpp))
-$(OUT)/test: $(MAIN_O) $(OUT)/pump.o $(OUT)/runtime.o
+$(OUT)/test: $(MAIN_O) $(OUT)/pump.o $(OUT)/runtime.o $(OUT)/thread_pool.o
 	mkdir -p $(dir $@)
 	$(LINK.cc) -o $@ $^ $(LDFLAGS)
 

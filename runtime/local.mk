@@ -37,7 +37,8 @@ dist_noinst_DATA += %D%/c++/dzn/meta.hh.in
 runtime_cxxdir = $(pkgdatadir)/runtime/c++
 dist_runtime_cxx_DATA =				\
  %D%/c++/pump.cc				\
- %D%/c++/runtime.cc
+ %D%/c++/runtime.cc                             \
+ %D%/c++/thread_pool.cc
 endif
 
 if have_javascript
