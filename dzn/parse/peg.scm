@@ -225,9 +225,9 @@ imperative-statement <- variable / assign / if-statement / illegal /
 
   illegal <-- ILLEGAL SEMICOLON# / BRACE-OPEN ILLEGAL SEMICOLON# BRACE-CLOSE#
 
-  assign <-- var ASSIGN expression SEMICOLON#
+  assign <-- var ASSIGN expression# SEMICOLON#
 
-  if-statement <-- IF PAREN-OPEN# expression PAREN-CLOSE# imperative-statement# (ELSE imperative-statement#)?
+  if-statement <-- IF PAREN-OPEN# expression# PAREN-CLOSE# imperative-statement# (ELSE imperative-statement#)?
 
   reply <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE# SEMICOLON#
 
@@ -240,7 +240,7 @@ or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
 compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
-not-expression <- not / group / dollars / (!var !is-port enum-literal / field-test / literal / var !DOT / action / call / interface-action / !unknown-identifier)#
+not-expression <- not / group / dollars / (!var !is-port enum-literal / field-test / literal / var !DOT / action / call / interface-action)
 not <-- NOT not-expression#
 enum-literal <-- scope name
 field-test <-- !is-port var DOT name
