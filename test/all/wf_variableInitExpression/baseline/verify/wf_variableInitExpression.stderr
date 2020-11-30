@@ -1,4 +1,4 @@
-test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:37:14: error
+test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:37:13: error
     bool b = c;
-             ^
-             `unknown identifier; enum-literal, field-test, literal, var, action, call, interface-action' expected
+            ^
+            `expression' expected

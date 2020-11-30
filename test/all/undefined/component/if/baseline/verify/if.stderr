@@ -1,4 +1,4 @@
 test/all/undefined/component/if/if.dzn:17:18: error
     on p.e(): if(g) {}
                  ^
-                 `unknown identifier; enum-literal, field-test, literal, var, action, call, interface-action' expected
+                 `expression' expected
