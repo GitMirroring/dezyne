@@ -49,7 +49,9 @@
              (and ((is? 'location) end)
                   (let ((from (.pos end))
                         (to (.end end)))
-                    (and (<= from at) (<= at to)))))
+                    (and (<= from at)
+                         (or (<= at to)
+                             (incomplete? o))))))
            (find (cute at-location? <> at) o))))
 
 (define (after-location? o at)
@@ -120,9 +122,9 @@
 (define (context:type-names o)
   (map tree:dotted-name (tree:type* (or (slot o 'interface) (slot o 'root)))))
 
-(define (context:event-names o event-dir)
+(define* (context:event-names o event-dir #:key (predicate identity))
   (let* ((events (tree:event* (find (is? 'interface) o)))
-         (events (filter (compose (cute eq? event-dir <>) tree:event-dir) events)))
+         (events (filter (conjoin predicate (compose (cute eq? event-dir <>) tree:event-dir)) events)))
     (map tree:dotted-name events)))
 
 (define* (context:interface-names o)
@@ -134,7 +136,9 @@
         ((and (eq? 'requires port-dir) (eq? 'trigger dir)) 'out)
         ((and (eq? 'requires port-dir) (eq? 'action dir)) 'in)))
 
-(define (context:port-event-names o dir) ;'trigger or 'action
+(define* (context:port-event-names o   ;context
+                                   dir ;'trigger or 'action
+                                   #:key (event-predicate identity))
   (let* ((ports (tree:port* (find (is? 'component) o)))
          (interface-names (map tree:type-name ports))
          (interfaces (filter (compose (cute member <> interface-names string=?)
@@ -148,8 +152,9 @@
                               interfaces))
              (events (filter
                       tree:dotted-name
-                      (filter (compose (cute eq? (port-dir->event-dir port-dir dir) <>)
-                                       tree:event-dir)
+                      (filter (conjoin event-predicate
+                                       (compose (cute eq? (port-dir->event-dir port-dir dir) <>)
+                                        tree:event-dir))
                               (tree:event* interface)))))
         (define (event->name event)
           (let* ((port (tree:dotted-name port))
@@ -160,15 +165,25 @@
         (map event->name events)))
     (append-map port->event-names ports)))
 
-(define (context:trigger-names o)
-  (cond ((slot o 'interface) (context:event-names o 'in))
-        ((slot o 'component) (context:port-event-names o 'trigger))
+(define* (context:trigger-names o #:key (event-predicate identity))
+  (cond ((slot o 'interface) (context:event-names o 'in #:predicate event-predicate))
+        ((slot o 'component) (context:port-event-names o 'trigger #:event-predicate event-predicate))
         (else '())))
 
-(define (context:action-names o)
-  (cond ((slot o 'interface) (context:event-names o 'out))
-        ((slot o 'component) (context:port-event-names o 'action))
+(define* (context:action-names o #:key (event-predicate identity))
+  (cond ((slot o 'interface) (context:event-names o 'out #:predicate event-predicate))
+        ((slot o 'component) (context:port-event-names o 'action #:event-predicate event-predicate))
         (else '())))
+
+(define* (tree:function-names o #:key (type-predicate identity))
+  (let* ((functions (tree:function* o))
+         (functions (filter (compose type-predicate .type-name) functions)))
+    (define (function->name f)
+      (let* ((name (tree:dotted-name f))
+             (formals (map (const "_") (tree:formal* f)))
+             (formals (string-join formals ", ")))
+        (format #f "~a(~a)" name formals)))
+    (map function->name functions)))
 
 (define (tree:enum-value-names o)
   (assert-type o 'enum)
@@ -234,11 +249,25 @@
     ((and (? (is? 'variable)) (? incomplete?))
      (let* ((type-name (.type-name o))
             (type (false-if-exception (tree:lookup type-name context)))
+            (type (tree:lookup type-name context))
             (expression (false-if-exception (.expression o)))
             (expression (and expression (.value expression))))
-       (cond ((not type) (type-names))
-             ((not expression) (tree:type-value-names type))
-             (else '()))))
+       (cond ((not type)
+              (type-names))
+             ((and (not expression)
+                   (is-a? (and=> (.parent context) .tree) 'behaviour-compound))
+              (tree:type-value-names type))
+             ((not expression)
+              (append
+               (tree:type-value-names type)
+               (tree:function-names
+                (parent context 'behaviour)
+                #:type-predicate (cute tree:name-equal? <> type-name))
+               (context:action-names
+                context
+                #:event-predicate (compose (cute tree:name-equal? <> type-name) .type-name))))
+             (else
+              '()))))
     ('statement
      (context:action-names context))
     (('compound (? tree:location?))

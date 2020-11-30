@@ -212,6 +212,14 @@
   '("p.hello(foo, bar)")
   (test-complete #:file-name "component-on.dzn" #:line 17 #:column 7))
 
+(test-equal "completion component-enum member"
+  '("Bool.False" "Bool.True")
+  (test-complete #:file-name "component-enum-member.dzn" #:line 25 #:column 18))
+
+(test-equal "completion component-enum local"
+  '("Bool.False" "Bool.True" "fun(_)" "r.hello()")
+  (test-complete #:file-name "component-enum-local.dzn" #:line 27 #:column 20))
+
 (test-equal "language typo"
   '("provides" "requires")
   (test-complete #:file-name "typo.dzn" #:offset 219))
