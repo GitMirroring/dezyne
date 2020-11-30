@@ -186,8 +186,8 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
 type-name <-- compound-name / BOOL / VOID
 
 behaviour <-- BEHAVIOUR (name)? behaviour-compound
-  behaviour-compound <-- BRACE-OPEN# enter-frame behaviour-statement* BRACE-CLOSE# exit-frame
-    behaviour-statement <- port / function / variable / declarative-statement / type
+  behaviour-compound <-- BRACE-OPEN# enter-frame behaviour-statements BRACE-CLOSE# exit-frame
+    behaviour-statements <- (port / function / variable / declarative-statement / type / &BRACE-CLOSE)#*
       function <-- type-name name &(formals BRACE-OPEN) enter-frame formals BRACE-OPEN# (imperative-statement  / !unknown-identifier)#* BRACE-CLOSE# exit-frame
 
 declarative-statement <- on / blocking / guard / compound
