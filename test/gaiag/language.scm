@@ -217,12 +217,28 @@
   (test-complete #:file-name "component-enum-member.dzn" #:line 25 #:column 18))
 
 (test-equal "completion component-enum local"
-  '("Bool.False" "Bool.True" "fun(_)" "r.hello()")
+  '("b" "fun(_)" "r.hello()" "Bool.False" "Bool.True")
   (test-complete #:file-name "component-enum-local.dzn" #:line 27 #:column 20))
 
 (test-equal "language typo"
   '("provides" "requires")
   (test-complete #:file-name "typo.dzn" #:offset 219))
+
+(test-equal "completion enum literal"
+  '("Bool.False" "Bool.True")
+  (test-complete #:file-name "component-enum.dzn" #:line 10 #:column 13))
+
+(test-equal "completion enum field"
+  '("Bool.False" "Bool.True")
+  (test-complete #:file-name "component-enum.dzn" #:line 10 #:column 18))
+
+(test-equal "completion enum local"
+  ' ("b" "m" "fun(_)" "Bool.False" "Bool.True")
+  (test-complete #:file-name "component-enum.dzn" #:line 34 #:column 15))
+
+(test-equal "completion enum reply"
+  '("b" "m" "Bool.False" "Bool.True")
+  (test-complete #:file-name "component-enum.dzn" #:line 35 #:column 13))
 
 (test-end)
 
