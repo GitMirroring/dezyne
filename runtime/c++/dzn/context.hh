@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of dzn-runtime.
 //
@@ -28,10 +28,32 @@
 #include <cassert>
 #include <condition_variable>
 #include <functional>
+#include <future>
 #include <map>
 #include <mutex>
 #include <stdexcept>
 #include <thread>
+#include <iostream>
+
+#ifndef DZN_THREAD_POOL
+// Set to 1 to use thread pool from thread_pool.cc.
+#define DZN_THREAD_POOL 0
+#endif
+
+namespace dzn
+{
+  namespace thread
+  {
+    std::future<void> defer(const std::function<void()>&);
+
+#if DZN_THREAD_POOL
+    std::future<void> defer(const std::function<void()>& work)
+    {
+      return std::async(std::launch::async, work);
+    }
+#endif //DZN_THREAD_POOL
+  }
+}
 
 namespace dzn
 {
@@ -56,7 +78,7 @@ class context
   std::function<void(std::function<void(context&)>&)> work;
   std::mutex mutex;
   std::condition_variable condition;
-  std::thread thread;
+  std::future<void> future;
 public:
   struct forced_unwind: public std::runtime_error
   {
@@ -67,9 +89,8 @@ public:
   , work()
   , mutex()
   , condition()
-  , thread([this] {
-      try
-      {
+  , future(dzn::thread::defer([this] {
+      try {
         debug << "[" << get_id () << "] create" << std::endl;
         std::unique_lock<std::mutex> lock(mutex);
         while(state != FINAL)
@@ -87,7 +108,7 @@ public:
         }
       }
       catch(const forced_unwind&) { debug << "ignoring forced_unwind" << std::endl; }
-    })
+  }))
   {
     std::unique_lock<std::mutex> lock(mutex);
     while(state != BLOCKED) condition.wait(lock);
@@ -97,7 +118,7 @@ public:
   , work()
   , mutex()
   , condition()
-  , thread()
+  , future()
   {}
   context(context&&) = delete;
   context& operator=(context&&) = delete;
@@ -186,7 +207,7 @@ private:
     state = FINAL;
     lock.unlock();
     condition.notify_all();
-    if(thread.joinable()) thread.join();
+    if(future.valid()) future.wait();
   }
 };
 }
