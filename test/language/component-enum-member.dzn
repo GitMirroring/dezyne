@@ -1,0 +1,27 @@
+enum Bool {False,True};
+
+interface ihello
+{
+  in Bool hello();
+
+  behaviour
+  {
+    on hello: reply (Bool.True);
+  }
+}
+
+component hello
+{
+  provides ihello p;
+  requires ihello r;
+
+  behaviour
+  {
+    Bool fun ()
+    {
+      return Bool.True;
+    }
+
+    Bool b = Bool.
+  }
+}
