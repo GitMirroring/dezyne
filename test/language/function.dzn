@@ -1,0 +1,14 @@
+interface ihello
+{
+  in void hello();
+  out void world();
+  behaviour
+  {
+    void fun ()
+    {
+      world;
+    }
+
+    on hello: fun ();
+  }
+}

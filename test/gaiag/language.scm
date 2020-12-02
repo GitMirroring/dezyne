@@ -345,6 +345,10 @@
   "deep-space-enum.dzn:1:39"
   (test-lookup #:file-name "deep-space-enum.dzn" #:line 8 #:column 4))
 
+(test-equal "lookup call->function"
+  "function.dzn:7:9"
+  (test-lookup #:file-name "function.dzn" #:line 12 #:column 16))
+
 (test-end)
 
 (test-end)

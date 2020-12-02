@@ -55,6 +55,7 @@
             .field
             .fields
             .file-name
+            .function-name
             .instance-name
             .location
             .name
@@ -201,7 +202,8 @@ procedure)."
          (? (is? 'int))
          (? (is? 'type-name)))
      (slot o 'compound-name))
-    ((or (? (is? 'compound-name))
+    ((or (? (is? 'call))
+         (? (is? 'compound-name))
          (? (is? 'event-name))
          (? (is? 'port))
          (? (is? 'interface))
@@ -233,6 +235,10 @@ procedure)."
     ((? (is? 'end-point)) (.instance-name (slot o 'compound-name)))
     (('compound-name (? (is? 'scope) instance) (? (is? 'name) port) rest ...) instance)
     (('compound-name (? (is? 'name) port) rest ...) #f)))
+
+(define (.function-name o)
+  (match o
+    ((? (is? 'call)) (.name o))))
 
 (define (.ports o)
   (match o
