@@ -205,6 +205,13 @@ null)."
            (tree:lookup port-name context))
           (else #f))))
 
+(define (resolve-call o name context)
+  (assert-type o 'call)
+  (let ((function-name (.function-name o)))
+    (cond ((and function-name (tree:name-equal? name function-name))
+           (tree:lookup function-name context))
+          (else #f))))
+
 
 ;;;
 ;;; Utilities.
@@ -259,6 +266,8 @@ null)."
          => (cute resolve-field-test <> name context))
         ((parent context 'end-point)
          => (cute resolve-end-point <> name context))
+        ((parent context 'call)
+         => (cute resolve-call <> name context))
         (else
          #f))))
 
