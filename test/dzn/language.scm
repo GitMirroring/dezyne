@@ -55,7 +55,7 @@
 (define* (test-context #:key file-name text line (column 0) offset)
   (let* ((text   (or text (file-name->text file-name)))
          (root   (parameterize ((%peg:fall-back? #t))
-                   (string->parse-tree text)))
+                   (string->parse-tree text #:file-name file-name)))
          (offset (or offset
                      (and line (line-column->offset line column text))
                      (string-length text))))
@@ -78,7 +78,7 @@
                                  #:file-name file-name
                                  #:file-name->text file-name->text
                                  #:file-name->parse-tree file-name->parse-tree)))
-    (location->string loc)))
+    (and=> loc location->string)))
 
 (test-begin "language")
 

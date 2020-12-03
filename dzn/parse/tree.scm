@@ -106,7 +106,9 @@
             tree:trigger*
             tree:type*
             tree:statement*
-            tree:variable*))
+            tree:variable*
+
+            tree:add-file-name))
 
 ;;;
 ;;; Utilities.
@@ -149,7 +151,8 @@ procedure)."
 
 (define (.end o)
   (match o
-    (('location pos end) end)))
+    (('location pos end) end)
+    (('location pos end file-name) end)))
 
 (define (.expression o)
   (assert-type o 'enum-literal 'assign 'variable)
@@ -186,6 +189,8 @@ procedure)."
     ((? (is? 'root))
      (and=> (slot o 'file-name) .file-name))
     (((or 'file-name 'import) (? string? file-name) rest ...)
+     file-name)
+    (('location start end file-name)
      file-name)))
 
 (define (.formals o)
@@ -250,7 +255,8 @@ procedure)."
 
 (define (.pos o)
   (match o
-    (('location pos end) pos)))
+    (('location pos end) pos)
+    (('location pos end file-name) pos)))
 
 (define (.scope o) ;; accessor with default: '()
   (match o
@@ -553,9 +559,10 @@ procedure)."
       '()))
 
 (define (tree:name o)
-  (or (slot o 'name)
-      (slot o 'compound-name))
   (match o
+    ((or (? (is? 'name))
+         (? (is? 'compound-name)))
+     o)
     ((? (is? 'event)) (tree:name (slot o 'event-name)))
     (_   (or (slot o 'name)
              (slot o 'compound-name)))))
@@ -591,10 +598,10 @@ procedure)."
     (_ #f)))
 
 (define (tree:offset o)
-  (let ((location (.location o)))
-    (match location
-      (('location start end)
-       start))))
+  (and=> (.location o) .pos))
+
+(define (tree:file-name o)
+  (and=> (.location o) .file-name))
 
 (define (tree:instance* o)
   (match o
@@ -739,3 +746,17 @@ procedure)."
     ((? (is? 'triggers)) (slots o 'trigger))
     ((? (is? 'on)) (tree:trigger* (.triggers o)))
     (_ '())))
+
+
+;;;
+;;; Parse tree transformations.
+;;;
+
+(define (tree:add-file-name o file-name)
+  (match o
+    (('location start end)
+     `(location ,start ,end ,file-name))
+    (((? symbol? type) slots ...)
+     (let ((slots (map (cute tree:add-file-name <> file-name) slots)))
+       `(,type ,@slots)))
+    (_ o)))

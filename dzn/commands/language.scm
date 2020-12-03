@@ -150,12 +150,9 @@ Dezyne language tool for completion and lookup information
               (pretty-print def (current-error-port)))
             (when verbose?
               (display "location:\n"))
-            (let ((loc (match def
-                         ((file declaration)
-                          (let* ((file-name (or file file-name))
-                                 (text      (file-name->text file-name)))
-                            (lookup->location def text #:file-name file-name)))
-                         (_ #f))))
+            (let* ((text (file-name->text file-name))
+                   (name (tree:name def))
+                   (loc  (tree:->location name text)))
               (unless loc
                 (display "not found\n")
                 (exit EXIT_FAILURE))

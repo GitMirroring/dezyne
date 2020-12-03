@@ -38,38 +38,42 @@
 
   #:export (declaration->offset
             lookup
-            lookup->location
             lookup-definition
             lookup-location
-            tree:lookup))
+            tree:lookup
+            tree:->location))
 
 ;;;
 ;;; Lookup.
 ;;;
 
-(define (look-in-scope name scope)
-  "Look for NAME (a 'name) in SCOPE, a tree:scope?."
+(define (look-in-scope name scope context)
+  "Look for NAME (a 'name) in SCOPE, a tree:scope?.  Return a location
+with file-name from CONTEXT in offsets."
   (assert-type name 'name)
   (assert-type scope tree:scope?)
-  (filter (lambda (decl) (tree:name-equal? (tree:name decl) name))
-          (tree:declaration* scope)))
+  (let* ((root (find (is? 'root) context))
+         (file-name (and=> root .file-name))
+         (found (filter (compose (cute tree:name-equal? <> name) tree:name)
+                        (tree:declaration* scope))))
+    (map (cute tree:add-file-name <> file-name) found)))
 
-(define (lookdown name search-scope)
+(define (lookdown name search-scope context)
   "Find named scope in SEARCH-SCOPE for NAME (a 'compound-name), until
 NAME's scope prefix matches, then look-in-scope for NAME."
   (assert-type name 'compound-name 'name)
   (assert-type search-scope tree:scope?)
   (let* ((loc (.location name))
          (scope name (tree:scope+name name)))
-    (if (null? scope) (or (tree:context? (look-in-scope name search-scope))
+    (if (null? scope) (or (tree:context? (look-in-scope name search-scope context))
                           '())
         (let* ((first (car scope))
-               (first-scopes (lookdown first search-scope)))
+               (first-scopes (lookdown first search-scope context)))
           (if (null? first-scopes) '()
               (let* ((scope (cdr scope))
                      (name (if (null? scope)`(compound-name ,name ,loc)
                                `(compound-name (scope ,@scope) ,name ,loc))))
-                (append-map (cute lookdown name <>) first-scopes)))))))
+                (append-map (cute lookdown name <> context) first-scopes)))))))
 
 (define (lookup-n name context)
   "Find NAME (a 'name or 'compound-name) in CONTEXT (a tree:context? or
@@ -78,7 +82,7 @@ null)."
       (let* ((loc (.location name))
              (scope name (tree:scope+name name)))
         (assert-type context tree:context?)
-        (if (null? scope) (or (tree:context? (look-in-scope name (.tree context)))
+        (if (null? scope) (or (tree:context? (look-in-scope name (.tree context) context))
                               (lookup-n name (parent-context context tree:scope?)))
             (let* ((first (car scope))
                    (first-scopes (lookup-n first context)))
@@ -86,7 +90,7 @@ null)."
                   (let* ((scope (cdr scope))
                          (name (if (null? scope)`(compound-name ,name ,loc)
                                    `(compound-name (scope ,@scope) ,name ,loc))))
-                    (append-map (cute lookdown name <>) first-scopes))))))))
+                    (append-map (cute lookdown name <> context) first-scopes))))))))
 
 (define (tree:lookup name context)
   (let ((scope (if (tree:scope? (.tree context)) context
@@ -95,33 +99,37 @@ null)."
       ((first rest ...) first)
       (_ #f))))
 
-(define (tree:lookup-var name o)
-  (define (name? o)
-    (and (tree:name-equal? (.name o) name) o))
-  (let ((tree (.tree o)))
-    (match tree
-      ((? (is? 'behaviour-compound))
-       (find name? (tree:variable* tree)))
-      ((? (is? 'compound))
-       (or (find name? (filter (is? 'variable) (tree:statement* tree)))
-           (tree:lookup-var name (.parent o))))
-      ((? (is? 'function))
-       (or (find name? ((compose tree:formal* .signature) tree))
-           (tree:lookup-var name (.parent o))))
-      ((or (? (is? 'formal))
-           (is? 'formal-binding))
-       (and (equal? (.name tree) name)
-            tree))
-      ((? (is? 'on))
-       (or (find (cute tree:lookup-var name <>)
-                 (append-map tree:formal* (tree:trigger* tree)))
-           (tree:lookup-var name (.parent o))))
-      ((? (is? 'variable))
-       (name? tree))
-      ((? (cute parent <> 'variable))
-       (tree:lookup-var name (.parent (parent o 'variable))))
-      ((? tree?)
-       (tree:lookup-var name (.parent o))))))
+(define (tree:lookup-var name context)
+  (define (helper name o)
+    (define (name? o)
+      (and (tree:name-equal? (.name o) name) o))
+    (let ((tree (.tree o)))
+      (match tree
+        ((? (is? 'behaviour-compound))
+         (find name? (tree:variable* tree)))
+        ((? (is? 'compound))
+         (or (find name? (filter (is? 'variable) (tree:statement* tree)))
+             (helper name (.parent o))))
+        ((? (is? 'function))
+         (or (find name? (tree:formal* tree))
+             (helper name (.parent o))))
+        ((or (? (is? 'formal))
+             (is? 'formal-binding))
+         (and (equal? (.name tree) name)
+              tree))
+        ((? (is? 'on))
+         (or (find (cute helper name <>)
+                   (append-map tree:formal* (tree:trigger* tree)))
+             (helper name (.parent o))))
+        ((? (is? 'variable))
+         (name? tree))
+        ((? (cute parent <> 'variable))
+         (helper name (.parent (parent o 'variable))))
+        ((? tree?)
+         (helper name (.parent o))))))
+  (let* ((root (find (is? 'root) context))
+         (file-name (and=> root .file-name)))
+    (and=> (helper name context) (cute tree:add-file-name <> file-name))))
 
 
 ;;;
@@ -222,21 +230,11 @@ null)."
   (let ((name (tree:name declaration)))
     (tree:offset name)))
 
-(define* (lookup->location lookup text #:key file-name)
-  "Create a <location> for LOOKUP result using TEXT, and return it."
-  (match lookup
-    (((? string? file-name) (? (is? 'name) name))
-     (let ((offset (tree:offset name)))
-       (file-offset->location file-name offset text)))
-    (((? string? file-name) (? tree:declaration? declaration))
-     (let ((offset (declaration->offset declaration)))
-       (file-offset->location file-name offset text)))
-    ((#f (? (is? 'name) name))
-     (let ((offset (tree:offset name)))
-       (file-offset->location file-name offset text)))
-    ((#f (? tree:declaration? declaration))
-     (let ((offset (declaration->offset declaration)))
-       (file-offset->location file-name offset text)))))
+(define* (tree:->location o text #:key file-name)
+  "Create a <location> for tree O using TEXT, and return it."
+  (let ((file-name (or file-name (tree:file-name o)))
+        (offset    (or (tree:offset o) 0)))
+    (file-offset->location file-name offset text)))
 
 
 ;;;
@@ -281,7 +279,7 @@ search in imports, as (FILE-NAME DECLARATION), or #f if not found."
            (tree      (and file-name (file-name->parse-tree file-name)))
            (result    (and tree (tree:lookup name (list tree)))))
       (if (not result) '()
-          `((,file-name ,result)))))
+          (list result))))
   (define (lookup-imported)
     (let* ((root    (parent context 'root))
            (imports (tree:import* root))
@@ -291,8 +289,8 @@ search in imports, as (FILE-NAME DECLARATION), or #f if not found."
         (_ #f))))
   (and (is-a? name 'name)
        (let ((declaration (context-lookup-definition name context)))
-      (if declaration `(,file-name ,declaration)
-          (lookup-imported)))))
+         (or declaration
+             (lookup-imported)))))
 
 (define* (lookup-location name context #:key
                           file-name
@@ -303,8 +301,8 @@ search in imports, or #f if not found."
   (let ((def (lookup-definition name context
                                 #:file-name file-name
                                 #:file-name->parse-tree file-name->parse-tree)))
-    (match def
-      ((file declaration)
-       (let* ((file-name (or file file-name))
-              (text      (file-name->text file-name)))
-         (lookup->location def text #:file-name file-name))))))
+    (and def
+         (let* ((file-name (or (tree:file-name def) file-name))
+                (text      (file-name->text file-name))
+                (name      (tree:name def)))
+           (tree:->location name text #:file-name file-name)))))
