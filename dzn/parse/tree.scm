@@ -86,6 +86,7 @@
 
             tree:collect
             tree:dotted-name
+            tree:file-name
             tree:location
             tree:name
             tree:offset
@@ -182,7 +183,10 @@ procedure)."
 
 (define (.file-name o)
   (match o
-   (('import (? string? file-name) rest ...) file-name)))
+    ((? (is? 'root))
+     (and=> (slot o 'file-name) .file-name))
+    (((or 'file-name 'import) (? string? file-name) rest ...)
+     file-name)))
 
 (define (.formals o)
   (match o
@@ -352,6 +356,7 @@ procedure)."
      extern
      field-test
      fields
+     file-name
      formal
      formals
      function

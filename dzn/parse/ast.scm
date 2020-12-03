@@ -472,6 +472,8 @@
         (('root element)
          (make <root-node> #:elements (make-list? (helper element))))
 
+        (('file-name file-name) (make <file-name> #:name file-name))
+
         (('root elements ...)
          (let* ((lst (let loop ((elements elements) (file-name file-name) (start-pos 0))
                        (if (null? elements) '()

@@ -1,5 +1,8 @@
 (("test/all/parse_peg_locations/parse_peg_locations.dzn"
   root
+  (file-name
+    "test/all/parse_peg_locations/parse_peg_locations.dzn"
+    (location 0 0))
   (import "ihello.dzn" (location 823 841))
   (component
     (compound-name
@@ -33,6 +36,9 @@
   (location 823 925))
  ("test/all/parse_peg_locations/ihello.dzn"
   root
+  (file-name
+    "test/all/parse_peg_locations/ihello.dzn"
+    (location 0 0))
   (interface
     (compound-name
       (name "ihello" (location 833 839))

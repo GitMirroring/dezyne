@@ -279,6 +279,8 @@
   (match o
     (('root (? (disjoin complete? tree:location?)) ...)
      '("component" "enum" "import" "interface" "namespace" "subint"))
+    ((? (is? 'file-name))
+     (complete (.tree (.parent context)) (.parent context) offset))
     (('interface (? (disjoin incomplete? tree:location?)) ..1)
      '())
     ;; FIXME: for component-empty
