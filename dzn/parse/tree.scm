@@ -35,7 +35,9 @@
 
   #:use-module (dzn misc)
 
-  #:export (assert-type
+  #:export (%file-name->parse-tree
+            %resolve-file
+            assert-type
 
             complete?
             incomplete?
@@ -113,6 +115,9 @@
 ;;;
 ;;; Utilities.
 ;;;
+
+(define %file-name->parse-tree (make-parameter (const '())))
+(define %resolve-file (make-parameter identity))
 
 (define (assert-type o . any-of-types)
   (unless (any (cute <> o) (map is? any-of-types))

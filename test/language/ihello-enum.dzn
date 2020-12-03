@@ -1,0 +1,17 @@
+import ienum.dzn;
+
+interface ihello_enum
+{
+  in Bool hello();
+  out void world();
+
+  behaviour
+  {
+    Bool m = Bool.True;
+
+    [m.True] on hello: {
+      Bool b = Bool.False;
+      reply (b);
+    }
+  }
+}

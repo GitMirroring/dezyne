@@ -62,7 +62,13 @@ EXTRA_DIST +=					\
  %D%/deep-space-enum.dzn			\
  %D%/enum.dzn					\
  %D%/function.dzn				\
+ %D%/ienum.dzn       				\
+ %D%/ihello.dzn					\
+ %D%/ihello-enum.dzn 				\
+ %D%/ihello-int.dzn  				\
+ %D%/iint.dzn        				\
  %D%/ilookup.dzn				\
+ %D%/import.dzn					\
  %D%/int.dzn					\
  %D%/interface-enum.dzn				\
  %D%/lookup.dzn					\

@@ -1,0 +1,27 @@
+import ihello.dzn;
+import ihello-enum.dzn;
+import ihello-int.dzn;
+
+component hello_enum
+{
+  provides ihello_enum p;
+  requires ihello_int r;
+
+  behaviour
+  {
+    Bool m = Bool.True;
+
+    Bool fun (bool b)
+    {
+      return Bool.True;
+    }
+
+    on p.hello ():
+    {
+      Bool b = Bool.True;
+      reply (b);
+    }
+
+    on r.world (): r.hello ();
+  }
+}
