@@ -89,6 +89,7 @@ Dezyne language tool for completion and lookup information
 
   (let* ((options (parse-opts args))
          (verbose? (option-ref options 'verbose #f))
+         (debugity (dzn:debugity))
          (file-name (and+pred=> (option-ref options '() #f) last pair?))
          (imports (multi-opt options 'import))
          (imports (delete-duplicates (cons* (dirname file-name) "." imports)))
@@ -127,12 +128,16 @@ Dezyne language tool for completion and lookup information
                        (car parse-result)))
            (parse-tree (cdr parse-result)))
       (let ((context (complete:context parse-tree offset)))
-        (when verbose?
-          (display "input:\n") (format #t input)
-          (display "parse-tree:\n") (pretty-print parse-tree)
-          (display "offset: ") (pretty-print offset))
-        (when verbose?
-          (display "context:\n") (pretty-print context))
+        (when (> debugity 2)
+          (display "input:\n" (current-error-port ))
+          (display input (current-error-port))
+          (display "parse-tree:\n" (current-error-port))
+          (pretty-print parse-tree (current-error-port))
+          (display "offset: " (current-error-port))
+          (pretty-print offset (current-error-port)))
+        (when (> debugity 1)
+          (display "context:\n" (current-error-port))
+          (pretty-print context (current-error-port)))
         (cond
          (lookup?
           (let* ((token (.tree context))
@@ -140,9 +145,9 @@ Dezyne language tool for completion and lookup information
                          token context
                          #:file-name file-name
                          #:file-name->parse-tree file-name->parse-tree)))
-            (when verbose?
-              (display "definition:\n")
-              (pretty-print def))
+            (when (> debugity 0)
+              (display "definition:\n" (current-error-port))
+              (pretty-print def (current-error-port)))
             (when verbose?
               (display "location:\n"))
             (let ((loc (match def
