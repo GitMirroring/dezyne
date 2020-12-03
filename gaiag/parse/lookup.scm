@@ -47,6 +47,15 @@
 ;;; Lookup.
 ;;;
 
+(define (lookup-import name import)
+  (let* ((file-name (.file-name import))
+         (tree      (and file-name ((%file-name->parse-tree) file-name))))
+    (and tree (append-map (lambda (t) (lookdown name tree (list tree))) tree))))
+
+(define (lookup-imported name root)
+  (let ((imports (tree:import* root)))
+    (append-map (cut lookup-import name <>) imports)))
+
 (define (look-in-scope name scope context)
   "Look for NAME (a 'name) in SCOPE, a tree:scope?.  Return a location
 with file-name from CONTEXT in offsets."
@@ -55,8 +64,11 @@ with file-name from CONTEXT in offsets."
   (let* ((root (find (is? 'root) context))
          (file-name (and=> root .file-name))
          (found (filter (compose (cute tree:name-equal? <> name) tree:name)
-                        (tree:declaration* scope))))
-    (map (cute tree:add-file-name <> file-name) found)))
+                        (tree:declaration* scope)))
+         (found (map (cute tree:add-file-name <> file-name) found)))
+    (if (and (null? found) (is-a? scope 'root))
+        (lookup-imported name scope)
+        found)))
 
 (define (lookdown name search-scope context)
   "Find named scope in SEARCH-SCOPE for NAME (a 'compound-name), until
@@ -271,36 +283,26 @@ null)."
 
 (define* (lookup-definition name context #:key
                             file-name
-                            (file-name->parse-tree (const '())))
+                            (file-name->parse-tree (const '()))
+                            (resolve-file identity))
   "Return declaration of NAME in CONTEXT, using FILE-NAME->PARSE-TREE to
 search in imports, as (FILE-NAME DECLARATION), or #f if not found."
-  (define (lookup-import name import)
-    (let* ((file-name (.file-name import))
-           (tree      (and file-name (file-name->parse-tree file-name)))
-           (result    (and tree (tree:lookup name (list tree)))))
-      (if (not result) '()
-          (list result))))
-  (define (lookup-imported)
-    (let* ((root    (parent context 'root))
-           (imports (tree:import* root))
-           (result  (append-map (cut lookup-import name <>) imports)))
-      (match result
-        ((first rest ...) first)
-        (_ #f))))
   (and (is-a? name 'name)
-       (let ((declaration (context-lookup-definition name context)))
-         (or declaration
-             (lookup-imported)))))
+       (parameterize ((%file-name->parse-tree file-name->parse-tree)
+                      (%resolve-file resolve-file))
+         (context-lookup-definition name context))))
 
 (define* (lookup-location name context #:key
                           file-name
                           (file-name->text (const ""))
-                          (file-name->parse-tree (const '())))
+                          (file-name->parse-tree (const '()))
+                          (resolve-file identity))
   "Return location of NAME in CONTEXT, using FILE-NAME->PARSE-TREE to
 search in imports, or #f if not found."
   (let ((def (lookup-definition name context
                                 #:file-name file-name
-                                #:file-name->parse-tree file-name->parse-tree)))
+                                #:file-name->parse-tree file-name->parse-tree
+                                #:resolve-file resolve-file)))
     (and def
          (let* ((file-name (or (tree:file-name def) file-name))
                 (text      (file-name->text file-name))

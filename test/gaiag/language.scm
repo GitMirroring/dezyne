@@ -349,6 +349,31 @@
   "function.dzn:7:9"
   (test-lookup #:file-name "function.dzn" #:line 12 #:column 16))
 
+(test-equal "lookup on->imported trigger-port"
+  "import.dzn:7:23"
+  (test-lookup #:file-name "import.dzn" #:line 19  #:column 7
+               #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "lookup port->imported-interface"
+  "ihello-int.dzn:3:10"
+  (test-lookup #:file-name "import.dzn" #:line 8 #:column 11
+               #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "lookup type->imported enum"
+  "ienum.dzn:1:5"
+  (test-lookup #:file-name "import.dzn" #:line 12 #:column 4
+               #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "lookup type->imported enum"
+  "ienum.dzn:1:5"
+  (test-lookup #:file-name "ihello-enum.dzn" #:line 10 #:column 4
+               #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "lookup enum-literal->imported enum field"
+  "ienum.dzn:1:11"
+  (test-lookup #:file-name "ihello-enum.dzn" #:line 13 #:column 20
+               #:file-name->parse-tree file-name->parse-tree))
+
 (test-end)
 
 (test-end)
