@@ -12,6 +12,8 @@
       (length . 102))))
   (("bool" (name . bool)))
   (("void" (name . void)))
+  (("file-name"
+    (name . "test/all/parse_locations/ihello.dzn")))
   (("interface"
     (location
       (("location"
@@ -128,6 +130,9 @@
                    (end-column . 3)
                    (offset . 892)
                    (length . 5))))))))))))))
+  (("file-name"
+    (name .
+          "test/all/parse_locations/parse_locations.dzn")))
   (("component"
     (location
       (("location"

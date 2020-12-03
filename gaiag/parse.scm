@@ -143,7 +143,13 @@
 (define* (string->parse-tree string #:key (file-name "-") (imported-from '()))
   (let ((fall-back? (%peg:fall-back?)))
     (define (parse)
-      (let ((parse-tree (peg:parse string)))
+      (let* ((parse-tree (peg:parse string))
+             (parse-tree (match parse-tree
+                           (('root tree ...)
+                            `(root
+                                 ,@(if (not file-name) '()
+                                       `((file-name ,file-name (location 0 0))))
+                                 ,@tree)))))
         (when (> (dzn:debugity) 2)
           (format (current-error-port) "parse-tree: ~a\n" file-name)
           (pretty-print parse-tree (current-error-port)))
