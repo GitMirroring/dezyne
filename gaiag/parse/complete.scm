@@ -272,15 +272,15 @@
 
 
 ;;;
-;;; Entry point.
+;;; Entry points.
 ;;;
 
-(define (complete o context offset)
+(define (context:complete o context offset)
   (match o
     (('root (? (disjoin complete? tree:location?)) ...)
      '("component" "enum" "import" "interface" "namespace" "subint"))
     ((? (is? 'file-name))
-     (complete (.tree (.parent context)) (.parent context) offset))
+     (context:complete (.tree (.parent context)) (.parent context) offset))
     (('interface (? (disjoin incomplete? tree:location?)) ..1)
      '())
     ;; FIXME: for component-empty
@@ -318,7 +318,7 @@
             (let ((on (parent-context context 'on)))
              (complete-on (.tree on) context)))
            (else
-            (complete (.tree (.parent context)) (.parent context) offset))))
+            (context:complete (.tree (.parent context)) (.parent context) offset))))
 
     (('triggers (? (disjoin incomplete? tree:location?)) ...)
      (context:trigger-names context))
@@ -357,12 +357,19 @@
          (? symbol?))
      '())
     (_ (if (complete? o) '()
-           (or (complete (find incomplete? (cdr o)) context offset)
-               (complete (before-location? o offset) context offset))))))
+           (or (context:complete (find incomplete? (cdr o)) context offset)
+               (context:complete (before-location? o offset) context offset))))))
 
 ;; TODO: rewrite above as:
-;; (define (complete o context offset)
+;; (define (context:complete o context offset)
 ;;   (match o
 ;;     ((? (is? 'trigger)) (context:trigger-names context))
-;;     ((? (is? 'name)) (complete (.tree (.parent context)) (.parent context) offset))
+;;     ((? (is? 'name)) (context:complete (.tree (.parent context)) (.parent context) offset))
 ;;     (_ '())))
+
+(define* (complete o context offset #:key
+                   (file-name->parse-tree (const '()))
+                   (resolve-file (lambda args (car args))))
+  (parameterize ((%file-name->parse-tree file-name->parse-tree)
+                 (%resolve-file resolve-file))
+    (context:complete o context offset)))

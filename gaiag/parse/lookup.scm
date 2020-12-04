@@ -284,7 +284,7 @@ null)."
 (define* (lookup-definition name context #:key
                             file-name
                             (file-name->parse-tree (const '()))
-                            (resolve-file identity))
+                            (resolve-file (lambda args (car args))))
   "Return declaration of NAME in CONTEXT, using FILE-NAME->PARSE-TREE to
 search in imports, as (FILE-NAME DECLARATION), or #f if not found."
   (and (is-a? name 'name)
@@ -296,7 +296,7 @@ search in imports, as (FILE-NAME DECLARATION), or #f if not found."
                           file-name
                           (file-name->text (const ""))
                           (file-name->parse-tree (const '()))
-                          (resolve-file identity))
+                          (resolve-file (lambda args (car args))))
   "Return location of NAME in CONTEXT, using FILE-NAME->PARSE-TREE to
 search in imports, or #f if not found."
   (let ((def (lookup-definition name context

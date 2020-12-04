@@ -61,12 +61,13 @@
                      (string-length text))))
     (values (complete:context root offset) offset)))
 
-(define* (test-complete #:key file-name text line (column 0) offset)
+(define* (test-complete #:key file-name text line (column 0) offset
+                        (file-name->parse-tree (const '())))
   (let* ((ctx offset (test-context #:file-name file-name #:text text
                                    #:line line #:column column
                                    #:offset offset))
          (token      (.tree ctx)))
-    (complete token ctx offset)))
+    (complete token ctx offset #:file-name->parse-tree file-name->parse-tree)))
 
 (define* (test-lookup #:key file-name text line (column 0) offset
                       (file-name->parse-tree (const '())))
@@ -239,6 +240,16 @@
 (test-equal "completion enum reply"
   '("b" "m" "Bool.False" "Bool.True")
   (test-complete #:file-name "component-enum.dzn" #:line 35 #:column 13))
+
+(test-equal "completion provides imported interfaces"
+  '("ihello" "ihello_enum" "ihello_int")
+  (test-complete #:file-name "import.dzn" #:line 8 #:column 10
+                 #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "completion on imported triggers"
+  '("p.hello()" "r.world()")
+  (test-complete #:file-name "import.dzn" #:line 19 #:column 9
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-end)
 
