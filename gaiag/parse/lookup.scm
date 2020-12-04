@@ -41,7 +41,8 @@
             lookup-definition
             lookup-location
             tree:lookup
-            tree:->location))
+            tree:->location
+            %file-name->parse-tree))
 
 ;;;
 ;;; Lookup.
