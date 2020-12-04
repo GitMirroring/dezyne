@@ -247,11 +247,32 @@
            (make <port-node>
              #:name (helper name)
              #:type.name type
-             #:direction (if direction-list? (car direction) direction)
-             #:external (and direction-list? (find (lambda (x) (eq? x 'external)) direction))
-             #:injected (and direction-list? (find (lambda (x) (eq? x 'injected)) direction)))))
+             #:direction direction)))
 
-        (('port direction type formals name)
+        (('port direction ('port-qualifiers qualifiers ...) type name)
+         (let* ((direction (helper direction))
+                (direction-list? (pair? direction))
+                (type (helper type)))
+           (make <port-node>
+             #:name (helper name)
+             #:type.name type
+             #:direction direction
+             #:external (and=> (assq 'external qualifiers) helper)
+             #:injected (and=> (assq 'injected qualifiers) helper))))
+
+        (('port direction ('port-qualifiers qualifiers ...) type name)
+         (let* ((direction (helper direction))
+                (direction-list? (pair? direction))
+                (type (helper type))
+                (type (async-interface-name type formals)))
+           (make <port-node>
+             #:name (helper name)
+             #:type.name type
+             #:direction direction
+             #:external (and=> (assq 'external qualifiers) helper)
+             #:injected (and=> (assq 'injected qualifiers) helper))))
+
+        (('port direction ('port-qualifiers qualifiers ...) type formals name)
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
                 (formals (helper formals))
@@ -261,9 +282,9 @@
              #:name (helper name)
              #:type.name type
              #:formals formals
-             #:direction (if direction-list? (car direction) direction)
-             #:external (and direction-list? (find (lambda (x) (eq? x 'external)) direction))
-             #:injected (and direction-list? (find (lambda (x) (eq? x 'injected)) direction)))))
+             #:direction direction
+             #:external (and=> (assq 'external qualifiers) helper)
+             #:injected (and=> (assq 'injected qualifiers) helper))))
 
         (('provides) 'provides)
         (('requires) 'requires)
