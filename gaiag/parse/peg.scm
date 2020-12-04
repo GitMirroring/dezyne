@@ -178,8 +178,9 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
           end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
 
   ports <-- (port / &BEHAVIOUR / &SYSTEM / &BRACE-CLOSE)#*
-    port <-- port-direction compound-name# formals? port-name# SEMICOLON#
-      port-direction <- provides external? / requires (injected / external)?
+    port <-- port-direction port-qualifiers? compound-name# formals? port-name# SEMICOLON#
+      port-direction <- provides / requires
+      port-qualifiers <-- (external / injected / &compound-name)*
       formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
         formal <-- (INOUT / IN / OUT)? type-name add-var
 

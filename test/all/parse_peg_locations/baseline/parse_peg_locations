@@ -6,6 +6,7 @@
       (name "hello" (location 853 858))
       (location 853 858))
     (ports (port (provides (location 863 871))
+                 (port-qualifiers (location 872 872))
                  (compound-name
                    (name "ihello" (location 872 878))
                    (location 872 878))
