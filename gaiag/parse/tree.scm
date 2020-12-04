@@ -677,30 +677,31 @@ procedure)."
     ((? pair?) (append-map tree:port* o))
     (_ '())))
 
-(define (tree:top* o)
-  (slots o tree?))
-
-(define (tree:model* o)
+(define* (tree:top* o #:key (seen '()))
   (match o
-    ((? tree:model?) (list o))
     ((? (is? 'root))
-     (filter tree:model?
-             (append (tree:top* o)
-                     (append-map tree:model* (tree:namespace* o)))))
+     (let* ((file-name ((%resolve-file) (.file-name o)))
+            (seen (cons file-name seen)))
+       (append-map (cut tree:top* <> #:seen seen) (slots o tree?))))
+    ((? (is? 'import))
+     (let ((file-name ((%resolve-file) (.file-name o))))
+       (if (member file-name seen) '()
+           (and=> ((%file-name->parse-tree) file-name) tree:top*))))
     ((? (is? 'namespace))
-     (filter tree:model?
-             (append (tree:top* o)
-                     (append-map tree:model* (tree:namespace* o)))))
-    (_ '())))
+     (append-map tree:top* (slots o tree?)))
+    ((? tree?)
+     (list o))
+    (()
+     '())))
 
 (define (tree:namespace* o)
-  (slots o 'namespace))
+  (filter (is? 'namespace) (tree:top* o)))
 
 (define (tree:component* o)
-  (filter (is? 'component) (tree:model* o)))
+  (filter (is? 'component) (tree:top* o)))
 
 (define (tree:interface* o)
-  (filter (is? 'interface) (tree:model* o)))
+  (filter (is? 'interface) (tree:top* o)))
 
 (define (tree:type* o)
   (match o

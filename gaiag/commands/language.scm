@@ -161,4 +161,5 @@ Dezyne language tool for completion and lookup information
          (else
           (when verbose?
             (display "completions:\n"))
-          (pretty-print (complete (.tree context) context offset))))))))
+          (pretty-print (complete (.tree context) context offset
+                                  #:file-name->parse-tree file-name->parse-tree))))))))
