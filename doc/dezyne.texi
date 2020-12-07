@@ -4639,7 +4639,6 @@ commands:
 
 @example
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
-  -c, --core             run core commands only
   -d, --debug            enable debug ouput
   -h, --help             display this help
   -j, --json             output json
