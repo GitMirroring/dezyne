@@ -5,6 +5,30 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.10.1 since 2.10.0
+** Usability
+  - The dzn command now exits gracefully when given an unknown command.
+  - The dzn-mode for GNU Emacs is now a major mode called "Dezyne".
+** Parser
+  - Parse errors in imported dzn-files now show the import inclusion
+    path.
+** Code generation
+  - Performance has been improved.
+  - The C++ code generator is now prepared for C++20: The
+    dzn::port::meta fields are renamed to "provide" and "require".
+  - The Scheme code generator uses the "namespace to module" feature.
+    This code generator is experimental, and not available in the
+    regular binary release.
+  - The JavaScript code generator uses the "namespace to module"
+    feature.  This code generator is experimental, and not available in
+    the regular binary release.
+** Documentation
+  - The infocenter has been converted to texinfo and is now included in
+    the release.
+** Noteworthy bug fixes
+  - Fixed a regression of using two different types of async interface
+    in one behaviour.
+
 * Changes in 2.10.0 since 2.9.1
 ** Dezyne is now stand alone, client only, serverless, pure GNU Guile Scheme.
   - Removed: server, services, dzn, dzn/daemon
