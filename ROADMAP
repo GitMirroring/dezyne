@@ -43,14 +43,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and merge wip-tutorial
       - doc/dezyne-tutorial.texi
   - code
-    + Review and merge wip-c++ew
     + Review and merge wip-language
   - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.11.0.rc5
-    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc5
-      experimental: javascript
-  - TFS
-    + thread pool c++ runtime (TFS only?)
+    + Solicit and incorporate feedback on dezyne-2.11.0.rc7
+    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc7
+      (experimental: c++ew, scheme, javascript)
   - Digital Ocean / Sentia
     + cleanup meuk
 
@@ -121,6 +118,17 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Decide on dzn or ide
+    + PATCH: dzn: Add -c,--core option; support running ide commands.
+      - feedback: revert, keep dzn and ide commands separate.
+  - Support binary release
+    + Solicit and incorporate feedback on dezyne-2.11.0.rc5,6
+    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc5,6
+      experimental: javascript
+  - Thermo Fisher
+    + new wip-thermo-fisher branch
+    + wip-c++ew to wip-thermo-fisher
+    - Add thread pool c++ runtime
   - Support binary release
     + Solicit and incorporate feedback on dezyne-2.11.0.rc1,2,3,4
     + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc1,2,3
@@ -134,6 +142,13 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Sort out emacs/dzn-mode.el,emacs/dzn-ide.el with, and without, LSP
   - enable 'dzn' to run 'ide' commands
     + Add -c,--core option; support running ide commands.
+  - Review and merge wip-documentation
+    + doc/dezyne.texi
+  - Support binary release
+    + Solicit and incorporate feedback on dezyne-2.11.0.rc7
+    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc7
+      (experimental: c++ew, scheme, javascript)
+  - Regression test: Fixed test/all/shell
   - Review and merge wip-release
   - LSP
     + Move wip-lsp into dezyne-ide
