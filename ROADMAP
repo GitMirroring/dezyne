@@ -34,8 +34,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 ** Release 2.11, unsorted
   - Pass regression test
     + XFAIL: compliance_out_inevitable_illegal
-    + XFAIL: parse_parameter_mismatch
-      - preferrable in PEG, for LSP
     + Rewrite underlapping tests from wip-test (old-regression)
       - Dataparam?
       - Injected?
@@ -48,8 +46,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Solicit and incorporate feedback on dezyne-2.11.0.rc7
     + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc7
       (experimental: c++ew, scheme, javascript)
-  - Digital Ocean / Sentia
-    + cleanup meuk
 
 ** Release 2.12
   - Deprecate cloud-based 2.9
@@ -93,9 +89,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Resurrect C# support
   - Fully support IDE release
     + Finish and merge wip-namespace
-  - Eradicate remnants of cloud-based solution
-    - Document access to examples, runtime.
-    - Remove dzn ls, dzn cat and dependencies
   - dzn graph/ltsgraph (lts --graph?): The original dzn lts by Johri
   - dzn lts + states: simple but correct dot-based state charts
   - Nsis-based installer for Windows
@@ -118,6 +111,10 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - Eradicate remnants of cloud-based solution
+    - Document access to examples, runtime.
+    - Remove dzn ls, dzn cat and dependencies
+  - Fix parse_parameter_mismatch.
   - Decide on dzn or ide
     + PATCH: dzn: Add -c,--core option; support running ide commands.
       - feedback: revert, keep dzn and ide commands separate.
