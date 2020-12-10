@@ -121,7 +121,8 @@
       (('and items ...) (string-join (filter-map error->string items) " "))
       (('or items ...) (string-join (filter-map error->string items) ", "))
       (('expect item) (error->string item))
-      ((? symbol?) (symbol->string e))))
+      ((? symbol?) (symbol->string e))
+      ((? string?) e)))
 
   (let ((message (error->string e)))
     (if (not (unknown-identifier? e))  message
@@ -361,7 +362,7 @@ specified in IMPORTS."
 
 (define (imported-file-names content)
   "Return the list of file names used in import statements in content."
-  (let loop ((o (parameterize ((%peg:skip? peg:skip-parse)
+  (let loop ((o (parameterize ((%peg:skip? peg:import-skip-parse)
                                (%peg:debug? (> (dzn:debugity) 3)))
                   (peg:imports content))))
     (match o
