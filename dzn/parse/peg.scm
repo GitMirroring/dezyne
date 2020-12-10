@@ -41,13 +41,18 @@
 
   #:export (peg:imports
             peg:parse
-            peg:skip-parse))
+            peg:skip-parse
+            peg:import-skip-parse))
 
+(define-skip-parser peg-eof none (not-followed-by peg-any))
 (define-skip-parser peg-eol none (or "\f" "\n" "\r" "\v"))
 (define-skip-parser peg-ws none (or " " "\t"))
 (define-skip-parser peg-line all (and "//" (* (and (not-followed-by peg-eol) peg-any))))
-(define-skip-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
-(define-skip-parser peg-skip all (* (or peg-ws peg-eol peg-line peg-block)))
+(define-skip-parser peg-block-strict all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
+(define-skip-parser peg-skip all (* (or peg-ws peg-eol peg-line peg-block-strict)))
+
+(define-skip-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (or "*/" peg-eof)))
+(define-skip-parser peg-import-skip all (* (or peg-ws peg-eol peg-line peg-block)))
 
 (define (peg:imports string)
   (define-peg-string-patterns
@@ -60,6 +65,7 @@ SKIP < !IMPORT . 'import'*")
   (peg:tree (match-pattern root string)))
 
 (define peg:skip-parse peg-skip)
+(define peg:import-skip-parse peg-import-skip)
 
 (define* (peg:parse string)
   (define interface-events '())
