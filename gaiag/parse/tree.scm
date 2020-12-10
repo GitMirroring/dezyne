@@ -206,6 +206,7 @@ procedure)."
      name)
     ((or (? (is? 'enum))
          (? (is? 'int))
+         (? (is? 'namespace))
          (? (is? 'type-name)))
      (slot o 'compound-name))
     ((or (? (is? 'call))

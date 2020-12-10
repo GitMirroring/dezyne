@@ -259,6 +259,11 @@
   (test-complete #:file-name "import.dzn" #:line 19 #:column 9
                  #:file-name->parse-tree file-name->parse-tree))
 
+(test-equal "completion provides interfaces, imported, namespace"
+  '("ihello" "igoodbye" "iworld")
+  (test-complete #:file-name "space-hello.dzn" #:line 12 #:column 12
+                 #:file-name->parse-tree file-name->parse-tree))
+
 (test-end)
 
 (test-begin "lookup")
@@ -391,6 +396,11 @@
 (test-equal "lookup enum-literal->imported enum field"
   "ienum.dzn:1:11"
   (test-lookup #:file-name "ihello-enum.dzn" #:line 13 #:column 20
+               #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "lookup port->namespace-interface"
+  "space-ihello.dzn:7:12"
+  (test-lookup #:file-name "space-hello.dzn" #:line 12 #:column 13
                #:file-name->parse-tree file-name->parse-tree))
 
 (test-end)

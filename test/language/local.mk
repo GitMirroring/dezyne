@@ -75,4 +75,6 @@ EXTRA_DIST +=					\
  %D%/interface-enum.dzn				\
  %D%/lookup.dzn					\
  %D%/namespace-enum.dzn				\
+ %D%/space-hello.dzn				\
+ %D%/space-ihello.dzn				\
  %D%/system.dzn
