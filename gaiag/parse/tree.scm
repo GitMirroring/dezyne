@@ -61,6 +61,7 @@
             .instance-name
             .location
             .name
+            .namespace-root
             .parent
             .port-name
             .ports
@@ -152,9 +153,16 @@ procedure)."
 ;;; Parse record accessors.
 ;;;
 
+(define (.behaviour o)
+  (match o
+    ((or (? (is? 'component))
+         (? (is? 'interface)))
+     (slot o 'behaviour))))
+
 (define (.behaviour-compound o)
   (match o
-    ((? (is? 'behaviour)) (slot o 'behaviour-compound))))
+    ((? (is? 'behaviour))
+     (slot o 'behaviour-compound))))
 
 (define (.end o)
   (match o
@@ -165,16 +173,6 @@ procedure)."
   (assert-type o 'enum-literal 'assign 'variable)
   (slot o 'expression))
 
-(define (.statement o)
-  (assert-type o 'blocking 'guard 'on)
-  (slot o tree:statement?))
-
-(define (.value o)
-  (assert-type o 'expression)
-  (match o
-    (('expression (? (is? 'location))) #f)
-    (('expression expression (? (is? 'location))) expression)))
-
 (define (.field o)
   (assert-type o 'enum-literal 'field-test)
   (slot o 'name))
@@ -182,14 +180,6 @@ procedure)."
 (define (.fields o)
   (assert-type o 'enum)
   (slot o 'fields))
-
-(define (.triggers o)
-  (assert-type o 'on)
-  (slot o 'triggers))
-
-(define (.ports o)
-  (assert-type o 'enum)
-  (slot o 'ports))
 
 (define (.file-name o)
   (match o
@@ -229,6 +219,11 @@ procedure)."
     ((? (is? 'event))
      (.name (slot o 'event-name)))))
 
+(define (.namespace-root o)
+  (match o
+    ((? (is? 'namespace))
+     (slot o 'namespace-root))))
+
 (define (.event-name o)
   (match o
     (((or 'action 'interface-action 'trigger)
@@ -265,20 +260,18 @@ procedure)."
     (('location pos end) pos)
     (('location pos end file-name) pos)))
 
+(define (.statement o)
+  (assert-type o 'blocking 'guard 'on)
+  (slot o tree:statement?))
+
+(define (.triggers o)
+  (assert-type o 'on)
+  (slot o 'triggers))
+
 (define (.scope o) ;; accessor with default: '()
   (match o
     ((? (is? 'compound-name))
      (or (slot o 'scope) '()))))
-
-(define (.behaviour o)
-  (match o
-    ((or (? (is? 'component))
-         (? (is? 'interface)))
-     (slot o 'behaviour))))
-
-(define (.behaviour-compound o)
-  (assert-type o 'behaviour)
-  (slot o 'behaviour-compound))
 
 (define (.system o)
   (match o
@@ -309,6 +302,12 @@ procedure)."
 (define (.types-and-events o)
   (match o
     ((? (is? 'interface)) (slot o 'types-and-events))))
+
+(define (.value o)
+  (assert-type o 'expression)
+  (match o
+    (('expression (? (is? 'location))) #f)
+    (('expression expression (? (is? 'location))) expression)))
 
 (define (.var o)
   (assert-type o 'field-test)
@@ -373,6 +372,7 @@ procedure)."
      formal
      formals
      function
+     global
      group
      illegal-trigger
      illegal-triggers
@@ -385,6 +385,7 @@ procedure)."
      location
      name
      namespace
+     namespace-root
      not
      offset
      otherwise
@@ -620,10 +621,11 @@ procedure)."
     ((or (? (is? 'root))
          (? (is? 'behaviour-compound))
          (? (is? 'compound))
-         (? (is? 'namespace))
          (? (is? 'ports))
          (? (is? 'types-and-events)))
      (slots o tree:declaration?))
+    ((? (is? 'namespace))
+     (slots (.namespace-root o) tree:declaration?))
     ((? (is? 'interface))
      (tree:declaration* (.types-and-events o)))
     ((? (is? 'component))
@@ -693,7 +695,7 @@ procedure)."
            (and=> ((%file-name->parse-tree) file-name) tree:top*))))
     ((? (is? 'namespace))
      (append-map (cut tree:top* <> #:imports imports #:seen seen)
-                 (slots o tree?)))
+                 (slots (.namespace-root o) tree?)))
     ((? tree?)
      (list o))
     (()

@@ -161,7 +161,8 @@ type <- enum / int / extern
 
   extern <-- EXTERN compound-name# dollars# SEMICOLON#
 
-namespace <-- NAMESPACE compound-name# BRACE-OPEN# (type / namespace / interface / component / &BRACE-CLOSE)#* BRACE-CLOSE#
+namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
+  namespace-root <-- (type / namespace / interface / component / &BRACE-CLOSE)#*
 
 interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# behaviour# BRACE-CLOSE#
 
@@ -252,7 +253,7 @@ name <-- identifier
 
 compound-name <-- scope? name
 
-scope <-- global? (name DOT &name)+
+scope <-- global? (name DOT &name)+ / global &name
   global <-- DOT
 
 identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
