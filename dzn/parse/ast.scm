@@ -126,10 +126,13 @@
          (make <namespace-node>
            #:name (helper name)))
 
-        (('namespace name elements)
+        (('namespace-root elements ...)
+         (map helper elements))
+
+        (('namespace name root)
          (make <namespace-node>
            #:name (helper name)
-           #:elements (make-list? (helper elements))))
+           #:elements (helper root)))
 
         (('enum name fields)
          (make <enum-node> #:name (helper name) #:fields (helper fields)))
