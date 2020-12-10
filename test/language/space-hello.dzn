@@ -1,0 +1,38 @@
+import space-ihello.dzn;
+
+namespace space
+{
+  component foo
+  {
+    provides ihello p;
+  }
+
+  component hello
+  {
+    provides ihello p;
+
+    behaviour
+    {
+
+    on p.hello (): p.world ();
+    }
+  }
+
+  interface igoodbye
+  {
+    in void bye();
+    behaviour
+    {
+      on bye: {}
+    }
+  }
+}
+
+interface iworld
+{
+  in void world();
+  behaviour
+  {
+    on world: {}
+  }
+}

@@ -1,0 +1,17 @@
+namespace space
+{
+  extern data_t $*unspecified*$;
+  enum Bool {False, True};
+  subint int {0..1};
+
+  interface ihello
+  {
+    in void hello();
+    out void world();
+
+    behaviour
+    {
+      on hello: world ();
+    }
+  }
+}
