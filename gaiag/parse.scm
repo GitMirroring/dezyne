@@ -127,18 +127,13 @@
     (if (not (unknown-identifier? e))  message
         (string-append "unknown identifier; " message))))
 
-(define (peg:syntax-error-message imported-from file-name string args)
-  (unless (or (null? args) (null? (car args)))
-    (let* ((pos (caar args))
-           (message (format #f "`~a' expected" (peg:syntax-error->message (cadar args)))))
-      (peg:error-message imported-from file-name string pos message))))
-
 (define* (peg:handle-syntax-error file-name string #:optional (imported-from '()))
   (lambda (key . args)
-    (if (or (null? args) (null? (car args))) (apply throw key args)
-        (begin
-          (peg:syntax-error-message imported-from file-name string args)
-          (apply throw key '())))))
+    (unless (or (null? args) (null? (car args)))
+      (let* ((pos (caar args))
+             (message (format #f "`~a' expected" (peg:syntax-error->message (cadar args)))))
+        (peg:error-message imported-from file-name string pos message)))
+    (apply throw key args)))
 
 (define* (string->parse-tree string #:key (file-name "-") (imported-from '()))
   (let ((fall-back? (%peg:fall-back?)))
@@ -158,6 +153,7 @@
                    (%peg:locations? #t)
                    (%peg:skip? peg:skip-parse)
                    (%peg:debug? (> (dzn:debugity) 3)))
+      ;; in case of fall-back, try a regular parse first
       (catch 'syntax-error
         parse
         (lambda (key . args)
