@@ -290,7 +290,9 @@
                  (not (.system o)))
             '("behaviour" "provides" "requires" "system"))
            (else '())))
-    ((or (? (is? 'provides)) (? (is? 'requires)))
+    ((or (? (is? 'port-qualifiers))
+         (? (is? 'provides))
+         (? (is? 'requires)))
      (context:interface-names (parent context 'root)))
     ('types-and-events
      '("bool" "enum" "in" "out"))
