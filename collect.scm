@@ -5,6 +5,7 @@
              (ice-9 rdelim)
              (gaiag parse)
              (gaiag parse peg)
+             (gaiag peg codegen)
              (gaiag parse util))
 
 (define-immutable-record-type <missing>
@@ -37,8 +38,10 @@
         (set! errors (cons error errors))))
     (parameterize ((%peg:fall-back? #t)
                    (%peg:locations? #t)
-                   (%peg:skip? peg:skip-parse)
-                   (%peg:error add-error!))
+                   (%peg:debug? #t)
+                   (%peg:skip? peg:skip)
+                   ;;(%peg:error add-error!)
+                   )
       (peg:parse text))
     errors))
 
