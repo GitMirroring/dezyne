@@ -148,6 +148,14 @@
   %completion-component
   (test-complete #:file-name "component1.dzn"))
 
+(test-equal "language component1a"
+  %completion-component
+  (test-complete #:file-name "component1a.dzn"))
+
+(test-equal "language component1b"
+  '("I" "J")
+  (test-complete #:file-name "component1b.dzn"))
+
 (test-equal "language component2"
   '("p.e()" "r.f()")
   (test-complete #:file-name "component2.dzn"))

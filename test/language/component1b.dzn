@@ -1,0 +1,15 @@
+interface I
+{
+  in void e();
+  behaviour {}
+}
+
+interface J
+{
+  in void f();
+  behaviour {}
+}
+
+component C
+{
+  provides 
