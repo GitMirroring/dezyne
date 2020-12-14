@@ -5,6 +5,15 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.11.0 since 2.10.1
+** Commands
+  - A new command `dzn language' supports DZN-language completion and
+    lookups.
+  - The commands `dzn cat and `dzn ls' have been removed.
+** Parser
+  - A well-formedness check was added for trigger, action, and
+    function-call arguments.
+
 * Changes in 2.10.1 since 2.10.0
 ** Usability
   - The dzn command now exits gracefully when given an unknown command.
@@ -12,6 +21,8 @@
 ** Parser
   - Parse errors in imported dzn-files now show the import inclusion
     path.
+  - Using newlines between `dollar'-expressions and toplevel
+    `dollar'-statements is now an error.
 ** Code generation
   - Performance has been improved.
   - The C++ code generator is now prepared for C++20: The
