@@ -156,6 +156,22 @@
   '("I" "J")
   (test-complete #:file-name "component1b.dzn"))
 
+(test-equal "language component1b --point=15,10"
+  '("I" "J")
+  (test-complete #:file-name "component1b.dzn" #:line 15 #:column 10))
+
+(test-equal "language component1b --point=15,11"
+  '("I" "J")
+  (test-complete #:file-name "component1b.dzn" #:line 15 #:column 11))
+
+(test-equal "language component1b --point=15,12"
+  '("I" "J")
+  (test-complete #:file-name "component1b.dzn" #:line 15 #:column 12))
+
+(test-equal "language component1b --point=16,0"
+  '("I" "J")
+  (test-complete #:file-name "component1b.dzn" #:line 16 #:column 0))
+
 (test-equal "language component2"
   '("p.e()" "r.f()")
   (test-complete #:file-name "component2.dzn"))
