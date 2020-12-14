@@ -294,6 +294,12 @@
          (? (is? 'provides))
          (? (is? 'requires)))
      (context:interface-names (parent context 'root)))
+    ((? (is? 'port))
+     (cond ((and (not (slot o 'provides))
+                 (not (slot o 'requires)))
+            '("provides" "requires"))
+           (else
+             (context:interface-names (parent context 'root)))))
     ('types-and-events
      '("bool" "enum" "in" "out"))
     (('types-and-events types-events ...)
