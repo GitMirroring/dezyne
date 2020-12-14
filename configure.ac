@@ -169,6 +169,9 @@ if test "x$CXX11" = x -a x$cross_compiling = xno; then
 fi
 have_cxx11=true
 ;;
+  *)
+have_cxx11=false
+;;
 esac
 
 case ,${enable_languages}, in
