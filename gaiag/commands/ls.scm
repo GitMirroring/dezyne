@@ -52,9 +52,9 @@ List available Dezyne runtime support files
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (files (map (lambda (f) (if (not (string-prefix? "/" f)) f (string-drop f 1))) files))
+         (files (map (lambda (f) (if (or (equal? f "share") (equal? f "share/")) "." f)) files))
          (files (map (lambda (f) (if (not (string-prefix? "share/" f)) f (string-drop f 6))) files))
          (recursive? (option-ref options 'recursive #f))
-         ;;(root (string-append %root-dir "/fs"))
          (root %root-dir)
          (dzn-debug? (dzn:command-line:get 'debug)))
     (when dzn-debug?

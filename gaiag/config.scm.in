@@ -69,6 +69,7 @@
 
 (define %root-dir
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
+      (getenv "DZN_FSROOT")
       %pkgdatadir))
 
 (define %template-dir
