@@ -22,10 +22,8 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/cat.scm					\
  %D%/code.scm					\
  %D%/hello.scm					\
- %D%/ls.scm					\
  %D%/language.scm				\
  %D%/lts.scm					\
  %D%/parse.scm					\
