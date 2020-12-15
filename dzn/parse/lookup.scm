@@ -162,7 +162,7 @@ null)."
       (tree:lookup (slot o 'compound-name) context)))
 
 (define (resolve-trigger o name context)
-  (assert-type o 'trigger 'action 'interface-action)
+  (assert-type o 'illegal-trigger 'trigger 'action 'interface-action)
   (let* ((port-name (.port-name o))
          (event-name (.event-name o)))
     (cond ((and port-name (tree:name-equal? name port-name))
@@ -267,7 +267,8 @@ null)."
          => (cute resolve-action <> name context))
         ((parent context 'port)
          => (cute resolve-port <> name context))
-        ((parent context 'trigger)
+        ((or (parent context 'illegal-trigger)
+             (parent context 'trigger))
          => (cute resolve-trigger <> name context))
         ((parent context 'instance)
          => (cute resolve-instance <> name context))

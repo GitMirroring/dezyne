@@ -227,16 +227,16 @@ procedure)."
 
 (define (.event-name o)
   (match o
-    (((or 'action 'interface-action 'trigger)
+    (((or 'action 'interface-action 'illegal-trigger 'trigger)
       (? (is? 'name) port) (? (is? 'name) event) rest ...) event)
-    (((or 'action 'interface-action 'trigger)
+    (((or 'action 'interface-action 'illegal-trigger 'trigger)
       (? (is? 'name) event) rest ...) event)))
 
 (define (.port-name o)
   (match o
-    (((or 'action 'interface-action 'trigger)
+    (((or 'action 'interface-action 'illegal-trigger 'trigger)
       (? (is? 'name) port) (? (is? 'name) event) rest ...) port)
-    (((or 'action 'interface-action 'trigger)
+    (((or 'action 'interface-action 'illegal-trigger 'trigger)
       (? (is? 'name) event) rest ...) #f)
     ((? (is? 'end-point)) (.port-name (slot o 'compound-name)))
     (('compound-name (? (is? 'scope) instance) (? (is? 'name) port) rest ...) port)
