@@ -35,7 +35,6 @@
             %default-languages
             %package
             %prefix
-            %root-dir
             %template-dir
             %version
             %version-major
@@ -66,11 +65,6 @@
 (define %bindir
   (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/bin"))
       "@bindir@"))
-
-(define %root-dir
-  (or (and (getenv "DZN_UNINSTALLED") %prefix)
-      (getenv "DZN_FSROOT")
-      %pkgdatadir))
 
 (define %template-dir
   (string-append %datadir "/templates"))

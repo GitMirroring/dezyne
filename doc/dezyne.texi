@@ -170,11 +170,9 @@ Integrating Scheme Code
 The Dezyne command-line tools
 
 * Invoking dzn::
-* Invoking dzn cat::
 * Invoking dzn code::
 * Invoking dzn hello::
 * Invoking dzn language::
-* Invoking dzn ls::
 * Invoking dzn lts::
 * Invoking dzn parse::
 * Invoking dzn trace::
@@ -4580,11 +4578,9 @@ foreigns that use the same interfaces need to form a chain of
 
 @menu
 * Invoking dzn::
-* Invoking dzn cat::
 * Invoking dzn code::
 * Invoking dzn hello::
 * Invoking dzn language::
-* Invoking dzn ls::
 * Invoking dzn lts::
 * Invoking dzn parse::
 * Invoking dzn trace::
@@ -4661,33 +4657,6 @@ Commands:
 
 Use "dzn COMMAND --help" for command-specific information.
 @end example
-
-
-@node Invoking dzn cat
-@section Invoking @command{dzn cat}
-
-@c XXX should we deprecate CAT already?  I would like to, but we
-@c lack a good alternative for people (read: Windows users) to find
-@c e.g. runtime.cc in the installation tree.
-The @command{dzn cat} command@footnote{The @command{cat} is inherited
-from the cloud-based 2.9 implementation.  Runtime files can be copied
-and retrieved directly from the installation tree.} can be used to copy
-a Dezyne runtime support file to standard output.  @xref{Invoking dzn
-ls}.
-
-@example
-dzn @var{dzn-option}@dots{} cat @var{option}@dots{} @file{FILE}
-@end example
-
-The @var{option}s can be among the following:
-
-@table @code
-
-@item --help
-@itemx -h
-Display help on invoking @code{dzn cat}, and then exit.
-
-@end table
 
 
 @node Invoking dzn code
@@ -4805,37 +4774,6 @@ Calculate offset from line @var{line} and column @var{column}.
 @item --verbose
 @itemx -v
 Display input, parse tree, offset, context and completions.
-
-@end table
-
-
-@node Invoking dzn ls
-@section Invoking @command{dzn ls}
-
-@c XXX should we deprecate LS already?  I would like to, but we
-@c lack a good alternative for people (read: Windows users) to find
-@c e.g. runtime.cc in the installation tree.
-The @command{dzn ls} command@footnote{The @command{ls} is inherited from
-the cloud-based 2.9 implementation.  Runtime files can be found and and
-listed directly from the installation tree.} can be used to list the
-available Dezyne runtime support files in your installation.
-@xref{Invoking dzn cat}.
-
-@example
-dzn @var{dzn-option}@dots{} ls @var{option}@dots{} @file{FILE}@dots{}
-@end example
-
-The @var{option}s can be among the following:
-
-@table @code
-
-@item --help
-@itemx -h
-Display help on invoking @code{dzn ls}, and then exit.
-
-@item --recursive
-@itemx -R
-List subdirectories recursively.
 
 @end table
 
