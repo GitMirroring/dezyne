@@ -1,0 +1,19 @@
+interface ihello
+{
+  in void hello();
+
+  behaviour
+  {
+    on hello: illegal;
+    on inevitable: illegal;
+  }
+}
+
+component hello_illegal
+{
+  provides ihello h;
+  behaviour
+  {
+    on h.hello: illegal;
+  }
+}

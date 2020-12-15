@@ -70,6 +70,7 @@ EXTRA_DIST +=					\
  %D%/ihello-int.dzn  				\
  %D%/iint.dzn        				\
  %D%/ilookup.dzn				\
+ %D%/illegal.dzn				\
  %D%/import.dzn					\
  %D%/int.dzn					\
  %D%/interface-enum.dzn				\

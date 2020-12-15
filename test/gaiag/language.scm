@@ -419,6 +419,18 @@
   (test-lookup #:file-name "space-hello.dzn" #:line 12 #:column 13
                #:file-name->parse-tree file-name->parse-tree))
 
+(test-equal "lookup illegal interface trigger->event"
+  "illegal.dzn:3:10"
+  (test-lookup #:file-name "illegal.dzn" #:line 7 #:column 7))
+
+(test-equal "lookup illegal trigger->port"
+  "illegal.dzn:14:18"
+  (test-lookup #:file-name "illegal.dzn" #:line 17 #:column 7))
+
+(test-equal "lookup illegal trigger->event"
+  "illegal.dzn:3:10"
+  (test-lookup #:file-name "illegal.dzn" #:line 17 #:column 9))
+
 (test-end)
 
 (test-end)
