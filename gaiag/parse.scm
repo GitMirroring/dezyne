@@ -221,7 +221,9 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
 @var{debug?}, handle exceptions."
 
   (define (helper)
-    (if (equal? file-name "-") (string->ast (read-string))
+    (if (equal? file-name "-") (string->ast (read-string)
+                                            #:parse-tree? parse-tree?
+                                            #:skip-wfc? skip-wfc?)
         (let* ((content-alist (file+import-content-alist file-name #:imports imports))
                (parse-tree-alist (parse-file+import-content-alist content-alist)))
           (if parse-tree? parse-tree-alist
