@@ -1,0 +1,128 @@
+
+Subject: dezyne-2.11.0 and dezyne-ide-2.11.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are delighted to announce Dezyne 2.11: The first standalone release
+of the Dezyne-IDE that includes simulation and visualization similar to
+2.9.
+
+Dezyne-IDE introduces an LSP <https://langserver.org> server ('ide lsp')
+with basic code completion and goto-definition support.
+
+The documentation, which has not been fully updated for 2.11 yet, is
+available here: <https://doc.verum.com/documentation.html>.
+
+What's next?
+
+In the upcoming releases we aim to introduce a complete and correct
+state diagram, a language pack for C# and a free software release of the
+dezyne core language.
+
+Enjoy!
+The Verum Team
+
+Here are the binary downloads:
+  https://dezyne.org/download/dezyne/dezyne-2.11.0.x86_64-linux.tar.gz
+  https://dezyne.org/download/dezyne/dezyne-2.11.0.i686-windows.zip
+
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.x86_64-linux.tar.gz
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.i686-windows.zip
+
+Here are the GPG detached signatures[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.11.0.x86_64-linux.tar.gz.sig
+  https://dezyne.org/download/dezyne/dezyne-2.11.0.i686-windows.zip.sig
+
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.x86_64-linux.tar.gz.sig
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.i686-windows.zip.sig
+
+Here are the MD5 and SHA1 checksums:
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.11.0.x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.11.0.i686-windows.zip
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.11.0.x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.11.0.i686-windows.zip
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-ide-2.11.0.x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-ide-2.11.0.i686-windows.zip
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.11.0.x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.11.0.i686-windows.zip
+
+[*] Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify dezyne-2.11.0.tar.gz.sig
+
+If that command fails because you don't have the required public key,
+then run this command to import it:
+
+  gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+and rerun the 'gpg --verify' command.
+
+NEWS
+
+Dezyne-IDE
+
+* Changes in 2.11.0 since 2.9.1
+** The integrated Eclipse download has been discontinued.
+** Dezyne is now stand alone, client only, serverless, pure GNU Guile Scheme.
+** Dezyne-IDE has browser-based views and integrates with any LSP-aware editor.
+  - Support for GNU Emacs.
+  - Support for Electron-based editors, such as VSCodium.
+    + VSCode plugin: [[https://dezyne.org/download/dezyne-ide/dzn-lsp-1.0.0.vsix][https://dezyne.org/download/dezyne-ide/dzn-lsp-1.0.0.vsix]]
+** Commands
+  - A new command `ide lsp' provides a stdio-based Language Protocol
+    Server for the Dezyne language.
+  - The Dezyne-IDE, view-commands are now subcommands `ide': `ide
+    simulate', 'ide system', `ide verify', `ide browse', `ide daemon`,
+    `ide hello', and `ide bye'.
+** Views
+  - The Trace view now places the buttons with the port's time line.
+  - The State view was removed.  The state view in 2.9 (and earlier) was
+    often incomplete or incorrect.  A complete and correct State view
+    will return.
+  - The Table views were removed.
+  - The watch window has been integrated in the sequence diagram.
+  - The watch window itself is now deprecated.
+  - Diagram click is optionally (ide lsp --relay-daemon) mapped to an
+    LSP publishDiagnostics message, this will likely change in the near
+    future.
+
+Dezyne core
+
+* Changes in 2.11.0 since 2.10.1
+** Commands
+  - A new command `dzn language' supports DZN-language completion and
+    lookups.
+  - The commands `dzn cat and `dzn ls' have been removed.
+** Parser
+  - A well-formedness check was added for trigger, action, and
+    function-call arguments.
+
+* Changes in 2.10.1 since 2.10.0
+** Usability
+  - The dzn command now exits gracefully when given an unknown command.
+  - The dzn-mode for GNU Emacs is now a major mode called "Dezyne".
+** Parser
+  - Parse errors in imported dzn-files now show the import inclusion
+    path.
+  - Using newlines between `dollar'-expressions and toplevel
+    `dollar'-statements is now an error.
+** Code generation
+  - Performance has been improved.
+  - The C++ code generator is now prepared for C++20: The
+    dzn::port::meta fields are renamed to "provide" and "require".
+  - The Scheme code generator uses the "namespace to module" feature.
+    This code generator is experimental, and not available in the
+    regular binary release.
+  - The JavaScript code generator uses the "namespace to module"
+    feature.  This code generator is experimental, and not available in
+    the regular binary release.
+** Documentation
+  - The infocenter has been converted to texinfo and is now included in
+    the release.
+** Noteworthy bug fixes
+  - Fixed a regression of using two different types of async interface
+    in one behaviour.
