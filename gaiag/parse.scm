@@ -343,33 +343,37 @@ alist:
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
-  (let loop ((file-names (list (basename file-name)))
-             (imports (cons (dirname file-name) imports))
-             (content-alist content-alist))
-    (if (null? file-names) (reverse content-alist)
-        (let* ((file-name (or (search-path imports (car file-names))
-                              (throw 'import-error
-                                     (car file-names)
-                                     imports
-                                     (imported-from content-alist))))
-               (imports (delete-duplicates (cons (dirname file-name) imports))))
-          (if (assoc-ref content-alist file-name) (loop (cdr file-names) imports content-alist)
-              (let ((content (with-input-from-file file-name read-string)))
-                (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
-                    (let ((content-alist (acons file-name content content-alist)))
-                      (loop (append (cdr file-names)
-                                    (imported-file-names content))
-                            imports
-                            content-alist)))))))))
+
+  (define (read-file file-name)
+    (let ((content (with-input-from-file file-name read-string)))
+      (cons file-name content)))
+
+  (define (resolve from imports imported)
+    (map (cute search-path (cons (dirname from) imports) <>) imported))
+
+  (let ((content (with-input-from-file file-name read-string)))
+    (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
+        (let loop ((file-names (resolve file-name imports (imported-file-names content)))
+                   (content-alist (acons file-name content content-alist)))
+          (if (null? file-names) (reverse content-alist)
+              (let* ((file-names (lset-difference string=? file-names (map car content-alist)))
+                     (file-names (delete-duplicates file-names))
+                     (alist (reverse (map read-file file-names)))
+                     (file-names (append-map
+                                  (match-lambda
+                                    ((file-name . content)
+                                     (resolve file-name imports (imported-file-names content))))
+                                  alist)))
+                (loop file-names (append alist content-alist))))))))
 
 (define (imported-file-names content)
   "Return the list of file names used in import statements in content."
-  (let loop ((o (parameterize ((%peg:skip? peg:import-skip-parse)
-                               (%peg:debug? (> (dzn:debugity) 3)))
-                  (peg:imports content))))
-    (match o
-      (('import file-name) `(,file-name))
-      (_ (append-map loop o)))))
+  (let ((tree (parameterize ((%peg:skip? peg:import-skip-parse)
+                             (%peg:debug? (> (dzn:debugity) 3)))
+                (peg:imports content))))
+    (match tree
+      (('import file-name) (list file-name))
+      ((('import file-name) ...) file-name))))
 
 (define (imported-from alist)
   (define parse

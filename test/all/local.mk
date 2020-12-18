@@ -248,8 +248,10 @@ PARSER_TESTS =					\
  %D%/newlines_between_dollars			\
  %D%/parse_block_comment_import			\
  %D%/parse_duplicate_declaration		\
- %D%/parse_import_path				\
+ %D%/parse_import_both				\
  %D%/parse_import_end				\
+ %D%/parse_import_path				\
+ %D%/parse_import_twice				\
  %D%/parse_locations				\
  %D%/parse_missing_event			\
  %D%/parse_parameter_mismatch			\
