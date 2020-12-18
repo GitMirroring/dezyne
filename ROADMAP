@@ -31,7 +31,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Freenode!
 
 * TODO
-** Release 2.11, unsorted
+** Release 2.12
   - Pass regression test
     + XFAIL: compliance_out_inevitable_illegal
     + Rewrite underlapping tests from wip-test (old-regression)
@@ -40,14 +40,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Documentation
     + Review and merge wip-tutorial
       - doc/dezyne-tutorial.texi
-  - code
-    + Review and merge wip-language
-  - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.11.0.rc7
-    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc7
-      (experimental: c++ew, scheme, javascript)
-
-** Release 2.12
   - Deprecate cloud-based 2.9
     + No new trial accounts
   - state diagram
@@ -111,6 +103,12 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Sub machines
   - Weak illegals
 * DONE
+  - code
+    + Review and merge wip-language
+  - Support binary release
+    + Solicit and incorporate feedback on dezyne-2.11.0.rc7,8,9,10
+    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc7,8,9,10
+      (experimental: c++ew, scheme, javascript)
   - Eradicate remnants of cloud-based solution
     - Document access to examples, runtime.
     - Remove dzn ls, dzn cat and dependencies
