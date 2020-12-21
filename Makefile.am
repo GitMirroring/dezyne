@@ -289,8 +289,8 @@ GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
 GNULIB=$(HOME)/src/gnulib
 gen-announce:
 	$(GEN_ANNOUNCE)						\
-	    --release-type=beta					\
-	    --package-name=dezyne				\
+	    --release-type=stable				\
+	    --package-name=$(PACKAGE_NAME)			\
 	    --previous-version='2.9.1'				\
             --current-version=$(PACKAGE_VERSION)		\
 	    --gpg-key-id=$(GPG_KEY_ID)				\
