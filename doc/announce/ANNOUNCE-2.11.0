@@ -13,6 +13,17 @@ with basic code completion and goto-definition support.
 The documentation, which has not been fully updated for 2.11 yet, is
 available here: <https://doc.verum.com/documentation.html>.
 
+Dezyne is developed on GNU/Linux, and has been demonstrated to work on
+the Windows Subsystem for Linux.  Dezyne 2.10 is being used on native MS
+Windows.  The Dezyne 2.11 additions on top of 2.10 are not fully tested
+on native MS Windows, however they do work on WSL2.  If you would like
+to help us to finish the porting effort or repair other shortcomings,
+please email your bug reports to bugreport@verum.com.  We will evaluate
+your reports and track them via the
+[[https://gitlab.com/dashboard/issues][Gitlab dezyne-issues project]],
+see our [[https://dezyne.org/bugreport][guide to writing helpful bug
+reports]].
+
 What's next?
 
 In the upcoming releases we aim to introduce a complete and correct
@@ -23,36 +34,33 @@ Enjoy!
 The Verum Team
 
 Here are the binary downloads:
-  https://dezyne.org/download/dezyne/dezyne-2.11.0.x86_64-linux.tar.gz
-  https://dezyne.org/download/dezyne/dezyne-2.11.0.i686-windows.zip
-
-  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.x86_64-linux.tar.gz
-  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.i686-windows.zip
+  https://dezyne.org/download/dezyne/dezyne-2.11.0.x86_64-linux.tar.gz   (54MB)
+  https://dezyne.org/download/dezyne/dezyne-2.11.0.i686-windows.zip   (120MB)
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.x86_64-linux.tar.gz   (74MB)
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.i686-windows.zip   (159MB)
 
 Here are the GPG detached signatures[*]:
   https://dezyne.org/download/dezyne/dezyne-2.11.0.x86_64-linux.tar.gz.sig
   https://dezyne.org/download/dezyne/dezyne-2.11.0.i686-windows.zip.sig
-
   https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.x86_64-linux.tar.gz.sig
   https://dezyne.org/download/dezyne-ide/dezyne-ide-2.11.0.i686-windows.zip.sig
 
 Here are the MD5 and SHA1 checksums:
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.11.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-2.11.0.i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.11.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.11.0.i686-windows.zip
-
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-ide-2.11.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx dezyne-ide-2.11.0.i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.11.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.11.0.i686-windows.zip
+7a8c0c6f95001fe1c8adf564bf6db7c2  dezyne-2.11.0.x86_64-linux.tar.gz
+a90fc0a883df840aa848470571f308e7  dezyne-2.11.0.i686-windows.zip
+592de005ceb85f2423b5ef651d284bff  dezyne-ide-2.11.0.x86_64-linux.tar.gz
+56b0c9072963b7b107c4d575d8b6adbb  dezyne-ide-2.11.0.i686-windows.zip
+d59d1a32e1f2861a2c315a9fa15450fcaec2085c  dezyne-2.11.0.x86_64-linux.tar.gz
+73b88a373cbf74af90f911ea3f497545ba237f84  dezyne-2.11.0.i686-windows.zip
+b24c4d0271b68ef4e39a594b4c0a4fbe2402d974  dezyne-ide-2.11.0.x86_64-linux.tar.gz
+2cd772dcf23e6a863519aae00ffe84168010d451  dezyne-ide-2.11.0.i686-windows.zip
 
 [*] Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
 and the corresponding tarball.  Then, run a command like this:
 
-  gpg --verify dezyne-2.11.0.tar.gz.sig
+  gpg --verify dezyne-ide-2.11.0.x86_64-linux.tar.gz.sig
 
 If that command fails because you don't have the required public key,
 then run this command to import it:
@@ -71,7 +79,7 @@ Dezyne-IDE
 ** Dezyne-IDE has browser-based views and integrates with any LSP-aware editor.
   - Support for GNU Emacs.
   - Support for Electron-based editors, such as VSCodium.
-    + VSCode plugin: [[https://dezyne.org/download/dezyne-ide/dzn-lsp-1.0.0.vsix][https://dezyne.org/download/dezyne-ide/dzn-lsp-1.0.0.vsix]]
+    + VSCode plugin: [[https://dezyne.org/download/dezyne-ide/dzn-lsp-1.0.2.vsix][https://dezyne.org/download/dezyne-ide/dzn-lsp-1.0.2.vsix]]
 ** Commands
   - A new command `ide lsp' provides a stdio-based Language Protocol
     Server for the Dezyne language.
