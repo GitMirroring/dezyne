@@ -305,7 +305,7 @@ GNULIB=$(HOME)/src/gnulib
 gen-announce:
 	$(GEN_ANNOUNCE)						\
 	    --release-type=stable				\
-	    --package-name=$(PACKAGE_NAME)			\
+	    --package-name=$(PACKAGE)				\
 	    --previous-version='2.9.1'				\
             --current-version=$(PACKAGE_VERSION)		\
 	    --archive-suf=x86_64-linux.tar.gz			\
