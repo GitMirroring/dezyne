@@ -7751,9 +7751,20 @@ will result in the following error message:
 @chapter Contributing
 
 This project is a cooperative effort, and we need your help to make it
-grow!  Please get in touch with us on @email{dezyne-devel@@nongnu.org}
-and @code{#dezyne} on the Freenode IRC network.  We welcome ideas, bug
-reports, patches, and anything that may be helpful to the project.
+grow!  Please get in touch with us on @email{dezyne-devel@@nongnu.org} and
+@code{#dezyne} on the Freenode IRC network.  We welcome ideas, bug
+reports (please send your bug reports to @email{bug-dezyne@@nongnu.org}),
+patches, and anything that may be helpful to the project.
+
+Note: bug reports contain at least descriptions of:
+@enumerate
+@item Steps to reproduce the bug
+@item What you expected to see
+@item What you actually saw
+@end enumerate
+
+You can help us by increasing the signal to noise ratio in your
+communication including your bug reports.
 
 @menu
 * The Perfect Setup::
