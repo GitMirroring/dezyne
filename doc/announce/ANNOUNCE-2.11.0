@@ -20,7 +20,7 @@ on native MS Windows, however they do work on WSL2.  If you would like
 to help us to finish the porting effort or repair other shortcomings,
 please email your bug reports to bugreport@verum.com.  We will evaluate
 your reports and track them via the
-[[https://gitlab.com/dashboard/issues][Gitlab dezyne-issues project]],
+[[https://gitlab.com/groups/dezyne/-/issues][Gitlab dezyne-issues project]],
 see our [[https://dezyne.org/bugreport][guide to writing helpful bug
 reports]].
 
