@@ -4667,8 +4667,12 @@ Generate thread-safe system shell for model @var{model}.
 @node Invoking dzn explore
 @section Invoking @command{dzn explore}
 
-The @command{dzn explore} command generates a state diagram for a
-Dezyne model.
+@cindex Aldebaran
+@cindex @code{lts}
+
+The @command{dzn explore} command generates a state diagram or an
+@code{lts} for a Dezyne model (@xref{Invoking dzn lts}, @xref{Invoking
+dzn traces}).
 
 Under the hood, @command{dzn explore} uses the Dezyne VM.
 
@@ -4688,10 +4692,16 @@ Display help on invoking @code{dzn explore}, and then exit.
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
 
+@item --lts
+Generate an @code{lts} in Aldebaren format.
+
 @item --model=@var{model}
 @itemx -m @var{model}
 Explore model @var{model}.  The default is to use the most
 ``interesting'' model.
+
+@item --state-diagram
+Generate a state-diagram it @code{dot} format.  This is the default.
 
 @end table
 
@@ -4767,8 +4777,10 @@ Display input, parse tree, offset, context and completions.
 
 @cindex Aldebaran
 @cindex @code{lts}
-The @command{dzn lts} command can be used t navigate and query an @var{lts} in
-Aldebaran (@code{aut}) format.
+
+The @command{dzn lts} command can be used t navigate and query an
+@var{lts} in Aldebaran (@code{aut}) format (@xref{Invoking dzn explore},
+@xref{Invoking dzn traces}).
 
 @example
 dzn @var{dzn-option}@dots{} lts @var{option}@dots{} [@file{FILE}]@dots{}
@@ -4969,7 +4981,8 @@ Use trail @var{trail}.  The default is to read from standard input.
 
 The @command{dzn traces} command generates an exhaustive set of traces
 for a behavioural Dezyne model.  It can also be used to generate an
-@var{lts} in Aldebaran format (@xref{Invoking dzn lts}).
+@var{lts} in Aldebaran format (@xref{Invoking dzn lts}, @xref{Invoking
+dzn explore}).
 
 Under the hood, @command{dzn traces} uses @command{dzn code} and mCRL2.
 

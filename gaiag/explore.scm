@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -39,7 +40,8 @@
   #:use-module (gaiag vm report)
   #:use-module (gaiag vm run)
   #:use-module (gaiag vm util)
-  #:export (state-diagram))
+  #:export (lts
+            state-diagram))
 
 ;;; Commentary:
 ;;;
@@ -47,7 +49,6 @@
 ;;;
 ;;; Code:
 
-
 ;;;
 ;;; State diagram
 ;;;
@@ -137,6 +138,96 @@ begin -> " title))
 
 
 ;;;
+;;; LTS
+;;;
+
+(define %lts-state-count 1) ;; FIXME: remove global
+
+(define (explore-lts pc)
+  "Explore the state space of (%SUT).  Start by running all (labels) on
+PC, and recurse until no new PCs are found.  Return the graph as
+
+   ((from transition to)
+    ...)
+
+  and set! %lts-state-count: the number of states.
+"
+  (let* ((labels (labels))
+         (pc-state-number (make-hash-table))
+         (explored (make-hash-table)))
+    (define (pc->state-number pc)
+      (let ((state-string (pc->string pc)))
+        (cond ((is-a? (.status pc) <illegal-error>)
+               0)
+              ((is-a? (.status pc) <implicit-illegal-error>)
+               0)
+              ((hash-ref pc-state-number state-string))
+              (else
+               (hash-set! pc-state-number state-string %lts-state-count)
+               (set! %lts-state-count (1+ %lts-state-count))
+               (pc->state-number pc)))))
+    (define fix-illegal-transition
+      (match-lambda
+        ((from (trail ... "<illegal>") to)
+         `(,from (,@trail "<illegal>") 0))
+        (()
+         '())
+        (transition transition)))
+    (define (fix-missing-reply-trace trace)
+      (match trace
+        (((and ($ <program-counter>) (? (is-status? <missing-reply-error>)) error)
+          ($ <program-counter>) tail ...)
+         (cons error tail))
+        (_ trace)))
+    (define (traces->transitions pc from label traces)
+      (let* ((traces (map fix-missing-reply-trace traces))
+             (pcs (map car traces))
+             (tos (map pc->state-number pcs))
+             (trails (map (lambda (t) (map cdr (trace->trail t))) traces))
+             (transitions (map (cut list from <> <>) trails tos))
+             (transitions (map fix-illegal-transition transitions)))
+        transitions))
+    (cons
+     '(0 ("<illegal>") 0)
+     (let loop ((pc pc))
+       (let ((from (pc->state-number pc)))
+         (if (or (.status pc) (hash-ref explored from)) '()
+             (let* ((pc (clone pc #:instance #f #:trail '()))
+                    (traces (map (cute run-to-completion** pc <>) labels))
+                    (pcs (append-map (cute map car <>) traces))
+                    (transitions (append-map (cute traces->transitions pc from <> <>) labels traces)))
+               (hash-set! explored from #t)
+               (append transitions
+                       (append-map loop pcs)))))))))
+
+(define (graph->lts graph)
+  "Return an LTS in Aldebaran format from GRAPH produced by
+EXPLORE-LTS."
+  (define (next-state-num)
+    (let ((res %lts-state-count))
+      (set! %lts-state-count (1+ %lts-state-count))
+      res))
+  (define steps-expand
+    (match-lambda
+      ((from steps to)
+       (let* ((steps (if (null? steps) (list "tau") steps))
+              (l (map (cut list (next-state-num) <>) (cdr steps)))
+              (l0 (append (list (list from (car steps))) l))
+              (l1 (append l (list (list to #f)))))
+         (map (lambda (e0 e1)
+                (let ((from (car e0))
+                      (step (cadr e0))
+                      (to   (car e1)))
+                  (format #f "(~s, ~s, ~s)" from step to)))
+              l0 l1)))))
+  (let ((lines (append-map steps-expand graph)))
+    (string-append
+     (format #f "des (1, ~s, ~s)\n" (length lines) %lts-state-count)
+     (string-join lines "\n")
+     "\n")))
+
+
+;;;
 ;;; Entry point.
 ;;;
 
@@ -151,3 +242,14 @@ begin -> " title))
         (let* ((pc (make-pc))
                (graph (explore pc)))
           (display (graph->dot graph)))))))
+
+(define* (lts root #:key model-name)
+  "Entry-point for dzn explore --lts."
+  (let ((root (vm:normalize root)))
+    (when (> (dzn:debugity) 0)
+      (set! %debug? #t))
+    (parameterize ((%exploring? #t)
+                   (%sut (runtime:get-sut root (ast:get-model root model-name))))
+      (parameterize ((%instances (runtime:system* (%sut))))
+        (let ((pc (make-pc)))
+          (display (graph->lts (explore-lts pc))))))))
