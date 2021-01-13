@@ -35,7 +35,9 @@
   (let* ((option-spec
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
-            (model (single-char #\m) (value #t))))
+            (lts)
+            (model (single-char #\m) (value #t))
+            (state-diagram)))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
@@ -48,6 +50,8 @@ Explore the state space of a Dezyne model
 
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
+      --lts              write the lts in AUT format to stdout
+      --state-diagram    write the state diagram in DOT to stdout [default]
   -m, --model=MODEL      generate main for MODEL
 ")
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
@@ -61,5 +65,9 @@ Explore the state space of a Dezyne model
          (model-name (option-ref options 'model #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cute eq? <> 'model) car)) options))
-         (ast (parse parse-options file-name)))
-    (state-diagram ast #:model-name model-name)))
+         (ast (parse parse-options file-name))
+         (format (option-ref options 'format #f))
+         (state-diagram? (option-ref options 'state-diagram #f))
+         (lts? (option-ref options 'lts #f)))
+    (cond (lts? (lts ast #:model-name model-name))
+          (else (state-diagram ast #:model-name model-name)))))
