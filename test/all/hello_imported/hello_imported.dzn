@@ -60,6 +60,10 @@ interface iworld
 #imported "components.dzn"
 //import interfaces.dzn;
 
+// This originally tested removing behaviour content from imported
+// models (this feature has been removed), and check compatible
+// behavior when using the pre-processor.
+/*
 component comp {
   provides ihello h;
 
@@ -70,3 +74,4 @@ component comp {
     }
   }
 }
+*/
