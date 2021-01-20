@@ -33,7 +33,8 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((help (single-char #\h))
+          '((format (single-char #\f) (value #t))
+            (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (lts)
             (model (single-char #\m) (value #t))
@@ -48,10 +49,11 @@
 Usage: dzn explore [OPTION]... [FILE]...
 Explore the state space of a Dezyne model
 
+  -f, --format=FORMAT    display trace in format FORMAT [dot] {dot,json}
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
       --lts              write the lts in AUT format to stdout
-      --state-diagram    write the state diagram in DOT to stdout [default]
+      --state-diagram    write the state diagram to stdout [default]
   -m, --model=MODEL      generate main for MODEL
 ")
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
@@ -70,4 +72,4 @@ Explore the state space of a Dezyne model
          (state-diagram? (option-ref options 'state-diagram #f))
          (lts? (option-ref options 'lts #f)))
     (cond (lts? (lts ast #:model-name model-name))
-          (else (state-diagram ast #:model-name model-name)))))
+          (else (state-diagram ast #:model-name model-name #:format format)))))

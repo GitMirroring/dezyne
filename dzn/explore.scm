@@ -181,6 +181,39 @@ begin -> " title))
       "\n")
      postamble)))
 
+(define (graph->json graph)
+  (let* ((start (match graph (((from from-label label to trigger-location) transition ...)
+                              from)))
+         (graph (cons `("*" "" "" ,start #f) graph)))
+    (string-append
+     "{\"states\":[\n"
+     (string-join
+      (map (match-lambda ((from from-label label to trigger-location)
+                          (string-append
+                           (format #f "{\"id\":~s, \"state\":~s}\n" from from-label))))
+           (delete-duplicates graph (lambda (a b) (and (equal? (first a) (first b))
+                                                       (equal? (second a) (second b)))))) ",\n")
+     "],\n"
+     "\"transitions\":[\n"
+     (string-join
+      (map (match-lambda
+             ((from from-label label to trigger-location)
+              (let* ((location (if (not trigger-location) "\"undefined\""
+                                   (format #f "{\"file-name\":~s,\"line\":~a,\"column\":~a}"
+                                           (.file-name trigger-location)
+                                           (.line trigger-location)
+                                           (.column trigger-location))))
+                     (separator "\n------\n")
+                     (pos (string-contains label separator))
+                     (trigger (if pos (substring label 0 pos) separator))
+                     (action (if pos (substring label (+ pos (string-length separator))) "")))
+                (format #f
+                        "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":~s, \"location\":~a}"
+                        from to trigger action location))))
+           (filter (match-lambda ((from from-label #f #f #f) #f) (_ #t)) graph)
+           ) ",\n")
+     "]}")))
+
 
 ;;;
 ;;; LTS
@@ -285,7 +318,8 @@ EXPLORE-LTS."
       (parameterize ((%instances (runtime:system* (%sut))))
         (let* ((pc (make-pc))
                (graph (explore pc)))
-          (display (graph->dot graph)))))))
+          (if (equal? format "json") (display (graph->json graph))
+              (display (graph->dot graph))))))))
 
 (define* (lts root #:key model-name)
   "Entry-point for dzn explore --lts."
