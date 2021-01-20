@@ -21,7 +21,7 @@ Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
 Copyright @copyright{} 2014, 2020 Rutger van Beusekom@*
 Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
-Copyright @copyright{} 2014, 2016, 2019, 2020 Jan Nieuwenhuizen@*
+Copyright @copyright{} 2014, 2016, 2019, 2020, 2021 Jan Nieuwenhuizen@*
 Copyright @copyright{} 2014, 2015, 2016 Rob Wieringa@@*
 Copyright @copyright{} 2014 Paul Hoogendijk@*
 
@@ -4727,6 +4727,8 @@ Display input, parse tree, offset, context and completions.
 @node Invoking dzn lts
 @section Invoking @command{dzn lts}
 
+@cindex Aldebaran
+@cindex @code{lts}
 The @command{dzn lts} command can be used t navigate and query an @var{lts} in
 Aldebaran (@code{aut}) format.
 
@@ -4885,9 +4887,14 @@ Use trail @var{trail}.  The default is to read from standard input.
 @node Invoking dzn traces
 @section Invoking @command{dzn traces}
 
+@cindex Aldebaran
+@cindex @code{lts}
+
 The @command{dzn traces} command generates an exhaustive set of traces
-for a Dezyne model.  It can also be used to generate an @var{lts}
-(@xref{Invoking dzn lts}).
+for a behavioural Dezyne model.  It can also be used to generate an
+@var{lts} in Aldebaran format (@xref{Invoking dzn lts}).
+
+Under the hood, @command{dzn traces} uses @command{dzn code} and mCRL2.
 
 @example
 dzn @var{dzn-option}@dots{} traces @var{option}@dots{} @file{FILE}
@@ -4913,10 +4920,10 @@ Include traces that lead to an illegal.
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
 
-@c XXX TODO: --lts seems broken, but is still used internally??
 @item --lts
 @itemx -l
-Generate @var{lts}.
+Instead of generating trace files, generate an @var{lts} in Aldebaran
+format.
 
 @item --model=@var{model}
 @itemx -m @var{model}
@@ -4924,7 +4931,7 @@ Generate traces for model @var{model}.
 
 @item --output=@var{dir}
 @itemx -o @var{dir}
-Write output to directory @var{dir}.
+Write trace files to directory @var{dir}.
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}

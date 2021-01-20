@@ -702,7 +702,7 @@ required to be non-deterministic."
     (annotate)
     (step root '())))
 
-(define (lts->traces data illegal? flush? interface out lts? model provides-ports provides-in)
+(define (lts->traces data illegal? flush? interface out model provides-ports provides-in)
   (let* ((provides-ports (if (not interface) provides-ports
                              (list model)))
          (interface (and interface model)))
