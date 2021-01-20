@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -129,28 +129,14 @@ Generate exhaustive set of traces for Dezyne model
                           (map .name (filter ast:in? (ast:event* model)))))
          (foo (if dzn-debug? (stderr "provides: ~a\n" provided-ports)))
          (provided (map .name provided-ports))
-         (tmp (tmpnam))
-         (foo (mkdir tmp))
          (model-name (verify:scope-name model))
          (bin ((compose dirname car) (command-line)))
          (flush-opt (option-ref options 'flush #f))
          (illegal-opt (option-ref options 'illegal #f))
-         (lts-opt (option-ref options 'lts #f))
+         (lts? (option-ref options 'lts #f))
          (dir (option-ref options 'output "."))
          (foo (mkdir-p dir))
          (json? (dzn:command-line:get 'json #f))
-         (commands `(,(cut display lts)
-                     ,@(if dzn-debug? '(("tee" "lts.aut")) '())
-                     ("lts2traces"
-                      ,@(if json? '() `("--out" ,dir))
-                      ,@(if (not illegal-opt) '() '("--illegal"))
-                      ,@(if (not flush-opt) '() '("--flush"))
-                      ,@(if (is-a? model <interface>) '("--interface") '())
-                      ,@(if (not lts-opt) '() '("--lts"))
-                      "--model" ,model-name
-                      ,@(append-map (lambda (p) (list "--provides-in" p)) provides-in)
-                      "-")))
-         (foo (if dzn-debug? (stderr "commands: ~s\n" commands)))
          (traces (with-output-to-string
                    (lambda _
                      (let* ((text (string-trim-right lts))
@@ -160,17 +146,17 @@ Generate exhaustive set of traces for Dezyne model
                                     flush-opt
                                     (is-a? model <interface>)
                                     dir
-                                    lts-opt
                                     model-name
                                     '()
                                     provides-in)))))
          (traces (string-trim-right traces)))
+    (when lts?
+      (with-output-to-file (string-append dir "/" model-name ".aut")
+        (cute display lts)))
     (when json? (display traces))
     (when dzn-debug?
       (stderr "provides-in=~s\n" provides-in)
-      (stderr "traces=~s\n" traces))
-    (if (not dzn-debug?)
-        (delete-file-recursively tmp))))
+      (stderr "traces=~s\n" traces))))
 
 (define (main args)
   (let* ((options (parse-opts args))
