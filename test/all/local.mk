@@ -122,6 +122,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_provides_int			\
  %D%/compliance_provides_out			\
  %D%/compliance_requires_illegal		\
+ %D%/compound_local_assign_call			\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
@@ -348,6 +349,7 @@ NON_REPRODUCIBLE_TESTS =			\
 XFAIL_TESTS =					\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
+ %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\
  %D%/import_strip_component
 
