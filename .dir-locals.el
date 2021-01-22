@@ -43,6 +43,7 @@
 
    (eval . (put 'package 'scheme-indent-function 0))
    (eval . (put 'origin 'scheme-indent-function 0))
+   (eval . (put 'with-directory-excursion 'scheme-indent-function 1))
 
    ;; Emacsy
    (eval . (put 'with-current-buffer 'scheme-indent-function 1))
