@@ -28,6 +28,7 @@
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
+  #:use-module (ice-9 regex)
   #:use-module (json)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
@@ -339,8 +340,8 @@ output, and standard error as three values."
          (out (string-append file-name "/out"))
          (out-lang (string-append file-name "/out/traces"))
          (handwritten-traces (list-files file-name ".*trace.*$")))
-    (or (error-model? file-name)
-        (pair? handwritten-traces)
+    (or (and (error-model? file-name)
+             (null? handwritten-traces))
         (skip? file-name "traces")
         (receive (status stdout stderr)
             (observe
@@ -348,7 +349,9 @@ output, and standard error as three values."
                ,@includes
                "-m" ,model
                "-o" ,out-lang
+               ,@(if (null? handwritten-traces) '("--traces") '())
                ,@(if (flush? file-name) '("--flush") '())
+               "--lts"
                ,dzn-name)
              input)
           (zero? status)))))
@@ -475,11 +478,78 @@ output, and standard error as three values."
         (and (string-contains file-name "queuefull") #t)
         (and-map (cut run-simulate-trace file-name <>) traces))))
 
+(define (run-lts file-name)
+  (format #t "** stage: lts\n")
+  (let* ((base-name (basename file-name))
+         (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (input "")
+         (includes (cons (string-append file-name "/dzn")
+                         (or (and=> (getenv "DZN_INCLUDE_PATH")
+                                    (cut string-split <> #\:))
+                             '())))
+         (includes (append-map (cut list "-I" <>) includes))
+         (model (or (model? file-name) base-name))
+         (out (string-append file-name "/out"))
+         (language "lts")
+         (out-lang (string-append file-name "/out/" language))
+         (handwritten-traces (list-files file-name ".*trace.*$")))
+    (or (and (error-model? file-name)
+             (null? handwritten-traces))
+        (skip? file-name
+               "traces"
+               "lts")
+        (and (string-contains file-name "deadlock") #t)
+        (and (string-contains file-name "external") #t)
+        (and (string-contains file-name "livelock") #t)
+        (and (string-contains file-name "queuefull") #t)
+        (receive (status stdout stderr)
+            (observe
+             `("dzn" "explore" "--lts"
+               ,@includes
+               "-m" ,model
+               ,dzn-name)
+             input)
+          (and (zero? status)
+               (let ((makreel-lts-file (string-append out "/traces/" base-name ".aut")))
+                 (or (and (not (file-exists? makreel-lts-file))
+                          ;; XXX skip: "probably a system"
+                          (format (current-error-port) "skip compare: ~s\n" makreel-lts-file))
+                     (let* ((makreel-lts (with-input-from-file makreel-lts-file read-string))
+                            (flushes (list-matches "\"([^\"]*<flush>)\"" makreel-lts))
+                            (flushes (map (cute match:substring <> 1) flushes))
+                            (flushes (delete-duplicates flushes))
+                            (taus (append '("<deadlock>" "<livelock>" "optional" "inevitable") flushes)))
+                       (with-output-to-file makreel-lts-file
+                         (cute display makreel-lts))
+                       (mkdir-p out-lang)
+                       (with-output-to-file (string-append out-lang "/" base-name ".aut")
+                         (cute display stdout))
+                       ;; FIXME: --structured-output with -eweak-trace still writes to disk
+                       (with-directory-excursion out-lang
+                         (receive (status stdout stderr)
+                             (observe
+                              `("ltscompare" "--counter-example" "--structured-output"
+                                "-eweak-trace"
+                                ,(string-append "--tau=" (string-join taus ","))
+                                ,(string-append "../traces/" base-name ".aut")
+                                ,(string-append base-name ".aut"))
+                              "")
+                           (display stdout)
+                           (let* ((lines (and stdout (string-split stdout #\newline)))
+                                  (stdout-status (and lines (filter (cut string-prefix? "result: " <>) lines)))
+                                  (stdout-status (and (pair? stdout-status) (car stdout-status)))
+                                  (status (if (and (zero? status)
+                                                   stdout-status
+                                                   (string=? stdout-status "result: true"))
+                                              EXIT_SUCCESS EXIT_FAILURE)))
+                             (zero? status))))))))))))
+
 (define (run-test file-name languages)
   (setvbuf (current-output-port) 'line)
   (format #t "* run: ~a ~a\n" file-name languages)
   (let ((result (and (run-verify file-name)
                      (run-traces file-name)
+                     (run-lts file-name)
                      (run-simulate file-name)
                      (and-map (cut run-code file-name <>) languages))))
     (format #t "# Local Variables:
