@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -95,10 +95,10 @@ illegal")
      queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      end                <   scope* ('end' / 'silent_end')
      return             <-- 'return'
-     flush              <-- identifier tick 'flush'
+     flush              <-- port-scope* identifier tick 'flush'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      scope              <   identifier tick
-     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / 'queue_full')
+     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / 'queue_full' / 'flush')
      interface-name     <   scope* identifier
      port-name          <-  port-scope* identifier
      event-name         <-  identifier
