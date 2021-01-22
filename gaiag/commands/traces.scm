@@ -68,6 +68,7 @@
             (illegal (single-char #\i))
             (import (single-char #\I) (value #t))
             (lts (single-char #\l))
+            (traces (single-char #\t))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))))
@@ -85,9 +86,10 @@ Generate exhaustive set of traces for Dezyne model
   -h, --help                  display this help and exit
   -i, --illegal               include traces that lead to an illegal
   -I, --import=DIR+           add DIR to import path
-  -l, --lts                   generate LTS
+  -l, --lts                   also generate LTS
   -m, --model=MODEL           generate traces for model MODEL
-  -o, --output=DIR            write traces in directory DIR
+  -o, --output=DIR            write lts,traces in directory DIR
+  -t, --traces                also generate traces (default)
   -q, --queue-size=SIZE       use queue size=SIZE for generation
 ")
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
@@ -134,29 +136,34 @@ Generate exhaustive set of traces for Dezyne model
          (flush-opt (option-ref options 'flush #f))
          (illegal-opt (option-ref options 'illegal #f))
          (lts? (option-ref options 'lts #f))
-         (dir (option-ref options 'output "."))
-         (foo (mkdir-p dir))
-         (json? (dzn:command-line:get 'json #f))
-         (traces (with-output-to-string
-                   (lambda _
-                     (let* ((text (string-trim-right lts))
-                            (lines (string-split text #\newline)))
-                       (lts->traces lines
-                                    illegal-opt
-                                    flush-opt
-                                    (is-a? model <interface>)
-                                    dir
-                                    model-name
-                                    '()
-                                    provides-in)))))
-         (traces (string-trim-right traces)))
+         (traces? (option-ref options 'traces #f))
+         (output (option-ref options 'output #f)))
+    (when (and output (not (equal? output "-")))
+      (mkdir-p output))
+    (when (or (not lts?) traces?)
+      (let* ((traces (with-output-to-string
+                       (lambda _
+                         (let* ((text (string-trim-right lts))
+                                (lines (string-split text #\newline)))
+                           (lts->traces lines
+                                        illegal-opt
+                                        flush-opt
+                                        (is-a? model <interface>)
+                                        (or output ".")
+                                        model-name
+                                        '()
+                                        provides-in)))))
+             (json? (dzn:command-line:get 'json #f))
+             (traces (string-trim-right traces)))
+        (when json? (display traces))
+        (when dzn-debug?
+          (stderr "provides-in=~s\n" provides-in)
+          (stderr "traces=~s\n" traces))))
     (when lts?
-      (with-output-to-file (string-append dir "/" model-name ".aut")
-        (cute display lts)))
-    (when json? (display traces))
-    (when dzn-debug?
-      (stderr "provides-in=~s\n" provides-in)
-      (stderr "traces=~s\n" traces))))
+      (if (and output (not (equal? output "-")))
+          (with-output-to-file (string-append output "/" model-name ".aut")
+            (cute display lts))
+          (display lts)))))
 
 (define (main args)
   (let* ((options (parse-opts args))

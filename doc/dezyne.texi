@@ -4937,6 +4937,11 @@ Write trace files to directory @var{dir}.
 @itemx -q @var{size}
 Use queue size @var{size} for generation, the default is @code{3}.
 
+@item --traces
+@itemx -t
+Generate trace files, this is the default.  Using @option{--traces} will
+generate trace files even when @option{--lts} is used.
+
 @end table
 
 
