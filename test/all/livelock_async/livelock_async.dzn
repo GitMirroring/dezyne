@@ -40,7 +40,7 @@ interface IAsync {
   }
 }
 
-component async_context2 {
+component livelock_async {
   provides IAsync p;
   behaviour {
     enum State { S0, S1, S2 };
