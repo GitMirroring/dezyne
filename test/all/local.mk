@@ -85,7 +85,7 @@ REGRESSION_TESTS =				\
  %D%/async_cancel				\
  %D%/async_context				\
  %D%/livelock_async				\
- %D%/async_context3				\
+ %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
  %D%/determinism_async				\

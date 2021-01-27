@@ -41,7 +41,7 @@ interface IAsync {
   }
 }
 
-component async_context3 {
+component compliance_async {
   provides IAsync p;
   behaviour {
     enum State { S0, S1, S2 };
