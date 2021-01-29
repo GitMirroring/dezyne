@@ -1,1 +1,1 @@
-no such model: parse_import_both
+test/all/parse_import_both/parse_import_both.dzn:error:No such model: "parse_import_both"

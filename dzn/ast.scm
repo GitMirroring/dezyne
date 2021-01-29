@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
@@ -788,11 +788,17 @@
 
 (define* (ast:get-model root #:optional model-name)
   (let ((models (ast:model* root)))
-    (or (and model-name (find (lambda (o) (equal? (ast:dotted-name o) model-name)) models))
-        (let ((systems (filter (is? <system>) models)))
-          (find (negate ast:instance?) systems))
-        (find (is? <component>) models)
-        (find (is? <interface>) models))))
+    (cond
+     (model-name
+      (let ((model (find (lambda (o) (equal? (ast:dotted-name o) model-name)) models)))
+        (unless model
+          (throw 'error (format #f "No such model: ~s" model-name)))
+        model))
+     (else
+      (or (let ((systems (filter (is? <system>) models)))
+            (find (negate ast:instance?) systems))
+          (find (is? <component>) models)
+          (find (is? <interface>) models))))))
 
 (define-method (ast:dotted-name (o <ast>))
   (string-join (ast:full-name o) "."))
