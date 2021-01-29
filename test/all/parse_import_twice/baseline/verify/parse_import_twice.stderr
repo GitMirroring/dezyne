@@ -1,1 +1,1 @@
-no such model: parse_import_twice
+test/all/parse_import_twice/parse_import_twice.dzn:error:No such model: "parse_import_twice"
