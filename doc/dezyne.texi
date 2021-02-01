@@ -4914,6 +4914,10 @@ The @var{option}s can be among the following:
 
 @table @code
 
+@item --no-deadlock
+@itemx -D
+Do not run the deadlock check.
+
 @item --help
 @itemx -h
 Display help on invoking @code{dzn simulate}, and then exit.

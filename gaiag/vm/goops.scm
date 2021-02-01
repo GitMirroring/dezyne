@@ -53,6 +53,7 @@
             <blocked-error>
             <compliance-error>
             <determinism-error>
+            <deadlock-error>
             <end-of-trail>
             <illegal-error>
             <implicit-illegal-error>
@@ -128,6 +129,8 @@
   (component-acceptance)
   (port-acceptance)
   (port))
+
+(define-ast <deadlock-error> (<error>))
 
 (define-ast <determinism-error> (<error>))
 
