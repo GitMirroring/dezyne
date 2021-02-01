@@ -162,6 +162,7 @@ REGRESSION_TESTS =				\
  %D%/foreign_import_system			\
  %D%/foreign_namespace				\
  %D%/foreign_optional				\
+ %D%/foreign_reply				\
  %D%/guard_expressions				\
  %D%/hello_blocked_external			\
  %D%/hello_blocking_sync			\
