@@ -187,6 +187,52 @@
    (else
     (append-map (cute check-provides-compliance pc event <>) traces))))
 
+(define-method (event->label-traces (pc <program-counter>) event)
+  (let* ((pc (clone pc #:trail '()))
+         (traces (parameterize ((%exploring? #t)
+                                (%strict? #f))
+                   (run-to-completion* pc event))))
+    (cons event traces)))
+
+(define-method (check-deadlock (pc <program-counter>) event)
+  (define (mark-deadlock pc)
+    (let* ((error (.status pc))
+           (ast (or (and error (.ast error))
+                    (let ((model (.type (.ast (%sut)))))
+                      (.behaviour model)))))
+      (if (and error (not (is-a? error <implicit-illegal-error>))) pc
+          (clone pc #:status (make <deadlock-error> #:ast ast #:message "deadlock")))))
+  (cond
+   ((and (is-a? (%sut) <runtime:port>)
+         (let ((interface (.type (.ast (%sut)))))
+           (and (null? (ast:in-event* interface))
+                (list (list (mark-deadlock pc)))))))
+   (else
+    (let* ((event-traces-alist (map (cute event->label-traces pc <>) (labels)))
+           (pcs-alist (map
+                       (match-lambda
+                         ((event traces ...)
+                          (cons event (map car traces))))
+                       event-traces-alist))
+           (valid-pcs-alist (map
+                             (match-lambda
+                               ((event pcs ...)
+                                (cons event
+                                      (filter
+                                       (conjoin (negate .status)
+                                                (lambda (new)
+                                                  (or (null? (.blocked pc))
+                                                      (and (pair? (.blocked pc))
+                                                           (or (.released new)
+                                                               (null? (.blocked new)))))))
+                                       pcs))))
+                             pcs-alist))
+           (valid-pcs (append-map cdr valid-pcs-alist)))
+      (and (null? valid-pcs)
+           (let* ((traces (assoc-ref event-traces-alist event))
+                  (traces (if (pair? traces) traces (list (list pc)))))
+             (map (cute rewrite-trace-head mark-deadlock <>) traces)))))))
+
 (define-method (run-state (pc <program-counter>) (state <list>))
   (let ((pc (set-state pc state)))
     (serialize (.state pc) (current-output-port))
@@ -197,7 +243,7 @@
   (let ((traces (run-to-completion* pc event)))
     (check-provides-compliance* pc event traces)))
 
-(define (run-sut pc)
+(define* (run-sut pc #:key deadlock-check?)
   (let* ((event pc ((%next-input) pc))
          (pc (clone pc #:instance #f)))
     (%debug "run-sut pc: ~s\n" pc)
@@ -206,12 +252,17 @@
       (('state state ...)
        (run-state pc state))
       ((? string?)
-       (if (is-a? (%sut) <runtime:port>) (run-to-completion* pc event)
-           (run-component pc event)))
-      (_
-       '()))))
+       (let ((traces (if (is-a? (%sut) <runtime:port>) (run-to-completion* pc event)
+                         (run-component pc event))))
+         (if (and deadlock-check?
+                  (find (compose .status car) traces))
+             (or (check-deadlock pc event) traces)
+             traces)))
+      (else
+       (or (and deadlock-check? (check-deadlock pc event))
+           '())))))
 
-(define (run-trail trail)
+(define* (run-trail trail #:key deadlock-check?)
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
   (define (trail-input pc)
     (let ((trail (.trail pc)))
@@ -224,7 +275,9 @@
     (report (list (list pc)))
     (parameterize ((%next-input (if (pair? trail) trail-input read-input)))
       (let loop ((pcs (list pc)))
-        (let ((traces (append-map run-sut pcs)))
+        (let ((traces (append-map
+                       (cut run-sut <> #:deadlock-check? deadlock-check?)
+                       pcs)))
           (when (pair? traces)
             (let* ((traces (filter-match-error traces))
                    (pcs (map car traces)))
@@ -315,10 +368,10 @@
     (%next-input read-input)
     (%pc)))
 
-(define* (simulate* root trail #:key model-name strict?)
+(define* (simulate* root trail #:key deadlock-check? model-name strict?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  When STRICT?, the trail must include all observable
-events."
+events.  When deadlock-check?, run check-deadlock at the end."
   (let ((root (vm:normalize root)))
     (when (> (dzn:debugity) 0)
       (set! %debug? #t))
@@ -327,16 +380,20 @@ events."
     (parameterize ((%strict? strict?)
                    (%sut (runtime:get-sut root (ast:get-model root model-name))))
       (parameterize ((%instances (runtime:system* (%sut))))
-        (run-trail trail)))))
+        (run-trail trail #:deadlock-check? deadlock-check?)))))
 
-(define* (simulate root #:key model-name strict? trail)
+(define* (simulate root #:key deadlock-check? model-name strict? trail)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  When STRICT?, the trail must
-include all observable events."
+include all observable events.  When deadlock-check?, run check-deadlock
+at the end."
   (let ((trail (and=> (or trail
                           (and (not (isatty? (current-input-port)))
                                (input-port? (current-input-port))
                                (read-string (current-input-port)))
                           "")
                       string->trail)))
-    (simulate* root trail #:model-name model-name #:strict? strict?)))
+    (simulate* root trail
+               #:deadlock-check? deadlock-check?
+               #:model-name model-name
+               #:strict? strict?)))

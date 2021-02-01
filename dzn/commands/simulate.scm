@@ -37,6 +37,7 @@
           '((help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
+            (no-deadlock (single-char #\D))
             (strict (single-char #\s))
             (trail (single-char #\t) (value #t))))
 	 (options (getopt-long args option-spec))
@@ -49,6 +50,7 @@
 Usage: dzn simulate [OPTION]... [FILE]...
 Simulate a Dezyne model
 
+  -D, --no-deadlock      skip the deadlock check
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
   -m, --model=MODEL      generate main for MODEL
@@ -67,6 +69,11 @@ Simulate a Dezyne model
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
+         (no-deadlock? (option-ref options 'no-deadlock #f))
          (strict? (command-line:get 'strict #f))
          (trail (option-ref options 'trail #f)))
-    (simulate ast #:model-name model-name #:strict? strict? #:trail trail)))
+    (simulate ast
+              #:model-name model-name
+              #:deadlock-check? (not no-deadlock?)
+              #:strict? strict?
+              #:trail trail)))
