@@ -43,6 +43,7 @@
             %strict?
             filter-error
             filter-match-error
+            livelock?
             run-async-event
             run-requires
             run-silent
@@ -128,6 +129,18 @@ in the same component."
          (pc (clone pc #:status error)))
     (cons pc (cdr trace))))
 
+(define (mark-livelock-error trace)
+  (let* ((pc (car trace))
+         (error (make <livelock-error> #:ast (.statement pc) #:message "livelock"))
+         (pc (clone pc #:status error)))
+    (cons pc (cdr trace))))
+
+(define (livelock? trace)
+  (let* ((trace (filter (lambda (pc) (is-a? (.instance pc) <runtime:component>)) trace))
+         (res (and (pair? trace)
+                   (member (car trace) (cdr trace) pc:eq?))))
+    res))
+
 (define-method (extend-trace (trace <list>))
   "Return a list of traces, produced by appending TRACE to each of the
 program-counters produced by taking a step."
@@ -149,23 +162,25 @@ program-counters produced by taking a step."
            #t)))
 
   (let ((pc (car trace)))
-    (if (rtc? pc) (list trace)
-        (let* ((o (.statement pc))
-               (pcs (step pc o))
-               (string-stapje (and=> (trace->trail pc) cdr))
-               (observable? (or (is-a? o <action>)
-                                (is-a? o <q-out>)
-                                (is-a? o <trigger-return>)))
-               (string-stapje (and observable? string-stapje))
+    (cond ((livelock? trace) (list (mark-livelock-error trace)))
+          ((rtc? pc) (list trace))
+          (else
+           (let* ((o (.statement pc))
+                  (pcs (step pc o))
+                  (string-stapje (and=> (trace->trail pc) cdr))
+                  (observable? (or (is-a? o <action>)
+                                   (is-a? o <q-out>)
+                                   (is-a? o <trigger-return>)))
+                  (string-stapje (and observable? string-stapje))
 
-               (input pc (if string-stapje ((%next-input) pc) (values #f pc)))
-               (pcs (if string-stapje (map (cute clone <> #:trail (.trail pc)) pcs)
-                        pcs))
+                  (input pc (if string-stapje ((%next-input) pc) (values #f pc)))
+                  (pcs (if string-stapje (map (cute clone <> #:trail (.trail pc)) pcs)
+                           pcs))
 
-               (pcs (cond ((or (not string-stapje)
-                               (matching? pc input string-stapje)) pcs)
-                          (else (map (mark-pc input o) pcs)))))
-          (map (cut cons <> trace) pcs)))))
+                  (pcs (cond ((or (not string-stapje)
+                                  (matching? pc input string-stapje)) pcs)
+                             (else (map (mark-pc input o) pcs)))))
+             (map (cut cons <> trace) pcs))))))
 
 (define-method (run-to-completion (pc <program-counter>))
   "Return a list of traces produced by taking steps, starting from PC

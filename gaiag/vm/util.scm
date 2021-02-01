@@ -603,6 +603,21 @@
        (equal? (serialize (.state a)) (serialize (.state b)))
        (equal? (.trail a) (.trail b))))
 
+(define-method (pc:eq? (pc0 <program-counter>) (pc1 <program-counter>))
+  (and (equal? (pc->string pc0) (pc->string pc1))
+       (equal? (and=> (.instance pc0) runtime:instance->path) (and=> (.instance pc1) runtime:instance->path))
+       (vm:ast:eq? (.statement pc0) (.statement pc1))
+       (pc:eq? (.previous pc0) (.previous pc1))))
+
+(define-method (pc:eq? (pc0 <top>) (pc1 <top>))
+  (eq? pc0 pc1))
+
+(define-method (vm:ast:eq? (a <flush-return>) (b <flush-return>))
+  #t)
+
+(define-method (vm:ast:eq? (a <top>) (b <top>))
+  (ast:eq? a b))
+
 (define-method (async-event? (pc <program-counter>) event)
   (and (string? event) (not (member event (labels))) (pair? (.async pc))))
 

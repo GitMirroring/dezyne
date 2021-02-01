@@ -240,7 +240,9 @@ REGRESSION_TESTS =				\
  %D%/livelock1					\
  %D%/livelock2					\
  %D%/livelock_component2			\
+ %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
+ %D%/livelock_synchronous2			\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
