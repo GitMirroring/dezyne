@@ -524,7 +524,9 @@
   (if (.status o) "<error>"
       (string-join
        (cons (state->string (.state o))
-             (map (compose runtime:dotted-name car) (.blocked o)))
+             (append
+              (map (compose runtime:dotted-name car) (.blocked o))
+              (map (match-lambda ((timeout port . proc) (.name port))) (.async o))))
        "\n")))
 
 (define-method (pc->hash (o <program-counter>))

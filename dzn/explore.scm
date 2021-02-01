@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -60,13 +61,57 @@
        (string-join (cons* trigger "------" action) "\n"))
       (() "------"))))
 
+(define (process-async pc)
+  (if (null? (.async pc)) '()
+      (run-async-event pc)))
+
+(define (did-provides-out? trace)
+  ;; TODO: mark did-provides-out? event in PC
+  (let* ((trail (map cdr (trace->trail trace)))
+         (r:ports (filter runtime:boundary-port? (%instances)))
+         (ports (map .ast r:ports))
+         (provide-ports (filter ast:provides? ports))
+         (provide-names (map .name provide-ports)))
+    (find (lambda (event)
+            (match (string-split event #\.)
+              ((port event) (member port provide-names))
+              ((path ... port event) #f)))
+          trail)))
+
+(define-method (flush-async (pc <program-counter>))
+  (let* ((traces (process-async pc))
+         (pcs (map car traces)))
+    (cond
+     ((or (null? traces) (null? (.async (car pcs))))
+      traces)
+     (else
+      (let ((stop flush (partition
+                         (disjoin did-provides-out? (compose .status car))
+                         traces)))
+        (append stop (append-map flush-async flush)))))))
+
+(define-method (flush-async (trace <list>))
+  (let* ((pc (car trace))
+         (traces (flush-async pc)))
+    (map (cut append <> trace) traces)))
+
 (define (run-to-completion** pc event)
   (let* ((pc (clone pc #:instance #f #:reply #f #:trail '())))
     (cond
+     ((not event)
+      (flush-async pc))
      ((is-a? (%sut) <runtime:port>)
       (run-to-completion pc event))
      ((requires-trigger? event)
-      (run-requires pc event))
+      (if (pair? (.async pc)) '()
+          (let* ((traces (run-requires pc event))
+                 (stop flush
+                       (partition
+                        (disjoin (compose null? .async car)
+                                 did-provides-out?
+                                 (compose .status car))
+                        traces)))
+            (append stop (append-map flush-async flush)))))
      ((provides-trigger? event)
       (run-to-completion pc event)))))
 
@@ -84,7 +129,7 @@ PC, and recurse until no new PCs are found.  Return the graph as
                     (reverse trace))))
       (and pc (and=> (.statement pc) ast:location))))
   (define (graph pc)
-    (let* ((labels (labels))
+    (let* ((labels (cons #f (labels)))
            (explored (make-hash-table)))
       (let loop ((pc pc))
         (let ((from (pc->hash pc)))
@@ -152,7 +197,7 @@ PC, and recurse until no new PCs are found.  Return the graph as
 
   and set! %lts-state-count: the number of states.
 "
-  (let* ((labels (labels))
+  (let* ((labels (cons #f (labels)))
          (pc-state-number (make-hash-table))
          (explored (make-hash-table)))
     (define (pc->state-number pc)
