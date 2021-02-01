@@ -57,6 +57,7 @@
             <end-of-trail>
             <illegal-error>
             <implicit-illegal-error>
+            <livelock-error>
             <match-error>
             <missing-reply-error>
             <range-error>
@@ -141,6 +142,9 @@
 (define-ast <illegal-error> (<error>))
 
 (define-ast <implicit-illegal-error> (<error>))
+
+(define-ast <livelock-error> (<error>)
+  (input))
 
 (define-ast <match-error> (<status>)
   (input)

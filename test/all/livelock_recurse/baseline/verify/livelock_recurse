@@ -1,0 +1,9 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: livelock_recurse: check: deterministic: ok
+verify: livelock_recurse: check: illegal: ok
+verify: livelock_recurse: check: deadlock: ok
+verify: livelock_recurse: check: compliance: ok
+verify: livelock_recurse: check: livelock: fail
+h.hello
+<livelock>
