@@ -149,6 +149,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
+ %D%/deadlock_port_blocked			\
  %D%/dollars					\
  %D%/empty_dollars				\
  %D%/enum_expressions				\
