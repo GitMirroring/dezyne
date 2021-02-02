@@ -131,6 +131,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_system_provides_bool		\
  %D%/compound_local_assign_call			\
  %D%/data_full					\
+ %D%/deadlock_interface_out_only		\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
@@ -172,7 +173,6 @@ REGRESSION_TESTS =				\
  %D%/hello_interface_function			\
  %D%/illegal_interface.space			\
  %D%/hello_interface_optional			\
- %D%/hello_interface_out_only			\
  %D%/hello_local_assign				\
  %D%/hello_local_enum				\
  %D%/hello_multiple_out				\

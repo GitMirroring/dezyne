@@ -1,0 +1,3 @@
+verify: deadlock_interface_out_only: check: deadlock: fail
+<deadlock>
+verify: deadlock_interface_out_only: check: livelock: ok
