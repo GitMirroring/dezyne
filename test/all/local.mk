@@ -111,6 +111,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system2				\
  %D%/blocking_system3				\
  %D%/blocking_system4				\
+ %D%/blocking_shell				\
  %D%/calling_context				\
  %D%/compliance_external_asynchronous_sync	\
  %D%/compliance_livelock			\
@@ -228,7 +229,6 @@ REGRESSION_TESTS =				\
  %D%/deadlock_reply_modeling				\
  %D%/second_reply				\
  %D%/second_reply_blocking			\
- %D%/shell					\
  %D%/shell_injected				\
  %D%/silent_nondet				\
  %D%/silent_optional				\

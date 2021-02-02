@@ -26,7 +26,7 @@
 //dedicated container.hh with std::this_thread::sleep_for
 #include "container.hh"
 
-#include "shell.hh"
+#include "blocking_shell.hh"
 
 #include <algorithm>
 #include <cassert>
@@ -37,7 +37,7 @@ bool to_bool(std::string s){return s == "true";}
 void to_void(std::string){}
 
 void
-connect_ports (dzn::container< ::shell, std::function<void()>>& c)
+connect_ports (dzn::container< ::blocking_shell, std::function<void()>>& c)
 {
   c.system.r_outer.in.return_void = [&] () {
     dzn::trace(std::clog, c.system.r_outer.meta, "return_void");
@@ -71,7 +71,7 @@ connect_ports (dzn::container< ::shell, std::function<void()>>& c)
 }
 
 std::map<std::string,std::function<void()> >
-event_map (dzn::container< ::shell, std::function<void()>>& c)
+event_map (dzn::container< ::blocking_shell, std::function<void()>>& c)
 {
   c.system.p_outer.meta.require.port = "p_outer";
 
@@ -94,7 +94,7 @@ int
 main(int argc, char* argv[])
 {
   if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::container< ::shell, std::function<void()>> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
+  dzn::container< ::blocking_shell, std::function<void()>> c(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;}));
 
   connect_ports (c);
   c(event_map (c), {"r_outer"});

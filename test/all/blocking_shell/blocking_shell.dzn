@@ -112,7 +112,7 @@ component B
   }
 }
 
-component shell
+component blocking_shell
 {
   provides I p_outer;
   requires II r_outer;
