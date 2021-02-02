@@ -1,3 +1,0 @@
-verify: hello_interface_out_only: check: deadlock: fail
-<deadlock>
-verify: hello_interface_out_only: check: livelock: ok
