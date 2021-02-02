@@ -143,6 +143,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_provides_int			\
  %D%/compliance_provides_out			\
  %D%/compliance_requires_illegal		\
+ %D%/compliance_single_to_multiple		\
  %D%/compliance_system_provides_bool		\
  %D%/compound_local_assign_call			\
  %D%/data_full					\
@@ -213,7 +214,6 @@ REGRESSION_TESTS =				\
  %D%/hello_recursive				\
  %D%/hello_silent				\
  %D%/hello_shadow				\
- %D%/hello_single_to_multiple			\
  %D%/hello_systems				\
  %D%/hello_tail_recursive_function		\
  %D%/hello_tick					\

@@ -1,3 +1,0 @@
-test/all/hello_single_to_multiple/hello_single_to_multiple.dzn:39:32: error: non-compliance
-test/all/hello_single_to_multiple/hello_single_to_multiple.dzn:39:32: component accept: h.world
-test/all/hello_single_to_multiple/hello_single_to_multiple.dzn:29:5:      port accept: none

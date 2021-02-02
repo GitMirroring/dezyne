@@ -31,7 +31,7 @@ interface ihello {
   }
 }
 
-component hello_single_to_multiple {
+component compliance_single_to_multiple {
   provides ihello h;
   requires ihello w;
   behaviour {
