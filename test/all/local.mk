@@ -193,7 +193,6 @@ REGRESSION_TESTS =				\
  %D%/hello_silent				\
  %D%/hello_shadow				\
  %D%/hello_single_to_multiple			\
- %D%/hello_synchronous_livelock			\
  %D%/hello_systems				\
  %D%/hello_tail_recursive_function		\
  %D%/hello_tick					\
@@ -214,6 +213,7 @@ REGRESSION_TESTS =				\
  %D%/livelock1					\
  %D%/livelock2					\
  %D%/livelock_component2			\
+ %D%/livelock_synchronous			\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
