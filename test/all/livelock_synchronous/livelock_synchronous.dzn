@@ -36,7 +36,7 @@ interface iworld {
   }
 }
 
-component hello_synchronous_livelock {
+component livelock_synchronous {
   provides ihello h;
   requires iworld w;
 
