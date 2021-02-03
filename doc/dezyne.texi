@@ -7766,6 +7766,11 @@ Note: bug reports contain at least descriptions of:
 You can help us by increasing the signal to noise ratio in your
 communication including your bug reports.
 
+Before sending your bug report, please check if you found an already
+known problem first at
+@url{https://gitlab.com/dezyne/dezyne-issues/-/issues, dezyne bugs at
+gitlab}.
+
 @menu
 * The Perfect Setup::
 @end menu
