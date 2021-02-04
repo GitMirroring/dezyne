@@ -155,6 +155,9 @@ REGRESSION_TESTS =				\
  %D%/enum_expressions				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
+ %D%/external_requires_twice			\
+ %D%/illegal_external_requires_twice		\
+ %D%/illegal_external_requires_twice2		\
  %D%/extern_in_interface			\
  %D%/foreign_import_system			\
  %D%/foreign_namespace				\
