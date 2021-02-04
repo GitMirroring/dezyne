@@ -1,0 +1,17 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: J: check: deadlock: ok
+verify: J: check: livelock: ok
+verify: illegal_external_requires_twice: check: deterministic: ok
+verify: illegal_external_requires_twice: check: illegal: fail
+p.e
+q.e
+q.return
+r.e
+r.return
+p.return
+q.a
+<illegal>
+verify: illegal_external_requires_twice: check: deadlock: ok
+verify: illegal_external_requires_twice: check: compliance: skip
+verify: illegal_external_requires_twice: check: livelock: ok

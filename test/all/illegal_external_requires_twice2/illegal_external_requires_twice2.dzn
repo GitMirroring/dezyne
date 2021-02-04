@@ -1,0 +1,41 @@
+interface I
+{
+  in void e();
+  out void a();
+
+  behaviour
+  {
+    bool idle=true;
+    [idle] on e: idle = false;
+    [!idle] {
+      on e: illegal;
+      on inevitable: {idle = true; a;}
+    }
+  }
+}
+
+interface J
+{
+  in void e();
+  out void a();
+
+  behaviour
+  {
+    on e: a;
+  }
+}
+
+component illegal_external_requires_twice2
+{
+  provides I p;
+  requires external J q;
+  requires external J r;
+  behaviour
+  {
+    enum S {A,B,C};
+    S s = S.A;
+    [s.A] on p.e(): {s = S.B; q.e(); r.e();}
+    [s.B] on q.a(): {s=S.C;}
+    [s.C] on r.a(): {s=S.A;p.a();}
+  }
+}
