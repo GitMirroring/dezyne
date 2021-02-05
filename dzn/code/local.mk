@@ -34,12 +34,6 @@ else
 dist_noinst_DATA += %D%/c++.scm
 endif
 
-if have_cxx03
-dist_%C%_scm_DATA += %D%/c++03.scm
-else
-dist_noinst_DATA += %D%/c++03.scm
-endif
-
 if have_cs
 dist_%C%_scm_DATA += %D%/cs.scm
 else

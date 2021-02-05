@@ -123,15 +123,6 @@ if test "x$have_cxx11" = "xtrue"; then
 fi
 AC_SUBST([CXX11])
 
-AX_BOOST_BASE([1.67], [have_boost=yes])
-if test "x$have_boost" = "xyes"; then
-   if test "x$courageous" = "xyes"; then
-      CXX03="$CXX"
-      all_languages="$all_languages,c++03"
-   fi
-fi
-AC_SUBST([CXX03])
-
 AC_PROG_CC
 AC_PROG_CC_C99
 if test "xx$ac_cv_prog_cc_c99" != "xyes"; then
@@ -171,19 +162,6 @@ have_cxx11=true
 ;;
   *)
 have_cxx11=false
-;;
-esac
-
-case ,${enable_languages}, in
-  *,c++03,*)
-if test "x$courageous" = xno; then
-    AC_MSG_ERROR([`c++03' is not a supported language.
-See "Porting" in the manual, or try `--with-courage'.])
-fi
-if test "x$CXX03" = x -a x$cross_compiling = xno; then
-    AC_MSG_ERROR([language c++03 enabled, but no C++ compiler with boost was not found])
-fi
-have_cxx03=true
 ;;
 esac
 
@@ -238,7 +216,6 @@ esac
 
 AM_CONDITIONAL([have_c99], [test "x$have_c99" = xtrue])
 AM_CONDITIONAL([have_cs], [test "x$have_cs" = xtrue])
-AM_CONDITIONAL([have_cxx03], [test "x$have_boost" = xtrue])
 AM_CONDITIONAL([have_cxx11], [test "x$have_cxx11" = xtrue])
 AM_CONDITIONAL([have_javascript], [test "x$have_javascript" = xtrue])
 AM_CONDITIONAL([have_scheme], [test "x$have_scheme" = xtrue])
