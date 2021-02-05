@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018,2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Johri van Eerd <johri.van.eerd@verum.com>
@@ -41,6 +41,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
+  #:use-module (gaiag code-util)
 
   #:use-module (gaiag indent)
   #:use-module (gaiag shell-util)
@@ -51,12 +52,9 @@
             dzn:annotate-shells
             dzn:data
             dzn:class-member?
-            dzn:dump
             dzn:extension
             dzn:expression
             dzn:indent
-            dzn:om
-            dzn:file2file
             dzn:expand-statement
             dzn:expression-expand
             dzn:action-arguments
@@ -84,9 +82,6 @@
             %dzn:indenter))
 
 (define %x:source (make-parameter #f))
-
-(define (dzn:file2file root)
-  (dzn:dump root))
 
 (define-public (dzn-async? o)
   (and (is-a? o <interface>)
@@ -125,23 +120,14 @@
                   ("python" . ".py"))
                 (%language)))))
 
-(define (dzn:om ast)
-  ast)
-
-(define (dzn:language)
-  (let ((language (command-line:get 'language "dzn")))
-    (if (member language '("dzn" "html")) language
-        "dzn")))
-
+(define-method (generator->string generator)
+  (with-output-to-string (code-util:indenter generator)))
 (define-method (ast->dzn (o <root>))
-  (parameterize ((%language "dzn"))
-    (with-output-to-string (dzn:indent (cut x:source o)))))
+  (generator->string (cute x:source o)))
 (define-method (ast->dzn (o <statement>))
-  (parameterize ((%language "dzn"))
-    (with-output-to-string (dzn:indent (cut x:statement o)))))
+  (generator->string(cute x:statement o)))
 (define-method (ast->dzn (o <function>))
-  (parameterize ((%language "dzn"))
-    (with-output-to-string (dzn:indent (cut x:source o)))))
+  (generator->string (cute x:source o)))
 
 ;;; dzn: generic templates
 (define-method (dzn:model (o <root>))
@@ -409,28 +395,21 @@
 (define-method (dzn:open-namespace (o <ast>))
   (cdr (reverse (ast:path (parent o <namespace>)))))
 
-(define-method (dzn:dump (o <ast>))
-  (let* ((dir (command-line:get 'output "."))
-         (stdout? (equal? dir "-"))
-         (dir (string-append dir "/" (dzn:dir o)))
-         (base (basename (ast:source-file o) ".dzn")))
-    (let* ((ext (dzn:extension (make <component>)))
-           (file-name (string-append dir base ext)))
-      (if stdout? ((dzn:indent (cut (%x:source) o)))
-          (begin
-            (mkdir-p dir)
-            (with-output-to-file file-name
-             (dzn:indent (cut (%x:source) o))))))))
-
 (define-templates-macro define-templates dzn)
 (include-from-path "gaiag/templates/dzn.scm")
 
-(define (ast-> ast)
-  (let ((root (dzn:om ast)))
-    (dzn:root-> root))
-  "")
+
+;;;
+;;; Entry points.
+;;;
 
-(define (dzn:root-> root)
-  (parameterize ((%language (dzn:language))
-                 (%x:source x:source))
-    (dzn:file2file root)))
+(define* (root-> root #:key (dir "."))
+  "Entry point."
+  (let ((file-name (code-util:root-file-name root dir ".dzn"))
+        (generator (code-util:indenter (cute x:source root))))
+    (code-util:dump root generator #:file-name file-name)))
+
+(define (ast-> ast)
+  "XXX REMOVEME Legacy entry point"
+  (let ((dir (command-line:get 'output ".")))
+    (root-> ast #:dir dir)))
