@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -39,6 +39,7 @@
   #:use-module (gaiag command-line)
   #:use-module (gaiag code dzn)
   #:use-module (gaiag code)
+  #:use-module (gaiag code-util)
   #:use-module (gaiag glue)
   #:use-module (gaiag indent)
 
@@ -48,7 +49,6 @@
 
   #:export (c++:argument_n
             c++:capture-arguments
-            c++:dump
             c++:enum->string
             c++:enum-literal
             c++:type-name
@@ -148,16 +148,13 @@
           (if (code:glue)
               (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
                   (filter (is? <foreign>) models)
-                  (filter (negate (disjoin (is? <type>) dzn-async?)) models))
-              (filter (negate (disjoin (is? <type>) (is? <namespace>) dzn-async?
+                  (filter (negate (disjoin (is? <type>) ast:async?)) models))
+              (filter (negate (disjoin (is? <type>) (is? <namespace>) ast:async?
                                        (conjoin ast:imported? (negate (is? <foreign>)))))
                       models)))
          (models (ast:topological-model-sort models))
          (models (map dzn:annotate-shells models)))
     models))
-
-(define-method (c++:dump o)
-  (code:dump o))
 
 (define-method (c++:header-model-glue (o <root>))
   (filter-map (lambda (o)
@@ -176,21 +173,35 @@
 (include-from-path "gaiag/templates/c++.scm")
 (include-from-path "gaiag/templates/glue.scm")
 
-(define (c++:root-> root)
-  (parameterize ((%language "c++")
-                 (%x:header x:header)
-                 (%x:source x:source)
-                 (%x:glue-bottom-header x:glue-bottom-header)
-                 (%x:glue-bottom-source x:glue-bottom-source)
-                 (%x:glue-top-header x:glue-top-header)
-                 (%x:glue-top-source x:glue-top-source)
-                 (%x:main x:main))
-    (c++:dump root)
-    (code:dump-main root)
-    (when (code:glue)
-      (for-each c++:dump-glue (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* root))))))
+
+;;;
+;;; Entry points.
+;;;
+
+(define* (root-> root #:key (dir ".") main)
+  "Entry point."
+
+  (code-util:foreign-conflict? root)
+
+  (let ((root (code:om root)))
+    (let ((generator (code-util:indenter (cute x:header root)))
+          (file-name (code-util:root-file-name root dir ".hh")))
+      (code-util:dump root generator #:file-name file-name))
+
+    (when (code-util:generate-source? root)
+      (let ((generator (code-util:indenter (cute x:source root)))
+            (file-name (code-util:root-file-name root dir ".cc")))
+        (code-util:dump root generator #:file-name file-name)))
+
+    (when main
+      (let ((model (ast:get-model root main)))
+        (when (is-a? model <component-model>)
+          (let ((generator (code-util:indenter (cute x:main model)))
+                (file-name (code-util:file-name "main" dir ".cc")))
+            (code-util:dump root generator #:file-name file-name)))))))
 
 (define (ast-> ast)
-  (let ((root (code:om ast)))
-    (c++:root-> root))
-  "")
+  "XXX REMOVEME Legacy entry point"
+  (let ((dir (command-line:get 'output "."))
+        (main (command-line:get 'model #f)))
+    (root-> ast #:dir dir #:main main)))

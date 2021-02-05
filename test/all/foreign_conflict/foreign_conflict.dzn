@@ -52,7 +52,7 @@ component hello
   }
 }
 
-component hello_foreign_conflict
+component foreign_conflict
 {
   provides iworld w;
 }
@@ -64,7 +64,7 @@ component hello_foreign
   system
     {
       hello c;
-      hello_foreign_conflict f;
+      foreign_conflict f;
       h <=> c.h;
       c.w <=> f.w;
     }

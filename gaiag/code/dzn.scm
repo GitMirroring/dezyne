@@ -48,7 +48,6 @@
   #:use-module (gaiag templates)
 
   #:export (ast->dzn
-            dzn-async?
             dzn:annotate-shells
             dzn:data
             dzn:class-member?
@@ -82,10 +81,6 @@
             %dzn:indenter))
 
 (define %x:source (make-parameter #f))
-
-(define-public (dzn-async? o)
-  (and (is-a? o <interface>)
-       (equal? (ast:full-name o) '("dzn" "async"))))
 
 (define (dzn:extension o)
   (match o
@@ -132,7 +127,7 @@
 ;;; dzn: generic templates
 (define-method (dzn:model (o <root>))
   (let* ((models (ast:model* o))
-         (models (filter (negate (disjoin (is? <type>) (is? <namespace>) dzn-async?
+         (models (filter (negate (disjoin (is? <type>) (is? <namespace>) ast:async?
                                           (conjoin ast:imported? (negate (is? <foreign>)))))
                          models))
          (models (ast:topological-model-sort models))

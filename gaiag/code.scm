@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016, 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -737,7 +737,7 @@
   (let* ((objects
           (filter
            (disjoin (is? <extern>)
-                    (negate (disjoin dzn-async? ast:imported?)))
+                    (negate (disjoin ast:async? ast:imported?)))
            (ast:model* o)))
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
