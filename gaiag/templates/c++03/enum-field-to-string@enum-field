@@ -1,1 +1,0 @@
-case #x:enum-field-type : return "#x:enum-short-name _#.field";
