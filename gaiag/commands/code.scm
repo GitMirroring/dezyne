@@ -53,7 +53,6 @@
   (let* ((option-spec
           '((calling-context (single-char #\c) (value #t))
             (debug (single-char #\d))
-            (glue (single-char #\g) (value #t))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (language (single-char #\l) (value #t))
@@ -73,7 +72,6 @@ Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
 Generate code for Dezyne models in DZN-FILE
 
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
-  -g, --glue=TYPE             generate glue for TYPE [dzn]
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -l, --language=LANG         generate code for language=LANG [~a]

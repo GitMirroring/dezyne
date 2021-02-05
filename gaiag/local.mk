@@ -42,10 +42,6 @@ dist_%C%_scm_DATA =				\
  %D%/templates.scm				\
  %D%/wfc.scm
 
-if have_cxx11
-dist_%C%_scm_DATA += %D%/glue.scm
-endif
-
 EXTRA_DIST += %D%/config.scm.in
 BUILT_SOURCES += %D%/config.scm
 nodist_%C%_scm_DATA = %D%/config.scm

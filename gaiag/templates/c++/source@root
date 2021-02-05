@@ -5,6 +5,5 @@
 #x:pump-include
 
 #x:model
-#x:model-glue
 #x:version-assert
 //version: #x:version
