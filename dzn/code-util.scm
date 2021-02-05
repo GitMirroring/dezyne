@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>;;;
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,6 +23,7 @@
 ;;; Code:
 
 (define-module (dzn code-util)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
@@ -31,6 +33,8 @@
   #:use-module (dzn shell-util)
   #:export (code-util:dump
             code-util:file-name
+            code-util:foreign-conflict?
+            code-util:generate-source?
             code-util:root-file-name
             code-util:indenter))
 
@@ -56,3 +60,23 @@
     (mkdir-p (dirname file-name))
     (with-output-to-file file-name
       generate))))
+
+(define-method (code-util:base-name (o <foreign>))
+  (string-join (ast:full-name o) "_"))
+
+(define-method (code-util:foreign-conflict? (o <root>))
+  (let* ((foreigns (filter (conjoin (is? <foreign>)
+                                    (negate ast:imported?))
+                           (ast:model* o)))
+         (foreign-bases (map code-util:base-name foreigns))
+         (conflict? (member (ast:base-name o) foreign-bases)))
+    (when conflict?
+      ;; XXX TODO: throw / catch
+      (format (current-error-port) "cowardly refusing to clobber file with basename: ~a\n"
+              (ast:base-name o))
+      (exit EXIT_FAILURE))))
+
+(define-method (code-util:generate-source? (o <root>))
+  (find (conjoin (negate ast:imported?)
+                 (disjoin (is? <component>) (is? <system>)))
+        (ast:model* o)))

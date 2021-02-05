@@ -138,7 +138,6 @@ REGRESSION_TESTS =				\
  %D%/hello_clash_port_variable			\
  %D%/hello_enum					\
  %D%/hello_enum_function			\
- %D%/hello_foreign_conflict			\
  %D%/hello_foreign_file				\
  %D%/hello_foreign_path				\
  %D%/hello_function_assign			\
@@ -346,6 +345,7 @@ NON_REPRODUCIBLE_TESTS =			\
 XFAIL_TESTS =					\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
+ %D%/foreign_conflict				\
  %D%/import_strip_component
 
 FULL_TESTS =					\
