@@ -29,7 +29,6 @@ dist_nocompile_%C%_scm_DATA =			\
 
 #if have_cxx11
 dist_nocompile_%C%_scm_DATA += %D%/c++.scm
-dist_nocompile_%C%_scm_DATA += %D%/glue.scm
 #endif
 
 if have_cs

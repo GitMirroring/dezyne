@@ -40,7 +40,6 @@
   #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn code-util)
-  #:use-module (dzn glue)
   #:use-module (dzn indent)
 
   #:use-module (dzn ast)
@@ -58,10 +57,7 @@
             c++:name
             c++:optional-type
             c++:string->enum
-            c++:type-ref
-            c++:header-model-glue
-            c++:model-glue
-            ))
+            c++:type-ref))
 
 ;;; ast accessors / template helpers
 
@@ -144,34 +140,19 @@
 
 (define-method (c++:model (o <root>))
   (let* ((models (ast:model* o))
-         (models
-          (if (code:glue)
-              (if (null? (filter (negate (disjoin ast:imported? (is? <foreign>))) models))
-                  (filter (is? <foreign>) models)
-                  (filter (negate (disjoin (is? <type>) ast:async?)) models))
-              (filter (negate (disjoin (is? <type>) (is? <namespace>) ast:async?
-                                       (conjoin ast:imported? (negate (is? <foreign>)))))
-                      models)))
+         (models (filter (negate
+                          (disjoin (is? <type>) (is? <namespace>) ast:async?
+                                   (conjoin ast:imported?
+                                            (negate (is? <foreign>)))))
+                      models))
          (models (ast:topological-model-sort models))
          (models (map dzn:annotate-shells models)))
     models))
-
-(define-method (c++:header-model-glue (o <root>))
-  (filter-map (lambda (o)
-                (if (and (code:glue) (is-a? o <foreign>)) o
-                    #f))
-              ((@@ (dzn code c++)
-                   c++:model) o)))
-
-(define-method (c++:model-glue (o <root>))
-  (filter (lambda (o) (and (code:glue) (is-a? o <foreign>)))
-          ((@@ (dzn code c++) c++:model) o)))
 
 (define-templates-macro define-templates c++)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/code.scm")
 (include-from-path "dzn/templates/c++.scm")
-(include-from-path "dzn/templates/glue.scm")
 
 
 ;;;

@@ -5,7 +5,7 @@ struct #ast:name
 {
   enum type
   {
-    #x:asd-voidreply #x:enum-field-definer
+    #x:enum-field-definer
   };
 };
 

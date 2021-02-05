@@ -4294,63 +4294,6 @@ int main()
 @}
 @end example
 
-@subsection Migrating from ASD to Dezyne
-
-When converting ASD models to Dezyne models a map file is generated.
-This allows automatic generation of a glue layer between the Dezyne
-generated code and any existing code behind an ASD interface.  This
-glue layer comes in two flavours, which depend on whether the
-interface is provided or required.
-
-
-Let us assume we are migrating a system that has a main function which
-instantiates and connects the ASD tree of components, which we want to
-preserve.  And where there are two handwritten components C1 and C2
-which have to be preserved as is.  We would like to end up with a
-system as depicted below.
-
-
-@example
-                     O
-                    -|- main
-                    / \
-                  ---+---
-                 (  asd  )
-                  ---+---
-                 +---+---+
-                 | glue  |
-                 +---+---+
-+-------------------+-+--------------------+
-|                   +++                    |
-|                                          |
-|                  Dezyne                  |
-|                                          |
-|     +++                          +++     |
-+-----+-+--------------------------+-+-----+
-   +---+---+                    +---+---+
-   | glue  |                    | glue  |
-   +---+---+                    +---+---+
-    ---+---                      ---+---
-   (  asd  )                    (  asd  )
-    ---+---                      ---+---
-   +---+---+                    +---+---+
-   |  C1   |                    |  C2   |
-   +-------+                    +-------+
-@end example
-
-Here the ellipses represent the ASD interfaces.  For every interface a
-glue layer is generated to connect the Dezyne system to the ASD
-interface which the existing code depends on.
-
-
-Effectively this approach makes an ASD component appear like a Dezyne
-component and it makes a Dezyne component appear like an ASD
-component.  The former case is aimed at reusing existing ASD components
-from Dezyne.  The latter case is aimed at reusing a main function.  In
-either case this approach would allow migrating an ASD system
-component by component to Dezyne.
-
-
 @cindex system
 @cindex Understanding and integrating the generated C++ code
 @cindex migrating

@@ -12,5 +12,4 @@ namespace dzn {
 
 #x:global-enum-definer
 #x:header-model
-#x:header-model-glue
 //version: #x:version

@@ -742,9 +742,6 @@
          (non-interface-models (filter (negate (is? <interface>)) objects)))
     (pair? non-interface-models)))
 
-(define (code:glue)
-  (command-line:get 'glue #f))
-
 (define-method (code:dump (o <root>))
   (let* ((dir (command-line:get 'output "."))
          (stdout? (equal? dir "-"))
@@ -752,7 +749,7 @@
          (foreign-conflict? (find (lambda (o) (and (is-a? o <foreign>)
                                                    (not (ast:imported? o))
                                                    (equal? base (code:file-name o)))) (ast:model* o))))
-    (when (and (not (code:glue)) foreign-conflict?)
+    (when foreign-conflict?
       (stderr "cowardly refusing to clobber file with basename: ~a\n" base)
       (exit EXIT_SUCCESS))
     (when (code:header?)

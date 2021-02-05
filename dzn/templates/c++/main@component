@@ -24,8 +24,7 @@ event_map (dzn::container< #x:type-name , std::function<void()>>& c)
          ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}
           #x:main-event-map-void
           #x:main-event-map-valued
-          #x:main-event-map-flush
-          #x:main-event-map-flush-asd };
+          #x:main-event-map-flush };
 }
 
 int
