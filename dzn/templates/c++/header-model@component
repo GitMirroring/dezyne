@@ -1,8 +1,8 @@
 /********************************** COMPONENT *********************************/
-#x:include-guard
-#x:interface-include
+ #x:include-guard
+ #x:interface-include
 
-#x:open-namespace
+ #x:open-namespace
 struct #x:model-name
 {
   dzn::meta dzn_meta;
@@ -24,7 +24,8 @@ struct #x:model-name
   }
   private:
   #x:method-declare
-  #x:function-declare };
-#x:close-namespace
+  #x:function-declare
+};
+ #x:close-namespace
 #x:endif
 /********************************** COMPONENT *********************************/

@@ -1,5 +1,6 @@
 #x:method
 {
   #x:expand-on
+
   #x:return
 }

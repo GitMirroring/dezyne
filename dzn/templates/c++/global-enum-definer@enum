@@ -1,7 +1,7 @@
 ##ifndef ENUM_#x:enum-name
 ##define ENUM_#x:enum-name  1
 
-#x:open-namespace
+ #x:open-namespace
 struct #ast:name
 {
   enum type
@@ -9,6 +9,6 @@ struct #ast:name
     #x:enum-field-definer
   };
 };
-#x:close-namespace
+ #x:close-namespace
 
 ##endif // ENUM_#x:enum-name

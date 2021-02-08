@@ -1,17 +1,19 @@
 /********************************** INTERFACE *********************************/
-#x:include-guard
+ #x:include-guard
 
-#x:open-namespace
+ #x:open-namespace
 struct #x:model-name
 {
   #x:enum-definer
   struct
   {
-    #x:in-event-definer } in;
+    #x:in-event-definer
+    } in;
 
   struct
   {
-    #x:out-event-definer } out;
+    #x:out-event-definer
+    } out;
 
    dzn::port::meta meta;
    inline #x:model-name(const dzn::port::meta& m) : meta(m) {}
@@ -30,10 +32,10 @@ inline void connect (#x:model-name & provided, #x:model-name & required)
   provided.meta.require = required.meta.require;
   required.meta.provide = provided.meta.provide;
 }
-#x:close-namespace
+ #x:close-namespace
 
-#x:interface-enum-to-string
-#x:interface-string-to-enum
+ #x:interface-enum-to-string
+ #x:interface-string-to-enum
 
 #x:endif
 /********************************** INTERFACE *********************************/

@@ -1,2 +1,4 @@
-{"#.port.name .#.event.name",[&]{#x:main-out-arg-define c.system.#.port.name .#.event.direction .#.event.name(#x:main-out-arg);
-#x:main-event-map-match-return }}
+{"#.port.name .#.event.name",[&]{
+  #x:main-out-arg-define c.system.#.port.name .#.event.direction .#.event.name(#x:main-out-arg);
+  #x:main-event-map-match-return
+}}
