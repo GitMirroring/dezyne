@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -19,7 +19,6 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn indent)
-  #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 pretty-print)
 
@@ -31,30 +30,62 @@
   #:export (indent))
 
 (define* (eat-space #:optional (port (current-input-port)))
-  (while (and-let* ((c (peek-char port)) ((or (eq? c #\space) (eq? c #\tab)))) (read-char port))))
+  (list->string
+   (let loop ()
+     (let ((c (peek-char port)))
+       (cond
+        ((or (eq? c *eof*)
+             (not (eq? c #\space))) '())
+        (else
+         (read-char port)
+         (cons c (loop))))))))
 
 (define* (indent #:key (indent 2) (open #\{) (close #\}) (no-indent "#") (port (current-input-port)))
-  (let loop ((level 0))
-    (define* (space #:optional (c level)) (let ((char (if (=1 indent) #\tab #\space))) (when (not (dzn:command-line:get 'debug)) (display (make-string c char)))))
-    (if (not (and-let* ((s (*eof*-is-#f (read-delimited (list->string `(#\newline ,open ,close)) port 'peek))))
-                       (display s)))
-        #f
-        (let ((c (read-char port)))
+  (let ((delims (list->string `(#\newline ,open ,close))))
+    (let loop ((level 0) (newline? #f))
+      (define* (space #:optional (c level))
+        (let ((char (if (=1 indent) #\tab #\space)))
+          (display (make-string c char))))
+      (let* ((leading-space (eat-space port))
+             (string (read-delimited delims port 'peek))
+             (c (read-char port)))
+        (cond
+         ((eq? string *eof*)
+          (newline))
+         ((eq? c *eof*)
+          (space level)
+          (display string)
+          (newline))
+         ((and (eq? c #\newline)
+               (string-null? leading-space)
+               (string-null? string))
+          (display c)
+          (loop level #t))
+         ((and (eq? c #\newline)
+               (string-null? leading-space)
+               (string-null? (string-trim string)))
+          (loop level #t))
+         ((eq? c #\newline)
           (cond
-           ((eq? c *eof*) #f)
-           ((eq? c #\newline)
+           ((string-null? (string-trim string))
+            (loop level #t))
+           (else
+            (cond ((and (not (string-null? no-indent)) (string-prefix? no-indent string)))
+                  (newline? (space))
+                  (else (display leading-space)))
+            (display string)
             (display c)
-            (eat-space port)
-            (let ((c (read-char port)))
-              (cond
-               ((eq? c *eof*) #f)
-               ((eq? c open) (space) (display c) (loop (+ level indent)))
-               ((eq? c close) (let ((i (- level indent)))
-                              (space i) (display c) (loop i)))
-               ((eq? c #\newline) (unread-char c port))
-               ((string-index no-indent c) (display c))
-               (else (space) (display c)))))
-           ((eq? c open) (display c) (set! level (+ level indent)))
-           ((eq? c close) (display c) (set! level (- level indent)))
-           (else (unread-char c port)))
-          (loop level)))))
+            (loop level #t))))
+         ((eq? c open)
+          (when newline?
+            (space))
+          (display string)
+          (display c)
+          (loop (+ level indent) #f))
+         ((eq? c close)
+          (when newline?
+            (if (string-null? string) (space (- level indent))
+                (space indent)))
+          (display string)
+          (display c)
+          (loop (- level indent) #f)))))))
