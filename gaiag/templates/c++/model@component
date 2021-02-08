@@ -1,13 +1,13 @@
-#x:open-namespace
+ #x:open-namespace
 #x:model-name ::#x:model-name(const dzn::locator& dzn_locator)
 : #x:meta
 , dzn_rt(dzn_locator.get<dzn::runtime>())
 , dzn_locator(dzn_locator)
-#x:variable-member-initializer
-#x:injected-member-initializer
-#x:provided-member-initializer
-#x:required-member-initializer
-#x:async-member-initializer
+ #x:variable-member-initializer
+ #x:injected-member-initializer
+ #x:provided-member-initializer
+ #x:required-member-initializer
+ #x:async-member-initializer
 {
   dzn_rt.performs_flush(this) = true;
   #x:pump
@@ -18,14 +18,16 @@
   #x:clrs
 }
 
-#x:methods
-#x:functions
+ #x:methods
+ #x:functions
+
 void #x:model-name ::check_bindings() const
 {
   dzn::check_bindings(&dzn_meta);
 }
+
 void #x:model-name ::dump_tree(std::ostream& os) const
 {
   dzn::dump_tree(os, &dzn_meta);
 }
-#x:close-namespace
+ #x:close-namespace

@@ -5,11 +5,12 @@ namespace dzn {
   struct runtime;
 }
 
-#x:header-data
+ #x:header-data
 
 ##include <iostream>
 ##include <map>
 
-#x:global-enum-definer
-#x:header-model
+ #x:global-enum-definer
+ #x:header-model
+
 //version: #x:version

@@ -1,11 +1,11 @@
 /***********************************  SYSTEM  ***********************************/
-#x:include-guard
+ #x:include-guard
 
 ##include <dzn/locator.hh>
 
-#x:component-include
+ #x:component-include
 
-#x:open-namespace
+ #x:open-namespace
 struct #x:model-name
 {
   dzn::meta dzn_meta;
@@ -20,6 +20,6 @@ struct #x:model-name
   void check_bindings() const;
   void dump_tree(std::ostream& os=std::clog) const;
 };
-#x:close-namespace
+ #x:close-namespace
 #x:endif
 /***********************************  SYSTEM  ***********************************/

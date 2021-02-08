@@ -2,8 +2,9 @@
 
 ##include <dzn/locator.hh>
 ##include <dzn/runtime.hh>
-#x:pump-include
+ #x:pump-include
 
-#x:model
-#x:version-assert
+ #x:model
+ #x:version-assert
+
 //version: #x:version
