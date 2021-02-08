@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -40,7 +40,7 @@
 
   #:export (define-templates-base
              define-templates-macro
-             display-primitive))
+             display-template))
 
 (eval-when (compile load expand)
   (define (template->tree file-name)
@@ -50,39 +50,38 @@
        pegsep       <   [ ]?
        escape       <   '#'
        pegprocedure <-- '#' [-!$%&'*+,./0-9:<=>?A-Z^_a-z{|}~]([-!#$%&'*+,./0-9:<=>?A-Z^_a-z{|}~])* pegsep")
-    (let* ( ;;(debug-level (length (dzn:debugity)))
-           (result (match-pattern script (with-input-from-file file-name read-string)))
+    (let* ((result (match-pattern script (with-input-from-file file-name read-string)))
            (end (peg:end result)))
       (peg:tree result)))
 
-  (define (display-primitive o)
-    (cond (((disjoin char? number? string?) o) (display o) "")
-          ((symbol? o) (display (symbol->string o)) "") ;; FIXME: still needed???
-          (else o)))
+  (define (display-template o)
+    (cond (((disjoin char? number? string?) o) (display o))
+          ((symbol? o) (display (symbol->string o)))))
 
-  (define (tree->body t . id)
-    (let ((id (if (or #t (null? id)) '() ;;DEBUG MEUK HERE
-                  (list (list 'display-primitive (car id))))))
-      (append id
-              (match t
-                (('script t ...) (tree->body t))
-                (('pegprocedure s) (list (list 'display-primitive (list (string->symbol (string-drop s 1)) 'o))))
-                ((? string?) (list (list 'display t)))
-                ((t ...) (append-map tree->body t))
-                ('script '())))))
+  (define (tree->body tree template)
+    (define (tree->body tree)
+      (match tree
+        ('script '())
+        (('script t ...) (tree->body t))
+        (('pegprocedure s) (let ((name (string->symbol (string-drop s 1))))
+                             (list (list 'display-template (list name 'o)))))
+        ((? string?) (list (list 'display tree)))
+        ((t ...) (append-map tree->body t))))
+    (let* ((template (list 'display-template template))
+           (body (tree->body tree)))
+      (cons
+       (list 'if (list 'getenv "DZN_DEBUG_TEMPLATE_TREE")
+             (list 'display-template template)
+             ''(()))
+       body)))
 
   (define* (display-join proc name dir o #:optional (grammar-alist '((#f . ("")))))
     "Like STRING-JOIN, allowing \"PRE\" 'pre and \"POST\" 'post in GRAMMAR"
-    (define (bla o)
-      (when (and #f (is-a? o <ast>) (dzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
-        (display "/*\ngaiag/")
-        (display dir)
-        (display name)
-        (display "@")
-        (display (string-trim-both (symbol->string (class-name (class-of o))) (lambda (c)
-                                                                                (or (eqv? c #\<)
-										    (eqv? c #\>)))))
-        (display ":0: */\n"))
+    (define (display-o o)
+      (when (and (is-a? o <ast>) (getenv "DZN_DEBUG_TEMPLATE"))
+        (let* ((klas (symbol->string (class-name (class-of o))))
+               (klas (string-trim-both klas (lambda (c) (or (eqv? c #\<) (eqv? c #\>))))))
+          (format #t "/*\n~a~a@~a:0: */\n" dir name klas)))
       (cond (((disjoin char? number? string? symbol?) o) (display o))
             ((null? o))
             (else (proc o))))
@@ -113,11 +112,11 @@
             (when (pair? lst)
               (let ((o (car lst)))
                 (unless (and (string? o) (string-null? o)) (display prefix))
-                (bla o)
+                (display-o o)
                 (unless (and (string? o) (string-null? o)) (display suffix)))
               (when (pair? (cdr lst)) (display infix))
               (loop (cdr lst))))
-          (bla o))
+          (display-o o))
       (unless (null? o) (display post))))
 
   (define (reduce-sexp l)
@@ -161,14 +160,19 @@
         (let* ((o (datum->syntax x 'o))
                (name@ (string-append (symbol->string (syntax->datum name)) "@"))
                (files (ls dir))
-               (types (map (compose string->symbol (cut string-append "<" <> ">") (cute string-drop <> (string-length name@))) (filter (cute string-prefix? name@ <>) files)))
-               (grammars (or (and (syntax->datum sep)
-                                  (let ((sep-files (filter (cute string-prefix? (string-append ((compose symbol->string syntax->datum) sep) ;;"@"
-                                                                                               ) <>) files)))
-                                    (map (lambda (sep)
-                                           (let* ((aapje (string-index sep #\@))
-                                                  (type (and aapje ((compose string->symbol (cut string-drop <> (1+ aapje))) sep))))
-                                             (cons type (read-sep sep)))) sep-files)))
+               (types (map (compose string->symbol
+                                    (cut string-append "<" <> ">")
+                                    (cute string-drop <> (string-length name@)))
+                           (filter (cute string-prefix? name@ <>) files)))
+               (grammars (or
+                          (and (syntax->datum sep)
+                               (let* ((sep ((compose symbol->string syntax->datum) sep))
+                                      (sep-files (filter (cute string-prefix? sep <>) files)))
+                                 (map (lambda (sep)
+                                        (let* ((at (string-index sep #\@))
+                                               (type (and at ((compose string->symbol
+                                                                       (cut string-drop <> (1+ at))) sep))))
+                                          (cons type (read-sep sep)))) sep-files)))
                              '()))
                (grammars (append grammars '((#f . ("")))))
                (grammars (datum->syntax x grammars)))
@@ -178,7 +182,7 @@
                   (define-method (#,tname (o <top>)) (throw 'missing-template-overload: (string-append "template: " (symbol->string '#,name) " for type: " (symbol->string (class-name (class-of o)))))))
               (define (#,xname #,o)
                 (let ((f (#,func #,o)))
-		  (when (and #f (dzn:command-line:get 'debug)) ;;FIX FOR verify -d etc.
+		  (when (getenv "DZN_DEBUG_TEMPLATE_ACCESSOR")
 		    (display "// ") (display '#,func) (newline))
                   (display-join #,tname '#,name #,dir f '#,grammars)))))))
 
