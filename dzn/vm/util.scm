@@ -615,6 +615,9 @@
 (define-method (vm:ast:eq? (a <flush-return>) (b <flush-return>))
   #t)
 
+(define-method (vm:ast:eq? (a <trigger-return>) (b <trigger-return>))
+  #t)
+
 (define-method (vm:ast:eq? (a <top>) (b <top>))
   (ast:eq? a b))
 
