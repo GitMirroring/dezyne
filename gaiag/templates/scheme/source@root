@@ -9,9 +9,8 @@
 (define true ##t)
 (define false ##f)
 
-#x:header-data
+ #x:header-data
+ #x:global-enum-definer
+ #x:model
 
-#x:global-enum-definer
-
-#x:model
 ;; code generator version: #x:version

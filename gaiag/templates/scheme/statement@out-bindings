@@ -1,3 +1,2 @@
 (set! (.out_#.port.name  o)
-  (lambda _
-#x:out-bindings))
+  (lambda _ #x:out-bindings))
