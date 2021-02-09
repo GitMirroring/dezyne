@@ -1,4 +1,4 @@
-#x:enum-definer
+ #x:enum-definer
 
 (define-class <#x:type-name > (<dzn:component>)
   #x:variable-member-initializer
@@ -16,5 +16,5 @@
   #x:async-port-instance-declare
   #x:injected-member-initializer)
 
-#x:methods
-#x:functions
+ #x:methods
+ #x:functions
