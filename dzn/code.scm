@@ -71,7 +71,6 @@
             code:name
             code:non-injected-bindings
             code:injected-instances-system
-            code:name.name
             code:ons
             code:port-release
             code:functions
@@ -853,18 +852,6 @@
                                   (disjoin (is? <blocking>) (is? <blocking-compound>))
                                   (parent o <model>))) '()
       o))
-
-(define-method (code:name.name (o <enum>)) ;; FIXME: remove code:name.name
-  (ast:name o))
-
-(define-method (code:name.name (o <extern>))
-  (ast:name o))
-
-(define-method (code:name.name (o <int>))
-  (ast:name o))
-
-(define-method (code:name.name (o <namespace>))
-  (ast:name o))
 
 (define-method (code:used-foreigns (o <root>))
   (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))
