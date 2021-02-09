@@ -15,8 +15,8 @@ if (node_p ()) {
   */
 }
 
-#x:javascript-namespace-setup
-#x:require-module
+ #x:javascript-namespace-setup
+ #x:require-module
 
 dzn.#x:class-name  = function (locator, meta) {
   dzn.runtime.init (this, locator, meta);

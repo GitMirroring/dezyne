@@ -18,7 +18,7 @@ if (node_p ()) {
   */
 }
 
-#x:global-enum-definer
+ #x:global-enum-definer
+ #x:model
 
-#x:model
-//code generator version: #x:version
+//version: #x:version
