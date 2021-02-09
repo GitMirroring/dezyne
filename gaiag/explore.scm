@@ -78,28 +78,33 @@
               ((path ... port event) #f)))
           trail)))
 
-(define-method (flush-async (pc <program-counter>))
+(define-method (check-mark-livelock trace)
+  (if (livelock? trace) (mark-livelock-error trace) trace))
+
+(define-method (flush-async-trace (trace <list>) previous-trace)
+  (let* ((trace (check-mark-livelock (append trace previous-trace)))
+         (pc (car trace))
+         (traces (flush-async pc trace)))
+    (map (compose check-mark-livelock (cut append <> trace)) traces)))
+
+(define-method (flush-async (pc <program-counter>) previous-trace)
   (let* ((traces (process-async pc))
          (pcs (map car traces)))
     (cond
-     ((or (null? traces) (null? (.async (car pcs))))
-      traces)
-     (else
-      (let ((stop flush (partition
-                         (disjoin did-provides-out? (compose .status car))
-                         traces)))
-        (append stop (append-map flush-async flush)))))))
-
-(define-method (flush-async (trace <list>))
-  (let* ((pc (car trace))
-         (traces (flush-async pc)))
-    (map (cut append <> trace) traces)))
+      ((or (null? traces)) traces)
+      (else
+        (let* ((stop flush (partition
+                            (disjoin (compose null? .async car) did-provides-out? (compose .status car))
+                            traces))
+                (traces (append stop (append-map (cute flush-async-trace <> previous-trace) flush)))
+                (pcs (map car traces)))
+          traces)))))
 
 (define (run-to-completion** pc event)
-  (let* ((pc (clone pc #:instance #f #:reply #f #:trail '())))
+  (let ((pc (clone pc #:instance #f #:reply #f #:trail '())))
     (cond
      ((not event)
-      (flush-async pc))
+      (flush-async pc '()))
      ((is-a? (%sut) <runtime:port>)
       (run-to-completion pc event))
      ((requires-trigger? event)
@@ -111,7 +116,7 @@
                                  did-provides-out?
                                  (compose .status car))
                         traces)))
-            (append stop (append-map flush-async flush)))))
+            (append stop (append-map (cute flush-async-trace <> '()) flush)))))
      ((provides-trigger? event)
       (run-to-completion pc event)))))
 

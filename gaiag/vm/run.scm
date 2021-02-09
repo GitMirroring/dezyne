@@ -44,6 +44,7 @@
             filter-error
             filter-match-error
             livelock?
+            mark-livelock-error
             run-async-event
             run-requires
             run-silent
