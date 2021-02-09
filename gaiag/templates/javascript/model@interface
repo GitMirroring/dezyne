@@ -1,4 +1,4 @@
-#x:javascript-namespace-setup
+ #x:javascript-namespace-setup
 
 dzn.#x:class-name  = function #x:model-name (meta) {
  this._dzn = {};

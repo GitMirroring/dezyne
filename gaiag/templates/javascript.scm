@@ -25,4 +25,4 @@
 (define-templates javascript-namespace-setup javascript:namespace-setup)
 (define-templates class-name javascript:class-name type-infix)
 (define-templates module-name javascript:module-name)
-(define-templates require-module javascript:require-module)
+(define-templates require-module javascript:require-module newline-infix)
