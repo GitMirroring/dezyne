@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2018, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -22,10 +22,6 @@
 #
 # Code:
 
-ifeq ($(MAIN),)
-MAIN:=$(OUT)/main.js
-endif
-
 define MONO_SCRIPT
 #! $(SHELL)
 mono --debug $$(dirname $$0)/test.exe "$$@"
@@ -40,5 +36,11 @@ $(OUT)/test: $(OUT)/test.exe
 
 DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.cs.make,$(MAKEFILE_LIST)))../../)
 
-$(OUT)/test.exe: $(wildcard $(OUT)/*cs) $(wildcard $(IN)/*.cs) $(wildcard $(IN)/cs/*.cs) $(wildcard $(DEVELOPMENT)/runtime/cs/dzn/*.cs)
+IN_SOURCES := $(wildcard $(IN)/*.cs) $(wildcard $(IN)/cs/*.cs)
+RUNTIME_SOURCES := $(wildcard $(DEVELOPMENT)/runtime/cs/dzn/*.cs)
+OUT_SOURCES := $(wildcard $(OUT)/*cs)
+ifneq ($(filter %/main.cs,$(IN_SOURCES)),)
+OUT_SOURCES := $(filter-out %/main.cs,$(OUT_SOURCES))
+endif
+$(OUT)/test.exe: $(OUT_SOURCES) $(IN_SOURCES) $(RUNTIME_SOURCES)
 	mcs -debug -out:$@ $^
