@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 #
 # This file is part of Dezyne.
@@ -299,7 +299,7 @@ release: update-hash
 	    -m '* guix/gnu/packages/dezyne.scm (dezyne)[source]: : Update to $(PACKAGE_VERSION).'	\
 	    guix/gnu/packages/dezyne.scm
 
-GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+GPG_KEY_ID=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
 GNULIB=$(HOME)/src/gnulib
 gen-announce:
