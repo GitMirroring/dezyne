@@ -171,7 +171,7 @@
 (define-method (cs:model (o <root>))
   (let* ((models (ast:model* o))
          (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
-                                          (conjoin ast:imported? (negate (is? <foreign>)))))
+                                          ast:imported?))
                          models))
          (models (ast:topological-model-sort models))
          (models (map dzn:annotate-shells models)))
