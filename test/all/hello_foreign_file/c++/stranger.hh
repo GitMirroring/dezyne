@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,8 +22,10 @@
 //
 // Code:
 
-#ifndef FOREIGN_HH
-#define FOREIGN_HH
+#ifndef STRANGER_HH
+#define STRANGER_HH
+
+#include "foreign.hh"
 
 struct stranger: public skel::stranger
 {
@@ -30,4 +33,4 @@ struct stranger: public skel::stranger
   void w_world();
 };
 
-#endif // FOREIGN_HH
+#endif // STRANGER_HH
