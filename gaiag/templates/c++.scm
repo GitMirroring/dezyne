@@ -30,7 +30,6 @@
 (define-templates prefix-formals-type code:formals formal-prefix)
 (define-templates pump code:pump?)
 (define-templates pump-include code:pump?)
-(define-templates include-statement code:file-name)
 (define-templates meta identity)
 (define-templates ports-meta-list ast:requires-port* meta-infix)
 (define-templates check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (ast:port* o)))))
