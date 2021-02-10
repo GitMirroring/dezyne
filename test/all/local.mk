@@ -131,6 +131,7 @@ REGRESSION_TESTS =				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
  %D%/extern_in_interface			\
+ %D%/foreign_import_system			\
  %D%/foreign_namespace				\
  %D%/guard_expressions				\
  %D%/hello_blocked_external			\
