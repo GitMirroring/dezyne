@@ -1,8 +1,8 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
-// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -26,6 +26,7 @@
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 
@@ -112,6 +113,9 @@ namespace dzn
             if(port == "" || port != p) port = p;
             else port = "";
           }
+
+          if(str.Count(c => (c == '.')) > 1) continue;
+
           context.lck(this, () => {
               Monitor.Pulse(this);
               this.expect.Enqueue(str);
