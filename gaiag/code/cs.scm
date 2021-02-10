@@ -89,8 +89,8 @@
 
 (define (direction o)
   (match (.direction o)
-    ("out" "out")
-    ("inout" "ref")
+    ('out "out")
+    ('inout "ref")
     (_ "")))
 
 (define-method (cs:direction (o <formal>))
@@ -115,7 +115,7 @@
         (cons (clone (make <formal>
                        #:name "dzn_cc"
                        #:type.name (make <scope.name> #:ids '("*calling-context*"))
-                       #:direction "inout")
+                       #:direction 'inout)
                      #:parent o)
               formals)
         formals)))
@@ -131,7 +131,7 @@
         (cons (make <formal>
                 #:name "dzn_cc"
                 #:type.name (make <scope.name> #:ids '("*calling-context*"))
-                #:direction "inout")
+                #:direction 'inout)
               args))))
 
 (define (expression+formal->argument a f)
