@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -114,7 +114,7 @@
     (if calling-context
         (cons (clone (make <formal>
                        #:name "dzn_cc"
-                       #:type.name (make <scope.name> #:name "*calling-context*")
+                       #:type.name (make <scope.name> #:ids '("*calling-context*"))
                        #:direction "inout")
                      #:parent o)
               formals)
@@ -130,7 +130,7 @@
     (if (not (command-line:get 'calling-context #f)) args
         (cons (make <formal>
                 #:name "dzn_cc"
-                #:type.name (make <scope.name> #:name "*calling-context*")
+                #:type.name (make <scope.name> #:ids '("*calling-context*"))
                 #:direction "inout")
               args))))
 
