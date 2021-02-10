@@ -1,4 +1,4 @@
-(begin
+(let (#x:let-variable)
+ *unspecified*
  #x:expand-statement
- #x:block
-)
+ #x:block)

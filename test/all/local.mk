@@ -101,6 +101,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_function_reply			\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\
+ %D%/blocking_local				\
  %D%/blocking_normalize				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
