@@ -73,6 +73,7 @@ REGRESSION_TESTS =				\
  %D%/alpha_event				\
  %D%/alpha_field_test				\
  %D%/alpha_local				\
+ %D%/alpha_local2				\
  %D%/alpha_shadow_port				\
  %D%/alpha_variable				\
  %D%/async_async_prio				\
@@ -347,6 +348,7 @@ NON_REPRODUCIBLE_TESTS =			\
  %D%/compliance_reply_bool
 
 XFAIL_TESTS =					\
+ %D%/alpha_local2				\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable_illegal		\
  %D%/compound_local_assign_call			\
