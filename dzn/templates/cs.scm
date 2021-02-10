@@ -80,7 +80,7 @@
 (define-templates global-type-name)
 (define-templates non-primitive (lambda (o) (if (or (is-a? (ast:type o) <enum>)
                                                     (is-a? (ast:type o) <interface>)) o '())))
-(define-templates bind-interface-name (compose .type .port .left))
+(define-templates bind-interface-name (compose ast:full-name .type .port .left) type-infix)
 
 (define-templates data (lambda (o) (cond ((is-a? o <root>) (filter (is? <data>) (.elements o)))
                                          ((is-a? o <data>) o)
