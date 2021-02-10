@@ -1,1 +1,1 @@
-{"skip":["traces","scheme:code"],"languages":["c++"],"tss":"true"}
+{"skip":["traces","javascript:execute"],"languages":["c++"],"tss":"true"}
