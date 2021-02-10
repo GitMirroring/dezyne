@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2016, 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -838,7 +838,7 @@
 (define-method (code:model (o <root>))
   (let* ((models (ast:model* o))
          (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
-                                          (conjoin ast:imported? (negate (is? <foreign>)))))
+                                          ast:imported?))
                          models))
          (models (ast:topological-model-sort models))
          (models (map dzn:annotate-shells models)))
