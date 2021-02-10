@@ -57,7 +57,7 @@
     (set! (.name (.out (.p sut))) "p")
     (set! (.name (.in (.r sut))) "r")
     (set! (.cb (.out (.p sut))) (lambda _ (log-out "p." "cb")))
-    (set! (.ping (.out (.p sut))) (lambda _ (log-out "p." "p"ing)))
+    (set! (.ping (.out (.p sut))) (lambda _ (log-out "p." "ping")))
 
     (let ((proc (assoc-ref trace-alist trace)))
       (unless proc
