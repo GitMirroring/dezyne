@@ -148,6 +148,11 @@
          (models (map dzn:annotate-shells models)))
     models))
 
+(define-method (c++:dzn-locator (o <instance>))
+  (let ((model (parent o <model>)))
+    (if (null? (injected-bindings model)) '()
+        o)))
+
 (define-templates-macro define-templates c++)
 (include-from-path "gaiag/templates/dzn.scm")
 (include-from-path "gaiag/templates/code.scm")
