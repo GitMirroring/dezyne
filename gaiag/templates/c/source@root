@@ -1,4 +1,4 @@
-##include "#x:scoped-model-name .h"
+##include "#code:file-name .h"
 ##include <dzn/config.h>
 ##include <dzn/locator.h>
 ##include <dzn/runtime.h>

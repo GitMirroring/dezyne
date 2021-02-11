@@ -32,6 +32,7 @@
 (define-templates source dzn:model newline-infix)
 (define-templates global dzn:global newline-infix)
 (define-templates model-name dzn:model-name)
+(define-templates model-full-name dzn:model-full-name type-infix)
 (define-templates =expression dzn:=expression)
 (define-templates type dzn:type type-infix)
 (define-templates external dzn:external)

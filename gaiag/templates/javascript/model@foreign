@@ -4,6 +4,6 @@ if (node_p ()) {
 } else {
   // browser
   /* Add to your html something like
-     <script src="js/#x:scope+name .js"></script>
+     <script src="js/#x:module-name .js"></script>
   */
 }
