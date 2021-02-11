@@ -49,8 +49,6 @@
             injected-instances
             non-injected-instances
             injected-instance-name
-
-            code:language
             code:instance-name
 
             code:add-calling-context
@@ -135,9 +133,6 @@
           (conjoin (compose ast:imported? .type) (lambda (i) (not (equal? (ast:source-file o)
                                                                           (ast:source-file (.type i)))))))
          (ast:instance* o)))
-
-(define (code:language)
-  (command-line:get 'language "c++"))
 
 ;;; ast accessors
 (define-method (code:instance* (o <system>))
