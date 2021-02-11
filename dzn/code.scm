@@ -539,14 +539,15 @@
 (define-method (code:type-name (o <model>))
   (ast:full-name o))
 
-(define-method (code:type-name o) ; MORTAL SIN HERE!!?
+(define-method (code:type-name o)
   (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
-    (map dzn:->string
-         (match type
-           (($ <enum>) (code:type-name type))
-           (($ <extern>) (list (.value type)))
-           ((or ($ <bool>) ($ <int>) ($ <void>)) (ast:full-name type))
-           (_ (ast:full-name type))))))
+    (match type
+      (($ <enum>) (code:type-name type))
+      (($ <extern>) (list (.value type)))
+      (($ <bool>) '("bool"))
+      (($ <int>) '("int"))
+      (($ <void>) '("void"))
+      (_ (ast:full-name type)))))
 
 (define-method (code:type-name (o <event>))
   ((compose code:type-name .type .signature) o))
