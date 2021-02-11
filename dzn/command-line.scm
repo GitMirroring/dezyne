@@ -34,7 +34,6 @@
             dzn:verbosity
             %locations?
             multi-opt
-            %language
             EXIT_OTHER_FAILURE))
 
 (define EXIT_OTHER_FAILURE 2)
@@ -80,5 +79,3 @@
 
 (define (dzn:verbosity)
   (dzn:multi-opt 'debug))
-
-(define %language (make-parameter "c++"))
