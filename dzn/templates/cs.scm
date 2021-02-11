@@ -57,7 +57,6 @@
 (define-templates check-bindings-list ast:port* newline-comma-infix)
 (define-templates event-type ast:type)
 (define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
-(define-templates scope_name code:scope+name name_infix)
 (define-templates delegate-signature (lambda (o) (if (or (ast:typed? o) (pair? (cs:formals o))) o '())))
 (define-templates signature cs:formals)
 

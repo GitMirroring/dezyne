@@ -78,9 +78,7 @@
             code:pump?
             code:reply
             code:reply-type
-            code:reply-scope+name
             code:reply-types
-            code:scope+name
             code:trace-q-out
 
             code:file-name
@@ -122,7 +120,6 @@
             code:reply-type
             code:reply-types
             code:return
-            code:scope+name
             code:scope-type-name
             code:trigger
             code:type-name
@@ -216,67 +213,6 @@
 
 (define-method (code:port-type (o <port>))
   (ast:full-name (.type o)))
-
-(define-method (code:fullscope (o <ast>))
-
-  (define (name o)
-    (let ((n (.name o)))
-      (if (is-a? n <scope.name>) (ast:name n) n)))
-
-  (define (fullscope o)
-    (let ((p (.parent o)))
-     (match p
-       (($ <root>) '())
-       (($ <namespace>) (append (fullscope p) (list (name p))))
-       ((? (is? <model>)) (append (fullscope p) (list (name p))))
-       (_ (fullscope p)))))
-
-  (let ((scope (fullscope o)))
-    (unless (every string? scope)
-      (throw 'scope 'not-string scope))
-    scope))
-
-(define-method (code:scope+name o) ;; REMOVEME
-  (match o
-    (($ <bool>) '("bool"))
-    (($ <void>) '("void"))
-    (($ <event>) ((compose code:scope+name .signature) o))
-    (($ <formal>) ((compose code:scope+name .type.name) o))
-    (($ <instance>) (code:scope+name (.type.name o)))
-    (($ <enum-literal>) (append (code:scope+name (.type o)) (list (.field o))))
-    (($ <port>) (code:scope+name (.type.name o)))
-    (($ <scope.name>) (.ids o))
-    (($ <signature>) ((compose code:scope+name .type.name) o))
-    (($ <trigger>) ((compose code:scope+name .event) o))
-    ((? (is? <named>)) ((compose code:scope+name .name) o))
-    ))
-
-(define-method (code:scope+name (o <root>))
-  (code:file-name o))
-
-(define-method (code:scope+name (o <reply>))
-  ((compose code:scope+name ast:type .expression) o))
-
-(define-method (code:scope+name (o <event>))
-  ((compose code:scope+name .signature) o))
-
-(define-method (code:scope+name (o <extern>))
-  (list (.value o)))
-
-(define-method (code:scope+name (o <int>))
-  '("int"))
-
-(define-method (code:scope+name (o <signature>))
-  ((compose code:scope+name .type) o))
-
-(define-method (code:scope+name (o <trigger>))
-  ((compose code:scope+name .event) o))
-
-(define-method (code:scope+name (o <enum-field>))
-  (append ((compose code:scope+name .type) o) (list (.field o))))
-
-(define-method (code:scope+name (o <binding>))
-  ((compose code:scope+name .type (cut ast:lookup (parent o <model>) <>) injected-instance-name) o))
 
 (define-method (code:non-injected-bindings (o <system>))
   (filter om:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
@@ -496,6 +432,9 @@
 (define-method (code:enum-short-name (o <enum>))
   (ast:name o))
 
+(define-method (code:enum-short-name (o <enum-literal>))
+  (code:enum-short-name (.type o)))
+
 (define-method (code:enum-definer (o <interface>))
   (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behaviour o)))))
 
@@ -648,12 +587,6 @@
 
 ;;; code: generic templates
 
-(use-modules (ice-9 pretty-print))
-
-(define-method (scope (o <type>)) ((compose ast:scope .name) o))
-(define-method (scope (o <event>)) ((compose scope .type .signature) o))
-(define-method (scope (o <reply>)) (scope (.type (.expression o))))
-
 (define-method (code:interface-include o)
   (map (compose (cut make <file-name> #:name <>) code:file-name)
        (delete-duplicates
@@ -668,21 +601,13 @@
 (define-method (code:enum-literal (o <enum-literal>))
   (append (code:type-name (.type o)) (list (.field o))))
 
-(define-method (code:enum-scope (o <field-test>))
-  ((compose (cut code:enum-model-scope <> (parent o <model>)) .type .variable) o))
-
 (define-method (code:enum-scope (o <enum-literal>))
-  ((compose (cut code:enum-model-scope <> (parent o <model>)) .type) o))
-
-(define-method (code:enum-scope (o <enum>))
-  ((compose (cut code:enum-model-scope <> (parent o <model>)) .type) o))
-
-(define-method (code:enum-model-scope (o <enum>) model)
-  (let ((scope (ast:full-scope o))
-        (model-scope (and=> model ast:full-name)))
-    (cond ((or (null? scope) (null? model-scope)) (parent o <root>))
+  (let* ((enum (.type o))
+         (scope (ast:full-scope enum))
+         (model-scope (and=> (parent o <model>) ast:full-name)))
+    (cond ((or (null? scope) (null? model-scope)) (parent enum <root>))
           ((equal? scope model-scope) (make <model-scope> #:scope model-scope))
-          (else o))))
+          (else enum))))
 
 (define-method (code:trace-q-out o)
   (if ((compose ast:out? .event) o) o

@@ -34,17 +34,7 @@
 (define-templates async ast:async-out-triggers newline-infix)
 (define-templates reqs ast:req-events newline-infix)
 (define-templates clrs ast:clr-events newline-infix)
-
-;; FIXME
-(define-templates scope (compose scope .name) name-infix)
-(define-templates code:type-scope ast:full-scope type-infix)
-(define-templates scope-type-name code:scope-type-name type-infix)
-(define-templates scope-prefix (compose scope .name) name-suffix)
-(define-templates scope+name code:scope+name name-infix)
-(define-templates scoped-model-name code:scope+name name-infix);; c++ compat, junk me
-(define-templates scope::name code:scope+name type-infix)
 (define-templates enum-scope code:enum-scope type-infix)
-
 (define-templates enum-name code:enum-name name-infix)
 (define-templates enum-short-name code:enum-short-name name-infix)
 (define-templates type-name code:type-name type-infix)

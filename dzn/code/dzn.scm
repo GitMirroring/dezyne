@@ -68,6 +68,7 @@
             dzn:injected
             dzn:model
             dzn:model-name
+            dzn:model-full-name
             dzn:open-namespace
             dzn:port-prefix
             dzn:reply-port
@@ -105,6 +106,9 @@
 
 (define-method (dzn:model-name (o <ast>))
   (ast:name (parent o <model>)))
+
+(define-method (dzn:model-full-name (o <ast>))
+  (or (and=> (parent o <model>) ast:full-name) '()))
 
 (define (dzn:global o) ;; TODO: REPLACEME with ???
   (filter (is? <type>) (ast:top* o)))

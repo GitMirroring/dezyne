@@ -11,7 +11,7 @@ if (node_p ()) {
   dzn_require = function () {return {};};
   dzn = have_dzn_p () ? dzn : {};
   /* Add to your html something like
-     <script src="js/#x:scope+name .js"></script>
+     <script src="js/#x:module-name .js"></script>
   */
 }
 

@@ -1,1 +1,1 @@
-#x:enum-scope .#x:scope-type-name .#.field
+#x:enum-scope .#x:enum-short-name .#.field
