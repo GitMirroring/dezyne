@@ -125,7 +125,7 @@
             code:upcase-model-name
             code:variable-name
             code:variable->argument
-            om:port-bind?))
+            code:port-bind?))
 
 (define (code:component-include o)
  (filter (disjoin
@@ -140,37 +140,15 @@
 (define-method (code:instance* o)
   '())
 
-(define (om:port-bind? bind)
-  (and (om:port-binding? bind)
+(define (code:port-bind? bind)
+  (and (code:port-binding? bind)
        bind))
 
-(define (om:port-binding? bind)
+(define (code:port-binding? bind)
   (or (and (not (.instance.name (.left bind)))
            (.left bind))
       (and (not (.instance.name (.right bind)))
            (.right bind))))
-
-(define (om:port-bind system port)
-  (find (lambda (bind) (and=> (om:port-bind? bind)
-                              (lambda (b)
-				(ast:equal? (.port (om:port-binding? b)) port))))
-        (ast:binding* system)))
-
-(define (om:bind system o)
-  (let* ((binds (ast:binding* system)))
-    (match o
-      ((? string?) ;; FIXME: port need not be unique
-       (error "obsolete code")
-       (find (lambda (bind) (or (ast:equal? (.port.name (.left bind)) o)
-                                (ast:equal? (.port.name (.right bind)) o)))
-           binds))
-      ((and ($ <end-point>) (= .instance.name instance-name) (= .port.name port-name))
-       (find (lambda (bind)
-               (or (and (equal? (.instance.name (.left bind)) instance-name)
-                                     (equal? (.port.name (.left bind)) port-name))
-                                (and (equal? (.instance.name (.right bind)) instance-name)
-                                     (equal? (.port.name (.right bind)) port-name))))
-             binds)))))
 
 (define (injected-binding? binding)
   (or (equal? "*" (.port.name (.left binding)))
@@ -210,7 +188,7 @@
   (ast:full-name (.type o)))
 
 (define-method (code:non-injected-bindings (o <system>))
-  (filter om:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
+  (filter code:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
 
 (define-method (code:injected-instances-system (o <system>))
   (if (null? (injected-bindings o)) ""
@@ -239,7 +217,7 @@
   (let* ((model (parent o <model>))
          (left (.left o))
          (right (.right o))
-         (port (and (om:port-bind? o)
+         (port (and (code:port-bind? o)
                     (if (not (.instance.name left)) (.port left) (.port right)))))
     port))
 
@@ -247,7 +225,7 @@
   (let* ((model (parent o <model>))
          (left (.left o))
          (right (.right o))
-         (bind (and (om:port-bind? o)
+         (bind (and (code:port-bind? o)
                     (if (.instance.name left) left right))))
     bind))
 
