@@ -106,7 +106,7 @@
 
 ;; nameing stuff
 (define-method (c:namespace-upcase o)
-  (map symbol-upcase (c:name o)))
+  (map string-upcase (c:name o)))
 
 (define-method (c:name o)
   ((compose ast:full-name ast:type) o))
@@ -123,7 +123,7 @@
       (c:name o)))
 
 (define-method (c:enum-complete-name-upcase (o <enum>))
-  (map symbol-upcase (c:name o)))
+  (map string-upcase (c:name o)))
 
 (define-method (c:get-enum-fields-of-enum (o <enum>))
   (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
