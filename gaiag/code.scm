@@ -50,10 +50,8 @@
             non-injected-instances
             injected-instance-name
 
-            code:header?
             code:language
             code:instance-name
-            code:skel-file
 
             code:add-calling-context
             code:add-calling-context-formal
@@ -86,12 +84,9 @@
             code:trace-q-out
 
             code:file-name
-            code:dump
             code:declarative-or-imperative
             code:extension
-            code:dump-main
             code:model
-            code:module
             code:om
             code:port-type
             code:enum-field-definer
@@ -137,32 +132,7 @@
             code:variable-name
             code:variable->argument
             code:x-header-
-            code:root->
-
-            om:port-bind?
-            %x:header
-            %x:main
-            ))
-
-(define %x:header (make-parameter #f))
-(define %x:main (make-parameter #f))
-
-(define (ast-> ast)
-  (let ((root (code:om ast)))
-    (code:root-> root))
-  "")
-
-(define (code:root-> root)
-  (code:dump root)
-  (code:dump-main root))
-
-(define-method (code:dump-main (root <root>))
-  (let ((main (command-line:get 'model #f)))
-    (when main
-      (let* ((main-name (string-split main #\.))
-             (main-model (ast:lookup root (make <scope.name> #:ids main-name))))
-        ;; FIXME: error if not found?
-        (and=> main-model code:dump-main)))))
+            om:port-bind?))
 
 (define (code:component-include o)
  (filter (disjoin
@@ -728,62 +698,6 @@
   (if ((compose ast:out? .event) o) o
       ""))
 
-;; main
-
-;;; dump to file
-
-(define-method (have-non-interface-models? (o <root>))
-  (let* ((objects
-          (filter
-           (disjoin (is? <extern>)
-                    (negate (disjoin ast:async? ast:imported?)))
-           (ast:model* o)))
-         (non-interface-models (filter (negate (is? <interface>)) objects)))
-    (pair? non-interface-models)))
-
-(define-method (code:dump (o <root>))
-  (let* ((dir (command-line:get 'output "."))
-         (stdout? (equal? dir "-"))
-         (base (basename (ast:source-file o) ".dzn"))
-         (foreign-conflict? (find (lambda (o) (and (is-a? o <foreign>)
-                                                   (not (ast:imported? o))
-                                                   (equal? base (code:file-name o)))) (ast:model* o))))
-    (when foreign-conflict?
-      (stderr "cowardly refusing to clobber file with basename: ~a\n" base)
-      (exit EXIT_SUCCESS))
-    (when (code:header?)
-      (let* ((ext (dzn:extension (make <interface>)))
-             (file-name (string-append dir "/" base ext)))
-        (if stdout? ((dzn:indent (cut (%x:header) o)))
-            (begin
-              (mkdir-p dir)
-              (with-output-to-file file-name
-                (dzn:indent (cut (%x:header) o)))))))
-    (if (or (not (code:header?)) (have-non-interface-models? o))
-        (let* ((ext (dzn:extension (make <component>)))
-               (file-name (string-append dir "/" base ext)))
-          (if stdout? ((dzn:indent (cut (%x:source) o)))
-              (begin
-                (mkdir-p dir)
-                (with-output-to-file file-name
-                  (dzn:indent (cut (%x:source) o)))))))))
-
-(define-method (code:dump (o <foreign>))
-  #f)
-
-(define-method (code:dump-main (o <interface>))
-  #f)
-
-(define-method (code:dump-main (o <component-model>))
-  (let* ((dir (command-line:get 'output "."))
-         (stdout? (equal? dir "-"))
-         (ext (dzn:extension o))
-         (dir (string-append dir "/"))
-         (base "main")
-         (file-name (string-append dir base ext)))
-   (if stdout? ((dzn:indent (cut (%x:main) o)))
-       (with-output-to-file file-name (dzn:indent (cut (%x:main) o))))))
-
 (define-method (code:file-name (o <port>))
   (code:file-name (.type o)))
 
@@ -812,21 +726,6 @@
         (let ((extern (make <extern> #:name (make <scope.name> #:ids '("*calling-context*")) #:value calling-context)))
           (clone o #:elements (cons extern (ast:top* o))))
         o)))
-
-(define (code:foreign?)
-  (member (%language) '("c++" "c++03" "c++-msvc11")))
-
-(define (code:header?)
-  (member (%language) '("c" "c++" "c++03" "c++-msvc11")))
-
-(define (code:module root)
-  (let ((module (make-module 31 `(,(resolve-module '(gaiag code))
-                                  ,(resolve-module `(gaiag code ,(%language)))))))
-    (module-define! module 'root root)
-    module))
-
-(define (code:skel-file model)
-  ((->string-join "_") (append (drop-right (code:scope+name model) 1) '("skel") (take-right (code:scope+name model) 1))))
 
 (define-method (code:pump? (o <root>))
   (filter (conjoin (negate ast:imported?) (is? <component>) (compose pair? ast:req-events)) (ast:model* o)))

@@ -76,44 +76,7 @@
             dzn:->string
             dzn:from
             dzn:to
-            dzn:type
-            %x:source
-            %dzn:indenter))
-
-(define %x:source (make-parameter #f))
-
-(define (dzn:extension o)
-  (match o
-    (($ <interface>)
-     (assoc-ref '(("cd" . ".yah")
-                  ("c" . ".h")
-                  ("c++" . ".hh")
-                  ("c++03" . ".hh")
-                  ("c++-msvc11" . ".hh")
-                  ("dzn" . ".dzn")
-                  ("html" . ".html")
-                  ("scheme" . ".scm")
-                  ("java" . ".java")
-                  ("java7" . ".java")
-                  ("javascript" . ".js")
-                  ("cs" . ".cs")
-                  ("python" . ".py"))
-                (%language)))
-    ((or ($ <foreign>) ($ <component>) ($ <system>))
-     (assoc-ref '(("cd" . ".yll")
-                  ("c" . ".c")
-                  ("c++" . ".cc")
-                  ("c++03" . ".cc")
-                  ("c++-msvc11" . ".cc")
-                  ("dzn" . ".dzn")
-                  ("html" . ".html")
-                  ("scheme" . ".scm")
-                  ("java" . ".java")
-                  ("java7" . ".java")
-                  ("javascript" . ".js")
-                  ("cs" . ".cs")
-                  ("python" . ".py"))
-                (%language)))))
+            dzn:type))
 
 (define-method (generator->string generator)
   (with-output-to-string (code-util:indenter generator)))
@@ -357,17 +320,6 @@
 
 (define-method (dzn:expand-blocking (o <blocking>))
   (.statement o))
-
-;;; dump to file
-(define %dzn:indenter (make-parameter indent))
-
-(define (pipe producer consumer)
-  (with-input-from-string (with-output-to-string producer) consumer))
-
-(define (dzn:indent thunk)
-  (if (%dzn:indenter)
-      (lambda () (pipe thunk (lambda () ((%dzn:indenter)))))
-      thunk))
 
 (define-method (dzn:namespace (o <root>))
   (let ((dzn-file (ast:source-file o))
