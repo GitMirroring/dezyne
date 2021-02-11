@@ -63,7 +63,7 @@
 (define-templates shell-required-meta-initializer ast:requires-port* newline-infix)
 (define-templates injected-instance-meta-initializer injected-instances newline-infix)
 (define-templates non-injected-instance-meta-initializer non-injected-instances newline-infix)
-(define-templates dzn-locator code:dzn-locator)
+(define-templates dzn-locator c++:dzn-locator)
 (define-templates header-data ast:data*)
 (define-templates header-model c++:model)
 

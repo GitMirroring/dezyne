@@ -98,7 +98,6 @@
             code:bind-required
             code:component-include
             code:component-port
-            code:dzn-locator
             code:enum-literal
             code:enum-scope
             code:expand-on
@@ -206,11 +205,6 @@
   (let ((injected-instance-names (map injected-instance-name (injected-bindings model))))
     (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
             (ast:instance* model))))
-
-(define-method (code:dzn-locator (o <instance>)) ;; MORTAL SIN HERE!!?
-  (let* ((model (parent o <model>)))
-    (if (null? (injected-bindings model)) ""
-        "_local")))
 
 (define-method (code:name (o <binding>))
   (injected-instance-name o))
