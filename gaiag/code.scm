@@ -95,7 +95,7 @@
             code:om
             code:port-type
             code:enum-field-definer
-            symbol->enum-field
+            string->enum-field
 
             code:arguments
             code:assign-reply
@@ -504,9 +504,9 @@
         o)))
 
 (define-method (code:enum-field-definer (o <enum>))
-  (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
+  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
-(define ((symbol->enum-field enum) o i)
+(define ((string->enum-field enum) o i)
   (make <enum-field> #:type.name (.name enum) #:field o #:value i))
 
 (define-method (code:enum-name (o <enum-field>))

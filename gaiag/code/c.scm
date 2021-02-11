@@ -126,7 +126,7 @@
   (map string-upcase (c:name o)))
 
 (define-method (c:get-enum-fields-of-enum (o <enum>))
-  (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
+  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 ;;enum main stuff
 (define-method (c:get-all-enums (o <ast>))

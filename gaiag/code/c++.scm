@@ -76,11 +76,11 @@
 (define (c++:pump-include o) (if (pair? (ast:port* (.behaviour o))) "#include <dzn/pump.hh>" ""))
 
 (define-method (c++:enum-field->string (o <enum>))
-  (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
+  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 (define-method (c++:string->enum (o <model>))
   (filter (is? <enum>) (ast:type* o)))
 (define-method (c++:string->enum (o <enum>))
-  (map (symbol->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
+  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 (define-method (c++:enum->string (o <interface>))
   (filter (is? <enum>) (append (ast:type* (parent o <root>))
