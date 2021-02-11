@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
@@ -38,6 +38,7 @@
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
   #:use-module (dzn code)
+  #:use-module (dzn code-util)
   #:use-module (dzn indent)
   #:use-module (dzn templates))
 
@@ -208,15 +209,33 @@
 (include-from-path "dzn/templates/code.scm")
 (include-from-path "dzn/templates/scheme.scm")
 
-(define (scheme:root-> root)
-  (parameterize ((%language "scheme")
-                 (%x:main x:main)
-                 (%x:header identity)
-                 (%x:source x:source)
-                 (%dzn:indenter (cut indent #:open #\( #:close #\) #:no-indent "")))
-    (code:root-> root)))
+
+;;;
+;;; Entry points.
+;;;
+
+(define* (root-> root #:key (dir ".") main)
+  "Entry point."
+
+  (code-util:foreign-conflict? root)
+
+  (let ((root (code:om root))
+        (indenter (cute code-util:indenter <>
+                        #:open #\( #:close #\) #:no-indent "")))
+
+    (let ((generator (indenter (cute x:source root)))
+          (file-name (code-util:root-file-name root dir ".scm")))
+      (code-util:dump root generator #:file-name file-name))
+
+    (when main
+      (let ((model (ast:get-model root main)))
+        (when (is-a? model <component-model>)
+          (let ((generator (indenter (cute x:main model)))
+                (file-name (code-util:file-name "main" dir ".scm")))
+            (code-util:dump root generator #:file-name file-name)))))))
 
 (define (ast-> ast)
-  (let ((root (code:om ast)))
-    (scheme:root-> root))
-  "")
+  "XXX REMOVEME Legacy entry point"
+  (let ((dir (command-line:get 'output "."))
+        (main (command-line:get 'model #f)))
+    (root-> ast #:dir dir #:main main)))
