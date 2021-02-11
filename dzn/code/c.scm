@@ -138,10 +138,6 @@
 (define-method (c:enum-printed-name (o <enum-field>))
   (ast:name (.type o)))
 
-(define-method (c:is-global (o <variable>))
-  (if (parent o <variables>) o
-      '()))
-
 (define-method (c:enum-trigger-void (o <trigger>))
   (cond ((is-a? (ast:type o) <enum>) (ast:type o))
         ((ast:typed? o) o)
@@ -253,6 +249,9 @@
 (define-method (c:enum-name (o <ast>)) ;; enum for helper functions
   (if (is-a? (ast:type o) <enum>) "enum"
       (c:type-name o)))
+
+(define-method (c:enum-literal (o <enum-literal>))
+  (append (ast:full-name (.type o)) (list (.field o))))
 
 
 ;;;
