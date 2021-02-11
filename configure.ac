@@ -125,7 +125,7 @@ AC_SUBST([CXX11])
 
 AC_PROG_CC
 AC_PROG_CC_C99
-if test "xx$ac_cv_prog_cc_c99" != "xyes"; then
+if test "x$ac_cv_prog_cc_c99" != "xyes" -a "x$have_cxx11" != "xtrue"; then
    CC99=
 else
    if test "x$courageous" = "xyes"; then
