@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2015, 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -37,6 +37,7 @@
   #:use-module (gaiag ast)
   #:use-module (gaiag code dzn)
   #:use-module (gaiag code)
+  #:use-module (gaiag code-util)
   #:use-module (gaiag templates))
 
 (define-method (javascript:class-name (o <model>))
@@ -98,14 +99,31 @@
 (include-from-path "gaiag/templates/code.scm")
 (include-from-path "gaiag/templates/javascript.scm")
 
-(define (javascript:root-> root)
-  (parameterize ((%language "javascript")
-                 (%x:main x:main)
-                 (%x:header identity)
-                 (%x:source x:source))
-    (code:root-> root)))
+
+;;;
+;;; Entry points.
+;;;
+
+(define* (root-> root #:key (dir ".") main)
+  "Entry point."
+
+  (code-util:foreign-conflict? root)
+
+  (let ((root (code:om root)))
+
+    (let ((generator (code-util:indenter (cute x:source root)))
+          (file-name (code-util:root-file-name root dir ".js")))
+      (code-util:dump root generator #:file-name file-name))
+
+    (when main
+      (let ((model (ast:get-model root main)))
+        (when (is-a? model <component-model>)
+          (let ((generator (code-util:indenter (cute x:main model)))
+                (file-name (code-util:file-name "main" dir ".js")))
+            (code-util:dump root generator #:file-name file-name)))))))
 
 (define (ast-> ast)
-  (let ((root (code:om ast)))
-    (javascript:root-> root))
-  "")
+  "XXX REMOVEME Legacy entry point"
+  (let ((dir (command-line:get 'output "."))
+        (main (command-line:get 'model #f)))
+    (root-> ast #:dir dir #:main main)))
