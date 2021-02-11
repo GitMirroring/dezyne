@@ -71,7 +71,6 @@
 (define-templates method-prototype (lambda (o) (map code:trigger (code:ons o))) newline-infix)
 (define-templates method code:trigger)
 (define-templates methods code:ons)
-(define-templates self-or-not c:is-global)
 (define-templates enum-cast (lambda (o)(if (is-a? (ast:type o) <enum>) o '())))
 
 (define-templates functions-declarations code:functions newline-infix)
@@ -137,6 +136,7 @@
 (define-templates file-name-identifier-upcase c:file-name-identifier-upcase)
 (define-templates header-enum-string-function-prototype c:get-all-enums newline-infix)
 (define-templates enum-name c:enum-name type-infix)
+(define-templates enum-literal c:enum-literal type-infix)
 
 ;; namespace stuff
 (define-templates namespace-upcase c:namespace-upcase type-infix)
