@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2020,2021 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -23,5 +23,6 @@
 
 EXTRA_DIST +=					\
  %D%/build.c++.make				\
+ %D%/build.c.make				\
  %D%/build.javascript.make			\
  %D%/build.scheme.make
