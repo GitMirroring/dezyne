@@ -103,6 +103,5 @@ Languages: ~a
     (unless ast->
       (format (current-error-port) "code: no such language: ~a\n" language)
       (exit EXIT_OTHER_FAILURE))
-    (parameterize ((%language language)
-                   (%locations? locations?)) (ast-> ast))
+    (parameterize ((%locations? locations?)) (ast-> ast))
     *unspecified*))

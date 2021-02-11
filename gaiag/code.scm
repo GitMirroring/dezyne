@@ -578,14 +578,13 @@
   o)
 
 (define-method (code:variable-name (o <variable>))
-  (cond ((member (%language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
-        ((code:class-member? o) o)
-        (else (make <local> #:name (.name o) #:type.name (.type.name o) #:expression (.expression o)))))
+  (if (code:class-member? o) o
+      (make <local> #:name (.name o) #:type.name (.type.name o)
+            #:expression (.expression o))))
 
 (define-method (code:variable-name (o <formal>))
-  (cond ((member (%language) '("c++" "c++03" "c++-msvc11")) o) ; MORTAL SIN HERE!!?
-        (((disjoin ast:out? ast:inout?) o) (make <out-formal> #:name (.name o) #:type.name (.type.name o)))
-        (else o)))
+  (if (ast:in? o) o
+      (make <out-formal> #:name (.name o) #:type.name (.type.name o))))
 
 (define-method (code:variable-name (o <ast>))
   ((compose code:variable-name .variable) o))
@@ -623,12 +622,13 @@
 (define-method (code:type-name (o <enum-literal>))
   (code:type-name (.type o)))
 
-(define-method (code:main-out-arg (o <trigger>)) ; MORTAL SIN HERE!!?
-  (let ((formals (ast:formal* o)))
+(define-method (code:main-out-arg (o <trigger>))
+  (let* ((formals (ast:formal* o))
+         (formals (map
+                   (lambda (f) (if (ast:in? f) f (make <out-formal>)))
+                   formals)))
     (map
-     (lambda (f i) (cond ((ast:in? f) (clone f #:name i))
-                         ((member (%language) '("c++" "c++03" "c++-msvc11" "cs")) (string-append "_" (number->string i)))
-                         (else (make <out-formal> #:name i))))
+     (cute clone <> #:name <>)
      formals (iota (length formals)))))
 
 (define-method (code:main-out-arg-define (o <trigger>))
