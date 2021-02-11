@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,16 +22,24 @@
 //
 // Code:
 
-#ifndef FOREIGN_H_H
-#define FOREIGN_H_H
-typedef struct foreign_t foreign;
-typedef struct foreign_skel_t foreign_skel;
+#include <hello_foreign.h>
 
-struct foreign_t{
-  foreign_skel base;
-  /* space for variables */
+/* call "name-of-foreign"_skel_init as follows:
+   foreign_skel_init(&(self->base), dezyne_locator, dzn_meta); */
 
-  /* end of space */
-};
+void Foreign_init(Foreign* self, locator* dezyne_locator
+#if DZN_TRACING
+, dzn_meta* dzn_meta
+#endif /* !DZN_TRACING */
+)
+{
+  Foreign_skel_init(&(self->base), dezyne_locator
+#if DZN_TRACING
+, dzn_meta
+#endif /* !DZN_TRACING */
+);
+}
 
-#endif /* FOREIGN_H_H */
+void w_world_Foreign(Foreign* self)
+{
+}
