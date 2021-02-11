@@ -36,6 +36,7 @@
   #:use-module (dzn config)
   #:use-module (dzn command-line)
   #:use-module (dzn code)
+  #:use-module (dzn code-util)
   #:use-module (dzn code dzn)
   #:use-module (dzn goops)
   #:use-module (dzn misc)
@@ -177,19 +178,38 @@
          (models (map dzn:annotate-shells models)))
     models))
 
-(define (cs:om ast) ;;TODO, replace me with code:om when (binding-into-blocking) is removed
+(define (cs:om ast)
   ((compose
-    (lambda (o) (if (dzn:command-line:get 'debug) (display (ast->dzn o) (current-error-port))) o)
     add-reply-port
     triples:event-traversal
     (remove-otherwise)
     code:add-calling-context)
    ast))
 
+
+;;;
+;;; Entry points.
+;;;
+
+(define* (root-> root #:key (dir ".") main)
+  "Entry point."
+
+  (code-util:foreign-conflict? root)
+
+  (let ((root (cs:om root)))
+    (let ((generator (code-util:indenter (cute x:source root)))
+          (file-name (code-util:root-file-name root dir ".cs")))
+      (code-util:dump root generator #:file-name file-name))
+
+    (when main
+      (let ((model (ast:get-model root main)))
+        (when (is-a? model <component-model>)
+          (let ((generator (code-util:indenter (cute x:main model)))
+                (file-name (code-util:file-name "main" dir ".cs")))
+            (code-util:dump root generator #:file-name file-name)))))))
+
 (define (ast-> ast)
-  (parameterize ((%language "cs")
-                 (%x:header x:header)
-                 (%x:source x:source)
-                 (%x:main x:main))
-    (let ((ast (cs:om ast)))
-      (code:root-> ast))))
+  "XXX REMOVEME Legacy entry point"
+  (let ((dir (command-line:get 'output "."))
+        (main (command-line:get 'model #f)))
+    (root-> ast #:dir dir #:main main)))
