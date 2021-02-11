@@ -630,11 +630,10 @@
     (map (lambda (f i) (clone f #:name i))
          formals (iota (length formals)))))
 
-(define-method (code:main-out-arg-define-formal (o <formal>)) ;; MORTAL SIN HERE!!?
+(define-method (code:main-out-arg-define-formal (o <formal>))
   (let ((type ((compose .value .type) o)))
-    (if (not ((disjoin ast:out? ast:inout?) o)) ""
-        (if (equal? type "int") o
-            "/*FIXME*/"))))
+    (if (ast:in? o) ""
+        o)))
 
 (define-method (code:main-event-map-match-return (o <trigger>))
   (if (ast:in? (.event o)) o ""))
@@ -688,9 +687,9 @@
           ((equal? scope model-scope) (make <model-scope> #:scope model-scope))
           (else o))))
 
-(define-method (code:trace-q-out o) ;; MORTAL SIN HERE
+(define-method (code:trace-q-out o)
   (if ((compose ast:out? .event) o) o
-      ""))
+      '()))
 
 (define-method (code:file-name (o <port>))
   (code:file-name (.type o)))
