@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -28,13 +28,13 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
-  ;; #:use-module (ice-9 readline)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
   #:use-module (gaiag ast)
   #:use-module (gaiag code)
+  #:use-module (gaiag code-util)
   #:use-module (gaiag command-line)
   #:use-module (gaiag config)
   #:use-module (gaiag code dzn)
@@ -241,7 +241,6 @@
         ((c:in-range lower higher -2147483648 2147483647) "int32_t")
         (else "int64_t")))
 
-
 (define (c:in-range low high min max)
   (and (>= low min)
        (<= low max)
@@ -252,13 +251,35 @@
   (if (is-a? (ast:type o) <enum>) "enum"
       (c:type-name o)))
 
-(define (c:root-> root)
-  (parameterize ((%language "c")
-                 (%x:header x:header)
-                 (%x:source x:source)
-                 (%x:main x:main))
-    (code:root-> root))) ;generates output files
+
+;;;
+;;; Entry points.
+;;;
+
+(define* (root-> root #:key (dir ".") main)
+  "Entry point."
+
+  (code-util:foreign-conflict? root)
+
+  (let ((root (code:om root)))
+    (let ((generator (code-util:indenter (cute x:header root)))
+          (file-name (code-util:root-file-name root dir ".h")))
+      (code-util:dump root generator #:file-name file-name))
+
+    (when (code-util:generate-source? root)
+      (let ((generator (code-util:indenter (cute x:source root)))
+            (file-name (code-util:root-file-name root dir ".c")))
+        (code-util:dump root generator #:file-name file-name)))
+
+    (when main
+      (let ((model (ast:get-model root main)))
+        (when (is-a? model <component-model>)
+          (let ((generator (code-util:indenter (cute x:main model)))
+                (file-name (code-util:file-name "main" dir ".c")))
+            (code-util:dump root generator #:file-name file-name)))))))
 
 (define (ast-> ast)
-  (let ((ast (code:om ast)))
-    (c:root-> ast)))
+  "XXX REMOVEME Legacy entry point"
+  (let ((dir (command-line:get 'output "."))
+        (main (command-line:get 'model #f)))
+    (root-> ast #:dir dir #:main main)))
