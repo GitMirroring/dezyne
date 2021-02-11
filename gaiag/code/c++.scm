@@ -96,14 +96,15 @@
   (let ((type (ast:type o)))
     (if (is-a? type <void>) '() type)))
 
-(define-method (c++:type-name o)        ; MORTAL SIN HERE!!?
+(define-method (c++:type-name o)
   (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
-    (map dzn:->string
-         (match type
-           (($ <enum>) (c++:type-name type))
-           (($ <extern>) (list (.value type)))
-           ((or ($ <bool>) ($ <int>) ($ <void>)) (code:scope+name type))
-           (_ (c++:type-name type))))))
+    (match type
+      (($ <enum>) (c++:type-name type))
+      (($ <extern>) (list (.value type)))
+      (($ <bool>) '("bool"))
+      (($ <int>) '("int"))
+      (($ <void>) '("void"))
+      (_ (c++:type-name type)))))
 
 (define-method (c++:type-name o)
   (code:type-name o))

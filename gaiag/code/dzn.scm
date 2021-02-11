@@ -74,7 +74,6 @@
             dzn:reply-port
             dzn:signature
             dzn:statement
-            dzn:->string
             dzn:from
             dzn:to
             dzn:type))
@@ -120,7 +119,7 @@
       o))
 
 (define-method (dzn:data (o <data>))
-  (if (.value o) ((compose dzn:->string .value) o)
+  (if (.value o) (.value o)
       '()))
 
 (define-method (dzn:=expression (o <ast>))
@@ -223,15 +222,6 @@
 (define (unspecified? o)
   (eq? o *unspecified*))
 
-(define (dzn:->string o)
-  (match o
-    ((? number?) (number->string o))
-;;    ((? symbol?) (symbol->string o))
-    ((? string?) o)
-    ((? (is? <data>)) (dzn:->string (.value o)))
-    ((? unspecified?) "")
-    (#f "")))
-
 (define-method (dzn:formal-type (o <formal>)) o)
 (define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
 (define-method (dzn:formal-type (o <trigger>)) ((compose dzn:formal-type .event) o))
@@ -267,7 +257,7 @@
 (define-method (dzn:signature (o <port>))
   (list ((compose ast:name .type) o) "t"))
 
-(define-method (dzn:action-arguments (o <action>)) ; MORTAL SIN HERE!!?
+(define-method (dzn:action-arguments (o <action>))
   (if (not (.port.name o)) '()
       (if (null? (ast:argument* o)) (list "")
           (ast:argument* o))))
