@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -165,7 +165,7 @@ namespace dzn
               }
 
               Action service_timers = () => {
-                IEnumerator<KeyValuePair<Deadline, Action>> t = timers.OrderBy(k => k.Key.t).GetEnumerator();
+                IEnumerator<KeyValuePair<Deadline, Action>> t = timers.OrderBy(k => k.Key).GetEnumerator();
                 while(timers.Count != 0 && t.MoveNext() && t.Current.Key.expired()) {
                   this.timers.Remove(t.Current.Key);
                   if(Monitor.IsEntered(this)) Monitor.Exit(this);
