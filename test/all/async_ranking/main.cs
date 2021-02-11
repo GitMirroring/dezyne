@@ -44,6 +44,11 @@ public static class main
 	    sut.dzn_meta.name = "sut";
 	    sut.p.dzn_meta.requires.name = "p";
 
+            dzn.RuntimeHelper.apply(sut.dzn_meta, (m) => {
+                    System.Console.WriteLine
+                    ((m.parent != null ? m.parent.name : "null")
+                     + " " + m.name + " " + m.rank);});
+
 	    sut.p.outport.done = () => {System.Console.Error.WriteLine("sut.p.done -> <external>.p.done");};
 	    pump.shell (() => sut.p.inport.doAB());
 	    pump.shell (() => sut.p.inport.doBA());
