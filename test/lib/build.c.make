@@ -1,5 +1,5 @@
 # Dezyne --- Dezyne command line tools
-# Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2018, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 #
 # This file is part of Dezyne.
@@ -25,6 +25,7 @@
 
 default: $(OUT)/test
 
+DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.c.make,$(MAKEFILE_LIST)))../../)
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
@@ -47,21 +48,26 @@ ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
 endif
 
+$(OUT)/%.o: $(DEVELOPMENT)/runtime/c/%.c
+	mkdir -p $(dir $@)
+	$(COMPILE.c) -o $@ $<
+
 $(OUT)/%.o: $(IN)/%.c
 	mkdir -p $(dir $@)
-	$(COMPILE.c) -S -o $@.S $<
 	$(COMPILE.c) -o $@ $<
 
 $(OUT)/%.o: $(IN)/c/%.c
 	mkdir -p $(dir $@)
-	$(COMPILE.c) -S -o $@.S $<
 	$(COMPILE.c) -o $@ $<
 
 $(foreach f, $(wildcard $(IN)/c/*.c), $(eval $(OUT)/test: $(patsubst $(IN)/c/%.c, $(OUT)/%.o, $(f))))
 
+RUNTIME_SOURCES := $(wildcard $(DEVELOPMENT)/runtime/c/*.c)
+RUNTIME_O := $(RUNTIME_SOURCES:$(DEVELOPMENT)/runtime/c/%.c=$(OUT)/%.o)
+
 $(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c))
 $(OUT)/test: $(patsubst $(OUT)/%.c, $(OUT)/%.o,  $(wildcard $(OUT)/*.c))
-$(OUT)/test: $(MAIN_O)
+$(OUT)/test: $(RUNTIME_O)
 	mkdir -p $(dir $@)
 	$(LINK.c) -o $@ $^ $(LDFLAGS)
 
