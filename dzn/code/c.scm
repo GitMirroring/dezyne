@@ -77,10 +77,12 @@
 
 
 (define-method (c:formal-data-type (o <formal>))
-  (cond ((is-a? (.type o) <enum>) "uint8_t")
-        ((is-a? (.type o) <int>) (c:range-type (.type o)))
-        ((is-a? (.type o) <extern>) (list ((compose .value .value .type) o)))
-        (else ((compose .name .type.name) o))))
+  (let ((type (.type o)))
+    (match type
+     (($ <enum>) "uint8_t")
+     (($ <int>) (c:range-type (.type o)))
+     (($ <extern>) (list ((compose .value .value .type) o)))
+     (_ (ast:name type)))))
 
 ;; bidning stuff
 (define-method (c:binding-instance (o <end-point>))
@@ -134,7 +136,7 @@
     (tree-collect (is? <enum>) root)))
 
 (define-method (c:enum-printed-name (o <enum-field>))
-  ((compose .name .type.name) o))
+  (ast:name (.type o)))
 
 (define-method (c:is-global (o <variable>))
   (if (parent o <variables>) o
@@ -213,13 +215,14 @@
 
 ;; enum type name handling
 (define-method (c:type-name (o <ast>))
-  (cond ((is-a? (ast:type o) <enum>) "uint8_t")
-        ((is-a? (ast:type o) <int>) (c:range-type (ast:type o)))
-        ((is-a? (ast:type o) <extern>)
-         (if (string= "int" ((compose .name.name .type) o))
-             "int16_t"
-             ((compose .value .type) o)))
-        (else (code:type-name o))))
+  (let ((type (ast:type o)))
+    (match type
+      (($ <enum>) "uint8_t")
+      (($ <int>) (c:range-type (ast:type o)))
+      (($ <extern>) (if (string= "int" ((compose ast:name .type) o))
+                        "int16_t"
+                        ((compose .value .type) o)))
+      (_ (code:type-name o)))))
 
 (define-method (c:range-type (o <int>))
   (let*((range (.range o))
