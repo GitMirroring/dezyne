@@ -29,7 +29,6 @@
 (define-templates source)
 (define-templates file-name code:file-name)
 (define-templates model code:model)
-(define-templates header- code:x-header-)
 (define-templates name code:name)
 (define-templates async-member-initializer (lambda (o) (ast:port* (.behaviour o))) newline-infix)
 (define-templates async ast:async-out-triggers newline-infix)

@@ -130,7 +130,6 @@
             code:upcase-model-name
             code:variable-name
             code:variable->argument
-            code:x-header-
             om:port-bind?))
 
 (define (code:component-include o)
@@ -643,8 +642,6 @@
 
 (define-method (code:scope-type-name (o <field-test>))
   ((compose code:scope-type-name .type .variable) o))
-
-(define (code:x-header- o) (filter (conjoin (negate ast:imported?) (is? <interface>)) (ast:model* o)))
 
 (define-method (code:reply (o <type>))
   o)
