@@ -38,10 +38,11 @@
             code-util:root-file-name
             code-util:indenter))
 
-(define (code-util:indenter thunk)
+(define* (code-util:indenter thunk #:key (width 2) (open #\{) (close #\}) (no-indent "#"))
   (define (pipe producer consumer)
     (with-input-from-string (with-output-to-string producer) consumer))
-  (cute pipe thunk indent))
+  (cute pipe thunk
+        (cute indent #:width width #:open open #:close close #:no-indent no-indent)))
 
 (define (code-util:file-name base dir ext)
   (cond ((equal? dir "-") "-")
