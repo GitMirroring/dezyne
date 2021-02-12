@@ -52,6 +52,7 @@ HELLO_TESTS =					\
  %D%/hello_global_int				\
  %D%/hello_guard				\
  %D%/hello_if					\
+ %D%/hello_injected				\
  %D%/hello_interface				\
  %D%/hello_local				\
  %D%/hello_multiple_provides			\
