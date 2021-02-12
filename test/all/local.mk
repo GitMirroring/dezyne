@@ -257,6 +257,7 @@ PARSER_TESTS =					\
  %D%/parse_import_end				\
  %D%/parse_import_path				\
  %D%/parse_import_twice				\
+ %D%/parse_interface_parens			\
  %D%/parse_locations				\
  %D%/parse_missing_event			\
  %D%/parse_non_existent_import			\
@@ -353,7 +354,8 @@ XFAIL_TESTS =					\
  %D%/compliance_out_inevitable_illegal		\
  %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\
- %D%/import_strip_component
+ %D%/import_strip_component			\
+ %D%/parse_interface_parens
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
