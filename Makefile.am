@@ -174,6 +174,7 @@ EXTRA_DIST += $(info_image_DATA)
 dist_man_MANS =					\
  doc/dzn.1					\
  doc/dzn-code.1					\
+ doc/dzn-explore.1				\
  doc/dzn-hello.1				\
  doc/dzn-language.1				\
  doc/dzn-lts.1					\

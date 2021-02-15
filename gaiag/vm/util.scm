@@ -54,6 +54,8 @@
             make-system-state
             modeling-names
             out-event?
+            pc->hash
+            pc->string
             pop-locals
             port-event?
             provides-trigger?
@@ -494,6 +496,39 @@
          (result (fold (cut update-variable update-list <> <>) state ((compose ast:variable* .type .ast) instance))))
     (if (is-a? result <error>) (clone pc #:status result)
         (set-state pc result))))
+
+
+;;;
+;;; Hashing state
+;;;
+
+(define-method (state->string (o <state>))
+  (string-append
+   (string-join (runtime:instance->path (.instance o)) ".") "=["
+   (string-join (map (match-lambda ((x . y)
+                                    (format #f "~a=~a" x (->sexp y))))
+                     (.variables o)) ",\n")
+   (if (null? (.q o)) ""
+       (string-append "q=" (string-join (map trigger->string (.q o)) ",")))
+   "]"))
+
+(define-method (state->string (o <system-state>))
+  (let* ((state-list (.state-list o))
+         (state-list (if (is-a? (%sut) <runtime:port>) state-list
+                         (filter (disjoin (compose (is? <runtime:component>) .instance)
+                                          (compose ast:requires? .ast .instance))
+                                 state-list))))
+    (string-join (map state->string state-list) "\n")))
+
+(define-method (pc->string (o <program-counter>))
+  (if (.status o) "<error>"
+      (string-join
+       (cons (state->string (.state o))
+             (map (compose runtime:dotted-name car) (.blocked o)))
+       "\n")))
+
+(define-method (pc->hash (o <program-counter>))
+  (string-hash (pc->string o)))
 
 
 ;;;
