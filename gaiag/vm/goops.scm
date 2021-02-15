@@ -33,6 +33,7 @@
   #:use-module (gaiag vm evaluate)
   #:use-module (gaiag vm runtime)
   #:export (<end-of-on>
+            <flush-async>
             <flush-return>
             <flush>
             <initial-compound>
@@ -56,6 +57,7 @@
             <range-error>
             <second-reply-error>
 
+            .async
             .component-acceptance
             .deferred
             .handling?
@@ -93,6 +95,8 @@
 (define-ast <flush> (<imperative>))
 
 (define-ast <flush-return> (<imperative>))
+
+(define-ast <flush-async> (<statement>))
 
 (define-ast <initial-compound> (<declarative-compound>))
 
@@ -150,7 +154,9 @@
   (status #:getter .status #:init-value #f #:init-keyword #:status)
   (statement #:getter .statement #:init-value #f #:init-keyword #:statement)
   (trail #:getter .trail #:init-value (list) #:init-keyword #:trail)
-  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger))
+  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger)
+
+  (async #:getter .async #:init-form (list) #:init-keyword #:async))
 
 (define-class <state> ()
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
@@ -223,6 +229,9 @@
   (when (.statement o)
     (display " " port)
     (display ((compose name .statement) o) port))
+  (when (pair? (.async o))
+    (display " async: " port)
+    (display (map (compose .name cadr) (.async o)) port))
   (and=> (.reply o) (cut format port " reply: ~a" <>))
   (and=> (.return o) (cut format port " return: ~a" <>))
   (display " " port)

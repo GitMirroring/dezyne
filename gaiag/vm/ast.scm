@@ -31,7 +31,8 @@
             ast:statement
             ast:trigger-equal?
             ast:valued?)
-  #:re-export (ast:type))
+  #:re-export (ast:async?
+               ast:type))
 
 (define-method (ast:acceptance* (o <acceptances>)) (.elements o))
 (define-method (ast:acceptance* (o <compliance-error>)) ((compose ast:acceptance* .port-acceptance) o))
@@ -54,3 +55,12 @@
 
 (define-method (ast:valued? (o <trigger>))
   (ast:valued-in-triggers))
+
+(define-method (ast:async? (o <port>))
+  (string-prefix? "dzn.async" (string-join ((compose ast:full-name .type) o) ".")))
+
+(define-method (ast:async? (o <action>))
+  (and=> (.port o) ast:async?))
+
+(define-method (ast:async? (o <trigger>))
+  (and=> (.port o) ast:async?))
