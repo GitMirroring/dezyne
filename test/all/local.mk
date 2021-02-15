@@ -56,6 +56,7 @@ HELLO_TESTS =					\
  %D%/hello_interface				\
  %D%/hello_local				\
  %D%/hello_multiple_provides			\
+ %D%/hello_nondet				\
  %D%/hello_optional				\
  %D%/hello_otherwise				\
  %D%/hello_out					\
