@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -35,8 +35,7 @@
   #:use-module (dzn misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
-  #:export (
-            define-ast
+  #:export (define-ast
             <ast>
             <ast-node>
             .node
@@ -65,8 +64,7 @@
             tree-collect
             tree-collect-filter
             tree-filter
-            tree-map
-            ))
+            tree-map))
 
 ;; FIXME: generate-me
 (export
@@ -75,7 +73,6 @@
            .behaviour
            .bindings
            .column
-           .component-acceptance
            .direction
            .elements
            .else
@@ -104,7 +101,6 @@
            .message
            .name
            .offset
-           .port-acceptance
            .port
            .ports
            .range
@@ -126,236 +122,122 @@
            .variable.name
            .variables
 
-           <action-node>
            <action-or-call>
-           <action-or-call-node>
            <action>
-           <and-node>
-           <action-out>
-           <action-out-node>
            <and>
            <argument>
-           <arguments-node>
            <arguments>
-           <assign-node>
            <assign>
            <ast-list>
            <ast-node-list>
-           <behaviour-node>
            <behaviour>
-           <binary-node>
            <binary>
-           <binding-node>
            <binding>
-           <bindings-node>
            <bindings>
-           <block-comment-node>
            <block-comment>
-           <blocking-compound-node>
            <blocking-compound>
-           <blocking-node>
            <blocking>
-           <bool-expr-node>
            <bool-expr>
-           <bool-node>
            <bool>
-           <call-node>
            <call>
-           <comment-node>
            <comment>
-           <component-model-node>
            <component-model>
-           <component-node>
            <component>
-           <compound-node>
            <compound>
-           <data-expr-node>
            <data-expr>
-           <data-node>
            <data>
-           <declarative-compound-node>
            <declarative-compound>
-           <declarative-illegal-node>
            <declarative-illegal>
-           <declarative-node>
            <declarative>
            <direction>
-           <end-point-node>
            <end-point>
-           <enum-expr-node>
            <enum-expr>
            <enum-field>
-           <enum-literal-node>
            <enum-literal>
-           <enum-node>
            <enum>
-           <equal-node>
            <equal>
            <error>
-           <event-node>
            <event>
-           <events-node>
            <events>
-           <expression-node>
            <expression>
-           <extern-node>
            <extern>
-           <field-test-node>
            <field-test>
-           <fields-node>
            <fields>
            <file-name>
-           <flush>
-           <flush-node>
-           <foreign-node>
            <foreign>
-           <formal-binding-node>
            <formal-binding>
-           <formal-node>
            <formal>
-           <formals-node>
            <formals>
-           <function-node>
            <function>
-           <functions-node>
            <functions>
-           <greater-equal-node>
            <greater-equal>
-           <greater-node>
            <greater>
-           <group-node>
            <group>
-           <guard-node>
            <guard>
-           <if-node>
            <if>
-           <illegal-node>
            <illegal>
-           <imperative-node>
            <imperative>
-           <import-node>
            <import>
-           <incomplete-node>
            <incomplete>
-           <inevitable-node>
            <inevitable>
-           <instance-node>
            <instance>
-           <instances-node>
            <instances>
-           <int-expr-node>
            <int-expr>
-           <int-node>
            <int>
-           <interface-node>
            <interface>
-           <less-equal-node>
            <less-equal>
-           <less-node>
            <less>
-           <line-comment-node>
            <line-comment>
-           <literal-node>
            <literal>
-           <local-node>
            <local>
-           <location-node>
            <location>
-           <location-end-node>
            <location-end>
-           <minus-node>
            <minus>
-           <model-node>
            <model-scope>
            <model>
-           <modeling-event-node>
            <modeling-event>
-           <named-node>
            <named>
-           <namespace-node>
            <namespace>
-           <not-equal-node>
            <not-equal>
-           <not-node>
            <not>
-           <on-node>
            <on>
-           <optional-node>
            <optional>
-           <or-node>
            <or>
-           <otherwise-guard-node>
            <otherwise-guard>
-           <otherwise-node>
            <otherwise>
-           <out-bindings-node>
            <out-bindings>
            <out-formal>
-           <plus-node>
            <plus>
-           <port-node>
            <port>
-           <ports-node>
            <ports>
-           <q-in>
-           <q-in-node>
-           <q-out>
-           <q-out-node>
-           <range-node>
            <range>
-           <reply-node>
            <reply>
-           <return-node>
            <return>
-           <root-node>
            <root>
-           <scope.name-node>
            <scope.name>
-           <selection-node>
            <selection>
-           <shell-system-node>
            <shell-system>
-           <signature-node>
            <signature>
-           <silent-trigger-node>
            <silent-trigger>
            <skip>
-           <stack-node>
            <stack>
-           <statement-node>
            <statement>
-           <system-node>
            <system>
            <the-end-blocking>
            <the-end>
            <trigger-return>
-           <trigger-return-node>
-           <trigger-node>
            <trigger>
-           <triggers-node>
            <triggers>
-           <type-node>
            <type>
-           <types-node>
            <types>
-           <unary-node>
            <unary>
            <unspecified>
-           <var-node>
            <var>
-           <variable-node>
            <variable>
-           <variables-node>
            <variables>
-           <void-node>
            <void>
-           <voidreply>
-           )
+           <voidreply>)
 
-;; (define-method (.name (o <pair>))
-;;   (cadr o))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-syntax define-ast
   (lambda (x)
     (define (make-node name)
@@ -417,7 +299,6 @@
 (define-method (make-wrapper (o <top>) p) o)
 (define-method (make-wrapper (o <ast-node>) p) o)
 (define-method (make-wrapper (o <ast-list-node>) p) (make <ast-list> #:parent p #:node o))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-ast <location> (<ast>)
   (file-name)
@@ -473,7 +354,6 @@
 (define-ast <functions> (<ast-list>))
 (define-ast <instances> (<ast-list>))
 (define-ast <ports> (<ast-list>))
-(define-ast <acceptances> (<ast-list>))
 
 (define g-root-id 0)
 (define-method (initialize (o <root-node>) . initargs)
@@ -706,26 +586,10 @@
 (define-ast <return> (<imperative>)
   (expression #:init-form (make <literal-node>)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; system simulator ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-ast <action-out> (<action>))
-(define-ast <flush> (<imperative>)
-  (instance))
-
 (define-ast <trigger-return> (<imperative>)
   (expression)
   (port.name)
   (event.name #:init-value "return"))
-
-(define-ast <q-in> (<ast>)
-  (trigger))
-
-(define-ast <q-out> (<ast>)
-  (trigger))
-
-(define-ast <q-trigger> (<ast>)
-  (trigger))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-ast <stack> (<ast>))
 (define-ast <return-value> (<ast>))
@@ -743,13 +607,6 @@
 
 (define-ast <error> (<status>)
   (message #:init-value ""))
-
-(define-ast <compliance-error> (<error>)
-  (component-acceptance)
-  (port-acceptance))
-
-(define-ast <no-match> (<status>)
-  (input))
 
 (define-ast <skip> (<imperative>))
 
@@ -785,9 +642,6 @@
 (define-method (node-class (class <class>))
   (node-class- (make class #:node #f #:parent #f)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO: make construct function line clone, explicitely looking for pairs
 (define-method (ast:unwrap o) o)
 (define-method (ast:unwrap (o <ast-node>)) o)
 (define-method (ast:unwrap (o <pair>)) (if (not (list? o)) (pke "URG node:" o) (map ast:unwrap o)))
@@ -801,8 +655,6 @@
          (node (apply make (cons class-node (map ast:unwrap setters))))
          (parent (find get-parent setters)))
     (if (equal? class class-node) node (make class #:node node #:parent parent))))
-
-;;(define construct (pure-funcq construct))
 
 (define-method (make-instance (class <class>) . initargs)
   (if (and (member <ast> (class-precedence-list class))
@@ -887,20 +739,11 @@
                      (map ast:unwrap setters))))
     (apply clone-base (cons o setters))))
 
-;; makreel;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (define-method (clone-base-node (o <ast-node>) . setters)
-;;   (apply clone-base (cons o setters)))
-
-;; (define-method (clone-base-ast (o <ast>) . setters)
-;;   (apply clone-base (cons o setters)))
-
-;; step
 (define-method (clone-base-node (o <ast-node>) . setters)
   (apply clone-base-unwrap (cons o setters)))
 
 (define-method (clone-base-ast (o <ast>) . setters)
   (apply clone-base-unwrap (cons o setters)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-method (clone (o <ast-node>) . setters)
   (apply clone-base-node (cons o setters)))
