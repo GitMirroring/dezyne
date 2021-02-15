@@ -248,6 +248,7 @@ PARSER_TESTS =					\
  %D%/newlines_between_dollars			\
  %D%/parse_block_comment_import			\
  %D%/parse_duplicate_declaration		\
+ %D%/parse_duplicate_import_prefix		\
  %D%/parse_import_both				\
  %D%/parse_import_end				\
  %D%/parse_import_path				\
