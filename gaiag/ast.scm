@@ -124,7 +124,6 @@
            ast:type
            ast:value
 
-           ast:acceptance*
            ast:argument*
            ast:binding*
            ast:event*
@@ -164,7 +163,6 @@
 
 ;;; ast: accessors
 
-(define-method (ast:acceptance* (o <acceptances>)) (.elements o))
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
 (define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))
@@ -196,7 +194,6 @@
 
 (define-method (ast:namespace* (o <scope>)) '())
 
-(define-method (ast:acceptance* (o <compliance-error>)) ((compose ast:acceptance* .port-acceptance) o))
 (define-method (ast:argument* (o <action>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
