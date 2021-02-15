@@ -97,14 +97,15 @@
       (cons action (format #f "~a" (trigger->string action)))))
 
 (define-method (trace->trail (o <runtime:component>) (action <action>))
-  (let* ((port (.port action))
-         (r:port (runtime:port o port))
-         (r:other-port (runtime:other-port r:port)))
-    (if (ast:injected? port)       ;injected
-        (cons action (format #f "~a.~a" (.name (.ast r:other-port)) (.event.name action)))
-        (and (runtime:boundary-port? r:other-port)
-             (let ((trigger (action->trigger r:other-port action)))
-               (cons action (format #f "~a.~a" (name r:other-port) (trigger->string trigger))))))))
+  (and (not (ast:async? action))
+       (let* ((port (.port action))
+              (r:port (runtime:port o port))
+              (r:other-port (runtime:other-port r:port)))
+         (if (ast:injected? port)       ;injected
+             (cons action (format #f "~a.~a" (.name (.ast r:other-port)) (.event.name action)))
+             (and (runtime:boundary-port? r:other-port)
+                  (let ((trigger (action->trigger r:other-port action)))
+                    (cons action (format #f "~a.~a" (name r:other-port) (trigger->string trigger)))))))))
 
 (define-method (trace->trail (o <runtime:component>) (q-out <q-out>))
   (let* ((trigger (.trigger q-out))
@@ -137,6 +138,7 @@
 (define-method (trace->trail (o <runtime:component>) (return <trigger-return>))
   (let ((port (.port return)))
     (and port
+         (not (ast:async? port))
          (let* ((r:port (runtime:port o port))
                 (r:other-port (and r:port (runtime:other-port r:port))))
            (if (eq? r:port r:other-port) ;injected

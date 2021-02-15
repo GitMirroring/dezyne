@@ -39,6 +39,7 @@
             append-port-trace
             action->trigger
             assign
+            async-event?
             dequeue
             enqueue
             flush
@@ -564,6 +565,9 @@
        (ast:eq? (.statement a) (.statement b))
        (equal? (serialize (.state a)) (serialize (.state b)))
        (equal? (.trail a) (.trail b))))
+
+(define-method (async-event? (pc <program-counter>) event)
+  (and (string? event) (not (member event (labels))) (pair? (.async pc))))
 
 
 ;;;

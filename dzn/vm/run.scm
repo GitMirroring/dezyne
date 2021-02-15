@@ -41,6 +41,7 @@
             %strict?
             filter-error
             filter-match-error
+            run-async-event
             run-requires
             run-silent
             run-to-completion
@@ -308,14 +309,29 @@ until RTC?."
                (traces (append-map run-flush traces)))
           traces))))
 
+(define-method (run-async-event (pc <program-counter>))
+  (let ((trace (step pc (make <flush-async>))))
+    (extend-trace trace run-to-completion)))
+
+(define-method (run-async (pc <program-counter>) event)
+  (let* ((trail (.trail pc))
+         (pc (clone pc #:trail (cons event trail)))
+         (traces (run-async-event pc)))
+    traces))
+
 (define-method (run-to-completion* (pc <program-counter>) event)
   (let ((pc (clone pc #:instance #f #:reply #f)))
     (cond
      ((is-a? (%sut) <runtime:port>)
       (run-interface pc event))
      ((requires-trigger? event)
-      (run-requires pc event))
+      (let ((async-traces (if (null? (.async pc)) '()
+                              (run-async pc event))))
+        (if (pair? async-traces) async-traces
+            (run-requires pc event))))
      ((provides-trigger? event)
       (run-provides pc event))
+     ((async-event? pc event)
+      (run-async pc event))
      (else
       '()))))
