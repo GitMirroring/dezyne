@@ -37,15 +37,3 @@ interface deadlock_interface1 {
     }
   }
 }
-
-// Dummy interface and component since there needs to be present a component
-interface DummyI {
-  in void e();
-  behaviour { [true] on e: {} }
-}
-
-component DummyC {
-  provides DummyI i;
-  requires deadlock_interface1 ii;
-  behaviour { [true] on i.e(): {} }
-}
