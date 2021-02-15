@@ -634,6 +634,12 @@
 (define-ast <direction> (<named>))
 (define-ast <unspecified> (<ast>))
 
+(define-method (.variable.name (o <action>))
+  (let ((parent (.parent o)))
+    (match parent
+      (($ <assign>) (.variable.name parent))
+      (($ <variable>) (.name parent)))))
+
 (define-method (.id (o <object>))
   (pointer-address (scm->pointer o)))
 
