@@ -242,6 +242,7 @@ REGRESSION_TESTS =				\
  %D%/step_state					\
  %D%/stress_comment				\
  %D%/system_hello				\
+ %D%/system_hello_world				\
  %D%/system_helloworld				\
  %D%/system_inevitable				\
  %D%/system_mix_bindings			\
