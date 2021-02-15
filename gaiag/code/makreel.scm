@@ -896,12 +896,6 @@
        (.event.name expression))
       (_ "BAH"))))
 
-(define-method (.variable.name (o <action>))
-  (let ((parent (.parent o)))
-    (match parent
-      (($ <assign>) (.variable.name parent))
-      (($ <variable>) (.name parent)))))
-
 (define-method (makreel:enum-literal (o <enum-literal>))
   (append (ast:full-name (.type o)) (list (.field o))))
 
