@@ -52,6 +52,7 @@ HELLO_TESTS =					\
  %D%/hello_global_int				\
  %D%/hello_guard				\
  %D%/hello_if					\
+ %D%/hello_inevitable				\
  %D%/hello_injected				\
  %D%/hello_interface				\
  %D%/hello_local				\
@@ -160,10 +161,10 @@ REGRESSION_TESTS =				\
  %D%/hello_implicit_illegal			\
  %D%/hello_imported				\
  %D%/hello_import_component			\
- %D%/hello_inevitable				\
  %D%/hello_inevitable_action			\
  %D%/hello_inevitable_blocking_sync_out		\
  %D%/hello_inevitable_illegal			\
+ %D%/inevitable_multiple_requires		\
  %D%/hello_inevitable_sync_out			\
  %D%/hello_int					\
  %D%/hellointbug				\
