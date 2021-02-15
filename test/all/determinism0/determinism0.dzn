@@ -31,7 +31,7 @@ interface I {
   }
 }
 
-// This component has an deterministic problem immediately
+// This component has an immediate determinism problem
 component determinism0 {
   provides I i;
   requires I ii;
