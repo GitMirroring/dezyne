@@ -38,7 +38,8 @@
   #:use-module (dzn vm report)
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
-  #:export (%next-input
+  #:export (%exploring?
+            %next-input
             %strict?
             filter-error
             filter-match-error
@@ -59,6 +60,9 @@
 (define %strict? (make-parameter #f))
 
 (define %next-input (make-parameter (lambda (pc) (values #f pc))))
+
+;; Are we running "explore"?
+(define %exploring? (make-parameter #f))
 
 
 ;;;
@@ -102,20 +106,21 @@
   "Return #t when PCs are a nondeterministic set, i.e.: at least two
 valid PCS have the same state and are executing an imperative statement
 in the same component."
-  (let ((pcs (filter (negate .status) pcs)))
-    (and (not (is-a? ((compose .type .ast %sut)) <interface>))
-         (not (equal? pcs
-                      (delete-duplicates pcs
-                                         (lambda (a b)
-                                           (equal? (serialize (.state a)) (serialize (.state b)))))))
-         (let* ((statements (map .statement pcs))
-                (imperative (filter ast:imperative? statements)))
-           (> (length imperative) 1))
-         (let* ((instances (filter-map .instance pcs))
-                (types (map (compose .type .ast) instances))
-                (components (filter (is? <component>) types)))
-           ;; TODO: the *same* component (tests have only 1 component anyway...)
-           (> (length components) 1)))))
+  (if (%exploring?) #f
+      (let ((pcs (filter (negate .status) pcs)))
+        (and (not (is-a? ((compose .type .ast %sut)) <interface>))
+             (not (equal? pcs
+                          (delete-duplicates pcs
+                                             (lambda (a b)
+                                               (equal? (serialize (.state a)) (serialize (.state b)))))))
+             (let* ((statements (map .statement pcs))
+                    (imperative (filter ast:imperative? statements)))
+               (> (length imperative) 1))
+             (let* ((instances (filter-map .instance pcs))
+                    (types (map (compose .type .ast) instances))
+                    (components (filter (is? <component>) types)))
+               ;; TODO: the *same* component (tests have only 1 component anyway...)
+               (> (length components) 1))))))
 
 (define (mark-determinism-error trace)
   (let* ((pc (car trace))
@@ -166,7 +171,7 @@ program-counters produced by taking a step."
   "Return a list of traces produced by taking steps, starting from PC
 until RTC?."
   (let loop ((traces (list (list pc))))
-    (let* ((traces (filter-illegal traces))
+    (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
            (traces (filter-match-error traces))
            (pcs (map car traces)))
       (cond

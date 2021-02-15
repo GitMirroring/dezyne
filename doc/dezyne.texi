@@ -39,6 +39,7 @@ Documentation License''.
 * Dezyne Tutorial: (dezyne-tutorial).   Dezyne Tutorial.
 * dzn: (dezyne)Invoking dzn.            Running Dezyne commands.
 * dzn: (dezyne)Invoking dzn code.       Generating code from a Dezyne file.
+* dzn: (dezyne)Invoking dzn exlpore.    Exploring Dezyne models.
 * dzn: (dezyne)Invoking dzn parse.      Checking the syntax of Dezyne file.
 * dzn: (dezyne)Invoking dzn simulate.   Simulating Dezyne models.
 * dzn: (dezyne)Invoking dzn verify.     Verifying Dezyne models.
@@ -175,6 +176,7 @@ The Dezyne command-line tools
 
 * Invoking dzn::
 * Invoking dzn code::
+* Invoking dzn explore::
 * Invoking dzn hello::
 * Invoking dzn language::
 * Invoking dzn lts::
@@ -4527,6 +4529,7 @@ foreigns that use the same interfaces need to form a chain of
 @menu
 * Invoking dzn::
 * Invoking dzn code::
+* Invoking dzn explore::
 * Invoking dzn hello::
 * Invoking dzn language::
 * Invoking dzn lts::
@@ -4659,6 +4662,39 @@ Generate thread-safe system shell for model @var{model}.
 @xref{Thread-safe Shell}.
 
 @end table
+
+
+@node Invoking dzn explore
+@section Invoking @command{dzn explore}
+
+The @command{dzn explore} command generates a state diagram for a
+Dezyne model.
+
+Under the hood, @command{dzn explore} uses the Dezyne VM.
+
+@example
+dzn @var{dzn-option}@dots{} explore @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn explore}, and then exit.
+
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
+
+@item --model=@var{model}
+@itemx -m @var{model}
+Explore model @var{model}.  The default is to use the most
+``interesting'' model.
+
+@end table
+
 
 @node Invoking dzn hello
 @section Invoking @command{dzn hello}
