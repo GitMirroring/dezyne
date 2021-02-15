@@ -239,6 +239,7 @@ REGRESSION_TESTS =				\
  %D%/silent_optional_function			\
  %D%/simple.space				\
  %D%/state_deadlock				\
+ %D%/step_state					\
  %D%/stress_comment				\
  %D%/system_hello				\
  %D%/system_helloworld				\
