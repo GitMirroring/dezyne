@@ -52,6 +52,7 @@ interface ISensor
     }
   }
 }
+
 component CMOS
 {
   provides ISensor port;
@@ -65,6 +66,7 @@ interface IMemory
     on store:{}
   }
 }
+
 component Memory
 {
   provides IMemory port;
@@ -104,6 +106,7 @@ interface IAcquisition
     }
   }
 }
+
 component Acquire
 {
   provides IAcquisition port;
@@ -135,6 +138,7 @@ component Acquire
     }
   }
 }
+
 component Acquisition
 {
   provides IAcquisition port;
