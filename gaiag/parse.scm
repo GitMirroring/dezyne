@@ -360,11 +360,18 @@ specified in IMPORTS."
   (let ((content (with-input-from-file file-name read-string)))
     (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
         (let* ((content-alist (acons file-name content content-alist))
-               (file-names (resolve file-name imports (imported-file-names content) (imported-from content-alist))))
+               (file-names (resolve file-name imports
+                                    (imported-file-names content)
+                                    (imported-from content-alist))))
           (let loop ((file-names file-names) (content-alist content-alist))
             (if (null? file-names) (reverse content-alist)
-                (let* ((file-names (lset-difference string=? file-names (map car content-alist)))
-                       (file-names (delete-duplicates file-names))
+                (let* ((canonical-string=? (lambda (a b)
+                                             (string=? (canonicalize-path a)
+                                                       (canonicalize-path b))))
+                       (file-names (delete-duplicates file-names canonical-string=?))
+                       (file-names (lset-difference canonical-string=?
+                                                    file-names
+                                                    (map car content-alist)))
                        (alist (reverse (map read-file file-names)))
                        (content-alist (append alist content-alist))
                        (file-names (append-map
