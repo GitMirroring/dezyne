@@ -30,15 +30,3 @@ interface livelock_interface0 {
     on inevitable: {}
   }
 }
-
-// Dummy interface and component since there needs to be present a component
-interface DummyI {
-  in void e();
-  behaviour { on e: {} }
-}
-
-component DummyC {
-  provides DummyI i;
-  requires livelock_interface0 ii;
-  behaviour { on i.e(): {} }
-}
