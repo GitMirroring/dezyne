@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2018, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -247,7 +247,7 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
           (cond ((string=? file-name (car args))
                  (format (current-error-port) "No such file: ~a\n" file-name))
                 (else (format (current-error-port)
-                              "No such file: ~a, in: ~a;\n"
+                              "No such file: ~a found in: ~a;\n"
                               file (string-join imports ", "))
                       (let ((from (assoc-ref imported-from (basename file))))
                         (let loop ((from from))
@@ -348,23 +348,33 @@ specified in IMPORTS."
     (let ((content (with-input-from-file file-name read-string)))
       (cons file-name content)))
 
-  (define (resolve from imports imported)
-    (map (cute search-path (cons (dirname from) imports) <>) imported))
+  (define (resolve from imports imported imported-from)
+    (map (lambda (import)
+           (let* ((paths (cons (dirname from) imports))
+                  (file-name (search-path paths import)))
+             (unless file-name
+               (throw 'import-error import paths imported-from))
+             file-name))
+         imported))
 
   (let ((content (with-input-from-file file-name read-string)))
     (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
-        (let loop ((file-names (resolve file-name imports (imported-file-names content)))
-                   (content-alist (acons file-name content content-alist)))
-          (if (null? file-names) (reverse content-alist)
-              (let* ((file-names (lset-difference string=? file-names (map car content-alist)))
-                     (file-names (delete-duplicates file-names))
-                     (alist (reverse (map read-file file-names)))
-                     (file-names (append-map
-                                  (match-lambda
-                                    ((file-name . content)
-                                     (resolve file-name imports (imported-file-names content))))
-                                  alist)))
-                (loop file-names (append alist content-alist))))))))
+        (let* ((content-alist (acons file-name content content-alist))
+               (file-names (resolve file-name imports (imported-file-names content) (imported-from content-alist))))
+          (let loop ((file-names file-names) (content-alist content-alist))
+            (if (null? file-names) (reverse content-alist)
+                (let* ((file-names (lset-difference string=? file-names (map car content-alist)))
+                       (file-names (delete-duplicates file-names))
+                       (alist (reverse (map read-file file-names)))
+                       (content-alist (append alist content-alist))
+                       (file-names (append-map
+                                    (match-lambda
+                                      ((file-name . content)
+                                       (resolve file-name imports
+                                                (imported-file-names content)
+                                                (imported-from content-alist))))
+                                    alist)))
+                  (loop file-names content-alist))))))))
 
 (define (imported-file-names content)
   "Return the list of file names used in import statements in content."
@@ -376,6 +386,7 @@ specified in IMPORTS."
       ((('import file-name) ...) file-name))))
 
 (define (imported-from alist)
+  "Return an alist of imported file names"
   (define parse
     (match-lambda ((file-name . content)
                    (map (cute cons <> file-name)
