@@ -60,6 +60,7 @@ HELLO_TESTS =					\
  %D%/hello_optional				\
  %D%/hello_otherwise				\
  %D%/hello_out					\
+ %D%/hello_out_state				\
  %D%/hello_parse				\
  %D%/hello_reorder				\
  %D%/hello_system				\
