@@ -1,1 +1,1 @@
-{"model":false,"skip":["c:build","cs:build","javascript","run"],"comment":"handwritten main, cannot c, cs, run"}
+{"skip":["c++:execute","cs:execute"],"comment":"set-state not supported"}
