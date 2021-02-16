@@ -36,6 +36,6 @@ endef
 
 $(OUT)/test: $(MAIN)
 	if test -f $(IN)/main.scm; then cp -f $(IN)/main.scm $(OUT); fi
-	if test -f $(IN)/scheme/main.scm; then cp -f $(IN)/main.scm $(OUT); fi
+	if test -f $(IN)/scheme/main.scm; then cp -f $(IN)/scheme/main.scm $(OUT); fi
 	echo -e "$(TEST_SCRIPT)" > $@
 	chmod +x $@
