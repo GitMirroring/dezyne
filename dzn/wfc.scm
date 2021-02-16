@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -1009,7 +1009,7 @@
      ((and is-aorc
            (is-a? (ast:type o) <void>)
            (is-a? p <variable>))
-      `((wfc-error o "void value not ignored as it ought to be")))
+      `(,(wfc-error o "void value not ignored as it ought to be")))
      ((and is-aorc
            (not (is-a? (ast:type o) <void>))
            (not (is-a? p <assign>))
