@@ -214,8 +214,20 @@ output, and standard error as three values."
          (and=> (assoc "model" json)
                 (cut equal? <> '("model" . #f))))))
 
-(define (verify-only? file-name)
-  (directory-exists? (string-append file-name "/baseline/verify")))
+(define (error-model? file-name)
+  (or (directory-exists? (string-append file-name "/baseline/verify"))
+      ;; no verify baseline for system error models
+      (directory-exists? (string-append file-name "/baseline/simulate"))))
+
+(define (filter-<flush> string)
+  (let* ((lines (string-split string #\newline))
+         (events (filter (negate (cut string-contains <> "<flush>")) lines)))
+    (string-join events "\n")))
+
+(define (filter-state string)
+  (let* ((lines (string-split string #\newline))
+         (events (filter (negate (cut string-prefix? "(" <>)) lines)))
+    (string-join events "\n")))
 
 (define* (run-baseline file-name command #:key
                        (baseline (string-append file-name "/baseline"))
@@ -281,7 +293,7 @@ output, and standard error as three values."
               (model (or (model? file-name) base-name))
               ;; FIXME: METAs `model' is used for component/system tricksery
               (model base-name))
-         (or (verify-only? file-name)
+         (or (error-model? file-name)
              (skip? file-name "code" language (string-append language ":code"))
              (and
               (receive (status stdout stderr)
@@ -327,7 +339,7 @@ output, and standard error as three values."
          (out (string-append file-name "/out"))
          (out-lang (string-append file-name "/out/traces"))
          (handwritten-traces (list-files file-name ".*trace.*$")))
-    (or (verify-only? file-name)
+    (or (error-model? file-name)
         (pair? handwritten-traces)
         (skip? file-name "traces")
         (receive (status stdout stderr)
@@ -355,7 +367,7 @@ output, and standard error as three values."
                     ,(string-append "IN=" file-name)
                     ,(string-append "OUT=" out-lang)
                     ,@(if thread-pool? '("THREAD_POOL_O=thread_pool.o") '()))))
-    (or (verify-only? file-name)
+    (or (error-model? file-name)
         (skip? file-name
                language
                "code" (string-append language ":code")
@@ -372,7 +384,7 @@ output, and standard error as three values."
          (out (string-append file-name "/out"))
          (out-lang (string-append file-name "/out/" language))
          (test (string-append out-lang "/test")))
-    (or (verify-only? file-name)
+    (or (error-model? file-name)
         (skip? file-name
                language
                "code" (string-append language ":code")
@@ -383,21 +395,94 @@ output, and standard error as three values."
           (and (zero? status)
                (let ((net (trace:format-trace stderr #:format "event")))
                  (receive (status stdout stderr)
-                     (observe `("bash" "-c"
-                                ,(string-append "diff -ywB"
-                                                " --ignore-matching-lines='<flush>$'"
-                                                ;; ignore foreign/system communications
-                                                " --ignore-matching-lines='[.][^. ]\\+[.][^. ]\\+[.]'"
-                                                " <(echo -e '" input "')"
-                                                " <(echo -e '" net "')" ))
-                              #f)
+                     (let* ((input (filter-state input))
+                            (input (filter-<flush> input)))
+                       (observe `("bash" "-c"
+                                  ,(string-append "diff -ywB"
+                                                  ;; ignore foreign/system communications
+                                                  " --ignore-matching-lines='[.][^. ]\\+[.][^. ]\\+[.]'"
+                                                  " <(echo -e '" input "')"
+                                                  " <(echo -e '" net "')" ))
+                                #f))
                    (zero? status))))))))
+
+(define (run-simulate-trace file-name trace)
+  (format #t "** stage: simulate-trace ~a\n" trace)
+  (let* ((base-name (basename file-name))
+         (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (baseline (string-append file-name "/baseline/simulate"))
+         (input (with-input-from-file trace read-string))
+         (includes (cons (string-append file-name "/dzn")
+                         (or (and=> (getenv "DZN_INCLUDE_PATH")
+                                    (cut string-split <> #\:))
+                             '())))
+         (includes (filter directory-exists? includes))
+         (includes (append-map (cut list "-I" <>) includes))
+         (model (or (model? file-name) base-name))
+         (out (string-append file-name "/out"))
+         (language "simulate")
+         (out-lang (string-append file-name "/out/" language))
+         (input (filter-<flush> input))
+         (model (or (model? file-name) base-name))
+         ;; FIXME: METAs `model' is used for component/system tricksery
+         (model base-name))
+    (receive (status stdout stderr)
+        (observe `("dzn" "simulate"
+                   ,@includes
+                   "--strict"
+                   "-m" ,model
+                   ,dzn-name)
+                 input)
+
+      (cond ((and (zero? status) (not (file-exists? baseline)))
+
+             (let* ((input (filter-state input))
+                    (trail (filter-state stdout)))
+               (and
+                (receive (status stdout stderr)
+                    (observe `("bash" "-c"
+                               ,(string-append
+                                 "diff -ywB"
+                                 ;; ignore foreign/system communications
+                                 ;;" --ignore-matching-lines='[.][^. ]\\+[.][^. ]\\+[.]'"
+                                 " <(echo -e '" input "')"
+                                 " <(echo -e '" trail "')" ))
+                             #f)
+                  (zero? status))
+                (or (string-null? stderr)
+                    (and (format (current-error-port) "ERROR: ~a\n" stderr)
+                         #f)))))
+            (else
+             (let ((out-file (string-append out-lang "/out"))
+                   (err-file (string-append out-lang "/err"))
+                   (trail (filter-state stdout)))
+               (mkdir-p out-lang)
+               (with-output-to-file out-file
+                 (cut display trail))
+               (with-output-to-file err-file
+                 (cut display stderr))
+               (let ((baseline-out (string-append baseline "/" base-name))
+                     (baseline-err (string-append baseline "/" base-name ".stderr")))
+                 (and (zero? (system* "diff" "-ywB" baseline-out out-file))
+                      (zero? (system* "diff" "-ywB" baseline-err err-file))))))))))
+
+(define (run-simulate file-name)
+  (format #t "** stage: simulate\n")
+  (let ((traces (find-files file-name ".*trace.*$")))
+    (or (and (string-contains file-name "async") #t)
+        (and (string-contains file-name "block") #t)
+        (and (string-contains file-name "deadlock") #t)
+        (and (string-contains file-name "external") #t)
+        (and (string-contains file-name "livelock") #t)
+        (and (string-contains file-name "queuefull") #t)
+        (and-map (cut run-simulate-trace file-name <>) traces))))
 
 (define (run-test file-name languages)
   (setvbuf (current-output-port) 'line)
   (format #t "* run: ~a ~a\n" file-name languages)
   (let ((result (and (run-verify file-name)
                      (run-traces file-name)
+                     (run-simulate file-name)
                      (and-map (cut run-code file-name <>) languages))))
     (format #t "# Local Variables:
 # mode: org
