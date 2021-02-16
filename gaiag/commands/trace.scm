@@ -62,11 +62,11 @@
     (when help?
       (format #t "\
 Usage: dzn trace [OPTION]... FILE
-Pseudo-filter to translate between different trace formats
+Convert between different trace formats
 
-  -f, --format=FORMAT    display trace in format FORMAT [code] {code,event,sexp}
+  -f, --format=FORMAT    display trace in format FORMAT [event] {code,event,sexp}
   -h, --help             display this help and exit
-  -L, --locations        prepend locations to output trail
+  -L, --locations        prepend locations to output trace
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
 ")
       (exit EXIT_SUCCESS))
@@ -112,7 +112,10 @@ ws               <   [ \t]
 ")
   (peg:tree (match-pattern trace ascii)))
 
-(define* (trace:trace->steps trace #:key (file-name "<stdin>"))
+(define* (trace:trace->steps trace #:key (file-name "<stdin>") debug?)
+  (when debug?
+    (format (current-error-port) "trace:")
+    (pretty-print trace (current-error-port)))
   (catch 'syntax-error
     (lambda _
       (let ((result (trace-parse trace)))
@@ -137,22 +140,53 @@ ws               <   [ \t]
     (cons (record-type-name type)
           (map (lambda (f) (cons f ((record-accessor type f) o))) (record-type-fields type)))))
 
-(define-immutable-record-type message ;; fubar me javascript <message>
+(define-immutable-record-type <message>
   (make-message line location message)
   message?
   (line message-line)
   (location message-location)
   (message message-message))
 
-(define-immutable-record-type state ;; fubar me javascript <state>
+(define-immutable-record-type <eligible>
+  (make-eligible sexp)
+  eligible?
+  (sexp eligible-sexp))
+
+(define-immutable-record-type <header>
+  (make-header sexp)
+  header?
+  (sexp header-sexp))
+
+(define-immutable-record-type <labels>
+  (make-labels sexp)
+  labels?
+  (sexp labels-sexp))
+
+(define-immutable-record-type <state>
   (make-state sexp)
   state?
   (sexp state-sexp))
 
+(define-immutable-record-type <trail>
+  (make-trail sexp)
+  trail?
+  (sexp trail-sexp))
+
 (define (step->communication o)
   (match o
-    (('sexp sexp)
-     (make-state sexp))
+    (('sexp string)
+     (let ((sexp (with-input-from-string string read)))
+       (match sexp
+         (('eligible eligible ...)
+          (make-eligible eligible))
+         (('header header ...)
+          (make-header header))
+         (('labels labels ...)
+          (make-labels labels))
+         (('state state ...)
+          (make-state state))
+         (('trail trail ...)
+          (make-trail trail)))))
 
     ((('location location) ('message message))
      (make-message o location message))
@@ -188,7 +222,7 @@ ws               <   [ \t]
     ((content ('instance ('event (or ('name event) ('number event)))))
      `(("sut") . ,event))
 
-     (_ #f)))
+    (_ #f)))
 
 (define (code-pijltjes? steps)
   (and (pair? steps)
@@ -272,7 +306,7 @@ ws               <   [ \t]
      (message-message o))))
 
 (define (state->string o)
-  (with-output-to-string (cut display (state-sexp o))))
+  (with-output-to-string (cut display (cons 'state (state-sexp o)))))
 
 (define (step->code o)
   (cond ((communication? o) (communication->code o))
@@ -310,8 +344,8 @@ ws               <   [ \t]
       (list (communication-event o)))
      ".")))
 
-(define (trace:step->trace:code pijltjes)
-  (let* ((steps (trace:trace->steps pijltjes #:file-name "foobar"))
+(define* (trace:step->trace:code pijltjes #:key debug?)
+  (let* ((steps (trace:trace->steps pijltjes #:debug? debug?))
          (debug? #f)
          (foo (when debug? (format (current-error-port) "steps:") (pretty-print steps (current-error-port))))
          (steps (map (lambda (s) (or (step->communication s) s)) steps))
@@ -370,7 +404,7 @@ ws               <   [ \t]
                ""))
 
 (define (json-vector->list o)
-  ;; guile-json-3 translates arrays to vectors
+  ;; XXX TODO guile-json-3 translates arrays to vectors
   (if (vector? o) (vector->list o) o))
 
 (define (seqdiag:sexp->location sexp)
@@ -430,7 +464,7 @@ ws               <   [ \t]
   (seqdiag:format-sexp (json-string->alist-scm trace)))
 
 (define* (trace:trace->structured trace #:key file-name debug?)
-  (let* ((steps (trace:trace->steps trace #:file-name file-name))
+  (let* ((steps (trace:trace->steps trace #:file-name file-name #:debug? debug?))
          (foo (when debug? (format (current-error-port) "steps:") (pretty-print steps (current-error-port))))
          (structured (map (lambda (s) (or (step->communication s) s)) steps)))
     structured))
@@ -441,10 +475,10 @@ ws               <   [ \t]
     (cond ((equal? format "sexp") (if (dzn:command-line:get 'json) (scm->json-string (map serialize structured))
                                       (map serialize structured)))
           ((equal? format "event")
-           (let ((communications (filter (conjoin (negate q-out?) external?) merged)))
+           (let ((communications (filter (disjoin (conjoin (negate q-out?) external?) message?) merged)))
              (string-join (map step->event communications) "\n" 'suffix)))
           (else
-           (let ((communications (filter (disjoin state? (conjoin (negate q-out?) communication?)) merged)))
+           (let ((communications (filter (disjoin (conjoin (negate q-out?) communication?) state? message?) merged)))
              (string-join (map step->code communications) "\n" 'suffix))))))
 
 (define* (format-trace trace #:key file-name format debug?)
@@ -459,7 +493,7 @@ ws               <   [ \t]
          (trace (or trail
                     (if (equal? file-name "-") (read-string)
                         (with-input-from-file (car files) read-string))))
-         (format (option-ref options 'format "code"))
+         (format (option-ref options 'format "event"))
          (debug? (dzn:command-line:get 'debug)))
     (display (format-trace trace #:file-name file-name #:format format #:debug? debug?))
     ""))
