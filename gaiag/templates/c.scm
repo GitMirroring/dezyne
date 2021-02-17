@@ -45,7 +45,6 @@
 (define-templates formal-data-type c:formal-data-type)
 
 ;; event-arguments stuff
-(define-templates event-arguments c:trigger-formals)
 (define-templates closure-struct-args c:trigger-formals)
 (define-templates method-params c:trigger-formals)
 (define-templates call-in-function-extra-arguments c:trigger-formals)
@@ -126,7 +125,6 @@
 (define-templates base-or-not-right c:base-or-not-right)
 
 ;; enum stuff
-(define-templates enum-name-global-local c:global-or-local-enum-name type-infix)
 (define-templates enum-field-switch-case c:get-enum-fields-of-enum)
 (define-templates enum-field-else-if c:get-enum-fields-of-enum)
 (define-templates source-enum-string-function-definition c:get-all-enums)
