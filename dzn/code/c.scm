@@ -120,10 +120,6 @@
   (c:name (parent o <model>)))
 
 ;; enum stuff
-(define-method (c:global-or-local-enum-name (o <enum>))
-  (if (is-a? (.parent o) <root>) (string-append "_" (c:name o))
-      (c:name o)))
-
 (define-method (c:enum-complete-name-upcase (o <enum>))
   (map string-upcase (c:name o)))
 
