@@ -51,9 +51,6 @@
 (define-method (c++:type-ref (o <formal>))
   (if (not (eq? 'in (.direction o))) "&" ""))
 
-(define-method (c++:name (o <binding>))  ;; FIXME
-  (injected-instance-name o))
-
 (define-method (c++:capture-arguments (o <trigger>))
   (map .name (filter (negate (disjoin ast:out? ast:inout?)) (code:formals o))))
 
@@ -72,16 +69,6 @@
 (define-method (c++:enum->string (o <interface>))
   (filter (is? <enum>) (append (ast:type* (parent o <root>))
                                 (ast:type* o))))
-
-(define-method (c++:argument_n (o <trigger>))
-  (map
-   (lambda (f i) (clone f #:name (string-append "_"  (number->string i))))
-   (code:formals o)
-   (iota (length (code:formals o)) 1 1)))
-
-(define-method (c++:optional-type (o <trigger>))
-  (let ((type (ast:type o)))
-    (if (is-a? type <void>) '() type)))
 
 (define-method (c++:type-name o)
   (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
