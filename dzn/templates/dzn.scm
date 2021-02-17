@@ -89,7 +89,6 @@
 (define-templates arguments ast:argument* argument-grammar)
 (define-templates declare-variable ast:variable* newline-infix)
 (define-templates reply-port dzn:reply-port dot-suffix)
-(define-templates expand-blocking dzn:expand-blocking)
 
 
 ;;;
