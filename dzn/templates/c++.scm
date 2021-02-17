@@ -38,7 +38,6 @@
 ;;;
 ;;; Names
 ;;;
-(define-templates name c++:name)
 (define-templates c++:type-ref c++:type-ref)
 (define-templates type-name c++:type-name type-infix)
 
@@ -115,18 +114,9 @@
 (define-templates required-port-instance-declare ast:requires-port* newline-infix)
 (define-templates local_locator code:injected-instances-system)
 (define-templates injected-instance-declare injected-instances newline-infix)
-(define-templates optional-type c++:optional-type)
 (define-templates constructor-meta-initializer non-injected-instances newline-infix)
 (define-templates shell-provided-meta-initializer ast:provides-port* newline-infix)
 (define-templates shell-required-meta-initializer ast:requires-port* newline-infix)
 (define-templates injected-instance-meta-initializer injected-instances newline-infix)
 (define-templates non-injected-instance-meta-initializer non-injected-instances newline-infix)
 (define-templates dzn-locator c++:dzn-locator)
-(define-templates instance-meta-initializer identity)
-
-
-;;;
-;;; Misc
-;;;
-(define-templates prefix-formals-type code:formals formal-prefix)
-(define-templates prefix-arguments-n c++:argument_n prefix-arguments-grammar)
