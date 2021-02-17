@@ -64,7 +64,8 @@
       ""))
 
 (define-method (c++ew:calling-context-type-name (o <ast>))
-  (%calling-context))
+  (or (%calling-context)
+      "undefined-calling-context-type"))
 
 (define-method (c++ew:formals (o <event>))
   (ast:formal* ((compose .formals .signature) o)))
