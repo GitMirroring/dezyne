@@ -42,12 +42,6 @@
   #:use-module (gaiag indent)
   #:use-module (gaiag templates))
 
-(define (scheme:namespace-setup o)
-  "")
-
-(define-method (scheme:constructor-parameters (o <component>))
-  (cons "flushes? " (map .name (ast:port* o))))
-
 (define (string->class-name o)
   (string-append "<" o ">"))
 

@@ -26,8 +26,6 @@
 ;;;
 ;;; Module
 ;;;
-(define-templates scheme-namespace-setup scheme:namespace-setup)
-(define-templates constructor-parameters scheme:constructor-parameters space-infix)
 (define-templates scheme:export scheme:export newline-infix)
 (define-templates scheme:re-export scheme:re-export re-export-grammar)
 (define-templates use-module scheme:use-module newline-infix)
@@ -72,12 +70,6 @@
 
 (define-templates declare-async-req-method scheme:async-req newline-infix)
 (define-templates declare-async-clr-method scheme:async-clr newline-infix)
-
-
-;;;
-;;; Generated main
-;;;
-(define-templates main-event-map-flush-provides ast:provides-port* event-map-prefix)
 
 
 ;;;
