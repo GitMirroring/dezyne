@@ -213,24 +213,6 @@
             (tree-map f o))))
    (f root))
 
-(define (makreel:om ast)
-  ((compose
-    makreel:mark-tail-call
-    makreel:add-function-return
-    triples:state-traversal
-    (remove-otherwise)
-    makreel:tick-names
-    purge-data
-    ) ast))
-
-(define (ast-> ast)
-  (let ((root (makreel:om ast)))
-    (root-> root))
-  "")
-
-(define (root-> o)
-  (x:source o))
-
 (define %model-name (make-parameter #f))
 
 (define (untick o)
@@ -572,27 +554,6 @@
 
 (define-method (is-optional? (o <trigger>))
   (equal? "optional" (.event.name o)))
-
-(define-method (makreel:behaviour-with-optional-proc (o <behaviour>))
-  (let ((optionals (filter is-optional? (ast:statement* o))))
-    (if (pair? optionals) o
-        '())))
-
-(define-method (makreel:behaviour-without-optional-proc (o <behaviour>))
-  (let ((optionals (filter is-optional? (ast:statement* o))))
-    (if (null? optionals) o
-        '())))
-
-(define-method (makreel:non-optional-proc (o <behaviour>))
-  (let ((non-optionals (filter (negate is-optional?) (ast:statement* o)))
-        (optionals (filter is-optional? (ast:statement* o))))
-    (cond ((null? optionals) o)
-          ((null? non-optionals) (make <skip>))
-          (else (clone o #:statement (make <declarative-compound> #:elements non-optionals)))))) ;; FIXME: breaks function
-
-(define-method (makreel:optional-proc (o <behaviour>))
-  (let ((optionals (filter is-optional? (ast:statement* o))))
-    (clone o #:statement (make <declarative-compound> #:elements optionals))))
 
 (define-method (makreel:silent (o <the-end>))
   (if (.silent? (parent o <on>)) o
@@ -960,3 +921,21 @@
 (define-templates-macro define-templates makreel)
 (include-from-path "gaiag/templates/dzn.scm")
 (include-from-path "gaiag/templates/makreel.scm")
+
+(define (makreel:om ast)
+  ((compose
+    makreel:mark-tail-call
+    makreel:add-function-return
+    triples:state-traversal
+    (remove-otherwise)
+    makreel:tick-names
+    purge-data
+    ) ast))
+
+(define (root-> o)
+  (x:source o))
+
+(define (ast-> ast)
+  (let ((root (makreel:om ast)))
+    (root-> root))
+  "")
