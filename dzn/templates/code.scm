@@ -102,7 +102,6 @@
 (define-templates formals code:formals formal-grammar)
 (define-templates formals-anonymous code:formals formal-grammar)
 (define-templates formals-type code:formals formal-grammar)
-(define-templates parameters code:parameters formal-grammar)
 
 
 ;;;
@@ -131,7 +130,6 @@
 (define-templates injected-instance-initializer code:injected-instances newline-infix)
 (define-templates non-injected-instance-initializer non-injected-instances newline-infix)
 (define-templates injected-binding-initializer injected-bindings newline-infix)
-(define-templates instance-initializer code:instance* newline-infix)
 
 ;; Bindings
 (define-templates bind-connect code:non-injected-bindings)

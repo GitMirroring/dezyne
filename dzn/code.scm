@@ -112,7 +112,6 @@
             code:non-injected-bindings
             code:ons
             code:out-argument
-            code:parameters
             code:port-name
             code:port-type
             code:reply-type
@@ -320,13 +319,6 @@
 
 (define-method (code:out-argument (o <trigger>))
   (filter (disjoin ast:out? ast:inout?) (code:formals o)))
-
-(define-method (code:parameters (o <event>))
-  (let ((parameters (map .name (ast:formal* o)))
-        (calling-context (command-line:get 'calling-context #f)))
-    (if calling-context
-        (cons "dzn_cc" parameters)
-        parameters)))
 
 (define-method (code:add-calling-context-formal (o <formals>))
   (let ((calling-context (command-line:get 'calling-context #f)))
