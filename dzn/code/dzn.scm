@@ -208,9 +208,6 @@
          (is-a? (.parent p) <behaviour>))))
 
 (define-method (dzn:enum-literal (o <enum-literal>))
-  (dzn:scope+name o))
-
-(define-method (dzn:scope+name (o <enum-literal>))
   (append (dzn:type o) (list (.field o))))
 
 (define-method (dzn:type (o <event>))
