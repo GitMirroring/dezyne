@@ -210,6 +210,7 @@ REGRESSION_TESTS =				\
  %D%/livelock2					\
  %D%/livelock_component2			\
  %D%/missing_reply				\
+ %D%/multiple_provides				\
  %D%/name.space					\
  %D%/queuefull_external				\
  %D%/queuefull_external_sync			\
