@@ -1,7 +1,0 @@
-tau_void . (optional_#x:makreel:model-name  #x:process-haakjes + non_optional_#x:makreel:model-name  #x:process-haakjes + #x:makreel:model-name #x:process-haakjes)
- + tau_void . (non_optional_#x:makreel:model-name  #x:process-haakjes + #x:makreel:model-name  #x:process-haakjes)
- ;
-
-non_optional_#x:makreel:model-name  #x:process-parameters  = #x:non-optional-proc
-
-optional_#x:makreel:model-name  #x:process-parameters  = #x:optional-proc
