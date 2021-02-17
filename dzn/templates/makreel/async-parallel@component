@@ -1,3 +1,0 @@
-async_parallel
- = component_queue([]) #x:async-parallel-port
- ;
