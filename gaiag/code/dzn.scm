@@ -60,7 +60,6 @@
             dzn:annotate-shells
             dzn:direction
             dzn:enum-literal
-            dzn:expand-blocking
             dzn:=expression
             dzn:external
             dzn:formal-type
@@ -308,9 +307,6 @@
 (define-method (dzn:reply-port (o <reply>))
   (if (not (.port o)) ""
       (list (.port o))))
-
-(define-method (dzn:expand-blocking (o <blocking>))
-  (.statement o))
 
 (define-method (dzn:namespace (o <root>))
   (let ((dzn-file (ast:source-file o))
