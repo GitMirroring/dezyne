@@ -83,11 +83,6 @@
 
 (define-templates interface-proc makreel:interface-proc newline-infix)
 (define-templates behaviour-proc .behaviour)
-(define-templates behaviour-with-optional-proc makreel:behaviour-with-optional-proc)
-(define-templates behaviour-without-optional-proc makreel:behaviour-without-optional-proc)
-
-(define-templates non-optional-proc makreel:non-optional-proc newline-infix)
-(define-templates optional-proc makreel:optional-proc newline-infix)
 
 (define-templates function makreel:called-function*)
 (define-templates function-return-proc makreel:function-return-proc)
@@ -103,11 +98,9 @@
 (define-templates proc-variable makreel:proc-variable)
 (define-templates variable-parameter makreel:variable-parameter)
 (define-templates variable-parameters makreel:continuation-haakjes)
-(define-templates continuation-haakjes makreel:continuation-haakjes)
 (define-templates reply-synchronization makreel:reply-synchronization)
 (define-templates trigger-name makreel:trigger-name)
 (define-templates process-id)
-(define-templates continuation-identifier-call makreel:continuation)
 (define-templates process-identifier)
 (define-templates process-parameters makreel:process-parameters parameters-grammar)
 (define-templates process-parameters-return makreel:process-parameters-return parameters-grammar)
@@ -191,20 +184,9 @@
 (define-templates semantics-provides-blocked-qmt ast:requires-ports newline-union-prefix)
 (define-templates semantics-provides-blocked-qmt-async ast:async-ports newline-union-prefix)
 (define-templates semantics-provides-replies ast:provides-ports newline-union-infix)
+
 (define-templates semantics-requires ast:requires-ports newline-union-prefix)
-(define-templates semantics-requires-flush-provides ast:provides-ports)
-(define-templates semantics-requires-flush-provides-provides makreel:flush-provides-ports newline-union-infix)
-(define-templates semantics-requires-flush-requires ast:requires-ports newline-union-prefix)
-
-
-(define-templates semantics-requires-provides ast:provides-ports newline-union-infix)
-(define-templates semantics-requires-requires ast:requires-ports newline-union-prefix)
 (define-templates semantics-requires-flush ast:provides-ports newline-union-prefix)
-
-
-(define-templates semantics-flush-provides makreel:flush-provides-ports newline-union-prefix)
-(define-templates semantics-qmt-flush-provides ast:provides-ports newline-union-infix)
-(define-templates semantics-flush-requires ast:requires-ports newline-union-prefix)
 
 (define-templates semantics-comm-provides ast:provides-ports newline-comma-prefix)
 (define-templates semantics-comm-requires ast:requires+async-ports newline-comma-prefix)
@@ -234,4 +216,3 @@
 (define-templates provides-comm ast:provides-ports newline-comma-infix)
 (define-templates provides-allow ast:provides-ports newline-comma-prefix)
 (define-templates provides-rename ast:provides-ports newline-comma-infix)
-(define-templates provides-hide ast:provides-ports newline-comma-infix)
