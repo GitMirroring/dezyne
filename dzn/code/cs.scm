@@ -178,6 +178,59 @@
          (models (map dzn:annotate-shells models)))
     models))
 
+(define-method (cs:formal-binding (o <on>))
+  (filter (is? <formal-binding>) (cs:formals (car (ast:trigger* o)))))
+
+(define-method (cs:formal-binding (o <blocking-compound>))
+  (cs:formal-binding (parent o <on>)))
+
+(define-method (out-ref-local (o <trigger>))
+  (filter (negate ast:in?) (cs:formals o)))
+
+(define-method (dzn-prefix (o <formal>))
+  (if (ast:in? o) '() o))
+
+(define-method (default-ref (o <formal>))
+  (if (ast:inout? o) o '()))
+
+(define-method (default-out (o <formal>))
+  (if (ast:out? o) o '()))
+
+(define-method (=expression (o <variable>))
+  (let ((e (.expression o)))
+    (if (and (is-a? e <literal>) (equal? "void" (.value e))) o
+        e)))
+
+(define (cs:function-return-type o)
+  (let ((type (return-type o)))
+    (if (is-a? type <void>) '()
+        o)))
+
+(define (cs:return-statement o)
+ (let ((type (return-type o)))
+   (if (is-a? type <void>) '()
+       o)))
+
+(define (cs:return-temporary-assign o)
+  (let ((type (return-type o)))
+    (if (is-a? type <void>) '()
+        o)))
+
+(define (cs:return-temporary o)
+  (let ((type (return-type o)))
+    (if (is-a? type <void>) '()
+        o)))
+
+(define (cs:non-primitive o)
+  (if (or (is-a? (ast:type o) <enum>)
+          (is-a? (ast:type o) <interface>)) o
+          '()))
+
+(define (cs:data o)
+  (cond ((is-a? o <root>) (filter (is? <data>) (.elements o)))
+        ((is-a? o <data>) o)
+        (else '())))
+
 (define (cs:om ast)
   ((compose
     add-reply-port

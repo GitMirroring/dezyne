@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -23,118 +23,117 @@
 ;;;
 ;;; Code:
 
+;;;
+;;; Top
+;;;
 (define-templates model cs:model)
+(define-templates global-type-name)
+(define-templates data cs:data)
+(define-templates global-enum-definer cs:global-enum-definer)
+
+
+;;;
+;;; Names
+;;;
+(define-templates enum-name code:enum-name identifier-infix)
+
+(define-templates delegate-type return-type)
+(define-templates event-type ast:type)
+(define-templates formal-type (lambda (o) (append (cs:formals o) (if (ast:typed? o) (list (ast:type o)) '()))) comma-infix)
+(define-templates function-return-type cs:function-return-type)
+(define-templates reply-type code:reply-type identifier-infix)
+(define-templates return-type return-type)
+
+
+;;;
+;;; Interface
+;;;
+(define-templates in-event-signature (lambda (o) (filter ast:in? (ast:event* o))) newline-infix)
+(define-templates out-event-signature (lambda (o) (filter ast:out? (ast:event* o))) newline-infix)
+
+
+;;;
+;;; Component
+;;;
 (define-templates meta)
 (define-templates port-declaration ast:port*)
 (define-templates async-port-declare ast:async-port*)
 (define-templates async-port-init ast:async-port*)
+
+(define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
 (define-templates provided-port-init ast:provides-port*)
 (define-templates required-port-init (compose (cut filter (negate .injected) <>) ast:requires-port*))
 (define-templates required-port-meta ast:requires-port* newline-comma-infix)
-(define-templates port-check-bindings ast:port* newline-comma-infix)
+
 (define-templates method code:ons)
-(define-templates function code:functions)
-
-(define-templates return-type return-type)
-(define-templates delegate-type return-type)
-(define-templates func-return-type (lambda (o) (let ((type (return-type o)))
-                                                 (if (is-a? type <void>) '() o))))
-
-(define-templates return-statement (lambda (o) (let ((type (return-type o)))
-                                                        (if (is-a? type <void>) '() o))))
-
-(define-templates return-temporary-assign (lambda (o) (let ((type (return-type o)))
-                                                        (if (is-a? type <void>) '() o))))
-(define-templates return-temporary (lambda (o) (let ((type (return-type o)))
-                                                 (if (is-a? type <void>) '() o))))
-
 (define-templates on-trigger (compose car .elements .triggers))
-(define-templates statement cs:statement)
-(define-templates check-in-binding ast:in-event*)
-(define-templates check-out-binding ast:out-event*)
-(define-templates instance-declaration ast:instance*)
-(define-templates port-initializer ast:port*)
-(define-templates check-bindings-list ast:port* newline-comma-infix)
-(define-templates event-type ast:type)
-(define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
-(define-templates delegate-signature (lambda (o) (if (or (ast:typed? o) (pair? (cs:formals o))) o '())))
-(define-templates signature cs:formals)
-
-(define-templates formal-type (lambda (o) (append (cs:formals o) (if (ast:typed? o) (list (ast:type o)) '()))) comma-infix)
-
-(define-templates formal-parameter cs:formals comma-infix)
-
-(define-templates direction cs:direction)
-(define-templates delegate-formal-type cs:delegate-formal-type comma-infix)
-
-(define-templates main-arg cs:formals comma-infix)
-(define-templates main-arg-define cs:formals)
-
-(define-templates main-port-connect-return (lambda (o) (if (ast:typed? o) o '())))
-
-(define-templates global-enum-definer cs:global-enum-definer)
-(define-templates enum-name code:enum-name identifier-infix)
-(define-templates reply-type code:reply-type identifier-infix)
-
-(define-templates global-type-name)
-(define-templates non-primitive (lambda (o) (if (or (is-a? (ast:type o) <enum>)
-                                                    (is-a? (ast:type o) <interface>)) o '())))
-(define-templates bind-interface-name (compose ast:full-name .type .port .left) type-infix)
-
-(define-templates data (lambda (o) (cond ((is-a? o <root>) (filter (is? <data>) (.elements o)))
-                                         ((is-a? o <data>) o)
-                                         (else '()))))
-
-(define-templates shell-provided-in ast:provided-in-triggers)
-(define-templates shell-required-out ast:required-out-triggers)
-(define-templates shell-provided-out ast:provided-out-triggers)
-(define-templates shell-required-in ast:required-in-triggers)
-
-
-(define-templates in-event-signature (lambda (o) (filter ast:in? (ast:event* o))) newline-infix)
-(define-templates out-event-signature (lambda (o) (filter ast:out? (ast:event* o))) newline-infix)
-
-(define-templates code-arguments cs:arguments argument-infix)
-
-(define-method (out-ref-local (o <trigger>))
-  (filter (negate ast:in?) (cs:formals o)))
-(define-templates out-ref-local out-ref-local)
-(define-templates assign-out-ref out-ref-local)
-
-(define-method (dzn-prefix (o <formal>))
-  (if (ast:in? o) '() o))
-(define-templates dzn-prefix dzn-prefix)
-
-(define-method (default-ref (o <formal>))
-  (if (ast:inout? o) o '()))
-(define-templates default-ref default-ref)
-
-(define-method (default-out (o <formal>))
-  (if (ast:out? o) o '()))
-(define-templates default-out default-out)
-
-(define-templates main-formal-assign (lambda (o) (filter (negate ast:in?) (cs:formals o))) newline-infix)
-
-(define-method (cs:formal-binding (o <on>))
-  (filter (is? <formal-binding>) (cs:formals (car (ast:trigger* o)))))
-
-(define-method (cs:formal-binding (o <blocking-compound>))
-  (cs:formal-binding (parent o <on>)))
+(define-templates function code:functions)
 
 (define-templates formal-binding cs:formal-binding newline-infix)
 (define-templates formal-binding-temporary cs:formal-binding newline-infix)
 (define-templates formal-binding-assign-temporary cs:formal-binding newline-infix)
 (define-templates formal-binding-lambda ast:provides-port*)
 
-(define-method (=expression (o <variable>))
-  (let ((e (.expression o)))
-    (if (and (is-a? e <literal>) (equal? "void" (.value e))) o
-        e)))
+(define-templates out-ref-local out-ref-local)
+(define-templates assign-out-ref out-ref-local)
+(define-templates dzn-prefix dzn-prefix)
+(define-templates default-ref default-ref)
+(define-templates default-out default-out)
+
+;; check-bindings
+(define-templates check-bindings-list ast:port* newline-comma-infix)
+(define-templates check-in-binding ast:in-event*)
+(define-templates check-out-binding ast:out-event*)
+(define-templates port-check-bindings ast:port* newline-comma-infix)
+
+
+;;;
+;;; Statements
+;;;
 (define-templates =expression =expression)
-
+(define-templates code-arguments cs:arguments argument-infix)
 (define-templates illegal-out-assign cs:illegal-out-assign newline-infix)
+(define-templates return-statement cs:return-statement)
+(define-templates statement cs:statement)
+
+
+;;;
+;;; Generated main
+;;;
+(define-templates main-formal-assign (lambda (o) (filter (negate ast:in?) (cs:formals o))) newline-infix)
+(define-templates main-arg cs:formals comma-infix)
+(define-templates main-arg-define cs:formals)
+(define-templates main-port-connect-return (lambda (o) (if (ast:typed? o) o '())))
+
+
+;;;
+;;; System
+;;;
 (define-templates scoped-port-name (lambda (port) ((compose .ids .name .type) port)) type-infix)
+(define-templates instance-declaration ast:instance*)
+(define-templates port-initializer ast:port*)
 
-
+
+;;;
+;;; Shell
+;;;
+(define-templates bind-interface-name (compose ast:full-name .type .port .left) type-infix)
 (define-templates shell-provided-meta-initializer ast:provides-port*)
 (define-templates shell-required-meta-initializer ast:requires-port*)
+(define-templates shell-provided-in ast:provided-in-triggers)
+(define-templates shell-required-out ast:required-out-triggers)
+(define-templates shell-provided-out ast:provided-out-triggers)
+(define-templates shell-required-in ast:required-in-triggers)
+(define-templates return-temporary-assign cs:return-temporary-assign)
+(define-templates return-temporary cs:return-temporary)
+
+
+;;;
+;;; Misc
+;;;
+(define-templates formal-parameter cs:formals comma-infix)
+(define-templates direction cs:direction)
+(define-templates non-primitive cs:non-primitive)
+(define-templates delegate-formal-type cs:delegate-formal-type comma-infix)
+(define-templates delegate-signature (lambda (o) (if (or (ast:typed? o) (pair? (cs:formals o))) o '())))
+(define-templates signature cs:formals)
