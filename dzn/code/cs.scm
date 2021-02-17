@@ -59,12 +59,6 @@
                    (compose (cut equal? (ast:source-file o) <>) (cut ast:source-file <>)))
           (ast:type* o)))
 
-(define-method (cs:delegate-formal-type (o <event>))
-  (let ((formals (ast:formal* o)))
-    (append (map (lambda (f) (if (ast:out? f) f
-                                 (.type f))) formals)
-            (if (ast:typed? o) `(,(ast:type o)) '()))))
-
 (define-method (cs:statement (o <compound>))
   (let ((elements (ast:statement* o)))
     (if (null? elements) (make <skip>)

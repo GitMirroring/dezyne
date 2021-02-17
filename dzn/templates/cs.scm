@@ -37,9 +37,6 @@
 ;;;
 (define-templates enum-name code:enum-name identifier-infix)
 
-(define-templates delegate-type return-type)
-(define-templates event-type ast:type)
-(define-templates formal-type (lambda (o) (append (cs:formals o) (if (ast:typed? o) (list (ast:type o)) '()))) comma-infix)
 (define-templates function-return-type cs:function-return-type)
 (define-templates reply-type code:reply-type identifier-infix)
 (define-templates return-type return-type)
@@ -110,7 +107,6 @@
 ;;; System
 ;;;
 (define-templates scoped-port-name (lambda (port) ((compose .ids .name .type) port)) type-infix)
-(define-templates instance-declaration ast:instance*)
 (define-templates port-initializer ast:port*)
 
 
@@ -134,6 +130,3 @@
 (define-templates formal-parameter cs:formals comma-infix)
 (define-templates direction cs:direction)
 (define-templates non-primitive cs:non-primitive)
-(define-templates delegate-formal-type cs:delegate-formal-type comma-infix)
-(define-templates delegate-signature (lambda (o) (if (or (ast:typed? o) (pair? (cs:formals o))) o '())))
-(define-templates signature cs:formals)
