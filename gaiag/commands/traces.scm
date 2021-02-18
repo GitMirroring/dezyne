@@ -58,6 +58,7 @@
 
 (define x:interface-init (@@ (scmcrl2 verification) x:interface-init))
 (define x:component-init (@@ (scmcrl2 verification) x:component-init))
+(define execute (@@ (scmcrl2 verification) execute))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -103,10 +104,10 @@ Generate exhaustive set of traces for Dezyne model
                      ("lpsconstelm" "--quiet" "-st")
                      ("lpsparelm")
                      ("lps2lts" "--quiet" "--cached" "--out=aut""--save-at-end" "-" "-")))
-         (result (pipeline->string commands))
+         (result (execute commands))
          (commands `(,(cut display result)
                      ("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut")))
-         (result (pipeline->string commands)))
+         (result (execute commands)))
     (string-trim-right result)))
 
 (define (model->lts root model)
@@ -118,6 +119,8 @@ Generate exhaustive set of traces for Dezyne model
            (lts (mcrl2->lts root model init))
            (lts (cleanup-lts lts #:illegal? #t)))
       (chdir cwd)
+      (when (string-null? (string-trim-right lts))
+        (throw 'error "failed to create LTS"))
       lts)))
 
 (define (model->traces options root model)
