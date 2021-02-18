@@ -30,7 +30,6 @@
 
   #:use-module (dzn config)
   #:use-module (dzn misc)
-  #:use-module (dzn command-line)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
@@ -205,10 +204,10 @@
 
 
 ;;;
-;;; Entry points.
+;;; Entry point.
 ;;;
 
-(define* (root-> root #:key (dir ".") main)
+(define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
   (code-util:foreign-conflict? root)
@@ -221,15 +220,9 @@
           (file-name (code-util:root-file-name root dir ".scm")))
       (code-util:dump root generator #:file-name file-name))
 
-    (when main
-      (let ((model (ast:get-model root main)))
+    (when model
+      (let ((model (ast:get-model root model)))
         (when (is-a? model <component-model>)
           (let ((generator (indenter (cute x:main model)))
                 (file-name (code-util:file-name "main" dir ".scm")))
             (code-util:dump root generator #:file-name file-name)))))))
-
-(define (ast-> ast)
-  "XXX REMOVEME Legacy entry point"
-  (let ((dir (command-line:get 'output "."))
-        (main (command-line:get 'model #f)))
-    (root-> ast #:dir dir #:main main)))

@@ -34,7 +34,6 @@
 
   #:use-module (dzn ast)
   #:use-module (dzn config)
-  #:use-module (dzn command-line)
   #:use-module (dzn code)
   #:use-module (dzn code-util)
   #:use-module (dzn code dzn)
@@ -104,9 +103,8 @@
   (formals o))
 
 (define (formals o)
-  (let ((formals (ast:formal* o) )
-        (calling-context (command-line:get 'calling-context #f)))
-    (if calling-context
+  (let ((formals (ast:formal* o) ))
+    (if (%calling-context)
         (cons (clone (make <formal>
                        #:name "dzn_cc"
                        #:type.name (make <scope.name> #:ids '("*calling-context*"))
@@ -122,7 +120,7 @@
 
 (define-method (cs:args o)
   (let ((args (ast:argument* o)))
-    (if (not (command-line:get 'calling-context #f)) args
+    (if (not (%calling-context)) args
         (cons (make <formal>
                 #:name "dzn_cc"
                 #:type.name (make <scope.name> #:ids '("*calling-context*"))
@@ -235,10 +233,10 @@
 
 
 ;;;
-;;; Entry points.
+;;; Entry point.
 ;;;
 
-(define* (root-> root #:key (dir ".") main)
+(define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
   (code-util:foreign-conflict? root)
@@ -248,15 +246,9 @@
           (file-name (code-util:root-file-name root dir ".cs")))
       (code-util:dump root generator #:file-name file-name))
 
-    (when main
-      (let ((model (ast:get-model root main)))
+    (when model
+      (let ((model (ast:get-model root model)))
         (when (is-a? model <component-model>)
           (let ((generator (code-util:indenter (cute x:main model)))
                 (file-name (code-util:file-name "main" dir ".cs")))
             (code-util:dump root generator #:file-name file-name)))))))
-
-(define (ast-> ast)
-  "XXX REMOVEME Legacy entry point"
-  (let ((dir (command-line:get 'output "."))
-        (main (command-line:get 'model #f)))
-    (root-> ast #:dir dir #:main main)))

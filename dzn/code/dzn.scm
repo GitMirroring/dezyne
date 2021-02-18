@@ -35,14 +35,12 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module (dzn command-line)
-  #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
   #:use-module (dzn ast)
   #:use-module (dzn code-util)
-
+  #:use-module (dzn config)
   #:use-module (dzn indent)
   #:use-module (dzn shell-util)
   #:use-module (dzn templates)
@@ -344,13 +342,8 @@
 (define-method (ast->dzn (o <function>))
   (generator->string (cute x:source o)))
 
-(define* (root-> root #:key (dir "."))
+(define* (ast-> root #:key (dir ".") model)
   "Entry point."
   (let ((file-name (code-util:root-file-name root dir ".dzn"))
         (generator (code-util:indenter (cute x:source root))))
     (code-util:dump root generator #:file-name file-name)))
-
-(define (ast-> ast)
-  "XXX REMOVEME Legacy entry point"
-  (let ((dir (command-line:get 'output ".")))
-    (root-> ast #:dir dir)))
