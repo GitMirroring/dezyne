@@ -169,7 +169,7 @@
                                           ast:imported?))
                          models))
          (models (ast:topological-model-sort models))
-         (models (map dzn:annotate-shells models)))
+         (models (map code:annotate-shells models)))
     models))
 
 (define-method (cs:formal-binding (o <on>))

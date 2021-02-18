@@ -54,6 +54,7 @@
             code:add-calling-context
             code:add-calling-context-formal
             code:add-calling-context-argument
+            code:annotate-shells
 
             code:class-member?
             code:enum-definer
@@ -178,7 +179,9 @@
   (injected-instance-name o))
 
 (define-method (code:class-member? (o <variable>))
-  (dzn:class-member? o))
+  (let ((p (.parent o)))
+    (and (is-a? p <variables>)
+         (is-a? (.parent p) <behaviour>))))
 
 (define-method (code:port-type (o <trigger>))
   ((compose code:port-type .port) o))
@@ -615,13 +618,19 @@
   (if ((compose pair? ast:req-events) o) o
       '()))
 
+(define (code:annotate-shells o)
+  (if (and (is-a? o <system>)
+           (equal? (command-line:get 'shell #f) (string-join (ast:full-name o) ".")))
+      (clone (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o)) #:parent (.parent o))
+      o))
+
 (define-method (code:model (o <root>))
   (let* ((models (ast:model* o))
          (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
                                           ast:imported?))
                          models))
          (models (ast:topological-model-sort models))
-         (models (map dzn:annotate-shells models)))
+         (models (map code:annotate-shells models)))
     models))
 
 (define-method (code:upcase-model-name o)
