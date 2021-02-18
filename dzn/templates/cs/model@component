@@ -28,11 +28,11 @@ public class #x:model-name  : dzn.Component {
       #x:port-check-bindings
     };
 
-    #x:calls
-    #x:async
-    #x:rcalls
-    #x:reqs
-    #x:clrs
+    #x:event-slot
+    #x:async-event-slot
+    #x:valued-event-slot
+    #x:async-req-event-slot
+    #x:async-clr-event-slot
   }
 
   #x:method

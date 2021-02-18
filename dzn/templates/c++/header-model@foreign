@@ -22,8 +22,8 @@ struct #x:model-name
   #x:provided-member-initializer
   #x:required-member-initializer
   {
-  #x:calls
-  #x:rcalls
+  #x:event-slot
+  #x:valued-event-slot
   }
   virtual ~ #x:model-name () {}
   virtual std::ostream& stream_members(std::ostream& os) const { return os; }
