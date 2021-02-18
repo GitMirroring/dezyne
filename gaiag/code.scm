@@ -44,8 +44,10 @@
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
 
-
-  #:export (code:add-calling-context
+  #:export (%calling-context
+            %queue-size
+            %shell
+            code:add-calling-context
             code:add-calling-context-argument
             code:add-calling-context-formal
             code:annotate-shells
@@ -104,6 +106,15 @@
             code:variable->argument
             code:variable-name
             string->enum-field))
+
+;; The calling-context to insert.
+(define %calling-context (make-parameter #f))
+
+;; The size of the queue.
+(define %queue-size (make-parameter #f))
+
+;; The name of the thread-safe shell.
+(define %shell (make-parameter #f))
 
 ;;;
 ;;; Top
@@ -595,35 +606,31 @@
 ;;; Transform
 ;;;
 (define-method (code:add-calling-context (o <root>))
-  (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context
-        (let ((extern (make <extern>
-                        #:name (make <scope.name> #:ids '("*calling-context*"))
-                        #:value calling-context)))
-          (clone o #:elements (cons extern (ast:top* o))))
-        o)))
+  (if (%calling-context)
+      (let ((extern (make <extern>
+                      #:name (make <scope.name> #:ids '("*calling-context*"))
+                      #:value (%calling-context))))
+        (clone o #:elements (cons extern (ast:top* o))))
+      o))
 
 (define (code:add-calling-context-argument arguments)
-  (let ((calling-context (command-line:get 'calling-context #f)))
-    (if calling-context (cons "dzn_cc" arguments)
-        arguments)))
+  (if (%calling-context) (cons "dzn_cc" arguments)
+      arguments))
 
 (define-method (code:add-calling-context-formal (o <formals>))
-  (let ((calling-context (command-line:get 'calling-context #f)))
-    (if (not calling-context) o
-        (let* ((cc-formal (make <formal>
-                            #:name "dzn_cc"
-                            #:direction 'inout
-                            #:type.name (make <scope.name>
-                                          #:ids '("*calling-context*"))))
-               (cc-formal (clone cc-formal #:parent o))
-               (lst (cons cc-formal (ast:formal* o))))
-          (clone o #:elements lst)))))
+  (if (not (%calling-context)) o
+      (let* ((cc-formal (make <formal>
+                          #:name "dzn_cc"
+                          #:direction 'inout
+                          #:type.name (make <scope.name>
+                                        #:ids '("*calling-context*"))))
+             (cc-formal (clone cc-formal #:parent o))
+             (lst (cons cc-formal (ast:formal* o))))
+        (clone o #:elements lst))))
 
 (define (code:annotate-shells o)
-  ;;; XXX TODO: add %shell parameter, #:shell keyword argument to ast->
   (if (and (is-a? o <system>)
-           (equal? (command-line:get 'shell #f) (string-join (ast:full-name o) ".")))
+           (equal? (%shell) (string-join (ast:full-name o) ".")))
       (clone (make <shell-system>
                #:ports (.ports o)
                #:name (.name o)

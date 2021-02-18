@@ -28,18 +28,14 @@
   #:use-module (srfi srfi-26)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
+  #:use-module (gaiag command-line)
   #:use-module (gaiag goops)
   #:use-module (gaiag code)
-  #:use-module (gaiag command-line)
   #:use-module (gaiag templates)
-  #:use-module (gaiag command-line)
-
   #:export (ast->
             json:get-fields
             json:elements
             json:value))
-
-
 
 (define-class <json:field> ()
   (name #:getter .name #:init-value #f #:init-keyword #:name)
@@ -95,6 +91,6 @@
 (define-templates-macro define-templates json)
 (include-from-path "gaiag/templates/json.scm")
 
-(define (ast-> ast)
+(define* (ast-> ast #:key dir model)
   (x:source (.node ast))
   "")

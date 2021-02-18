@@ -45,6 +45,7 @@
 
   #:use-module (gaiag ast)
 
+  #:use-module (gaiag code)
   #:use-module (gaiag code dzn)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
@@ -467,7 +468,7 @@
   (if (pair? (ast:requires+async-ports o)) '() o))
 
 (define-method (makreel:queue-length (o <component>))
-  (command-line:get 'queue-size 3))
+  (%queue-size))
 
 (define-method (makreel:event-act (o <component>))
   (append
@@ -932,11 +933,17 @@
     purge-data
     ) ast))
 
+
+;;;
+;;; Entry points.
+;;;
 (define (root-> o)
-  (x:source o)
-  (newline))
+  (let ((queue-size (or (%queue-size)
+                        (command-line:get 'queue-size 3))))
+    (parameterize ((%queue-size queue-size))
+      (x:source o)
+      (newline))))
 
-(define (ast-> ast)
+(define* (ast-> ast #:key dir model)
   (let ((root (makreel:om ast)))
-    (root-> root))
-  "")
+    (root-> root)))

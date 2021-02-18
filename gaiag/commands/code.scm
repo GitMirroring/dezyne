@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -29,6 +29,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
   #:use-module (gaiag config)
+  #:use-module (gaiag code)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag command-line)
   #:use-module (gaiag commands parse)
@@ -68,7 +69,7 @@
     (when (or help? usage?)
       (let ((port (if usage? (current-error-port) (current-output-port))))
         (format port "\
-Usage: dzn code [OPTION]... DZN-FILE [MAP-FILE]...
+Usage: dzn code [OPTION]... DZN-FILE
 Generate code for Dezyne models in DZN-FILE
 
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
@@ -90,11 +91,13 @@ Languages: ~a
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
-         (map-files (cdr args))
+         (dir (option-ref options 'output #f))
+         (calling-context (option-ref options 'calling-context #f))
          (language (option-ref options 'language %default-language))
          (locations? (option-ref options 'locations #f))
-         (options (if (equal? language "scheme") (acons 'behaviour #t options)
-                      options))
+         (model (option-ref options 'model #f))
+         (queue-size (option-ref options 'queue-size 3))
+         (shell (option-ref options 'shell #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
@@ -103,5 +106,8 @@ Languages: ~a
     (unless ast->
       (format (current-error-port) "code: no such language: ~a\n" language)
       (exit EXIT_OTHER_FAILURE))
-    (parameterize ((%locations? locations?)) (ast-> ast))
-    *unspecified*))
+    (parameterize ((%calling-context calling-context)
+                   (%locations? locations?)
+                   (%queue-size queue-size)
+                   (%shell shell))
+      (ast-> ast #:dir dir #:model model))))
