@@ -103,7 +103,7 @@
 ;;;
 ;;; Shell
 ;;;
-(define-templates shell-non-injected-instance-meta non-injected-instances)
+(define-templates shell-non-injected-instance-meta code:non-injected-instances)
 (define-templates shell-provided-in ast:provided-in-triggers newline-infix)
 (define-templates shell-required-out ast:required-out-triggers newline-infix)
 (define-templates shell-provided-out ast:provided-out-triggers newline-infix)
@@ -113,10 +113,10 @@
 (define-templates provided-port-instance-declare ast:provides-port* newline-infix)
 (define-templates required-port-instance-declare ast:requires-port* newline-infix)
 (define-templates local_locator code:injected-instances-system)
-(define-templates injected-instance-declare injected-instances newline-infix)
-(define-templates constructor-meta-initializer non-injected-instances newline-infix)
+(define-templates injected-instance-declare code:injected-instances newline-infix)
+(define-templates constructor-meta-initializer code:non-injected-instances newline-infix)
 (define-templates shell-provided-meta-initializer ast:provides-port* newline-infix)
 (define-templates shell-required-meta-initializer ast:requires-port* newline-infix)
-(define-templates injected-instance-meta-initializer injected-instances newline-infix)
-(define-templates non-injected-instance-meta-initializer non-injected-instances newline-infix)
+(define-templates injected-instance-meta-initializer code:injected-instances newline-infix)
+(define-templates non-injected-instance-meta-initializer code:non-injected-instances newline-infix)
 (define-templates dzn-locator c++:dzn-locator)

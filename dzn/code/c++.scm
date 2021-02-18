@@ -125,7 +125,7 @@
 
 (define-method (c++:dzn-locator (o <instance>))
   (let ((model (parent o <model>)))
-    (if (null? (injected-bindings model)) '()
+    (if (null? (code:injected-bindings model)) '()
         o)))
 
 (define-templates-macro define-templates c++)

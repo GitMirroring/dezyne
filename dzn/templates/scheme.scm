@@ -75,7 +75,7 @@
 ;;;
 ;;; System
 ;;;
-(define-templates non-injected-instance-declare non-injected-instances newline-infix)
+(define-templates non-injected-instance-declare code:non-injected-instances newline-infix)
 (define-templates provided-port-reference-declare ast:provides-port* newline-infix)
 (define-templates required-port-reference-declare ast:requires-port* newline-infix)
 
