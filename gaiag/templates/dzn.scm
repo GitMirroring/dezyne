@@ -28,22 +28,23 @@
 ;;;
 ;;; Entry points
 ;;;
-(define-templates source dzn:model newline-infix)
+(define-templates source)
 
 
 ;;;
 ;;; Top
 ;;;
-(define-templates global dzn:global newline-infix)
+(define-templates import ast:import* newline-infix)
 (define-templates open-namespace dzn:open-namespace)
 (define-templates close-namespace dzn:open-namespace)
+(define-templates global dzn:global newline-infix)
+(define-templates model dzn:model newline-infix)
 
 
 ;;;
 ;;; Names
 ;;;
-
-(define-templates model-name dzn:model-name)
+(define-templates model-name dzn:model-name newline-infix)
 (define-templates model-full-name dzn:model-full-name type-infix)
 
 

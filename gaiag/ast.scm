@@ -68,6 +68,7 @@
            ast:get-model
            ast:graph-cyclic?
            ast:id-path
+           ast:import*
            ast:in-event*
            ast:in-triggers
            ast:in?
@@ -166,6 +167,7 @@
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
 (define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))
+(define-method (ast:import* (o <root>)) (filter (is? <import>) (ast:top* o)))
 (define-method (ast:statement* (o <compound>)) (.elements o))
 (define-method (ast:statement* (o <declarative-compound>)) (.elements o))
 (define-method (ast:event* (o <events>)) (.elements o))
