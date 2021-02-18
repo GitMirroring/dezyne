@@ -40,7 +40,6 @@
 
 (define-templates file-name code:file-name)
 (define-templates function-type code:function-type)
-(define-templates name code:name)
 (define-templates port-name code:port-name)
 (define-templates port-type code:port-type type-infix)
 (define-templates reply-type code:reply-type name-infix)
@@ -120,7 +119,7 @@
 ;;; System
 ;;;
 (define-templates injected-instance-declare code:injected-instances newline-infix)
-(define-templates non-injected-instance-declare non-injected-instances newline-infix)
+(define-templates non-injected-instance-declare code:non-injected-instances newline-infix)
 
 (define-templates injected-member-initializer ast:injected-port* newline-infix)
 (define-templates provided-member-initializer ast:provides-port* newline-infix)
@@ -128,8 +127,8 @@
 (define-templates instance-name code:instance-name)
 (define-templates instance-port-name code:instance-port-name)
 (define-templates injected-instance-initializer code:injected-instances newline-infix)
-(define-templates non-injected-instance-initializer non-injected-instances newline-infix)
-(define-templates injected-binding-initializer injected-bindings newline-infix)
+(define-templates non-injected-instance-initializer code:non-injected-instances newline-infix)
+(define-templates injected-binding-initializer code:injected-bindings newline-infix)
 
 ;; Bindings
 (define-templates bind-connect code:non-injected-bindings)
