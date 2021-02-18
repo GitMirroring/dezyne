@@ -53,34 +53,34 @@
 ;;; Component
 ;;;
 (define-templates meta)
-(define-templates port-declaration ast:port*)
-(define-templates async-port-declare ast:async-port*)
-(define-templates async-port-init ast:async-port*)
+(define-templates port-declaration ast:port* newline-infix)
+(define-templates async-port-declare ast:async-port* newline-infix)
+(define-templates async-port-init ast:async-port* newline-infix)
 
-(define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
-(define-templates provided-port-init ast:provides-port*)
-(define-templates required-port-init (compose (cut filter (negate .injected) <>) ast:requires-port*))
+(define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))) newline-infix)
+(define-templates provided-port-init ast:provides-port* newline-infix)
+(define-templates required-port-init (compose (cut filter (negate .injected) <>) ast:requires-port*) newline-infix)
 (define-templates required-port-meta ast:requires-port* newline-comma-infix)
 
-(define-templates method code:ons)
+(define-templates method code:ons newline-infix)
 (define-templates on-trigger (compose car .elements .triggers))
-(define-templates function code:functions)
+(define-templates function code:functions newline-infix)
 
 (define-templates formal-binding cs:formal-binding newline-infix)
 (define-templates formal-binding-temporary cs:formal-binding newline-infix)
 (define-templates formal-binding-assign-temporary cs:formal-binding newline-infix)
-(define-templates formal-binding-lambda ast:provides-port*)
+(define-templates formal-binding-lambda ast:provides-port* newline-infix)
 
-(define-templates out-ref-local out-ref-local)
-(define-templates assign-out-ref out-ref-local)
+(define-templates out-ref-local out-ref-local newline-infix)
+(define-templates assign-out-ref out-ref-local newline-infix)
 (define-templates dzn-prefix dzn-prefix)
 (define-templates default-ref default-ref)
 (define-templates default-out default-out)
 
 ;; check-bindings
 (define-templates check-bindings-list ast:port* newline-comma-infix)
-(define-templates check-in-binding ast:in-event*)
-(define-templates check-out-binding ast:out-event*)
+(define-templates check-in-binding ast:in-event* newline-infix)
+(define-templates check-out-binding ast:out-event* newline-infix)
 (define-templates port-check-bindings ast:port* newline-comma-infix)
 
 
@@ -91,7 +91,7 @@
 (define-templates code-arguments cs:arguments argument-infix)
 (define-templates illegal-out-assign cs:illegal-out-assign newline-infix)
 (define-templates return-statement cs:return-statement)
-(define-templates statement cs:statement)
+(define-templates statement cs:statement newline-infix)
 
 
 ;;;
@@ -107,21 +107,21 @@
 ;;; System
 ;;;
 (define-templates scoped-port-name (lambda (port) ((compose .ids .name .type) port)) type-infix)
-(define-templates port-initializer ast:port*)
+(define-templates port-initializer ast:port* newline-infix)
 
 
 ;;;
 ;;; Shell
 ;;;
 (define-templates bind-interface-name (compose ast:full-name .type .port .left) type-infix)
-(define-templates shell-provided-meta-initializer ast:provides-port*)
-(define-templates shell-required-meta-initializer ast:requires-port*)
-(define-templates shell-provided-in ast:provided-in-triggers)
-(define-templates shell-required-out ast:required-out-triggers)
-(define-templates shell-provided-out ast:provided-out-triggers)
-(define-templates shell-required-in ast:required-in-triggers)
-(define-templates return-temporary-assign cs:return-temporary-assign)
-(define-templates return-temporary cs:return-temporary)
+(define-templates shell-provided-meta-initializer ast:provides-port* newline-infix)
+(define-templates shell-required-meta-initializer ast:requires-port* newline-infix)
+(define-templates shell-provided-in ast:provided-in-triggers newline-infix)
+(define-templates shell-required-out ast:required-out-triggers newline-infix)
+(define-templates shell-provided-out ast:provided-out-triggers newline-infix)
+(define-templates shell-required-in ast:required-in-triggers newline-infix)
+(define-templates return-temporary-assign cs:return-temporary-assign newline-infix)
+(define-templates return-temporary cs:return-temporary newline-infix)
 
 
 ;;;
