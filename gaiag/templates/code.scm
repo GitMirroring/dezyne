@@ -72,12 +72,11 @@
 (define-templates variable-member-initializer ast:variable*)
 (define-templates reply-member-initializer code:reply-types)
 
-;; event-slot
-(define-templates calls (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
-(define-templates rcalls ast:valued-in-triggers)
-(define-templates async ast:async-out-triggers)
-(define-templates reqs ast:req-events)
-(define-templates clrs ast:clr-events)
+(define-templates event-slot (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
+(define-templates valued-event-slot ast:valued-in-triggers)
+(define-templates async-event-slot ast:async-out-triggers)
+(define-templates async-req-event-slot ast:req-events)
+(define-templates async-clr-event-slot ast:clr-events)
 (define-templates trace-q-out code:trace-q-out)
 
 (define-templates functions code:functions double-newline-infix)

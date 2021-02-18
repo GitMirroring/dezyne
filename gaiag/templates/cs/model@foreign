@@ -18,8 +18,8 @@ public partial class #x:model-name : dzn.Component
       #x:port-check-bindings
     };
 
-    #x:calls
-    #x:rcalls
+    #x:event-slot
+    #x:valued-event-slot
   }
   public void check_bindings()
   {
