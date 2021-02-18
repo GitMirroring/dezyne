@@ -48,16 +48,13 @@
   #:use-module (dzn templates)
 
   #:export (ast->dzn
-            dzn:annotate-shells
             dzn:data
-            dzn:class-member?
             dzn:extension
             dzn:expression
             dzn:indent
             dzn:expand-statement
             dzn:expression-expand
             dzn:action-arguments
-            dzn:annotate-shells
             dzn:direction
             dzn:enum-literal
             dzn:=expression
@@ -77,23 +74,27 @@
             dzn:to
             dzn:type))
 
-(define-method (generator->string generator)
-  (with-output-to-string (code-util:indenter generator)))
-(define-method (ast->dzn (o <root>))
-  (generator->string (cute x:source o)))
-(define-method (ast->dzn (o <statement>))
-  (generator->string(cute x:statement o)))
-(define-method (ast->dzn (o <function>))
-  (generator->string (cute x:source o)))
+;;;
+;;; Top
+;;;
+(define-method (dzn:namespace (o <root>))
+  (let ((dzn-file (ast:source-file o))
+        (namespaces (filter (negate ast:imported?) (ast:namespace* o))))
+    (if (null? namespaces) '()
+        (ast:full-name (car namespaces)))))
 
-;;; dzn: generic templates
+(define-method (dzn:open-namespace (o <ast>))
+  (cdr (reverse (ast:path (parent o <namespace>)))))
+
+(define (dzn:global o)
+  (filter (is? <type>) (ast:top* o)))
+
 (define-method (dzn:model (o <root>))
   (let* ((models (ast:model* o))
          (models (filter (negate (disjoin (is? <type>) (is? <namespace>) ast:async?
                                           (conjoin ast:imported? (negate (is? <foreign>)))))
                          models))
-         (models (ast:topological-model-sort models))
-         (models (map dzn:annotate-shells models)))
+         (models (ast:topological-model-sort models)))
     models))
 
 (define-method (dzn:model (o <namespace>))
@@ -102,39 +103,23 @@
 (define-method (dzn:model (o <ast>))
   o)
 
+(define-method (dzn:data (o <data>))
+  (if (.value o) (.value o)
+      '()))
+
+
+;;;
+;;; Names
+;;;
+
 (define-method (dzn:model-name (o <ast>))
   (ast:name (parent o <model>)))
 
 (define-method (dzn:model-full-name (o <ast>))
   (or (and=> (parent o <model>) ast:full-name) '()))
 
-(define (dzn:global o) ;; TODO: REPLACEME with ???
-  (filter (is? <type>) (ast:top* o)))
-
-(define (dzn:annotate-shells o)
-  (if (and (is-a? o <system>)
-           (equal? (command-line:get 'shell #f) (string-join (ast:full-name o) ".")))
-      (clone (make <shell-system> #:ports (.ports o) #:name (.name o) #:instances (.instances o) #:bindings (.bindings o)) #:parent (.parent o))
-      o))
-
-(define-method (dzn:data (o <data>))
-  (if (.value o) (.value o)
-      '()))
-
-(define-method (dzn:=expression (o <ast>))
-  o)
-
-(define-method (dzn:=expression (o <literal>))
-  (let ((value (.value o)))
-    (if (equal? value "void") (make <void>)
-        o)))
-
-(define-method (dzn:=expression (o <variable>))
-  ((compose dzn:=expression .expression) o))
-
-(define-method (dzn:=expression (o <extern>))
-  (if (.value o) (.value o)
-      '()))
+(define-method (dzn:enum-literal (o <enum-literal>))
+  (append (dzn:type o) (list (.field o))))
 
 (define-method (dzn:type o)
   (if (as o <model>)
@@ -153,13 +138,114 @@
 (define-method (dzn:type (o <void>))
   o)
 
-(define-method (dzn:external (o <port>))
-  (if (not (.external o)) ""
+(define-method (dzn:type (o <event>))
+  ((compose dzn:type .type .signature) o))
+
+(define-method (dzn:type (o <function>))
+  ((compose dzn:type .type .signature) o))
+
+(define-method (dzn:formal-type (o <formal>)) o)
+(define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
+(define-method (dzn:formal-type (o <trigger>)) ((compose dzn:formal-type .event) o))
+(define-method (dzn:formal-type (o <port>)) ((compose dzn:formal-type car ast:event*) o))
+
+(define-method (dzn:direction (o <ast>))
+  (if (not (.direction o)) '()
+      (make <direction> #:name (.direction o))))
+
+(define-method (dzn:direction (o <trigger>))
+  ((compose dzn:direction .event) o))
+
+(define-method (dzn:direction (o <action>))
+  ((compose dzn:direction .event) o))
+
+(define-method (dzn:direction (o <on>))
+  ((compose dzn:direction car ast:trigger*) o))
+
+(define-method (dzn:from (o <expression>))
+  ((compose dzn:from ast:expression->type) o))
+
+(define-method (dzn:from (o <type>))
+  ((compose .from .range) o))
+
+(define-method (dzn:to (o <expression>))
+  ((compose dzn:to ast:expression->type) o))
+
+(define-method (dzn:to (o <type>))
+  ((compose .to .range) o))
+
+(define-method (dzn:port-prefix (o <action>))
+  (if (not (.port.name o)) '()
+      (list (.port.name o))))
+
+(define-method (dzn:port-prefix (o <end-point>))
+  (if (not (.port.name o)) '()
+      (list (.port.name o))))
+
+(define-method (dzn:port-prefix (o <trigger>))
+  (if (not (.port.name o)) '()
+      (list (.port.name o))))
+
+(define-method (dzn:signature (o <event>))
+  (.signature o))
+
+(define-method (dzn:signature (o <port>))
+  (list ((compose ast:name .type) o) "t"))
+
+
+;;;
+;;; Statements
+;;;
+(define-method (dzn:signature (o <event>))
+  (.signature o))
+
+(define-method (dzn:statement (o <statement>))
+  o)
+
+(define-method (dzn:statement (o <compound>))
+  (if (null? (ast:statement* o)) (make <skip>)
       o))
 
-(define-method (dzn:injected (o <port>))
-  (if (not (.injected o)) ""
-      o))
+(define-method (dzn:statement (o <guard>))
+  (cond ((is-a? (.expression o) <otherwise>)
+         (clone (make <otherwise-guard> #:expression (.expression o)
+                      #:statement (.statement o))
+                #:parent (.parent o)))
+        ((ast:literal-true? (.expression o))
+         (.statement o))
+        ((ast:literal-false? (.expression o))
+         '())
+        (else
+         o)))
+
+(define-method (dzn:statement (o <behaviour>))
+  ((compose dzn:expand-statement .statement) o))
+
+(define-method (dzn:statement (o <function>))
+  (.statement o))
+
+(define-method (dzn:expand-statement (o <statement>))
+  o)
+
+(define-method (dzn:expand-statement (o <function>))
+  ((compose dzn:expand-statement .statement) o))
+
+(define-method (dzn:expand-statement (o <compound>))
+  (if (null? (ast:statement* o)) (make <skip>)
+      (ast:statement* o)))
+
+(define-method (dzn:expand-statement (o <declarative-compound>))
+  (if (null? (ast:statement* o)) (make <skip>)
+      (ast:statement* o)))
+
+(define-method (dzn:expand-statement (o <blocking>))
+  (.statement o))
+
+(define-method (dzn:expand-statement (o <on>))
+  (.statement o))
+
+(define-method (dzn:expand-statement (o <guard>))
+  (.statement o))
 
 (define-method (dzn:expression (o <top>))
   o)
@@ -201,133 +287,47 @@
 (define-method (dzn:expression-expand (o <group>))
   (.expression o))
 
-(define-method (dzn:class-member? (o <variable>))
-  (let ((p (.parent o)))
-    (and (is-a? p <variables>)
-         (is-a? (.parent p) <behaviour>))))
+(define-method (dzn:=expression (o <ast>))
+  o)
 
-(define-method (dzn:enum-literal (o <enum-literal>))
-  (append (dzn:type o) (list (.field o))))
+(define-method (dzn:=expression (o <literal>))
+  (let ((value (.value o)))
+    (if (equal? value "void") (make <void>)
+        o)))
+(define-method (dzn:=expression (o <variable>))
+  ((compose dzn:=expression .expression) o))
 
-(define-method (dzn:type (o <event>))
-  ((compose dzn:type .type .signature) o))
+(define-method (dzn:=expression (o <extern>))
+  (if (.value o) (.value o)
+      '()))
 
-(define-method (dzn:type (o <function>))
-  ((compose dzn:type .type .signature) o))
-
-(define (unspecified? o)
-  (eq? o *unspecified*))
-
-(define-method (dzn:formal-type (o <formal>)) o)
-(define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
-(define-method (dzn:formal-type (o <trigger>)) ((compose dzn:formal-type .event) o))
-(define-method (dzn:formal-type (o <port>)) ((compose dzn:formal-type car ast:event*) o))
-
-(define-method (dzn:direction (o <ast>))
-  (if (not (.direction o)) '()
-      (make <direction> #:name (.direction o))))
-
-(define-method (dzn:direction (o <trigger>))
-  ((compose dzn:direction .event) o))
-
-(define-method (dzn:direction (o <action>))
-  ((compose dzn:direction .event) o))
-
-(define-method (dzn:direction (o <on>))
-  ((compose dzn:direction car ast:trigger*) o))
-
-(define-method (dzn:port-prefix (o <action>))
-  (if (not (.port.name o)) '()
-      (list (.port.name o))))
-
-(define-method (dzn:port-prefix (o <end-point>))
-  (if (not (.port.name o)) '()
-      (list (.port.name o))))
-
-(define-method (dzn:port-prefix (o <trigger>))
-  (if (not (.port.name o)) '()
-      (list (.port.name o))))
-
-(define-method (dzn:signature (o <event>))
-  (.signature o))
-(define-method (dzn:signature (o <port>))
-  (list ((compose ast:name .type) o) "t"))
-
+
+;;;
+;;; Component
+;;;
 (define-method (dzn:action-arguments (o <action>))
   (if (not (.port.name o)) '()
       (if (null? (ast:argument* o)) (list "")
           (ast:argument* o))))
 
-(define-method (dzn:signature (o <event>))
-  (.signature o))
-
-(define-method (dzn:statement (o <statement>))
-  o)
-
-(define-method (dzn:statement (o <compound>))
-  (if (null? (ast:statement* o)) (make <skip>)
+(define-method (dzn:external (o <port>))
+  (if (not (.external o)) ""
       o))
 
-(define-method (dzn:statement (o <guard>)) ;; FIXME: for code, do in normalization!
-  (cond ((is-a? (.expression o) <otherwise>) (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
-                                                    #:parent (.parent o)))
-        ((ast:literal-true? (.expression o))(.statement o))
-        ((ast:literal-false? (.expression o)) '())
-        (else o)))
-
-(define-method (dzn:statement (o <behaviour>))
-  ((compose dzn:expand-statement .statement) o))
-
-(define-method (dzn:statement (o <function>))
-  (.statement o))
-
-(define-method (dzn:expand-statement (o <statement>))
-  o)
-
-(define-method (dzn:expand-statement (o <function>))
-  ((compose dzn:expand-statement .statement) o))
-
-(define-method (dzn:expand-statement (o <compound>))
-  (if (null? (ast:statement* o)) (make <skip>)
-      (ast:statement* o)))
-
-(define-method (dzn:expand-statement (o <declarative-compound>))
-  (if (null? (ast:statement* o)) (make <skip>)
-      (ast:statement* o)))
-
-(define-method (dzn:expand-statement (o <blocking>))
-  (.statement o))
-
-(define-method (dzn:expand-statement (o <on>))
-  (.statement o))
-
-(define-method (dzn:expand-statement (o <guard>))
-  (.statement o))
+(define-method (dzn:injected (o <port>))
+  (if (not (.injected o)) ""
+      o))
 
 (define-method (dzn:reply-port (o <reply>))
   (if (not (.port o)) ""
       (list (.port o))))
 
-(define-method (dzn:namespace (o <root>))
-  (let ((dzn-file (ast:source-file o))
-        (namespaces (filter (negate ast:imported?) (ast:namespace* o))))
-    (if (null? namespaces) '()
-        (ast:full-name (car namespaces)))))
-
-(define-method (dzn:from (o <expression>))
-  ((compose dzn:from ast:expression->type) o))
-
-(define-method (dzn:from (o <type>))
-  ((compose .from .range) o))
-
-(define-method (dzn:to (o <expression>))
-  ((compose dzn:to ast:expression->type) o))
-
-(define-method (dzn:to (o <type>))
-  ((compose .to .range) o))
-
-(define-method (dzn:open-namespace (o <ast>))
-  (cdr (reverse (ast:path (parent o <namespace>)))))
+
+;;;
+;;; Utility
+;;;
+(define-method (generator->string generator)
+  (with-output-to-string (code-util:indenter generator)))
 
 (define-templates-macro define-templates dzn)
 (include-from-path "dzn/templates/dzn.scm")
@@ -336,6 +336,13 @@
 ;;;
 ;;; Entry points.
 ;;;
+
+(define-method (ast->dzn (o <root>))
+  (generator->string (cute x:source o)))
+(define-method (ast->dzn (o <statement>))
+  (generator->string(cute x:statement o)))
+(define-method (ast->dzn (o <function>))
+  (generator->string (cute x:source o)))
 
 (define* (root-> root #:key (dir "."))
   "Entry point."

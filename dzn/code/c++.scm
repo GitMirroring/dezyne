@@ -120,7 +120,7 @@
                                    ast:imported?))
                       models))
          (models (ast:topological-model-sort models))
-         (models (map dzn:annotate-shells models)))
+         (models (map code:annotate-shells models)))
     models))
 
 (define-method (c++:dzn-locator (o <instance>))
