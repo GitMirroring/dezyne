@@ -47,20 +47,20 @@
 ;;;
 (define-templates meta identity)
 (define-templates ports-meta-list ast:requires-port* meta-infix)
-(define-templates provided-port-declare ast:provides-port* newline-infix)
-(define-templates required-port-declare ast:requires-port* newline-infix)
-(define-templates async-port-declare ast:async-port* newline-infix)
-(define-templates declare-method code:trigger newline-infix)
+(define-templates provided-port-declare ast:provides-port*)
+(define-templates required-port-declare ast:requires-port*)
+(define-templates async-port-declare ast:async-port*)
+(define-templates declare-method code:trigger)
 (define-templates pump code:pump?)
-(define-templates method-declare code:ons newline-infix)
-(define-templates declare-method code:trigger newline-infix)
+(define-templates method-declare code:ons)
+(define-templates declare-method code:trigger)
 (define-templates stream-member ast:variable* stream-comma-infix)
-(define-templates function-declare code:functions newline-infix)
+(define-templates function-declare code:functions)
 
 ;; check-bindings
 (define-templates check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (ast:port* o)))))
-(define-templates check-in-binding (lambda (o) (filter ast:in? (ast:event* o))) newline-infix)
-(define-templates check-out-binding (lambda (o) (filter ast:out? (ast:event* o))) newline-infix)
+(define-templates check-in-binding (lambda (o) (filter ast:in? (ast:event* o))))
+(define-templates check-out-binding (lambda (o) (filter ast:out? (ast:event* o))))
 
 
 ;;;
@@ -77,12 +77,12 @@
 ;;;
 ;;; Enums
 ;;;
-(define-templates interface-enum-to-string c++:enum->string newline-infix)
-(define-templates interface-string-to-enum c++:enum->string newline-infix)
-(define-templates enum-field-to-string c++:enum-field->string newline-infix)
+(define-templates interface-enum-to-string c++:enum->string)
+(define-templates interface-string-to-enum c++:enum->string)
+(define-templates enum-field-to-string c++:enum-field->string)
 (define-templates enum-field-type c++:enum-field-type type-infix)
 (define-templates enum-literal c++:enum-literal type-infix)
-(define-templates string-to-enum c++:string->enum newline-infix)
+(define-templates string-to-enum c++:string->enum)
 
 
 ;;;
@@ -94,29 +94,29 @@
 ;;;
 ;;; System
 ;;;
-(define-templates provided-port-reference-declare ast:provides-port* newline-infix)
-(define-templates required-port-reference-declare ast:requires-port* newline-infix)
-(define-templates provided-port-reference-initializer ast:provides-port* newline-infix)
-(define-templates required-port-reference-initializer ast:requires-port* newline-infix)
+(define-templates provided-port-reference-declare ast:provides-port*)
+(define-templates required-port-reference-declare ast:requires-port*)
+(define-templates provided-port-reference-initializer ast:provides-port*)
+(define-templates required-port-reference-initializer ast:requires-port*)
 
 
 ;;;
 ;;; Shell
 ;;;
 (define-templates shell-non-injected-instance-meta code:non-injected-instances)
-(define-templates shell-provided-in ast:provided-in-triggers newline-infix)
-(define-templates shell-required-out ast:required-out-triggers newline-infix)
-(define-templates shell-provided-out ast:provided-out-triggers newline-infix)
-(define-templates shell-required-in ast:required-in-triggers newline-infix)
+(define-templates shell-provided-in ast:provided-in-triggers)
+(define-templates shell-required-out ast:required-out-triggers)
+(define-templates shell-provided-out ast:provided-out-triggers)
+(define-templates shell-required-in ast:required-in-triggers)
 (define-templates capture c++:capture-arguments capture-prefix)
 (define-templates capture-list identity)
-(define-templates provided-port-instance-declare ast:provides-port* newline-infix)
-(define-templates required-port-instance-declare ast:requires-port* newline-infix)
+(define-templates provided-port-instance-declare ast:provides-port*)
+(define-templates required-port-instance-declare ast:requires-port*)
 (define-templates local_locator code:injected-instances-system)
-(define-templates injected-instance-declare code:injected-instances newline-infix)
-(define-templates constructor-meta-initializer code:non-injected-instances newline-infix)
-(define-templates shell-provided-meta-initializer ast:provides-port* newline-infix)
-(define-templates shell-required-meta-initializer ast:requires-port* newline-infix)
-(define-templates injected-instance-meta-initializer code:injected-instances newline-infix)
-(define-templates non-injected-instance-meta-initializer code:non-injected-instances newline-infix)
+(define-templates injected-instance-declare code:injected-instances)
+(define-templates constructor-meta-initializer code:non-injected-instances)
+(define-templates shell-provided-meta-initializer ast:provides-port*)
+(define-templates shell-required-meta-initializer ast:requires-port*)
+(define-templates injected-instance-meta-initializer code:injected-instances)
+(define-templates non-injected-instance-meta-initializer code:non-injected-instances)
 (define-templates dzn-locator c++:dzn-locator)

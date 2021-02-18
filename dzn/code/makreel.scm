@@ -933,7 +933,8 @@
     ) ast))
 
 (define (root-> o)
-  (x:source o))
+  (x:source o)
+  (newline))
 
 (define (ast-> ast)
   (let ((root (makreel:om ast)))

@@ -22,8 +22,8 @@
 ;;;
 ;;; Code:
 
-(define-templates header-model c:models)
-(define-templates source-model c:models)
+(define-templates header-model c:models double-newline-infix)
+(define-templates source-model c:models double-newline-infix)
 (define-templates header)
 (define-templates source)
 
@@ -49,7 +49,7 @@
 (define-templates method-params c:trigger-formals)
 (define-templates call-in-function-extra-arguments c:trigger-formals)
 (define-templates helper-function-extra-arguments c:trigger-formals)
-(define-templates closure-variable-definition c:trigger-formals newline-infix)
+(define-templates closure-variable-definition c:trigger-formals)
 
 (define-templates closure-struct c:get-incoming-triggers-from-model)
 (define-templates helper-in-trigger-prototype c:get-incoming-triggers-from-model)
@@ -59,20 +59,20 @@
 (define-templates required-port-initialization ast:requires-port*)
 (define-templates trigger-initialization ast:in-triggers)
 
-(define-templates call-in-trigger-prototype ast:provided-in-triggers newline-infix)
-(define-templates call-out-trigger-prototype ast:required-out-triggers newline-infix)
+(define-templates call-in-trigger-prototype ast:provided-in-triggers)
+(define-templates call-out-trigger-prototype ast:required-out-triggers)
 (define-templates call-in-trigger ast:provided-in-triggers)
 (define-templates call-out-trigger ast:required-out-triggers)
-(define-templates formal-handler ast:formal* newline-infix)
+(define-templates formal-handler ast:formal*)
 
 
 
-(define-templates method-prototype (lambda (o) (map code:trigger (code:ons o))) newline-infix)
+(define-templates method-prototype (lambda (o) (map code:trigger (code:ons o))))
 (define-templates method code:trigger)
 (define-templates methods code:ons)
 (define-templates enum-cast (lambda (o)(if (is-a? (ast:type o) <enum>) o '())))
 
-(define-templates functions-declarations code:functions newline-infix)
+(define-templates functions-declarations code:functions)
 (define-templates functions code:functions)
 
 (define-templates header-data (lambda (o) (filter (is? <data>) (.elements o))))
@@ -104,9 +104,9 @@
 ;; system stuff
 
 (define-templates instance-declaration (lambda (o) ( (compose .elements .instances) o)))
-(define-templates instance-init (lambda (o) ( (compose .elements .instances) o)) newline-infix)
-(define-templates instance-init-dzn-tracing (lambda (o) ( (compose .elements .instances) o)) newline-infix)
-(define-templates instance-declare-dzn-tracing (lambda (o) ( (compose .elements .instances) o)) newline-infix)
+(define-templates instance-init (lambda (o) ( (compose .elements .instances) o)))
+(define-templates instance-init-dzn-tracing (lambda (o) ( (compose .elements .instances) o)))
+(define-templates instance-declare-dzn-tracing (lambda (o) ( (compose .elements .instances) o)))
 (define-templates system-port-connect (lambda (o) ((compose .elements .bindings) o)))
 (define-templates connect-internal-ports c:evaluate-internal-bind)
 (define-templates binding-provided .left)
@@ -132,7 +132,7 @@
 (define-templates source-enum-string-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
 (define-templates global-enum-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
 (define-templates file-name-identifier-upcase c:file-name-identifier-upcase)
-(define-templates header-enum-string-function-prototype c:get-all-enums newline-infix)
+(define-templates header-enum-string-function-prototype c:get-all-enums)
 (define-templates enum-name c:enum-name type-infix)
 (define-templates enum-literal c:enum-literal type-infix)
 
@@ -141,7 +141,7 @@
 (define-templates enum-complete-name-upcase c:enum-complete-name-upcase type-infix)
 
 ;; foreign stuff
-(define-templates method-prototypes ast:in-triggers newline-infix)
+(define-templates method-prototypes ast:in-triggers)
 (define-templates call-in-trigger-foreign ast:provided-in-triggers)
 
 ;; in out events of interfaces

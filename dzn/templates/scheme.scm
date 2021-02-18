@@ -26,15 +26,15 @@
 ;;;
 ;;; Module
 ;;;
-(define-templates scheme:export scheme:export newline-infix)
+(define-templates scheme:export scheme:export)
 (define-templates scheme:re-export scheme:re-export re-export-grammar)
-(define-templates use-module scheme:use-module newline-infix)
+(define-templates use-module scheme:use-module)
 
 
 ;;;
 ;;; Top
 ;;;
-(define-templates header-data ast:data* newline-infix)
+(define-templates header-data ast:data*)
 
 
 ;;;
@@ -49,35 +49,35 @@
 ;;;
 ;;; Statements
 ;;;
-(define-templates let-variable scheme:let-variable newline-infix)
-(define-templates out-binding-initializer ast:provides-port* newline-infix)
+(define-templates let-variable scheme:let-variable)
+(define-templates out-binding-initializer ast:provides-port*)
 (define-templates set! scheme:set!)
-(define-templates statement scheme:statement newline-infix)
+(define-templates statement scheme:statement)
 
 
 ;;;
 ;;; Component
 ;;;
-(define-templates provided-port-instance-declare ast:provides-port* newline-infix)
-(define-templates required-port-instance-declare ast:requires-port* newline-infix)
-(define-templates injected-port-instance-declare  ast:injected-port* newline-infix)
-(define-templates async-port-instance-declare ast:async-port* newline-infix)
+(define-templates provided-port-instance-declare ast:provides-port*)
+(define-templates required-port-instance-declare ast:requires-port*)
+(define-templates injected-port-instance-declare  ast:injected-port*)
+(define-templates async-port-instance-declare ast:async-port*)
 
-(define-templates injected-member-initializer ast:injected-port* newline-infix)
+(define-templates injected-member-initializer ast:injected-port*)
 
-(define-templates expand-on scheme:expand-on newline-infix)
-(define-templates declare-method code:trigger newline-infix)
+(define-templates expand-on scheme:expand-on)
+(define-templates declare-method code:trigger double-newline-infix)
 
-(define-templates declare-async-req-method scheme:async-req newline-infix)
-(define-templates declare-async-clr-method scheme:async-clr newline-infix)
+(define-templates declare-async-req-method scheme:async-req double-newline-infix)
+(define-templates declare-async-clr-method scheme:async-clr double-newline-infix)
 
 
 ;;;
 ;;; System
 ;;;
-(define-templates non-injected-instance-declare code:non-injected-instances newline-infix)
-(define-templates provided-port-reference-declare ast:provides-port* newline-infix)
-(define-templates required-port-reference-declare ast:requires-port* newline-infix)
+(define-templates non-injected-instance-declare code:non-injected-instances)
+(define-templates provided-port-reference-declare ast:provides-port*)
+(define-templates required-port-reference-declare ast:requires-port*)
 
-(define-templates provided-port-reference-initializer ast:provides-port* newline-infix)
-(define-templates required-port-reference-initializer ast:requires-port* newline-infix)
+(define-templates provided-port-reference-initializer ast:provides-port*)
+(define-templates required-port-reference-initializer ast:requires-port*)
