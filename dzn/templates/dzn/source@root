@@ -1,2 +1,3 @@
-#x:global
-#x:source
+ #x:import
+ #x:define-type
+#x:model
