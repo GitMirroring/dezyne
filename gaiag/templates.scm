@@ -50,7 +50,9 @@
        pegsep       <   [ ]?
        escape       <   '#'
        pegprocedure <-- '#' [-!$%&'*+,./0-9:<=>?A-Z^_a-z{|}~]([-!#$%&'*+,./0-9:<=>?A-Z^_a-z{|}~])* pegsep")
-    (let* ((result (match-pattern script (with-input-from-file file-name read-string)))
+    (let* ((text (with-input-from-file file-name read-string))
+           (text (string-trim-right text))
+           (result (match-pattern script text))
            (end (peg:end result)))
       (peg:tree result)))
 
@@ -174,7 +176,7 @@
                                                                        (cut string-drop <> (1+ at))) sep))))
                                           (cons type (read-sep sep)))) sep-files)))
                              '()))
-               (grammars (append grammars '((#f . ("")))))
+               (grammars (append grammars '((#f . ("\n" infix)))))
                (grammars (datum->syntax x grammars)))
           #`(begin
               #,@(map (lambda (t) #`(compile-template #,name #,(datum->syntax x t) #,language)) (syntax->datum types))

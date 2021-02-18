@@ -34,43 +34,43 @@
 ;;;
 ;;; Top
 ;;;
-(define-templates import ast:import* newline-infix)
+(define-templates import ast:import*)
 (define-templates open-namespace dzn:open-namespace)
 (define-templates close-namespace dzn:open-namespace)
-(define-templates global dzn:global newline-infix)
-(define-templates model dzn:model newline-infix)
+(define-templates global dzn:global)
+(define-templates model dzn:model double-newline-infix)
 
 
 ;;;
 ;;; Names
 ;;;
-(define-templates model-name dzn:model-name newline-infix)
+(define-templates model-name dzn:model-name)
 (define-templates model-full-name dzn:model-full-name type-infix)
 
 
 ;;;
 ;;; Interface
 ;;;
-(define-templates define-type ast:type* newline-infix)
+(define-templates define-type (lambda (o) (filter (disjoin (is? <enum>) (is? <int>)) (ast:type* o))))
 (define-templates direction dzn:direction)
-(define-templates in-event (lambda (o) (filter ast:in? (ast:event* o))) newline-infix)
-(define-templates out-event (lambda (o) (filter ast:out? (ast:event* o))) newline-infix)
+(define-templates in-event (lambda (o) (filter ast:in? (ast:event* o))))
+(define-templates out-event (lambda (o) (filter ast:out? (ast:event* o))))
 (define-templates signature dzn:signature space-infix)
 (define-templates formal-type dzn:formal-type)
 (define-templates formal ast:formal* formal-grammar)
 (define-templates behaviour .behaviour)
-(define-templates define-function ast:function* newline-infix)
+(define-templates define-function ast:function*)
 (define-templates trigger ast:trigger* comma-infix)
 
 
 ;;;
 ;;; Component
 ;;;
-(define-templates provided-port (lambda (o) (filter ast:provides? (ast:port* o))) newline-infix)
-(define-templates required-port (lambda (o) (filter ast:requires? (ast:port* o))) newline-infix)
+(define-templates provided-port (lambda (o) (filter ast:provides? (ast:port* o))))
+(define-templates required-port (lambda (o) (filter ast:requires? (ast:port* o))))
 (define-templates external dzn:external)
 (define-templates injected dzn:injected)
-(define-templates async-port ast:port* newline-infix)
+(define-templates async-port ast:port*)
 
 (define-templates trigger-signature (lambda (o) (if (not (.port.name o)) "" o)))
 (define-templates trigger-formal (lambda (o) (ast:formal* o)) formal-grammar)
@@ -82,13 +82,13 @@
 ;;;
 (define-templates argument ast:argument* argument-grammar)
 (define-templates action-arguments dzn:action-arguments action-argument-grammar)
-(define-templates statement dzn:statement newline-infix)
-(define-templates expand-statement dzn:expand-statement newline-infix)
+(define-templates statement dzn:statement)
+(define-templates expand-statement dzn:expand-statement)
 (define-templates out-bindings ast:formal*)
 (define-templates then .then)
 (define-templates else (lambda (o) (or (.else o) '())))
 (define-templates arguments ast:argument* argument-grammar)
-(define-templates declare-variable ast:variable* newline-infix)
+(define-templates declare-variable ast:variable*)
 (define-templates reply-port dzn:reply-port dot-suffix)
 
 
@@ -124,9 +124,9 @@
 ;;; System
 ;;;
 (define-templates system)
-(define-templates declare-instance ast:instance* newline-infix)
+(define-templates declare-instance ast:instance*)
 (define-templates instance (lambda (o) (if (not (.instance.name o)) "" (list (.instance o)))) dot-suffix)
-(define-templates binding ast:binding* newline-infix)
+(define-templates binding ast:binding*)
 
 
 ;;;

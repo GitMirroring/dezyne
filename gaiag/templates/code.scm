@@ -31,7 +31,7 @@
 
 (define-templates header)
 (define-templates source)
-(define-templates model code:model)
+(define-templates model code:model double-newline-infix)
 
 
 ;;;
@@ -61,26 +61,26 @@
 (define-templates all-ports-meta-list ast:port* meta-infix)
 (define-templates meta-child code:instance* meta-child-infix)
 
-(define-templates reply-member-declare code:reply-types newline-infix)
-(define-templates variable-member-declare ast:variable* newline-infix)
+(define-templates reply-member-declare code:reply-types)
+(define-templates variable-member-declare ast:variable*)
 
-(define-templates methods code:ons newline-infix)
+(define-templates methods code:ons double-newline-infix)
 (define-templates expand-on code:expand-on)
 (define-templates method code:trigger)
 
-(define-templates async-member-initializer (lambda (o) (ast:port* (.behaviour o))) newline-infix)
-(define-templates variable-member-initializer ast:variable* newline-infix)
-(define-templates reply-member-initializer code:reply-types newline-infix)
+(define-templates async-member-initializer (lambda (o) (ast:port* (.behaviour o))))
+(define-templates variable-member-initializer ast:variable*)
+(define-templates reply-member-initializer code:reply-types)
 
 ;; event-slot
-(define-templates calls (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))) newline-infix)
-(define-templates rcalls ast:valued-in-triggers newline-infix)
-(define-templates async ast:async-out-triggers newline-infix)
-(define-templates reqs ast:req-events newline-infix)
-(define-templates clrs ast:clr-events newline-infix)
+(define-templates calls (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
+(define-templates rcalls ast:valued-in-triggers)
+(define-templates async ast:async-out-triggers)
+(define-templates reqs ast:req-events)
+(define-templates clrs ast:clr-events)
 (define-templates trace-q-out code:trace-q-out)
 
-(define-templates functions code:functions newline-infix)
+(define-templates functions code:functions double-newline-infix)
 
 
 ;;;
@@ -118,17 +118,17 @@
 ;;;
 ;;; System
 ;;;
-(define-templates injected-instance-declare code:injected-instances newline-infix)
-(define-templates non-injected-instance-declare code:non-injected-instances newline-infix)
+(define-templates injected-instance-declare code:injected-instances)
+(define-templates non-injected-instance-declare code:non-injected-instances)
 
-(define-templates injected-member-initializer ast:injected-port* newline-infix)
-(define-templates provided-member-initializer ast:provides-port* newline-infix)
-(define-templates required-member-initializer (lambda (o) (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o))) newline-infix)
+(define-templates injected-member-initializer ast:injected-port*)
+(define-templates provided-member-initializer ast:provides-port*)
+(define-templates required-member-initializer (lambda (o) (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o))))
 (define-templates instance-name code:instance-name)
 (define-templates instance-port-name code:instance-port-name)
-(define-templates injected-instance-initializer code:injected-instances newline-infix)
-(define-templates non-injected-instance-initializer code:non-injected-instances newline-infix)
-(define-templates injected-binding-initializer code:injected-bindings newline-infix)
+(define-templates injected-instance-initializer code:injected-instances)
+(define-templates non-injected-instance-initializer code:non-injected-instances)
+(define-templates injected-binding-initializer code:injected-bindings)
 
 ;; Bindings
 (define-templates bind-connect code:non-injected-bindings)
@@ -136,8 +136,8 @@
 (define-templates bind-required code:bind-required)
 (define-templates binding-name code:instance-name)
 (define-templates component-port code:component-port)
-(define-templates injected-instance-system-initializer code:injected-instances-system newline-infix)
-(define-templates system-port-connect (lambda (o) (filter (negate code:port-bind?) (ast:binding* o))) newline-infix)
+(define-templates injected-instance-system-initializer code:injected-instances-system)
+(define-templates system-port-connect (lambda (o) (filter (negate code:port-bind?) (ast:binding* o))))
 (define-templates system-rank ast:provides-port*)
 
 
@@ -145,14 +145,14 @@
 ;;; Generated main
 ;;;
 (define-templates main)
-(define-templates main-port-connect-in ast:out-triggers-in-events newline-infix)
-(define-templates main-port-connect-in-void ast:out-triggers-void-in-events newline-infix)
-(define-templates main-port-connect-in-valued ast:out-triggers-valued-in-events newline-infix)
-(define-templates main-port-connect-out ast:out-triggers-out-events newline-infix)
-(define-templates main-provided-port-init ast:provides-port* newline-infix)
-(define-templates main-required-port-init ast:requires-port* newline-infix)
-(define-templates main-provided-flush-init ast:provides-port* newline-infix)
-(define-templates main-required-flush-init ast:requires-port* newline-infix)
+(define-templates main-port-connect-in ast:out-triggers-in-events)
+(define-templates main-port-connect-in-void ast:out-triggers-void-in-events)
+(define-templates main-port-connect-in-valued ast:out-triggers-valued-in-events)
+(define-templates main-port-connect-out ast:out-triggers-out-events)
+(define-templates main-provided-port-init ast:provides-port*)
+(define-templates main-required-port-init ast:requires-port*)
+(define-templates main-provided-flush-init ast:provides-port*)
+(define-templates main-required-flush-init ast:requires-port*)
 (define-templates main-out-arg-define code:main-out-arg-define)
 (define-templates main-out-arg-define-formal identity)
 (define-templates main-out-arg code:main-out-arg main-out-arg-grammar)
@@ -167,5 +167,5 @@
 ;;; Misc
 ;;;
 (define-templates version-assert)
-(define-templates interface-include code:interface-include newline-infix)
-(define-templates component-include code:component-include newline-infix)
+(define-templates interface-include code:interface-include)
+(define-templates component-include code:component-include)

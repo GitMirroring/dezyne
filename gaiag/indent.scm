@@ -80,32 +80,31 @@
                    #t)
                   ((eq? last 'newline)
                    (space))
-                  (last
-                   ;; XXX This tries do handle javascript's
-                   ;;    } else {  => }else {
-                   ;; but that breaks c++''
-                   ;;    }; ==> }  ;
-                   ;;(space)
-                   #t)
                   (else
                    (display leading-space)))
             (display string)
             (loop level 'newline))))
          ((eq? c open)
-          (when (eq? last 'newline)
-            (newline)
-            (space))
+          (case last
+            ((newline)
+             (newline)
+             (space))
+            ((close)
+             (display leading-space)))
           (display string)
           (display c)
           (loop (+ level width) #f))
          ((eq? c close)
-          (when (and (eq? last 'newline)
-                     (or (not (eq? close #\)))
-                         (not (string-null? string))
-                         (zero? level)))
-            (newline)
-            (if (string-null? string) (space (- level width))
-                (space)))
+          (case last
+            ((newline)
+             (when (or (not (eq? close #\)))
+                       (not (string-null? string))
+                       (zero? level))
+               (newline)
+               (if (string-null? string) (space (- level width))
+                   (space))))
+            ((close)
+             (display leading-space)))
           (display string)
           (display c)
           (loop (- level width) 'close)))))))

@@ -76,12 +76,12 @@
 (define-templates return-type-sort makreel:return-type-sort)
 (define-templates return-type makreel:return-type newline-pipe-infix)
 
-(define-templates call-continuation-sort makreel:call-continuation-sort newline-infix)
+(define-templates call-continuation-sort makreel:call-continuation-sort)
 (define-templates call-continuation-sort-function makreel:call-continuation-sort newline-pipe-infix)
 
 (define-templates pretty-print-dzn pretty-print-dzn)
 
-(define-templates interface-proc makreel:interface-proc newline-infix)
+(define-templates interface-proc makreel:interface-proc)
 (define-templates behaviour-proc .behaviour)
 
 (define-templates function makreel:called-function*)
@@ -93,7 +93,7 @@
 
 ;; statement process
 (define-templates silent makreel:silent)
-(define-templates proc makreel:proc newline-infix)
+(define-templates proc makreel:proc)
 (define-templates proc-assign makreel:proc-assign)
 (define-templates proc-variable makreel:proc-variable)
 (define-templates variable-parameter makreel:variable-parameter)
@@ -126,11 +126,11 @@
 (define-templates type-bound makreel:type-bound)
 (define-templates type-check makreel:type-check)
 
-(define-templates interface-action-proc makreel:interface-action-proc newline-infix)
+(define-templates interface-action-proc makreel:interface-action-proc)
 (define-templates rename-flush-provides makreel:rename-flush-provides)
 (define-templates rename-flush-requires makreel:rename-flush-requires)
 (define-templates allow-tau makreel:allow-tau newline-comma-infix)
-(define-templates action-proc makreel:action-proc newline-infix)
+(define-templates action-proc makreel:action-proc)
 (define-templates member-init makreel:member-init parameters-grammar)
 
 (define-templates sum-helper-params makreel:sum-helper-params parameters-grammar)
