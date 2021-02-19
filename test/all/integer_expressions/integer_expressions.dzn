@@ -86,7 +86,7 @@ component integer_expressions
     [true]
       on i.e():
       {
-        if (state == 0 && state != 1)
+        if (state != 1 && state == 0)
         {
           state = 3;
           i.a();
