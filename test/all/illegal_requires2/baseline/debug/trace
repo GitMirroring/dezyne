@@ -1,7 +1,0 @@
-(((h)) ((sut)) ((w)))
-h.hello
-w.hello
-w.return
-h.return
-illegal
-(((h)) ((sut)) ((w)))
