@@ -1,0 +1,3 @@
+test/all/range_action/range_action.dzn:55:8: error: range-error: invalid value `12' for variable `n'
+test/all/range_action/range_action.dzn:55:8: info: variable `n' defined here
+test/all/range_action/range_action.dzn:53:6: info: of type `Sub' defined here
