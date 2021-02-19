@@ -1,0 +1,3 @@
+test/all/range_member/range_member.dzn:33:5: error: range-error: invalid value `4' for variable `state'
+test/all/range_member/range_member.dzn:33:5: info: variable `state' defined here
+test/all/range_member/range_member.dzn:31:5: info: of type `State' defined here
