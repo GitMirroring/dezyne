@@ -1,0 +1,3 @@
+test/all/range_local/range_local.dzn:34:7: error: range-error: invalid value `6' for variable `x'
+test/all/range_local/range_local.dzn:34:7: info: variable `x' defined here
+test/all/range_local/range_local.dzn:31:5: info: of type `State' defined here
