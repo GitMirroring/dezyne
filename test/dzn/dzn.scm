@@ -472,8 +472,7 @@ output, and standard error as three values."
 (define (run-simulate file-name)
   (format #t "** stage: simulate\n")
   (let ((traces (find-files file-name ".*trace.*$")))
-    (or (and (string-contains file-name "external") #t)
-        (and (string-contains file-name "queuefull") #t)
+    (or (and (string-contains file-name "queuefull") #t)
         (and-map (cut run-simulate-trace file-name <>) traces))))
 
 (define (run-lts file-name)
@@ -496,7 +495,6 @@ output, and standard error as three values."
         (skip? file-name
                "traces"
                "lts")
-        (and (string-contains file-name "external") #t)
         (and (string-contains file-name "queuefull") #t)
         (receive (status stdout stderr)
             (observe
