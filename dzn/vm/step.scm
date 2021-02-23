@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -248,6 +248,10 @@
         (clone q-trigger #:parent (.type (.ast other-instance)))))
 
     (cond
+     ((and (is-a? instance <runtime:port>)
+           (ast:requires? (.ast instance))
+           (ast:external? (.ast instance)))
+      (list (enqueue-external pc o (q-trigger))))
      ((is-a? (%sut) <runtime:port>)
       (list pc))
      ((and (is-a? instance <runtime:port>)
@@ -343,6 +347,7 @@
                   (pc (make <program-counter>
                         #:async (.async pc)
                         #:blocked (acons r:port pc (.blocked pc))
+                        #:external-q (.external-q pc)
                         #:state (.state pc)
                         #:trail (.trail pc))))
              (list pc))))))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -60,6 +60,7 @@
             <livelock-error>
             <match-error>
             <missing-reply-error>
+            <queue-full-error>
             <range-error>
             <second-reply-error>
 
@@ -67,6 +68,7 @@
             .blocked
             .component-acceptance
             .deferred
+            .external-q
             .handling?
             .input
             .labels
@@ -81,6 +83,7 @@
             .status
             .trail
             ->sexp
+            external-q->string
             name
             name*
             rtc?)
@@ -135,6 +138,8 @@
 
 (define-ast <determinism-error> (<error>))
 
+(define-ast <queue-full-error> (<error>))
+
 (define-ast <end-of-trail> (<error>)
   (trigger)
   (labels))
@@ -177,7 +182,8 @@
   (async #:getter .async #:init-form (list) #:init-keyword #:async)
 
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
-  (released #:getter .released #:init-form #f #:init-keyword #:released))
+  (released #:getter .released #:init-form #f #:init-keyword #:released)
+  (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
 
 (define-class <state> ()
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
@@ -233,6 +239,13 @@
       (not (.previous pc))
       (not (.statement pc))))
 
+(define (external-q->string external-q)
+  (define q->string
+    (match-lambda
+      ((port q ...)
+       (format #f "~s ~s" (name port) (map trigger->string q)))))
+  (format #f "~a" (map q->string external-q)))
+
 (define-method (write (o <program-counter>) port)
   (display "#<" port)
   (display (ast-name o) port)
@@ -257,6 +270,8 @@
   (when (pair? (.blocked o)) (display " *blocked*" port))
   (and=> (.reply o) (cut format port " reply: ~a" <>))
   (and=> (.return o) (cut format port " return: ~a" <>))
+  (when (pair? (.external-q o))
+    (format port " ext-q: ~a" (external-q->string (.external-q o))))
   (display " " port)
   (display (.state o) port)
   (display " trail: " port)

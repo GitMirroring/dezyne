@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -46,6 +46,8 @@
             livelock?
             mark-livelock-error
             run-async-event
+            run-external
+            run-external-q
             run-requires
             run-silent
             run-to-completion
@@ -114,7 +116,7 @@ in the same component."
              (not (equal? pcs
                           (delete-duplicates pcs
                                              (lambda (a b)
-                                               (equal? (serialize (.state a)) (serialize (.state b)))))))
+                                               (equal? (pc->string a) (pc->string b))))))
              (let* ((statements (map .statement pcs))
                     (imperative (filter ast:imperative? statements)))
                (> (length imperative) 1))
@@ -246,9 +248,13 @@ until RTC?."
                (instance (.instance pc))
                (trail (.trail pc))
                (pc (clone pc #:previous #f #:instance port #:trail '()))
-               (traces (parameterize ((%sut port))
+               (r:other-port (runtime:other-port port))
+               (external? (ast:external? (.ast r:other-port)))
+               (traces (parameterize ((%sut port)
+                                      (%strict? (not external?)))
                          (append-map (cut run-to-completion pc <>) modeling-names)))
-               (traces (filter (conjoin (compose null? trace->trail)
+               (traces (filter (conjoin (disjoin (const external?)
+                                                 (compose null? trace->trail))
                                         (compose (negate .status) car))
                                traces))
                (traces (map (cut rewrite-trace-head (cut clone <> #:trail trail) <>) traces)))
@@ -341,11 +347,36 @@ until RTC?."
          (traces (run-async-event pc)))
     traces))
 
+(define-method (external-event? (pc <program-counter>) event)
+  (and (requires-trigger? event)
+       (find (match-lambda
+               ((port trigger tail ...)
+                (equal? (trigger->string trigger) event)))
+             (.external-q pc))))
+
+(define-method (run-external-q (pc <program-counter>) (instance <runtime:port>))
+  (let* ((pc trigger (dequeue-external pc instance))
+         (q-out (make <q-out> #:trigger trigger))
+         (q-out (clone q-out #:location (.location trigger)))
+         (q-out-pc (clone pc #:instance (%sut) #:statement q-out))
+         (traces (run-to-completion pc trigger)))
+    (map (lambda (t) (append t (list q-out-pc))) traces)))
+
+(define-method (run-external (pc <program-counter>) event)
+  (%debug "run-external pc: ~s\n" pc)
+  (let ((queues (.external-q pc)))
+    (if (or (null? queues)
+            (pair? (.async pc))) '()
+            (match (external-event? pc event)
+              ((port q ...) (run-external-q pc (or port (%sut))))))))
+
 (define-method (run-to-completion* (pc <program-counter>) event)
   (let ((pc (clone pc #:instance #f #:reply #f)))
     (cond
      ((is-a? (%sut) <runtime:port>)
       (run-interface pc event))
+     ((external-event? pc event)
+      (run-external pc event))
      ((requires-trigger? event)
       (let ((async-traces (if (null? (.async pc)) '()
                               (run-async pc event))))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -95,7 +95,8 @@
 (define-method (trace->trail (o <runtime:port>) (action <action>))
   (if (ast:out? action)
       (and (or (is-a? (%sut) <runtime:port>)
-               (ast:requires? (.ast o)))
+               (and (ast:requires? (.ast o))
+                    (not (ast:external? (.ast o)))))
            (cons action (format #f "~a~a" (or (and=> (trace-name o) (cut format #f "~a." <>)) "") (trigger->string action))))
       (cons action (format #f "~a" (trigger->string action)))))
 
@@ -113,7 +114,8 @@
 (define-method (trace->trail (o <runtime:component>) (q-out <q-out>))
   (let* ((trigger (.trigger q-out))
          (port (.port trigger)))
-    (and (ast:provides? port)
+    (and (or (ast:provides? port)
+             (ast:external? port))
          (cons q-out (trigger->string trigger)))))
 
 (define-method (trace->trail (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))

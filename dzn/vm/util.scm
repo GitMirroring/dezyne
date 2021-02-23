@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -41,7 +41,9 @@
             assign
             async-event?
             dequeue
+            dequeue-external
             enqueue
+            enqueue-external
             flush
             get-handling?
             get-state
@@ -298,6 +300,34 @@
     (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<dequeue>" (trigger->string trigger))
     (values pc trigger)))
 
+(define-method (enqueue-external (pc <program-counter>) (ast <ast>) (trigger <trigger>))
+  (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<enqueue-external>" (trigger->string trigger))
+  (let* ((external-q (.external-q pc))
+         (instance (.instance pc))
+         (q (or (assoc-ref external-q instance) '())))
+    (if (= (length q) 3) ;XXX TODO: (%queue-size)
+        (clone pc #:status (make <queue-full-error> #:ast ast #:message "queue-full" #:instance instance))
+        (let* ((external-q (alist-delete instance external-q))
+               (external-q (acons instance (append q (list trigger)) external-q))
+               (external-q (sort external-q
+                                 (match-lambda*
+                                   (((port-a q-a ...) (port-b q-b ...))
+                                    (string< (name port-a) (name port-b)))))))
+          (clone pc #:external-q external-q)))))
+
+(define-method (dequeue-external (pc <program-counter>) (instance <runtime:port>))
+  (let* ((external-q (.external-q pc))
+         (q (assoc-ref external-q instance)))
+    (if (null? q) (values pc #f)
+        (let* ((tail (cdr q))
+               (external-q (alist-delete instance external-q))
+               (external-q (if (null? tail) external-q
+                               (acons instance (cdr q) external-q)))
+               (pc (clone pc #:external-q external-q))
+               (trigger (car q)))
+          (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<dequeue-external>" (trigger->string trigger))
+          (values pc trigger)))))
+
 (define-method (get-handling? (pc <program-counter>) (instance <runtime:instance>))
   (.handling? (get-state pc instance)))
 
@@ -524,9 +554,10 @@
   (if (.status o) "<error>"
       (string-join
        (cons (state->string (.state o))
-             (append
-              (map (compose runtime:dotted-name car) (.blocked o))
-              (map (match-lambda ((timeout port . proc) (.name port))) (.async o))))
+             (append (map (compose runtime:dotted-name car) (.blocked o))
+                     (if (null? (.external-q o)) '()
+                         (list (external-q->string (.external-q o))))
+                     (map (match-lambda ((timeout port . proc) (.name port))) (.async o))))
        "\n")))
 
 (define-method (pc->hash (o <program-counter>))
