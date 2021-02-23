@@ -100,11 +100,20 @@
                 (pcs (map car traces)))
           traces)))))
 
+(define-method (process-external (pc <program-counter>))
+  (let ((queues (.external-q pc)))
+    (if (or (null? queues)
+            (pair? (.async pc))) '()
+            (let ((instances (map car queues)))
+              (append-map (cute run-external-q pc <>) instances)))))
+
 (define (run-to-completion** pc event)
   (let ((pc (clone pc #:instance #f #:reply #f #:trail '())))
     (cond
-     ((not event)
+     ((eq? event 'async)
       (flush-async pc '()))
+     ((eq? event 'external)
+      (process-external pc))
      ((is-a? (%sut) <runtime:port>)
       (run-to-completion pc event))
      ((requires-trigger? event)
@@ -134,7 +143,7 @@ PC, and recurse until no new PCs are found.  Return the graph as
                     (reverse trace))))
       (and pc (and=> (.statement pc) ast:location))))
   (define (graph pc)
-    (let* ((labels (cons #f (labels)))
+    (let* ((labels (cons* 'async 'external (labels)))
            (explored (make-hash-table)))
       (let loop ((pc pc))
         (let ((from (pc->hash pc)))
@@ -235,7 +244,7 @@ PC, and recurse until no new PCs are found.  Return the graph as
 
   and set! %lts-state-count: the number of states.
 "
-  (let* ((labels (cons #f (labels)))
+  (let* ((labels (cons* 'async 'external (labels)))
          (pc-state-number (make-hash-table))
          (explored (make-hash-table)))
     (define (pc->state-number pc)
