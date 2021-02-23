@@ -30,6 +30,7 @@ SMOKE_TESTS =					\
 
 HELLO_TESTS =					\
  %D%/compliance0				\
+ %D%/compliance_external			\
  %D%/deadlock_component0			\
  %D%/deadlock_component1			\
  %D%/deadlock_interface0			\
