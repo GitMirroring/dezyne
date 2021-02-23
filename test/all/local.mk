@@ -70,7 +70,6 @@ HELLO_TESTS =					\
  %D%/hello_system				\
  %D%/hello_two					\
  %D%/illegal_component0				\
- %D%/illegal_hello_external			\
  %D%/livelock_component0			\
  %D%/livelock_component1			\
  %D%/livelock_interface0			\
@@ -160,6 +159,7 @@ REGRESSION_TESTS =				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
  %D%/external_requires_twice			\
+ %D%/illegal_external				\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
  %D%/extern_in_interface			\
