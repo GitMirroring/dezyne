@@ -131,7 +131,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system4				\
  %D%/blocking_shell				\
  %D%/calling_context				\
- %D%/compliance_external_asynchronous_sync	\
+ %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_livelock			\
  %D%/compliance_out_inevitable			\
  %D%/compliance_out_inevitable_illegal		\
