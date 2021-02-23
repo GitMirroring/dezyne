@@ -51,7 +51,7 @@ interface II {
   }
 }
 
-component compliance_external_asynchronous_sync {
+component compliance_nonsynchronous_sync {
   provides I p;
   requires II r;
 
