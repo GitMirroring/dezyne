@@ -543,6 +543,13 @@ output, and standard error as three values."
                       (taus+modeling (append taus modeling)))
                  (mkdir-p out-lang)
                  (with-output-to-file lts-file (cute display stdout))
+                 (observe
+                  `("ltsconvert"
+                    "-eweak-trace"
+                    ,(string-append "--tau=" (string-join taus ","))
+                    ,lts-file
+                    ,(string-append out-lang "/" base-name "-lts.aut"))
+                  "")
                  (or (and (not (file-exists? makreel-lts-file))
                           ;; XXX skip: "probably a system"
                           (format (current-error-port) "skip compare: ~s\n" makreel-lts-file))
@@ -569,6 +576,13 @@ output, and standard error as three values."
                                 ,(string-append base-name ".aut"))
                               "")
                            (display stdout)
+                           (observe
+                            `("ltsconvert"
+                              "-eweak-trace"
+                              ,(string-append "--tau=" (string-join taus ","))
+                              ,(string-append "../traces/" base-name ".aut")
+                              ,(string-append base-name "-makreel.aut"))
+                            "")
                            (let* ((lines (and stdout (string-split stdout #\newline)))
                                   (stdout-status (and lines (filter (cute string-prefix? "result: " <>) lines)))
                                   (stdout-status (and (pair? stdout-status) (car stdout-status)))
