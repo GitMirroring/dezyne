@@ -815,6 +815,13 @@ are weak-bisim equivalent"
                       (taus+modeling (append taus modeling)))
                  (mkdir-p out-lang)
                  (with-output-to-file lts-file (cute display stdout))
+                 (observe
+                  `("ltsconvert"
+                    "-eweak-trace"
+                    ,(string-append "--tau=" (string-join taus ","))
+                    ,lts-file
+                    ,(string-append out-lang "/" base-name "-lts.aut"))
+                  "")
                  (or (and (not (file-exists? makreel-lts-file))
                           ;; XXX skip: "probably a system"
                           (format (current-error-port) "skip compare: ~s\n" makreel-lts-file))
@@ -841,6 +848,13 @@ are weak-bisim equivalent"
                                 ,(string-append base-name ".aut"))
                               "")
                            (display stdout)
+                           (observe
+                            `("ltsconvert"
+                              "-eweak-trace"
+                              ,(string-append "--tau=" (string-join taus ","))
+                              ,(string-append "../traces/" base-name ".aut")
+                              ,(string-append base-name "-makreel.aut"))
+                            "")
                            (zero? (ltscompare-status? status stdout))))))))))))
 
 
