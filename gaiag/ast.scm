@@ -679,9 +679,10 @@
   (.location o))
 
 (define-method (ast:location (o <ast-list>))
-  (let ((elements (.elements o)))
-    (if (null? elements) (ast:location (.parent o))
-         (ast:location (car elements)))))
+  (or (.location o)
+      (let ((elements (.elements o)))
+        (if (null? elements) (ast:location (.parent o))
+            (ast:location (car elements))))))
 
 (define-method (ast:location o) #f)
 
