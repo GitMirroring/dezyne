@@ -33,6 +33,7 @@ HELLO_TESTS =					\
  %D%/compliance_external			\
  %D%/deadlock_component0			\
  %D%/deadlock_component1			\
+ %D%/deadlock_implicit				\
  %D%/deadlock_interface0			\
  %D%/deadlock_interface1			\
  %D%/determinism0				\

@@ -1,0 +1,8 @@
+verify: deadlock_implicit: check: deterministic: ok
+verify: deadlock_implicit: check: illegal: ok
+verify: deadlock_implicit: check: deadlock: fail
+<deadlock>
+verify: deadlock_implicit: check: compliance: skip
+verify: deadlock_implicit: check: livelock: ok
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
