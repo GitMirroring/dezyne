@@ -32,6 +32,8 @@
             ast:trigger-equal?
             ast:valued?)
   #:re-export (ast:async?
+               ast:provides?
+               ast:requires?
                ast:type))
 
 (define-method (ast:acceptance* (o <acceptances>)) (.elements o))
@@ -64,3 +66,15 @@
 
 (define-method (ast:async? (o <trigger>))
   (and=> (.port o) ast:async?))
+
+(define-method (ast:provides? (o <runtime:port>))
+  (ast:provides? (.ast o)))
+
+(define-method (ast:provides? (o <instance>))
+  #f)
+
+(define-method (ast:requires? (o <runtime:port>))
+  (ast:requires? (.ast o)))
+
+(define-method (ast:requires? (o <instance>))
+  #f)
