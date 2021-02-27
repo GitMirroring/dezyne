@@ -24,6 +24,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
   #:use-module (gaiag misc)
+  #:use-module (ice-9 poe)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag ast)
   #:use-module (gaiag goops)
@@ -360,7 +361,7 @@
 ;;       result = OEP (next, ep)
 ;;  fi
 
-(define-method (runtime:other-port (o <runtime:port>))
+(define-method (runtime:other-port- (o <runtime:port>))
   (let ((sut (runtime:find-instance "sut")))
     (let loop ((o o) (previous #f))
       (let ((container (.container o)))
@@ -425,3 +426,6 @@
                   ((not next) (injected-port o))
                   ((runtime:system-or-foreign-instance? (.container next)) (loop next o))
                   (else next)))))))))
+
+(define (runtime:other-port o) (runtime:other-port- o))
+(define runtime:other-port (pure-funcq runtime:other-port))
