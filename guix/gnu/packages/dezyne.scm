@@ -63,20 +63,20 @@
        (sha256
         (base32 #!dezyne!# "1zwf1ky7paq5flx78l7g4k1rs3padcns34lcswx83cals17zwnry"))))
     (inputs `(("bash" ,bash-minimal)
-              ("guile" ,guile-2.2)
+              ("guile" ,guile-3.0-latest)
               ("m4-cw" ,m4-changeword)
               ("mcrl2" ,mcrl2-minimal)
               ("sed" ,sed)))
     (native-inputs `(("autoconf" ,autoconf)
                      ("automake" ,automake)
                      ("gettext" ,gnu-gettext)
-                     ("guile-for-build" ,guile-2.2)
+                     ("guile-for-build" ,guile-3.0-latest)
                      ("help2man" ,help2man)
                      ("perl" ,perl)
                      ("pkg-config" ,pkg-config)
                      ("texinfo" ,texinfo)
                      ("zip" ,zip))) ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json-1)))
+    (propagated-inputs `(("guile-json" ,guile3.0-json-1)))
     (build-system gnu-build-system)
     (arguments
      `(#:modules ((ice-9 popen)
@@ -134,3 +134,10 @@
      (substitute-keyword-arguments
          `(#:configure-flags '("--enable-changeword" "--program-suffix=-cw")
            ,@(package-arguments m4))))))
+
+(define-public guile3.0-json-1
+  (package
+    (inherit guile-json-1)
+    (native-inputs `(("pkg-config" ,pkg-config)
+                     ("guile" ,guile-3.0-latest)))
+    (inputs `(("guile" ,guile-3.0-latest)))))
