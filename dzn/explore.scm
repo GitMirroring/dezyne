@@ -209,16 +209,15 @@ EXPLORE-LTS."
       res))
   (define steps-expand
     (match-lambda
-      ((from steps to)
-       (let* ((steps (if (null? steps) (list "tau") steps))
-              (l (map (cut list (next-state-num) <>) (cdr steps)))
-              (l0 (append (list (list from (car steps))) l))
-              (l1 (append l (list (list to #f)))))
-         (map (lambda (e0 e1)
-                (let ((from (car e0))
-                      (step (cadr e0))
-                      (to   (car e1)))
-                  (format #f "(~s, ~s, ~s)" from step to)))
+      ((from () to)
+       (steps-expand `(,from ("tau") ,to)))
+      ((from (step tail ...) to)
+       (let* ((l (map (cut list (next-state-num) <>) tail))
+              (l0 (cons `(,from ,step) l))
+              (l1 (append l (list `(,to #f)))))
+         (map (match-lambda*
+                (((from step tail ...) (to to-tail ...))
+                 (format #f "(~s, ~s, ~s)" from step to)))
               l0 l1)))))
   (let ((lines (append-map steps-expand graph)))
     (string-append
