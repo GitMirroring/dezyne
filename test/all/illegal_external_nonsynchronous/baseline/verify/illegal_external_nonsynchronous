@@ -1,0 +1,35 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: illegal_external_nonsynchronous: check: deterministic: ok
+verify: illegal_external_nonsynchronous: check: illegal: fail
+p.e
+r.e
+r.return
+p.return
+r.ec
+<illegal>
+verify: illegal_external_nonsynchronous: check: deadlock: fail
+p.e
+r.e
+r.return
+p.return
+p.a
+r.a
+r.return
+p.return
+p.a
+r.a
+r.return
+p.return
+p.a
+r.a
+r.return
+p.return
+p.a
+r.a
+r.return
+p.return
+p.a
+<queue-full>
+verify: illegal_external_nonsynchronous: check: compliance: skip
+verify: illegal_external_nonsynchronous: check: livelock: ok

@@ -47,7 +47,7 @@ interface I {
   }
 }
 
-component illegal_external_asynchronous2 {
+component illegal_external_nonsynchronous {
   provides I p;
   requires external I r;
 
