@@ -1,0 +1,16 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: illegal_silent: check: deterministic: ok
+verify: illegal_silent: check: illegal: fail
+h.hello
+w.hello
+w.return
+h.return
+h.hello
+w.cruel
+<illegal>
+verify: illegal_silent: check: deadlock: ok
+verify: illegal_silent: check: compliance: skip
+verify: illegal_silent: check: livelock: ok
+verify: iworld: check: deadlock: ok
+verify: iworld: check: livelock: ok
