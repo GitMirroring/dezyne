@@ -1,0 +1,65 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// When compliance is checked in the simulator, the return (and possibly
+// other provides out events) are missing: they follow on the releasing
+// event.  The simulator disables the compliance check for a blocking
+// context, which leads to failure to detect even the most basic
+// compliance problems.
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  out void planet ();
+
+  behaviour
+  {
+    on hello: world;
+  }
+}
+
+component compliance_blocking_out
+{
+  provides ihello h;
+  requires iworld w;
+  behaviour
+  {
+    bool blocked = false;
+    blocking on h.hello (): {blocked=true;h.planet ();}
+    [blocked] on w.world (): {blocked=false;h.reply ();}
+    [!blocked] on w.world (): {}
+  }
+}
+
+interface iworld
+{
+  out void world ();
+
+  behaviour
+  {
+    on inevitable: world;
+  }
+}
