@@ -225,6 +225,7 @@ REGRESSION_TESTS =				\
  %D%/hello_true_guard				\
  %D%/helloworld					\
  %D%/illegal_external_nonsynchronous		\
+ %D%/illegal_garbage				\
  %D%/illegal_provides				\
  %D%/illegal_requires				\
  %D%/illegal_requires2				\
