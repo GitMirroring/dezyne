@@ -1,14 +1,14 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
 verify: queuefull_component0: check: deterministic: ok
 verify: queuefull_component0: check: illegal: ok
 verify: queuefull_component0: check: deadlock: fail
-p.e
-r.e
-r.c
-r.c
-r.c
-r.c
+h.hello
+w.hello
+w.world
+w.world
+w.world
+w.world
 <queue-full>
 verify: queuefull_component0: check: compliance: skip
 verify: queuefull_component0: check: livelock: ok
