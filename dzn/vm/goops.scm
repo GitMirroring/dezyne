@@ -141,7 +141,8 @@
 
 (define-ast <determinism-error> (<error>))
 
-(define-ast <queue-full-error> (<error>))
+(define-ast <queue-full-error> (<error>)
+  (instance))
 
 (define-ast <end-of-trail> (<error>)
   (trigger)

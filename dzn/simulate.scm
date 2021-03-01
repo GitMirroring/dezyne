@@ -371,8 +371,8 @@
     (%next-input read-input)
     (%pc)))
 
-(define* (simulate* root trail #:key deadlock-check? model-name strict? trace
-                    locations? verbose?)
+(define* (simulate* root trail #:key deadlock-check? model-name queue-size
+                    strict? trace locations? verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  When STRICT?, the trail must include all observable
 events.  When deadlock-check?, run check-deadlock at the end."
@@ -392,8 +392,8 @@ events.  When deadlock-check?, run check-deadlock at the end."
         (when (equal? trace "trace")
           (format #t "~a\n" (cons "eligible" (labels))))))))
 
-(define* (simulate root #:key deadlock-check? model-name strict? trace trail
-                   locations? verbose?)
+(define* (simulate root #:key deadlock-check? model-name queue-size strict?
+                   trace trail locations? verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  When STRICT?, the trail must
 include all observable events.  When deadlock-check?, run check-deadlock
@@ -407,6 +407,7 @@ at the end."
     (simulate* root trail
                #:deadlock-check? deadlock-check?
                #:model-name model-name
+               #:queue-size queue-size
                #:strict? strict?
                #:trace trace
                #:locations? locations?
