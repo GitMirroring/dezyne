@@ -36,6 +36,7 @@
   #:use-module (gaiag vm runtime)
   #:export (%debug
             %debug?
+            %queue-size
             append-port-trace
             action->trigger
             assign
@@ -106,6 +107,9 @@
 (define-syntax-rule (%debug fmt arg ...)
   (when %debug?
     (format (current-error-port) fmt arg ...)))
+
+;;; The size of the component queues and external queues.
+(define %queue-size (make-parameter 3))
 
 
 ;;;
@@ -287,10 +291,13 @@
 ;;; Q and flush
 ;;;
 
-(define-method (enqueue (pc <program-counter>) (instance <runtime:component>) (trigger <trigger>))
+(define-method (enqueue (pc <program-counter>)  (ast <ast>) (instance <runtime:component>) (trigger <trigger>))
   (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<enqueue>" (trigger->string trigger))
-  (let ((state (get-state pc instance)))
-    (set-deferred (set-state pc (clone state #:q (append (.q state) (list trigger)))) instance)))
+  (let* ((state (get-state pc instance))
+         (q (.q state)))
+    (if (= (length q) (%queue-size))
+        (clone pc #:status (make <queue-full-error> #:ast ast #:message "queue-full" #:instance instance))
+     (set-deferred (set-state pc (clone state #:q (append q (list trigger)))) instance))))
 
 (define-method (dequeue (pc <program-counter>))
   (let* ((state (get-state pc))
@@ -305,7 +312,7 @@
   (let* ((external-q (.external-q pc))
          (instance (.instance pc))
          (q (or (assoc-ref external-q instance) '())))
-    (if (= (length q) 3) ;XXX TODO: (%queue-size)
+    (if (= (length q) (%queue-size))
         (clone pc #:status (make <queue-full-error> #:ast ast #:message "queue-full" #:instance instance))
         (let* ((external-q (alist-delete instance external-q))
                (external-q (acons instance (append q (list trigger)) external-q))

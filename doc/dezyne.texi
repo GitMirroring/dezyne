@@ -4700,6 +4700,10 @@ Generate an @code{lts} in Aldebaren format.
 Explore model @var{model}.  The default is to use the most
 ``interesting'' model.
 
+@item --queue-size=@var{size}
+@itemx -q @var{size}
+Use queue size @var{size} for exploration, the default is @code{3}.
+
 @item --state-diagram
 Generate a state-diagram it @code{dot} format.  This is the default.
 
@@ -4939,6 +4943,10 @@ Display locations in the trace, this implies @option{--format=@code{trace}}.
 @itemx -m @var{model}
 Start simulating @var{model}.  The default is the most ``interesting''
 model.
+
+@item --queue-size=@var{size}
+@itemx -q @var{size}
+Use queue size @var{size} for simulation, the default is @code{3}.
 
 @item --strict
 @itemx -s

@@ -322,25 +322,27 @@ EXPLORE-LTS."
 ;;; Entry point.
 ;;;
 
-(define* (state-diagram root #:key format model-name)
+(define* (state-diagram root #:key format model-name queue-size)
   "Entry-point for dzn explore --state-diagram."
   (let ((root (vm:normalize root)))
     (when (> (dzn:debugity) 0)
       (set! %debug? #t))
     (parameterize ((%exploring? #t)
-                   (%sut (runtime:get-sut root (ast:get-model root model-name))))
-      (parameterize ((%instances (runtime:system* (%sut))))
+                   (%queue-size queue-size)
+                   (%sut (runtime:get-sut root (ast:get-model root model-name)))
+)      (parameterize ((%instances (runtime:system* (%sut))))
         (let* ((pc (make-pc))
                (graph (explore pc)))
           (if (equal? format "json") (display (graph->json graph))
               (display (graph->dot graph))))))))
 
-(define* (lts root #:key model-name)
+(define* (lts root #:key model-name queue-size)
   "Entry-point for dzn explore --lts."
   (let ((root (vm:normalize root)))
     (when (> (dzn:debugity) 0)
       (set! %debug? #t))
     (parameterize ((%exploring? #t)
+                   (%queue-size queue-size)
                    (%sut (runtime:get-sut root (ast:get-model root model-name))))
       (parameterize ((%instances (runtime:system* (%sut))))
         (let ((pc (make-pc)))

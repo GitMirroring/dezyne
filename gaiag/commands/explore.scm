@@ -38,6 +38,7 @@
             (import (single-char #\I) (value #t))
             (lts)
             (model (single-char #\m) (value #t))
+            (queue-size (single-char #\q) (value #t))
             (state-diagram)))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
@@ -55,6 +56,7 @@ Explore the state space of a Dezyne model
       --lts              write the lts in AUT format to stdout
       --state-diagram    write the state diagram to stdout [default]
   -m, --model=MODEL      generate main for MODEL
+  -q, --queue-size=SIZE  use queue size=SIZE for exploration [3]
 ")
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
@@ -69,7 +71,11 @@ Explore the state space of a Dezyne model
          (parse-options (filter (negate (compose (cute eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
          (format (option-ref options 'format #f))
+         (queue-size (command-line:get 'queue-size 3))
          (state-diagram? (option-ref options 'state-diagram #f))
          (lts? (option-ref options 'lts #f)))
-    (cond (lts? (lts ast #:model-name model-name))
-          (else (state-diagram ast #:model-name model-name #:format format)))))
+    (cond (lts? (lts ast #:model-name model-name #:queue-size 3))
+          (else (state-diagram ast
+                               #:format format
+                               #:model-name model-name
+                               #:queue-size queue-size)))))
