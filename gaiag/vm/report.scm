@@ -527,40 +527,46 @@
          (labels (map (cut string-append port-name "." <>) labels)))
     labels))
 
-(define* (report traces #:key header (trace "event") locations? verbose?)
-  (let* ((pcs (map car traces))
-         (pc (car pcs))
-         (status (.status pc))
-         (initial-message (initial-error-message traces)))
+(define* (report traces #:key eligible header (trace "event") locations? verbose?)
+  (let* ((pcs (and (pair? traces) (map car traces)))
+         (pc (and pcs (car pcs)))
+         (status (and pc (.status pc)))
+         (initial-message (and status (initial-error-message traces))))
     (when initial-message
       (display initial-message (current-error-port)))
 
     ;; XXX TODO: handle set of (non-deterministic) traces.
     ;;(for-each display-trace-n traces (iota (length traces)))
-    (cond ((equal? trace "event")
+    (cond ((null? traces))
+          ((equal? trace "event")
            (display-trails traces))
           ((equal? trace "trace")
            (display-trace (car traces)
                           #:locations? locations? #:verbose? verbose?)))
 
-    (serialize (.state (car pcs)) (current-output-port))
-    (newline)
+    (when pc
+      (serialize (.state pc) (current-output-port))
+      (newline))
 
     (when (and (equal? trace "trace") initial-message)
       (display initial-message))
-    (let ((final-messages (final-error-messages traces)))
-      (when final-messages
-        (display final-messages (current-error-port)))
-      (when (is-a? status <end-of-trail>)
-        (let ((labels (end-of-trail-labels pc)))
-          (format #t "~a\n" (cons "labels" labels))))
+    (when (pair? traces)
+      (let ((final-messages (final-error-messages traces)))
+        (when final-messages
+          (display final-messages (current-error-port)))
 
-      (when (equal? trace "trace")
-        (when (pair? traces)
+        (when (equal? trace "trace")
           (let* ((trail (trace->trail (car traces)))
                  (trail (map cdr trail)))
             (when (pair? trail)
-              (format #t "~a\n" (cons "trail" trail))))))
+              (format #t "~s\n" (cons 'trail trail)))))))
 
-      (when status
-        (exit EXIT_FAILURE)))))
+    (when (and (equal? trace "trace")
+               eligible)
+      (let ((eligible (if (is-a? status <end-of-trail>) (end-of-trail-labels pc)
+                          eligible)))
+        (format #t "~s\n" (cons 'labels (labels)))
+        (format #t "~s\n" (cons 'eligible eligible))))
+
+    (when status
+      (exit EXIT_FAILURE))))
