@@ -55,7 +55,11 @@
 
 (define (check-provides-compliance pc event trace)
   (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
+         (sut-trail (trace->trail trace))
+         (event (match sut-trail
+                  (((ast . event) step ...) event)
+                  (() event)))
+         (trigger (and event (clone (string->trigger event) #:parent component)))
          (port-name (cond ((provides-trigger? event) (.port.name trigger))
                           (((compose ast:provides-port .type .ast %sut)) => .name)))
          (port-instance (runtime:port-name->instance port-name))
@@ -106,7 +110,6 @@
             (display-trails port-traces)))
 
         (let* ((port-prefix (format #f "~a." port-name))
-               (sut-trail (trace->trail trace))
                (sut-trail (filter (compose (disjoin (cut equal? <> "illegal")
                                                     (cut string-prefix? port-prefix <>))
                                            cdr)
@@ -252,23 +255,24 @@
     (newline)
     (list (list pc))))
 
-(define-method (run-component (pc <program-counter>) event)
-  (let ((traces (run-to-completion* pc event)))
-    (check-provides-compliance* pc event traces)))
-
-(define (run-sut pc)
-  (let* ((event pc ((%next-input) pc))
-         (pc (clone pc #:instance #f)))
+(define-method (run-sut (pc+blocked-trace <list>))
+  (let* ((pc (car pc+blocked-trace))
+         (event pc ((%next-input) pc)))
     (%debug "run-sut pc: ~s\n" pc)
     (%debug "     event: ~s\n" event)
     (match event
       (('state state ...)
        (run-state pc state))
       ((? string?)
-       (if (is-a? (%sut) <runtime:port>) (run-to-completion* pc event)
-           (run-component pc event)))
-      (else
-       '()))))
+       (let* ((pc (clone pc #:instance #f))
+              (traces (run-to-completion* pc event))
+              (traces (map (cute append <> pc+blocked-trace) traces)))
+         (if (is-a? (%sut) <runtime:port>) traces
+             (check-provides-compliance* pc event traces))))
+      (_
+       (let* ((pc (clone pc #:status (make <end-of-trail>)))
+              (trace (cons pc (cdr pc+blocked-trace))))
+         (list trace))))))
 
 (define* (run-trail trail #:key deadlock-check? locations? trace verbose?)
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
@@ -283,43 +287,54 @@
     (let ((event pc ((%next-input) pc)))
       (let* ((event-traces-alist (event-traces-alist pc))
              (eligible (eligible-labels pc event-traces-alist))
-             (traces (or (check-deadlock pc event-traces-alist event)
-                         traces)))
-        (report traces
+             (dealock-traces (check-deadlock pc event-traces-alist event)))
+        (when (and dealock-traces (pair? (.blocked pc)))
+          (report traces
+                  #:locations? locations?
+                  #:trace trace
+                  #:verbose? verbose?))
+        (report (or dealock-traces traces)
                 #:eligible eligible
                 #:locations? locations?
                 #:trace trace
                 #:verbose? verbose?))))
+  (define (end-report from-pcs list-of-traces)
+    (let ((traces (apply append list-of-traces)))
+      (cond
+       ((and deadlock-check? (null? traces))
+        (for-each (cute deadlock-report <> '()) from-pcs))
+       (deadlock-check?
+        (for-each deadlock-report from-pcs list-of-traces))
+       (else
+        (report traces
+                  #:eligible #t
+                  #:locations? locations?
+                  #:trace trace
+                  #:verbose? verbose?)))))
   (let ((pc (make-pc #:trail trail)))
     (when (equal? trace "trace")
       (serialize-header (.state pc) (current-output-port))
       (newline))
     (report (list (list pc)) #:trace trace #:header #t)
     (parameterize ((%next-input (if (pair? trail) trail-input read-input)))
-      (let loop ((pcs (list pc)))
-        (let* ((traces (map run-sut pcs))
-               (all-traces (apply append traces))
-               (valid-traces (filter (compose (negate .status) car) all-traces)))
-          (cond
-           ((null? valid-traces)
-            (cond
-             ((and deadlock-check? (null? all-traces))
-              (for-each (cute deadlock-report <> '()) pcs))
-             (deadlock-check?
-              (for-each deadlock-report pcs traces))
-             (else
-              (report all-traces
-                      #:eligible #t
-                      #:locations? locations?
-                      #:trace trace
-                      #:verbose? verbose?))))
-           (else
-            (report valid-traces
-                    #:locations? locations?
-                    #:trace trace
-                    #:verbose? verbose?)
-            (let ((pcs (map car valid-traces)))
-              (loop pcs)))))))))
+      (let loop ((traces (list (list pc))))
+        (let* ((from-pcs (map car traces))
+               (list-of-traces (map run-sut traces))
+               (traces (apply append list-of-traces))
+               (valid-traces (filter (compose (negate .status) car) traces))
+               (blocked non-blocked (partition (compose pair? .blocked car)
+                                               valid-traces)))
+          (cond ((null? valid-traces)
+                 (end-report from-pcs list-of-traces))
+                ((pair? blocked)
+                 (loop blocked))
+                ((pair? non-blocked)
+                 (let ((pcs (map car valid-traces)))
+                   (report non-blocked
+                           #:locations? locations?
+                           #:trace trace
+                           #:verbose? verbose?)
+                   (loop (map list pcs))))))))))
 
 
 ;;;

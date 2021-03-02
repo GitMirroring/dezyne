@@ -144,7 +144,7 @@
 (define-ast <queue-full-error> (<error>)
   (instance))
 
-(define-ast <end-of-trail> (<error>)
+(define-ast <end-of-trail> (<status>)
   (trigger)
   (labels))
 
