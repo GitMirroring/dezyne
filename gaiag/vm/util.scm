@@ -563,14 +563,19 @@
     (string-join (map state->string state-list) "\n")))
 
 (define-method (pc->string (o <program-counter>))
-  (if (.status o) "<error>"
-      (string-join
-       (cons (state->string (.state o))
-             (append (map (compose runtime:dotted-name car) (.blocked o))
-                     (if (null? (.external-q o)) '()
-                         (list (external-q->string (.external-q o))))
-                     (map (match-lambda ((timeout port . proc) (.name port))) (.async o))))
-       "\n")))
+  (match (.status o)
+    ((or ($ <illegal-error>) ($ <implicit-illegal-error>))
+     "<illegal>")
+    ((? identity)
+     "<deadlock>")
+    (_
+     (string-join
+      (cons (state->string (.state o))
+            (append (map (compose runtime:dotted-name car) (.blocked o))
+                    (if (null? (.external-q o)) '()
+                        (list (external-q->string (.external-q o))))
+                    (map (match-lambda ((timeout port . proc) (.name port))) (.async o))))
+      "\n"))))
 
 (define-method (pc->hash (o <program-counter>))
   (string-hash (pc->string o)))

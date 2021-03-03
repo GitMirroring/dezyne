@@ -20,6 +20,7 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gaiag explore)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
   #:use-module (srfi srfi-1)
@@ -129,9 +130,54 @@
      ((provides-trigger? event)
       (run-to-completion pc event)))))
 
-(define (explore pc)
+;; table is initially (<(string-hash "<illegal>") . 0>)
+(define* ((pc->state-number table count) pc #:optional trail)
+  (let* ((pc-string (pc->string pc))
+         (pc-string (if trail (string-append pc-string " t:" trail) pc-string))
+         (key (string-hash pc-string))
+         (next (hash-ref table key)))
+    (if next next
+        (let ((n (car count)))
+          (hash-set! table key n)
+          (set-car! count (1+ (car count)))
+          n))))
+
+(define (pc->rtc-lts pc)
   "Explore the state space of (%SUT).  Start by running all (labels) on
-PC, and recurse until no new PCs are found.  Return the graph as
+PC, and recurse until no new PCs are found.  Return a run-to-completion
+LTS
+
+   ((pc-hash . (pc . traces))
+    ...)
+
+  as a hash table, as multiple values
+
+  (LTS PC->STATE-NUMBER AND STATE-NUMBER-COUNT)
+"
+  (let* ((labels (cons* 'async 'external (labels)))
+         (lts (make-hash-table))
+         (state-number-table (make-hash-table))
+         (state-number-count (list 1))
+         (pc->state-number (pc->state-number state-number-table state-number-count)))
+    (hash-set! state-number-table (string-hash "<illegal>") 0)
+    (when (.status pc)
+      (let ((pc0 (clone pc #:status #f)))
+        (hash-set! lts 1 (cons pc0 (list (list pc0 pc))))))
+    (let loop ((pc pc))
+      (let ((from (pc->state-number pc)))
+        (unless (or (.status pc) (hash-ref lts from))
+          (let* ((pc (clone pc #:instance #f #:trail '()))
+                 (traces (append-map (cute run-to-completion** pc <>) labels))
+                 (pcs (map car traces)))
+            (map pc->state-number pcs)
+            (hash-set! lts from (cons pc traces))
+            (for-each loop pcs)))))
+    (when (= (car state-number-count) 1)
+      (hash-set! lts 1 (cons pc (list (list pc)))))
+    (values lts pc->state-number state-number-count)))
+
+(define (rtc-lts->state-diagram lts pc->state-number)
+  "Create a state-diagram from run-to-completion LTS, return
 
    ((from from-label transition to trigger-location)
     ...)
@@ -142,63 +188,54 @@ PC, and recurse until no new PCs are found.  Return the graph as
                                       (compose (is? <runtime:component>) .instance)))
                     (reverse trace))))
       (and pc (and=> (.statement pc) ast:location))))
-  (define (graph pc)
-    (let* ((labels (cons* 'async 'external (labels)))
-           (explored (make-hash-table)))
-      (let loop ((pc pc))
-        (let ((from (pc->hash pc)))
-          (if (equal? (hash-ref explored from) (pc->string pc)) '()
-              (let* ((pc (clone pc #:instance #f #:trail '()))
-                     (traces (append-map (cute run-to-completion** pc <>) labels))
-                     (traces (filter (compose not .status car) traces))
-                     (pcs (map car traces))
-                     (transition (map trace->string-trail traces))
-                     (from-label (pc->string pc))
-                     (to (map pc->hash pcs))
-                     (trigger-location (map trigger-location traces)))
-                (hash-set! explored from (pc->string pc))
-                (append (map (cut list from from-label <> <> <>)
-                             transition
-                             to
-                             trigger-location)
-                        (append-map loop pcs))))))))
-  (let ((graph (graph pc)))
-    (if (null? graph) `((,(pc->hash pc) ,(pc->string pc) #f #f #f))
-        graph)))
 
-(define (graph->dot graph)
-  "Return a diagram in DOT format from GRAPH produced by EXPLORE."
+  (define ((transition->dot pc->state-number) from pc+traces)
+    (let* ((pc traces (match pc+traces ((pc . traces) (values pc traces))))
+           (traces (filter (compose not .status car) traces))
+           (pcs (map car traces))
+           (transition (map trace->string-trail traces))
+           (from-label (pc->string pc))
+           (to (map pc->state-number pcs))
+           (trigger-location (map trigger-location traces)))
+      (map (cut list from from-label <> <> <>)
+           transition
+           to
+           trigger-location)))
+
+  (apply append (hash-map->list (transition->dot pc->state-number) lts)))
+
+(define (state-diagram->dot graph start)
+  "Return a diagram in DOT format from GRAPH produced by
+RTC-LTS->STATE-DIAGRAM."
   (define (preamble title)
     (format #f
             "digraph G {
 label=~s begin[shape=\"circle\" width=0.3 fillcolor=\"black\" style=\"filled\" label=\"\"]
 node[shape=\"rectangle\" style=\"rounded\"]
-begin -> " title))
+begin -> 1
+" title))
 
   (define postamble
     "
 }
 ")
-  (let ((start (match graph (((from from-label label to trigger-location) transition ...)
-                             from))))
-    (string-append
-     (preamble (ast:dotted-name (.type (.ast (%sut)))))
-     (string-append (number->string start) "\n")
-     (string-join
-      (map (match-lambda ((from from-label label to trigger-location)
-                          (string-append
-                           (format #f "~s [label=~s]\n" from from-label)
-                           (if (and to label)
-                               (format #f "~s -> ~s [label=~s]" from to label)
-                               ""))))
-           graph)
-      "\n")
-     postamble)))
+  (string-append
+   (preamble (ast:dotted-name (.type (.ast (%sut)))))
+   (string-join
+    (map (match-lambda ((from from-label label to trigger-location)
+                        (string-append
+                         (format #f "~s [label=~s]\n" from from-label)
+                         (if (and to label)
+                             (format #f "~s -> ~s [label=~s]" from to label)
+                             ""))))
+         graph)
+    "\n")
+   postamble))
 
-(define (graph->json graph)
-  (let* ((start (match graph (((from from-label label to trigger-location) transition ...)
-                              from)))
-         (graph (cons `("*" "" "" ,start #f) graph)))
+(define (state-diagram->json graph)
+  "Return a diagram in P5 JSON format from GRAPH produced by
+RTC-LTS->STATE-DIAGRAM."
+  (let ((graph (cons `("*" "" "" "1" #f) graph)))
     (string-append
      "{\"states\":[\n"
      (string-join
@@ -233,93 +270,62 @@ begin -> " title))
 ;;; LTS
 ;;;
 
-(define %lts-state-count 1) ;; FIXME: remove global
+(define (rtc-lts->lts lts pc->state-number state-number-count)
+  "Create an unfolded LTS from the run-to-completion LTS, return
 
-(define (explore-lts pc)
-  "Explore the state space of (%SUT).  Start by running all (labels) on
-PC, and recurse until no new PCs are found.  Return the graph as
+   ((from label to)
+     ...))"
+  (define (fix-missing-reply-trace trace)
+    (match trace
+      (((and ($ <program-counter>) (? (is-status? <missing-reply-error>)) error)
+        ($ <program-counter>) tail ...)
+       (cons error tail))
+      (_ trace)))
 
-   ((from transition to)
-    ...)
+  (define (trail->state-numbers pc trail to)
+    "Use every trail prefix to hash pc and produce contiguous state
+numbers"
+    (let* ((prefix (map (cute list-head trail <>)
+                        (iota (1- (length trail)) 1)))
+           (prefix (map string-join prefix)))
+      (append (map (cute pc->state-number pc <>) prefix)
+              (list to))))
 
-  and set! %lts-state-count: the number of states.
-"
-  (let* ((labels (cons* 'async 'external (labels)))
-         (pc-state-number (make-hash-table))
-         (explored (make-hash-table)))
-    (define (pc->state-number pc)
-      (let ((state-string (pc->string pc)))
-        (cond ((is-a? (.status pc) <illegal-error>)
-               0)
-              ((is-a? (.status pc) <implicit-illegal-error>)
-               0)
-              ((hash-ref pc-state-number state-string))
-              (else
-               (hash-set! pc-state-number state-string %lts-state-count)
-               (set! %lts-state-count (1+ %lts-state-count))
-               (pc->state-number pc)))))
-    (define fix-illegal-transition
-      (match-lambda
-        ((from (trail ... "<illegal>") to)
-         `(,from (,@trail "<illegal>") 0))
-        (()
-         '())
-        (transition transition)))
-    (define (fix-missing-reply-trace trace)
-      (match trace
-        (((and ($ <program-counter>) (? (is-status? <missing-reply-error>)) error)
-          ($ <program-counter>) tail ...)
-         (cons error tail))
-        (_ trace)))
-    (define (traces->transitions pc from label traces)
-      (let* ((traces (map fix-missing-reply-trace traces))
-             (pcs (map car traces))
-             (tos (map pc->state-number pcs))
-             (trails (map (lambda (t) (map cdr (trace->trail t))) traces))
-             (transitions (map (cut list from <> <>) trails tos))
-             (transitions (map fix-illegal-transition transitions)))
-        transitions))
-    (cons
-     '(0 ("<illegal>") 0)
-     (let loop ((pc pc))
-       (let ((from (pc->state-number pc)))
-         (if (or (.status pc) (hash-ref explored from)) '()
-             (let* ((pc (clone pc #:instance #f #:trail '()))
-                    (traces (map (cute run-to-completion** pc <>) labels))
-                    (pcs (append-map (cute map car <>) traces))
-                    (transitions (append-map (cute traces->transitions pc from <> <>) labels traces)))
-               (hash-set! explored from #t)
-               (append transitions
-                       (append-map loop pcs)))))))))
+  (define (trace->lts-triples pc from trace)
+    "From a run-to-completion transition PC,TRACE, generate one LTS
+triple per label in the trail of the transition."
+    (let* ((trace (fix-missing-reply-trace trace))
+           (labels (map cdr (trace->trail trace)))
+           (labels (if (null? labels) '("tau") labels))
+           (to (pc->state-number (car trace)))
+           (inner-state-numbers (trail->state-numbers pc labels to)))
+      (map list
+           (cons from inner-state-numbers)
+           labels
+           inner-state-numbers)))
 
-(define (graph->lts graph)
-  "Return an LTS in Aldebaran format from GRAPH produced by
-EXPLORE-LTS."
-  (define (next-state-num)
-    (let ((res %lts-state-count))
-      (set! %lts-state-count (1+ %lts-state-count))
-      res))
-  (define steps-expand
-    (match-lambda
-      ((from () to)
-       (steps-expand `(,from ("tau") ,to)))
-      ((from (step tail ...) to)
-       (let* ((l (map (cut list (next-state-num) <>) tail))
-              (l0 (cons `(,from ,step) l))
-              (l1 (append l (list `(,to #f)))))
-         (map (match-lambda*
-                (((from step tail ...) (to to-tail ...))
-                 (format #f "(~s, ~s, ~s)" from step to)))
-              l0 l1)))))
-  (let ((lines (append-map steps-expand graph)))
-    (string-append
-     (format #f "des (1, ~s, ~s)\n" (length lines) %lts-state-count)
-     (string-join lines "\n")
-     "\n")))
+  (define (transition->aut from pc+traces)
+    (let ((pc traces (match pc+traces ((pc . traces) (values pc traces)))))
+      (append-map (cute trace->lts-triples pc from <>) traces)))
+
+  (values
+   (cons
+    (list 0 "<illegal>" 0)
+    (apply append (hash-map->list transition->aut lts)))
+   (car state-number-count)))
+
+(define (lts->aut lts state-count)
+  "Return an LTS in Aldebaran (aut) format from LTS produced by
+RTC-LTS->LTS."
+  (format #t "des (1, ~s, ~s)\n" (length lts) state-count)
+  (for-each (match-lambda
+              ((from step to)
+               (format #t "(~s, ~s, ~s)\n" from step to)))
+            lts))
 
 
 ;;;
-;;; Entry point.
+;;; Entry points.
 ;;;
 
 (define* (state-diagram root #:key format model-name queue-size)
@@ -329,12 +335,13 @@ EXPLORE-LTS."
       (set! %debug? #t))
     (parameterize ((%exploring? #t)
                    (%queue-size queue-size)
-                   (%sut (runtime:get-sut root (ast:get-model root model-name)))
-)      (parameterize ((%instances (runtime:system* (%sut))))
+                   (%sut (runtime:get-sut root (ast:get-model root model-name))))
+      (parameterize ((%instances (runtime:system* (%sut))))
         (let* ((pc (make-pc))
-               (graph (explore pc)))
-          (if (equal? format "json") (display (graph->json graph))
-              (display (graph->dot graph))))))))
+               (lts pc->state-number state-count (pc->rtc-lts pc))
+               (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
+          (if (equal? format "json") (display (state-diagram->json state-diagram))
+              (display (state-diagram->dot state-diagram (pc->hash pc)))))))))
 
 (define* (lts root #:key model-name queue-size)
   "Entry-point for dzn explore --lts."
@@ -345,5 +352,7 @@ EXPLORE-LTS."
                    (%queue-size queue-size)
                    (%sut (runtime:get-sut root (ast:get-model root model-name))))
       (parameterize ((%instances (runtime:system* (%sut))))
-        (let ((pc (make-pc)))
-          (display (graph->lts (explore-lts pc))))))))
+        (let* ((pc (make-pc))
+               (rtc-lts pc->state-number state-count (pc->rtc-lts pc))
+               (lts state-count (rtc-lts->lts rtc-lts pc->state-number state-count)))
+          (lts->aut lts state-count))))))
