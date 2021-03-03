@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -83,7 +84,7 @@ Dezyne language tool for completion and lookup information
 
 (define (main args)
   (define (string->point str)
-    (match (map string->number (string-split str (char-set #\, #\space)))
+    (match (map string->number (string-split str (char-set-complement char-set:digit)))
       ((line column) (values line column))
       ((line) (values line 0))))
 
@@ -94,7 +95,8 @@ Dezyne language tool for completion and lookup information
          (imports (multi-opt options 'import))
          (imports (delete-duplicates (cons* (dirname file-name) "." imports)))
          (help? (option-ref options 'help #f))
-         (lookup? (option-ref options 'lookup #f)))
+         (lookup? (option-ref options 'lookup #f))
+         (errors '()))
 
     (define (file-name->parse-tree file-name)
       (let* ((file (search-path imports file-name))
@@ -105,26 +107,29 @@ Dezyne language tool for completion and lookup information
     (define (file-name->text file-name)
       (let ((file-name (search-path imports file-name)))
         (with-input-from-file file-name read-string)))
+    (define (handle-error pos str error)
+      (when (< pos (1- (string-length str)))
+        (set! errors (cons errors (list pos str error)))
+        (let ((line (1+ (string-count str #\newline 0 pos)))
+              (col (- pos (or (string-rindex str #\newline 0 pos) 0))))
+          (format (current-error-port) "~a ~a\n"
+                  (locus file-name line col (second error))
+                  error))))
     (let* ((input (file-name->text file-name))
-           (errors '())
            (parse-result (parameterize
                              ((%peg:debug? (> (dzn:debugity) 0))
                               (%peg:locations? #t)
                               (%peg:skip? peg:skip-parse)
                               (%peg:fall-back? #t)
-                              (%peg:error (lambda (pos str error)
-                                            (when (< pos (1- (string-length str)))
-                                              (set! errors (cons errors (list pos str error)))
-                                              (let ((line (1+ (string-count str #\newline 0 pos)))
-                                                    (col (- pos (or (string-rindex str #\newline 0 pos) 0))))
-                                                (format (current-error-port) "~a ~a\n"
-                                                        (locus file-name line col (second error))
-                                                        error))))))
-                           (cons (string-length input) (string->parse-tree input #:file-name file-name))))
+                              (%peg:error handle-error))
+                           (cons (string-length input)
+                                 (string->parse-tree input #:file-name file-name))))
            (offset (or (and+pred=> (option-ref options 'offset #f) string->number)
-                       (and+pred=> (option-ref options 'point #f) (lambda (str)
-                                                                    (call-with-values (cute string->point str)
-                                                                      (lambda (line col) (line-column->offset line col input)))))
+                       (and+pred=> (option-ref options 'point #f)
+                                   (lambda (str)
+                                     (call-with-values (cute string->point str)
+                                       (lambda (line col)
+                                         (line-column->offset line col input)))))
                        (car parse-result)))
            (parse-tree (cdr parse-result)))
       (let ((context (complete:context parse-tree offset)))
