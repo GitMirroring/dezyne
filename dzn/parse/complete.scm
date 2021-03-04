@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -192,6 +192,12 @@
     (map (cute string-append (tree:dotted-name name) "." <>)
          (map tree:dotted-name fields))))
 
+(define (tree:enum-field-tests o name)
+  (assert-type o 'enum)
+  (let ((fields (tree:field* o)))
+    (map (cute string-append (tree:dotted-name name) "." <>)
+         (map tree:dotted-name fields))))
+
 (define (tree:type-value-names o)
   (cond ((is-a? o 'enum) (tree:enum-value-names o))
         ((is-a? o 'int) (tree:int-value-names o))
@@ -327,7 +333,12 @@
              (complete-on (.tree on) context)))
            (else
             (context:complete (.tree (.parent context)) (.parent context) offset))))
-
+    (('field-test var name ...)
+     (let* ((name (tree:name var))
+            (variable (tree:lookup name context))
+            (type (.type-name variable))
+            (enum (tree:lookup type context)))
+       (tree:enum-field-tests enum name)))
     (('triggers (? (disjoin incomplete? tree:location?)) ...)
      (context:trigger-names context))
     ((? (is? 'trigger))
