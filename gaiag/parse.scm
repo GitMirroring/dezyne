@@ -49,6 +49,7 @@
             file+import-content-alist
             imported-from
             parse:handle-exceptions
+            call-with-handle-exceptions
             peg:handle-syntax-error
             preprocess
             string->ast
@@ -269,6 +270,11 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
       (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
                     file-name key args)
             (exit EXIT_FAILURE)))))
+
+(define* (call-with-handle-exceptions thunk #:key backtrace? (file-name "-"))
+  (catch (if backtrace? 'none #t)
+    thunk
+    (parse:handle-exceptions file-name)))
 
 (define* (string->ast string #:key parse-tree? skip-wfc?)
   "Parse STRING and return an ast.  When PARSE-TREE?, return the parse

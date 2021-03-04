@@ -2,7 +2,8 @@
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -38,6 +39,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
   #:use-module (gaiag misc)
+  #:use-module (gaiag peg)
   #:export (add-failures
             assert-deadlock
             assert-deterministic
@@ -48,6 +50,7 @@
             edge-label
             aut-file->lts
             aut-header-regex
+            cleanup-aut
             lts->nodes
             lts->traces
             lts-hide
@@ -542,11 +545,13 @@ required to be non-deterministic."
 
 (define (optional? e)
   (or (equal? (edge-label e) "optional")
+      (string-suffix? ".optional" (edge-label e))
       (string-suffix? "'optional" (edge-label e))
       (string-suffix? "'optional)" (edge-label e))))
 
 (define (inevitable? e)
   (or (equal? (edge-label e) "inevitable")
+      (string-suffix? ".inevitable" (edge-label e))
       (string-suffix? "'inevitable" (edge-label e))
       (string-suffix? "'inevitable)" (edge-label e))))
 
@@ -743,3 +748,105 @@ required to be non-deterministic."
            (nodes (lts->nodes lts #t))
            (root (car (lts-state lts))))
       (generate-trace root nodes provides-in (string-append model ".trace") out))))
+
+
+;;;
+;;; Cleanup.
+;;;
+
+(define (parse-label label)
+  (define-peg-string-patterns
+    "tree               <-- event / modeling / reply / return / queue / tau-literal / illegal / error / end / flush / parse-error
+     parse-error        <-- [a-zA-Z_0-9'()]*
+     event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
+     modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
+     queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
+     end                <   scope* ('end' / 'silent_end')
+     return             <-- 'return'
+     flush              <-- port-scope* identifier tick 'flush'
+     reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
+     scope              <   identifier tick
+     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / 'queue_full' / 'flush')
+     port-name          <-  port-scope* identifier
+     event-name         <-  identifier
+     reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
+     bool-literal       <   'Bool'
+     bool               <-- ('true' / 'false' )
+     int-literal        <   'Int'
+     int                <-- '-'?[0-9]+
+     void-literal       <   'Void'
+     void               <-- 'void'
+     enum-name          <   identifier
+     enum-literal       <-- (enum tick)* enum-field
+     enum               <-  identifier
+     enum-field         <-  identifier
+     direction          <   ('qin' / 'in' / 'out') !identifier
+     queue-direction    <-- 'qout'
+     action-literal     <   'action'
+     internal-literal   <   'internal' / 'silent'
+     reply-literal      <   'reply'
+     tau-literal        <   'tau'
+     illegal            <-- 'illegal' / 'declarative_illegal'
+     error              <-- incomplete / queue-full / range-error / reply-error / missing-reply / second-reply
+     queue-full         <-  'queue_full' / port-name tick 'queue_full'
+     range-error        <-  'range_error'
+     incomplete         <-  'incomplete'
+     reply-error        <-  'double_reply_error' / 'no_reply_error'
+     missing-reply      <-  'missing_reply'
+     second-reply       <-  'second_reply'
+     tick               <   [']
+     lpar               <   [(]
+     rpar               <   [)]
+     identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ / !direction [a-zA-Z_][a-zA-Z0-9_]*")
+  (let* ((match (match-pattern tree label))
+         (end (peg:end match))
+         (tree (peg:tree match)))
+    (if (eq? (string-length label) end)
+        (if (symbol? tree) '()
+            (cdr tree))
+        (if match
+            (begin
+              (format (current-error-port) "input: ~a\nparse error: at offset: ~a\n~s\n" label end tree)
+              #f)
+            (begin
+              (format (current-error-port) "parse error: no match\n")
+              #f)))))
+
+(define* (cleanup-label label #:key internal? illegal?)
+  (define (helper tree)
+    (match tree
+      (('parse-error parse-error) (stderr "parse error:~s\n" tree) parse-error)
+      (('error error) error)
+      (('flush ('identifier port) "flush") (string-append port ".<flush>"))
+      (('error ('identifier port) error) error)
+      (('event ('identifier port) ('identifier event)) (string-append port "." event))
+      (('illegal illegal) (and illegal? illegal))
+      (('modeling ('identifier port) event) (and internal? (string-append port "." event)))
+      (('queue ('identifier port) ('queue-direction direction) ('identifier event)) (and internal? (string-append port "." direction "." event)))
+      (('reply ('identifier port) ('void "void")) (string-append port ".return"))
+      (('reply ('identifier port) ('bool value)) (string-append port "." value))
+      (('reply ('identifier port) ('int value)) (string-append port "." value))
+      (('reply ('identifier port) ('enum-literal scope ... ('identifier name) ('identifier field))) (string-append port "." name "_" field))
+      (('reply ('identifier port) ('enum-literal (scope ... ('identifier name)) ('identifier field))) (string-append port "." name "_" field))
+      (('return return) (and internal? "return"))
+      ((h) (helper h))
+      (_ label)))
+  (or (helper (parse-label label)) "tau"))
+
+(define* (cleanup-aut #:key file-name (illegal? #t) (internal? #t))
+  (let ((input-port (if file-name (open-input-file file-name) (current-input-port)))
+        (label-re (make-regexp "\"([^\"]*)\"")))
+    (let loop ((line (read-line input-port 'concat)))
+      (unless (eof-object? line)
+        (let ((out-line (regexp-substitute/global
+                         #f label-re line
+                         'pre
+                         (compose (cute format #f "\"~a\"" <>)
+                                  (cut cleanup-label
+                                       <>
+                                       #:illegal? illegal?
+                                       #:internal? internal?)
+                                  (cute match:substring <> 1))
+                         'post)))
+          (display out-line))
+        (loop (read-line input-port 'concat))))))

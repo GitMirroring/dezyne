@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2017, 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -27,13 +27,8 @@
 (define-module (gaiag commands traces)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 ftw)
   #:use-module (ice-9 getopt-long)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 receive)
-
+  #:use-module (ice-9 regex)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) 'goops:<port> x)))
 
   #:use-module (gaiag misc)
@@ -41,24 +36,16 @@
   #:use-module (gaiag goops)
   #:use-module (gaiag ast)
   #:use-module (gaiag commands parse)
-  #:use-module (gaiag commands verify)
   #:use-module (gaiag command-line)
   #:use-module (gaiag lts)
   #:use-module (gaiag code makreel)
-
+  #:use-module (gaiag parse)
   #:use-module (gaiag shell-util)
-  #:use-module (gash job)
-  #:use-module (gash pipe)
 
   #:use-module (scmcrl2 verification)
-  #:use-module (scmcrl2 traces)
 
   #:export (parse-opts
             main))
-
-(define x:interface-init (@@ (scmcrl2 verification) x:interface-init))
-(define x:component-init (@@ (scmcrl2 verification) x:component-init))
-(define execute (@@ (scmcrl2 verification) execute))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -96,36 +83,23 @@ Generate exhaustive set of traces for Dezyne model
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
-(define (mcrl2->lts ast model init)
-  (let* ((commands `(,(cut model->mcrl2 ast model)
-                     ("bash" "-c" ,(format #f "cat - ; echo \"~a\"" init))
-                     ("m4-cw")
-                     ("mcrl22lps" "--quiet" "-b")
-                     ("lpsconstelm" "--quiet" "-st")
-                     ("lpsparelm")
-                     ("lps2lts" "--quiet" "--cached" "--out=aut""--save-at-end" "-" "-")))
-         (result (execute commands))
-         (commands `(,(cut display result)
-                     ("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut")))
-         (result (execute commands)))
-    (string-trim-right result)))
+(define (lts-hide-internal-labels text)
+  (let* ((text (regexp-substitute/global #f "\"declarative_illegal\"" text 'pre "\"illegal\"" 'post))
+         (text (regexp-substitute/global #f "\"[^\"]*\\.qout\\.[^\"]*\"" text 'pre "\"tau\"" 'post))
+         (text (regexp-substitute/global #f "\"(optional|inevitable)\"" text 'pre "\"tau\"" 'post))
+         (text (regexp-substitute/global #f "\"[^\"]*\\.(optional|inevitable)\"" text 'pre "\"tau\"" 'post)))
+    text))
 
-(define (model->lts root model)
-  (let* ((cwd (getcwd))
-         (tmp (string-append (tmpnam) "-traces"))
-         (foo (mkdir tmp)))
-    (chdir tmp)
-    (let* ((init (if (is-a? model <component>) (x:component-init model) (x:interface-init model)))
-           (lts (mcrl2->lts root model init))
-           (lts (cleanup-lts lts #:illegal? #t)))
-      (chdir cwd)
-      (when (string-null? (string-trim-right lts))
-        (throw 'error "failed to create LTS"))
-      lts)))
+(define (model->lts root model file-name)
+  (let* ((lts (verify-pipeline "aut-weak-trace" root model))
+         (lts (lts-hide-internal-labels lts)))
+    (when (string-null? (string-trim-right lts))
+      (throw 'error "failed to create LTS"))
+    lts))
 
-(define (model->traces options root model)
+(define (model->traces options root model file-name)
   (let* ((dzn-debug? (dzn:command-line:get 'debug))
-         (lts (model->lts root model))
+         (lts (model->lts root model file-name))
          (provided-ports (if (is-a? model <interface>) '()
                              (ast:provides-port* model)))
          (provides-in (if (is-a? model <component>)
@@ -134,7 +108,7 @@ Generate exhaustive set of traces for Dezyne model
                           (map .name (filter ast:in? (ast:event* model)))))
          (foo (if dzn-debug? (stderr "provides: ~a\n" provided-ports)))
          (provided (map .name provided-ports))
-         (model-name (verify:scope-name model))
+         (model-name (makreel:unticked-dotted-name model))
          (bin ((compose dirname car) (command-line)))
          (flush-opt (option-ref options 'flush #f))
          (illegal-opt (option-ref options 'illegal #f))
@@ -176,7 +150,7 @@ Generate exhaustive set of traces for Dezyne model
          (root (makreel:om ast))
          (model-name (option-ref options 'model #f)))
     (define (named? o)
-      (equal? (verify:scope-name o) model-name))
+      (equal? (makreel:unticked-dotted-name o) model-name))
     (let* ((models (ast:model* root))
            (components-interfaces (append (filter (conjoin (is? <component>) .behaviour) models)
                                           (filter (is? <interface>) models)))
@@ -185,4 +159,4 @@ Generate exhaustive set of traces for Dezyne model
       (cond ((and model-name (not model)) (error "no such model:" model-name))
             ((is-a? model <system>) #t) ;; silently no traces
             ((and model-name (or (is-a? model <foreign>) (not (.behaviour model)))) (error "no model with behaviour:" model-name))
-            (model (model->traces options root model))))))
+            (model (model->traces options root model file-name))))))

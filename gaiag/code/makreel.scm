@@ -49,13 +49,63 @@
   #:use-module (gaiag code dzn)
   #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
-  #:export (ast->
-            ast:interface*
-            root->
+  #:export (%model-name
+            makreel:.name
+            makreel:enum-fields
+            makreel:get-model
+            makreel:model->makreel
+            makreel:model-name
+            makreel:name
             makreel:om
+            makreel:reply-type-sort
             makreel:tick-names
-            verify:scope-name
-            %model-name))
+            makreel:unticked-dotted-name
+            root->))
+
+(define %model-name (make-parameter #f))
+
+;;;
+;;; Ticked root.
+;;;
+
+(define (untick o)
+  (string-drop-right o 1))
+
+(define-method (makreel:.name (o <named>))
+  (untick (.name o)))
+
+(define-method (makreel:name (o <named>))
+  (untick (ast:name o)))
+
+(define-method (makreel:get-model (o <root>) model-name)
+  "Find model of MODEL-NAME in ROOT.  MODEL-NAME is unticked, ROOT is ticked."
+  (let ((models (ast:model* o)))
+    (find (compose (cute equal? <> model-name) makreel:unticked-dotted-name) models)))
+
+(define (makreel:model->makreel root model)
+  (let* ((model-name (makreel:unticked-dotted-name model))
+         (root' (tree-filter (disjoin (negate (is? <component>)) (cut ast:eq? <> model)) root)))
+    (parameterize ((%model-name model-name))
+      (root-> root'))))
+
+(define (makreel:unticked-dotted-name o)
+  "Return a full name of MODEL, separated with dots, with ticks removed."
+  (string-join (map untick (ast:full-name o)) "."))
+
+(define-method (makreel:get-model (o <root>))
+  (define (named? o)
+    (equal? (makreel:unticked-dotted-name o) (%model-name)))
+  (let ((model (and (%model-name)
+                    (find named? (ast:model* o)))))
+    (or model
+        (find (is? <component>) (ast:model* o))
+        (filter (is? <interface>) (ast:model* o)))))
+
+
+
+;;;
+;;; Accessors.
+;;;
 
 (define-method (makreel:interface-reorder (o <behaviour>))
   (if (parent o <interface>) o
@@ -67,7 +117,7 @@
 (define interface-alist '())
 
 (define (makreel:interface-proc-memo o)
-  (let* ((key (verify:scope-name o))
+  (let* ((key (makreel:unticked-dotted-name o))
          (intf (assoc-ref interface-alist key)))
     (if intf
         (string-append "%% cache hit: \n" intf)
@@ -214,27 +264,10 @@
             (tree-map f o))))
    (f root))
 
-(define %model-name (make-parameter #f))
-
-(define (untick o)
-  (string-drop-right o 1))
-
-(define (verify:scope-name o)
-  (string-join (map untick (ast:full-name o)) "."))
-
-(define-method (makreel:get-model (o <root>))
-  (define (named? o)
-    (equal? (verify:scope-name o) (%model-name)))
-  (let ((model (and (%model-name)
-                    (find named? (ast:model* o)))))
-    (or model
-        (find (is? <component>) (ast:model* o))
-        (filter (is? <interface>) (ast:model* o)))))
-
 (define-method (makreel:init (o <root>))
   (let* ((model-name (%model-name)))
     (define (named? o)
-      (equal? (verify:scope-name o) model-name))
+      (equal? (makreel:unticked-dotted-name o) model-name))
     (let ((model (and model-name
                       (find named? (ast:model* o)))))
       (or model

@@ -94,9 +94,10 @@ Parse a Dezyne file and produce an AST
                             #:parse-tree? parse-tree?
                             #:skip-wfc? skip-wfc?)))
         (if (not model-name) ast
-            (catch (if debug? 'none #t)
-              (lambda _ (ast:filter-model ast (ast:get-model ast model-name)))
-              (parse:handle-exceptions file-name)))))))
+            (call-with-handle-exceptions
+             (lambda _ (ast:filter-model ast (ast:get-model ast model-name)))
+             #:backtrace? debug?
+             #:file-name file-name))))))
 
 (define (preprocess options file-name)
   (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))

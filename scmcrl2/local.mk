@@ -22,7 +22,6 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/traces.scm      				\
  %D%/verification.scm
 
 dist_nocompile_%C%_scm_DATA =

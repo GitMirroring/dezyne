@@ -28,5 +28,5 @@ Declarative_Illegal = declarative_illegal . Declarative_Illegal;
 
 %%%%%%%%%%%%%%%%%%%%%%%%% INIT %%%%%%%%%%%%%%%%%%%%%%%%%
 
-#x:init
+init init_process();
 %% version: #x:version
