@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <johri.van.eerd@verum.com>
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -265,6 +265,10 @@
   '("b" "m" "Bool.False" "Bool.True")
   (test-complete #:file-name "component-enum.dzn" #:line 35 #:column 13))
 
+(test-equal "completion field-test field"
+  '("e.False" "e.True")
+  (test-complete #:file-name "enum.dzn" #:line 9 #:column 7))
+
 (test-equal "completion provides imported interfaces"
   '("ihello" "ihello_enum" "ihello_int")
   (test-complete #:file-name "import.dzn" #:line 8 #:column 10
@@ -370,7 +374,7 @@
   (test-lookup #:file-name "enum.dzn" #:line 9 #:column 5))
 
 (test-equal "lookup field-test->enum-field"
-  "enum.dzn:1:11"
+  "enum.dzn:1:17"
   (test-lookup #:file-name "enum.dzn" #:line 9 #:column 7))
 
 (test-equal "lookup variable-type->interface enum"

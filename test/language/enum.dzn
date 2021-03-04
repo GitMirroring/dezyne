@@ -1,4 +1,4 @@
-enum Bool {True,False};
+enum Bool {False,True};
 
 interface ihello
 {
