@@ -1,8 +1,8 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
@@ -29,27 +29,19 @@
 (define-module (dzn commands verify)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 receive)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
   #:use-module (dzn ast)
   #:use-module (dzn config)
-  #:use-module (dzn misc)
+  #:use-module (dzn parse)
   #:use-module (dzn code makreel)
   #:use-module (dzn commands parse)
   #:use-module (dzn commands code)
   #:use-module (dzn verify pipeline)
   #:use-module (dzn command-line)
-  #:use-module (dzn shell-util)
-  #:use-module (gash job)
-  #:use-module (gash pipe)
   #:export (parse-opts
-            model->mcrl2
             main))
 
 (define (parse-opts args)
@@ -63,6 +55,7 @@
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
+         (out (option-ref options 'out #f))
 	 (usage? (and (not help?) (null? files))))
     (when (or help? usage?)
       (let ((port (if usage? (current-error-port) (current-output-port))))
@@ -76,61 +69,21 @@ Check DZN-FILE for verification errors in Dezyne models
   -m, --model=MODEL           restrict verification to model MODEL
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
-	(exit (or (and usage? EXIT_OTHER_FAILURE) 0))))
+	(exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
-(define (models-for-verification root)
-  (let* ((models (ast:model* root))
-         (components (filter (conjoin (is? <component>) (negate ast:imported?) .behaviour) models))
-         (component-names (map verify:scope-name components))
-         (interfaces (filter (conjoin (is? <interface>) (negate ast:dzn-scope?)) models))
-         (interface-names (map verify:scope-name interfaces))
-         (interface-names (let loop ((components components) (interface-names interface-names))
-                            (if (null? components) interface-names
-                                (let ((component-interfaces (map (compose verify:scope-name .type) (ast:port* (car components)))))
-                                  (loop (cdr components)
-                                        (filter (negate (cut member <> component-interfaces)) interface-names)))))))
-    (append interface-names component-names)))
-
-(define-method (ast:interface* (o <interface>))
-  (let* ((types (delete-duplicates
-                 (map ast:type (tree-collect (disjoin (is? <event>) (is? <variable>) (is? <formal>)) o))
-                 ast:eq?)))
-    (delete-duplicates (filter-map (cut parent <> <interface>) types) ast:eq?)))
-
-(define (model->mcrl2 root model)
-  (let* ((model-name (verify:scope-name model))
-         (root' (tree-filter (disjoin (negate (is? <component>)) (cut ast:eq? <> model)) root)))
-    (parameterize ((%model-name model-name))
-      (root-> root'))))
-
-(define (verify-makreel options ast)
-  (let ((all? (command-line:get 'all)))
-
-    (define (verify-makreel-model root model-name)
-      (mcrl2:verify model-name root))
-
-    (let* ((root (makreel:om ast))
-           (model (option-ref options 'model #f))
-           (models (if model (list model) (models-for-verification root))))
-      (when (and model (not (find (lambda (x) (equal? (verify:scope-name x) model))
-                                  (ast:model* root))))
-        (display (string-append "no such model: " model "\n") (current-error-port))
-        (exit EXIT_OTHER_FAILURE))
-      (let loop ((models models) (error? #f))
-        (if (or (and (not all?) error?) (null? models)) (if error? 1 0)
-            (let* ((model (car models))
-                   (this-error? (verify-makreel-model root model))
-                   (error? (or error? this-error?)))
-              (loop (cdr models) error?)))))))
-
 (define (main args)
+  (setvbuf (current-output-port) 'line)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
-         (debug? (dzn:command-line:get 'debug)))
-    (setvbuf (current-output-port) 'line)
-    (let* ((file-name (car files))
-           (ast (parse options file-name)))
-      (let ((error? (verify-makreel options ast)))
-        (exit error?)))))
+         (all? (option-ref options 'all #f))
+         (debug? (dzn:command-line:get 'debug #f))
+         (model-name (option-ref options 'model #f))
+         (ast (parse options file-name))
+         (model (and model-name (call-with-handle-exceptions
+                                 (lambda _ (ast:get-model ast model-name))
+                                 #:backtrace? debug?
+                                 #:file-name file-name)))
+         (root (makreel:om ast)))
+    (exit (verification:verify options root #:all? all? #:model-name model-name))))

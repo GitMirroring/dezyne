@@ -110,10 +110,12 @@ define(#x:makreel:model-name interface_internal, rename({
   , #x:makreel:model-name internal' -> #x:makreel:model-name internal
   , #x:makreel:model-name end'reordered -> #x:makreel:model-name end
   , #x:makreel:model-name end' -> tau_void
+  , #x:makreel:model-name silent_end -> tau_void
   }, #x:makreel:model-name allow))
 
 #x:makreel:model-name interface = hide({
    tau_void
+ , #x:makreel:model-name end
  , #x:makreel:model-name tau_reply}, #x:makreel:model-name interface_internal);
 
 #x:makreel:model-name behaviour #x:process-parameters

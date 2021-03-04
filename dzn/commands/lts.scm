@@ -39,6 +39,7 @@
 
 (define (parse-opts args)
   (let* ((option-spec '((accepts (single-char #\a))
+                        (cleanup (single-char #\c))
                         (deadlock (single-char #\d))
                         (deterministic)
                         (events (single-char #\e))
@@ -62,6 +63,7 @@ Usage: dzn lts [OPTION]... [FILE]...
 Navigate and query an LTS from FILE in Aldebaran (AUT) format.
 
   -a, --accepts                   list acceptance sets for state reachable by TRACE
+  -c, --cleanup                   rewrite makreel labels to dezyne, optionlly remove PREFIX
   -d, --deadlock                  detect deadlock in LTS (after failures introduction)
       --deterministic             detect non-determinism in LTS with respect to all labels
   -e, --events                    list event alphabet (edge labels) for each FILE.
@@ -88,7 +90,9 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (output-separator #\;)
          (options (parse-opts args))
          (accepts (option-ref options 'accepts #f))
+         (cleanup? (option-ref options 'cleanup #f))
          (files (option-ref options '() '()))
+         (file-name (and (pair? files) (car files)))
          (events (option-ref options 'events #f))
          (deadlock (option-ref options 'deadlock #f))
          (deterministic (option-ref options 'deterministic #f))
@@ -147,6 +151,8 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
           (begin (format (current-error-port) "Error in aut file: ~a - ~a\n" path error)
                  #f)))
 
+    (when cleanup?
+      (cleanup-aut #:file-name file-name))
     (when events
       (let ((alphabets (map (compose lts->alphabet (cut lts-hide <> tau) aut-file->lts) files)))
         (map (lambda (f a) (format #t "Events in lts ~a:\n~a\n" f a)) files alphabets)))

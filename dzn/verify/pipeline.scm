@@ -1,9 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
@@ -21,111 +21,276 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-;;;
-;;; Commentary:
-;;;
-;;; Code:
 
 (define-module (dzn verify pipeline)
-
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 receive)
-  #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn commands verify)
   #:use-module (dzn config)
   #:use-module (dzn goops)
   #:use-module (dzn code makreel)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
-  #:use-module (dzn verify traces)
-  #:use-module (gash job)
   #:use-module (gash pipe)
   #:use-module (json)
 
-  #:export (mcrl2:verify
-            verify:file-name
-            x:interface-init
-            x:component-init))
+  #:export (verification:formats
+            verification:partial
+            verification:verify
+            verify-pipeline))
+
+;;; Commentary:
+;;;
+;;; '(scmrl2 verification)' implements a mCRL2-base pipeline for
+;;; verification of Dezyne models.  Entry point: dzn verify.
+;;;
+;;; Starting point is from dzn code -l makreel, (dzn code makreel),
+;;; the verification pipeline consists of mCRL2 commands and dzn lts.
+;;; The result is reported in plain text or JSON.
+;;;
+;;; TODO:
+;;;   * Do not drop failure event "illegal", keep it as <illegal>,
+;;;     together with something like <compliance>, <deadlock>,
+;;;     <missing-reply>, <range-error>, <queue-full>, <second-reply>.
+;;;   * Cleanup reporting.
+;;;
+;;; Code:
+
+;;;
+;;; Taus.
+;;;
+
+(define (interface-taus model)
+  (let* ((name (makreel:name model))
+         (alphabet (map (cute string-append name "." <>)'("inevitable" "optional"))))
+    (string-join alphabet ",")))
+
+(define (enum-literal->event o)
+  (string-append (makreel:name (.type o)) "_" (.field o)))
+
+(define (event-returns event)
+  (let ((type (ast:type event)))
+    (match type
+      (($ <bool>)
+       '("false" "true"))
+      (($ <enum>)
+       (map enum-literal->event (makreel:enum-fields type)))
+      (($ <int>)
+       (let* ((range (.range type))
+              (from (.from range)))
+         (map number->string (iota (1+ (- (.to range) from)) from))))
+      (($  <void>)
+       '("return")))))
+
+(define (event-alpabet event)
+  (cons* (.name event)
+         (string-append "qout." (.name event))
+         (event-returns event)))
+
+(define (component-taus model)
+  (let ((ports (ast:required+async model)))
+    (define (port-taus port)
+      (let* ((interface (.type port))
+             (port-name (makreel:.name port))
+             (alphabet (append-map event-alpabet (ast:event* interface))))
+        (map (cute string-append port-name "." <>) alphabet)))
+    (string-join (append-map port-taus ports) ",")))
+
+(define (compliance-taus model)
+  (define (provides-taus port)
+    (let ((port-name (makreel:.name port)))
+      (map (cute string-append port-name "." <>) '("inevitable" "optional"))))
+  (define (requires-taus port)
+    (let* ((interface (.type port))
+           (port-name (makreel:.name port))
+           (alphabet (append-map event-alpabet (ast:event* interface)))
+           (alphabet (cons* "<flush>"  "inevitable" "optional" "qout.ack" alphabet)))
+      (map (cute string-append port-name "." <>) alphabet)))
+  (let* ((provides-ports (ast:provides-port* model))
+         (requires-ports (ast:required+async model))
+         (taus (append (append-map provides-taus provides-ports)
+                       (append-map requires-taus requires-ports))))
+    (string-join taus ",")))
+
+(define (deterministic-labels component)
+  (define (trigger->event trigger)
+    (let ((port (.port trigger)))
+      (string-append (makreel:.name (.port trigger))
+                     (if (ast:async? trigger) ".qout." ".")
+                     (.event.name trigger))))
+  (let* ((triggers (ast:in-triggers component))
+         (alphabet (map trigger->event triggers)))
+    (string-join alphabet ",")))
+
+(define (hide-internal-labels trace)
+  (let ((trace (string-map (lambda (c) (if (eq? c #\newline) #\; c)) trace)))
+    (string-join
+     (filter (lambda (event)
+               (and (not (member event '("declarative_illegal" "illegal" "inevitable" "optional" "tau")))
+                    (not (string-contains event ".qout."))
+                    (not (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
+             (string-split trace #\;))
+     "\n")))
+
+
+;;;
+;;; Verify pipeline.
+;;;
 
 (define %dzn (if (mingw?) "dzn.cmd" %dzn))
 
-(define* ((om:scope-name #:optional (infix "_")) o)
-  (let ((infix (if (symbol? infix) (symbol->string infix)
-                   infix)))
-    ((->string-join infix) (ast:full-name o))))
+(define-immutable-record-type <options>
+  (make-options root model init)
+  options?
+  (root options-root)
+  (model options-model)
+  (init options-init))
 
-(define (x:interface-init o) (format #f "init ~ainterface;" (apply string-append (ast:full-name o))))
-(define (x:provides-init o) "init provides;\n")
-(define (x:component-init o) "init component;\n")
+(define (get-commands in-out.pipeline format) ;target-format -> commands
+  (define (get-input in-out.pipeline format) ;target-format -> input
+    (any
+     (match-lambda (((from to) . command)
+                    (and (equal? to format) from)))
+     in-out.pipeline))
+  (define (get-command in-out.pipeline format) ;target-format -> command
+    (any
+     (match-lambda (((from to) . command)
+                    (and (equal? to format) command)))
+     in-out.pipeline))
+  (reverse
+   (let loop ((format format))
+     (let ((command (get-command in-out.pipeline format)))
+       (if (not command) '()
+           (cons command
+                 (loop (get-input in-out.pipeline format))))))))
 
-(define (verify:file-name o)
-  (string-append (verify:scope-name o) ".makreel"))
+(define (in-out:dzn->makreel options)
+  (let ((root (options-root options))
+        (model (options-model options)))
+    (cute makreel:model->makreel root model)))
 
-(define (interface-taus model)
-  (define (compose-taus names)
-    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("silent" "silent_end" "internal" "end"))) names) ","))
-  (compose-taus (list (apply string-append (ast:full-name model)))))
+(define (in-out:dzn->aut+provides-aut options)
+  (let* ((model (options-model options))
+         (root (options-root options))
+         (provides-init (get-init model #:provides? #t)))
+    (cute display
+          (string-append
+           (verify-pipeline "aut-failures" root model)
+           "\n\x04\n"
+           (verify-pipeline "aut-failures" root model #:init provides-init)))))
 
-(define (component-taus model)
-  (define (compose-taus names)
-    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "qin" "qout" "reply"))) names) ","))
-  (compose-taus (map .name (ast:required+async model))))
+(define (in-out:makreel->mcrl2 options)
+  `("m4-cw" ,(string-append "--define=init_process=" (options-init options))))
 
-(define (compliance-taus model)
-  (define (compose-taus names)
-    (string-join (append-map (lambda (o) (map (cut string-append o <>) '("in" "internal" "silent" "qin" "qout" "reply" "flush"))) names) ","))
-  (compose-taus (map .name (ast:required+async model))))
+(define in-out:mcrl2->lps
+  '("mcrl22lps" "--quiet" "--binary"))
 
-(define (deterministic-labels component)
-  (define (compose-triggers channel dir triggers)
-    (map (lambda (t) (string-append (.port.name t) channel "(" ((compose (om:scope-name (string->symbol "")) .type .port) t) "action" "("
-                                    ((compose (om:scope-name (string->symbol "")) .type .port) t) dir (.event.name t) ")" ")")) triggers))
-  (string-join (append (compose-triggers "in" "in'" (ast:provided-in-triggers component))
-                       (compose-triggers "qout" "out'" (append (ast:async-out-triggers component) (ast:required-out-triggers component)))) ","))
+(define in-out:lps->lpsconstelm
+  '("lpsconstelm" "--quiet" "--remove-singleton-sorts" "--remove-trivial-summands"))
 
-;;(define cppflag "-rjittyc")
-(define cppflag "")
+(define in-out:lpsconstelm->lpsparelm
+  '("lpsparelm"))
 
-(define execute
-  (let ((job-count 0))
-    (lambda (procs)
-      "Wrap pipeline->string, inserting a @command{tee} commands when
-@var{dzn:debugity} is non-zero."
-      (let* ((debug? (> (dzn:debugity) 0))
-             (job-id (number->string job-count))
-             (procs (if (not debug?) procs
-                        (fold-right (lambda (proc id lst)
-                                      (let ((file (string-append job-id "." id)))
-                                        (cons* proc `("tee" ,file) lst)))
-                                    '() procs (map number->string (iota (length procs))))))
-             (foo (when debug? (with-output-to-file job-id (cut format #t "COMMANDS: ~s\n" procs)))))
-        (set! job-count (1+ job-count))
-        (pipeline->string procs)))))
+(define in-out:lpsparelm->aut
+  '("lps2lts" "--quiet" "--cached" "--out=aut""--save-at-end" "-" "-"))
 
-(define (reduce-or all? l)
-  (if all? (fold (cut or <> <>) #f (map (cut <>) l))
-      (fold (lambda (e res) (or res (e))) #f l)))
+(define in-out:aut->aut-weak-trace
+  '("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut"))
 
-(define (mcrl2:verify-component model-name ast)
-  (let* ((component (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <component>) (ast:model* ast))))
-         (interfaces (delete-duplicates (map .type (ast:port* component)) ast:eq?))
-         (verify-models (append (map (lambda (i) (cut mcrl2:verify-interface i ast)) interfaces)
-                                (list (cut mcrl2:verify-component-asserts component ast)))))
-    (reduce-or (command-line:get 'all) verify-models)))
+(define in-out:aut->aut-dpweak-bisim
+  '("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut"))
 
-(define* (display-binary string #:optional (port (current-output-port)))
-  (set-port-encoding! port "ISO-8859-1")
-  (display string port))
+(define in-out:aut-makreel->aut
+  `(,%dzn "lts" "--cleanup"))
+
+(define in-out:aut-dpweak-bisim->aut-failures
+  `(,%dzn "lts" "--failures" "-"))
+
+(define (model-taus options)
+  (let* ((model (options-model options))
+         (taus (if (is-a? model <interface>) (interface-taus model)
+                   (component-taus model))))
+    (if (string-null? taus) '()
+        (list (string-append "--tau=" taus)))))
+
+(define (in-out:aut-dpweak-bisim->verify-interface options)
+  (let ((taus (model-taus options)))
+    `(,%dzn "lts" "--single-line" "--deadlock" ,@taus "--livelock" "-")))
+
+(define (in-out:aut-dpweak-bisim->verify-component options)
+  (let* ((taus (model-taus options))
+         (model (options-model options))
+         (deterministic (deterministic-labels model)))
+    `(,%dzn "lts" "--single-line"
+            "--nondet" ,deterministic ;; XXX Rename --determinism
+            "--illegal" "illegal"
+            "--deadlock" ,@taus
+            "--livelock"
+            "--failures"
+            "-")))
+
+(define (in-out:aut+provides-aut->verify-compliance options)
+  (let* ((model (options-model options))
+         (taus (compliance-taus model))
+         (taus (if (string-null? taus) '()
+                   (list (string-append "--tau=" taus)))))
+    `("ltscompare" "--quiet" "--counter-example" "--structured-output" "-pweak-failures"
+      ,@taus
+      "--in1=aut" "--in2=aut" "-" "-")))
+
+(define in-out.pipeline
+  `((("dzn"               "makreel")           . ,in-out:dzn->makreel)
+    (("makreel"           "mcrl2")             . ,in-out:makreel->mcrl2)
+    (("mcrl2"             "lps")               . ,in-out:mcrl2->lps)
+    (("lps"               "lpsconstelm")       . ,in-out:lps->lpsconstelm)
+    (("lpsconstelm"       "lpsparelm")         . ,in-out:lpsconstelm->lpsparelm)
+    (("lpsparelm"         "aut-makreel")       . ,in-out:lpsparelm->aut)
+    (("aut-makreel"       "aut")               . ,in-out:aut-makreel->aut)
+    (("aut"               "aut-weak-trace")    . ,in-out:aut->aut-weak-trace)
+    (("aut"               "aut-dpweak-bisim")  . ,in-out:aut->aut-dpweak-bisim)
+    (("aut-dpweak-bisim"  "aut-failures")      . ,in-out:aut-dpweak-bisim->aut-failures)
+    (("aut-dpweak-bisim"  "verify-interface")  . ,in-out:aut-dpweak-bisim->verify-interface)
+    (("aut-dpweak-bisim"  "verify-component")  . ,in-out:aut-dpweak-bisim->verify-component)
+    (("aut+provides-aut"  "verify-compliance") . ,in-out:aut+provides-aut->verify-compliance)))
+
+(define (verification:formats)
+  (map (match-lambda (((from to) . command) to)) in-out.pipeline))
+
+(define* (get-init model #:key provides?)
+  (cond ((is-a? model <interface>)
+         (let ((name (string-join (ast:full-name model) "")))
+           (format #f "~ainterface" name)))
+        (provides?
+         "provides")
+        (else
+         "component")))
+
+(define* (verify-pipeline out root model #:key (init (get-init model)) input)
+  "Create a verify pipeline to produce OUT from MODEL.  Use standard
+init for MODEL unless INIT.  Use makreel:model->makreel to generate
+makreel for MODEL, otherwise use procedure INPUT."
+  (define ((prepare options) next result)
+    (let ((next (if (procedure? next) (next options) next)))
+      (cons next result)))
+  (let* ((options (make-options root model init))
+         (commands (get-commands in-out.pipeline out))
+         (commands (reverse (fold (prepare options) '() commands)))
+         (commands (if input (cons input commands) commands)))
+    (pipeline->string commands)))
+
+
+;;;
+;;; Report.
+;;;
 
 (define (result-split result)
   (map (cut string-split <> #\:) (string-split result #\newline)))
@@ -141,121 +306,11 @@
 (define (get-trace assert result)
   (let* ((line (get-line assert result))
          (trace (and (equal? (cadr line) "fail") (string-join (string-split (cadddr line) #\;) "\n")))
-         (trace (and trace (rename-lts-actions trace))))
+         (trace (and trace (hide-internal-labels trace))))
     trace))
 
 (define (get-info assert result)
   (string-split (caddr (get-line assert result)) #\,))
-
-(define (mcrl2:verify-interface model ast)
-  (let* ((model-name ((compose ->string verify:scope-name) model))
-         (taus (interface-taus model))
-         (file-name (verify:file-name model))
-         (intf (with-output-to-string (cut model->mcrl2 ast model)))
-         (commands `(,(cut format #t "~a\n~a\n" intf (x:interface-init model))
-                     ("m4-cw")
-                     ("mcrl22lps" "--quiet" "-b")
-                     ("lpsconstelm" "-st")
-                     ("lpsparelm")
-                     ("lps2lts" "--cached" "--out=aut" "--save-at-end" "-" "-")
-                     ("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut")
-                     (,%dzn "lts" "--single-line" "--deadlock" "--tau" ,taus "--livelock" "-")))
-         (result (execute commands))
-         (result (result-split result))
-         (info (get-info 'deadlock result)))
-    (reduce-or (command-line:get 'all)
-               (list (cut report 'deadlock #f (get-trace 'deadlock result) #f info 'interface model-name)
-                     (cut report 'livelock #f (get-trace 'livelock result) #f info 'interface model-name)))))
-
-(define (do-refinement lts model-name makreel model)
-  (let* ((taus (compliance-taus model))
-         (taus (if (string-null? taus) '()
-                   (list (string-append "--tau=" taus))))
-         (commands `(,(cut format #t "~a\n~a\n" makreel (x:provides-init model))
-                     ("m4-cw")
-                     ("mcrl22lps" "--quiet" "-b")
-                     ("lpsconstelm" "--quiet" "-st")
-                     ("lpsparelm")
-                     ("lps2lts" "--cached" "--out=aut" "--save-at-end" "-" "-")
-                     ("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut")
-                     (,%dzn "lts" "--failures" "-")))
-         (interface (execute commands))
-         (commands `(,(cut format #t "~a\n\x04\n~a" lts interface)
-                     ("ltscompare" "--quiet" "--counter-example" "--structured-output" "-pweak-failures" ,@taus "--in1=aut" "--in2=aut" "-" "-"))))
-    (receive (output status)
-        (execute commands)
-      (let* ((lines (and output (string-split output #\newline)))
-             (stdout-status (and lines (filter (cut string-prefix? "result: " <>) lines)))
-             (stdout-status (and (pair? stdout-status) (car stdout-status)))
-             (status (if (and (zero? status)
-                              stdout-status
-                              (string=? stdout-status "result: true"))
-                         0 1))
-             (trace (and lines (find (cut string-prefix? "counter_example_weak_failures_refinement: " <>) lines)))
-             (trace (and trace (substring trace (1+ (string-index trace #\:)))))
-             (trace (and trace (string-trim-both trace)))
-             (trace (and trace (rename-lts-actions trace)))
-             (trace (and trace (if (string-null? trace) trace (string-append trace "\n"))))
-             (component-accepts (and lines (find (cut string-prefix? "left-acceptance: " <>) lines)))
-             (component-accepts (and component-accepts (substring component-accepts (+ 2 (string-contains component-accepts ": ")))))
-             (component-accepts (and component-accepts (rename-lts-actions component-accepts)))
-             (component-accepts (and component-accepts (string-split component-accepts #\newline)))
-             (component-accepts (and component-accepts (sort component-accepts string<?)))
-             (interface-accepts (and lines (filter (cut string-prefix? "right-acceptance: " <>) lines)))
-             (interface-accepts (and (pair? interface-accepts) (car interface-accepts)))
-             (interface-accepts (and interface-accepts (substring interface-accepts (+ 2 (string-contains interface-accepts ": ")))))
-             (interface-accepts (and interface-accepts (rename-lts-actions interface-accepts)))
-             (interface-accepts (and interface-accepts (string-split interface-accepts #\newline)))
-             (interface-accepts (and interface-accepts (sort interface-accepts string<?))))
-        (when (and (not (zero? status))
-                   (not trace))
-          ;; XXX Avoid "no verification errors found"
-          (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
-        (values trace interface-accepts component-accepts)))))
-
-(define (extend-trace trace accepts)
-  (if accepts (string-append trace (car accepts) "\n")
-              trace))
-
-(define (mcrl2:verify-component-asserts model ast)
-  (let* ((model-name ((compose ->string verify:scope-name) model))
-         (taus (component-taus model))
-         (taus (if (string-null? taus) '()
-                   `(,(string-append "--tau=" taus))))
-         (deterministic (deterministic-labels model))
-         (makreel (with-output-to-string (cut model->mcrl2 ast model)))
-         (commands `(,(cut format #t "~a\n~a\n" makreel (x:component-init model))
-                     ("m4-cw")
-                     ("mcrl22lps" "--quiet" "-b")
-                     ("lpsconstelm" "-st")
-                     ("lpsparelm")
-                     ("lps2lts" "--cached" "--out=aut" "--save-at-end" "-" "-")
-                     ("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut")
-                     (,%dzn "lts" "--single-line"  "--nondet" ,deterministic "--illegal" "illegal" "--deadlock" ,@taus "--livelock" "--failures" "-")))
-         (result (execute commands))
-         (result (result-split result))
-         (lts (get-lts result))
-         (info (get-info 'deterministic result)))
-    (receive (refinement-trace interface-accepts component-accepts)
-        (do-refinement lts model-name makreel model)
-      (define (report-assert assert)
-        (report assert #f (get-trace assert result) #f info 'component model-name))
-      (reduce-or (command-line:get 'all)
-        (list (cut report-assert 'deterministic)
-              (cut report-assert 'illegal)
-              (cut report-assert 'deadlock)
-              (cut report-assert 'livelock)
-              (cut report 'compliance
-                         (or (get-trace 'illegal result) (get-trace 'deadlock result))
-                         (extend-trace refinement-trace component-accepts)
-                         (extend-trace refinement-trace interface-accepts)
-                         info 'component model-name))))))
-
-(define (mcrl2:verify model-name ast)
-  (let ((model (find (lambda (x) (equal? (verify:scope-name x) model-name)) (filter (is? <model>) (ast:model* ast)))))
-    (cond ((is-a? model <interface>) (mcrl2:verify-interface model ast))
-          ((is-a? model <component>) (mcrl2:verify-component model-name ast))
-          (else #f))))
 
 (define (report-ok model-type model-name assert info)
   (let* ((verbose? (dzn:command-line:get 'verbose))
@@ -350,3 +405,129 @@
   (cond (skip  (report-skip model-type model-name assert))
         (trace (report-fail model-type model-name assert info trace interface-trace ))
         (else  (report-ok   model-type model-name assert info))))
+
+
+;;;
+;;; Verify model.
+;;;
+
+(define (reduce-or all? l)
+  (if all? (fold (cut or <> <>) #f (map (cut <>) l))
+      (fold (lambda (e res) (or res (e))) #f l)))
+
+(define (mcrl2:verify-interface-asserts model root)
+  (let* ((model-name (makreel:unticked-dotted-name model))
+         (result (verify-pipeline "verify-interface" root model))
+         (result (result-split result))
+         (info (get-info 'deadlock result)))
+    (reduce-or (command-line:get 'all)
+               (list (cut report 'deadlock #f (get-trace 'deadlock result) #f info 'interface model-name)
+                     (cut report 'livelock #f (get-trace 'livelock result) #f info 'interface model-name)))))
+
+(define (mcrl2:verify-compliance root aut model)
+  (let* ((provides-init (get-init model #:provides? #t))
+         (provides-aut (verify-pipeline "aut-failures" root model #:init provides-init))
+         (aut+provides-aut (cute format #t "~a\n\x04\n~a" aut provides-aut))
+         (output status (verify-pipeline "verify-compliance" root model #:input aut+provides-aut))
+         (lines (and output (string-split output #\newline)))
+         (stdout-status (and lines (filter (cut string-prefix? "result: " <>) lines)))
+         (stdout-status (and (pair? stdout-status) (car stdout-status)))
+         (status (if (and (zero? status)
+                          stdout-status
+                          (string=? stdout-status "result: true"))
+                     0 1))
+         (trace (and lines (find (cut string-prefix? "counter_example_weak_failures_refinement: " <>) lines)))
+         (trace (and trace (substring trace (1+ (string-index trace #\:)))))
+         (trace (and trace (string-trim-both trace)))
+
+         (trace (and trace (hide-internal-labels trace)))
+
+         (trace (and trace (if (string-null? trace) trace (string-append trace "\n"))))
+         (component-accepts (and lines (find (cut string-prefix? "left-acceptance: " <>) lines)))
+         (component-accepts (and component-accepts (substring component-accepts (+ 2 (string-contains component-accepts ": ")))))
+
+         (component-accepts (and component-accepts (hide-internal-labels component-accepts)))
+
+         (component-accepts (and component-accepts (string-split component-accepts #\newline)))
+         (component-accepts (and component-accepts (sort component-accepts string<?)))
+         (interface-accepts (and lines (filter (cut string-prefix? "right-acceptance: " <>) lines)))
+         (interface-accepts (and (pair? interface-accepts) (car interface-accepts)))
+         (interface-accepts (and interface-accepts (substring interface-accepts (+ 2 (string-contains interface-accepts ": ")))))
+
+         (interface-accepts (and interface-accepts (hide-internal-labels interface-accepts)))
+
+         (interface-accepts (and interface-accepts (string-split interface-accepts #\newline)))
+         (interface-accepts (and interface-accepts (sort interface-accepts string<?))))
+    (when (and (not (zero? status))
+               (not trace))
+      ;; XXX Avoid "no verification errors found"
+      (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
+    (values trace interface-accepts component-accepts)))
+
+(define (mcrl2:verify-component-asserts model root)
+  (let* ((model-name (makreel:unticked-dotted-name model))
+         (result status (verify-pipeline "verify-component" root model))
+         (result (result-split result))
+         (lts (get-lts result))
+         (info (get-info 'deterministic result))
+         (refinement-trace interface-accepts component-accepts
+                           (mcrl2:verify-compliance root lts model)))
+    (define (report-assert assert)
+      (report assert #f (get-trace assert result) #f info 'component model-name))
+    (define (extend-trace trace accepts)
+      (if accepts (string-append trace (car accepts) "\n")
+          trace))
+    (reduce-or (command-line:get 'all)
+               (list (cut report-assert 'deterministic)
+                     (cut report-assert 'illegal)
+                     (cut report-assert 'deadlock)
+                     (cut report-assert 'livelock)
+                     (cut report 'compliance
+                          (or (get-trace 'illegal result) (get-trace 'deadlock result))
+                          (extend-trace refinement-trace component-accepts)
+                          (extend-trace refinement-trace interface-accepts)
+                          info 'component model-name)))))
+
+(define (mcrl2:verify-interface root model-name)
+  (let ((model (makreel:get-model root model-name)))
+    (mcrl2:verify-interface-asserts model root)))
+
+(define (mcrl2:verify-component root model-name)
+  (let* ((component (makreel:get-model root model-name))
+         (interfaces (delete-duplicates (map .type (ast:port* component)) ast:eq?))
+         (verify-models (append (map (lambda (i) (cut mcrl2:verify-interface-asserts i root)) interfaces)
+                                (list (cut mcrl2:verify-component-asserts component root)))))
+    (reduce-or (command-line:get 'all) verify-models)))
+
+(define (mcrl2:verify root model-name)
+  (let ((model (makreel:get-model root model-name)))
+    (cond ((is-a? model <interface>) (mcrl2:verify-interface root model-name))
+          ((is-a? model <component>) (mcrl2:verify-component root model-name))
+          (else #f))))
+
+
+;;;
+;;; Entry point.
+;;;
+
+(define* (verification:verify options root #:key all? model-name)
+  (define (model-names-for-verification root)
+    (let* ((models (ast:model* root))
+           (components (filter (conjoin (is? <component>) (negate ast:imported?) .behaviour) models))
+           (component-names (map makreel:unticked-dotted-name components))
+           (interfaces (filter (conjoin (is? <interface>) (negate ast:dzn-scope?)) models))
+           (interface-names (map makreel:unticked-dotted-name interfaces))
+           (interface-names (let loop ((components components) (interface-names interface-names))
+                              (if (null? components) interface-names
+                                  (let ((component-interfaces (map (compose makreel:unticked-dotted-name .type) (ast:port* (car components)))))
+                                    (loop (cdr components)
+                                          (filter (negate (cut member <> component-interfaces)) interface-names)))))))
+      (append interface-names component-names)))
+  (let ((model-names (if model-name (list model-name)
+                         (model-names-for-verification root))))
+    (let loop ((model-names model-names) (error? #f))
+      (if (or (and (not all?) error?) (null? model-names)) (if error? 1 0)
+          (let* ((model-name (car model-names))
+                 (this-error? (mcrl2:verify root model-name))
+                 (error? (or error? this-error?)))
+            (loop (cdr model-names) error?))))))
