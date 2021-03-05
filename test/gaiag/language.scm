@@ -152,6 +152,14 @@
   '("b" "e" "false" "true")
   (test-complete #:file-name "interface10.dzn" #:line 11 #:column 5))
 
+(test-equal "language interface11"
+  '("e.False" "e.True")
+  (test-complete #:file-name "interface11.dzn"))
+
+(test-equal "language interface11a"
+  '("e.False" "e.True")
+  (test-complete #:file-name "interface11a.dzn" #:line 11 #:column 6))
+
 (test-equal "language component1"
   %completion-component
   (test-complete #:file-name "component1.dzn"))
