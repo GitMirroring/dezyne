@@ -144,6 +144,14 @@
   '("foo" "bar")
   (test-complete #:file-name "interface9b.dzn"))
 
+(test-equal "language interface10"
+  '("b" "e" "false" "true")
+  (test-complete #:file-name "interface10.dzn"))
+
+(test-equal "language interface10a"
+  '("b" "e" "false" "true")
+  (test-complete #:file-name "interface10.dzn" #:line 11 #:column 5))
+
 (test-equal "language component1"
   %completion-component
   (test-complete #:file-name "component1.dzn"))

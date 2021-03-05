@@ -114,13 +114,13 @@
     (_ #f)))
 
 (define (context:enum-names o)
-  (map tree:dotted-name (tree:enum* (or (slot o 'interface) (slot o 'root)))))
+  (map tree:dotted-name (tree:enum* (slot o 'root))))
 
 (define (context:int-names o)
-  (map tree:dotted-name (tree:int* (or (slot o 'interface) (slot o 'root)))))
+  (map tree:dotted-name (tree:int* (slot o 'root))))
 
 (define (context:type-names o)
-  (map tree:dotted-name (tree:type* (or (slot o 'interface) (slot o 'root)))))
+  (map tree:dotted-name (tree:type* (slot o 'root))))
 
 (define* (context:event-names o event-dir #:key (predicate identity))
   (let* ((events (tree:event* (find (is? 'interface) o)))
@@ -206,19 +206,21 @@
 
 (define (context:locals o)
   (let loop ((scope (parent-context o tree:scope?)))
-    (if (or (not scope) (is-a? (.tree scope) 'behaviour-compound)) '()
+    (if (or (not scope) (is-a? (.tree scope) 'behaviour-statements)) '()
         (append (tree:variable* (.tree scope))
                 (loop (parent-context scope tree:scope?))))))
 
 (define (context:members o)
-  (let ((scope (parent-context o 'behaviour-compound)))
+  (let ((scope (parent-context o 'behaviour-statements)))
     (tree:variable* (.tree scope))))
 
 (define (complete:variable-names type context)
   (let* ((variables (append (context:locals context)
                             (context:members context)))
-         (type-name (.name type))
-         (variables (filter (compose (cute tree:name-equal? <> type-name) .type-name) variables)))
+         (type-name (and=> type .name))
+         (variables (if (not type) variables
+                        (filter (compose (cute tree:name-equal? <> type-name) .type-name)
+                                variables))))
     (map tree:dotted-name variables)))
 
 (define (complete:type-names context)
@@ -276,6 +278,11 @@
             (complete:variable-names type context)
             (tree:type-value-names type))))))
 
+(define (complete:boolean-expressions context)
+  (sort (cons* "true" "false"
+               (complete:variable-names #f context))
+        string<))
+
 
 ;;;
 ;;; Entry points.
@@ -319,12 +326,15 @@
      '("behaviour" "provides" "requires" "system"))
     ('behaviour
      '("behaviour" "bool" "enum" "in" "out"))
-    (('behaviour-compound (? (disjoin incomplete? tree:location?)) ...)
-     (let ((incomplete (find incomplete? (cdr o))))
-       (cond ((is-a? incomplete 'on)
-              (context:trigger-names context))
-             (else '("on")))))
-
+    (('behaviour-statements (? (disjoin incomplete? tree:location?)) ...)
+     (match context
+       ((o ('BRACE-OPEN b ...) t ...)
+        '())
+       (_
+        (let ((incomplete (find incomplete? (cdr o))))
+          (cond ((is-a? incomplete 'on)
+                 (context:trigger-names context))
+                (else '("on")))))))
     ((? (is? 'name))
      (cond ((parent context 'enum-literal)
             => (cute complete-enum-literal <> o context))
@@ -361,6 +371,9 @@
               (complete-enum type context))
              (else
               '()))))
+    (('or 'otherwise 'expression)
+     (complete:boolean-expressions context))
+
     ('statement
      (context:action-names context))
     (('compound (? tree:location?))
