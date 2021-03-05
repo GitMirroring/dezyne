@@ -121,7 +121,7 @@ null)."
       (and (tree:name-equal? (.name o) name) o))
     (let ((tree (.tree o)))
       (match tree
-        ((? (is? 'behaviour-compound))
+        ((? (is? 'behaviour-statements))
          (find name? (tree:variable* tree)))
         ((? (is? 'compound))
          (or (find name? (filter (is? 'variable) (tree:statement* tree)))

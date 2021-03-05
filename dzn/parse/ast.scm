@@ -371,7 +371,10 @@
                                     #:variable.name (.name (helper var))
                                     #:expression (helper expression)))
 
-        (('behaviour-compound statement ...)
+        (('behaviour-statement statement ...)
+         (map helper statement))
+
+        (('behaviour-compound statement)
          (make <compound-node> #:elements (helper statement)))
 
         (('behaviour compound)

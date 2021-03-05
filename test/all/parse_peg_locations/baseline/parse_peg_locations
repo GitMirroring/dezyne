@@ -18,15 +18,17 @@
            (location 863 881))
     (behaviour
       (behaviour-compound
-        (on (triggers
-              (trigger
-                (name "h" (location 905 906))
-                (name "hello" (location 907 912))
-                (trigger-formals (location 912 914))
+        (behaviour-statements
+          (on (triggers
+                (trigger
+                  (name "h" (location 905 906))
+                  (name "hello" (location 907 912))
+                  (trigger-formals (location 912 914))
+                  (location 905 914))
                 (location 905 914))
-              (location 905 914))
-            (compound (location 916 921))
-            (location 902 921))
+              (compound (location 916 921))
+              (location 902 921))
+          (location 902 921))
         (location 896 923))
       (location 884 923))
     (location 843 924))
@@ -58,13 +60,15 @@
       (location 844 860))
     (behaviour
       (behaviour-compound
-        (on (triggers
-              (trigger
-                (name "hello" (location 885 890))
+        (behaviour-statements
+          (on (triggers
+                (trigger
+                  (name "hello" (location 885 890))
+                  (location 885 890))
                 (location 885 890))
-              (location 885 890))
-            (compound (location 892 897))
-            (location 882 897))
+              (compound (location 892 897))
+              (location 882 897))
+          (location 882 897))
         (location 876 899))
       (location 864 899))
     (location 823 900))
