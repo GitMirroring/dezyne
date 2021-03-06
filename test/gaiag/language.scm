@@ -150,7 +150,7 @@
 
 (test-equal "language interface10a"
   '("b" "e" "false" "true")
-  (test-complete #:file-name "interface10.dzn" #:line 11 #:column 5))
+  (test-complete #:file-name "interface10a.dzn" #:line 11 #:column 5))
 
 (test-equal "language interface11"
   '("e.False" "e.True")
@@ -159,6 +159,14 @@
 (test-equal "language interface11a"
   '("e.False" "e.True")
   (test-complete #:file-name "interface11a.dzn" #:line 11 #:column 6))
+
+(test-equal "language interface12"
+  '("e.False" "e.True")
+  (test-complete #:file-name "interface12.dzn"))
+
+(test-equal "language interface12a"
+  '("e.False" "e.True")
+  (test-complete #:file-name "interface12a.dzn" #:line 11 #:column 7))
 
 (test-equal "language component1"
   %completion-component
@@ -254,11 +262,11 @@
   (test-complete #:file-name "component-on.dzn" #:line 17 #:column 7))
 
 (test-equal "completion component-enum member"
-  '("Bool.False" "Bool.True")
+  '("fun()" "r.hello()" "Bool.False" "Bool.True")
   (test-complete #:file-name "component-enum-member.dzn" #:line 25 #:column 18))
 
 (test-equal "completion component-enum local"
-  '("b" "fun(_)" "r.hello()" "Bool.False" "Bool.True")
+  '("fun(_)" "r.hello()" "Bool.False" "Bool.True")
   (test-complete #:file-name "component-enum-local.dzn" #:line 27 #:column 20))
 
 (test-equal "language typo"

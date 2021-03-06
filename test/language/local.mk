@@ -63,6 +63,8 @@ EXTRA_DIST +=					\
  %D%/interface10a.dzn				\
  %D%/interface11.dzn				\
  %D%/interface11a.dzn				\
+ %D%/interface12.dzn				\
+ %D%/interface12a.dzn				\
  %D%/typo.dzn					\
 						\
  %D%/deep-space-enum.dzn			\
