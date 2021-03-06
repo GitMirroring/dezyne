@@ -176,7 +176,7 @@ procedure)."
     (('location pos end file-name) end)))
 
 (define (.expression o)
-  (assert-type o 'enum-literal 'assign 'variable)
+  (assert-type o 'assign 'enum-literal 'guard 'variable)
   (slot o 'expression))
 
 (define (.field o)
