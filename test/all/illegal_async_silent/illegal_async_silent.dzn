@@ -81,7 +81,7 @@ interface IAsync2 {
   }
 }
 
-component async_silent {
+component illegal_async_silent {
   provides IAsync p;
   requires IAsync2 r;
   behaviour {
