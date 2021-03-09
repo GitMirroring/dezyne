@@ -4968,6 +4968,10 @@ verification stops after finding a verification error.
 @itemx -h
 Display help on invoking @code{dzn verify}, and then exit.
 
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
+
 @item --model=@var{model}
 @itemx -m @var{model}
 Limit verification to @var{model}, and for a behavioural component
@@ -4982,6 +4986,12 @@ verification of all its @code{interface} models and behavioral
 @code{component} models.}.
 @c XXX TODO: reference to compositional quality/property
 @end quotation
+
+@item --out=@var{format}
+Run a partial verification pipeline to produce @var{format}.
+Interesting formats are @code{mcrl2}, @code{aut},
+@code{aut-dpweak-bisim}, @code{aut-weak-trace}, and
+@code{aut+provides-aut}.  Use @option{--out=help} for a full list.
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
