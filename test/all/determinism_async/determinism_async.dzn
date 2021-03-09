@@ -39,7 +39,7 @@ interface ihello
   }
 }
 
-component async_nondet
+component determinism_async
 {
   provides ihello h;
 
