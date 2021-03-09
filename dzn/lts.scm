@@ -833,15 +833,21 @@ required to be non-deterministic."
       (_ label)))
   (or (helper (parse-label label)) "tau"))
 
-(define* (cleanup-aut #:key file-name (illegal? #t) (internal? #t))
+(define* (cleanup-aut #:key file-name (illegal? #t) (internal? #t) prefix)
   (let ((input-port (if file-name (open-input-file file-name) (current-input-port)))
-        (label-re (make-regexp "\"([^\"]*)\"")))
+        (label-re (make-regexp "\"([^\"]*)\""))
+        (prefix-length (and prefix (string-length prefix))))
+    (define (drop-prefix o)
+      (if (and prefix
+               (string-prefix? prefix o)) (substring o prefix-length)
+          o))
     (let loop ((line (read-line input-port 'concat)))
       (unless (eof-object? line)
         (let ((out-line (regexp-substitute/global
                          #f label-re line
                          'pre
                          (compose (cute format #f "\"~a\"" <>)
+                                  drop-prefix
                                   (cut cleanup-label
                                        <>
                                        #:illegal? illegal?

@@ -1,2 +1,2 @@
-error: model ihello is incomplete: event 'ihello.hello' not handled
+error: model ihello is incomplete: event 'hello' not handled
 error: deadlock in model incomplete

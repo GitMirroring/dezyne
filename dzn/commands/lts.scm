@@ -152,7 +152,8 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                  #f)))
 
     (when cleanup?
-      (cleanup-aut #:file-name file-name))
+      (let ((prefix (option-ref options 'prefix #f)))
+        (cleanup-aut #:file-name file-name #:prefix prefix)))
     (when events
       (let ((alphabets (map (compose lts->alphabet (cut lts-hide <> tau) aut-file->lts) files)))
         (map (lambda (f a) (format #t "Events in lts ~a:\n~a\n" f a)) files alphabets)))
