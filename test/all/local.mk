@@ -165,7 +165,7 @@ REGRESSION_TESTS =				\
  %D%/hello_int					\
  %D%/hellointbug				\
  %D%/hello_interface_function			\
- %D%/hello.interface_namespace			\
+ %D%/illegal_interface.space			\
  %D%/hello_interface_optional			\
  %D%/hello_interface_out_only			\
  %D%/hello_local_assign				\
