@@ -225,7 +225,7 @@ REGRESSION_TESTS =				\
  %D%/range_member				\
  %D%/range_return				\
  %D%/reply_expression				\
- %D%/reply_modeling				\
+ %D%/deadlock_reply_modeling				\
  %D%/second_reply				\
  %D%/second_reply_blocking			\
  %D%/shell					\

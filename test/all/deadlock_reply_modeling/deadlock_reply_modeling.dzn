@@ -21,7 +21,7 @@
 //
 // Code:
 
-interface reply_modeling
+interface deadlock_reply_modeling
 {
   in void hello();
   out void world();

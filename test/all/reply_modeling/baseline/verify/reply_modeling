@@ -1,3 +1,0 @@
-verify: reply_modeling: check: deadlock: fail
-reply_modeling.world
-verify: reply_modeling: check: livelock: ok
