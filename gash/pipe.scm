@@ -1,6 +1,6 @@
 ;;; Gash --- Guile As SHell
-;;; Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
-;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2021 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
+;;; Copyright © 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Gash.
 ;;;
@@ -95,17 +95,19 @@
 	  (port->fdes (cdr p)))))
 
 (define (piped-process:pipeline procs)  ; -> (to from . pids)
+  (define (command pipe proc previous)
+    (let* ((pfrom (car previous))
+	   (pids (cdr previous))
+	   (to pfrom)
+	   (from pipe))
+      (cond ((procedure? proc)
+             (throw 'error "procedure inside pipeline" procs))
+            (else
+             (let ((pid ((@@ (ice-9 popen) piped-process) (car proc) (cdr proc) from to)))
+	       (cons from (cons pid pids)))))))
   (let* ((to (pipe->fdes))
          (pipes (map (lambda _ (pipe->fdes)) procs))
-	 (pipeline (fold (lambda (pipe proc previous)
-			   (let* ((pfrom (car previous))
-				  (pids (cdr previous))
-				  (to pfrom)
-				  (from pipe))
-			     (cons from (cons ((@@ (ice-9 popen) piped-process) (car proc) (cdr proc) from to) pids))))
-			 `(,to)
-                         pipes
-			 procs))
+	 (pipeline (fold command `(,to) pipes procs))
 	 (from (car pipeline))
 	 (pids (cdr pipeline)))
     (cons* (fdes->outport (cdr to)) (fdes->inport (car from)) pids)))

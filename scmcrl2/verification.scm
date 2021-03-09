@@ -260,6 +260,7 @@
     (("aut-dpweak-bisim"  "aut-failures")      . ,in-out:aut-dpweak-bisim->aut-failures)
     (("aut-dpweak-bisim"  "verify-interface")  . ,in-out:aut-dpweak-bisim->verify-interface)
     (("aut-dpweak-bisim"  "verify-component")  . ,in-out:aut-dpweak-bisim->verify-component)
+    (("dzn"               "aut+provides-aut")  . ,in-out:dzn->aut+provides-aut)
     (("aut+provides-aut"  "verify-compliance") . ,in-out:aut+provides-aut->verify-compliance)))
 
 (define (verification:formats)
@@ -274,17 +275,15 @@
         (else
          "component")))
 
-(define* (verify-pipeline out root model #:key (init (get-init model)) input)
+(define* (verify-pipeline out root model #:key (init (get-init model)))
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
-init for MODEL unless INIT.  Use makreel:model->makreel to generate
-makreel for MODEL, otherwise use procedure INPUT."
+init for MODEL unless INIT."
   (define ((prepare options) next result)
     (let ((next (if (procedure? next) (next options) next)))
       (cons next result)))
   (let* ((options (make-options root model init))
          (commands (get-commands in-out.pipeline out))
-         (commands (reverse (fold (prepare options) '() commands)))
-         (commands (if input (cons input commands) commands)))
+         (commands (reverse (fold (prepare options) '() commands))))
     (pipeline->string commands)))
 
 
@@ -425,10 +424,7 @@ makreel for MODEL, otherwise use procedure INPUT."
                      (cut report 'livelock #f (get-trace 'livelock result) #f info 'interface model-name)))))
 
 (define (mcrl2:verify-compliance root aut model)
-  (let* ((provides-init (get-init model #:provides? #t))
-         (provides-aut (verify-pipeline "aut-failures" root model #:init provides-init))
-         (aut+provides-aut (cute format #t "~a\n\x04\n~a" aut provides-aut))
-         (output status (verify-pipeline "verify-compliance" root model #:input aut+provides-aut))
+  (let* ((output status (verify-pipeline "verify-compliance" root model))
          (lines (and output (string-split output #\newline)))
          (stdout-status (and lines (filter (cut string-prefix? "result: " <>) lines)))
          (stdout-status (and (pair? stdout-status) (car stdout-status)))
@@ -507,8 +503,12 @@ makreel for MODEL, otherwise use procedure INPUT."
 
 
 ;;;
-;;; Entry point.
+;;; Entry points.
 ;;;
+
+(define* (verification:partial root model-name #:key out)
+  (let ((model (makreel:get-model root model-name)))
+    (display (verify-pipeline out root model))))
 
 (define* (verification:verify options root #:key all? model-name)
   (define (model-names-for-verification root)
