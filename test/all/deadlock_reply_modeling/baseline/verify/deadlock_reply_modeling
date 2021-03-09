@@ -1,3 +1,4 @@
 verify: deadlock_reply_modeling: check: deadlock: fail
 world
+<deadlock>
 verify: deadlock_reply_modeling: check: livelock: ok

@@ -5,4 +5,5 @@ verify: compliance_out_two: check: illegal: ok
 verify: compliance_out_two: check: deadlock: ok
 verify: compliance_out_two: check: compliance: fail
 p.e
+<compliance>
 verify: compliance_out_two: check: livelock: ok

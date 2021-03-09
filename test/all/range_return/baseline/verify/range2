@@ -1,3 +1,0 @@
-verify: range2: check: deadlock: fail
-e
-verify: range2: check: livelock: ok

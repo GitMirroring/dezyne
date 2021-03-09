@@ -84,7 +84,7 @@ Generate exhaustive set of traces for Dezyne model
     options))
 
 (define (lts-hide-internal-labels text)
-  (let* ((text (regexp-substitute/global #f "\"declarative_illegal\"" text 'pre "\"illegal\"" 'post))
+  (let* ((text (regexp-substitute/global #f "\"<declarative-illegal>\"" text 'pre "\"<illegal>\"" 'post))
          (text (regexp-substitute/global #f "\"[^\"]*\\.qout\\.[^\"]*\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"(optional|inevitable)\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"[^\"]*\\.(optional|inevitable)\"" text 'pre "\"tau\"" 'post)))

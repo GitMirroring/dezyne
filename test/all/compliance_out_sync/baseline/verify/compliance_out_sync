@@ -9,4 +9,5 @@ rp.ia
 rp.oa
 rp.return
 pp.return
+<compliance>
 verify: compliance_out_sync: check: livelock: ok

@@ -4,6 +4,7 @@ verify: compliance_provides_int: check: deadlock: ok
 verify: compliance_provides_int: check: compliance: fail
 p.hello
 p.0
+<compliance>
 verify: compliance_provides_int: check: livelock: ok
 verify: iint: check: deadlock: ok
 verify: iint: check: livelock: ok

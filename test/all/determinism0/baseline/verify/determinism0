@@ -2,6 +2,7 @@ verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: determinism0: check: deterministic: fail
 i.e
+<deterministic>
 verify: determinism0: check: illegal: ok
 verify: determinism0: check: deadlock: ok
 verify: determinism0: check: compliance: ok

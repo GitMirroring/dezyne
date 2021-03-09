@@ -1,3 +1,4 @@
 verify: range_return: check: deadlock: fail
 e
+<range-error>
 verify: range_return: check: livelock: ok

@@ -51,6 +51,8 @@
             aut-file->lts
             aut-header-regex
             cleanup-aut
+            cleanup-error
+            cleanup-label
             lts->nodes
             lts->traces
             lts-hide
@@ -412,7 +414,7 @@ livelock to deadlock.)"
   (define (to-exclude? edge)
     (node-color (vector-ref nodes (edge-end-state edge))))
   (begin
-   (annotate-exclude nodes (list "declarative_illegal"))
+   (annotate-exclude nodes (list "<declarative-illegal>"))
    (list->vector (map (lambda (n) (let ((new-node (clone-node n)))
                                     (set-node-succ! new-node (filter (negate to-exclude?) (node-succ n)))
                                     new-node))
@@ -423,7 +425,7 @@ livelock to deadlock.)"
   (define (has-deadlock? state)
       (null? (filter (lambda (e) ((negate node-color) (vector-ref nodes (edge-end-state e)))) (node-succ (vector-ref nodes state)))))
   (begin
-    (annotate-exclude nodes (list "declarative_illegal"))
+    (annotate-exclude nodes (list "<declarative-illegal>"))
     (filter has-deadlock?
      (filter (compose not node-color (cut vector-ref nodes <>))
       (sort (iota (vector-length nodes))
@@ -723,7 +725,7 @@ required to be non-deterministic."
           (_ label))))
 
     (define (illegal-edge edge)
-      (equal? (edge-label edge) "illegal"))
+      (equal? (edge-label edge) "<illegal>"))
 
     (define (add-illegal-state lts)
       (let ((illegal-state (lts-states lts)))
@@ -812,15 +814,18 @@ required to be non-deterministic."
               (format (current-error-port) "parse error: no match\n")
               #f)))))
 
+(define (cleanup-error e)
+  (string-append "<" (string-map (lambda (c) (if (eq? c #\_) #\- c)) e) ">"))
+
 (define* (cleanup-label label #:key internal? illegal?)
   (define (helper tree)
     (match tree
       (('parse-error parse-error) (stderr "parse error:~s\n" tree) parse-error)
-      (('error error) error)
-      (('flush ('identifier port) "flush") (string-append port ".<flush>"))
-      (('error ('identifier port) error) error)
+      (('error error) (cleanup-error error))
+      (('error ('identifier port) error) (cleanup-error error))
       (('event ('identifier port) ('identifier event)) (string-append port "." event))
-      (('illegal illegal) (and illegal? illegal))
+      (('flush ('identifier port) "flush") (string-append port ".<flush>"))
+      (('illegal illegal) (and illegal? (cleanup-error illegal)))
       (('modeling ('identifier port) event) (and internal? (string-append port "." event)))
       (('queue ('identifier port) ('queue-direction direction) ('identifier event)) (and internal? (string-append port "." direction "." event)))
       (('reply ('identifier port) ('void "void")) (string-append port ".return"))

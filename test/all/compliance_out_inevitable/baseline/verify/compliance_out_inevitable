@@ -7,6 +7,7 @@ w.hello
 w.return
 h.return
 h.hello
+<compliance>
 verify: compliance_out_inevitable: check: livelock: ok
 verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok

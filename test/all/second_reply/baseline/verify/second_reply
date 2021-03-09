@@ -4,5 +4,6 @@ verify: second_reply: check: deterministic: ok
 verify: second_reply: check: illegal: ok
 verify: second_reply: check: deadlock: fail
 h.hello
+<second-reply>
 verify: second_reply: check: compliance: skip
 verify: second_reply: check: livelock: ok

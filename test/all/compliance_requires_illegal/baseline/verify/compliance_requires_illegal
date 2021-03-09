@@ -2,6 +2,7 @@ verify: compliance_requires_illegal: check: deterministic: ok
 verify: compliance_requires_illegal: check: illegal: fail
 h.hello
 w.cruel
+<illegal>
 verify: compliance_requires_illegal: check: deadlock: ok
 verify: compliance_requires_illegal: check: compliance: skip
 verify: compliance_requires_illegal: check: livelock: ok

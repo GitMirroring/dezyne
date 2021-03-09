@@ -3,6 +3,7 @@ verify: ihello: check: livelock: ok
 verify: illegal_requires_out: check: deterministic: ok
 verify: illegal_requires_out: check: illegal: fail
 w.world
+<illegal>
 verify: illegal_requires_out: check: deadlock: ok
 verify: illegal_requires_out: check: compliance: skip
 verify: illegal_requires_out: check: livelock: ok

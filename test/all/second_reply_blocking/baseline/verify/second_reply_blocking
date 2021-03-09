@@ -9,5 +9,6 @@ p.e
 r.e
 r.return
 r.cb
+<second-reply>
 verify: second_reply_blocking: check: compliance: skip
 verify: second_reply_blocking: check: livelock: ok

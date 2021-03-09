@@ -8,5 +8,6 @@ verify: deadlock_blocking_optional: check: deadlock: fail
 p.e
 r.e
 r.return
+<deadlock>
 verify: deadlock_blocking_optional: check: compliance: skip
 verify: deadlock_blocking_optional: check: livelock: ok

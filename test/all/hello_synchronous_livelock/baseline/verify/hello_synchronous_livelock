@@ -7,6 +7,7 @@ h.hello
 w.hello
 w.world
 w.return
+<livelock>
 verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok
 verify: iworld: check: deadlock: ok

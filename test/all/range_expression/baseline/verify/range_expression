@@ -10,5 +10,6 @@ r.e
 r.return
 p.return
 p.e
+<range-error>
 verify: range_expression: check: compliance: skip
 verify: range_expression: check: livelock: ok

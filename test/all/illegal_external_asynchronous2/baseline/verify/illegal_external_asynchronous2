@@ -7,6 +7,7 @@ r.e
 r.return
 p.return
 r.ec
+<illegal>
 verify: illegal_external_asynchronous2: check: deadlock: fail
 p.e
 r.e
@@ -29,5 +30,6 @@ r.a
 r.return
 p.return
 p.a
+<queue-full>
 verify: illegal_external_asynchronous2: check: compliance: skip
 verify: illegal_external_asynchronous2: check: livelock: ok

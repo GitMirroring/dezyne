@@ -1,6 +1,7 @@
 verify: determinism_async: check: deterministic: fail
 h.hello
 h.return
+<deterministic>
 verify: determinism_async: check: illegal: ok
 verify: determinism_async: check: deadlock: ok
 verify: determinism_async: check: compliance: ok

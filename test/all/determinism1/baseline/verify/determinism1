@@ -4,6 +4,7 @@ verify: determinism1: check: deterministic: fail
 i.e
 i.return
 i.e
+<deterministic>
 verify: determinism1: check: illegal: ok
 verify: determinism1: check: deadlock: ok
 verify: determinism1: check: compliance: ok
