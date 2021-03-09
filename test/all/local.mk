@@ -85,7 +85,7 @@ REGRESSION_TESTS =				\
  %D%/async_context3				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
- %D%/async_nondet				\
+ %D%/determinism_async				\
  %D%/async_order				\
  %D%/async_order2				\
  %D%/async_prio					\

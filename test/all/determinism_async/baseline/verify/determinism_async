@@ -1,0 +1,9 @@
+verify: determinism_async: check: deterministic: fail
+h.hello
+h.return
+verify: determinism_async: check: illegal: ok
+verify: determinism_async: check: deadlock: ok
+verify: determinism_async: check: compliance: ok
+verify: determinism_async: check: livelock: ok
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
