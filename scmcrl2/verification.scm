@@ -70,8 +70,7 @@
 ;;;
 
 (define (interface-taus model)
-  (let* ((name (makreel:name model))
-         (alphabet (map (cute string-append name "." <>)'("inevitable" "optional"))))
+  (let ((alphabet '("inevitable" "optional")))
     (string-join alphabet ",")))
 
 (define (enum-literal->event o)
@@ -209,8 +208,12 @@
 (define in-out:aut->aut-dpweak-bisim
   '("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut"))
 
-(define in-out:aut-makreel->aut
-  `(,%dzn "lts" "--cleanup"))
+(define (in-out:aut-makreel->aut options)
+  (let* ((model (options-model options))
+         (model-name (makreel:name model))
+         (prefix (string-append model-name ".")))
+    `(,%dzn "lts" "--cleanup"
+            ,@(if (is-a? model <interface>) `("--prefix" ,prefix) '()))))
 
 (define in-out:aut-dpweak-bisim->aut-failures
   `(,%dzn "lts" "--failures" "-"))
