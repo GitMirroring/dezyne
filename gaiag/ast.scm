@@ -223,7 +223,8 @@
 (define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
 (define-method (ast:variable* (o <compound>)) (filter (is? <variable>) (.elements o)))
 
-(define-method (ast:async? (o <trigger>)) (parent (.port o) <behaviour>))
+(define-method (ast:async? (o <port>)) (parent o <behaviour>))
+(define-method (ast:async? (o <trigger>)) (ast:async? (.port o)))
 (define-method (ast:async? (o <interface>))
   (equal? (ast:full-name o) '("dzn" "async")))
 (define-method (ast:async? (o <ast>))
