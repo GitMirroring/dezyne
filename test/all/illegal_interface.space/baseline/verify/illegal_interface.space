@@ -1,0 +1,4 @@
+verify: illegal_interface.space: check: deadlock: fail
+interface_namespace.hello
+interface_namespace.return
+verify: illegal_interface.space: check: livelock: ok

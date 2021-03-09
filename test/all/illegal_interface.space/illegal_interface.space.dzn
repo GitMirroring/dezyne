@@ -20,7 +20,7 @@
 //
 // Code:
 
-interface hello.interface_namespace
+interface illegal_interface.space
 {
   in void hello();
   in void world();
