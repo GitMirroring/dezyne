@@ -1,7 +1,9 @@
 verify: irange_member: check: deadlock: fail
+<range-error>
 verify: irange_member: check: livelock: ok
 verify: range_member: check: deterministic: ok
 verify: range_member: check: illegal: ok
 verify: range_member: check: deadlock: fail
+<range-error>
 verify: range_member: check: compliance: skip
 verify: range_member: check: livelock: ok

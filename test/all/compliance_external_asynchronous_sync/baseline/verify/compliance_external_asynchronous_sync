@@ -11,4 +11,5 @@ r.e
 r.ec
 r.return
 p.ec
+<compliance>
 verify: compliance_external_asynchronous_sync: check: livelock: ok

@@ -1,5 +1,6 @@
 verify: ilivelock: check: deadlock: ok
 verify: ilivelock: check: livelock: fail
+<livelock>
 verify: livelock2: check: deterministic: ok
 verify: livelock2: check: illegal: ok
 verify: livelock2: check: deadlock: ok

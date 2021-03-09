@@ -7,6 +7,7 @@ w.return
 h.return
 w.cruel
 h.world
+<deadlock>
 verify: compliance_out_nondet: check: compliance: skip
 verify: compliance_out_nondet: check: livelock: ok
 verify: ihello: check: deadlock: ok

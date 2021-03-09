@@ -22,5 +22,6 @@ w.hello
 w.return
 h.return
 h.hello
+<queue-full>
 verify: queuefull_external_sync: check: compliance: skip
 verify: queuefull_external_sync: check: livelock: ok

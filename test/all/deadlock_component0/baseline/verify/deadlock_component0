@@ -3,5 +3,6 @@ verify: I: check: livelock: ok
 verify: deadlock_component0: check: deterministic: ok
 verify: deadlock_component0: check: illegal: ok
 verify: deadlock_component0: check: deadlock: fail
+<deadlock>
 verify: deadlock_component0: check: compliance: skip
 verify: deadlock_component0: check: livelock: ok

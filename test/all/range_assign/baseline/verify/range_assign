@@ -1,3 +1,4 @@
 verify: range_assign: check: deadlock: fail
 e
+<range-error>
 verify: range_assign: check: livelock: ok

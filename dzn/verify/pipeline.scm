@@ -39,6 +39,7 @@
   #:use-module (dzn config)
   #:use-module (dzn goops)
   #:use-module (dzn code makreel)
+  #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (gash pipe)
@@ -135,9 +136,18 @@
   (let ((trace (string-map (lambda (c) (if (eq? c #\newline) #\; c)) trace)))
     (string-join
      (filter (lambda (event)
-               (and (not (member event '("declarative_illegal" "illegal" "inevitable" "optional" "tau")))
+               (and (not (member event '("inevitable" "optional" "tau" ;;"<illegal>" "<declarative-illegal>"
+                                         )))
                     (not (string-contains event ".qout."))
                     (not (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
+             (string-split trace #\;))
+     "\n")))
+
+(define (hide-illegal-labels trace)
+  (let ((trace (string-map (lambda (c) (if (eq? c #\newline) #\; c)) trace)))
+    (string-join
+     (filter (lambda (event)
+               (not (member event '("<illegal>" "<declarative-illegal>"))))
              (string-split trace #\;))
      "\n")))
 
@@ -242,7 +252,7 @@
          (deterministic (deterministic-labels model)))
     `(,%dzn "lts" "--single-line"
             "--nondet" ,deterministic ;; XXX Rename --determinism
-            "--illegal" "illegal"
+            "--illegal" "<illegal>"
             "--deadlock" ,@taus
             "--livelock"
             "--failures"
@@ -374,44 +384,44 @@ init for MODEL unless INIT."
                              (transitions . ,transitions)))))
   #f))
 
-(define (remove-flushes trace)
-  (and trace (string-join (filter (negate (cut string-contains <> "<flush>"))
-                                  (string-split trace #\newline))
-                          "\n")))
-
 (define (report-fail model-type model-name assert info trace interface-trace)
+  (define (remove-flushes trace)
+    (filter (negate (cut string-contains <> "<flush>")) trace))
+  (define (drop-queue-full-tail trace)
+    (append (take-while (negate (cut equal? "<queue-full>" <>)) trace) (list "<queue-full>")))
   (let* ((states (car info))
          (transitions (car (cdr info)))
-         (trace-list (filter (negate string-null?) (string-split trace #\newline)))
-         (last-el (and (pair? trace-list) (last trace-list)))
-         (second-last (and (pair? trace-list)
-                           (pair? (drop-right trace-list 1))
-                           (last (drop-right trace-list 1))))
+         (trace (filter (negate string-null?) (string-split trace #\newline)))
+         (last-el (and (pair? trace) (last trace)))
+         (second-last (and (pair? trace)
+                           (pair? (drop-right trace 1))
+                           (last (drop-right trace 1))))
          (last (and last-el (string->symbol last-el)))
          (error (case assert
                    ((deadlock) (cond
-                                 ((member last (list 'range_error 'type_error 'missing_reply 'second_reply 'incomplete)) last)
-                                 ((find (cut equal? "queue_full" <>) trace-list) 'queue_full)
+                                 ((member last '(<range-error> <type-error> <missing-reply> <second-reply> <incomplete>)) last)
+                                 ((find (cut equal? "<queue-full>" <>) trace) '<queue-full>)
                                  (else assert)))
                    (else assert)))
          (message (case error
                    ((illegal) (format #f "illegal action performed in model ~a" model-name))
                    ((deterministic) (format #f "component ~a is non-deterministic due to overlapping guards" model-name))
                    ((compliance) (format #f "component ~a is non-compliant with interface(s) of provides port(s)" model-name))
-                   ((range_error) (format #f "integer range error in model ~a" model-name))
-                   ((type_error) (format #f "type error in model ~a" model-name))
-                   ((missing_reply) (format #f "reply missing from model ~a" model-name))
-                   ((second_reply) (format #f "double reply in model ~a" model-name))
-                   ((incomplete) (format #f "model ~a is incomplete: event '~a' not handled" model-name second-last))
+                   ((<range-error>) (format #f "integer range error in model ~a" model-name))
+                   ((<type-error>) (format #f "type error in model ~a" model-name))
+                   ((<missing-reply>) (format #f "reply missing from model ~a" model-name))
+                   ((<second-reply>) (format #f "double reply in model ~a" model-name))
+                   ((<incomplete>) (format #f "model ~a is incomplete: event '~a' not handled" model-name second-last))
+                   ((<queue-full>) (format #f "queue full in model ~a" model-name))
                    (else (format #f "~a in model ~a" error model-name))))
-         (trace (if (equal? last error)
-                    (string-join (drop-right trace-list (if (equal? last 'incomplete) 2 1)) "\n")
-                    (string-join (take-while (negate (cut equal? "queue_full" <>)) trace-list) "\n")))
-
-         ;; XXX TODO current simulator does not expect flushes; remove
-         ;; when new simulator is in place
          (trace (remove-flushes trace))
-         (interface-trace (remove-flushes interface-trace)))
+         (trace (if (member error '(compliance deadlock deterministic illegal livelock))
+                    (append trace (list (cleanup-error (symbol->string error))))
+                    trace))
+         (trace (if (eq? error '<queue-full>) (drop-queue-full-tail trace) trace))
+         (trace (string-join trace "\n"))
+         (interface-trace (and interface-trace
+                               (string-join (remove-flushes (string-split interface-trace #\newline)) "\n"))))
     (if (dzn:command-line:get 'json)
         (format #t "~a\n"
                 (scm->json-string (append
@@ -483,12 +493,14 @@ init for MODEL unless INIT."
          (trace (and trace (string-trim-both trace)))
 
          (trace (and trace (hide-internal-labels trace)))
+         (trace (and trace (hide-illegal-labels trace)))
 
          (trace (and trace (if (string-null? trace) trace (string-append trace "\n"))))
          (component-accepts (and lines (find (cut string-prefix? "left-acceptance: " <>) lines)))
          (component-accepts (and component-accepts (substring component-accepts (+ 2 (string-contains component-accepts ": ")))))
 
          (component-accepts (and component-accepts (hide-internal-labels component-accepts)))
+         (component-accepts (and component-accepts (hide-illegal-labels component-accepts)))
 
          (component-accepts (and component-accepts (string-split component-accepts #\newline)))
          (component-accepts (and component-accepts (sort component-accepts string<?)))
@@ -497,6 +509,7 @@ init for MODEL unless INIT."
          (interface-accepts (and interface-accepts (substring interface-accepts (+ 2 (string-contains interface-accepts ": ")))))
 
          (interface-accepts (and interface-accepts (hide-internal-labels interface-accepts)))
+         (interface-accepts (and interface-accepts (hide-illegal-labels interface-accepts)))
 
          (interface-accepts (and interface-accepts (string-split interface-accepts #\newline)))
          (interface-accepts (and interface-accepts (sort interface-accepts string<?))))

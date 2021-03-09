@@ -10,6 +10,7 @@ r.return
 p.return
 r.f
 r.Res_NOK
+<illegal>
 verify: illegal_async_silent: check: deadlock: ok
 verify: illegal_async_silent: check: compliance: skip
 verify: illegal_async_silent: check: livelock: ok

@@ -9,5 +9,6 @@ p.e
 r.e
 r.return
 r.cb
+<deadlock>
 verify: deadlock_blocking_inevitable: check: compliance: skip
 verify: deadlock_blocking_inevitable: check: livelock: ok

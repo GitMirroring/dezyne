@@ -8,4 +8,5 @@ p.e
 p.return
 p.cb
 p.e
+<compliance>
 verify: async_context3: check: livelock: ok
