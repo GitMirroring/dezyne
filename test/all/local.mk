@@ -94,7 +94,7 @@ REGRESSION_TESTS =				\
  %D%/async_rank					\
  %D%/async_ranking				\
  %D%/async_types				\
- %D%/async_silent				\
+ %D%/illegal_async_silent				\
  %D%/async_simple				\
  %D%/async_synccb				\
  %D%/async_synccb2				\
