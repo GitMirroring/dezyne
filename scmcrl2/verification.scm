@@ -26,6 +26,7 @@
   #:use-module (srfi srfi-9 gnu)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -172,10 +173,16 @@
            (cons command
                  (loop (get-input in-out.pipeline format))))))))
 
+(define root+model->makreel
+  (pure-funcq
+   (lambda (root model)
+     (with-output-to-string (cute makreel:model->makreel root model)))))
+
 (define (in-out:dzn->makreel options)
-  (let ((root (options-root options))
-        (model (options-model options)))
-    (cute makreel:model->makreel root model)))
+  (let* ((root (options-root options))
+         (model (options-model options))
+         (makreel (root+model->makreel root model)))
+    (cute display makreel)))
 
 (define (in-out:dzn->aut+provides-aut options)
   (let* ((model (options-model options))
