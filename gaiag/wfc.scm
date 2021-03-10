@@ -211,7 +211,7 @@
       (let* ((arguments (ast:argument* o))
              (count (length arguments))
              (function (.function ast))
-             (formals (ast:formal* function))
+             (formals (if function (ast:formal* function) '()))
              (function-count (length formals)))
         (append
          (if (= count function-count) '()
@@ -767,6 +767,9 @@
 
 (define-method (type-name (o <boolean>))
   "<unknown type>")
+
+(define-method (type-name (o <string>))
+  o)
 
 (define-method (type-name (o <ast>))
   (or (and=> (ast:full-name o) (cut string-join <> "."))
