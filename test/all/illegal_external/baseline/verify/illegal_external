@@ -12,42 +12,6 @@ w.return
 h.return
 w.world
 <illegal>
-verify: illegal_external: check: deadlock: fail
-h.hello
-w.hello
-w.return
-h.return
-h.cancel
-w.cancel
-w.return
-h.return
-h.hello
-w.hello
-w.return
-h.return
-h.cancel
-w.cancel
-w.return
-h.return
-h.hello
-w.hello
-w.return
-h.return
-h.cancel
-w.cancel
-w.return
-h.return
-h.hello
-w.hello
-w.return
-h.return
-h.cancel
-w.cancel
-w.return
-h.return
-h.hello
-w.hello
-w.return
-<queue-full>
+verify: illegal_external: check: deadlock: ok
 verify: illegal_external: check: compliance: skip
 verify: illegal_external: check: livelock: ok
