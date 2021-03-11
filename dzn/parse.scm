@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2017, 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -47,7 +47,6 @@
   #:export (file->ast
             file->stream
             file+import-content-alist
-            imported-from
             parse:handle-exceptions
             call-with-handle-exceptions
             peg:handle-syntax-error
@@ -79,8 +78,9 @@
      (if (string-null? hanging) ""
          (string-append hanging "\n")))))
 
-(define (peg:imported-from->message imported-from file-name)
-  (let ((from (assoc-ref imported-from (basename file-name))))
+(define (peg:imported-from->message content-alist file-name)
+  (let* ((imported-from (imported-from content-alist))
+         (from (assoc-ref imported-from (basename file-name))))
     (if (not from) ""
         (string-append
          (format #f "In ~a:\n" file-name)
@@ -89,8 +89,8 @@
                                    (loop (assoc-ref imported-from (basename from))))
                "\n"))))))
 
-(define (peg:error-message imported-from file-name string pos message)
-  (display (peg:imported-from->message imported-from file-name) (current-error-port))
+(define (peg:error-message content-alist file-name string pos message)
+  (display (peg:imported-from->message content-alist file-name) (current-error-port))
   (display (peg:message file-name string pos "error" message) (current-error-port)))
 
 (define (peg:syntax-error->message e)
@@ -129,15 +129,15 @@
     (if (not (unknown-identifier? e))  message
         (string-append "unknown identifier; " message))))
 
-(define* (peg:handle-syntax-error file-name string #:optional (imported-from '()))
+(define* (peg:handle-syntax-error file-name string #:key (content-alist '()))
   (lambda (key . args)
     (unless (or (null? args) (null? (car args)))
       (let* ((pos (caar args))
              (message (format #f "`~a' expected" (peg:syntax-error->message (cadar args)))))
-        (peg:error-message imported-from file-name string pos message)))
+        (peg:error-message content-alist file-name string pos message)))
     (apply throw key args)))
 
-(define* (string->parse-tree string #:key (file-name "-") (imported-from '()))
+(define* (string->parse-tree string #:key (file-name "-") (content-alist '()))
   (let ((fall-back? (%peg:fall-back?)))
     (define (parse)
       (let* ((parse-tree (peg:parse string))
@@ -160,7 +160,7 @@
         parse
         (lambda (key . args)
           (if fall-back? (parameterize ((%peg:fall-back? #t)) (parse))
-              (apply (peg:handle-syntax-error file-name string imported-from) key args)))))))
+              (apply (peg:handle-syntax-error file-name string #:content-alist content-alist) key args)))))))
 
 (define (parse-file+import-content-alist alist)
   "From ALIST of form
@@ -178,7 +178,7 @@ parse CONTENT and return
           (cons file-name (string->parse-tree
                            content
                            #:file-name file-name
-                           #:imported-from (imported-from alist)))))
+                           #:content-alist alist))))
        alist))
 
 (define* (parse-tree-alist->ast alist #:key (content-alist '()))
@@ -244,17 +244,19 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
        (exit EXIT_FAILURE))
       ((import-error)
        (match args
-         ((file imports imported-from)
+         ((file imports content-alist)
           (cond ((string=? file-name (car args))
                  (format (current-error-port) "No such file: ~a\n" file-name))
-                (else (format (current-error-port)
-                              "No such file: ~a found in: ~a;\n"
-                              file (string-join imports ", "))
-                      (let ((from (assoc-ref imported-from (basename file))))
-                        (let loop ((from from))
-                          (when from
-                            (format (current-error-port) "imported from ~a\n" from)
-                            (loop (assoc-ref imported-from (basename from))))))))))
+                (else
+                 (let* ((imported-from (imported-from content-alist))
+                        (from (assoc-ref imported-from (basename file))))
+                   (format (current-error-port)
+                           "No such file: ~a found in: ~a;\n"
+                           file (string-join imports ", "))
+                   (let loop ((from from))
+                     (when from
+                       (format (current-error-port) "imported from ~a\n" from)
+                       (loop (assoc-ref imported-from (basename from))))))))))
        (exit EXIT_FAILURE))
       ((error)
        (apply format (current-error-port) "~a:error:~a\n" file-name args)
@@ -357,12 +359,12 @@ specified in IMPORTS."
     (let ((content (with-input-from-file file-name read-string)))
       (cons file-name content)))
 
-  (define (resolve from imports imported imported-from)
+  (define (resolve from imports imported content-alist)
     (map (lambda (import)
            (let* ((paths (cons (dirname from) imports))
                   (file-name (search-path paths import)))
              (unless file-name
-               (throw 'import-error import paths imported-from))
+               (throw 'import-error import paths content-alist))
              file-name))
          imported))
 
@@ -371,7 +373,7 @@ specified in IMPORTS."
         (let* ((content-alist (acons file-name content content-alist))
                (file-names (resolve file-name imports
                                     (imported-file-names content)
-                                    (imported-from content-alist))))
+                                    content-alist)))
           (let loop ((file-names file-names) (content-alist content-alist))
             (if (null? file-names) (reverse content-alist)
                 (let* ((canonical-string=? (lambda (a b)
@@ -388,13 +390,14 @@ specified in IMPORTS."
                                       ((file-name . content)
                                        (resolve file-name imports
                                                 (imported-file-names content)
-                                                (imported-from content-alist))))
+                                                content-alist)))
                                     alist)))
                   (loop file-names content-alist))))))))
 
 (define (imported-file-names content)
   "Return the list of file names used in import statements in content."
-  (let ((tree (parameterize ((%peg:skip? peg:import-skip-parse)
+  (let ((tree (parameterize ((%peg:locations? #f)
+                             (%peg:skip? peg:import-skip-parse)
                              (%peg:debug? (> (dzn:debugity) 3)))
                 (peg:imports content))))
     (match tree
