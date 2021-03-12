@@ -185,9 +185,9 @@ program-counters produced by taking a step."
                              (else (map (mark-pc input o) pcs)))))
              (map (cut cons <> trace) pcs))))))
 
-(define-method (run-to-completion (pc <program-counter>))
-  "Return a list of traces produced by taking steps, starting from PC
-until RTC?."
+(define-method (run-to-completion-unmemoized (pc <program-counter>))
+  "Return a list of traces produced by taking steps, starting from
+PC until RTC?."
   (let loop ((traces (list (list pc))))
     (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
            (traces (filter-match-error traces))
@@ -203,11 +203,24 @@ until RTC?."
        (else
         (loop (append-map extend-trace traces)))))))
 
-(define-method (run-to-completion (pc <program-counter>) event)
+(define-method (run-to-completion-unmemoized (pc <program-counter>) event)
   "Return a list of traces produced by taking steps, starting from PC
 with EVENT as first step, until RTC?."
   (let ((pc (begin-step pc event)))
-    (run-to-completion pc)))
+    (run-to-completion-unmemoized pc)))
+
+(define run-to-completion
+  (let ((cache (make-hash-table 512)))
+    (lambda (pc event)
+      "Memoizing version of RUN-TO-COMPLETION-UNMEMOIZED."
+      (let* ((event-string (if (string? event) event (trigger->string event)))
+             (key (string-append "pc:" (pc->string pc) " event: " event-string)))
+        (or (hash-ref cache key)
+            (let ((result (run-to-completion-unmemoized pc event)))
+              (when (%exploring?)
+                (hash-set! cache key result))
+              result))))))
+(define-generic run-to-completion)
 
 (define-method (extend-trace (trace <list>) producer)
   "Return a list of traces produced running PRODUCER or the PC (head
@@ -225,7 +238,7 @@ of) TRACE, extending TRACE."
   "Return a list of traces produced by taking steps, starting by flushing (%SUT),
 until RTC?."
   (let ((pc (flush pc)))
-    (run-to-completion pc)))
+    (run-to-completion-unmemoized pc)))
 
 (define-method (run-flush (trace <list>))
   "Return a list of traces produced by RUN-FLUSH, extending TRACE."
@@ -235,7 +248,7 @@ until RTC?."
   "Return a list of traces produced by taking steps, starting by flushing (%SUT),
 until RTC?."
   (let* ((pc (flush pc))
-         (traces (run-to-completion pc))
+         (traces (run-to-completion-unmemoized pc))
          (pcs (map car traces)))
   (if (every q-empty? pcs) traces
       (append-map run-flush traces))))
@@ -339,7 +352,7 @@ until RTC?."
 
 (define-method (run-async-event (pc <program-counter>))
   (let ((trace (step pc (make <flush-async>))))
-    (extend-trace trace run-to-completion)))
+    (extend-trace trace run-to-completion-unmemoized)))
 
 (define-method (run-async (pc <program-counter>) event)
   (let* ((trail (.trail pc))
