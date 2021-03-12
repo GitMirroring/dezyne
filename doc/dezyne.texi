@@ -4993,6 +4993,10 @@ Interesting formats are @code{mcrl2}, @code{aut},
 @code{aut-dpweak-bisim}, @code{aut-weak-trace}, and
 @code{aut+provides-aut}.  Use @option{--out=help} for a full list.
 
+Using the @option{--debug} on @command{dzn} (@xref{Invoking dzn}) shows
+the pipelines with all their commands that are being used, ready for
+use on the command line.
+
 @item --queue-size=@var{size}
 @itemx -q @var{size}
 Use queue size @var{size} for verification, the default is @code{3}.

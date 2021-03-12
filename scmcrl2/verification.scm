@@ -275,6 +275,32 @@
         (else
          "component")))
 
+(define (pretty-verify-pipeline commands out root model)
+  "Return a pretty printable string for COMMANDS.  Synthesize dzn code
+for MODEL, using ROOT."
+  (define (command->string command)
+    (define (program->string program)
+      (if (and (equal? (basename program) "dzn")
+               (getenv "DZN_UNINSTALLED"))
+          "./pre-inst-env dzn"
+          program))
+    (define (arg->string arg)
+      (if (string-any (string->char-set "<>;'") arg) (format #f "~s" arg)
+          (format #f "~a" arg)))
+    (let ((file-name (ast:source-file root))
+          (model-name (makreel:unticked-dotted-name model)))
+      (match command
+        (((and (? string?) program) args ...)
+         (let ((program (program->string program)))
+           (format #f "~a ~a" program (string-join (map arg->string args)))))
+        ((? (const (equal? out "verify-compliance")))
+         (format #f "~a verify --model=~a --out=aut+provides-aut ~a"
+                 (program->string %dzn) model-name file-name))
+        (_
+         (format #f "~a code --language=makreel --model=~a ~a"
+                 (program->string %dzn) model-name file-name)))))
+  (string-join (map command->string commands) " \\\n  | "))
+
 (define* (verify-pipeline out root model #:key (init (get-init model)))
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
 init for MODEL unless INIT."
@@ -284,6 +310,9 @@ init for MODEL unless INIT."
   (let* ((options (make-options root model init))
          (commands (get-commands in-out.pipeline out))
          (commands (reverse (fold (prepare options) '() commands))))
+    (when (dzn:command-line:get 'debug)
+      (format (current-error-port) "~a\n"
+              (pretty-verify-pipeline commands out root model)))
     (pipeline->string commands)))
 
 
