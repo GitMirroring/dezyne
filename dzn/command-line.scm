@@ -28,6 +28,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (dzn script)
   #:export (command-line:get
+            command:command-line
             dzn:command-line:get
             dzn:debugity
             dzn:multi-opt
@@ -57,6 +58,9 @@
          (if (not (member option multi-options)) (option-ref options option default)
              (filter-map (multi-opt option) options)))))
 
+(define (dzn:options)
+  (parse-opts (command-line)))
+
 (define* (dzn:command-line:get option #:optional default)
   (and (> (length (command-line)) 1)
        (let ((options (parse-opts (command-line))))
@@ -68,7 +72,7 @@
 
 (define (dzn:multi-opt name)
   (and (> (length (command-line)) 1)
-       (multi-opt (parse-opts (command-line)) name)))
+       (multi-opt (dzn:options) name)))
 
 (define (dzn:debugity)
   (or (and (pair? (command-line))
@@ -79,3 +83,6 @@
 
 (define (dzn:verbosity)
   (dzn:multi-opt 'debug))
+
+(define* (command:command-line #:optional (options (dzn:options)))
+  (option-ref options '() '()))
