@@ -287,6 +287,12 @@ for MODEL, using ROOT."
     (define (arg->string arg)
       (if (string-any (string->char-set "<>;'") arg) (format #f "~s" arg)
           (format #f "~a" arg)))
+    (define (imports->string)
+      (let* ((options ((@@ (gaiag commands verify) parse-opts)
+                       (command:command-line)))
+             (imports (multi-opt options 'import)))
+        (if (null? imports) ""
+            (string-join imports " -I " 'prefix))))
     (let ((file-name (ast:source-file root))
           (model-name (makreel:unticked-dotted-name model)))
       (match command
@@ -294,12 +300,13 @@ for MODEL, using ROOT."
          (let ((program (program->string program)))
            (format #f "~a ~a" program (string-join (map arg->string args)))))
         ((? (const (equal? out "verify-compliance")))
-         (format #f "~a verify --model=~a --out=aut+provides-aut ~a"
-                 (program->string %dzn) model-name file-name))
+         (format #f "~a verify --model=~a --out=aut+provides-aut~a ~a"
+                 (program->string %dzn) model-name (imports->string) file-name))
         (_
-         (format #f "~a code --language=makreel --model=~a ~a"
-                 (program->string %dzn) model-name file-name)))))
-  (string-join (map command->string commands) " \\\n  | "))
+         (format #f "~a code --language=makreel --model=~a~a ~a"
+                 (program->string %dzn) model-name (imports->string)
+                 file-name)))))
+   (string-join (map command->string commands) " \\\n  | "))
 
 (define* (verify-pipeline out root model #:key (init (get-init model)))
   "Create a verify pipeline to produce OUT from MODEL.  Use standard

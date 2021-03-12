@@ -94,7 +94,7 @@ Use \"dzn COMMAND --help\" for command-specific information.
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (command-args (option-ref options '() '()))
+         (command-args (command:command-line options))
          (command (and (pair? command-args) (car command-args)))
          (debug? (option-ref options 'debug #f)))
     (if (getenv "DZN_REPL") (call-with-error-handling (cut run-command command-args))
