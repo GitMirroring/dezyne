@@ -43,7 +43,7 @@
 	 (ifd (cond
 	       ((= (length input) 0) '())
 	       ((= (length input) 1) '(0))))
-	 (pipes (map (lambda (. _) (pipe)) ofd))
+	 (pipes (map (lambda _ (pipe)) ofd))
 	 (r (map car pipes))
 	 (w (map cdr pipes))
 	 (pid (primitive-fork)))
