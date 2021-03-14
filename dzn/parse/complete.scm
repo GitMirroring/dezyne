@@ -192,6 +192,12 @@
     (map (cute string-append (tree:dotted-name name) "." <>)
          (map tree:dotted-name fields))))
 
+(define (tree:int-value-names o)
+  (assert-type o 'int)
+  (let* ((range (.range o))
+         (from (.from range)))
+    (map number->string (iota (1+ (- (.to range) from)) from))))
+
 (define (tree:enum-field-tests o name)
   (assert-type o 'enum)
   (let ((fields (tree:field* o)))
