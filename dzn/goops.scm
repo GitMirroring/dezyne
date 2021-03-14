@@ -650,7 +650,7 @@
 
 (define-method (ast:unwrap o) o)
 (define-method (ast:unwrap (o <ast-node>)) o)
-(define-method (ast:unwrap (o <pair>)) (if (not (list? o)) (pke "URG node:" o) (map ast:unwrap o)))
+(define-method (ast:unwrap (o <pair>)) (map ast:unwrap o))
 (define-method (ast:unwrap (o <ast>)) (.node o))
 
 (define-method (get-parent o) #f)

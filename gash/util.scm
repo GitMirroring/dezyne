@@ -24,9 +24,9 @@
   :export (disjoin conjoin))
 
 (define (disjoin . predicates)
-  (lambda (. arguments)
+  (lambda arguments
     (any (cut apply <> arguments) predicates)))
 
 (define (conjoin . predicates)
-  (lambda (. arguments)
+  (lambda arguments
     (every (cut apply <> arguments) predicates)))
