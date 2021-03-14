@@ -263,18 +263,6 @@
              #:external (and=> (assq 'external qualifiers) helper)
              #:injected (and=> (assq 'injected qualifiers) helper))))
 
-        (('port direction ('port-qualifiers qualifiers ...) type name)
-         (let* ((direction (helper direction))
-                (direction-list? (pair? direction))
-                (type (helper type))
-                (type (async-interface-name type formals)))
-           (make <port-node>
-             #:name (helper name)
-             #:type.name type
-             #:direction direction
-             #:external (and=> (assq 'external qualifiers) helper)
-             #:injected (and=> (assq 'injected qualifiers) helper))))
-
         (('port direction ('port-qualifiers qualifiers ...) type formals name)
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
