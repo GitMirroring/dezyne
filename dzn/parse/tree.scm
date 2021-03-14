@@ -52,12 +52,14 @@
             .behaviour
             .behaviour-compound
             .behaviour-statements
+            .direction
             .end
             .event-name
             .expression
             .field
             .fields
             .file-name
+            .from
             .function-name
             .instance-name
             .location
@@ -67,9 +69,11 @@
             .port-name
             .ports
             .pos
+            .range
             .scope
             .statement
             .system
+            .to
             .tree
             .triggers
             .type-name
@@ -170,6 +174,10 @@ procedure)."
     ((? (is? 'behaviour-compound))
      (slot o 'behaviour-statements))))
 
+(define (.direction o)
+  (assert-type o 'event 'formal 'port)
+  (slot o 'direction))
+
 (define (.end o)
   (match o
     (('location pos end) end)
@@ -201,6 +209,10 @@ procedure)."
     ((or (? (is? 'function))
          (? (is? 'trigger)) (slot o 'formals))
      (slot o 'formals))))
+
+(define (.from o)
+  (assert-type o 'range)
+  (slot o 'from))
 
 (define (.location o)
   (assert-type o tree?)
@@ -267,9 +279,17 @@ procedure)."
     (('location pos end) pos)
     (('location pos end file-name) pos)))
 
+(define (.range o)
+  (assert-type o 'int)
+  (slot o 'range))
+
 (define (.statement o)
   (assert-type o 'blocking 'guard 'on)
   (slot o tree:statement?))
+
+(define (.to o)
+  (assert-type o 'range)
+  (slot o 'to))
 
 (define (.triggers o)
   (assert-type o 'on)
