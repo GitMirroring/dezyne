@@ -23,6 +23,7 @@
 
 (define-module (gaiag commands hello)
   #:use-module (ice-9 getopt-long)
+  #:use-module (gaiag command-line)
   #:export (parse-opts
             main))
 
