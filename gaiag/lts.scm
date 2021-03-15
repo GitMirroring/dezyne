@@ -53,17 +53,26 @@
             cleanup-aut
             cleanup-error
             cleanup-label
+            lts->alphabet
             lts->nodes
             lts->traces
             lts-hide
+            lts-stable-accepts
             <lts>
             make-edge
             make-lts
             lts-edges
             lts-state
             lts-states
+            print-metrics
+            remove-illegal
+            rm-tau-loops
+            run
+            step-tau
             text->aut-header
+            text->edge
             text-file->aut-header
+            validate-aut-file
             write-lts))
 
 (define %version "git")

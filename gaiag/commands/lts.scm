@@ -148,7 +148,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
 
     (define (validation-error error)
       (or (not error)
-          (begin (format (current-error-port) "Error in aut file: ~a - ~a\n" path error)
+          (begin (format (current-error-port) "Error in aut file: ~a - ~a\n" file-name error)
                  #f)))
 
     (when cleanup?
