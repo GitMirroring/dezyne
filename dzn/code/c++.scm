@@ -92,9 +92,6 @@
 (define-method (c++:type-name o)
   (code:type-name o))
 
-(define-method (c++:type-name (o <binding>))
-  ((compose c++:type-name .type (cut ast:lookup (parent o <model>) <>) injected-instance-name) o))
-
 (define-method (c++:type-name (o <enum>))
   (append (list "") (ast:full-name o) (list "type")))
 
