@@ -23,6 +23,7 @@
 
 (define-module (dzn commands hello)
   #:use-module (ice-9 getopt-long)
+  #:use-module (dzn command-line)
   #:export (parse-opts
             main))
 
