@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <Rob.Wieringa@verum.com>
@@ -35,6 +35,7 @@
 
   #:use-module (gaiag command-line)
   #:use-module (gaiag misc)
+  #:use-module (gaiag display)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (gaiag goops)
@@ -544,7 +545,6 @@ We follow the following renaming strategy:
 
 (define (ast-> ast)
   ((compose
-    pretty-print
-    om->list
+    ast:pretty-print
     root->)
    ast))
