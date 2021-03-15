@@ -808,7 +808,7 @@
 (define-method (ast:full-name (o <scope.name>))
   (let ((ids (.ids o)))
     (if (pair? (cdr ids)) ids
-        (append (ast:full-name (parent (.parent o) <scope>)) name))))
+        (append (ast:full-name (parent (.parent o) <scope>)) (car ids)))))
 
 (define-method (ast:full-name (o <bool>))
   '("bool"))
