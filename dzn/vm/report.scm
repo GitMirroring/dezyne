@@ -558,5 +558,4 @@
         (format #t "~s\n" (cons 'labels (labels)))
         (format #t "~s\n" (cons 'eligible eligible))))
 
-    (when (is-a? status <error>)
-      (exit EXIT_FAILURE))))
+    status))

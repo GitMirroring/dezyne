@@ -287,54 +287,55 @@
     (let ((event pc ((%next-input) pc)))
       (let* ((event-traces-alist (event-traces-alist pc))
              (eligible (eligible-labels pc event-traces-alist))
-             (dealock-traces (check-deadlock pc event-traces-alist event)))
-        (when (and dealock-traces (pair? (.blocked pc)))
-          (report traces
-                  #:locations? locations?
-                  #:trace trace
-                  #:verbose? verbose?))
-        (report (or dealock-traces traces)
-                #:eligible eligible
-                #:locations? locations?
-                #:trace trace
-                #:verbose? verbose?))))
+             (dealock-traces (check-deadlock pc event-traces-alist event))
+             (status (and dealock-traces (pair? (.blocked pc))
+                          (report traces
+                                  #:locations? locations?
+                                  #:trace trace
+                                  #:verbose? verbose?))))
+        (if (is-a? status <error>) status
+            (report (or dealock-traces traces)
+                    #:eligible eligible
+                    #:locations? locations?
+                    #:trace trace
+                    #:verbose? verbose?)))))
   (define (end-report from-pcs list-of-traces)
     (let ((traces (apply append list-of-traces)))
       (cond
        ((and deadlock-check? (null? traces))
-        (for-each (cute deadlock-report <> '()) from-pcs))
+        (find identity (map (cute deadlock-report <> '()) from-pcs)))
        (deadlock-check?
-        (for-each deadlock-report from-pcs list-of-traces))
+        (find identity (map deadlock-report from-pcs list-of-traces)))
        (else
         (report traces
-                  #:eligible #t
-                  #:locations? locations?
-                  #:trace trace
-                  #:verbose? verbose?)))))
+                #:eligible #t
+                #:locations? locations?
+                #:trace trace
+                #:verbose? verbose?)))))
   (let ((pc (make-pc #:trail trail)))
     (when (equal? trace "trace")
       (serialize-header (.state pc) (current-output-port))
       (newline))
-    (report (list (list pc)) #:trace trace #:header #t)
-    (parameterize ((%next-input (if (pair? trail) trail-input read-input)))
-      (let loop ((traces (list (list pc))))
-        (let* ((from-pcs (map car traces))
-               (list-of-traces (map run-sut traces))
-               (traces (apply append list-of-traces))
-               (valid-traces (filter (compose (negate .status) car) traces))
-               (blocked non-blocked (partition (compose pair? .blocked car)
-                                               valid-traces)))
-          (cond ((null? valid-traces)
-                 (end-report from-pcs list-of-traces))
-                ((pair? blocked)
-                 (loop blocked))
-                ((pair? non-blocked)
-                 (let ((pcs (map car valid-traces)))
-                   (report non-blocked
-                           #:locations? locations?
-                           #:trace trace
-                           #:verbose? verbose?)
-                   (loop (map list pcs))))))))))
+    (or (report (list (list pc)) #:trace trace #:header #t)
+        (parameterize ((%next-input (if (pair? trail) trail-input read-input)))
+          (let loop ((traces (list (list pc))))
+            (let* ((from-pcs (map car traces))
+                   (list-of-traces (map run-sut traces))
+                   (traces (apply append list-of-traces))
+                   (valid-traces (filter (compose (negate .status) car) traces))
+                   (blocked non-blocked (partition (compose pair? .blocked car)
+                                                   valid-traces)))
+              (cond ((null? valid-traces)
+                     (end-report from-pcs list-of-traces))
+                    ((pair? blocked)
+                     (loop blocked))
+                    ((pair? non-blocked)
+                     (let ((pcs (map car valid-traces)))
+                       (or (report non-blocked
+                                   #:locations? locations?
+                                   #:trace trace
+                                   #:verbose? verbose?)
+                           (loop (map list pcs))))))))))))
 
 
 ;;;
