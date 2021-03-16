@@ -29,6 +29,10 @@
   #:use-module (gaiag simulate)
   #:use-module (gaiag commands parse)
   #:use-module (gaiag commands trace)
+
+  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (gaiag goops)
+
   #:export (parse-opts
             main))
 
@@ -85,13 +89,15 @@ Simulate a Dezyne model
          (verbose? (command-line:get 'verbose #f))
          (locations? (command-line:get 'locations verbose?))
          (trace (command-line:get 'format (if locations? "trace" "event")))
-         (trail (option-ref options 'trail #f)))
-    (simulate ast
-              #:model-name model-name
-              #:deadlock-check? (not no-deadlock?)
-              #:locations? locations?
-              #:queue-size queue-size
-              #:strict? strict?
-              #:trace trace
-              #:trail trail
-              #:verbose? verbose?)))
+         (trail (option-ref options 'trail #f))
+         (status (simulate ast
+                           #:model-name model-name
+                           #:deadlock-check? (not no-deadlock?)
+                           #:locations? locations?
+                           #:queue-size queue-size
+                           #:strict? strict?
+                           #:trace trace
+                           #:trail trail
+                           #:verbose? verbose?)))
+    (when (is-a? status <error>)
+      (exit EXIT_FAILURE))))
