@@ -106,7 +106,7 @@ Generate exhaustive set of traces for Dezyne model
                           (map (lambda (t) (string-append (string-drop-right (.port.name t) 1) "." (.event.name t)))
                                (ast:provided-in-triggers model))
                           (map .name (filter ast:in? (ast:event* model)))))
-         (foo (if dzn-debug? (stderr "provides: ~a\n" provided-ports)))
+         (foo (if dzn-debug? (format (current-error-port) "provides: ~a\n" provided-ports)))
          (provided (map .name provided-ports))
          (model-name (makreel:unticked-dotted-name model))
          (bin ((compose dirname car) (command-line)))
@@ -134,8 +134,8 @@ Generate exhaustive set of traces for Dezyne model
              (traces (string-trim-right traces)))
         (when json? (display traces))
         (when dzn-debug?
-          (stderr "provides-in=~s\n" provides-in)
-          (stderr "traces=~s\n" traces))))
+          (format (current-error-port) "provides-in=~s\n" provides-in)
+          (format (current-error-port) "traces=~s\n" traces))))
     (when lts?
       (if (and output (not (equal? output "-")))
           (with-output-to-file (string-append output "/" model-name ".aut")

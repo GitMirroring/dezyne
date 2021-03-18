@@ -29,6 +29,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
   #:use-module (json)
+  #:use-module (gaiag misc)
   #:use-module (gaiag shell-util)
   #:use-module (gaiag commands trace)
   #:export (observe

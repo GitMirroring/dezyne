@@ -24,7 +24,6 @@
 ;;; Code:
 
 (define-module (gaiag wfc)
-  #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
@@ -55,8 +54,10 @@
   (let* ((ast (.ast o))
          (loc (.location ast)))
     (if loc
-        (stderr "~a:~a:~a: error: ~a\n" (.file-name loc) (.line loc) (.column loc) (.message o))
-        (stderr "error: ~a\n" (.message o)))))
+        (format (current-error-port)
+                "~a:~a:~a: error: ~a\n"
+                (.file-name loc) (.line loc) (.column loc) (.message o))
+        (format (current-error-port) "error: ~a\n" (.message o)))))
 
 (define (wfc-error o message)
   (make <error> #:ast o #:message message))
@@ -83,7 +84,7 @@
 (define-method (wfc (o <component>)) ;; is-a <component-model>
   (append
    (re-declaration o)
-   (if (>0 (length (ast:provides-port* o))) '()
+   (if (> (length (ast:provides-port* o)) 0) '()
        `(,(wfc-error o "component with behaviour must have a provides port")))
    (append-map wfc (ast:port* o))
    (or (and=> (.behaviour o) wfc) '())))
@@ -689,15 +690,15 @@
 
 (define-method (mixing-declarative-imperative (o <compound>))
   (if (ast:declarative? o)
-      (or (and-let* ((imperative
-                      (null-is-#f (filter ast:imperative? (ast:statement* o))))
-                     (ast (car imperative)))
-            (list (wfc-error ast "declarative statement expected")))
+      (or (let* ((imperative (filter ast:imperative? (ast:statement* o)))
+                 (ast (and (pair? imperative) (car imperative))))
+            (and ast
+                 (list (wfc-error ast "declarative statement expected"))))
           '())
-      (or (and-let* ((declarative
-                      (null-is-#f (filter ast:declarative? (ast:statement* o))))
-                     (ast (car declarative)))
-            (list (wfc-error ast "imperative statement expected")))
+      (or (let* ((declarative (filter ast:declarative? (ast:statement* o)))
+                 (ast (and (pair? declarative) (car declarative))))
+            (and ast
+                 (list (wfc-error ast "imperative statement expected"))))
           '())))
 
 (define-method (modeling-silent (o <on>))

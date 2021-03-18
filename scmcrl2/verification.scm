@@ -371,7 +371,7 @@ init for MODEL unless INIT."
          (transitions (car (cdr info))))
     (if (not (dzn:command-line:get 'json))
       (when verbose?
-        (stdout "verify: ~a: check: ~a: ok\n" model-name assert))
+        (format #t "verify: ~a: check: ~a: ok\n" model-name assert))
       (format #t "~a\n"
          (scm->json-string `((model . ,model-name)
                              (type . ,model-type)
@@ -436,16 +436,16 @@ init for MODEL unless INIT."
                                      (if interface-trace `((interface-trace . ,interface-trace)) `()))))
         (begin
           (when (dzn:command-line:get 'verbose)
-            (stdout "verify: ~a: check: ~a: fail\n" model-name assert trace))
-          (stderr "error: ~a\n" message)
+            (format #t "verify: ~a: check: ~a: fail\n" model-name assert))
+          (format (current-error-port) "error: ~a\n" message)
           (unless (string-null? trace)
-            (stdout "~a\n" trace))))
+            (format #t "~a\n" trace))))
     #t))
 
 (define (report-skip model-type model-name assert)
   (if (not (dzn:command-line:get 'json))
     (when (dzn:command-line:get 'verbose)
-      (stdout "verify: ~a: check: ~a: skip\n" model-name assert))
+      (format #t "verify: ~a: check: ~a: skip\n" model-name assert))
     (format #t "~a\n"
        (scm->json-string `((model . ,model-name)
                            (type . ,model-type)

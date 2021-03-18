@@ -31,14 +31,14 @@
 	 (options (getopt-long (command-line) option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) (>1 (length files))))
+	 (usage? (and (not help?) (> (length files) 1)))
 	 (version? (option-ref options 'version #f)))
-    (or
-     (and version?
-	  (stdout "0.1\n")
-	  (exit 0))
-      (and (or help? usage?)
-	   ((or (and usage? stderr) stdout) "\
+    (when version?
+      (format #t "0.1\n")
+      (exit EXIT_SUCCESS))
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
 Usage: scm2json [OPTION]... FILE
 Convert scheme-AST in FILE or standard input, to JSON on standard output
   -d, --debug          run with debugging
@@ -49,8 +49,8 @@ Examples:
   echo \"(console.arm console.disarm sensor.disabled)\" | ./scm2json
   ./gaiag -l simulate -t \"$(cat examples/Alarm-trail.scm)\" examples/Alarm.dzn | ./scm2json
 ")
-	   (exit (or (and usage? EXIT_OTHER_FAILURE) 0)))
-     options)))
+	   (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
+     options))
 
 (define (->json files)
   (display (scm->json-string

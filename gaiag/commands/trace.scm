@@ -42,7 +42,6 @@
   #:use-module (json)
 
   #:export (trace:format-trace
-            json-string->alist-scm
             step:format-trace
             seqdiag:get-model
             seqdiag:format-sexp
@@ -114,7 +113,6 @@ ws               <   [ \t]
   (peg:tree (match-pattern trace ascii)))
 
 (define* (trace:trace->steps trace #:key (file-name "<stdin>"))
-  ;;(stderr "trace:") (pretty-print trace (current-error-port))
   (catch 'syntax-error
     (lambda _
       (let ((result (trace-parse trace)))
@@ -229,7 +227,7 @@ ws               <   [ \t]
             (not (list? (communication-right o)))
             (not (string? (communication-arrow o))))
         (begin
-          (stderr "URG: ~s\n" o)
+          (format (current-error-port) "URG: ~s\n" o)
          "<boe>")
         (string-append
          location
@@ -247,7 +245,7 @@ ws               <   [ \t]
              (not (list? (communication-right o)))
              (not (string? (communication-arrow o)))))
         (begin
-          (stderr "URG: ~s\n" o)
+          (format (current-error-port) "URG: ~s\n" o)
          "<boe>")
         (string-append
          location
@@ -315,7 +313,7 @@ ws               <   [ \t]
 (define (trace:step->trace:code pijltjes)
   (let* ((steps (trace:trace->steps pijltjes #:file-name "foobar"))
          (debug? #f)
-         (foo (when debug? (stderr "steps:") (pretty-print steps (current-error-port))))
+         (foo (when debug? (format (current-error-port) "steps:") (pretty-print steps (current-error-port))))
          (steps (map (lambda (s) (or (step->communication s) s)) steps))
          (merged (merge-communications steps))
          (communications (filter (disjoin state? (conjoin (negate q-out?) communication?)) merged)))
@@ -326,7 +324,7 @@ ws               <   [ \t]
 
     (match x
       (('<communication> ('line line ...) rest ...) `((communication ,@rest)))
-      (('state ('sexp . sexp)) (stderr "X: ~s\n" sexp) (warn 'Y: (list (with-input-from-string sexp read)))
+      (('state ('sexp . sexp)) (format (current-error-port) "X: ~s\n" sexp) (warn 'Y: (list (with-input-from-string sexp read)))
        )
       (_ (list x)))))
 
@@ -415,16 +413,6 @@ ws               <   [ \t]
          (steps (if error (cons error steps) steps)))
     steps))
 
-(define (json->alist-scm src)
-  (match src
-    ((? hash-table?) (json->alist-scm (hash-table->alist src)))
-    ((h ...) (map json->alist-scm src))
-    ((h . t) (cons (json->alist-scm h) (json->alist-scm t)))
-    (_ src)))
-
-(define (json-string->alist-scm src)
-  (json->alist-scm (json-string->scm src)))
-
 (define* (seqdiag:sexp->steps sexp #:key (file-name "<stdin>"))
   (let* ((sequence (json-vector->list sexp))
          (model (seqdiag:get-model sequence))
@@ -443,7 +431,7 @@ ws               <   [ \t]
 
 (define* (trace:trace->structured trace #:key file-name debug?)
   (let* ((steps (trace:trace->steps trace #:file-name file-name))
-         (foo (when debug? (stderr "steps:") (pretty-print steps (current-error-port))))
+         (foo (when debug? (format (current-error-port) "steps:") (pretty-print steps (current-error-port))))
          (structured (map (lambda (s) (or (step->communication s) s)) steps)))
     structured))
 

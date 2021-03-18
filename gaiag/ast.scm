@@ -160,7 +160,7 @@
                ))
 
 (define (deprecated . where)
-  (stderr "DEPRECATED:~a\n" where))
+  (format (current-error-port) "DEPRECATED:~a\n" where))
 
 ;;; ast: accessors
 
@@ -970,7 +970,6 @@
 	    val)))))
 
 (define-method (ast:lookup-n (o <scope>) (name <scope.name>))
-  ;; (stderr "ast:lookup-n[~s]: ~s\n" o name)
   (let ((ids (.ids name)))
     (if (null? (cdr ids)) (if (ast:has-equal-name (car ids) o) (list o)
                               (ast:lookup-n o (car ids)))
@@ -978,14 +977,12 @@
                (first-scopes (ast:lookup-n o first)))
           (if (null? first-scopes) '()
               (let ((name (clone name #:ids (cdr ids))))
-                ;;(stderr "found first scopes:~s\n" first-scopes)
                 (ast:lookdown first-scopes name)))))))
 
 (define-method (ast:lookdown (o <list>) (name <scope.name>))
   (append-map (cut ast:lookdown <> name) o))
 
 (define-method (ast:lookdown (o <scope>) (name <string>))
-  ;;  (stderr "ast:lookdown 1[~s]: ~s\n" o name)
   (filter (lambda (decl)
             (let ((decl (cond ((string? decl) decl)
                               ((is-a? decl <named>) (.name decl)))))
@@ -993,30 +990,24 @@
           (ast:declaration* o)))
 
 (define-method (ast:lookdown (o <scope>) (name <scope.name>))
-;;  (stderr "ast:lookdown 2[~s]: ~s\n" o name)
   (let ((ids (.ids name)))
     (if (null? (cdr ids)) (ast:lookdown o (car ids))
         (let* ((first (car ids))
                (first-scopes (ast:lookdown o first)))
           (if (null? first-scopes) '()
               (let ((name (clone name #:ids (cdr ids))))
-                ;;(stderr "found first scope:~s\n" first-scope)
                 (ast:lookdown first-scopes name)))))))
 
 (define-method (ast:lookdown (o <ast>) (name <scope.name>))
-;;  (stderr "ast:lookdown <ast>[~s]: ~s\n" o name)
   '())
 
 (define-method (ast:lookup-n (o <ast>) name)
-  ;; (stderr "ast:lookup-n <ast> 2 [~s]: ~s\n" o name)
   (ast:lookup-n (parent o <scope>) name))
 
 (define-method (ast:lookup-n (o <formals>) name)
-  ;; (stderr "ast:lookup-n <formals> 2 [~s]: ~s\n" o name)
   (filter (cut ast:name-equal? <> name) (ast:formal* o)))
 
 (define-method (ast:lookup-n (o <scope>) (name <string>))
-  ;; (stderr "ast:lookup-n 3 [~s]: ~s\n" o name)
   (cond ((equal? name "void")
          (list (find (conjoin (is? <declaration>)
                               (lambda (decl) (ast:name-equal? (.name decl) name)))

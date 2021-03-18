@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2020,2021 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -27,7 +27,6 @@ dist_%C%_scm_DATA =				\
  %D%/code-util.scm				\
  %D%/command-line.scm				\
  %D%/display.scm				\
- %D%/fifo.scm					\
  %D%/goops.scm					\
  %D%/indent.scm					\
  %D%/lts.scm					\
