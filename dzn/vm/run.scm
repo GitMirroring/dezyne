@@ -326,7 +326,7 @@ until RTC?."
   (define (silent-or-event-in-trace? trace)
     (let ((trail (map cdr (trace->trail trace))))
       (or (null? trail)
-          (member event trail))))
+          (equal? event (car trail)))))
   (%debug "run-requires... ~s\n" event)
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (clone (string->trigger event) #:parent component))
