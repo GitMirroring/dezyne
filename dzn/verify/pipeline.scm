@@ -156,8 +156,6 @@
 ;;; Verify pipeline.
 ;;;
 
-(define %dzn (if (mingw?) "dzn.cmd" %dzn))
-
 (define-immutable-record-type <options>
   (make-options root model init)
   options?
