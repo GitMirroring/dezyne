@@ -85,13 +85,14 @@
   (javascript:require-module (parent o <root>)))
 
 (define (javascript:namespace-setup o)
-  (->string
+  (string-join
    (let loop ((todo (cons "dzn" (ast:full-scope o))) (namespace '()))
      (if (null? todo) '()
          (let* ((namespace (append namespace (list (car todo))))
-                (x ((->join ".") namespace)))
+                (x (string-join namespace ".")))
            (append (list x " = " x " || {};\n" )
-                   (loop (cdr todo) namespace)))))))
+                   (loop (cdr todo) namespace)))))
+   ""))
 
 (define-templates-macro define-templates javascript)
 (include-from-path "dzn/templates/dzn.scm")

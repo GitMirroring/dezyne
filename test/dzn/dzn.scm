@@ -29,6 +29,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
   #:use-module (json)
+  #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn commands trace)
   #:export (observe

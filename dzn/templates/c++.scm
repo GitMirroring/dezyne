@@ -58,7 +58,7 @@
 (define-templates function-declare code:functions)
 
 ;; check-bindings
-(define-templates check-bindings-list (lambda (o) ((->join ",") (map (lambda (port) (list "[this]{"(.name port) ".check_bindings();}")) (ast:port* o)))))
+(define-templates check-bindings-list (lambda (o) (map (lambda (port) (string-append "[this]{" (.name port) ".check_bindings();}")) (ast:port* o))) comma-infix)
 (define-templates check-in-binding (lambda (o) (filter ast:in? (ast:event* o))))
 (define-templates check-out-binding (lambda (o) (filter ast:out? (ast:event* o))))
 

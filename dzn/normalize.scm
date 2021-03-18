@@ -436,7 +436,6 @@ We follow the following renaming strategy:
     (_ o)))
 
 (define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
-  ;(stderr "add-reply-report o = ~a; port = ~a: model = ~a\n" o port model)
   (match o
     (($ <reply>) (let ((port? (.port o))) (if (and port? (not (string? port?))) o (clone o #:port.name (.name port)))))
     (($ <blocking>)

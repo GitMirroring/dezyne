@@ -829,7 +829,7 @@ required to be non-deterministic."
 (define* (cleanup-label label #:key internal? illegal?)
   (define (helper tree)
     (match tree
-      (('parse-error parse-error) (stderr "parse error:~s\n" tree) parse-error)
+      (('parse-error parse-error) (format (current-error-port) "parse error:~s\n" tree) parse-error)
       (('error error) (cleanup-error error))
       (('error ('identifier port) error) (cleanup-error error))
       (('event ('identifier port) ('identifier event)) (string-append port "." event))

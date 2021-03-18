@@ -401,7 +401,7 @@
         (('foreign name body ...)
          (make <foreign-node>
            #:name (helper name)
-           #:ports (helper (or (null-is-#f (assoc 'ports body)) '(ports)))))
+           #:ports (helper (or (assoc 'ports body) '(ports)))))
 
         (('compound statements ...)
          (make <compound-node> #:elements (helper statements)))

@@ -34,7 +34,7 @@
    (let loop ()
      (let ((c (peek-char port)))
        (cond
-        ((or (eq? c *eof*)
+        ((or (eof-object? c)
              (not (eq? c #\space))) '())
         (else
          (read-char port)
@@ -44,15 +44,15 @@
   (let ((delims (list->string `(#\newline ,open ,close))))
     (let loop ((level 0) (last #f))
       (define* (space #:optional (c level))
-        (let ((char (if (=1 width) #\tab #\space)))
+        (let ((char (if (= width 1) #\tab #\space)))
           (display (make-string c char))))
       (let* ((leading-space (eat-space port))
              (string (read-delimited delims port 'peek))
              (c (read-char port)))
         (cond
-         ((eq? string *eof*)
+         ((eof-object? string)
           (newline))
-         ((eq? c *eof*)
+         ((eof-object? c)
           (space level)
           (display string)
           (newline))
