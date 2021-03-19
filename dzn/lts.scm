@@ -49,6 +49,7 @@
             assert-partially-deterministic
             edge-label
             aut-file->lts
+            aut-text->lts
             aut-header-regex
             cleanup-aut
             cleanup-error
@@ -84,8 +85,11 @@
       file))
 
 ;; ===== text-file =====
-(define (text-file->line-list text)
-  (map (cut string-trim-right <> #\cr) (string-split text #\newline)))
+(define (text->line-list text)
+  (map (cute string-trim-right <> #\cr) (string-split text #\newline)))
+
+(define (text-file->line-list file-name)
+  (text->line-list (with-input-from-file file-name read-string)))
 
 ;; The Aldebaran file format is a simple format for storing labelled transition systems (LTS’s) explicitly.
 ;; The syntax of an Aldebaran file consists of a number of lines, where the first line is aut_header and the remaining lines are aut_edge.
@@ -220,15 +224,20 @@
   "Edges transitioning into STATE"
   (filter (lambda (e) (= state (edge-end-state e))) (lts-edges lts)))
 
-(define (aut-file->lts text)
+(define (aut-text->lts text)
   "List starting with one <aut-header> followed by multiple <edge>"
-  (let* ((rm-empty-lines (lambda (lines) (filter (lambda (l) (not (equal? "" l))) lines)))
-         (lines (rm-empty-lines (text-file->line-list text)))
+  (define (remove-empty-lines lines)
+    (filter (lambda (l) (not (equal? "" l))) lines))
+  (let* ((lines (text->line-list text))
+         (lines (filter (negate string-null?) lines))
          (header (car lines))
          (edges (cdr lines)))
-    (make-lts (list (aut-header-first-state  (text->aut-header header)))
+    (make-lts (list (aut-header-first-state (text->aut-header header)))
               (aut-header-nr-states (text->aut-header header))
               (map text->edge edges))))
+
+(define (aut-file->lts file-name)
+  (aut-text->lts (with-input-from-file file-name read-string)))
 
 (define (lts-hide lts tau)
   "Mark edges labeled with name occurring in TAU as tau-edge."
@@ -448,18 +457,18 @@ livelock to deadlock.)"
     (if (null? deadlock-nodes) #f
         deadlock-trace)))
 
-(define (illegal-nodes nodes illegals)
-  "States with labels of outgoing edges contained in illegals"
+(define (illegal-nodes nodes)
+  "States with labels of illegal outgoing edges."
   (define (has-illegal? state)
-    (pair? (filter (cut member <> illegals) (map edge-label (node-succ (vector-ref nodes state))))))
+    (find (cute equal? <> "<illegal>") (map edge-label (node-succ (vector-ref nodes state)))))
   (filter has-illegal?
    (sort (iota (vector-length nodes))
          (lambda (a b) (< (node-distance (vector-ref nodes a))
                           (node-distance (vector-ref nodes b)))))))
 
-(define (assert-illegal nodes illegals)
+(define (assert-illegal nodes)
   "Trace to nodes without outgoing edges or #f if no deadlock found"
-  (let* ((illegal-nodes (illegal-nodes nodes illegals))
+  (let* ((illegal-nodes (illegal-nodes nodes))
          (illegal-trace (and (not (null? illegal-nodes)) (trace nodes (car illegal-nodes)))))
     (if (null? illegal-nodes) #f
         illegal-trace)))
@@ -754,7 +763,7 @@ required to be non-deterministic."
             (filter (lambda (edge) (not (member (edge-end-state edge) illegal-nodes))) (lts-edges lts)))))
           lts)
 
-    (let* ((lts (aut-file->lts (string-join data "\n")))
+    (let* ((lts (aut-text->lts (string-join data "\n")))
            (lts (remove-edges-to-illegal (add-illegal-state lts)))
            (nodes (lts->nodes lts #t))
            (root (car (lts-state lts))))

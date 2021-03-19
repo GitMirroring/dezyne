@@ -1,0 +1,6 @@
+des (0,5,4)                                         
+(0,"pp'in(I'in'ia)",1)
+(0,"pp'in(I'in'ia)",2)
+(1,"pp'out(I'out'oa)",3)
+(2,"pp'out(I'out'ob)",3)
+(3,"pp'reply_out(I'in'ia, reply_I'Void(void))",0)

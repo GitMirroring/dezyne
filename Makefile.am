@@ -117,6 +117,7 @@ include test/all/local.mk   # FULL_TESTS and XFAIL_TESTS
 include test/dzn/local.mk
 include test/lib/local.mk
 include test/language/local.mk
+include test/lts/local.mk
 
 TEST_EXTENSIONS = .scm
 LOG_COMPILER = $(top_builddir)/pre-inst-env run
