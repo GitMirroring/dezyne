@@ -46,12 +46,12 @@ namespace dzn
   {
     std::future<void> defer(const std::function<void()>&);
 
-#if DZN_THREAD_POOL
-    std::future<void> defer(const std::function<void()>& work)
+#if !DZN_THREAD_POOL
+    inline std::future<void> defer(const std::function<void()>& work)
     {
       return std::async(std::launch::async, work);
     }
-#endif //DZN_THREAD_POOL
+#endif //!DZN_THREAD_POOL
   }
 }
 

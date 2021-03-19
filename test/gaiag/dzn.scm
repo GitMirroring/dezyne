@@ -187,6 +187,12 @@ output, and standard error as three values."
          (and=> (assoc-ref json "flush")
                 (cut equal? <> #t)))))
 
+(define (thread-pool? file-name)
+  (let ((json (get-meta file-name)))
+    (and json
+         (and=> (assoc-ref json "thread-pool")
+                (cut equal? <> #t)))))
+
 (define (thread-safe-shell? file-name)
   (let ((json (get-meta file-name)))
     (and json
@@ -345,11 +351,13 @@ output, and standard error as three values."
          (input "")
          (out (string-append file-name "/out"))
          (out-lang (string-append file-name "/out/" language))
+         (thread-pool? (thread-pool? file-name))
          (command `("make"
                     "-f" ,(string-append "test/lib/build." language ".make")
                     ,(string-append "LANGUAGE=" language)
                     ,(string-append "IN=" file-name)
-                    ,(string-append "OUT=" out-lang))))
+                    ,(string-append "OUT=" out-lang)
+                    ,@(if thread-pool? '("THREAD_POOL_O=thread_pool.o") '()))))
     (or (verify-only? file-name)
         (skip? file-name
                language
