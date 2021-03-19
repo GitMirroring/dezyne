@@ -59,7 +59,8 @@
             binding-into-blocking
             purge-data
             remove-otherwise
-            ))
+            remove-behaviour
+            remove-location))
 
 (define (t-triple on guard blocking statement) (list on guard blocking statement))
 (define (t-on triple) (first triple))
@@ -435,6 +436,9 @@ We follow the following renaming strategy:
                      (else (clone o #:left left #:right right)))))
     (_ o)))
 
+(define-method (simplify (o <ast>))
+  o)
+
 (define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
   (match o
     (($ <reply>) (let ((port? (.port o))) (if (and port? (not (string? port?))) o (clone o #:port.name (.name port)))))
@@ -534,8 +538,55 @@ We follow the following renaming strategy:
       ((and ($ <not>) (= .expression expression)) expression)
       (_ (make <not> #:expression expression)))))
 
-(define-method (simplify (o <ast>))
-  o)
+(define (remove-location o)
+  "Remove locations from types, events, formals, signatures, ports."
+  (match o
+    (($ <interface>)
+     (clone o #:events (remove-location (.events o))))
+    (($ <component>)
+     (clone o #:ports (remove-location (.ports o))))
+    (($ <instance>)
+     o)
+    (($ <system>)
+     (clone o
+            #:ports (remove-location (.ports o))
+            #:bindings (remove-location (.bindings o))))
+    (($ <event>)
+     (clone o
+            #:location #f
+            #:signature (remove-location (.signature o))))
+    (($ <port>)
+     (clone o
+            #:formals (remove-location (.formals o))))
+    (($ <binding>)
+     (clone o
+            #:left (remove-location (.left o))
+            #:right (remove-location (.right o))))
+    (($ <signature>)
+     (clone o
+            #:location #f
+            #:formals (remove-location (.formals o))))
+    (($ <root>)
+     (tree-map remove-location o))
+    ((? (is? <namespace>))
+     (tree-map remove-location o))
+    ((? (is? <locationed>))
+     (clone o #:location #f))
+    ((? (is? <ast>))
+     (tree-map remove-location o))
+    (_ o)))
+
+(define (remove-behaviour o)
+  "Remove behaviour from models."
+  (match o
+    (($ <interface>)
+     (clone o #:behaviour #f))
+    (($ <component>)
+     (clone o #:behaviour #f))
+    ((? (is? <namespace>))
+     (tree-map remove-behaviour o))
+    (_
+     o)))
 
 (define-method (root-> (o <root>))
   ((compose
