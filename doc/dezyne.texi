@@ -4740,21 +4740,12 @@ The @var{option}s can be among the following:
 
 @table @code
 
-@item --accepts
-@itemx -a
-List acceptance sets for state reachable by @var{trace}.
-
-
 @item --deadlock
 @itemx -d
 Detect deadlock in @var{lts} (after failures introduction).
 
 @item --deterministic
 Detect non-determinism in @var{lts} with respect to all labels.
-
-@item --events
-@itemx -e
-List event alphabet (edge labels) for each @var{file}.
 
 @item --exclude-illegal
 Remove edges leading to illegal (in combination with --failures).
@@ -4767,9 +4758,17 @@ Introduce a failure for each 'optional' event.
 @itemx -h
 Display help on invoking @code{dzn lts}, and then exit.
 
-@item --illegal=@var{label}[,@var{label}@dots{}]
-@itemx -i @var{label}[,@var{label}@dots{}]
-Detect whether lts contains the labels from @var{label}s.
+@item --illegal
+@itemx -i
+Detect whether lts contains @code{<illegal>} labels.
+
+@item --list-accepts
+@itemx -a
+List acceptance sets for state reachable by @var{trace}.
+
+@item --list-events
+@itemx -e
+List event alphabet (edge labels) for each @var{file}.
 
 @item --livelock
 @itemx -l
@@ -4779,9 +4778,9 @@ Detect tau-loops in @var{lts}.
 @itemx -m
 Number of states and number of transitions.
 
-@item --nondet=@var{label}[,@var{label}@dots{}]
+@item --deterministic-labels=@var{label}[,@var{label}@dots{}]
 @itemx -n @var{label}[,@var{label}@dots{}]
-Assert non-determinism by detecting multiple edges of @var{label} from a
+Assert determinism by detecting multiple edges of @var{label} from a
 single state.
 
 @item --prefix=@var{event}[,@var{event}@dots{}]

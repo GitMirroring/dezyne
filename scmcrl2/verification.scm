@@ -249,8 +249,8 @@
          (model (options-model options))
          (deterministic (deterministic-labels model)))
     `(,%dzn "lts" "--single-line"
-            "--nondet" ,deterministic ;; XXX Rename --determinism
-            "--illegal" "<illegal>"
+            "--deterministic-labels" ,deterministic
+            "--illegal"
             "--deadlock" ,@taus
             "--livelock"
             "--failures"

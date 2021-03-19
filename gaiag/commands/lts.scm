@@ -38,18 +38,18 @@
   #:export (main))
 
 (define (parse-opts args)
-  (let* ((option-spec '((accepts (single-char #\a))
+  (let* ((option-spec '((list-accepts (single-char #\a))
                         (cleanup (single-char #\c))
                         (deadlock (single-char #\d))
                         (deterministic)
-                        (events (single-char #\e))
+                        (list-events (single-char #\e))
                         (exclude-illegal)
                         (failures (single-char #\f))
                         (help (single-char #\h))
-                        (illegal (single-char #\i) (value #t))
+                        (illegal (single-char #\i))
                         (livelock (single-char #\l))
                         (metrics (single-char #\m))
-                        (nondet (single-char #\n) (value #t))
+                        (deterministic-labels (single-char #\n) (value #t))
                         (prefix (single-char #\p) (value #t))
                         (single-line (single-char #\s))
                         (tau (single-char #\t) (value #t))
@@ -62,20 +62,21 @@
 Usage: dzn lts [OPTION]... [FILE]...
 Navigate and query an LTS from FILE in Aldebaran (AUT) format.
 
-  -a, --accepts                   list acceptance sets for state reachable by TRACE
+  -a, --list-accepts              list acceptance sets for state reachable by TRACE
   -c, --cleanup                   rewrite makreel labels to dezyne, optionlly remove PREFIX
   -d, --deadlock                  detect deadlock in LTS (after failures introduction)
       --deterministic             detect non-determinism in LTS with respect to all labels
-  -e, --events                    list event alphabet (edge labels) for each FILE.
+  -e, --list-events               list event alphabet (edge labels) for each FILE.
       --exclude-illegal           remove edges leading to illegal (in combination with
                                     option --failures)
   -f, --failures                  introduce a failure for each 'optional' event
   -h, --help                      display this help and exit
-  -i, --illegal=LABEL[,LABEL...]  detect whether LTS contains the labels from LABELs
+  -i, --illegal                   detect whether LTS contains <illegal> labels
   -l, --livelock                  detect tau-loops in LTS
   -m, --metrics                   number of states and number of transitions.
-  -n, --nondet=LABEL[,LABEL...]   Assert non-determinism by detecting multiple edges
-                                    of LABEL from a single state
+  -n, --deterministic-labels=LABEL[,LABEL...]
+                                  assert determinism by detecting multiple edges
+                                  of LABEL from a single state
   -p, --prefix=EVENT[,EVENT...]   find states reachable by EVENTs
                                     [default: empty trace => initial state]
   -t, --tau=EVENT[,EVENT...]      hide all EVENTs
@@ -89,21 +90,20 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
   (let* ((sep #\,)
          (output-separator #\;)
          (options (parse-opts args))
-         (accepts (option-ref options 'accepts #f))
+         (list-accepts? (option-ref options 'list-accepts #f))
          (cleanup? (option-ref options 'cleanup #f))
          (files (option-ref options '() '()))
          (file-name (and (pair? files) (car files)))
-         (events (option-ref options 'events #f))
-         (deadlock (option-ref options 'deadlock #f))
-         (deterministic (option-ref options 'deterministic #f))
+         (list-events? (option-ref options 'list-events #f))
+         (deadlock? (option-ref options 'deadlock #f))
+         (deterministic? (option-ref options 'deterministic #f))
          (exclude-illegal (option-ref options 'exclude-illegal #f))
-         (failures (option-ref options 'failures #f))
-         (illegal (option-ref options 'illegal #f))
-         (illegal (if illegal (string-split illegal sep) #f))
-         (livelock (option-ref options 'livelock #f))
+         (failures? (option-ref options 'failures #f))
+         (illegal? (option-ref options 'illegal #f))
+         (livelock? (option-ref options 'livelock #f))
          (metrics (option-ref options 'metrics #f))
-         (nondet (option-ref options 'nondet #f))
-         (nondet (if nondet (string-split nondet sep) #f))
+         (deterministic-labels (option-ref options 'deterministic-labels #f))
+         (deterministic-labels (if deterministic-labels (string-split deterministic-labels sep) #f))
          (prefix (option-ref options 'prefix #f))
          (prefix (if prefix (string-split prefix sep) '()))
          (single-line (option-ref options 'single-line #f))
@@ -119,7 +119,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (lts-failures- #f))
 
     (define (get-lts)
-      (if (not lts-) (set! lts- (aut-file->lts (if (or (null? files) (equal? "-" (car files)))
+      (if (not lts-) (set! lts- (aut-text->lts (if (or (null? files) (equal? "-" (car files)))
                                                    (read-string (current-input-port))
                                                    (with-input-from-file (car files) read-string)))))
       lts-)
@@ -154,31 +154,32 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
     (when cleanup?
       (let ((prefix (option-ref options 'prefix #f)))
         (cleanup-aut #:file-name file-name #:prefix prefix)))
-    (when events
+    (when list-events?
       (let ((alphabets (map (compose lts->alphabet (cut lts-hide <> tau) aut-file->lts) files)))
         (map (lambda (f a) (format #t "Events in lts ~a:\n~a\n" f a)) files alphabets)))
-    (when accepts
-      (let* ((lts (rm-tau-loops (get-lts-hide-nodes)))
+    (when list-accepts?
+      (let* ((lts (get-lts-hide))
+             (lts (rm-tau-loops lts))
              (lts (step-tau lts))
              (lts (run lts prefix))
              (acceptance-sets (lts-stable-accepts lts)))
         (format #t "stable acceptance sets: ~a\n" acceptance-sets)))
-    (when deterministic
+    (when deterministic?
       (report-result "deterministic" "LTS is non-deterministic" "LTS is deterministic" (assert-deterministic (get-lts-hide))))
-    (when illegal
-      (report-result "illegal" "LTS contains illegal events" "LTS contains no illegal events" (assert-illegal (get-lts-hide-nodes) illegal)))
+    (when illegal?
+      (report-result "illegal" "LTS contains illegal events" "LTS contains no illegal events" (assert-illegal (get-lts-hide-nodes))))
     (when metrics
       (map print-metrics files))
-    (when livelock
+    (when livelock?
       (report-result "livelock" "tau loop found:" "No tau loop found." (assert-livelock (get-lts-hide-nodes))))
-    (when nondet
-      (report-result "deterministic" "LTS is non-deterministic" "LTS is deterministic" (assert-partially-deterministic (get-lts-hide) nondet)))
+    (when deterministic-labels
+      (report-result "deterministic" "LTS is non-deterministic" "LTS is deterministic" (assert-partially-deterministic (get-lts-hide) deterministic-labels)))
     (when validate
       (if (member #f (map (compose validation-error validate-aut-file) files))
           (begin
             (format (current-error-port) "Invalid aut file(s) found.")
             #f)))
-    (when deadlock
+    (when deadlock?
       (report-result "deadlock" "deadlock found:" "No deadlock found." (assert-deadlock (get-lts-failures))))
-    (when failures
+    (when failures?
       (write-lts "failures" single-line (car (lts-state (get-lts))) ((if exclude-illegal remove-illegal identity) (get-lts-failures))))))

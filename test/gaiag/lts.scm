@@ -1,6 +1,8 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
+;;; Copyright © 2018, 2019 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -24,209 +26,53 @@
 ;;; Code:
 
 (define-module (test gaiag lts)
-  #:use-module (gaiag lts)
   #:use-module (ice-9 match)
+  #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
+  #:use-module (gaiag lts)
   #:use-module (test gaiag automake))
 
-;; TODO: string->aut
 
-(define aap-aut "\
-des (0,2,2)
-(0,\"aap\",1)
-(1,\"return\",0)")
+(define edges->successor-edge-vector (@@ (gaiag lts) edges->successor-edge-vector))
+(define edges->predecessor-edge-vector (@@ (gaiag lts) edges->predecessor-edge-vector))
+(define make-edge_ (@@ (gaiag lts) make-edge_))
+(define lts-accept-edge-sets (@@ (gaiag lts) lts-accept-edge-sets))
+(define node-distance (@@ (gaiag lts) node-distance))
+(define node-parent (@@ (gaiag lts) node-parent))
+(define test-lts-livelock (@@ (gaiag lts) test-lts-livelock))
+(define make-node (@@ (gaiag lts) make-node))
+(define lts-succ (@@ (gaiag lts) lts-succ))
+(define lts-pred (@@ (gaiag lts) lts-pred))
+(define WHITE (@@ (gaiag lts) WHITE))
+(define annotate-parent (@@ (gaiag lts) annotate-parent))
+(define root (@@ (gaiag lts) root))
+(define lts-tau-loops (@@ (gaiag lts) lts-tau-loops))
+(define trace (@@ (gaiag lts) trace))
+(define edge-end-state (@@ (gaiag lts) edge-end-state))
+(define last (@@ (gaiag lts) last))
+(define tau-loop (@@ (gaiag lts) tau-loop))
+(define test-lts-livelock-2 (@@ (gaiag lts) test-lts-livelock-2))
+(define step (@@ (gaiag lts) step))
+(define aut-file-format-error (@@ (gaiag lts) aut-file-format-error))
+(define main (@@ (gaiag commands lts) main))
 
-(define comp-livelock-aut "\
-des (0,11,10)
-(0,\"iter'event(Iterate'in'map)\",1)
-(1,\"tau\",2)
-(2,\"list'event(List'in'next)\",3)
-(2,\"list'event(List'in'next)\",4)
-(3,\"list'return(List'in'next, reply_List'Bool(false))\",5)
-(4,\"list'return(List'in'next, reply_List'Bool(true))\",6)
-(5,\"tau\",7)
-(6,\"tau\",2)
-(7,\"tau\",8)
-(8,\"tau\",9)
-(9,\"iter'return(Iterate'in'map, reply_Iterate'Void(void))\",0)
-")
 
-(define component-deterministic-fail0-aut "\
-des (0,5,4)
-(0,\"i'in(I'in'e)\",1)
-(0,\"i'in(I'in'e)\",2)
-(1,\"ii'out(I'in'e)\",3)
-(2,\"i'reply_out(I'in'e, reply_I'Void(void))\",0)
-(3,\"ii'reply_in(I'in'e, reply_I'Void(void))\",2)
-")
+(test-begin "lts")
 
-(define component-deterministic-fail1-aut "\
-des (0,7,6)
-(0,\"i'in(I'in'e)\",1)
-(1,\"i'reply_out(I'in'e, reply_I'Void(void))\",2)
-(2,\"i'in(I'in'e)\",3)
-(2,\"i'in(I'in'e)\",4)
-(3,\"i'reply_out(I'in'e, reply_I'Void(void))\",2)
-(4,\"ii'out(I'in'e)\",5)
-(5,\"ii'reply_in(I'in'e, reply_I'Void(void))\",3)
-")
-
-(define ComponentIsNonDeterministic-aut "\
-des (0,5,4)
-(0,\"pp'in(I'in'ia)\",1)
-(0,\"pp'in(I'in'ia)\",2)
-(1,\"pp'out(I'out'oa)\",3)
-(2,\"pp'out(I'out'ob)\",3)
-(3,\"pp'reply_out(I'in'ia, reply_I'Void(void))\",0)
-")
-
-(define double-entry-aut "\
-des (1,10,8)
-(6,\"listIt'return(IIterator'in'getNextElmt, reply_IIterator'IIterator'IsPastEnd(IIterator'IsPastEnd'Yes))\",0)
-(7,\"listIt'return(IIterator'in'getNextElmt, reply_IIterator'IIterator'IsPastEnd(IIterator'IsPastEnd'No))\",5)
-(0,\"pp'return(IDriver'in'step, reply_IDriver'Void(void))\",1)
-(5,\"listIt'event(IIterator'in'getNextElmt)\",7)
-(5,\"listIt'event(IIterator'in'getNextElmt)\",6)
-(4,\"listIt'return(IIterator'in'getFirstElmt, reply_IIterator'IIterator'IsPastEnd(IIterator'IsPastEnd'Yes))\",0)
-(3,\"listIt'return(IIterator'in'getFirstElmt, reply_IIterator'IIterator'IsPastEnd(IIterator'IsPastEnd'No))\",5)
-(2,\"listIt'event(IIterator'in'getFirstElmt)\",4)
-(2,\"listIt'event(IIterator'in'getFirstElmt)\",3)
-(1,\"pp'event(IDriver'in'step)\",2)
-")
-
-(define itimer-aut "\
-des (0,7,5)
-(0,\"create\",1)
-(0,\"cancel\",4)
-(1,\"return\",2)
-(2,\"cancel\",4)
-(2,\"tau\",3)
-(3,\"timeout\",0)
-(4,\"return\",0)")
-
-(define livelock-aut "\
-des (0,5,9)
-(0,\"aap\",1)
-(1,\"return\",0)
-(0,\"blaat\",2)
-(2,\"noot\",3)
-(2,\"blaat\",3)
-(3,\"tau\",3)
-(3,\"live\",4)
-(4,\"lock\",3)
-(3,\"mies\",0)
-")
-
-(define nolivelock-aut "\
-des (1,2,2)
-(0,\"nolivelock'flush\",1)
-(1,\"nolivelock'event(nolivelock'out'dummy)\",0)
-")
-
-(define noloop-aut "\
-des (0,4,4)
-(0,\"tau\",1)
-(0,\"tau\",2)
-(1,\"tau\",3)
-(2,\"tau\",3)")
-
-(define timer-aut "\
-des (0,12,10)
-(0,\"create\",1)
-(0,\"cancel\",9)
-(1,\"hw.enable\",2)
-(2,\"hw.return\",3)
-(3,\"return\",4)
-(4,\"cancel\",5)
-(5,\"hw.disable\",6)
-(6,\"hw.return\",7)
-(7,\"return\",0)
-(4,\"hw.interrupt\",8)
-(8,\"timeout\",0)
-(9,\"return\",0)
-")
-
-(define verify-component-aut "\
-des (1,15,13)
-(0,\"pp'return(II'Actions'ic,reply_II'Void(void))\",10)
-(12,\"pp'return(II'Actions'ic,reply_II'Void(void))\",5)
-(11,\"pp'return(II'Actions'ic,reply_II'Void(void))\",1)
-(10,\"pp'event(II'Actions'ic)\",0)
-(9,\"pp'flush\",10)
-(8,\"pp'event(II'Actions'oa)\",9)
-(7,\"rp'flush\",8)
-(6,\"rp'event(IO'Actions'oa)\",7)
-(5,\"rp'optional\",6)
-(5,\"pp'event(II'Actions'ic)\",12)
-(4,\"pp'return(II'Actions'ia,reply_II'Void(void))\",5)
-(3,\"rp'return(IO'Actions'ia,reply_IO'Void(void))\",4)
-(2,\"rp'event(IO'Actions'ia)\",3)
-(1,\"pp'event(II'Actions'ia)\",2)
-(1,\"pp'event(II'Actions'ic)\",11)
-")
-
-(define verify-provided-aut "\
-des (3,9,7)
-(6,\"pp'return(II'Actions'ic,reply_II'Void(void))\",3)
-(0,\"pp'return(II'Actions'ic,reply_II'Void(void))\",1)
-(4,\"pp'return(II'Actions'ia,reply_II'Void(void))\",1)
-(3,\"pp'event(II'Actions'ia)\",4)
-(3,\"pp'event(II'Actions'ic)\",6)
-(2,\"pp'flush\",3)
-(5,\"pp'event(II'Actions'oa)\",2)
-(1,\"tau\",5)
-(1,\"pp'event(II'Actions'ic)\",0)
-")
-
-(define wrong-edge-aut "\
-des (1,15,13)
-(0,pp'return(II'Actions'ic,reply_II'Void(void)),10)
-(12,\"pp'return(II'Actions'ic,reply_II'Void(void))\",5)
-(11,\"pp'return(II'Actions'ic,reply_II'Void(void))\",1)
-(10,\"pp'event(II'Actions'ic)\",0)
-(9,\"pp'flush\",10)
-(8,\"pp'event(II'Actions'oa)\",9)
-(7,\"rp'flush\",8)
-(6,\"rp'event(IO'Actions'oa)\",7)
-(5,\"rp'optional\",6)
-(5,\"pp'event(II'Actions'ic)\",12)
-(4,\"pp'return(II'Actions'ia,reply_II'Void(void))\",5)
-(3,\"rp'return(IO'Actions'ia,reply_IO'Void(void))\",4)
-(2,\"rp'event(IO'Actions'ia)\",3)
-(1,\"pp'event(II'Actions'ia)\",2)
-(1,\"pp'event(II'Actions'ic)\",11)
-")
-
-(define wrong-header-aut "\
-(1,15,13)
-(0,\"pp'return(II'Actions'ic,reply_II'Void(void))\",10)
-(12,\"pp'return(II'Actions'ic,reply_II'Void(void))\",5)
-(11,\"pp'return(II'Actions'ic,reply_II'Void(void))\",1)
-(10,\"pp'event(II'Actions'ic)\",0)
-(9,\"pp'flush\",10)
-(8,\"pp'event(II'Actions'oa)\",9)
-(7,\"rp'flush\",8)
-(6,\"rp'event(IO'Actions'oa)\",7)
-(5,\"rp'optional\",6)
-(5,\"pp'event(II'Actions'ic)\",12)
-(4,\"pp'return(II'Actions'ia,reply_II'Void(void))\",5)
-(3,\"rp'return(IO'Actions'ia,reply_IO'Void(void))\",4)
-(2,\"rp'event(IO'Actions'ia)\",3)
-(1,\"pp'event(II'Actions'ia)\",2)
-(1,\"pp'event(II'Actions'ic)\",11)
-")
+(test-assert "lts dummy"
+  #t)
 
 (define (test:text->aut-header)
   (and (text->aut-header "des (0,1,2)")
        (not (text->aut-header "(0,\"aap\",2)"))))
-;;(test:text->aut-header)
+(test-assert (test:text->aut-header))
 
 (define (test:text->edge)
   (and (equal? (make-edge 0 "aap" 1)
                (text->edge "(0,\"aap\",1)"))
        (equal? (make-edge 10 "robot'return(ITransfer'in'calibrate, reply_ITransfer'Void(void))" 15)
                (text->edge "(10,\"robot'return(ITransfer'in'calibrate, reply_ITransfer'Void(void))\",15)"))))
-;;(test:text->edge)
+(test-assert (test:text->edge))
 
 (define (test:edges->successor-edge-vector)
   (equal?
@@ -244,7 +90,7 @@ des (1,15,13)
                                        (make-edge 3 "return" 0)
                                        (make-edge 1 "return_true" 2)
                                        (make-edge 3 "deadlock" 4)))))
-;;(test:edges->successor-edge-vector)
+(test:edges->successor-edge-vector)
 
 (define (test:edges->predecessor-edge-vector)
   (equal?
@@ -261,15 +107,15 @@ des (1,15,13)
                                          (make-edge 2 "cancel" 3)
                                          (make-edge 3 "return" 0)
                                          (make-edge 3 "deadlock" 4)))))
-;;(test:edges->predecessor-edge-vector)
+(test-assert (test:edges->predecessor-edge-vector))
 
 (define (test:aut-file->lts)
   (equal? (make-lts '(0)
                     2
                     (list (make-edge 0 "aap" 1)
                           (make-edge 1 "return" 0)))
-          (aut-file->lts "../../tst/aap.aut")))
-;;(test:aut-file->lts)
+          (aut-file->lts "test/lts/aap.aut")))
+(test-assert (test:aut-file->lts))
 
 ;; ===== Performance test =====
 ;; (define (write-test-file)
@@ -317,7 +163,7 @@ des (1,15,13)
                                          (make-edge 0 "aapje" 1)
                                          (make-edge 1 "return" 0)))
                          (list "aap" "aap'return" "noot" "mies")))))
-;;(test:lts-hide)
+(test-assert (test:lts-hide))
 
 (define (test:lts->alphabet)
   (equal? (list "aap" "return")
@@ -326,7 +172,7 @@ des (1,15,13)
                                    (list (make-edge 0 "aap" 1)
                                          (make-edge 1 "return" 0)
                                          (make-edge_ 1 "blaat" #t 42))))))
-;;(test:lts->alphabet)
+(test-assert (test:lts->alphabet))
 
 
 (define (test:accept-edge-sets)
@@ -346,7 +192,7 @@ des (1,15,13)
                                                      (make-edge 2 "noot" 3)
                                                      (make-edge 2 'tau 3)
                                                      (make-edge 3 "mies" 0)))))))
-;;(test:accept-edge-sets)
+(test-assert (test:accept-edge-sets))
 
 (define (test:lts-stable-accepts)
   (equal? (list '("aap"))
@@ -379,7 +225,7 @@ des (1,15,13)
                                                         (make-edge_ 2 "noot" #f 3)
                                                         (make-edge_ 2 "blaat" #t 3)
                                                         (make-edge_ 3 "mies" #f 0)))))))
-;;(test:lts-stable-accepts)
+(test-assert (test:lts-stable-accepts))
 
 
 (define (test:annotate-parent)
@@ -402,33 +248,33 @@ des (1,15,13)
                      states))
          (nodes (list->vector nodes)))
     (assert (annotate-parent nodes))))
-;;(test:annotate-parent)
+(test-assert (test:annotate-parent))
 
 (define (test:root)
-  (let* ((lts (aut-file->lts "../../tst/verify_component.aut"))
+  (let* ((lts (aut-file->lts "test/lts/verify-component.aut"))
          (lts-root (car (lts-state lts)))
          (nodes (lts->nodes lts))
          (nodes-root (root nodes)))
     (eqv? lts-root nodes-root)))
-;;(test:root)
+(test-assert (test:root))
 
 (define (test:lts-tau-loops)
   (and (equal? '(3)
                (let ((nodes (lts->nodes test-lts-livelock)))
                  (lts-tau-loops nodes)))
        (equal? '(5)
-               (let ((nodes (lts->nodes (lts-hide (aut-file->lts "../../tst/double-entry.aut")
+               (let ((nodes (lts->nodes (lts-hide (aut-file->lts "test/lts/double-entry.aut")
                                                   (list "listIt'return" "listIt'event" "ListIt'flush")))))
                  (lts-tau-loops nodes)))
        ))
-;;(test:lts-tau-loops)
+(test-assert (test:lts-tau-loops))
 
 (define (test:trace)
   (equal? '(() ("create") ("create" "return") ("create" "return" "tau") ("cancel"))
-          (let* ((lts (lts-hide (aut-file->lts "../../tst/itimer.aut") '()))
+          (let* ((lts (lts-hide (aut-file->lts "test/lts/itimer.aut") '()))
                  (test-nodes (lts->nodes lts)))
             (map (cut map edge-label <>) (map (cut trace test-nodes <>) (iota 5))))))
-;;(test:trace)
+(test-assert (test:trace))
 
 (define (test:tau-loop)
   (let ((actual (let* ((nodes (lts->nodes test-lts-livelock))
@@ -441,7 +287,7 @@ des (1,15,13)
         (equal? (list (make-edge_ 3 "live" #t 4)
                       (make-edge_ 4 "lock" #t 3))
                 actual))))
-;;(test:tau-loop)
+(test-assert (test:tau-loop))
 
 (define (test:assert-livelock)
   (and (equal? (list (make-edge_ 0 "blaat" #t 2)
@@ -455,10 +301,10 @@ des (1,15,13)
                      (make-edge_ 0 "tau" #t 0))
                (let ((nodes (lts->nodes test-lts-livelock-2)))
                  (assert-livelock nodes)))
-       (not (let* ((lts (lts-hide (aut-file->lts "../../tst/nolivelock.aut") '()))
+       (not (let* ((lts (lts-hide (aut-file->lts "test/lts/no-livelock.aut") '()))
                    (test-nodes (lts->nodes lts)))
               (assert-livelock test-nodes)))))
-;;(test:assert-livelock)
+(test-assert (test:assert-livelock))
 
 (define (test:rm-tau-loops)
   (define expect-lts
@@ -476,7 +322,7 @@ des (1,15,13)
                     )))
   (equal? expect-lts
           (rm-tau-loops test-lts-livelock)))
-;;(test:rm-tau-loops)
+(test-assert (test:rm-tau-loops))
 
 (define (test:assert-deadlock)
   (define test-lts-deadlock
@@ -492,8 +338,7 @@ des (1,15,13)
                     (make-edge_ 3 "mies" #f 0))))
   (equal? '("blaat" "blaat" "dead")
           (map edge-label (assert-deadlock (lts->nodes test-lts-deadlock)))))
-;;(test:assert-deadlock)
-
+(test-assert (test:assert-deadlock))
 
 (define (test:assert-illegal)
   (define test-lts-illegal
@@ -505,11 +350,11 @@ des (1,15,13)
                     (make-edge_ 2 "noot" #f 3)
                     (make-edge_ 2 "blaat" #t 3)
                     (make-edge_ 3 "tau" #t 3)
-                    (make-edge_ 3 "dead" #t 4)
+                    (make-edge_ 3 "<illegal>" #t 4)
                     (make-edge_ 3 "mies" #f 0))))
   (equal? '("blaat" "blaat")
-          (map edge-label (assert-illegal (lts->nodes test-lts-illegal) (list "dead")))))
-;;(test:assert-illegal)
+          (map edge-label (assert-illegal (lts->nodes test-lts-illegal)))))
+(test-assert (test:assert-illegal))
 
 (define (test:assert-partially-deterministic)
   (let ((deterministic-lts-1 (make-lts '(0)
@@ -528,16 +373,16 @@ des (1,15,13)
                                       (make-edge 0 "aap" 2)
                                       (make-edge 1 "true" 0)
                                       (make-edge 2 "false" 0))))
-        (nondet-lts-2 (aut-file->lts "../../tst/component_deterministic_fail0.aut"))
-        (nondet-lts-3 (aut-file->lts "../../tst/component_deterministic_fail1.aut"))
-        (nondet-lts-4 (aut-file->lts "../../tst/ComponentIsNonDeterministic.aut")))
+        (nondet-lts-2 (aut-file->lts "test/lts/deterministic-fail0.aut"))
+        (nondet-lts-3 (aut-file->lts "test/lts/deterministic-fail1.aut"))
+        (nondet-lts-4 (aut-file->lts "test/lts/deterministic-fail2.aut")))
     (and (equal? #f (assert-partially-deterministic deterministic-lts-1 '()))
          (equal? #f (assert-partially-deterministic deterministic-lts-2 '()))
          (not (equal? #f (assert-partially-deterministic nondet-lts-1 '("aap"))))
          (not (equal? #f (assert-partially-deterministic nondet-lts-2 '("i'in(I'in'e)"))))
          (not (equal? #f (assert-partially-deterministic nondet-lts-3 '("i'in(I'in'e)"))))
          (not (equal? #f (assert-partially-deterministic nondet-lts-4 '("pp'in(I'in'ia)")))))))
-;; (test:assert-partially-deterministic)
+(test-assert (test:assert-partially-deterministic))
 
 (define (test:assert-deterministic)
   (let ((deterministic-lts-1 (make-lts '(0)
@@ -556,16 +401,16 @@ des (1,15,13)
                                       (make-edge 0 "aap" 2)
                                       (make-edge 1 "true" 0)
                                       (make-edge 2 "false" 0))))
-        (nondet-lts-2 (aut-file->lts "../../tst/component_deterministic_fail0.aut"))
-        (nondet-lts-3 (aut-file->lts "../../tst/component_deterministic_fail1.aut"))
-        (nondet-lts-4 (aut-file->lts "../../tst/ComponentIsNonDeterministic.aut")))
+        (nondet-lts-2 (aut-file->lts "test/lts/deterministic-fail0.aut"))
+        (nondet-lts-3 (aut-file->lts "test/lts/deterministic-fail1.aut"))
+        (nondet-lts-4 (aut-file->lts "test/lts/deterministic-fail2.aut")))
     (and (equal? #f (assert-deterministic deterministic-lts-1))
          (equal? #f (assert-deterministic deterministic-lts-2))
          (not (equal? #f (assert-deterministic nondet-lts-1)))
          (not (equal? #f (assert-deterministic nondet-lts-2)))
          (not (equal? #f (assert-deterministic nondet-lts-3)))
          (not (equal? #f (assert-deterministic nondet-lts-4))))))
-;; (test:assert-deterministic)
+(test-assert (test:assert-deterministic))
 
 (define (test:step-tau)
   (define test-lts (make-lts '(1)
@@ -576,7 +421,7 @@ des (1,15,13)
                                    (make-edge_ 2 "true" #f 0)
                                    (make-edge_ 3 "false" #f 0))))
   (equal? '(2 3) (lts-state (step-tau test-lts))))
-;;(test:step-tau)
+(test-assert (test:step-tau))
 
 (define (test:step)
   (define test-lts (make-lts '(0)
@@ -587,7 +432,7 @@ des (1,15,13)
                                    (make-edge_ 2 "true" #f 0)
                                    (make-edge_ 3 "false" #f 0))))
   (equal? '(2 3) (lts-state (step test-lts "a"))))
-;;(test:step)
+(test-assert (test:step))
 
 (define (test:run)
   (let* ((lts-a (make-lts '(0)
@@ -611,7 +456,7 @@ des (1,15,13)
     (and (equal? lts-a lts-b)
          (equal? lts-c lts-d)
          (equal? lts-e lts-f1 lts-f2))))
-;;(test:run)
+(test-assert (test:run))
 
 (define (test:aut-file-format-error)
   (define correct-aut
@@ -630,88 +475,54 @@ des (1,15,13)
        (aut-file-format-error wrong-aut-header)
        (aut-file-format-error wrong-edge)
        #t))
-;;(test:aut-file-format-error)
-
-;; - - - - -   u n i t   t e s t   - - - - -
-(define (test:unit)
-  (and
-   (test:text->aut-header)
-   (test:text->edge)
-   (test:edges->successor-edge-vector)
-   (test:edges->predecessor-edge-vector)
-   (test:aut-file->lts)
-   (test:lts-hide)
-   (test:lts->alphabet)
-   (test:accept-edge-sets)
-   (test:lts-stable-accepts)
-   (test:annotate-parent)
-   (test:root)
-   (test:lts-tau-loops)
-   (test:trace)
-   (test:tau-loop)
-   (test:assert-livelock)
-   (test:rm-tau-loops)
-   (test:assert-deadlock)
-   (test:assert-partially-deterministic)
-   (test:assert-deterministic)
-   (test:step-tau)
-   (test:step)
-   (test:run)
-   (test:aut-file-format-error)
-   #t
-   ))
-;;(test:unit)
+(test-assert (test:aut-file-format-error))
 
 (define (test:main)
-  ;; (main (list "command" "../../tst/verify_component.aut")) ;; display lts
-  (main (list "command" "-e" "../../tst/verify_provided.aut")) ;; list events in alphabet
-  (main (list "command" "-e" "-t" "tau;pp'flush" "../../tst/verify_provided.aut")) ;; list events in alphabet hiding flush and tau
-  ;; (main (list "command" "-e" "../../tst/verify_component.aut")) ;; list events in alphabet
-  ;; (main (list "command" "-a" "../../tst/verify_provided.aut")) ;; list acceptances in initial state
-  (main (list "command" "-a" "../../tst/verify_component.aut")) ;; list acceptances in initial state
-  (main (list "command" "-a"
-              "-t" "tau;pp'flush"
-              "-p" "pp'event(II'Actions'ic);pp'return(II'Actions'ic,reply_II'Void(void))"
-              "../../tst/verify_component.aut")) ;; list acceptances in initial state
-  (main (list "command" "-a"
-              "-p" "pp'event(II'Actions'ic);pp'return(II'Actions'ic,reply_II'Void(void))"
-              "../../tst/verify_component.aut")) ;; list acceptances in initial state
-  (main (list "command" "-a"
-              "-p" "pp'event(II'Actions'ia);pp'return(II'Actions'ia,reply_II'Void(void))"
-              "../../tst/verify_provided.aut")) ;; list acceptances in unstable state (1)
-  (main (list "command" "-a"
-              "-p" "pp'event(II'Actions'ia);pp'return(II'Actions'ia,reply_II'Void(void))"
-              "-t" "tau;pp'flush"
-              "../../tst/verify_provided.aut"))
-  (main (list "command" "-a"
-              "-p" "create;hw.enable;hw.return;return;hw.interrupt"
-              "-t" "tau;hw.interrupt;hw.return;hw.disable;hw.enable"
-              "../../tst/timer.aut")) ;; expect: ((timeout))
+  ;; (main (list "command" "test/lts/verify-component.aut")) ;; display lts
+  (main (list "command" "--list-events" "test/lts/verify-provides.aut"))
+  (main (list "command" "--list-events" "--tau" "tau;pp'flush" "test/lts/verify-provides.aut"))
+  ;; (main (list "command" "--list-events" "test/lts/verify-component.aut"))
+  ;; (main (list "command" "--list-accepts" "test/lts/verify-provides.aut"))
+  (main (list "command" "--list-accepts" "test/lts/verify-component.aut"))
+  (main (list "command" "--list-accepts"
+              "--tau" "tau;pp'flush"
+              "--prefix" "pp'event(II'Actions'ic);pp'return(II'Actions'ic,reply_II'Void(void))"
+              "test/lts/verify-component.aut")) ;; list acceptances in initial state
+  (main (list "command" "--list-accepts"
+              "--prefix" "pp'event(II'Actions'ic);pp'return(II'Actions'ic,reply_II'Void(void))"
+              "test/lts/verify-component.aut")) ;; list acceptances in initial state
+  (main (list "command" "--list-accepts"
+              "--prefix" "pp'event(II'Actions'ia);pp'return(II'Actions'ia,reply_II'Void(void))"
+              "test/lts/verify-provides.aut")) ;; list acceptances in unstable state (1)
+  (main (list "command" "--list-accepts"
+              "--prefix" "pp'event(II'Actions'ia);pp'return(II'Actions'ia,reply_II'Void(void))"
+              "--tau" "tau;pp'flush"
+              "test/lts/verify-provides.aut"))
+  (main (list "command" "--list-accepts"
+              "--prefix" "create;hw.enable;hw.return;return;hw.interrupt"
+              "--tau" "tau;hw.interrupt;hw.return;hw.disable;hw.enable"
+              "test/lts/timer.aut")) ;; expect: ((timeout))
 
-  (main (list "command" "-l"
-              "../../tst/livelock.aut")) ;; expect: exit value: #f, stderr output: "tau loop found:\nblaat\nblaat\n"
-  (main (list "command" "-l"
-              "-t" "list'return;list'event;list'flush"
-              "../../tst/comp-livelock.aut")) ;; expect: exit value: #f, stderr output: "tau loop found:iter'event(Iterage'in'map)\ntau\n"
-  (main (list "command" "-l"
-              "-t" "tau;hw.interrupt;hw.return;hw.disable;hw.enable"
-              "../../tst/timer.aut")) ;; expect: ???
-  (main (list "command" "-l"
-              "-t" "tau"
-              "../../tst/noloop.aut")) ;; expect: exit value: ?? stderr output: "No tau loop found"
+  (main (list "command" "--livelock"
+              "test/lts/livelock.aut")) ;; expect: exit value: #f, stderr output: "tau loop found:\nblaat\nblaat\n"
+  (main (list "command" "--livelock"
+              "--tau" "list'return;list'event;list'flush"
+              "test/lts/livelock-component.aut")) ;; expect: exit value: #f, stderr output: "tau loop found:iter'event(Iterage'in'map)\ntau\n"
+  (main (list "command" "--livelock"
+              "--tau" "tau;hw.interrupt;hw.return;hw.disable;hw.enable"
+              "test/lts/timer.aut")) ;; expect: ???
+  (main (list "command" "--livelock"
+              "--tau" "tau"
+              "test/lts/no-loop.aut")) ;; expect: exit value: ?? stderr output: "No tau loop found"
 
-  (main (list "command" "-n"
-              "-t" "tau"
-              "../../tst/component_deterministic_fail1.aut"))
+  (main (list "command" "--deterministic"
+              "--tau" "tau"
+              "test/lts/deterministic-fail1.aut"))
   ;; expect: exit value: #f
   ;;         stderr output: "LTS is non-deterministic"
   ;;         stdout: "i.e\ni.return\ni.e"
 )
-;;(test:main)
-
-(test-begin "lts")
-
-(test-assert "lts dummy"
-  #t)
+(test-assert (test:main))
+(test:main)
 
 (test-end)

@@ -1,0 +1,3 @@
+des (1,2,2)
+(0,"nolivelock'flush",1)
+(1,"nolivelock'event(nolivelock'out'dummy)",0)
