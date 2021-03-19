@@ -79,7 +79,7 @@ Parse a Dezyne file and produce an AST
 
 (define (parse options file-name)
   (let* ((debug? (dzn:command-line:get 'debug #f))
-         (skip-wfc? (dzn:command-line:get 'peg #f))
+         (skip-wfc? (dzn:command-line:get 'skip-wfc #f))
          (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
          (imports (filter-map import-opt options))
          (locations? (command-line:get 'locations))

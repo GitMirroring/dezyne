@@ -40,7 +40,7 @@
 	  '((debug (single-char #\d))
             (help (single-char #\h))
             (json (single-char #\j))
-	    (peg (single-char #\p))
+	    (skip-wfc (single-char #\p))
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
 	 (options (getopt-long args option-spec
@@ -69,7 +69,7 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
   -h, --help             display this help
   -j, --json             output json
-  -p, --peg              use plain PEG, skip well-formedness
+  -p, --skip-wfc         use plain PEG, skip well-formedness checking
   -v, --verbose          be more verbose, show progress
   -V, --version          display version
 

@@ -4563,7 +4563,7 @@ Display help on invoking @code{dzn}, and then exit.
 @itemx -j
 For internal use: output data as JSON.
 
-@item --peg
+@item --skip-wfc
 @itemx -p
 Use plain @var{peg} parser, skip Well-formedness
 (@xref{Well-formedness}) checking.
@@ -4586,15 +4586,14 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
   -h, --help             display this help
   -j, --json             output json
-  -p, --peg              use plain PEG, skip well-formedness
+  -p, --skip-wfc         use plain PEG, skip well-formedness checking
   -v, --verbose          be more verbose, show progress
   -V, --version          display version
 
 Commands:
-  cat
   code
   hello
-  ls
+  language
   lts
   parse
   trace
