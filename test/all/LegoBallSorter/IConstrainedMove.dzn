@@ -51,7 +51,7 @@ interface IConstrainedMove
     on move: [!s.idle] illegal;
     on stop: s = State.lost;
 
-    [s.moving] on inevitable: notifyArrived;
-    [s.calibrating] on inevitable: notifyHomed;
+    [s.moving] on inevitable: notifyArrived();
+    [s.calibrating] on inevitable: notifyHomed();
   }
 }
