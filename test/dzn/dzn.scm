@@ -181,23 +181,20 @@ output, and standard error as three values."
                  stages)
          (format #t "skip\n"))))
 
-(define (flush? file-name)
+(define (get-meta-flag file-name flag)
   (let ((json (get-meta file-name)))
     (and json
-         (and=> (assoc-ref json "flush")
+         (and=> (assoc-ref json flag)
                 (cut equal? <> #t)))))
+
+(define (flush? file-name)
+  (get-meta-flag file-name "flush"))
 
 (define (thread-pool? file-name)
-  (let ((json (get-meta file-name)))
-    (and json
-         (and=> (assoc-ref json "thread-pool")
-                (cut equal? <> #t)))))
+  (get-meta-flag file-name "thead-pool"))
 
 (define (thread-safe-shell? file-name)
-  (let ((json (get-meta file-name)))
-    (and json
-         (and=> (assoc-ref json "tss")
-                (cut equal? <> #t)))))
+  (get-meta-flag file-name "tss"))
 
 (define (code-options file-name)
   (let ((json (get-meta file-name)))
