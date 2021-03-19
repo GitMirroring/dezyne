@@ -1,3 +1,3 @@
 dir=$1
 base=$(basename $1)
-exec run-baseline $dir dzn --peg parse --locations -o- $dir/$base.dzn
+exec run-baseline $dir dzn --skip-wfc parse --locations -o- $dir/$base.dzn
