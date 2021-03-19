@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020,2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -31,6 +31,7 @@
   #:use-module (gaiag command-line)
   #:use-module (gaiag goops)
   #:use-module (gaiag code)
+  #:use-module (gaiag normalize)
   #:use-module (gaiag templates)
   #:export (ast->
             json:get-fields
@@ -92,5 +93,6 @@
 (include-from-path "gaiag/templates/json.scm")
 
 (define* (ast-> ast #:key dir model)
-  (x:source (.node ast))
-  "")
+  (let* ((root (remove-behaviour ast))
+         (root (if (%locations?) (remove-location root) root)))
+    (x:source (.node root))))
