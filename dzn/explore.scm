@@ -72,8 +72,9 @@
               ((path ... port event) #f)))
           trail)))
 
-(define-method (check-mark-livelock trace)
-  (if (livelock? trace) (mark-livelock-error trace) trace))
+ (define-method (check-mark-livelock trace)
+  (let ((livelock-trace (livelock? trace)))
+    (if livelock-trace (mark-livelock-error livelock-trace) trace)))
 
 (define-method (flush-async-trace (trace <list>) previous-trace)
   (let* ((trace (check-mark-livelock (append trace previous-trace)))

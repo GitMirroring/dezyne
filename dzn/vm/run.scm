@@ -132,17 +132,30 @@ in the same component."
          (pc (clone pc #:status error)))
     (cons pc (cdr trace))))
 
+
 (define (mark-livelock-error trace)
   (let* ((pc (car trace))
          (error (make <livelock-error> #:ast (.statement pc) #:message "livelock"))
          (pc (clone pc #:status error)))
     (cons pc (cdr trace))))
 
+(define livelock-limit 42)
+
 (define (livelock? trace)
-  (let* ((trace (filter (lambda (pc) (is-a? (.instance pc) <runtime:component>)) trace))
-         (res (and (pair? trace)
-                   (member (car trace) (cdr trace) pc:eq?))))
-    res))
+  (define* (livelock-check trace)
+    (let ((trace (filter (lambda (pc) (and (is-a? (.instance pc) <runtime:component>)
+                                           (not (is-a? (.statement pc) <initial-compound>)))) trace)))
+      (and (pair? trace)
+           (member (car trace) (cdr trace) pc:eq?))))
+  (define (suffixes trace)
+    (let loop ((res '()) (trace trace))
+      (if (null? trace) res
+          (loop (cons trace res) (cdr trace)))))
+  (if (< (length trace) livelock-limit) #f
+      (let ((lifelock-trace (find livelock-check (suffixes trace))))
+        (when (not lifelock-trace)
+          (set! livelock-limit (* 2 livelock-limit)))
+        lifelock-trace)))
 
 (define-method (extend-trace (trace <list>))
   "Return a list of traces, produced by appending TRACE to each of the
@@ -164,8 +177,9 @@ program-counters produced by taking a step."
           (else
            #t)))
 
-  (let ((pc (car trace)))
-    (cond ((livelock? trace) (list (mark-livelock-error trace)))
+  (let ((pc (car trace))
+        (livelock-trace (livelock? trace)))
+    (cond (livelock-trace (list (mark-livelock-error livelock-trace)))
           ((rtc? pc) (list trace))
           (else
            (let* ((o (.statement pc))
