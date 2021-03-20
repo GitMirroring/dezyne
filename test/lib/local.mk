@@ -24,5 +24,6 @@
 EXTRA_DIST +=					\
  %D%/build.c++.make				\
  %D%/build.c.make				\
+ %D%/build.cs.make				\
  %D%/build.javascript.make			\
  %D%/build.scheme.make

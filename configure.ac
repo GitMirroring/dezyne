@@ -136,9 +136,7 @@ fi
 
 AC_PATH_PROGS([MCS], [mcs])
 if test "x$MCS" != "x"; then
-   if test "x$courageous" = "xyes"; then
-      all_languages="$all_languages,cs"
-   fi
+   all_languages="$all_languages,cs"
 fi
 
 AC_PATH_PROGS([NODEJS], [nodejs node])
@@ -193,10 +191,6 @@ esac
 
 case ,${enable_languages}, in
   *,cs,*)
-if test "x$courageous" = xno; then
-    AC_MSG_ERROR([`cs' is not a supported language.
-See "Porting" in the manual, or try `--with-courage'.])
-fi
 if test x$MCS = x -a x$cross_compiling = xno; then
     AC_MSG_ERROR([language cs enabled, but mcs was not found])
 fi
