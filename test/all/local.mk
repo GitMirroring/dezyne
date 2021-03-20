@@ -402,6 +402,9 @@ XFAIL_TESTS =					\
  %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\
  %D%/import_strip_component			\
+ %D%/livelock_component2			\
+ %D%/livelock_synchronous			\
+ %D%/livelock_synchronous2			\
  %D%/parse_interface_parens
 
 FULL_TESTS =					\
