@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2021 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -20,6 +20,18 @@
 # Commentary:
 #
 # Code:
+
+if have_cs
+runtime_cs_dzndir = $(pkgdatadir)/runtime/cs/dzn
+dist_runtime_cs_dzn_DATA =			\
+ %D%/cs/dzn/container.cs			\
+ %D%/cs/dzn/context.cs				\
+ %D%/cs/dzn/coroutine.cs			\
+ %D%/cs/dzn/locator.cs				\
+ %D%/cs/dzn/meta.cs				\
+ %D%/cs/dzn/pump.cs				\
+ %D%/cs/dzn/runtime.cs
+endif
 
 if have_cxx11
 runtime_cxx_dzndir = $(pkgdatadir)/runtime/c++/dzn

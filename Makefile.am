@@ -360,6 +360,9 @@ define LISP_VERSION_COMMENT
 endef
 
 install-data-hook:
+if have_cs
+	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/cs -type f)
+endif
 if have_cxx11
 	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/c++ -type f)
 endif
