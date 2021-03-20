@@ -139,23 +139,23 @@ in the same component."
          (pc (clone pc #:status error)))
     (cons pc (cdr trace))))
 
-(define livelock-limit 42)
-
-(define (livelock? trace)
-  (define* (livelock-check trace)
-    (let ((trace (filter (lambda (pc) (and (is-a? (.instance pc) <runtime:component>)
-                                           (not (is-a? (.statement pc) <initial-compound>)))) trace)))
-      (and (pair? trace)
-           (member (car trace) (cdr trace) pc:eq?))))
-  (define (suffixes trace)
-    (let loop ((res '()) (trace trace))
-      (if (null? trace) res
-          (loop (cons trace res) (cdr trace)))))
-  (if (< (length trace) livelock-limit) #f
-      (let ((lifelock-trace (find livelock-check (suffixes trace))))
-        (when (not lifelock-trace)
-          (set! livelock-limit (* 2 livelock-limit)))
-        lifelock-trace)))
+(define %livelock-trace-threshold (make-parameter 42))
+(define livelock?
+  (lambda (trace)
+    (define* (livelock-check trace)
+      (let ((trace (filter (lambda (pc) (and (is-a? (.instance pc) <runtime:component>)
+                                             (not (is-a? (.statement pc) <initial-compound>)))) trace)))
+        (and (pair? trace)
+             (member (car trace) (cdr trace) pc:eq?))))
+    (define (suffixes trace)
+      (let loop ((res '()) (trace trace))
+        (if (null? trace) res
+            (loop (cons trace res) (cdr trace)))))
+    (if (< (length trace) (%livelock-trace-threshold)) #f
+        (let ((lifelock-trace (find livelock-check (suffixes trace))))
+          (when (not lifelock-trace)
+            (%livelock-trace-threshold (* 2 (%livelock-trace-threshold))))
+          lifelock-trace))))
 
 (define-method (extend-trace (trace <list>))
   "Return a list of traces, produced by appending TRACE to each of the
