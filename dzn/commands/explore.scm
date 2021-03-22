@@ -27,7 +27,10 @@
 
   #:use-module (dzn command-line)
   #:use-module (dzn explore)
+  #:use-module (dzn ast)
+  #:use-module (dzn parse)
   #:use-module (dzn commands parse)
+  #:use-module (dzn vm normalize)
   #:export (parse-opts
             main))
 
@@ -67,15 +70,24 @@ Explore the state space of a Dezyne model
          (files (option-ref options '() '()))
          (file-name (car files))
          (model-name (option-ref options 'model #f))
+         (debug? (dzn:command-line:get 'debug #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cute eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
-         (format (option-ref options 'format #f))
+         (root (vm:normalize ast))
+         (model (call-with-handle-exceptions
+                 (lambda _ (ast:get-model root model-name))
+                 #:backtrace? debug?
+                 #:file-name file-name))
+         (fmt (option-ref options 'format #f))
          (queue-size (command-line:get 'queue-size 3))
          (state-diagram? (option-ref options 'state-diagram #f))
          (lts? (option-ref options 'lts #f)))
-    (cond (lts? (lts ast #:model-name model-name #:queue-size 3))
-          (else (state-diagram ast
-                               #:format format
-                               #:model-name model-name
+    (unless model
+      (format (current-error-port) "~a: No dezyne model found.\n" file-name)
+      (exit EXIT_OTHER_FAILURE))
+    (cond (lts? (lts root #:model model #:queue-size 3))
+          (else (state-diagram root
+                               #:format fmt
+                               #:model model
                                #:queue-size queue-size)))))
