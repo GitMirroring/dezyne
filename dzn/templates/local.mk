@@ -67,6 +67,7 @@ nocompile_%C%_scmdir = $(%C%_scmdir)
 EXTRA_DIST +=					\
  %D%/c						\
  %D%/c++					\
+ %D%/c++-exception-wrappers			\
  %D%/cs						\
  %D%/dzn					\
  %D%/javascript					\
