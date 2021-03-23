@@ -1,10 +1,10 @@
 #x:open-namespace
-public partial class #x:model-name : dzn.Component 
+public partial class #x:model-name : dzn.Component
 {
   #x:port-declaration
   public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
   : base(locator, name, parent) {
-    this.dzn_runtime.infos[this].flushes = true;
+    this.dzn_runtime.infos[this].flushes = false;
     #x:provided-port-init
     #x:required-port-init
 
