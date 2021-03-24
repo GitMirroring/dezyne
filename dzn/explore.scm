@@ -227,7 +227,10 @@ begin -> 1
                          (string-append
                           (format #f "~s [label=~s]\n" from from-label)
                           (format #f "~s -> ~s [label=~s]" from to label))))
-                       ((from from-label #f #f #f)
+                       ((from from-label () to trigger-location)
+                          (format #f "~s [label=~s]\n" from from-label)
+                          (format #f "~s -> ~s [label=~s]" from to "tau"))
+                       ((from from-label x #f #f)
                         (format #f "~s [label=~s]\n" from from-label)))
          graph)
     "\n")
@@ -236,6 +239,12 @@ begin -> 1
 (define (state-diagram->json graph)
   "Return a diagram in P5 JSON format from GRAPH produced by
 RTC-LTS->STATE-DIAGRAM."
+  (define (json-location trigger-location)
+    (if (not trigger-location) "\"undefined\""
+        (format #f "{\"file-name\":~s,\"line\":~a,\"column\":~a}"
+                (.file-name trigger-location)
+                (.line trigger-location)
+                (.column trigger-location))))
   (let ((graph (cons `("*" "" ("" "") "1" #f) graph)))
     (string-append
      "{\"states\":[\n"
@@ -251,16 +260,17 @@ RTC-LTS->STATE-DIAGRAM."
       (filter-map
        (match-lambda
          ((from from-label (trigger actions ...) to trigger-location)
-          (let* ((location (if (not trigger-location) "\"undefined\""
-                               (format #f "{\"file-name\":~s,\"line\":~a,\"column\":~a}"
-                                       (.file-name trigger-location)
-                                       (.line trigger-location)
-                                       (.column trigger-location))))
+          (let* ((location (json-location trigger-location))
                  (actions (string-join actions "\n")))
             (format #f
                     "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":~s, \"location\":~a}"
                     from to trigger actions location)))
-         ((from from-label #f #f #f) #f))
+         ((from from-label () to trigger-location)
+          (let ((location (json-location trigger-location)))
+            (format #f
+                    "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":~s, \"location\":~a}"
+                    from to "tau" "" location)))
+         ((from from-label x #f #f) #f))
        graph)
       ",\n")
      "]}\n")))
