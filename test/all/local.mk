@@ -260,7 +260,7 @@ REGRESSION_TESTS =				\
  %D%/range_member				\
  %D%/range_return				\
  %D%/reply_expression				\
- %D%/deadlock_reply_modeling				\
+ %D%/deadlock_reply_modeling			\
  %D%/second_reply				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
@@ -268,6 +268,7 @@ REGRESSION_TESTS =				\
  %D%/silent_optional				\
  %D%/silent_optional_broken			\
  %D%/silent_optional_function			\
+ %D%/silent_unused_out				\
  %D%/simple.space				\
  %D%/state_deadlock				\
  %D%/step_state					\
