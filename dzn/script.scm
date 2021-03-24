@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -44,7 +44,7 @@
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
 	 (options (getopt-long args option-spec
-		   #:stop-at-first-non-option #t))
+		               #:stop-at-first-non-option #t))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files)))
@@ -52,10 +52,14 @@
 
     (define (list-commands dir)
       (map (cut basename <> ".go")
-           (filter (cute string-contains <> dir)
-                   (append-map (cute find-files <> "\\.go$")
-                               (filter directory-exists?
-                                       %load-compiled-path)))))
+           (filter
+            (cute string-contains <> dir)
+            (append-map
+             (cute list-directory <>
+                   (cute string-suffix? ".go" <>))
+             (filter directory-exists?
+                     (map (cute string-append <> "/dzn/commands/")
+                          %load-compiled-path))))))
 
     (when version?
       (format (current-output-port) "dzn ~a\n" %version)

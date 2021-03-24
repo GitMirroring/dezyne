@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2017, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -19,45 +19,46 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn shell-util)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
-  #:use-module (srfi srfi-1)
   #:export (directory-exists?
+            list-directory
             mkdir-p
             delete-file-recursively
             copy-recursively
             find-files
+            list-directory
             mingw?
             set-file-time
             substitute
             substitute*
             with-directory-excursion))
 
+(define (mingw?)
+  (string-suffix? "mingw32" %host-type))
+
+
 ;;;
 ;;; Directories.
 ;;;
 
 (define (directory-exists? dir)
-  "Return #t if DIR exists and is a directory."
+  "Return DIR if it exists and is a directory."
   (let ((s (stat dir #f)))
     (and s
-         (eq? 'directory (stat:type s)))))
+         (eq? (stat:type s) 'directory)
+         s)))
 
-(define-syntax-rule (with-directory-excursion dir body ...)
-  "Run BODY with DIR as the process's current directory."
-  (let ((init (getcwd)))
-   (dynamic-wind
-     (lambda ()
-       (chdir dir))
-     (lambda ()
-       body ...)
-     (lambda ()
-       (chdir init)))))
-
-(define (mingw?)
-  (string-suffix? "mingw32" %host-type))
+(define* (list-directory dir #:optional (predicate identity))
+  "Run SCANDIR on dir, using PREDICATE, and prepend DIR to results."
+  (let ((dir (if (string-suffix? "/" dir) dir
+                 (string-append dir "/"))))
+    (map (cute string-append dir <>)
+         (scandir dir predicate))))
 
 (define (mkdir-p dir)
   "Create directory DIR and all its ancestors."
@@ -89,6 +90,17 @@
                    (loop tail dir)
                    (apply throw args))))))
         (() #t)))))
+
+(define-syntax-rule (with-directory-excursion dir body ...)
+  "Run BODY with DIR as the process's current directory."
+  (let ((init (getcwd)))
+   (dynamic-wind
+     (lambda ()
+       (chdir dir))
+     (lambda ()
+       body ...)
+     (lambda ()
+       (chdir init)))))
 
 (define* (delete-file-recursively dir
                                   #:key follow-mounts?)
