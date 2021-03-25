@@ -1,6 +1,27 @@
-Henk Katerberg <henk.katerberg@yahoo.com>
+Dezyne was written by
+
 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-Johri van Eerd <johri.van.eerd@verum.com>
-Paul Hoogendijk <paul.hoogendijk@verum.com>
-Rob Wieringa <rob.wieringa@verum.com>
 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
+Rob Wieringa <rob.wieringa@verum.com>
+Paul Hoogendijk <paul.hoogendijk@verum.com>
+Johri van Eerd <johri.van.eerd@verum.com>
+Henk Katerberg <henk.katerberg@yahoo.com>
+Filip Toman <filip.toman@verum.com>
+
+which covers all files except the imported files listed below.
+
+Code imported from other projects
+
+PEG from GNU Guile:
+dzn/peg.scm
+dzn/peg/cache.scm
+dzn/peg/codegen.scm
+dzn/peg/simplify-tree.scm
+dzn/peg/string-peg.scm
+dzn/peg/using-parsers.scm
+
+Shell utilities from GNU Guix
+dzn/shell-util.scm
+
+Test intergrtion from Gash
+test/dzn/automake.scm
