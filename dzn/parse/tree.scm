@@ -85,6 +85,10 @@
             context:full-name
 
             tree:component?
+            debug-name
+
+            tree->context
+
             tree:context?
             tree:declaration?
             tree:foreign?
@@ -129,6 +133,19 @@
 ;;;
 ;;; Utilities.
 ;;;
+
+(define (tree:type-name o)
+  (match o
+    (((? symbol? type) slot ...) type)))
+
+(define (context:type-name o)
+  (tree:type-name (.tree o)))
+
+(define (debug-name context)
+  (and context
+       (let ((tree (.tree context)))
+         (if (is-a? tree 'root) (.file-name tree)
+             (tree:dotted-name tree)))))
 
 (define %file-name->parse-tree (make-parameter (const '())))
 (define %resolve-file
@@ -230,7 +247,8 @@ procedure)."
   (match o
     (('name (? string? name) (? (is? 'location)))
      name)
-    ((or (? (is? 'enum))
+    ((or (? (is? tree:model?))
+         (? (is? 'enum))
          (? (is? 'int))
          (? (is? 'namespace))
          (? (is? 'type-name))
@@ -248,7 +266,8 @@ procedure)."
     ((? (is? 'event))
      (.name (slot o 'event-name)))
     ((? (is? 'root))
-     "")))
+     "")
+    (_ #f)))
 
 (define (.namespace-root o)
   (match o
@@ -690,7 +709,7 @@ procedure)."
   (match o
     ((? (is? 'name)) (.name o))
 
-    ((? (is? 'compound-name)) (string-join (filter-map tree:dotted-name (cdr o)) "."))
+    ((? (is? 'compound-name)) (string-join (filter-map tree:dotted-name `(,@(.scope o) ,(.name o))) "."))
     ((? (is? 'event-name)) (tree:dotted-name (.name o)))
     ((? (is? 'port)) (tree:dotted-name (.name o)))
     ((? (is? 'type-name)) #f)

@@ -47,73 +47,57 @@
 ;;; Lookup.
 ;;;
 
-(define (lookup-import name import)
+(define (search-import scope name import)
   (let* ((file-name (.file-name import))
          (tree      (and file-name ((%file-name->parse-tree) file-name))))
-    (and tree (append-map (lambda (t) (lookdown name tree (list tree))) tree))))
+    (and tree (search-or-widen-context scope name (tree->context tree)))))
 
-(define (lookup-imported name root)
-  (let ((imports (tree:import* root)))
-    (append-map (cut lookup-import name <>) imports)))
+(define (search scope name context)
+  (let* ((target (if (null? scope) name (car scope)))
+         (found (filter (compose (cute tree:name-equal? <> target) tree:name)
+                        (tree:declaration* (.tree context)))))
+    (and (pair? found)
+         (let* ((found (if (null? scope) (and (pair? found) (cons (car found) context))
+                           (let ((tail (cdr scope)))
+                             (any (compose (cute search tail name <>)
+                                           (cute tree->context <> context))
+                                  found))))
+                (root (find (is? 'root) context))
+                (file-name (and=> root .file-name)))
+           (and found
+                (map (cute tree:add-file-name <> file-name) found))))))
 
-(define (look-in-scope name scope context)
-  "Look for NAME (a 'name) in SCOPE, a tree:scope?.  Return a location
-with file-name from CONTEXT in offsets."
-  (assert-type name 'name)
-  (assert-type scope tree:scope?)
-  (let* ((root (find (is? 'root) context))
-         (file-name (and=> root .file-name))
-         (found (filter (compose (cute tree:name-equal? <> name) tree:name)
-                        (tree:declaration* scope)))
-         (found (map (cute tree:add-file-name <> file-name) found)))
-    (if (is-a? scope 'root)
-        (append found (lookup-imported name scope))
-        found)))
+(define (widen-to-parent scope name context)
+  (let ((parent-context (parent-context context tree:scope?)))
+    (and parent-context
+         (let* ((parent-tree (and=> parent-context .tree))
+                (scope-name (.name (.tree context)))
+                (scope+ (if scope-name (cons scope-name scope) scope)))
+           (or (search-or-widen-context scope name parent-context)
+               (search-or-widen-context scope+ name parent-context))))))
 
-(define (lookdown name search-scope context)
-  "Find named scope in SEARCH-SCOPE for NAME (a 'compound-name), until
-NAME's scope prefix matches, then look-in-scope for NAME."
-  (assert-type name 'compound-name 'name)
-  (assert-type search-scope tree:scope?)
-  (let* ((loc (.location name))
-         (scope name (tree:scope+name name)))
-    (if (null? scope) (or (tree:context? (look-in-scope name search-scope context))
-                          '())
-        (let* ((first (car scope))
-               (first-scopes (lookdown first search-scope context)))
-          (if (null? first-scopes) '()
-              (let* ((scope (cdr scope))
-                     (name (if (null? scope)`(compound-name ,name ,loc)
-                               `(compound-name (scope ,@scope) ,name ,loc))))
-                (append-map (cute lookdown name <> context) first-scopes)))))))
+(define (widen-to-imports scope name context)
+  (and context (is-a? (.tree context) 'root)
+       (let* ((root (.tree context))
+              (imports (tree:import* root)))
+         (any (cute search-import scope name <>) imports))))
 
-(define (lookup-n name context)
-  "Find NAME (a 'name or 'compound-name) in CONTEXT (a tree:context? or
-null)."
+(define (search-or-widen-context scope name context)
+  (or (search scope name context)
+      (widen-to-parent scope name context)
+      (widen-to-imports scope name context)))
+
+(define (context:lookup name context)
+  "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a tree:context? or
+null) and return its CONTEXT."
   (if (not context) '()
-      (let* ((loc (.location name))
-             (scope name (tree:scope+name name)))
-        (assert-type context tree:context?)
-        (if (null? scope) (or (tree:context? (look-in-scope name (.tree context) context))
-                              (let* ((tree (.tree context))
-                                     (name (if (is-a? tree 'namespace)
-                                               `(compound-name (scope ,(.name (.name tree))) ,name ,loc)
-                                               name)))
-                                (lookup-n name (parent-context context tree:scope?))))
-            (let* ((first (car scope))
-                   (first-scopes (lookup-n first context)))
-              (if (null? first-scopes) '()
-                  (let* ((scope (cdr scope))
-                         (name (if (null? scope) `(compound-name ,name ,loc)
-                                   `(compound-name (scope ,@scope) ,name ,loc))))
-                    (append-map (cute lookdown name <> context) first-scopes))))))))
+      (let ((scope name (tree:scope+name name)))
+        (search-or-widen-context scope name context))))
 
 (define (tree:lookup name context)
   (let ((scope (if (tree:scope? (.tree context)) context
                    (parent-context context tree:scope?))))
-    (match (lookup-n name scope)
-      ((first rest ...) first)
-      (_ #f))))
+    (and=> (tree:context? (context:lookup name context)) .tree)))
 
 (define (tree:lookup-var name context)
   (define (helper name o)
