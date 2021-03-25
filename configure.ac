@@ -43,6 +43,13 @@ guileobjectdir="${libdir}/guile/$GUILE_EFFECTIVE_VERSION/site-ccache"
 AC_SUBST([guilemoduledir])
 AC_SUBST([guileobjectdir])
 
+dnl Check for Guile pipeline.
+GUILE_MODULE_CHECK([have_guile_pipeline], [(ice-9 popen)],
+   [pipeline], [has pipeline])
+if test "x$have_guile_pipeline" != "xyes"; then
+  AC_MSG_ERROR([Guile's pipeline is missing; please upgrade or patch Guile.])
+fi
+
 dnl Check for Guile-JSON.
 GUILE_MODULE_AVAILABLE([have_guile_json], [(json)])
 if test "x$have_guile_json" != "xyes"; then

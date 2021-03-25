@@ -86,7 +86,6 @@ include dzn/code/local.mk
 include dzn/vm/local.mk
 include dzn/local.mk
 include dzn/commands/local.mk
-include gash/local.mk
 include runtime/local.mk
 include dzn/verify/local.mk
 include dzn/templates/local.mk

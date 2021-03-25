@@ -35,6 +35,7 @@ dist_%C%_scm_DATA =				\
  %D%/normalize.scm				\
  %D%/parse.scm					\
  %D%/peg.scm					\
+ %D%/pipe.scm					\
  %D%/serialize.scm				\
  %D%/script.scm					\
  %D%/scm2json.scm				\

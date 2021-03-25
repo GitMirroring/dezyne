@@ -42,7 +42,7 @@
   #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
-  #:use-module (gash pipe)
+  #:use-module (dzn pipe)
   #:use-module (json)
 
   #:export (verification:formats

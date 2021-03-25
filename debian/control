@@ -1,10 +1,10 @@
 Source: dzn
 Section: devel
 Priority: optional
-Maintainer: Jan Nieuwenhuizen <janneke@gnu.org>
+Maintainer: Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 Build-Depends: debhelper-compat (=12),
- guile-2.2,
- guile-2.2-dev,
+ guile-0.0,
+ guile-3.0-dev,
  guile-json,
  help2man,
  install-info,
@@ -16,6 +16,6 @@ Package: dzn
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends},
- guile-2.2,
+ guile-3.0,
 Description: Dezyne command line tools
  Dezyne command line tools.
