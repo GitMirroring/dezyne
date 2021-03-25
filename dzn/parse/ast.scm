@@ -3,6 +3,7 @@
 ;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2019, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -44,7 +45,7 @@
   #:export (parse-tree->ast
             annotate-ast))
 
-(define* (parse-tree->ast o #:key string (file-name "<stdin>"))
+(define* (parse-tree->ast o #:key string (file-name "<stdin>") working-directory)
   "Return a root AST for parse-tree O."
   (define (make-list? o) (if (pair? o) o
                              (list o)))
@@ -464,7 +465,7 @@
         (('return expression) (make <return-node> #:expression (helper expression)))
 
         (('root element)
-         (make <root-node> #:elements (make-list? (helper element))))
+         (make <root-node> #:elements (make-list? (helper element)) #:working-directory working-directory))
 
         (('file-name file-name) (make <file-name> #:name file-name))
 
@@ -483,7 +484,7 @@
                             ((('file-command file-name location) rest ...)
                              (make <location-node> #:file-name file-name))
                             (_ #f))))
-           (make <root-node> #:elements lst #:location location)))
+           (make <root-node> #:elements lst #:location location #:working-directory working-directory)))
 
         (('system name ports instances bindings)
          (make <system-node>

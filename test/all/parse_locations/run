@@ -1,3 +1,6 @@
 dir=$1
 base=$(basename $1)
-exec run-baseline $dir dzn --skip-wfc parse --locations -o- $dir/$base.dzn
+
+mkdir -p $dir/out
+dzn --skip-wfc parse -E -o- $dir/$base.dzn | sed 's,^#dir.*,#dir ".",' > $dir/out/$base.dzn
+run-baseline $dir dzn --skip-wfc parse --locations -o- $dir/out/$base.dzn

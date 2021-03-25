@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2014 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2014, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -28,6 +28,7 @@
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
@@ -181,7 +182,8 @@ parse CONTENT and return
                            #:content-alist alist))))
        alist))
 
-(define* (parse-tree-alist->ast alist #:key (content-alist '()))
+(define* (parse-tree-alist->ast alist #:key (content-alist '())
+                                (working-directory (getcwd)))
   "Return an AST by merging ALIST of form
 
    '((FILE-NAME . PARSE-TREE)
@@ -208,7 +210,8 @@ using CONTENT-ALIST to transform locations."
                     (cons file-name
                           (parse-tree->ast parse-tree
                                            #:string content
-                                           #:file-name file-name)))))
+                                           #:file-name file-name
+                                           #:working-directory working-directory)))))
                alist))
          (ast (expand-imports ast-alist))
          (ast (annotate-ast ast)))
@@ -225,11 +228,12 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
     (if (equal? file-name "-") (string->ast (read-string)
                                             #:parse-tree? parse-tree?
                                             #:skip-wfc? skip-wfc?)
-        (let* ((content-alist (file+import-content-alist file-name #:imports imports))
+        (let* ((content-alist dir (file+import-content-alist file-name #:imports imports))
                (parse-tree-alist (parse-file+import-content-alist content-alist)))
           (if parse-tree? parse-tree-alist
               (let ((ast (parse-tree-alist->ast parse-tree-alist
-                                                #:content-alist content-alist)))
+                                                #:content-alist content-alist
+                                                #:working-directory dir)))
                 (if skip-wfc? ast
                     (ast:wfc ast)))))))
 
@@ -281,41 +285,49 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
 (define* (string->ast string #:key parse-tree? skip-wfc?)
   "Parse STRING and return an ast.  When PARSE-TREE?, return the parse
 trees.  When SKIP-WFC? skip the well-formedness checks."
-  (let* ((content-alist (string->file+import-content-alist string))
+  (let* ((content-alist dir (string->file+import-content-alist string))
          (parse-tree-alist (parse-file+import-content-alist content-alist)))
     (if parse-tree? parse-tree-alist
         (let ((ast (parse-tree-alist->ast parse-tree-alist
-                                          #:content-alist content-alist)))
+                                          #:content-alist content-alist
+                                          #:working-directory dir)))
           (if skip-wfc? ast
               (ast:wfc ast))))))
 
 (define (string->file+import-content-alist string)
   "Split possibly pre-processed STRING at preprocessing markers
 
+   #dir \"working directory\"
    #file \"file-name\"
    <content>
    #imported \"imported-file-name\"
    <imported-content>
    ...
 
-and return an alist:
+and return two values, an alist:
 
    '((FILE-NAME . CONTENT)
      (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
+
+and the working directory.
 "
-  (let ((file-match (string-match "^#file \"([^\"]*)\"\n" string)))
-    (if (not file-match) `(("-" . ,string))
-        (let* ((file-name (match:substring file-match 1))
-               (string (substring string (match:end file-match))))
-          (let loop ((file-name file-name)
-                     (string string)
-                     (imported-match (string-match "\n#imported \"([^\"]*)\"" string)))
-            (if (not imported-match) `((,file-name . ,string))
-                (cons `(,file-name . ,(substring string 0 (match:start imported-match)))
-                      (let ((string (substring string (match:end imported-match))))
-                        (loop (match:substring imported-match 1)
-                              string
-                              (string-match "\n#imported \"([^\"]*)\"" string))))))))))
+  (let ((file-match (string-match (string-append "^#dir \"([^\"]*)\"\n"
+                                                 "#file \"([^\"]*)\"\n")
+                                  string)))
+    (if (not file-match) (values `(("-" . ,string)) (getcwd))
+        (let* ((dir (match:substring file-match 1))
+               (file-name (match:substring file-match 2))
+               (string (substring string (match:end file-match)))
+               (alist (let loop ((file-name file-name)
+                                 (string string)
+                                 (imported-match (string-match "\n#imported \"([^\"]*)\"" string)))
+                        (if (not imported-match) `((,file-name . ,string))
+                            (cons `(,file-name . ,(substring string 0 (match:start imported-match)))
+                                  (let ((string (substring string (match:end imported-match))))
+                                    (loop (match:substring imported-match 1)
+                                          string
+                                          (string-match "\n#imported \"([^\"]*)\"" string))))))))
+          (values alist dir)))))
 
 (define* (file->stream file-name #:key debug? (imports '()))
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
@@ -323,16 +335,19 @@ statements and return the expanded dezyne text, similar to @command{gcc
 -E}.  Unless @var{debug?}, handle exceptions."
 
   (define (helper)
-    (let* ((content-alist (if (equal? file-name "-") (string->file+import-content-alist (read-string))
-                              (file+import-content-alist file-name #:imports imports)))
+    (let* ((content-alist
+            dir
+            (if (equal? file-name "-") (string->file+import-content-alist (read-string))
+                (file+import-content-alist file-name #:imports imports)))
            (file (car content-alist))
            (imports (cdr content-alist)))
       (string-join
        (append
         (match file
           ((file-name . content)
-           (if (string-prefix? "#file " content) (list content)
-               (list (format #f "#file ~s" file-name)
+           (if (string-prefix? "#dir " content) (list content)
+               (list (format #f "#dir ~s" dir)
+                     (format #f "#file ~s" file-name)
                      content))))
         (append-map (match-lambda ((file-name . content)
                                    (list (format #f "#imported ~s" file-name)
@@ -345,11 +360,13 @@ statements and return the expanded dezyne text, similar to @command{gcc
     (parse:handle-exceptions file-name)))
 
 (define* (file+import-content-alist file-name #:key (imports '()) (content-alist '()))
-  "Recursively resolve imports starting with FILE-NAME and return an
-alist:
+  "Recursively resolve imports starting with FILE-NAME and return two
+values, an alist:
 
    '((FILE-NAME . CONTENT)
      (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
+
+and the working directory.
 
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
@@ -369,30 +386,33 @@ specified in IMPORTS."
          imported))
 
   (let ((content (with-input-from-file file-name read-string)))
-    (if (string-prefix? "#file \"" content) (string->file+import-content-alist content)
-        (let* ((content-alist (acons file-name content content-alist))
-               (file-names (resolve file-name imports
-                                    (imported-file-names content)
-                                    content-alist)))
-          (let loop ((file-names file-names) (content-alist content-alist))
-            (if (null? file-names) (reverse content-alist)
-                (let* ((canonical-string=? (lambda (a b)
-                                             (string=? (canonicalize-path a)
-                                                       (canonicalize-path b))))
-                       (file-names (delete-duplicates file-names canonical-string=?))
-                       (file-names (lset-difference canonical-string=?
-                                                    file-names
-                                                    (map car content-alist)))
-                       (alist (reverse (map read-file file-names)))
-                       (content-alist (append alist content-alist))
-                       (file-names (append-map
-                                    (match-lambda
-                                      ((file-name . content)
-                                       (resolve file-name imports
-                                                (imported-file-names content)
-                                                content-alist)))
-                                    alist)))
-                  (loop file-names content-alist))))))))
+    (if (string-prefix? "#dir \"" content) (string->file+import-content-alist content)
+        (let*
+            ((content-alist (acons file-name content content-alist))
+             (file-names (resolve file-name imports
+                                  (imported-file-names content)
+                                  content-alist))
+             (alist
+              (let loop ((file-names file-names) (content-alist content-alist))
+                (if (null? file-names) (reverse content-alist)
+                    (let* ((canonical-string=? (lambda (a b)
+                                                 (string=? (canonicalize-path a)
+                                                           (canonicalize-path b))))
+                           (file-names (delete-duplicates file-names canonical-string=?))
+                           (file-names (lset-difference canonical-string=?
+                                                        file-names
+                                                        (map car content-alist)))
+                           (alist (reverse (map read-file file-names)))
+                           (content-alist (append alist content-alist))
+                           (file-names (append-map
+                                        (match-lambda
+                                          ((file-name . content)
+                                           (resolve file-name imports
+                                                    (imported-file-names content)
+                                                    content-alist)))
+                                        alist)))
+                      (loop file-names content-alist))))))
+          (values alist (getcwd))))))
 
 (define (imported-file-names content)
   "Return the list of file names used in import statements in content."

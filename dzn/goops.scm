@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
@@ -323,7 +323,8 @@
 
 (define-ast <namespace> (<scope> <ast-list> <declaration>))
 
-(define-ast <root> (<namespace>))
+(define-ast <root> (<namespace>)
+  (working-directory))
 
 (define-ast <scope.name> (<ast>)
   (ids #:init-form (list)))
