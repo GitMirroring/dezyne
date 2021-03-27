@@ -84,7 +84,6 @@
             .var
 
             context:dotted-name
-            context:full-name
 
             tree:component?
             tree:debug-context
@@ -466,6 +465,7 @@ procedure)."
      file-name
      formal
      formals
+     from
      function
      from
      global

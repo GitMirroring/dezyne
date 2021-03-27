@@ -37,7 +37,12 @@
   #:use-module (dzn parse tree)
   #:use-module (dzn parse util)
 
-  #:export (declaration->offset
+  #:export (.event
+            .port
+            .type
+            context:lookup
+            context:look-down
+            declaration->offset
             lookup
             lookup-definition
             lookup-location
@@ -154,6 +159,32 @@ null) and return its CONTEXT."
 ;;;
 ;;; Resolvers.
 ;;;
+
+(define (.event context)
+  (let* ((tree (.tree context)))
+    (match tree
+      ((or (? (is? 'action))
+           (? (is? 'illegal-trigger))
+           (? (is? 'interface-action))
+           (? (is? 'trigger)))
+       (let ((port (.port context))
+             (event-name (.event-name tree)))
+         (cond (port
+                (and=> (.type port) (cute context:lookup event-name <>)))
+               (else
+                (search '() event-name (.parent context)))))))))
+
+(define (.port context)
+  (let ((tree (.tree context)))
+    (match tree
+      ((? (is? 'trigger))
+       ;;<trigger> opens a new scope, so lookup the port name the parent scope
+       (and=> (.port-name tree) (cute context:lookup <> (.parent context)))))))
+
+(define (.type context)
+  (let ((tree (.tree context)))
+    (match tree
+      ((? (is? 'port)) (context:lookup (.type-name tree) context)))))
 
 (define (resolve-action o name context)
   (resolve-trigger o name context))
