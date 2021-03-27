@@ -274,12 +274,7 @@
        (append-map wfc (ast:type* o))
        (append-map wfc (ast:port* o))
        (append-map wfc (ast:variable* o))
-       (append-map
-        (lambda (variable)
-          (if (ast:name-equal? (.name (parent o <model>)) (.name variable))
-              `(,(wfc-error variable (format #f "variable `~a' must not have the same name as the model it is declared in" (.name variable))))
-              '()))
-        (ast:variable* o))
+       (append-map (cute wfc model <>) (ast:variable* o))
        (append-map wfc (ast:function* o))
        (wfc (.statement o))))))
 
@@ -287,6 +282,14 @@
   (append
    (re-declaration o)
    (assign o)))
+
+(define-method (wfc (model <model>) (o <variable>))
+  (if (ast:name-equal? (.name model) (.name o))
+      `(,(wfc-error o
+                    (format #f
+                            "variable `~a' must not have the same name as the model it is declared in"
+                            (.name o))))
+      '()))
 
 (define-method (wfc (o <function>))
   (append
