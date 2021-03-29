@@ -320,7 +320,7 @@ and the working directory.
                (string (substring string (match:end file-match)))
                (alist (let loop ((file-name file-name)
                                  (string string)
-                                 (imported-match (string-match "\n#imported \"([^\"]*)\"" string)))
+                                 (imported-match (string-match "\n#imported \"([^\"]*)\"\n" string)))
                         (if (not imported-match) `((,file-name . ,string))
                             (cons `(,file-name . ,(substring string 0 (match:start imported-match)))
                                   (let ((string (substring string (match:end imported-match))))

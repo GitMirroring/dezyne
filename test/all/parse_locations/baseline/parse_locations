@@ -20,11 +20,11 @@
         (file-name
           .
           "test/all/parse_locations/ihello.dzn")
-        (line . 25)
+        (line . 24)
         (column . 1)
-        (end-line . 33)
+        (end-line . 32)
         (end-column . 2)
-        (offset . 824)
+        (offset . 823)
         (length . 77))))
     (name . ihello)
     (types ("types"))
@@ -36,11 +36,11 @@
              (file-name
                .
                "test/all/parse_locations/ihello.dzn")
-             (line . 27)
+             (line . 26)
              (column . 3)
-             (end-line . 27)
+             (end-line . 26)
              (end-column . 19)
-             (offset . 845)
+             (offset . 844)
              (length . 16))))
          (name . "hello")
          (signature
@@ -50,11 +50,11 @@
                 (file-name
                   .
                   "test/all/parse_locations/ihello.dzn")
-                (line . 27)
+                (line . 26)
                 (column . 6)
-                (end-line . 27)
+                (end-line . 26)
                 (end-column . 10)
-                (offset . 848)
+                (offset . 847)
                 (length . 4))))
             (type.name . void)
             (formals ("formals"))))
@@ -66,11 +66,11 @@
            (file-name
              .
              "test/all/parse_locations/ihello.dzn")
-           (line . 29)
+           (line . 28)
            (column . 3)
-           (end-line . 33)
+           (end-line . 32)
            (end-column . 1)
-           (offset . 865)
+           (offset . 864)
            (length . 35))))
        (types ("types"))
        (ports ("ports"))
@@ -83,11 +83,11 @@
               (file-name
                 .
                 "test/all/parse_locations/ihello.dzn")
-              (line . 30)
+              (line . 29)
               (column . 3)
-              (end-line . 33)
+              (end-line . 32)
               (end-column . 1)
-              (offset . 877)
+              (offset . 876)
               (length . 23))))
           (("on"
             (location
@@ -95,11 +95,11 @@
                 (file-name
                   .
                   "test/all/parse_locations/ihello.dzn")
-                (line . 31)
+                (line . 30)
                 (column . 5)
-                (end-line . 32)
+                (end-line . 31)
                 (end-column . 3)
-                (offset . 883)
+                (offset . 882)
                 (length . 15))))
             (triggers
               ("triggers"
@@ -109,11 +109,11 @@
                      (file-name
                        .
                        "test/all/parse_locations/ihello.dzn")
-                     (line . 31)
+                     (line . 30)
                      (column . 8)
-                     (end-line . 31)
+                     (end-line . 30)
                      (end-column . 13)
-                     (offset . 886)
+                     (offset . 885)
                      (length . 5))))
                  (event.name . "hello")
                  (formals ("formals"))))))
@@ -124,11 +124,11 @@
                    (file-name
                      .
                      "test/all/parse_locations/ihello.dzn")
-                   (line . 31)
+                   (line . 30)
                    (column . 15)
-                   (end-line . 32)
+                   (end-line . 31)
                    (end-column . 3)
-                   (offset . 893)
+                   (offset . 892)
                    (length . 5))))))))))))))
   (("file-name"
     (name .
