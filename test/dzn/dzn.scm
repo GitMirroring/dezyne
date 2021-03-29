@@ -471,8 +471,10 @@ output, and standard error as three values."
 
 (define (run-simulate file-name)
   (format #t "** stage: simulate\n")
-  (let ((traces (find-files file-name ".*trace.*$")))
-    (and-map (cut run-simulate-trace file-name <>) traces)))
+  (or (skip? file-name
+             "simulate")
+      (let ((traces (find-files file-name ".*trace.*$")))
+        (and-map (cut run-simulate-trace file-name <>) traces))))
 
 (define (run-lts file-name)
   (format #t "** stage: lts\n")
