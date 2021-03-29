@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -325,10 +325,6 @@
 (test-equal "lookup instance->component"
   "lookup.dzn:26:10"
   (test-lookup #:file-name "lookup.dzn" #:line 77 #:column 6))
-
-(test-equal "lookup port->imported-interface"
-  #f
-  (test-lookup #:file-name "lookup.dzn" #:line 28 #:column 13))
 
 (test-equal "lookup port->imported-interface, with fallback"
   "ilookup.dzn:24:10"

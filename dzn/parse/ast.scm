@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2019 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -334,10 +334,13 @@
         (('compound-name scope name)
          (make <scope.name-node> #:ids (append (helper scope) (list (helper name)))))
 
-        (('scope ('global rest ...) names) (cons "/" (make-list? (helper names))))
+        (('compound-name global scope name)
+         (make <scope.name-node> #:ids (append (helper global) (helper scope) (list (helper name)))))
+
         (('scope name) (make-list? (helper name)))
         (('scope names ...) (helper names))
 
+        (('global) '("/"))
         (('name name) (helper name))
 
         (('type-name name) (helper name))
@@ -446,6 +449,10 @@
 
         (('enum-literal type field)
          (let ((type (helper type)))
+           (make <enum-literal-node> #:type.name (make <scope.name-node> #:ids type) #:field (helper field))))
+
+        (('enum-literal global type field)
+         (let ((type (append (helper global) (helper type))))
            (make <enum-literal-node> #:type.name (make <scope.name-node> #:ids type) #:field (helper field))))
 
         (('otherwise) (make <otherwise-node> #:value "otherwise"))

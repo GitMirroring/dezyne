@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -246,17 +246,18 @@ compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expressio
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
 not-expression <- not / group / dollars / (!var !is-port enum-literal / literal / var !DOT / action / call / interface-action / field-test)
 not <-- NOT not-expression#
-enum-literal <-- scope name
+enum-literal <-- global? scope name
 field-test <-- !is-port var DOT# name#
 literal <-- NUMBER / FALSE / TRUE
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 
 name <-- identifier
 
-compound-name <-- scope? name
+compound-name <-- global? scope? name
 
-scope <-- global? (name DOT &name)+ / global &name
-  global <-- DOT
+scope <-- (name DOT &name)+
+
+global <-- DOT
 
 identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
 
