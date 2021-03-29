@@ -642,7 +642,7 @@
 (define (code:om ast)
   ((compose
     add-reply-port
-    triples:event-traversal
+    normalize:event
     (remove-otherwise)
     (binding-into-blocking)
     code:add-calling-context)

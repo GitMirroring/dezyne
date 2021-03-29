@@ -31,6 +31,7 @@
   #:use-module (ice-9 receive)
 
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn command-line)
@@ -43,18 +44,8 @@
 
   #:use-module (dzn ast)
 
-  #:export (root->
-            triples:state-traversal
-            triples:event-traversal
-            triples:->compound-guard-on
-            triples:->triples
-            triples:add-illegals
-            triples:mark-the-end
-            triples:compound->triples
-            triples:fix-empty-interface
-            triples:on-compound
-            triples:split-multiple-on
-
+  #:export (normalize:state
+            normalize:event
             add-reply-port
             binding-into-blocking
             guards-not-or
@@ -63,19 +54,32 @@
             remove-behaviour
             remove-location))
 
-(define (t-triple on guard blocking statement) (list on guard blocking statement))
-(define (t-on triple) (first triple))
-(define (t-guard triple) (second triple))
-(define (t-blocking triple) (third triple))
-(define (t-statement triple) (fourth triple))
+;; A prefix is a normalized combination of the declarative statements
+;; that ... the imperative statement.  It is a triple that combines
+;; "guard", "on", and "blocking" leading to the statement.
+(define-immutable-record-type <triple>
+  (make-triple on guard blocking? statement)
+  triple?
+  (on triple-on)
+  (guard triple-guard)
+  (blocking? triple-blocking?)
+  (statement triple-statement))
 
+(define (write-triple triple port)
+  "Write TRIPLE on PORT."
+  (display "#<triple " port)
+  (format port "on: ~a" (triple-on triple))
+  (format port "guard: ~a" (triple-guard triple))
+  (format port "blocking?: ~a" (triple-blocking? triple))
+  (format port "statement: ~a" (triple-statement triple))
+  (format port " >"))
 
 (define (triples:->compound-guard-on triples)
   (let* ((st (map (lambda (t)
-                    (let* ((on (t-on t))
-                           (guard (t-guard t))
-                           (statement (t-statement t))
-                           (blocking (t-blocking t))
+                    (let* ((on (triple-on t))
+                           (guard (triple-guard t))
+                           (statement (triple-statement t))
+                           (blocking (triple-blocking? t))
                            (statement (if blocking (clone blocking #:statement statement)
                                           statement)))
                       (clone guard #:statement (clone on #:statement statement))))
@@ -83,19 +87,19 @@
     (make <declarative-compound> #:elements st)))
 
 (define (declarative-illegal? o)
-    (match o
-      (($ <illegal>) o)
-      (($ <declarative-illegal>) o)
-      ((and ($ <compound>) (= ast:statement* (? null?))) #f)
-      (($ <compound>) (declarative-illegal? ((compose car ast:statement*) o)))
-      (_ #f)))
+  (match o
+    (($ <illegal>) o)
+    (($ <declarative-illegal>) o)
+    ((and ($ <compound>) (= ast:statement* (? null?))) #f)
+    (($ <compound>) (declarative-illegal? ((compose car ast:statement*) o)))
+    (_ #f)))
 
 (define ((triples:fix-empty-interface model) triples)
   (if (and (is-a? model <interface>) (null? triples))
       (let* ((on (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "inevitable")))))
              (guard (make <guard> #:expression (make <literal> #:value "false")))
              (statement (make <compound> #:elements (list (make <illegal>)))))
-        (list (t-triple on guard #f statement)))
+        (list (make-triple on guard #f statement)))
       triples))
 
 (define (trigger-equal? a b)
@@ -109,61 +113,61 @@
 						#:expression (.expression (car guards)))))
 	(else (make <guard> #:expression (reduce (lambda (elem prev)
 						   (make <and> #:left elem #:right prev))
-					    (make <literal> #:value "true")
-					    (map (compose (cut make <not> #:expression <>) .expression) guards))))))
+					         (make <literal> #:value "true")
+					         (map (compose (cut make <not> #:expression <>) .expression) guards))))))
 
 (define (add-illegals model triples trigger)
-  (let* ((triples (filter (lambda (t) (trigger-equal? ((compose car ast:trigger* t-on) t) trigger)) triples))
+  (let* ((triples (filter (lambda (t) (trigger-equal? ((compose car ast:trigger* triple-on) t) trigger)) triples))
          (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
-         (guard (combine-not (map t-guard triples)))
+         (guard (combine-not (map triple-guard triples)))
          (provides? (and=> (.port trigger) ast:provides?))
          (statement (make (cond (provides? <declarative-illegal>)
                                 ((is-a? model <interface>) <incomplete>)
                                 (else <illegal>)))))
-    (append triples (list (t-triple on guard #f statement)))))
+    (append triples (list (make-triple on guard #f statement)))))
 
 (define ((triples:add-illegals model) triples)
   (append (append-map (cut add-illegals model triples <>) (ast:in-triggers model))
-          (filter (compose ast:modeling? car ast:trigger* t-on) triples)))
+          (filter (compose ast:modeling? car ast:trigger* triple-on) triples)))
 
 (define (triples:mark-the-end triples)
   (define (mark-the-end t)
-    (let* ((on (t-on t))
-           (illegal? (declarative-illegal? (t-statement t)))
-           (blocking? (t-blocking t))
+    (let* ((on (triple-on t))
+           (illegal? (declarative-illegal? (triple-statement t)))
+           (blocking? (triple-blocking? t))
            (valued-trigger? (ast:typed? ((compose car ast:trigger*) on)))
            (modeling? (is-a? ((compose .event car ast:trigger*) on) <modeling-event>))
            (port ((compose .port car ast:trigger*) on))
            (provides? (and port (ast:provides? port))))
       (if (parent on <interface>)
           (if (or valued-trigger? illegal?) t
-              (let* ((statement (t-statement t))
+              (let* ((statement (triple-statement t))
                      (end (make (if modeling? <the-end> <reply>)))
                      (elements (if (is-a? statement <compound>)
                                    (append (ast:statement* statement) (list end))
                                    (list statement end)))
                      (statement (make <compound> #:elements elements)))
-                (t-triple on (t-guard t) (t-blocking t) statement)))
+                (make-triple on (triple-guard t) (triple-blocking? t) statement)))
           (let ((t (if (or valued-trigger? illegal? blocking?) t
-                       (let* ((statement (t-statement t))
+                       (let* ((statement (triple-statement t))
                               (reply (if provides? (list (make <reply>)) '()))
                               (elements (if (is-a? statement <compound>)
                                             (ast:statement* statement)
                                             (list statement)))
                               (elements (append elements reply))
                               (statement (make <compound> #:elements elements)))
-                         (t-triple on (t-guard t) (t-blocking t) statement)))))
+                         (make-triple on (triple-guard t) (triple-blocking? t) statement)))))
             (if illegal? t (add-the-end t))))))
   (map mark-the-end triples))
 
 (define (add-the-end t)
-  (let* ((statement (t-statement t))
+  (let* ((statement (triple-statement t))
          (elements (if (is-a? statement <compound>)
                        (ast:statement* statement)
                        (list statement)))
          (elements (append elements (list (make <the-end>))))
          (statement (make <compound> #:elements elements)))
-    (t-triple (t-on t) (t-guard t) (t-blocking t) statement)))
+    (make-triple (triple-on t) (triple-guard t) (triple-blocking? t) statement)))
 
 (define ((triples:declarative-illegals model) triples)
   (define (illegal? o)
@@ -172,25 +176,25 @@
       ((and ($ <compound>) (= ast:statement* (statement))) (illegal? statement))
       (_ #f)))
   (define (foo t)
-    (let* ((on (t-on t))
+    (let* ((on (triple-on t))
            (trigger ((compose car ast:trigger*) on))
            (provides? (and=> (.port trigger) ast:provides?))
-           (statement (t-statement t)))
-      (if (and (or (is-a? model <interface>) provides?) (illegal? statement)) (t-triple on (t-guard t) (t-blocking t) (make <declarative-illegal>))
+           (statement (triple-statement t)))
+      (if (and (or (is-a? model <interface>) provides?) (illegal? statement)) (make-triple on (triple-guard t) (triple-blocking? t) (make <declarative-illegal>))
           t)))
   (map foo triples))
 
 (define (triples:split-multiple-on triples)
-  (define (split-on t)
-    (let* ((on (t-on t))
+  (define (splitriple-on t)
+    (let* ((on (triple-on t))
            (triggers (ast:trigger* on))
            (ons (if (= (length triggers) 1) (list on)
                     (map (lambda (t) (clone on #:triggers (make <triggers> #:elements (list t)))) triggers))))
       (map (lambda (on)
              (let* ((trigger ((compose car ast:trigger*) on))
                     (provides? (and=> (.port trigger) ast:provides?)))
-               (t-triple on (t-guard t) (and provides? (t-blocking t)) (t-statement t)))) ons)))
-  (append-map split-on triples))
+               (make-triple on (triple-guard t) (and provides? (triple-blocking? t)) (triple-statement t)))) ons)))
+  (append-map splitriple-on triples))
 
 (define (combine guards)
   (make <guard> #:expression (reduce (cut make <and> #:left <> #:right <>)
@@ -200,10 +204,10 @@
 (define (triples:->triples o)
   (define (triple o)
     (let ((path (ast:path o (lambda (p) (is-a? (.parent p) <behaviour>)))))
-      (t-triple (find (is? <on>) path)
-                (combine (filter (is? <guard>) path))
-                (find (is? <blocking>) path)
-                o)))
+      (make-triple (find (is? <on>) path)
+                   (combine (filter (is? <guard>) path))
+                   (find (is? <blocking>) path)
+                   o)))
   (if (and (is-a? o <compound>) (null? (ast:statement* o))) '()
       (map triple (tree-collect-filter
                    (conjoin (is? <ast>) (disjoin ast:declarative? (compose ast:declarative? .parent)))
@@ -211,13 +215,13 @@
 
 (define (triples:on-compound triples)
   (define (foo t)
-    (let* ((statement (t-statement t))
+    (let* ((statement (triple-statement t))
            (statement (if (is-a? statement <compound>) statement
                           (make <compound> #:elements (list statement)))))
-      (t-triple (t-on t) (t-guard t) (t-blocking t) statement)))
+      (make-triple (triple-on t) (triple-guard t) (triple-blocking? t) statement)))
   (map foo triples))
 
-(define (triples:state-traversal o)
+(define (normalize:state o)
   (match o
     (($ <behaviour>) (clone o #:statement
                             ((compose
@@ -230,28 +234,28 @@
                               triples:->triples
                               .statement
                               ) o)))
-    ((? (is? <ast>)) (tree-map triples:state-traversal o))
+    ((? (is? <ast>)) (tree-map normalize:state o))
     (_ o)))
 
 (define (triples:->on-guard* triples)
   (define ((trigger-equal? trigger) triple)
-    (let ((t ((compose car ast:trigger* t-on) triple)))
+    (let ((t ((compose car ast:trigger* triple-on) triple)))
       (and (equal? (.port.name t) (.port.name trigger)) (equal? (.event.name t) (.event.name trigger)))))
   (let* ((sorted-triples (let loop ((triples triples))
                            (if (null? triples) '()
-                               (let ((trigger ((compose car ast:trigger* t-on car) triples)))
+                               (let ((trigger ((compose car ast:trigger* triple-on car) triples)))
                                  (receive (shared rest)
                                      (partition (trigger-equal? trigger) triples)
                                    (cons shared (loop rest)))))))
          (ons (map
                (lambda (triples)
-                 (let* ((on ((compose t-on car) triples))
+                 (let* ((on ((compose triple-on car) triples))
                         (guards (map (lambda (t)
-                                       (let* ((statement (t-statement t))
-                                              (blocking (t-blocking t))
+                                       (let* ((statement (triple-statement t))
+                                              (blocking (triple-blocking? t))
                                               (statement (if blocking (clone blocking #:statement statement)
                                                              statement)))
-                                         (clone (t-guard t) #:statement statement)))
+                                         (clone (triple-guard t) #:statement statement)))
                                      triples))
                         ;; code need <otherwise>
                         (otherwise (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t))))
@@ -264,7 +268,7 @@
                sorted-triples)))
     ons))
 
-(define (triples:event-traversal o)
+(define (normalize:event o)
   (match o
     (($ <behaviour>) (clone o #:statement
                             ((compose
@@ -277,7 +281,7 @@
                               triples:->triples
                               .statement
                               ) o)))
-    ((? (is? <ast>)) (tree-map triples:event-traversal o))
+    ((? (is? <ast>)) (tree-map normalize:event o))
     (_ o)))
 
 (define ((rewrite-formals-and-locals model) triples)
@@ -305,45 +309,45 @@ We follow the following renaming strategy:
     (define (rename-string o)
       (or (assoc-ref mapping o) o))
     (match o
-           ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
-           (($ <trigger>)
-            (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) (ast:formal* o)))))
-           (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
-           (($ <arguments>) (clone o #:elements (map (rename mapping) (ast:argument* o))))
-           (($ <var>) (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.name o)))
-                          o))
-           (($ <assign>)
-            (let ((expression ((rename mapping) (.expression o)))
-                  (name (if (formal-or-local? (.variable o)) (rename-string (.variable.name o))
-                            (.variable.name o))))
-              (clone o #:variable.name name #:expression expression)))
-           (($ <variable>)
-            (let ((name (if (formal-or-local? o) (rename-string (.name o))
-                            (.name o))))
-              (clone o #:name name #:expression ((rename mapping) (.expression o)))))
-           (($ <field-test>) (if (formal-or-local? (.variable o)) (clone o #:variable.name (rename-string (.variable.name o)))
-                                 o))
-           (($ <formal>) (clone o #:name (rename-string (.name o))))
-           (($ <formal-binding>) (clone o #:name (rename-string (.name o))))
-           ((? (is? <ast>)) (tree-map (rename mapping) o))
-           (_ o)))
+      ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
+      (($ <trigger>)
+       (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) (ast:formal* o)))))
+      (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
+      (($ <arguments>) (clone o #:elements (map (rename mapping) (ast:argument* o))))
+      (($ <var>) (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.name o)))
+                     o))
+      (($ <assign>)
+       (let ((expression ((rename mapping) (.expression o)))
+             (name (if (formal-or-local? (.variable o)) (rename-string (.variable.name o))
+                       (.variable.name o))))
+         (clone o #:variable.name name #:expression expression)))
+      (($ <variable>)
+       (let ((name (if (formal-or-local? o) (rename-string (.name o))
+                       (.name o))))
+         (clone o #:name name #:expression ((rename mapping) (.expression o)))))
+      (($ <field-test>) (if (formal-or-local? (.variable o)) (clone o #:variable.name (rename-string (.variable.name o)))
+                            o))
+      (($ <formal>) (clone o #:name (rename-string (.name o))))
+      (($ <formal-binding>) (clone o #:name (rename-string (.name o))))
+      ((? (is? <ast>)) (tree-map (rename mapping) o))
+      (_ o)))
 
   (define (foo t)
-    (let* ((o (t-on t))
+    (let* ((o (triple-on t))
            (t (if ((compose pair? ast:formal* car ast:trigger*) o) t
                   (let* ((trigger ((compose car .elements .triggers) o))
                          (formals ((compose .elements .formals .signature) (.event trigger))))
                     (if (null? formals) t
-                        (t-triple (clone o #:triggers (clone (.triggers o) #:elements (list (clone trigger #:formals (clone (.formals trigger) #:elements formals)))))
-                                  (t-guard t)
-                                  (t-blocking t)
-                                  (t-statement t))))))
-           (trigger ((compose car .elements .triggers) (t-on t)))
+                        (make-triple (clone o #:triggers (clone (.triggers o) #:elements (list (clone trigger #:formals (clone (.formals trigger) #:elements formals)))))
+                                     (triple-guard t)
+                                     (triple-blocking? t)
+                                     (triple-statement t))))))
+           (trigger ((compose car .elements .triggers) (triple-on t)))
            (trigger (if (pair? (ast:formal* trigger)) trigger
                         (clone trigger #:formals (clone (.formals trigger) #:elements (ast:formal* (.event trigger))))))
            (formals (map .name ((compose .elements .formals .signature) (.event trigger))))
            (members (map .name (ast:variable* model)))
-           (locals (map .name (tree-collect (is? <variable>) (t-statement t))))
+           (locals (map .name (tree-collect (is? <variable>) (triple-statement t))))
            (occupied members)
            (fresh (letrec ((fresh (lambda (occupied name)
                                     (if (member name occupied)
@@ -359,11 +363,11 @@ We follow the following renaming strategy:
            (occupied (append (map cdr mapping) members))
            (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
       (if (null? mapping) t
-          (t-triple
+          (make-triple
            (clone o #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger))))
-           (t-guard t)
-           (t-blocking t)
-           ((rename mapping) (t-statement t))))))
+           (triple-guard t)
+           (triple-blocking? t)
+           ((rename mapping) (triple-statement t))))))
   (map foo triples))
 
 (define-method (is-data? (o <ast>))
@@ -386,7 +390,7 @@ We follow the following renaming strategy:
      (let* ((variable (.variable o))
             (type (and variable (.type variable))))
        (if (and type (not (is-a? type <extern>))) (clone o #:expression (purge-data (.expression o)))
-         (clone (make <compound>) #:parent (.parent o)))))
+           (clone (make <compound>) #:parent (.parent o)))))
     (($ <formal>)
      (let ((type (.type o)))
        (and type (not (is-a? type <extern>)) o)))
@@ -407,11 +411,11 @@ We follow the following renaming strategy:
 
 (define (triples:simplify-guard triples)
   (map (lambda (t)
-         (t-triple
-          (t-on t)
-          (clone (t-guard t) #:expression ((compose simplify .expression t-guard) t))
-          (t-blocking t)
-          (t-statement t)))
+         (make-triple
+          (triple-on t)
+          (clone (triple-guard t) #:expression ((compose simplify .expression triple-guard) t))
+          (triple-blocking? t)
+          (triple-statement t)))
        triples))
 
 ;; simplify exp
@@ -419,8 +423,8 @@ We follow the following renaming strategy:
   (match o
     (($ <not>)(let ((e (simplify (.expression o))))
                 (cond ((ast:literal-true? e) (clone e #:value "false"))
-                          ((ast:literal-false? e) (clone e #:value "true"))
-                          (else (clone o #:expression e)))))
+                      ((ast:literal-false? e) (clone e #:value "true"))
+                      (else (clone o #:expression e)))))
     (($ <and>)(let ((left (simplify (.left o)))
                     (right (simplify (.right o))))
                 (cond ((ast:literal-true? left) right)
@@ -591,7 +595,7 @@ We follow the following renaming strategy:
 
 (define-method (root-> (o <root>))
   ((compose
-    triples:event-traversal
+    normalize:event
     ) o))
 
 (define (ast-> ast)

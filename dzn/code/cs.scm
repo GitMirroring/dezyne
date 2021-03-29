@@ -226,7 +226,7 @@
 (define (cs:om ast)
   ((compose
     add-reply-port
-    triples:event-traversal
+    normalize:event
     (remove-otherwise)
     code:add-calling-context)
    ast))

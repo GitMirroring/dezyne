@@ -960,7 +960,7 @@
   ((compose
     makreel:mark-tail-call
     makreel:add-function-return
-    triples:state-traversal
+    normalize:state
     (remove-otherwise)
     makreel:tick-names
     purge-data
