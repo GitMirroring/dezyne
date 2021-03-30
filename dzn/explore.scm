@@ -245,10 +245,12 @@ begin -> 1
 RTC-LTS->STATE-DIAGRAM."
   (define (json-location trigger-location)
     (if (not trigger-location) "\"undefined\""
-        (format #f "{\"file-name\":~s,\"line\":~a,\"column\":~a}"
+        (format #f "{\"file-name\":~s,\"line\":~a,\"column\":~a,\"end-line\":~a,\"end-column\":~a}"
                 (.file-name trigger-location)
                 (.line trigger-location)
-                (.column trigger-location))))
+                (.column trigger-location)
+                (.end-line trigger-location)
+                (.end-column trigger-location))))
   (let ((graph (cons `(* "" ("" "") 1 #f) graph)))
     (string-append
      "{\"states\":[\n"
