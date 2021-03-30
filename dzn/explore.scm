@@ -183,7 +183,11 @@ LTS
       (and pc (and=> (.statement pc) ast:location))))
 
   (define (trace->string-trail trace)
-    (map cdr (trace->trail trace)))
+    (let* ((trail (map cdr (trace->trail trace)))
+           (trail (filter (negate (cute string-suffix? ".return" <>)) trail)))
+      (define (strip-sut-prefix o)
+        (if (string-prefix? "sut." o) (substring o 4) o))
+      (map strip-sut-prefix trail)))
 
   (define ((transition->dot pc->state-number) from pc+traces)
     (let* ((pc traces (match pc+traces ((pc . traces) (values pc traces))))
