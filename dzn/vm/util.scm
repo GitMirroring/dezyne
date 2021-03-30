@@ -545,14 +545,22 @@
 ;;;
 
 (define-method (state->string (o <state>))
-  (string-append
-   (string-join (runtime:instance->path (.instance o)) ".") "=["
-   (string-join (map (match-lambda ((x . y)
-                                    (format #f "~a=~a" x (->sexp y))))
-                     (.variables o)) ",\n")
-   (if (null? (.q o)) ""
-       (string-append "q=" (string-join (map trigger->string (.q o)) ",")))
-   "]"))
+  (let* ((path (runtime:instance->path (.instance o)))
+         (path (match path (("sut" path ...) path)
+                      (_ path)))
+         (variables (map (match-lambda ((x . y)
+                                        (format #f "~a=~a" x (->sexp y))))
+                         (.variables o)))
+         (q (.q o)))
+    (if (and (null? variables) (null? q)) #f
+        (string-append
+         (string-join path ".")
+         (if (pair? path) "=" "")
+         "["
+         (string-join variables ",\n")
+         (if (null? (.q o)) ""
+             (string-append "q=" (string-join (map trigger->string (.q o)) ",")))
+         "]"))))
 
 (define-method (state->string (o <system-state>))
   (let* ((state-list (.state-list o))
@@ -560,7 +568,7 @@
                          (filter (disjoin (compose (is? <runtime:component>) .instance)
                                           (compose ast:requires? .ast .instance))
                                  state-list))))
-    (string-join (map state->string state-list) "\n")))
+    (string-join (filter-map state->string state-list) "\n")))
 
 (define-method (pc->string (o <program-counter>))
   (match (.status o)
