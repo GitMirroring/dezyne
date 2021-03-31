@@ -550,6 +550,8 @@ We follow the following renaming strategy:
      (clone o #:events (remove-location (.events o))))
     (($ <component>)
      (clone o #:ports (remove-location (.ports o))))
+    (($ <foreign>)
+     (clone o #:ports (remove-location (.ports o))))
     (($ <instance>)
      o)
     (($ <system>)
