@@ -29,6 +29,7 @@
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
@@ -861,21 +862,24 @@ required to be non-deterministic."
         (label-re (make-regexp "\"([^\"]*)\""))
         (prefix-length (and prefix (string-length prefix))))
     (define (drop-prefix o)
-      (if (and prefix
-               (string-prefix? prefix o)) (substring o prefix-length)
+      (if (and prefix (string-prefix? prefix o)) (substring o prefix-length)
           o))
+    (define memoizing-cleanup-label
+      (pure-funcq
+       (lambda* (label #:key internal? illegal?)
+         (format #f "\"~a\""
+                 (drop-prefix (cleanup-label (symbol->string label)
+                                             #:illegal? illegal?
+                                             #:internal? internal?))))))
     (let loop ((line (read-line input-port 'concat)))
       (unless (eof-object? line)
         (let ((out-line (regexp-substitute/global
                          #f label-re line
                          'pre
-                         (compose (cute format #f "\"~a\"" <>)
-                                  drop-prefix
-                                  (cut cleanup-label
-                                       <>
-                                       #:illegal? illegal?
-                                       #:internal? internal?)
-                                  (cute match:substring <> 1))
+                         (compose (cute memoizing-cleanup-label <>
+                                        #:illegal? illegal?
+                                        #:internal? internal?)
+                                  string->symbol (cute match:substring <> 1))
                          'post)))
           (display out-line))
         (loop (read-line input-port 'concat))))))
