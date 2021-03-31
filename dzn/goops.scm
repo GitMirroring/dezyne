@@ -121,6 +121,7 @@
            .value
            .variable.name
            .variables
+           .working-directory
 
            <action-or-call>
            <action>

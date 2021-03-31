@@ -240,7 +240,7 @@ begin -> 1
     "\n")
    postamble))
 
-(define (state-diagram->json graph)
+(define* (state-diagram->json graph #:optional (working-directory "."))
   "Return a diagram in P5 JSON format from GRAPH produced by
 RTC-LTS->STATE-DIAGRAM."
   (define (json-location trigger-location)
@@ -249,13 +249,13 @@ RTC-LTS->STATE-DIAGRAM."
                 (.file-name trigger-location)
                 (.line trigger-location)
                 (.column trigger-location))))
-  (let ((graph (cons `("*" "" ("" "") "1" #f) graph)))
+  (let ((graph (cons `(* "" ("" "") 1 #f) graph)))
     (string-append
      "{\"states\":[\n"
      (string-join
       (map (match-lambda ((from from-label label to trigger-location)
                           (string-append
-                           (format #f "{\"id\":~s, \"state\":~s}" from from-label))))
+                           (format #f "{\"id\":\"~a\", \"state\":~s}" from from-label))))
            (delete-duplicates graph (lambda (a b) (and (equal? (first a) (first b))
                                                        (equal? (second a) (second b)))))) ",\n")
      "],\n"
@@ -267,7 +267,7 @@ RTC-LTS->STATE-DIAGRAM."
           (let* ((location (json-location trigger-location))
                  (actions (string-join actions "\n")))
             (format #f
-                    "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":~s, \"location\":~a}"
+                    "{\"from\":\"~s\", \"to\":\"~s\", \"trigger\":~s, \"action\":~s, \"location\":~a}"
                     from to trigger actions location)))
          ((from from-label () to trigger-location)
           (let ((location (json-location trigger-location)))
@@ -277,7 +277,9 @@ RTC-LTS->STATE-DIAGRAM."
          ((from from-label x #f #f) #f))
        graph)
       ",\n")
-     "]}\n")))
+     "],\n"
+     (format #f "\"working-directory\":~s\n" working-directory)
+     "}\n")))
 
 
 ;;;
@@ -353,7 +355,8 @@ RTC-LTS->LTS."
       (let* ((pc (make-pc))
              (lts pc->state-number state-count (pc->rtc-lts pc))
              (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
-        (if (equal? format "json") (display (state-diagram->json state-diagram))
+        (if (equal? format "json") (display (state-diagram->json
+                                             state-diagram (.working-directory root)))
             (display (state-diagram->dot state-diagram (pc->hash pc))))))))
 
 (define* (lts root #:key model queue-size)
