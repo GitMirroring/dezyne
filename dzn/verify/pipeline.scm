@@ -198,7 +198,11 @@
          (provides-init (get-init model #:provides? #t)))
     (cute display
           (string-append
-           (verify-pipeline "aut-failures" root model)
+           ;; The first LTS can be produced by running the
+           ;; "aut-failures" pipeline.  Running the already memoized
+           ;; "verify-component" gives us the same result, and has
+           ;; already been memoized.
+           (get-lts (result-split (verify-pipeline "verify-component" root model)))
            "\n\x04\n"
            (verify-pipeline "aut-failures" root model #:init provides-init)))))
 
@@ -329,16 +333,25 @@ for MODEL, using ROOT."
 (define* (verify-pipeline out root model #:key (init (get-init model)))
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
 init for MODEL unless INIT."
-  (define ((prepare options) next result)
-    (let ((next (if (procedure? next) (next options) next)))
-      (cons next result)))
-  (let* ((options (make-options root model init))
-         (commands (get-commands in-out.pipeline out))
-         (commands (reverse (fold (prepare options) '() commands))))
-    (when (dzn:command-line:get 'debug)
-      (format (current-error-port) "~a\n"
-              (pretty-verify-pipeline commands out root model)))
-    (pipeline->string commands)))
+  (define memoizing-verify-pipeline
+    (pure-funcq
+     (lambda (out root model init)
+       (let* ((out (symbol->string out))
+              (init (symbol->string init)))
+         (define ((prepare options) next result)
+           (let ((next (if (procedure? next) (next options) next)))
+             (cons next result)))
+         (let* ((options (make-options root model init))
+                (commands (get-commands in-out.pipeline out))
+                (commands (reverse (fold (prepare options) '() commands))))
+           (when (dzn:command-line:get 'debug)
+             (format (current-error-port) "~a\n"
+                     (pretty-verify-pipeline commands out root model)))
+           (let ((result status (pipeline->string commands)))
+             (list result status)))))))
+  (apply values (memoizing-verify-pipeline (string->symbol out)
+                                           root model
+                                           (string->symbol init))))
 
 
 ;;;
