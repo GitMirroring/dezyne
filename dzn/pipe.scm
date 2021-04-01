@@ -33,7 +33,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
-  #:export (pipeline pipeline* pipeline->string pipeline*->string))
+  #:export (pipeline pipeline* pipeline->port pipeline->string pipeline*->string))
 
 (define piped-process (@@ (ice-9 popen) piped-process))
 
@@ -42,13 +42,14 @@
    (cons (port->fdes (car p))
          (port->fdes (cdr p)))))
 
-(define (pipeline commands)
+(define* (pipeline commands #:key output-port)
   "Execute a pipeline of COMMANDS, feeding INPUT to the first command.
 If the first command is a procedure, run that and take its output as
 input for the pipeline, instead of INPUT.  Each command is a list of a
 program and its arguments as strings.  Return three values: the input
 port to write to the pipeline, the output port to read from the
-pipeline, and the pids from all COMMANDS."
+pipeline, and the pids from all COMMANDS.  When OUTPUT-PORT, write to
+that port; return output-port, #f and pids."
   (define (command pipe proc previous)
     (match previous
       ((pfrom . pids)
@@ -61,12 +62,19 @@ pipeline, and the pids from all COMMANDS."
 	          (cons from (cons pid pids)))))))))
   (let* ((to (pipe->fdes))
          (pipes (map (lambda _ (pipe->fdes)) commands))
+         (pipes (if (not output-port) pipes
+                    (match pipes
+                      (((x . y) pipes ...)
+                       (append pipes
+                               `((,x . ,(port->fdes output-port))))))))
 	 (pipeline (fold command `(,to) pipes commands)))
     (match pipeline
       ((from . pids)
-       (values (fdes->outport (cdr to)) (fdes->inport (car from)) pids)))))
+       (values (fdes->outport (cdr to))
+               (and (not output-port) (fdes->inport (car from)))
+               pids)))))
 
-(define* (pipeline* commands)
+(define (pipeline* commands)
   "Execute a pipeline of COMMANDS, feeding INPUT to the first command.
 If the first command is a procedure, run that and take its output as
 input for the pipeline, instead of INPUT.  Each command is a list of a
@@ -88,7 +96,7 @@ all COMMANDS."
   "Execute a pipeline of COMMANDS, feeding INPUT to the first command.
 If the first command is a procedure, run that and take its output as
 input for the pipeline, instead of INPUT.  Each command is a list of a
-program and its arguments as strings.  Return three values: the output
+program and its arguments as strings.  Return two values: the output
 that the pipeline produced as a string, and a sum of the output stati of
 the pipeline COMMANDS."
   (define (pipeline-with-input commands input)
@@ -107,11 +115,38 @@ the pipeline COMMANDS."
     (_
      (pipeline-with-input commands input))))
 
+(define* (pipeline->port commands #:key (input "") (output-port (current-output-port)))
+  "Execute a pipeline of COMMANDS, feeding INPUT to the first command.
+If the first command is a procedure, run that and take its output as
+input for the pipeline, instead of INPUT.  Each command is a list of a
+program and its arguments as strings.  Return two values: #f, and a sum
+of the output stati of the pipeline COMMANDS."
+  (define (pipeline-with-input commands input)
+    (let ((output-port input-port pids
+             (pipeline commands #:output-port (current-output-port))))
+      (display input output-port)
+      (close output-port)
+      (false-if-exception (close input-port))
+      (values #f (apply + (map (compose status:exit-val cdr waitpid) pids)))))
+  (match commands
+    (((? procedure? procedure))
+     (parameterize ((current-output-port output-port))
+       (procedure)
+       (close output-port)
+       (values #f 0)))
+    (((? procedure? procedure) commands ...)
+     (unless (string-null? input)
+       (format (current-error-port) "pipeline*->string: warning: ignoring input: ~a\n" input))
+     (let ((input (with-output-to-string procedure)))
+       (pipeline-with-input commands input)))
+    (_
+     (pipeline-with-input commands input))))
+
 (define* (pipeline*->string commands #:key (input ""))
   "Execute a pipeline of COMMANDS, feeding INPUT to the first command.
 If the first command is a procedure, run that and take its output as
 input for the pipeline, instead of INPUT.  Each command is a list of a
-program and its arguments as strings.  Return three values: the output
+program and its arguments as strings.  Return two values: the output
 that the pipeline produced as a string, a sum of the output stati of the
 pipeline COMMANDS, and the error output that the pipeline procuded as a
 string."

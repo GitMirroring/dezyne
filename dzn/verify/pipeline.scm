@@ -332,9 +332,10 @@ for MODEL, using ROOT."
                  file-name)))))
    (string-join (map command->string commands) " \\\n  | "))
 
-(define* (verify-pipeline out root model #:key (init (get-init model)))
+(define* (verify-pipeline out root model #:key (init (get-init model)) stdout?)
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
-init for MODEL unless INIT."
+init for MODEL unless INIT.  When STDOUT?, write result
+to (current-output-port)."
   (define memoizing-verify-pipeline
     (pure-funcq
      (lambda (out root model init)
@@ -349,7 +350,8 @@ init for MODEL unless INIT."
            (when (dzn:command-line:get 'debug)
              (format (current-error-port) "~a\n"
                      (pretty-verify-pipeline commands out root model)))
-           (let ((result status (pipeline->string commands)))
+           (let* ((pipeline (if stdout? pipeline->port pipeline->string))
+                  (result status (pipeline commands)))
              (list result status)))))))
   (apply values (memoizing-verify-pipeline (string->symbol out)
                                            root model
@@ -580,7 +582,7 @@ init for MODEL unless INIT."
 
 (define* (verification:partial root model-name #:key out)
   (let ((model (makreel:get-model root model-name)))
-    (display (verify-pipeline out root model))))
+    (verify-pipeline out root model #:stdout? #t)))
 
 (define* (verification:verify options root #:key all? model-name)
   (define (model-names-for-verification root)
