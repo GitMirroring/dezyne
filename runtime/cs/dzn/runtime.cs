@@ -189,7 +189,7 @@ namespace dzn
         }
         public void call_out(Component c, Action f, port.Meta m, String e)
         {
-            traceOut(m, e);
+            traceQin(m, e);
             defer(m.provides.component, c, f);
         }
         public static String path(Meta m, String p = "")
@@ -207,8 +207,23 @@ namespace dzn
         }
         public static void traceOut(port.Meta m, String e)
         {
-            System.Console.Error.WriteLine(path(m.provides.meta, m.provides.name) + "." + e + " -> "
-                                           + path(m.requires.meta, m.requires.name) + "." + e);
+            System.Console.Error.WriteLine(path(m.requires.meta, m.requires.name) + "." + e + " <- "
+                                           + path(m.provides.meta, m.provides.name) + "." + e);
+        }
+        public static void traceQin(port.Meta m, String e)
+        {
+            if(path(m.provides.meta) == "<external>")
+                System.Console.Error.WriteLine(path(m.requires.meta, "<q>") + " <- " +
+                                               path(m.provides.meta, m.provides.name) + "." + e);
+            else
+                System.Console.Error.WriteLine(path(m.provides.meta, m.provides.name) + ".<q> <- " +
+                                               path(m.requires.meta, m.requires.name) + "." + e);
+
+        }
+        public static void traceQout(port.Meta m, String e)
+        {
+            System.Console.Error.WriteLine(path(m.requires.meta, m.requires.name) + "." + e + " <- " +
+                                           path(m.requires.meta, "<q>"));
         }
     }
 }

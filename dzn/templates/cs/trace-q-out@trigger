@@ -1,0 +1,1 @@
+dzn.Runtime.traceQout(this.#.port.name .dzn_meta, "#.event.name");
