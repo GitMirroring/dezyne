@@ -237,6 +237,12 @@ null)."
            (tree:lookup function-name context))
           (else #f))))
 
+(define (resolve-import o)
+  (assert-type o 'import)
+  (let* ((file-name (.file-name o))
+         (file-name ((%resolve-file) file-name)))
+    `(root (location 0 0 ,file-name))))
+
 
 ;;;
 ;;; Utilities.
@@ -260,32 +266,35 @@ null)."
 
 (define (context-lookup-definition name context)
   "Return declaration of NAME in CONTEXT, or #f if not found."
-  (and (is-a? name 'name)
-       (cond
-        ((or (parent context 'action)
-             (parent context 'interface-action))
-         => (cute resolve-action <> name context))
-        ((parent context 'port)
-         => (cute resolve-port <> name context))
-        ((or (parent context 'illegal-trigger)
-             (parent context 'trigger))
-         => (cute resolve-trigger <> name context))
-        ((parent context 'instance)
-         => (cute resolve-instance <> name context))
-        ((parent context 'enum-literal)
-         => (cute resolve-enum-literal <> name context))
-        ((parent context 'type-name)
-         => (cute resolve-type <> name context))
-        ((parent context 'var)
-         => (cute resolve-var <> name context))
-        ((parent context 'field-test)
-         => (cute resolve-field-test <> name context))
-        ((parent context 'end-point)
-         => (cute resolve-end-point <> name context))
-        ((parent context 'call)
-         => (cute resolve-call <> name context))
-        (else
-         #f))))
+  (or
+   (and (is-a? name 'name)
+        (cond
+         ((or (parent context 'action)
+              (parent context 'interface-action))
+          => (cute resolve-action <> name context))
+         ((parent context 'port)
+          => (cute resolve-port <> name context))
+         ((or (parent context 'illegal-trigger)
+              (parent context 'trigger))
+          => (cute resolve-trigger <> name context))
+         ((parent context 'instance)
+          => (cute resolve-instance <> name context))
+         ((parent context 'enum-literal)
+          => (cute resolve-enum-literal <> name context))
+         ((parent context 'type-name)
+          => (cute resolve-type <> name context))
+         ((parent context 'var)
+          => (cute resolve-var <> name context))
+         ((parent context 'field-test)
+          => (cute resolve-field-test <> name context))
+         ((parent context 'end-point)
+          => (cute resolve-end-point <> name context))
+         ((parent context 'call)
+          => (cute resolve-call <> name context))
+         (else
+          #f)))
+   (and (is-a? name 'import)
+        (resolve-import name))))
 
 (define* (lookup-definition name context #:key
                             file-name
@@ -293,7 +302,8 @@ null)."
                             (resolve-file (lambda args (car args))))
   "Return declaration of NAME in CONTEXT, using FILE-NAME->PARSE-TREE to
 search in imports, as (FILE-NAME DECLARATION), or #f if not found."
-  (and (is-a? name 'name)
+  (and (or (is-a? name 'name)
+           (is-a? name 'import))
        (parameterize ((%file-name->parse-tree file-name->parse-tree)
                       (%resolve-file resolve-file))
          (context-lookup-definition name context))))
@@ -312,5 +322,5 @@ search in imports, or #f if not found."
     (and def
          (let* ((file-name (or (tree:file-name def) file-name))
                 (text      (file-name->text file-name))
-                (name      (tree:name def)))
-           (tree:->location name text #:file-name file-name)))))
+                (target    (or (tree:name def) def)))
+           (tree:->location target text #:file-name file-name)))))

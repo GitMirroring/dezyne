@@ -98,10 +98,11 @@ Dezyne language tool for completion and lookup information
          (lookup? (option-ref options 'lookup #f))
          (errors '()))
 
+    (define (resolve-file file-name)
+      (search-path imports file-name))
     (define (file-name->parse-tree file-name)
-      (let* ((file (search-path imports file-name))
-             (text (with-input-from-file file
-                     read-string)))
+      (let* ((file (resolve-file file-name))
+             (text (with-input-from-file file read-string)))
         (parameterize ((%peg:fall-back? #t))
           (string->parse-tree text #:file-name file-name))))
     (define (file-name->text file-name)
@@ -149,15 +150,16 @@ Dezyne language tool for completion and lookup information
                  (def   (lookup-definition
                          token context
                          #:file-name file-name
-                         #:file-name->parse-tree file-name->parse-tree)))
+                         #:file-name->parse-tree file-name->parse-tree
+                         #:resolve-file resolve-file)))
             (when (> debugity 0)
               (display "definition:\n" (current-error-port))
               (pretty-print def (current-error-port)))
             (when verbose?
               (display "location:\n"))
-            (let* ((text (file-name->text file-name))
-                   (name (tree:name def))
-                   (loc  (tree:->location name text)))
+            (let* ((text   (file-name->text file-name))
+                   (target (or (tree:name def) def))
+                   (loc    (tree:->location target text)))
               (unless loc
                 (display "not found\n")
                 (exit EXIT_FAILURE))

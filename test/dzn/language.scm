@@ -42,10 +42,14 @@
   #:use-module (dzn parse util)
   #:use-module (test dzn automake))
 
-(define (file-name->text file-name)
+(define (resolve-file file-name)
   (let ((dir "test/language"))
-    (with-input-from-file (string-append dir "/" file-name)
-      read-string)))
+    (if (string-prefix? dir file-name) file-name
+        (string-append dir "/" file-name))))
+
+(define (file-name->text file-name)
+  (let ((file-name (resolve-file file-name)))
+    (with-input-from-file file-name read-string)))
 
 (define (file-name->parse-tree file-name)
   (let ((text (file-name->text file-name)))
@@ -78,7 +82,8 @@
          (loc   (lookup-location token ctx
                                  #:file-name file-name
                                  #:file-name->text file-name->text
-                                 #:file-name->parse-tree file-name->parse-tree)))
+                                 #:file-name->parse-tree file-name->parse-tree
+                                 #:resolve-file resolve-file)))
     (and=> loc location->string)))
 
 (test-begin "language")
@@ -458,6 +463,10 @@
 (test-equal "lookup illegal trigger->event"
   "illegal.dzn:3:10"
   (test-lookup #:file-name "illegal.dzn" #:line 17 #:column 9))
+
+(test-equal "lookup import"
+  "test/language/ihello.dzn:1:0"
+  (test-lookup #:file-name "import.dzn" #:line 1 #:column 0))
 
 (test-end)
 
