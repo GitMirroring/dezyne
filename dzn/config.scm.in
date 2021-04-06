@@ -93,7 +93,7 @@
   @VERSION_PATCH@)
 
 (define %dzn
-  (if (mingw?) "%dzn.cmd"
+  (if (mingw?) "dzn.cmd"
       (string-append %bindir "/dzn")))
 
 (define %default-languages
