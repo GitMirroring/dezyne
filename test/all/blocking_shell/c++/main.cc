@@ -79,7 +79,7 @@ event_map (dzn::container< ::blocking_shell, std::function<void()>>& c)
   c.system.r_outer.meta.provide.meta = &c.meta;
   c.system.r_outer.meta.provide.port = "r_outer";
 
-
+  // NOTE the use of parallel executing the events, i.e. the usage of std::thread.
   return {{"illegal", []{std::clog << "illegal" << std::endl; std::exit(0);}}
     , {"r_outer.foo",[&]{c.system.r_outer.out.foo(0);}}
     , {"p_outer.return_void",[&]{std::thread([&]{c.system.p_outer.in.return_void(); c.match("p_outer.return");}).detach();}}

@@ -39,6 +39,9 @@ DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.cs.make,$(MAKEFILE_LIST)
 IN_SOURCES := $(wildcard $(IN)/*.cs) $(wildcard $(IN)/cs/*.cs)
 RUNTIME_SOURCES := $(wildcard $(DEVELOPMENT)/runtime/cs/dzn/*.cs)
 OUT_SOURCES := $(wildcard $(OUT)/*cs)
+ifneq ($(filter %/container.cs,$(IN_SOURCES)),)
+OUT_SOURCES := $(filter-out %/container.cs,$(RUNTIME_SOURCES))
+endif
 ifneq ($(filter %/main.cs,$(IN_SOURCES)),)
 OUT_SOURCES := $(filter-out %/main.cs,$(OUT_SOURCES))
 endif
