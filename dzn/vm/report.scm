@@ -553,7 +553,7 @@
 
     (when (and (equal? trace "trace")
                eligible)
-      (let ((eligible (if (is-a? status <end-of-trail>) (end-of-trail-labels pc)
+      (let ((eligible (if (and (is-a? status <end-of-trail>) (.ast status)) (end-of-trail-labels pc)
                           eligible)))
         (format #t "~s\n" (cons 'labels (labels)))
         (format #t "~s\n" (cons 'eligible eligible))))
