@@ -228,7 +228,10 @@
                                                      (else #f)))))
                 (and event (format #f "~a.~a" instance event))))
 
-            (cond ((not trace-step?)
+            (cond ((or (not statement)
+                       (is-a? statement <end-of-on>)
+                       (is-a? statement <flush-return>)))
+                  ((not trace-step?)
                    (when (and locations? verbose?)
                      (let ((string (step->string pc)))
                        (when string

@@ -97,9 +97,10 @@ instance-event   <-  dotted-event / instance event
 dotted-event     <-- '...'
 instance         <-- (name DOT)*
 event            <-- name / number
-message          <-- (!(eol / arrow / ws) .)+
-location         <-- (!COLON .)+ COLON location-number COLON location-number COLON
+message          <-- (!(eol / arrow) .)+
+location         <-- (!(COLON / SEMICOLON / eol) .)+ COLON location-number COLON location-number COLON
 COLON            <-  ':'
+SEMICOLON        <-  ';'
 DOT              <   '.'
 arrow            <-  in / out
 in               <-- '->'
@@ -305,13 +306,29 @@ ws               <   [ \t]
      location
      (message-message o))))
 
+(define (eligible->string o)
+  (with-output-to-string (cut display (cons 'eligible (eligible-sexp o)))))
+
+(define (header->string o)
+  (with-output-to-string (cut display (cons 'header (header-sexp o)))))
+
+(define (labels->string o)
+  (with-output-to-string (cut display (cons 'labels (labels-sexp o)))))
+
+(define (trail->string o)
+  (with-output-to-string (cut display (cons 'trail (trail-sexp o)))))
+
 (define (state->string o)
   (with-output-to-string (cut display (cons 'state (state-sexp o)))))
 
 (define (step->code o)
   (cond ((communication? o) (communication->code o))
+        ((eligible? o) (eligible->string o))
+        ((header? o) (header->string o))
+        ((labels? o) (labels->string o))
+        ((message? o) (message->string o))
         ((state? o) (state->string o))
-        ((message? o) (message->string o))))
+        ((trail? o) (trail->string o))))
 
 (define (communication-port o)
   (and=> o last))
@@ -475,10 +492,12 @@ ws               <   [ \t]
     (cond ((equal? format "sexp") (if (dzn:command-line:get 'json) (scm->json-string (map serialize structured))
                                       (map serialize structured)))
           ((equal? format "event")
-           (let ((communications (filter (disjoin (conjoin (negate q-out?) external?) message?) merged)))
+           (let ((communications (filter (conjoin (negate q-out?) external?) merged)))
              (string-join (map step->event communications) "\n" 'suffix)))
           (else
-           (let ((communications (filter (disjoin (conjoin (negate q-out?) communication?) state? message?) merged)))
+           (let ((communications (filter (disjoin (conjoin (negate q-out?) communication?)
+                                                  message? state?)
+                                         merged)))
              (string-join (map step->code communications) "\n" 'suffix))))))
 
 (define* (format-trace trace #:key file-name format debug?)
