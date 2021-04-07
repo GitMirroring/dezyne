@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -26,6 +26,7 @@
 
 (define-module (dzn parse util)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 regex)
   #:use-module (srfi srfi-9 gnu)
   #:export (<location>
             make-location
@@ -34,6 +35,7 @@
             location-line
             location-column
             location->string
+            string->location
 
             line-column->offset
             offset->line-column
@@ -89,3 +91,12 @@
   (match (offset->line-column offset text)
     ((line . column)
      (make-location file-name line column))))
+
+(define (string->location string)
+  "Parse STRING as file-name:line:[column:]: message and return a
+<location>."
+  (let ((m (string-match "([^:]*):([0-9]+):(([0-9]+):)?" string)))
+    (and m
+         (make-location (match:substring m 1)
+                        (string->number (match:substring m 2))
+                        (or (and=> (match:substring m 4) string->number) 0)))))

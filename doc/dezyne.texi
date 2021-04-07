@@ -4986,7 +4986,7 @@ The @var{option}s can be among the following:
 @item --format=@var{format}
 @itemx -f @var{format}
 Display trace in format @var{format}, one of @code{diagram},
-@code{event}, or @code{sexp}.  The default is @code{code}.
+@code{event}, @code{json}, or @code{sexp}.  The default is @code{code}.
 
 @item --help
 @itemx -h

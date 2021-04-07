@@ -38,6 +38,7 @@
 
   #:use-module (dzn peg)
   #:use-module (dzn parse)
+  #:use-module (dzn parse util)
 
   #:use-module (json)
 
@@ -65,7 +66,7 @@
 Usage: dzn trace [OPTION]... FILE
 Convert between different trace formats
 
-  -f, --format=FORMAT    display trace in format FORMAT [event] {code,diagram,event,sexp}
+  -f, --format=FORMAT    display trace in format FORMAT [event] {code,diagram,event,json,sexp}
   -h, --help             display this help and exit
   -i, --internal         display system-internal events
   -L, --locations        prepend locations to output trace
@@ -168,6 +169,9 @@ ws               <   [ \t]
   (line message-line)
   (location message-location)
   (message message-message))
+
+(define (message-text-equal? a b)
+  (equal? (message-message a) (message-message b)))
 
 (define-immutable-record-type <eligible>
   (make-eligible sexp)
@@ -385,6 +389,11 @@ ws               <   [ \t]
   (and (communication? o)
        (communication-right o)
        (q-instance? (communication-right o))))
+
+(define (q-in? o)
+  (and (communication? o)
+       (communication-left o)
+       (q-instance? (communication-left o))))
 
 (define (step->event o)
   (cond ((communication? o)
@@ -768,6 +777,194 @@ ws               <   [ \t]
                                               (list (trail->string step)))))))
                        (append lines (loop tail))))))))))
 
+
+;;;
+;;; JSON
+;;;
+(define-immutable-record-type <lifeline-header>
+  (make-lifeline-header text role)
+  lifeline-header?
+  (text lifeline-header-text)
+  (role lifeline-header-role))
+
+(define (lifeline-header->scm o)
+  `((instance . ,(lifeline-header-text o))
+    (role     . ,(lifeline-header-role o))))
+
+(define-immutable-record-type <lifeline-activity>
+  (make-lifeline-activity key time location)
+  lifeline-activity?
+  (key lifeline-activity-key)
+  (time lifeline-activity-time)
+  (location lifeline-activity-location))
+
+(define (lifeline-activity->scm o)
+  (define (location-string->scm-location string)
+    (let ((loc (string->location string)))
+      (if (not loc) '()
+          `((location . ((file-name . ,(location-file loc))
+                         (line      . ,(location-line loc))
+                         (column    . ,(location-column loc))))))))
+  `((key      . ,(lifeline-activity-key o))
+    (time     . ,(lifeline-activity-time o))
+    ,@(let ((location (lifeline-activity-location o)))
+        (if location (location-string->scm-location location) '()))))
+
+(define-immutable-record-type <lifeline-label>
+  (make-lifeline-label text role illegal?)
+  lifeline-label?
+  (text lifeline-label-text)
+  (role lifeline-label-role)
+  (illegal? lifeline-label-illegal?))
+
+(define (lifeline-label->scm o)
+  `((text . ,(lifeline-label-text o))
+    (role . ,(lifeline-label-role o))
+    ,@(if (lifeline-label-illegal? o) `((illegal . #t)) '())))
+
+(define-immutable-record-type <lifeline-event>
+  (make-lifeline-event text from to type messages)
+  lifeline-event?
+  (text lifeline-event-text)
+  (from lifeline-event-from)
+  (to lifeline-event-to)
+  (type lifeline-event-type)
+  (messages lifeline-event-messages))
+
+(define (lifeline-event->scm o)
+  (define (message->scm message)
+    `((location  . ,(message-location message))
+      (text      . ,(message-message message))))
+  `((text     . ,(lifeline-event-text o))
+    (from     . ,(lifeline-event-from o))
+    (to       . ,(lifeline-event-to o))
+    (type     . ,(lifeline-event-type o))
+    ,@(let ((messages (lifeline-event-messages o)))
+        (if (null? messages) '()
+            `((message . ,(message-message (car messages))))))))
+
+(define (instance-state->scm sut-name o)
+  (define state->scm
+    (match-lambda
+      ((name . value)
+       `(("name" . ,(symbol->string name))
+         ("value" . ,(symbol->string value))))))
+  (match o
+    ((instance state ...)
+     (let ((name (if (equal? instance '(sut)) sut-name (instance->string instance))))
+       `(("instance" . ,name)
+         ("state"    . ,(list->vector (map state->scm state))))))))
+
+(define (lifeline-state->scm sut-name o)
+  (list->vector (map (cute instance-state->scm sut-name <>) (state-sexp o))))
+
+(define-immutable-record-type <lifeline>
+  (make-lifeline header activities labels)
+  lifeline?
+  (header lifeline-header)
+  (activities lifeline-activities)
+  (labels lifeline-labels))
+
+(define (lifeline->scm o)
+  `((header     . ,(lifeline-header->scm (lifeline-header o)))
+    (activities . ,(list->vector (map lifeline-activity->scm (lifeline-activities o))))
+    (labels     . ,(list->vector (map lifeline-label->scm (lifeline-labels o))))))
+
+(define (communication-instance->path instance)
+  (match instance
+    (("<external>" path ...) (map string->symbol path))
+    (("sut" path ... port) (map string->symbol (cons "sut" path)))))
+
+(define (header-instance->name instance)
+  (match instance
+    ((('sut) type kind)
+     (symbol->string type))
+    ((path type kind)
+     (string-join (map symbol->string path) "."))))
+
+(define (trace:steps->json steps)
+  "Produce P5 JSON output from STEPS."
+
+  (define* (instance->lifeline instance activities labels eligible)
+    (define (lifeline-label label kind)
+      (make-lifeline-label label kind (and (not (equal? label "<back>"))
+                                           (not (member label eligible)))))
+    (match instance
+      ((path type kind)
+       (let* ((name       (header-instance->name instance))
+              (header     (make-lifeline-header name kind))
+              (prefix     (string-append name "."))
+              (labels     (if (eq? kind 'component) '("<back>")
+                              (filter (cute string-prefix? prefix <>) labels)))
+              (labels     (map (cute lifeline-label <> kind) labels))
+              (activities (assoc-ref activities path)))
+         (make-lifeline header activities labels)))))
+
+  (let* ((header (find header? steps))
+         (r-steps (reverse steps))
+         (eligible (find eligible? r-steps))
+         (eligible (and eligible (eligible-sexp eligible)))
+         (labels (find labels? r-steps))
+         (labels (if labels (labels-sexp labels) '()))
+         (header (header-sexp header))
+         (instances (filter (match-lambda ((path name type) (not (eq? type 'system)))) header))
+         (sut-name (match (assoc-ref instances '(sut)) ((name kind) (symbol->string name)) (_ #f)))
+         (activities-alist (map (compose list car) instances))
+         (communications (filter communication? steps))
+         (states (filter state? steps))
+         (messages (delete-duplicates (filter message? steps) message-text-equal?)))
+
+    ;; loop: cdr through communications, building up activities and events from each communication
+    (let loop ((communications communications) (activities activities-alist) (events '()))
+      (if (null? communications)
+          (let ((lifelines (map (cute instance->lifeline <> activities labels eligible) instances)))
+            (scm->json-string
+             `((working-directory . ,(getcwd))
+               (lifelines . ,(list->vector (map lifeline->scm lifelines)))
+               (events    . ,(list->vector (map lifeline-event->scm events)))
+               (states    . ,(list->vector (map (cute lifeline-state->scm sut-name <>) states))))))
+          (let* ((communication  (car communications))
+                 (last?          (null? (cdr communications)))
+                 (direction      (communication-direction communication))
+                 (left           (communication-left communication))
+                 (right          (communication-right communication))
+                 (from           (if (eq? direction 'in) left right))
+                 (to             (if (eq? direction 'in) right left))
+                 (from           (and from (communication-instance->path from)))
+                 (to             (and to (communication-instance->path to)))
+                 (label          (communication-event communication))
+                 (time           (length events))
+                 (key-from       (1+ (* 2 time)))
+                 (location-left  (communication-left-location communication))
+                 (location-right (communication-right-location communication))
+                 (location-from  (if (eq? direction 'in) location-left location-right))
+                 (location-to    (if (eq? direction 'in) location-right location-left))
+                 (activity-from  (make-lifeline-activity key-from time location-from))
+                 (key-to         (1+ key-from))
+                 (activity-to    (make-lifeline-activity key-to time location-to))
+                 (type           (if (or (member label '("true" "false" "return"))
+                                         (string->number label)
+                                         ;;TODO: fix ambiguity: "in void Bool_True();"
+                                         (string-index label #\_))
+                                     "return"
+                                     direction))
+                 (messages       (if (or (null? messages) (not last?)) '()
+                                     messages))
+                 ;; XXX FIXME: type overload?
+                 (type           (if (null? messages) type "error"))
+                 (event          (make-lifeline-event label key-from key-to type messages))
+                 (activities     (acons from
+                                        (append (or (assoc-ref activities from) '())
+                                                (list activity-from))
+                                        activities))
+                 (activities     (acons to
+                                        (append (or (assoc-ref activities to) '())
+                                                (list activity-to))
+                                        activities)))
+            (loop (cdr communications)
+                  activities
+                  (append events (list event))))))))
+
 (define* (trace:format-trace trace #:key file-name format internal? debug?)
   (let* ((structured (trace:trace->structured trace #:file-name file-name #:debug? debug?))
          (merged (merge-communications structured)))
@@ -783,6 +980,8 @@ ws               <   [ \t]
                                          merged)))
              (let ((header (find header? structured)))
                (string-join (step:steps->diagram header communications #:internal? internal?) "\n" 'suffix))))
+          ((equal? format "json")
+           (trace:steps->json merged))
           (else
            (let ((communications (filter (disjoin (conjoin (negate q-out?) communication?)
                                                   message? state?)
