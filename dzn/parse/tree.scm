@@ -83,8 +83,10 @@
             context:dotted-name
             context:full-name
 
+            tree:component?
             tree:context?
             tree:declaration?
+            tree:foreign?
             tree:in?
             tree:location?
             tree:model?
@@ -93,6 +95,7 @@
             tree:provides?
             tree:requires?
             tree:scope?
+            tree:system?
             tree:type?
 
             tree:collect
@@ -450,7 +453,8 @@ procedure)."
     (((? symbol? (? (cute memq <> tree:record)) type) slot ...)
      o)
     (((? symbol?) slot ...)
-     (warn "XXX tree? noisy fallback:" o))
+     (format (current-error-port)
+             "programming-warning: tree?: missing-type: ~a\n" o))
     (_
      #f)))
 
@@ -514,6 +518,22 @@ procedure)."
     (((? symbol? type) slot ...)
      (memq type tree:model))
     (_ #f)))
+
+(define (tree:component? o)
+  (and (is-a? o 'component)
+       (.behaviour o)
+       o))
+
+(define (tree:foreign? o)
+  (and (is-a? o 'component)
+       (not (tree:component? o))
+       (not (tree:system? o))
+       o))
+
+(define (tree:system? o)
+  (and (is-a? o 'component)
+       (.system o)
+       o))
 
 (define (tree:type? o)
   (match o

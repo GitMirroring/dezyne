@@ -4597,10 +4597,12 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
 
 Commands:
   code
+  explore
   hello
   language
   lts
   parse
+  simulate
   trace
   traces
   verify
@@ -4882,6 +4884,9 @@ Display help on invoking @code{dzn parse}, and then exit.
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
+
+@item --list-models
+List the Dezyne models defined in the file, with their type.
 
 @item --locations
 @itemx -L

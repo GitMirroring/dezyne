@@ -34,6 +34,7 @@
   #:use-module (json)
 
   #:use-module (dzn command-line)
+  #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse tree)
@@ -108,6 +109,19 @@ Parse a Dezyne file and produce an AST
          (debug? (dzn:command-line:get 'debug #f)))
     (file->stream file-name #:debug? debug? #:imports imports)))
 
+(define (list-models file-name)
+  "For each model in FILE-NAME, print 'name type'."
+  (let* ((text (with-input-from-file file-name read-string))
+         (tree (string->parse-tree text)))
+    (define (print-model context)
+      (let* ((model (find tree:model? context))
+             (type (cond ((is-a? model 'interface) 'interface)
+                         ((tree:component? model) 'component)
+                         ((tree:foreign? model) 'foreign)
+                         ((tree:system? model) 'system))))
+        (format #t "~a ~a\n" (context:dotted-name context) type)))
+    (for-each print-model (tree:model* tree))))
+
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
@@ -116,9 +130,7 @@ Parse a Dezyne file and produce an AST
          (preprocess? (option-ref options 'preprocess #f)))
     (cond (preprocess?
            (display (preprocess options file-name)))
-          (list-models? (let ((tree (string->parse-tree (with-input-from-file file-name read-string))))
-                          (for-each (compose write-line context:dotted-name)
-                                    (tree:model* tree))))
+          (list-models? (list-models file-name))
           (else
            (let ((ast (parse options file-name)))
              (if (option-ref options 'output #f)
