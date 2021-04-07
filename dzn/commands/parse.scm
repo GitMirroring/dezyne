@@ -36,6 +36,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg)
+  #:use-module (dzn parse tree)
   #:use-module (dzn shell-util)
   #:use-module (dzn ast)
   #:use-module (dzn wfc)
@@ -51,6 +52,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
+            (list-models (single-char #\l))
             (locations (single-char #\L))
             (preprocess (single-char #\E))
             (parse-tree (single-char #\t))
@@ -69,6 +71,7 @@ Parse a Dezyne file and produce an AST
   -E, --preprocess       resolve imports and produce content stream
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
+  -l, --list-models      print the name of each model in FILE
   -L, --locations        show locations in output AST
   -m, --model=MODEL      generate ast for MODEL
   -t, --parse-tree       write PEG parse tree
@@ -109,9 +112,13 @@ Parse a Dezyne file and produce an AST
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (and (pair? files) (car files)))
+         (list-models? (command-line:get 'list-models))
          (preprocess? (option-ref options 'preprocess #f)))
     (cond (preprocess?
            (display (preprocess options file-name)))
+          (list-models? (let ((tree (string->parse-tree (with-input-from-file file-name read-string))))
+                          (for-each (compose write-line context:dotted-name)
+                                    (tree:model* tree))))
           (else
            (let ((ast (parse options file-name)))
              (if (option-ref options 'output #f)

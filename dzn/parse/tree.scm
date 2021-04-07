@@ -80,6 +80,9 @@
             .value
             .var
 
+            context:dotted-name
+            context:full-name
+
             tree:context?
             tree:declaration?
             tree:in?
@@ -110,6 +113,7 @@
             tree:import*
             tree:int*
             tree:interface*
+            tree:model*
             tree:port*
             tree:trigger*
             tree:type*
@@ -225,7 +229,9 @@ procedure)."
     ((or (? (is? 'enum))
          (? (is? 'int))
          (? (is? 'namespace))
-         (? (is? 'type-name)))
+         (? (is? 'type-name))
+         (? (is? 'component))
+         (? (is? 'interface)))
      (slot o 'compound-name))
     ((or (? (is? 'call))
          (? (is? 'compound-name))
@@ -236,7 +242,9 @@ procedure)."
          (? (is? 'variable)))
      (slot o 'name))
     ((? (is? 'event))
-     (.name (slot o 'event-name)))))
+     (.name (slot o 'event-name)))
+    ((? (is? 'root))
+     "")))
 
 (define (.namespace-root o)
   (match o
@@ -377,6 +385,7 @@ procedure)."
    tree:model
    tree:type
    '(arguments
+     argument
      behaviour
      behaviour-compound
      behaviour-statements
@@ -404,6 +413,7 @@ procedure)."
      group
      illegal-trigger
      illegal-triggers
+     injected
      import
      instance
      instances-and-bindings
@@ -428,6 +438,7 @@ procedure)."
      system
      trigger
      trigger-formals
+     trigger-formal
      triggers
      type-name
      types-and-events
@@ -557,6 +568,9 @@ procedure)."
 (define (.tree context)
   (and (tree:context? context) (car context)))
 
+(define* (tree->context tree #:optional (context '()))
+  (cons tree context))
+
 (define (.parent context)
   (and (tree:context? context) (cdr context)))
 
@@ -588,8 +602,31 @@ procedure)."
 
 
 ;;;
+;;; Context accessors.
+;;;
+
+(define* (context:collect predicate tree #:optional (context '()))
+  (if (not (tree? tree)) '()
+      (let* ((context (tree->context tree context))
+             (rest (append-map (cute context:collect predicate <> context) tree)))
+        (if (not (predicate tree)) rest
+            (cons context rest)))))
+
+(define (context:full-name context)
+  (append-map (compose tree:id* .name) (filter tree:scope? (reverse context))))
+
+(define (context:dotted-name context)
+  (string-join (filter (negate string-null?) (context:full-name context)) "."))
+
+
+;;;
 ;;; Parse tree accessors.
 ;;;
+
+(define (tree:model* tree)
+  (if (not (tree? tree)) '()
+      (context:collect tree:model? tree)))
+
 
 (define (tree:collect o predicate)
   (if (predicate o) (cons o (append-map (cute tree:collect <> predicate) o))
@@ -699,7 +736,9 @@ procedure)."
     ((? (is? 'compound-name))
      (append (tree:id* (.scope o)) (tree:id* (.name o))))
     (((? string? id) ...)
-     o)))
+     o)
+    ((? string?)
+     (list o))))
 
 (define (tree:import* o)
   (match o
