@@ -406,12 +406,14 @@ procedure)."
      events
      expression
      extern
+     external
      field-test
      fields
      file-name
      formal
      formals
      function
+     from
      global
      group
      illegal-trigger
@@ -435,10 +437,13 @@ procedure)."
      port-qualifiers
      ports
      provides
+     range
      requires
+     return
      root
      scope
      system
+     to
      trigger
      trigger-formals
      trigger-formal
