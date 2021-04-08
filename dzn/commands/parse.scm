@@ -111,8 +111,14 @@ Parse a Dezyne file and produce an AST
 
 (define (list-models file-name)
   "For each model in FILE-NAME, print 'name type'."
-  (let* ((text (with-input-from-file file-name read-string))
-         (tree (string->parse-tree text)))
+  (let* ((debug? (dzn:command-line:get 'debug #f))
+         (text (with-input-from-file file-name read-string))
+         (tree (call-with-handle-exceptions
+                (lambda _
+                  (parameterize ((%peg:fall-back? #t))
+                    (string->parse-tree text #:file-name file-name)))
+                #:backtrace? debug?
+                #:file-name file-name)))
     (define (print-model context)
       (let* ((model (find tree:model? context))
              (type (cond ((is-a? model 'interface) 'interface)
