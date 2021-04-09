@@ -169,7 +169,7 @@ namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
 interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# behaviour# BRACE-CLOSE#
 
   types-and-events <-- (type / event / &behaviour)#+
-    event <-- direction type-name# event-name# formals# SEMICOLON#
+    event <-- direction type-name# event-name# enter-frame formals# exit-frame SEMICOLON#
       direction <-- IN / OUT
 
 component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-OPEN# ports# body# BRACE-CLOSE#

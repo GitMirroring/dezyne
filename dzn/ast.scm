@@ -614,7 +614,7 @@
 (define-method (ast:type (o <variable>))
   (.type o))
 (define-method (ast:type (o <var>))
-  ((compose .type .variable) o))
+  (and=> (.variable o) .type))
 (define-method (ast:type (o <void>)) o)
 
 (define-method (ast:type (o <bool-expr>))

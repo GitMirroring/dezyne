@@ -379,6 +379,7 @@ PARSER_TESTS =					\
  %D%/wf_variableInitExpression			\
  %D%/undefined/component/action			\
  %D%/undefined/component/argument		\
+ %D%/undefined/component/argument_seen		\
  %D%/undefined/component/guard			\
  %D%/undefined/component/if			\
  %D%/undefined/component/port			\
