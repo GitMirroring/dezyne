@@ -1,1 +1,8 @@
-event-slot@trigger
+this.#.port.name .#.event.direction port.#.event.name  =
+  (#x:formal-parameter) => {
+    #x:out-ref-local  dzn_runtime.handle(this,
+    () => {
+      #.port.name _#.event.name(#x:code-arguments);
+    });
+    #x:assign-out-ref
+};
