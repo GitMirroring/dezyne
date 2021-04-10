@@ -7,4 +7,4 @@
      ##:out (make <#x:port-type .out>
      ##:name "#.name "
      ##:self o
-     #x:declare-method))))
+     #x:declare-async-method))))

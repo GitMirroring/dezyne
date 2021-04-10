@@ -1,0 +1,1 @@
+##:#.event.name  (lambda args (dzn:handle o (lambda _ (apply #.port.name -#.event.name  (cons o args)))))

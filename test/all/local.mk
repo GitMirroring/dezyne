@@ -113,6 +113,7 @@ REGRESSION_TESTS =				\
  %D%/async_prio3				\
  %D%/async_rank					\
  %D%/async_ranking				\
+ %D%/async_shell				\
  %D%/async_types				\
  %D%/illegal_async_silent				\
  %D%/async_simple				\

@@ -67,6 +67,7 @@
 
 (define-templates expand-on scheme:expand-on)
 (define-templates declare-method code:trigger double-newline-infix)
+(define-templates declare-async-method code:trigger double-newline-infix)
 
 (define-templates declare-async-req-method scheme:async-req double-newline-infix)
 (define-templates declare-async-clr-method scheme:async-clr double-newline-infix)

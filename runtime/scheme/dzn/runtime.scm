@@ -53,6 +53,7 @@
             dzn:clone
 
             dzn:connect
+            dzn:handle
             dzn:path
             dzn:rank
             dzn:trace
@@ -172,7 +173,7 @@
 (define (dzn:flush o)
   (when (not (external? o))
     (while (not (q-empty? (.dzn-q o)))
-      (handle o (deq! (.dzn-q o))))
+      (dzn:handle o (deq! (.dzn-q o))))
     (and=> (.deferred? o)
            (lambda (target)
              (set! (.deferred? o) #f)
@@ -181,7 +182,7 @@
 
 (define (defer i o f)
   (if (and (not (and i (.flushes? i))) (not (.handling? o)))
-      (handle o f)
+      (dzn:handle o f)
       (begin
         (enq! (.dzn-q o) f)
         (if i
@@ -195,7 +196,7 @@
     (dzn:flush o)
     r))
 
-(define (handle o f)
+(define-method (dzn:handle (o <dzn:component>) f)
   (if (not (.handling? o))
       (begin
         (set! (.handling? o) #t)
@@ -214,7 +215,7 @@
 (define-method (call-in (o <dzn:component>) f m)
   (let ((log (dzn:get (.locator o) <procedure> 'trace)))
     (apply dzn:trace (cons log (take m 2)))
-    (let ((r (handle o f)))
+    (let ((r (dzn:handle o f)))
       (dzn:trace-out log (car m) (dzn:return-value r))
       r)))
 
