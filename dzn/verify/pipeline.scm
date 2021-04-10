@@ -332,30 +332,38 @@ for MODEL, using ROOT."
                  file-name)))))
    (string-join (map command->string commands) " \\\n  | "))
 
-(define* (verify-pipeline out root model #:key (init (get-init model)) stdout?)
+(define* (unmemoized-verify-pipeline out root model #:key (init (get-init model)) stdout?)
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
 init for MODEL unless INIT.  When STDOUT?, write result
 to (current-output-port)."
-  (define memoizing-verify-pipeline
-    (pure-funcq
-     (lambda (out root model init)
-       (let* ((out (symbol->string out))
-              (init (symbol->string init)))
-         (define ((prepare options) next result)
-           (let ((next (if (procedure? next) (next options) next)))
-             (cons next result)))
-         (let* ((options (make-options root model init))
-                (commands (get-commands in-out.pipeline out))
-                (commands (reverse (fold (prepare options) '() commands))))
-           (when (dzn:command-line:get 'debug)
-             (format (current-error-port) "~a\n"
-                     (pretty-verify-pipeline commands out root model)))
-           (let* ((pipeline (if stdout? pipeline->port pipeline->string))
-                  (result status (pipeline commands)))
-             (list result status)))))))
-  (apply values (memoizing-verify-pipeline (string->symbol out)
-                                           root model
-                                           (string->symbol init))))
+  (define ((prepare options) next result)
+    (let ((next (if (procedure? next) (next options) next)))
+      (cons next result)))
+  (let* ((options (make-options root model init))
+         (commands (get-commands in-out.pipeline out))
+         (commands (reverse (fold (prepare options) '() commands))))
+    (when (dzn:command-line:get 'debug)
+      (format (current-error-port) "~a\n"
+              (pretty-verify-pipeline commands out root model)))
+    (let* ((pipeline (if stdout? pipeline->port pipeline->string))
+           (result status (pipeline commands)))
+      (values result status))))
+
+(define memoizing-verify-pipeline
+  (pure-funcq
+   (lambda* (out root model #:key init)
+     (let* ((out (symbol->string out))
+            (init (symbol->string init))
+            (result status (unmemoized-verify-pipeline
+                            out root model #:init init)))
+       (list result status)))))
+
+(define* (verify-pipeline out root model #:key (init (get-init model)))
+  "Create a verify pipeline to produce OUT from MODEL.  Use standard
+init for MODEL unless INIT."
+  (let ((out (string->symbol out))
+        (init (string->symbol init)))
+    (apply values (memoizing-verify-pipeline out root model #:init init))))
 
 
 ;;;
@@ -582,7 +590,7 @@ to (current-output-port)."
 
 (define* (verification:partial root model-name #:key out)
   (let ((model (makreel:get-model root model-name)))
-    (verify-pipeline out root model #:stdout? #t)))
+    (unmemoized-verify-pipeline out root model #:stdout? #t)))
 
 (define* (verification:verify options root #:key all? model-name)
   (define (model-names-for-verification root)

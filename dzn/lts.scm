@@ -857,20 +857,21 @@ required to be non-deterministic."
       (_ label)))
   (or (helper (parse-label label)) "tau"))
 
+(define memoizing-cleanup-label
+  (pure-funcq
+   (lambda* (label #:key internal? illegal? prefix)
+     (let ((prefix-length (and prefix (string-length prefix))))
+       (define (drop-prefix o)
+         (if (and prefix (string-prefix? prefix o)) (substring o prefix-length)
+             o))
+       (format #f "\"~a\""
+               (drop-prefix (cleanup-label (symbol->string label)
+                                           #:illegal? illegal?
+                                           #:internal? internal?)))))))
+
 (define* (cleanup-aut #:key file-name (illegal? #t) (internal? #t) prefix)
   (let ((input-port (if file-name (open-input-file file-name) (current-input-port)))
-        (label-re (make-regexp "\"([^\"]*)\""))
-        (prefix-length (and prefix (string-length prefix))))
-    (define (drop-prefix o)
-      (if (and prefix (string-prefix? prefix o)) (substring o prefix-length)
-          o))
-    (define memoizing-cleanup-label
-      (pure-funcq
-       (lambda* (label #:key internal? illegal?)
-         (format #f "\"~a\""
-                 (drop-prefix (cleanup-label (symbol->string label)
-                                             #:illegal? illegal?
-                                             #:internal? internal?))))))
+        (label-re (make-regexp "\"([^\"]*)\"")))
     (let loop ((line (read-line input-port 'concat)))
       (unless (eof-object? line)
         (let ((out-line (regexp-substitute/global
@@ -878,8 +879,10 @@ required to be non-deterministic."
                          'pre
                          (compose (cute memoizing-cleanup-label <>
                                         #:illegal? illegal?
-                                        #:internal? internal?)
-                                  string->symbol (cute match:substring <> 1))
+                                        #:internal? internal?
+                                        #:prefix prefix)
+                                  string->symbol
+                                  (cute match:substring <> 1))
                          'post)))
           (display out-line))
         (loop (read-line input-port 'concat))))))
