@@ -123,15 +123,14 @@
      ((provides-trigger? event)
       (run-to-completion pc event)))))
 
-;; table is initially (<(string-hash "<illegal>") . 0>)
+;; table is initially (<"<illegal>") . 0>)
 (define* ((pc->state-number table count) pc #:optional trail)
   (let* ((pc-string (pc->string pc))
          (pc-string (if trail (string-append pc-string " t:" trail) pc-string))
-         (key (string-hash pc-string))
-         (next (hash-ref table key)))
+         (next (hash-ref table pc-string)))
     (if next next
         (let ((n (car count)))
-          (hash-set! table key n)
+          (hash-set! table pc-string n)
           (set-car! count (1+ (car count)))
           n))))
 
@@ -152,7 +151,7 @@ LTS
          (state-number-table (make-hash-table))
          (state-number-count (list 1))
          (pc->state-number (pc->state-number state-number-table state-number-count)))
-    (hash-set! state-number-table (string-hash "<illegal>") 0)
+    (hash-set! state-number-table "<illegal>" 0)
     (when (.status pc)
       (let ((pc0 (clone pc #:status #f)))
         (hash-set! lts 1 (cons pc0 (list (list pc0 pc))))))
