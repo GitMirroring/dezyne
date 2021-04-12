@@ -276,6 +276,7 @@ REGRESSION_TESTS =				\
  %D%/system_hello				\
  %D%/system_hello_world				\
  %D%/system_helloworld				\
+ %D%/system_flush				\
  %D%/system_inevitable				\
  %D%/system_mix_bindings			\
  %D%/system_nondet_out				\

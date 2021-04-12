@@ -105,51 +105,6 @@
     ((? (is? <ast>)) (tree-map (annotate-otherwise statements) o))
     (_ o)))
 
-(define* ((transform-action #:optional model) o)
-  (define (component? x) (is-a? model <component>))
-
-  (define (system-port-event? trigger)
-    ;; instance-path
-    ;; port-name
-
-    (and (ast:provides? (.port trigger))
-         (ast:out? (.event trigger))))
-
-  (define (add-flush o f)
-    (match o
-      ((and ($ <compound>) (? ast:imperative?))
-       (clone o #:elements (append (ast:statement* o) f)))
-      ((? ast:imperative?)
-       (make <compound> #:elements (cons o f) #:location (.location o)))
-      (($ <compound>)
-       (clone o #:elements (map (cut add-flush <> f) (ast:statement* o))))
-      (($ <guard>) (clone o #:statement (add-flush (.statement o) f)))
-      (($ <blocking>) (clone o #:statement (add-flush (.statement o) f)))))
-
-  (match o
-    ((and ($ <on>) (= ast:trigger* triggers) (= .statement statement))
-     (let* ((statement ((transform-action model) statement))
-            (actions (tree-collect (is? <action>) statement))
-            (blocking? (or (parent o <blocking>)
-                           (pair? (tree-collect (is? <blocking>) o))))
-            (trigger ((compose car ast:trigger*) o))
-            (model (parent o <model>))
-            (statement (if (or (is-a? model <interface>)
-                               (and (null? actions) (not blocking?))
-                               (ast:out? (.event trigger))
-                               (is-a? (.event trigger) <modeling-event>)) statement
-                           (add-flush statement (list (clone (make <flush> #:location (.location o)) #:parent statement))))))
-       (clone o #:statement statement)))
-
-    (($ <interface>)
-     (clone o #:behaviour ((transform-action o) (.behaviour o))))
-
-    (($ <component>)
-     (clone o #:behaviour ((transform-action o) (.behaviour o))))
-
-    ((? (is? <ast>)) (tree-map (transform-action model) o))
-    (_ o)))
-
 (define (transform-end-of-on o)
   (define (add-end-of-on o r)
     (match o
@@ -211,7 +166,6 @@
     add-function-return
     set-blocking-reply-port
     transform-end-of-on
-    (transform-action)
     (annotate-otherwise)
     purge-data)
    root))

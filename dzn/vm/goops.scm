@@ -38,7 +38,6 @@
             <end-of-on>
             <flush-async>
             <flush-return>
-            <flush>
             <initial-compound>
             <program-counter>
 
@@ -106,8 +105,6 @@
 (define-ast <unblock> (<imperative>))
 
 (define-ast <end-of-on> (<imperative>))
-
-(define-ast <flush> (<imperative>))
 
 (define-ast <flush-return> (<imperative>))
 
