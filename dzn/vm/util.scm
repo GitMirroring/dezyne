@@ -72,6 +72,8 @@
             requires-trigger?
             rewrite-trace-head
             rtc-program-counter-equal?
+            rtc-port
+            rtc-trigger
             serialize
             serialize-header
             set-deferred
@@ -285,6 +287,13 @@
 
 (define-method (push-pc (pc <program-counter>) (instance <runtime:instance>) (statement <statement>))
   (clone pc #:previous pc #:instance instance #:statement statement))
+
+(define-method (rtc-trigger (pc <program-counter>))
+  (let ((triggers (unfold (negate (cute .previous <>)) .trigger .previous pc)))
+    (last triggers)))
+
+(define-method (rtc-port (pc <program-counter>))
+  (and=> (rtc-trigger pc) .port))
 
 
 ;;;

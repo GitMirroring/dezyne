@@ -217,7 +217,7 @@
     ("req"
      (let* ((instance (.instance pc))
             (trigger (clone (make <q-trigger> #:port.name (.port.name o) #:event.name "ack")
-                            #:parent ((compose .type .ast) instance)))
+                            #:parent ((compose .behaviour .type .ast) instance)))
             (ack (lambda (pc) (list (begin-step pc instance trigger))))
             (rank (.rank instance))
             (pc (clone pc #:async (acons rank (cons (.port o) ack) (.async pc)))))
