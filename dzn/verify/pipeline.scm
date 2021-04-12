@@ -502,7 +502,7 @@ init for MODEL unless INIT."
                (list (cut report 'deadlock #f (get-trace 'deadlock result) #f info 'interface model-name)
                      (cut report 'livelock #f (get-trace 'livelock result) #f info 'interface model-name)))))
 
-(define (mcrl2:verify-compliance root aut model)
+(define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))
          (lines (and output (string-split output #\newline)))
          (stdout-status (and lines (filter (cut string-prefix? "result: " <>) lines)))
@@ -546,10 +546,9 @@ init for MODEL unless INIT."
   (let* ((model-name (makreel:unticked-dotted-name model))
          (result status (verify-pipeline "verify-component" root model))
          (result (result-split result))
-         (lts (get-lts result))
          (info (get-info 'deterministic result))
          (refinement-trace interface-accepts component-accepts
-                           (mcrl2:verify-compliance root lts model)))
+                           (mcrl2:verify-compliance root model)))
     (define (report-assert assert)
       (report assert #f (get-trace assert result) #f info 'component model-name))
     (define (extend-trace trace accepts)
