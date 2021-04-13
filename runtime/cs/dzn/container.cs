@@ -36,8 +36,9 @@ namespace dzn
   {
     public bool flush;
     public TSystem system;
+    public bool single_threaded;
     public Dictionary<String, Action> lookup;
-    public Queue<String> expect;
+    public Queue<String> trail;
     public pump pump;
 
     public container(Func<Locator,String,TSystem> new_system, bool flush, Locator locator)
@@ -45,9 +46,10 @@ namespace dzn
     {
       this.flush = flush;
       this.pump = new pump();
-      this.expect = new Queue<String>();
-      this.system = new_system(locator.set(this.pump),"sut");
-      this.system.dzn_runtime.infos[this].flushes = flush;
+      trail = new Queue<String>();
+      system = new_system(locator.set(this.pump),"sut");
+      single_threaded = system.dzn_locator.get<pump>() == this.pump;
+      system.dzn_runtime.infos[this].flushes = flush;
     }
     public container(Func<Locator,String,TSystem> new_system, bool flush)
     : this (new_system, flush, new Locator().set(new dzn.Runtime(() => {
@@ -70,31 +72,20 @@ namespace dzn
     public void Dispose()
     {
       Debug.WriteLine("container.Dispose");
+      context.lck(this, () => {while (trail.Count != 0) Monitor.Wait(this);});
       Dispose(true);
       GC.SuppressFinalize(this);
     }
-    public String match_return()
+    public void match(String perform)
     {
-      return context.lck(this, () => {
-          while (expect.Count == 0) Monitor.Wait(this);
-          String tmp = this.expect.Dequeue();
-          Action e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
-          while(e != null)
-          {
-            e();
-            while (this.expect.Count == 0) Monitor.Wait(this);
-            tmp = this.expect.Dequeue();
-            e = this.lookup.ContainsKey(tmp) ? this.lookup[tmp] : null;
-          }
-          if(this.expect.Count == 0) Monitor.Pulse(this);
-          return tmp;
-        });
-    }
-    public void match(String actual)
-    {
-      String tmp = match_return();
-      if(actual != tmp)
-        throw new runtime_error("unmatched expectation: behaviour expects: \"" + actual + "\" trace expects: \"" + tmp + "\"");
+      String expect = trail_expect();
+
+      if(lookup.ContainsKey(perform))
+        throw new runtime_error("match synchronization error");
+
+      if(expect != perform)
+        throw new runtime_error("unmatched expectation: trail expects: \"" + expect +
+                               "\" behaviour expects: \"" + perform + "\"");
     }
     public void run(Dictionary<String, Action> lookup, List<String> required_ports)
     {
@@ -104,7 +95,7 @@ namespace dzn
 
       while((str = System.Console.ReadLine()) != null)
       {
-        Action e = this.lookup.ContainsKey(str) ? this.lookup[str] : null;
+        Action e = lookup.ContainsKey(str) ? lookup[str] : null;
         if(e == null || port != "")
         {
           String p = str.Split('.')[0];
@@ -117,17 +108,39 @@ namespace dzn
           if(str.Count(c => (c == '.')) > 1) continue;
 
           context.lck(this, () => {
+              trail.Enqueue(str);
               Monitor.Pulse(this);
-              this.expect.Enqueue(str);
             });
         }
         else
         {
-          pump.execute(e);
+          String p = str.Split('.')[0];
+          if(single_threaded || required_ports.Find(o => {return o == p;}) == null)
+            this.pump.execute(e);
+          else
+              e();
           port = "";
         }
       }
-      context.lck(this, () => {while (expect.Count != 0) Monitor.Wait(this);});
+    }
+    public String match_return()
+    {
+      String expect = trail_expect();
+      if(single_threaded) {
+          while(lookup.ContainsKey(expect)) {
+              lookup[expect]();
+              expect = trail_expect();
+          }
+      }
+      return expect;
+    }
+    String trail_expect()
+    {
+      return context.lck(this, () => {
+              while (trail.Count == 0) Monitor.Wait(this);
+              Monitor.Pulse(this);
+              return trail.Dequeue();
+          });
     }
     public static R string_to_value<R>(String s) where R: struct, IComparable, IConvertible {
       String v = s.Substring(s.IndexOf(".")+1);

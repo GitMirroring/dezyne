@@ -1,5 +1,5 @@
 // dzn-runtime -- Dezyne runtime library
-// Copyright © 2015, 2016, 2017, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
@@ -45,10 +45,11 @@ namespace dzn
     dzn::locator dzn_locator;
     dzn::runtime dzn_rt;
     System system;
+    bool single_threaded;
 
     std::map<std::string, Function> lookup;
 
-    std::queue<std::string> expect;
+    std::queue<std::string> trail;
     std::mutex mutex;
     std::condition_variable condition;
 
@@ -64,6 +65,7 @@ namespace dzn
     , dzn_locator(std::forward<dzn::locator>(l))
     , dzn_rt()
     , system(dzn_locator.set(dzn_rt).set(pump))
+    , single_threaded(system.dzn_locator.template try_get<dzn::pump>() == &pump)
     , pump()
     {
       dzn_locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
@@ -72,34 +74,28 @@ namespace dzn
     }
     ~container()
     {
+      std::unique_lock<std::mutex> lock(mutex);
+      condition.wait(lock, [this]{return trail.empty();});
+
       dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); //only shells have a pump
       //resolve the race condition between the shell pump dtor and the container pump dtor
       if(p && p != &pump) pump([p] {p->stop();});
     }
-    std::string match_return()
+    void match(const std::string& perform)
     {
-      std::unique_lock<std::mutex> lock(mutex);
-      condition.wait(lock, [this]{return not expect.empty();});
-      std::string tmp = expect.front(); expect.pop();
-      auto it = lookup.find(tmp);
-      while(it != lookup.end())
-      {
-        it->second();
-        condition.wait(lock, [this]{return not expect.empty();});
-        tmp = expect.front(); expect.pop();
-        it = lookup.find(tmp);
-      }
-      if(expect.empty()) condition.notify_one();
-      return tmp;
-    }
-    void match(const std::string& expected)
-    {
-      std::string actual = match_return();
+      std::string expect = trail_expect();
+      auto it = lookup.find(expect);
 
-      if(expected != actual)
-        throw std::runtime_error("failure: expected: \"" + expected + "\" != actual: \"" + actual + "\"");
+      if(it != lookup.end())
+        throw std::runtime_error("match synchronization error");
+
+      if(expect != perform)
+        throw std::runtime_error("unmatched expectation: trail expects: \"" + expect +
+                                 "\" behaviour expects: \"" + perform + "\"");
     }
     void operator()(std::map<std::string, Function>&& lookup, std::set<std::string>&& required_ports)
+    // to be executed on the main thread
+    // reads stdin and offloads the work to its pump
     {
       this->lookup = std::move(lookup);
 
@@ -121,17 +117,41 @@ namespace dzn
           if(std::count(str.begin(), str.end(), '.') > 1) continue;
 
           std::unique_lock<std::mutex> lock(mutex);
+          trail.push(str);
           condition.notify_one();
-          expect.push(str);
         }
         else
         {
-          pump(it->second);
+          std::string p = str.substr(0, str.find('.'));
+          if(single_threaded || required_ports.find(p) == required_ports.end())
+            pump(it->second);
+          else
+            it->second();
           port.clear();
         }
       }
+    }
+    std::string match_return()
+    {
+      std::string expect = trail_expect();
+      if(single_threaded) {
+        auto it = lookup.find(expect);
+        while(it != lookup.end()) {
+          it->second();
+          expect = trail_expect();
+          it = lookup.find(expect);
+        }
+      }
+      return expect;
+    }
+  private:
+    std::string trail_expect()
+    {
       std::unique_lock<std::mutex> lock(mutex);
-      condition.wait(lock, [this]{return expect.empty();});
+      condition.wait(lock, [this]{return trail.size();});
+      condition.notify_one();
+      std::string expect = trail.front(); trail.pop();
+      return expect;
     }
   };
 }

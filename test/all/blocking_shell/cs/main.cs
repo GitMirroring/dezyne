@@ -60,18 +60,14 @@ class main {
     c.system.r_outer.dzn_meta.provides.meta = c.dzn_meta;
     c.system.r_outer.dzn_meta.provides.name = "r_outer";
 
-    // NOTE the use of parallel executing the events, i.e. the usage of Thread.
     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
     lookup.Add("illegal",()=>{Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    lookup.Add("p_outer.return_void",()=>{new Thread(new ThreadStart(()=>{c.system.p_outer.inport.return_void(); c.match("p_outer.return");})).Start();});
-    lookup.Add("r_outer.foo",()=>{int i = default(int); c.system.r_outer.outport.foo( i); });
-    lookup.Add("p_outer.return_int",()=>{new Thread(new ThreadStart(()=>{c.match("p_outer." + c.to_string<int>(c.system.p_outer.inport.return_int()));})).Start();});
-    lookup.Add("p_outer.return_bool",()=>{new Thread(new ThreadStart(()=>{c.match("p_outer." + c.to_string<bool>(c.system.p_outer.inport.return_bool()));})).Start();});
-    lookup.Add("p_outer.return_enum",()=>{new Thread(new ThreadStart(()=>{int i = default(int);
-                        int j = default(int); c.match("p_outer." + c.to_string<global::Enum>(c.system.p_outer.inport.return_enum( i, out j)));})).Start();});
-    lookup.Add("r_outer.<flush>",()=>{System.Console.Error.WriteLine("r_outer.<flush>");
-      c.dzn_runtime.flush(c);
-    });
+    lookup.Add("p_outer.return_void",()=>{c.system.p_outer.inport.return_void(); c.match("p_outer.return");});
+    lookup.Add("r_outer.foo",()=>{Thread.Sleep(1000); int i = default(int); c.system.r_outer.outport.foo( i); });
+    lookup.Add("p_outer.return_int",()=>{c.match("p_outer." + c.to_string<int>(c.system.p_outer.inport.return_int()));});
+    lookup.Add("p_outer.return_bool",()=>{c.match("p_outer." + c.to_string<bool>(c.system.p_outer.inport.return_bool()));});
+    lookup.Add("p_outer.return_enum",()=>{int i = default(int); int j = default(int); c.match("p_outer." + c.to_string<global::Enum>(c.system.p_outer.inport.return_enum( i, out j)));});
+    lookup.Add("r_outer.<flush>",()=>{System.Console.Error.WriteLine("r_outer.<flush>"); c.dzn_runtime.flush(c);});
 
     return lookup;
   }
