@@ -170,10 +170,10 @@ program-counters produced by taking a step."
           (else
            (clone pc #:status (make <end-of-trail> #:ast o #:input input #:labels (list o))))))
 
-  (define (matching? pc input stapje)
+  (define (matching? pc input step-string)
     (cond ((%strict?)
            (or (not (or input (is-a? (%sut) <runtime:port>)))
-               (equal? stapje input)))
+               (equal? step-string input)))
           (else
            #t)))
 
@@ -184,18 +184,18 @@ program-counters produced by taking a step."
           (else
            (let* ((o (.statement pc))
                   (pcs (step pc o))
-                  (string-stapje (and=> (trace->trail pc) cdr))
+                  (step-string (and=> (trace->trail pc) cdr))
                   (observable? (or (is-a? o <action>)
                                    (is-a? o <q-out>)
                                    (is-a? o <trigger-return>)))
-                  (string-stapje (and observable? string-stapje))
+                  (step-string (and observable? step-string))
 
-                  (input pc (if string-stapje ((%next-input) pc) (values #f pc)))
-                  (pcs (if string-stapje (map (cute clone <> #:trail (.trail pc)) pcs)
+                  (input pc (if step-string ((%next-input) pc) (values #f pc)))
+                  (pcs (if step-string (map (cute clone <> #:trail (.trail pc)) pcs)
                            pcs))
 
-                  (pcs (cond ((or (not string-stapje)
-                                  (matching? pc input string-stapje)) pcs)
+                  (pcs (cond ((or (not step-string)
+                                  (matching? pc input step-string)) pcs)
                              (else (map (mark-pc input o) pcs)))))
              (map (cut cons <> trace) pcs))))))
 
