@@ -44,10 +44,10 @@ The Verum Team
 
 
 Here are the binary downloads:
-  https://dezyne.org/download/dezyne/dezyne-2.12.0.x86_64-linux.tar.gz   (54MB)
-  https://dezyne.org/download/dezyne/dezyne-2.12.0.i686-windows.zip   (120MB)
-  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.12.0.x86_64-linux.tar.gz   (74MB)
-  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.12.0.i686-windows.zip   (159MB)
+  https://dezyne.org/download/dezyne/dezyne-2.12.0.x86_64-linux.tar.gz   (55MB)
+  https://dezyne.org/download/dezyne/dezyne-2.12.0.i686-windows.zip   (118MB)
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.12.0.x86_64-linux.tar.gz   (75MB)
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.12.0.i686-windows.zip   (157MB)
 
 Here are the GPG detached signatures[*]:
   https://dezyne.org/download/dezyne/dezyne-2.12.0.x86_64-linux.tar.gz.sig
@@ -57,14 +57,14 @@ Here are the GPG detached signatures[*]:
 
 Here are the MD5 and SHA1 checksums:
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.12.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.12.0.i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.12.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.12.0.i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.12.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.12.0.i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.12.0.x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.12.0.i686-windows.zip
+6cd5093963972a544e91b84939fdcd57  dezyne-2.12.0-i686-windows.zip
+34faedd5fd72f2e5af82157feb6da95c  dezyne-2.12.0-x86_64-linux.tar.gz
+11928b91f4384c346dd92d78fc006f3e  dezyne-ide-2.12.0-i686-windows.zip
+4a9c5caa57e360b83e8e3799f685d12e  dezyne-ide-2.12.0-x86_64-linux.tar.gz
+f69cc22c390968661e4df945afbe30f82764aec8  dezyne-2.12.0-i686-windows.zip
+45611b9706a74b4175a2775a545231efc7723cf4  dezyne-2.12.0-x86_64-linux.tar.gz
+1a1a591c6d8b0d99fb97d78195254b938f288e62  dezyne-ide-2.12.0-i686-windows.zip
+656c361e0836a4f0dcafc2f390d6f53a5b00206f  dezyne-ide-2.12.0-x86_64-linux.tar.gz
 
 [*] Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
