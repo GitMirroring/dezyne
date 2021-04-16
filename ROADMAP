@@ -18,9 +18,12 @@ The goals of the Dezyne project are two-fold:
     automated, by using formal verification to replace testing.
 
 Since its inception, the project has gone a long way towards that goal.
-Version "2.9" was the last closed, cloud-based release.  We are aiming
-for a "2.10" release that is serverless, client-only, free software and
-on par with "2.9".
+Version "2.9" was the last closed, cloud-based release.  Version "2.10"
+release was serverless, client-only.  Version "2.11" included support
+for a Dezyne-IDE.  Version "2.12" included a Dezyne-IDE on par with
+"2.9".  Version "2.13" included a system simulator, removing the last
+remaining copy of the archaic object model parser, finally allowing for
+future language changes and extensions.
 
 Dezyne "3.0" should mark the long transition of Dezyne to a free
 software project: https://dezyne.org.
@@ -34,40 +37,83 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 ** Release 2.13
   - Pass regression test
     + XFAIL: alpha_local2
-    + XFAIL: compliance_out_inevitable_illegal
+    + XFAIL: compliance_livelock
     + XFAIL: compound_local_assign_call
     + XFAIL: parse_interface_parens
-    + FAIL: blocking_shell (cs)
-  - Lazy import in lookup
-    + prototype in tree
-    + lazy lookup in ast/during resolve
+    + data_full: split into smaller tests, preferrably trace-based,
+      and without handwritten main's
+    + Bring multiple events on a single modeling event properly under test
+      + Require flush on provides port: h.<flush>
+      + Make test fail if without flush
+      + Test in combination with foreign
 
-  - Makreel:
-    + Add CSP alphabetized parallel support (weak illegals, modules)
-    + Refactor makreel with alphabetized parallel
-    + Add variable sharing (modules, sub machines)
+  - Finish and merge wip-simulate
+    + Skipped tests (trace and baseline missing)
+      - livelock_interface0: What's this, a silent livelock?  How to
+        test, no trace possible?
+      - queuefull_external: <queue-full> without trace.  How to test?
 
-  - Replace simulator
-    + use dzn simulate instead of seqdiag, lseligible, replaytrace,
-      backintrace
-    + integration (trace) cleanup (use p5 trace diagram)
-    + loose coupling of dzn verify and dzn simulate!
+  - Documentation
+    + Blocking, thread-safe-shell, external, collateral-block.
 
-  - Language extensions:
-    + shared state variables
-    + weak illegals
-    + sub machines
-    + data behaviour
-    + structured state types
-    + modules
+** Release 2.14
+  - Pass regression test -- shared state
+    + FAIL: compliance_provides_bool (deadlock due to compliance error)
+    + FAIL: illegal_requires2 (interface constraint with deadlock in interface)
+    + FAIL: determinism_async (dzn lts does not detect non-det or forking ack)
+    + FAIL: illegal_external_nonsynchronous (no queue-full after illegal)
+    + FAIL: compliance_nonsynchronous_sync (deadlock after 1 rondje)
+
+  - Full foreign support
+    + Generated main
+    + Simulate system with foreign with requires port
+    + State diagram system with foreign with requires port
 
   - Rename sut to <sut>.
     + DRAFT vm: Use <sut> to avoid potential naming clash.
     + generated code
     + dzn/commands/trace
-  - Regression
-   + data_full: split into smaller tests, preferrably trace-based,
-     and without handwritten main's
+
+  - Fix ambiguities:
+    + Puntje van Paul aka Paul sugar aka field test in language
+    + dzn trace: Whether an arrow label is in, out or return.
+
+  - Disable internal tracing in code, such that simulator can reproduce
+    the internal tracing (including state).
+
+  - Verify
+    + persistent (aka delayed inspection) (Alarm.verify)?
+    + drop --all?
+    + memoize or remove oeverloos redundant interface verification
+
+  - Simulate
+     + show trace in all diagrams consistently and interactively
+     + give user more insight/control w.r.t. silent and async
+
+  - Finish and merge wip-lazy
+    + Lazy import in lookup
+    + prototype in tree
+    + lazy lookup in ast/during resolve
+
+  - Finish and merge wip-shared-state
+    + Increase regression test coverage
+      - hello_proxy_nondet
+      - constrained_alarm
+      - ... need more tests!!!
+    + Document it!
+    + Cleanup c++ spek
+    +  Deprecate non-observable non-determinism in interfaces
+      - Add --disable-implicit-interface-constraints option
+      - Report non-observable non-determinism in interfaces as error
+        unless --disable-implicit-interface-constraints
+    + Non compliant interfaces deadlock the component
+      - Anything we can do besides documenting this?
+    + Add CSP alphabetized parallel support (weak illegals, modules)
+    + Refactor makreel with alphabetized parallel
+
+  - UX
+    + wfc: check for reply on modeling event
+    + vm: <modeling-reply-error> reply on modeling event
   - Documentation
     + Review doc/dezyne-tutorial.texi
   - Code cleanups
@@ -78,21 +124,23 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - <foreign>, <port>?  Use node: prefixes?
   - LSP
     + move ast/wfc.scm tests into PEG parser
+    + move ast/wfc.scm tests into TREE postprocessor?
 
 ** Release 3.0
+  - Language extensions:
+    + full blocking support
+    + hierarchical behaviours (sub machines)
+    + data behaviour (data interfaces, data shims)
+    + structured state types
+    + module specifications (aka aggregate interfaces)
+    + functional verification
   - Simplify grammar through syntax
-    + reconsider '.' as infix operator for scoping, field test (Pauls sugar), port event separator,
-  - Update architecture for:
-    + language extension
-      - weak illegals,
-      - nested behaviours (aka sub-machines),
-      - modules (aka aggregate interfaces)
-      - system behaviours,
-      - requirements,
-      - etc.
-  - Release on savannah.nongnu.org; create dezyne-devel@nongnu.org,
-    bug-dezyne@nongnu.org
-    + All READMEs.
+    + reconsider '.' as infix operator for scoping, field test (Pauls
+      sugar), port event separator, ...
+  - Release on savannah.nongnu.org
+   + Update all READMEs.
+   + create dezyne-devel@nongnu.org, bug-dezyne@nongnu.org
+   + register #dezyne
   - Debian package
     + Source build on Buster
   - Documentation
@@ -100,11 +148,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - Merge snippets/tests with doc/dezyne.texi.
       - Remove error messages.
       - Generate images.
-  - dzn graph/ltsgraph (lts --graph?): The original dzn lts by Johri
-  - dzn lts + states: simple but correct dot-based state charts
   - Nsis-based installer for Windows
-  - Revisit code trace format h.hello <- <external>.
-  - Find a solution to the m4-changeword kludge
   - Language support
     + scheme: review blocking, => blocking_system4
     + javascript: blocking, async
@@ -121,10 +165,61 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish C99 support (what about MISRA-C?)
     + Finish JavaScript support
     + Review and finish Scheme support
-  - System simulator
-  - Sub machines
-  - Weak illegals
 * DONE
+  - Finish and merge wip-simulate
+    + BUG van robw
+      ./pre-inst-env dzn simulate -l --state -m MaterialHandler -I test/all/LegoBallSorter/c++ test/all/LegoBallSorter/MaterialHandler.dzn < L | ./pre-inst-env dzn trace --format=json | jq > data
+    + Generate correct JSON even if split-arrows are incorrect, add error message
+  - Regression test
+    + local.mk: move NON_REPRODUCIBLE_TESTS => REGRESSION_TESTS, add
+      META for verify
+  - UX
+    + performance of deadlock-check/eligible events
+  - Rename tests (these are not categorized as compliance errors)
+    + compliance_out_nondet: deadlock
+    + compliance_out_inevitable_illegal: deadlock
+    + livelock2: non-error model, no livelock
+    + livelock_component0: non-error model, no livelock
+    + livelock_component1: non-error model, no livelock
+  - Remove symlink trees in test/
+  - XFAIL: compliance_failures_choice
+  - Simulate
+    + failure trace (Alarm) still shows eligibles
+  - Explore: Instead of state as string, use json'y state like dzn
+    trace --format=json
+  - loose coupling of dzn verify and dzn simulate!
+  - provides silent / silent_provides
+  - dzn trace for interface
+  - Apropos 2.13
+    + Jan:
+      + P5 system diagram integration performance
+      + postpone lazy import
+      + verify | simulate (no json, structured output including meta information)
+      + display error message in simulator
+      + integratie vertaling naar json (silent, async)
+      + resurrect ide verify
+      + bring silent under test
+    + Paul:
+     + Activity bars
+     + System (preview)
+  - Pass regression test
+    + FAIL: livelock_async (dzn verify should report <livelock>) (add to local.mk!!!)
+    + FAIL: async_multiple_provides (dzn traces forgets pending r.world event at end)
+  - bring split-arrows + dzn trace under test
+  - loose coupling of dzn verify and dzn simulate!
+    + Drop --json output
+    + Drop "sometimes use verify error message" concept
+    + Drop component-trace/spectrace/interface-trace concept
+    + For compliance, output common + <compliance> + "interface-trace"
+    + Prepend trace with model:MODEL-NAME, or <model:MODEL-NAME>
+  - dzn code
+    + Resurrect C support
+    + initial/minimal C language pack
+  - Review dzn verify
+    + --format=STAGE: output intermediate stages (mcrl2, lts, asserts)
+  - dzn lts + states: simple but correct dot-based state charts
+  - Pass regression test
+    + FAIL: blocking_shell (cs)
   - Support binary release
     + Solicit and incorporate feedback on dezyne-2.12.0.rc0,rc1,rc2,rc3
   - Code cleanups
