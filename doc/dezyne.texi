@@ -636,7 +636,7 @@ the regression test:
 
 Dezyne optionally uses the following packages:
 @itemize
-@item @uref{https://savannah.nongnu.org/projects/guile-json/, Guile-JSON} 1.x;
+@item @uref{https://savannah.nongnu.org/projects/guile-json/, Guile-JSON} 4.x;
 @end itemize
 
 to provide support for the views of the Dezyne IDE, @pxref{Dezyne
