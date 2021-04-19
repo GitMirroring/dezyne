@@ -1,1 +1,1 @@
-{"skip":["execute","run"],"comment":"system model cannot run"}
+{"skip":["c:build","execute","run"],"comment":"system model cannot run"}
