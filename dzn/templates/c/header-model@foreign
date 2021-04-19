@@ -1,14 +1,14 @@
 /**********************************  FOREIGN  *********************************/
 #x:include-guard
 
-#x:interface-include
+ #x:interface-include
 
-struct #x:name _skel_t{
+struct #x:name _skel_t {
 ##if DZN_TRACING
-     dzn_meta meta;
+  dzn_meta meta;
 ##endif /*!DZN_TRACING*/
-     runtime_info dzn_info;
-     #x:port-declare
+  runtime_info dzn_info;
+   #x:port-declare
 };
 
 ##include <#x:model-parent-name .h>

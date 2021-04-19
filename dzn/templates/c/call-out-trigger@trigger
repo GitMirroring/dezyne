@@ -1,4 +1,4 @@
-static #x:type-name  out_#.port.name _#.event.name _#x:model-parent-name (#x:port-type * port#x:formals){
+static #x:type-name  out_#.port.name _#.event.name _#x:model-parent-name (#x:port-type * port#x:formals) {
        #x:model-parent-name _#x:enum-name #x:closure-struct-args  closure_struct_obj;
 ##if DZN_TRACING
 runtime_trace_out (&port->meta, "#.event.name ");
