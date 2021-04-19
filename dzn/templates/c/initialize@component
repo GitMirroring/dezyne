@@ -2,7 +2,7 @@ void #x:name _init(#x:name * self, locator* dezyne_locator
 ##if DZN_TRACING
 , dzn_meta *meta
 ##endif /* DZN_TRACING */
-){
+) {
         runtime_info_init(&self->dzn_info, dezyne_locator);
         self->dzn_info.performs_flush = true;
         #x:variable-member-initialization

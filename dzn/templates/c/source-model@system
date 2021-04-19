@@ -1,9 +1,9 @@
 /**********************************  SYSTEM   *********************************/
-void  #x:name _init(#x:name *self, locator* dezyne_locator
+void  #x:name _init(#x:name * self, locator* dezyne_locator
 ##if DZN_TRACING
 , dzn_meta* meta
 ##endif /* DZN_TRACING */
-){
+) {
 ##if DZN_TRACING
   #x:instance-declare-dzn-tracing
 ##endif /* DZN_TRACING */
@@ -19,4 +19,5 @@ void  #x:name _init(#x:name *self, locator* dezyne_locator
 ##endif /* DZN_TRACING */
   #x:system-port-connect
 }
+
 /**********************************  SYSTEM   *********************************/

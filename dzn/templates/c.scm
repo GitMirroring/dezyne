@@ -27,7 +27,7 @@
 ;;;
 
 (define-templates header-model c:models double-newline-infix)
-(define-templates source-model c:models double-newline-infix)
+(define-templates source-model c:components double-newline-infix)
 (define-templates header)
 (define-templates source)
 

@@ -2,7 +2,7 @@ void #x:name _skel_init(#x:name _skel* self, locator* dezyne_locator
 ##if DZN_TRACING
 , dzn_meta *meta
 ##endif /* DZN_TRACING */
-){
+) {
   runtime_info_init(&self->dzn_info, dezyne_locator);
   self->dzn_info.performs_flush = true;
   #x:provided-port-initialization

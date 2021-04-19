@@ -47,7 +47,10 @@
 (include-from-path "dzn/templates/c.scm")
 
 (define-method (c:models (o <root>))
-  (filter (lambda (u) (not (ast:imported? u))) (dzn:model o)))
+  (filter (negate ast:imported?) (dzn:model o)))
+
+(define-method (c:components (o <root>))
+  (filter (negate (cute is-a? <> <interface>)) (c:models o)))
 
 (define-method (c:file-name (o <ast>))
   (if (is-a? (.type o) <foreign>) (basename ((compose .file-name ast:location .type) o) ".dzn")
