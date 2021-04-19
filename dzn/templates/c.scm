@@ -22,12 +22,20 @@
 ;;;
 ;;; Code:
 
+;;;
+;;; Entry points
+;;;
+
 (define-templates header-model c:models double-newline-infix)
 (define-templates source-model c:models double-newline-infix)
 (define-templates header)
 (define-templates source)
 
-;; naming stuff
+
+;;;
+;;; Names
+;;;
+
 (define-templates model-parent-name c:model-parent-name type-infix)
 (define-templates name c:name type-infix)
 
@@ -39,17 +47,18 @@
 (define-templates to-string c:enum-trigger-void)
 (define-templates trigger-reply c:enum-trigger-void)
 
-(define-templates main-log-event-return c:enum-or-trigger)
-
 (define-templates port-type c:get-trigger-port-type type-infix)
 (define-templates formal-data-type c:formal-data-type)
 
-;; event-arguments stuff
-(define-templates closure-struct-args c:trigger-formals)
-(define-templates method-params c:trigger-formals)
-(define-templates call-in-function-extra-arguments c:trigger-formals)
-(define-templates helper-function-extra-arguments c:trigger-formals)
-(define-templates closure-variable-definition c:trigger-formals)
+
+;;;
+;;; Formals, parameters, arguments
+;;;
+(define-templates c-comma c:comma)
+(define-templates closure-struct-args code:arguments)
+(define-templates method-parameters code:arguments formal-grammar)
+(define-templates helper-function-arguments code:arguments argument-grammar)
+(define-templates closure-variable-definition code:arguments argument-grammar)
 
 (define-templates closure-struct c:get-incoming-triggers-from-model)
 (define-templates helper-in-trigger-prototype c:get-incoming-triggers-from-model)
@@ -78,31 +87,25 @@
 (define-templates header-data (lambda (o) (filter (is? <data>) (.elements o))))
 (define-templates event-function-ptr)
 
-;; main@component stuff
-(define-templates main-header)
-(define-templates main-includes)
-(define-templates main-fill-event-map)
-(define-templates main-illegal-print)
-(define-templates main-content)
+
+;;;
+;;; Enums
+;;;
+(define-templates enum-field-switch-case c:get-enum-fields-of-enum)
+(define-templates enum-field-else-if c:get-enum-fields-of-enum)
+(define-templates source-enum-string-function-definition c:get-all-enums)
+(define-templates header-enum-string-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
+(define-templates source-enum-string-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
+(define-templates global-enum-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
+(define-templates file-name-identifier-upcase c:file-name-identifier-upcase)
+(define-templates header-enum-string-function-prototype c:get-all-enums)
+(define-templates enum-name c:enum-name type-infix)
+(define-templates enum-literal c:enum-literal type-infix)
 
-(define-templates port-initialization-provided ast:provides-port*)
-(define-templates port-initialization-required ast:requires-port*)
-(define-templates main-log-event-out-trigger ast:out-triggers)
-(define-templates in-trigger-initialization ast:in-triggers)
-(define-templates out-trigger-initialization ast:out-triggers)
-(define-templates main-log-event-void-return c:void-trigger)
-(define-templates main-log-event-non-void-return c:non-void-trigger)
-
-(define-templates type-name c:type-name name-infix)
-(define-templates type-name-different c:type-name-different name-infix)
-(define-templates function-return-type (lambda (o) ((compose c:name .type .signature) o)) name-infix)
-(define-templates formals ast:formal*)
-(define-templates in-event-definer c:filter-in)
-(define-templates out-event-definer c:filter-out)
-(define-templates include-guard)
-
-;; system stuff
-
+
+;;;
+;;; System
+;;;
 (define-templates instance-declaration (lambda (o) ( (compose .elements .instances) o)))
 (define-templates instance-init (lambda (o) ( (compose .elements .instances) o)))
 (define-templates instance-init-dzn-tracing (lambda (o) ( (compose .elements .instances) o)))
@@ -119,22 +122,37 @@
 (define-templates port-declare ast:port*)
 (define-templates binding-instance c:binding-instance)
 
+
+;;;
+;;; Generated main
+;;;
+(define-templates main-header)
+(define-templates main-includes)
+(define-templates main-fill-event-map)
+(define-templates main-illegal-print)
+(define-templates main-content)
+
+(define-templates port-initialization-provided ast:provides-port*)
+(define-templates port-initialization-required ast:requires-port*)
+(define-templates main-log-event-out-trigger ast:out-triggers)
+(define-templates in-trigger-initialization ast:in-triggers)
+(define-templates out-trigger-initialization ast:out-triggers)
+(define-templates main-log-event-return c:enum-or-trigger)
+(define-templates main-log-event-void-return c:void-trigger)
+(define-templates main-log-event-non-void-return c:non-void-trigger)
+
+(define-templates type-name c:type-name name-infix)
+(define-templates type-name-different c:type-name-different name-infix)
+(define-templates function-return-type (lambda (o) ((compose c:name .type .signature) o)) name-infix)
+(define-templates formals ast:formal*)
+(define-templates in-event-definer c:filter-in)
+(define-templates out-event-definer c:filter-out)
+(define-templates include-guard)
+
 ;; foreign binding stuff
 (define-templates base-or-not c:base-or-not)
 (define-templates base-or-not-left c:base-or-not-left)
 (define-templates base-or-not-right c:base-or-not-right)
-
-;; enum stuff
-(define-templates enum-field-switch-case c:get-enum-fields-of-enum)
-(define-templates enum-field-else-if c:get-enum-fields-of-enum)
-(define-templates source-enum-string-function-definition c:get-all-enums)
-(define-templates header-enum-string-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
-(define-templates source-enum-string-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
-(define-templates global-enum-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
-(define-templates file-name-identifier-upcase c:file-name-identifier-upcase)
-(define-templates header-enum-string-function-prototype c:get-all-enums)
-(define-templates enum-name c:enum-name type-infix)
-(define-templates enum-literal c:enum-literal type-infix)
 
 ;; namespace stuff
 (define-templates namespace-upcase c:namespace-upcase type-infix)
