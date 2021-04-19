@@ -212,7 +212,7 @@ REGRESSION_TESTS =				\
  %D%/hello_optional_flush			\
  %D%/hello_optional_system			\
  %D%/hellooutevent				\
- %D%/hellooutparam				\
+ %D%/hello_out_data				\
  %D%/hello_out_provides				\
  %D%/helloparam					\
  %D%/helloparams				\
