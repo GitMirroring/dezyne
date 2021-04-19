@@ -33,7 +33,7 @@ interface ihello
   }
 }
 
-component hellooutparam
+component hello_out_data
 {
   provides ihello h;
   requires iworld w;
