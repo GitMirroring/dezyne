@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,17 +22,17 @@
 //
 // Code:
 
-#ifndef STRANGER_H_XTRA
-#define STRANGER_H_XTRA
+#ifndef STRANGER_H
+#define STRANGER_H
 #include <dzn/boolc90.h>
 typedef struct stranger_t stranger;
 typedef struct stranger_skel_t stranger_skel;
 
-typedef struct stranger_t {
+struct stranger_t {
   stranger_skel base;
   /* space for variables */
   int32_t hello;
   /* end of space */
 };
 
-#endif /* STRANGER_H_XTRA */
+#endif /* STRANGER_H */

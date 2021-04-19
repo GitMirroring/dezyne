@@ -29,15 +29,15 @@
 
 void Foreign_init(Foreign* self, locator* dezyne_locator
 #if DZN_TRACING
-, dzn_meta* dzn_meta
+                  , dzn_meta* dzn_meta
 #endif /* !DZN_TRACING */
 )
 {
   Foreign_skel_init(&(self->base), dezyne_locator
 #if DZN_TRACING
-, dzn_meta
+                    , dzn_meta
 #endif /* !DZN_TRACING */
-);
+                    );
 }
 
 void w_world_Foreign(Foreign* self)

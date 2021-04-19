@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,11 +22,19 @@
 //
 // Code:
 
-#include <foreign.h>
+#include <hello_foreign_file.h>
 
-void stranger_init(stranger* self, locator* dezyne_locator, dzn_meta* meta)
+void stranger_init(stranger* self, locator* dezyne_locator
+#if DZN_TRACING
+                   , dzn_meta* dzn_meta
+#endif /* !DZN_TRACING */
+)
 {
-  stranger_skel_init(&(self->base), dezyne_locator, meta);
+  stranger_skel_init(&(self->base), dezyne_locator
+#if DZN_TRACING
+                     , dzn_meta
+#endif /* !DZN_TRACING */
+                     );
   self->hello = 20;
   return;
 }
