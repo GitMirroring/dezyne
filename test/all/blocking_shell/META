@@ -1,1 +1,1 @@
-{"skip":["traces","javascript:execute"],"languages":["c++"],"tss":true,"thread-pool":true}
+{"skip":["traces","c","javascript"],"languages":["c++"],"tss":true,"thread-pool":true}
