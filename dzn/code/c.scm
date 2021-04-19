@@ -62,11 +62,17 @@
 (define-method (c:get-trigger-port-type (o <trigger>))
   (c:name (parent (.event o) <interface>)))
 
-(define-method (c:event-arguments (o <trigger>))
-  ((compose ast:formal* .event) o))
+(define-method (c:comma (o <list>))
+  (if (null? o) "" ","))
 
-(define-method (c:trigger-formals (o <trigger>))
-  (ast:formal* o))
+(define-method (c:comma (o <action>))
+  (c:comma (ast:argument* o)))
+
+(define-method (c:comma (o <call>))
+  (c:comma (ast:argument* o)))
+
+(define-method (c:comma (o <trigger>))
+  (c:comma (ast:formal* o)))
 
 (define-method (c:extract-variables-with-respect-to-enums (o <ast>))
   (let* ((non-literals (filter (lambda (u) (not (is-a? (.expression u) <literal>))) (ast:variable* o)))

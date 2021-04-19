@@ -40,11 +40,12 @@ component hello_data
 
   behaviour
   {
+    int member;
     on h.hello(i, j): {
-      int dummy;
       int k = $0$;
       k = $1$;
-      bool b = w.world(i, j);
+      member = k;
+      bool b = w.world(i, member);
     }
   }
 }
