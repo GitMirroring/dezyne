@@ -79,7 +79,7 @@ void log_out(char* prefix, char* event, map* event_map) {
   fprintf(stderr, "<external>.%s%s <- sut.%s%s\n", prefix, event, prefix, event);
 }
 
-void log_flush(void* args) {
+void log_flush(void* args, ...) {
   args_flush* a = args;
   fprintf(stderr, "%s.<flush>\n", a->name);
   runtime_flush(a->info);
