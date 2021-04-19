@@ -1,8 +1,6 @@
 uint8_t string_to__#x:name (char* s) {
-
-  if (0) {
-		;
-	}
+  if (0)
+  ;
   #x:enum-field-else-if
   else {
     return INT_MIN;
@@ -10,10 +8,10 @@ uint8_t string_to__#x:name (char* s) {
 }
 
 char const* _#x:name _to_string(uint8_t  v) {
-	switch(v) {
-    #x:enum-field-switch-case
-    default:
-      return "";
-      break;
-	}
+  switch(v) {
+  #x:enum-field-switch-case
+  default:
+    return "";
+    break;
+  }
 }
