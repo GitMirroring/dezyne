@@ -40,7 +40,7 @@ void Foreign_init(Foreign* self, locator* dezyne_locator
 );
 }
 
-bool w_world_Foreign(Foreign* self)
+bool Foreign_w_world(Foreign* self)
 {
   self->reply__bool = true;
   return self->reply__bool;

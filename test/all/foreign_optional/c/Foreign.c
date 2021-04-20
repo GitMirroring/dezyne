@@ -40,7 +40,7 @@ void Foreign_init(Foreign* self, locator* dezyne_locator
 );
 }
 
-void w_hello_Foreign(Foreign* self)
+void Foreign_w_hello(Foreign* self)
 {
   fprintf(stderr, "sut.f.w.world\n");
   self->base.w->out.world(self->base.w);

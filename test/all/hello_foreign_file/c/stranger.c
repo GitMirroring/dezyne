@@ -39,7 +39,7 @@ void stranger_init(stranger* self, locator* dezyne_locator
   return;
 }
 
-void w_world_stranger(stranger* self)
+void stranger_w_world(stranger* self)
 {
   return;
 }
