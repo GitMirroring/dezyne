@@ -15,7 +15,7 @@ struct #x:name _skel_t {
 
 /* Implement following functions for in triggers
 ** in your foreign file: foreign.c */
-#x:method-prototypes
+#x:formal-method-prototype
 
 /* In foreign.c implement initialization of foreign component with
 ** following function prototype:                                       */

@@ -77,7 +77,7 @@
 
 
 
-(define-templates method-prototype (lambda (o) (map code:trigger (code:ons o))))
+(define-templates method-prototype ast:in-triggers)
 (define-templates method code:trigger)
 (define-templates methods code:ons)
 (define-templates enum-cast (lambda (o)(if (is-a? (ast:type o) <enum>) o '())))
@@ -161,5 +161,5 @@
 (define-templates enum-complete-name-upcase c:enum-complete-name-upcase type-infix)
 
 ;; foreign stuff
-(define-templates method-prototypes ast:in-triggers)
+(define-templates formal-method-prototype ast:in-triggers)
 (define-templates call-in-trigger-foreign ast:provided-in-triggers)
