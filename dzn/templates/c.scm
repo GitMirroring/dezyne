@@ -152,9 +152,7 @@
 (define-templates include-guard)
 
 ;; foreign binding stuff
-(define-templates base-or-not c:base-or-not)
-(define-templates base-or-not-left c:base-or-not-left)
-(define-templates base-or-not-right c:base-or-not-right)
+(define-templates foreign-instance c:foreign-instance)
 
 ;; namespace stuff
 (define-templates namespace-upcase c:namespace-upcase type-infix)

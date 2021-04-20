@@ -97,21 +97,9 @@
   (if (.instance.name o) o
       '()))
 
-(define-method (c:base-or-not (o <end-point>))
+(define-method (c:foreign-instance (o <end-point>))
   (if (and (.instance o)
            (is-a? ((compose .type .instance) o) <foreign>)) o
-      '()))
-
-
-(define-method (c:base-or-not-left (o <binding>))
-  (if (and ((compose .instance .left) o)
-           (is-a? ((compose .type .instance .left) o) <foreign>)) (.left o)
-      '()))
-
-
-(define-method (c:base-or-not-right (o <binding>))
-  (if (and ((compose .instance .right) o)
-           (is-a? ((compose .type .instance .right) o) <foreign>)) (.right o)
       '()))
 
 ;; nameing stuff
