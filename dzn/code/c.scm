@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2015, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2015, 2017, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -159,22 +159,6 @@
   (if (ast:typed? o) o
       (ast:type o)))
 
-
-(define-method (c:in-events? (o <model>))
-  (if (pair? (filter ast:in? (ast:event* o))) o
-      '()))
-
-(define-method (c:out-events? (o <model>))
-  (if (pair? (filter ast:out? (ast:event* o))) o
-      '()))
-
-(define-method (c:filter-in (o <model>))
-  (filter ast:in? (ast:event* o)))
-
-(define-method (c:filter-out (o <model>))
-  (filter ast:out? (ast:event* o)))
-
-
 ;; helper struct stuff
 (define-method (c:equal? (a <type>) (b <type>))
   (and(is-a? a <enum>)
@@ -201,14 +185,28 @@
                                             ((compose .signature .event) b)))))))
 
 
-;; system internal connection
-(define-method (c:evaluate-internal-bind (o <binding>))
-  (if (and
-       ((compose .instance.name .left) o)
-       ((compose .port.name .left) o)
-       ((compose .instance.name .right) o)
-       ((compose .port.name .right) o)) o
-       (.parent o)))
+(define-method (c:binding-provided (o <binding>))
+  (if (ast:provides? (.port (.left o))) (.left o)
+      (.right o)))
+
+(define-method (c:binding-required (o <binding>))
+  (if (ast:requires? (.port (.left o))) (.left o)
+      (.right o)))
+
+(define (internal-binding? o)
+  (and ((compose .instance.name .left) o)
+       ((compose .instance.name .right) o)))
+
+(define-method (c:external-binding (o <system>))
+  (define (port-end-point-left b)
+    (if ((compose .instance.name .right) b) b
+        (make <binding> #:left (.right b)
+              #:right (.left b))))
+  (let ((bindings (filter (negate internal-binding?) (ast:binding* o))))
+    (map port-end-point-left bindings)))
+
+(define-method (c:internal-binding (o <system>))
+  (filter internal-binding? (ast:binding* o)))
 
 (define-method (c:type-name-different (o <ast>))
   (code:type-name o))

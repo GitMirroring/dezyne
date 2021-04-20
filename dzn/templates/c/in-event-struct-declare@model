@@ -1,3 +1,0 @@
-struct {
-       #x:in-event-definer
-} in;

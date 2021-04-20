@@ -21,21 +21,6 @@
 //
 // Code:
 
-component hello_systems
-{
-  provides ihello h;
-  requires iworld w;
-
-  system
-    {
-      system_hellocruel shc;
-      system_cruelworld scw;
-      h <=> shc.h;
-      shc.c <=> scw.c;
-      scw.w <=> w;
-    }
-}
-
 interface ihello
 {
   in void hello();
@@ -113,5 +98,20 @@ component system_cruelworld
 
       c <=> cw.c;
       w <=> cw.w;
+    }
+}
+
+component hello_systems
+{
+  provides ihello h;
+  requires iworld w;
+
+  system
+    {
+      system_hellocruel shc;
+      system_cruelworld scw;
+      h <=> shc.h;
+      shc.c <=> scw.c;
+      scw.w <=> w;
     }
 }

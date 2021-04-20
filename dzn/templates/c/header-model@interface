@@ -7,8 +7,12 @@ typedef struct #x:name _t #x:name ;
 
 struct #x:name _t {
   dzn_port_meta meta;
-  #x:in-event-struct-declare
-  #x:out-event-struct-declare
+  struct {
+     #x:in-event-definer
+  } in;
+  struct {
+     #x:out-event-definer
+  } out;
 };
 
 ##endif /* #x:namespace-upcase _H */
