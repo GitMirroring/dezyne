@@ -50,6 +50,6 @@ int main()
 
   // FIXME
   sut.f.base.w->out.world = sut.c.h->out.world;
-  w_hello_Foreign (&sut.f);
+  Foreign_w_hello (&sut.f);
   return 0;
 }

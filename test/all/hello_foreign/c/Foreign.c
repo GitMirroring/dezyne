@@ -40,6 +40,6 @@ void Foreign_init(Foreign* self, locator* dezyne_locator
                     );
 }
 
-void w_world_Foreign(Foreign* self)
+void Foreign_w_world(Foreign* self)
 {
 }

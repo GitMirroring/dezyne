@@ -40,6 +40,6 @@ void library_foreign_init(library_foreign* self, locator* dezyne_locator
                     );
 }
 
-void w_world_library_foreign(library_foreign* self)
+void library_foreign_w_world(library_foreign* self)
 {
 }

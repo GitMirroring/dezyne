@@ -1,1 +1,1 @@
-#.function.name _#x:model-parent-name (self#x:c-comma #x:code-arguments)
+#x:model-parent-name _#.function.name(self#x:c-comma #x:code-arguments)
