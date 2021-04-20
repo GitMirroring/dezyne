@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -110,15 +111,16 @@
 (define-templates instance-init (lambda (o) ( (compose .elements .instances) o)))
 (define-templates instance-init-dzn-tracing (lambda (o) ( (compose .elements .instances) o)))
 (define-templates instance-declare-dzn-tracing (lambda (o) ( (compose .elements .instances) o)))
-(define-templates system-port-connect (lambda (o) ((compose .elements .bindings) o)))
-(define-templates connect-internal-ports c:evaluate-internal-bind)
-(define-templates binding-provided .left)
-(define-templates binding-required .right)
+(define-templates system-port-connect c:external-binding)
+(define-templates connect-internal-ports c:internal-binding)
+(define-templates binding-provided c:binding-provided)
+(define-templates binding-required c:binding-required)
 (define-templates connect-port-name-right (lambda (o) ((compose .port.name .right) o)))
 (define-templates connect-port-name-left (lambda (o) ((compose .port.name .left) o)))
 (define-templates connect-instance-name-right (lambda (o) ((compose .instance.name .right) o)))
 (define-templates connect-instance-name-left (lambda (o) ((compose .instance.name .left) o)))
 (define-templates port-declaration ast:port*)
+(define-templates system-port-declaration ast:port*)
 (define-templates port-declare ast:port*)
 (define-templates binding-instance c:binding-instance)
 
@@ -145,8 +147,8 @@
 (define-templates type-name-different c:type-name-different name-infix)
 (define-templates function-return-type (lambda (o) ((compose c:name .type .signature) o)) name-infix)
 (define-templates formals ast:formal*)
-(define-templates in-event-definer c:filter-in)
-(define-templates out-event-definer c:filter-out)
+(define-templates in-event-definer ast:in-event*)
+(define-templates out-event-definer ast:out-event*)
 (define-templates include-guard)
 
 ;; foreign binding stuff
@@ -161,7 +163,3 @@
 ;; foreign stuff
 (define-templates method-prototypes ast:in-triggers)
 (define-templates call-in-trigger-foreign ast:provided-in-triggers)
-
-;; in out events of interfaces
-(define-templates in-event-struct-declare c:in-events?)
-(define-templates out-event-struct-declare c:out-events?)

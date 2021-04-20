@@ -1,2 +1,1 @@
-self->#x:binding-provided  = self->#x:binding-required;
- #x:connect-internal-ports
+self->#x:connect-port-name-left  = self->#x:connect-instance-name-right .#x:connect-port-name-right;

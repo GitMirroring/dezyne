@@ -8,16 +8,14 @@ void  #x:name _init(#x:name * self, locator* dezyne_locator
   #x:instance-declare-dzn-tracing
 ##endif /* DZN_TRACING */
 
-/* port initialization */
-  #x:provided-port-initialization
-  #x:required-port-initialization
 ##if DZN_TRACING
   #x:instance-init-dzn-tracing
-  memcpy(&self->meta, meta, sizeof(dzn_meta));
+  self->meta = *meta;
 ##else /* ! DZN_TRACING */
   #x:instance-init
 ##endif /* DZN_TRACING */
   #x:system-port-connect
+  #x:connect-internal-ports
 }
 
 /**********************************  SYSTEM   *********************************/
