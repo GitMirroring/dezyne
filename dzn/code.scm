@@ -350,9 +350,14 @@
        (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .function) o)))))
 
 (define-method (code:arguments (o <action>))
-  (map code:variable->argument
-       (code:add-calling-context-argument (ast:argument* o))
-       (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o)))))
+  (if (and (ast:async? o)
+           (equal? (.event.name o) "clr"))
+      (map code:variable->argument
+           (ast:argument* o)
+           (ast:formal* ((compose .formals .signature .event) o)))
+      (map code:variable->argument
+           (code:add-calling-context-argument (ast:argument* o))
+           (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o))))))
 
 (define-method (code:arguments (o <trigger>))
   (code:formals o))

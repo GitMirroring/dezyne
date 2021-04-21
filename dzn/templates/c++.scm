@@ -2,8 +2,8 @@
 ;;;
 ;;; Copyright © 2018 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -72,6 +72,7 @@
 ;;;
 ;;; Formals, parameters, arguments
 ;;;
+(define-templates formal-type c++:formal-type comma-infix)
 
 
 ;;;
