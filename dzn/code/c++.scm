@@ -64,7 +64,8 @@
   (map .name (filter (negate (disjoin ast:out? ast:inout?)) (code:formals o))))
 
 (define-method (c++:formal-type (o <formal>)) o)
-(define-method (c++:formal-type (o <port>)) ((compose ast:formal* car ast:event*) o))
+(define-method (c++:formal-type (o <port>))
+  (code:formals (car (ast:event* o))))
 
 (define (c++:pump-include o) (if (pair? (ast:port* (.behaviour o))) "#include <dzn/pump.hh>" ""))
 

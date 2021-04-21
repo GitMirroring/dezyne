@@ -56,7 +56,7 @@
 (define-templates in-event (lambda (o) (filter ast:in? (ast:event* o))))
 (define-templates out-event (lambda (o) (filter ast:out? (ast:event* o))))
 (define-templates signature dzn:signature space-infix)
-(define-templates formal-type dzn:formal-type)
+(define-templates formal-type dzn:formal-type comma-infix)
 (define-templates formal ast:formal* formal-grammar)
 (define-templates behaviour .behaviour)
 (define-templates define-function ast:function*)
