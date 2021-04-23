@@ -226,7 +226,6 @@
 
 (define-method (ast:async? (o <port>)) (parent o <behaviour>))
 (define-method (ast:async? (o <trigger>)) (ast:async? (.port o)))
-(define-method (ast:async? (o <action>)) (ast:async? (.port o)))
 (define-method (ast:async? (o <interface>))
   (equal? (ast:full-name o) '("dzn" "async")))
 (define-method (ast:async? (o <ast>))

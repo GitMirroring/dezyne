@@ -2,7 +2,7 @@
   return dzn::call_#.event.direction(this,[=#x:out-arguments ]{
     dzn_locator.get<dzn::runtime>().skip_block(&this->#.port.name) = false;
     #x:trace-q-out
-    return #.port.name _#.event.name(#x:code-arguments);
+    return #.port.name _#.event.name(#x:c++-arguments);
   },
   this->#.port.name .meta, "#.event.name ");
 };

@@ -1,6 +1,6 @@
 #.port.name .#.event.direction .#.event.name  = [&](#x:formals){
   return dzn_rt.handle(this, [=#x:out-arguments ]{
     dzn_locator.get<dzn::runtime>().skip_block(&this->#.port.name) = false;
-    #.port.name _#.event.name(#x:code-arguments);
+    #.port.name _#.event.name(#x:c++-arguments);
   });
 };

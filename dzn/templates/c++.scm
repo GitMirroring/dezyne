@@ -73,6 +73,7 @@
 ;;; Formals, parameters, arguments
 ;;;
 (define-templates formal-type c++:formal-type comma-infix)
+(define-templates c++-arguments c++:arguments comma-infix)
 
 
 ;;;

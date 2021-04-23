@@ -67,6 +67,29 @@
 (define-method (c++:formal-type (o <port>))
   (code:formals (car (ast:event* o))))
 
+;;; REMOVEME
+(define-method (ast:async? (o <action>)) (ast:async? (.port o)))
+
+(define-method (c++:arguments (o <call>))
+  (map code:variable->argument
+       (code:add-calling-context-argument (ast:argument* o))
+       (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .function) o)))))
+
+(define-method (c++:arguments (o <action>))
+  (if (and (ast:async? o)
+           (equal? (.event.name o) "clr"))
+      (map code:variable->argument
+           (ast:argument* o)
+           (ast:formal* ((compose .formals .signature .event) o)))
+      (map code:variable->argument
+           (code:add-calling-context-argument (ast:argument* o))
+           (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o))))))
+
+(define-method (c++:arguments (o <trigger>))
+  (code:formals o))
+;;; END REMOVEME
+
+
 (define (c++:pump-include o) (if (pair? (ast:port* (.behaviour o))) "#include <dzn/pump.hh>" ""))
 
 (define-method (c++:enum-field->string (o <enum>))
