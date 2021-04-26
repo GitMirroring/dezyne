@@ -5,6 +5,54 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.13.0 since 2.12.0
+** Simulation
+  - Interactive use is now supported, it is started when invoked without
+    input trail.
+  - The input trail may now be sparse, only the input needed to resolve
+    non-deterministic choices is required.
+  - The split-arrows trace format is now used by default.  It includes
+    the provides port trace.
+  - The eligible events are printed at the end of the trace.
+  - Invalid input (garbage) on the trail is marked as an error.
+  - All verification problems are detected and reported, notably:
+    + async livelock,
+    + failures model refusals,
+    + forking a call from one provides port to another provides port,
+    + a second async req, while a previous ack is still pending,
+    + a reply on a modeling event in an interface.
+  - A provides port that uses silent events is now supported.
+** Commands
+  - The `dzn trace' command has two new output formats:
+    + --format=json provides P5 output for integration with Dezyne-IDE,
+    + --format=ascii provides an trace diagram.
+  - The JSON output for the state diagram now produces actions and state
+    as structured data.
+** Verification
+  - The verification standard output is now adds the model name next to
+    the trace.
+  - The trace is now marked with a <label> indicating the problem found
+    during verification.
+  - Verbose output is written to standard error.
+  - The `--json' option has been removed.
+  - Async livelocks, i.e., defer.ack () => defer.req () are now
+    detected and reported.
+** Code generation
+  - The experimental C code generator now properly supports systems,
+    foreign components and namespaces.
+** Noteworthy bug fixes
+  - A type mismatch is now also properly reported when attempting an
+    enum field access on a boolean ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/19][#19]]).
+  - An undefined function is now also properly reported for a function
+    call that has arguments ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/18][#18]]).
+  - Verification now reports a livelock with async.
+  - In the simulator, for a requires out event on a model with multiple
+    provides ports, all provides ports are now being updated.
+  - In the preprocessor, an off-by-one line count error has been fixed
+    for deeply nested imports.
+  - Generating code using a calling context for a model that uses
+    dzn.async is now supported ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/20][#20]]).
+
 * Changes in 2.12.0 since 2.11.0
 ** Commands
   - A new command 'dzn explore' can be used to create LTSs and accurate
@@ -362,7 +410,7 @@
 * legalese
 
 Copyright © 2017,2018,2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-Copyright © 2017,2018,2019,2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+Copyright © 2017,2018,2019,2020,2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 Copyright © 2018,2019 Rob Wieringa <Rob.Wieringa@verum.com>
 
   Copying and distribution of this file, with or without modification,
