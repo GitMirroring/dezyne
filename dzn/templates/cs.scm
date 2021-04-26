@@ -95,6 +95,13 @@
 
 
 ;;;
+;;; Formals, parameters, arguments
+;;;
+(define-templates direction cs:direction)
+(define-templates formal-parameter cs:formals comma-infix)
+
+
+;;;
 ;;; Generated main
 ;;;
 (define-templates main-formal-assign (lambda (o) (filter (negate ast:in?) (cs:formals o))))
@@ -127,6 +134,4 @@
 ;;;
 ;;; Misc
 ;;;
-(define-templates formal-parameter cs:formals comma-infix)
-(define-templates direction cs:direction)
 (define-templates non-primitive cs:non-primitive)

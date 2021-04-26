@@ -19,48 +19,7 @@
 //
 // Commentary:
 //
-// Test the feature interaction of async refine and calling context.
-//
 // Code:
 
-import language.dzn;
-
-interface I
-{
-  in void hello(string s);
-  in void bye();
-  out void world(string s);
-
-  behaviour
-  {
-    bool idle = true;
-    [idle] {
-      on hello: idle = false;
-      on bye: {}
-    }
-    [!idle] {
-      on hello: illegal;
-      on bye: idle = true;
-      on inevitable: {idle = true; world;}
-    }
-  }
-}
-
-component async_calling_context
-{
-  provides I p;
-
-  behaviour
-  {
-    bool idle = true;
-    requires dzn.async(string s) a;
-    [idle] {
-      on p.hello(s): {idle = false; a.req(s);}
-      on p.bye(): {}
-    }
-    [!idle] {
-      on p.bye(): {idle = true; a.clr();}
-      on a.ack(s): {idle = true; p.world(s);}
-    }
-  }
-}
+$public class calling_context{};$
+extern string $string$;
