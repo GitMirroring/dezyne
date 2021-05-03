@@ -1,3 +1,3 @@
-test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:67:20: error: non-compliance
-test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:67:20: component accept: p.ec
-test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:32:7:      port accept: return
+test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:54:19: error: non-compliance
+test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:54:19: component accept: h.world
+test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:31:9:      port accept: return
