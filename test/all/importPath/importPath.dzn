@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,7 +27,7 @@ import I.dzn;
 
 component importPath {
   provides I i;
-  provides I2 i2;
+  requires I2 i2;
 
   behaviour {
     on i.esub(): { reply(E.E1); }
