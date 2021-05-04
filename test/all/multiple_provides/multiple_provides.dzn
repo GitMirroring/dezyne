@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016,2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,10 +21,10 @@
 //
 // Code:
 
-interface imultiple_provides
+interface ihello
 {
-  in void left();
-  out void right();
+  in void hello();
+  out void world();
 
   behaviour
   {
@@ -32,22 +32,22 @@ interface imultiple_provides
 
     [!b]
     {
-      on left: right;
-      on left: b = true;
+      on hello: world;
+      on hello: b = true;
     }
     [b]
     {
-      on left: illegal;
-      on inevitable: {b = false; right;}
+      on hello: illegal;
+      on inevitable: {b = false; world;}
     }
   }
 }
 
 component multiple_provides
 {
-  provides imultiple_provides p_left;
-  provides imultiple_provides p_right;
-  requires imultiple_provides r;
+  provides ihello p_left;
+  provides ihello p_right;
+  requires ihello r;
 
   behaviour
   {
@@ -59,23 +59,23 @@ component multiple_provides
 
     [!b_left && !b_right]
     {
-      on p_left.left(): {dir = Direction.Left; r.left(); b_left = true;}
-      on p_right.left():{dir = Direction.Right; r.left(); b_right = true;}
-      on r.right(): illegal;
+      on p_left.hello(): {dir = Direction.Left; r.hello(); b_left = true;}
+      on p_right.hello():{dir = Direction.Right; r.hello(); b_right = true;}
+      on r.world(): illegal;
     }
     [b_left || b_right]
     {
-      on p_left.left():
+      on p_left.hello():
       {
         [b_left] illegal;
-        [!b_left] p_left.right();
+        [!b_left] p_left.world();
       }
-      on p_right.left():
+      on p_right.hello():
       {
         [b_right] illegal;
-        [!b_right] p_right.right();
+        [!b_right] p_right.world();
       }
-      on r.right(): if(dir.Left){b_left = false; p_left.right();} else {b_right = false; p_right.right();}
+      on r.world(): if(dir.Left){b_left = false; p_left.world();} else {b_right = false; p_right.world();}
     }
   }
 }
