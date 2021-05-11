@@ -311,7 +311,8 @@ and return two values, an alist:
 
 and the working directory.
 "
-  (let ((file-match (string-match (string-append "^#dir \"([^\"]*)\"\n"
+  (let ((imported-regexp "\n#imported \"([^\"]*)\"\n")
+        (file-match (string-match (string-append "^#dir \"([^\"]*)\"\n"
                                                  "#file \"([^\"]*)\"\n")
                                   string)))
     (if (not file-match) (values `(("-" . ,string)) (getcwd))
@@ -320,13 +321,13 @@ and the working directory.
                (string (substring string (match:end file-match)))
                (alist (let loop ((file-name file-name)
                                  (string string)
-                                 (imported-match (string-match "\n#imported \"([^\"]*)\"\n" string)))
+                                 (imported-match (string-match imported-regexp string)))
                         (if (not imported-match) `((,file-name . ,string))
                             (cons `(,file-name . ,(substring string 0 (match:start imported-match)))
                                   (let ((string (substring string (match:end imported-match))))
                                     (loop (match:substring imported-match 1)
                                           string
-                                          (string-match "\n#imported \"([^\"]*)\"" string))))))))
+                                          (string-match imported-regexp string))))))))
           (values alist dir)))))
 
 (define* (file->stream file-name #:key debug? (imports '()))

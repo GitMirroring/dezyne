@@ -2,6 +2,7 @@
 #
 # Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+# Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -316,6 +317,7 @@ PARSER_TESTS =					\
  %D%/parse_peg_locations			\
  %D%/parse_preprocessed_foo			\
  %D%/parse_preprocessed_imported_bar		\
+ %D%/parse_preprocessed_imported_baz		\
  %D%/wf_actionInExpression			\
  %D%/wf_actionNotInOnEvent			\
  %D%/wf_actionValueDiscarded			\
