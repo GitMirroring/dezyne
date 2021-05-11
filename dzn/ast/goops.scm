@@ -502,6 +502,9 @@
 (define-ast <undefined> (<unary>)
   (name))
 
+(define-ast <shared-var> (<var>)
+  (port.name))
+
 (define-ast <variable> (<declaration> <imperative> <unary>)
   (type.name)
   (expression #:init-form (make <expression-node>)))

@@ -163,5 +163,9 @@
   (and (equal? (.port.name a) (.port.name b))
        (equal? (.event.name a) (.event.name b))))
 
+(define-method (ast:equal? (a <shared-var>) (b <shared-var>))
+  (and (ast:equal? (.port.name a) (.port.name b))
+       (ast:equal? (.name a) (.name b))))
+
 (define-method (ast:equal? (a <the-end>) (b <the-end>))
   #t)

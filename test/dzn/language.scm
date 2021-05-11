@@ -339,7 +339,7 @@
   (test-complete #:file-name "component10.dzn" #:line 21 #:column 14))
 
 (test-equal "component10a"
-  '("bool" "defer" "i.a0()" "i.a1()" "if" "void")
+  '("bool" "defer" "i.a0()" "i.a1()" "if" "illegal" "void")
   (test-complete #:file-name "component10a.dzn" #:line 21 #:column 17))
 
 (test-equal "component11"

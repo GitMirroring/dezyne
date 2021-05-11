@@ -201,9 +201,10 @@ procedure)."
   (and (match predicate
          ((? symbol?)
           (and (pair? o)
-               (and (eq? predicate (car o)) o)))
+               (eq? predicate (car o))))
          ((? procedure? predicate)
-          (and (predicate o) o)))))
+          (predicate o)))
+       o))
 
 (define (is? predicate)
   "Return a predicate that tests for PREDICATE."

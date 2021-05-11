@@ -343,6 +343,9 @@ null) and return its CONTEXT."
         (ast:lookup component (.port.name o)))
       (ast:lookup o (.port.name o))))
 
+(define-method (.port (o <shared-var>))
+  (and (.port.name o) (ast:lookup o (.port.name o))))
+
 (define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
 (define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
 
@@ -399,6 +402,10 @@ null) and return its CONTEXT."
 
 (define-method (.variable (o <var>))
   (and=> (.name o) (cut ast:lookup-variable o <>)))
+
+(define-method (.variable (o <shared-var>))
+  (and=> (.name o)
+         (cut ast:lookup-variable ((compose .behavior .type .port) o) <>)))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))

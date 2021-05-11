@@ -600,6 +600,8 @@ to the AST element."
 
         (('var name) (make <var-node> #:name (helper name)))
 
+        (('shared-var port.name name) (make <shared-var-node> #:port.name (helper port.name) #:name (helper name)))
+
         (('variable type name)
          (make <variable-node> #:name (helper name) #:type.name (helper type) #:expression (make <literal-node>)))
 
