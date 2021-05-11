@@ -254,11 +254,12 @@ or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
 compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
 plus-min-expression <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
-not-expression <- minus / not / group / dollars / (!var !is-port enum-literal / literal / call / var !DOT / action / interface-action / field-test / unknown-identifier)
+not-expression <- minus / not / group / dollars / (shared-var / !var !is-port enum-literal / literal / call / var !DOT / action / interface-action / field-test / unknown-identifier)
 not <-- NOT not-expression#
 minus <-- UMINUS not-expression#
 enum-literal <-- global? scope name
 field-test <-- !is-port var DOT# name#
+shared-var <-- is-port COLON name#
 literal <-- NUMBER / FALSE / TRUE
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 
