@@ -209,8 +209,9 @@
 (define (in-out:makreel->mcrl2 options)
   `("m4-cw" ,(string-append "--define=init_process=" (options-init options))))
 
-(define in-out:mcrl2->lps
-  '("mcrl22lps" "--quiet" "--binary"))
+(define (in-out:mcrl2->lps options)
+  (let ((debug? (dzn:command-line:get 'debug)))
+    `("mcrl22lps" ,@(if debug? '() '("--quiet")) "--binary")))
 
 (define in-out:lps->lpsconstelm
   '("lpsconstelm" "--quiet" "--remove-singleton-sorts" "--remove-trivial-summands"))
