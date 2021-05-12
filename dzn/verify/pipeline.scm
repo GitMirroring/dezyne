@@ -52,19 +52,13 @@
 
 ;;; Commentary:
 ;;;
-;;; '(scmrl2 verification)' implements a mCRL2-base pipeline for
+;;; '(dzn verify pipeline)' implements a mCRL2-base pipeline for
 ;;; verification of Dezyne models.  Entry point: dzn verify.
 ;;;
 ;;; Starting point is from dzn code -l makreel, (dzn code makreel),
 ;;; the verification pipeline consists of mCRL2 commands and dzn lts.
 ;;; The result is reported in plain text or JSON.
-;;;
-;;; TODO:
-;;;   * Do not drop failure event "illegal", keep it as <illegal>,
-;;;     together with something like <compliance>, <deadlock>,
-;;;     <missing-reply>, <range-error>, <queue-full>, <second-reply>.
-;;;   * Cleanup reporting.
-;;;
+
 ;;; Code:
 
 ;;;
