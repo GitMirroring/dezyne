@@ -1,0 +1,7 @@
+void #.direction _#.name ()
+{
+  if (false) {}
+  #x:shared
+  dzn_update_state();
+  dzn_prefix.clear();
+}

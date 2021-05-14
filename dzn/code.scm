@@ -28,28 +28,32 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
+  #:use-module (ice-9 regex)
+  #:use-module (ice-9 string-fun)
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
+  #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
+  #:use-module (dzn code language makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
-  #:use-module (dzn config)
+  #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn templates)
   #:use-module (dzn vm goops)
+  #:use-module (dzn verify constraint)
 
-  #:export (<port-pair>
-           .other
-            %calling-context
-            %no-unreachable?
+  #:export (%calling-context
             %queue-size
             %shell
+            %no-unreachable?
             code
             code:add-calling-context
             code:add-calling-context-argument
@@ -112,6 +116,14 @@
             code:return
             code:return-values
             code:short-circuit?
+            code:shared-value
+            code:shared-lts
+            code:shared
+            code:shared-group
+            code:shared-state
+            code:shared-update-state
+            code:shared-update-prefix
+            code:shared-update-group
             code:trace-q-out
             code:trigger
             code:type-name
@@ -119,9 +131,7 @@
             code:used-foreigns
             code:variable->argument
             code:variable-name
-            string->enum-field)
-  #:re-export (.port
-               .port.name))
+            string->enum-field))
 
 ;; The calling-context to insert.
 (define %calling-context (make-parameter #f))
@@ -134,16 +144,6 @@
 
 ;; The name of the thread-safe shell.
 (define %shell (make-parameter #f))
-
-;;;
-;;; Ast extension.
-;;;
-(define-ast <port-pair> (<ast>)
-  (port)
-  (other))
-
-(define-method (.port.name (o <port-pair>)) (.name (.port o)))
-(define-method (.other.name (o <port-pair>)) (.name (.other o)))
 
 ;;;
 ;;; Top
@@ -791,6 +791,156 @@
       add-determinism-temporaries
       code:om)
      ast)))
+
+
+;;;
+;;; Shared-state.
+;;;
+(define-method (code:shared-lts (o <interface>))
+  (let* ((debug (getenv "DZN_DEBUG_TEMPLATE"))
+         (foo (unsetenv "DZN_DEBUG_TEMPLATE"))
+         (debugity (dzn:debugity))
+         (model-name (ast:dotted-name o))
+         (root (ast:parent o <root>))
+         (root' (makreel:om root))
+         (interface' (makreel:get-model root' model-name))
+         (lts (interface->constraint-lts root' interface'))
+         (rtc-lts (lts->rtc-lts lts)))
+    (when (> debugity 2)
+      (display "rtc-lts:\n" (current-error-port))
+      (for-each (cute write-line <> (current-error-port))
+                (vector->list rtc-lts)))
+    (when debug
+      (setenv "DZN_DEBUG_TEMPLATE" debug))
+    rtc-lts))
+
+(define-method (code:shared (o <event>))
+  (define (trigger? o)
+    (and (string? o)
+         (and=> (string-match "'in\\(([^)]*\\))\\)" o)
+                (cute match:substring <> 1))))
+  (define (action? o)
+    (and (string? o)
+         (and=> (string-contains "'out\\(([^)]*\\))\\)" o)
+                (cute match:substring <> 1))))
+  (define (reply? o)
+    (and (string? o)
+         (and=> (string-match "'reply\\(([^)]*\\))\\)" o)
+                (cute match:substring <> 1))))
+  (define (state? o)
+    (and (string? o)
+         (and=> (string-match "'state\\(([^)]*\\))\\)" o)
+                (cute match:substring <> 1))))
+  (define (match-event edge)
+    (let ((labels (edge-label edge)))
+      (match labels
+        (((and (? trigger?) trigger) tail ...)
+         (string-contains trigger (string-append "in'" (.name o))))
+        (_
+         #f))))
+  (define (makreel->event o)
+    (match (string-split o #\')
+      ((scope ... enum field)
+       (string-append enum ":" field))
+      (_
+       o)))
+  (define (event->prefix event) ;; XXX vouw in trigger?, action?, reply?
+    (or (and=> (string-match ".*'in'([^)]*)\\)" event)
+               (cute match:substring <> 1))
+        (and=> (string-match ".*'out'([^)]*)\\)" event)
+               (cute match:substring <> 1))
+        (and=> (string-match ".*'Bool\\(([^)]*)\\)" event)
+               (cute match:substring <> 1))
+        (and (string-match ".*'Void\\(([^)]*)\\)" event)
+             "return")
+        (and=> (string-match "\\(([^)]*)\\)" event)
+               (compose makreel->event
+                        (cute match:substring <> 1)))
+        ;; HACK for debugging
+        (pke "EVENT" event)))
+  (define (edge->prefix edge)
+    (let* ((labels (edge-label edge))
+           (events (filter-map (disjoin trigger? action? reply?) labels))
+           (events (map event->prefix events)))
+      (string-join events " " 'suffix)))
+  (define (edge->transition edge)
+    (let ((from (edge-from edge))
+          (to (edge-to edge))
+          (prefix (edge->prefix edge)))
+      (make <shared-transition> #:from from #:prefix prefix #:to to)))
+  (let* ((debugity (dzn:debugity))
+         (interface (ast:parent o <interface>))
+         (lts (code:shared-lts interface))
+         (nodes (vector->list lts))
+         (edges (append-map node-edges nodes))
+         (edges (filter match-event edges))
+         (transitions (map edge->transition edges)))
+    transitions))
+
+(define-method (code:shared-state (o <interface>))
+  (let* ((variables (ast:variable* o))
+         (variable-names (map .name variables)))
+    (define (state? o)
+      (and (string? o)
+           (and=> (string-match "'state\\(([^)]*\\))\\)" o)
+                  (cute match:substring <> 1))))
+    (define (edge->assign edge)
+      (let* ((labels (edge-label edge))
+             (state (any state? labels)))
+        (and (pair? variables)
+             state
+             (let* ((from (edge-from edge))
+                    (values (and=> (string-match "'variables\\(([^)]*)\\)" state)
+                                   (cute match:substring <> 1)))
+                    (values (string-split values #\,))
+                    (values (map (cute make <shared-value> #:value <>)
+                                 values))
+                    (statements (map (cute make <assign>
+                                           #:variable.name <>
+                                           #:expression <>)
+                                     variable-names
+                                     values))
+                    (compound (make <compound> #:elements statements)))
+               (make <shared-state> #:from from #:assign compound)))))
+    (let* ((debugity (dzn:debugity))
+           (lts (code:shared-lts o))
+           (nodes (vector->list lts))
+           (edges (append-map node-edges nodes))
+           (assign (filter-map edge->assign edges)))
+      (when (> debugity 2)
+        (display "code:\n" (current-error-port))
+        (display assign (current-error-port)))
+      assign)))
+
+(define-method (code:shared-update-state (o <ast>))
+  #f)
+
+(define-method (code:shared-update-state (o <action>))
+  (and (ast:in? o) o))
+
+(define-method (code:shared-update-state (o <assign>))
+  (code:shared-update-state (.expression o)))
+
+(define-method (code:shared-update-state (o <variable>))
+  (code:shared-update-state (.expression o)))
+
+(define-method (code:shared-update-prefix (o <ast>))
+  #f)
+
+(define-method (code:shared-update-prefix (o <action>))
+  o)
+
+(define-method (code:shared-update-prefix (o <assign>))
+  (and (code:shared-update-prefix (.expression o))
+       o))
+
+(define-method (code:shared-update-prefix (o <variable>))
+  (and (code:shared-update-prefix (.expression o))
+       o))
+
+(define-method (code:shared-group (o <ast>))
+  (or (as (.parent o) <guard>)
+      (as (.parent o) <if>)))
 
 
 ;;;

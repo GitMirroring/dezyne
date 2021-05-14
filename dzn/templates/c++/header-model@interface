@@ -5,25 +5,40 @@
 struct #x:model-name
 {
   dzn::port::meta meta;
+
   #x:enum-definer
   struct
   {
     #x:in-event-definer
-    } in;
+  } in;
 
   struct
   {
     #x:out-event-definer
-    } out;
+  } out;
 
-   inline #x:model-name(const dzn::port::meta& m) : meta(m) {}
-   inline virtual ~#x:model-name() = default;
+  int dzn_state;
+  std::string dzn_prefix;
+  #x:variable-member-declare
+  inline #x:model-name(const dzn::port::meta& m)
+  : meta(m)
+  , dzn_state(0)
+  , dzn_prefix()
+  #x:variable-member-initializer
+  {}
+  inline virtual ~#x:model-name() = default;
 
-   void check_bindings() const
-   {
-     #x:check-in-binding
-     #x:check-out-binding
-   }
+  void check_bindings() const
+  {
+    #x:check-in-binding
+    #x:check-out-binding
+  }
+  void dzn_update_state()
+  {
+    if (false) {}
+    #x:shared-state
+  }
+  #x:shared-update
 };
 
 inline void connect (#x:model-name & provided, #x:model-name & required)

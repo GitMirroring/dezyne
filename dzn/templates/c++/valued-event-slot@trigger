@@ -1,1 +1,14 @@
-event-slot@trigger
+#.port.name .#.event.direction .#.event.name  = [&](#x:formals){
+  this->#.port.name .dzn_prefix += "#.event.name  ";
+  auto dzn_value = dzn::call_#.event.direction(this,[=#x:out-arguments ]{
+    #x:injected-port-require-override
+    this->#.port.name _#.event.name(#x:code-arguments);
+    #x:flush
+    #x:port-reply
+    #x:return
+  },
+  this->#.port.name , "#.event.name ");
+  this->#.port.name .dzn_prefix += to_string(dzn_value) + " ";
+  this->#.port.name .#.event.direction _#.event.name();
+  return dzn_value;
+};

@@ -122,3 +122,9 @@
 (define-templates injected-instance-meta-initializer code:injected-instances)
 (define-templates non-injected-instance-meta-initializer code:non-injected-instances)
 (define-templates dzn-locator c++:dzn-locator)
+
+
+;;;
+;;; Shared state.
+;;;
+(define-templates shared-value c++:shared-value)

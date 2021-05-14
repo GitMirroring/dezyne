@@ -27,15 +27,18 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 match)
-  #:use-module (ice-9 regex)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 string-fun)
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
-  #:use-module (dzn code)
+  #:use-module (dzn code language makreel)
   #:use-module (dzn code util)
+  #:use-module (dzn code)
+  #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn indent)
   #:use-module (dzn misc)
@@ -49,6 +52,7 @@
             c++:enum-literal
             c++:formal-type
             c++:model
+            c++:shared-value
             c++:string->enum
             c++:type-name
             c++:type-ref))
@@ -134,6 +138,13 @@
   (let ((model (ast:parent o <model>)))
     (if (null? (code:injected-bindings model)) '()
         o)))
+
+
+;;;
+;;; Shared-state.
+;;;
+(define-method (c++:shared-value (o <shared-value>))
+  (string-replace-substring (.value o) "'" "::"))
 
 (define-templates-macro define-templates c++)
 (include-from-path "dzn/templates/dzn.scm")

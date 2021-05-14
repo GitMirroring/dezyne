@@ -43,6 +43,7 @@
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn templates)
+  #:use-module (dzn vm goops)
 
   #:export (ast->dzn
             dzn:blocking

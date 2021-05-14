@@ -184,3 +184,18 @@
 ;;;
 (define-templates interface-include code:interface-include)
 (define-templates component-include code:component-include)
+
+
+;;;
+;;; Shared state.
+;;;
+(define-templates shared-update ast:event* double-newline-infix)
+(define-templates shared code:shared)
+(define-templates shared-state code:shared-state)
+(define-templates shared-assign ast:statement*)
+(define-templates shared-value code:shared-value)
+(define-templates shared-update-prefix code:shared-update-prefix)
+(define-templates shared-update-prefix-return code:shared-update-prefix)
+(define-templates shared-update-state code:shared-update-state)
+(define-templates shared-open-brace code:shared-group)
+(define-templates shared-close-brace code:shared-group)

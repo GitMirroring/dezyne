@@ -64,6 +64,7 @@
             cleanup-aut
             cleanup-error
             display-lts
+            edge-from
             edge-label
             edge-to
             edge?
