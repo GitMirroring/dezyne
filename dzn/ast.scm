@@ -373,6 +373,9 @@
 ;;;
 ;;; Algorithmic accessors.
 ;;;
+(define-method (ast:dotted-name (o <list>))
+  (string-join o "."))
+
 (define-method (ast:dotted-name (o <ast>))
   (string-join (ast:full-name o) "."))
 

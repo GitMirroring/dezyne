@@ -38,8 +38,8 @@
 ;;;
 (define-templates header-data code:data*)
 (define-templates import-include ast:unique-import*)
-(define-templates interface-include code:interface-include)
-(define-templates component-include code:component-include)
+(define-templates interface-include code:interface-include*)
+(define-templates component-include code:component-include*)
 
 
 ;;;
@@ -117,9 +117,9 @@
 ;;;
 (define-templates code-arguments code:arguments argument-grammar)
 (define-templates out-arguments code:out-argument out-argument-grammar)
-(define-templates formals code:formals formal-grammar)
-(define-templates formals-anonymous code:formals formal-grammar)
-(define-templates formals-type code:formals formal-grammar)
+(define-templates formals code:formal* formal-grammar)
+(define-templates formals-anonymous code:formal* formal-grammar)
+(define-templates formals-type code:formal* formal-grammar)
 
 
 ;;;

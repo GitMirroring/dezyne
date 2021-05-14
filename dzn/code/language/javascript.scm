@@ -33,6 +33,7 @@
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code legacy dzn)
+  #:use-module (dzn code legacy code)
   #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -108,15 +109,18 @@
 
   (code:foreign-conflict? root)
 
-  (let ((root (code:om root)))
+  (parameterize ((%member-prefix "this.")
+                 (%type-infix ".")
+                 (%type-prefix ""))
+    (let ((root (code:om root)))
 
-    (let ((generator (code:indenter (cute x:source root)))
-          (file-name (code:root-file-name root dir ".js")))
-      (code:dump root generator #:file-name file-name))
+      (let ((generator (code:indenter (cute x:source root)))
+            (file-name (code:root-file-name root dir ".js")))
+        (code:dump root generator #:file-name file-name))
 
-    (when model
-      (let ((model (ast:get-model root model)))
-        (when (is-a? model <component-model>)
-          (let ((generator (code:indenter (cute x:main model)))
-                (file-name (code:source-file-name "main" dir ".js")))
-            (code:dump root generator #:file-name file-name)))))))
+      (when model
+        (let ((model (ast:get-model root model)))
+          (when (is-a? model <component-model>)
+            (let ((generator (code:indenter (cute x:main model)))
+                  (file-name (code:source-file-name "main" dir ".js")))
+              (code:dump root generator #:file-name file-name))))))))

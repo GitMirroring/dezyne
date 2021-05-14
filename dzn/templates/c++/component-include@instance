@@ -1,3 +1,0 @@
-#x:include-guard
-##include "#x:file-name .hh"
-#x:endif

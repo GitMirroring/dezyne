@@ -348,9 +348,6 @@
 
 (define-ast <arguments> (<ast-list> <locationed>))
 (define-ast <bindings> (<ast-list>))
-(define-ast <out-bindings> (<ast-list> <imperative>)
-  (port))
-
 (define-ast <compound> (<scope> <ast-list> <statement>))
 (define-ast <blocking-compound> (<compound>)
   (port))
@@ -359,6 +356,8 @@
 (define-ast <events> (<ast-list>))
 (define-ast <fields> (<ast-list>))
 (define-ast <formals> (<ast-list> <scope>))
+(define-ast <out-bindings> (<formals> <imperative>)
+  (port))
 (define-ast <functions> (<ast-list>))
 (define-ast <instances> (<ast-list>))
 (define-ast <ports> (<ast-list>))

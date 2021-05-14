@@ -1,1 +1,0 @@
-this->dzn_rt.flush(this,dzn::coroutine_id(this->dzn_locator));

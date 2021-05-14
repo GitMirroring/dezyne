@@ -216,8 +216,8 @@ int main()
 
   dzn::fill_event_map(sut, event_map);
 
-  sut.check_bindings();
-  sut.dump_tree();
+  dzn::check_bindings(sut);
+  dzn::dump_tree(sut);
 
   std::string event;
   while(std::cin >> event) {

@@ -17,7 +17,7 @@ struct #x:port-type Wrapper
     inline #x:port-type Wrapper(const dzn::port::meta& m) : meta(m) {}
     virtual ~#x:port-type Wrapper() {}
 
-    void check_bindings() const
+    void dzn_check_bindings() const
     {
       #x:check-in-binding
       #x:check-out-binding

@@ -32,10 +32,11 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
-  #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
-  #:use-module (dzn code language c++)
   #:use-module (dzn code legacy dzn)
+  #:use-module (dzn code legacy code)
+  #:use-module (dzn code language c++)
+  #:use-module (dzn code scmackerel c++)
   #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -45,8 +46,10 @@
 (define-templates-macro define-templates c++-exception-wrappers)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/code.scm")
-(include-from-path "dzn/templates/c++.scm")
 (include-from-path "dzn/templates/c++-exception-wrappers.scm")
+
+(define-method (c++:type-ref (o <formal>))
+  (if (not (eq? 'in (.direction o))) "&" ""))
 
 (define-method (c++ew:ast-system* (o <root>))
   (filter (negate ast:imported?) (ast:system* o)))
@@ -74,7 +77,7 @@
   (ast:formal* (.formals o)))
 
 (define-method (c++ew:formals (o <top>))
-  (code:formals o))
+  (code:formal* o))
 
 (define-method (c++ew:formal-names (o <trigger>))
   (map .name (ast:formal* o)))

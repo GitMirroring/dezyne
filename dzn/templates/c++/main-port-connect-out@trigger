@@ -1,9 +1,0 @@
-c.system.#.port.name .#.event.direction .#.event.name  = [&] (#x:formals-anonymous) {
-  c.match("#.port.name .#.event.name");
-  return dzn::call_out(&c, [&]{
-  if(c.dzn_rt.performs_flush(&c)) c.dzn_rt.queue(&c).push([&]{
-    if(c.dzn_rt.queue(&c).empty()) {
-      std::clog << "#.port.name .<flush>" << std::endl;
-      c.match("#.port.name .<flush>");
-    }
-  });}, c.system.#.port.name , "#.event.name");};

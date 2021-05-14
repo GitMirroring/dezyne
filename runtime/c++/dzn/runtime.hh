@@ -79,11 +79,21 @@ namespace dzn
       });
   }
 
+  inline void check_bindings(dzn::component& c)
+  {
+    check_bindings (&reinterpret_cast<component_meta const*> (&c)->dzn_meta);
+  }
+
   inline void dump_tree(std::ostream& os, const dzn::meta* c)
   {
     apply(c, [&](const dzn::meta* m){
         os << path(m) << ":" << m->type << std::endl;
       });
+  }
+
+  inline void dump_tree (dzn::component const& c)
+  {
+    dump_tree (std::clog, &reinterpret_cast<component_meta const*> (&c)->dzn_meta);
   }
 
   // implemented conditionally in pump.cc
@@ -161,11 +171,11 @@ namespace dzn
     , event(event)
     , reply("return")
     {
-      if(component->dzn_rt.handling(component) ||
+      if(component->dzn_runtime.handling(component) ||
          port_blocked_p(component->dzn_locator, &port))
         collateral_block(component->dzn_locator, component);
 
-      component->dzn_rt.reset_skip_block(component);
+      component->dzn_runtime.reset_skip_block(component);
       trace(os, meta, event);
 #if DZN_STATE_TRACING
       os << *component << std::endl;
@@ -174,12 +184,12 @@ namespace dzn
     template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
     void operator()(L&& event)
     {
-      component->dzn_rt.handle(component, event, coroutine_id(component->dzn_locator));
+      component->dzn_runtime.handle(component, event, coroutine_id(component->dzn_locator));
     }
     template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
     auto operator()(L&& event) -> decltype(event())
     {
-      auto value = component->dzn_rt.handle(component, event, coroutine_id(component->dzn_locator));
+      auto value = component->dzn_runtime.handle(component, event, coroutine_id(component->dzn_locator));
       reply = to_string(value);
       return value;
     }
@@ -190,7 +200,7 @@ namespace dzn
       os << *c << std::endl;
 #endif
       prune_deferred(component->dzn_locator);
-      component->dzn_rt.handling(component) = 0;
+      component->dzn_runtime.handling(component) = 0;
     }
   };
 
@@ -209,7 +219,7 @@ namespace dzn
 #if DZN_STATE_TRACING
     os << *component << std::endl;
 #endif
-    component->dzn_rt.enqueue(port.meta.provide.component, component,
+    component->dzn_runtime.enqueue(port.meta.provide.component, component,
                               [&os,component,event,&port,event_name]{
       trace_qout(os, port.meta, event_name);
       event();
@@ -221,9 +231,9 @@ namespace dzn
   {
     defer(component->dzn_locator, std::function<bool()>(predicate),
           std::function<void(size_t)>([=](size_t coroutine_id){
-            component->dzn_rt.handling(component) = coroutine_id;
+            component->dzn_runtime.handling(component) = coroutine_id;
             event();
-            component->dzn_rt.flush(component);
+            component->dzn_runtime.flush(component);
           }));
   }
 }

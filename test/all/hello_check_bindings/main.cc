@@ -40,7 +40,7 @@ int main ()
   unbound_in_event.p.out.world = []{ };
   try
   {
-    unbound_in_event.check_bindings ();
+    dzn::check_bindings (unbound_in_event);
   }
   catch (const dzn::binding_error& e)
   {
@@ -54,7 +54,7 @@ int main ()
   unbound_out_event.r.in.hello = []{ };
   try
   {
-    unbound_out_event.check_bindings ();
+    dzn::check_bindings (unbound_out_event);
   }
   catch (const dzn::binding_error& e)
   {
@@ -69,7 +69,7 @@ int main ()
   no_unbound_events.r.in.hello = []{ };
   try
   {
-    no_unbound_events.check_bindings ();
+    dzn::check_bindings (no_unbound_events);
   }
   catch (const dzn::binding_error& e)
   {

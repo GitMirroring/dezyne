@@ -1,5 +1,0 @@
-{"#.name .<flush>",[&]{
-  c.match("#.name .<flush>");
-  std::clog << "#.name .<flush>" << std::endl;
-  c.dzn_rt.flush(&c);
-}}

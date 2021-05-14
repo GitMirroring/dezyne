@@ -56,3 +56,11 @@
 (define-templates valued-requires-in-return c++ew:valued-event?)
 (define-templates ew-trigger-type-base c++ew:trigger-type-base type-infix)
 (define-templates file-name-upcase c++ew:file-name-upcase)
+
+(define-templates ports-meta-list ast:requires-port* meta-infix)
+(define-templates check-bindings-list (lambda (o) (map (compose code->string c++:call-check-bindings .name) (ast:port* o))) comma-infix)
+(define-templates check-in-binding (lambda (o) (filter ast:in? (ast:event* o))))
+(define-templates check-out-binding (lambda (o) (filter ast:out? (ast:event* o))))
+
+(define-templates c++:type-ref c++:type-ref)
+(define-templates type-name code:type-name type-infix)

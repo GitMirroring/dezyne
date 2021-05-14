@@ -32,7 +32,7 @@
 struct Foreign: public dzn::component
 {
   dzn::meta dzn_meta;
-  dzn::runtime& dzn_rt;
+  dzn::runtime& dzn_runtime;
   dzn::locator const& dzn_locator;
   ::iworld w;
   Foreign(const dzn::locator&);

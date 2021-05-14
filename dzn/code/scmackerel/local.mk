@@ -22,9 +22,16 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
+ %D%/code.scm					\
  %D%/makreel.scm
 
 dist_nocompile_%C%_scm_DATA =
+
+if have_cxx11
+dist_%C%_scm_DATA += %D%/c++.scm
+else
+dist_noinst_DATA += %D%/c++.scm
+endif
 
 %C%_scmdir = $(guilemoduledir)/%D%
 nocompile_%C%_scmdir = $(%C%_scmdir)

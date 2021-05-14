@@ -24,17 +24,18 @@
 #include <foreign_handwritten.hh>
 
 Foreign::Foreign(const dzn::locator& dzn_locator)
-: dzn_meta{"","Foreign",0,{},{},{[this]{w.check_bindings();}}}
-, dzn_rt(dzn_locator.get<dzn::runtime>())
+: dzn_meta{"","Foreign",0,{},{},{[this]{w.dzn_check_bindings();}}}
+, dzn_runtime(dzn_locator.get<dzn::runtime>())
 , dzn_locator(dzn_locator)
 , w({{"w",&w,this,&dzn_meta},{"",0,0,0}})
 {
   dzn_meta.require = {};
-  w.in.world = [&](){
-    return dzn::call_in(this,[=]{
+  w.in.world = [&] ()
+  {
+    return dzn::call_in(this, [=] ()
+    {
       return w_world();
-    },
-    this->w, "world");
+    }, this->w, "world");
   };
 }
 

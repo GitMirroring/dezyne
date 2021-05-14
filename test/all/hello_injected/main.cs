@@ -32,8 +32,8 @@ class main {
     sut.t.out_port.f = () => {System.Console.Error.WriteLine("sut.m.t.f -> <external>.t.f");};
     sut.t.meta.require.name = "t";
 
-    //sut.check_bindings ();
-    //sut.dump_tree ();
+    //dzn::check_bindings (sut);
+    //dzn::dump_tree (sut);
 
     sut.t.in_port.e();
   }

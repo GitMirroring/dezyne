@@ -1,7 +1,0 @@
-{
-#x:capture-member-value
-dzn::defer(this, [this#x:capture-member ]
-                 { #x:defer-condition #x:default-true },
-                 [&#x:capture-local ]
-                 { #x:expand-statement });
-}

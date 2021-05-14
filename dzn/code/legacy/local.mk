@@ -22,6 +22,7 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
+ %D%/code.scm					\
  %D%/dzn.scm
 
 dist_nocompile_%C%_scm_DATA =

@@ -1,1 +1,0 @@
-connect(#x:bind-provides , #x:bind-requires);

@@ -1,3 +1,0 @@
-c.system.#.name .meta.provide.component = &c;
-c.system.#.name .meta.provide.meta = &c.meta;
-c.system.#.name .meta.provide.name = "#.name";

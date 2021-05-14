@@ -25,139 +25,52 @@
 (define-module (dzn code language c++)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
-  #:use-module (dzn code goops)
-  #:use-module (dzn code language dzn)
-  #:use-module (dzn code legacy dzn)
+  #:use-module (dzn code scmackerel c++)
   #:use-module (dzn code util)
-  #:use-module (dzn config)
   #:use-module (dzn misc)
-  #:use-module (dzn templates)
+  #:export (c++:ref))
 
-  #:export (c++:capture-arguments
-            c++:dzn-locator
-            c++:enum->string
-            c++:enum-field->string
-            c++:enum-field-type
-            c++:enum-literal
-            c++:formal-type
-            c++:include-guard
-            c++:model
-            c++:string->enum-field*
-            c++:type-name
-            c++:type-ref))
+;;;
+;;; Accessors.
+;;;
+(define-method (c++:generate-source? (o <root>))
+  (find (conjoin (negate ast:imported?)
+                 (disjoin (is? <interface>) ;; no inline (yet??)
+                          (is? <foreign>)   ;; no inline (yet??
+                          (is? <component>)
+                          (is? <system>)))
+        (ast:model* o)))
 
-;;; ast accessors / template helpers
-
-(define-method (c++:type-ref (o <formal>))
-  (if (not (eq? 'in (.direction o))) "&" ""))
-
-(define-method (c++:capture-arguments (o <trigger>))
-  (map .name (filter (negate (disjoin ast:out? ast:inout?)) (code:formals o))))
-
-(define-method (c++:formal-type (o <formal>)) o)
-(define-method (c++:formal-type (o <port>))
-  (code:formals (car (ast:event* o))))
-
-(define (c++:pump-include o) (if (pair? (ast:port* (.behavior o))) "#include <dzn/pump.hh>" ""))
-
-(define-method (c++:enum-field->string (o <enum>))
-  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
-
-(define-method (c++:string->enum-field* (o <enum>))
-  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
-
-(define-method (c++:enum->string (o <interface>))
-  (filter (is? <enum>) (ast:type* o)))
-
-(define-method (c++:enum->string (o <component>))
-  (filter (is? <enum>) (ast:type* (.behavior o))))
-
-(define-method (c++:enum->string (o <enum>))
-  o)
-
-(define-method (c++:type-name o)
-  (code:type-name o))
-
-(define-method (c++:type-name (o <enum>))
-  (append (list "") (ast:full-name o)))
-
-(define-method (c++:type-name (o <enum-field>))
-  (append (c++:type-name (.type o)) (list (.field o))))
-
-(define-method (c++:type-name (o <enum-literal>))
-  (c++:type-name (.type o)))
-
-(define-method (c++:type-name (o <event>))
-  ((compose c++:type-name .type .signature) o))
-
-(define-method (c++:type-name (o <formal>))
-  ((compose c++:type-name .type) o))
-
-(define-method (c++:type-name (o <var>))
-  (c++:type-name o))
-
-(define-method (c++:type-name (o <variable>))
-  (c++:type-name (.type o)))
-
-(define-method (c++:enum-field-type (o <enum-field>))
-  (append (c++:type-name (.type o)) (list (.field o))))
-
-(define-method (c++:enum-literal (o <enum-literal>))
-  (append (c++:type-name (.type o)) (list (.field o))))
-
-(define-method (c++:model (o <root>))
-  (let* ((models (ast:model* o))
-         (models (filter (negate
-                          (disjoin (is? <type>) (is? <namespace>)
-                                   ast:imported?))
-                         models))
-         (models (ast:topological-model-sort models))
-         (models (map code:annotate-shells models)))
-    models))
-
-(define-method (c++:dzn-locator (o <instance>))
-  (let ((model (ast:parent o <model>)))
-    (if (null? (code:injected-bindings model)) '()
-        o)))
-
-(define-method (c++:include-guard (o <model>))
-  o)
-
-(define-method (c++:include-guard (o <instance>))
-  (.type o))
-
-(define-templates-macro define-templates c++)
-(include-from-path "dzn/templates/dzn.scm")
-(include-from-path "dzn/templates/code.scm")
-(include-from-path "dzn/templates/c++.scm")
+(define-method (c++:ref (o <string>))
+  (string-append "&" o))
 
 
 ;;;
 ;;; Entry point.
 ;;;
-
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
   (code:foreign-conflict? root)
 
   (let ((root (code:om+determinism root)))
-    (let ((generator (code:indenter (cute x:header root)))
+    (let ((generator (code:indenter (cute print-header-ast root)))
           (file-name (code:root-file-name root dir ".hh")))
       (code:dump root generator #:file-name file-name))
 
-    (when (code:generate-source? root)
-      (let ((generator (code:indenter (cute x:source root)))
+    (when (c++:generate-source? root)
+      (let ((generator (code:indenter (cute print-code-ast root)))
             (file-name (code:root-file-name root dir ".cc")))
         (code:dump root generator #:file-name file-name)))
 
     (when model
       (let ((model (ast:get-model root model)))
         (when (is-a? model <component-model>)
-          (let ((generator (code:indenter (cute x:main model)))
+          (let ((generator (code:indenter (cute print-main-ast model)))
                 (file-name (code:source-file-name "main" dir ".cc")))
             (code:dump root generator #:file-name file-name)))))))

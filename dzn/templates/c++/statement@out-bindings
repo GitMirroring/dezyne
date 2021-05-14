@@ -1,3 +1,0 @@
-this->out_#.port.name  = [&] {
-  #x:out-bindings
-};

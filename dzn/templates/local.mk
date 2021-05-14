@@ -30,10 +30,6 @@ dist_nocompile_%C%_scm_DATA =			\
  %D%/dzn.scm					\
  %D%/json.scm
 
-#if have_cxx11
-dist_nocompile_%C%_scm_DATA += %D%/c++.scm
-#endif
-
 if have_cxx_exception_wrappers
 dist_nocompile_%C%_scm_DATA += %D%/c++-exception-wrappers.scm
 else
@@ -76,7 +72,6 @@ dist_%C%_makreel_DATA =				\
 EXTRA_DIST +=					\
  %D%/README					\
  %D%/c						\
- %D%/c++					\
  %D%/c++-exception-wrappers			\
  %D%/cs						\
  %D%/dot					\

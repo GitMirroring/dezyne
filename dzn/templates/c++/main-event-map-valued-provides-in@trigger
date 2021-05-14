@@ -1,5 +1,0 @@
-{"#.port.name .#.event.name ",[&]{
-  c.match("#.port.name .#.event.name");
-  #x:main-out-arg-define
-  c.match("#.port.name ." + dzn::to_string(c.system.#.port.name .#.event.direction .#.event.name(#x:main-out-arg)));
-}}

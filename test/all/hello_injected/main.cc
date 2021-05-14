@@ -50,8 +50,8 @@ int main()
   sut.t.meta.require.component = 0;
   sut.t.out.f = f;
 
-  sut.check_bindings();
-  sut.dump_tree();
+  dzn::check_bindings(sut);
+  dzn::dump_tree(sut);
 
   sut.t.in.e();
 }

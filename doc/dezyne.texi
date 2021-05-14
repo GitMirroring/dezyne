@@ -2214,9 +2214,9 @@ int main()
 @{
   dezyne::locator loc;
   dezyne::runtime rt;
-  loc.set(rt);
+  loc.set (rt);
   //construct the system
-  some_system system(loc);
+  some_system system (loc);
   //connect the outer events directed at the system
   system.provided_port.out.event = []@{
     std::cout << "system.provided_port.out.event" << std::endl;
@@ -2225,8 +2225,8 @@ int main()
     std::cout << "system.required_port.in.event" << std::endl;
   @};
   //and finally fire some of the external events
-  system.provided_port.in.event();
-  system.required_port.out.event();
+  system.provided_port.in.event ();
+  system.required_port.out.event ();
 @}
 @end example
 
@@ -2263,12 +2263,12 @@ int main()
 @{
   dezyne::locator loc;
   dezyne::runtime rt;
-  loc.set(rt);
+  loc.set (rt);
   Foo foo;
   foo.in.bar = []@{/*no op*/@};
-  loc.set(foo);
-  some_component comp(loc);
-  comp.provided_port.in.in_event();
+  loc.set (foo);
+  some_component comp (loc);
+  comp.provided_port.in.in_event ();
 @}
 @end example
 
@@ -2447,9 +2447,7 @@ struct SYS
   IA pp;
   IA rp;
   dzn::pump dzn_pump;
-  SYS(const dzn::locator&);
-  void check_bindings() const;
-  void dump_tree(std::ostream& os=std::clog) const;
+  SYS (dzn::locator const&);
 @};
 #endif // SYS_HH
 @end example
@@ -2458,32 +2456,24 @@ File SYS.cc:
 
 @example
 #include "SYS.hh"
-SYS::SYS(const dzn::locator& locator)
+SYS::SYS (dzn::locator const& locator)
 : dzn_meta@{"","SYS",0,@{additionalbhv.dzn_meta@},@{@}@}
-, dzn_locator(locator.clone().set(dzn_runtime).set(dzn_pump))
+, dzn_locator (locator.clone ().set (dzn_runtime).set (dzn_pump))
 , bhv(dzn_locator)
-, pp(bhv.pp)
-, rp(bhv.rp)
-, dzn_pump()
+, pp (bhv.pp)
+, rp (bhv.rp)
+, dzn_pump ()
 @{
   pp.in.iv = [&] (int i) @{
-    return dzn::shell(dzn_pump, [&,i] @{return bhv.pp.in.iv(i);@});
+    return dzn::shell (dzn_pump, [&,i] @{return bhv.pp.in.iv (i);@});
   @};
   rp.out.o = [&] (int i) @{
-    return dzn_pump([&,i] @{return bhv.rp.out.o(i);@});
+    return dzn_pump ([&,i] @{return bhv.rp.out.o (i);@});
   @};
-  bhv.pp.out.o = std::ref(pp.out.o);
-  bhv.rp.in.iv = std::ref(rp.in.iv);
+  bhv.pp.out.o = std::ref (pp.out.o);
+  bhv.rp.in.iv = std::ref (rp.in.iv);
   bhv.dzn_meta.parent = additionaldzn_meta;
   bhv.dzn_meta.name = "bhv";
-@}
-void SYS::check_bindings() const
-@{
-  dzn::check_bindings(additionaldzn_meta);
-@}
-void SYS::dump_tree(std::ostream& os) const
-@{
-  dzn::dump_tree(os, additionaldzn_meta);
 @}
 @end example
 

@@ -23,8 +23,8 @@
 (define-module (dzn code)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
-  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast display)
@@ -33,115 +33,121 @@
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn code goops)
-  #:use-module (dzn code legacy dzn)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn vm goops)
 
   #:export (%calling-context
+            %member-prefix
+            %name-infix
             %no-constraint?
             %no-unreachable?
             %shell
+            %type-infix
+            %type-prefix
+
             code
+
             code:add-calling-context
             code:add-calling-context-argument
             code:add-calling-context-formal
             code:annotate-shells
-            code:arguments
-            code:assign-reply
-            code:bind-provides
-            code:bind-requires
+            code:argument*
+            code:blocking?
             code:capture-local
-            code:capture-member
-            code:class-member?
-            code:component-include
-            code:component-port
-            code:data*
-            code:declarative-or-imperative
-            code:default-true
+            code:capture-name
+            code:component-binding*
+            code:component-include*
             code:defer-condition
-            code:enum-definer
-            code:enum-field-definer
-            code:enum-literal
-            code:enum-name
-            code:enum-scope
-            code:enum-short-name
-            code:expand-on
-            code:expression
-            code:extension
+            code:defer-equality*
+            code:direction
+            code:end-point->string
+            code:enum*
+            code:event-name
+            code:event-slot-name
             code:file-name
-            code:formals
-            code:function-type
-            code:functions
-            code:global-enum-definer
-            code:injected-bindings
-            code:injected-instances
-            code:injected-instances-system
+            code:file-name->string
+            code:formal*
+            code:injected-binding*
+            code:injected-instance*
             code:instance*
-            code:instance-name
-            code:instance-port-name
-            code:interface-include
-            code:main-event-map-match-return
-            code:main-out-arg
-            code:main-out-arg-define
-            code:member-equality
-            code:model
-            code:non-injected-bindings
-            code:non-injected-instances
+            code:instance-end-point
+            code:interface-include*
+            code:member
+            code:member-name
+            code:model*
+            code:number-argument
+            code:number-formals
             code:om
             code:om+determinism
-            code:ons
-            code:out-argument
-            code:port-bind?
-            code:port-name
-            code:port-release
-            code:port-reply
-            code:port-type
+            code:on
+            code:out-binding
+            code:port-binding?
+            code:port-end-point?
+            code:port-release?
+            code:provides+requires-end-point
+            code:provides-end-point
+            code:public-enum*
             code:pump?
-            code:reply
-            code:reply-type
             code:reply-types
+            code:type-eq?
+            code:reply-var
+            code:requires-end-point
             code:requires-in-void-returns
-            code:return
             code:return-values
             code:short-circuit?
-            code:trace-q-out
-            code:trigger
+            code:type->string
             code:type-name
-            code:upcase-model-name
-            code:used-foreigns
-            code:variable->argument
-            code:variable-name
-            string->enum-field)
-  #:re-export (.port
-               .port.name))
+            code:wrap-compound))
+
+;;;
+;;; Parameters.
+;;;
 
 ;; The calling-context to insert.
 (define %calling-context (make-parameter #f))
 
+;; Prefix for member variable.
+(define %member-prefix (make-parameter "this->"))
+
 ;; Should interface constraints be omitted?
 (define %no-constraint? (make-parameter #f))
+
+;; Infix for printing name elements.
+(define %name-infix (make-parameter "."))
 
 ;; Should unreachable-code tags be omitted?
 (define %no-unreachable? (make-parameter #f))
 
+;; Prefix for printing compound types.
+(define %type-prefix (make-parameter "::"))
+
+;; Infix for printing type elements.
+(define %type-infix (make-parameter "::"))
+
 ;; The name of the thread-safe shell.
 (define %shell (make-parameter #f))
 
+
 ;;;
-;;; Top
+;;; Accessors.
 ;;;
-(define-method (code:model (o <root>))
+(define-method (.port.name (o <instance>))
+  (let ((component (.type o)))
+    (.name (ast:provides-port component))))
+
+(define-method (code:model* (o <root>))
   (let* ((models (ast:model* o))
-         (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
-                                          ast:imported?))
+         (models (filter (negate
+                          (disjoin (is? <type>) (is? <namespace>)
+                                   ast:imported?))
                          models))
          (models (ast:topological-model-sort models))
          (models (map code:annotate-shells models)))
     models))
 
-(define-method (code:interface-include (o <top>) source-file)
+(define-method (code:interface-include* (o <top>) source-file)
   (let* ((interfaces (ast:interface* o))
          (interfaces (filter (compose not
                                       (cute equal? source-file <>)
@@ -151,13 +157,13 @@
          (file-names (delete-duplicates file-names)))
     (map (cut make <file-name> #:name <>) file-names)))
 
-(define-method (code:interface-include (o <top>))
-  (code:interface-include o (ast:source-file o)))
+(define-method (code:interface-include* (o <top>))
+  (code:interface-include* o (ast:source-file o)))
 
-(define-method (code:interface-include (o <foreign>))
-  (code:interface-include o (ast:source-file (ast:parent o <root>))))
+(define-method (code:interface-include* (o <foreign>))
+  (code:interface-include* o (ast:source-file (ast:parent o <root>))))
 
-(define (code:component-include o)
+(define (code:component-include* o)
   (let ((source-file (ast:source-file o)))
     (filter (disjoin
              (compose (is? <foreign>) .type)
@@ -180,15 +186,16 @@
                             (ast:model* o))))
     (any code:pump? components)))
 
-
-;;;
-;;; Names
-;;;
-(define-method (code:file-name (o <port>))
-  (code:file-name (.type o)))
+(define-method (code:public-enum* (o <interface>))
+  (filter (is? <enum>) (ast:type* o)))
 
-(define-method (code:file-name (o <instance>))
-  (code:file-name (.type o)))
+(define-method (code:public-enum* (o <root>))
+  (filter (is? <enum>) (ast:type* o)))
+
+(define-method (code:enum* (o <root>))
+  (filter (conjoin (is? <enum>)
+                   (negate ast:imported?))
+          (ast:type* o)))
 
 (define-method (code:file-name (o <foreign>))
   (if (ast:imported? o) (next-method)
@@ -200,195 +207,22 @@
 (define-method (code:file-name (o <ast>))
   (basename (ast:source-file o) ".dzn"))
 
-(define-method (code:function-type (o <type>))
-  o)
+(define-method (code:enum* (o <model>))
+  (filter (is? <enum>) (ast:type* (.behavior o))))
 
-(define-method (code:function-type (o <trigger>))
-  ((compose code:function-type .signature .event) o))
+(define-method (code:enum* (o <foreign>))
+  '())
 
-(define-method (code:function-type (o <signature>))
-  ((compose code:function-type .type) o))
-
-(define-method (code:function-type (o <function>))
-  ((compose code:function-type .signature) o))
-
-(define-method (code:port-name (o <on>))
-  ((compose .port.name car ast:trigger*) o))
-
-(define-method (code:port-name (o <instance>))
-  (let ((component (.type o)))
-    (.name (car (ast:provides-port* component)))))
-
-(define-method (code:port-name (o <binding>))
-  (let* ((model (ast:parent o <model>))
-         (left (.left o))
-         (right (.right o))
-         (port (and (code:port-bind? o)
-                    (if (not (.instance.name left)) (.port left) (.port right)))))
-    port))
-
-(define-method (code:port-type (o <trigger>))
-  ((compose code:port-type .port) o))
-
-(define-method (code:port-type (o <port>))
-  (ast:full-name (.type o)))
-
-(define-method (code:reply-type (o <ast>))
-  (ast:full-name o))
-
-(define-method (code:reply-type (o <int>))
-  "int")
-
-(define-method (code:reply-type (o <trigger>))
-  (code:reply-type (ast:type o)))
-
-(define-method (code:reply-type (o <reply>))
-  ((compose code:reply-type ast:type .expression) o))
-
-(define-method (code:type-name (o <variable>))
-  (code:type-name (.type o)))
-
-(define-method (code:type-name (o <enum>))
-  (ast:full-name o))
-
-(define-method (code:type-name (o <binding>))
-  ((compose code:type-name
-            .type
-            (cute ast:lookup (ast:parent o <model>) <>)
-            injected-instance-name)
-   o))
-
-(define-method (code:type-name (o <enum-field>))
-  (append (code:type-name (.type o)) (list (.field o))))
-
-(define-method (code:type-name (o <enum-literal>))
-  (append (code:type-name (.type o)) (list (.field o))))
-
-(define-method (code:type-name (o <model>))
-  (ast:full-name o))
-
-(define-method (code:type-name o)
-  (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
-    (match type
-      (($ <enum>) (code:type-name type))
-      (($ <extern>) (list (.value type)))
-      (($ <bool>) '("bool"))
-      (($ <int>) '("int"))
-      (($ <subint>) '("int"))
-      (($ <void>) '("void"))
-      (_ (ast:full-name type)))))
-
-(define-method (code:type-name (o <event>))
-  ((compose code:type-name .type .signature) o))
-
-(define-method (code:type-name (o <enum-literal>))
-  (code:type-name (.type o)))
-
-(define-method (code:variable-name (o <variable>))
-  (if (code:class-member? o) o
-      (make <local> #:name (.name o) #:type.name (.type.name o)
-            #:expression (.expression o))))
-
-(define (make-out-formal formal)
-  (let* ((type (.type.name formal))
-         (out-formal (make <out-formal> #:name (.name formal) #:type.name type))
-         (out-formal (clone out-formal #:parent formal)))
-    (if (ast:in? formal) formal out-formal)))
-
-(define-method (code:variable-name (o <formal>))
-  (make-out-formal o))
-
-(define-method (code:variable-name (o <top>))
-  o)
-
-(define-method (code:variable-name (o <assign>))
-  ((compose code:variable-name .variable) o))
-
-(define-method (code:variable-name (o <field-test>))
-  ((compose code:variable-name .variable) o))
-
-(define-method (code:variable-name (o <var>))
-  ((compose code:variable-name .variable) o))
-
-(define-method (code:variable-name (o <argument>))
-  o)
-
-(define-method (code:upcase-model-name (o <model>))
-  (map string-upcase (ast:full-name o)))
-
-(define-method (code:upcase-model-name o)
-  (code:upcase-model-name (ast:parent o <model>)))
-
-
-;;;
-;;; Accessors
-;;;
-(define-method (code:functions (o <component>))
-  (ast:function* o))
-
-(define-method (code:ons (o <component>))
-  (let ((behavior (.behavior o)))
-    (if (not behavior) '()
-        (ast:statement* (.statement behavior)))))
-
-(define-method (code:ons (o <port>))
-  (let* ((component (ast:parent o <component>))
-         (behavior (.behavior component))
-         (ons (if (not behavior) '()
-                  (ast:statement* (.statement behavior)))))
-    (define (this-port? p)
-      (equal? (.name o) (.port.name (car (ast:trigger* p)))))
-    (filter this-port? ons)))
-
-(define-method (code:reply (o <type>))
-  o)
-
-(define-method (code:return-type-eq? (a <subint>) (b <subint>))
+(define-method (code:type-eq? (a <subint>) (b <subint>))
   #t)
-(define-method (code:return-type-eq? a b)
+
+(define-method (code:type-eq? a b)
   (ast:eq? a b))
+
 (define (code:reply-types o)
-  (delete-duplicates (filter (negate (is? <void>)) (ast:return-types o)) code:return-type-eq?))
-
-(define-method (code:trigger (o <on>))
-  ((compose car ast:trigger*) o))
-
-(define-method (code:trigger (o <port>))
-  (map code:trigger (code:ons o)))
-
-
-;;;
-;;; Statements
-;;;
-(define-method (code:expand-on (o <statement>))
-  (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-      (clone (make <otherwise-guard>
-               #:expression (.expression o)
-               #:statement (.statement o))
-             #:parent (.parent o))
-      o))
-
-(define-method (code:expand-on (o <on>))
-  (.statement o))
-
-(define-method (code:assign-reply (o <reply>))
-  (let ((expression (.expression o)))
-    (if (is-a? (ast:type expression) <void>) '()
-        o)))
-
-(define-method (code:return (o <trigger>))
-  (ast:type o))
-
-(define-method (code:return (o <on>))
-  (code:return (code:trigger o)))
-
-(define (code:blocking? o)
-  (pair? (tree-collect-filter
-          (negate (disjoin (is? <imperative>)
-                           (is? <expression>)
-                           (is? <location>)))
-          (disjoin (is? <blocking>) (is? <blocking-compound>))
-          (ast:parent o <model>))))
+  (let* ((types (ast:return-types o))
+         (types (filter (negate (is? <void>)) types)))
+    (delete-duplicates types code:type-eq?)))
 
 (define-method (code:port-release o)
   (let ((trigger (and=> (ast:parent o <on>)
@@ -401,335 +235,143 @@
          (code:blocking? o)
          o)))
 
-(define-method (code:port-reply o)
-  (let ((port (.port o)))
-    (if (ast:provides? port) port
-        '())))
+(define (code:blocking? o)
+  (pair? (tree-collect-filter
+          (negate (disjoin (is? <imperative>)
+                           (is? <expression>)
+                           (is? <location>)))
+          (disjoin (is? <blocking>) (is? <blocking-compound>))
+          (ast:parent o <model>))))
 
-(define-method (code:default-true (o <defer>))
-  (if (or (and=> (.arguments o) (compose null? .elements))
-          (null? (ast:variable* (ast:parent o <component>)))) o
-          '()))
+(define-method (code:port-release? o)
+  (let ((trigger (and=> (ast:parent o <on>)
+                        (compose car ast:trigger*))))
+    (and (or (not trigger)
+             (ast:requires? trigger)
+             (or (not (ast:equal? (.port o) (.port trigger)))
+                 (ast:parent o <blocking>)
+                 (ast:parent o <blocking-compound>)))
+         (code:blocking? o))))
 
-(define-method (code:defer-condition (o <defer>))
-  (if (not (or (and=> (.arguments o)(compose null? .elements))
-               (null? (ast:variable* (ast:parent o <component>))))) o
-               '()))
+(define-method (code:direction (o <event>))
+  (simple-format #f "~a" (.direction o)))
 
-(define-method (code:capture-local (o <defer>))
-  (let* ((references (tree-collect (disjoin(is? <assign>)
-                                           (is? <argument>)
-                                           (is? <var>))
-                                   (.statement o)))
-         (variables (map .variable references))
-         (local? (compose (cute ast:eq? <> o)
-                          (cute ast:parent <> <defer>))))
-    (filter (negate (disjoin ast:member? local?))
-            variables)))
+(define-method (code:direction (o <action>))
+  (code:direction (.event o)))
 
-(define-method (code:capture-member (o <defer>))
-  (ast:defer-variable* o))
+(define-method (code:direction (o <trigger>))
+  (code:direction (.event o)))
 
-(define-method (code:capture-member (o <variable>))
-  o)
+(define-method (code:direction (o <port>))
+  (simple-format #f "~a" (.direction o)))
 
-(define-method (code:member-equality (o <defer>))
-  (filter (compose not (is? <extern>) .type) (ast:defer-variable* o)))
+(define-method (code:event-slot-name o) ; <trigger> or <action>
+  (string-append (.port.name o)
+                 "_"
+                 (.event.name o)))
 
-
-;;;
-;;; Expressions
-;;;
-(define-method (code:expression (o <top>))
-  (dzn:expression o))
+(define-method (code:event-name (o <event>))
+  (string-append
+   (code:direction o)
+   "."
+   (.name o)))
 
-(define-method (code:expression (o <formal>))
-  (code:variable-name o))
+(define-method (code:event-name o) ; <trigger> or <action>
+  (string-append (.port.name o)
+                 "."
+                 (code:event-name (.event o))))
 
-(define-method (code:expression (o <variable>))
-  (code:variable-name o))
+(define-method (code:file-name (o <port>))
+  (code:file-name (.type o)))
 
-(define-method (code:expression (o <return>))
-  (dzn:expression o))
+(define-method (code:file-name (o <instance>))
+  (code:file-name (.type o)))
 
-(define-method (code:expression (o <return>))
-  (or (as (ast:type (.expression o)) <void>)
-      (.expression o)))
-
-(define-method (code:arguments (o <ast>) (signature <signature>))
-  (map code:variable->argument
-       (code:add-calling-context-argument (ast:argument* o))
-       (ast:formal* (code:add-calling-context-formal
-                     (.formals signature)))))
-
-(define-method (code:arguments (o <call>))
-  (code:arguments o (.signature (.function o))))
-
-(define-method (code:arguments (o <action>))
-  (code:arguments o (.signature (.event o))))
-
-(define-method (code:arguments (o <trigger>))
-  (code:formals o))
-
-(define-method (code:out-argument (o <trigger>))
-  (filter (disjoin ast:out? ast:inout?) (code:formals o)))
-
-(define-method (code:formals (o <function>))
-  (ast:formal* (code:add-calling-context-formal ((compose .formals .signature) o))))
-
-(define-method (code:formals (o <action>))
-  (ast:formal* (code:add-calling-context-formal ((compose .formals .signature .event) o))))
-
-(define-method (code:formals (o <trigger>))
-  (ast:formal* (code:add-calling-context-formal ((compose .formals) o))))
-
-(define-method (code:formals (o <signature>))
-  (ast:formal* (code:add-calling-context-formal ((compose .formals) o))))
-
-(define-method (code:formals (o <event>))
-  (ast:formal* (code:add-calling-context-formal ((compose .formals .signature) o))))
-
-(define-method (code:formals (o <on>))
-  (ast:formal*
-   (code:add-calling-context-formal
-    (let* ((trigger ((compose car ast:trigger*) o))
-           (formals ((compose .formals .signature) trigger))
-           (event (.event trigger)))
-      (clone formals
-             #:elements (map (lambda (name formal)
-                               (clone formal #:name name))
-                             (map .name (ast:formal* formals))
-                             (ast:formal* event)))))))
-
-(define-method (code:variable->argument (o <expression>) (v <variable>) (f <formal>))
-  (if (or (code:class-member? v) (eq? (.direction f) 'in)) v
-      (let ((argument (make <argument>
-                        #:name (.name v)
-                        #:type.name (.type.name f)
-                        #:direction (.direction f)
-                        #:expression o)))
-        (clone argument #:parent (.parent o)))))
-
-(define-method (code:variable->argument (o <expression>) (v <formal>) (f <formal>))
-  (if (eq? (.direction f) 'in) v
-      (let ((argument (make <argument>
-                        #:name (.name v)
-                        #:type.name (.type.name v)
-                        #:direction (.direction v)
-                        #:expression o)))
-        (clone argument #:parent (.parent o)))))
-
-(define-method (code:variable->argument (o <var>) (f <formal>))
-  (code:variable->argument o (.variable o) f))
-
-(define-method (code:variable->argument (o <formal>) (f <formal>))
-  (code:variable->argument o o f))
-
-(define-method (code:variable->argument o f)
-  o)
-
-(define-method (code:data* (o <root>))
-  (filter (negate ast:imported?) (ast:data* o)))
-
-
-;;;
-;;; Enum
-;;;
-(define ((string->enum-field enum) o i)
-  (make <enum-field> #:type.name (.name enum) #:field o #:value i))
-
-(define-method (code:enum-field-definer (o <enum>))
-  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
-
-(define-method (code:enum-name (o <enum-field>))
-  ((compose code:enum-name .type) o))
-
-(define-method (code:enum-name (o <enum>))
+(define-method (code:file-name (o <foreign>))
   (ast:full-name o))
 
-(define-method (code:enum-name (o <enum-literal>))
-  ((compose code:enum-name .type) o))
+(define-method (code:file-name (o <ast>))
+  (basename (ast:source-file o) ".dzn"))
 
-(define-method (code:enum-name (o <reply>))
-  ((compose code:enum-name .expression) o))
+(define-method (code:member (o <string>))
+  (string-append (%member-prefix) o))
 
-(define-method (code:enum-name (o <variable>))
-  ((compose code:enum-name .type) o))
+(define-method (code:member-name (o <variable>))
+  (code:member (.name o)))
 
-(define-method (code:enum-name o)
-  ((compose code:enum-name .variable) o))
+(define-method (code:out-binding (o <port>))
+  (string-append "dzn_out_" (.name o)))
 
-(define-method (code:enum-definer (o <interface>))
-  (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behavior o)))))
+(define-method (code:type-name o)
+  (let ((type (or (as o <model>) (as o <type>) (ast:type o))))
+    (match type
+      (($ <bool>) "bool")
+      (($ <data>) (.value type))
+      (($ <int>) "int")
+      (($ <subint>) "int")
+      (($ <void>) "void")
+      (_ (string-append
+          (%type-prefix)
+          (string-join (ast:full-name type) (%type-infix)))))))
 
-(define-method (code:enum-definer (o <component>))
-  (filter (is? <enum>) (ast:type* (.behavior o))))
+(define-method (code:type-name (o <data>))
+  (.value o))
 
-(define-method (code:global-enum-definer (o <root>))
-  (filter (conjoin (is? <enum>)
-                   (negate ast:imported?))
-          (ast:type* o)))
+(define-method (code:type-name (o <enum>))
+  (string-append
+   (%type-prefix) (string-join (ast:full-name o) (%type-infix))))
 
-(define-method (code:global-enum-definer (o <model>))
-  (filter (is? <enum>) (ast:type* (ast:parent o <root>))))
+(define-method (code:type-name (o <event>))
+  ((compose code:type-name .type .signature) o))
 
-(define-method (code:enum-literal (o <enum-literal>))
-  (append (code:type-name (.type o)) (list (.field o))))
+(define-method (code:type-name (o <enum-field>))
+  (string-append (code:type-name (.type o)) (%type-infix) (.field o)))
 
-(define-method (code:enum-scope (o <enum-literal>))
-  (let* ((enum (.type o))
-         (scope (ast:full-scope enum))
-         (model-scope (and=> (ast:parent o <model>) ast:full-name)))
-    (cond ((or (null? scope) (null? model-scope)) (ast:parent enum <root>))
-          ((equal? scope model-scope) (make <model-scope> #:scope model-scope))
-          (else enum))))
+(define-method (code:type-name (o <enum-literal>))
+  (string-append (code:type-name (.type o)) (%type-infix) (.field o)))
 
-(define-method (code:enum-short-name (o <enum-field>))
-  ((compose code:enum-short-name .type) o))
+(define-method (code:type-name (o <extern>))
+  (code:type-name (.value o)))
 
-(define-method (code:enum-short-name (o <enum>))
-  (ast:name o))
+(define-method (code:type-name (o <model>))
+  (string-append
+   (%type-prefix)
+   (string-join (ast:full-name o) (%type-infix))))
 
-(define-method (code:enum-short-name (o <enum-literal>))
-  (code:enum-short-name (.type o)))
+(define-method (code:type-name (o <formal>))
+  (code:type-name (.type o)))
 
-
-;;;
-;;; System
-;;;
-(define-method (code:component-port (o <port>))
-  (ast:other-end-point o))
-
-(define-method (code:instance* (o <system>))
-  (ast:instance* o))
-(define-method (code:instance* o)
-  '())
-
-(define-method (code:instance-name (o <binding>))
-  (let* ((model (ast:parent o <model>))
-         (left (.left o))
-         (right (.right o))
-         (bind (and (code:port-bind? o)
-                    (if (.instance.name left) left right))))
-    bind))
-
-(define-method (code:instance-name (o <end-point>))
+(define-method (code:type-name (o <string>))
   o)
 
-(define-method (code:instance-name (o <port>))
-  (.instance.name (ast:other-end-point o)))
+(define-method (code:type-name (o <variable>))
+  (code:type-name (.type o)))
 
-(define-method (code:instance-name (o <trigger>))
-  (code:instance-name (.port o)))
+(define-method (code:type->string (o <type>))
+  (parameterize ((%type-infix "_")
+                 (%type-prefix ""))
+    (code:type-name o)))
 
-(define-method (code:instance-port-name (o <port>))
-  (.port.name (ast:other-end-point o)))
+(define-method (code:reply-var (o <type>))
+  (let ((type (code:type->string o)))
+    (simple-format #f "dzn_reply_~a" type)))
 
-(define-method (code:instance-port-name (o <trigger>))
-  (code:instance-port-name (.port o)))
+(define (code:file-name->string o)
+  (let ((file-name (code:file-name o)))
+    (match file-name
+      ((h t ...)
+       (string-join file-name "_"))
+      ((? string?)
+       file-name))))
 
-(define (injected-instance-name binding)
-  (or (.instance.name (.left binding)) (.instance.name (.right binding))))
-
-(define (code:injected-instances model)
-  (let ((injected-instance-names (map injected-instance-name (code:injected-bindings model))))
-    (filter (lambda (instance) (member (.name instance) injected-instance-names))
-            (ast:instance* model))))
-
-(define (code:non-injected-instances model)
-  (let ((injected-instance-names (map injected-instance-name (code:injected-bindings model))))
-    (filter (lambda (instance) (not (member (.name instance) injected-instance-names)))
-            (ast:instance* model))))
-
-(define-method (code:injected-instances-system (o <system>))
-  (if (null? (code:injected-bindings o)) '()
-      (list o)))
-
-(define (code:port-bind? bind)
-  (and (code:port-binding? bind)
-       bind))
-
-(define (code:port-binding? bind)
-  (or (and (not (.instance.name (.left bind)))
-           (.left bind))
-      (and (not (.instance.name (.right bind)))
-           (.right bind))))
-
-(define (injected-binding? binding)
-  (or (equal? "*" (.port.name (.left binding)))
-      (equal? "*" (.port.name (.right binding)))))
-
-(define (injected-binding binding)
-  (cond ((equal? "*" (.port.name (.left binding))) (.right binding))
-        ((equal? "*" (.port.name (.right binding))) (.left binding))
-        (else #f)))
-
-(define (code:injected-bindings model)
-  (filter injected-binding? (ast:binding* model)))
-
-(define-method (code:non-injected-bindings (o <system>))
-  (filter code:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
-
-(define-method (code:bind-provides-required (o <binding>))
-  (let* ((model (ast:parent o <model>))
-         (left (.left o))
-         (left-port (.port left))
-         (right (.right o))
-         (right-port (.port right)))
-    (if (ast:provides? left-port)
-        (cons left right)
-        (cons right left))))
-
-(define-method (code:bind-provides (o <binding>))
-  ((compose car code:bind-provides-required) o))
-
-(define-method (code:bind-requires (o <binding>))
-  ((compose cdr code:bind-provides-required) o))
-
-(define-method (code:trace-q-out o)
-  (if ((compose ast:out? .event) o) o
-      '()))
+(define-method (code:wrap-compound o)
+  (let ((compound (make <compound> #:elements (list o))))
+    (clone compound #:parent (.parent o))))
 
 
 ;;;
-;;; Generated main
+;;; Calling context.
 ;;;
-(define-method (code:main-out-arg (o <trigger>))
-  (let* ((formals (ast:formal* o))
-         (formals (map make-out-formal formals)))
-    (map (lambda (f i) (clone f #:name i))
-         formals (iota (length formals)))))
-
-(define-method (code:main-out-arg-define (o <trigger>))
-  (let* ((formals (ast:formal* o))
-         (formals (map (lambda (f i) (clone f #:name i))
-                       formals (iota (length formals)))))
-    (filter (disjoin ast:out? ast:inout?) formals)))
-
-(define-method (code:main-out-arg-define-formal (o <formal>))
-  (let ((type ((compose .value .type) o)))
-    (if (ast:in? o) ""
-        o)))
-
-(define-method (code:main-event-map-match-return (o <trigger>))
-  (if (ast:in? (.event o)) o ""))
-
-
-;;;
-;;; Transform
-;;;
-(define-method (code:add-calling-context (o <root>))
-  (if (%calling-context)
-      (let ((extern (make <extern>
-                      #:name (make <scope.name> #:ids '("*calling-context*"))
-                      #:value (%calling-context))))
-        (clone o #:elements (cons extern (ast:top* o))))
-      o))
-
-(define (code:add-calling-context-argument arguments)
-  (if (%calling-context) (cons "dzn_cc" arguments)
-      arguments))
-
 (define-method (code:add-calling-context-formal (o <formals>))
   (if (not (%calling-context)) o
       (let* ((cc-formal (make <formal>
@@ -741,17 +383,158 @@
              (lst (cons cc-formal (ast:formal* o))))
         (clone o #:elements lst))))
 
-(define (code:annotate-shells o)
-  (if (and (is-a? o <system>)
-           (equal? (%shell) (string-join (ast:full-name o) ".")))
-      (clone (make <shell-system>
-               #:ports (.ports o)
-               #:name (.name o)
-               #:instances (.instances o)
-               #:bindings (.bindings o))
-             #:parent (.parent o))
-      o))
+(define-method (code:formal* (o <formals>))
+  (ast:formal* (code:add-calling-context-formal o)))
 
+(define-method (code:formal* (o <signature>))
+  (code:formal* (.formals o)))
+
+(define-method (code:formal* (o <function>))
+  (code:formal* (.signature o)))
+
+(define-method (code:formal* (o <event>))
+  (code:formal* (.signature o)))
+
+(define-method (code:formal* (o <action>))
+  (code:formal* (.event o)))
+
+(define-method (code:formal* (o <trigger>))
+  (code:formal* (.formals o)))
+
+(define-method (code:formal* (o <on>))
+  (code:formal*
+   (let* ((trigger ((compose car ast:trigger*) o))
+          (formals ((compose .formals .signature) trigger))
+          (event (.event trigger))
+          (elements (map (cute clone <> #:name <>)
+                         (ast:formal* event)
+                         (map .name (ast:formal* formals)))))
+     (clone formals #:elements elements))))
+
+(define (code:add-calling-context-argument arguments)
+  (if (%calling-context) (cons "dzn_cc" arguments)
+      arguments))
+
+(define-method (code:argument* (o <call>))
+  (code:add-calling-context-argument (ast:argument* o)))
+
+(define-method (code:argument* (o <action>))
+  (code:add-calling-context-argument (ast:argument* o)))
+
+(define-method (code:number-formals formals)
+  (map (cute clone <> #:name <>)
+       formals (iota (length formals))))
+
+(define-method (code:number-argument (o <formal>))
+  (if (ast:in? o) (.name o)
+      (simple-format #f "_~a" (.name o))))
+
+(define-method (code:on (o <trigger>))
+  (or (ast:parent o <on>)
+      (let ((model (ast:parent o <model>)))
+        (and (is-a? model <component>)
+             (let* ((behavior (.behavior model))
+                    (trigger (car (tree-collect (cute ast:equal? <> o)
+                                                behavior))))
+               (ast:parent trigger <on>))))))
+
+
+;;;
+;;; Constraint.
+;;;
+(define-method (code:capture-name (o <variable>))
+  (string-append "dzn"
+                 "_"
+                 "capture"
+                 "_"
+                 (.name o)))
+
+(define-method (code:defer-condition (o <defer>))
+  (not (or (and=> (.arguments o)(compose null? .elements))
+           (null? (ast:variable* (ast:parent o <component>))))))
+
+(define-method (code:capture-local (o <defer>))
+  (let* ((references (tree-collect (disjoin(is? <assign>)
+                                           (is? <argument>)
+                                           (is? <var>))
+                                   (.statement o)))
+         (variables (map .variable references))
+         (local? (compose
+                  (cute ast:eq? <> o)
+                  (cute ast:parent <> <defer>))))
+    (filter (negate (disjoin ast:member? local?))
+            variables)))
+
+(define-method (code:defer-equality* (o <defer>))
+  (filter (compose not (is? <extern>) .type) (ast:defer-variable* o)))
+
+
+;;;
+;;; System.
+;;;
+(define-method (code:port-end-point? (o <binding>))
+  (or (and (not (.instance.name (.left o)))
+           (.left o))
+      (and (not (.instance.name (.right o)))
+           (.right o))))
+
+(define-method (code:instance-end-point (o <binding>))
+  (let ((left (.left o))
+        (right (.right o)))
+    (and (code:port-binding? o)
+         (if (.instance.name left) left right))))
+
+(define-method (code:injected-binding? (o <binding>))
+  (or (ast:wildcard? (.port.name (.left o)))
+      (ast:wildcard? (.port.name (.right o)))))
+
+(define-method (code:port-binding? (o <binding>))
+  (and (code:port-end-point? o)
+       o))
+
+(define-method (code:component-binding* (o <system>))
+  (let ((bindings (ast:binding* o)))
+    (filter (negate code:port-end-point?) bindings)))
+
+(define-method (.instance.name (o <binding>))
+  (.instance.name (code:instance-end-point o)))
+
+(define-method (code:instance* (o <system>))
+  (let ((injected (map .instance.name (code:injected-binding* o))))
+    (partition (compose not (cute member <> injected) .name)
+               (ast:instance* o))))
+
+(define-method (code:injected-instance* (o <system>))
+  (let ((instances injected (code:instance* o)))
+    injected))
+
+(define-method (code:injected-binding* (o <system>))
+  (filter code:injected-binding? (ast:binding* o)))
+
+(define-method (code:provides+requires-end-point (o <binding>))
+  (let* ((model (ast:parent o <model>))
+         (left (.left o))
+         (left-port (.port left))
+         (right (.right o))
+         (right-port (.port right)))
+    (if (ast:provides? left-port) (values left right)
+        (values right left))))
+
+(define-method (code:provides-end-point (o <binding>))
+  (let ((provides requires (code:provides+requires-end-point o)))
+    provides))
+
+(define-method (code:requires-end-point (o <binding>))
+  (let ((provides requires (code:provides+requires-end-point o)))
+    requires))
+
+(define-method (code:end-point->string (o <end-point>))
+  (string-append (.instance.name o) "." (.port.name o)))
+
+
+;;;
+;;; Main.
+;;;
 (define-method (code:return-values (o <component-model>))
   (define (trigger->port-pairs trigger)
     (map (cute make
@@ -772,14 +555,28 @@
                        (lambda (a b)
                          (ast:eq? (.port a) (.port b))))))
 
-(define (code:short-circuit? o)
-  (match o
-    ((or ($ <foreign>) ($ <system>))
-     o)
-    ((and (or ($ <interface>) ($ <component>)) (? ast:imported?))
-     o)
-    (_
-     #f)))
+
+;;;
+;;; Transform.
+;;;
+(define-method (code:add-calling-context (o <root>))
+  (if (not (%calling-context)) o
+      (let* ((name (make <scope.name> #:ids '("*calling-context*")))
+             (extern (make <extern>
+                       #:name name
+                       #:value (%calling-context))))
+        (clone o #:elements (cons extern (ast:top* o))))))
+
+(define (code:annotate-shells o)
+  (let ((shell? (and (is-a? o <system>)
+                     (equal? (%shell) (string-join (ast:full-name o) ".")))))
+    (if (not shell?) o
+        (let ((shell (make <shell-system>
+                       #:ports (.ports o)
+                       #:name (.name o)
+                       #:instances (.instances o)
+                       #:bindings (.bindings o))))
+          (clone shell #:parent (.parent o))))))
 
 (define (code:om- ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
@@ -807,19 +604,14 @@
         (ast:pretty-print root (current-error-port)))
       root)))
 
-
-;;;
-;;; Utility
-;;;
-(define-method (code:class-member? (o <variable>))
-  (let ((p (.parent o)))
-    (and (is-a? p <variables>)
-         (is-a? (.parent p) <behavior>))))
-
-(define-method (code:used-foreigns (o <root>))
-  (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))
-         (models (map .type (append-map ast:instance* systems))))
-    (filter (is? <foreign>) models)))
+(define (code:short-circuit? o)
+  (match o
+    ((or ($ <foreign>) ($ <system>))
+     o)
+    ((and (or ($ <interface>) ($ <component>)) (? ast:imported?))
+     o)
+    (_
+     #f)))
 
 
 ;;;

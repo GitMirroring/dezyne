@@ -33,7 +33,8 @@
   #:use-module (dzn misc)
   #:use-module (dzn verify pipeline)
 
-  #:export (interface->constraint))
+  #:export (interface->constraint
+            interface->constraint-lts))
 
 (define (lts->makreel model lts)
   "Print constraint proces in makreel code for MODEL's deterministic LTS
@@ -227,13 +228,16 @@ to current-output-port."
 
 
 ;;;
-;;; Entry point.
+;;; Entry points.
 ;;;
-(define (interface->constraint root model)
-  "Return constraint process as mCRL2 string from MODEL."
+(define (interface->constraint-lts root model)
+  "Return constraining LTS from MODEL."
   (let* ((aut (verify-pipeline "maut-weak-trace+hide" root model))
          (debugity (dzn:debugity))
          (lts (aut-text->lts aut)))
+    (when (> debugity 0)
+      (let ((stats (substring aut 0 (string-index aut #\newline))))
+        (format (current-error-port) "# constraint: ~a\n" stats)))
     (when (> debugity 0)
       (let ((stats (substring aut 0 (string-index aut #\newline))))
         (format (current-error-port) "# constraint: ~a\n" stats)))
@@ -241,6 +245,12 @@ to current-output-port."
       (display "lts:\n" (current-error-port))
       (for-each (cute write-line <> (current-error-port))
                 (string-split aut #\newline)))
+    lts))
+
+(define (interface->constraint root model)
+  "Return constraint process as mCRL2 string from MODEL."
+  (let* ((lts (interface->constraint-lts root model))
+         (debugity (dzn:debugity)))
     (let ((makreel (with-output-to-string
                      (cute lts->makreel model lts))))
       (when (> debugity 2)

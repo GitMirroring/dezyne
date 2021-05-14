@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
     connect(c.sut.brick4_s2, bricks.at("ROBOT"), PORT2);
     connect(c.sut.brick4_s3, bricks.at("ROBOT"), PORT3);
 
-    c.sut.check_bindings();
+    dzn::check_bindings (c.sut);
 
     dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){
         std::clog << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;

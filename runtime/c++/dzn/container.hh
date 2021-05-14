@@ -43,9 +43,9 @@ namespace dzn
   template <typename System, typename Function>
   struct container: public component
   {
-    dzn::meta meta;
+    dzn::meta dzn_meta;
     dzn::locator dzn_locator;
-    dzn::runtime dzn_rt;
+    dzn::runtime dzn_runtime;
     System system;
 
     std::map<std::string, Function> lookup;
@@ -60,14 +60,14 @@ namespace dzn
     }
 
     container(bool flush, dzn::locator&& l = dzn::locator{})
-    : meta{"<external>","container",0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
+    : dzn_meta{"<external>","container",0,{},{&system.dzn_meta},{[this]{dzn::check_bindings (system);}}}
     , dzn_locator(std::forward<dzn::locator>(l))
-    , dzn_rt()
-    , system(dzn_locator.set(dzn_rt).set(pump))
+    , dzn_runtime()
+    , system(dzn_locator.set(dzn_runtime).set(pump))
     , pump()
     {
       dzn_locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
-      dzn_rt.performs_flush(this) = flush;
+      dzn_runtime.performs_flush(this) = flush;
       system.dzn_meta.name = "sut";
     }
     ~container()

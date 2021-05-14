@@ -34,9 +34,10 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn code)
+  #:use-module (dzn code scmackerel code)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code language makreel)
-  #:use-module (dzn code)
   #:use-module (dzn config)
   #:use-module (dzn misc)
 
@@ -45,17 +46,6 @@
 ;;;
 ;;; Helpers.
 ;;;
-(define-method (makreel:expression->string o)
-  (simple-format #f "~a" o))
-
-(define-method (makreel:expression->string (o <string>))
-  o)
-
-(define-method (makreel:expression->string (o <ast>))
-  (let ((expression (ast->expression o)))
-    (with-output-to-string
-      (cute print-expressions expression))))
-
 (define (makreel:caption str)
   (let* ((width (floor/ (- 80 (+ 2 (string-length str))) 2))
          (pad (make-string width #\%)))
@@ -210,19 +200,19 @@
       (($ <void>)
        (model-prefix "void_return (void)" model))
       (($ <bool>)
-       (let ((expression (makreel:expression->string expression)))
+       (let ((expression (ast->expression expression)))
          (model-prefix
           (simple-format #f "bool_return (~a)" expression)
           model)))
       (($ <enum>)
-       (let ((expression (makreel:expression->string expression)))
+       (let ((expression (ast->expression expression)))
          (model-prefix
           (simple-format #f "~a_return (~a)"
                          (makreel:type->string type)
                          expression)
           model)))
       ((or ($ <int>) ($ <subint>))
-       (let ((expression (makreel:expression->string expression)))
+       (let ((expression (ast->expression expression)))
          (model-prefix
           (simple-format #f "int_return (~a)" expression)
           model)))
@@ -992,39 +982,6 @@
 ;;;
 ;;; Ast->expression.
 ;;;
-(define-method (ast->expression (o <action>))
-  (string-append (.port.name o) (.event.name o)))
-
-(define-method (ast->expression (o <binary>))
-  (expression
-   (operator (operator->string o))
-   (operands (list (ast->expression (.left o))
-                   (ast->expression (.right o))))))
-
-(define-method (ast->expression (o <enum-literal>))
-  (let ((lst (append (ast:full-name (.type o)) (list (.field o)))))
-    (string-join lst "")))
-
-(define-method (ast->expression (o <field-test>))
-  (let* ((enum-literal (make <enum-literal>
-                         #:type.name (.type.name (.variable o))
-                         #:field (.field o)))
-         (var (make <var> #:name (.variable.name o)))
-         (expression (make <equal>
-                       #:left var
-                       #:right enum-literal)))
-    (ast->expression expression)))
-
-(define-method (ast->expression (o <group>))
-  (group* (ast->expression (.expression o))))
-
-(define-method (ast->expression (o <literal>))
-  (literal
-   (value (.value o))))
-
-(define-method (ast->expression (o <not>))
-  (not* (ast->expression (.expression o))))
-
 (define-method (ast->expression (o <shared-field-test>))
   (let* ((variable (.variable o))
          (type (.type variable))
@@ -1041,12 +998,6 @@
 
 (define-method (ast->expression (o <shared-var>))
   (string-append (.port.name o) "port_" (.name o)))
-
-(define-method (ast->expression (o <var>))
-  (.name o))
-
-(define-method (ast->expression (o <variable>))
-  (.name o))
 
 
 ;;;

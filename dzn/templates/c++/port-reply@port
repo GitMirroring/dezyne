@@ -1,2 +1,0 @@
-if (this->out_#.name) this->out_#.name ();
-this->out_#.name  = nullptr;

@@ -27,27 +27,18 @@ namespace library {
   struct foreign: public dzn::component
   {
     dzn::meta dzn_meta;
-    dzn::runtime& dzn_rt;
+    dzn::runtime& dzn_runtime;
     dzn::locator const& dzn_locator;
-
     std::function<void ()> out_w;
-
     ::library::iworld w;
-
-
-
     foreign(const dzn::locator&);
-    void check_bindings() const;
-    void dump_tree(std::ostream& os) const;
-    void set_state(std::map<std::string,std::map<std::string,std::string> > state_alist);
-    void set_state(std::map<std::string,std::string> state_alist);
-    friend std::ostream& operator << (std::ostream& os, const foreign& m)  {
-      (void)m;
+    void dzn_check_bindings() const;
+    friend std::ostream& operator << (std::ostream& os, foreign const&)
+    {
       return os << "[" << "]" ;
     }
     private:
     void w_world();
-
   };
 };
 

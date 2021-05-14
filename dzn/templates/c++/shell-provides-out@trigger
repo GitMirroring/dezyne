@@ -1,1 +1,0 @@
-#x:instance-name .#x:instance-port-name .#.event.direction .#.event.name  = std::ref(#.port.name .#.event.direction .#.event.name);

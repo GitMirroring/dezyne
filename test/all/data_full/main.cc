@@ -81,8 +81,8 @@ int main()
   sut.port.out.aa = aa;
   sut.port.out.a6 = a6;
 
-  sut.check_bindings();
-  sut.dump_tree();
+  dzn::check_bindings(sut);
+  dzn::dump_tree(sut);
 
   assert(Idata_full::Status::Yes == sut.port.in.e0r());
   sut.port.in.e0();

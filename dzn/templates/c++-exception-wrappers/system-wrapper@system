@@ -18,9 +18,4 @@ struct #x:model-name Wrapper: public dzn::component
           #x:provides-port-event-wrappers
           #x:requires-port-event-wrappers
         }
-
-    void check_bindings()
-    {
-      dzn::check_bindings(&dzn_meta);
-    }
 };

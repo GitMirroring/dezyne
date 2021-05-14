@@ -1,1 +1,0 @@
-this->dzn_locator.get< ::#x:type-name >() = #.name;

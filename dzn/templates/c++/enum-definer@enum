@@ -1,9 +1,0 @@
-##ifndef ENUM_#x:enum-name
-##define ENUM_#x:enum-name  1
-
-enum struct #ast:name
-{
-  #x:enum-field-definer
-};
-
-##endif // ENUM_#x:enum-name

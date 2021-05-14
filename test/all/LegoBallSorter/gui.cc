@@ -417,8 +417,8 @@ int main(int argc, char* argv[])
     connect(sut.brick4_s2, lego.sensor_trolley_end);
     connect(sut.brick4_s3, lego.sensor_hoist_end);
 
-    sut.check_bindings();
-    sut.dump_tree();
+    sut.dzn_check_bindings();
+    dzn::dump_tree(sut);
 
     return app->run (lego);
   }

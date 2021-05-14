@@ -1,3 +1,0 @@
-#.name .meta.require.meta = &dzn_meta;
-#.name .meta.require.name = "#.name";
-#.name .meta.require.component = this;

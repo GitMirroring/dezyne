@@ -1,1 +1,0 @@
-dzn::trace_qout(dzn_locator.template get<typename std::ostream>(), this->#.port.name .meta, "#.event.name");

@@ -38,6 +38,7 @@
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code legacy dzn)
+  #:use-module (dzn code legacy code)
   #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn indent)
@@ -224,6 +225,11 @@
 (define-method (scheme:comment (o <ast>))
   (scheme:comment (.comment o)))
 
+(define-method (code:defer-condition (o <defer>))
+  (if (not (or (and=> (.arguments o)(compose null? .elements))
+               (null? (ast:variable* (ast:parent o <component>))))) o
+               '()))
+
 (define (wrap-lonely-variable o)
   (match o
     (($ <variable>)
@@ -258,17 +264,19 @@
 
   (code:foreign-conflict? root)
 
-  (let ((root (scheme:om root))
-        (indenter (cute code:indenter <>
-                        #:open #\( #:close #\) #:no-indent "")))
+  (parameterize ((%type-infix ":")
+                 (%type-prefix ""))
+    (let ((root (scheme:om root))
+          (indenter (cute code:indenter <>
+                          #:open #\( #:close #\) #:no-indent "")))
 
-    (let ((generator (indenter (cute x:source root)))
-          (file-name (code:root-file-name root dir ".scm")))
-      (code:dump root generator #:file-name file-name))
+      (let ((generator (indenter (cute x:source root)))
+            (file-name (code:root-file-name root dir ".scm")))
+        (code:dump root generator #:file-name file-name))
 
-    (when model
-      (let ((model (ast:get-model root model)))
-        (when (is-a? model <component-model>)
-          (let ((generator (indenter (cute x:main model)))
-                (file-name (code:source-file-name "main" dir ".scm")))
-            (code:dump root generator #:file-name file-name)))))))
+      (when model
+        (let ((model (ast:get-model root model)))
+          (when (is-a? model <component-model>)
+            (let ((generator (indenter (cute x:main model)))
+                  (file-name (code:source-file-name "main" dir ".scm")))
+              (code:dump root generator #:file-name file-name))))))))

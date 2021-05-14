@@ -23,10 +23,10 @@
 
 namespace S
 {
-  struct Foreign: public skel::Foreign
+  struct Foreign: public skel::S::Foreign
   {
     Foreign(const dzn::locator& l)
-    : skel::Foreign(l)
+      : skel::S::Foreign(l)
     {}
     void p_e(){}
     I::R p_f(){return I::R::r;}

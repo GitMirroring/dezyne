@@ -36,6 +36,7 @@
   #:use-module (dzn code)
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
+  #:use-module (dzn code legacy code)
   #:use-module (dzn code legacy dzn)
   #:use-module (dzn code util)
   #:use-module (dzn config)
@@ -48,7 +49,7 @@
 (include-from-path "dzn/templates/c.scm")
 
 (define-method (c:models (o <root>))
-  (filter (negate ast:imported?) (code:model o)))
+  (filter (negate ast:imported?) (code:model* o)))
 
 (define-method (c:components (o <root>))
   (filter (negate (cute is-a? <> <interface>)) (c:models o)))
@@ -378,20 +379,23 @@
 
   (code:foreign-conflict? root)
 
-  (let ((root (code:om+determinism root)))
-    (let ((generator (code:indenter (cute x:header root)))
-          (file-name (code:root-file-name root dir ".h")))
-      (code:dump root generator #:file-name file-name))
+  (parameterize ((%member-prefix "self->")
+                 (%type-infix "_")
+                 (%type-prefix ""))
+    (let ((root (code:om+determinism root)))
+      (let ((generator (code:indenter (cute x:header root)))
+            (file-name (code:root-file-name root dir ".h")))
+        (code:dump root generator #:file-name file-name))
 
-    (when (or (c:generate-source? root)
-              (c:generate-foreign-skel? root))
-      (let ((generator (code:indenter (cute x:source root)))
-            (file-name (code:root-file-name root dir ".c")))
-        (code:dump root generator #:file-name file-name)))
+      (when (or (c:generate-source? root)
+                (c:generate-foreign-skel? root))
+        (let ((generator (code:indenter (cute x:source root)))
+              (file-name (code:root-file-name root dir ".c")))
+          (code:dump root generator #:file-name file-name)))
 
-    (when model
-      (let ((model (ast:get-model root model)))
-        (when (is-a? model <component-model>)
-          (let ((generator (code:indenter (cute x:main model)))
-                (file-name (code:source-file-name "main" dir ".c")))
-            (code:dump root generator #:file-name file-name)))))))
+      (when model
+        (let ((model (ast:get-model root model)))
+          (when (is-a? model <component-model>)
+            (let ((generator (code:indenter (cute x:main model)))
+                  (file-name (code:source-file-name "main" dir ".c")))
+              (code:dump root generator #:file-name file-name))))))))
