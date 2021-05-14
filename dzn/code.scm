@@ -32,15 +32,14 @@
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
+  #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn vm goops)
 
-  #:export (<port-pair>
-            .other
-            %calling-context
+  #:export (%calling-context
             %no-unreachable?
             %shell
             code
@@ -125,16 +124,6 @@
 
 ;; The name of the thread-safe shell.
 (define %shell (make-parameter #f))
-
-;;;
-;;; Ast extension.
-;;;
-(define-ast <port-pair> (<ast>)
-  (port)
-  (other))
-
-(define-method (.port.name (o <port-pair>)) (.name (.port o)))
-(define-method (.other.name (o <port-pair>)) (.name (.other o)))
 
 ;;;
 ;;; Top

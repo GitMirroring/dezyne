@@ -36,6 +36,7 @@
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn templates)
+  #:use-module (dzn vm goops)
 
   #:export (ast->dzn
             dzn:blocking

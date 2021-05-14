@@ -29,8 +29,9 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
-  #:use-module (dzn code language dzn)
   #:use-module (dzn code)
+  #:use-module (dzn code goops)
+  #:use-module (dzn code language dzn)
   #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn misc)
