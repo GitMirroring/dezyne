@@ -36,7 +36,9 @@
 #include <tuple>
 
 // Set to 1 for experimental state tracing feature.
+#ifndef DZN_STATE_TRACING
 #define DZN_STATE_TRACING 0
+#endif
 
 inline std::string to_string(bool b){return b ? "true" : "false";}
 inline std::string to_string(int i){return std::to_string(i);}
