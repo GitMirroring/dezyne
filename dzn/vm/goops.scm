@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -85,7 +85,6 @@
             ->sexp
             external-q->string
             name
-            name*
             rtc?)
   #:re-export (.event.name
                .instance
@@ -217,14 +216,6 @@
 
 (define-method (name (o <boolean>))
   (name (%sut)))
-
-(define-method (name* (o <runtime:instance>))
-  (cond ((is-a? (%sut) <runtime:port>) #f) ;; FIXME
-        ((null? (runtime:instance->path o)) "sut")
-        (else (string-join (runtime:instance->path o) "."))))
-
-(define-method (name* (o <ast>))
-  ((compose class-name class-of) o))
 
 (define-method (->sexp (o <top>))
   o)

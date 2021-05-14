@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>;;;
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -57,105 +58,161 @@
 (define-method (display-trail (o <list>))
   (display (string-join (map cdr (trace->trail o)) "\n" 'suffix)))
 
-(define-method (trace-name (o <runtime:instance>))
-  (if (is-a? (%sut) <runtime:port>) #f
-      (name* o)))
-
 (define-method (trace->trail (o <list>))
   (filter-map trace->trail (reverse o)))
 
-(define-method (trace->trail (o <error>))
-  (cons #f (format #f "<~a>" (or (.message o) "error"))))
+(define-method (trace->trail (o <program-counter>))
+  (and (pc-event? o) (pc->event o)))
 
-(define-method (trace->trail (o <blocked-error>))
-  (cons #f "<deadlock>"))
+;;; events predicate
 
-(define-method (trace->trail (o <end-of-trail>))
+(define-method (pc-event? (o <program-counter>))
+  (or (and=> (.status o) (negate (is? <end-of-trail>)))
+      (pc-event? o (.statement o))))
+
+(define-method (pc-event? (pc <program-counter>) (o <statement>))
+  (pc-event? (.instance pc) o))
+
+(define-method (pc-event? (pc <program-counter>) (o <initial-compound>))
+  (pc-event? (.instance pc) (.trigger pc)))
+
+(define-method (pc-event? (o <runtime:port>) (trigger <trigger>))
+  (and (eq? o (%sut))
+       (not (ast:modeling? trigger))))
+
+(define-method (pc-event? (o <runtime:component>) (trigger <trigger>))
+  (let ((port (.port trigger)))
+    (and port
+         (let ((r:other-port (runtime:other-port (runtime:port o port))))
+           (runtime:boundary-port? r:other-port)))))
+
+(define-method (pc-event? (o <runtime:component>) (trigger <q-trigger>))
   #f)
 
-(define-method (trace->trail (o <match-error>))
-  (cons #f "<match>"))
+(define-method (pc-event? (o <runtime:port>) (action <action>))
+  (or (ast:in? action)
+      (is-a? (%sut) <runtime:port>)
+      (and (ast:requires? o)
+           (not (ast:external? o)))))
 
-(define-method (trace->trail (o <program-counter>))
-  (if (.status o) (trace->trail (.status o))
-      (trace->trail o (.statement o))))
-
-(define-method (trace->trail (pc <program-counter>) (o <statement>))
-  (trace->trail (.instance pc) o))
-
-(define-method (trace->trail (pc <program-counter>) (o <trigger-return>))
-  (let* ((value (->sexp (.reply pc)))
-         (value (and (not (equal? value "void")) value)))
-    (and (not (is-a? (.event (.trigger pc)) <modeling-event>))
-         (trace->trail (.instance pc) (clone o #:event.name (or value (format #f "~a" (.event.name o))))))))
-
-(define-method (trace->trail (pc <program-counter>) (o <initial-compound>))
-  (trace->trail (.instance pc) o (.trigger pc)))
-
-(define-method (trace->trail (o <runtime:port>) (action <action>))
-  (if (ast:out? action)
-      (and (or (is-a? (%sut) <runtime:port>)
-               (and (ast:requires? (.ast o))
-                    (not (ast:external? (.ast o)))))
-           (cons action (format #f "~a~a" (or (and=> (trace-name o) (cut format #f "~a." <>)) "") (trigger->string action))))
-      (cons action (format #f "~a" (trigger->string action)))))
-
-(define-method (trace->trail (o <runtime:component>) (action <action>))
+(define-method (pc-event? (o <runtime:component>) (action <action>))
   (and (not (ast:async? action))
        (let* ((port (.port action))
               (r:port (runtime:port o port))
               (r:other-port (runtime:other-port r:port)))
-         (if (ast:injected? port)       ;injected
-             (cons action (format #f "~a.~a" (.name (.ast r:other-port)) (.event.name action)))
-             (and (runtime:boundary-port? r:other-port)
-                  (let ((trigger (action->trigger r:other-port action)))
-                    (cons action (format #f "~a.~a" (name r:other-port) (trigger->string trigger)))))))))
+         (or (ast:injected? port)
+             (runtime:boundary-port? r:other-port)))))
 
-(define-method (trace->trail (o <runtime:component>) (q-out <q-out>))
+(define-method (pc-event? (o <runtime:component>) (q-out <q-out>))
   (let* ((trigger (.trigger q-out))
          (port (.port trigger)))
-    (and (or (ast:provides? port)
-             (ast:external? port))
-         (cons q-out (trigger->string trigger)))))
+    (or (ast:provides? port)
+        (ast:external? port))))
 
-(define-method (trace->trail (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))
-  (and (or (eq? o (%sut)))
-       (not (ast:modeling? trigger))
-       (cons trigger (format #f "~a" (.event.name trigger)))))
+(define-method (pc-event? (pc <program-counter>) (o <trigger-return>))
+  (and (not (is-a? (.event (.trigger pc)) <modeling-event>))
+       (pc-event? (.instance pc) o)))
 
-(define-method (trace->trail (o <runtime:port>) (return <trigger-return>))
-  (and (or (is-a? (%sut) <runtime:port>)
-           (and (runtime:boundary-port? o)
-                (ast:requires? o)))
-       (let ((value (or (.expression return) (.event.name return))))
-         (cons return (if (or (eq? o (%sut)) (not (trace-name o))) (format #f "~a" value)
-                          (format #f "~a.~a" (trace-name o) value))))))
+(define-method (pc-event? (o <runtime:port>) (return <trigger-return>))
+  (or (is-a? (%sut) <runtime:port>)
+      (and (runtime:boundary-port? o)
+           (ast:requires? o))))
 
-(define-method (trace->trail (o <runtime:component>) (compound <initial-compound>) (trigger <q-trigger>))
-  #f)
-
-(define-method (trace->trail (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
-  (let ((port (.port trigger)))
-    (and port
-         (let ((r:other-port (runtime:other-port (runtime:port o port))))
-           (and (runtime:boundary-port? r:other-port)
-                (cons trigger (format #f "~a.~a" (trace-name r:other-port) (.event.name trigger))))))))
-
-(define-method (trace->trail (o <runtime:component>) (return <trigger-return>))
+(define-method (pc-event? (o <runtime:component>) (return <trigger-return>))
   (let ((port (.port return)))
     (and port
          (not (ast:async? port))
          (let* ((r:port (runtime:port o port))
                 (r:other-port (and r:port (runtime:other-port r:port))))
-           (if (eq? r:port r:other-port) ;injected
-               (cons return (format #f "~a.~a" (.name port) (.event.name return)))
+           (or (eq? r:port r:other-port) ;The other port is injected, no
+                                         ;chance to find our way back
+                                         ;and use ast:injected?
                (and r:other-port
                     (runtime:boundary-port? r:other-port)
-                    (ast:provides? (.ast r:other-port))
-                    (cons return (let ((value (or (.expression return) (.event.name return))))
-                                   (format #f "~a.~a" (trace-name r:other-port) value)))))))))
+                    (ast:provides? r:other-port)))))))
 
-(define-method (trace->trail x y)
+(define-method (pc-event? x y)
+  #f)
+
+;;; events formatting
+
+(define-method (trace-name (o <runtime:instance>))
+  (cond ((is-a? (%sut) <runtime:port>) #f)
+        ((null? (runtime:instance->path o)) "sut")
+        (else (string-join (runtime:instance->path o) "."))))
+
+(define-method (pc->event (o <program-counter>))
+  (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc->event (.status o))
+      (pc->event o (.statement o))))
+
+(define-method (pc->event (o <error>))
+  (cons #f (format #f "<~a>" (or (.message o) "error"))))
+
+(define-method (pc->event (o <blocked-error>))
+  (cons #f "<deadlock>"))
+
+(define-method (pc->event (o <match-error>))
+  (cons #f "<match>"))
+
+(define-method (pc->event (pc <program-counter>) (o <statement>))
+  (pc->event (.instance pc) o))
+
+(define-method (pc->event (pc <program-counter>) (o <initial-compound>))
+  (pc->event (.instance pc) o (.trigger pc)))
+
+(define-method (pc->event (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))
+  (cons trigger (format #f "~a" (.event.name trigger))))
+
+(define-method (pc->event (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
+  (cons trigger
+        (let* ((port (.port trigger))
+               (r:other-port (runtime:other-port (runtime:port o port))))
+          (format #f "~a.~a" (trace-name r:other-port) (.event.name trigger)))))
+
+(define-method (pc->event (o <runtime:port>) (action <action>))
+  (cons action
+        (if (ast:out? action)
+            (format #f "~a~a" (or (and=> (trace-name o) (cut format #f "~a." <>)) "") (trigger->string action))
+            (format #f "~a" (trigger->string action)))))
+
+(define-method (pc->event (o <runtime:component>) (action <action>))
+  (cons action
+        (let* ((port (.port action))
+               (r:port (runtime:port o port))
+               (r:other-port (runtime:other-port r:port)))
+          (if (ast:injected? port)
+              (format #f "~a.~a" (.name (.ast r:other-port)) (.event.name action))
+              (let ((trigger (action->trigger r:other-port action)))
+                (format #f "~a.~a" (trace-name r:other-port) (trigger->string trigger)))))))
+
+(define-method (pc->event (o <runtime:component>) (q-out <q-out>))
+  (let ((trigger (.trigger q-out)))
+    (cons q-out (trigger->string trigger))))
+
+(define-method (pc->event (pc <program-counter>) (o <trigger-return>))
+  (let* ((value (->sexp (.reply pc)))
+         (value (and (not (equal? value "void")) value)))
+    (pc->event (.instance pc) (clone o #:event.name (or value (format #f "~a" (.event.name o)))))))
+
+(define-method (pc->event (o <runtime:port>) (return <trigger-return>))
+  (cons return
+        (let ((value (or (.expression return) (.event.name return))))
+          (if (or (eq? o (%sut)) (not (trace-name o))) (format #f "~a" value)
+              (format #f "~a.~a" (trace-name o) value)))))
+
+(define-method (pc->event (o <runtime:component>) (return <trigger-return>))
+  (cons return
+        (let ((port (.port return)))
+          (let* ((r:port (runtime:port o port))
+                 (r:other-port (and r:port (runtime:other-port r:port))))
+            (if (eq? r:port r:other-port) ;The other port is injected,
+                                          ;no chance to find our way back
+                                          ;and use ast:injected?
+                (format #f "~a.~a" (.name port) (.event.name return))
+                (let ((value (or (.expression return) (.event.name return))))
+                  (format #f "~a.~a" (trace-name r:other-port) value)))))))
+
+(define-method (pc->event x y)
   #f)
 
 

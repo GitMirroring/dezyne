@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -32,6 +33,7 @@
             ast:trigger-equal?
             ast:valued?)
   #:re-export (ast:async?
+               ast:external?
                ast:provides?
                ast:requires?
                ast:type))
@@ -67,14 +69,29 @@
 (define-method (ast:async? (o <trigger>))
   (and=> (.port o) ast:async?))
 
+(define-method (ast:provides? (o <instance>))
+  #f)
+
 (define-method (ast:provides? (o <runtime:port>))
   (ast:provides? (.ast o)))
 
-(define-method (ast:provides? (o <instance>))
+(define-method (ast:provides? (o <runtime:instance>))
+  #f)
+
+(define-method (ast:requires? (o <instance>))
   #f)
 
 (define-method (ast:requires? (o <runtime:port>))
   (ast:requires? (.ast o)))
 
-(define-method (ast:requires? (o <instance>))
+(define-method (ast:requires? (o <runtime:instance>))
+  #f)
+
+(define-method (ast:external? (o <instance>))
+  #f)
+
+(define-method (ast:external? (o <runtime:port>))
+  (ast:external? (.ast o)))
+
+(define-method (ast:external? (o <runtime:instance>))
   #f)
