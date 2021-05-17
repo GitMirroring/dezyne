@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -46,11 +46,11 @@
            (cond
             ((is-a? (.parent o) <behaviour>)
              (let* ((elements (map normalize-compound (.elements o)))
-                    (compound (make <initial-compound> #:elements elements)))
+                    (compound (make <initial-compound> #:elements elements #:location o)))
                (clone compound #:location (.location o))))
             ((ast:declarative? o)
              (let* ((elements (map normalize-compound (.elements o)))
-                    (compound (make <declarative-compound> #:elements elements)))
+                    (compound (make <declarative-compound> #:elements elements #:location o)))
                (clone compound #:location (.location o))))
             ((null? (.elements o))
              (let ((skip (make <skip>)))
@@ -109,9 +109,9 @@
   (define (add-end-of-on o r)
     (match o
       ((and ($ <compound>) (? ast:imperative?))
-       (clone o #:elements (append (ast:statement* o) (if (parent o <blocking>) (cons (make <block>) r) r))))
+       (clone o #:elements (append (ast:statement* o) (if (parent o <blocking>) (cons (make <block> #:location o) r) r))))
       ((? ast:imperative?)
-       (make <compound> #:elements (cons o (if (parent o <blocking>) (cons (make <block>) r) r)) #:location (.location o)))
+       (make <compound> #:elements (cons o (if (parent o <blocking>) (cons (make <block> #:location o) r) r)) #:location (.location o)))
       (($ <compound>)
        (clone o #:elements (map (cut add-end-of-on <> r) (ast:statement* o))))
       (($ <guard>)
@@ -135,12 +135,13 @@
     (_ o)))
 
 (define (add-function-return o)
-  (define (add-return o)
+  (define* (add-return o #:key (loc o))
     (match o
       (($ <compound>)
-       (clone o #:elements (add-return (ast:statement* o))))
+       (clone o #:elements (add-return (ast:statement* o) #:loc o)))
       ((statement ... ($ <return>)) o)
-      ((statement ...) (append o (list (make <return>))))))
+      ((statement ... t) (append o (list (make <return> #:location (.location (.parent t))))))
+      ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
   (match o
     (($ <interface>)
      (clone o #:behaviour (add-function-return (.behaviour o))))
