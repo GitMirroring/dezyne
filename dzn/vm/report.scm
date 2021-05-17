@@ -125,7 +125,8 @@
 
 (define-method (trace->trail (o <runtime:port>) (return <trigger-return>))
   (and (or (is-a? (%sut) <runtime:port>)
-           (and (runtime:boundary-port? o)))
+           (and (runtime:boundary-port? o)
+                (ast:requires? o)))
        (let ((value (or (.expression return) (.event.name return))))
          (cons return (if (or (eq? o (%sut)) (not (trace-name o))) (format #f "~a" value)
                           (format #f "~a.~a" (trace-name o) value))))))

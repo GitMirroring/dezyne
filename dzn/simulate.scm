@@ -18,6 +18,7 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn simulate)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
@@ -136,15 +137,85 @@
                        (and=> (caar b) trigger->string))
                (equal? (cadr a) (cadr b))))
 
+        (define (zip trace port-trace)
+          (define ((action-equal? port-name) a b)
+            (let ((b (.statement b)))
+              (and (is-a? a <action>) (is-a? b <action>)
+                   (equal? (.port.name a) port-name)
+                   (equal? (.event.name a) (.event.name b)))))
+
+          (define ((return-equal? port-name) a b)
+            (let ((instance (.instance b))
+                  (b (.statement b)))
+              (and (is-a? a <trigger-return>) (is-a? b <trigger-return>)
+                   (eq? instance port-name))))
+
+          (let* ((port-on (list-index (compose (is? <on>) .statement) port-trace))
+                 (trace (append trace (drop port-trace port-on)))
+                 (port-trace (take port-trace port-on))
+                 (instance (and=> (find (compose (is? <runtime:component>) .instance) trace)
+                                  .instance)))
+
+            (let loop ((trace trace) (port-trace port-trace))
+              (if (null? trace) '()
+                  (let* ((pc (car trace))
+                         (pc-instance (.instance pc))
+                         (statement (.statement pc)))
+                    (cond ((and (not (is-a? (%sut) <runtime:port>))
+                                (is-a? statement <action>)
+                                (is-a? pc-instance <runtime:component>)
+                                (ast:out? statement))
+                           (let* ((port (.port statement))
+                                  (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
+                                              (runtime:port pc-instance port)))
+                                  (port (.ast r:port))
+                                  (port-name (.name port))
+                                  (port-action+trace (member statement port-trace (action-equal? port-name))))
+                             (match port-action+trace
+                               ((action-pc tail ...)
+                                (cons* action-pc pc (loop (cdr trace) tail)))
+                               (_
+                                (cons pc (loop (cdr trace) port-trace))))))
+                          ((and (not (is-a? (%sut) <runtime:port>))
+                                (is-a? statement <trigger-return>)
+                                (.port.name statement))
+                           (let* ((port (.port statement))
+                                  (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
+                                              (runtime:port pc-instance port)))
+                                  (r:other-port (runtime:other-port r:port))
+                                  (port-return+trace (member statement port-trace
+                                                             (return-equal? r:other-port))))
+                             (match port-return+trace
+                               ((return-pc tail ...)
+                                (let* ((port-state (get-state return-pc))
+                                       (return-pc (clone return-pc #:state (.state pc)))
+                                       (return-pc (set-state return-pc port-state)))
+                                  (cons* return-pc pc (loop (cdr trace) tail))))
+                               (_
+                                (cons pc (loop (cdr trace) port-trace))))))
+                          (else
+                           (cons pc (loop (cdr trace) port-trace)))))))))
+
         (let ((port-traces non-compliances
                            (partition (negate first-non-match) port-traces)))
           (cond
+           ((and (pair? trace)
+                 (.status (car trace))
+                 (not (is-a? (.status (car trace)) <match-error>))
+                 (pair? (append port-traces non-compliances)))
+            (let* ((pc (car trace))
+                   (status (.status pc))
+                   (trace (rewrite-trace-head (cut clone <> #:status #f #:statement #f) trace))
+                   (trace (zip trace (car (append port-traces non-compliances))))
+                   (trace (rewrite-trace-head (cut clone <> #:status status) trace)))
+              (list trace)))
            ((pair? port-traces)
-            (let ((port-pcs (map (compose (cut clone pc #:state <>) .state car) port-traces)))
-              (map (lambda (port-pc)
-                     (cons (set-state (car trace) (get-state port-pc port-instance))
-                           (cdr trace)))
-                   port-pcs)))
+            (let* ((port-pcs (map (compose (cut clone pc #:state <>) .state car) port-traces))
+                   (traces (map (lambda (port-pc)
+                                  (cons (set-state (car trace) (get-state port-pc port-instance))
+                                        (cdr trace)))
+                                port-pcs)))
+              (map zip traces port-traces)))
            ((null? non-compliances)
             (if (null? trace) '()
                 (list trace)))
@@ -171,17 +242,12 @@
                                          #:port port-instance
                                          #:port-acceptance port-acceptances))))
               (if (null? trace) (list (cons pc (car non-compliances)))
-                  (let ((tail (cdr trace)))
-                    (list (cons pc tail))))))))))))
+                  (let* ((tail (cdr trace))
+                         (trace (cons pc tail)))
+                    (list (zip trace (car non-compliances)))))))))))))
 
 (define-method (check-provides-compliance* (pc <program-counter>) event traces)
   (cond
-   ((find (compose (conjoin
-                    .status
-                    (negate (is-status? <match-error>)))
-                   car)
-          traces)
-    traces)
    ((find (compose pair? .blocked car) traces)
     traces)
    ((null? traces)
@@ -286,20 +352,37 @@
     (let ((event pc ((%next-input) pc)))
       (let* ((event-traces-alist (event-traces-alist pc))
              (eligible (eligible-labels pc event-traces-alist))
-             (dealock-traces (check-deadlock pc event-traces-alist event))
-             (status (and dealock-traces (pair? (.blocked pc))
+             (error-trace? (find
+                            (compose (conjoin
+                                      .status
+                                      (negate (is-status? <compliance-error>))
+                                      (negate (is-status? <end-of-trail>)))
+                                     car)
+                            traces))
+             (illegal-trace? (find
+                              (compose (disjoin
+                                        (is-status? <illegal-error>)
+                                        (is-status? <implicit-illegal-error>))
+                                       car)
+                              traces))
+             (deadlock-traces (and (or (not error-trace?)
+                                       illegal-trace?)
+                                   (check-deadlock pc event-traces-alist event)))
+             (status (and deadlock-traces (pair? (.blocked pc))
                           (report traces
                                   #:locations? locations?
                                   #:trace trace
                                   #:verbose? verbose?))))
         (if (is-a? status <error>) status
-            (report (or dealock-traces traces)
+            (report (or deadlock-traces traces)
                     #:eligible eligible
                     #:locations? locations?
                     #:trace trace
                     #:verbose? verbose?)))))
   (define (end-report from-pcs list-of-traces)
-    (let ((traces (apply append list-of-traces)))
+    (let ((traces (apply append list-of-traces))
+          (deadlock-check? (and deadlock-check?
+                                (not (is-a? (%sut) <runtime:system>)))))
       (cond
        ((and deadlock-check? (null? traces))
         (find identity (map (cute deadlock-report <> '()) from-pcs)))
@@ -307,7 +390,7 @@
         (find identity (map deadlock-report from-pcs list-of-traces)))
        (else
         (report traces
-                #:eligible #t
+                #:eligible (labels)
                 #:locations? locations?
                 #:trace trace
                 #:verbose? verbose?)))))
