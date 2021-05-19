@@ -45,6 +45,7 @@
             (model (single-char #\m) (value #t))
             (no-deadlock (single-char #\D))
             (queue-size (single-char #\q) (value #t))
+            (state (single-char #\s))
             (strict (single-char #\s))
             (trail (single-char #\t) (value #t))
             (verbose (single-char #\v))))
@@ -66,6 +67,7 @@ Simulate a Dezyne model
                            implies --format=trace
   -m, --model=MODEL      generate main for MODEL
   -q, --queue-size=SIZE  use queue size=SIZE for simulation [3]
+      --state            show state after every action, trigger
   -s, --strict           use strict matching of trail
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
   -v, --verbose          show non-communication steps in trace,
@@ -85,6 +87,7 @@ Simulate a Dezyne model
          (ast (parse parse-options file-name))
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (queue-size (command-line:get 'queue-size 3))
+         (state? (command-line:get 'state #f))
          (strict? (command-line:get 'strict #f))
          (verbose? (command-line:get 'verbose #f))
          (locations? (command-line:get 'locations verbose?))
@@ -95,6 +98,7 @@ Simulate a Dezyne model
                            #:deadlock-check? (not no-deadlock?)
                            #:locations? locations?
                            #:queue-size queue-size
+                           #:state? state?
                            #:strict? strict?
                            #:trace trace
                            #:trail trail

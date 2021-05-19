@@ -477,24 +477,27 @@ the location of the executed <on>-statement."
                  (.line location)
                  (.column location)))))
 
-(define* (display-trace trace #:key locations? verbose?)
+(define* (display-trace trace #:key locations? state? verbose?)
   "Write TRACE as split-arrows trace to stdout.  When LOCATIONS?,
-prepend every line with its location.  VERBOSE?, to enable intermediate
-steps (aka micro-trace), is ignored."
-  (define write-step
-    (match-lambda*
-      (((pc ast . string) i)
-       (when (and ast locations?)
-         (let ((location (step->location ast)))
-           (when location
-           (display (string-trim-right location))
-           (format #t "i~a: " i))))
-       (write-line string)
-       (serialize (.state pc) (current-output-port))
-       (newline))))
+prepend every line with its location.  When VERBOSE?, also show
+intermediate steps such as assignments, function calls, replies,
+... (aka micro-trace)."
   (let* ((trace (complete-split-arrows-pcs trace))
-         (trace (reverse (set-trigger-location (reverse trace))))
+         (trace (reverse (set-trigger-locations trace))))
          (steps (trace->arrows trace)))
+    (define write-step
+      (match-lambda*
+        (((pc ast . string) i)
+         (when (and ast locations?)
+           (let ((location (step->location ast)))
+             (when location
+               (display location))))
+         (write-line string)
+         (when (and state?
+                    (odd? i)
+                    (< i (1- (length steps))))
+           (serialize (.state pc) (current-output-port))
+           (newline)))))
     (for-each write-step steps (iota (length steps)))))
 
 (define (label->string o)
@@ -674,7 +677,7 @@ steps (aka micro-trace), is ignored."
          (labels (map (cut string-append port-name "." <>) labels)))
     labels))
 
-(define* (report traces #:key eligible header (trace "event") locations? verbose?)
+(define* (report traces #:key eligible header (trace "event") locations? state? verbose?)
   (let* ((pcs (and (pair? traces) (map car traces)))
          (pc (and pcs (car pcs)))
          (status (and pc (.status pc)))
@@ -689,7 +692,7 @@ steps (aka micro-trace), is ignored."
            (display-trails traces))
           ((equal? trace "trace")
            (display-trace (car traces)
-                          #:locations? locations? #:verbose? verbose?)))
+                          #:locations? locations? #:state? state? #:verbose? verbose?)))
 
     (when pc
       (serialize (.state pc) (current-output-port))

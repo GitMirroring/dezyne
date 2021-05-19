@@ -339,7 +339,7 @@
               (trace (cons pc (cdr pc+blocked-trace))))
          (list trace))))))
 
-(define* (run-trail trail #:key deadlock-check? locations? trace verbose?)
+(define* (run-trail trail #:key deadlock-check? locations? state? trace verbose?)
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
   (define (trail-input pc)
     (let ((trail (.trail pc)))
@@ -415,6 +415,7 @@
                      (let ((pcs (map car valid-traces)))
                        (or (report non-blocked
                                    #:locations? locations?
+                                   #:state? state?
                                    #:trace trace
                                    #:verbose? verbose?)
                            (loop (map list pcs))))))))))))
@@ -503,7 +504,7 @@
     (%pc)))
 
 (define* (simulate* root trail #:key deadlock-check? model-name queue-size
-                    strict? trace locations? verbose?)
+                    strict? trace locations? state? verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  When STRICT?, the trail must include all observable
 events.  When deadlock-check?, run check-deadlock at the end."
@@ -519,10 +520,11 @@ events.  When deadlock-check?, run check-deadlock at the end."
                    #:deadlock-check? deadlock-check?
                    #:locations? locations?
                    #:trace trace
+                   #:state? state?
                    #:verbose? verbose?)))))
 
 (define* (simulate root #:key deadlock-check? model-name queue-size strict?
-                   trace trail locations? verbose?)
+                   trace trail locations? state? verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  When STRICT?, the trail must
 include all observable events.  When deadlock-check?, run check-deadlock
@@ -540,4 +542,5 @@ at the end."
                #:strict? strict?
                #:trace trace
                #:locations? locations?
+               #:state? state?
                #:verbose? verbose?)))
