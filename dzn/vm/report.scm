@@ -527,19 +527,6 @@ steps (aka micro-trace), is ignored."
     ((and ($ <trigger-return>) (= .expression expression) (= .port.name port))
      (string-append (statement->string port) "." (statement->string expression)))
     ((and ($ <trigger-return>) (= .expression #f)) "return")
-
-    ;; trace completion
-    ((and ($ <trigger-return-trace>) (= .expression #f) (= .port.name #f))
-     "return")
-    ((and ($ <trigger-return-trace>) (= .expression #f) (= .port.name port))
-     (string-append (statement->string port) ".return"))
-    ((and ($ <trigger-return-trace>) (= .expression expression) (= .port.name #f))
-     (statement->string expression))
-    ((and ($ <trigger-return-trace>) (= .expression expression) (= .port.name port))
-     (string-append (statement->string port) "." (statement->string expression)))
-    ((and ($ <trigger-return-trace>) (= .expression #f)) "return")
-
-
     ((? number?) (number->string o))
     ("void" "return")
     ((? string?) o)
