@@ -299,43 +299,6 @@ until RTC?."
       (else
        traces))))
 
-(define (run-provides-port pc event)
-  (%debug "run-provides-port... ~s\n" event)
-  (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
-         (port-name (.port.name trigger))
-         (port-instance (runtime:port-name->instance port-name))
-         (port-event (.event.name trigger))
-         (port-trail (filter-map (cut port-event? port-name <>) (.trail pc)))
-         (port-pc (clone pc #:trail port-trail))
-         (port-trace (list port-pc))
-         (traces (cons port-trace (run-silent port-pc port-instance)))
-         (traces (parameterize ((%sut port-instance))
-                   (append-map (cut run-to-completion <> port-event) traces))))
-    (filter-match-error traces)))
-
-(define (run-provides pc event)
-  (%debug "run-provides... ~s\n" event)
-  (let* ((port-traces (run-provides-port pc event))
-         (port-traces (filter-error port-traces))
-         (instance (.instance pc))
-         (trail (.trail pc))
-         (traces (map (lambda (trace)
-                        (if (null? trace) trace
-                            (let* ((pc (car trace))
-                                   (instance (%sut))
-                                   (pc (clone pc
-                                              #:instance (and (.status pc) instance)
-                                              #:reply #f
-                                              #:status #f
-                                              #:trail trail)))
-                              (cons pc
-                                    (filter (compose (is? <initial-compound>) .statement) trace)))))
-                      port-traces))
-         (traces (if (find (compose (is-status? <error>) car) traces) traces
-                     (append-map (cut run-to-completion <> event) traces))))
-    traces))
-
 (define (run-requires pc event)
   (define (silent-or-event-in-trace? trace)
     (let ((trail (map cdr (trace->trail trace))))
@@ -410,7 +373,7 @@ until RTC?."
         (if (pair? async-traces) async-traces
             (run-requires pc event))))
      ((provides-trigger? event)
-      (run-provides pc event))
+      (run-to-completion pc event))
      ((async-event? pc event)
       (run-async pc event))
      (else
