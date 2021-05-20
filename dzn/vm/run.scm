@@ -168,7 +168,7 @@ program-counters produced by taking a step."
           (input
            (clone pc #:status (make <match-error> #:ast o #:input input #:message "match")))
           (else
-           (clone pc #:status (make <end-of-trail> #:ast o #:input input #:labels (list o))))))
+           (clone pc #:status (make <end-of-trail> #:ast o #:input input #:labels (make <labels> #:elements (list o)))))))
 
   (define (matching? pc input step-string)
     (cond ((%strict?)

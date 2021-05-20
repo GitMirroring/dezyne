@@ -502,47 +502,22 @@ intermediate steps such as assignments, function calls, replies,
 
 (define (label->string o)
   (match o
-    (($ <trigger>) (trigger->string o))
+    (($ <action>)
+     (trigger->string o))
     (($ <enum-literal>)
-     (string-append (label->string (ast:name (.type.name o))) "_" (label->string (.field o))))
-    (($ <literal>) (label->string (.value o)))
-    ;; FIXME!??!
-    ;; labels from <end-of-trail> strip to .node?
-    ;; (label->string (.labels (.status (.ast <end-of-trail>))))
-    ((? (is? <ast-node>))
-     (let ((root (make <root> #:elements (list o))))
-       (label->string (car (.elements root)))))))
-
-(define (statement->string o)
-  (match o
-    (($ <action>) (trigger->string o))
-    (($ <trigger>) (trigger->string o))
-    (($ <illegal>) "illegal")
-    (($ <q-in>) "<q>")
-    (($ <q-out>) "<q>")
-    (($ <q-trigger>) (trigger->string o))
-    ((and ($ <trigger-return>) (= .expression #f) (= .port.name #f))
-     "return")
-    ((and ($ <trigger-return>) (= .expression #f) (= .port.name port))
-     (string-append (statement->string port) ".return"))
-    ((and ($ <trigger-return>) (= .expression expression) (= .port.name #f))
-     (statement->string expression))
+     (string-append (ast:name (.type.name o)) "_" (.field o)))
+    (($ <literal>)
+     (label->string (.value o)))
+    ((? (is? <trigger>))
+     (trigger->string o))
     ((and ($ <trigger-return>) (= .expression expression) (= .port.name port))
-     (string-append (statement->string port) "." (statement->string expression)))
-    ((and ($ <trigger-return>) (= .expression #f)) "return")
-    ((? number?) (number->string o))
-    ("void" "return")
-    ((? string?) o)
-    ((? symbol?) (symbol->string o))
-    (($ <enum-literal>)
-     (string-append (statement->string (ast:name (.type.name o))) "_" (statement->string (.field o))))
-    (($ <literal>) (statement->string (.value o)))
-    ((and ($ <reply>) (= .expression (? (is? <literal>))))
-     ((compose statement->string .expression) o))
-    (($ <reply>) ((compose statement->string .expression) o))
-    (#f "false")
-    (#t "true")
-    ((? (is? <ast>)) (statement->string (ast-name o)))))
+     (string-append port "." (label->string expression)))
+    ((and ($ <trigger-return>) (= .expression #f))
+     "return")
+    (#f
+     "false")
+    (#t
+     "true")))
 
 (define (initial-error-message traces)
   (let* ((pcs (map car traces))
@@ -599,7 +574,8 @@ intermediate steps such as assignments, function calls, replies,
 
 (define (final-error-messages traces)
   (let* ((pcs (map car traces))
-         (status (.status (car pcs))))
+         (pc (car pcs))
+         (status (.status pc)))
     (match status
       (($ <compliance-error>)
        (let* ((component-acceptance (.component-acceptance status))
@@ -646,7 +622,7 @@ intermediate steps such as assignments, function calls, replies,
        (let ((location (or (step->location ast)
                            "<unknown-file>:")))
          (format #f "~aerror: no match; at ast `~s', got input `~s'\n"
-                 location (statement->string ast) (.input status))))
+                 location (label->string ast) (.input status))))
       ((and ($ <end-of-trail> ) (and (= .ast ast)))
        (and ast
             (let* ((instance (.instance (car pcs)))
@@ -671,9 +647,8 @@ intermediate steps such as assignments, function calls, replies,
          (location (or (step->location (.ast status))
                        "<unknown-file>:"))
          (ast (trigger->string (clone ast #:port.name #f)))
-         (labels (.labels status))
-         (labels (map (lambda (x) (if (is-a? x <trigger-node>) (clone x #:port.name #f) x)) labels))
-         (labels (map statement->string labels))
+         (labels (ast:label* status))
+         (labels (map label->string labels))
          (labels (map (cut string-append port-name "." <>) labels)))
     labels))
 

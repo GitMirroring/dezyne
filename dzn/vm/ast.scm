@@ -29,6 +29,7 @@
   #:use-module (dzn ast)
   #:use-module (dzn vm runtime)
   #:export (ast:acceptance*
+            ast:label*
             ast:statement
             ast:trigger-equal?
             ast:valued?)
@@ -40,6 +41,8 @@
 
 (define-method (ast:acceptance* (o <acceptances>)) (.elements o))
 (define-method (ast:acceptance* (o <compliance-error>)) ((compose ast:acceptance* .port-acceptance) o))
+
+(define-method (ast:label* (o <labels>)) (.elements o))
 
 (define-method (ast:type (o <runtime:instance>))
   ((compose .type .ast) o))
