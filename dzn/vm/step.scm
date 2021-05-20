@@ -375,8 +375,8 @@
                         (other-instances (map (cut runtime:other-instance+port instance <>) other-port-instances)))
                    (find (compose pair? .q (cut get-state pc <>)) other-instances)))))
       (and other-instance
-          (not (get-handling? pc other-instance))
-          (list (flush pc other-instance)))))
+           (not (get-handling? pc other-instance))
+           (list (flush pc other-instance)))))
 
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (or (flush-other pc)
@@ -385,10 +385,14 @@
                      (eq? (.instance pc) (.instance (.previous pc)))))
            (list (flush pc)))
       (and (.released pc) (pair? (.blocked pc)) (step pc (make <unblock>)))
-      (let* ((return (make <trigger-return> #:location (.location o) #:port.name (.port.name (.trigger pc))))
-             (pc (clone pc #:statement (clone return #:parent (.parent o))))
-             (pc (set-handling? pc #f)))
-        (list pc))))
+      (let ((pc (set-handling? pc #f)))
+        (if (and (ast:out? (.trigger pc)) )
+            (let ((pc (if (.status pc) pc
+                          (pop-locals pc (filter (is? <variable>) (ast:statement* (.parent o)))))))
+              (list (pop-pc pc)))
+            (let* ((return (make <trigger-return> #:location (.location o) #:port.name (.port.name (.trigger pc))))
+                   (pc (clone pc #:statement (clone return #:parent (.parent o)))))
+              (list pc))))))
 
 (define-method (step (pc <program-counter>) (o <trigger-return>))
   (define (valued-reply? pc o)
