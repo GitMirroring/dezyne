@@ -374,6 +374,65 @@
 (define-method (pc->arrow x)
   #f)
 
+
+;;;
+;;; Steps (a.k.a. micro steps, arrows with assignments, calls, ...
+;;;
+
+(define-method (trace->steps (o <list>))
+  (filter-map trace->steps (reverse o)))
+
+(define-method (trace->steps (o <program-counter>))
+  (and (pc-step? o) (pc->step o)))
+
+;;; step predicate
+
+(define-method (pc-step? (o <program-counter>))
+  (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc-event? (.status o))
+      (pc-step? o (.statement o))))
+
+(define-method (pc-step? (pc <program-counter>) (o <initial-compound>))
+  (pc-arrow? (.instance pc) (.trigger pc)))
+
+(define-method (pc-step? (pc <program-counter>) (o <statement>))
+  #t)
+
+(define-method (pc-step? (pc <program-counter>) (o <compound>))
+  #f)
+
+(define-method (pc-step? (pc <program-counter>) (o <declarative-compound>))
+  #f)
+
+(define-method (pc-step? (pc <program-counter>) (o <on>))
+  #f)
+
+(define-method (pc-step? (pc <program-counter>) (o <end-of-on>))
+  #f)
+
+(define-method (pc-step? (pc <program-counter>) (o <flush-return>))
+  #f)
+
+(define-method (pc-step? x y)
+  (pc-arrow? x y))
+
+(define-method (pc-step? x)
+  (pc-arrow? x))
+
+;;; step formatting
+
+(define-method (pc->step (o <program-counter>))
+  (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc->event (.status o))
+      (pc->step o (.statement o))))
+
+(define-method (pc->step (pc <program-counter>) (o <guard>))
+  (cons o (format #f "[~a]" (string-trim-both (ast->dzn (.expression o))))))
+
+(define-method (pc->step (pc <program-counter>) (o <statement>))
+  (or (pc->arrow pc o)
+      (cons o (string-trim-both (ast->dzn o)))))
+
+(define-method (pc->step x y)
+  (pc->arrow x y))
 
 
 ;;;
@@ -483,8 +542,9 @@ prepend every line with its location.  When VERBOSE?, also show
 intermediate steps such as assignments, function calls, replies,
 ... (aka micro-trace)."
   (let* ((trace (complete-split-arrows-pcs trace))
-         (trace (reverse (set-trigger-locations trace))))
-         (steps (trace->arrows trace)))
+         (trace (reverse (set-trigger-locations (reverse trace))))
+         (steps (if verbose? (trace->steps trace)
+                    (trace->arrows trace))))
     (define write-step
       (match-lambda*
         (((pc ast . string) i)

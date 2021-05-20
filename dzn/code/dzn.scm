@@ -341,6 +341,8 @@
   (generator->string(cute x:statement o)))
 (define-method (ast->dzn (o <function>))
   (generator->string (cute x:source o)))
+(define-method (ast->dzn (o <expression>))
+  (generator->string (cute x:expression o)))
 
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
