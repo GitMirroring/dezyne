@@ -121,7 +121,6 @@
             set-handling!
             set-reply
             set-state
-            set-variables
             show-eligible
             switch-context
             string->q-trigger
@@ -1008,6 +1007,25 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (clone pc #:state (clone (.state pc) #:state-list (map (lambda (x) (if (eq? (.instance o) (.instance x)) o x)) ((compose .state-list .state) pc)))))
 
 (define-method (set-state (pc <program-counter>) (state <list>))
+
+  (define (assign state variable value)
+    (let ((name (.name variable)))
+      (or (range-error variable value)
+          (clone state #:variables (assoc-set! (copy-tree (.variables state)) name value)))))
+
+  (define (update-variable update-list variable state)
+    (let ((name (string->symbol (.name variable))))
+      (or (and=> (assoc-ref update-list name) (compose (cut assign state variable <>) sexp->value))
+          state)))
+
+  (define (update-state event state pc)
+    (let* ((instance (.instance state))
+           (path (map string->symbol (runtime:instance->path instance)))
+           (update-list (assoc-ref event path))
+           (result (fold (cut update-variable update-list <> <>) state ((compose ast:variable* .type .ast) instance))))
+      (if (is-a? result <error>) (clone pc #:status result)
+          (set-state pc result))))
+
   (fold (cut update-state state <> <>) pc ((compose .state-list .state) pc)))
 
 (define-method (get-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
@@ -1080,12 +1098,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (pop-locals (pc <program-counter>) (o <list>))
   (set-variables pc (drop (get-variables pc) (length o))))
 
-(define-method (eval-expression (o <state>) (e <expression>))
-  (eval-expression (.variables o) e))
-
-(define-method (eval-expression (pc <program-counter>) (e <expression>))
-  (eval-expression (get-state pc) e))
-
 (define-method (range-error o (value <expression>))
   (unless (or (is-a? o <formal>) (is-a? o <variable>))
     (error "range-error" o))
@@ -1104,7 +1116,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (assign (pc <program-counter>) variable expression)
   (let* ((name (.name variable))
          (state (get-state pc))
-         (value (eval-expression state expression))
+         (value (eval-expression pc expression))
          (state (clone state #:variables (assoc-set! (copy-tree (.variables state)) name value)))
          (pc (set-state pc state))
          (error (range-error variable value)))
@@ -1223,20 +1235,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
            ((ids ... field)
             (make <enum-literal> #:type.name (make <scope.name> #:ids ids) #:field field))))) ;; FIXME: what about resolving
     ))
-
-(define (update-variable update-list variable pc)
-  (let ((name (string->symbol (.name variable))))
-    (or (and=> (assoc-ref update-list name)
-               (compose (cute assign pc variable <>) sexp->value))
-        pc)))
-
-(define (update-state event state pc)
-  (let* ((instance (.instance state))
-         (path (map string->symbol (runtime:instance->path instance)))
-         (update-list (assoc-ref event path))
-         (pc (clone pc #:instance instance))
-         (variables ((compose ast:variable* .type .ast) instance)))
-    (fold (cute update-variable update-list <> <>) pc variables)))
 
 
 ;;;
@@ -1540,9 +1538,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 ;;;
 
 (define-method (init (o <variable>))
-  (let ((value (eval-expression '() (.expression o))))
+  (let* ((pc (make <program-counter>))
+         (value (eval-expression pc (.expression o))))
     (or (range-error o value)
-        (cons (.name o) (eval-expression '() (.expression o))))))
+        (cons (.name o) (eval-expression pc (.expression o))))))
 
 (define-method (make-state (o <runtime:instance>))
   (let* ((variables (map init ((compose ast:variable* .type .ast) o)))
