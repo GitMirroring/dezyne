@@ -34,7 +34,6 @@
   #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
-  #:use-module (dzn vm evaluate)
   #:use-module (dzn vm runtime)
   #:export (<block>
             <end-of-on>
