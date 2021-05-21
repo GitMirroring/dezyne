@@ -251,7 +251,7 @@
   (display "#<" port)
   (display (ast-name o) port)
   (when (rtc? o)
-    (display " %sut: " port)
+    (display " *rtc*: " port)
     (display ((compose ast:dotted-name .type .ast %sut)) port)
     (display " " port)
     (display ((compose class-name class-of .type .ast %sut)) port))
