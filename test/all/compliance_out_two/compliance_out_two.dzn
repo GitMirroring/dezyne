@@ -1,20 +1,48 @@
-interface I {
-  in void e();
-  in void f();
-  out void cb();
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
 
-  behaviour {
-    on e: {}
-    on f: {}
-    on inevitable: cb;
+interface ihello
+{
+  in void hello();
+  in void hi();
+  out void world();
+
+  behaviour
+  {
+    on hello: {}
+    on hi: {}
+    on inevitable: world;
   }
 }
 
-component compliance_out_two {
-  provides I p;
+component compliance_out_two
+{
+  provides ihello h;
 
-  behaviour {
-    on p.f(): {}
-    on p.e(): {}
+  behaviour
+  {
+    on h.hello(): {}
+    on h.hi(): {}
   }
 }
