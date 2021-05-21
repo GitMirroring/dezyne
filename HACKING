@@ -21,9 +21,9 @@ Run all error tests
 
     make check TESTS="$(ls -1 test/error | sed s,^,test/all/,)"
 
-Run all verification failure tests
+Run all blocking tests
 
-    make check FULL_TESTS="$(cd test/error; ls -1)"
+    make check TESTS="$(find test/all -maxdepth 1 -name '*block*' -a -type d)"
 
 * The Perfect GNU Emacs Setup
 
@@ -98,7 +98,7 @@ make publish
 (push "/home/janneke/src/verum/ide/wip-doc/doc" Info-directory-list)
 
 * Legalese
-Copyright © 2019,2020 Jan Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2020,2021 Jan Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
