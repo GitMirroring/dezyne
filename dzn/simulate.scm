@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -74,106 +74,105 @@
              (_ #f))))
 
     (%debug "check-provides-compliance... ~s: ~a\n" port-name event)
+    (let* ((interface ((compose .type .ast) port-instance))
 
-    (cond
-     ((and (null? trace) (not provides-trigger?))
-      '())
-     (else
-      (let* ((interface ((compose .type .ast) port-instance))
+           ;; modeling trace
+           (modeling-names (modeling-names interface))
+           (ipc (clone pc #:trail '() #:status #f))
+           (traces (list (list ipc)))
+           (silent-traces (run-silent pc port-instance))
+           (traces (append silent-traces traces))
+           (modeling-traces (parameterize ((%sut port-instance)
+                                           (%strict? #f))
+                              (append-map (lambda (trace)
+                                            (append-map
+                                             (cute run-to-completion trace <>)
+                                             modeling-names))
+                                          traces)))
+           ;; provides trace
+           (traces (append traces modeling-traces))
+           (port-traces (if (not port-event) '()
+                            (parameterize ((%sut port-instance)
+                                           (%strict? #f))
+                              (append-map (cut run-to-completion <> port-event)
+                                          traces))))
+           (port-traces (append port-traces
+                                modeling-traces)))
 
-             ;; modeling trace
-             (modeling-names (modeling-names interface))
-             (ipc (clone pc #:trail '() #:status #f))
-             (traces (list (list ipc)))
-             (silent-traces (run-silent pc port-instance))
-             (traces (append silent-traces traces))
-             (modeling-traces (parameterize ((%sut port-instance)
-                                             (%strict? #f))
-                                (append-map (lambda (trace)
-                                              (append-map
-                                               (cute run-to-completion trace <>)
-                                               modeling-names))
-                                            traces)))
-             ;; provides trace
-             (traces (append traces modeling-traces))
-             (port-traces (if (not port-event) '()
-                              (parameterize ((%sut port-instance)
-                                             (%strict? #f))
-                                (append-map (cut run-to-completion <> port-event)
-                                            traces))))
-             (port-traces (append port-traces
-                                  modeling-traces)))
+      (when (> (dzn:debugity) 0)
+        (%debug "port-traces[~s]:\n" (length port-traces))
+        (parameterize ((%sut port-instance))
+          (display-trails port-traces)))
 
-        (when (> (dzn:debugity) 0)
-          (%debug "port-traces[~s]:\n" (length port-traces))
-          (parameterize ((%sut port-instance))
-            (display-trails port-traces)))
+      (let* ((port-prefix (format #f "~a." port-name))
+             (sut-trail (filter (compose (disjoin (cut equal? <> "illegal")
+                                                  (cut string-prefix? port-prefix <>))
+                                         cdr)
+                                sut-trail)))
 
-        (let* ((port-prefix (format #f "~a." port-name))
-               (sut-trail (filter (compose (disjoin (cut equal? <> "illegal")
-                                                    (cut string-prefix? port-prefix <>))
-                                           cdr)
-                                  sut-trail)))
+        (define (port-trail trace)
+          (parameterize ((%sut port-instance)) (trace->trail trace)))
 
-          (define (port-trail trace)
-            (parameterize ((%sut port-instance)) (trace->trail trace)))
+        (define (first-non-match port-trace)
+          (define (non-matching-pair? a b)
+            (and (not (equal? (cdr a) ((compose last (cut string-split <> #\.) cdr) b))) (cons a b)))
 
-          (define (first-non-match port-trace)
-            (define (non-matching-pair? a b)
-              (and (not (equal? (cdr a) ((compose last (cut string-split <> #\.) cdr) b))) (cons a b)))
+          (let* ((port-trail (port-trail port-trace))
+                 (foo (%debug "     port trail : ~s\n" port-trail))
+                 (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
+                 (port-name ((compose .name .ast) port-instance))
+                 (foo (%debug "      sut trail : ~s\n" (map cdr sut-trail)))
+                 (events (map (compose last (cut string-split <> #\.) cdr) sut-trail))
+                 (foo (%debug "      sut trail : ~s\n" events)))
+            (or (any non-matching-pair? port-trail sut-trail)
+                (let ((port-length (length port-trail))
+                      (sut-length (length sut-trail)))
+                  (cond ((< port-length sut-length) (cons '(#f) (list-ref sut-trail port-length)))
+                        ((> port-length sut-length) (list (list-ref port-trail sut-length) #f))
+                        (else #f))))))
 
-            (let* ((port-trail (port-trail port-trace))
-                   (foo (%debug "     port trail : ~s\n" port-trail))
-                   (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
-                   (port-name ((compose .name .ast) port-instance))
-                   (foo (%debug "      sut trail : ~s\n" (map cdr sut-trail)))
-                   (events (map (compose last (cut string-split <> #\.) cdr) sut-trail))
-                   (foo (%debug "      sut trail : ~s\n" events)))
-              (or (any non-matching-pair? port-trail sut-trail)
-                  (let ((port-length (length port-trail))
-                        (sut-length (length sut-trail)))
-                    (cond ((< port-length sut-length) (cons '(#f) (list-ref sut-trail port-length)))
-                          ((> port-length sut-length) (list (list-ref port-trail sut-length) #f))
-                          (else #f))))))
+        (define (port-acceptance-equal? a b)
+          (and (equal? (and=> (caar a) trigger->string)
+                       (and=> (caar b) trigger->string))
+               (equal? (cadr a) (cadr b))))
 
-          (define (port-acceptance-equal? a b)
-            (and (equal? (and=> (caar a) trigger->string)
-                         (and=> (caar b) trigger->string))
-                 (equal? (cadr a) (cadr b))))
-
-          (let ((port-traces non-compliances
-                             (partition (negate first-non-match) port-traces)))
-            (cond ((pair? port-traces)
-                   (let ((port-pcs (map (compose (cut clone pc #:state <>) .state car) port-traces)))
-                     (map (lambda (port-pc)
-                            (cons (set-state (car trace) (get-state port-pc port-instance))
-                                  (cdr trace)))
-                          port-pcs)))
-                  ((null? non-compliances)
-                   (if (null? trace) '()
-                       (list trace)))
-                  ((and port-event
-                        (not (caar (first-non-match (car non-compliances)))))
-                   (list trace))
-                  ((and (not port-event)
-                        (null? sut-trail))
-                   (list trace))
-                  (else
-                   (let* ((port-acceptances (map first-non-match non-compliances))
-                          (port-acceptances (delete-duplicates port-acceptances port-acceptance-equal?))
-                          (component-acceptance (or (cadar port-acceptances)
-                                                    (and=> (.status pc) .ast)
-                                                    (trigger->component-trigger trigger)))
-                          (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
-                          (pc (clone pc
-                                     #:previous #f
-                                     #:status (make <compliance-error>
-                                                #:message "compliance"
-                                                #:component-acceptance component-acceptance
-                                                #:port port-instance
-                                                #:port-acceptance port-acceptances)))
-                          (tail (if (null? trace) '() (cdr trace))))
-                     (list (cons pc tail))))))))))))
+        (let ((port-traces non-compliances
+                           (partition (negate first-non-match) port-traces)))
+          (cond
+           ((pair? port-traces)
+            (let ((port-pcs (map (compose (cut clone pc #:state <>) .state car) port-traces)))
+              (map (lambda (port-pc)
+                     (cons (set-state (car trace) (get-state port-pc port-instance))
+                           (cdr trace)))
+                   port-pcs)))
+           ((null? non-compliances)
+            (if (null? trace) '()
+                (list trace)))
+           ((and port-event
+                 (not (caar (first-non-match (car non-compliances)))))
+            (list trace))
+           ((and (not port-event)
+                 (null? sut-trail)
+                 (pair? trace))
+            (list trace))
+           (else
+            (let* ((port-acceptances (map first-non-match non-compliances))
+                   (port-acceptances (delete-duplicates port-acceptances port-acceptance-equal?))
+                   (component-acceptance (and (pair? trace)
+                                              (or (cadar port-acceptances)
+                                                  (and=> (.status pc) .ast)
+                                                  (trigger->component-trigger trigger))))
+                   (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
+                   (pc (clone pc
+                              #:previous #f
+                              #:status (make <compliance-error>
+                                         #:message "compliance"
+                                         #:component-acceptance component-acceptance
+                                         #:port port-instance
+                                         #:port-acceptance port-acceptances))))
+              (if (null? trace) (list (cons pc (car non-compliances)))
+                  (let ((tail (cdr trace)))
+                    (list (cons pc tail))))))))))))
 
 (define-method (check-provides-compliance* (pc <program-counter>) event traces)
   (cond
