@@ -288,7 +288,7 @@ ws               <   [ \t]
                            (communication-right step))) (cons step (loop (cdr steps)))
                            (if (null? (cdr steps)) (list step)
                                (let ((step2 (cadr steps)))
-                                 (if (not (communication? step2)) (loop (cons step (cddr steps)))
+                                 (if (not (communication? step2)) (cons step2 (loop (cons step (cddr steps))))
                                      (cons (merge step step2) (loop (cddr steps))))))))))))
 
 (define (communication->string o)
