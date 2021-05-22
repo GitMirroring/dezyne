@@ -30,6 +30,7 @@ interface ihello
   {
     bool b = true;
     [b]  on hello: b=!b;
+    [!b]  on hello: illegal;
     [!b] on inevitable: {b=!b; world;}
   }
 }
