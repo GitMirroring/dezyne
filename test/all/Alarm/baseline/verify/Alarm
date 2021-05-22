@@ -21,29 +21,9 @@ console.return
 sensor.triggered
 console.detected
 siren.turnon
+<illegal>
 verify: Alarm: check: deadlock: ok
-verify: Alarm: check: compliance: fail
-console.arm
-sensor.enable
-sensor.return
-console.return
-sensor.triggered
-console.detected
-siren.turnon
-siren.return
-console.disarm
-sensor.disable
-sensor.return
-console.return
-sensor.disabled
-console.deactivated
-console.arm
-sensor.enable
-sensor.return
-console.return
-sensor.triggered
-console.detected
-siren.turnon
+verify: Alarm: check: compliance: skip
 verify: Alarm: check: livelock: ok
 verify: IConsole: check: deadlock: ok
 verify: IConsole: check: livelock: ok

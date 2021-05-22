@@ -19,3 +19,4 @@ console.return
 sensor.triggered
 console.detected
 siren.turnon
+<illegal>
