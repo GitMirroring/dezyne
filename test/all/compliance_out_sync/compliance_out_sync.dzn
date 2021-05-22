@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,31 +22,25 @@
 //
 // Code:
 
-interface I
+interface ihello
 {
-  in void ia();
-  out void oa();
+  in void hello ();
+  out void world ();
 
   behaviour
   {
-    on ia: oa;
+    on hello: world;
   }
 }
 
 component compliance_out_sync
 {
-  provides I pp;
-  requires I rp;
+  provides ihello h;
+  requires ihello w;
 
   behaviour
   {
-    on pp.ia(): rp.ia();
-    on rp.oa(): {}
+    on h.hello (): w.hello();
+    on w.world (): {}
   }
 }
-
-// Expect compliance fail
-// Spec I allows
-// <ia, oa>
-// Impl compliance_out_sync
-// <pp.ia, rp.ia, rp.oa, rp.return, pp.return>
