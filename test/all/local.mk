@@ -414,7 +414,6 @@ NON_REPRODUCIBLE_TESTS =			\
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
  %D%/compliance_livelock			\
- %D%/compliance_out_inevitable_illegal		\
  %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\
  %D%/import_strip_component			\
