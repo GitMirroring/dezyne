@@ -127,11 +127,16 @@ in the same component."
                (> (length components) 1))))))
 
 (define (mark-determinism-error trace)
-  (let* ((pc (car trace))
+  "Truncate TRACE up to including the component <initial-compound> and
+mark it with <determinism-error>."
+  (let* ((index (list-index (conjoin (compose (is? <runtime:component>) .instance)
+                                     (compose (is? <initial-compound>) .statement))
+                            trace))
+         (pc (list-ref trace index))
+         (trace (drop trace index))
          (error (make <determinism-error> #:ast (.statement pc) #:message "determinism"))
          (pc (clone pc #:status error)))
-    (cons pc (cdr trace))))
-
+    (cons pc trace)))
 
 (define (mark-livelock-error trace)
   (let* ((pc (car trace))
