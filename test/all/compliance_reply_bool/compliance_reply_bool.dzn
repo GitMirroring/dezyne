@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,36 +22,30 @@
 //
 // Code:
 
-interface I
+interface ihello
 {
-  in bool ia();
-  in bool ib();
+  in bool hello ();
+  in bool bye ();
 
   behaviour
   {
-    on ia: reply(true);
-    on ib: reply(true);
-    on ib: reply(false);
+    on hello: reply (true);
+    on bye: reply (true);
+    on bye: reply (false);
   }
 }
 
 component compliance_reply_bool
 {
-  provides I pp;
-  requires I rp;
+  provides ihello h;
+  requires ihello w;
 
   behaviour
   {
     bool bb = false;
-    [!bb] on pp.ia(): {bb = true; bool b = rp.ib(); reply(true);}
-    [bb] on pp.ia(): {bool b = rp.ib(); reply(b);}
+    [!bb] on h.hello (): {bb = true; bool b = w.bye(); reply (true);}
+    [bb] on h.hello (): {bool b = w.bye(); reply (b);}
 
-    on pp.ib(): {bool b = rp.ib(); reply(false);}
+    on h.bye (): {bool b = w.bye(); reply (false);}
   }
 }
-
-// Expect compliance fail
-// Spec I allows
-// <ia, true, ia, true>
-// Impl compliance_reply_bool performs
-// <pp.ia, rp.ib, rp.true, pp.true, pp.ia, rp.ib, rp.false, pp.false>
