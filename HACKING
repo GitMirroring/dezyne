@@ -17,10 +17,6 @@ Run all parser tests
 
     make check TESTS='$(PARSER_TESTS)'
 
-Run all error tests
-
-    make check TESTS="$(ls -1 test/error | sed s,^,test/all/,)"
-
 Run all blocking tests
 
     make check TESTS="$(find test/all -maxdepth 1 -name '*block*' -a -type d)"
