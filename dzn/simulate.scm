@@ -290,29 +290,43 @@
                       (.behaviour model)))))
       (if (and error (not (is-a? error <implicit-illegal-error>))) pc
           (clone pc #:status (make <deadlock-error> #:ast ast #:message "deadlock")))))
-  (cond
-   ((and (is-a? (%sut) <runtime:port>)
-         (let ((interface (.type (.ast (%sut)))))
-           (and (null? (ast:in-event* interface))
-                (list (list (mark-deadlock pc)))))))
-   (else
-    (and
-     (pair? event-traces-alist)
-     (let* ((pcs-alist (map
-                        (match-lambda
-                          ((event traces ...)
-                         (cons event (map car traces))))
-                      event-traces-alist))
-          (valid-pcs-alist (map
-                            (match-lambda
-                              ((event pcs ...)
-                               (cons event (filter (is-not-deadlock? pc) pcs))))
-                            pcs-alist))
-          (valid-pcs (append-map cdr valid-pcs-alist)))
-     (and (null? valid-pcs)
-          (let* ((traces (assoc-ref event-traces-alist event))
-                 (traces (if (pair? traces) traces (list (list pc)))))
-            (map (cute rewrite-trace-head mark-deadlock <>) traces))))))))
+  (define (optional-trace? trace)
+    (let* ((requires-on (filter
+                         (conjoin (compose (conjoin (is? <runtime:port>)
+                                                    ast:requires?)
+                                           .instance)
+                                  (compose (is? <on>) .statement))
+                         trace))
+           (triggers (map .trigger requires-on)))
+      (find ast:optional? triggers)))
+  (let ((event-traces-alist
+         (map (match-lambda
+                ((event traces ...)
+                 (cons event (filter (negate optional-trace?) traces))))
+              event-traces-alist)))
+    (cond
+     ((and (is-a? (%sut) <runtime:port>)
+           (let ((interface (.type (.ast (%sut)))))
+             (and (null? (ast:in-event* interface))
+                  (list (list (mark-deadlock pc)))))))
+     (else
+      (and
+       (pair? event-traces-alist)
+       (let* ((pcs-alist (map
+                          (match-lambda
+                            ((event traces ...)
+                             (cons event (map car traces))))
+                          event-traces-alist))
+              (valid-pcs-alist (map
+                                (match-lambda
+                                  ((event pcs ...)
+                                   (cons event (filter (is-not-deadlock? pc) pcs))))
+                                pcs-alist))
+              (valid-pcs (append-map cdr valid-pcs-alist)))
+         (and (null? valid-pcs)
+              (let* ((traces (assoc-ref event-traces-alist event))
+                     (traces (if (pair? traces) traces (list (list pc)))))
+                (map (cute rewrite-trace-head mark-deadlock <>) traces)))))))))
 
 (define-method (run-state (pc <program-counter>) (state <list>))
   (let ((pc (set-state pc state)))
