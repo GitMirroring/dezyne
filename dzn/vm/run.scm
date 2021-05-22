@@ -45,6 +45,7 @@
             filter-match-error
             livelock?
             mark-livelock-error
+            run-async
             run-async-event
             run-external
             run-external-q
@@ -381,5 +382,7 @@ until RTC?."
       (run-to-completion pc event))
      ((async-event? pc event)
       (run-async pc event))
+     ((and (eq? event #f) (pair? (.async pc)))
+      (run-async pc #f))
      (else
       '()))))

@@ -348,6 +348,8 @@
               (traces (map (cute append <> pc+blocked-trace) traces)))
          (if (is-a? (%sut) <runtime:port>) traces
              (check-provides-compliance* pc event traces))))
+      ((? (const (pair? (.async pc))))
+       (run-async pc event))
       (_
        (let* ((pc (clone pc #:status (make <end-of-trail>)))
               (trace (cons pc (cdr pc+blocked-trace))))
