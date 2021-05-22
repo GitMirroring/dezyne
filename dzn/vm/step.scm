@@ -288,10 +288,14 @@
                  (let ((value (eval-expression pc (.expression o))))
                    (continuation (clone pc #:reply value) o))))
          (port (.port o)))
-    (if (not port) (list pc)
-        (let* ((r:port (runtime:port (.instance pc) port))
-               (pc (clone pc #:released r:port)))
-          (list pc)))))
+    (cond ((ast:modeling? (.trigger pc))
+           (let ((pc (clone pc #:status (make <deadlock-error> #:ast o #:message "deadlock"))))
+             (list pc)))
+          ((not port) (list pc))
+          (else
+           (let* ((r:port (runtime:port (.instance pc) port))
+                  (pc (clone pc #:released r:port)))
+             (list pc))))))
 
 (define-method (step (pc <program-counter>) (o <flush-return>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
