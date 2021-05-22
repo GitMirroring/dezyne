@@ -241,7 +241,6 @@ REGRESSION_TESTS =				\
  %D%/integer_expressions			\
  %D%/label_instance_mismatch			\
  %D%/livelock1					\
- %D%/livelock2					\
  %D%/livelock_component2			\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
