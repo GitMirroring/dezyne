@@ -1,0 +1,8 @@
+h.hello
+w.bye
+w.true
+h.true
+h.hello
+w.bye
+w.false
+h.false
