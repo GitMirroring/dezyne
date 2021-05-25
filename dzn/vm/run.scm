@@ -178,11 +178,9 @@ program-counters produced by taking a step."
            (clone pc #:status (make <end-of-trail> #:ast o #:input input #:labels (make <labels> #:elements (list o)))))))
 
   (define (matching? pc input step-string)
-    (cond ((%strict?)
-           (or (not (or input (is-a? (%sut) <runtime:port>)))
-               (equal? step-string input)))
-          (else
-           #t)))
+    (or (%exploring?)
+        (or (not input)
+            (equal? step-string input))))
 
   (let ((pc (car trace))
         (livelock-trace (livelock? trace)))
@@ -191,24 +189,53 @@ program-counters produced by taking a step."
           (else
            (let* ((o (.statement pc))
                   (pcs (step pc o))
-                  (step-string (and=> (trace->trail pc) cdr))
                   (observable? (or (is-a? o <action>)
                                    (is-a? o <q-out>)
                                    (is-a? o <trigger-return>)))
-                  (step-string (and observable? step-string))
-
+                  (step-string (and observable? (and=> (trace->trail pc) cdr)))
                   (input pc (if step-string ((%next-input) pc) (values #f pc)))
-                  (pcs (if step-string (map (cute clone <> #:trail (.trail pc)) pcs)
-                           pcs))
-
+                  (trail (.trail pc))
+                  (update-trail? (and step-string (or (%strict?) (matching? pc input step-string))))
+                  (pcs (if update-trail? (map (cute clone <> #:trail trail) pcs) pcs))
                   (pcs (cond ((or (not step-string)
-                                  (matching? pc input step-string)) pcs)
-                             (else (map (mark-pc input o) pcs)))))
+                                  (matching? pc input step-string))
+                              pcs)
+                             (else
+                              (map (mark-pc input o) pcs)))))
              (map (cut cons <> trace) pcs))))))
 
 (define-method (run-to-completion-unmemoized (pc <program-counter>))
   "Return a list of traces produced by taking steps, starting from
 PC until RTC?."
+
+  (define (end-of-trail? traces)
+    (define (need-input? pc)
+      (let* ((o (.statement pc))
+             (observable? (or (is-a? o <action>)
+                              (is-a? o <q-out>)
+                              (is-a? o <trigger-return>)))
+             (step-string (and observable? (and=> (trace->trail pc) cdr))))
+        (and step-string
+             (runtime:boundary-port? (.instance pc))
+             (let ((input pc ((%next-input) pc)))
+               (not input)))))
+    (let ((traces (filter (compose need-input? car) traces)))
+      (and (not (%exploring?))
+           (or (and (%strict?) (pair? traces))
+               (> (length traces) 1))
+           traces)))
+
+  (define (mark-end-of-trail traces)
+    (let* ((pcs (map car traces))
+           (labels (map .reply pcs))
+           (trace (car traces))
+           (pc (car trace))
+           (status (make <end-of-trail> #:ast (.statement pc) #:input #f
+                         #:labels (make <labels> #:elements labels)))
+           (pc (clone pc #:statement #f #:status status))
+           (trace (cons pc (cdr trace))))
+      (list trace)))
+
   (let loop ((traces (list (list pc))))
     (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
            (traces (filter-match-error traces))
@@ -218,6 +245,9 @@ PC until RTC?."
         '())
        ((every (disjoin rtc? (is-status? <match-error>)) pcs)
         (filter-implicit-illegal traces))
+       ((end-of-trail? traces)
+        =>
+        mark-end-of-trail)
        ((non-deterministic? pcs)
         (let ((traces (filter-implicit-illegal traces)))
           (map mark-determinism-error traces)))
@@ -235,11 +265,8 @@ with EVENT as first step, until RTC?."
     (lambda (pc event)
       "Memoizing version of RUN-TO-COMPLETION-UNMEMOIZED."
       (let* ((event-string (if (string? event) event (trigger->string event)))
-             (sut (%sut))
-             (key (string-append "sut:" (parameterize ((%sut #f)) (runtime:dotted-name sut))
-                                 " pc:" (pc->string pc)
-                                 " event: " event-string)))
-        (or (and (%exploring?) (hash-ref cache key))
+             (key (string-append "pc:" (pc->string pc) " event: " event-string)))
+        (or (hash-ref cache key)
             (let ((result (run-to-completion-unmemoized pc event)))
               (when (%exploring?)
                 (hash-set! cache key result))

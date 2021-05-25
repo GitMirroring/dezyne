@@ -43,6 +43,7 @@
 (define-method (ast:acceptance* (o <compliance-error>)) ((compose ast:acceptance* .port-acceptance) o))
 
 (define-method (ast:label* (o <labels>)) (.elements o))
+(define-method (ast:label* (o <end-of-trail>)) (ast:label* (.labels o)))
 
 (define-method (ast:type (o <runtime:instance>))
   ((compose .type .ast) o))

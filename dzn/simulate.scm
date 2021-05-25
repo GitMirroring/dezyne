@@ -78,7 +78,7 @@
     (define (run-provides-port trace event)
       (%debug "run-provides-port... ~a\n" event)
       (parameterize ((%sut port-instance)
-                     (%strict? #f))
+                     (%exploring? #t))
         (run-to-completion trace event)))
 
     (%debug "check-provides-compliance... ~s: ~a\n" port-name event)
@@ -403,9 +403,9 @@
                                 (not (is-a? (%sut) <runtime:system>)))))
       (cond
        ((and deadlock-check? (null? traces))
-        (find identity (map (cute deadlock-report <> '()) from-pcs)))
+        (any (cute deadlock-report <> '()) from-pcs))
        (deadlock-check?
-        (find identity (map deadlock-report from-pcs list-of-traces)))
+        (any deadlock-report from-pcs list-of-traces))
        (else
         (report traces
                 #:eligible (labels)
