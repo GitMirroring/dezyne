@@ -103,7 +103,7 @@ REGRESSION_TESTS =				\
  %D%/async_cancel				\
  %D%/async_context				\
  %D%/async_calling_context			\
- %D%/livelock_async_cancel				\
+ %D%/livelock_async_cancel			\
  %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
@@ -117,7 +117,8 @@ REGRESSION_TESTS =				\
  %D%/async_ranking				\
  %D%/async_shell				\
  %D%/async_types				\
- %D%/illegal_async_silent				\
+ %D%/illegal_async_req				\
+ %D%/illegal_async_silent			\
  %D%/async_simple				\
  %D%/async_synccb				\
  %D%/async_synccb2				\
