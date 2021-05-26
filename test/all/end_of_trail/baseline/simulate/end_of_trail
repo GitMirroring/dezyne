@@ -1,0 +1,8 @@
+(header ((h) ihello provides) ((sut) end_of_trail component) ((w) ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+(trail "h.hello" "w.hello")
+(labels "w.false" "w.true")
+(eligible "w.false" "w.true")

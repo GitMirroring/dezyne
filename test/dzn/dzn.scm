@@ -215,6 +215,16 @@ output, and standard error as three values."
          (and=> (assoc "model" json)
                 (cut equal? <> '("model" . #f))))))
 
+(define (trace-format file-name)
+  (let ((json (get-meta file-name)))
+    (and json
+         (assoc-ref json "trace-format"))))
+
+(define (non-strict? file-name)
+  (let ((json (get-meta file-name)))
+    (and json
+         (assoc-ref json "non-strict?"))))
+
 (define (error-model? file-name)
   (or (directory-exists? (string-append file-name "/baseline/verify"))
       ;; no verify baseline for system error models
@@ -227,7 +237,7 @@ output, and standard error as three values."
 
 (define (filter-state string)
   (let* ((lines (string-split string #\newline))
-         (events (filter (negate (cut string-prefix? "(" <>)) lines)))
+         (events (filter (negate (cut string-prefix? "(state " <>)) lines)))
     (string-join events "\n")))
 
 (define* (run-baseline file-name command #:key
@@ -428,12 +438,13 @@ output, and standard error as three values."
          (input (filter-<flush> input))
          (model (or (model? file-name) base-name))
          ;; FIXME: METAs `model' is used for component/system tricksery
-         (model base-name))
+         (model base-name)
+         (trace-format (or (trace-format file-name) "event")))
     (receive (status stdout stderr)
         (observe `("dzn" "simulate"
                    ,@includes
-                   "--format=event"
-                   "--strict"
+                   "--format" ,trace-format
+                   ,@(if (non-strict? file-name) '() '("--strict"))
                    "-m" ,model
                    ,dzn-name)
                  input)

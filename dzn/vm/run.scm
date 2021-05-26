@@ -265,8 +265,11 @@ with EVENT as first step, until RTC?."
     (lambda (pc event)
       "Memoizing version of RUN-TO-COMPLETION-UNMEMOIZED."
       (let* ((event-string (if (string? event) event (trigger->string event)))
-             (key (string-append "pc:" (pc->string pc) " event: " event-string)))
-        (or (hash-ref cache key)
+             (sut (%sut))
+             (key (string-append "sut:" (parameterize ((%sut #f)) (runtime:dotted-name sut))
+                                 " pc:" (pc->string pc)
+                                 " event: " event-string)))
+        (or (and (%exploring?) (hash-ref cache key))
             (let ((result (run-to-completion-unmemoized pc event)))
               (when (%exploring?)
                 (hash-set! cache key result))
