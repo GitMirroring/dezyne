@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 # Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 #
@@ -60,6 +60,7 @@ HELLO_TESTS =					\
  %D%/hello_injected				\
  %D%/hello_interface				\
  %D%/hello_local				\
+ %D%/hello_local_bool				\
  %D%/hello_multiple_provides			\
  %D%/hello_nondet				\
  %D%/hello_nondet_reply				\
