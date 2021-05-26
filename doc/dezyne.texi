@@ -4929,7 +4929,7 @@ Do not run the deadlock check.
 @item --format=@var{format}
 @itemx -f @var{format}
 Print trace in format @var{format}; one of @code{event}, @code{trace}.
-The default is @code{event}.
+The default is @code{trace}.
 
 @item --help
 @itemx -h

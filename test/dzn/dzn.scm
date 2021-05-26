@@ -432,6 +432,7 @@ output, and standard error as three values."
     (receive (status stdout stderr)
         (observe `("dzn" "simulate"
                    ,@includes
+                   "--format=event"
                    "--strict"
                    "-m" ,model
                    ,dzn-name)
@@ -446,8 +447,6 @@ output, and standard error as three values."
                     (observe `("bash" "-c"
                                ,(string-append
                                  "diff -ywB"
-                                 ;; ignore foreign/system communications
-                                 ;;" --ignore-matching-lines='[.][^. ]\\+[.][^. ]\\+[.]'"
                                  " <(echo -e '" input "')"
                                  " <(echo -e '" trail "')" ))
                              #f)

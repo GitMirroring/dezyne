@@ -91,7 +91,7 @@ Simulate a Dezyne model
          (strict? (command-line:get 'strict #f))
          (verbose? (command-line:get 'verbose #f))
          (locations? (command-line:get 'locations verbose?))
-         (trace (command-line:get 'format (if locations? "trace" "event")))
+         (trace (command-line:get 'format "trace"))
          (trail (option-ref options 'trail #f))
          (status (simulate ast
                            #:model-name model-name
