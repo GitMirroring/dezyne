@@ -466,7 +466,9 @@ output, and standard error as three values."
                (let ((baseline-out (string-append baseline "/" base-name))
                      (baseline-err (string-append baseline "/" base-name ".stderr")))
                  (and (zero? (system* "diff" "-ywB" baseline-out out-file))
-                      (zero? (system* "diff" "-ywB" baseline-err err-file))))))))))
+                      (or (and (string-null? stderr)
+                               (not (file-exists? baseline-err)))
+                          (zero? (system* "diff" "-ywB" baseline-err err-file)))))))))))
 
 (define (run-simulate file-name)
   (format #t "** stage: simulate\n")
