@@ -215,6 +215,7 @@ REGRESSION_TESTS =				\
  %D%/hello_namespace_shadow			\
  %D%/hello_namespace_shadow2			\
  %D%/hello_choice_reply				\
+ %D%/hello_complete_action			\
  %D%/hello_complete_reply			\
  %D%/hello_optional_flush			\
  %D%/hello_optional_system			\
