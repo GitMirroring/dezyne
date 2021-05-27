@@ -1,0 +1,10 @@
+verify: IAsync: check: deadlock: ok
+verify: IAsync: check: livelock: ok
+verify: livelock_async: check: deterministic: ok
+verify: livelock_async: check: illegal: ok
+verify: livelock_async: check: deadlock: ok
+verify: livelock_async: check: compliance: ok
+verify: livelock_async: check: livelock: fail
+p.e
+p.return
+<livelock>

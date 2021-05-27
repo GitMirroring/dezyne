@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 ;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2018, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <johri.van.eerd@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -96,7 +96,8 @@
     (define (port-taus port)
       (let* ((interface (.type port))
              (port-name (makreel:.name port))
-             (alphabet (append-map event-alpabet (ast:event* interface))))
+             (alphabet (append (append-map event-alpabet (ast:event* interface))
+                               (if (ast:async? port) '("inevitable") '()))))
         (map (cute string-append port-name "." <>) alphabet)))
     (string-join (append-map port-taus ports) ",")))
 
