@@ -227,7 +227,6 @@
 
 (define-method (rtc? (pc <program-counter>))
   (or (.status pc)
-      (not (.previous pc))
       (not (.statement pc))))
 
 (define (external-q->string external-q)

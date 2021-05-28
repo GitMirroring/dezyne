@@ -80,7 +80,7 @@
 
            ;; modeling trace
            (modeling-names (modeling-names interface))
-           (ipc (clone pc #:trail '() #:status #f))
+           (ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
            (traces (list (list ipc)))
            (silent-traces (run-silent pc port-instance))
            (traces (append silent-traces traces))
