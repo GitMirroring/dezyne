@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@verum.com>
-;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2019, 2020, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -667,7 +667,8 @@ required to be non-deterministic."
            (member label provides-in)))
     (let ((edges (node-succ node)))
       (or (equal? (node-state node) (1- (vector-length nodes)))
-          (and (find (lambda (e) (label-provides-in? (edge-label e))) edges) #t))))
+          (and (find (lambda (e) (label-provides-in? (edge-label e))) edges)
+               (not (find (lambda (e) (equal? "<ack>" (edge-label e))) edges))))))
 
   (define (annotate)
     (let* ((frontier (map node-state
@@ -693,7 +694,7 @@ required to be non-deterministic."
   (let ((done (make-hash-table)))
 
     (define (trace-extend trace label)
-      (if (equal? label "tau") trace
+      (if (member label (list "tau" "<ack>")) trace
           (append trace (list label))))
 
     (define (trace-close trace index)
