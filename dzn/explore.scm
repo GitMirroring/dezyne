@@ -50,50 +50,6 @@
 ;;;
 ;;; Code:
 
-;;;
-;;; State diagram
-;;;
-
-(define (process-async pc)
-  (if (null? (.async pc)) '()
-      (run-async-event pc)))
-
-(define (did-provides-out? trace)
-  ;; TODO: mark did-provides-out? event in PC
-  (let* ((trail (map cdr (trace->trail trace)))
-         (r:ports (filter runtime:boundary-port? (%instances)))
-         (ports (map .ast r:ports))
-         (provide-ports (filter ast:provides? ports))
-         (provide-names (map .name provide-ports)))
-    (find (lambda (event)
-            (match (string-split event #\.)
-              ((port event) (member port provide-names))
-              ((path ... port event) #f)))
-          trail)))
-
- (define-method (check-mark-livelock trace)
-  (let ((livelock-trace (livelock? trace)))
-    (if livelock-trace (mark-livelock-error livelock-trace) trace)))
-
-(define-method (flush-async-trace (trace <list>) previous-trace)
-  (let* ((trace (check-mark-livelock (append trace previous-trace)))
-         (pc (car trace))
-         (traces (flush-async pc trace)))
-    (map (compose check-mark-livelock (cut append <> trace)) traces)))
-
-(define-method (flush-async (pc <program-counter>) previous-trace)
-  (let* ((traces (process-async pc))
-         (pcs (map car traces)))
-    (cond
-      ((or (null? traces)) traces)
-      (else
-        (let* ((stop flush (partition
-                            (disjoin (compose null? .async car) did-provides-out? (compose .status car))
-                            traces))
-                (traces (append stop (append-map (cute flush-async-trace <> previous-trace) flush)))
-                (pcs (map car traces)))
-          traces)))))
-
 (define-method (process-external (pc <program-counter>))
   (let ((queues (.external-q pc)))
     (if (or (null? queues)
@@ -168,6 +124,10 @@ LTS
       (hash-set! lts 1 (cons pc (list (list pc)))))
     (values lts pc->state-number state-number-count)))
 
+
+;;;
+;;; State diagram
+;;;
 (define (rtc-lts->state-diagram lts pc->state-number)
   "Create a state-diagram from run-to-completion LTS, return
 

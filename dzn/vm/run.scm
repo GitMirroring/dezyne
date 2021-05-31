@@ -41,8 +41,11 @@
   #:export (%exploring?
             %next-input
             %strict?
+            did-provides-out?
             filter-error
             filter-match-error
+            flush-async
+            flush-async-trace
             livelock?
             mark-livelock-error
             run-async
@@ -342,6 +345,50 @@ until RTC?."
          (pc (clone pc #:trail (cons event trail)))
          (traces (run-async-event pc)))
     traces))
+
+(define-method (flush-async-trace (trace <list>) previous-trace)
+  (let ((trace (append trace previous-trace)))
+    (cond ((.status (car trace))
+           (list trace))
+          ((livelock? trace)
+           =>
+           (compose list mark-livelock-error))
+          (else
+           (let* ((pc (car trace))
+                  (traces (flush-async pc trace)))
+             (map (cut append <> trace) traces))))))
+
+(define-method (flush-async (pc <program-counter>))
+  (flush-async pc '()))
+
+(define (did-provides-out? trace)
+  (let* ((trail (map cdr (trace->trail trace)))
+         (r:ports (filter runtime:boundary-port? (%instances)))
+         (ports (map .ast r:ports))
+         (provide-ports (filter ast:provides? ports))
+         (provide-names (map .name provide-ports)))
+    (find (lambda (event)
+            (match (string-split event #\.)
+              ((port event) (member port provide-names))))
+          trail)))
+
+(define-method (flush-async (pc <program-counter>) previous-trace)
+  (if (null? (.async pc)) '()
+      (let ((traces (run-async-event pc)))
+        (cond
+         ((null? traces) traces)
+         (else
+          (let* ((stop flush (partition
+                              (disjoin (compose null? .async car)
+                                       did-provides-out?
+                                       (compose .status car))
+                              traces))
+                 (traces (append-map (cute flush-async-trace <> previous-trace) flush))
+                 (livelock traces (partition livelock? traces))
+                 (livelock (map (compose mark-livelock-error livelock?) livelock)))
+            (append stop
+                    livelock
+                    traces)))))))
 
 (define-method (external-event? (pc <program-counter>) event)
   (and (requires-trigger? event)
