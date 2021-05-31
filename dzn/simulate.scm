@@ -409,26 +409,33 @@
       (serialize-header (.state pc) (current-output-port))
       (newline))
     (or (report (list (list pc)) #:trace trace #:header #t)
-        (parameterize ((%next-input (if (pair? trail) trail-input read-input)))
+        (parameterize ((%next-input (if (or (not (isatty? (current-input-port))) (pair? trail)) trail-input read-input)))
           (let loop ((traces (list (list pc))))
-            (let* ((from-pcs (map car traces))
-                   (list-of-traces (map run-sut traces))
-                   (traces (apply append list-of-traces))
-                   (valid-traces (filter (compose (negate .status) car) traces))
-                   (blocked non-blocked (partition (compose pair? .blocked car)
-                                                   valid-traces)))
-              (cond ((null? valid-traces)
-                     (end-report from-pcs list-of-traces))
-                    ((pair? blocked)
-                     (loop blocked))
-                    ((pair? non-blocked)
-                     (let ((pcs (map car valid-traces)))
-                       (or (report non-blocked
-                                   #:locations? locations?
-                                   #:state? state?
-                                   #:trace trace
-                                   #:verbose? verbose?)
-                           (loop (map list pcs))))))))))))
+            (let ((from-pcs (map car traces)))
+              (when (interactive?)
+                (format (current-error-port) "labels: ~a\n" (string-join (labels)))
+                (when deadlock-check?
+                  (let* ((pc (car from-pcs))
+                         (event-traces-alist (event-traces-alist pc))
+                         (eligible (eligible-labels pc event-traces-alist)))
+                    (format (current-error-port) "eligible: ~a\n" (string-join eligible)))))
+              (let* ((list-of-traces (map run-sut traces))
+                     (traces (apply append list-of-traces))
+                     (valid-traces (filter (compose (negate .status) car) traces))
+                     (blocked non-blocked (partition (compose pair? .blocked car)
+                                                     valid-traces)))
+                (cond ((null? valid-traces)
+                       (end-report from-pcs list-of-traces))
+                      ((pair? blocked)
+                       (loop blocked))
+                      ((pair? non-blocked)
+                       (let ((pcs (map car valid-traces)))
+                         (or (report non-blocked
+                                     #:locations? locations?
+                                     #:state? state?
+                                     #:trace trace
+                                     #:verbose? verbose?)
+                             (loop (map list pcs)))))))))))))
 
 
 ;;;

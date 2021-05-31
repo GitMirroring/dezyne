@@ -46,6 +46,7 @@
             filter-match-error
             flush-async
             flush-async-trace
+            interactive?
             livelock?
             mark-livelock-error
             run-async
@@ -175,6 +176,10 @@ mark it with <determinism-error>."
            (%livelock-threshold (* 2 (%livelock-threshold))))
          trace)))
 
+(define (interactive?)
+  (and (isatty? (current-input-port))
+       (eq? (%next-input) read-input)))
+
 (define-method (extend-trace (trace <list>))
   "Return a list of traces, produced by appending TRACE to each of the
 program-counters produced by taking a step."
@@ -199,7 +204,7 @@ program-counters produced by taking a step."
                                    (is-a? o <trigger-return>)))
                   (observable (and observable? (and=> (trace->trail pc) cdr)))
                   (pcs (step pc o))
-                  (input pc (if observable? ((%next-input) pc) (values #f pc)))
+                  (input pc (if (and observable (not (interactive?))) ((%next-input) pc) (values #f pc)))
                   (pcs (cond ((%exploring?)
                               pcs)
                              ((not observable)
@@ -240,6 +245,19 @@ PC until RTC?."
     (define (reply-label pc)
       (or (.reply pc) "return"))
 
+    (define (choose-postponed-match traces)
+      (define (label pc)
+        (let* ((label (label->string (reply-label pc)))
+               (instance (.instance pc))
+               (port-name (string-join (runtime:instance->path instance) ".")))
+          (format #f "~a.~a" port-name label)))
+
+      (let ((traces (map (cute rewrite-trace-head (cute clone <> #:status #f) <>) traces)))
+        (format (current-error-port) "eligible: ~a\n" (string-join (map (compose label cadr) traces)))
+        (let* ((input pc ((%next-input) pc))
+               (traces (filter (compose (cute equal? input <>) observable cadr) traces)))
+          (loop (append-map extend-trace traces)))))
+
     (define (mark-end-of-trail traces)
       (define (set-end-of-trail labels pc)
         (let* ((statement (.statement pc))
@@ -267,6 +285,8 @@ PC until RTC?."
           (cond
            ((= (length traces) 1)
             (reset-posponed-match traces))
+           ((and (not (%exploring?)) (interactive?))
+            (choose-postponed-match traces))
            (else
             (mark-end-of-trail traces)))))
        ((non-deterministic? pcs)
