@@ -256,7 +256,7 @@
     (display ((compose name .statement) o) port))
   (when (pair? (.async o))
     (display " async: " port)
-    (display (map (compose .name cadr) (.async o)) port))
+    (display (map (compose runtime:dotted-name cadr) (.async o)) port))
   (when (.released o) (display " *released*" port))
   (when (pair? (.blocked o)) (display " *blocked*" port))
   (and=> (.reply o) (cut format port " reply: ~a" <>))

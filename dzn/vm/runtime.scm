@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -226,8 +226,11 @@
 (define-method (runtime:port (o <runtime:port>) x)
   o)
 
+(define-method (runtime:port* (o <runtime:port>))
+  '())
+
 (define-method (runtime:port* (o <runtime:instance>))
-  (if (runtime:port-instance? o) '() (ast:port* (.type (.ast o)))))
+  (append (ast:port* (.type (.ast o))) (ast:async-port* (.type (.ast o)))))
 
 (define-method (runtime:other-instance+port (instance <runtime:component>) (port <runtime:port>))
   (let* ((other-port (runtime:other-port port))
@@ -314,7 +317,7 @@
                         (let ((instances (ast:instance* t)))
                           (cons o (append (map (cut port->instance <> o #f) (runtime:port* o))
                                           (append-map (lambda (i) (loop (ast->runtime:instance i o))) instances))))))))
-                 (map (cut port->instance <> #f #t) (filter ast:requires? (runtime:port* o))))))
+                 (map (cut port->instance <> #f #t) (filter (conjoin (negate ast:async?) ast:requires?) (runtime:port* o))))))
     (parameterize ((%instances instances))
       (for-each (cut runtime:rank! <> 0) (filter runtime:provides-instance? instances)))
     instances))

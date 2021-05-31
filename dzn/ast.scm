@@ -232,7 +232,9 @@
 (define-method (ast:async? (o <ast>))
   #f)
 
-(define-method (ast:async-port* (o <component-model>)) ((compose ast:port* .behaviour) o))
+(define-method (ast:async-port* (o <component>)) ((compose ast:port* .behaviour) o))
+(define-method (ast:async-port* (o <component-model>)) '())
+
 (define-method (ast:provides-port o)
   (let ((ports (ast:provides-port* o)))
     (and (pair? ports) (car ports))))

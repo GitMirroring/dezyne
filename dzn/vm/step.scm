@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -221,12 +221,17 @@
                             #:parent ((compose .behaviour .type .ast) instance)))
             (ack (lambda (pc) (list (begin-step pc instance trigger))))
             (rank (.rank instance))
-            (pc (clone pc #:async (acons rank (cons (.port o) ack) (.async pc)))))
-       (list (continuation pc o))))
+            (r:port (runtime:port instance (.port o)))
+            (req-pending? (find (compose (cute ast:eq? r:port <>) cadr) (.async pc))))
+       (if req-pending?
+           (list (clone pc #:status (make <illegal-error> #:message "illegal" #:ast o)))
+           (let ((pc (clone pc #:async (acons rank (cons r:port ack) (.async pc)))))
+             (list (continuation pc o))))))
     ("clr"
-     (let* ((port (.port o))
+     (let* ((instance (.instance pc))
+            (r:port (runtime:port instance (.port o)))
             (timers (.async pc))
-            (canceled (find (compose (cut ast:equal? <> port) cadr) (reverse timers)))
+            (canceled (find (compose (cut ast:eq? <> r:port) cadr) (reverse timers)))
             (timers (reverse (delete canceled timers eq?)))
             (pc (clone pc #:async timers)))
        (list (continuation pc o))))

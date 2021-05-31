@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
-;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -591,7 +591,9 @@
             (append (map (compose runtime:dotted-name car) (.blocked o))
                     (if (null? (.external-q o)) '()
                         (list (external-q->string (.external-q o))))
-                    (map (match-lambda ((timeout port . proc) (.name port))) (.async o))))
+                    (map (match-lambda ((timeout port . proc)
+                                        (runtime:dotted-name port)))
+                         (.async o))))
       "\n"))))
 
 (define-method (pc->hash (o <program-counter>))
