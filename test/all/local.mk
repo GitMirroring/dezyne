@@ -285,6 +285,7 @@ REGRESSION_TESTS =				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
  %D%/silent_nondet				\
+ %D%/silent_provides				\
  %D%/silent_optional				\
  %D%/silent_optional_broken			\
  %D%/silent_optional_function			\
