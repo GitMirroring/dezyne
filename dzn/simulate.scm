@@ -83,20 +83,13 @@
 
     (%debug "check-provides-compliance... ~s: ~a\n" port-name event)
     (let* ((interface ((compose .type .ast) port-instance))
-
            ;; modeling trace
            (modeling-names (modeling-names interface))
            (ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
-           (traces (list (list ipc)))
-           (silent-traces (run-silent pc port-instance))
-           (traces (append silent-traces traces))
-           (modeling-traces (append-map (lambda (trace)
-                                          (append-map
-                                           (cute run-provides-port trace <>)
-                                           modeling-names))
-                                        traces))
+           (modeling-traces (append-map (cute run-provides-port ipc <>)
+                                        modeling-names))
+           (traces (cons (list ipc) modeling-traces))
            ;; provides trace
-           (traces (append traces modeling-traces))
            (port-traces (if (not port-event) '()
                             (append-map (cut run-provides-port <> port-event)
                                           traces)))
