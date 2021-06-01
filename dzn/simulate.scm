@@ -75,6 +75,12 @@
              ((port event) (and (equal? port port-name) event))
              (_ #f))))
 
+    (define (run-provides-port trace event)
+      (%debug "run-provides-port... ~a\n" event)
+      (parameterize ((%sut port-instance)
+                     (%strict? #f))
+        (run-to-completion trace event)))
+
     (%debug "check-provides-compliance... ~s: ~a\n" port-name event)
     (let* ((interface ((compose .type .ast) port-instance))
 
@@ -84,22 +90,17 @@
            (traces (list (list ipc)))
            (silent-traces (run-silent pc port-instance))
            (traces (append silent-traces traces))
-           (modeling-traces (parameterize ((%sut port-instance)
-                                           (%strict? #f))
-                              (append-map (lambda (trace)
-                                            (append-map
-                                             (cute run-to-completion trace <>)
-                                             modeling-names))
-                                          traces)))
+           (modeling-traces (append-map (lambda (trace)
+                                          (append-map
+                                           (cute run-provides-port trace <>)
+                                           modeling-names))
+                                        traces))
            ;; provides trace
            (traces (append traces modeling-traces))
            (port-traces (if (not port-event) '()
-                            (parameterize ((%sut port-instance)
-                                           (%strict? #f))
-                              (append-map (cut run-to-completion <> port-event)
-                                          traces))))
-           (port-traces (append port-traces
-                                modeling-traces)))
+                            (append-map (cut run-provides-port <> port-event)
+                                          traces)))
+           (port-traces (append port-traces modeling-traces)))
 
       (when (> (dzn:debugity) 0)
         (%debug "port-traces[~s]:\n" (length port-traces))
