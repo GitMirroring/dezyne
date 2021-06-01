@@ -80,6 +80,9 @@
 ;;; ’run’ loops over ’step’ until ’rtc?’ (run to completion done) and
 ;;; collects a trace (of program counters).
 
+(define (trace-valid? trace)
+  ((compose not .status car) trace))
+
 (define (filter-error traces)
   (let ((error rest (partition
                      (compose (conjoin (is? <error>)
@@ -106,9 +109,17 @@
   (let* ((match-error rest (partition
                             (compose (is-status? <match-error>) car)
                             traces))
-         (valid? (find (compose (negate .status) car) rest)))
+         (valid? (find trace-valid? rest)))
     (if (or valid? (null? match-error)) rest
         match-error)))
+
+(define (filter-postponed-match traces)
+  (let* ((postponed-match rest (partition
+                                (compose (is-status? <postponed-match>) car)
+                                traces))
+         (valid? (find trace-valid? rest)))
+    (if (or valid? (null? postponed-match)) rest
+        postponed-match)))
 
 (define (non-deterministic? pcs)
   "Return #t when PCs are a nondeterministic set, i.e.: at least two
@@ -172,15 +183,10 @@ program-counters produced by taking a step."
     (%debug "match fail, ast ~s, input ~s\n" (name o) input)
     (cond ((.status pc)
            pc)
-          (input
+          ((and (%strict?) input)
            (clone pc #:status (make <match-error> #:ast o #:input input #:message "match")))
           (else
-           (clone pc #:status (make <end-of-trail> #:ast o #:input input #:labels (make <labels> #:elements (list o)))))))
-
-  (define (matching? pc input step-string)
-    (or (%exploring?)
-        (or (not input)
-            (equal? step-string input))))
+           (clone pc #:status (make <postponed-match> #:ast o #:input input)))))
 
   (let ((pc (car trace))
         (livelock-trace (livelock? trace)))
@@ -188,18 +194,18 @@ program-counters produced by taking a step."
           ((rtc? pc) (list trace))
           (else
            (let* ((o (.statement pc))
-                  (pcs (step pc o))
                   (observable? (or (is-a? o <action>)
                                    (is-a? o <q-out>)
                                    (is-a? o <trigger-return>)))
-                  (step-string (and observable? (and=> (trace->trail pc) cdr)))
-                  (input pc (if step-string ((%next-input) pc) (values #f pc)))
-                  (trail (.trail pc))
-                  (update-trail? (and step-string (or (%strict?) (matching? pc input step-string))))
-                  (pcs (if update-trail? (map (cute clone <> #:trail trail) pcs) pcs))
-                  (pcs (cond ((or (not step-string)
-                                  (matching? pc input step-string))
+                  (observable (and observable? (and=> (trace->trail pc) cdr)))
+                  (pcs (step pc o))
+                  (input pc (if observable? ((%next-input) pc) (values #f pc)))
+                  (pcs (cond ((%exploring?)
                               pcs)
+                             ((not observable)
+                              pcs)
+                             ((equal? input observable)
+                              (map (cute clone <> #:trail (.trail pc)) pcs))
                              (else
                               (map (mark-pc input o) pcs)))))
              (map (cut cons <> trace) pcs))))))
@@ -208,46 +214,61 @@ program-counters produced by taking a step."
   "Return a list of traces produced by taking steps, starting from
 PC until RTC?."
 
-  (define (end-of-trail? traces)
-    (define (need-input? pc)
-      (let* ((o (.statement pc))
-             (observable? (or (is-a? o <action>)
-                              (is-a? o <q-out>)
-                              (is-a? o <trigger-return>)))
-             (step-string (and observable? (and=> (trace->trail pc) cdr))))
-        (and step-string
-             (runtime:boundary-port? (.instance pc))
-             (let ((input pc ((%next-input) pc)))
-               (not input)))))
-    (let ((traces (filter (compose need-input? car) traces)))
-      (and (not (%exploring?))
-           (or (and (%strict?) (pair? traces))
-               (> (length traces) 1))
-           traces)))
+  (define (postponed-match? traces)
+    (and (not (find trace-valid? traces))
+         (let* ((traces (filter (compose (is-status? <postponed-match>) car) traces))
+                (pcs (map car traces)))
+           (and (pair? traces)
+                traces))))
 
-  (define (mark-end-of-trail traces)
-    (let* ((pcs (map car traces))
-           (labels (map .reply pcs))
-           (trace (car traces))
-           (pc (car trace))
-           (status (make <end-of-trail> #:ast (.statement pc) #:input #f
-                         #:labels (make <labels> #:elements labels)))
-           (pc (clone pc #:statement #f #:status status))
-           (trace (cons pc (cdr trace))))
-      (list trace)))
+  (define (observable pc)
+    (and=> (trace->trail pc) cdr))
 
   (let loop ((traces (list (list pc))))
+
+    (define (reset-posponed-match traces)
+      (let* ((trace (car traces))
+             (pc (car trace))
+             (observe-pc (cadr trace))
+             (trail (.trail pc))
+             (input (.input (.status pc)))
+             (drop-event? (equal? input (observable observe-pc)))
+             (trail (if drop-event? (cdr trail) trail))
+             (trace (rewrite-trace-head (cut clone <> #:status #f #:trail trail) trace)))
+        (loop (append-map extend-trace (list trace)))))
+
+    (define (reply-label pc)
+      (or (.reply pc) "return"))
+
+    (define (mark-end-of-trail traces)
+      (define (set-end-of-trail labels pc)
+        (let* ((statement (.statement pc))
+               (labels (make <labels> #:elements labels))
+               (status (make <end-of-trail> #:ast statement #:labels labels)))
+          (clone pc #:status status)))
+      (let ((labels (map (compose reply-label cadr) traces)))
+        (map (compose (cute rewrite-trace-head (cute set-end-of-trail labels <>) <>)
+                      cdr) traces)))
+
     (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
            (traces (filter-match-error traces))
+           (traces (filter-postponed-match traces))
            (pcs (map car traces)))
       (cond
-       ((null? pcs)
+       ((null? traces)
         '())
-       ((every (disjoin rtc? (is-status? <match-error>)) pcs)
+       ((every (conjoin (negate (is-status? <postponed-match>))
+                        (disjoin rtc? (is-status? <match-error>)))
+               pcs)
         (filter-implicit-illegal traces))
-       ((end-of-trail? traces)
+       ((postponed-match? traces)
         =>
-        mark-end-of-trail)
+        (lambda (traces)
+          (cond
+           ((= (length traces) 1)
+            (reset-posponed-match traces))
+           (else
+            (mark-end-of-trail traces)))))
        ((non-deterministic? pcs)
         (let ((traces (filter-implicit-illegal traces)))
           (map mark-determinism-error traces)))
@@ -319,6 +340,7 @@ until RTC?."
                (r:other-port (runtime:other-port port))
                (external? (ast:external? (.ast r:other-port)))
                (traces (parameterize ((%sut port)
+                                      (%exploring? #t)
                                       (%strict? (not external?)))
                          (append-map (cut run-to-completion pc <>) modeling-names)))
                (traces (filter (conjoin (disjoin (const external?)

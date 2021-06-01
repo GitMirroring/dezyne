@@ -706,8 +706,8 @@ intermediate steps such as assignments, function calls, replies,
 
 (define (end-of-trail-labels pc)
   (let* ((status (.status pc))
-         (ast (.ast status))
          (instance (.instance pc))
+         (ast (.ast status))
          (port-name (if instance (string-join (runtime:instance->path instance) ".")
                         (.port.name ast)))
          (location (or (step->location (.ast status))

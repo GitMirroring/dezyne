@@ -59,6 +59,7 @@
             <livelock-error>
             <match-error>
             <missing-reply-error>
+            <postponed-match-error>
             <queue-full-error>
             <range-error>
             <second-reply-error>
@@ -85,7 +86,8 @@
             external-q->string
             name
             rtc?)
-  #:re-export (.event.name
+  #:re-export (.ast
+               .event.name
                .instance
                .port
                .port.name
@@ -134,13 +136,9 @@
 
 (define-ast <determinism-error> (<error>))
 
-(define-ast <queue-full-error> (<error>)
-  (instance))
-
 (define-ast <labels> (<ast-list>))
 
 (define-ast <end-of-trail> (<status>)
-  (trigger)
   (labels))
 
 (define-ast <illegal-error> (<error>))
@@ -156,6 +154,13 @@
 
 (define-ast <missing-reply-error> (<error>)
   (type))
+
+(define-ast <postponed-match> (<status>)
+  (ast)
+  (input))
+
+(define-ast <queue-full-error> (<error>)
+  (instance))
 
 (define-ast <range-error> (<error>)
   (variable)

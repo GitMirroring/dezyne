@@ -130,13 +130,12 @@
 
 (define-method (read-input pc)
   (when (isatty? (current-input-port))
-    (cond ((rtc? pc) (format #t "labels: ~s\n" (labels)))
-          (else (format #t "pc=~s\n" pc)))
     (format #t "input: "))
   (let* ((input (read))
          (input (match input
                   ((? symbol?) (symbol->string input))
-                  ((? eof-object?) #f))))
+                  ((? eof-object?) #f)
+                  (#f #f))))
     (values input pc)))
 
 (define-method (labels)
@@ -450,8 +449,9 @@
   (assign (clone pc #:reply #f) variable (.reply pc)))
 
 (define (rewrite-trace-head rewriter trace)
-  (let ((pc (car trace)))
-    (cons (rewriter pc) (cdr trace))))
+  (match trace
+    ((pc tail ...)
+     (cons (rewriter pc) tail))))
 
 (define-method (append-port-trace (pc <program-counter>) trace (port-instance <runtime:port>) port-trace)
   (let* ((ipc (car port-trace))
