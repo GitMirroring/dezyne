@@ -546,13 +546,14 @@ events.  When deadlock-check?, run check-deadlock at the end."
 session for MODEL, following TRAIL.  When STRICT?, the trail must
 include all observable events.  When deadlock-check?, run check-deadlock
 at the end."
-  (let ((trail (and=> (or trail
-                          (and (not (isatty? (current-input-port)))
-                               (input-port? (current-input-port))
-                               (read-string (current-input-port)))
-                          "")
-                      string->trail)))
-    (simulate* root trail
+  (let* ((scm-trail (and=> (or trail
+                               (and (not (isatty? (current-input-port)))
+                                    (input-port? (current-input-port))
+                                    (read-string (current-input-port)))
+                               "")
+                           string->trail))
+         (scm-trail (if (and trail (null? scm-trail)) '(#f) scm-trail)))
+    (simulate* root scm-trail
                #:deadlock-check? deadlock-check?
                #:model-name model-name
                #:queue-size queue-size
