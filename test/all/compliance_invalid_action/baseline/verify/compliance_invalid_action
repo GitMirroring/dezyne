@@ -2,8 +2,8 @@ verify: compliance_invalid_action: check: deterministic: ok
 verify: compliance_invalid_action: check: illegal: ok
 verify: compliance_invalid_action: check: deadlock: ok
 verify: compliance_invalid_action: check: compliance: fail
+model: compliance_invalid_action
 w.world
-h.cruel
 <compliance>
 verify: compliance_invalid_action: check: livelock: ok
 verify: ihello: check: deadlock: ok

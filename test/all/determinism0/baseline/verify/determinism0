@@ -1,6 +1,7 @@
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: determinism0: check: deterministic: fail
+model: determinism0
 i.e
 <deterministic>
 verify: determinism0: check: illegal: ok

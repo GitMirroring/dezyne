@@ -2,7 +2,7 @@ verify: compliance_failures_inevitable: check: deterministic: ok
 verify: compliance_failures_inevitable: check: illegal: ok
 verify: compliance_failures_inevitable: check: deadlock: ok
 verify: compliance_failures_inevitable: check: compliance: fail
-h.hello
+model: compliance_failures_inevitable
 <compliance>
 verify: compliance_failures_inevitable: check: livelock: ok
 verify: ihello: check: deadlock: ok

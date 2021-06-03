@@ -2,6 +2,7 @@ verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
 verify: illegal_external_nonsynchronous: check: deterministic: ok
 verify: illegal_external_nonsynchronous: check: illegal: fail
+model: illegal_external_nonsynchronous
 p.e
 r.e
 r.return
@@ -9,6 +10,7 @@ p.return
 r.ec
 <illegal>
 verify: illegal_external_nonsynchronous: check: deadlock: fail
+model: illegal_external_nonsynchronous
 p.e
 r.e
 r.return

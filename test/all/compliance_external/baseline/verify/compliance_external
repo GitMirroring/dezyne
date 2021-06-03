@@ -2,6 +2,7 @@ verify: compliance_external: check: deterministic: ok
 verify: compliance_external: check: illegal: ok
 verify: compliance_external: check: deadlock: ok
 verify: compliance_external: check: compliance: fail
+model: compliance_external
 h.hello
 w.hello
 w.return

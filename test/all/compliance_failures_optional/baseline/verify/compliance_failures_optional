@@ -2,7 +2,7 @@ verify: compliance_failures_optional: check: deterministic: ok
 verify: compliance_failures_optional: check: illegal: ok
 verify: compliance_failures_optional: check: deadlock: ok
 verify: compliance_failures_optional: check: compliance: fail
-h.hello
+model: compliance_failures_optional
 <compliance>
 verify: compliance_failures_optional: check: livelock: ok
 verify: ihello: check: deadlock: ok

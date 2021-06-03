@@ -2,8 +2,8 @@ verify: compliance_optional: check: deterministic: ok
 verify: compliance_optional: check: illegal: ok
 verify: compliance_optional: check: deadlock: ok
 verify: compliance_optional: check: compliance: fail
+model: compliance_optional
 w.howdy
-h.goodbye
 <compliance>
 verify: compliance_optional: check: livelock: ok
 verify: ihello: check: deadlock: ok

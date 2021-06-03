@@ -2,8 +2,8 @@ verify: compliance_single_to_multiple: check: deterministic: ok
 verify: compliance_single_to_multiple: check: illegal: ok
 verify: compliance_single_to_multiple: check: deadlock: ok
 verify: compliance_single_to_multiple: check: compliance: fail
+model: compliance_single_to_multiple
 w.world
-h.world
 h.world
 <compliance>
 verify: compliance_single_to_multiple: check: livelock: ok

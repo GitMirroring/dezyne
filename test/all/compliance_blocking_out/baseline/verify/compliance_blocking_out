@@ -2,8 +2,8 @@ verify: compliance_blocking_out: check: deterministic: ok
 verify: compliance_blocking_out: check: illegal: ok
 verify: compliance_blocking_out: check: deadlock: ok
 verify: compliance_blocking_out: check: compliance: fail
+model: compliance_blocking_out
 h.hello
-h.planet
 <compliance>
 verify: compliance_blocking_out: check: livelock: ok
 verify: ihello: check: deadlock: ok

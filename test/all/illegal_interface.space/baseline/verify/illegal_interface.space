@@ -1,4 +1,5 @@
 verify: illegal_interface.space: check: deadlock: fail
+model: illegal_interface.space
 hello
 return
 <deadlock>

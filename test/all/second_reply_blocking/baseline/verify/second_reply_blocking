@@ -5,6 +5,7 @@ verify: II: check: livelock: ok
 verify: second_reply_blocking: check: deterministic: ok
 verify: second_reply_blocking: check: illegal: ok
 verify: second_reply_blocking: check: deadlock: fail
+model: second_reply_blocking
 p.e
 r.e
 r.return

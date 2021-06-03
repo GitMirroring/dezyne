@@ -5,6 +5,7 @@ verify: II: check: livelock: ok
 verify: range_declaration: check: deterministic: ok
 verify: range_declaration: check: illegal: ok
 verify: range_declaration: check: deadlock: fail
+model: range_declaration
 p.e
 <range-error>
 verify: range_declaration: check: compliance: skip

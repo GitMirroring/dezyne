@@ -4,6 +4,7 @@ verify: IAsync2: check: deadlock: ok
 verify: IAsync2: check: livelock: ok
 verify: illegal_async_silent: check: deterministic: ok
 verify: illegal_async_silent: check: illegal: fail
+model: illegal_async_silent
 p.e
 r.e
 r.return

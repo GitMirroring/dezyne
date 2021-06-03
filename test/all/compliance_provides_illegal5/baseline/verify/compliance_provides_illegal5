@@ -1,5 +1,6 @@
 verify: compliance_provides_illegal5: check: deterministic: ok
 verify: compliance_provides_illegal5: check: illegal: fail
+model: compliance_provides_illegal5
 h.hello
 w.hello
 w.world

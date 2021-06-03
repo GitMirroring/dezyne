@@ -2,8 +2,8 @@ verify: compliance_provides_int: check: deterministic: ok
 verify: compliance_provides_int: check: illegal: ok
 verify: compliance_provides_int: check: deadlock: ok
 verify: compliance_provides_int: check: compliance: fail
+model: compliance_provides_int
 p.hello
-p.0
 <compliance>
 verify: compliance_provides_int: check: livelock: ok
 verify: iint: check: deadlock: ok

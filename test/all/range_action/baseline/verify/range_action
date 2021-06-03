@@ -5,6 +5,7 @@ verify: II: check: livelock: ok
 verify: range_action: check: deterministic: ok
 verify: range_action: check: illegal: ok
 verify: range_action: check: deadlock: fail
+model: range_action
 p.e
 r.e
 r.12

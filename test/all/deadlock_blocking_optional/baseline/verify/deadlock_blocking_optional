@@ -5,6 +5,7 @@ verify: II: check: livelock: ok
 verify: deadlock_blocking_optional: check: deterministic: ok
 verify: deadlock_blocking_optional: check: illegal: ok
 verify: deadlock_blocking_optional: check: deadlock: fail
+model: deadlock_blocking_optional
 p.e
 r.e
 r.return

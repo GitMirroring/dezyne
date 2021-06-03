@@ -5,6 +5,7 @@ verify: II: check: livelock: ok
 verify: range_expression: check: deterministic: ok
 verify: range_expression: check: illegal: ok
 verify: range_expression: check: deadlock: fail
+model: range_expression
 p.e
 r.e
 r.return

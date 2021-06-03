@@ -1,5 +1,6 @@
 verify: compliance_requires_illegal: check: deterministic: ok
 verify: compliance_requires_illegal: check: illegal: fail
+model: compliance_requires_illegal
 h.hello
 w.cruel
 <illegal>

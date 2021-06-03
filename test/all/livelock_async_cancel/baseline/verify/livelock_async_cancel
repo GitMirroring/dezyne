@@ -5,6 +5,7 @@ verify: livelock_async_cancel: check: illegal: ok
 verify: livelock_async_cancel: check: deadlock: ok
 verify: livelock_async_cancel: check: compliance: ok
 verify: livelock_async_cancel: check: livelock: fail
+model: livelock_async_cancel
 p.e
 p.return
 <livelock>

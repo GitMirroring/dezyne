@@ -1,6 +1,7 @@
 verify: deadlock_implicit: check: deterministic: ok
 verify: deadlock_implicit: check: illegal: ok
 verify: deadlock_implicit: check: deadlock: fail
+model: deadlock_implicit
 <deadlock>
 verify: deadlock_implicit: check: compliance: skip
 verify: deadlock_implicit: check: livelock: ok

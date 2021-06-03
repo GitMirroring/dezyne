@@ -1,4 +1,5 @@
 verify: range_function: check: deadlock: fail
+model: range_function
 e
 <range-error>
 verify: range_function: check: livelock: ok

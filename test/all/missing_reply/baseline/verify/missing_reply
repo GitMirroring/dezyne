@@ -3,6 +3,7 @@ verify: ihello: check: livelock: ok
 verify: missing_reply: check: deterministic: ok
 verify: missing_reply: check: illegal: ok
 verify: missing_reply: check: deadlock: fail
+model: missing_reply
 h.hello
 <missing-reply>
 verify: missing_reply: check: compliance: skip

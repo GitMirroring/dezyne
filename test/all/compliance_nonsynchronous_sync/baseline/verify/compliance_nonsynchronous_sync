@@ -2,11 +2,11 @@ verify: compliance_nonsynchronous_sync: check: deterministic: ok
 verify: compliance_nonsynchronous_sync: check: illegal: ok
 verify: compliance_nonsynchronous_sync: check: deadlock: ok
 verify: compliance_nonsynchronous_sync: check: compliance: fail
+model: compliance_nonsynchronous_sync
 h.hello
 w.hello
 w.world
 w.return
-h.world
 <compliance>
 verify: compliance_nonsynchronous_sync: check: livelock: ok
 verify: ihello: check: deadlock: ok

@@ -5,6 +5,7 @@ verify: livelock_async: check: illegal: ok
 verify: livelock_async: check: deadlock: ok
 verify: livelock_async: check: compliance: ok
 verify: livelock_async: check: livelock: fail
+model: livelock_async
 h.hello
 h.return
 <livelock>

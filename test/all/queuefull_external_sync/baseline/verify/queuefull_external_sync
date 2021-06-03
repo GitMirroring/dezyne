@@ -5,6 +5,7 @@ verify: iworld: check: livelock: ok
 verify: queuefull_external_sync: check: deterministic: ok
 verify: queuefull_external_sync: check: illegal: ok
 verify: queuefull_external_sync: check: deadlock: fail
+model: queuefull_external_sync
 h.hello
 w.hello
 w.return

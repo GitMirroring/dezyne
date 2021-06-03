@@ -451,6 +451,7 @@ init for MODEL unless INIT."
          (format #t "verify: ~a: check: ~a: fail\n" model-name assert))
        (format (current-error-port) "error: ~a\n" message)
        (unless (string-null? trace)
+         (format #t "model: ~a\n" model-name)
          (format #t "~a\n" trace))
        #t))))
 

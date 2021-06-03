@@ -2,6 +2,7 @@ verify: compliance_implicit_illegal: check: deterministic: ok
 verify: compliance_implicit_illegal: check: illegal: ok
 verify: compliance_implicit_illegal: check: deadlock: ok
 verify: compliance_implicit_illegal: check: compliance: fail
+model: compliance_implicit_illegal
 h.hello
 <compliance>
 verify: compliance_implicit_illegal: check: livelock: ok

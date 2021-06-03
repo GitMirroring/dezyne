@@ -2,7 +2,7 @@ verify: compliance_out_two: check: deterministic: ok
 verify: compliance_out_two: check: illegal: ok
 verify: compliance_out_two: check: deadlock: ok
 verify: compliance_out_two: check: compliance: fail
-h.hello
+model: compliance_out_two
 <compliance>
 verify: compliance_out_two: check: livelock: ok
 verify: ihello: check: deadlock: ok

@@ -2,6 +2,7 @@ verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok
 verify: illegal_requires: check: deterministic: ok
 verify: illegal_requires: check: illegal: fail
+model: illegal_requires
 h.hello
 w.world
 <illegal>

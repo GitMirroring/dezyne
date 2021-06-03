@@ -1,4 +1,5 @@
 verify: determinism_async: check: deterministic: fail
+model: determinism_async
 h.hello
 h.return
 <deterministic>

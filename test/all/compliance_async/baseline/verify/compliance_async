@@ -4,6 +4,7 @@ verify: compliance_async: check: deterministic: ok
 verify: compliance_async: check: illegal: ok
 verify: compliance_async: check: deadlock: ok
 verify: compliance_async: check: compliance: fail
+model: compliance_async
 p.e
 p.return
 p.cb

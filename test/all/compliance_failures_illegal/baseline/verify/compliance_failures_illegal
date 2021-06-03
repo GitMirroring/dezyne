@@ -2,6 +2,7 @@ verify: compliance_failures_illegal: check: deterministic: ok
 verify: compliance_failures_illegal: check: illegal: ok
 verify: compliance_failures_illegal: check: deadlock: ok
 verify: compliance_failures_illegal: check: compliance: fail
+model: compliance_failures_illegal
 h.hello
 w.hello
 w.return
@@ -9,7 +10,6 @@ h.return
 h.hello
 w.hello
 w.return
-h.return
 <compliance>
 verify: compliance_failures_illegal: check: livelock: ok
 verify: ihello: check: deadlock: ok

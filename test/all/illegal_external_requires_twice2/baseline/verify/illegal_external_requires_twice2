@@ -4,6 +4,7 @@ verify: J: check: deadlock: ok
 verify: J: check: livelock: ok
 verify: illegal_external_requires_twice2: check: deterministic: ok
 verify: illegal_external_requires_twice2: check: illegal: fail
+model: illegal_external_requires_twice2
 p.e
 q.e
 q.return

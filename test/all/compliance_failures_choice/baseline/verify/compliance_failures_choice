@@ -2,11 +2,11 @@ verify: compliance_failures_choice: check: deterministic: ok
 verify: compliance_failures_choice: check: illegal: ok
 verify: compliance_failures_choice: check: deadlock: ok
 verify: compliance_failures_choice: check: compliance: fail
+model: compliance_failures_choice
 h.hello
 w.hello
 w.return
 h.return
-h.hello
 <compliance>
 verify: compliance_failures_choice: check: livelock: ok
 verify: ihello: check: deadlock: ok
