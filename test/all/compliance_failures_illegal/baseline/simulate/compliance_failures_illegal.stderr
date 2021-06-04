@@ -1,0 +1,2 @@
+test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:59:3: error: non-compliance
+test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:59:3: error: component refusal: h.hello h.<illegal>
