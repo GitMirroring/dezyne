@@ -3,6 +3,7 @@
 // Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2020 Rob Wieringa <rob.wieringa@verum.com>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -30,28 +31,20 @@ interface ihello
 
   behaviour
   {
-    bool b = false;
-
-    [!b] on hello: b = true;
-    [b] on hello: {}
-    [b] on inevitable: {b = false; world;}
+    on hello: {}
+    on inevitable: world;
   }
 }
 
 interface iworld
 {
   in void hello();
-  in void goodbye();
   out void world();
 
   behaviour
   {
-    bool b = false;
-
-    [!b] on hello: b = true;
-    [b] on hello: illegal;
-    on goodbye: {}
-    [b] on optional: {b = false; world;}
+    on hello: {}
+    on optional: world;
   }
 }
 
@@ -62,17 +55,7 @@ component compliance_out_inevitable
 
   behaviour
   {
-    bool b = false;
-
-    [!b] on h.hello(): {b = true; w.hello();}
-    [b] on h.hello(): {}
+    on h.hello(): w.hello();
     on w.world(): h.world();
   }
 }
-
-
-// Expect complhellonce fail:
-// Spec ihello allows
-// <hello, return, world>
-// Impl complhellonce_out_inevitable performs:
-// <h.hello, w.hello, w.return, h.return, h.hello>

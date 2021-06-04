@@ -1,3 +1,2 @@
-test/all/compliance_out_inevitable/compliance_out_inevitable.dzn:37:36: error: non-compliance
-test/all/compliance_out_inevitable/compliance_out_inevitable.dzn:37:36: component accept: -
-test/all/compliance_out_inevitable/compliance_out_inevitable.dzn:37:36:      port accept: world
+test/all/compliance_out_inevitable/compliance_out_inevitable.dzn:56:3: error: non-compliance
+test/all/compliance_out_inevitable/compliance_out_inevitable.dzn:56:3: error: component refusal: h.world
