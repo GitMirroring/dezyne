@@ -42,7 +42,7 @@ interface List
   }
 }
 
-component livelock_component2
+component livelock_iterator
 {
   provides Iterate iter;
   requires List list;

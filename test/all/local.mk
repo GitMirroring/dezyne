@@ -248,7 +248,7 @@ REGRESSION_TESTS =				\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/label_instance_mismatch			\
- %D%/livelock_component2			\
+ %D%/livelock_iterator				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
  %D%/livelock_synchronous2			\
@@ -416,7 +416,6 @@ XFAIL_TESTS =					\
  %D%/foreign_conflict				\
  %D%/import_strip_component			\
  %D%/illegal_async_silent			\
- %D%/livelock_component2			\
  %D%/livelock_synchronous			\
  %D%/livelock_synchronous2			\
  %D%/parse_interface_parens
