@@ -62,6 +62,7 @@
             <postponed-match-error>
             <queue-full-error>
             <range-error>
+            <refusals-error>
             <second-reply-error>
 
             .async
@@ -75,6 +76,7 @@
             .port-acceptance
             .previous
             .q
+            .refusals
             .released
             .reply
             .return
@@ -165,6 +167,9 @@
 (define-ast <range-error> (<error>)
   (variable)
   (value))
+
+(define-ast <refusals-error> (<error>)
+  (refusals))
 
 (define-ast <second-reply-error> (<error>)
   (previous))

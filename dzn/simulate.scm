@@ -46,6 +46,7 @@
   #:use-module (dzn vm run)
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
+  #:use-module (dzn explore)
   #:export (repl
             simulate))
 
@@ -283,6 +284,16 @@
                  event-traces-alist)))
     (map car eligible-traces)))
 
+(define (optional-trace? trace)
+  (let* ((requires-on (filter
+                       (conjoin (compose (conjoin (is? <runtime:port>)
+                                                  ast:requires?)
+                                         .instance)
+                                (compose (is? <on>) .statement))
+                       trace))
+         (triggers (map .trigger requires-on)))
+    (find ast:optional? triggers)))
+
 (define-method (check-deadlock (pc <program-counter>) event-traces-alist event)
   (define (mark-deadlock pc)
     (let* ((error (.status pc))
@@ -291,15 +302,6 @@
                       (.behaviour model)))))
       (if (and error (not (is-a? error <implicit-illegal-error>))) pc
           (clone pc #:status (make <deadlock-error> #:ast ast #:message "deadlock")))))
-  (define (optional-trace? trace)
-    (let* ((requires-on (filter
-                         (conjoin (compose (conjoin (is? <runtime:port>)
-                                                    ast:requires?)
-                                           .instance)
-                                  (compose (is? <on>) .statement))
-                         trace))
-           (triggers (map .trigger requires-on)))
-      (find ast:optional? triggers)))
   (let ((event-traces-alist
          (map (match-lambda
                 ((event traces ...)
@@ -356,16 +358,35 @@
               (trace (cons pc (cdr pc+blocked-trace))))
          (list trace))))))
 
-(define* (run-trail trail #:key deadlock-check? locations? state? trace verbose?)
-  "Run TRAIL on (%SUT) and produce a trace on STDOUT."
-  (define (trail-input pc)
-    (let ((trail (.trail pc)))
-      (if (null? trail) (values #f pc)
-          (let* ((event (car trail))
-                 (trail (cdr trail)))
-            (%debug "  pop trail ~s ~s\n" event trail)
-            (values event (clone pc #:trail trail))))))
-  (define (deadlock-report pc traces)
+(define ((rtc-lts->traces pc->state-number) lts)
+  "Create a set of traces from LTS."
+  (let ((from 1))
+    (match (hash-ref lts from)
+      ((pc traces ...)
+       (let loop ((seen (list from)) (traces traces))
+         (define (to-seen? trace)
+           (let ((to (pc->state-number (car trace))))
+             (member to seen)))
+         (let* ((tos (map (compose pc->state-number car) traces))
+                (done todo (partition to-seen? traces)))
+           (define (extend trace)
+             (let* ((pc (car trace))
+                    (from (pc->state-number pc)))
+               (match (hash-ref lts from)
+                 ((pc traces ...)
+                  (map (cute append <> trace) (loop (cons from seen) traces)))
+                 (#f
+                  (list trace)))))
+           (append done
+                   (append-map extend todo))))))))
+
+(define* (end-report from-pcs list-of-traces #:key deadlock-check?
+                     refusals-check? state? trace locations? verbose?)
+  "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
+refusals-check.  Run final REPORT and return exit status."
+
+  (define* (deadlock-report pc traces)
+    "Run check-deadlock and report.  Return exit status."
     (let ((event pc ((%next-input) pc)))
       (let* ((event-traces-alist (event-traces-alist pc))
              (eligible (eligible-labels pc event-traces-alist))
@@ -389,28 +410,165 @@
                           (report traces
                                   #:locations? locations?
                                   #:trace trace
-                                  #:verbose? verbose?))))
-        (if (is-a? status <error>) status
-            (report (or deadlock-traces traces)
-                    #:eligible eligible
-                    #:locations? locations?
-                    #:trace trace
-                    #:verbose? verbose?)))))
-  (define (end-report from-pcs list-of-traces)
-    (let ((traces (apply append list-of-traces))
-          (deadlock-check? (and deadlock-check?
-                                (not (is-a? (%sut) <runtime:system>)))))
-      (cond
-       ((and deadlock-check? (null? traces))
-        (any (cute deadlock-report <> '()) from-pcs))
-       (deadlock-check?
-        (any deadlock-report from-pcs list-of-traces))
-       (else
+                                  #:verbose? verbose?)))
+             (status (cond ((is-a? status <error>)
+                            status)
+                           (deadlock-traces
+                            (report deadlock-traces
+                                    #:eligible eligible
+                                    #:locations? locations?
+                                    #:trace trace
+                                    #:verbose? verbose?))
+                           (else
+                            #f))))
+        (and (is-a? status <error>)
+             status))))
+
+  (define (refusals-report from-pcs pc traces)
+    "Run check-refusals and report.  Return exit status."
+
+    (define (trace->string-trail trace)
+      (let ((trail (map cdr (trace->trail trace))))
+        (define (strip-sut-prefix o)
+          (if (string-prefix? "sut." o) (substring o 4) o))
+        (map strip-sut-prefix trail)))
+
+    (define (optional-port-trace? trace)
+      (let* ((requires-on (filter (compose (is? <on>) .statement) trace))
+             (triggers (map .trigger requires-on)))
+        (find ast:optional? triggers)))
+
+    (define ((filter-provides port-name) trail)
+      (let ((port-prefix (format #f "~a." port-name)))
+        (filter (disjoin (cut equal? <> "<illegal>")
+                         (cut string-prefix? port-prefix <>))
+                trail)))
+    (define (trail->events trail)
+      (map (compose last (cut string-split <> #\.)) trail))
+
+    (define ((prepend-port port-name) trail)
+      (map (cute string-append port-name "." <>) trail))
+
+    (define blocked?
+      (compose pair? .blocked car))
+
+    (define (optional->inevitable trail)
+      (match trail
+        (("optional" rest ...) (cons "inevitable" rest))
+        (_ trail)))
+
+    (define (remove-inevitable trail)
+      (filter (negate (cute equal? <> "inevitable")) trail))
+
+    (define (inevitable-trail? trail)
+      (match trail
+        (("inevitable" rest ...) #t)
+        (_ #f)))
+
+    (define (optional-trail? trail)
+      (match trail
+        (("optional" rest ...) #t)
+        (_ #f)))
+
+    (let* ((component (.type (.ast (%sut))))
+           (component-lts pc->state-number count
+                          (parameterize ((%exploring? #t))
+                            (pc->rtc-lts pc
+                                         #:trace-done? (conjoin did-provides-out? (negate blocked?)))))
+           (component-traces ((rtc-lts->traces pc->state-number) component-lts))
+           (component-traces (filter (negate optional-trace?) component-traces)))
+
+      (define (check-refusals provides)
+
+        (define (pc->provides-traces r:provides pc)
+          (let ((provides-lts pc->state-number count
+                              (parameterize ((%sut r:provides)
+                                             (%exploring? #t))
+                                (pc->rtc-lts pc))))
+            ((rtc-lts->traces pc->state-number) provides-lts)))
+
+        (let* ((r:provides (runtime:port (%sut) provides))
+               (r:provides (runtime:other-port r:provides))
+               (provides-traces (append-map (cute pc->provides-traces r:provides <>) from-pcs))
+               (provides-trails (parameterize ((%sut r:provides)
+                                               (%modeling? #t))
+                                  (map trace->string-trail provides-traces)))
+               (provides-trails (filter pair? provides-trails))
+               (inevitable-trails? (find inevitable-trail? provides-trails))
+               (provides-trails (if inevitable-trails? (map optional->inevitable provides-trails)
+                                    (filter (negate optional-trail?) provides-trails)))
+               (provides-trails (delete-duplicates provides-trails equal?))
+               (triggers (map car provides-trails))
+               (unique-triggers (delete-duplicates triggers equal?))
+               (non-deterministic-triggers (lset-difference eq? triggers unique-triggers))
+               (provides-trails (filter (compose not
+                                                 (cute member <> non-deterministic-triggers)
+                                                 car)
+                                        provides-trails))
+               (provides-trails (map remove-inevitable provides-trails))
+               (port-name (.name provides))
+               (component-trails (map trace->string-trail component-traces))
+               (component-trails (map (filter-provides port-name) component-trails))
+               (component-events (map trail->events component-trails))
+               (refusals (lset-difference equal? provides-trails component-events))
+               (refusals (map (prepend-port port-name) refusals)))
+          (and (pair? refusals) refusals)))
+
+      (let* ((ports (ast:provides-port* component))
+             (refusals (any check-refusals ports)))
+
+        (define (mark-refusals pc)
+          (clone pc #:status (make <refusals-error>
+                               #:ast (.behaviour component)
+                               #:message "compliance"
+                               #:refusals refusals)))
+
+        (and (pair? refusals)
+             (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
+               (report traces
+                       #:locations? locations?
+                       #:state? state?
+                       #:trace trace
+                       #:verbose? verbose?))))))
+
+  (let* ((traces (apply append list-of-traces))
+         (deadlock-check? (and deadlock-check?
+                               (not (is-a? (%sut) <runtime:system>))))
+         (status (any (compose
+                       (conjoin .status
+                                (negate (is-status? <end-of-trail>)))
+                       car)
+                      traces))
+         (refusals-check? (and refusals-check?
+                               (not status)
+                               (is-a? (%sut) <runtime:component>))))
+    (or (and deadlock-check? (null? traces)
+             (any (cute deadlock-report <> '()) from-pcs))
+        (and deadlock-check? (pair? traces)
+             (any deadlock-report from-pcs list-of-traces))
+        (and refusals-check? (null? traces)
+             (any (cute refusals-report from-pcs <> '()) from-pcs))
+        (and refusals-check? (pair? traces)
+             (any (cute refusals-report from-pcs <> <>) from-pcs list-of-traces))
         (report traces
                 #:eligible (labels)
                 #:locations? locations?
+                #:state? state?
                 #:trace trace
-                #:verbose? verbose?)))))
+                #:verbose? verbose?))))
+
+(define* (run-trail trail #:key deadlock-check? refusals-check? locations?
+                    state? trace verbose?)
+  "Run TRAIL on (%SUT) and produce a trace on STDOUT."
+
+  (define (trail-input pc)
+    (let ((trail (.trail pc)))
+      (if (null? trail) (values #f pc)
+          (let* ((event (car trail))
+                 (trail (cdr trail)))
+            (%debug "  pop trail ~s ~s\n" event trail)
+            (values event (clone pc #:trail trail))))))
+
   (let ((pc (make-pc #:trail trail)))
     (when (equal? trace "trace")
       (serialize-header (.state pc) (current-output-port))
@@ -432,7 +590,13 @@
                      (blocked non-blocked (partition (compose pair? .blocked car)
                                                      valid-traces)))
                 (cond ((null? valid-traces)
-                       (end-report from-pcs list-of-traces))
+                       (end-report from-pcs list-of-traces
+                                   #:deadlock-check? deadlock-check?
+                                   #:refusals-check? refusals-check?
+                                   #:state? state?
+                                   #:trace trace
+                                   #:locations? locations?
+                                   #:verbose? verbose?))
                       ((pair? blocked)
                        (loop blocked))
                       ((pair? non-blocked)
@@ -527,11 +691,12 @@
     (%next-input read-input)
     (%pc)))
 
-(define* (simulate* root trail #:key deadlock-check? model-name queue-size
-                    strict? trace locations? state? verbose?)
+(define* (simulate* root trail #:key deadlock-check? refusals-check? model-name
+                    queue-size strict? trace locations? state? verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  When STRICT?, the trail must include all observable
-events.  When deadlock-check?, run check-deadlock at the end."
+events.  When DEADLOCK-CHECK?, run check-deadlock at the end, when
+REFUSALS-CHECK?, run refusals-check at the end."
   (let ((root (vm:normalize root)))
     (when (> (dzn:debugity) 0)
       (set! %debug? #t))
@@ -542,17 +707,18 @@ events.  When deadlock-check?, run check-deadlock at the end."
       (parameterize ((%instances (runtime:system* (%sut))))
         (run-trail trail
                    #:deadlock-check? deadlock-check?
+                   #:refusals-check? refusals-check?
                    #:locations? locations?
                    #:trace trace
                    #:state? state?
                    #:verbose? verbose?)))))
 
-(define* (simulate root #:key deadlock-check? model-name queue-size strict?
-                   trace trail locations? state? verbose?)
+(define* (simulate root #:key deadlock-check? refusals-check? model-name
+                   queue-size strict? trace trail locations? state? verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  When STRICT?, the trail must
-include all observable events.  When deadlock-check?, run check-deadlock
-at the end."
+include all observable events.  When DEADLOCK-CHECK?, run check-deadlock
+at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
   (let* ((scm-trail (and=> (or trail
                                (and (not (isatty? (current-input-port)))
                                     (input-port? (current-input-port))
@@ -562,6 +728,7 @@ at the end."
          (scm-trail (if (and trail (null? scm-trail)) '(#f) scm-trail)))
     (simulate* root scm-trail
                #:deadlock-check? deadlock-check?
+               #:refusals-check? refusals-check?
                #:model-name model-name
                #:queue-size queue-size
                #:strict? strict?

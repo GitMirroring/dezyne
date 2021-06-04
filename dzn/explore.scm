@@ -42,6 +42,8 @@
   #:use-module (dzn vm run)
   #:use-module (dzn vm util)
   #:export (lts
+            pc->rtc-lts
+            pc->state-number
             state-diagram))
 
 ;;; Commentary:
@@ -90,10 +92,11 @@
           (set-car! count (1+ (car count)))
           n))))
 
-(define (pc->rtc-lts pc)
+(define* (pc->rtc-lts pc #:key (trace-done? (const #f)))
   "Explore the state space of (%SUT).  Start by running all (labels) on
-PC, and recurse until no new PCs are found.  Return a run-to-completion
-LTS
+PC, and recurse until no new, valid PCs are found.  A PC with STATUS set
+ends the recursion, and a PC for which TRACE-DONE? holds, ends the
+recursion.  Return a run-to-completion LTS
 
    ((pc-hash . (pc . traces))
     ...)
@@ -119,7 +122,9 @@ LTS
                  (pcs (map car traces)))
             (map pc->state-number pcs)
             (hash-set! lts from (cons pc traces))
-            (for-each loop pcs)))))
+            (let* ((traces (filter (negate trace-done?) traces))
+                   (pcs (map car traces)))
+              (for-each loop pcs))))))
     (when (= (car state-number-count) 1)
       (hash-set! lts 1 (cons pc (list (list pc)))))
     (values lts pc->state-number state-number-count)))

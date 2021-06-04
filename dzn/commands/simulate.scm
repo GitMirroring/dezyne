@@ -44,6 +44,7 @@
             (locations (single-char #\l))
             (model (single-char #\m) (value #t))
             (no-deadlock (single-char #\D))
+            (no-refusals (single-char #\R))
             (queue-size (single-char #\q) (value #t))
             (state (single-char #\s))
             (strict (single-char #\s))
@@ -60,6 +61,7 @@ Usage: dzn simulate [OPTION]... [FILE]...
 Simulate a Dezyne model
 
   -D, --no-deadlock      skip the deadlock check
+  -R, --no-refusals      skip the refusals check
   -f, --format=FORMAT    display trace in format FORMAT [event] {event,trace}
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
@@ -86,6 +88,7 @@ Simulate a Dezyne model
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
          (no-deadlock? (option-ref options 'no-deadlock #f))
+         (no-refusals? (option-ref options 'no-refusals #f))
          (queue-size (command-line:get 'queue-size 3))
          (state? (command-line:get 'state #f))
          (strict? (command-line:get 'strict #f))
@@ -96,6 +99,7 @@ Simulate a Dezyne model
          (status (simulate ast
                            #:model-name model-name
                            #:deadlock-check? (not no-deadlock?)
+                           #:refusals-check? (not no-refusals?)
                            #:locations? locations?
                            #:queue-size queue-size
                            #:state? state?

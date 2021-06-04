@@ -39,7 +39,8 @@
   #:use-module (dzn vm goops)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
-  #:export (display-trace-n
+  #:export (%modeling?
+            display-trace-n
             display-trails
             label->string
             step->location
@@ -49,6 +50,9 @@
 ;;;
 ;;; Trail (a.k.a. events, named event trace)
 ;;;
+
+;; Show modeling events on trail?
+(define %modeling? (make-parameter #F))
 
 (define (display-trails traces)
   (when (pair? traces)
@@ -82,7 +86,8 @@
 
 (define-method (pc-event? (o <runtime:port>) (trigger <trigger>))
   (and (eq? o (%sut))
-       (not (ast:modeling? trigger))))
+       (or (%modeling?)
+           (not (ast:modeling? trigger)))))
 
 (define-method (pc-event? (o <runtime:component>) (trigger <trigger>))
   (let ((port (.port trigger)))
@@ -600,6 +605,10 @@ intermediate steps such as assignments, function calls, replies,
                                                 port-acceptance))
                             "<unknown-file>:")))
          (format #f "~aerror: non-compliance\n" location)))
+      (($ <refusals-error>)
+       (let ((location (or (and=> (.ast status) step->location)
+                           "<unknown-file>:")))
+         (format #f "~aerror: non-compliance\n" location)))
       ((and (? (is? <determinism-error>)))
        (let ((locations (map (lambda (pc)
                                (or (step->location (.ast (.status pc)))
@@ -655,7 +664,8 @@ intermediate steps such as assignments, function calls, replies,
                             "<unknown-file>:"))
               (acceptance (if component-acceptance (trigger->string component-acceptance)
                               "-"))
-              (port-name (string-join (runtime:instance->path (.port status)) "."))
+              (port (.port status))
+              (port-name (and port (string-join (runtime:instance->path port) ".")))
               (component-name (string-join (runtime:instance->path (or (.instance (car pcs)) (%sut))) ".")))
          (string-join
           (cons*
@@ -668,6 +678,16 @@ intermediate steps such as assignments, function calls, replies,
                          (location (step->location ast)))
                     (format #f "~a     port accept: ~a\n"  location "none"))))
             (ast:acceptance* status)))
+          "")))
+      (($ <refusals-error>)
+       (let ((refusals (sort (.refusals status) equal?))
+             (location (or (and=> (.ast status) step->location)
+                           "<unknown-file>:")))
+         (string-join
+          (map (compose
+                (cute format #f "~aerror: component refusal: ~a\n" location <>)
+                string-join)
+               refusals)
           "")))
       (($ <range-error>)
        (let* ((variable (.variable status))

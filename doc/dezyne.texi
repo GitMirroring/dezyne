@@ -4926,6 +4926,10 @@ The @var{option}s can be among the following:
 @itemx -D
 Do not run the deadlock check.
 
+@item --no-refusals
+@itemx -R
+Do not run the compliance check for the failures model refusals check.
+
 @item --format=@var{format}
 @itemx -f @var{format}
 Print trace in format @var{format}; one of @code{event}, @code{trace}.
