@@ -43,7 +43,6 @@
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn pipe)
-  #:use-module (json)
 
   #:export (verification:formats
             verification:partial
@@ -57,7 +56,7 @@
 ;;;
 ;;; Starting point is from dzn code -l makreel, (dzn code makreel),
 ;;; the verification pipeline consists of mCRL2 commands and dzn lts.
-;;; The result is reported in plain text or JSON.
+;;; The result is reported in plain text.
 
 ;;; Code:
 
@@ -406,22 +405,13 @@ init for MODEL unless INIT."
 
 (define (report-ok model-type model-name assert info)
   (let ((verbose? (dzn:command-line:get 'verbose)))
-    (match info
-      ((states transitions)
-       (if (not (dzn:command-line:get 'json))
-           (when verbose?
-             (format #t "verify: ~a: check: ~a: ok\n" model-name assert))
-           (format #t "~a\n"
-                   (scm->json-string `((model . ,model-name)
-                                       (type . ,model-type)
-                                       (assert . ,assert)
-                                       (status . done)
-                                       (result . ok)
-                                       (states . ,states)
-                                       (transitions . ,transitions)))))))
+    (when (dzn:command-line:get 'verbose)
+      (match info
+        ((states transitions)
+         (format #t "verify: ~a: check: ~a: ok\n" model-name assert))))
     #f))
 
-(define (report-fail model-type model-name assert info trace interface-trace)
+(define (report-fail model-type model-name assert info trace)
   (define (remove-flushes trace)
     (filter (negate (cut string-contains <> "<flush>")) trace))
   (define (drop-queue-full-tail trace)
@@ -456,46 +446,22 @@ init for MODEL unless INIT."
                        (append trace (list (cleanup-error (symbol->string error))))
                        trace))
             (trace (if (eq? error '<queue-full>) (drop-queue-full-tail trace) trace))
-            (trace (string-join trace "\n"))
-            (interface-trace (and interface-trace
-                                  (string-join (remove-flushes (string-split interface-trace #\newline)) "\n"))))
-       (if (dzn:command-line:get 'json)
-           (format #t "~a\n"
-                   (scm->json-string (append
-                                      `((model . ,model-name)
-                                        (type . ,model-type)
-                                        (assert . ,assert)
-                                        (status . done)
-                                        (result . fail)
-                                        (error . ,error)
-                                        (message . ,message)
-                                        (states . ,states)
-                                        (transitions . ,transitions)
-                                        (trace . ,trace))
-                                      (if interface-trace `((interface-trace . ,interface-trace)) `()))))
-           (begin
-             (when (dzn:command-line:get 'verbose)
-               (format #t "verify: ~a: check: ~a: fail\n" model-name assert))
-             (format (current-error-port) "error: ~a\n" message)
-             (unless (string-null? trace)
-               (format #t "~a\n" trace))))
+            (trace (string-join trace "\n")))
+       (when (dzn:command-line:get 'verbose)
+         (format #t "verify: ~a: check: ~a: fail\n" model-name assert))
+       (format (current-error-port) "error: ~a\n" message)
+       (unless (string-null? trace)
+         (format #t "~a\n" trace))
        #t))))
 
 (define (report-skip model-type model-name assert)
-  (if (not (dzn:command-line:get 'json))
-    (when (dzn:command-line:get 'verbose)
-      (format #t "verify: ~a: check: ~a: skip\n" model-name assert))
-    (format #t "~a\n"
-       (scm->json-string `((model . ,model-name)
-                           (type . ,model-type)
-                           (assert . ,assert)
-                           (status . done)
-                           (result . skip)))))
+  (when (dzn:command-line:get 'verbose)
+    (format #t "verify: ~a: check: ~a: skip\n" model-name assert))
   #f)
 
-(define (report assert skip trace interface-trace info model-type model-name)
+(define (report assert skip trace info model-type model-name)
   (cond (skip  (report-skip model-type model-name assert))
-        (trace (report-fail model-type model-name assert info trace interface-trace ))
+        (trace (report-fail model-type model-name assert info trace))
         (else  (report-ok   model-type model-name assert info))))
 
 
@@ -513,8 +479,8 @@ init for MODEL unless INIT."
          (result (result-split result))
          (info (get-info 'deadlock result)))
     (reduce-or (command-line:get 'all)
-               (list (cut report 'deadlock #f (get-trace 'deadlock result) #f info 'interface model-name)
-                     (cut report 'livelock #f (get-trace 'livelock result) #f info 'interface model-name)))))
+               (list (cut report 'deadlock #f (get-trace 'deadlock result) info 'interface model-name)
+                     (cut report 'livelock #f (get-trace 'livelock result) info 'interface model-name)))))
 
 (define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))
@@ -564,7 +530,7 @@ init for MODEL unless INIT."
          (refinement-trace interface-accepts component-accepts
                            (mcrl2:verify-compliance root model)))
     (define (report-assert assert)
-      (report assert #f (get-trace assert result) #f info 'component model-name))
+      (report assert #f (get-trace assert result) info 'component model-name))
     (define (extend-trace trace accepts)
       (if accepts (string-append trace (car accepts) "\n")
           trace))
@@ -575,8 +541,7 @@ init for MODEL unless INIT."
                      (cut report-assert 'livelock)
                      (cut report 'compliance
                           (or (get-trace 'illegal result) (get-trace 'deadlock result))
-                          (extend-trace refinement-trace component-accepts)
-                          (extend-trace refinement-trace interface-accepts)
+                          refinement-trace
                           info 'component model-name)))))
 
 (define (mcrl2:verify-interface root model-name)
