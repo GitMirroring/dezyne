@@ -1,3 +1,2 @@
-test/all/compliance_livelock/compliance_livelock.dzn:30:20: error: non-compliance
-test/all/compliance_livelock/compliance_livelock.dzn:30:20: component accept: -
-test/all/compliance_livelock/compliance_livelock.dzn:30:20:      port accept: cb
+test/all/compliance_livelock/compliance_livelock.dzn:49:3: error: non-compliance
+test/all/compliance_livelock/compliance_livelock.dzn:49:3: error: component refusal: p.cb

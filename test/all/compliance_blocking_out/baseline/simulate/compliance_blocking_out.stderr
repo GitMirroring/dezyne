@@ -1,3 +1,2 @@
-test/all/compliance_blocking_out/compliance_blocking_out.dzn:51:43: error: non-compliance
-test/all/compliance_blocking_out/compliance_blocking_out.dzn:51:43: component accept: h.planet
-test/all/compliance_blocking_out/compliance_blocking_out.dzn:40:15:      port accept: world
+test/all/compliance_blocking_out/compliance_blocking_out.dzn:48:3: error: non-compliance
+test/all/compliance_blocking_out/compliance_blocking_out.dzn:48:3: error: component refusal: h.hello h.world h.return
