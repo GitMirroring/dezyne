@@ -1,0 +1,2 @@
+test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:57:3: error: non-compliance
+test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:57:3: error: component refusal: h.world
