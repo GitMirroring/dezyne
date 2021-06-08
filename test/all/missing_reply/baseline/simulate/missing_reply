@@ -1,3 +1,4 @@
+test/all/missing_reply/missing_reply.dzn:40:5: error: missing-reply: bool reply expected
 h.hello
 h.return
 <missing-reply>

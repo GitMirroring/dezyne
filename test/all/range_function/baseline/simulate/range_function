@@ -1,2 +1,3 @@
+test/all/range_function/range_function.dzn:34:13: error: range-error: invalid value `4' for variable `s'
 e
 <range-error>

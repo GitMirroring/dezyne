@@ -1,3 +1,4 @@
+test/all/illegal_requires2/illegal_requires2.dzn:30:15: error: illegal
 h.hello
 w.hello
 <illegal>

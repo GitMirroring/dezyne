@@ -1,3 +1,4 @@
+test/all/illegal_system_requires/illegal_system_requires.dzn:32:15: error: illegal
 h.hello
 w.cruel
 <illegal>

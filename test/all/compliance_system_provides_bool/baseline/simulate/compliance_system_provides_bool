@@ -1,3 +1,4 @@
+test/all/compliance_system_provides_bool/compliance_system_provides_bool.dzn:39:5: error: non-compliance
 pp.hello
 pp.false
 <compliance>

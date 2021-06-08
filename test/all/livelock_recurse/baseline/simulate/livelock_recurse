@@ -1,2 +1,3 @@
+test/all/livelock_recurse/livelock_recurse.dzn:41:7: error: livelock
 h.hello
 <livelock>

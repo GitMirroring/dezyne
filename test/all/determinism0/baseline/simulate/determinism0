@@ -1,2 +1,4 @@
+test/all/determinism0/determinism0.dzn:38:13: error: non-deterministic
+test/all/determinism0/determinism0.dzn:38:13: error: non-deterministic
 i.e
 <determinism>

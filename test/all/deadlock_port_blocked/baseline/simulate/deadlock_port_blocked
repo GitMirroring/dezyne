@@ -1,2 +1,3 @@
+test/all/deadlock_port_blocked/deadlock_port_blocked.dzn:43:13: error: port `h' is blocked
 h.hello
 <deadlock>

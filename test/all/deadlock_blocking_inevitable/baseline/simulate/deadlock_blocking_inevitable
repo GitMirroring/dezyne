@@ -2,4 +2,5 @@ p.e
 r.e
 r.return
 r.cb
+test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:48:3: error: deadlock
 <deadlock>

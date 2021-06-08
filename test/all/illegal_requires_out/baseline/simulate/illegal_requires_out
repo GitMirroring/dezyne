@@ -1,2 +1,3 @@
+test/all/illegal_requires_out/illegal_requires_out.dzn:44:19: error: illegal
 w.world
 <illegal>

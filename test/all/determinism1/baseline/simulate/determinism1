@@ -1,4 +1,6 @@
 i.e
 i.return
+test/all/determinism1/determinism1.dzn:38:13: error: non-deterministic
+test/all/determinism1/determinism1.dzn:38:13: error: non-deterministic
 i.e
 <determinism>

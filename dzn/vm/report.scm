@@ -772,6 +772,7 @@ intermediate steps such as assignments, function calls, replies,
          (status (and pc (.status pc)))
          (initial-message (and status (initial-error-message traces))))
     (when initial-message
+      (display initial-message)
       (display initial-message (current-error-port)))
 
     ;; XXX TODO: handle set of (non-deterministic) traces.

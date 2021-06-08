@@ -2,6 +2,7 @@ h.hello
 w.hello
 w.return
 h.return
+test/all/illegal_silent/illegal_silent.dzn:56:20: error: illegal
 h.hello
 w.cruel
 <illegal>

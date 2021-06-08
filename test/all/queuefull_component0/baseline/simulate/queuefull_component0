@@ -1,3 +1,4 @@
+test/all/queuefull_component0/queuefull_component0.dzn:33:34: error: queue-full in component "queuefull_component0"
 h.hello
 w.hello
 w.world

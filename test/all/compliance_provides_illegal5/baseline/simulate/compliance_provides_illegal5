@@ -1,3 +1,4 @@
+test/all/compliance_provides_illegal5/compliance_provides_illegal5.dzn:43:20: error: illegal
 h.hello
 w.hello
 w.world

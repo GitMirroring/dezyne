@@ -1,3 +1,4 @@
+test/all/compliance_provides_int/compliance_provides_int.dzn:40:5: error: non-compliance
 p.hello
 p.0
 <compliance>

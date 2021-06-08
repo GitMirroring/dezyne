@@ -2,5 +2,6 @@ p.e
 r.e
 r.return
 p.return
+test/all/range_expression/range_expression.dzn:53:18: error: range-error: invalid value `5' for variable `n'
 p.e
 <range-error>

@@ -10,6 +10,7 @@ h.hello
 w.hello
 w.return
 h.return
+test/all/queuefull_external_sync/queuefull_external_sync.dzn:35:15: error: queue-full in component "iworld"
 h.hello
 w.hello
 <queue-full>

@@ -1,3 +1,4 @@
 e
 return
+test/all/deadlock_interface1/deadlock_interface1.dzn:28:3: error: deadlock
 <deadlock>

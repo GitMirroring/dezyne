@@ -1,6 +1,6 @@
+test/all/compliance_provides_illegal4/compliance_provides_illegal4.dzn:46:20: error: illegal
 h.hello
 w.cruel
 w.world
 w.return
-illegal
-<compliance>
+<illegal>

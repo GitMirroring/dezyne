@@ -2,6 +2,7 @@ p.e
 r.e
 r.return
 p.return
+test/all/illegal_async_silent/illegal_async_silent.dzn:100:11: error: illegal
 r.f
 r.Res_NOK
 <illegal>

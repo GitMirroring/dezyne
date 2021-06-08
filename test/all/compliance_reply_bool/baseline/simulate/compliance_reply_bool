@@ -2,6 +2,7 @@ h.hello
 w.bye
 w.true
 h.true
+test/all/compliance_reply_bool/compliance_reply_bool.dzn:47:10: error: non-compliance
 h.hello
 w.bye
 w.false

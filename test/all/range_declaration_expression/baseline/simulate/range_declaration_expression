@@ -1,2 +1,3 @@
+test/all/range_declaration_expression/range_declaration_expression.dzn:52:18: error: range-error: invalid value `5' for variable `n'
 p.e
 <range-error>

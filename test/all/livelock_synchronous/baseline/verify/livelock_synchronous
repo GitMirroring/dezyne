@@ -7,6 +7,7 @@ verify: livelock_synchronous: check: illegal: ok
 verify: livelock_synchronous: check: deadlock: ok
 verify: livelock_synchronous: check: compliance: ok
 verify: livelock_synchronous: check: livelock: fail
+model: livelock_synchronous
 h.hello
 w.hello
 w.world

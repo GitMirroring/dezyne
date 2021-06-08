@@ -1,4 +1,8 @@
+test/all/livelock_synchronous/livelock_synchronous.dzn:44:5: error: livelock
 h.hello
+w.hello
+w.world
+w.return
 w.hello
 w.world
 w.return

@@ -2,5 +2,6 @@ h.hello
 w.hello
 w.return
 h.return
+test/all/compliance_external/compliance_external.dzn:43:13: error: illegal
 h.hello
 <illegal>

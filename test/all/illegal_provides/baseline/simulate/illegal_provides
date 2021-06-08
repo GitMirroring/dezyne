@@ -1,2 +1,3 @@
+test/all/illegal_provides/illegal_provides.dzn:41:20: error: illegal
 h.hello
 <illegal>

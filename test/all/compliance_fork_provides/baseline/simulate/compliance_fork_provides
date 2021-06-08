@@ -1,3 +1,4 @@
+test/all/compliance_fork_provides/compliance_fork_provides.dzn:43:25: error: non-compliance
 p_left.hello
 p_right.world
 <compliance>

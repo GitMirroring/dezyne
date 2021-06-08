@@ -1,2 +1,3 @@
+test/all/deadlock_implicit/deadlock_implicit.dzn:38:3: error: deadlock
 h.hello
 <deadlock>

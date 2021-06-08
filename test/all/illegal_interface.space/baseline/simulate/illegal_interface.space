@@ -1,3 +1,4 @@
 hello
 return
+test/all/illegal_interface.space/illegal_interface.space.dzn:28:3: error: deadlock
 <deadlock>

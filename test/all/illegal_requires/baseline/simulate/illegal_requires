@@ -1,3 +1,4 @@
+test/all/illegal_requires/illegal_requires.dzn:31:15: error: illegal
 h.hello
 w.world
 <illegal>

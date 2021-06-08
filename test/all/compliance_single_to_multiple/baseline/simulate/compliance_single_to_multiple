@@ -1,3 +1,4 @@
+test/all/compliance_single_to_multiple/compliance_single_to_multiple.dzn:39:32: error: non-compliance
 w.world
 h.world
 h.world

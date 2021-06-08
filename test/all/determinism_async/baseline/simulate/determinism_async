@@ -1,3 +1,5 @@
 h.hello
 h.return
+test/all/determinism_async/determinism_async.dzn:47:3: error: non-deterministic
+test/all/determinism_async/determinism_async.dzn:47:3: error: non-deterministic
 <determinism>

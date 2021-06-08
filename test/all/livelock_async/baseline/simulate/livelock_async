@@ -2,4 +2,5 @@ h.hello
 h.return
 h.hello
 h.return
+test/all/livelock_async/livelock_async.dzn:39:3: error: livelock
 <livelock>

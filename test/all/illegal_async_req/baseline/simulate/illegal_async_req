@@ -1,4 +1,5 @@
 h.hello
 h.return
+test/all/illegal_async_req/illegal_async_req.dzn:43:20: error: illegal
 h.hello
 <illegal>

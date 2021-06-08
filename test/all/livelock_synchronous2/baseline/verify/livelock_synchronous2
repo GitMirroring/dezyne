@@ -5,6 +5,7 @@ verify: iworld: check: livelock: ok
 verify: livelock_synchronous2: check: deterministic: ok
 verify: livelock_synchronous2: check: illegal: ok
 verify: livelock_synchronous2: check: deadlock: fail
+model: livelock_synchronous2
 h.hello
 w.hello
 w.cruel

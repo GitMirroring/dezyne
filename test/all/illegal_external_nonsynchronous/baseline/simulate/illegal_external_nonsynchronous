@@ -2,5 +2,6 @@ p.e
 r.e
 r.return
 p.return
+test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:66:18: error: illegal
 r.ec
 <illegal>
