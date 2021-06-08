@@ -620,7 +620,8 @@ intermediate steps such as assignments, function calls, replies,
                                (or (step->location (.ast (.status pc)))
                                    "<unknown-file>:"))
                              pcs)))
-         (string-join (map (cut format #f "~aerror: non-deterministic\n" <>) locations) "\n")))
+         (string-join
+          (map (cut format #f "~aerror: non-deterministic\n" <>) locations) "")))
       (($ <queue-full-error>)
        (let* ((model ((compose  ast:dotted-name .type .ast .instance) status))
               (location (or (step->location (.ast status))
