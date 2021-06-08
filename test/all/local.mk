@@ -171,6 +171,7 @@ REGRESSION_TESTS =				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
  %D%/external_requires_twice			\
+ %D%/compliance_fork_provides			\
  %D%/illegal_external				\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
