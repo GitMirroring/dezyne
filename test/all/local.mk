@@ -194,6 +194,7 @@ REGRESSION_TESTS =				\
  %D%/hello_function_local			\
  %D%/hello_function_local_nest			\
  %D%/hellofundata				\
+ %D%/hello_garbage				\
  %D%/hello_guard_two				\
  %D%/hello_ifelse				\
  %D%/hello_ifif					\
