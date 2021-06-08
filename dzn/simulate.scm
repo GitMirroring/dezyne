@@ -378,9 +378,14 @@ of traces, possibly marked with <compliance-error>."
       ((? string?)
        (let* ((pc (clone pc #:instance #f))
               (traces (run-to-completion* pc event))
-              (traces (map (cute append <> pc+blocked-trace) traces)))
-         (if (is-a? (%sut) <runtime:port>) traces
-             (check-provides-compliance* pc event traces))))
+              (traces (map (cute append <> pc+blocked-trace) traces))
+              (traces (if (is-a? (%sut) <runtime:port>) traces
+                          (check-provides-compliance* pc event traces))))
+         (if (pair? traces) traces
+             (let* ((ast (.ast (%sut)))
+                    (model (if (is-a? ast <instance>) (.type ast) ast))
+                    (error (make <match-error> #:message "match" #:ast model #:input event)))
+               (list (list (clone pc #:status error)))))))
       ((? (const (pair? (.async pc))))
        (flush-async pc))
       (_
@@ -579,6 +584,7 @@ refusals-check.  Run final REPORT and return exit status."
                         #:verbose? verbose?)))))))
 
   (let* ((traces (apply append list-of-traces))
+         (traces (filter-match-error traces))
          (deadlock-check? (and deadlock-check?
                                (not (is-a? (%sut) <runtime:system>))))
          (status (any (compose

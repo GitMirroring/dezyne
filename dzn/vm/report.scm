@@ -585,6 +585,8 @@ intermediate steps such as assignments, function calls, replies,
           (string-append port "." "return"))
     ((and ($ <trigger-return>) (= .expression expression) (= .port.name port))
      (string-append port "." (label->string expression)))
+    ((? (is? <model>))
+     #f)
     ((? string?)
      o)
     (#f
@@ -724,11 +726,18 @@ intermediate steps such as assignments, function calls, replies,
               (location (or (step->location (.ast status))
                             "<unknown-file>:")))
          (format #f "~ainfo: reply previously set here\n" (step->location previous))))
+      ((and (? (is? <match-error>)) (= .ast #f))
+       (let ((location "<unknown-file>:"))
+         (format #f "~aerror: no match; got input `~s'\n" location (.input status))))
       ((and (? (is? <match-error>)) (= .ast ast))
        (let ((location (or (step->location ast)
-                           "<unknown-file>:")))
-         (format #f "~aerror: no match; at ast `~s', got input `~s'\n"
-                 location (label->string ast) (.input status))))
+                           "<unknown-file>:"))
+             (label (label->string ast)))
+         (if (not label)
+             (format #f "~aerror: no match; got input `~s'\n"
+                     location (.input status))
+             (format #f "~aerror: no match; at ast `~s', got input `~s'\n"
+                     location (label->string ast) (.input status)))))
       ((and ($ <end-of-trail> ) (and (= .ast ast)))
        (and ast
             (let* ((instance (.instance (car pcs)))

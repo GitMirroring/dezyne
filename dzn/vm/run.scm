@@ -107,11 +107,10 @@
         illegal)))
 
 (define (filter-match-error traces)
-  (let* ((match-error rest (partition
-                            (compose (is-status? <match-error>) car)
-                            traces))
-         (valid? (find trace-valid? rest)))
-    (if (or valid? (null? match-error)) rest
+  (let ((match-error rest (partition
+                           (compose (is-status? <match-error>) car)
+                           traces)))
+    (if (pair? rest) rest
         match-error)))
 
 (define (filter-postponed-match traces)
