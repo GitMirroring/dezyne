@@ -56,6 +56,67 @@
 ;;;
 ;;; Code:
 
+(define (zip trace port-trace)
+  "Merge PORT-TRACE into TRACE, and synthesize corresponding actions and
+returns to support the split-arrow trace format."
+  (define ((action-equal? port-name) a b)
+    (let ((b (.statement b)))
+      (and (is-a? a <action>) (is-a? b <action>)
+           (equal? (.port.name a) port-name)
+           (equal? (.event.name a) (.event.name b)))))
+
+  (define ((return-equal? port-name) a b)
+    (let ((instance (.instance b))
+          (b (.statement b)))
+      (and (is-a? a <trigger-return>) (is-a? b <trigger-return>)
+           (eq? instance port-name))))
+
+  (let* ((port-on (list-index (compose (is? <on>) .statement) port-trace))
+         (trace (append trace (drop port-trace port-on)))
+         (port-trace (take port-trace port-on))
+         (instance (and=> (find (compose (is? <runtime:component>) .instance) trace)
+                          .instance)))
+
+    (let loop ((trace trace) (port-trace port-trace))
+      (if (null? trace) '()
+          (let* ((pc (car trace))
+                 (pc-instance (.instance pc))
+                 (statement (.statement pc)))
+            (cond ((and (not (is-a? (%sut) <runtime:port>))
+                        (is-a? statement <action>)
+                        (is-a? pc-instance <runtime:component>)
+                        (ast:out? statement))
+                   (let* ((port (.port statement))
+                          (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
+                                      (runtime:port pc-instance port)))
+                          (port (.ast r:port))
+                          (port-name (.name port))
+                          (port-action+trace (member statement port-trace (action-equal? port-name))))
+                     (match port-action+trace
+                       ((action-pc tail ...)
+                        (cons* action-pc pc (loop (cdr trace) tail)))
+                       (_
+                        (cons pc (loop (cdr trace) port-trace))))))
+                  ((and (not (is-a? (%sut) <runtime:port>))
+                        (is-a? statement <trigger-return>)
+                        (.port.name statement))
+                   (let* ((port (.port statement))
+                          (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
+                                      (runtime:port pc-instance port)))
+                          (r:other-port (runtime:other-port r:port))
+                          (port-return+trace (member statement port-trace
+                                                     (return-equal? r:other-port))))
+                     (match port-return+trace
+                       ((return-pc tail ...)
+                        (let* ((port-state (get-state return-pc))
+                               (return-pc (clone return-pc #:state (.state pc)))
+                               (return-pc (set-state return-pc port-state)))
+                          (cons* return-pc pc (loop (cdr trace) tail))))
+                       (_
+                        (cons pc (loop (cdr trace) port-trace))))))
+                  (else
+                   (cons pc (loop (cdr trace) port-trace)))))))))
+
 (define (check-provides-fork port trace)
   "Check TRACE for a fork with respect to PORT.  If TRACE contains
 actions to a provides port other than PORT, mark the trace as
@@ -67,33 +128,17 @@ actions to a provides port other than PORT, mark the trace as
              (and action-port
                   (not (ast:eq? action-port port))
                   (ast:provides? action-port))))))
-  (define (run-provides-port port-instance pc event)
-    (%debug "run-provides-port... ~a\n" event)
-    (let ((pc (clone pc #:instance #f #:previous #f #:trail '() #:status #f #:statement #f)))
-      (parameterize ((%sut port-instance)
-                     (%exploring? #t))
-        (run-to-completion pc event))))
-  (%debug "check-provides-fork... ~a\n" (.name port))
   (let* ((trail (trace->trail trace))
          (action-step (list-index action-other-port trace)))
     (and action-step
          (let* ((trace (drop trace action-step))
                 (pc (car trace))
-                (trigger (.trigger pc))
-                (event (trigger->string trigger))
-                (instance (.instance pc))
-                (r:other-port (runtime:port instance port))
-                (r:port (runtime:other-port r:other-port))
-                (port-event (.event.name trigger))
-                (port-traces (run-provides-port r:port pc port-event))
                 (pc (clone pc
                            #:previous #f
                            #:status (make <fork-error>
                                       #:ast (.statement pc)
-                                      #:message "compliance")))
-                (trace (cons pc trace)))
-           (if (null? port-traces) (list trace)
-               (list (zip trace (car port-traces))))))))
+                                      #:message "compliance"))))
+           (list (cons pc trace))))))
 
 (define (check-provides-compliance pc event trace)
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
@@ -177,65 +222,6 @@ of traces, possibly marked with <compliance-error>."
               (and (equal? (and=> (caar a) trigger->string)
                            (and=> (caar b) trigger->string))
                    (equal? (cadr a) (cadr b))))
-
-            (define (zip trace port-trace)
-              (define ((action-equal? port-name) a b)
-                (let ((b (.statement b)))
-                  (and (is-a? a <action>) (is-a? b <action>)
-                       (equal? (.port.name a) port-name)
-                       (equal? (.event.name a) (.event.name b)))))
-
-              (define ((return-equal? port-name) a b)
-                (let ((instance (.instance b))
-                      (b (.statement b)))
-                  (and (is-a? a <trigger-return>) (is-a? b <trigger-return>)
-                       (eq? instance port-name))))
-
-              (let* ((port-on (list-index (compose (is? <on>) .statement) port-trace))
-                     (trace (append trace (drop port-trace port-on)))
-                     (port-trace (take port-trace port-on))
-                     (instance (and=> (find (compose (is? <runtime:component>) .instance) trace)
-                                      .instance)))
-
-                (let loop ((trace trace) (port-trace port-trace))
-                  (if (null? trace) '()
-                      (let* ((pc (car trace))
-                             (pc-instance (.instance pc))
-                             (statement (.statement pc)))
-                        (cond ((and (not (is-a? (%sut) <runtime:port>))
-                                    (is-a? statement <action>)
-                                    (is-a? pc-instance <runtime:component>)
-                                    (ast:out? statement))
-                               (let* ((port (.port statement))
-                                      (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
-                                                  (runtime:port pc-instance port)))
-                                      (port (.ast r:port))
-                                      (port-name (.name port))
-                                      (port-action+trace (member statement port-trace (action-equal? port-name))))
-                                 (match port-action+trace
-                                   ((action-pc tail ...)
-                                    (cons* action-pc pc (loop (cdr trace) tail)))
-                                   (_
-                                    (cons pc (loop (cdr trace) port-trace))))))
-                              ((and (not (is-a? (%sut) <runtime:port>))
-                                    (is-a? statement <trigger-return>)
-                                    (.port.name statement))
-                               (let* ((port (.port statement))
-                                      (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
-                                                  (runtime:port pc-instance port)))
-                                      (r:other-port (runtime:other-port r:port))
-                                      (port-return+trace (member statement port-trace
-                                                                 (return-equal? r:other-port))))
-                                 (match port-return+trace
-                                   ((return-pc tail ...)
-                                    (let* ((port-state (get-state return-pc))
-                                           (return-pc (clone return-pc #:state (.state pc)))
-                                           (return-pc (set-state return-pc port-state)))
-                                      (cons* return-pc pc (loop (cdr trace) tail))))
-                                   (_
-                                    (cons pc (loop (cdr trace) port-trace))))))
-                              (else
-                               (cons pc (loop (cdr trace) port-trace)))))))))
 
             (let ((port-traces non-compliances
                                (partition (negate first-non-match) port-traces)))
