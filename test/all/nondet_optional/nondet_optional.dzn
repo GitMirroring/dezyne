@@ -1,0 +1,86 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  out void cruel ();
+
+  behaviour
+  {
+    bool idle = true;
+    bool d0 = false;
+
+    [idle]
+    {
+      on hello: { idle = false; d0 = false; }
+      on hello: { idle = false; d0 = true; }
+    }
+    [!idle && d0]
+    {
+      on hello: {}
+      on inevitable: { idle = true; world; }
+    }
+    [!idle && !d0]
+    {
+      on hello: {}
+      on optional: { idle = true; cruel; }
+    }
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void done ();
+
+  behaviour
+  {
+    bool idle = true;
+
+    [idle]
+    {
+      on hello: idle = false;
+    }
+    [!idle]
+    {
+      on hello: {}
+      on optional: { idle = true; done; }
+    }
+  }
+}
+
+component nondet_optional
+{
+  provides ihello h;
+  requires iworld w;
+
+  behaviour
+  {
+    on h.hello (): w.hello ();
+    on w.done (): h.cruel ();
+  }
+}

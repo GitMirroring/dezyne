@@ -262,6 +262,7 @@ REGRESSION_TESTS =				\
  %D%/multiple_provides				\
  %D%/name.space					\
  %D%/nondet_inevitable				\
+ %D%/nondet_optional				\
  %D%/queuefull_external				\
  %D%/queuefull_external_sync			\
  %D%/range_action				\
