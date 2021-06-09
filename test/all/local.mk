@@ -261,6 +261,7 @@ REGRESSION_TESTS =				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
+ %D%/nondet_inevitable				\
  %D%/queuefull_external				\
  %D%/queuefull_external_sync			\
  %D%/range_action				\
