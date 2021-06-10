@@ -1,0 +1,4 @@
+test/all/compliance_optional/compliance_optional.dzn:44:19: error: non-compliance
+w.howdy
+h.goodbye
+<compliance>

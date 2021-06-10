@@ -147,6 +147,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_failures_inevitable		\
  %D%/compliance_failures_multiple_provides	\
  %D%/compliance_failures_optional		\
+ %D%/compliance_optional			\
  %D%/compliance_out_sync			\
  %D%/compliance_out_two 			\
  %D%/compliance_provides_bool			\

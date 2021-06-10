@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,8 +22,6 @@
 //
 // Code:
 
-import iworld.dzn;
-
 interface ihello
 {
   in void hello();
@@ -31,38 +30,29 @@ interface ihello
   behaviour
   {
     on hello: {}
-    on optional: goodbye;
   }
 }
 
-component Foreign
-{
-  provides iworld w;
-  // behaviour {}
-}
-
-component hello
+component compliance_optional
 {
   provides ihello h;
   requires iworld w;
 
   behaviour
   {
-    bool b = true;
-    on h.hello(): {b = false; w.world();}
-    [!b] on w.howdy(): {b = true; h.goodbye();}
+    on h.hello(): w.world();
+    on w.howdy(): h.goodbye();
   }
 }
 
-component hello_foreign
+interface iworld
 {
-  provides ihello h;
+  in void world();
+  out void howdy();
 
-  system
-    {
-      h <=> c.h;
-      hello c;
-      c.w <=> f.w;
-      Foreign f;
-    }
+  behaviour
+  {
+    on world: {}
+    on optional: howdy;
+  }
 }
