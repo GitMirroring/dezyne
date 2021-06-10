@@ -243,6 +243,14 @@ of traces, possibly marked with <compliance-error>."
                                             (cdr trace)))
                                     port-pcs)))
                   (map zip traces port-traces)))
+               ((and (null? non-compliances)
+                     (null? port-traces)
+                     (pair? sut-trail))
+                (let ((status (make <compliance-error>
+                                #:message "compliance"
+                                #:component-acceptance (caar sut-trail)
+                                #:port port-instance)))
+                  (list (rewrite-trace-head (cut clone <> #:status status) trace))))
                ((null? non-compliances)
                 (if (null? trace) '()
                     (list trace)))

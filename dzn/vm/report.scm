@@ -601,7 +601,8 @@ intermediate steps such as assignments, function calls, replies,
       (($ <compliance-error>)
        (let* ((component-acceptance (.component-acceptance status))
               (port-acceptances (.port-acceptance status))
-              (port-acceptances (ast:acceptance* port-acceptances))
+              (port-acceptances (and port-acceptances
+                                     (ast:acceptance* port-acceptances)))
               (port-acceptance (and (pair? port-acceptances) (car port-acceptances)))
               (location (or (step->location (or component-acceptance
                                                 port-acceptance))
@@ -664,27 +665,32 @@ intermediate steps such as assignments, function calls, replies,
       (($ <compliance-error>)
        (let* ((component-acceptance (.component-acceptance status))
               (port-acceptances (.port-acceptance status))
-              (port-acceptances (ast:acceptance* port-acceptances))
+              (port-acceptances (and port-acceptances
+                                     (ast:acceptance* port-acceptances)))
               (port-acceptance (and (pair? port-acceptances) (car port-acceptances)))
               (location (or (step->location (or component-acceptance
                                                 port-acceptance))
                             "<unknown-file>:"))
               (acceptance (if component-acceptance (trigger->string component-acceptance)
                               "-"))
-              (port (.port status))
-              (port-name (and port (string-join (runtime:instance->path port) ".")))
+              (r:port (.port status))
+              (port-name (and r:port (string-join (runtime:instance->path r:port) ".")))
               (component-name (string-join (runtime:instance->path (or (.instance (car pcs)) (%sut))) ".")))
          (string-join
           (cons*
            (format #f "~acomponent accept: ~a\n" location acceptance)
-           (map
-            (lambda (ast)
-              (if ast
-                  (format #f "~a     port accept: ~a\n" (step->location ast) (trigger->string ast))
-                  (let* ((ast ((compose .statement .behaviour .type .ast .port) status))
-                         (location (step->location ast)))
-                    (format #f "~a     port accept: ~a\n"  location "none"))))
-            (ast:acceptance* status)))
+           (if (not port-acceptances)
+               (let* ((interface (.type (.ast r:port)))
+                      (ast (.behaviour interface)))
+                 (list (format #f "~a     port accept: -\n" (step->location ast))))
+               (map
+                (lambda (ast)
+                  (if ast
+                      (format #f "~a     port accept: ~a\n" (step->location ast) (trigger->string ast))
+                      (let* ((ast ((compose .statement .behaviour .type .ast .port) status))
+                             (location (step->location ast)))
+                        (format #f "~a     port accept: ~a\n"  location "none")))) ;; TODO rename "none" to "-" when updating baseline
+                port-acceptances)))
           "")))
       (($ <fork-error>)
        (let* ((action (.ast status))
