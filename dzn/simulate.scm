@@ -197,14 +197,14 @@ of traces, possibly marked with <compliance-error>."
                                              cdr)
                                     sut-trail)))
 
-            (define (port-trail trace)
+            (define (port-trace->trail trace)
               (parameterize ((%sut port-instance)) (trace->trail trace)))
 
             (define (first-non-match port-trace)
               (define (non-matching-pair? a b)
                 (and (not (equal? (cdr a) ((compose last (cut string-split <> #\.) cdr) b))) (cons a b)))
 
-              (let* ((port-trail (port-trail port-trace))
+              (let* ((port-trail (port-trace->trail port-trace))
                      (foo (%debug "     port trail : ~s\n" port-trail))
                      (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
                      (port-name ((compose .name .ast) port-instance))
@@ -222,6 +222,11 @@ of traces, possibly marked with <compliance-error>."
               (and (equal? (and=> (caar a) trigger->string)
                            (and=> (caar b) trigger->string))
                    (equal? (cadr a) (cadr b))))
+
+            (define (event-on-trail? event-name trace)
+              (let* ((trail (port-trace->trail trace))
+                     (trail (map cdr trail)))
+                (member event-name trail)))
 
             (let ((port-traces non-compliances
                                (partition (negate first-non-match) port-traces)))
@@ -266,13 +271,18 @@ of traces, possibly marked with <compliance-error>."
                                                       (and=> (.status pc) .ast)
                                                       (trigger->component-trigger trigger))))
                        (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
+                       (trigger (and (null? sut-trail)
+                                     (not (any (cute event-on-trail? (.event.name trigger) <>)
+                                               non-compliances))
+                                     trigger))
                        (pc (clone pc
                                   #:previous #f
                                   #:status (make <compliance-error>
                                              #:message "compliance"
                                              #:component-acceptance component-acceptance
                                              #:port port-instance
-                                             #:port-acceptance port-acceptances))))
+                                             #:port-acceptance port-acceptances
+                                             #:trigger trigger))))
                   (if (null? trace) (list (cons pc (car non-compliances)))
                       (let* ((tail (cdr trace))
                              (trace (cons pc tail)))

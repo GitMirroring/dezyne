@@ -132,7 +132,8 @@
 (define-ast <compliance-error> (<error>)
   (component-acceptance)
   (port-acceptance)
-  (port))
+  (port)
+  (trigger))
 
 (define-ast <deadlock-error> (<error>))
 

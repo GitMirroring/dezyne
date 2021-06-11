@@ -675,10 +675,14 @@ intermediate steps such as assignments, function calls, replies,
                               "-"))
               (r:port (.port status))
               (port-name (and r:port (string-join (runtime:instance->path r:port) ".")))
-              (component-name (string-join (runtime:instance->path (or (.instance (car pcs)) (%sut))) ".")))
+              (component-name (string-join (runtime:instance->path (or (.instance (car pcs)) (%sut))) "."))
+              (trigger (.trigger status)))
          (string-join
-          (cons*
-           (format #f "~acomponent accept: ~a\n" location acceptance)
+          (append
+           (if (not trigger) '()
+               (let ((location (step->location (.event trigger))))
+                (list (format #f "~atrigger: ~a\n" location (trigger->string trigger)))))
+           (list (format #f "~acomponent accept: ~a\n" location acceptance))
            (if (not port-acceptances)
                (let* ((interface (.type (.ast r:port)))
                       (ast (.behaviour interface)))
