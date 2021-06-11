@@ -334,7 +334,8 @@ of traces, possibly marked with <compliance-error>."
     (let* ((error (.status pc))
            (ast (or (and error (.ast error))
                     (let ((model (.type (.ast (%sut)))))
-                      (.behaviour model)))))
+                      (if (is-a? model <system>) model
+                          (.behaviour model))))))
       (if (and error (not (is-a? error <implicit-illegal-error>))) pc
           (clone pc #:status (make <deadlock-error> #:ast ast #:message "deadlock")))))
   (let ((event-traces-alist
@@ -588,10 +589,19 @@ refusals-check.  Run final REPORT and return exit status."
                         #:trace trace
                         #:verbose? verbose?)))))))
 
+  (define (eligible traces)
+    (match traces
+      (((pc rest ...) trace ...)
+       (and (is-a? (.status pc) <end-of-trail>)
+            (not (.labels (.status pc)))
+            (let* ((pc (clone pc #:status #f))
+                   (event-traces-alist (event-traces-alist pc)))
+              (eligible-labels pc event-traces-alist))))
+      (_
+       #f)))
+
   (let* ((traces (apply append list-of-traces))
          (traces (filter-match-error traces))
-         (deadlock-check? (and deadlock-check?
-                               (not (is-a? (%sut) <runtime:system>))))
          (status (any (compose
                        (conjoin .status
                                 (negate (is-status? <end-of-trail>)))
@@ -609,7 +619,7 @@ refusals-check.  Run final REPORT and return exit status."
         (and refusals-check? (pair? traces)
              (any (cute refusals-report from-pcs <> <>) from-pcs list-of-traces))
         (report traces
-                #:eligible (labels)
+                #:eligible (or (and deadlock-check? (eligible traces)) '())
                 #:locations? locations?
                 #:state? state?
                 #:trace trace

@@ -1,1 +1,1 @@
-test/all/state_deadlock/state_deadlock.dzn:44:3: error: illegal
+test/all/state_deadlock/state_deadlock.dzn:44:3: error: deadlock
