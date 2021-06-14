@@ -153,7 +153,7 @@
 (define-ast <livelock-error> (<error>)
   (input))
 
-(define-ast <match-error> (<status>)
+(define-ast <match-error> (<error>)
   (input)
   (message))
 
