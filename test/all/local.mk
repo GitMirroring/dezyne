@@ -226,7 +226,6 @@ REGRESSION_TESTS =				\
  %D%/hello_complete_action			\
  %D%/hello_complete_reply			\
  %D%/hello_optional_flush			\
- %D%/hello_optional_system			\
  %D%/hellooutevent				\
  %D%/hello_out_data				\
  %D%/hello_out_provides				\
