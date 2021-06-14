@@ -1,1 +1,8 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: determinism_async: check: deterministic: fail
 error: component determinism_async is non-deterministic due to overlapping guards
+verify: determinism_async: check: illegal: ok
+verify: determinism_async: check: deadlock: ok
+verify: determinism_async: check: livelock: ok
+verify: determinism_async: check: compliance: ok

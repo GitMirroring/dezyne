@@ -1,11 +1,4 @@
-verify: irange_member: check: deadlock: fail
 model: irange_member
 <range-error>
-verify: irange_member: check: livelock: ok
-verify: range_member: check: deterministic: ok
-verify: range_member: check: illegal: ok
-verify: range_member: check: deadlock: fail
 model: range_member
 <range-error>
-verify: range_member: check: compliance: skip
-verify: range_member: check: livelock: ok

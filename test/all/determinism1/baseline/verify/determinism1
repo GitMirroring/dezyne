@@ -1,12 +1,5 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: determinism1: check: deterministic: fail
 model: determinism1
 i.e
 i.return
 i.e
 <deterministic>
-verify: determinism1: check: illegal: ok
-verify: determinism1: check: deadlock: ok
-verify: determinism1: check: compliance: ok
-verify: determinism1: check: livelock: ok

@@ -1,1 +1,10 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: J: check: deadlock: ok
+verify: J: check: livelock: ok
+verify: illegal_external_requires_twice: check: deterministic: ok
+verify: illegal_external_requires_twice: check: illegal: fail
 error: illegal action performed in model illegal_external_requires_twice
+verify: illegal_external_requires_twice: check: deadlock: ok
+verify: illegal_external_requires_twice: check: livelock: ok
+verify: illegal_external_requires_twice: check: compliance: skip

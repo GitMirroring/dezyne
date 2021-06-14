@@ -1,1 +1,10 @@
+verify: Iterate: check: deadlock: ok
+verify: Iterate: check: livelock: ok
+verify: List: check: deadlock: ok
+verify: List: check: livelock: ok
+verify: livelock_iterator: check: deterministic: ok
+verify: livelock_iterator: check: illegal: ok
+verify: livelock_iterator: check: deadlock: ok
+verify: livelock_iterator: check: livelock: fail
 error: livelock in model livelock_iterator
+verify: livelock_iterator: check: compliance: ok

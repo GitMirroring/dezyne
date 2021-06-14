@@ -1,1 +1,8 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: livelock_async: check: deterministic: ok
+verify: livelock_async: check: illegal: ok
+verify: livelock_async: check: deadlock: ok
+verify: livelock_async: check: livelock: fail
 error: livelock in model livelock_async
+verify: livelock_async: check: compliance: ok

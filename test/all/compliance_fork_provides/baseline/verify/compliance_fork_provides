@@ -1,9 +1,2 @@
-verify: compliance_fork_provides: check: deterministic: ok
-verify: compliance_fork_provides: check: illegal: ok
-verify: compliance_fork_provides: check: deadlock: ok
-verify: compliance_fork_provides: check: compliance: fail
 model: compliance_fork_provides
 <compliance>
-verify: compliance_fork_provides: check: livelock: ok
-verify: ihello: check: deadlock: ok
-verify: ihello: check: livelock: ok

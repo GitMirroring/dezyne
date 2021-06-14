@@ -1,1 +1,8 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: compliance_out_two: check: deterministic: ok
+verify: compliance_out_two: check: illegal: ok
+verify: compliance_out_two: check: deadlock: ok
+verify: compliance_out_two: check: livelock: ok
+verify: compliance_out_two: check: compliance: fail
 error: component compliance_out_two is non-compliant with interface(s) of provides port(s)

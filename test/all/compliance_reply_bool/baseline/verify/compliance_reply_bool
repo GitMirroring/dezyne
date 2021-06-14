@@ -1,7 +1,4 @@
-verify: compliance_reply_bool: check: deterministic: ok
-verify: compliance_reply_bool: check: illegal: ok
-verify: compliance_reply_bool: check: deadlock: ok
-verify: compliance_reply_bool: check: compliance: fail
+model: compliance_reply_bool
 h.hello
 w.bye
 w.true
@@ -11,6 +8,3 @@ w.bye
 w.false
 h.false
 <compliance>
-verify: compliance_reply_bool: check: livelock: ok
-verify: ihello: check: deadlock: ok
-verify: ihello: check: livelock: ok

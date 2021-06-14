@@ -1,11 +1,2 @@
-verify: compliance_failures_inevitable: check: deterministic: ok
-verify: compliance_failures_inevitable: check: illegal: ok
-verify: compliance_failures_inevitable: check: deadlock: ok
-verify: compliance_failures_inevitable: check: compliance: fail
 model: compliance_failures_inevitable
 <compliance>
-verify: compliance_failures_inevitable: check: livelock: ok
-verify: ihello: check: deadlock: ok
-verify: ihello: check: livelock: ok
-verify: iworld: check: deadlock: ok
-verify: iworld: check: livelock: ok

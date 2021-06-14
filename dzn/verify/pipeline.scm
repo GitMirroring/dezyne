@@ -408,7 +408,7 @@ init for MODEL unless INIT."
     (when (dzn:command-line:get 'verbose)
       (match info
         ((states transitions)
-         (format #t "verify: ~a: check: ~a: ok\n" model-name assert))))
+         (format (current-error-port) "verify: ~a: check: ~a: ok\n" model-name assert))))
     #f))
 
 (define (report-fail model-type model-name assert info trace)
@@ -448,7 +448,7 @@ init for MODEL unless INIT."
             (trace (if (eq? error '<queue-full>) (drop-queue-full-tail trace) trace))
             (trace (string-join trace "\n")))
        (when (dzn:command-line:get 'verbose)
-         (format #t "verify: ~a: check: ~a: fail\n" model-name assert))
+         (format (current-error-port) "verify: ~a: check: ~a: fail\n" model-name assert))
        (format (current-error-port) "error: ~a\n" message)
        (unless (string-null? trace)
          (format #t "model: ~a\n" model-name)
@@ -457,7 +457,7 @@ init for MODEL unless INIT."
 
 (define (report-skip model-type model-name assert)
   (when (dzn:command-line:get 'verbose)
-    (format #t "verify: ~a: check: ~a: skip\n" model-name assert))
+    (format (current-error-port) "verify: ~a: check: ~a: skip\n" model-name assert))
   #f)
 
 (define (report assert skip trace info model-type model-name)

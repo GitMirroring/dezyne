@@ -1,1 +1,8 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: illegal_requires: check: deterministic: ok
+verify: illegal_requires: check: illegal: fail
 error: illegal action performed in model illegal_requires
+verify: illegal_requires: check: deadlock: ok
+verify: illegal_requires: check: livelock: ok
+verify: illegal_requires: check: compliance: skip

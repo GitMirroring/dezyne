@@ -1,1 +1,3 @@
+verify: illegal_interface.space: check: deadlock: fail
 error: deadlock in model illegal_interface.space
+verify: illegal_interface.space: check: livelock: ok

@@ -1,11 +1,2 @@
-verify: compliance_failures_multiple_provides: check: deterministic: ok
-verify: compliance_failures_multiple_provides: check: illegal: ok
-verify: compliance_failures_multiple_provides: check: deadlock: ok
-verify: compliance_failures_multiple_provides: check: compliance: fail
 model: compliance_failures_multiple_provides
 <compliance>
-verify: compliance_failures_multiple_provides: check: livelock: ok
-verify: ihello: check: deadlock: ok
-verify: ihello: check: livelock: ok
-verify: iworld: check: deadlock: ok
-verify: iworld: check: livelock: ok

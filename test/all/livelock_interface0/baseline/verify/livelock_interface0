@@ -1,4 +1,2 @@
-verify: livelock_interface0: check: deadlock: ok
-verify: livelock_interface0: check: livelock: fail
 model: livelock_interface0
 <livelock>

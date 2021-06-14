@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -245,8 +245,6 @@ AM_CONDITIONAL([have_cxx_exception_wrappers], [test "x$have_cxx_exception_wrappe
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
                 [chmod +x pre-inst-env])
-AC_CONFIG_FILES([test/bin/reorder:test/bin/reorder.in],
-                [chmod +x test/bin/reorder])
 AC_CONFIG_FILES([test/bin/run:test/bin/run.in],
                 [chmod +x test/bin/run])
 AC_CONFIG_FILES([test/bin/run-baseline:test/bin/run-baseline.in],

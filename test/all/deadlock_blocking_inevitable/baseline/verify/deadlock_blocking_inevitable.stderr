@@ -1,1 +1,10 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: II: check: deadlock: ok
+verify: II: check: livelock: ok
+verify: deadlock_blocking_inevitable: check: deterministic: ok
+verify: deadlock_blocking_inevitable: check: illegal: ok
+verify: deadlock_blocking_inevitable: check: deadlock: fail
 error: deadlock in model deadlock_blocking_inevitable
+verify: deadlock_blocking_inevitable: check: livelock: ok
+verify: deadlock_blocking_inevitable: check: compliance: skip

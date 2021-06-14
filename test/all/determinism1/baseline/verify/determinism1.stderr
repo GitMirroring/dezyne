@@ -1,1 +1,8 @@
+verify: I: check: deadlock: ok
+verify: I: check: livelock: ok
+verify: determinism1: check: deterministic: fail
 error: component determinism1 is non-deterministic due to overlapping guards
+verify: determinism1: check: illegal: ok
+verify: determinism1: check: deadlock: ok
+verify: determinism1: check: livelock: ok
+verify: determinism1: check: compliance: ok

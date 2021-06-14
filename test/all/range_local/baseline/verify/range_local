@@ -1,5 +1,3 @@
-verify: range_local: check: deadlock: fail
 model: range_local
 e
 <range-error>
-verify: range_local: check: livelock: ok

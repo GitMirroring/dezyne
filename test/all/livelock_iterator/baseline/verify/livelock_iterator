@@ -1,12 +1,3 @@
-verify: Iterate: check: deadlock: ok
-verify: Iterate: check: livelock: ok
-verify: List: check: deadlock: ok
-verify: List: check: livelock: ok
-verify: livelock_iterator: check: deterministic: ok
-verify: livelock_iterator: check: illegal: ok
-verify: livelock_iterator: check: deadlock: ok
-verify: livelock_iterator: check: compliance: ok
-verify: livelock_iterator: check: livelock: fail
 model: livelock_iterator
 iter.map
 list.next

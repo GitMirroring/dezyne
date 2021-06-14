@@ -1,10 +1,3 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: II: check: deadlock: ok
-verify: II: check: livelock: ok
-verify: range_expression: check: deterministic: ok
-verify: range_expression: check: illegal: ok
-verify: range_expression: check: deadlock: fail
 model: range_expression
 p.e
 r.e
@@ -12,5 +5,3 @@ r.return
 p.return
 p.e
 <range-error>
-verify: range_expression: check: compliance: skip
-verify: range_expression: check: livelock: ok

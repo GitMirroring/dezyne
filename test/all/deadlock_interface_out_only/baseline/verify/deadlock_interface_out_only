@@ -1,4 +1,2 @@
-verify: deadlock_interface_out_only: check: deadlock: fail
 model: deadlock_interface_out_only
 <deadlock>
-verify: deadlock_interface_out_only: check: livelock: ok

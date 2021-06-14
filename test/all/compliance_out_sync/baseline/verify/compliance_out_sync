@@ -1,13 +1,6 @@
-verify: compliance_out_sync: check: deterministic: ok
-verify: compliance_out_sync: check: illegal: ok
-verify: compliance_out_sync: check: deadlock: ok
-verify: compliance_out_sync: check: compliance: fail
 model: compliance_out_sync
 h.hello
 w.hello
 w.world
 w.return
 <compliance>
-verify: compliance_out_sync: check: livelock: ok
-verify: ihello: check: deadlock: ok
-verify: ihello: check: livelock: ok

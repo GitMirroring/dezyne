@@ -1,1 +1,8 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: compliance_single_to_multiple: check: deterministic: ok
+verify: compliance_single_to_multiple: check: illegal: ok
+verify: compliance_single_to_multiple: check: deadlock: ok
+verify: compliance_single_to_multiple: check: livelock: ok
+verify: compliance_single_to_multiple: check: compliance: fail
 error: component compliance_single_to_multiple is non-compliant with interface(s) of provides port(s)

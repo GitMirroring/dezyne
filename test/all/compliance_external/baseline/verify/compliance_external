@@ -1,7 +1,3 @@
-verify: compliance_external: check: deterministic: ok
-verify: compliance_external: check: illegal: ok
-verify: compliance_external: check: deadlock: ok
-verify: compliance_external: check: compliance: fail
 model: compliance_external
 h.hello
 w.hello
@@ -9,8 +5,3 @@ w.return
 h.return
 h.hello
 <compliance>
-verify: compliance_external: check: livelock: ok
-verify: ihello: check: deadlock: ok
-verify: ihello: check: livelock: ok
-verify: iworld: check: deadlock: ok
-verify: iworld: check: livelock: ok

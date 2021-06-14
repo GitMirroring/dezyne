@@ -1,1 +1,3 @@
+verify: range_local: check: deadlock: fail
 error: integer range error in model range_local
+verify: range_local: check: livelock: ok

@@ -40,8 +40,7 @@
             run-execute
             run-test
             run-traces
-            run-verify
-            verification-reorder))
+            run-verify))
 
 
 ;;; Shell-util
@@ -133,37 +132,6 @@ output, and standard error as three values."
              ((_ _ ex)
               (cleanup)
               (apply throw (call-with-input-string ex read))))))))
-
-(define (verification-reorder string)
-  (define (verification-less? a b)
-    (let ((a-split (string-split a #\:))
-          (b-split (string-split b #\:)))
-      (let ((model-a (cadr a-split))
-            (model-b (cadr b-split)))
-        (if (string=? model-a model-b)
-            (let ((check-a (string-trim-both (cadddr a-split)))
-                  (check-b (string-trim-both (cadddr b-split)))
-                  (check-order '("deterministic"
-                                 "completeness"
-                                 "illegal"
-                                 "deadlock"
-                                 "compliance"
-                                 "livelock")))
-              (< (list-index (cut string=? <> check-a) check-order)
-                 (list-index (cut string=? <> check-b) check-order)))
-            (string<? model-a model-b)))))
-  (let* ((lines (string-split string #\newline))
-         (chunks (let loop ((line "") (lines lines))
-                   (if (null? lines) '()
-                       (if (and (pair? (cdr lines))
-                                (not (string-prefix? "verify:" (cadr lines))))
-                           (loop (string-append
-                                  line (string-append (car lines) "\n"))
-                                 (cdr lines))
-                           (cons (string-trim-right
-                                  (string-append line (car lines)))
-                                 (loop "" (cdr lines))))))))
-    (string-join (sort chunks verification-less?) "\n" 'suffix)))
 
 (define (get-meta file-name)
   (let ((META (string-append file-name "/META")))
@@ -284,8 +252,7 @@ output, and standard error as three values."
                     ,dzn-name)))
     (or (skip? file-name "verify")
         (run-baseline file-name command
-                      #:baseline baseline
-                      #:stdout-filter verification-reorder))))
+                      #:baseline baseline))))
 
 (define (run-code file-name language)
   (format #t "** stage: code: ~a\n" language)

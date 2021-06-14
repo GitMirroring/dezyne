@@ -1,14 +1,5 @@
-verify: I: check: deadlock: ok
-verify: I: check: livelock: ok
-verify: II: check: deadlock: ok
-verify: II: check: livelock: ok
-verify: range_action: check: deterministic: ok
-verify: range_action: check: illegal: ok
-verify: range_action: check: deadlock: fail
 model: range_action
 p.e
 r.e
 r.12
 <range-error>
-verify: range_action: check: compliance: skip
-verify: range_action: check: livelock: ok
