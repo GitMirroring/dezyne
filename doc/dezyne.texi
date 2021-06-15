@@ -7841,7 +7841,7 @@ will result in the following error message:
 
 This project is a cooperative effort, and we need your help to make it
 grow!  Please get in touch with us on @email{dezyne-devel@@nongnu.org} and
-@code{#dezyne} on the Freenode IRC network.  We welcome ideas, bug
+@code{#dezyne} on the Libera Chat IRC network.  We welcome ideas, bug
 reports (please send your bug reports to @email{bug-dezyne@@nongnu.org}),
 patches, and anything that may be helpful to the project.
 

@@ -45,7 +45,7 @@ See [[file:guix.scm][guix.scm]] for other options and [[file:INSTALL][INSTALL]] 
 Please email [[mailto:dezyne-devel@nongnu.org][dezyne-devel@nongnu.org]] for help or questions; email bug
 reports to [[bug-dezyne@nongnu.org][bug-dezyne@nongnu.org]]
 
-Join #dezyne on irc.freenode.net.
+Join #dezyne on irc.libera.chat
 
 * Legalese
 Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
