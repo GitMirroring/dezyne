@@ -1,4 +1,4 @@
 test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:61:5: error: non-compliance
 test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:61:5: component accept: h.return
-test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:34:3:      port accept: none
-test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:38:20:      port accept: world
+test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:34:3: port accept: -
+test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:38:20: port accept: world

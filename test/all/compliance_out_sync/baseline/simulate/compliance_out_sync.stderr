@@ -1,3 +1,3 @@
 test/all/compliance_out_sync/compliance_out_sync.dzn:43:5: error: non-compliance
 test/all/compliance_out_sync/compliance_out_sync.dzn:43:5: component accept: h.return
-test/all/compliance_out_sync/compliance_out_sync.dzn:32:15:      port accept: world
+test/all/compliance_out_sync/compliance_out_sync.dzn:32:15: port accept: world

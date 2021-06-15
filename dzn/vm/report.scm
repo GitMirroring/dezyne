@@ -686,14 +686,14 @@ intermediate steps such as assignments, function calls, replies,
            (if (not port-acceptances)
                (let* ((interface (.type (.ast r:port)))
                       (ast (.behaviour interface)))
-                 (list (format #f "~a     port accept: -\n" (step->location ast))))
+                 (list (format #f "~aport accept: -\n" (step->location ast))))
                (map
                 (lambda (ast)
                   (if ast
-                      (format #f "~a     port accept: ~a\n" (step->location ast) (trigger->string ast))
+                      (format #f "~aport accept: ~a\n" (step->location ast) (trigger->string ast))
                       (let* ((ast ((compose .statement .behaviour .type .ast .port) status))
                              (location (step->location ast)))
-                        (format #f "~a     port accept: ~a\n"  location "none")))) ;; TODO rename "none" to "-" when updating baseline
+                        (format #f "~aport accept: ~a\n"  location "-"))))
                 port-acceptances)))
           "")))
       (($ <fork-error>)
