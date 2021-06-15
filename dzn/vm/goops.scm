@@ -143,6 +143,8 @@
 (define-ast <end-of-trail> (<status>)
   (labels))
 
+(define-ast <fork-error> (<error>))
+
 (define-ast <illegal-error> (<error>))
 
 (define-ast <implicit-illegal-error> (<error>))

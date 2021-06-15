@@ -56,7 +56,49 @@
 ;;;
 ;;; Code:
 
+(define (check-provides-fork port trace)
+  "Check TRACE for a fork with respect to PORT.  If TRACE contains
+actions to a provides port other than PORT, mark the trace as
+<fork-error>, otherwise return false."
+  (define (action-other-port pc)
+    (let ((statement (.statement pc)))
+      (and (is-a? statement <action>)
+           (let ((action-port (.port statement)))
+             (and action-port
+                  (not (ast:eq? action-port port))
+                  (ast:provides? action-port))))))
+  (define (run-provides-port port-instance pc event)
+    (%debug "run-provides-port... ~a\n" event)
+    (let ((pc (clone pc #:instance #f #:previous #f #:trail '() #:status #f #:statement #f)))
+      (parameterize ((%sut port-instance)
+                     (%exploring? #t))
+        (run-to-completion pc event))))
+  (%debug "check-provides-fork... ~a\n" (.name port))
+  (let* ((trail (trace->trail trace))
+         (action-step (list-index action-other-port trace)))
+    (and action-step
+         (let* ((trace (drop trace action-step))
+                (pc (car trace))
+                (trigger (.trigger pc))
+                (event (trigger->string trigger))
+                (instance (.instance pc))
+                (r:other-port (runtime:port instance port))
+                (r:port (runtime:other-port r:other-port))
+                (port-event (.event.name trigger))
+                (port-traces (run-provides-port r:port pc port-event))
+                (pc (clone pc
+                           #:previous #f
+                           #:status (make <fork-error>
+                                      #:ast (.statement pc)
+                                      #:message "compliance")))
+                (trace (cons pc trace)))
+           (if (null? port-traces) (list trace)
+               (list (zip trace (car port-traces))))))))
+
 (define (check-provides-compliance pc event trace)
+  "Check TRACE for traces-compliance with the provides ports, for EVENT.
+Update the state of the provides port in TRACE for EVENT.  Return a list
+of traces, possibly marked with <compliance-error>."
   (let* ((component ((compose .type .ast) (%sut)))
          (sut-trail (trace->trail trace))
          (event (match sut-trail
@@ -245,7 +287,9 @@
                              (trace (cons pc tail)))
                         (list (zip trace (car non-compliances)))))))))))))
 
-    (if port (check-compliance port (list trace))
+    (if port (or (and (> (length (ast:provides-port* component)) 1)
+                      (check-provides-fork port trace))
+                 (check-compliance port (list trace)))
         (let* ((ports (ast:provides-port* component)))
           (fold check-compliance (list trace) ports)))))
 
@@ -514,22 +558,39 @@ refusals-check.  Run final REPORT and return exit status."
                (refusals (map (prepend-port port-name) refusals)))
           (and (pair? refusals) refusals)))
 
-      (let* ((ports (ast:provides-port* component))
-             (refusals (any check-refusals ports)))
+      (define (trace-check-provides-fork trace)
+        (let ((trigger (and=> (find .trigger trace) .trigger)))
+          (and trigger
+               (let ((port (.port trigger)))
+                 (and port
+                      (ast:provides? port)
+                      (check-provides-fork port trace))))))
 
-        (define (mark-refusals pc)
-          (clone pc #:status (make <refusals-error>
-                               #:ast (.behaviour component)
-                               #:message "compliance"
-                               #:refusals refusals)))
+      (or
+       (and (> (length (ast:provides-port* component)) 1)
+            (let ((fork (any trace-check-provides-fork component-traces)))
+              (and fork
+                   (report fork
+                           #:locations? locations?
+                           #:trace trace
+                           #:verbose? verbose?))))
 
-        (and (pair? refusals)
-             (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
-               (report traces
-                       #:locations? locations?
-                       #:state? state?
-                       #:trace trace
-                       #:verbose? verbose?))))))
+       (let* ((ports (ast:provides-port* component))
+              (refusals (any check-refusals ports)))
+
+         (define (mark-refusals pc)
+           (clone pc #:status (make <refusals-error>
+                                #:ast (.behaviour component)
+                                #:message "compliance"
+                                #:refusals refusals)))
+
+         (and (pair? refusals)
+              (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
+                (report traces
+                        #:locations? locations?
+                        #:state? state?
+                        #:trace trace
+                        #:verbose? verbose?)))))))
 
   (let* ((traces (apply append list-of-traces))
          (deadlock-check? (and deadlock-check?
