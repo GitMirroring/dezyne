@@ -2,9 +2,9 @@ h.hello
 w.hello
 w.return
 h.return
+test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:61:5: error: non-compliance
 h.hello
 w.hello
 w.return
 h.return
-test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:59:3: error: non-compliance
 <compliance>

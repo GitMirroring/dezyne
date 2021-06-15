@@ -246,9 +246,6 @@ of traces, possibly marked with <compliance-error>."
                ((null? non-compliances)
                 (if (null? trace) '()
                     (list trace)))
-               ((and port-event
-                     (not (caar (first-non-match (car non-compliances)))))
-                (list trace))
                ((and (not port-event)
                      (null? sut-trail)
                      (pair? trace))
