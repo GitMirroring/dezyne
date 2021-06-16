@@ -872,6 +872,8 @@ ws               <   [ \t]
 
 (define (communication-instance->path instance)
   (match instance
+    (("sut") '(sut))
+    (("<external>") '(client))
     (("<external>" path ...) (map string->symbol path))
     (("sut" path ... port) (map string->symbol (cons "sut" path)))))
 
@@ -894,8 +896,14 @@ ws               <   [ \t]
        (let* ((name       (header-instance->name instance))
               (header     (make-lifeline-header name kind))
               (prefix     (string-append name "."))
-              (labels     (if (eq? kind 'component) '("<back>")
-                              (filter (cute string-prefix? prefix <>) labels)))
+              (labels     (cond ((or (member kind '(component interface)))
+                                 '("<back>"))
+                                ((and (eq? kind 'provides)
+                                      (pair? labels)
+                                      (not (string-index (car labels) #\.)))
+                                 labels)
+                                (else
+                                 (filter (cute string-prefix? prefix <>) labels))))
               (labels     (map (cute lifeline-label <> kind) labels))
               (activities (assoc-ref activities path)))
          (make-lifeline header activities labels)))))
