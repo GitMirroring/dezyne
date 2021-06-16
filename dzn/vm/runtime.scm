@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <Rob.Wieringa@verum.com>
 ;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;;
@@ -119,7 +119,10 @@
 
 (define-method (runtime:kind (o <runtime:instance>))
   (match o
-    (($ <runtime:port>) (if (runtime:provides-instance? o) 'provides 'requires))
+    (($ <runtime:port>)
+     (cond ((eq? o (%sut)) 'interface)
+           ((runtime:requires-instance? o) 'requires)
+           (else 'provides)))
     (($ <runtime:component>) 'component)
     (($ <runtime:foreign>) 'foreign)
     (($ <runtime:system>) 'system)))
@@ -140,13 +143,15 @@
 (define-method (runtime:instance->string (o <runtime:instance>))
   (let* ((path (runtime:instance->path o))
          (print-path (cond
-                      ((is-a? (.type (.ast (%sut))) <interface>) '("<external>"))
+                      ((and (is-a? (%sut) <runtime:port>) (eq? o (%sut))) '("sut"))
+                      ((is-a? (%sut) <runtime:port>) '("<external>"))
                       ((runtime:boundary-port? o) (cons "<external>" path))
                       (else path))))
     (string-join print-path ".")))
 
 (define-method (runtime:instance->path (o <runtime:instance>))
-  (if (runtime:port-instance? (%sut)) '()
+  (if (runtime:port-instance? (%sut))
+      (if (eq? o (%sut))'("sut") '("client"))
       (map (compose .name .ast) (reverse (runtime:container-path o)))))
 
 (define-method (runtime:path->instance (o <list>))
@@ -184,8 +189,8 @@
 (define-method (runtime:port-instance? o)
   #f)
 
-(define-method (runtime:port-instance? (o <runtime:instance>))
-  (is-a? (.type (.ast o)) <interface>))
+(define-method (runtime:port-instance? (o <runtime:port>))
+  #t)
 
 (define-method (runtime:provides-instance? (o <runtime:port>))
   (and (runtime:boundary-port? o)
@@ -324,6 +329,11 @@
 
 (define-method (runtime:system* (o <runtime:instance>))
   (runtime:system* o ast:sorted-instance*))
+
+(define-method (runtime:system* (o <runtime:port>))
+  (list
+   (make <runtime:port> #:ast (.ast o) #:boundary? #t)
+   o))
 
 
 ;;;

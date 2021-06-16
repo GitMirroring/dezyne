@@ -652,7 +652,7 @@ refusals-check.  Run final REPORT and return exit status."
     (when (equal? trace "trace")
       (serialize-header (.state pc) (current-output-port))
       (newline))
-    (or (report (list (list pc)) #:trace trace #:header #t)
+    (or (report (list (list pc)) #:trace trace)
         (parameterize ((%next-input (if (or (not (isatty? (current-input-port))) (pair? trail)) trail-input read-input)))
           (let loop ((traces (list (list pc))))
             (let ((from-pcs (map car traces)))
