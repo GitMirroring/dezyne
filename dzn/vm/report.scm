@@ -45,6 +45,7 @@
             label->string
             step->location
             trace->trail
+            trace->string-trail
             report))
 
 ;;;
@@ -71,6 +72,12 @@
 
 (define-method (trace->trail (o <program-counter>))
   (and (pc-event? o) (pc->event o)))
+
+(define (trace->string-trail trace)
+  (let ((trail (map cdr (trace->trail trace))))
+    (define (strip-sut-prefix o)
+      (if (string-prefix? "sut." o) (substring o 4) o))
+    (map strip-sut-prefix trail)))
 
 ;;; events predicate
 

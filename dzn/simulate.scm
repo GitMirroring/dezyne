@@ -141,6 +141,35 @@ actions to a provides port other than PORT, mark the trace as
                                       #:message "compliance"))))
            (list (cons pc trace))))))
 
+(define (rtc-lts-node->traces lts from)
+  "Return traces for FROM node of LTS."
+  (match (hash-ref lts from)
+    ((pc traces ...)
+     traces)
+    (#f
+     '())))
+
+(define* ((rtc-lts->traces pc->state-number #:key prefix-set?) lts)
+  "Create a (prefix) set of traces from LTS."
+
+  (define (extend todo trace)
+    (map (cute append trace <>) todo))
+
+  (let loop ((seen '()) (tos '(1)))
+    (if (null? tos) '()
+        (let* ((traces (append-map (cute rtc-lts-node->traces lts <>) tos))
+               (seen (append seen tos))
+               (done todo (partition
+                           (compose (cute member <> seen) pc->state-number car)
+                           traces))
+               (tos (map (compose pc->state-number car) todo))
+               (tos (delete-duplicates tos =)))
+          (let* ((continuations (loop seen tos))
+                 (traces (append (if prefix-set? traces done)
+                                 (if (null? continuations) todo
+                                     (append-map (cute extend todo <>) continuations)))))
+            traces)))))
+
 (define (check-provides-compliance pc event trace)
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
 Update the state of the provides port in TRACE for EVENT.  Return a list
@@ -410,28 +439,6 @@ of traces, possibly marked with <compliance-error>."
               (trace (cons pc (cdr pc+blocked-trace))))
          (list trace))))))
 
-(define ((rtc-lts->traces pc->state-number) lts)
-  "Create a set of traces from LTS."
-  (let ((from 1))
-    (match (hash-ref lts from)
-      ((pc traces ...)
-       (let loop ((seen (list from)) (traces traces))
-         (define (to-seen? trace)
-           (let ((to (pc->state-number (car trace))))
-             (member to seen)))
-         (let* ((tos (map (compose pc->state-number car) traces))
-                (done todo (partition to-seen? traces)))
-           (define (extend trace)
-             (let* ((pc (car trace))
-                    (from (pc->state-number pc)))
-               (match (hash-ref lts from)
-                 ((pc traces ...)
-                  (map (cute append <> trace) (loop (cons from seen) traces)))
-                 (#f
-                  (list trace)))))
-           (append done
-                   (append-map extend todo))))))))
-
 (define* (end-report from-pcs list-of-traces #:key deadlock-check?
                      refusals-check? state? trace locations? verbose?)
   "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
@@ -537,7 +544,8 @@ refusals-check.  Run final REPORT and return exit status."
                               (parameterize ((%sut r:provides)
                                              (%exploring? #t))
                                 (pc->rtc-lts pc))))
-            ((rtc-lts->traces pc->state-number) provides-lts)))
+            (parameterize ((%sut r:provides))
+              ((rtc-lts->traces pc->state-number #:prefix-set? #t) provides-lts))))
 
         (let* ((r:provides (runtime:port (%sut) provides))
                (r:provides (runtime:other-port r:provides))
