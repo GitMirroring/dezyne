@@ -92,7 +92,7 @@
           (set-car! count (1+ (car count)))
           n))))
 
-(define* (pc->rtc-lts pc #:key (trace-done? (const #f)))
+(define* (pc->rtc-lts pc #:key (trace-done? (const #f)) (labels labels))
   "Explore the state space of (%SUT).  Start by running all (labels) on
 PC, and recurse until no new, valid PCs are found.  A PC with STATUS set
 ends the recursion, and a PC for which TRACE-DONE? holds, ends the

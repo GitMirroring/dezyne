@@ -202,13 +202,20 @@ of traces, possibly marked with <compliance-error>."
                          (%exploring? #t))
             (run-to-completion trace event)))
 
+        (define (pc->provides-traces r:provides pc)
+          (let* ((interface (.type (.ast r:provides)))
+                 (modeling-names (modeling-names interface))
+                 (provides-lts pc->state-number count
+                               (parameterize ((%sut r:provides)
+                                              (%exploring? #t))
+                                 (pc->rtc-lts pc #:labels (const modeling-names)))))
+            (parameterize ((%sut r:provides))
+              ((rtc-lts->traces pc->state-number #:prefix-set? #t) provides-lts))))
+
         (%debug "check-provides-compliance... ~s: ~a\n" port-name event)
         (let* ((interface ((compose .type .ast) port-instance))
-               ;; modeling trace
-               (modeling-names (modeling-names interface))
                (ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
-               (modeling-traces (append-map (cute run-provides-port ipc <>)
-                                            modeling-names))
+               (modeling-traces (pc->provides-traces port-instance ipc))
                (traces (cons (list ipc) modeling-traces))
                ;; provides trace
                (port-traces (if (not port-event) '()
