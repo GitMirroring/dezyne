@@ -557,21 +557,22 @@
 
 (define-method (state->string (o <state>))
   (let* ((path (runtime:instance->path (.instance o)))
-         (path (match path (("sut" path ...) path)
-                      (_ path)))
+         (path (match path
+                 (("sut" path ...) path)
+                 (_ path)))
          (variables (map (match-lambda ((x . y)
                                         (format #f "~a=~a" x (->sexp y))))
                          (.variables o)))
          (q (.q o)))
-    (if (and (null? variables) (null? q)) #f
-        (string-append
-         (string-join path ".")
-         (if (pair? path) "=" "")
-         "["
-         (string-join variables ",\n")
-         (if (null? (.q o)) ""
-             (string-append "q=" (string-join (map trigger->string (.q o)) ",")))
-         "]"))))
+    (and (or (pair? variables) (pair? q))
+         (string-append
+          (string-join path ".")
+          (if (pair? path) "=" "")
+          "["
+          (string-join variables ",\n")
+          (if (null? q) ""
+              (string-append "q=" (string-join (map trigger->string q) ",")))
+          "]"))))
 
 (define-method (state->string (o <system-state>))
   (let* ((state-list (.state-list o))

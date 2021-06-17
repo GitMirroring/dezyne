@@ -42,8 +42,7 @@
 
   #:use-module (json)
 
-  #:export (trace:format-trace
-            step:format-trace
+  #:export (step:format-trace
             seqdiag:get-model
             seqdiag:format-sexp
             seqdiag:format-trace
@@ -843,20 +842,20 @@ ws               <   [ \t]
         (if (null? messages) '()
             `((message . ,(message-message (car messages))))))))
 
-(define (instance-state->scm sut-name o)
-  (define state->scm
+(define (instance-state->json-scm sut-name o)
+  (define state->json-scm
     (match-lambda
       ((name . value)
        `(("name" . ,(symbol->string name))
-         ("value" . ,(symbol->string value))))))
+         ("value" . ,(format #f "~a" value))))))
   (match o
     ((instance state ...)
      (let ((name (if (equal? instance '(sut)) sut-name (instance->string instance))))
        `(("instance" . ,name)
-         ("state"    . ,(list->vector (map state->scm state))))))))
+         ("state"    . ,(list->vector (map state->json-scm state))))))))
 
-(define (lifeline-state->scm sut-name o)
-  (list->vector (map (cute instance-state->scm sut-name <>) (state-sexp o))))
+(define (lifeline-state->json-scm sut-name o)
+  (list->vector (map (cute instance-state->json-scm sut-name <>) (state-sexp o))))
 
 (define-immutable-record-type <lifeline>
   (make-lifeline header activities labels)
@@ -930,7 +929,7 @@ ws               <   [ \t]
              `((working-directory . ,(getcwd))
                (lifelines . ,(list->vector (map lifeline->scm lifelines)))
                (events    . ,(list->vector (map lifeline-event->scm events)))
-               (states    . ,(list->vector (map (cute lifeline-state->scm sut-name <>) states))))))
+               (states    . ,(list->vector (map (cute lifeline-state->json-scm sut-name <>) states))))))
           (let* ((communication  (car communications))
                  (last?          (null? (cdr communications)))
                  (direction      (communication-direction communication))

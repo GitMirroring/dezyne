@@ -27,11 +27,12 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
+  #:use-module (json)
+
   #:use-module (dzn command-line)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
-
   #:use-module (dzn ast)
   #:use-module (dzn display)
   #:use-module (dzn misc)
@@ -203,6 +204,36 @@ begin -> 1
     "\n")
    postamble))
 
+(define-method (state->scm (o <state>))
+  (let* ((instance (.instance o))
+         (path (runtime:instance->path instance))
+         (path (match path
+                 (("sut" path ...) path)
+                 (_ path)))
+         (name (string-join path "."))
+         (variables (map (match-lambda ((name . value)
+                                        `((name  . ,name)
+                                          (value . ,(->sexp value)))))
+                         (.variables o)))
+         (q (.q o)))
+    (and (or (pair? variables) (pair? q))
+         `((instance . ,name)
+           (state    . ,(list->vector
+                         `(,@variables
+                           ,@(if (null? q) '()
+                                 `((<q> . (map trigger->string q)))))))))))
+
+(define-method (state->scm (o <system-state>))
+  (let* ((state-list (.state-list o))
+         (state-list (if (is-a? (%sut) <runtime:port>) state-list
+                         (filter (disjoin (compose (is? <runtime:component>) .instance)
+                                          (compose ast:requires? .ast .instance))
+                                 state-list))))
+    (list->vector (filter-map state->scm state-list))))
+
+(define-method (state->scm (pc <program-counter>))
+  (state->scm (.state pc)))
+
 (define* (state-diagram->json graph #:optional (working-directory "."))
   "Return a diagram in P5 JSON format from GRAPH produced by
 RTC-LTS->STATE-DIAGRAM."
@@ -218,16 +249,20 @@ RTC-LTS->STATE-DIAGRAM."
     (string-append
      "{\"states\":[\n"
      (string-join
-      (map (match-lambda ((from pc label to trigger-location)
-                          (let ((from-label (or (and=> pc pc->string) "")))
-                            (string-append
-                             (format #f "{\"id\":\"~a\", \"state\":~s}" from from-label)))))
-           (delete-duplicates graph
+      (map
+       (match-lambda
+         ((from pc label to trigger-location)
+          (let ((states (if (not pc) "[]"
+                            (scm->json-string (state->scm pc)))))
+            (string-append
+             (format #f "{\"id\":\"~a\", \"state\":~a}" from states)))))
+       (delete-duplicates graph
                               (match-lambda* (((from-a pc-a traces-a ...)
                                                (from-b pc-b traces-b ...))
                                               (and (equal? from-a from-b)
                                                    (equal? (pc->string pc-a)
-                                                           (pc->string pc-b))))))) ",\n")
+                                                           (pc->string pc-b)))))))
+      ",\n")
      "],\n"
      "\"transitions\":[\n"
      (string-join
@@ -235,14 +270,14 @@ RTC-LTS->STATE-DIAGRAM."
        (match-lambda
          ((from pc (trigger actions ...) to trigger-location)
           (let* ((location (json-location trigger-location))
-                 (actions (string-join actions "\n")))
+                 (actions (scm->json-string (list->vector actions))))
             (format #f
-                    "{\"from\":\"~s\", \"to\":\"~s\", \"trigger\":~s, \"action\":~s, \"location\":~a}"
+                    "{\"from\":\"~s\", \"to\":\"~s\", \"trigger\":~s, \"action\":~a, \"location\":~a}"
                     from to trigger actions location)))
          ((from pc () to trigger-location)
           (let ((location (json-location trigger-location)))
             (format #f
-                    "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":~s, \"location\":~a}"
+                    "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":[~s], \"location\":~a}"
                     from to "tau" "" location)))
          ((from pc x #f #f) #f))
        graph)
