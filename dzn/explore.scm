@@ -158,11 +158,10 @@ recursion.  Return a run-to-completion LTS
            (traces (filter (compose not .status car) traces))
            (pcs (map car traces))
            (transition (map trace->string-trail traces))
-           (from-label (pc->string pc))
            (to (map pc->state-number pcs))
            (trigger-location (map trigger-location traces)))
-      (if (null? to) (list (list from from-label #f #f #f))
-          (map (cut list from from-label <> <> <>)
+      (if (null? to) (list (list from pc #f #f #f))
+          (map (cut list from pc <> <> <>)
                transition
                to
                trigger-location))))
@@ -187,19 +186,19 @@ begin -> 1
   (string-append
    (preamble (ast:dotted-name (.type (.ast (%sut)))))
    (string-join
-    (map (match-lambda ((from from-label (trigger actions ...) to trigger-location)
+    (map (match-lambda ((from pc (trigger actions ...) to trigger-location)
                         (let* ((separator (make-string (apply max (map string-length (cons trigger actions))) #\-))
                                (actions (string-join actions "\n"))
                                (label (if (string-null? actions) trigger
                                           (format #f "~a\n~a\n~a" trigger separator actions))))
-                         (string-append
-                          (format #f "~s [label=~s]\n" from from-label)
-                          (format #f "~s -> ~s [label=~s]" from to label))))
-                       ((from from-label () to trigger-location)
-                          (format #f "~s [label=~s]\n" from from-label)
-                          (format #f "~s -> ~s [label=~s]" from to "tau"))
-                       ((from from-label x #f #f)
-                        (format #f "~s [label=~s]\n" from from-label)))
+                          (string-append
+                           (format #f "~s [label=~s]\n" from (pc->string pc))
+                           (format #f "~s -> ~s [label=~s]" from to label))))
+                       ((from pc () to trigger-location)
+                        (format #f "~s [label=~s]\n" from (pc->string pc))
+                        (format #f "~s -> ~s [label=~s]" from to "tau"))
+                       ((from pc x #f #f)
+                        (format #f "~s [label=~s]\n" from (pc->string pc))))
          graph)
     "\n")
    postamble))
@@ -215,32 +214,37 @@ RTC-LTS->STATE-DIAGRAM."
                 (.column trigger-location)
                 (.end-line trigger-location)
                 (.end-column trigger-location))))
-  (let ((graph (cons `(* "" ("" "") 1 #f) graph)))
+  (let ((graph (cons `(* #f ("" "") 1 #f) graph)))
     (string-append
      "{\"states\":[\n"
      (string-join
-      (map (match-lambda ((from from-label label to trigger-location)
-                          (string-append
-                           (format #f "{\"id\":\"~a\", \"state\":~s}" from from-label))))
-           (delete-duplicates graph (lambda (a b) (and (equal? (first a) (first b))
-                                                       (equal? (second a) (second b)))))) ",\n")
+      (map (match-lambda ((from pc label to trigger-location)
+                          (let ((from-label (or (and=> pc pc->string) "")))
+                            (string-append
+                             (format #f "{\"id\":\"~a\", \"state\":~s}" from from-label)))))
+           (delete-duplicates graph
+                              (match-lambda* (((from-a pc-a traces-a ...)
+                                               (from-b pc-b traces-b ...))
+                                              (and (equal? from-a from-b)
+                                                   (equal? (pc->string pc-a)
+                                                           (pc->string pc-b))))))) ",\n")
      "],\n"
      "\"transitions\":[\n"
      (string-join
       (filter-map
        (match-lambda
-         ((from from-label (trigger actions ...) to trigger-location)
+         ((from pc (trigger actions ...) to trigger-location)
           (let* ((location (json-location trigger-location))
                  (actions (string-join actions "\n")))
             (format #f
                     "{\"from\":\"~s\", \"to\":\"~s\", \"trigger\":~s, \"action\":~s, \"location\":~a}"
                     from to trigger actions location)))
-         ((from from-label () to trigger-location)
+         ((from pc () to trigger-location)
           (let ((location (json-location trigger-location)))
             (format #f
                     "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":~s, \"location\":~a}"
                     from to "tau" "" location)))
-         ((from from-label x #f #f) #f))
+         ((from pc x #f #f) #f))
        graph)
       ",\n")
      "],\n"
