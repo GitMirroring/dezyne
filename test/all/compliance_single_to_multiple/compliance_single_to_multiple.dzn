@@ -22,12 +22,9 @@
 // Code:
 
 interface ihello {
-  in void hello();
   out void world();
   behaviour {
-    bool b = true;
-    on hello: { b = !b; }
-    [b] on inevitable: world;
+    on inevitable: world;
   }
 }
 
@@ -35,7 +32,6 @@ component compliance_single_to_multiple {
   provides ihello h;
   requires ihello w;
   behaviour {
-    on h.hello(): { w.hello(); }
     on w.world(): { h.world(); h.world(); }
   }
 }
