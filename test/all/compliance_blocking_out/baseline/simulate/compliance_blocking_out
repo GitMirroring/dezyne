@@ -1,4 +1,4 @@
-test/all/compliance_blocking_out/compliance_blocking_out.dzn:48:3: error: non-compliance
+test/all/compliance_blocking_out/compliance_blocking_out.dzn:47:3: error: non-compliance
 h.hello
 h.planet
 <compliance>

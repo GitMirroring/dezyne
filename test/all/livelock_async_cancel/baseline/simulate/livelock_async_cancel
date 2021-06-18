@@ -1,4 +1,4 @@
 p.e
 p.return
-test/all/livelock_async_cancel/livelock_async_cancel.dzn:59:12: error: livelock
+test/all/livelock_async_cancel/livelock_async_cancel.dzn:60:12: error: livelock
 <livelock>

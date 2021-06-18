@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017 Henk Katerberg <henk.katerberg@verum.com>
+// Copyright © 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of dzn-runtime.

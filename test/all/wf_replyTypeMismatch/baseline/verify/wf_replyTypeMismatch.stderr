@@ -1,1 +1,1 @@
-test/all/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:41:17: error: type mismatch: no event with reply type `bool'
+test/all/wf_replyTypeMismatch/wf_replyTypeMismatch.dzn:42:17: error: type mismatch: no event with reply type `bool'

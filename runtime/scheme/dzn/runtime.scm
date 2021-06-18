@@ -1,6 +1,6 @@
 ;;; dzn-runtime -- Dezyne runtime library
 ;;;
-;;; Copyright © 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of dzn-runtime.
 ;;;

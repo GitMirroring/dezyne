@@ -1,2 +1,2 @@
-test/all/undefined/component/trigger/trigger.dzn:17:8: error: event `a' not defined for port `p'
-test/all/undefined/component/trigger/trigger.dzn:13:3: error: port `p' declared here
+test/all/undefined/component/trigger/trigger.dzn:36:8: error: event `a' not defined for port `p'
+test/all/undefined/component/trigger/trigger.dzn:32:3: error: port `p' declared here

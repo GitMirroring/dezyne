@@ -1,7 +1,7 @@
 In test/all/parse_preprocessed_imported_baz/baz.dzn:
 imported from test/all/parse_preprocessed_imported_baz/foo.dzn:
 
-test/all/parse_preprocessed_imported_baz/baz.dzn:1:1: error
+test/all/parse_preprocessed_imported_baz/baz.dzn:20:1: error
 baz
 ^
 `import, dollars, type, namespace, interface, component, EOF' expected

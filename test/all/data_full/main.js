@@ -1,7 +1,7 @@
 #! /usr/bin/env node
-
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.

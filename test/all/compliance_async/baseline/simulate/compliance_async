@@ -1,6 +1,6 @@
 p.e
 p.return
 p.cb
-test/all/compliance_async/compliance_async.dzn:62:17: error: illegal
+test/all/compliance_async/compliance_async.dzn:63:17: error: illegal
 p.e
 <illegal>

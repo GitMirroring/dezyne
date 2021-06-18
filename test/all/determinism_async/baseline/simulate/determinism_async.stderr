@@ -1,2 +1,2 @@
-test/all/determinism_async/determinism_async.dzn:47:3: error: non-deterministic
-test/all/determinism_async/determinism_async.dzn:47:3: error: non-deterministic
+test/all/determinism_async/determinism_async.dzn:48:3: error: non-deterministic
+test/all/determinism_async/determinism_async.dzn:48:3: error: non-deterministic

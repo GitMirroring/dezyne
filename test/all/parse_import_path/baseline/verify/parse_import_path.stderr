@@ -2,7 +2,7 @@ In test/all/parse_import_path/interface.dzn:
 imported from test/all/parse_import_path/component.dzn:
 imported from test/all/parse_import_path/parse_import_path.dzn:
 
-test/all/parse_import_path/interface.dzn:8:2: error
+test/all/parse_import_path/interface.dzn:27:2: error
 }
  ^
-`import, dollars, type, namespace, interface, component, EOF' expected
+ `import, dollars, type, namespace, interface, component, EOF' expected

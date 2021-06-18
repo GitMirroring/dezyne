@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020 Rob Wieringa <Rob.Wieringa@verum.com>
+;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;

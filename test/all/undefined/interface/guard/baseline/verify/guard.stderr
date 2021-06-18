@@ -1,4 +1,4 @@
-test/all/undefined/interface/guard/guard.dzn:7:6: error
+test/all/undefined/interface/guard/guard.dzn:26:6: error
     [foo] on e: {}
      ^
      `otherwise, expression' expected

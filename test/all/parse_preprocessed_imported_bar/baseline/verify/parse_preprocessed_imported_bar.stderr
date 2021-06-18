@@ -1,7 +1,7 @@
 In test/all/parse_preprocessed_imported_bar/bar.dzn:
 imported from test/all/parse_preprocessed_imported_bar/foo.dzn:
 
-test/all/parse_preprocessed_imported_bar/bar.dzn:1:1: error
+test/all/parse_preprocessed_imported_bar/bar.dzn:20:1: error
 bar
 ^
 `import, dollars, type, namespace, interface, component, EOF' expected
