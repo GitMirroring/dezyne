@@ -25,7 +25,7 @@
 interface ihello
 {
   in void hello();
-  out void goodbye();
+  out void world();
 
   behaviour
   {
@@ -40,19 +40,19 @@ component compliance_optional
 
   behaviour
   {
-    on h.hello(): w.world();
-    on w.howdy(): h.goodbye();
+    on h.hello(): w.hello();
+    on w.world(): h.world();
   }
 }
 
 interface iworld
 {
-  in void world();
-  out void howdy();
+  in void hello();
+  out void world();
 
   behaviour
   {
-    on world: {}
-    on optional: howdy;
+    on hello: {}
+    on optional: world;
   }
 }
