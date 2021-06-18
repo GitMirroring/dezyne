@@ -73,7 +73,6 @@ HELLO_TESTS =					\
  %D%/hello_system				\
  %D%/hello_two					\
  %D%/illegal_component0				\
- %D%/livelock_component1			\
  %D%/livelock_interface0			\
  %D%/queuefull_component0
 
@@ -153,6 +152,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_requires_illegal		\
  %D%/compliance_single_to_multiple		\
  %D%/compliance_system_provides_bool		\
+ %D%/component_modeling_loop			\
  %D%/compound_local_assign_call			\
  %D%/data_full					\
  %D%/deadlock_interface_out_only		\

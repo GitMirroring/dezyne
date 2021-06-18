@@ -48,8 +48,7 @@ interface II {
   }
 }
 
-// This component has an livelock problem after one step
-component livelock_component1 {
+component component_modeling_loop {
   provides I i;
   requires II ii;
   behaviour {
