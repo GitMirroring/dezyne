@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -21,34 +22,34 @@
 //
 // Code:
 
-interface nolivelock
+interface ihello
 {
-  in void dummy();
+  in void hello();
 
   behaviour
   {
-    on dummy: {}
+    on hello: {}
   }
 }
 
-interface ilivelock
+interface iworld
 {
-  out void dummy();
+  out void world();
 
   behaviour
   {
-    on inevitable: dummy;
+    on inevitable: world;
   }
 }
 
-component livelock1
+component hello_inevitable_hidden
 {
-  provides nolivelock n;
-  requires ilivelock l;
+  provides ihello h;
+  requires iworld w;
 
   behaviour
   {
-    on n.dummy(): {}
-    on l.dummy(): {}
+    on h.hello(): {}
+    on w.world(): {}
   }
 }

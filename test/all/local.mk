@@ -196,6 +196,7 @@ REGRESSION_TESTS =				\
  %D%/hello_inevitable_blocking_sync_out		\
  %D%/hello_inevitable_illegal			\
  %D%/inevitable_multiple_requires		\
+ %D%/hello_inevitable_hidden			\
  %D%/hello_inevitable_sync_out			\
  %D%/hello_int					\
  %D%/hellointbug				\
@@ -240,7 +241,6 @@ REGRESSION_TESTS =				\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/label_instance_mismatch			\
- %D%/livelock1					\
  %D%/livelock_component2			\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
