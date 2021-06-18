@@ -1,0 +1,6 @@
+model: livelock_component
+h.hello
+w.hello
+w.world
+w.return
+<livelock>

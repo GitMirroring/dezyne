@@ -75,6 +75,7 @@ HELLO_TESTS =					\
  %D%/hello_two					\
  %D%/illegal_component0				\
  %D%/livelock_interface0			\
+ %D%/livelock_component				\
  %D%/queuefull_component0
 
 SEMANTICS_TESTS =				\
