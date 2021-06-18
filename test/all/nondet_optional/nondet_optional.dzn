@@ -32,22 +32,13 @@ interface ihello
   behaviour
   {
     bool idle = true;
-    bool d0 = false;
+    bool do_world = true;
 
-    [idle]
-    {
-      on hello: { idle = false; d0 = false; }
-      on hello: { idle = false; d0 = true; }
-    }
-    [!idle && d0]
-    {
-      on hello: {}
-      on inevitable: { idle = true; world; }
-    }
-    [!idle && !d0]
-    {
-      on hello: {}
-      on optional: { idle = true; cruel; }
+    on hello: { idle = false; do_world = true; }
+    on hello: { idle = false; do_world = false; }
+    [!idle] {
+      [do_world]  on inevitable: { idle = true; world; }
+      [!do_world] on optional: { idle = true; cruel; }
     }
   }
 }
@@ -55,21 +46,14 @@ interface ihello
 interface iworld
 {
   in void hello ();
-  out void done ();
+  out void world ();
 
   behaviour
   {
     bool idle = true;
 
-    [idle]
-    {
-      on hello: idle = false;
-    }
-    [!idle]
-    {
-      on hello: {}
-      on optional: { idle = true; done; }
-    }
+    on hello: idle = false;
+    [!idle] on optional: { idle = true; world; }
   }
 }
 
@@ -81,6 +65,6 @@ component nondet_optional
   behaviour
   {
     on h.hello (): w.hello ();
-    on w.done (): h.cruel ();
+    on w.world (): h.cruel ();
   }
 }
