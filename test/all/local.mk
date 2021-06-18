@@ -73,7 +73,6 @@ HELLO_TESTS =					\
  %D%/hello_system				\
  %D%/hello_two					\
  %D%/illegal_component0				\
- %D%/livelock_component0			\
  %D%/livelock_component1			\
  %D%/livelock_interface0			\
  %D%/queuefull_component0
