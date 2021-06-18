@@ -151,7 +151,6 @@ REGRESSION_TESTS =				\
  %D%/compliance_invalid_action			\
  %D%/compliance_optional			\
  %D%/compliance_out_sync			\
- %D%/compliance_out_two 			\
  %D%/compliance_provides_bool			\
  %D%/compliance_provides_illegal4		\
  %D%/compliance_provides_illegal5		\
