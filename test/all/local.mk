@@ -141,11 +141,11 @@ REGRESSION_TESTS =				\
  %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_implicit_illegal		\
  %D%/compliance_livelock			\
+ %D%/compliance_failures_choice			\
  %D%/compliance_failures_illegal		\
  %D%/compliance_failures_inevitable		\
  %D%/compliance_failures_multiple_provides	\
  %D%/compliance_failures_optional		\
- %D%/compliance_out_inevitable_illegal		\
  %D%/compliance_out_sync			\
  %D%/compliance_out_two 			\
  %D%/compliance_provides_bool			\
@@ -413,6 +413,7 @@ NON_REPRODUCIBLE_TESTS =			\
 
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
+ %D%/compliance_failures_choice			\
  %D%/compliance_livelock			\
  %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\

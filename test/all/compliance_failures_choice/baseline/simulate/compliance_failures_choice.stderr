@@ -1,0 +1,2 @@
+test/all/compliance_failures_illegal/compliance_failures_choice.dzn:59:3: error: non-compliance
+test/all/compliance_failures_illegal/compliance_failures_choice.dzn:59:3: error: component refusal: XXX

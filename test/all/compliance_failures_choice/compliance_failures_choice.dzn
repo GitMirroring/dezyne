@@ -3,6 +3,7 @@
 // Copyright © 2018 Henk Katerberg <henk.katerberg@verum.com>
 // Copyright © 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2020 Rob Wieringa <rob.wieringa@verum.com>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -19,7 +20,7 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
-// Commentary: TODO: use dzn lts to filter h.hello (because leads to illegal).
+// Commentary:
 //
 // Code:
 
@@ -33,7 +34,7 @@ interface ihello
     bool b = false;
 
     [!b] on hello: b = true;
-    [b] on hello: illegal;
+    [b] on hello: illegal;   // refuse second hello
     [b] on inevitable: {b = false; world;}
   }
 }
@@ -41,8 +42,7 @@ interface ihello
 interface iworld
 {
   in void hello();
-  in void goodbye();
-  out void world();
+  in bool terminated();
 
   behaviour
   {
@@ -50,28 +50,22 @@ interface iworld
 
     [!b] on hello: b = true;
     [b] on hello: illegal;
-    on goodbye: {}
-    [b] on optional: {b = false; world;}
+    on terminated: reply(!b); // avoids deadlock
   }
 }
 
-component compliance_out_inevitable_illegal
+component compliance_failures_choice
 {
   provides ihello h;
   requires iworld w;
 
   behaviour
   {
-    bool b = false;
+    bool b = true;
 
-    [!b] on h.hello(): {b = true; w.hello();}
-    on w.world(): h.world();
+    on h.hello(): {if(b) w.hello(); b = false;} // accept second hello
   }
 }
 
-
-// Expect compliance fail:
-// Spec ihello allows
-// <hello, return, world>
-// Impl compliance_out_inevitable performs:
-// <h.hello, w.hello, w.return, h.return, h.hello>
+// ihello                            : hello, return, world (refuses hello)
+// compliance_failures_choice : hello, return, hello (refuses world)
