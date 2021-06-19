@@ -1,1 +1,1 @@
-out/compliance_provides_illegal4/compliance_provides_illegal4.dzn:22:-14: error: illegal
+test/all/compliance_provides_illegal4/compliance_provides_illegal4.dzn:46:20: error: illegal

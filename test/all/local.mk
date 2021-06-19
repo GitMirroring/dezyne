@@ -152,9 +152,11 @@ REGRESSION_TESTS =				\
  %D%/compliance_out_sync			\
  %D%/compliance_out_two 			\
  %D%/compliance_provides_bool			\
+ %D%/compliance_provides_illegal4		\
  %D%/compliance_provides_illegal5		\
  %D%/compliance_provides_int			\
  %D%/compliance_provides_out			\
+ %D%/compliance_reply_bool			\
  %D%/compliance_requires_illegal		\
  %D%/compliance_single_to_multiple		\
  %D%/compliance_system_provides_bool		\
@@ -410,13 +412,6 @@ PARSER_TESTS =					\
  %D%/undefined/interface/if			\
  %D%/undefined/interface/trigger		\
  %D%/undefined/interface/var
-
-# The LTS for these tests is not generated reproducibly by mcrl22lps |
-# lps2lts across different mcrl2 builds, at least depending on how mcrl2
-# was compiled (e.g., using boost-1.69 or boost-1.70).
-NON_REPRODUCIBLE_TESTS =			\
- %D%/compliance_provides_illegal4		\
- %D%/compliance_reply_bool
 
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
