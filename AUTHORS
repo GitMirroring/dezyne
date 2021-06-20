@@ -1,12 +1,52 @@
 Dezyne was written by
 
 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Initial author of Gaiag -- https://gitlab.com/janneke/gaiag
+Initial author of the Scheme and JavaScript code generators
+Initial author of the VM and system simulator
+
 Rutger van Beusekom <rutger.van.beusekom@gmail.com>
-Rob Wieringa <rob.wieringa@verum.com>
+Initial author of the CSP generator
+Initial author of the C++ runtime and C++ code generator
+Initial author of the CS runtime and CS code generator
+Initial author of the Camera example
+Initial author of the mCRL2 generator
+Initial author of the PEG parser
+Initial author of the state diagram generator (explore)
+Initial author of blocking in the VM and system simulator
+Main author of the VM and system simulator
+
+Rob Wieringa <rma.wieringa@gmail.com>
+Initial author of well-formedness checks
+Initial author of the AST node wrapper and parent mechanism
+Initial author of the VM runtime library
+
+Johri van Eerd <vaneerd.johri@gmail.com>
+Initial author of the mCRL2 generator prototype
+Main author of the mCRL2 generator
+Initial author of the CS runtime and CS code generator
+
 Paul Hoogendijk <paul.hoogendijk@verum.com>
-Johri van Eerd <johri.van.eerd@verum.com>
+Initial author of the first C code generator
+Initial author of AST normalisations
+Initial author of the traces tool
+Initial author of the LTS tool
+Initial author of the Alarm example
+Main author of the CSP generator
+Main author of the mCRL2 generator
+Initial author of the system simulator livelock check
+Initial author of the LTS generator (explore)
+
 Henk Katerberg <henk.katerberg@yahoo.com>
+Initial author of the LTS tool
+Initial author of the Lego Ball Sorter example
+
 Filip Toman <filip.toman@verum.com>
+Initial author of the C code generator
+
+Ard-Jan Moerdijk <ard-jan.moerdijk@verum.com>
+Ladislau Posta <ladislau.posta@verum.com>
+Initial authors of the reference manual
 
 which covers all files except the imported files listed below.
 
@@ -23,5 +63,5 @@ dzn/peg/using-parsers.scm
 Shell utilities from GNU Guix
 dzn/shell-util.scm
 
-Test intergrtion from Gash
+Test intergration from Gash
 test/dzn/automake.scm
