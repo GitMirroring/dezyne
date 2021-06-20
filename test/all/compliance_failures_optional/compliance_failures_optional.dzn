@@ -48,7 +48,7 @@ interface iworld
   }
 }
 
-component compliance_out_inevitable
+component compliance_failures_optional
 {
   provides ihello h;
   requires iworld w;
