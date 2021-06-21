@@ -40,6 +40,7 @@
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
   #:export (%modeling?
+            debug:lts->alist
             display-trace-n
             display-trails
             label->string
@@ -78,6 +79,18 @@
     (define (strip-sut-prefix o)
       (if (string-prefix? "sut." o) (substring o 4) o))
     (map strip-sut-prefix trail)))
+
+(define (debug:lts->alist pc->state-number lts)
+  (hash-map->list
+   (lambda (from pc+traces)
+     (match pc+traces
+       ((pc traces ...)
+        (cons from
+              (map (lambda (trace)
+                     (append (trace->string-trail trace)
+                             (list (pc->state-number (car trace)))))
+                   traces)))))
+   lts))
 
 ;;; events predicate
 

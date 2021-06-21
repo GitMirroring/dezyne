@@ -149,25 +149,35 @@ actions to a provides port other than PORT, mark the trace as
     (#f
      '())))
 
-(define* ((rtc-lts->traces pc->state-number #:key prefix-set?) lts)
-  "Create a (prefix) set of traces from LTS."
+(define* ((rtc-lts->traces pc->state-number #:key prefix-set? continue-on-silent?) lts)
+  "Create a (prefix) set of traces from LTS.  When CONTINUE-ON-SILENT?,
+never extend a trace, but do continue as long as the trail is silent."
 
   (define (extend todo trace)
     (map (cute append trace <>) todo))
+
+  (define observable?
+    (compose pair? trace->string-trail))
 
   (let loop ((seen '()) (tos '(1)))
     (if (null? tos) '()
         (let* ((traces (append-map (cute rtc-lts-node->traces lts <>) tos))
                (seen (append seen tos))
+               ;;done = seen or observable? when continue-on-silent?
+               ;;todo = not seen and not observable?
                (done todo (partition
-                           (compose (cute member <> seen) pc->state-number car)
+                           (disjoin
+                            (compose (cute member <> seen) pc->state-number car)
+                            (if (not continue-on-silent?) (const #f)
+                                observable?))
                            traces))
                (tos (map (compose pc->state-number car) todo))
                (tos (delete-duplicates tos =)))
           (let* ((continuations (loop seen tos))
                  (traces (append (if prefix-set? traces done)
                                  (if (null? continuations) todo
-                                     (append-map (cute extend todo <>) continuations)))))
+                                     (if continue-on-silent? continuations
+                                         (append-map (cute extend todo <>) continuations))))))
             traces)))))
 
 (define (check-provides-compliance pc event trace)
@@ -552,7 +562,10 @@ refusals-check.  Run final REPORT and return exit status."
                                              (%exploring? #t))
                                 (pc->rtc-lts pc))))
             (parameterize ((%sut r:provides))
-              ((rtc-lts->traces pc->state-number #:prefix-set? #t) provides-lts))))
+              ((rtc-lts->traces pc->state-number
+                                #:prefix-set? #t
+                                #:continue-on-silent? #t)
+               provides-lts))))
 
         (let* ((r:provides (runtime:port (%sut) provides))
                (r:provides (runtime:other-port r:provides))
@@ -573,6 +586,7 @@ refusals-check.  Run final REPORT and return exit status."
                                                  car)
                                         provides-trails))
                (provides-trails (map remove-inevitable provides-trails))
+               (provides-trails (filter pair? provides-trails))
                (port-name (.name provides))
                (component-trails (map trace->string-trail component-traces))
                (component-trails (map (filter-provides port-name) component-trails))
