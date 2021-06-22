@@ -179,6 +179,7 @@ REGRESSION_TESTS =				\
  %D%/external_asynchronous_sync			\
  %D%/external_requires_twice			\
  %D%/compliance_fork_provides			\
+ %D%/failures_inevitable			\
  %D%/illegal_external				\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
