@@ -53,7 +53,7 @@ interface iworld
   }
 }
 
-component second_inevitable
+component failures_second_inevitable
 {
   provides ihello h;
   requires iworld w;

@@ -182,6 +182,7 @@ REGRESSION_TESTS =				\
  %D%/failures_inevitable			\
  %D%/failures_nondet_inevitable			\
  %D%/failures_nondet_optional			\
+ %D%/failures_second_inevitable			\
  %D%/illegal_external				\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
@@ -284,7 +285,6 @@ REGRESSION_TESTS =				\
  %D%/range_return				\
  %D%/reply_expression				\
  %D%/deadlock_reply_modeling			\
- %D%/second_inevitable				\
  %D%/second_reply				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
