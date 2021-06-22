@@ -58,7 +58,7 @@ interface iworld
   }
 }
 
-component nondet_optional
+component failures_nondet_optional
 {
   provides ihello h;
   requires iworld w;

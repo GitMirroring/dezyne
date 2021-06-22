@@ -181,6 +181,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_fork_provides			\
  %D%/failures_inevitable			\
  %D%/failures_nondet_inevitable			\
+ %D%/failures_nondet_optional			\
  %D%/illegal_external				\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
@@ -269,7 +270,6 @@ REGRESSION_TESTS =				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
- %D%/nondet_optional				\
  %D%/queuefull_external				\
  %D%/queuefull_external_sync			\
  %D%/range_action				\
