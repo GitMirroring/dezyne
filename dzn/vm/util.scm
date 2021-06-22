@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 regex)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
   #:use-module (dzn ast)
@@ -83,6 +84,7 @@
             set-variables
             string->q-trigger
             string->trail
+            string->trail+model
             string->trigger
             string->value
             trace-head:eq?
@@ -126,9 +128,23 @@
         (cons x (helper (read)))))
   (helper (read)))
 
-(define (string->trail o)
-  (map (lambda (x) (if (symbol? x) (symbol->string x) x))
-       (with-input-from-string (string-join (string-split o #\,) " ") read-input-file)))
+(define (string->trail trail)
+  (define (->string o)
+    (if (symbol? o) (symbol->string o) o))
+  (let* ((trail (string-join (string-split trail #\,) " "))
+         (trail (with-input-from-string trail read-input-file))
+         (trail (map ->string trail))
+         (trail (filter (negate (conjoin string? (cute string-prefix? "<" <>))) trail)))
+    trail))
+
+(define (string->trail+model trail)
+  (let* ((model-match (string-match "(^[ \n]*model: ?([^ \n,]+))" trail))
+         (trail (if model-match
+                    (substring trail (match:end model-match))
+                    trail))
+         (trail (string->trail trail))
+         (model (and model-match (match:substring model-match 2))))
+    (values trail model)))
 
 (define-method (read-input pc)
   (when (isatty? (current-input-port))

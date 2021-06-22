@@ -23,7 +23,6 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 regex)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -827,20 +826,16 @@ REFUSALS-CHECK?, run refusals-check at the end."
 session for MODEL, following TRAIL.  When STRICT?, the trail must
 include all observable events.  When DEADLOCK-CHECK?, run check-deadlock
 at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
-  (let* ((trail-string (or trail
-                           (and (not (isatty? (current-input-port)))
-                                (input-port? (current-input-port))
-                                (read-string (current-input-port)))
-                           ""))
-         (model-match (string-match "(^[ \n]*model: ?([^ \n,]+))" trail-string))
-         (trail-string (if model-match
-                           (substring trail-string (match:end model-match))
-                           trail-string))
-         (model-name (or model-name
-                         (and model-match (match:substring model-match 2))))
-         (scm-trail (string->trail trail-string))
-         (scm-trail (if (and trail (null? scm-trail)) '(#f) scm-trail)))
-    (simulate* root scm-trail
+  (let* ((trail? trail)
+         (trail (or trail
+                    (and (not (isatty? (current-input-port)))
+                         (input-port? (current-input-port))
+                         (read-string (current-input-port)))
+                    ""))
+         (trail trail-model (string->trail+model trail))
+         (model-name (or model-name trail-model))
+         (trail (if (and trail? (null? trail)) '(#f) trail)))
+    (simulate* root trail
                #:deadlock-check? deadlock-check?
                #:refusals-check? refusals-check?
                #:model-name model-name
