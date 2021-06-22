@@ -148,6 +148,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_failures_choice			\
  %D%/compliance_failures_illegal		\
  %D%/compliance_failures_inevitable		\
+ %D%/compliance_failures_inevitable2		\
  %D%/compliance_failures_multiple_provides	\
  %D%/compliance_failures_optional		\
  %D%/compliance_invalid_action			\
@@ -418,6 +419,7 @@ PARSER_TESTS =					\
 
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
+ %D%/compliance_failures_inevitable2		\
  %D%/compliance_livelock			\
  %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\
