@@ -183,6 +183,9 @@
 (define-method (pc->event (o <match-error>))
   (cons #f "<match>"))
 
+(define-method (pc->event (o <postponed-match>))
+  (cons #f "<postponed-match>"))
+
 (define-method (pc->event (pc <program-counter>) (o <statement>))
   (pc->event (.instance pc) o))
 

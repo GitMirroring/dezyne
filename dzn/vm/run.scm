@@ -242,21 +242,25 @@ PC until RTC?."
              (trace (rewrite-trace-head (cut clone <> #:status #f #:trail trail) trace)))
         (loop (append-map extend-trace (list trace)))))
 
-    (define (reply-label pc)
-      (or (.reply pc) "return"))
+    (define (choice-label trace)
+      (match (trace->trail trace)
+        ((label ... (($ <trigger-return>) . string) (#f . "<postponed-match>"))
+         (or (.reply (car trace)) "return"))
+        ((label ... (choice . string) (#f . "<postponed-match>")) choice)))
 
     (define (choose-postponed-match traces)
-      (define (label pc)
-        (let* ((label (label->string (reply-label pc)))
+      (define (label trace)
+        (let* ((label (label->string (choice-label trace)))
+               (pc (cadr trace))
                (instance (.instance pc))
                (port-name (string-join (runtime:instance->path instance) ".")))
           (format #f "~a.~a" port-name label)))
 
-      (let ((traces (map (cute rewrite-trace-head (cute clone <> #:status #f) <>) traces)))
-        (format (current-error-port) "eligible: ~a\n" (string-join (map (compose label cadr) traces)))
-        (let* ((input pc ((%next-input) pc))
-               (traces (filter (compose (cute equal? input <>) observable cadr) traces)))
-          (loop (append-map extend-trace traces)))))
+      (format (current-error-port) "eligible: ~a\n" (string-join (map label traces)))
+      (let* ((input pc ((%next-input) pc))
+             (traces (map cdr traces)) ;drop <postponed-match> pc
+             (traces (filter (compose (cute equal? input <>) observable car) traces)))
+        (loop (append-map extend-trace traces))))
 
     (define (mark-end-of-trail traces)
       (define (set-end-of-trail labels pc)
@@ -264,9 +268,10 @@ PC until RTC?."
                (labels (make <labels> #:elements labels))
                (status (make <end-of-trail> #:ast statement #:labels labels)))
           (clone pc #:status status)))
-      (let ((labels (map (compose reply-label cadr) traces)))
-        (map (compose (cute rewrite-trace-head (cute set-end-of-trail labels <>) <>)
-                      cdr) traces)))
+      (let* ((labels (map choice-label traces))
+             (traces (map cdr traces))) ;drop <postponed-match> pc
+        (map (cute rewrite-trace-head (cute set-end-of-trail labels <>) <>)
+             traces)))
 
     (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
            (traces (filter-match-error traces))
