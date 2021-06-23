@@ -1,0 +1,8 @@
+(header ((h) ihello provides) ((sut) end_of_trail_action2 component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+(trail "h.hello" "w.hello")
+(labels "h.hello" "w.world" "w.cruel")
+(eligible "w.world" "w.cruel")

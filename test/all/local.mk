@@ -175,6 +175,7 @@ REGRESSION_TESTS =				\
  %D%/empty_dollars				\
  %D%/end_of_trail				\
  %D%/end_of_trail_action			\
+ %D%/end_of_trail_action2			\
  %D%/enum_expressions				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
