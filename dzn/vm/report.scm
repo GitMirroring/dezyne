@@ -494,7 +494,8 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                  (is-a? statement <trigger-return>))
             (let ((client-pc (clone pc #:instance (car (%instances)))))
               (cons* client-pc pc (loop (cdr trace) pc))))
-           ((and (is-a? statement <action>)
+           ((and next
+                 (is-a? statement <action>)
                  (.instance next)
                  (.deferred (get-state next))
                  (pair? (.q (get-state next (.deferred (get-state next))))))
