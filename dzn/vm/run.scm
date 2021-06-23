@@ -122,6 +122,18 @@
     (if (or valid? (null? postponed-match)) rest
         postponed-match)))
 
+(define (non-deterministic? traces)
+  "Return #t when TRACES are a nondeterministic set, i.e.: at least two
+valid PCs that are executing an imperative statement."
+  (let* ((pcs (map car traces))
+         (pcs (filter (negate .status) pcs)))
+    (and
+     (every (compose (cute is-a? <> <runtime:component>) .instance) pcs)
+     (let ((declarative imperative
+                        (partition (compose ast:declarative? .statement)
+                                   pcs)))
+       (> (length imperative) 1)))))
+
 (define (mark-determinism-error trace)
   "Truncate TRACE up to including the component <initial-compound> and
 mark it with <determinism-error>."
@@ -196,18 +208,13 @@ program-counters produced by taking a step."
                                 (map (mark-pc input o) pcs))))
                     (traces (map (cut cons <> trace) pcs)))
                (cond
-                ((and (ast:declarative? o)
-                      (is-a? (.instance pc) <runtime:component>)
-                      (not (%exploring?)))
-                 (let ((decarative imperative
-                                   (partition (compose ast:declarative? .statement car)
-                                              traces)))
+                ((ast:declarative? o)
+                 (let ((declarative imperative
+                                    (partition (compose ast:declarative? .statement car)
+                                               traces)))
                    (cond
-                    ((pair? decarative)
-                     (let* ((traces (append imperative (append-map loop decarative)))
-                            (valid (filter (compose (negate .status) car) traces)))
-                       (if (<= (length valid) 1) traces
-                           (map mark-determinism-error traces))))
+                    ((pair? declarative)
+                     (append imperative (append-map loop declarative)))
                     (else
                      traces))))
                 (observable
@@ -296,7 +303,14 @@ PC until RTC?."
        (else
         (loop (append-map extend-trace traces))))))
 
-  (loop (list (list pc))))
+  (let ((traces (extend-trace (list pc))))
+    (cond
+     ((and (not (%exploring?))
+           (non-deterministic? traces))
+      (let ((traces (filter-implicit-illegal traces)))
+        (map mark-determinism-error traces)))
+     (else
+      (loop traces)))))
 
 (define-method (run-to-completion-unmemoized (pc <program-counter>) event)
   "Return a list of traces produced by taking steps, starting from PC
