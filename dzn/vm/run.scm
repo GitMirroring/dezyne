@@ -122,26 +122,6 @@
     (if (or valid? (null? postponed-match)) rest
         postponed-match)))
 
-(define (non-deterministic? pcs)
-  "Return #t when PCs are a nondeterministic set, i.e.: at least two
-valid PCS have the same state and are executing an imperative statement
-in the same component."
-  (if (%exploring?) #f
-      (let ((pcs (filter (negate .status) pcs)))
-        (and (not (is-a? ((compose .type .ast %sut)) <interface>))
-             (not (equal? pcs
-                          (delete-duplicates pcs
-                                             (lambda (a b)
-                                               (equal? (pc->string a) (pc->string b))))))
-             (let* ((statements (map .statement pcs))
-                    (imperative (filter ast:imperative? statements)))
-               (> (length imperative) 1))
-             (let* ((instances (filter-map .instance pcs))
-                    (types (map (compose .type .ast) instances))
-                    (components (filter (is? <component>) types)))
-               ;; TODO: the *same* component (tests have only 1 component anyway...)
-               (> (length components) 1))))))
-
 (define (mark-determinism-error trace)
   "Truncate TRACE up to including the component <initial-compound> and
 mark it with <determinism-error>."
@@ -193,27 +173,47 @@ program-counters produced by taking a step."
           (else
            (clone pc #:status (make <postponed-match> #:ast o #:input input)))))
 
-  (let ((pc (car trace))
-        (livelock-trace (livelock? trace)))
-    (cond (livelock-trace (list (mark-livelock-error livelock-trace)))
-          ((rtc? pc) (list trace))
-          (else
-           (let* ((o (.statement pc))
-                  (observable? (or (is-a? o <action>)
-                                   (is-a? o <q-out>)
-                                   (is-a? o <trigger-return>)))
-                  (observable (and observable? (and=> (trace->trail pc) cdr)))
-                  (pcs (step pc o))
-                  (input pc (if (and observable (not (interactive?))) ((%next-input) pc) (values #f pc)))
-                  (pcs (cond ((%exploring?)
-                              pcs)
-                             ((not observable)
-                              pcs)
-                             ((equal? input observable)
-                              (map (cute clone <> #:trail (.trail pc)) pcs))
-                             (else
-                              (map (mark-pc input o) pcs)))))
-             (map (cut cons <> trace) pcs))))))
+  (let loop ((trace trace))
+    (let ((pc (car trace))
+          (livelock-trace (livelock? trace)))
+      (cond (livelock-trace (list (mark-livelock-error livelock-trace)))
+            ((rtc? pc) (list trace))
+            (else
+             (let* ((o (.statement pc))
+                    (observable? (or (is-a? o <action>)
+                                     (is-a? o <q-out>)
+                                     (is-a? o <trigger-return>)))
+                    (observable (and observable? (and=> (trace->trail pc) cdr)))
+                    (pcs (step pc o))
+                    (input pc (if (and observable (not (interactive?))) ((%next-input) pc) (values #f pc)))
+                    (pcs (cond ((%exploring?)
+                                pcs)
+                               ((not observable)
+                                pcs)
+                               ((equal? input observable)
+                                (map (cute clone <> #:trail (.trail pc)) pcs))
+                               (else
+                                (map (mark-pc input o) pcs))))
+                    (traces (map (cut cons <> trace) pcs)))
+               (cond
+                ((and (ast:declarative? o)
+                      (is-a? (.instance pc) <runtime:component>)
+                      (not (%exploring?)))
+                 (let ((decarative imperative
+                                   (partition (compose ast:declarative? .statement car)
+                                              traces)))
+                   (cond
+                    ((pair? decarative)
+                     (let* ((traces (append imperative (append-map loop decarative)))
+                            (valid (filter (compose (negate .status) car) traces)))
+                       (if (<= (length valid) 1) traces
+                           (map mark-determinism-error traces))))
+                    (else
+                     traces))))
+                (observable
+                 traces)
+                (else
+                 (append-map loop traces)))))))))
 
 (define-method (run-to-completion-unmemoized (pc <program-counter>))
   "Return a list of traces produced by taking steps, starting from
@@ -294,9 +294,6 @@ PC until RTC?."
             (choose-postponed-match traces))
            (else
             (mark-end-of-trail traces)))))
-       ((non-deterministic? pcs)
-        (let ((traces (filter-implicit-illegal traces)))
-          (map mark-determinism-error traces)))
        (else
         (loop (append-map extend-trace traces)))))))
 
