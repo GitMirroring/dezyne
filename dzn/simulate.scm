@@ -462,6 +462,68 @@ of traces, possibly marked with <compliance-error>."
               (trace (cons pc (cdr pc+blocked-trace))))
          (list trace))))))
 
+(define-method (pc->modeling-lts (pc <program-counter>))
+  "Create a partial modeling-LTS at PC, i.e., use inevitable and
+optional labels only and stop when observable event seen."
+
+  (define observable?
+    (compose pair? trace->string-trail))
+
+  (let ((lts pc->state-number count
+             (pc->rtc-lts pc
+                          #:trace-done? observable?
+                          #:labels (const '("inevitable" "optional")))))
+    (when %debug?
+      (parameterize ((%modeling? #t))
+        ((@ (ice-9 pretty-print) pretty-print)
+         (debug:lts->alist pc->state-number lts) (current-error-port))))
+    lts))
+
+(define (modeling-lts-stable? lts)
+  "Return if modeling-LTS has a node without (INEVITABLE event)."
+
+  (define (inevitable-observable? trace)
+    (let ((trail (parameterize ((%modeling? #t))
+                   (trace->string-trail trace))))
+      (match trail
+        (("inevitable" observable event ...)
+         #t)
+        (_
+         #f))))
+
+  (define (node-stable? from pc+traces result)
+    (or result
+        (let ((traces (match pc+traces
+                        ((pc traces ...)
+                         traces)
+                        (#f
+                         '()))))
+          (not (find inevitable-observable? traces)))))
+
+  (hash-fold node-stable? #f lts))
+
+(define (modeling-lts->observables lts)
+  "Return all observables from the modeling-LTS."
+
+  (define (observable trace)
+    (let ((trail (parameterize ((%modeling? #t))
+                   (trace->string-trail trace))))
+      (match trail
+        (((or "inevitable" "optional") observable event ...)
+         observable)
+        (_
+         #f))))
+
+  (define (node-observables from pc+traces)
+    (let ((traces (match pc+traces
+                    ((pc traces ...)
+                     traces)
+                    (#f
+                     '()))))
+      (filter-map observable traces)))
+
+  (apply append (hash-map->list node-observables lts)))
+
 (define* (end-report from-pcs list-of-traces #:key deadlock-check?
                      refusals-check? state? trace locations? verbose?)
   "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
@@ -507,133 +569,93 @@ refusals-check.  Run final REPORT and return exit status."
              status))))
 
   (define (refusals-report from-pcs pc traces)
-    "Run check-refusals and report.  Return exit status."
+    "Run check-provides-fork and check-refusals and report.  Return exit
+status."
 
-    (define (trace->string-trail trace)
-      (let ((trail (map cdr (trace->trail trace))))
-        (define (strip-sut-prefix o)
-          (if (string-prefix? "sut." o) (substring o 4) o))
-        (map strip-sut-prefix trail)))
+    (define (trace-check-provides-fork trace)
+      (let ((trigger (and=> (find .trigger trace) .trigger)))
+        (and trigger
+             (let ((port (.port trigger)))
+               (and port
+                    (ast:provides? port)
+                    (check-provides-fork port trace))))))
 
-    (define (optional-port-trace? trace)
-      (let* ((requires-on (filter (compose (is? <on>) .statement) trace))
-             (triggers (map .trigger requires-on)))
-        (find ast:optional? triggers)))
+    (define (component-check-provides-fork component)
+      (let* ((component-lts pc->state-number count
+                            (parameterize ((%exploring? #t))
+                              (pc->rtc-lts pc
+                                           #:trace-done? (conjoin did-provides-out? (negate blocked?)))))
+             (component-traces ((rtc-lts->traces pc->state-number) component-lts))
+             (component-traces (filter (negate optional-trace?) component-traces)))
+        (any trace-check-provides-fork component-traces)))
 
-    (define ((filter-provides port-name) trail)
-      (let ((port-prefix (format #f "~a." port-name)))
-        (filter (disjoin (cut equal? <> "<illegal>")
-                         (cut string-prefix? port-prefix <>))
-                trail)))
-    (define (trail->events trail)
-      (map (compose last (cut string-split <> #\.)) trail))
+    (define ((port-lts-stable? pc) port)
+      (let* ((instance (runtime:port (%sut) port))
+             (instance (runtime:other-port instance))
+             (lts (parameterize ((%sut instance))
+                    (pc->modeling-lts pc))))
+        (parameterize ((%sut instance))
+          (and (modeling-lts-stable? lts) lts))))
 
-    (define ((prepend-port port-name) trail)
-      (map (cute string-append port-name "." <>) trail))
+    (define (requires-ports-stable? component pc)
+      (let ((requires (ast:requires-port* component)))
+        (every (port-lts-stable? pc) requires)))
+
+    (define (port-refusals pc port)
+      (let* ((instance (runtime:port (%sut) port))
+             (instance (runtime:other-port instance))
+             (lts (parameterize ((%sut instance))
+                    (pc->modeling-lts pc)))
+             (port-name (.name port))
+             (refusals (parameterize ((%sut instance))
+                         (modeling-lts->observables lts)))
+             (refusals (map (cute string-append port-name "." <>) refusals))
+             (refusals (map list refusals)))
+        (and (pair? refusals) refusals)))
 
     (define blocked?
       (compose pair? .blocked car))
 
-    (define (optional->inevitable trail)
-      (match trail
-        (("optional" rest ...) (cons "inevitable" rest))
-        (_ trail)))
-
-    (define (remove-inevitable trail)
-      (filter (negate (cute equal? <> "inevitable")) trail))
-
-    (define (inevitable-trail? trail)
-      (match trail
-        (("inevitable" rest ...) #t)
-        (_ #f)))
-
-    (define (optional-trail? trail)
-      (match trail
-        (("optional" rest ...) #t)
-        (_ #f)))
-
-    (let* ((component (.type (.ast (%sut))))
-           (component-lts pc->state-number count
-                          (parameterize ((%exploring? #t))
-                            (pc->rtc-lts pc
-                                         #:trace-done? (conjoin did-provides-out? (negate blocked?)))))
-           (component-traces ((rtc-lts->traces pc->state-number) component-lts))
-           (component-traces (filter (negate optional-trace?) component-traces)))
-
-      (define (check-refusals provides)
-
-        (define (pc->provides-traces r:provides pc)
-          (let ((provides-lts pc->state-number count
-                              (parameterize ((%sut r:provides)
-                                             (%exploring? #t))
-                                (pc->rtc-lts pc))))
-            (parameterize ((%sut r:provides))
-              ((rtc-lts->traces pc->state-number
-                                #:prefix-set? #t
-                                #:continue-on-silent? #t)
-               provides-lts))))
-
-        (let* ((r:provides (runtime:port (%sut) provides))
-               (r:provides (runtime:other-port r:provides))
-               (provides-traces (append-map (cute pc->provides-traces r:provides <>) from-pcs))
-               (provides-trails (parameterize ((%sut r:provides)
-                                               (%modeling? #t))
-                                  (map trace->string-trail provides-traces)))
-               (provides-trails (filter pair? provides-trails))
-               (inevitable-trails? (find inevitable-trail? provides-trails))
-               (provides-trails (if inevitable-trails? (map optional->inevitable provides-trails)
-                                    (filter (negate optional-trail?) provides-trails)))
-               (provides-trails (delete-duplicates provides-trails equal?))
-               (triggers (map car provides-trails))
-               (unique-triggers (delete-duplicates triggers equal?))
-               (non-deterministic-triggers (lset-difference eq? triggers unique-triggers))
-               (provides-trails (filter (compose not
-                                                 (cute member <> non-deterministic-triggers)
-                                                 car)
-                                        provides-trails))
-               (provides-trails (map remove-inevitable provides-trails))
-               (provides-trails (filter pair? provides-trails))
-               (port-name (.name provides))
-               (component-trails (map trace->string-trail component-traces))
-               (component-trails (map (filter-provides port-name) component-trails))
-               (component-events (map trail->events component-trails))
-               (refusals (lset-difference equal? provides-trails component-events))
-               (refusals (map (prepend-port port-name) refusals)))
-          (and (pair? refusals) refusals)))
-
-      (define (trace-check-provides-fork trace)
-        (let ((trigger (and=> (find .trigger trace) .trigger)))
-          (and trigger
-               (let ((port (.port trigger)))
-                 (and port
-                      (ast:provides? port)
-                      (check-provides-fork port trace))))))
-
+    (let ((component (.type (.ast (%sut)))))
       (or
+       ;; Forking from one to another provides port is a compliance
+       ;; error.
        (and (> (length (ast:provides-port* component)) 1)
-            (let ((fork (any trace-check-provides-fork component-traces)))
+            (let ((fork (component-check-provides-fork component)))
               (and fork
                    (report fork
                            #:locations? locations?
                            #:trace trace
                            #:verbose? verbose?))))
 
-       (let* ((ports (ast:provides-port* component))
-              (refusals (any check-refusals ports)))
+       ;; In the failures model, refusals can only occur when the
+       ;; component LTS is stable.  When the component LTS is not
+       ;; stable, that means outgoing tau events: no refusals.  A
+       ;; component LTS is stable when all requires port LTSs are
+       ;; stable.  When the a provides port's modeling-LTS in not
+       ;; stable, the refusals set consists of all its observable
+       ;; events.
+       (and (= (length from-pcs) 1)
+            (null? (.external-q (car from-pcs)))
+            (requires-ports-stable? component pc)
+            (let* ((ports (ast:provides-port* component))
+                   (instable (find (negate (port-lts-stable? pc)) ports))
+                   (pc (car from-pcs))
+                   (refusals (and instable (port-refusals pc instable))))
 
-         (define (mark-refusals pc)
-           (clone pc #:status (make <refusals-error>
-                                #:ast (.behaviour component)
-                                #:message "compliance"
-                                #:refusals refusals)))
+              (define (mark-refusals pc)
+                (clone pc #:status (make <refusals-error>
+                                     #:ast (.behaviour component)
+                                     #:message "compliance"
+                                     #:refusals refusals)))
 
-         (and (pair? refusals)
-              (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
-                (report traces
-                        #:locations? locations?
-                        #:state? state?
-                        #:trace trace
-                        #:verbose? verbose?)))))))
+              (and (pair? refusals)
+                   (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
+                     (report traces
+                             #:locations? locations?
+                             #:state? state?
+                             #:trace trace
+                             #:verbose? verbose?))))))))
 
   (define (eligible traces)
     (match traces

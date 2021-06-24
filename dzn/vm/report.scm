@@ -81,16 +81,17 @@
     (map strip-sut-prefix trail)))
 
 (define (debug:lts->alist pc->state-number lts)
-  (hash-map->list
-   (lambda (from pc+traces)
-     (match pc+traces
-       ((pc traces ...)
-        (cons from
-              (map (lambda (trace)
-                     (append (trace->string-trail trace)
-                             (list (pc->state-number (car trace)))))
-                   traces)))))
-   lts))
+  (define (entry->pair from pc+traces)
+    (match pc+traces
+      ((pc traces ...)
+       (cons from
+             (map (lambda (trace)
+                    (append (trace->string-trail trace)
+                            (list (pc->state-number (car trace)))))
+                  traces)))))
+  (let ((alist (hash-map->list entry->pair lts)))
+    (sort alist (match-lambda* (((from-a traces ...) (from-b traces ...))
+                                (< from-a from-b))))))
 
 ;;; events predicate
 

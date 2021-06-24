@@ -422,7 +422,6 @@ PARSER_TESTS =					\
 
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
- %D%/compliance_failures_inevitable2		\
  %D%/compliance_livelock			\
  %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\

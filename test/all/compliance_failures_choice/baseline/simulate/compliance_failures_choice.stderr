@@ -1,3 +1,2 @@
 test/all/compliance_failures_choice/compliance_failures_choice.dzn:62:3: error: non-compliance
-test/all/compliance_failures_choice/compliance_failures_choice.dzn:62:3: error: component refusal: h.hello h.<illegal>
 test/all/compliance_failures_choice/compliance_failures_choice.dzn:62:3: error: component refusal: h.world
