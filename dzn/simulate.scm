@@ -183,7 +183,8 @@ never extend a trace, but do continue as long as the trail is silent."
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
 Update the state of the provides port in TRACE for EVENT.  Return a list
 of traces, possibly marked with <compliance-error>."
-  (let* ((component ((compose .type .ast) (%sut)))
+  (let* ((pc (if (and (pair? (.blocked pc)) (pair? trace)) (last trace) pc))
+         (component ((compose .type .ast) (%sut)))
          (sut-trail (trace->trail trace))
          (event (match sut-trail
                   (((ast . event) step ...) event)
@@ -241,7 +242,8 @@ of traces, possibly marked with <compliance-error>."
                  (sut-trail (filter (compose (disjoin (cut equal? <> "illegal")
                                                       (cut string-prefix? port-prefix <>))
                                              cdr)
-                                    sut-trail)))
+                                    sut-trail))
+                 (blocked? (and (pair? trace) (pair? (.blocked (car trace))))))
 
             (define (port-trace->trail trace)
               (parameterize ((%sut port-instance)) (trace->trail trace)))
@@ -251,6 +253,10 @@ of traces, possibly marked with <compliance-error>."
                 (and (not (equal? (cdr a) ((compose last (cut string-split <> #\.) cdr) b))) (cons a b)))
 
               (let* ((port-trail (port-trace->trail port-trace))
+                     (port-trail (if (not blocked?) port-trail
+                                     ;; Check prefix only as long as trace is blocked
+                                     (list-head port-trail (min (length port-trail)
+                                                                (length sut-trail)))))
                      (foo (%debug "     port trail : ~s\n" port-trail))
                      (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
                      (port-name ((compose .name .ast) port-instance))
@@ -294,7 +300,7 @@ of traces, possibly marked with <compliance-error>."
                                       (cons (set-state (car trace) (get-state port-pc port-instance))
                                             (cdr trace)))
                                     port-pcs)))
-                  (if (not provides-trigger?) traces
+                  (if (or blocked? (not provides-trigger?)) traces
                       (map zip traces port-traces))))
                ((and (null? non-compliances)
                      (null? port-traces)
@@ -345,8 +351,6 @@ of traces, possibly marked with <compliance-error>."
 
 (define-method (check-provides-compliance* (pc <program-counter>) event traces)
   (cond
-   ((find (compose pair? .blocked car) traces)
-    traces)
    ((null? traces)
     (check-provides-compliance pc event '()))
    (else
