@@ -54,7 +54,7 @@ interface iworld {
   }
 }
 
-component hello_blocked_external {
+component blocking_silent_external {
   provides ihello h;
   requires external iworld w;
 
