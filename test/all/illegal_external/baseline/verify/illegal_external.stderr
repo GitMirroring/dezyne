@@ -1,8 +1,0 @@
-verify: ihello: check: deadlock: ok
-verify: ihello: check: livelock: ok
-verify: illegal_external: check: deterministic: ok
-verify: illegal_external: check: illegal: fail
-error: illegal action performed in model illegal_external
-verify: illegal_external: check: deadlock: ok
-verify: illegal_external: check: livelock: ok
-verify: illegal_external: check: compliance: skip

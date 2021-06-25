@@ -39,7 +39,7 @@ interface ihello {
   }
 }
 
-component illegal_external {
+component illegal_silent_external {
   provides ihello h;
   requires external ihello w;
 

@@ -1,3 +1,4 @@
+model: illegal_silent_external
 h.hello
 w.hello
 w.return
@@ -6,6 +7,5 @@ h.cancel
 w.cancel
 w.return
 h.return
-test/all/illegal_external/illegal_external.dzn:46:13: error: illegal
 w.world
 <illegal>
