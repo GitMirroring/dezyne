@@ -284,7 +284,8 @@ of traces, possibly marked with <compliance-error>."
                 (let* ((pc (car trace))
                        (status (.status pc))
                        (trace (rewrite-trace-head (cut clone <> #:status #f #:statement #f) trace))
-                       (trace (zip trace (car (append port-traces non-compliances))))
+                       (trace (if (not provides-trigger?) trace
+                                  (zip trace (car (append port-traces non-compliances)))))
                        (trace (rewrite-trace-head (cut clone <> #:status status) trace)))
                   (list trace)))
                ((pair? port-traces)
@@ -293,7 +294,8 @@ of traces, possibly marked with <compliance-error>."
                                       (cons (set-state (car trace) (get-state port-pc port-instance))
                                             (cdr trace)))
                                     port-pcs)))
-                  (map zip traces port-traces)))
+                  (if (not provides-trigger?) traces
+                      (map zip traces port-traces))))
                ((and (null? non-compliances)
                      (null? port-traces)
                      (pair? sut-trail))
@@ -332,7 +334,8 @@ of traces, possibly marked with <compliance-error>."
                   (if (null? trace) (list (cons pc (car non-compliances)))
                       (let* ((tail (cdr trace))
                              (trace (cons pc tail)))
-                        (list (zip trace (car non-compliances)))))))))))))
+                        (if (not provides-trigger?) (list trace)
+                            (list (zip trace (car non-compliances))))))))))))))
 
     (if port (or (and (> (length (ast:provides-port* component)) 1)
                       (check-provides-fork port trace))
