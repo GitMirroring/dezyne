@@ -357,12 +357,62 @@ of traces, possibly marked with <compliance-error>."
     (append-map (cute check-provides-compliance pc event <>) traces))))
 
 (define-method (event-traces-alist (pc <program-counter>))
-  (define (event->label-traces pc event)
+
+  (define (event-traces-alist pc)
+    (define (event->label-traces pc event)
+      (let* ((pc (clone pc #:trail '()))
+             (traces (parameterize ((%exploring? #t))
+                       (run-to-completion* pc event))))
+        (cons event traces)))
+    (map (cute event->label-traces pc <>) (labels)))
+
+  (define (provides-event->label-traces pc event)
     (let* ((pc (clone pc #:trail '()))
            (traces (parameterize ((%exploring? #t))
                      (run-to-completion* pc event))))
       (cons event traces)))
-  (map (cute event->label-traces pc <>) (labels)))
+
+  (define (requires-event->label-traces pc event)
+    (let* ((pc (clone pc #:trail '()))
+           (traces (parameterize ((%exploring? #t))
+                     (run-to-completion* pc event)))
+           (trails (map trace->string-trail traces)))
+      (fold
+       (lambda (trace trail alist)
+         (match trail
+           ((event rest ...)
+            (let* ((entry (or (assoc-ref alist event) '()))
+                   (entry (cons trace entry)))
+              (acons event entry (alist-delete event alist))))
+           (_
+            alist)))
+       '()
+       traces trails)))
+
+  (define (add-port port entry)
+    (match entry
+      ((event traces ...)
+       (let* ((name (string-join (runtime:instance->path port) "."))
+              (event (string-append name "." event)))
+         (cons event traces)))))
+
+  (define (port->label-traces pc port)
+    (let* ((pc (clone pc #:trail '()))
+           (interface (.type (.ast port)))
+           (alist (parameterize ((%sut port))
+                    (if (ast:provides? port)
+                        (map (cute provides-event->label-traces pc <>)
+                             (map .name (ast:in-event* interface)))
+                        (append-map (cute requires-event->label-traces pc <>)
+                                    (modeling-names interface))))))
+      (map (cute add-port port <>) alist)))
+
+  (define (system-event-traces-alist pc)
+    (let ((boundary (filter runtime:boundary-port? (%instances))))
+      (append-map (cute port->label-traces pc <>) boundary)))
+
+  (if (is-a? (%sut) <runtime:system>) (system-event-traces-alist pc)
+      (event-traces-alist pc)))
 
 (define-method (is-not-deadlock? (pc <program-counter>))
   (conjoin (negate .status)

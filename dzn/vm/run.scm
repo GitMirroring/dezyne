@@ -387,7 +387,7 @@ until RTC?."
                (pcs (map car traces)))
           (map (cute update-state pc <>) pcs)))))
 
-(define-method (run-interface (pc <program-counter>) event)
+(define-method (run-interface (pc <program-counter>) (event <string>))
   (let* ((pc (clone pc #:reply #f))
          (interface ((compose .type .ast %sut)))
          (modeling-names (modeling-names interface))
