@@ -86,6 +86,13 @@
          (add-before 'configure 'setenv
            (lambda _
              (setenv "GUILE_AUTO_COMPILE" "0")))
+         (add-after 'install 'install-readmes
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (base (string-append ,name "-" ,version))
+                    (doc (string-append out "/share/doc/" base)))
+               (mkdir-p doc)
+               (copy-file "NEWS" (string-append doc "/NEWS")))))
          (add-after 'install 'wrap-binaries
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
