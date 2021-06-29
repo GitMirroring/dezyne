@@ -1,0 +1,175 @@
+
+Subject: dezyne-2.13.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are delighted to announce Dezyne 2.13: The simulator function
+including system scope.
+
+This replaces the simulation function that was moved from Dezyne Core in
+release 2.10 to Dezyne-IDE in release 2.11.  The new simulation function
+provides a basic command-line interface in Dezyne Core and is now also
+integrated in the Dezyne-IDE.
+
+The integrated Trace view of the simulator was rewritten in P5, using
+the new [[https://gitlab.com/rma.wieringa/dezyne-p5][Dezyne-P5]] project
+by Rob Wieringa which he developed as free software.  The buttons for
+events that are outside the accepted behaviour are only greyed-out and
+can still be selected to inspect what happens if the event would occur.
+
+The integrated System view was also rewritten in P5, removing the last
+dependency on third-party proprietary software.
+
+Finally, verification and simulation can now be loosely integrated on
+the command-line and an experimental ASCII diagram is provided by `dzn
+trace', i.e., running
+
+    dzn verify examples/Alarm.dzn | dzn simulate Alarm.dzn \
+      | dzn trace --format=diagram
+
+gives
+
+--8<---------------cut here---------------start------------->8---
+error: illegal action performed in model Alarm
+test/all/Alarm/Alarm.dzn:136:25: error: illegal
+console             Alarm              sensor siren
+  //                 //                 //     //
+   .                  :                  .      . error: illegal
+   .                  :                  .      .
+   .                  :         triggered.      .
+   .                  :<-----------------.      .
+   .                  :                  .      .
+   .          detected:                  .      .
+   .<-----------------:                  .      .
+   .                  :                  .      .
+   .                  :turnon            .      .
+   .                  :------------------------>.
+(trail sensor.triggered console.detected siren.turnon <illegal>)
+(eligible)
+--8<---------------cut here---------------end--------------->8---
+
+The documentation is available here:
+<https://doc.verum.com/documentation.html>.
+
+We will evaluate your reports and track them via the
+[[https://gitlab.com/groups/dezyne/-/issues][Gitlab dezyne-issues
+project]], see our [[https://dezyne.org/bugreport][guide to writing
+helpful bug reports]].
+
+What's next?
+
+Extending the language with aspects like: implicit interface
+constraints, hierarchical behaviors, module-specifications and
+data-interfaces.  Support for Model Based Testing.  Releasing the Dezyne
+Core as free software.
+
+Enjoy!
+The Verum Team
+
+
+Here are the binary downloads:
+  https://dezyne.org/download/dezyne/dezyne-2.13.0.x86_64-linux.tar.gz   (55MB)
+  https://dezyne.org/download/dezyne/dezyne-2.13.0.i686-windows.zip   (118MB)
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.13.0.x86_64-linux.tar.gz   (75MB)
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.13.0.i686-windows.zip   (157MB)
+
+Here are the GPG detached signatures[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.13.0.x86_64-linux.tar.gz.sig
+  https://dezyne.org/download/dezyne/dezyne-2.13.0.i686-windows.zip.sig
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.13.0.x86_64-linux.tar.gz.sig
+  https://dezyne.org/download/dezyne-ide/dezyne-ide-2.13.0.i686-windows.zip.sig
+
+Here are the MD5 and SHA1 checksums:
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-i686-windows.zip
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-i686-windows.zip
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-i686-windows.zip
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-x86_64-linux.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-i686-windows.zip
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-x86_64-linux.tar.gz
+
+[*] Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify dezyne-ide-2.11.0.x86_64-linux.tar.gz.sig
+
+If that command fails because you don't have the required public key,
+then run this command to import it:
+
+  gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+and rerun the 'gpg --verify' command.
+
+Dezyne-IDE
+==========
+
+* Changes in 2.13.0 since 2.12.0
+** Simulation
+   - Simulation now uses the `dzn simulate' command under the hood.
+     This provides a simulation function including system scope and
+     enables future language updates.
+   - The `--queue-size' option is now supported for simulation.
+** Verification
+   - Detailed error messages of verification and simulation are
+     displayed in the console.
+   - The `--all' flag has been removed for `ide verify' and thus the
+     implicit ide simulate displays the first and only error.
+** Views
+   - The System view now uses P5.
+   - The Trace view now uses P5.
+** Noteworthy bug fixes
+   - The daemon now supports the `-w,--http-port' option.
+
+Dezyne Core
+===========
+
+* Changes in 2.13.0 since 2.12.0
+** Simulation
+  - Interactive use is now supported, it is started when invoked without
+    input trail.
+  - The input trail may now be sparse, only the input needed to resolve
+    non-deterministic choices is required.
+  - The split-arrows trace format is now used by default.  It includes
+    the provides port trace.
+  - The eligible events are printed at the end of the trace.
+  - Invalid input (garbage) on the trail is marked as an error.
+  - All verification problems are detected and reported, notably:
+    + async livelock,
+    + failures model refusals,
+    + forking a call from one provides port to another provides port,
+    + a second async req, while a previous ack is still pending,
+    + a reply on a modeling event in an interface.
+  - A provides port that uses silent events is now supported.
+** Commands
+  - The `dzn trace' command has two new output formats:
+    + --format=json provides P5 output for integration with Dezyne-IDE,
+    + --format=ascii provides an trace diagram.
+  - The JSON output for the state diagram now produces actions and state
+    as structured data.
+** Verification
+  - The verification standard output is now adds the model name next to
+    the trace.
+  - The trace is now marked with a <label> indicating the problem found
+    during verification.
+  - Verbose output is written to standard error.
+  - The `--json' option has been removed.
+  - Async livelocks, i.e., defer.ack () => defer.req () are now
+    detected and reported.
+** Code generation
+  - The experimental C code generator now properly supports systems,
+    foreign components and namespaces.
+** Noteworthy bug fixes
+  - A type mismatch is now also properly reported when attempting an
+    enum field access on a boolean ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/19][#19]]).
+  - An undefined function is now also properly reported for a function
+    call that has arguments ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/18][#18]]).
+  - Verification now reports a livelock with async.
+  - In the simulator, for a requires out event on a model with multiple
+    provides ports, all provides ports are now being updated.
+  - In the preprocessor, an off-by-one line count error has been fixed
+    for deeply nested imports.
+  - Generating code using a calling context for a model that uses
+    dzn.async is now supported ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/20][#20]]).
