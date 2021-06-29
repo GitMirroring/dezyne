@@ -207,7 +207,10 @@
                    `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
                      ,(wfc-error event (format #f "for formals of event `~a' defined here" (.name event)))))
                (append-map argument-type-check arguments formals)))))))
-   ((parent o <call>)
+   ((let ((ast (parent o <call>)))
+      (and ast
+           (.function ast)
+           ast))
     =>
     (lambda (ast)
       (let* ((arguments (ast:argument* o))
