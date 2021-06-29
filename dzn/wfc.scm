@@ -648,7 +648,7 @@
   (let* ((variable (.variable o))
          (type (and=> variable .type))
          (field (.field o))
-         (fields (and=> type ast:field*)))
+         (fields (and (is-a? type <enum>) (and=> type ast:field*))))
     (cond ((not variable)
            `(,(wfc-error o (format #f "undefined variable `~a'" (.variable.name o)))))
           ((not type)
