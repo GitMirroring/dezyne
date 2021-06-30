@@ -142,6 +142,12 @@ ws               <   [ \t]
   (direction communication-direction)
   (arrow communication-arrow))
 
+(define (communication-complete? o)
+  (and (string? (communication-event o))
+       (list? (communication-left o))
+       (list? (communication-right o))
+       (string? (communication-arrow o))))
+
 (define (communication-location o)
   (if (eq? (communication-direction o) 'in)
       (or (communication-left-location o)
@@ -260,6 +266,19 @@ ws               <   [ \t]
           (communication-right c)))))
 
 (define (merge-communications steps)
+  (define (merge-able? step step2)
+    (or (and (eq? (communication-direction step) 'in)
+             (communication-left step)
+             (not (communication-right step))
+             (eq? (communication-direction step2) 'in)
+             (not (communication-left step2))
+             (communication-right step2))
+        (and (eq? (communication-direction step) 'out)
+             (not (communication-left step))
+             (communication-right step)
+             (eq? (communication-direction step2) 'out)
+             (communication-left step2)
+             (not (communication-right step2)))))
   (define (merge step step2)
     (let* ((event (or (communication-event step)
                       (communication-event step2)))
@@ -287,54 +306,74 @@ ws               <   [ \t]
                            (communication-right step))) (cons step (loop (cdr steps)))
                            (if (null? (cdr steps)) (list step)
                                (let ((step2 (cadr steps)))
-                                 (if (not (communication? step2)) (cons step2 (loop (cons step (cddr steps))))
-                                     (cons (merge step step2) (loop (cddr steps))))))))))))
+                                 (cond
+                                  ((not (communication? step2))
+                                   (cons step2 (loop (cons step (cddr steps)))))
+                                  ((merge-able? step step2)
+                                   (cons (merge step step2) (loop (cddr steps))))
+                                  (else
+                                   (let ((message "error: split-arrows cannot be merged")
+                                         (arrow1 (string-append "error: arrow1: "
+                                                                (communication->string step)))
+                                         (arrow2 (string-append "error: arrow2: "
+                                                                (communication->string step2))))
+                                     (list (make-message #f message message)
+                                           (make-message #f arrow1 arrow1)
+                                           (make-message #f arrow2 arrow2)))))))))))))
 
 (define (communication->string o)
   (let* ((event (communication-event o))
          (locations? (command-line:get 'locations))
          (location (or (and locations? (communication-location o)) "")))
-    (if (or (not (string? event))
-            (not (list? (communication-left o)))
-            (not (list? (communication-right o)))
-            (not (string? (communication-arrow o))))
-        (begin
-          (format (current-error-port) "URG: ~s\n" o)
-         "<boe>")
-        (string-append
-         location
-         (apply string-join `(,(communication-left o) ".")) "." event
-         " " (communication-arrow o) " "
-         (apply string-join `(,(communication-right o) ".")) "." event))))
+    (cond
+     ((communication-complete? o)
+      (string-append
+       location
+       (string-join `(,@(communication-left o) ,event) ".")
+       " " (communication-arrow o) " "
+       (string-join `(,@(communication-right o) ,event) ".")))
+     ((and (string? event)
+           (list? (communication-left o)))
+      (string-append
+       location
+       (string-join `(,@(communication-left o) ,event) ".")
+       " " (communication-arrow o) " "
+       "..."))
+     ((and (string? event)
+           (list? (communication-right o)))
+      (string-append
+       location
+       "..."
+       " " (communication-arrow o) " "
+       (string-join `(,@(communication-right o) ,event) ".")))
+     (else
+      (format #f "~s" o)))))
 
 (define (communication->code o)
   (let* ((event (communication-event o))
          (locations? (command-line:get 'locations))
          (location (or (and locations? (communication-location o)) "")))
-    (if (and #f
-             (or (not (string? event))
-             (not (list? (communication-left o)))
-             (not (list? (communication-right o)))
-             (not (string? (communication-arrow o)))))
-        (begin
-          (format (current-error-port) "URG: ~s\n" o)
-         "<boe>")
-        (string-append
-         location
-         (cond ((not (communication-left o)) "")
-               ((q-instance? (communication-left o))
-                (string-append
-                 (apply string-join `(,(communication-left o) "."))
-                 " "))
-               (else
-                (string-append
-                 (apply string-join `(,(communication-left o) ".")) "." event
-                 " ")))
-         (communication-arrow o)
-         (if (not (communication-right o)) ""
-             (string-append
-              " "
-              (apply string-join `(,(communication-right o) ".")) "." event))))))
+    (cond
+     ((communication-complete? o)
+      (string-append
+       location
+       (cond
+        ((not (communication-left o)) "")
+        ((q-instance? (communication-left o))
+         (string-append
+          (string-join `(,@(communication-left o) ,event) ".")
+          " "))
+        (else
+         (string-append
+          (string-join `(,@(communication-left o) ,event) ".")
+          " ")))
+       (communication-arrow o)
+       (if (not (communication-right o)) ""
+           (string-append
+            " "
+            (string-join `(,@(communication-right o) ,event) ".")))))
+     (else
+      (format #f "~s" o)))))
 
 (define (message->string o)
   (let* ((locations? (command-line:get 'locations))
@@ -840,7 +879,7 @@ ws               <   [ \t]
     (type     . ,(lifeline-event-type o))
     ,@(let ((messages (lifeline-event-messages o)))
         (if (null? messages) '()
-            `((message . ,(message-message (car messages))))))))
+            `((messages . ,(list->vector (map message-message messages))))))))
 
 (define (instance-state->json-scm sut-name o)
   (define state->json-scm
