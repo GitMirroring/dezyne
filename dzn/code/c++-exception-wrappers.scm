@@ -97,11 +97,6 @@
          (type (map string-upcase type)))
     (string-join type "_")))
 
-(define (dump-name root dir ext)
-  (if (equal? dir "-") "-"
-      (let ((base (basename (ast:source-file root) ".dzn")))
-        (string-append dir "/" base ext))))
-
 (define %char-set:identifier (list->char-set '(#\_) char-set:letter+digit))
 (define-method (c++ew:file-name-upcase (o <ast>))
   (string-map (lambda (c)
@@ -117,6 +112,7 @@
   "Entry point."
 
   (let ((root (code:om root)))
-    (let ((generator (code-util:indenter (cute x:header root)))
-          (file-name (dump-name root dir "_exception_forwarding.hh")))
+    (let* ((generator (code-util:indenter (cute x:header root)))
+           (base (basename (ast:source-file root) ".dzn"))
+           (file-name (code-util:file-name base dir "_exception_forwarding.hh")))
       (code-util:dump root generator #:file-name file-name))))
