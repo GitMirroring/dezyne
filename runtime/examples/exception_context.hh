@@ -37,7 +37,8 @@ struct exception_context
 {
   std::queue<std::exception_ptr> qe;
   void operator()(){
-    std::rethrow_exception(qe.front());
+    if(qe.size())
+      std::rethrow_exception(qe.front());
   }
   void extend(const std::exception_ptr e) {
     qe.push(e);
