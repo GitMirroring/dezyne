@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2015, 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2015, 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -179,7 +179,6 @@ namespace dzn
                                     timers_expired()))
           {
             worker();
-            if(!self->released) collateral_release(self);
           }
           if(self->released) finish(coroutines);
 
@@ -210,6 +209,8 @@ namespace dzn
   }
   void pump::collateral_release(std::list<coroutine>::iterator self)
   {
+    debug << "[" << self->id << "] collateral_release" << std::endl;
+
     if(collateral_blocked.size()) finish(coroutines);
     while(collateral_blocked.size())
     {
