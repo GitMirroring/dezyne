@@ -515,6 +515,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
               (cons* action-pc pc (loop (cdr trace) pc))))
            ((and next
                  (is-a? statement <action>)
+                 (ast:out? statement)
                  (.instance next)
                  (.deferred (get-state next))
                  (pair? (.q (get-state next (.deferred (get-state next))))))
@@ -536,6 +537,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (q-pc (clone pc #:instance r:other-port #:statement q-out)))
               (cons* pc q-pc (loop (cdr trace) pc))))
            ((and (is-a? statement <action>)
+                 (ast:out? statement)
                  (is-a? pc-instance <runtime:port>)
                  (ast:external? pc-instance)
                  (> (length (external-triggers next)) (length (external-triggers pc))))
