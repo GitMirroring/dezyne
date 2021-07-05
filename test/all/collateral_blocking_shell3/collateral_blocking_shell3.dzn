@@ -1,0 +1,103 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  in void cruel ();
+
+  out void bye ();
+
+  behaviour {
+    on hello: {}
+    on hello: bye;
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+
+  behaviour {
+    bool idle = true;
+    on hello: idle = !idle;
+    [!idle] on inevitable: {world; idle = true;}
+  }
+}
+
+component Top
+{
+  provides ihello h;
+  requires ihello w0;
+  requires iworld w1;
+
+  behaviour
+  {
+    bool foo = true;
+    on h.hello (): {w1.hello(); w0.hello (); foo = false;}
+
+    [!foo] on w1.world (): {h.bye (); foo = true;}
+  }
+}
+
+component Blocked
+{
+  provides ihello h;
+  requires iworld w0;
+  requires iworld w1;
+
+  behaviour
+  {
+    bool idle = true;
+    bool idle_w0 = true;
+    bool idle_w1 = true;
+    [idle] blocking on h.hello (): {w0.hello (); w1.hello (); idle = false; idle_w0 = false; idle_w1 = false;}
+    on h.cruel(): {}
+    on w0.world (): { idle_w0 = true; if (idle_w1) { h.reply(); idle =true; } }
+    on w1.world (): { idle_w1 = true; if (idle_w0) { h.reply(); idle =true; } }
+  }
+}
+
+component collateral_blocking_shell3
+{
+  provides ihello h;
+  requires iworld w0;
+  requires iworld w1;
+
+  requires iworld w2;
+
+  system
+  {
+    Top top;
+    Blocked blocked;
+
+    h <=> top.h;
+    top.w0 <=> blocked.h;
+    top.w1 <=> w2;
+
+    blocked.w0 <=> w0;
+    blocked.w1 <=> w1;
+  }
+}
