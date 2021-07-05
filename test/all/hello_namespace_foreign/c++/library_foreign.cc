@@ -13,7 +13,7 @@ namespace library {
 
 
   {
-    w.in.world = [&](){return dzn::call_in(this,[=]{ dzn_locator.get<dzn::runtime>().skip_block(&this->w) = false; return w_world();}, this->w.meta, "world");};
+    w.in.world = [&](){return dzn::call_in(this,[=]{ dzn_locator.get<dzn::runtime>().skip_block(&this->w) = false; return w_world();}, this->w, "world");};
 
   }
 

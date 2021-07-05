@@ -49,6 +49,13 @@ namespace dzn
   {
     l.get<dzn::pump>().collateral_block_lambda();
   }
+  bool port_blocked_p(const locator& l, void *p)
+  {
+    dzn::pump* pump = l.try_get<dzn::pump>();
+    if(pump)
+      return pump->blocked_p(p);
+    return false;
+  }
 
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
   {
@@ -79,6 +86,10 @@ namespace dzn
   pump::~pump()
   {
     stop();
+  }
+  bool pump::blocked_p(void *p)
+  {
+    return find_blocked(coroutines, p) != coroutines.end();
   }
   void pump::stop()
   {

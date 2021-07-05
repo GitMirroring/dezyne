@@ -27,7 +27,7 @@ connect_ports (dzn::container< shell_injected, std::function<void()>>& c)
           std::clog << "p.<flush>" << std::endl;
           c.match("p.<flush>");
         }
-      });}, c.system.p.meta, "f");};}
+      });}, c.system.p, "f");};}
 
 std::map<std::string,std::function<void()> >
 event_map (dzn::container< shell_injected, std::function<void()>>& c)

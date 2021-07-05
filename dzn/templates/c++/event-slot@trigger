@@ -4,5 +4,5 @@
     #x:trace-q-out
     return #.port.name _#.event.name(#x:code-arguments);
   },
-  this->#.port.name .meta, "#.event.name ");
+  this->#.port.name , "#.event.name ");
 };

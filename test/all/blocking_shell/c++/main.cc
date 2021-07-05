@@ -49,7 +49,7 @@ connect_ports (dzn::container< blocking_shell, std::function<void()>>& c)
           std::clog << "p_outer.<flush>" << std::endl;
           c.match("p_outer.<flush>");
         }
-      });}, c.system.p_outer.meta, "foo");};}
+      });}, c.system.p_outer, "foo");};}
 
 std::map<std::string,std::function<void()> >
 event_map (dzn::container< blocking_shell, std::function<void()>>& c)

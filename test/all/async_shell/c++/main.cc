@@ -22,7 +22,7 @@ connect_ports (dzn::container< async_shell, std::function<void()>>& c)
           std::clog << "h.<flush>" << std::endl;
           c.match("h.<flush>");
         }
-      });}, c.system.h.meta, "world");};}
+      });}, c.system.h, "world");};}
 
 std::map<std::string,std::function<void()> >
 event_map (dzn::container< async_shell, std::function<void()>>& c)

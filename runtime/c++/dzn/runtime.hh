@@ -3,7 +3,7 @@
 // Copyright © 2016, 2017, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <Rob.Wieringa@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of dzn-runtime.
 //
@@ -131,10 +131,11 @@ namespace dzn
   };
 
   void collateral_block(const locator&);
+  bool port_blocked_p(const locator&, void*);
   void port_block(const locator&, void*);
   void port_release(const locator&, void*, std::function<void()>&);
 
-  template <typename C>
+  template <typename C, typename P>
   struct call_helper
   {
     C* c;
@@ -142,21 +143,22 @@ namespace dzn
     const dzn::port::meta& meta;
     const char* event;
     std::string reply;
-    call_helper(C* c, const dzn::port::meta& meta, const char* event)
+    call_helper(C* c, P& p, const char* event)
     : c(c)
     , os(c->dzn_locator.template get<typename std::ostream>())
-    , meta(meta)
+    , meta(p.meta)
     , event(event)
     , reply("return")
     {
+      if(c->dzn_rt.handling(c) || port_blocked_p(c->dzn_locator, &p))
+      {
+        collateral_block(c->dzn_locator);
+      }
+
       trace(os, meta, event);
 #if DZN_STATE_TRACING
       os << *c << std::endl;
 #endif
-      if(c->dzn_rt.handling(c))
-      {
-        collateral_block(c->dzn_locator);
-      }
     }
     template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
     void operator()(L&& l)
@@ -179,22 +181,22 @@ namespace dzn
     }
   };
 
-  template <typename C, typename L>
-  auto call_in(C* c, L&& l, const dzn::port::meta& meta, const char* event) -> decltype(l())
+  template <typename C, typename P, typename L>
+  auto call_in(C* c, L&& l, P& p, const char* event) -> decltype(l())
   {
-    call_helper<C> helper(c, meta, event);
+    call_helper<C,P> helper(c, p, event);
     return helper(l);
   }
 
-  template <typename C, typename L>
-  void call_out(C* c, L&& l, const dzn::port::meta& meta, const char* event)
+  template <typename C, typename P, typename L>
+  void call_out(C* c, L&& l, P& p, const char* event)
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_qin(os, meta, event);
+    trace_qin(os, p.meta, event);
 #if DZN_STATE_TRACING
     os << *c << std::endl;
 #endif
-    c->dzn_rt.defer(meta.provide.address, c, [&,l]{l();});
+    c->dzn_rt.defer(p.meta.provide.address, c, [&,l]{l();});
   }
 }
 #endif //DZN_RUNTIME_HH

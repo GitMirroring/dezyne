@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016, 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of dzn-runtime.
 //
@@ -84,6 +84,7 @@ namespace dzn
     void collateral_block();
     void collateral_release(std::list<coroutine>::iterator);
 
+    bool blocked_p(void*);
     void block(void*);
     void create_context();
     void release(void*);
