@@ -336,7 +336,11 @@
         (let* ((port (.port trigger))
                (r:port (runtime:port o port))
                (r:other-port (runtime:other-port r:port)))
-          (format #f "... -> ~a.~a" (runtime:instance->string r:port) (.event.name trigger)))))
+          (cond
+           ((eq? r:port r:other-port) ; injected
+            (format #f "... -> ~a.~a" (runtime:instance->string r:port) (.event.name trigger)))
+           (else
+            (format #f "... -> ~a.~a" (runtime:instance->string r:port) (.event.name trigger)))))))
 
 (define-method (pc->arrow (o <runtime:port>) (action <action>))
   (cons action
@@ -352,12 +356,13 @@
                (r:port (runtime:port o port))
                (r:other-port (runtime:other-port r:port))
                (trigger (action->trigger r:other-port action)))
-          (cond ((ast:injected? port)
-                 (format #f "~a.~a" (.name (.ast r:other-port)) (.event.name action)))
-                ((ast:out? action)
-                 (format #f "... <- ~a.~a" (runtime:instance->string r:port) (.event.name trigger)))
-                (else
-                 (format #f "~a.~a -> ..." (runtime:instance->string r:port) (.event.name trigger)))))))
+          (cond
+           ((ast:injected? port)
+            (format #f "~a.~a -> ..." (runtime:instance->string r:port) (.event.name action)))
+           ((ast:out? action)
+            (format #f "... <- ~a.~a" (runtime:instance->string r:port) (.event.name trigger)))
+           (else
+            (format #f "~a.~a -> ..." (runtime:instance->string r:port) (.event.name trigger)))))))
 
 (define-method (pc->arrow (o <runtime:component>) (q-in <q-in>))
   (cons q-in (format #f "~a.<q> <- ..." (runtime:instance->string o))))
@@ -397,12 +402,15 @@
           (let* ((r:port (and port (runtime:port o port)))
                  (r:other-port (and r:port (runtime:other-port r:port)))
                  (value (or (.expression return) (.event.name return)))                 )
-            (cond ((and r:port (eq? r:port r:other-port)) ;injected TODO: try (ast:injected? port)
-                   (format #f ".. <- ~a.~a" (runtime:instance->string o) (.event.name return)))
-                  ((ast:provides? port)
-                   (format #f "... <- ~a.~a" (runtime:instance->string r:port) value))
-                  (else
-                   (format #f "~a.~a <- ..." (runtime:instance->string r:port) value)))))))
+            (cond
+             ((ast:injected? port)
+              (format #f "~a.~a <- ..." (runtime:instance->string r:port) (.event.name return)))
+             ((and r:port (eq? r:port r:other-port)) ;injected
+              (format #f "... <- ~a.~a" (runtime:instance->string r:port) (.event.name return)))
+             ((ast:provides? port)
+              (format #f "... <- ~a.~a" (runtime:instance->string r:port) value))
+             (else
+              (format #f "~a.~a <- ..." (runtime:instance->string r:port) value)))))))
 
 (define-method (pc->arrow x y)
   #f)
@@ -478,8 +486,15 @@
 (define (complete-split-arrows-pcs trace)
   "The split-arrows format needs a PC for both ends of the arrow.
 Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
+
   (define (external-triggers pc)
     (append-map cdr (.external-q pc)))
+
+  (define (injected-port-name component interface)
+    (let* ((ports (filter ast:injected? (ast:port* component)))
+           (port (find (compose (cute ast:eq? <> interface) .type) ports)))
+      (.name port)))
+
   (let loop ((trace trace) (next #f))
     (if (null? trace) '()
         (let* ((pc (car trace))
@@ -560,7 +575,8 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                                  (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
                                              (runtime:port pc-instance port)))
                                  (r:other-port (runtime:other-port r:port)))
-                            (ast:requires? r:other-port))))
+                            (or (ast:requires? r:other-port)
+                                (eq? r:port r:other-port))))) ; injected
                  (not (ast:modeling? (car (ast:trigger* (parent statement <on>))))))
             (let* ((next-statement (.statement next)) ;; XXX statement *after* action
                    (next-instance (.instance next))
@@ -568,8 +584,12 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
                                (runtime:port pc-instance port)))
                    (r:other-port (runtime:other-port r:port))
+                   (interface (and port (.type port)))
+                   (component (.type (.ast next-instance)))
+                   (port-name (if (eq? r:port r:other-port) (injected-port-name component interface)
+                                  (.name (.ast r:other-port))))
                    (return (clone statement
-                                  #:port.name (.name (.ast r:other-port))
+                                  #:port.name port-name
                                   #:location (.location next-statement)))
                    (return (clone return #:parent (.parent next-statement)))
                    (return-pc (clone pc #:instance next-instance #:statement return)))
