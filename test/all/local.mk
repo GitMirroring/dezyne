@@ -144,6 +144,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_shell				\
  %D%/calling_context				\
  %D%/collateral_blocking_shell			\
+ %D%/collateral_blocking_shell2			\
  %D%/compliance_blocking_out			\
  %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_implicit_illegal		\
