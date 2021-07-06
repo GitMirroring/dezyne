@@ -118,6 +118,8 @@ Dezyne-IDE
    - The `--all' flag has been removed for `ide verify' and thus the
      implicit ide simulate displays the first and only error.
 ** Views
+   - Clicking on a port in the System view highlights the port binding
+     across system boundaries.
    - The System view now uses P5.
    - The Trace view now uses P5.
 ** Noteworthy bug fixes
@@ -150,6 +152,9 @@ Dezyne Core
   - The JSON output for the state diagram now produces actions and state
     as structured data.
 ** Verification
+  - Enum literals in the verification trace now use a colon as
+    enum-field separator.  This resolves a long standing ambiguity in
+    the trace format.
   - The verification standard output is now adds the model name next to
     the trace.
   - The trace is now marked with a <label> indicating the problem found
@@ -159,6 +164,12 @@ Dezyne Core
   - Async livelocks, i.e., defer.ack () => defer.req () are now
     detected and reported.
 ** Code generation
+  - The C# runtime now defines a generic async interface; async
+    interfaces are no longer generated.
+  - The C++ code generator has been updated to support the new enum
+    literal representation.
+  - The C# runtime has been updated to support the new enum literal
+    representation.
   - The experimental C code generator now properly supports systems,
     foreign components and namespaces.
 ** Noteworthy bug fixes
@@ -173,3 +184,7 @@ Dezyne Core
     for deeply nested imports.
   - Generating code using a calling context for a model that uses
     dzn.async is now supported ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/20][#20]]).
+  - Using the same async interface with parameters more than once no
+    longer triggers a well-formedness error.
+  - The C++ and C# code generators no longer create structs or classes
+    for async interfaces with parameters.
