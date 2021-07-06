@@ -54,14 +54,14 @@
 (define-public dezyne
   (package
     (name "dezyne")
-    (version #!dezyne!# "2.12.0")
+    (version #!dezyne!# "2.13.0.rc0")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://dezyne.org/download/dezyne/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!dezyne!# "0pby3k7g759pxhff8iqrabkmpm625jd0dcyql52w25ylfql2szy9"))))
+        (base32 #!dezyne!# "0bf7z8g2ryhj0wlfzsa1y06f63cbb6fpa93w7kjym9dw4prys4bp"))))
     (inputs `(("bash" ,bash-minimal)
               ("guile" ,guile-3.0-latest)
               ("m4-cw" ,m4-changeword)
