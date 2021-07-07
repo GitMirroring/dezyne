@@ -236,7 +236,9 @@
      (else pp))))
 
 (define (dzn:trace-qin log i e)
-  (log "~a.~a <- ~a.~a\n" (path (.out i)) '<q> (path (.in i)) e))
+  (let* ((q-path (path (.out i)))
+         (q-prefix (substring q-path 0 (string-rindex q-path #\.))))
+   (log "~a.~a <- ~a.~a\n" q-prefix '<q> (path (.out i)) e)))
 
 (define (dzn:trace-qout log i e)
   (log "~a.~a <- ~a.~a\n" (path (.out i)) e (path (.in i)) '<q>))
