@@ -133,12 +133,3 @@
     (description "Dezyne command line tools")
     (home-page "https://verum.com")
     (license license:gpl3+)))
-
-(define-public m4-changeword
-  (package
-    (inherit m4)
-    (name "m4-changeword")
-    (arguments
-     (substitute-keyword-arguments
-         `(#:configure-flags '("--enable-changeword" "--program-suffix=-cw")
-           ,@(package-arguments m4))))))
