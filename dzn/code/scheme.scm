@@ -25,6 +25,7 @@
 
 (define-module (dzn code scheme)
   #:use-module (ice-9 receive)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -197,6 +198,24 @@
   (let ((event (find (cut ast:name-equal? <> "clr") (ast:event* (.type o)))))
     (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event)  (parent o <model>)))))
 
+(define (wrap-lonely-variable o)
+  (match o
+    (($ <variable>) (make <compound> #:elements (list o)))
+    (($ <behaviour>) (clone o #:statement (wrap-lonely-variable (.statement o))))
+    (($ <component>) (clone o #:behaviour (wrap-lonely-variable (.behaviour o))))
+    ((and ($ <compound>) (? ast:imperative?)) o)
+    (($ <system>) o)
+    (($ <foreign>) o)
+    (($ <interface>) (clone o #:behaviour (wrap-lonely-variable (.behaviour o))))
+    ((? (is? <ast>)) (tree-map wrap-lonely-variable o))
+    (_ o)))
+
+(define (scheme:om ast)
+  ((compose
+    wrap-lonely-variable
+    code:om)
+   ast))
+
 (define-templates-macro define-templates scheme)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/code.scm")
@@ -212,7 +231,7 @@
 
   (code-util:foreign-conflict? root)
 
-  (let ((root (code:om root))
+  (let ((root (scheme:om root))
         (indenter (cute code-util:indenter <>
                         #:open #\( #:close #\) #:no-indent "")))
 
