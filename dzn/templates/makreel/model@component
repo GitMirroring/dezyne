@@ -63,13 +63,13 @@ provides_r2c = #x:provides-r2c-proc;
 
 #x:provides-out-proc
 
-define(provides_parallel, #x:provides-port-parallel-proc || provides_r2c)
+provides_parallel = #x:provides-port-parallel-proc || provides_r2c;
 
-define(provides_comm, comm ({
+provides_comm = comm ({
 #x:provides-comm
- }, provides_parallel))
+ }, provides_parallel);
 
-define(provides_allow, allow ({
+provides_allow = allow ({
    declarative_illegal
  , illegal
  , incomplete
@@ -78,11 +78,11 @@ define(provides_allow, allow ({
  , second_reply
  , tau_void
 #x:provides-allow
- }, provides_comm))
+ }, provides_comm);
 
-define(provides_rename, rename ({
+provides_rename = rename ({
 #x:provides-rename
- }, provides_allow))
+ }, provides_allow);
 
 provides = hide ({
    tau_void
@@ -121,14 +121,14 @@ component_reorder_block
  + #x:reorder-block
  ;
 
-define(component_reorder_parallel, component_behaviour || component_reorder)
+component_reorder_parallel = component_behaviour || component_reorder;
 
-define(component_reorder_comm, comm({
+component_reorder_comm = comm({
   #x:makreel:model-name end | #x:makreel:model-name end  -> #x:makreel:model-name end'
 #x:reorder-comm-provides
- }, component_reorder_parallel))
+ }, component_reorder_parallel);
 
-define(component_reorder_allow, allow({
+component_reorder_allow = allow({
    #x:makreel:model-name end'
 #x:reorder-allow-provides
 #x:reorder-allow-requires
@@ -141,13 +141,13 @@ define(component_reorder_allow, allow({
  , recurse
  , return
  , second_reply
- }, component_reorder_comm))
+ }, component_reorder_comm);
 
-define(component_reordered, rename({
+component_reordered = rename({
   #x:makreel:model-name end' -> #x:makreel:model-name end
 #x:reorder-rename-provides
 #x:reorder-rename-requires
- }, component_reorder_allow))
+ }, component_reorder_allow);
 
 %%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -186,15 +186,15 @@ semantics_provides_blocked
  = #x:semantics-provides-replies #x:semantics-provides-blocked-provides #x:semantics-provides-blocked-requires #x:semantics-provides-blocked-async #x:semantics-provides-blocked-internal
  ;
 
-define(component_semantics_parallel, component_reordered || semantics)
+component_semantics_parallel = component_reordered || semantics;
 
-define(component_semantics_comm, comm({
+component_semantics_comm = comm({
    #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
 #x:semantics-comm-provides
 #x:semantics-comm-requires
- }, component_semantics_parallel))
+ }, component_semantics_parallel);
 
-define(component_semantics_allow, allow({
+component_semantics_allow = allow({
    #x:makreel:model-name end'
  , #x:allow-tau
 #x:semantics-allow-provides
@@ -212,28 +212,28 @@ define(component_semantics_allow, allow({
  , return
  , second_reply
  , tau_void
- }, component_semantics_comm))
+ }, component_semantics_comm);
 
-define(component_semantics, rename({
+component_semantics = rename({
    #x:makreel:model-name end' -> #x:makreel:model-name end
 #x:semantics-rename-provides
 #x:semantics-rename-requires
- }, component_semantics_allow))
+ }, component_semantics_allow);
 
 %%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
 
-define(component_parallel, component_semantics || req_and_queue)
+component_parallel = component_semantics || req_and_queue;
 
-define(component_comm, comm({
+component_comm = comm({
    async_not_pending | async_not_pending -> async_not_pending'
  , async_pending | async_pending -> async_pending'
  , queue_empty | queue_empty -> queue_empty'
  , queue_not_empty | queue_not_empty -> queue_not_empty'
 #x:component-comm-requires
 #x:component-comm-async
- }, component_parallel))
+ }, component_parallel);
 
-define(component_allow, allow({
+component_allow = allow({
    #x:makreel:model-name end
  , #x:allow-tau
 #x:component-allow-provides
@@ -252,9 +252,9 @@ define(component_allow, allow({
  , return
  , second_reply
  , tau_void
- }, component_comm))
+ }, component_comm);
 
-define(component_rename, rename({
+component_rename = rename({
    async_not_pending' -> async_not_pending
  , async_pending' -> async_pending
  , queue_empty' -> queue_empty
@@ -262,7 +262,7 @@ define(component_rename, rename({
 #x:component-rename-provides
 #x:component-rename-requires
 #x:component-rename-async
- }, component_allow))
+ }, component_allow);
 
 component = hide({
    #x:makreel:model-name end

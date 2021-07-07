@@ -64,7 +64,6 @@ if test "x$have_guile_readline" != "xyes"; then
 fi
 
 AC_PATH_PROGS([PERL5], [perl5 perl])
-AC_PATH_PROG([M4_CW], [m4-cw])
 AC_PATH_PROG([MCRL22LPS], [mcrl22lps])
 AC_PATH_PROG([LPS2LTS], [lps2lts])
 AC_PATH_PROG([LTSCOMPARE], [ltscompare])

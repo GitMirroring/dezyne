@@ -201,7 +201,10 @@ actions."
   (let* ((root (options-root options))
          (model (options-model options))
          (makreel (root+model->makreel root model)))
-    (cute display makreel)))
+    (lambda _
+      (display makreel)
+      (newline)
+      (format #t "init ~a;\n" (options-init options)))))
 
 (define (in-out:dzn->aut+provides-aut options)
   (let* ((model (options-model options))
@@ -221,9 +224,6 @@ actions."
   (let* ((model (options-model options))
          (root (options-root options)))
     (cute display (verify-pipeline "aut-dpweak-bisim" root model))))
-
-(define (in-out:makreel->mcrl2 options)
-  `("m4-cw" ,(string-append "--define=init_process=" (options-init options))))
 
 (define (in-out:mcrl2->lps options)
   (let ((debug? (dzn:command-line:get 'debug)))
@@ -306,8 +306,7 @@ actions."
       "--in1=aut" "--in2=aut" "-" "-")))
 
 (define in-out.pipeline
-  `((("dzn"                     "makreel")                 . ,in-out:dzn->makreel)
-    (("makreel"                 "mcrl2")                   . ,in-out:makreel->mcrl2)
+  `((("dzn"                     "mcrl2")                   . ,in-out:dzn->makreel)
     (("mcrl2"                   "lps")                     . ,in-out:mcrl2->lps)
     (("lps"                     "lpsconstelm")             . ,in-out:lps->lpsconstelm)
     (("lpsconstelm"             "lpsparelm")               . ,in-out:lps->lpsparelm)
@@ -367,9 +366,11 @@ for MODEL, using ROOT."
                  (program->string %dzn) model-name (imports->string) file-name))
         (_
          (and (not (string-prefix? "verify-interface" out))
-              (format #f "~a code --language=makreel --model=~a~a ~a"
-                      (program->string %dzn) model-name (imports->string)
-                      file-name))))))
+              (string-append
+               (format #f "~a code --language=makreel --model=~a~a ~a"
+                       (program->string %dzn) model-name (imports->string)
+                       file-name)
+               (format #f "\\\n  | (cat -; echo \"init ~a;\")" (get-init model))))))))
   (string-join (filter-map command->string commands) " \\\n  | "))
 
 (define* (unmemoized-verify-pipeline out root model #:key (init (get-init model)) stdout?)

@@ -12,9 +12,9 @@ proc
  + sum r : #x:makreel:model-name replies. #x:makreel:model-name reply(r) . second_reply .delta
  ;
 
-define(#x:makreel:model-name reordered_parallel, (#x:type-check #x:makreel:model-name behaviour #x:member-init) || #x:makreel:model-name reorder)
+#x:makreel:model-name reordered_parallel = (#x:type-check #x:makreel:model-name behaviour #x:member-init) || #x:makreel:model-name reorder;
 
-define(#x:makreel:model-name reordered_comm, comm({
+#x:makreel:model-name reordered_comm = comm({
    #x:makreel:model-name in | #x:makreel:model-name in -> #x:makreel:model-name in'
  , #x:makreel:model-name reply | #x:makreel:model-name reply -> #x:makreel:model-name reply'
  , #x:makreel:model-name internal | #x:makreel:model-name internal -> #x:makreel:model-name internal'
@@ -23,9 +23,9 @@ define(#x:makreel:model-name reordered_comm, comm({
  , #x:makreel:model-name silent_end | #x:makreel:model-name silent_end -> #x:makreel:model-name silent_end'
  , #x:makreel:model-name reorder_end | #x:makreel:model-name reorder_end -> #x:makreel:model-name reorder_end'
  , #x:makreel:model-name state | #x:makreel:model-name state -> #x:makreel:model-name state'
- }, #x:makreel:model-name reordered_parallel))
+ }, #x:makreel:model-name reordered_parallel);
 
-define(#x:makreel:model-name reordered_allow, allow({
+#x:makreel:model-name reordered_allow = allow({
    tau_void
  , #x:makreel:model-name tau_reply
  , #x:makreel:model-name reorder_end'
@@ -46,9 +46,9 @@ define(#x:makreel:model-name reordered_allow, allow({
  , recurse
  , return
  , second_reply
-}, #x:makreel:model-name reordered_comm))
+}, #x:makreel:model-name reordered_comm);
 
-define(#x:makreel:model-name reordered, rename({
+#x:makreel:model-name reordered = rename({
    #x:makreel:model-name in' -> #x:makreel:model-name in
  , #x:makreel:model-name reply' -> #x:makreel:model-name tau_reply
  , #x:makreel:model-name reply'reordered -> #x:makreel:model-name reply
@@ -58,7 +58,7 @@ define(#x:makreel:model-name reordered, rename({
  , #x:makreel:model-name silent_end' -> #x:makreel:model-name silent_end
  , #x:makreel:model-name state' -> #x:makreel:model-name state
  , #x:makreel:model-name reorder_end' -> tau_void
- }, #x:makreel:model-name reordered_allow))
+ }, #x:makreel:model-name reordered_allow);
 
 #x:makreel:model-name semantics
  = sum i : #x:makreel:model-name events. #x:makreel:model-name in(i) . (#x:makreel:model-name semantics_sync + #x:makreel:model-name semantics)
@@ -74,17 +74,17 @@ define(#x:makreel:model-name reordered, rename({
  = sum i : #x:makreel:model-name events. #x:makreel:model-name out(i) . (#x:makreel:model-name end . #x:makreel:model-name flush . #x:makreel:model-name end'reordered . #x:makreel:model-name semantics + #x:makreel:model-name semantics_flush)
  ;
 
-define(#x:makreel:model-name parallel, #x:makreel:model-name semantics || #x:makreel:model-name reordered)
+#x:makreel:model-name parallel = #x:makreel:model-name semantics || #x:makreel:model-name reordered;
 
-define(#x:makreel:model-name comm, comm({
+#x:makreel:model-name comm = comm({
     #x:makreel:model-name in | #x:makreel:model-name in -> #x:makreel:model-name in'
   , #x:makreel:model-name out | #x:makreel:model-name out -> #x:makreel:model-name out'
   , #x:makreel:model-name reply | #x:makreel:model-name reply -> #x:makreel:model-name reply'
   , #x:makreel:model-name internal | #x:makreel:model-name internal -> #x:makreel:model-name internal'
   , #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
-  }, #x:makreel:model-name parallel))
+  }, #x:makreel:model-name parallel);
 
-define(#x:makreel:model-name allow, allow({
+#x:makreel:model-name allow = allow({
    tau_void
   , #x:makreel:model-name tau_reply
   , #x:makreel:model-name in'
@@ -104,9 +104,9 @@ define(#x:makreel:model-name allow, allow({
   , recurse
   , return
   , second_reply
-  }, #x:makreel:model-name comm))
+  }, #x:makreel:model-name comm);
 
-define(#x:makreel:model-name interface_internal, rename({
+#x:makreel:model-name interface_internal = rename({
     recurse -> tau_void
   , return -> tau_void
   , #x:makreel:model-name in' -> #x:makreel:model-name in
@@ -117,7 +117,7 @@ define(#x:makreel:model-name interface_internal, rename({
   , #x:makreel:model-name state' -> #x:makreel:model-name state
   , #x:makreel:model-name end' -> tau_void
   , #x:makreel:model-name silent_end -> tau_void
-  }, #x:makreel:model-name allow))
+  }, #x:makreel:model-name allow);
 
 #x:makreel:model-name interface = hide({
    tau_void

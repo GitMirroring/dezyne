@@ -5,18 +5,18 @@
 ;
 
 
-define(#.name _portinternal, rename({
+#.name _portinternal = rename({
   #.name internal -> #x:basic-type tau_modeling
   , #.name end -> tau_void
-  , #.name flush -> tau_void}, #.name _port))
+  , #.name flush -> tau_void}, #.name _port);
 
-define(#.name _portexternal_parallel, #.name _portexternal_queue([]) || #.name _portinternal)
+#.name _portexternal_parallel = #.name _portexternal_queue([]) || #.name _portinternal;
 
-define(#.name _portexternal_comm, comm({
+#.name _portexternal_comm = comm({
   #.name out | #.name qin -> #.name qin'
-  }, #.name _portexternal_parallel))
+  }, #.name _portexternal_parallel);
 
-define(#.name _portexternal_allow, allow({
+#.name _portexternal_allow = allow({
     #x:makreel:interface-name tau_modeling
   , #x:makreel:interface-name tau_reply
   , #.name in
@@ -31,9 +31,9 @@ define(#.name _portexternal_allow, allow({
   , illegal
   , incomplete
   , tau_void
-  }, #.name _portexternal_comm))
+  }, #.name _portexternal_comm);
 
-define(#.name _portexternal, rename({
+#.name _portexternal = rename({
   #.name qin' -> #x:basic-type tau_event
   , #.name qout -> #.name out
-  }, #.name _portexternal_allow))
+  }, #.name _portexternal_allow);

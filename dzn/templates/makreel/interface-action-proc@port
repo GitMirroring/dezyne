@@ -1,4 +1,5 @@
-define(#.name _port, rename ({
+proc
+#.name _port = rename ({
   #x:basic-type in -> #.name in
   , #x:basic-type out -> #.name out
   , #x:basic-type reply -> #.name reply
@@ -7,4 +8,4 @@ define(#.name _port, rename ({
   , #x:basic-type silent -> #.name silent
   , #x:basic-type silent_end -> #.name silent_end
   #x:rename-flush-provides #x:rename-flush-requires
-  }, #x:basic-type interface_internal))
+  }, #x:basic-type interface_internal);
