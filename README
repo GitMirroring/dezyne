@@ -22,14 +22,16 @@ the file [[file:COPYING.LESSER][COPYING.LESSER]].
 Dezyne currently depends on the following packages:
 
   - [[https://gnu.org/software/guile/][GNU Guile 3.0.5]] or later, with readline support
-  - [[https://savannah.nongnu.org/projects/guile-json/][Guile-JSON]], version 4.x
   - [[https://www.gnu.org/software/make/][GNU Make]]
-  - [[https://mcrl2.org][mCRL2]], version 202006.0
-  - [[https://gnu.org/software/m4/][GNU m4]], compiled with --enable-changeword
+  - [[https://mcrl2.org][mCRL2]], version 202106.0
 
 To run the regression test, these additional packages are needed:
 
   - for C++11: [[https://gcc.gnu.org][GCC's g++]], version 5.4 or later
+
+For optional JSON output:
+
+   - [[https://savannah.nongnu.org/projects/guile-json/][Guile-JSON]], version 4.x
 
 #+BEGIN_EXAMPLE
     guix environment -l guix.scm
