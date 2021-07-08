@@ -7,5 +7,5 @@ c.system.#.port.name .outport.#.event.name  = (#x:formal-parameter) => {
         c.match("#.port.name .<flush>");
       }
     });
-  }, c.system.#.port.name .dzn_meta, "#.event.name ");
+  }, c.system.#.port.name , "#.event.name ");
 };

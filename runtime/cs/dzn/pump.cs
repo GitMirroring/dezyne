@@ -41,6 +41,13 @@ namespace dzn
 
   public class pump : IDisposable
   {
+    public static bool port_blocked_p(Locator loc, Object p)
+    {
+      dzn.pump pump = loc.try_get<pump>();
+      if(pump != null)
+          return pump.blocked_p(p);
+      return false;
+    }
     public static void port_block(Locator loc, Object p)
     {
       loc.get<pump>().block(p);
@@ -247,6 +254,12 @@ namespace dzn
           }
         }));
     }
+    public static void collateral_block(dzn.Locator l)
+    {
+      dzn.pump pump = l.try_get<dzn.pump>();
+      if(pump != null)
+          pump.collateral_block();
+    }
     public void collateral_block()
     {
       coroutine self = find_self(this.coroutines);
@@ -265,6 +278,10 @@ namespace dzn
         this.collateral_blocked.RemoveAt(0);
         self.yield_to(this.coroutines.Last());
       }
+    }
+    public bool blocked_p(Object p)
+    {
+      return this.coroutines.Find(c => c.port == p) != null;
     }
     public void block(Object p)
     {

@@ -47,7 +47,7 @@ class main {
             c.match("p_outer.<flush>");
           }
         });
-      }, c.system.p_outer.dzn_meta, "foo");
+      }, c.system.p_outer, "foo");
     };
   }
 

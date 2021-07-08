@@ -19,7 +19,7 @@ class main {
             c.match("h.<flush>");
           }
         });
-      }, c.system.h.dzn_meta, "world");
+      }, c.system.h, "world");
     };
   }
 

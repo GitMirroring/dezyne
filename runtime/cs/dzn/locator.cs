@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of dzn-runtime.
 //
@@ -43,6 +43,9 @@ namespace dzn {
         }
         public R get<R>(String key="") {
             return (R)services[Locator.key(typeof(R), key)];
+        }
+        public R try_get<R>(String key="") where R: class {
+            return services.ContainsKey(Locator.key(typeof(R), key)) ? get<R>() : (R) null;
         }
         public Locator clone() {return new Locator(new Services(services));}
     }

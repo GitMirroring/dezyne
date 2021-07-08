@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
-// Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
 //
 // This file is part of dzn-runtime.
@@ -167,14 +167,24 @@ namespace dzn
                     throw new RuntimeException("component already handling an event");
                 }
         }
-        public void call_in(Component c, Action f, port.Meta m, String e)
+        public void call_in<Port>(Component c, Action f, Port p, String e)
         {
+            if(infos[c].handling || dzn.pump.port_blocked_p(c.dzn_locator, p))
+            {
+                dzn.pump.collateral_block(c.dzn_locator);
+            }
+            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
             handle(c, f);
             traceOut(m, "return");
         }
-        public R call_in<R>(Component c, Func<R> f, port.Meta m, String e) where R : struct, IComparable, IConvertible
+        public R call_in<R,Port>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
         {
+            if(infos[c].handling || dzn.pump.port_blocked_p(c.dzn_locator, p))
+            {
+                dzn.pump.collateral_block(c.dzn_locator);
+            }
+            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
             R r = valued_helper(c, f);
             String s;
@@ -187,8 +197,9 @@ namespace dzn
             traceOut(m, s);
             return r;
         }
-        public void call_out(Component c, Action f, port.Meta m, String e)
+        public void call_out<Port>(Component c, Action f, Port p, String e)
         {
+            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceQin(m, e);
             defer(m.provides.component, c, f);
         }

@@ -24,7 +24,7 @@ class main {
             c.match("p.<flush>");
           }
         });
-      }, c.system.p.dzn_meta, "f");
+      }, c.system.p, "f");
     };
   }
 

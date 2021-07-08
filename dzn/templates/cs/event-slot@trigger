@@ -4,5 +4,5 @@ this.#.port.name .#.event.direction port.#.event.name  =
     () => {
       #x:trace-q-out
       #.port.name _#.event.name(#x:code-arguments);
-    }, this.#.port.name .dzn_meta, "#.event.name");
+    }, this.#.port.name , "#.event.name");
     #x:assign-out-ref };
