@@ -209,9 +209,12 @@
                           (display message (current-error-port))
                           (throw 'invalid-input message)))))))
 
-(define-method (modeling-names (o <interface>))
+(define (modeling-names-unmemoized o)
   (let ((modeling (tree-collect (conjoin (is? <trigger>) ast:modeling?) o)))
     (delete-duplicates (sort (map .event.name modeling) string=?))))
+
+(define-method (modeling-names (o <interface>))
+  ((ast:pure-funcq modeling-names-unmemoized) o))
 
 (define-method (modeling-names (o <runtime:port>))
   (modeling-names ((compose .type .ast) o)))
