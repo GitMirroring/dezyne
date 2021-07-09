@@ -1,1 +1,1 @@
-{"#x:enum-short-name _#.field", #x:type-name },
+{"#x:enum-short-name :#.field", #x:type-name },

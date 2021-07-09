@@ -200,12 +200,12 @@
 
 (define-method (string->value (type <enum>) (o <string>))
   (let* ((value (last (string-split o #\.)))
-         (enum (string-split value #\_)))
+         (enum (string-split value #\:)))
     (match enum
       ((name field) (or (and (equal? (ast:name type) name)
                              (member field (ast:field* type))
                              (make <enum-literal> #:type.name (.name type) #:field field))
-                        (let ((message (format #f "invalid enum value: ~s [~s]\n" o (map (cut string-append (ast:name type) "_" <>) (ast:field* type)))))
+                        (let ((message (format #f "invalid enum value: ~s [~s]\n" o (map (cut string-append (ast:name type) ":" <>) (ast:field* type)))))
                           (display message (current-error-port))
                           (throw 'invalid-input message)))))))
 
@@ -551,7 +551,7 @@
     ('true (make <literal> #:value "true"))
     ('false (make <literal> #:value "false"))
     ((? number?) (make <literal> #:value v))
-    (_ (let ((enum (string-split (symbol->string v) #\_)))
+    (_ (let ((enum (string-split (symbol->string v) #\:)))
          (match enum
            ((ids ... field)
             (make <enum-literal> #:type.name (make <scope.name> #:ids ids) #:field field))))) ;; FIXME: what about resolving

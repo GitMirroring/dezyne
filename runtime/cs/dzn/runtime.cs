@@ -183,7 +183,7 @@ namespace dzn
             else if (r.GetType().Equals(typeof(int)))
                 s = r.ToString();
             else
-                s = r.GetType().Name + "_" + Enum.GetName(r.GetType(), r);
+                s = r.GetType().Name + ":" + Enum.GetName(r.GetType(), r);
             traceOut(m, s);
             return r;
         }

@@ -147,7 +147,7 @@ namespace dzn
       if (typeof(R) == typeof(bool)) return (R)Convert.ChangeType(v,typeof(R));
       if (typeof(R) == typeof(int)) return (R)Convert.ChangeType(v,typeof(R));
       foreach (R e in Enum.GetValues(typeof(R))) {
-        if ((typeof(R).Name + "_" + e.ToString()).Equals(s)) {
+        if ((typeof(R).Name + ":" + e.ToString()).Equals(s)) {
           return e;
         }
       }
@@ -156,7 +156,7 @@ namespace dzn
     public String to_string<R>(R r) where R: struct, IComparable, IConvertible {
       if(typeof(R) == typeof(int)) return r.ToString();
       if(typeof(R) == typeof(bool)) return (bool)Convert.ChangeType(r,typeof(bool)) ? "true" : "false";
-      return r.GetType().Name + "_" + r.ToString();
+      return r.GetType().Name + ":" + r.ToString();
     }
   }
 }

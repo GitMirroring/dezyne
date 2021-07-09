@@ -99,7 +99,7 @@ scopename        <-  name (DOT name)*
 instance-event   <-  dotted-event / instance event
 dotted-event     <-- '...'
 instance         <-- (name DOT)*
-event            <-- name / number
+event            <-- enum / name / number
 message          <-- (!(eol / arrow) .)+
 location         <-- (!(COLON / SEMICOLON / eol) .)+ COLON location-number COLON location-number COLON
 COLON            <-  ':'
@@ -110,6 +110,7 @@ in               <-- '->'
 out              <-- '<-'
 name             <-- [a-zA-Z_][a-zA-Z_0-9]* / '<external>' / '<q>'
 number           <-- '-'? [0-9]+
+enum             <-- [a-zA-Z_][a-zA-Z_0-9]* ':' [a-zA-Z_][a-zA-Z_0-9]*
 location-number  <-  [0-9]+
 eol              <   [\n]
 space            <   ' '
@@ -246,13 +247,13 @@ ws               <   [ \t]
     (('content ('instance ('name instance) ...) ('event ('name "<q>")))
      `((,@instance "<q>") . #f))
 
-    (('content ('instance ('name instance) ...) ('event (or ('name event) ('number event))))
+    (('content ('instance ('name instance) ...) ('event (or ('name event) ('number event) ('enum event))))
      (cons instance event))
 
     (('content ('dotted-event dots))
      #f)
 
-    ((content ('instance ('event (or ('name event) ('number event)))))
+    ((content ('instance ('event (or ('name event) ('number event) ('enum event)))))
      `(("sut") . ,event))
 
     (_ #f)))
@@ -990,8 +991,7 @@ ws               <   [ \t]
                  (activity-to    (make-lifeline-activity key-to time location-to))
                  (type           (if (or (member label '("true" "false" "return"))
                                          (string->number label)
-                                         ;;TODO: fix ambiguity: "in void Bool_True();"
-                                         (string-index label #\_))
+                                         (string-index label #\:))
                                      "return"
                                      direction))
                  (messages       (if (or (null? messages) (not last?)) '()

@@ -652,7 +652,7 @@ intermediate steps such as assignments, function calls, replies,
     (($ <action>)
      (trigger->string o))
     (($ <enum-literal>)
-     (string-append (ast:name (.type.name o)) "_" (.field o)))
+     (string-append (ast:name (.type.name o)) ":" (.field o)))
     (($ <literal>)
      (label->string (.value o)))
     ((? (is? <trigger>))

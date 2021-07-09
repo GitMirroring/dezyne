@@ -234,7 +234,7 @@
   o)
 
 (define-method (->sexp (o <enum-literal>))
-  (string-append (last (.ids (.type.name o))) "_" (.field o)))
+  (string-append (last (.ids (.type.name o))) ":" (.field o)))
 
 (define-method (->sexp (o <literal>))
   ((compose ->sexp .value) o))

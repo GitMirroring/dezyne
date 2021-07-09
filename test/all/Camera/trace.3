@@ -1,4 +1,4 @@
-(state ((control) (state . State_Setup)) ((sut driver) (state . State_Setup)) ((sut optics optics) (state . State_Prepare) (ready . false)) ((sut optics focus focus) (idle . false) (contrast_was . EContrast_Blurrier)) ((sut optics focus lens port) (moving . true)) ((sut optics focus sensor port)) ((sut optics shutter port)) ((sut acquisition acquire) (state . State_Ready)) ((sut acquisition sensor port) (state . State_Ready)) ((sut acquisition memory port)))
+(state ((control) (state . State:Setup)) ((sut driver) (state . State:Setup)) ((sut optics optics) (state . State:Prepare) (ready . false)) ((sut optics focus focus) (idle . false) (contrast_was . EContrast:Blurrier)) ((sut optics focus lens port) (moving . true)) ((sut optics focus sensor port)) ((sut optics shutter port)) ((sut acquisition acquire) (state . State:Ready)) ((sut acquisition sensor port) (state . State:Ready)) ((sut acquisition memory port)))
 control.release
 sut.acquisition.sensor.port.cancel
 sut.acquisition.sensor.port.return

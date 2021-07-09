@@ -69,7 +69,7 @@
     (string-join alphabet ",")))
 
 (define (enum-literal->event o)
-  (string-append (makreel:name (.type o)) "_" (.field o)))
+  (string-append (makreel:name (.type o)) ":" (.field o)))
 
 (define (event-returns event)
   (let ((type (ast:type event)))

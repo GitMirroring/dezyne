@@ -369,8 +369,8 @@ p         hello_system.e                 hello_system.b         r
 .               :                              :                .
 .         return:                              :                .
 .<--------------:                              :                .
-(state ((p) (b . false)) ((sut e) (e . E_T)) ((sut b) (b . false)) ((r) (b . false)))
+(state ((p) (b . false)) ((sut e) (e . E:T)) ((sut b) (b . false)) ((r) (b . false)))
 (trail p.hello r.hello r.false p.return)
-(state ((p) (b . false)) ((sut e) (e . E_T)) ((sut b) (b . false)) ((r) (b . false)))
+(state ((p) (b . false)) ((sut e) (e . E:T)) ((sut b) (b . false)) ((r) (b . false)))
 (labels p.hello r.world)
 (eligible p.hello r.world)
