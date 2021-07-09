@@ -562,7 +562,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (r:other-port (and r:port (runtime:other-port r:port)))
                    (r:other-instance (.container r:other-port))
                    (q-in (make <q-in> #:trigger trigger #:location (.location trigger)))
-                   (q-in (clone q-in #:parent (.parent (.ast r:other-instance))))
+                   (q-in (clone q-in #:parent (.ast r:other-instance)))
                    (q-pc (clone pc #:instance r:other-instance #:statement q-in)))
               (cons* q-pc pc (loop (cdr trace) pc))))
            ((and next
@@ -590,8 +590,8 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                                   (.name (.ast r:other-port))))
                    (return (clone statement
                                   #:port.name port-name
-                                  #:location (.location next-statement)))
-                   (return (clone return #:parent (.parent next-statement)))
+                                  #:location (.location statement)))
+                   (return (clone return #:parent component))
                    (return-pc (clone pc #:instance next-instance #:statement return)))
               (cons* return-pc pc (loop (cdr trace) next))))
            (else
