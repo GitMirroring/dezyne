@@ -253,6 +253,10 @@ PC until RTC?."
        (or (.reply (car trace)) "return"))
       ((label ... (choice . string) (#f . "<postponed-match>")) choice)))
 
+  (define (choice-labels traces)
+    (let ((labels (map choice-label traces)))
+      (delete-duplicates labels ast:eq?)))
+
   (define (choose-postponed-match traces)
     (define (label trace)
       (let* ((label (label->string (choice-label trace)))
@@ -273,7 +277,7 @@ PC until RTC?."
              (labels (make <labels> #:elements labels))
              (status (make <end-of-trail> #:ast statement #:labels labels)))
         (clone pc #:status status)))
-    (let* ((labels (map choice-label traces))
+    (let* ((labels (choice-labels traces))
            (traces (map cdr traces)))   ;drop <postponed-match> pc
       (map (cute rewrite-trace-head (cute set-end-of-trail labels <>) <>)
            traces)))
@@ -294,7 +298,8 @@ PC until RTC?."
         =>
         (lambda (traces)
           (cond
-           ((= (length traces) 1)
+           ((or (= (length traces) 1)
+                (= (length (choice-labels traces)) 1))
             (reset-posponed-match traces))
            ((and (not (%exploring?)) (interactive?))
             (choose-postponed-match traces))
