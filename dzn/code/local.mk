@@ -23,6 +23,7 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
+ %D%/dot.scm					\
  %D%/dzn.scm					\
  %D%/json.scm					\
  %D%/makreel.scm

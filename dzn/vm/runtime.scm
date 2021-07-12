@@ -157,14 +157,17 @@
       (map (compose .name .ast) (reverse (runtime:container-path o)))))
 
 (define-method (runtime:path->instance (o <list>))
-  (or (and (pair? o) (every symbol? o)) (error (format #f "list of symbol expected, got: ~s" o)))
-  (let* ((boundary? (= (length o) 1))
-         (container (if boundary? (runtime:find-instance (car o) #:boundary? #t)
-                        (%sut))))
-    (let loop ((container container) (instance-path (cdr o)))
-      (if (null? instance-path) container
-          (let ((container (runtime:find-instance (car instance-path) #:container container)))
-            (loop container (cdr instance-path)))))))
+  (or (and (pair? o) (every string? o)) (error (format #f "list of strings expected, got: ~s" o)))
+  (match o
+    (("sut") (%sut))
+    (_
+     (let* ((boundary? (= (length o) 1))
+            (container (if boundary? (runtime:find-instance (car o) #:boundary? #t)
+                           (%sut))))
+       (let loop ((container container) (instance-path (cdr o)))
+         (if (null? instance-path) container
+             (let ((container (runtime:find-instance (car instance-path) #:container container)))
+               (loop container (cdr instance-path)))))))))
 
 (define-method (runtime:port-name->instance (o <string>))
   (find (compose (cut equal? o <>) runtime:dotted-name)
@@ -378,7 +381,9 @@
 ;;;
 
 (define-method (runtime:rank! (o <runtime:port>) r)
-  (runtime:rank! (.container (runtime:other-port o)) r))
+  (let ((other-port (runtime:other-port o)))
+    (when other-port
+      (runtime:rank! (.container other-port) r))))
 
 (define-method (runtime:rank! (o <runtime:component-model>) r)
   (define (set-rank! port)
@@ -439,9 +444,13 @@
           (if (and (not (runtime:boundary-port? o))
                    (runtime:foreign-instance? (.container o)))
               (runtime:find-instance (.name (.ast o)) #:container (.container o) #:boundary? #t)
-              (let* ((other (ast:other-end-point (.ast o)))
-                     (runtime-component (runtime:find-instance (.instance.name other) #:container container)))
-                (runtime:find-instance (.port.name other) #:container runtime-component))))
+              (let ((other (ast:other-end-point (.ast o))))
+                (and other
+                     (let ((runtime-component (runtime:find-instance
+                                               (.instance.name other)
+                                               #:container container)))
+                       (runtime:find-instance (.port.name other)
+                                              #:container runtime-component))))))
 
         (define (injected-port o)
           (let ((other-port
@@ -472,7 +481,9 @@
                       (outer (outer-runtime-port o))
                       (next (if (eq? inner previous) outer inner)))
                  (cond ((runtime:boundary-port? next) next)
-                       ((runtime:system-or-foreign-instance? (.container next)) (loop next o))
+                       ((and next
+                             (runtime:system-or-foreign-instance? (.container next)))
+                        (loop next o))
                        ((not outer) (injected-port o))
                        (else next))))
               ((runtime:foreign-instance? container)

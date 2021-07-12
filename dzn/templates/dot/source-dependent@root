@@ -1,0 +1,7 @@
+strict digraph G
+{
+graph [splines=ortho];
+node [shape=rectangle];
+
+#x:dependent
+}

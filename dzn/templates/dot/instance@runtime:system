@@ -1,0 +1,6 @@
+subgraph "cluster_#runtime:dotted-name"
+{
+label="#dot:instance-name\n«#dot:instance-type-name»"
+labeljust=l
+#x:instance
+}

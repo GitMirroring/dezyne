@@ -1,0 +1,3 @@
+"#ast:dotted-name" [shape="rectangle",label="#ast:dotted-name "];
+#x:dependency-provides
+#x:dependency-requires

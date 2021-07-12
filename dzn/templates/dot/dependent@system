@@ -1,0 +1,4 @@
+"#ast:dotted-name" [shape="folder",label="#ast:dotted-name "];
+#x:dependency-provides
+#x:dependency-requires
+#x:dependency-instance

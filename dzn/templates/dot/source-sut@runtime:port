@@ -1,0 +1,8 @@
+digraph G
+{
+bgcolor="##ddffcc"
+node [shape=rectangle,fillcolor="##cceeaa",style=filled]
+edge [labelfontsize=8,dir=both,arrowhead=obox,arrowtail=obox,headport=_,tailport=_,labeldistance=1.5]
+
+"#runtime:dotted-name"  [label="#dot:instance-name\n«#dot:instance-type-name»",labeljust=l]
+}

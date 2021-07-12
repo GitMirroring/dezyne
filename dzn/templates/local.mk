@@ -26,6 +26,7 @@
 
 dist_nocompile_%C%_scm_DATA =			\
  %D%/code.scm					\
+ %D%/dot.scm					\
  %D%/dzn.scm					\
  %D%/json.scm					\
  %D%/makreel.scm
@@ -73,6 +74,7 @@ EXTRA_DIST +=					\
  %D%/c++-exception-wrappers			\
  %D%/cs						\
  %D%/dzn					\
+ %D%/dot					\
  %D%/javascript					\
  %D%/json					\
  %D%/makreel					\

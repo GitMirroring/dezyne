@@ -77,6 +77,9 @@
 (define-method (ast:async? (o <trigger>))
   (and=> (.port o) ast:async?))
 
+(define-method (ast:async? (o <runtime:port>))
+  (ast:async? (.ast o)))
+
 (define-method (ast:provides? (o <instance>))
   #f)
 
