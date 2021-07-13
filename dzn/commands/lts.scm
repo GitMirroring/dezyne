@@ -140,7 +140,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
       (let* ((lts (get-lts))
              (states (lts-states lts))
              (transitions (length (lts-edges lts))))
-        (if single-line (display (string-append check ":" (if trace "fail" "ok") ":" (number->string states) "," (number->string transitions) ":" (if trace (string-join (map edge-label trace) (make-string 1 output-separator)) "") "\n"))
+        (if single-line (display (string-append check ":" (if trace "fail" "ok") (if trace (string-append ":" (string-join (map edge-label trace) (make-string 1 output-separator))) "") "\n"))
             (if trace (begin
                         (format (current-error-port) "~a\n" fail-msg)
                         (if (not (null? trace))
