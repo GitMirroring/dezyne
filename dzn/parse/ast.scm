@@ -651,8 +651,9 @@ interfaces."
     (and
      (equal? (ast:full-name (.type.name a))
              (ast:full-name (.type.name b)))
-     (equal? (map .type.name (ast:formal* a))
-             (map .type.name (ast:formal* b)))))
+     (every ast:equal?
+            (map .type.name (ast:formal* a))
+            (map (compose .type.name) (ast:formal* b)))))
   (let* ((types (list (make <bool>) (make <void>)))
          (components (filter (is? <component>) (ast:model* root)))
          (async-ports (append-map ast:async-port* components))
