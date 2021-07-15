@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 // Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
@@ -95,5 +95,28 @@ namespace dzn
       : base("not connected: " + MetaHelper.path(m.provides.component != null ? m.provides.meta : m.requires.meta,
                                                  m.provides.component != null ? m.provides.name : m.requires.name) + "." + msg)
     {}
+  }
+
+  public class async<Signature>
+  {
+    public class In
+    {
+      public Signature req;
+      public delegate void signature_clr ();
+      public signature_clr clr;
+    }
+    public class Out
+    {
+      public Signature ack;
+    }
+    public dzn.port.Meta dzn_meta;
+    public In inport;
+    public Out outport;
+    public async ()
+    {
+      dzn_meta = new dzn.port.Meta ();
+      inport = new In ();
+      outport = new Out ();
+    }
   }
 }

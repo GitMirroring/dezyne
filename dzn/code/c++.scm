@@ -125,7 +125,8 @@
 (define-method (c++:model (o <root>))
   (let* ((models (ast:model* o))
          (models (filter (negate
-                          (disjoin (is? <type>) (is? <namespace>) ast:async?
+                          (disjoin (is? <type>) (is? <namespace>)
+                                   ast:async?
                                    ast:imported?))
                       models))
          (models (ast:topological-model-sort models))

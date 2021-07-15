@@ -102,6 +102,12 @@
 (define-method (cs:formals (o <event>))
   (formals o))
 
+(define-method (cs:formals (o <interface>))
+  (formals (.signature (car (ast:event* o)))))
+
+(define-method (cs:formals (o <port>))
+  (cs:formals (.type o)))
+
 (define (formals o)
   (let ((formals (ast:formal* o) ))
     (if (%calling-context)
@@ -140,13 +146,28 @@
        (cs:formals (.function o))))
 
 (define-method (cs:arguments (o <action>))
-  (map expression+formal->argument
-       (cs:args o)
-       (cs:formals (.event o))))
+  (if (and (ast:async? o)
+           (equal? (.event.name o) "clr"))
+      (map expression+formal->argument
+           (ast:argument* o)
+           (cs:formals (.event o)))
+      (map expression+formal->argument
+           (cs:args o)
+           (cs:formals (.event o)))))
 
 (define-method (cs:arguments (o <trigger>))
   (cs:formals o))
 
+(define-method (cs:async-interface* (o <component>))
+  (let* ((ports (ast:async-port* o))
+         (interfaces (map .type ports)))
+    (delete-duplicates interfaces ast:eq?)))
+
+(define-method (cs:async-signature-name (o <interface>))
+  (ast:full-name o))
+
+(define-method (cs:async-signature-name (o <port>))
+  (cs:async-signature-name (.type o)))
 
 (define-method (return-type (o <event>))
   ((compose .type .signature) o))
@@ -163,7 +184,9 @@
 
 (define-method (cs:model (o <root>))
   (let* ((models (ast:model* o))
-         (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
+         (models (filter (negate (disjoin (is? <type>)
+                                          (is? <namespace>)
+                                          ast:async?
                                           ast:imported?))
                          models))
          (models (ast:topological-model-sort models))

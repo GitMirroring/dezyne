@@ -3,6 +3,7 @@
 public class #x:model-name  : dzn.Component {
   #x:enum-definer
   #x:port-declaration
+  #x:async-port-declare-delegate
   #x:async-port-declare
   #x:variable-member-declare
   #x:reply-member-declare
