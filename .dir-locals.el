@@ -38,6 +38,8 @@
 
  (diff-mode . (eval (progn (remove-hook 'before-save-hook 'delete-trailing-whitespace t))))
 
+ (java-mode . ((c-basic-offset 2)))
+
  (scheme-mode
   .
   ((geiser-active-implementations . (guile))
