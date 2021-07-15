@@ -229,7 +229,7 @@
 (define-method (ast:async? (o <trigger>)) (ast:async? (.port o)))
 (define-method (ast:async? (o <action>)) (ast:async? (.port o)))
 (define-method (ast:async? (o <interface>))
-  (equal? (ast:full-name o) '("dzn" "async")))
+  (string-prefix? "dzn.async" (ast:dotted-name o)))
 (define-method (ast:async? (o <ast>))
   #f)
 
