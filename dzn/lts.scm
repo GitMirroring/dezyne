@@ -849,12 +849,12 @@ required to be non-deterministic."
      queue-direction    <-- 'qout'
      action-literal     <   'action'
      internal-literal   <   'internal' / 'silent'
-     reply-literal      <   'reply'
+     reply-literal      <   'reply' (tick 'reordered')?
      state-literal      <   'state'
      tag-literal        <   'tag'
      tau-literal        <   'tau'
-     illegal            <-- 'illegal' / 'declarative_illegal'
-     error              <-- queue-full / range-error / reply-error / missing-reply / second-reply
+     illegal            <-- 'illegal' / 'declarative_illegal' / 'constrained_illegal'
+     error              <--  queue-full / range-error / reply-error / missing-reply / second-reply
      queue-full         <-  'queue_full' / port-name tick 'queue_full'
      range-error        <-  'range_error'
      reply-error        <-  'double_reply_error' / 'no_reply_error'

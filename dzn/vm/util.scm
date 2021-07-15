@@ -995,6 +995,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (get-variables (pc <program-counter>))
   ((compose .variables get-state) pc))
 
+(define-method (get-variables (pc <program-counter>) (instance <runtime:instance>))
+  (.variables (get-state pc instance)))
+
 (define-method (set-variables (pc <program-counter>) (o <list>))
   (set-state pc (clone (get-state pc) #:variables o)))
 

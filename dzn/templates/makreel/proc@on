@@ -1,1 +1,1 @@
-#x:process-id  = #x:event-prefix #x:trigger-name  . #x:continuation;
+#x:process-id  = #x:event-prefix #x:trigger-name  . #x:constraint-continuation #x:constraint-continuation-illegal;

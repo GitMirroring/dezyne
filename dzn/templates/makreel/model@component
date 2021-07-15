@@ -85,6 +85,7 @@ provides_allow = allow ({
  , second_reply
  , tag
  , tau_void
+#x:provides-interface-allow
 #x:provides-allow
  }, provides_comm);
 
@@ -165,7 +166,9 @@ component_behavior_comm = comm ({
 }, #x:type-check  #x:makreel:model-name behavior #x:member-init || defer_queue([]));
 
 component_behavior_allow = allow({
-   declarative_illegal
+   constrained_legal
+ , constrained_illegal
+ , declarative_illegal
  , defer_end
  , defer_q_empty
  , defer_qin'
@@ -303,6 +306,8 @@ component_semantics_allow = allow({
  , #x:allow-tau
    #x:semantics-allow-provides
    #x:semantics-allow-requires
+ , constrained_legal
+ , constrained_illegal
  , declarative_illegal
  , defer_end'
  , defer_q_empty'
@@ -322,14 +327,59 @@ component_semantics_allow = allow({
 
 component_semantics = rename({
    defer_qout' -> defer_qout
+ , defer_q_empty' -> defer_q_empty
+ , defer_end' -> defer_end
  , #x:makreel:model-name end' -> #x:makreel:model-name end
    #x:semantics-rename-provides
    #x:semantics-rename-requires
  }, component_semantics_allow);
 
+#x:provides-interface-constraint
+
+#x:provides-constraint
+
+#x:single-provides-constraint
+#x:multiple-provides-constraint
+
+component_constrained_comm = comm ({
+  constrained_legal | constrained_legal -> constrained_legal'
+, constrained_illegal | constrained_illegal -> constrained_illegal'
+ #x:comm-provides-constraint
+ }, component_semantics || provides_constraint);
+
+component_constrained_allow = allow({
+ #x:makreel:model-name end
+ , #x:allow-tau
+#x:constrained-semantics-allow-provides
+#x:constrained-semantics-allow-requires
+, constrained_legal'
+, constrained_illegal'
+, declarative_illegal
+, defer_q_empty
+, defer_qout
+, defer_end
+, illegal
+, missing_reply
+, queue_empty
+, queue_full
+, queue_not_empty
+, range_error
+, recurse
+, return
+, second_reply
+, tag
+, tau_void },
+  component_constrained_comm);
+
+component_constrained = rename({
+  constrained_legal' -> constrained_legal
+, constrained_illegal' -> declarative_illegal
+ #x:rename-comm-provides-constraint
+}, component_constrained_allow);
+
 %%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
 
-component_parallel = component_semantics || req_and_queue;
+component_parallel = component_constrained || req_and_queue;
 
 component_comm = comm({
    queue_empty | queue_empty -> queue_empty'
@@ -342,10 +392,11 @@ component_allow = allow({
  , #x:allow-tau
    #x:component-allow-provides
    #x:component-allow-requires
+ , constrained_legal
  , declarative_illegal
- , defer_q_empty'
+ , defer_q_empty
  , defer_qout
- , defer_end'
+ , defer_end
  , illegal
  , missing_reply
  , queue_empty'
@@ -371,8 +422,10 @@ component = hide({
  , #x:allow-tau
    #x:component-hide-provides
    #x:component-hide-requires
+ , constrained_legal
  , defer_q_empty'
- , defer_end'
+ , defer_q_empty
+ , defer_end
  , queue_empty
  , queue_not_empty
  , recurse

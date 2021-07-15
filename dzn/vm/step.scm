@@ -448,6 +448,12 @@
                 (let ((pc (block pc r:port)))
                   (list pc)))))))))
 
+(define-method (step (pc <program-counter>) (o <tag>))
+  (list (continuation pc o)))
+
+(define-method (step (pc <program-counter>) (o <the-end>))
+  (list (continuation pc o)))
+
 (define-method (step (pc <program-counter>) (o <end-of-on>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((deferred (pop-deferred pc))

@@ -148,6 +148,9 @@
       (throw 'add-ast:equal?-overload-for-type (class-of a))
       #f))
 
+(define-method (ast:equal? (a <reply>) (b <reply>))
+  (ast:equal? (.expression a) (.expression b)))
+
 (define-method (ast:equal? (a <signature>) (b <signature>))
   (and
    (ast:equal? (.type.name a) (.type.name b))
@@ -162,3 +165,6 @@
 (define-method (ast:equal? (a <trigger>) (b <trigger>))
   (and (equal? (.port.name a) (.port.name b))
        (equal? (.event.name a) (.event.name b))))
+
+(define-method (ast:equal? (a <the-end>) (b <the-end>))
+  #t)

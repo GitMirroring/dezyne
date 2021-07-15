@@ -36,6 +36,7 @@
             merge-alist2
             merge-alist-list
             pke
+            singleton?
             split-lists))
 
 (define (disjoin . predicates)
@@ -45,6 +46,9 @@
 (define (conjoin . predicates)
   (lambda arguments
     (every (cut apply <> arguments) predicates)))
+
+(define (singleton? list)
+  (and (= 1 (length list)) (car list)))
 
 (define (pke . stuff)
   "Like peek (pk), writing to (CURRENT-ERROR-PORT)."

@@ -1,0 +1,4 @@
+#.name provides_constraint  = rename({
+ #x:rename-provides-constraint
+},
+#x:makreel:interface-name constraint_start);

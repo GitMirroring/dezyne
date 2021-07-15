@@ -196,7 +196,8 @@
 ;;semantics
 (define-templates semantics-main)
 (define-templates semantics-provides ast:provides-port* newline-union-infix)
-(define-templates semantics-provides-flush ast:requires-port* newline-union-prefix)
+(define-templates semantics-provides-flush makreel:semantics-provides-flush)
+(define-templates semantics-provides-unblocked-out ast:requires-port* newline-union-infix)
 (define-templates semantics-provides-reply-init ast:provides-port* comma-infix)
 (define-templates semantics-provides-reset-reply-pair makreel:provides-pair* comma-infix)
 (define-templates semantics-provides-reset-reply makreel:provides-reset-reply comma-infix)
@@ -255,4 +256,33 @@
 (define-templates provides-out makreel:provides-proc newline-union-infix)
 (define-templates provides-comm ast:provides-port* newline-comma-infix)
 (define-templates provides-allow ast:provides-port* newline-comma-prefix)
+(define-templates provides-interface-allow ast:provides-interface* newline-comma-prefix)
 (define-templates provides-rename ast:provides-port* newline-comma-infix)
+
+;; constraint
+(define-templates constraint makreel:constraint double-newline-infix)
+(define-templates constraint-start makreel:constraint-start)
+(define-templates constraint-prefix makreel:constraint-prefix dot-space-suffix)
+(define-templates constraint-branch makreel:constraint-branch* newline-union-infix)
+(define-templates constraint-assign makreel:constraint-assignment* comma-infix)
+
+(define-templates constraint-process-parameters makreel:constraint-process-parameters parameters-grammar)
+(define-templates constraint-member-init makreel:member-init parameters-grammar)
+
+(define-templates constraint-continuation makreel:constraint-continuation)
+(define-templates constraint-continuation-illegal makreel:constraint-continuation-illegal)
+(define-templates constraint-component-illegal makreel:constraint-component-illegal)
+
+(define-templates provides-constraint ast:provides-port*)
+(define-templates provides-interface-constraint ast:provides-interface*)
+(define-templates provides-constraint-port-parallel ast:provides-port* parallel-infix)
+(define-templates provides-constraint-allow-provides ast:provides-port* newline-comma-prefix)
+(define-templates single-provides-constraint makreel:single-provides-component)
+(define-templates multiple-provides-constraint makreel:multiple-provides-component)
+
+(define-templates rename-provides-constraint)
+(define-templates comm-provides-constraint ast:provides-port* newline-comma-prefix)
+(define-templates rename-comm-provides-constraint ast:provides-port* newline-comma-prefix)
+
+(define-templates constrained-semantics-allow-provides ast:provides-port* newline-comma-prefix)
+(define-templates constrained-semantics-allow-requires ast:requires-port* newline-comma-prefix)

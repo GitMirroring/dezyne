@@ -27,6 +27,7 @@ interface ihello
 
   behavior
   {
+    on hello: illegal;
   }
 }
 
@@ -37,6 +38,6 @@ component illegal_provides
 
   behavior
   {
-    on h.hello (): illegal;
+    on h.hello (): {}
   }
 }

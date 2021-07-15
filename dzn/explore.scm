@@ -20,7 +20,6 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn explore)
-
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
@@ -30,17 +29,21 @@
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
+  #:use-module (dzn code makreel)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
+  #:use-module (dzn vm normalize)
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
+
   #:export (lts
             pc->rtc-lts
             pc->state-number
@@ -609,42 +612,44 @@ RTC-LTS->LTS."
 ;;;
 ;;; Entry points.
 ;;;
-
-(define* (state-diagram root #:key format model queue-size
+(define* (state-diagram ast #:key format model queue-size
                         ports? extended? actions? labels? returns?)
   "Entry-point for dzn explore --state-diagram."
-  (parameterize ((%compliance-check? #f)
-                 (%debug? (> (dzn:debugity) 0))
-                 (%exploring? #t)
-                 (%queue-size queue-size)
-                 (%sut (runtime:get-sut root model)))
-    (parameterize ((%instances (runtime:create-instances (%sut))))
-      (let* ((pc (make-pc))
-             (lts pc->state-number state-count (pc->rtc-lts pc))
-             (size (1- (car state-count)))
-             (lts pc->state-number state-count
-                  (lts-remove lts size
-                              #:ports? (or ports? extended?)
-                              #:extended? extended?
-                              #:actions? actions?
-                              #:labels? labels?
-                              #:returns? returns?
-                              #:self? (or extended? ports?)))
-             (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
-        (if (equal? format "json") (display
-                                    (state-diagram->json
-                                     state-diagram (.working-directory root)))
-            (display (state-diagram->dot state-diagram (pc->hash pc))))))))
-
-(define* (lts root #:key model queue-size)
+  (let* ((root (vm:normalize ast))
+         (model (ast:get-model root (ast:dotted-name model))))
+    (parameterize ((%compliance-check? #f)
+                   (%debug? (> (dzn:debugity) 0))
+                   (%exploring? #t)
+                   (%queue-size queue-size)
+                   (%sut (runtime:get-sut root model)))
+      (parameterize ((%instances (runtime:create-instances (%sut))))
+        (let* ((pc (make-pc))
+               (lts pc->state-number state-count (pc->rtc-lts pc))
+               (size (1- (car state-count)))
+               (lts pc->state-number state-count
+                    (lts-remove lts size
+                                #:ports? (or ports? extended?)
+                                #:extended? extended?
+                                #:actions? actions?
+                                #:labels? labels?
+                                #:returns? returns?
+                                #:self? (or extended? ports?)))
+               (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
+          (if (equal? format "json") (display
+                                      (state-diagram->json
+                                       state-diagram (.working-directory root)))
+              (display (state-diagram->dot state-diagram (pc->hash pc)))))))))
+(define* (lts ast #:key model queue-size)
   "Entry-point for dzn explore --lts."
-  (parameterize ((%compliance-check? #f)
-                 (%debug? (> (dzn:debugity) 0))
-                 (%exploring? #t)
-                 (%queue-size queue-size)
-                 (%sut (runtime:get-sut root model)))
-    (parameterize ((%instances (runtime:create-instances (%sut))))
-      (let* ((pc (make-pc))
-             (rtc-lts pc->state-number state-count (pc->rtc-lts pc))
-             (lts state-count (rtc-lts->lts rtc-lts pc->state-number state-count)))
-        (lts->aut lts state-count)))))
+  (let* ((root (vm:normalize ast))
+         (model (ast:get-model root (ast:dotted-name model))))
+    (parameterize ((%compliance-check? #f)
+                   (%debug? (> (dzn:debugity) 0))
+                   (%exploring? #t)
+                   (%queue-size queue-size)
+                   (%sut (runtime:get-sut root model)))
+      (parameterize ((%instances (runtime:create-instances (%sut))))
+        (let* ((pc (make-pc))
+               (rtc-lts pc->state-number state-count (pc->rtc-lts pc))
+               (lts state-count (rtc-lts->lts rtc-lts pc->state-number state-count)))
+          (lts->aut lts state-count))))))

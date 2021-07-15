@@ -4,6 +4,10 @@ sort
 Void = struct void;
 
 act
+constrained_legal;
+constrained_legal';
+constrained_illegal;
+constrained_illegal';
 declarative_illegal;
 illegal;
 missing_reply;
@@ -16,6 +20,7 @@ tau_void;
 
 proc
 Illegal = illegal . Illegal;
+Constrained_Illegal = constrained_illegal . Constrained_Illegal;
 Declarative_Illegal = declarative_illegal . Declarative_Illegal;
 
 #x:model

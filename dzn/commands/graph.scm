@@ -35,7 +35,7 @@
   #:use-module (dzn commands parse)
   #:use-module (dzn explore)
   #:use-module (dzn parse)
-  #:use-module (dzn vm normalize)
+
   #:export (parse-opts
             main))
 
@@ -101,9 +101,8 @@ Generate graph from a Dezyne model
          (parse-options (filter (negate (compose (cute eq? <> 'model) car))
                                 options))
          (ast (parse parse-options file-name))
-         (root (if (member backend '("lts" "state")) (vm:normalize ast) ast))
          (model (call-with-handle-exceptions
-                 (lambda _ (ast:get-model root model-name))
+                 (lambda _ (ast:get-model ast model-name))
                  #:backtrace? debug?
                  #:file-name file-name))
          (language (option-ref options 'format "dot"))
@@ -117,12 +116,12 @@ Generate graph from a Dezyne model
     (unless model
       (format (current-error-port) "~a: No dezyne model found.\n" file-name)
       (exit EXIT_OTHER_FAILURE))
-    (cond (dependency? (code root
+    (cond (dependency? (code ast
                              #:ast-> 'dependency-diagram
                              #:model model
                              #:language language))
-          (lts? (lts root #:model model #:queue-size queue-size))
-          (state? (state-diagram root
+          (lts? (lts ast #:model model #:queue-size queue-size))
+          (state? (state-diagram ast
                                  #:format language
                                  #:model model
                                  #:queue-size queue-size
@@ -131,7 +130,7 @@ Generate graph from a Dezyne model
                                  #:actions? actions?
                                  #:labels? labels?
                                  #:returns? returns?))
-          (else (code root
+          (else (code ast
                       #:ast-> 'system-diagram
                       #:model model
                       #:language language

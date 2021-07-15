@@ -136,7 +136,10 @@
                ast:pure-funcq
 
                ast:argument*
+               ast:assignment*
                ast:binding*
+               ast:constraint-branch*
+               ast:constraint-transition*
                ast:data*
                ast:event*
                ast:field*
@@ -248,7 +251,7 @@
 (define-method (ast:inout? (o <variable>))
   #f)
 
-(define-method (ast:modeling? (o <event>))
+(define-method (ast:modeling? (o <ast>))
   #f)
 
 (define-method (ast:modeling? (o <modeling-event>))

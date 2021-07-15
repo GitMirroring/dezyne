@@ -46,6 +46,7 @@
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
+  #:use-module (dzn explore constraint)
   #:use-module (dzn misc)
   #:use-module (dzn templates)
 
@@ -63,6 +64,7 @@
             makreel:reply-type-sort
             makreel:tick-names
             makreel:unticked-dotted-name
+            makreel:constraint->makreel
             root->))
 
 (define %id-alist (make-parameter #f))
@@ -141,7 +143,7 @@
  (makreel:interface-proc-memo o))
 
 (define-method (x:interface-proc-memo (o <component>))
- (string-join (map makreel:interface-proc-memo  (ast:interface* o)) "\n"))
+ (string-join (map makreel:interface-proc-memo (makreel:interface* o)) "\n"))
 
 (define (mcrl2:process-identifier o)
   (let* ((model-key ((compose .id (cute ast:parent <> <model>)) o))
@@ -290,6 +292,15 @@
 (define-method (makreel:interface-name (o <interface>))
   (makreel:model-name o))
 
+(define-method (makreel:interface-name (o <constraint>))
+  (makreel:interface-name (ast:parent o <model>)))
+
+(define-method (makreel:interface-name (o <constraint-branch>))
+  (makreel:interface-name (ast:parent o <model>)))
+
+(define-method (makreel:interface-name (o <unconstrained-process>))
+  (makreel:interface-name (ast:parent o <model>)))
+
 (define-method (makreel:interface-name (o <port>))
   ((compose makreel:interface-name .type) o))
 
@@ -304,6 +315,13 @@
   (makreel:interface-name (ast:parent o <on>)))
 
 (define-method (makreel:interface-name (o <action>))
+  (makreel:interface-name
+   (or (.port o) (ast:parent o <on>)
+       (let ((model (ast:parent o <model>)))
+         (if (is-a? model <interface>) model
+             ((compose .type car ast:provides-port*) o))))))
+
+(define-method (makreel:interface-name (o <trigger>))
   (makreel:interface-name
    (or (.port o) (ast:parent o <on>)
        (let ((model (ast:parent o <model>)))
@@ -333,6 +351,9 @@
 (define-method (makreel:flush-provides-ports (o <port>))
   (ast:provides-port* (ast:parent o <component>)))
 
+(define-method (makreel:port-variable* (port <port>))
+  (ast:variable* (.behavior (.type port))))
+
 (define-method (ast:non-external-port* (o <component>))
   (filter (negate ast:external?) (filter ast:requires? (ast:port* o))))
 
@@ -340,7 +361,7 @@
   (filter ast:external? (ast:port* o)))
 
 (define-method (makreel:action-sort (o <component>))
-  (ast:interface* o))
+  (makreel:interface* o))
 
 (define-method (makreel:action-sort (o <interface>))
   o)
@@ -368,7 +389,7 @@
     (enum-sort-global-public (ast:parent o <root>))
     (append-map
       (lambda (o) (filter (is? <enum>) (ast:type* (.behavior o))))
-      (append (list o) (ast:interface* o)))))
+      (append (list o) (makreel:interface* o)))))
 
 (define-method (makreel:reply-type-eq? (a <subint>) (b <subint>))
   #t)
@@ -397,7 +418,7 @@
   (makreel:type-constructor (.port o)))
 
 (define-method (makreel:modeling-sort (o <component>))
-  (ast:interface* o))
+  (makreel:interface* o))
 
 (define-method (makreel:modeling-sort (o <interface>))
   o)
@@ -507,7 +528,7 @@
 
 (define-method (makreel:event-act (o <component>))
   (append
-   (ast:interface* o)
+   (makreel:interface* o)
    (ast:port* o)
    (ast:port* (.behavior o))))
 
@@ -523,6 +544,9 @@
 (define-method (pretty-print-dzn (o <behavior>))
   (if (dzn:command-line:get 'debug) "\n%behavior"
       ""))
+
+(define-method (pretty-print-dzn (o <top>))
+  "")
 
 (define-method (pretty-print-dzn (o <statement>))
   (let ((debug? (dzn:command-line:get 'debug)))
@@ -559,6 +583,10 @@
 (define-method (makreel:event-prefix (o <statement>))
   (makreel:event-prefix (ast:parent o <on>)))
 
+(define-method (makreel:event-prefix (o <trigger>))
+  (let ((port (.port o)))
+    (or port (ast:parent o <model>))))
+
 (define-method (makreel:trigger-name (o <on>))
   (let ((trigger ((compose car ast:trigger*) o)))
     (.event trigger)))
@@ -566,8 +594,23 @@
 (define-method (makreel:interface-proc (o <interface>))
   o)
 
+(define-method (makreel:interface* (o <component>))
+  (delete-duplicates
+   (append
+    (map .type (ast:port* o))
+    (filter (conjoin (negate ast:imported?) (is? <interface>))
+            (ast:model* (ast:parent o <root>))))
+   ast:eq?))
+
+(define-method (ast:provides-interface* (o <component>))
+  (delete-duplicates (append (map .type (ast:provides-port* o))) ast:eq?))
+
+(define-method (makreel:unique-provides-port* (o <component>))
+  (delete-duplicates (ast:provides-port* o)
+                     (match-lambda* ((a b) (ast:eq? (.type a) (.type b))))))
+
 (define-method (makreel:interface-proc (o <component>))
-  (ast:interface* o))
+  (makreel:interface* o))
 
 (define-method (is-optional? (o <guard>))
   (is-optional? (.statement o)))
@@ -606,6 +649,10 @@
   (or (.else o) '()))
 
 (define-method (makreel:reply-synchronization (o <action>))
+  (let ((in? (eq? 'in (.direction (.event o)))))
+    (if in? o '())))
+
+(define-method (makreel:reply-synchronization (o <trigger>))
   (let ((in? (eq? 'in (.direction (.event o)))))
     (if in? o '())))
 
@@ -973,6 +1020,98 @@
   (let ((location (.location o)))
     (format #f "~a, ~a" (.line location) (.column location))))
 
+
+;;;
+;;; Constraint
+;;;
+(define-method (makreel:constraint (o <interface>))
+  (let ((constraint (interface->constraint (ast:parent o <root>) o)))
+    (sort constraint (match-lambda* ((a b) (< (.from a) (.from b)))))))
+
+(define-method (makreel:constraint-start (o <constraint>))
+  (and (eq? 1 (.from o)) (ast:parent o <model>)))
+
+(define-method (makreel:constraint-prefix (o <constraint-branch>))
+  (let ((statements (ast:statement* o)))
+    (match statements
+      (((and (? ast:modeling?) modeling) tail ...)
+       tail)
+      (((and ($ <trigger>) trigger) tail ...)
+       (cons trigger tail))
+      (_
+       statements))))
+
+(define-method (makreel:constraint-empty-prefix (o <constraint-branch>))
+  (let* ((statements (filter (is? <action>) (ast:statement* o))))
+    (and (null? statements)
+         (ast:parent o <model>))))
+
+(define-method (makreel:constraint-assignment* (o <constraint-process>))
+  (let ((statements (ast:assignment* o)))
+    (and (not (find (is? <illegal>) statements))
+        statements)))
+
+(define (top-constraint-branch o)
+  (let loop ((o o))
+    (let* ((parent (.parent o))
+           (grandparent (.parent parent)))
+      (if (is-a? grandparent <constraint>) o
+          (loop parent)))))
+
+(define-method (constrained-illegal? (o <compound>))
+  (match (.elements o)
+    ((e ... (and ($ <illegal>) i)) i)
+    (_ #f)))
+
+(define (makreel:constraint-branch* o)
+  (cond ((.branches o)
+         (filter (negate (conjoin (is? <constraint-branch>)
+                                  (compose null? .elements (cute .prefix <>))))
+                 (ast:constraint-branch* o)))
+        ((and (is-a? o <constraint-branch>)
+              (constrained-illegal? (.prefix o))))
+        (else
+         (let ((process (make <unconstrained-process>)))
+           (clone process #:parent (ast:parent o <model>))))))
+
+(define-method (makreel:constraint-process-parameters (o <interface>))
+  (makreel:process-parameters o))
+
+(define-method (makreel:constraint-process-parameters (o <port>))
+  (makreel:constraint-process-parameters (.type o)))
+
+(define-method (makreel:constraint-process-parameters (o <constraint>))
+  (makreel:constraint-process-parameters (ast:parent o <model>)))
+
+(define-method (makreel:provides-port-name (o <component>))
+  (.name (ast:provides-port o)))
+
+(define-method (makreel:single-provides-component (o <component>))
+  (and (= (length (ast:provides-port* o)) 1)
+       o))
+
+(define-method (makreel:multiple-provides-component (o <component>))
+  (and (> (length (ast:provides-port* o)) 1)
+       o))
+
+(define-method (makreel:constraint-continuation (o <on>))
+  (and (or (is-a? (ast:parent o <model>) <interface>)
+           (ast:requires? (car (ast:trigger* o))))
+       o))
+
+(define-method (makreel:constraint-continuation-illegal (o <on>))
+  (and (is-a? (ast:parent o <model>) <component>)
+       (ast:provides? (car (ast:trigger* o)))
+        o))
+
+(define-method (makreel:constraint-component-illegal (o <on>))
+  (and (not (is-a? (ast:parent o <model>) <interface>))
+       o))
+
+(define-method (makreel:semantics-provides-flush (o <component>))
+  (and (pair? (ast:requires-port* o))
+       o))
+
 (define-templates-macro define-templates makreel)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/makreel.scm")
@@ -999,17 +1138,17 @@
 ;;;
 (define (root-> o)
   (let ((queue-size (or (%queue-size)
-                        (command-line:get-number 'queue-size 3)))
-        (init (command-line:get 'init)))
+                        (command-line:get-number 'queue-size 3))))
     (parameterize ((%queue-size queue-size)
                    (%id-alist '())
                    (%next-alist '()))
       (x:source o)
-      (newline)
-      (when init
-        (display (makreel:init-process init))))))
+      (newline))))
 
 (define* (ast-> ast #:key dir model)
-  (let ((root (makreel:om ast)))
+  (let ((root (makreel:om ast))
+        (init (command-line:get 'init)))
     (if model (makreel:model->makreel root (makreel:get-model root model))
-        (root-> root))))
+        (root-> root))
+    (when init
+      (display (makreel:init-process init)))))

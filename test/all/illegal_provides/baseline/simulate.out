@@ -1,11 +1,11 @@
 (header ((h) ihello provides) ((sut) illegal_provides component) ((w) ihello requires))
 (state ((h)) ((sut)) ((w)))
-test/all/illegal_provides/illegal_provides.dzn:29:3: error: illegal
+test/all/illegal_provides/illegal_provides.dzn:30:15: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <illegal>
 (state ((h)) ((sut)) ((w)))
-test/all/illegal_provides/illegal_provides.dzn:29:3: error: illegal
+test/all/illegal_provides/illegal_provides.dzn:30:15: error: illegal
 (trail "h.hello" "<illegal>")
 (labels "h.hello")
 (eligible)

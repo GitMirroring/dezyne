@@ -1,8 +1,7 @@
-#.name in'
+   #.name in'
  , #.name out'
  , #.name reply'
  , #.name internal'
  , #.name end'
  , #.name flush
  , #.name blocking
- , #x:makreel:interface-name tau_reply
