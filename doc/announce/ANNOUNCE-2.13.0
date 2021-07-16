@@ -190,3 +190,7 @@ Dezyne Core
     for async interfaces with parameters.
   - Using an early return pattern in a function now no longer reports a
     false positive <livelock> or <second-reply> error ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/27][#27]]).
+  - The C++ and C# runtime and pump now queue events that are sent to a
+    blocked port ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/23][#23]]).
+  - The C++ and C# runtime no longer releases collaterally blocked ports
+    early, avoiding "component already handling an event" ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/23][#23]]).
