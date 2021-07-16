@@ -35,6 +35,7 @@
   #:use-module (dzn goops)
   #:use-module (dzn ast)
   #:use-module (dzn config)
+  #:use-module (dzn display)
   #:use-module (dzn parse)
   #:use-module (dzn code makreel)
   #:use-module (dzn commands parse)
@@ -91,6 +92,8 @@ Check DZN-FILE for verification errors in Dezyne models
                                  #:backtrace? debug?
                                  #:file-name file-name)))
          (root (makreel:om ast)))
+    (when (> (dzn:debugity) 1)
+      (ast:pretty-print root (current-error-port)))
     (cond (out
            (let ((formats (verification:formats)))
              (unless (member out formats)
