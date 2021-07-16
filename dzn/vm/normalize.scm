@@ -134,28 +134,6 @@
     ((? (is? <ast>)) (tree-map transform-end-of-on o))
     (_ o)))
 
-(define (add-function-return o)
-  (define* (add-return o #:key (loc o))
-    (match o
-      (($ <compound>)
-       (clone o #:elements (add-return (ast:statement* o) #:loc o)))
-      ((statement ... ($ <return>)) o)
-      ((statement ... t) (append o (list (make <return> #:location (.location (.parent t))))))
-      ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
-  (match o
-    (($ <interface>)
-     (clone o #:behaviour (add-function-return (.behaviour o))))
-    (($ <component>)
-     (clone o #:behaviour (add-function-return (.behaviour o))))
-    (($ <behaviour>)
-     (clone o #:functions (add-function-return (.functions o))))
-    (($ <functions>)
-     (clone o #:elements (map add-function-return (ast:function* o))))
-    (($ <function>)
-     (clone o #:statement (add-return (.statement o))))
-    ((? (is? <ast>)) (tree-map add-function-return o))
-    (_ o)))
-
 
 ;;;
 ;;; Entry point: normalize.

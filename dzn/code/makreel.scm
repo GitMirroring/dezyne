@@ -251,19 +251,6 @@
     ((? (is? <ast>)) (tree-map makreel:mark-tail-call o))
     (_ o)))
 
-(define (makreel:add-function-return root)
-  (define (f o)
-    (if (not (is-a? o <ast>)) o
-        (if (and o
-              (.parent o)
-              (is-a? (.parent o) <function>)
-              (is-a? o <compound>)
-              (is-a? (.type (.signature (.parent o))) <void>))
-            (if (pair? (tree-collect-filter (is? <statement>) (is? <return>) o)) o
-                (clone o #:elements (append (ast:statement* o) (list (make <return>)))))
-            (tree-map f o))))
-   (f root))
-
 (define-method (makreel:init (o <root>))
   (let* ((model-name (%model-name)))
     (define (named? o)
@@ -959,7 +946,7 @@
 (define (makreel:om ast)
   ((compose
     makreel:mark-tail-call
-    makreel:add-function-return
+    add-function-return
     normalize:state
     (remove-otherwise)
     makreel:tick-names
