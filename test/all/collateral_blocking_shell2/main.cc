@@ -39,42 +39,34 @@ main ()
   loc.set (rt);
   collateral_blocking_shell2 sut (loc);
   sut.dzn_meta.name = "sut";
-  sut.w0.meta.require.port = "w0";
-  sut.w1.meta.require.port = "w1";
+  sut.w.meta.require.port = "w";
 
-  bool cruel = false;
-  sut.w0.in.hello = [&]
+  std::future<void> f1, f2;
+  sut.w.in.hello = [&]
   {
-    std::clog << "sut.blocked.w0.hello -> <external>.w0.hello\n";
-  };
-  sut.w1.in.hello = [&]
-  {
-    std::clog << "sut.blocked.w1.hello -> <external>.w1.hello\n";
-    if (cruel)
-      {
-        std::thread ([&]
-        {
-          std::clog << "cruel\n";
-          sut.h.in.cruel ();
-        }).detach();
-      }
-
-    std::thread ([&]
+    std::clog << "sut.blocked.w.hello -> <external>.w.hello\n";
+    f1 = std::async (std::launch::async, [&]
     {
-      std::this_thread::sleep_for (std::chrono::milliseconds (2000));
-      std::clog << "world0\n";
-      sut.w0.out.world ();
-      std::this_thread::sleep_for (std::chrono::milliseconds (2000));
-      std::clog << "world1\n";
-      sut.w1.out.world ();
-    }).detach();
+      std::this_thread::sleep_for (std::chrono::milliseconds (50));
+      std::clog << "cruel\n";
+      sut.h.in.cruel ();
+    });
+    f2 = std::async (std::launch::async, [&]
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds (100));
+      std::clog << "world\n";
+      sut.w.out.world ();
+    });
   };
 
-  std::clog << "hello happy\n";
+  sut.w.in.cruel = [&]{
+    sut.w.out.bye();
+  };
+
   sut.h.in.hello ();
-  cruel = true;
-  std::clog << "hello cruel\n";
-  sut.h.in.hello ();
+
+  f1.wait();
+  f2.wait();
 
   return 0;
 }

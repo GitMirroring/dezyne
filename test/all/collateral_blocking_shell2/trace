@@ -1,14 +1,6 @@
 h.hello
-w0.hello
-w1.hello
-w0.world
-w1.world
-h.true
-h.hello
-w0.hello
-w1.hello
-w0.world
-w1.world
+w.hello
+w.world
 h.true
 h.cruel
 h.false

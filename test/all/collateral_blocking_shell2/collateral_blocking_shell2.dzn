@@ -40,43 +40,73 @@ interface iworld
   in void hello ();
   out void world ();
 
+  in void cruel ();
+  out void bye ();
+
   behaviour {
     bool idle = true;
-    on hello: idle = !idle;
-    [!idle] on inevitable: {world; idle = true;}
+    [idle] on hello: idle = !idle;
+    [!idle] {
+      on hello: illegal;
+      on inevitable: {world; idle = true;}
+    }
+    on cruel: bye;
   }
 }
+
+extern Exception $int$;
 
 component Blocked
 {
   provides ihello h;
-  requires iworld w0;
-  requires iworld w1;
+  requires iworld w;
+
+  behaviour
+  {
+    bool waiting = false;
+
+    blocking on h.hello (): {
+      w.hello ();
+      waiting = true;
+    }
+
+    [waiting] on h.cruel(): h.reply(true); // This should never happen because waiting is only true while blocked
+    [!waiting] on h.cruel(): h.reply(false); // So any cruel() call should return false
+
+    on w.world (): {
+      waiting = false;
+      h.reply(true);
+    }
+  }
+}
+
+component Bottom
+{
+  provides iworld p;
+  requires iworld r;
 
   behaviour
   {
     bool idle = true;
-    bool idle_w0 = true;
-    bool idle_w1 = true;
-    [idle] blocking on h.hello (): {w0.hello (); w1.hello (); idle = false; idle_w0 = false; idle_w1 = false;}
-    on h.cruel(): { reply(false); }
-    on w0.world (): { idle_w0 = true; if (idle_w1) { h.reply(true); idle =true; } }
-    on w1.world (): { idle_w1 = true; if (idle_w0) { h.reply(true); idle =true; } }
+    [idle] on p.hello(): {idle = false; r.hello();}
+    on r.world(): {idle = true; p.world();}
+
+    on p.cruel(): p.bye();
   }
 }
 
 component collateral_blocking_shell2
 {
   provides ihello h;
-  requires iworld w0;
-  requires iworld w1;
+  requires iworld w;
 
   system
   {
     Blocked blocked;
+    Bottom bottom;
 
     h <=> blocked.h;
-    blocked.w0 <=> w0;
-    blocked.w1 <=> w1;
+    blocked.w <=> bottom.p;
+    bottom.r <=> w;
   }
 }
