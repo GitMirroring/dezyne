@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
@@ -227,7 +227,6 @@ namespace dzn
             while((this.running || this.queue.Count != 0) && !self.released)
             {
               worker();
-              if(!self.released) collateral_release(self);
             }
             if(self.released) finish(this.coroutines);
             if(this.switch_context != null) {
