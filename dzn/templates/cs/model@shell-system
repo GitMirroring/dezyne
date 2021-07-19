@@ -1,7 +1,7 @@
 //SYSTEM
 #x:open-namespace
-public class #x:model-name  : dzn.SystemComponent {
-  dzn.pump pump;
+public class #x:model-name  : dzn.SystemComponent, IDisposable {
+  public dzn.pump pump;
   #x:non-injected-instance-declare
   #x:injected-instance-declare
   #x:port-declaration
@@ -36,6 +36,17 @@ public class #x:model-name  : dzn.SystemComponent {
 
     #x:system-port-connect
     #x:system-rank
+  }
+  protected virtual void Dispose(bool gc)
+  {
+    if(gc) {
+      this.pump.Dispose();
+    }
+  }
+  public void Dispose()
+  {
+    Dispose(true);
+    GC.SuppressFinalize(this);
   }
   public void check_bindings()
   {
