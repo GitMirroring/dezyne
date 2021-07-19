@@ -101,7 +101,7 @@ dotted-event     <-- '...'
 instance         <-- (name DOT)*
 event            <-- enum / name / number
 message          <-- (!(eol / arrow) .)+
-location         <-- (!(COLON / SEMICOLON / eol) .)+ COLON location-number COLON location-number COLON
+location         <-- (!(SEMICOLON / eol / COLON location-number COLON location-number COLON) .)+ COLON location-number COLON location-number COLON
 COLON            <-  ':'
 SEMICOLON        <-  ';'
 DOT              <   '.'

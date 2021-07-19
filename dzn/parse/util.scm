@@ -95,7 +95,8 @@
 (define (string->location string)
   "Parse STRING as file-name:line:[column:]: message and return a
 <location>."
-  (let ((m (string-match "([^:]*):([0-9]+):(([0-9]+):)?" string)))
+  (let ((m (or (string-match "(.*):([0-9]+):(([0-9]+):)" string)
+               (string-match "(.*):([0-9]+):(([0-9]+):)?" string))))
     (and m
          (make-location (match:substring m 1)
                         (string->number (match:substring m 2))
