@@ -63,6 +63,8 @@
             root->))
 
 (define %model-name (make-parameter #f))
+(define %id-alist (make-parameter #f))
+(define %next-alist (make-parameter #f))
 
 ;;;
 ;;; Ticked root.
@@ -131,22 +133,17 @@
 (define-method (x:interface-proc-memo (o <component>))
  (string-join (map makreel:interface-proc-memo  (ast:interface* o)) "\n"))
 
-(define mcrl2:process-identifier
-  (let ((id-alist '())
-	(next-alist '()))
-    (lambda (o)
-      (let* ((id (.id o))
-	     (sid ((compose .id (cut parent <> <model>)) o))
-             (path (ast:path o))
-             (id (map .id path))
-	     (key (cons id sid))
-	     (next (assq-ref next-alist sid))
-	     (next (or next -1)))
-	(number->string (or (assoc-ref id-alist key)
-			    (let ((next (1+ next)))
-                              (set! id-alist (acons key next id-alist))
-                              (set! next-alist (assoc-set! next-alist sid next))
-                              next)))))))
+(define (mcrl2:process-identifier o)
+  (let* ((model-key ((compose .id (cut parent <> <model>)) o))
+         (path (ast:path o))
+         (key (map .id path))
+	 (next (assq-ref (%next-alist) model-key))
+	 (next (or next -1)))
+    (number->string (or (assoc-ref (%id-alist) key)
+			(let ((next (1+ next)))
+                          (%id-alist (acons key next (%id-alist)))
+                          (%next-alist (assoc-set! (%next-alist) model-key next))
+                          next)))))
 
 (define-method (mcrl2:process-continuation (o <ast>))
   (let* ((parent (.parent o)))
@@ -960,7 +957,9 @@
 (define (root-> o)
   (let ((queue-size (or (%queue-size)
                         (command-line:get 'queue-size 3))))
-    (parameterize ((%queue-size queue-size))
+    (parameterize ((%queue-size queue-size)
+                   (%id-alist '())
+                   (%next-alist '()))
       (x:source o)
       (newline))))
 
