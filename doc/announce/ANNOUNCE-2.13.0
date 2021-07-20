@@ -81,14 +81,14 @@ Here are the GPG detached signatures[*]:
 
 Here are the MD5 and SHA1 checksums:
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.13.0-x86_64-linux.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-i686-windows.zip
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-ide-2.13.0-x86_64-linux.tar.gz
+90980647b88e18a103a3b2b62bb92814  dezyne-2.13.0-i686-windows.zip
+aa54b6b492e464bf1075f5ac39b13d4f  dezyne-2.13.0-x86_64-linux.tar.gz
+c0c62077ff26fe95c5cfb6c512f0202d  dezyne-ide-2.13.0-i686-windows.zip
+e78c1abef1da7d28180681ddd57516be  dezyne-ide-2.13.0-x86_64-linux.tar.gz
+64e02fbaff3a7926561108497c8e663ba04deb08  dezyne-2.13.0-i686-windows.zip
+fa696b73226200a14e69cdcb500bf462dec9196f  dezyne-2.13.0-x86_64-linux.tar.gz
+83de7a9930d8dcb6ee4448551c8b65906a6bf13b  dezyne-ide-2.13.0-i686-windows.zip
+11f810fe5698316f8eafba2698436120ae16176a  dezyne-ide-2.13.0-x86_64-linux.tar.gz
 
 [*] Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
