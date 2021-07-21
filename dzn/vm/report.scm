@@ -300,9 +300,11 @@
        (pc-arrow? (.instance pc) o)))
 
 (define-method (pc-arrow? (o <runtime:port>) (return <trigger-return>))
-  (let ((trigger (car (ast:trigger* (parent return <on>)))))
-    (or (is-a? (%sut) <runtime:port>)
-        (not (ast:modeling? trigger)))))
+  (let ((on (parent return <on>)))
+    (and on
+         (let ((trigger (car (ast:trigger* on))))
+           (or (is-a? (%sut) <runtime:port>)
+               (not (ast:modeling? trigger)))))))
 
 (define-method (pc-arrow? (o <runtime:component>) (return <trigger-return>))
   #t)
@@ -574,6 +576,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
            ((and next
                  (not (is-a? (%sut) <runtime:port>))
                  (is-a? statement <trigger-return>)
+                 (is-a? (.instance next) <runtime:component>)
                  (or (and (is-a? pc-instance <runtime:port>)
                           (ast:requires? pc-instance))
                      (and (is-a? pc-instance <runtime:component>)
