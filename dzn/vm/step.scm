@@ -281,7 +281,10 @@
 
 (define-method (step (pc <program-counter>) (o <variable>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (list (continuation (assign (push-local pc o) o (.expression o)) o)))
+  (let* ((pc (assign (push-local pc o) o (.expression o)))
+         (pc (if (is-a? (.parent o) <compound>) pc
+                 (pop-locals pc (list o)))))
+    (list (continuation pc o))))
 
 (define-method (step (pc <program-counter>) (o <reply>))
   (%debug "  ~s ~s ~a => ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (.expression o))
