@@ -506,9 +506,19 @@
     ((and (or ($ <assign>) ($ <variable>)) assign) (clone pc #:statement assign))
     (_ (next-method))))
 
+(define-method (function-return (pc <program-counter>) (o <statement>))
+  (let ((parent (.parent o)))
+    (match parent
+      (($ <compound>)
+       (let* ((statements (member o (reverse (ast:statement* parent)) ast:eq?))
+              (pc (pop-locals pc (filter (is? <variable>) statements))))
+         (function-return pc parent)))
+      (($ <function>)
+       (let* ((formals (ast:formal* parent))
+              (pc (pop-locals pc formals)))
+        (pop-pc pc)))
+      (_
+       (function-return pc parent)))))
+
 (define-method (continuation (pc <program-counter>) (o <return>))
-  (let* ((function (parent o <function>))
-         (formals (ast:formal* function))
-         (locals (filter (is? <variable>) (ast:statement* (.statement function))))
-         (pc (pop-locals pc (append locals formals))))
-    (pop-pc pc)))
+  (function-return pc o))
