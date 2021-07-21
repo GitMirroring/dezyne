@@ -1,0 +1,122 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Joran Jessurun <joran.jessurun@ajmail.com>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void start();
+  in void stop();
+  out void tick();
+
+  behaviour
+  {
+    bool operational = false;
+
+    [!operational]
+      {
+        on start: operational = true;
+        on stop: {}
+      }
+
+    [operational]
+      {
+        on start: illegal;
+        on stop: operational = false;
+        on optional: tick;
+      }
+    }
+}
+
+component Top
+{
+  provides ihello p;
+  requires iworld w;
+
+  behaviour
+  {
+    requires dzn.async tick;
+
+    bool operational = false;
+
+    [!operational]
+      {
+        on p.start():
+        {
+          tick.req();
+          w.hello();
+          operational = true;
+        }
+        on p.stop(): {}
+      }
+
+    [operational]
+      {
+        on p.stop():
+        {
+          tick.clr();
+          operational = false;
+        }
+        on tick.ack(): p.tick();
+      }
+    }
+}
+
+interface iworld
+{
+  in void hello();
+  out void world();
+
+  behaviour
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] {
+      on hello: illegal;
+      on inevitable: {idle = true; world;}
+    }
+  }
+}
+
+component Bottom
+{
+  provides iworld p;
+  behaviour
+  {
+    requires dzn.async async;
+    on p.hello(): async.req();
+    on async.ack(): p.world();
+  }
+}
+
+component async_ranking_disorder
+{
+  provides ihello p;
+  system
+  {
+    Top top;
+    top.p <=> p;
+
+    Bottom bottom;
+    bottom.p <=> top.w;
+  }
+}

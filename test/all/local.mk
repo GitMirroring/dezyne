@@ -120,6 +120,7 @@ REGRESSION_TESTS =				\
  %D%/async_prio3				\
  %D%/async_rank					\
  %D%/async_ranking				\
+ %D%/async_ranking_disorder			\
  %D%/async_shell				\
  %D%/async_types				\
  %D%/illegal_async_req				\
@@ -427,6 +428,7 @@ PARSER_TESTS =					\
 
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
+ %D%/async_ranking_disorder			\
  %D%/compliance_livelock			\
  %D%/compound_local_assign_call			\
  %D%/foreign_conflict				\
