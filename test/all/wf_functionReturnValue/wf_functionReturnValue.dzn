@@ -22,25 +22,98 @@
 //
 // Code:
 
-extern xint $int$;
+extern int $int$;
 
-interface Intf {
-  in void evt();
-  behaviour {
-    xint g() {
-      return $1$;
+interface wf_functionReturnValue
+{
+  in void hello ();
+
+  behaviour
+  {
+    int f ()
+    {
+      return $0$;
     }
 
-    bool f() {
+    bool f2 ()
+    {
+    }
+
+    bool f3 ()
+    {
+      if (true)
+        ;
+      else
+        return true;
+    }
+
+    bool f4 ()
+    {
       bool b = false;
-      if (b) {
-        return false;
-      }
-      else if (!b) {
-        // return true;
-      }
+      if (b)
+        {
+          return false;
+        }
+      else if (!b)
+        {
+          // return true;
+        }
     }
 
-    on evt: {}
+    bool f5 ()
+    {
+      bool b = false;
+      if (!b)
+        {
+          b = true;
+          return true;
+        }
+      else
+        ;
+    }
+
+    bool f6 ()
+    {
+      return true;
+      // dead code, not missing return
+      bool b = true;
+    }
+
+    bool f7 ()
+    {
+      bool b = false;
+      if (b)
+        {
+          if (b)
+            {
+              // return true;
+            }
+          else
+            return true;
+        }
+      else
+        ;
+    }
+
+    bool f8 ()
+    {
+      bool b = false;
+      if (b)
+        {
+        }
+    }
+
+    bool f9 ()
+    {
+      bool b = false;
+      if (b)
+        {
+        }
+      if (b)
+        {
+        }
+    }
+
+    on hello: {}
   }
 }
