@@ -464,7 +464,8 @@ We follow the following renaming strategy:
     (($ <functions>)
      (clone o #:elements (map add-function-return (ast:function* o))))
     (($ <function>)
-     (clone o #:statement (add-return (.statement o))))
+     (if (not (is-a? (ast:type o) <void>)) o
+         (clone o #:statement (add-return (.statement o)))))
     ((? (is? <ast>)) (tree-map add-function-return o))
     (_ o)))
 
