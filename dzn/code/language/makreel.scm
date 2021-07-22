@@ -552,6 +552,12 @@ etc."
             #:type.name ((compose (tick-names-) .type.name) o)
             #:expression ((compose (tick-names- names)
                                    .expression) o)))
+    (($ <instance>)
+     (clone o #:name ((compose (append-tick names) .name) o)
+            #:type.name ((compose (tick-names-) .type.name) o)))
+    (($ <end-point>)
+     (clone o #:instance.name ((compose (append-tick) .instance.name) o)
+            #:port.name ((compose (append-tick) .port.name) o)))
     (($ <compound>)
      (clone o
             #:elements
