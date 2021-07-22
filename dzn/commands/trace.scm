@@ -643,7 +643,9 @@ ws               <   [ \t]
         ((port)
          (symbol->string port))
         ((path ... port) ;; FIXME: bug in trace
-         (symbol->string port))))
+         (symbol->string port))
+        (()
+         "client")))
     (define (instance->life instance)
       (match instance
         ((name type 'provides)
