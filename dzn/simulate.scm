@@ -520,9 +520,10 @@ optional labels only and stop when observable event seen."
     (compose pair? trace->string-trail))
 
   (let ((lts pc->state-number count
-             (pc->rtc-lts pc
-                          #:trace-done? observable?
-                          #:labels (const '("inevitable" "optional")))))
+             (parameterize ((%exploring? #t))
+               (pc->rtc-lts pc
+                            #:trace-done? observable?
+                            #:labels (const '("inevitable" "optional"))))))
     (when %debug?
       (parameterize ((%modeling? #t))
         ((@ (ice-9 pretty-print) pretty-print)

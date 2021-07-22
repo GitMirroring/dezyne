@@ -277,7 +277,8 @@ PC until RTC?."
     (define (set-end-of-trail labels pc)
       (let* ((statement (.statement pc))
              (labels (make <labels> #:elements labels))
-             (status (make <end-of-trail> #:ast statement #:labels labels)))
+             (status (make <end-of-trail> #:ast statement #:labels labels))
+             (pc (clone pc #:statement #f)))
         (clone pc #:status status)))
     (let* ((labels (choice-labels traces))
            (traces (map cdr traces)))   ;drop <postponed-match> pc
