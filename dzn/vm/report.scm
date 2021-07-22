@@ -847,8 +847,10 @@ intermediate steps such as assignments, function calls, replies,
                                  port-name))
                    (location (or (step->location (.ast status))
                                  "<unknown-file>:"))
+                   (prefix (if (is-a? (%sut) <runtime:port>) ""
+                               (string-append instance ".")))
                    (ast (trigger->string (clone ast #:port.name #f))))
-              (format #f "~ainfo: end of trail; stopping here: ~a.~a\n" location instance ast))))
+              (format #f "~ainfo: end of trail; stopping here: ~a~a\n" location prefix ast))))
       (_ #f))))
 
 (define (end-of-trail-labels pc)
@@ -862,7 +864,8 @@ intermediate steps such as assignments, function calls, replies,
          (ast (trigger->string (clone ast #:port.name #f)))
          (labels (ast:label* status))
          (labels (map label->string labels))
-         (labels (map (cut string-append port-name "." <>) labels)))
+         (labels (if (is-a? (%sut) <runtime:port>) labels
+                     (map (cut string-append port-name "." <>) labels))))
     labels))
 
 (define* (report traces #:key eligible (trace "event") locations? state? verbose?)

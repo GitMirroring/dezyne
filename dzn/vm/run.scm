@@ -262,8 +262,10 @@ PC until RTC?."
       (let* ((label (label->string (choice-label trace)))
              (pc (cadr trace))
              (instance (.instance pc))
-             (port-name (string-join (runtime:instance->path instance) ".")))
-        (format #f "~a.~a" port-name label)))
+             (port-name (string-join (runtime:instance->path instance) "."))
+             (prefix (if (is-a? (%sut) <runtime:port>) ""
+                         (string-append port-name "."))))
+        (format #f "~a~a" prefix label)))
 
     (format (current-error-port) "eligible: ~a\n" (string-join (map label traces)))
     (let* ((input pc ((%next-input) pc))
