@@ -1,0 +1,6 @@
+(header ((client) end_of_trail_interface provides) ((sut) end_of_trail_interface interface))
+<external>.hello -> ...
+... -> sut.hello
+(trail "hello")
+(labels "false" "true")
+(eligible "false" "true")
