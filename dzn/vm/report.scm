@@ -521,7 +521,8 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                  (let* ((port (.port statement))
                         (r:port (runtime:port pc-instance port))
                         (r:other-port (and r:port (runtime:other-port r:port))))
-                   (ast:provides? r:other-port)))
+                   (and r:other-port
+                        (ast:provides? r:other-port))))
             (let* ((port (.port statement))
                    (r:port (runtime:port pc-instance port))
                    (r:other-port (and r:port (runtime:other-port r:port)))

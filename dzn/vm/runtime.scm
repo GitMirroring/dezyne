@@ -402,13 +402,14 @@
 
         (define (injected-port o)
           (let loop ((container container))
-            (let ((model (.type (.ast container))))
+            (and container
+                 (let ((model (.type (.ast container))))
 
-              (if (not (is-a? model <system>)) (loop (.container container))
-                  (let* ((other (ast:other-end-point-injected model (.ast o)))
-                         (runtime-component (and other (runtime:find-instance (.instance.name other) #:container container))))
-                    (if other (runtime:find-instance (.port.name other) #:container runtime-component)
-                        (loop (.container container))))))))
+               (if (not (is-a? model <system>)) (loop (.container container))
+                   (let* ((other (ast:other-end-point-injected model (.ast o)))
+                          (runtime-component (and other (runtime:find-instance (.instance.name other) #:container container))))
+                     (if other (runtime:find-instance (.port.name other) #:container runtime-component)
+                         (loop (.container container)))))))))
 
         (define (runtime:system-or-foreign-instance? c)
           (and c (or (runtime:system-instance? c) (runtime:foreign-instance? c))))
