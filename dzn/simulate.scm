@@ -584,22 +584,7 @@ refusals-check.  Run final REPORT and return exit status."
     (let ((event pc ((%next-input) pc)))
       (let* ((event-traces-alist (event-traces-alist pc))
              (eligible (eligible-labels pc event-traces-alist))
-             (error-trace? (find
-                            (compose (conjoin
-                                      .status
-                                      (negate (is-status? <compliance-error>))
-                                      (negate (is-status? <end-of-trail>)))
-                                     car)
-                            traces))
-             (illegal-trace? (find
-                              (compose (disjoin
-                                        (is-status? <illegal-error>)
-                                        (is-status? <implicit-illegal-error>))
-                                       car)
-                              traces))
-             (deadlock-traces (and (or (not error-trace?)
-                                       illegal-trace?)
-                                   (check-deadlock pc event-traces-alist event)))
+             (deadlock-traces (check-deadlock pc event-traces-alist event))
              (status (and deadlock-traces (pair? (.blocked pc))
                           (report traces
                                   #:locations? locations?
@@ -722,9 +707,19 @@ status."
          (traces (filter-match-error traces))
          (status (any (compose
                        (conjoin .status
-                                (negate (is-status? <end-of-trail>)))
+                                (disjoin (negate (is-status? <end-of-trail>))
+                                         (compose .labels .status)))
                        car)
                       traces))
+         (illegal-trace? (find (compose
+                                (disjoin
+                                 (is-status? <illegal-error>)
+                                 (is-status? <implicit-illegal-error>))
+                                car)
+                               traces))
+         (deadlock-check? (and deadlock-check?
+                               (or (not status)
+                                   illegal-trace?)))
          (refusals-check? (and refusals-check?
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
