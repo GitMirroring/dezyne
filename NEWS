@@ -5,6 +5,58 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.13.1 since 2.13.0
+** Parser
+  - The well-formedness check now reports an error when the ports of a
+    binding have different types.
+** Simulation
+  - The 'dzn simulate' command now supports using --format="diagram"
+    directly.  It also supports the -i,--internal option from `dzn
+    trace' for this.
+  - In interactive mode, the `dzn simulate' command now uses GNU
+    Readline.
+  - When simulating interactively and an async ack is pending, show
+    first observable action triggered by the async ack as eligible
+    event.
+  - In interactive mode, the simulator now prints the action where input
+    is needed to resolve a non-deterministic choice.
+** Noteworthy bug fixes
+  - The C++ and C# runtime has an updated pump that fixes the collateral
+    blocked release that was previously only handled during pump
+    destruction ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/23][#23]]).
+  - The C++ code generator now correctly sets async ranking for thread
+    safe shells.
+  - A bug in verification has been fixed that would sometimes
+    cause invalid mCRL2 code, resulting in a backtrace.
+  - A bug in verification has been fixed that would attempt to add
+    missing void returns to valued functions.
+  - The well-formedness check now reports two more cases of missing
+    returns in a valued function: An else branch without return, and the
+    empty function body.
+  - In the simulator, the location of <q-out> events has been fixed.
+  - In the simulator, a crash related to injected has been fixed in the
+    default split-arrows trace output.
+  - In the simulator, two bugs with respect to scoping function
+    variables have been fixed.
+  - The simulator now skips the (expensive) deadlock check when input is
+    needed to resolve a non-deterministic choice.
+  - A bug in the simulator's trace output has been fixed that caused
+    some eligible event names to be prefixed with "sut." when simulating
+    an interface.
+  - The simulator now updates the provides ports right after flushing
+    async.
+  - The simulator now skips the deadlock check for illegal traces.
+  - The simulator now shows complete split-arrows trace for deadlock
+    errors.
+  - The simulator now supports systems with dangling injected ports,
+    which may happen when simulating a sub system that relies on an
+    injected instance from an outer system.
+  - A bug in the simulator was fixed where a trace needing input leading
+    up to a non-deterministic choice would already include one of the
+    possible choices at the end.
+  - A bug in the simulator was fixed that generated duplicate traces.
+  - The ASCII trace diagram now supports interface traces.
+
 * Changes in 2.13.0 since 2.12.0
 ** Simulation
   - Interactive use is now supported, it is started when invoked without
