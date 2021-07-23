@@ -61,10 +61,10 @@ main ()
 
     std::thread ([&]
     {
-      std::this_thread::sleep_for (std::chrono::milliseconds (2000));
+      std::this_thread::sleep_for (std::chrono::milliseconds (200));
       std::clog << "world0\n";
       sut.w0.out.world ();
-      std::this_thread::sleep_for (std::chrono::milliseconds (2000));
+      std::this_thread::sleep_for (std::chrono::milliseconds (200));
       std::clog << "world1\n";
       sut.w1.out.world ();
     }).detach();
