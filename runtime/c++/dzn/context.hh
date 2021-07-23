@@ -91,7 +91,7 @@ public:
   , condition()
   , future(dzn::thread::defer([this] {
       try {
-        debug << "[" << get_id () << "] create" << std::endl;
+        //debug << "[" << get_id () << "] create" << std::endl;
         std::unique_lock<std::mutex> lock(mutex);
         while(state != FINAL)
         {
@@ -163,7 +163,7 @@ public:
   }
   void call(context& c)
   {
-    debug << "[" << get_id () << "] call" << std::endl;
+    //debug << "[" << get_id () << "] call" << std::endl;
     std::unique_lock<std::mutex> lock(mutex);
     do_release(lock);
 
@@ -186,9 +186,9 @@ private:
   {
     state = BLOCKED;
     condition.notify_one();
-    debug << "[" << get_id () << "] do_block0" << std::endl;
+    //debug << "[" << get_id () << "] do_block0" << std::endl;
     do { condition.wait(lock); } while(state == BLOCKED);
-    debug << "[" << get_id () << "] do_block1" << std::endl;
+    //debug << "[" << get_id () << "] do_block1" << std::endl;
     if(state == FINAL) throw forced_unwind();
   }
   void do_release(std::unique_lock<std::mutex>&)
@@ -197,13 +197,13 @@ private:
       throw std::runtime_error("not allowed to release a call which is " +
                                to_string(state));
     state = RELEASED;
-    debug << "[" << get_id () << "] do_release0" << std::endl;
+    //debug << "[" << get_id () << "] do_release0" << std::endl;
     condition.notify_one();
-    debug << "[" << get_id () << "] do_release1" << std::endl;
+    //debug << "[" << get_id () << "] do_release1" << std::endl;
   }
   void do_finish(std::unique_lock<std::mutex>& lock)
   {
-    debug << "[" << get_id () << "] finish0" << std::endl;
+    //debug << "[" << get_id () << "] finish" << std::endl;
     state = FINAL;
     lock.unlock();
     condition.notify_all();
