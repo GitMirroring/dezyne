@@ -47,7 +47,7 @@ namespace dzn
   }
   void collateral_block(const locator& l)
   {
-    l.get<dzn::pump>().collateral_block_lambda();
+    l.get<dzn::pump>().collateral_block();
   }
   bool port_blocked_p(const locator& l, void *p)
   {
@@ -70,16 +70,17 @@ namespace dzn
     return self;
   }
 
-  static void finish(std::list<coroutine>& coroutines)
+  static void remove_finished_coroutines(std::list<coroutine>& coroutines)
   {
-    auto self = find_self(coroutines);
-    self->finished = true;
-    debug << "[" << self->id << "] finish coroutine" << std::endl;
+    coroutines.remove_if([](dzn::coroutine& c){
+        if(c.finished) debug << "[" << c.id << "] removing" << std::endl;
+        return c.finished;
+    });
   }
 
+
   pump::pump()
-  : collateral_block_lambda([this]{collateral_block();})
-  , switch_context()
+  : unblocked(false)
   , running(true)
   , task(std::async(std::launch::async, std::ref(*this)))
   {}
@@ -163,7 +164,7 @@ namespace dzn
 
         lock.lock();
 
-        remove_finished_coroutines();
+        remove_finished_coroutines(coroutines);
       }
       debug << "finish pump" << std::endl;
       assert(queue.empty());
@@ -190,8 +191,9 @@ namespace dzn
                                     timers_expired()))
           {
             worker();
+            if(unblocked) collateral_release(self);
           }
-          if(self->released) finish(coroutines);
+          if(self->released) self->finished = true;
 
           if(switch_context) decltype(switch_context)(std::move(switch_context))();
 
@@ -222,11 +224,15 @@ namespace dzn
   {
     debug << "[" << self->id << "] collateral_release" << std::endl;
 
-    if(collateral_blocked.size()) finish(coroutines);
+    if(collateral_blocked.size()) self->finished = true;
     while(collateral_blocked.size())
     {
       coroutines.splice(coroutines.end(), collateral_blocked, collateral_blocked.begin());
       self->yield_to(coroutines.back());
+    }
+    if(unblocked && collateral_blocked.empty()) {
+      debug << "resetting unblocked to false" << std::endl;
+      unblocked = false;
     }
   }
   void pump::block(void* p)
@@ -249,7 +255,7 @@ namespace dzn
       }
       debug << std::endl;
     }
-    remove_finished_coroutines();
+    remove_finished_coroutines(coroutines);
   }
   void pump::release(void* p)
   {
@@ -265,11 +271,14 @@ namespace dzn
     debug << "[" << self->id << "] released" << std::endl;
     self->released = true;
 
-    switch_context = [blocked,self] {
+    switch_context = [blocked,self,this] {
       blocked->port = nullptr;
 
       debug << "[" << self->id << "] switch from" << std::endl;
       debug << "[" << blocked->id << "] to" << std::endl;
+
+      debug << "setting unblocked to true" << std::endl;
+      unblocked = true;
 
       self->yield_to(*blocked);
     };
@@ -298,12 +307,5 @@ namespace dzn
   {
     auto it = std::find_if(timers.begin(), timers.end(), [id](const std::pair<deadline, std::function<void()>>& p){ return p.first.id == id; });
     if(it != timers.end()) timers.erase(it);
-  }
-  void pump::remove_finished_coroutines()
-  {
-    coroutines.remove_if([](dzn::coroutine& c){
-        if(c.finished) debug << "[" << c.id << "] removing" << std::endl;
-        return c.finished;
-      });
   }
 }

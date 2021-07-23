@@ -43,7 +43,8 @@ namespace dzn
 
   struct pump
   {
-    std::function <void()> collateral_block_lambda;
+    bool unblocked;
+    bool running;
     std::function<void()> worker;
     std::list<coroutine> coroutines;
     std::list<coroutine> collateral_blocked;
@@ -70,7 +71,6 @@ namespace dzn
     std::function<void()> switch_context;
     std::function<void()> exit;
     std::thread::id thread_id;
-    bool running;
     std::condition_variable condition;
     std::condition_variable idle;
     std::mutex mutex;
@@ -94,7 +94,6 @@ namespace dzn
     void remove(size_t id);
   private:
     bool timers_expired() const;
-    void remove_finished_coroutines();
   };
 
   template <typename L, typename ... Args, typename = typename std::enable_if<std::is_void<typename std::result_of<L(Args ...)>::type>::value>::type>

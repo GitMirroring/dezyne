@@ -65,7 +65,7 @@ namespace dzn
       return coroutines.Find(c => c.port == null && !c.finished);
     }
 
-    public static void finish(list<coroutine> coroutines)
+    public static void remove_finished_coroutines(list<coroutine> coroutines)
     {
       coroutine self = find_self(coroutines);
       self.finished = true;
@@ -99,19 +99,19 @@ namespace dzn
     public Action worker;
     public Dictionary<Deadline, Action> timers = new Dictionary<Deadline, Action>();
     public Action switch_context;
-    public Action collateral_block_lambda;
     public Action exit;
     public list<coroutine> coroutines = new list<coroutine>();
     public list<coroutine> collateral_blocked = new list<coroutine>();
     public List<Object> skip_block = new List<Object>();
     public Queue<Action> queue = new Queue<Action>();
     public bool running;
+    public bool unblocked;
     public Thread task;
 
     public pump()
     {
-      this.collateral_block_lambda = () => {collateral_block();};
       this.running = true;
+      this.unblocked = false;
       this.task = new Thread(this.run);
       this.task.Start();
     }
@@ -234,8 +234,9 @@ namespace dzn
             while((this.running || this.queue.Count != 0) && !self.released)
             {
               worker();
+              if(unblocked) collateral_release(self);
             }
-            if(self.released) finish(this.coroutines);
+            if(self.released) remove_finished_coroutines(this.coroutines);
             if(this.switch_context != null) {
               Action switch_context = this.switch_context;
               this.switch_context = null;
@@ -272,11 +273,15 @@ namespace dzn
     }
     public void collateral_release(coroutine self)
     {
-      if(this.collateral_blocked.Count != 0) finish(coroutines);
+      if(this.collateral_blocked.Count != 0) remove_finished_coroutines(coroutines);
       while(this.collateral_blocked.Count != 0) {
         this.coroutines.Add(this.collateral_blocked[0]);
         this.collateral_blocked.RemoveAt(0);
         self.yield_to(this.coroutines.Last());
+      }
+      if(unblocked && collateral_blocked.Count == 0) {
+        Debug.WriteLine("resetting unblocked to false");
+        unblocked = false;
       }
     }
     public bool blocked_p(Object p)
@@ -327,6 +332,10 @@ namespace dzn
         blocked.port = null;
         Debug.WriteLine("[" + self.id + "] switch from");
         Debug.WriteLine("[" + blocked.id + "] to");
+
+        Debug.WriteLine("setting unblocked to true");
+        unblocked = true;
+
         self.yield_to(blocked);
       };
     }
