@@ -771,7 +771,7 @@ status."
                   (let* ((pc (car from-pcs))
                          (event-traces-alist (event-traces-alist pc))
                          (eligible (eligible-labels pc event-traces-alist)))
-                    (format (current-error-port) "eligible: ~a\n" (string-join eligible)))))
+                    (show-eligible eligible))))
               (let* ((list-of-traces (map run-sut traces))
                      (traces (apply append list-of-traces))
                      (valid-traces (filter (compose (negate .status) car) traces))
@@ -916,6 +916,8 @@ at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
          (trail trail-model (string->trail+model trail))
          (model-name (or model-name trail-model))
          (trail (if (and trail? (null? trail)) '(#f) trail)))
+    (when trail?
+      (close-port (current-input-port)))
     (simulate* root trail
                #:deadlock-check? deadlock-check?
                #:refusals-check? refusals-check?

@@ -40,7 +40,6 @@
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
   #:export (%exploring?
-            %next-input
             %strict?
             did-provides-out?
             filter-error
@@ -68,8 +67,6 @@
 
 ;; Is the input trail to be matched exactly?
 (define %strict? (make-parameter #f))
-
-(define %next-input (make-parameter (lambda (pc) (values #f pc))))
 
 ;; Are we running "explore"?
 (define %exploring? (make-parameter #f))
@@ -169,8 +166,7 @@ mark it with <determinism-error>."
          trace)))
 
 (define (interactive?)
-  (and (isatty? (current-input-port))
-       (eq? (%next-input) read-input)))
+  (isatty? (current-input-port)))
 
 (define-method (extend-trace (trace <list>))
   "Return a list of traces, produced by appending TRACE to each of the
@@ -267,7 +263,7 @@ PC until RTC?."
                          (string-append port-name "."))))
         (format #f "~a~a" prefix label)))
 
-    (format (current-error-port) "eligible: ~a\n" (string-join (map label traces)))
+    (show-eligible (delete-duplicates (map label traces)))
     (let* ((input pc ((%next-input) pc))
            (traces (map cdr traces))    ;drop <postponed-match> pc
            (traces (filter (compose (cute equal? input <>) observable car) traces)))

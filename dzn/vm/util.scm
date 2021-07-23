@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 readline)
   #:use-module (ice-9 regex)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
@@ -38,6 +39,7 @@
   #:use-module (dzn vm runtime)
   #:export (%debug
             %debug?
+            %next-input
             %queue-size
             append-port-trace
             action->trigger
@@ -82,6 +84,7 @@
             set-handling?
             set-state
             set-variables
+            show-eligible
             string->q-trigger
             string->trail
             string->trail+model
@@ -146,11 +149,23 @@
          (model (and model-match (match:substring model-match 2))))
     (values trail model)))
 
+(define %next-input (make-parameter (lambda (pc) (values #f pc))))
+
+(define (show-eligible eligible)
+  (format (current-error-port) "eligible: ~a\n" (string-join eligible))
+  (%next-input (lambda (pc)
+                 (with-readline-completion-function
+                  (make-completion-function eligible)
+                  (cute read-input pc)))))
+
 (define-method (read-input pc)
-  (when (isatty? (current-input-port))
-    (format #t "input: "))
-  (let* ((input (read))
+  (let* ((input (if (isatty? (current-input-port))
+                    (readline "> ")
+                    (read)))
          (input (match input
+                  ((? string?) (let ((input (string-trim-both input)))
+                                 (add-history input)
+                                 input))
                   ((? symbol?) (symbol->string input))
                   ((? eof-object?) #f)
                   (#f #f))))
