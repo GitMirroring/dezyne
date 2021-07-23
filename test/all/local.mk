@@ -182,6 +182,7 @@ REGRESSION_TESTS =				\
  %D%/end_of_trail_action			\
  %D%/end_of_trail_action2			\
  %D%/end_of_trail_interface			\
+ %D%/end_of_trail_interface_action		\
  %D%/enum_expressions				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
