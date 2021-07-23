@@ -192,7 +192,7 @@ type-name <-- compound-name / BOOL / VOID
 behaviour <-- BEHAVIOUR (name)? behaviour-compound
   behaviour-compound <-- BRACE-OPEN# enter-frame behaviour-statements BRACE-CLOSE# exit-frame
     behaviour-statements <-- (port / function / variable / declarative-statement / type / &BRACE-CLOSE)#*
-      function <-- type-name name &(formals BRACE-OPEN) enter-frame formals BRACE-OPEN# (imperative-statement  / !unknown-identifier)#* BRACE-CLOSE# exit-frame
+      function <-- type-name name &(formals BRACE-OPEN) enter-frame formals compound# exit-frame
 
 declarative-statement <- on / blocking / guard / compound
   on <-- ON (illegal-triggers COLON# illegal /

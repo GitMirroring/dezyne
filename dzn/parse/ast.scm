@@ -415,19 +415,15 @@
         (('field-test ('var name _ ...) field) (make <field-test-node> #:variable.name (helper name) #:field (helper field)))
         (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
 
-        (('function type name formals)
-         (make <function-node>
-           #:name (helper name)
-           #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals) #:location (get-location type))
-           #:statement (make <compound-node>)))
-
         (('function type name formals statement)
-         (let ((name (helper name))
-               (statement (make <compound-node> #:elements (make-list? (helper statement)))))
+         (let ((signature (make <signature-node>
+                            #:type.name (helper type)
+                            #:formals (helper formals)
+                            #:location (get-location type))))
            (make <function-node>
-             #:name name
-             #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals) #:location (get-location type))
-             #:statement statement)))
+             #:name (helper name)
+             #:signature signature
+             #:statement (helper statement))))
 
         (('functions functions ...)
          (make <functions-node> #:elements (helper functions)))
