@@ -57,6 +57,12 @@ if test "x$have_guile_json" != "xyes"; then
   AC_MSG_ERROR([Guile-JSON is missing; please install it.])
 fi
 
+dnl Check for Guile readline support.
+GUILE_MODULE_AVAILABLE([have_guile_readline], [(ice-9 readline)])
+if test "x$have_guile_readline" != "xyes"; then
+  AC_MSG_ERROR([Guile readline support is missing; please install it.])
+fi
+
 AC_PATH_PROGS([PERL5], [perl5 perl])
 AC_PATH_PROG([M4_CW], [m4-cw])
 AC_PATH_PROG([MCRL22LPS], [mcrl22lps])
