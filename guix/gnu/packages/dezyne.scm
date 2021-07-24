@@ -76,7 +76,8 @@
                      ("pkg-config" ,pkg-config)
                      ("texinfo" ,texinfo)
                      ("zip" ,zip))) ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json-4)))
+    (propagated-inputs `(("guile-json" ,guile-json-4)
+                         ("guile-readline" ,guile-readline)))
     (build-system gnu-build-system)
     (arguments
      `(#:modules ((ice-9 popen)
@@ -101,6 +102,7 @@
                     (json (assoc-ref %build-inputs "guile-json"))
                     (m4 (assoc-ref %build-inputs "m4-cw"))
                     (mcrl2 (assoc-ref %build-inputs "mcrl2"))
+                    (readline (assoc-ref %build-inputs "guile-readline"))
                     (sed (assoc-ref %build-inputs "sed"))
                     (effective (read
                                 (open-pipe* OPEN_READ
@@ -114,10 +116,13 @@
                                 (string-append sed "/bin")))
                     (scm-dir (string-append out "/share/guile/site/" effective))
                     (scm-path (list (string-append out "/share/guile/site/" effective)
-                                    (string-append json "/share/guile/site/" effective)))
+                                    (string-append json "/share/guile/site/" effective)
+                                    (string-append readline "/share/guile/site/" effective)))
                     (go-path (list (string-append out "/lib/guile/" effective
                                                   "/site-ccache/")
                                    (string-append json "/lib/guile/" effective
+                                                  "/site-ccache/")
+                                   (string-append readline "/lib/guile/" effective
                                                   "/site-ccache/"))))
                (wrap-program (string-append out "/bin/dzn")
                  `("PATH" ":" prefix ,path)
