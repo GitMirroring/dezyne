@@ -35,6 +35,7 @@
   #:use-module (dzn code dzn)
   #:use-module (dzn misc)
   #:use-module (dzn wfc)
+  #:use-module (dzn commands trace)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm runtime)
@@ -868,7 +869,7 @@ intermediate steps such as assignments, function calls, replies,
                      (map (cut string-append port-name "." <>) labels))))
     labels))
 
-(define* (report traces #:key eligible (trace "event") locations? state? verbose?)
+(define* (report traces #:key eligible (trace "event") internal? locations? state? verbose?)
   (let* ((pcs (and (pair? traces) (map car traces)))
          (pc (and pcs (car pcs)))
          (status (and pc (.status pc)))
@@ -884,9 +885,22 @@ intermediate steps such as assignments, function calls, replies,
            (display-trails traces))
           ((equal? trace "trace")
            (display-trace (car traces)
-                          #:locations? locations? #:state? state? #:verbose? verbose?)))
+                          #:locations? locations? #:state? state? #:verbose? verbose?))
+          ((equal? trace "diagram")
+           (let* ((trace (car traces))
+                  (split-arrows
+                   (with-output-to-string
+                     (lambda _
+                       (serialize-header (.state pc) (current-output-port))
+                       (newline)
+                       (serialize (.state pc) (current-output-port))
+                       (newline)
+                       (display-trace (car traces)
+                                      #:locations? locations? #:state? state? #:verbose? verbose?)))))
+             (display (trace:format-trace split-arrows #:format "diagram" #:internal? internal?)))))
 
-    (when pc
+    (when (and pc
+               (not (equal? trace "diagram")))
       (serialize (.state pc) (current-output-port))
       (newline))
 

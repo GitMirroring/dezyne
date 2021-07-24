@@ -41,6 +41,7 @@
           '((format (single-char #\f) (value #t))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
+            (internal (single-char #\i))
             (locations (single-char #\l))
             (model (single-char #\m) (value #t))
             (no-deadlock (single-char #\D))
@@ -62,9 +63,10 @@ Simulate a Dezyne model
 
   -D, --no-deadlock      skip the deadlock check
   -R, --no-refusals      skip the refusals check
-  -f, --format=FORMAT    display trace in format FORMAT [event] {event,trace}
+  -f, --format=FORMAT    display trace in format FORMAT [event] {diagram,event,trace}
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
+  -i, --internal         display system-internal events
   -l, --locations        prepend locations to output trail,
                            implies --format=trace
   -m, --model=MODEL      generate main for MODEL
@@ -93,6 +95,7 @@ Simulate a Dezyne model
          (state? (command-line:get 'state #f))
          (strict? (command-line:get 'strict #f))
          (verbose? (command-line:get 'verbose #f))
+         (internal? (command-line:get 'internal #f))
          (locations? (command-line:get 'locations verbose?))
          (trace (command-line:get 'format "trace"))
          (trail (option-ref options 'trail #f))
@@ -100,6 +103,7 @@ Simulate a Dezyne model
                            #:model-name model-name
                            #:deadlock-check? (not no-deadlock?)
                            #:refusals-check? (not no-refusals?)
+                           #:internal? internal?
                            #:locations? locations?
                            #:queue-size queue-size
                            #:state? state?

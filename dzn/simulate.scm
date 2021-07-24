@@ -582,7 +582,7 @@ optional labels only and stop when observable event seen."
   (apply append (hash-map->list node-observables lts)))
 
 (define* (end-report from-pcs list-of-traces #:key deadlock-check?
-                     refusals-check? state? trace locations? verbose?)
+                     refusals-check? state? trace internal? locations? verbose?)
   "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
 refusals-check.  Run final REPORT and return exit status."
 
@@ -594,6 +594,7 @@ refusals-check.  Run final REPORT and return exit status."
              (deadlock-traces (check-deadlock pc event-traces-alist event))
              (status (and deadlock-traces (pair? (.blocked pc))
                           (report traces
+                                  #:internal? internal?
                                   #:locations? locations?
                                   #:trace trace
                                   #:verbose? verbose?)))
@@ -602,6 +603,7 @@ refusals-check.  Run final REPORT and return exit status."
                            (deadlock-traces
                             (report deadlock-traces
                                     #:eligible eligible
+                                    #:internal? internal?
                                     #:locations? locations?
                                     #:trace trace
                                     #:verbose? verbose?))
@@ -666,6 +668,7 @@ status."
             (let ((fork (component-check-provides-fork component)))
               (and fork
                    (report fork
+                           #:internal? internal?
                            #:locations? locations?
                            #:trace trace
                            #:verbose? verbose?))))
@@ -694,6 +697,7 @@ status."
               (and (pair? refusals)
                    (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
                      (report traces
+                             #:internal? internal?
                              #:locations? locations?
                              #:state? state?
                              #:trace trace
@@ -740,13 +744,14 @@ status."
              (any (cute refusals-report from-pcs <> <>) from-pcs list-of-traces))
         (report traces
                 #:eligible (or (and deadlock-check? (eligible traces)) '())
+                #:internal? internal?
                 #:locations? locations?
                 #:state? state?
                 #:trace trace
                 #:verbose? verbose?))))
 
-(define* (run-trail trail #:key deadlock-check? refusals-check? locations?
-                    state? trace verbose?)
+(define* (run-trail trail #:key deadlock-check? refusals-check? internal?
+                    locations? state? trace verbose?)
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
 
   (define (trail-input pc)
@@ -783,6 +788,7 @@ status."
                                    #:refusals-check? refusals-check?
                                    #:state? state?
                                    #:trace trace
+                                   #:internal? internal?
                                    #:locations? locations?
                                    #:verbose? verbose?))
                       ((pair? blocked)
@@ -790,6 +796,7 @@ status."
                       ((pair? non-blocked)
                        (let ((pcs (map car valid-traces)))
                          (or (report non-blocked
+                                     #:internal? internal?
                                      #:locations? locations?
                                      #:state? state?
                                      #:trace trace
@@ -880,7 +887,8 @@ status."
     (%pc)))
 
 (define* (simulate* root trail #:key deadlock-check? refusals-check? model-name
-                    queue-size strict? trace locations? state? verbose?)
+                    queue-size strict? trace internal? locations? state?
+                    verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  When STRICT?, the trail must include all observable
 events.  When DEADLOCK-CHECK?, run check-deadlock at the end, when
@@ -902,7 +910,8 @@ REFUSALS-CHECK?, run refusals-check at the end."
                    #:verbose? verbose?)))))
 
 (define* (simulate root #:key deadlock-check? refusals-check? model-name
-                   queue-size strict? trace trail locations? state? verbose?)
+                   queue-size strict? trace trail internal? locations? state?
+                   verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  When STRICT?, the trail must
 include all observable events.  When DEADLOCK-CHECK?, run check-deadlock
@@ -925,6 +934,7 @@ at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
                #:queue-size queue-size
                #:strict? strict?
                #:trace trace
+               #:internal? internal?
                #:locations? locations?
                #:state? state?
                #:verbose? verbose?)))

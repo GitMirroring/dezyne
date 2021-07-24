@@ -4932,8 +4932,8 @@ Do not run the compliance check for the failures model refusals check.
 
 @item --format=@var{format}
 @itemx -f @var{format}
-Print trace in format @var{format}; one of @code{event}, @code{trace}.
-The default is @code{trace}.
+Print trace in format @var{format}; one of @code{diagram}, @code{event},
+or @code{trace}.  The default is @code{trace}.
 
 @item --help
 @itemx -h
@@ -4942,6 +4942,10 @@ Display help on invoking @code{dzn simulate}, and then exit.
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
+
+@item --internal
+@itemx -i
+Display internal events when using the @code{diagram} trace format.
 
 @item --locations
 @itemx -l
