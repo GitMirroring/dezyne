@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
-;;; Copyright © 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2020, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -100,6 +100,7 @@
    (let ((errors (binding-declaration o)))
      (if (pair? errors) errors
          (let ((errors (append
+                        (binding-type o)
                         (binding-direction o)
                         (double-bindings o)
                         (missing-bindings o))))
@@ -931,6 +932,25 @@
              ,(wfc-error (.port left) (format #f "port `~a' declared here" (.port.name left)))
              ,(wfc-error (.port right) (format #f "port `~a' declared here" (.port.name right)))))
           (else '()))))
+
+(define-method (binding-type (o <system>))
+  (append-map binding-type (ast:binding* o)))
+
+(define-method (binding-type (o <binding>))
+  (let ((left (.left o))
+        (right (.right o)))
+    (if (and
+         (.port left)
+         (.port right)
+         (.type (.port left))
+         (.type (.port right))
+         (not (equal-type? (.type (.port left)) (.type (.port right)))))
+        `(,(wfc-error o (format #f "type mismatch: cannot bind port ~a of type `~a' to port ~a of type `~a'"
+                                (.port.name left) (type-name (.type (.port left)))
+                                (.port.name right) (type-name (.type (.port right)))))
+          ,(wfc-error (.port left) (format #f "port `~a' declared here" (.port.name left)))
+          ,(wfc-error (.port right) (format #f "port `~a' declared here" (.port.name right))))
+        '())))
 
 (define-method (double-bindings (o <system>))
   (append-map double-bindings (ast:binding* o)))

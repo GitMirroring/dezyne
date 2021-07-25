@@ -362,6 +362,7 @@ PARSER_TESTS =					\
  %D%/wf_bindingPortDirection			\
  %D%/wf_bindingPortNotBound			\
  %D%/wf_bindingRequiredWildcard			\
+ %D%/wf_bindingSameType			\
  %D%/wf_blockingInblocking			\
  %D%/wf_blockingInInterface			\
  %D%/wf_blockingMultipleProvides		\
