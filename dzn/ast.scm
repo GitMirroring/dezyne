@@ -541,6 +541,10 @@
 (define-method (ast:equal? a b)
   (equal? a b))
 
+(define-method (ast:equal? (a <pair>) (b <pair>))
+  (and (ast:equal? (car a) (car b))
+       (ast:equal? (cdr a) (cdr b))))
+
 (define-method (ast:equal? (a <ast>) (b <ast>))
   (eq? (.node a) (.node b)))
 

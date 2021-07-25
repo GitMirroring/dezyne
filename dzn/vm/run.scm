@@ -157,7 +157,7 @@ mark it with <determinism-error>."
                            (negate (compose (is? <initial-compound>) .statement)))
                   trace)))
       (and (pair? trace)
-           (find (cute pc:eq? (car trace) <>) (cdr trace)))))
+           (find (cute pc-equal? (car trace) <>) (cdr trace)))))
   (and (>= (length trace) (%livelock-threshold))
        (let* ((suffixes (unfold null? identity cdr trace))
               (trace (find trace-head-recurrence? suffixes)))

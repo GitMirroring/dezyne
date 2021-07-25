@@ -68,7 +68,7 @@
             provides-trigger?
             push-local
             q-empty?
-            pc:eq?
+            pc-equal?
             pop-deferred
             pop-pc
             push-pc
@@ -642,6 +642,11 @@
                                  state-list))))
     (string-join (filter-map state->string state-list) "\n")))
 
+(define-method (async-ports (pc <program-counter>))
+  (map (match-lambda ((timeout port . proc)
+                      (runtime:dotted-name port)))
+       (.async pc)))
+
 (define-method (pc->string (o <program-counter>))
   (match (.status o)
     ((or ($ <illegal-error>) ($ <implicit-illegal-error>))
@@ -654,9 +659,7 @@
             (append (map (compose runtime:dotted-name car) (.blocked o))
                     (if (null? (.external-q o)) '()
                         (list (external-q->string (.external-q o))))
-                    (map (match-lambda ((timeout port . proc)
-                                        (runtime:dotted-name port)))
-                         (.async o))))
+                    (async-ports o)))
       "\n"))))
 
 (define-method (pc->hash (o <program-counter>))
@@ -728,22 +731,25 @@
       (null? (.q (get-state pc)))))
 
 (define-method (rtc-program-counter-equal? (a <program-counter>) (b <program-counter>))
-  (and (ast:eq? (.status a) (.status b))
+  (and (ast:equal? (.status a) (.status b))
        (ast:eq? (.statement a) (.statement b))
        (equal? (serialize (.state a)) (serialize (.state b)))
-       (equal? (.trail a) (.trail b))))
+       (equal? (.trail a) (.trail b))
+       (equal? (async-ports a) (async-ports b))
+       (ast:equal? (.blocked a) (.blocked b))
+       (ast:equal? (.external-q a) (.external-q b))))
 
-(define-method (pc:eq? (pc0 <program-counter>) (pc1 <program-counter>))
-  (and (equal? (pc->string pc0) (pc->string pc1))
+(define-method (pc-equal? (pc0 <program-counter>) (pc1 <program-counter>))
+  (and (rtc-program-counter-equal? pc0 pc1)
        (equal? (and=> (.instance pc0) runtime:instance->path) (and=> (.instance pc1) runtime:instance->path))
        (pc:ast:eq? (.statement pc0) (.statement pc1))
-       (pc:eq? (.previous pc0) (.previous pc1))))
+       (pc-equal? (.previous pc0) (.previous pc1))))
 
-(define-method (pc:eq? (pc0 <top>) (pc1 <top>))
+(define-method (pc-equal? (pc0 <top>) (pc1 <top>))
   (eq? pc0 pc1))
 
 (define (trace-head:eq? a b)
-  (pc:eq? (car a) (car b)))
+  (pc-equal? (car a) (car b)))
 
 (define-method (pc:ast:eq? (a <flush-return>) (b <flush-return>))
   #t)
