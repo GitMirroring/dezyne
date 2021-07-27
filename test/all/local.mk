@@ -272,6 +272,7 @@ REGRESSION_TESTS =				\
  %D%/importPath					\
  %D%/import_strip_component			\
  %D%/incomplete					\
+ %D%/injected_dangling				\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/label_instance_mismatch			\
