@@ -107,6 +107,7 @@ REGRESSION_TESTS =				\
  %D%/async_cancel				\
  %D%/async_context				\
  %D%/async_calling_context			\
+ %D%/async_provides				\
  %D%/livelock_async				\
  %D%/livelock_async_cancel			\
  %D%/compliance_async				\
