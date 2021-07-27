@@ -323,6 +323,19 @@
                                                 (cute ast->runtime:instance <> o))
                                        instances))))))))
 
+  (define (injected-instances instances)
+    (filter (conjoin (is? <runtime:port>)
+                                   (compose ast:injected? .ast)
+                                   (negate runtime:boundary-port?)
+                                   (negate runtime:other-port))
+                          instances))
+
+  (define (make-injected-boundary port)
+    (make <runtime:port>
+      #:ast (.ast port)
+      #:container (.container port)
+      #:boundary? #t))
+
   (let* ((provides-instances (map (cut port->instance <> #f #t)
                                   (filter ast:provides? (runtime:port* o))))
          (model-instances (model-instances o))
@@ -330,7 +343,15 @@
                                   (filter (conjoin (negate ast:async?) ast:requires?) (runtime:port* o))))
          (instances (append provides-instances
                             model-instances
-                            requires-instances)))
+                            requires-instances))
+         (injected-instances (parameterize ((%instances instances))
+                               (filter (conjoin (is? <runtime:port>)
+                                                (compose ast:injected? .ast)
+                                                (negate runtime:boundary-port?)
+                                                (negate runtime:other-port-unmemoized))
+                                       instances)))
+         (injected-boundaries (map make-injected-boundary injected-instances))
+         (instances (append instances injected-boundaries)))
     (parameterize ((%instances instances))
       (for-each (cut runtime:rank! <> 0) (filter runtime:provides-instance? instances)))
     instances))
@@ -352,9 +373,15 @@
   (runtime:rank! (.container (runtime:other-port o)) r))
 
 (define-method (runtime:rank! (o <runtime:component-model>) r)
+  (define (set-rank! port)
+    (let ((r:other-port (runtime:other-port port)))
+      (when r:other-port
+        (and=> (.container r:other-port)
+               (cute runtime:rank! <> (1+ (.rank o)))))))
   (when (> r (.rank o))
     (set! (.rank o) r))
-  (for-each (lambda (i) (runtime:rank! ((compose .container runtime:other-port) i) (1+ (.rank o)))) (runtime:runtime-requires-port* o)))
+  (for-each set-rank! (filter (compose not ast:injected? .ast)
+                              (runtime:runtime-requires-port* o))))
 
 (define-method (runtime:rank! (o <boolean>) r)
   *unspecified*)
@@ -382,7 +409,7 @@
 ;;       result = OEP (next, ep)
 ;;  fi
 
-(define-method (runtime:other-port- (o <runtime:port>))
+(define-method (runtime:other-port-unmemoized (o <runtime:port>))
   (let ((sut (runtime:find-instance "sut")))
     (let loop ((o o) (previous #f))
       (let ((container (.container o)))
@@ -409,15 +436,20 @@
                 (runtime:find-instance (.port.name other) #:container runtime-component))))
 
         (define (injected-port o)
-          (let loop ((container container))
-            (and container
-                 (let ((model (.type (.ast container))))
+          (let ((other-port
+                 (let loop ((container container))
+                   (and container
+                        (let ((model (.type (.ast container))))
 
-               (if (not (is-a? model <system>)) (loop (.container container))
-                   (let* ((other (ast:other-end-point-injected model (.ast o)))
-                          (runtime-component (and other (runtime:find-instance (.instance.name other) #:container container))))
-                     (if other (runtime:find-instance (.port.name other) #:container runtime-component)
-                         (loop (.container container)))))))))
+                          (if (not (is-a? model <system>)) (loop (.container container))
+                              (let* ((other (ast:other-end-point-injected model (.ast o)))
+                                     (runtime-component (and other (runtime:find-instance (.instance.name other) #:container container))))
+                                (if other (runtime:find-instance (.port.name other) #:container runtime-component)
+                                    (loop (.container container))))))))))
+            (or other-port
+                (runtime:find-instance (.name (.ast o))
+                                       #:container (.container o)
+                                       #:boundary? (not (.boundary? o))))))
 
         (define (runtime:system-or-foreign-instance? c)
           (and c (or (runtime:system-instance? c) (runtime:foreign-instance? c))))
@@ -449,5 +481,5 @@
                   ((runtime:system-or-foreign-instance? (.container next)) (loop next o))
                   (else next)))))))))
 
-(define (runtime:other-port o) (runtime:other-port- o))
+(define (runtime:other-port o) (runtime:other-port-unmemoized o))
 (define runtime:other-port (pure-funcq runtime:other-port))
