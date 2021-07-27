@@ -488,8 +488,10 @@ of traces, possibly marked with <compliance-error>."
               (valid-pcs (append-map cdr valid-pcs-alist)))
          (and (null? valid-pcs)
               (let* ((traces (assoc-ref event-traces-alist event))
-                     (traces (if (pair? traces) traces (list (list pc)))))
-                (map (cute rewrite-trace-head mark-deadlock <>) traces)))))))))
+                     (traces (if (pair? traces) traces (list (list pc))))
+                     (traces (map (cute rewrite-trace-head mark-deadlock <>) traces)))
+                (if (is-a? (%sut) <runtime:port>) traces
+                    (append-map (cute check-provides-compliance pc #f <>) traces))))))))))
 
 (define-method (run-state (pc <program-counter>) (state <list>))
   (let ((pc (set-state pc state)))
