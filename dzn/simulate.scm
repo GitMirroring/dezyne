@@ -881,7 +881,7 @@ status."
          (root (file->ast file-name))
          (root (vm:normalize root)))
     (%sut (runtime:get-sut root (ast:get-model root model-name)))
-    (%instances (runtime:system* (%sut)))
+    (%instances (runtime:create-instances (%sut)))
     (%pc (list (make-pc)))
     (%traces (list (%pc)))
     (%next-input read-input)
@@ -901,7 +901,7 @@ REFUSALS-CHECK?, run refusals-check at the end."
       (ast:pretty-print root (current-error-port)))
     (parameterize ((%strict? strict?)
                    (%sut (runtime:get-sut root (ast:get-model root model-name))))
-      (parameterize ((%instances (runtime:system* (%sut))))
+      (parameterize ((%instances (runtime:create-instances (%sut))))
         (run-trail trail
                    #:deadlock-check? deadlock-check?
                    #:refusals-check? refusals-check?

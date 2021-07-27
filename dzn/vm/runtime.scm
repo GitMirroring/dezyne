@@ -51,7 +51,7 @@
             runtime:provides-instance?
             runtime:requires-instance?
             runtime:system-instance?
-            runtime:system*
+            runtime:create-instances
             <runtime:component>
             <runtime:foreign>
             <runtime:instance>
@@ -295,7 +295,7 @@
                  (stable (if (= w (cdr winst)) stable #f)))
             (loop all (cdr todo) stable))))))
 
-(define-method (runtime:system* (o <runtime:instance>) ast:instance*)
+(define-method (runtime:create-instances (o <runtime:instance>) ast:instance*)
 
   (define (port->instance p c b)
     (make <runtime:port> #:ast p #:container c #:boundary? b))
@@ -303,34 +303,42 @@
   (define (invert-direction p)
     (clone p #:direction (if (eq? (.direction p) 'requires) 'provides 'requires)))
 
-  (let ((instances
-         (append (map (cut port->instance <> #f #t) (filter ast:provides? (runtime:port* o)))
-                 (let loop  ((o o))
-                   (let ((t (.type (.ast o))))
-                     (match t
-                       (($ <interface>) (list o))
-                       (($ <component>) (cons o (map (cut port->instance <> o #f) (runtime:port* o))))
-                       (($ <foreign>)
-                        (let* ((ports (runtime:port* o))
-                               (port-instances (map (cut port->instance <> o #f) (runtime:port* o)))
-                               (inverted-provides (map invert-direction (filter ast:provides? ports)))
-                               (inverted-requires (map invert-direction (filter ast:requires? ports)))
-                               (provides-instances (map (cut port->instance <> o #t) inverted-requires))
-                               (requires-instances (map (cut port->instance <> o #t) inverted-provides)))
-                          (cons o (append port-instances provides-instances requires-instances))))
-                       (($ <system>)
-                        (let ((instances (ast:instance* t)))
-                          (cons o (append (map (cut port->instance <> o #f) (runtime:port* o))
-                                          (append-map (lambda (i) (loop (ast->runtime:instance i o))) instances))))))))
-                 (map (cut port->instance <> #f #t) (filter (conjoin (negate ast:async?) ast:requires?) (runtime:port* o))))))
+  (define (model-instances o)
+    (let ((t (.type (.ast o))))
+      (match t
+        (($ <interface>) (list o))
+        (($ <component>) (cons o (map (cut port->instance <> o #f) (runtime:port* o))))
+        (($ <foreign>)
+         (let* ((ports (runtime:port* o))
+                (port-instances (map (cut port->instance <> o #f) (runtime:port* o)))
+                (inverted-provides (map invert-direction (filter ast:provides? ports)))
+                (inverted-requires (map invert-direction (filter ast:requires? ports)))
+                (provides-instances (map (cut port->instance <> o #t) inverted-requires))
+                (requires-instances (map (cut port->instance <> o #t) inverted-provides)))
+           (cons o (append port-instances provides-instances requires-instances))))
+        (($ <system>)
+         (let ((instances (ast:instance* t)))
+           (cons o (append (map (cut port->instance <> o #f) (runtime:port* o))
+                           (append-map (compose model-instances
+                                                (cute ast->runtime:instance <> o))
+                                       instances))))))))
+
+  (let* ((provides-instances (map (cut port->instance <> #f #t)
+                                  (filter ast:provides? (runtime:port* o))))
+         (model-instances (model-instances o))
+         (requires-instances (map (cut port->instance <> #f #t)
+                                  (filter (conjoin (negate ast:async?) ast:requires?) (runtime:port* o))))
+         (instances (append provides-instances
+                            model-instances
+                            requires-instances)))
     (parameterize ((%instances instances))
       (for-each (cut runtime:rank! <> 0) (filter runtime:provides-instance? instances)))
     instances))
 
-(define-method (runtime:system* (o <runtime:instance>))
-  (runtime:system* o ast:sorted-instance*))
+(define-method (runtime:create-instances (o <runtime:instance>))
+  (runtime:create-instances o ast:sorted-instance*))
 
-(define-method (runtime:system* (o <runtime:port>))
+(define-method (runtime:create-instances (o <runtime:port>))
   (list
    (make <runtime:port> #:ast (.ast o) #:boundary? #t)
    o))
