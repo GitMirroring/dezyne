@@ -429,14 +429,19 @@ of traces, possibly marked with <compliance-error>."
                           (null? (.blocked new))))))))
 
 (define-method (eligible-labels (pc <program-counter>) event-traces-alist)
-  (let ((eligible-traces
-         (filter (match-lambda
-                   ((event)
-                    #f)
-                   ((event (pcs tails ...) ...)
-                    (find (is-not-deadlock? pc) pcs)))
-                 event-traces-alist)))
-    (map car eligible-traces)))
+  (let* ((eligible-traces
+          (filter (match-lambda
+                    ((event)
+                     #f)
+                    ((event (pcs tails ...) ...)
+                     (find (is-not-deadlock? pc) pcs)))
+                  event-traces-alist))
+         (eligible-labels (map car eligible-traces))
+         (async-traces (if (null? (.async pc)) '()
+                           (flush-async pc)))
+         (async-trails (map trace->string-trail async-traces))
+         (async-labels (map car async-trails)))
+    (append eligible-labels async-labels)))
 
 (define (optional-trace? trace)
   (let* ((requires-on (filter
