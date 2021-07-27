@@ -517,7 +517,8 @@ of traces, possibly marked with <compliance-error>."
                     (error (make <match-error> #:message "match" #:ast model #:input event)))
                (list (list (clone pc #:status error)))))))
       ((? (const (pair? (.async pc))))
-       (flush-async pc))
+       (let ((traces (flush-async pc)))
+         (check-provides-compliance* pc #f traces)))
       (_
        (let* ((pc (clone pc #:status (make <end-of-trail>)))
               (trace (cons pc (cdr pc+blocked-trace))))
