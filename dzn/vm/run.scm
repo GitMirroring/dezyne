@@ -262,8 +262,7 @@ PC until RTC?."
              (prefix (if (is-a? (%sut) <runtime:port>) ""
                          (string-append port-name "."))))
         (format #f "~a~a" prefix label)))
-
-    (show-eligible (delete-duplicates (map label traces)))
+    (show-eligible (delete-duplicates (map label traces)) #:traces traces)
     (let* ((input pc ((%next-input) pc))
            (traces (map cdr traces))    ;drop <postponed-match> pc
            (traces (filter (compose (cute equal? input <>) observable car) traces)))

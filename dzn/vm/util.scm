@@ -151,8 +151,33 @@
 
 (define %next-input (make-parameter (lambda (pc) (values #f pc))))
 
-(define (show-eligible eligible)
+(define* (show-eligible eligible #:key traces)
+
+  (define (statement->string o)
+    (match o
+      (($ <variable>) (statement->string (.expression o)))
+      (($ <action>) (format #f "~a.~a" (.port.name o) (.event.name o)))))
+
+  (define action-statement?
+    (disjoin (is? <variable>) (is? <action>)))
+
+  (define (statement-equal? . statements)
+    (and (pair? statements)
+         (not (find (negate (cute ast:eq? (car statements) <>)) statements))))
+
+  (when traces
+    (let* ((traces (map reverse traces))
+           (statement-traces (map (cute map .statement <>) traces))
+           (index-common-prefix (apply list-index (cons (negate statement-equal?) statement-traces)))
+           (statement (and index-common-prefix
+                           (find action-statement?
+                                 (reverse (take (car statement-traces) index-common-prefix))))))
+      (when statement
+        (format (current-error-port) "action: ~a\n"
+               (statement->string statement)))))
+
   (format (current-error-port) "eligible: ~a\n" (string-join eligible))
+
   (%next-input (lambda (pc)
                  (with-readline-completion-function
                   (make-completion-function eligible)
