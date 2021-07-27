@@ -727,15 +727,8 @@ status."
                                          (compose .labels .status)))
                        car)
                       traces))
-         (illegal-trace? (find (compose
-                                (disjoin
-                                 (is-status? <illegal-error>)
-                                 (is-status? <implicit-illegal-error>))
-                                car)
-                               traces))
          (deadlock-check? (and deadlock-check?
-                               (or (not status)
-                                   illegal-trace?)))
+                               (not status)))
          (refusals-check? (and refusals-check?
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
