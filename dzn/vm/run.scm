@@ -251,7 +251,7 @@ PC until RTC?."
 
   (define (choice-labels traces)
     (let ((labels (map choice-label traces)))
-      (delete-duplicates labels ast:eq?)))
+      (delete-duplicates labels ast:equal?)))
 
   (define (choose-postponed-match traces)
     (define (label trace)

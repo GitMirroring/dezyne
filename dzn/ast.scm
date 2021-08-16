@@ -588,6 +588,10 @@
    (= (length (ast:formal* a)) (length (ast:formal* b)))
    (every ast:equal? (map .type.name (ast:formal* a)) (map .type.name (ast:formal* b)))))
 
+(define-method (ast:equal? (a <action>) (b <action>))
+  (and (equal? (.port.name a) (.port.name b))
+       (equal? (.event.name a) (.event.name b))))
+
 (define-method (ast:type (o <action>))
   ((compose ast:type .event) o))
 (define-method (ast:type (o <call>))
