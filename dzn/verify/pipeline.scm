@@ -92,13 +92,7 @@
 
 (define (component-taus model)
   (let ((ports (ast:required+async model)))
-    (define (port-taus port)
-      (let* ((interface (.type port))
-             (port-name (makreel:.name port))
-             (alphabet (append (append-map event-alpabet (ast:event* interface))
-                               (if (ast:async? port) '("inevitable") '()))))
-        (map (cute string-append port-name "." <>) alphabet)))
-    (string-join (append-map port-taus ports) ",")))
+    (string-join (map makreel:.name ports) ",")))
 
 (define (compliance-taus model)
   (define (provides-taus port)
