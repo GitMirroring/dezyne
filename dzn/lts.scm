@@ -245,8 +245,9 @@
   (make-lts (lts-state lts)
             (lts-states lts)
             (map (lambda (edge) (if (or (member (edge-label edge) tau)
-                                        (not (null? (filter (cut string-prefix? <> (edge-label edge))
-                                                            (map (cut string-append <> "(") tau)))))
+                                        (find (cut string-prefix? <> (edge-label edge))
+                                              (append (map (cut string-append <> ".") tau)
+                                                      (map (cut string-append <> "(") tau))))
                                     (make-edge_ (edge-start-state edge)
                                                     (edge-label edge)
                                                     #t
