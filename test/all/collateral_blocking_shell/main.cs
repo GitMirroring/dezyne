@@ -59,10 +59,10 @@ class main
 
         new System.Threading.Thread (() =>
         {
-          System.Threading.Thread.Sleep(2000);
+          System.Threading.Thread.Sleep(200);
           System.Console.Error.WriteLine("world0");
           sut.w0.outport.world ();
-          System.Threading.Thread.Sleep(2000);
+          System.Threading.Thread.Sleep(200);
           System.Console.Error.WriteLine("world1");
           sut.w1.outport.world ();
         }).Start();

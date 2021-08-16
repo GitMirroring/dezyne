@@ -34,44 +34,31 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
+
     using(collateral_blocking_shell2 sut = new collateral_blocking_shell2 (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.w0.dzn_meta.requires.name = "w0";
-      sut.w1.dzn_meta.requires.name = "w1";
+      sut.w.dzn_meta.requires.name = "w";
 
-      bool cruel = false;
-      sut.w0.inport.hello = () =>
+      sut.w.inport.hello = () =>
       {
-        System.Console.Error.WriteLine("sut.blocked.w0.hello -> <external>.w0.hello");
-      };
-      sut.w1.inport.hello = () =>
-      {
-        System.Console.Error.WriteLine("sut.blocked.w1.hello -> <external>.w1.hello");
-        if (cruel)
-          {
-            new System.Threading.Thread (() =>
-            {
-              System.Console.Error.WriteLine("cruel");
-              sut.h.inport.cruel ();
-            }).Start();
-          }
+        System.Console.Error.WriteLine("sut.blocked.w.hello -> <external>.w.hello");
 
         new System.Threading.Thread (() =>
         {
-          System.Threading.Thread.Sleep(2000);
-          System.Console.Error.WriteLine("world0");
-          sut.w0.outport.world ();
-          System.Threading.Thread.Sleep(2000);
-          System.Console.Error.WriteLine("world1");
-          sut.w1.outport.world ();
+          System.Threading.Thread.Sleep(50);
+          System.Console.Error.WriteLine("cruel");
+          sut.h.inport.cruel ();
+        }).Start();
+        new System.Threading.Thread (() =>
+        {
+          System.Threading.Thread.Sleep(100);
+          System.Console.Error.WriteLine("world");
+          sut.w.outport.world ();
         }).Start();
       };
 
       System.Console.Error.WriteLine("hello happy");
-      sut.h.inport.hello ();
-      cruel = true;
-      System.Console.Error.WriteLine("hello cruel");
       sut.h.inport.hello ();
     }
   }
