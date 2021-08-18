@@ -35,7 +35,7 @@ namespace dzn
 
   struct coroutine
   {
-    int id;
+    size_t id;
     dzn::context context;
     dzn::yield yield;
     void* port;
@@ -56,7 +56,7 @@ namespace dzn
     , skip_block()
     {}
     coroutine()
-    : id()
+    : id(context::get_id())
     , context()
     , port()
     , finished()
@@ -74,6 +74,10 @@ namespace dzn
     void release()
     {
       this->context.release();
+    }
+    static size_t get_id()
+    {
+      return context::get_id();
     }
   };
 }
