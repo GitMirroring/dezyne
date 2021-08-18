@@ -200,6 +200,14 @@ namespace dzn
   void call_out(C* c, L&& l, P& p, const char* event)
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
+    size_t handle = c->dzn_rt.handling(c);
+    void* other_port = dzn::port::other(p);
+    debug << "port: " << &p << " other port: " << other_port << "\n";
+    if(handle && handle != coroutine::get_id()
+       && (!other_port || !port_blocked_p(c->dzn_locator, other_port)))
+    {
+      collateral_block(c->dzn_locator);
+    }
     trace_qin(os, p.meta, event);
 #if DZN_STATE_TRACING
     os << *c << std::endl;

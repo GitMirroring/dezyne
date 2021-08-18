@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <map>
 #include <string>
 #include <stdexcept>
 #include <vector>
@@ -65,6 +66,12 @@ int const version_patch = @VERSION_PATCH@;
         const dzn::meta* meta;
       } require;
     };
+    template <typename Port>
+    void* other(Port& port)
+    {
+      return (&port == port.meta.provide.port)
+        ? port.meta.require.port : port.meta.provide.port;
+    }
   }
 
   struct meta
