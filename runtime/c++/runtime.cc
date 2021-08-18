@@ -68,7 +68,7 @@ namespace dzn
     return (states.find(scope) == states.end());
   }
 
-  bool& runtime::handling(void* scope)
+  size_t& runtime::handling(void* scope)
   {
     return states[scope].handling;
   }

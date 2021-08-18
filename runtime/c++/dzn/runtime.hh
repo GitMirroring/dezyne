@@ -29,6 +29,7 @@
 
 #include <dzn/meta.hh>
 #include <dzn/locator.hh>
+#include <dzn/coroutine.hh>
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -80,7 +81,7 @@ namespace dzn
   {
     struct state
     {
-      bool handling;
+      size_t handling;
       bool performs_flush;
       void* deferred;
       std::queue<std::function<void()>> queue;
@@ -91,7 +92,7 @@ namespace dzn
 
 
     bool external(void*);
-    bool& handling(void*);
+    size_t& handling(void*);
     void*& deferred(void*);
     std::queue<std::function<void()> >& queue(void*);
     bool& performs_flush(void* scope);
@@ -114,19 +115,19 @@ namespace dzn
     template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
     void handle(void* scope, L&& l)
     {
-      bool& handle = handling(scope);
+      size_t& handle = handling(scope);
       if(handle) throw std::logic_error("component already handling an event");
-      {scoped_value<bool> sv(handle, true);
+      {scoped_value<size_t> sv(handle, coroutine::get_id());
         l();}
       flush(scope);
     }
     template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
     inline auto handle(void* scope, L&& l) -> decltype(l())
     {
-      bool& handle = handling(scope);
+      size_t& handle = handling(scope);
       if(handle) throw std::logic_error("component already handling an event");
       decltype(l()) r;
-      {scoped_value<bool> sv(handle, true);
+      {scoped_value<size_t> sv(handle, coroutine::get_id());
         r = l();}
       flush(scope);
       return r;
@@ -138,8 +139,8 @@ namespace dzn
   };
 
   void collateral_block(const locator&);
-  bool port_blocked_p(const locator&, void*);
-  void port_block(const locator&, void*);
+  bool port_blocked_p(const locator&, void* port);
+  void port_block(const locator&, void* component, void* port);
   void port_release(const locator&, void*, std::function<void()>&);
 
   template <typename C, typename P>

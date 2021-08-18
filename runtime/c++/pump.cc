@@ -1,9 +1,9 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2015, 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2016 Rob Wieringa <rob@dezyne.org>
+// Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -33,9 +33,12 @@
 
 namespace dzn
 {
-  void port_block(const locator& l, void* p)
+  void port_block(const locator& l, void* c, void* p)
   {
-    if(l.get<dzn::runtime>().skip_block(p)) return;
+    auto& rt = l.get<dzn::runtime>();
+    rt.handling(c) = 0;
+    rt.flush(c);
+    if(rt.skip_block(p)) return;
     l.get<dzn::pump>().block(p);
   }
   void port_release(const locator& l, void* p, std::function<void()>& out_binding)

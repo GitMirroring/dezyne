@@ -1,3 +1,1 @@
-dzn_rt.handling(this) = false;
-dzn_rt.flush(this);
-dzn::port_block(dzn_locator, &this->#.port.name);
+dzn::port_block(dzn_locator, this, &this->#.port.name);
