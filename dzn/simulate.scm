@@ -219,7 +219,8 @@ of traces, possibly marked with <compliance-error>."
             (run-to-completion trace event)))
 
         (define (pc->provides-traces r:provides pc)
-          (let* ((interface (.type (.ast r:provides)))
+          (let* ((pc (clone pc #:async '() #:external-q '()))
+                 (interface (.type (.ast r:provides)))
                  (modeling-names (modeling-names interface))
                  (provides-lts pc->state-number count
                                (parameterize ((%sut r:provides)
