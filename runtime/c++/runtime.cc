@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2014, 2015, 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015, 2016, 2017, 2019, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2016, 2017, 2019, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2015 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of dzn-runtime.
@@ -65,27 +65,27 @@ namespace dzn
   }
 
   bool runtime::external(void* scope) {
-    return (queues.find(scope) == queues.end());
+    return (states.find(scope) == states.end());
   }
 
   bool& runtime::handling(void* scope)
   {
-    return std::get<0>(queues[scope]);
+    return states[scope].handling;
   }
 
   void*& runtime::deferred(void* scope)
   {
-    return std::get<1>(queues[scope]);
+    return states[scope].deferred;
   }
 
   std::queue<std::function<void()> >& runtime::queue(void* scope)
   {
-    return std::get<2>(queues[scope]);
+    return states[scope].queue;
   }
 
   bool& runtime::performs_flush(void* scope)
   {
-    return std::get<3>(queues[scope]);
+    return states[scope].performs_flush;
   }
 
   bool& runtime::skip_block(void* port)

@@ -78,7 +78,14 @@ namespace dzn
 
   struct runtime
   {
-    std::map<void*, std::tuple<bool, void*, std::queue<std::function<void()> >, bool> > queues;
+    struct state
+    {
+      bool handling;
+      bool performs_flush;
+      void* deferred;
+      std::queue<std::function<void()>> queue;
+    };
+    std::map<void*, state> states;
     std::map<void*, bool> skip_port;
     bool& skip_block(void*);
 
