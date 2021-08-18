@@ -57,7 +57,7 @@ namespace dzn
     {}
     coroutine()
     : id()
-    , context(false)
+    , context()
     , port()
     , finished()
     , released()

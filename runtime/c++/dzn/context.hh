@@ -84,7 +84,8 @@ public:
   {
     forced_unwind(): std::runtime_error("forced_unwind") {}
   };
-  context()
+  template <typename Work>
+  context(Work&& work)
   : state(INITIAL)
   , work()
   , mutex()
@@ -112,8 +113,9 @@ public:
   {
     std::unique_lock<std::mutex> lock(mutex);
     while(state != BLOCKED) condition.wait(lock);
+    this->work = std::move(work);
   }
-  context(bool)
+  context()
   : state(INITIAL)
   , work()
   , mutex()
@@ -124,13 +126,6 @@ public:
   context& operator=(context&&) = delete;
   context(const context&) = delete;
   context& operator=(const context&) = delete;
-  template <typename Work>
-  context(Work&& work)
-  : context()
-  {
-    std::unique_lock<std::mutex> lock(mutex);
-    this->work = std::move(work);
-  }
   ~context()
   {
     std::unique_lock<std::mutex> lock(mutex);
