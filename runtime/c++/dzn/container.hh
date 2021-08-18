@@ -40,8 +40,8 @@ namespace dzn
   template <typename System, typename Function>
   struct container
   {
-    const bool flush;
     dzn::meta meta;
+    const bool flush;
     dzn::locator dzn_locator;
     dzn::runtime dzn_rt;
     System system;

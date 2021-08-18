@@ -41,6 +41,8 @@ namespace dzn
 {
   extern std::ostream debug;
 
+  struct runtime;
+
   struct pump
   {
     void* unblocked;
@@ -81,14 +83,15 @@ namespace dzn
     void wait();
     void operator()();
 
-    void collateral_block();
+    void collateral_block(void*, dzn::runtime&);
     void collateral_release(std::list<coroutine>::iterator);
 
     bool blocked_p(void*);
-    void block(void*);
+    void block(runtime&, void*, void*);
+    bool collateral_release_skip_block (runtime& rt, void* c);
     void create_context();
     void context_switch();
-    void release(void*);
+    void release(runtime&,void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
     void handle(size_t id, size_t ms, const std::function<void()>&, size_t rank = std::numeric_limits<size_t>::max());

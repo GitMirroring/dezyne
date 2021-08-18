@@ -49,6 +49,7 @@ namespace dzn
     size_t id;
     dzn::context context;
     dzn::yield yield;
+    void* component;
     void* port;
     bool finished;
     bool skip_block;

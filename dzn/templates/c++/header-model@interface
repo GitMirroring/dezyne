@@ -4,6 +4,7 @@
  #x:open-namespace
 struct #x:model-name
 {
+  dzn::port::meta meta;
   #x:enum-definer
   struct
   {
@@ -15,7 +16,6 @@ struct #x:model-name
     #x:out-event-definer
     } out;
 
-   dzn::port::meta meta;
    inline #x:model-name(const dzn::port::meta& m) : meta(m) {}
 
    void check_bindings() const

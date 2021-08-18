@@ -35,6 +35,7 @@
 #include <map>
 #include <queue>
 #include <tuple>
+#include <vector>
 
 // Set to 1 for experimental state tracing feature.
 #ifndef DZN_STATE_TRACING
@@ -88,6 +89,8 @@ namespace dzn
     };
     std::map<void*, state> states;
     std::map<void*, bool> skip_port;
+    std::vector<void*> component_stack;
+    std::map<size_t, std::vector<void*>> blocked_port_component_stack;
     bool& skip_block(void*);
 
 
@@ -138,7 +141,7 @@ namespace dzn
     runtime& operator = (const runtime&);
   };
 
-  void collateral_block(const locator&);
+  void collateral_block(void*, const locator&);
   bool port_blocked_p(const locator&, void* port);
   void port_block(const locator&, void* component, void* port);
   void port_release(const locator&, void*, std::function<void()>&);
@@ -159,10 +162,8 @@ namespace dzn
     , reply("return")
     {
       if(c->dzn_rt.handling(c) || port_blocked_p(c->dzn_locator, &p))
-      {
-        collateral_block(c->dzn_locator);
-      }
-
+        collateral_block(c, c->dzn_locator);
+      c->dzn_rt.component_stack.push_back(c);
       trace(os, meta, event);
 #if DZN_STATE_TRACING
       os << *c << std::endl;
@@ -186,6 +187,8 @@ namespace dzn
 #if DZN_STATE_TRACING
       os << *c << std::endl;
 #endif
+      assert(c->dzn_rt.component_stack.back() == c);
+      c->dzn_rt.component_stack.pop_back();
     }
   };
 
@@ -205,14 +208,17 @@ namespace dzn
     debug << "port: " << &p << " other port: " << other_port << "\n";
     if(handle && handle != coroutine::get_id()
        && (!other_port || !port_blocked_p(c->dzn_locator, other_port)))
-    {
-      collateral_block(c->dzn_locator);
-    }
+      collateral_block(c, c->dzn_locator);
     trace_qin(os, p.meta, event);
 #if DZN_STATE_TRACING
     os << *c << std::endl;
 #endif
-    c->dzn_rt.defer(p.meta.provide.component, c, [&,l]{l();});
+    c->dzn_rt.defer(p.meta.provide.component, c, [c,l]{
+      c->dzn_rt.component_stack.push_back(c);
+      l();
+      assert(c->dzn_rt.component_stack.back() == c);
+      c->dzn_rt.component_stack.pop_back();
+    });
   }
 }
 #endif //DZN_RUNTIME_HH

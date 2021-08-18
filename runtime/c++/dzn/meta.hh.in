@@ -112,6 +112,8 @@ int const version_patch = @VERSION_PATCH@;
   template <typename Signature>
   struct async
   {
+    dzn::port::meta meta;
+
     struct {
       std::function<Signature> req;
       std::function<void()> clr;
@@ -119,8 +121,6 @@ int const version_patch = @VERSION_PATCH@;
     struct {
       std::function<Signature> ack;
     } out;
-
-    dzn::port::meta meta;
 
     inline async(const dzn::port::meta& m) : meta(m) {}
 
