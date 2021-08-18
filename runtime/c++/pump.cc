@@ -83,7 +83,7 @@ namespace dzn
 
 
   pump::pump()
-  : unblocked(false)
+  : unblocked(nullptr)
   , running(true)
   , task(std::async(std::launch::async, std::ref(*this)))
   {}
@@ -234,8 +234,8 @@ namespace dzn
       self->yield_to(coroutines.back());
     }
     if(unblocked && collateral_blocked.empty()) {
-      debug << "resetting unblocked to false" << std::endl;
-      unblocked = false;
+      debug << "resetting unblocked to nullptr" << std::endl;
+      unblocked = nullptr;
     }
   }
   void pump::block(void* p)
@@ -275,13 +275,12 @@ namespace dzn
     self->released = true;
 
     switch_context = [blocked,self,this] {
+      debug << "setting unblocked to port " << blocked->port << std::endl;
+      unblocked = blocked->port;
       blocked->port = nullptr;
 
       debug << "[" << self->id << "] switch from" << std::endl;
       debug << "[" << blocked->id << "] to" << std::endl;
-
-      debug << "setting unblocked to true" << std::endl;
-      unblocked = true;
 
       self->yield_to(*blocked);
     };

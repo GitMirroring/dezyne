@@ -43,7 +43,7 @@ namespace dzn
 
   struct pump
   {
-    bool unblocked;
+    void* unblocked;
     bool running;
     std::function<void()> worker;
     std::list<coroutine> coroutines;
