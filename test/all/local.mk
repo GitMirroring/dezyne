@@ -50,6 +50,7 @@ HELLO_TESTS =					\
  %D%/hello_bool					\
  %D%/hello_comment				\
  %D%/hello_data					\
+ %D%/hello_defer				\
  %D%/hello_else					\
  %D%/hello_expression				\
  %D%/hello_external				\
