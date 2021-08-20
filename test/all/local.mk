@@ -224,6 +224,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_blocking_double_release		\
  %D%/compliance_blocking_function		\
  %D%/compliance_blocking_multiple_provides	\
+ %D%/compliance_blocking_multiple_provides2	\
  %D%/compliance_blocking_out			\
  %D%/compliance_defer				\
  %D%/compliance_external_inevitable		\
