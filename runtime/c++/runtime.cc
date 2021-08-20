@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2014, 2015, 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015, 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015, 2016, 2017, 2019, 2020 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2015 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -24,6 +24,7 @@
 // Code:
 
 #include <dzn/runtime.hh>
+#include <dzn/coroutine.hh>
 
 #include <algorithm>
 #include <iostream>
@@ -31,6 +32,7 @@
 namespace dzn
 {
   std::ostream debug(nullptr);
+  size_t dzn::coroutine::s_current;
 
   runtime::runtime(){}
 
