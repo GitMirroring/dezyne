@@ -317,6 +317,7 @@ REGRESSION_TESTS =				\
  %D%/livelock_unfold				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
+ %D%/multiple_parallel_blocking			\
  %D%/name.space					\
  %D%/queuefull_external				\
  %D%/queuefull_external_sync			\
