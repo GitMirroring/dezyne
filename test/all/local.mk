@@ -204,6 +204,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_blocking_replies			\
  %D%/deadlock_port_blocked			\
  %D%/dollars					\
+ %D%/double_collateral_blocking_shell		\
  %D%/empty_dollars				\
  %D%/end_of_trail				\
  %D%/end_of_trail_action			\
