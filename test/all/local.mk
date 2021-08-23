@@ -187,6 +187,7 @@ REGRESSION_TESTS =				\
  %D%/enum_expressions				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
+ %D%/external_blocking_livelock                 \
  %D%/external_requires_twice			\
  %D%/compliance_fork_provides			\
  %D%/failures_inevitable			\
@@ -437,6 +438,7 @@ XFAIL_TESTS =					\
  %D%/async_ranking_disorder			\
  %D%/compliance_livelock			\
  %D%/compound_local_assign_call			\
+ %D%/external_blocking_livelock                 \
  %D%/foreign_conflict				\
  %D%/import_strip_component			\
  %D%/livelock_synchronous			\
