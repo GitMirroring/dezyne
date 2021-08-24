@@ -907,7 +907,18 @@ status."
 following TRAIL.  When STRICT?, the trail must include all observable
 events.  When DEADLOCK-CHECK?, run check-deadlock at the end, when
 REFUSALS-CHECK?, run refusals-check at the end."
-  (let ((root (vm:normalize root)))
+  (define (filter-root root)
+    (let* ((sut (runtime:get-sut root (ast:get-model root model-name)))
+           (instances (runtime:create-instances sut))
+           (types (map (lambda (i) (let ((ast (.ast i)))
+                                     (if (is-a? ast <instance>) (.type ast)
+                                         ast))) instances))
+           (root (tree-filter (disjoin (is? <interface>)
+                                       (negate (is? <model>))
+                                       (cute member <> types ast:eq?)) root)))
+      root))
+  (let* ((root (filter-root root))
+         (root (vm:normalize root)))
     (when (> (dzn:debugity) 0)
       (set! %debug? #t))
     (when (> (dzn:debugity) 1)
