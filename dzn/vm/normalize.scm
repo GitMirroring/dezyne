@@ -91,6 +91,14 @@
 (define* ((annotate-otherwise #:optional (statements '())) o) ;; FIXME *unspecified*
   (define (virgin-otherwise? x) (or (eq? x 'otherwise) (eq? x *unspecified*)))
   (match o
+    (($ <interface>)
+     (clone o #:behaviour ((annotate-otherwise) (.behaviour o))))
+    (($ <component>)
+     (clone o #:behaviour ((annotate-otherwise) (.behaviour o))))
+    (($ <behaviour>)
+     (clone o #:statement ((annotate-otherwise) (.statement o))))
+    (($ <system>)
+     o)
     ((and ($ <guard>) (= .expression (and ($ <otherwise>) (= .value value)))) (=> failure)
      (if (or (not (virgin-otherwise? value)) (null? statements)) (failure)
          (clone o #:expression ((annotate-otherwise statements) (.expression o)))))
@@ -100,7 +108,8 @@
            (and value (clone o #:value value)))
          o))
     ((and ($ <compound>) (= .elements (statements ...)))
-     (clone o #:elements (map (annotate-otherwise statements) statements)))
+     (if (ast:imperative? o) o
+         (clone o #:elements (map (annotate-otherwise statements) statements))))
     (($ <skip>) o)
     ((? (is? <ast>)) (tree-map (annotate-otherwise statements) o))
     (_ o)))

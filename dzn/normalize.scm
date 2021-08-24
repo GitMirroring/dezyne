@@ -377,15 +377,22 @@ We follow the following renaming strategy:
 
 (define (purge-data o)
   (match o
+    (($ <interface>)
+     (clone o
+            #:types (purge-data (.types o))
+            #:events (purge-data (.events o))))
+    (($ <component>)
+     (clone o #:behaviour (purge-data (.behaviour o))))
+    (($ <system>)
+     o)
+    ((? (is? <ast-list>))
+     (clone o #:elements (filter-map purge-data (.elements o))))
     (($ <data>) #f)
     (($ <action>)
      (clone o #:arguments (make <arguments>)))
 
     (($ <trigger>)
      (clone o #:formals (make <formals>)))
-
-    ((? (is? <ast-list>))
-     (clone o #:elements (filter-map purge-data (.elements o))))
 
     (($ <extern>) #f)
     (($ <assign>)
