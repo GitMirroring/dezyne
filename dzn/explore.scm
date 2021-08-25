@@ -198,7 +198,7 @@ begin -> 1
                        ((from pc () to trigger-location)
                         (string-append
                          (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))
-                         (format #f "~s -> ~s [label=~s]" from to "tau")))
+                         (format #f "~s -> ~s [label=~s]" from to "")))
                        ((from pc x #f #f)
                         (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))))
          graph)
@@ -279,7 +279,7 @@ RTC-LTS->STATE-DIAGRAM."
           (let ((location (json-location trigger-location)))
             (format #f
                     "{\"from\":~s, \"to\":~s, \"trigger\":~s, \"action\":[~s], \"location\":~a}"
-                    from to "tau" "" location)))
+                    from to "" "" location)))
          ((from pc x #f #f) #f))
        graph)
       ",\n")
