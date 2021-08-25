@@ -275,6 +275,9 @@
 (define-method (pc-arrow? (o <runtime:port>) (trigger <trigger>))
   (not (ast:modeling? trigger)))
 
+(define-method (pc-arrow? (o <runtime:port>) (trigger <synth-trigger>))
+  #t)
+
 (define-method (pc-arrow? (o <runtime:component>) (trigger <trigger>))
   #t)
 
@@ -333,6 +336,14 @@
                      (not (eq? o (%sut)))))
             (format #f "~a.~a -> ..." (runtime:instance->string o) (.event.name trigger))
             (format #f "... -> ~a.~a" (runtime:instance->string o) (.event.name trigger)))))
+
+(define-method (pc->arrow (o <runtime:port>) (compound <initial-compound>) (trigger <synth-trigger>))
+  (cons trigger
+        (if (or (ast:provides? o)
+                (and (is-a? (%sut) <runtime:port>)
+                     (not (eq? o (%sut)))))
+            (format #f "... <- ~a.~a" (runtime:instance->string o) (.event.name trigger))
+            (format #f "~a.~a <- ..." (runtime:instance->string o) (.event.name trigger)))))
 
 (define-method (pc->arrow (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
   (cons trigger
@@ -505,6 +516,25 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                (pc-instance (.instance pc))
                (statement (.statement pc)))
           (cond
+           ((and (pair? result)
+                 ((is-status? <compliance-error>) (last result))
+                 (is-a? statement <action>)
+                 (not (.component-acceptance (.status (last result))))
+                 (.port-acceptance  (.status (last result))))
+            (let* ((last-pc (last result))
+                   (status (.status last-pc))
+                   (r:port (.port status))
+                   (port (.ast r:port))
+                   (interface (.type port))
+                   (trigger (.trigger pc))
+                   (trigger (make <synth-trigger> #:event.name (.event.name trigger)))
+                   (trigger (clone trigger #:parent interface))
+                   (initial-compound (make <initial-compound>))
+                   (initial-compound (clone initial-compound #:parent interface))
+                   (trigger-pc (clone pc
+                                      #:trigger trigger
+                                      #:statement initial-compound)))
+              (loop (cdr trace) (cons* trigger-pc pc result))))
            ((and (is-a? (%sut) <runtime:port>)
                  (is-a? statement <initial-compound>))
             (let ((client-pc (clone pc #:instance (car (%instances)))))

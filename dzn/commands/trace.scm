@@ -281,15 +281,19 @@ ws               <   [ \t]
              (communication-left step2)
              (not (communication-right step2)))))
   (define (merge step step2)
-    (let* ((event (or (communication-event step)
+    (let* ((event (communication-event step))
+           (event (or (and (not (member event '("inevitable" "optional")))
+                           event)
                       (communication-event step2)))
            (communication (cond
                            ((communication-left step)
                             (set-fields step
+                                        ((communication-event) event)
                                         ((communication-right-location) (communication-right-location step2))
                                         ((communication-right) (communication-right step2))))
                            (else
                             (set-fields step
+                                        ((communication-event) event)
                                         ((communication-left-location) (communication-left-location step2))
                                         ((communication-left) (communication-left step2))))))
            (communication (cond

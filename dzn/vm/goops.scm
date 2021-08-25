@@ -45,6 +45,7 @@
             <q-in>
             <q-out>
             <q-trigger>
+            <synth-trigger>
 
             <state>
             <system-state>
@@ -125,6 +126,8 @@
 
 (define-ast <silent-step> (<imperative>)
   (trigger))
+
+(define-ast <synth-trigger> (<trigger>))
 
 (define-ast <acceptances> (<ast-list>))
 
