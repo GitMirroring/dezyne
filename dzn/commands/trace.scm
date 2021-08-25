@@ -305,22 +305,29 @@ ws               <   [ \t]
               (if (or (not (communication? step))
                       (and (communication-left step)
                            (communication-right step))) (cons step (loop (cdr steps)))
-                           (if (null? (cdr steps)) (list step)
-                               (let ((step2 (cadr steps)))
-                                 (cond
-                                  ((not (communication? step2))
-                                   (cons step2 (loop (cons step (cddr steps)))))
-                                  ((merge-able? step step2)
-                                   (cons (merge step step2) (loop (cddr steps))))
-                                  (else
-                                   (let ((message "error: split-arrows cannot be merged")
-                                         (arrow1 (string-append "error: arrow1: "
-                                                                (communication->string step)))
-                                         (arrow2 (string-append "error: arrow2: "
-                                                                (communication->string step2))))
-                                     (list (make-message #f message message)
-                                           (make-message #f arrow1 arrow1)
-                                           (make-message #f arrow2 arrow2)))))))))))))
+                           (cond
+                            ((null? (cdr steps))
+                             (let ((message "error: split-arrows missing complement arrow")
+                                   (arrow (string-append "error: arrow: "
+                                                         (communication->string step))))
+                               (list (make-message #f message message)
+                                     (make-message #f arrow arrow))))
+                            (else
+                             (let ((step2 (cadr steps)))
+                               (cond
+                                ((not (communication? step2))
+                                 (cons step2 (loop (cons step (cddr steps)))))
+                                ((merge-able? step step2)
+                                 (cons (merge step step2) (loop (cddr steps))))
+                                (else
+                                 (let ((message "error: split-arrows cannot be merged")
+                                       (arrow1 (string-append "error: arrow1: "
+                                                              (communication->string step)))
+                                       (arrow2 (string-append "error: arrow2: "
+                                                              (communication->string step2))))
+                                   (list (make-message #f message message)
+                                         (make-message #f arrow1 arrow1)
+                                         (make-message #f arrow2 arrow2))))))))))))))
 
 (define (communication->string o)
   (let* ((event (communication-event o))
