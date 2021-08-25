@@ -63,6 +63,7 @@
             out-event?
             pc->hash
             pc->string
+            pc->string-state-diagram
             pop-locals
             port-event?
             provides-trigger?
@@ -659,6 +660,19 @@
             (append (map (compose runtime:dotted-name car) (.blocked o))
                     (if (null? (.external-q o)) '()
                         (list (external-q->string (.external-q o))))
+                    (async-ports o)))
+      "\n"))))
+
+(define-method (pc->string-state-diagram (o <program-counter>))
+  (match (.status o)
+    ((or ($ <illegal-error>) ($ <implicit-illegal-error>))
+     "<illegal>")
+    ((? identity)
+     "<deadlock>")
+    (_
+     (string-join
+      (cons (state->string (.state o))
+            (append (map (compose runtime:dotted-name car) (.blocked o))
                     (async-ports o)))
       "\n"))))
 

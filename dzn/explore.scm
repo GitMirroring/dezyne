@@ -193,14 +193,14 @@ begin -> 1
                                (label (if (string-null? actions) trigger
                                           (format #f "~a\n~a\n~a" trigger separator actions))))
                           (string-append
-                           (format #f "~s [label=~s]\n" from (pc->string pc))
+                           (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))
                            (format #f "~s -> ~s [label=~s]" from to label))))
                        ((from pc () to trigger-location)
                         (string-append
-                         (format #f "~s [label=~s]\n" from (pc->string pc))
+                         (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))
                          (format #f "~s -> ~s [label=~s]" from to "tau")))
                        ((from pc x #f #f)
-                        (format #f "~s [label=~s]\n" from (pc->string pc))))
+                        (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))))
          graph)
     "\n")
    postamble))
