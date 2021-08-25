@@ -196,8 +196,9 @@ begin -> 1
                            (format #f "~s [label=~s]\n" from (pc->string pc))
                            (format #f "~s -> ~s [label=~s]" from to label))))
                        ((from pc () to trigger-location)
-                        (format #f "~s [label=~s]\n" from (pc->string pc))
-                        (format #f "~s -> ~s [label=~s]" from to "tau"))
+                        (string-append
+                         (format #f "~s [label=~s]\n" from (pc->string pc))
+                         (format #f "~s -> ~s [label=~s]" from to "tau")))
                        ((from pc x #f #f)
                         (format #f "~s [label=~s]\n" from (pc->string pc))))
          graph)
