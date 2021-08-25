@@ -174,7 +174,7 @@ recursion.  Return a run-to-completion LTS
 RTC-LTS->STATE-DIAGRAM."
   (define (preamble title)
     (format #f
-            "digraph G {
+            "strict digraph G {
 label=~s begin[shape=\"circle\" width=0.3 fillcolor=\"black\" style=\"filled\" label=\"\"]
 node[shape=\"rectangle\" style=\"rounded\"]
 begin -> 1
