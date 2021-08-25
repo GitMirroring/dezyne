@@ -1,0 +1,11 @@
+model: illegal_pessimism_external
+h.hello
+w.hello
+w.return
+h.return
+h.bye
+w.bye
+w.return
+h.return
+w.cruel
+<illegal>

@@ -197,6 +197,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_silent_external			\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
+ %D%/illegal_pessimism_external			\
  %D%/extern_in_interface			\
  %D%/foreign_import_system			\
  %D%/foreign_namespace				\
