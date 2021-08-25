@@ -77,6 +77,7 @@
             requires-trigger?
             rewrite-trace-head
             rtc-program-counter-equal?
+            rtc-program-counter-equal-state-diagram?
             rtc-port
             rtc-trigger
             serialize
@@ -752,6 +753,14 @@
        (equal? (async-ports a) (async-ports b))
        (ast:equal? (.blocked a) (.blocked b))
        (ast:equal? (.external-q a) (.external-q b))))
+
+(define-method (rtc-program-counter-equal-state-diagram? (a <program-counter>) (b <program-counter>))
+  (and (ast:equal? (.status a) (.status b))
+       (ast:eq? (.statement a) (.statement b))
+       (equal? (serialize (.state a)) (serialize (.state b)))
+       (equal? (.trail a) (.trail b))
+       (equal? (async-ports a) (async-ports b))
+       (ast:equal? (.blocked a) (.blocked b))))
 
 (define-method (pc-equal? (pc0 <program-counter>) (pc1 <program-counter>))
   (and (rtc-program-counter-equal? pc0 pc1)

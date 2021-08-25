@@ -258,11 +258,11 @@ RTC-LTS->STATE-DIAGRAM."
             (string-append
              (format #f "{\"id\":\"~a\", \"state\":~a}" from states)))))
        (delete-duplicates graph
-                              (match-lambda* (((from-a pc-a traces-a ...)
-                                               (from-b pc-b traces-b ...))
-                                              (and (equal? from-a from-b)
-                                                   (equal? (pc->string pc-a)
-                                                           (pc->string pc-b)))))))
+                          (match-lambda* (((from-a pc-a traces-a ...)
+                                           (from-b pc-b traces-b ...))
+                                          (and (equal? from-a from-b)
+                                               (rtc-program-counter-equal-state-diagram?
+                                                pc-a pc-b))))))
       ",\n")
      "],\n"
      "\"transitions\":[\n"
