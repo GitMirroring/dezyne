@@ -795,8 +795,15 @@ status."
                      (traces (apply append list-of-traces))
                      (valid-traces (filter (compose (negate .status) car) traces))
                      (blocked non-blocked (partition (compose pair? .blocked car)
-                                                     valid-traces)))
-                (cond ((null? valid-traces)
+                                                     valid-traces))
+                     (error-trace? (find (compose
+                                          (conjoin .status
+                                                   (negate (is-status? <end-of-trail>))
+                                                   (negate (is-status? <match-error>)))
+                                          car)
+                                         traces)))
+                (cond ((or (null? valid-traces)
+                           error-trace?)
                        (end-report from-pcs list-of-traces
                                    #:deadlock-check? deadlock-check?
                                    #:refusals-check? refusals-check?
