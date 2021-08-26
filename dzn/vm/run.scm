@@ -20,6 +20,7 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn vm run)
+  #:use-module (ice-9 hcons)
   #:use-module (ice-9 match)
 
   #:use-module (srfi srfi-1)
@@ -322,7 +323,8 @@ with EVENT as first step, until RTC?."
     (run-to-completion-unmemoized pc)))
 
 (define run-to-completion
-  (let ((cache (make-hash-table 512)))
+  (let ((cache (make-weak-key-hash-table 523))
+        (gc-buffer (make-gc-buffer 256)))
     (lambda (pc event)
       "Memoizing version of RUN-TO-COMPLETION-UNMEMOIZED."
       (if (not (%exploring?)) (run-to-completion-unmemoized pc event)
@@ -331,10 +333,12 @@ with EVENT as first step, until RTC?."
                  (key (string-append (parameterize ((%sut #f)) (runtime:dotted-name sut))
                                      (pc->string pc)
                                      event-string)))
+            (gc-buffer key)
             (or (hash-ref cache key)
                 (let ((result (run-to-completion-unmemoized pc event)))
                   (hash-set! cache key result)
                   result)))))))
+
 (define-generic run-to-completion)
 
 (define-method (extend-trace (trace <list>) producer)
