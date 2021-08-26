@@ -225,6 +225,23 @@
 (define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
 (define-method (ast:variable* (o <compound>)) (filter (is? <variable>) (.elements o)))
 
+(define-method (ast:model* (o <model>))
+  (define (ports o)
+    (delete-duplicates (map .type (ast:port* o)) ast:eq?))
+  (match o
+    (($ <interface>)
+     (list o))
+    (($ <component>)
+     (cons o (ports o)))
+    (($ <foreign>)
+     (cons o (ports o)))
+    (($ <system>)
+     (let* ((ports (ports o))
+            (instances (ast:instance* o))
+            (components (append-map (compose ast:model* .type) instances))
+            (components (delete-duplicates components ast:eq?)))
+       (cons o (append ports components))))))
+
 (define-method (ast:async? (o <port>)) (parent o <behaviour>))
 (define-method (ast:async? (o <trigger>)) (ast:async? (.port o)))
 (define-method (ast:async? (o <action>)) (ast:async? (.port o)))

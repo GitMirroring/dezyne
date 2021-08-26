@@ -876,14 +876,11 @@ status."
                  pcs)))
 
 (define* (filter-root root #:key model-name)
-  (let* ((sut (runtime:get-sut root (ast:get-model root model-name)))
-         (instances (runtime:create-instances sut))
-         (types (map (lambda (i) (let ((ast (.ast i)))
-                                   (if (is-a? ast <instance>) (.type ast)
-                                       ast))) instances))
+  (let* ((model (ast:get-model root model-name))
+         (models (ast:model* model))
          (root (tree-filter (disjoin (is? <interface>)
                                      (negate (is? <model>))
-                                     (cute member <> types ast:eq?)) root)))
+                                     (cute member <> models ast:eq?)) root)))
     root))
 
 
