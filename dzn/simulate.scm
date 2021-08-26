@@ -47,8 +47,11 @@
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
   #:use-module (dzn explore)
-  #:export (repl
-            simulate))
+  #:export (filter-root
+            repl
+            run-trail
+            simulate
+            simulate**))
 
 ;;; Commentary:
 ;;;
@@ -872,6 +875,17 @@ status."
                        (format #t "~a\n" (cdr trail)))))
                  pcs)))
 
+(define* (filter-root root #:key model-name)
+  (let* ((sut (runtime:get-sut root (ast:get-model root model-name)))
+         (instances (runtime:create-instances sut))
+         (types (map (lambda (i) (let ((ast (.ast i)))
+                                   (if (is-a? ast <instance>) (.type ast)
+                                       ast))) instances))
+         (root (tree-filter (disjoin (is? <interface>)
+                                     (negate (is? <model>))
+                                     (cute member <> types ast:eq?)) root)))
+    root))
+
 
 ;;;
 ;;; Entry points
@@ -907,40 +921,6 @@ status."
     (%next-input read-input)
     (%pc)))
 
-(define* (simulate* root trail #:key deadlock-check? refusals-check? model-name
-                    queue-size strict? trace internal? locations? state?
-                    verbose?)
-  "Entry point for simulate library: start simulate session for MODEL,
-following TRAIL.  When STRICT?, the trail must include all observable
-events.  When DEADLOCK-CHECK?, run check-deadlock at the end, when
-REFUSALS-CHECK?, run refusals-check at the end."
-  (define (filter-root root)
-    (let* ((sut (runtime:get-sut root (ast:get-model root model-name)))
-           (instances (runtime:create-instances sut))
-           (types (map (lambda (i) (let ((ast (.ast i)))
-                                     (if (is-a? ast <instance>) (.type ast)
-                                         ast))) instances))
-           (root (tree-filter (disjoin (is? <interface>)
-                                       (negate (is? <model>))
-                                       (cute member <> types ast:eq?)) root)))
-      root))
-  (let* ((root (filter-root root))
-         (root (vm:normalize root)))
-    (when (> (dzn:debugity) 0)
-      (set! %debug? #t))
-    (when (> (dzn:debugity) 1)
-      (ast:pretty-print root (current-error-port)))
-    (parameterize ((%strict? strict?)
-                   (%sut (runtime:get-sut root (ast:get-model root model-name))))
-      (parameterize ((%instances (runtime:create-instances (%sut))))
-        (run-trail trail
-                   #:deadlock-check? deadlock-check?
-                   #:refusals-check? refusals-check?
-                   #:locations? locations?
-                   #:trace trace
-                   #:state? state?
-                   #:verbose? verbose?)))))
-
 (define* (simulate root #:key deadlock-check? refusals-check? model-name
                    queue-size strict? trace trail internal? locations? state?
                    verbose?)
@@ -965,6 +945,51 @@ at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
                #:model-name model-name
                #:queue-size queue-size
                #:strict? strict?
+               #:trace trace
+               #:internal? internal?
+               #:locations? locations?
+               #:state? state?
+               #:verbose? verbose?)))
+
+(define* (simulate* root trail #:key deadlock-check? refusals-check? model-name
+                    queue-size strict? trace internal? locations? state?
+                    verbose?)
+  "Entry point for simulate library: start simulate session for MODEL,
+following TRAIL.  When STRICT?, the trail must include all observable
+events.  When DEADLOCK-CHECK?, run check-deadlock at the end, when
+REFUSALS-CHECK?, run refusals-check at the end."
+  (let* ((root (filter-root root #:model-name model-name))
+         (root (vm:normalize root)))
+    (when (> (dzn:debugity) 0)
+      (set! %debug? #t))
+    (when (> (dzn:debugity) 1)
+      (ast:pretty-print root (current-error-port)))
+    (let* ((sut (runtime:get-sut root (ast:get-model root model-name)))
+           (instances (runtime:create-instances sut)))
+      (simulate** sut instances trail
+                  #:deadlock-check? deadlock-check?
+                  #:refusals-check? refusals-check?
+                  #:queue-size queue-size
+                  #:strict? strict?
+                  #:trace trace
+                  #:internal? internal?
+                  #:locations? locations?
+                  #:state? state?
+                  #:verbose? verbose?))))
+
+(define* (simulate** sut instances trail #:key deadlock-check? refusals-check?
+                     queue-size strict? trace internal? locations? state?
+                     verbose?)
+  "Entry point for simulate library, much like simulate*.  This
+procedure allows reuse with the same root, SUT and INSTANCES, allowing
+memoizations to work."
+  (parameterize ((%instances instances)
+                 (%queue-size (or queue-size 3))
+                 (%strict? strict?)
+                 (%sut sut))
+    (run-trail trail
+               #:deadlock-check? deadlock-check?
+               #:refusals-check? refusals-check?
                #:trace trace
                #:internal? internal?
                #:locations? locations?
