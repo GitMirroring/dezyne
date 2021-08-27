@@ -51,7 +51,6 @@
             parse:handle-exceptions
             call-with-handle-exceptions
             peg:handle-syntax-error
-            preprocess
             string->ast
             string->parse-tree))
 
