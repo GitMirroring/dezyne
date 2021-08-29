@@ -34,12 +34,17 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.13
+** Release 2.13.3
+  - BUGS
+    + verify crash:
+       ./pre-inst-env dzn verify test/all/parse_import_both/parse_import_both.dzn
   - Pass regression test
     + XFAIL: alpha_local2
+    + XFAIL: external_blocking_livelock
     + XFAIL: compliance_livelock
     + XFAIL: compound_local_assign_call
     + XFAIL: parse_interface_parens
+    + livelock_synchronous2: NOT a livelock, rename to queuefull_synchronous2?
     + data_full: split into smaller tests, preferrably trace-based,
       and without handwritten main's
     + Bring multiple events on a single modeling event properly under test
@@ -47,14 +52,29 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       + Make test fail if without flush
       + Test in combination with foreign
 
-  - Finish and merge wip-simulate
+  - postponed non-determinism check + deprecation
+
+  - Simulator
+    + deadlock check should consider all toplevel traces
+    + deadlock check should prevail over <compliance>
     + Skipped tests (trace and baseline missing)
       - livelock_interface0: What's this, a silent livelock?  How to
         test, no trace possible?
       - queuefull_external: <queue-full> without trace.  How to test?
+    + UX
 
+** Release 2.13.4
+  - component behaviour diagram
+  - Simulator
+    + livelock: show loop, e.g.,: <livelock>...<livelock>
+
+** Release 2.13.5
+  - collateral blocking
   - Documentation
     + Blocking, thread-safe-shell, external, collateral-block.
+
+** Release 2.13.6
+  - async -> defer; deprecate async
 
 ** Release 2.14
   - Pass regression test -- shared state
@@ -166,6 +186,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish JavaScript support
     + Review and finish Scheme support
 * DONE
+  - Remove command-line:get from trace library
+  - Simulator performance
+    + Add simulate** entry point for resident simulator in daemon
+    + Optimize livelock check
+    + Optimize purge-data and annotate-otherwise
   - Finish and merge wip-simulate
     + BUG van robw
       ./pre-inst-env dzn simulate -l --state -m MaterialHandler -I test/all/LegoBallSorter/c++ test/all/LegoBallSorter/MaterialHandler.dzn < L | ./pre-inst-env dzn trace --format=json | jq > data
