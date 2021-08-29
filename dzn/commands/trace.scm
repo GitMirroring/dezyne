@@ -42,13 +42,7 @@
 
   #:use-module (json)
 
-  #:export (step:format-trace
-            seqdiag:get-model
-            seqdiag:format-sexp
-            seqdiag:format-trace
-            seqdiag:sexp->steps
-            seqdiag:sequence->trail
-            trace:format-trace
+  #:export (trace:format-trace
             main))
 
 (define (parse-opts args)
@@ -466,106 +460,6 @@ ws               <   [ \t]
       (('<communication> ('line line ...) rest ...) `((communication ,@rest)))
       (('state ('sexp . sexp)) (format (current-error-port) "X: ~s\n" sexp) (warn 'Y: (list (with-input-from-string sexp read))))
       (_ (list x)))))
-
-(define (seqdiag:get-model sexp)
-  (let* ((inits (filter (compose (cut equal? <> "Initialize") (cut assoc-ref <> "kind"))
-                        sexp))
-         (model-inits (if (= (length inits) 1) inits
-                         (filter (compose (cut equal? <> "component") (cut assoc-ref <> "role"))
-                                 inits))))
-    (assoc-ref (car model-inits) "instance")))
-
-(define (seqdiag:sequence->trail sequence model)
-  (let* ((steps (filter
-                 (conjoin (compose (cut equal? <> model) (cut assoc-ref <> "instance"))
-                          (disjoin (cut assoc-ref <> "synchronization")
-                                   (conjoin (compose (cut equal? <> "Error")
-                                                     (cut assoc-ref <> "kind"))
-                                            (compose (cut equal? <> "illegal")
-                                                     (cut assoc-ref <> "message")))))
-                        sequence)))
-    (map (disjoin (cut assoc-ref <> "synchronization")
-                  (cut assoc-ref <> "message"))
-         steps)))
-
-(define-immutable-record-type <seqdiag:step>
-  (make-seqdiag-step location instance event message)
-  seqdiag:step?
-  (location seqdiag:step-location)
-  (instance seqdiag:step-instance)
-  (event seqdiag:step-event)
-  (message seqdiag:step-message))
-
-(define (seqdiag:step->string step)
-  (string-join `(,(or (seqdiag:step-location step) "?")
-                 ": "
-                 ,@(let ((instance (seqdiag:step-instance step)))
-                     (if instance (list instance ".")
-                         '()))
-                 ,(or (seqdiag:step-event step)
-                      (seqdiag:step-message step)
-                      "?"))
-               ""))
-
-(define (json-vector->list o)
-  ;; XXX TODO guile-json-3 translates arrays to vectors
-  (if (vector? o) (vector->list o) o))
-
-(define (seqdiag:sexp->location sexp)
-  (let ((selection (assoc-ref sexp "selection")))
-    (and selection
-         (let* ((locations (json-vector->list selection))
-                (location (car locations))
-                (file (assoc-ref location "file")))
-           (and file
-                (format #f "~a:~a:~a:~a" file
-                        (assoc-ref location "line")
-                        (assoc-ref location "column")
-                        (if (equal? (assoc-ref sexp "kind") "Error") "error" "info")))))))
-
-(define (seqdiag:sequence->steps sequence model)
-  (define (seqdiag:state->string state)
-    (define (alist->string x)
-      (format #f "~a=~a" (assoc-ref x "variable") (assoc-ref x "value")))
-    (string-join (map alist->string (json-vector->list state))))
-  (define (seqdiag:sexp->step sexp)
-    (make-seqdiag-step (seqdiag:sexp->location sexp)
-                       (assoc-ref sexp "instance")
-                       (or (assoc-ref sexp "event")
-                           (and (assoc-ref sexp "return") "return")
-                           (and (equal? (assoc-ref sexp "kind") "ReplyStatement") "reply")
-                           (and=> (assoc-ref sexp "state") seqdiag:state->string))
-                       (assoc-ref sexp "message")))
-  (let* ((sequen (filter (negate (compose (cut member <> '("Error" "Initialize" "OnEventStatement" "ThreedEnter" "ThreadExit" "TraceType"))
-                                          (cut assoc-ref <> "kind")))
-                         sequence))
-         (steps (map seqdiag:sexp->step sequen))
-         (final (last sequence))
-         (error (and (equal? (assoc-ref final "kind") "Error") final))
-         (error-instance (and error (or (assoc-ref error "instance") model)))
-         (error-location (and error (find (compose (cut equal? <> error-instance)
-                                                   (cut assoc-ref <> "instance"))
-                                          (reverse sequen))))
-         (error-location (and error-location (assoc-ref error-location "selection")))
-         (error (and error (seqdiag:sexp->step (acons "selection" error-location error))))
-         (steps (if error (cons error steps) steps)))
-    steps))
-
-(define* (seqdiag:sexp->steps sexp #:key (file-name "<stdin>"))
-  (let* ((sequence (json-vector->list sexp))
-         (model (seqdiag:get-model sequence))
-         (steps (seqdiag:sequence->steps sequence model)))
-    steps))
-
-(define (seqdiag:trace? string)
-  (string-prefix? "[{" string))
-
-(define (seqdiag:format-sexp sexp)
-  (let ((steps (seqdiag:sexp->steps sexp)))
-    (string-join (map seqdiag:step->string steps) "\n" 'suffix)))
-
-(define (seqdiag:format-trace trace)
-  (seqdiag:format-sexp (json-string->alist-scm trace)))
 
 (define* (trace:trace->structured trace #:key file-name debug?)
   (let* ((steps (trace:trace->steps trace #:file-name file-name #:debug? debug?))
@@ -1038,10 +932,6 @@ ws               <   [ \t]
                                          merged)))
              (string-join (map step->code communications) "\n" 'suffix))))))
 
-(define* (format-trace trace #:key file-name format internal? debug?)
-  (if (seqdiag:trace? trace) (seqdiag:format-trace trace)
-      (trace:format-trace trace #:file-name file-name #:format format #:internal? internal? #:debug? debug?)))
-
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
@@ -1052,6 +942,10 @@ ws               <   [ \t]
                         (with-input-from-file (car files) read-string))))
          (format (option-ref options 'format "event"))
          (internal? (command-line:get 'internal #f))
-         (debug? (dzn:command-line:get 'debug)))
-    (display (format-trace trace #:file-name file-name #:format format #:internal? internal? #:debug? debug?))
-    ""))
+         (debug? (dzn:command-line:get 'debug))
+         (trace (trace:format-trace trace
+                                    #:debug? debug?
+                                    #:file-name file-name
+                                    #:format format
+                                    #:internal? internal?)))
+    (display trace)))
