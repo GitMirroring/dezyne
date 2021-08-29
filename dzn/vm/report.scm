@@ -35,7 +35,7 @@
   #:use-module (dzn code dzn)
   #:use-module (dzn misc)
   #:use-module (dzn wfc)
-  #:use-module (dzn commands trace)
+  #:use-module (dzn trace)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm runtime)

@@ -33,7 +33,7 @@
   #:use-module (json)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
-  #:use-module (dzn commands trace)
+  #:use-module (dzn trace)
   #:export (observe
             run-baseline
             run-build

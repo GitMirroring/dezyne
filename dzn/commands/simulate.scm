@@ -28,7 +28,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn simulate)
   #:use-module (dzn commands parse)
-  #:use-module (dzn commands trace)
+  #:use-module (dzn trace)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)

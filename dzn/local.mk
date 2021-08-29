@@ -45,6 +45,7 @@ dist_%C%_scm_DATA =				\
  %D%/shell-util.scm				\
  %D%/simulate.scm				\
  %D%/templates.scm				\
+ %D%/trace.scm					\
  %D%/wfc.scm
 
 EXTRA_DIST += %D%/config.scm.in
