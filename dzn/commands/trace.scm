@@ -329,8 +329,7 @@ ws               <   [ \t]
 
 (define (communication->string o)
   (let* ((event (communication-event o))
-         (locations? (command-line:get 'locations))
-         (location (or (and locations? (communication-location o)) "")))
+         (location (or (communication-location o) "")))
     (cond
      ((communication-complete? o)
       (string-append
@@ -355,9 +354,8 @@ ws               <   [ \t]
      (else
       (format #f "~s" o)))))
 
-(define (communication->code o)
+(define* (communication->code o #:key locations?)
   (let* ((event (communication-event o))
-         (locations? (command-line:get 'locations))
          (location (or (and locations? (communication-location o)) "")))
     (cond
      ((communication-complete? o)
@@ -382,8 +380,7 @@ ws               <   [ \t]
       (format #f "~s" o)))))
 
 (define (message->string o)
-  (let* ((locations? (command-line:get 'locations))
-         (location (or (and locations? (message-location o)) "")))
+  (let ((location (or (message-location o) "")))
     (string-append
      location
      (message-message o))))
@@ -406,8 +403,8 @@ ws               <   [ \t]
 (define (trail->string o)
   (with-output-to-string (cut display (cons 'trail (trail-sexp o)))))
 
-(define (step->code o)
-  (cond ((communication? o) (communication->code o))
+(define* (step->code o #:key locations?)
+  (cond ((communication? o) (communication->code o #:locations? locations?))
         ((eligible? o) (eligible->string o))
         ((header? o) (header->string o))
         ((labels? o) (labels->string o))
@@ -499,13 +496,12 @@ ws               <   [ \t]
         (else
          0)))
 
-(define* (step:steps->diagram header steps #:key internal?)
+(define* (step:steps->diagram header steps #:key internal? locations?)
   (let* ((header (header-sexp header))
          (spacing 30)
          (spacer (make-string spacing #\space))
          (sut (find (compose (cut equal? <> '(sut)) car) header))
          (sut-name (and sut (cadr sut)))
-         (locations? (command-line:get 'locations))
          (location-width (and locations? (apply max (map location-length steps)))))
     (define (instance->head instance)
       (match instance
@@ -909,28 +905,36 @@ ws               <   [ \t]
                   activities
                   (append events (list event))))))))
 
-(define* (trace:format-trace trace #:key file-name format internal? debug?)
+(define* (trace:format-trace trace #:key debug? file-name format internal? locations?)
   (let* ((structured (trace:trace->structured trace #:file-name file-name #:debug? debug?))
          (merged (merge-communications structured)))
-    (cond ((equal? format "sexp")
-           (map serialize structured))
-          ((equal? format "event")
-           (let ((communications (filter (conjoin (negate q-out?) external?) merged)))
-             (string-join (map step->event communications) "\n" 'suffix)))
-          ((equal? format "diagram")
-           (let ((communications (filter (disjoin (conjoin (negate q-out?)
-                                                           (if internal? communication? external?))
-                                                  eligible? labels? message? state? trail?)
-                                         merged)))
-             (let ((header (find header? structured)))
-               (string-join (step:steps->diagram header communications #:internal? internal?) "\n" 'suffix))))
-          ((equal? format "json")
-           (trace:steps->json merged))
-          (else
-           (let ((communications (filter (disjoin (conjoin (negate q-out?) communication?)
-                                                  message? state?)
-                                         merged)))
-             (string-join (map step->code communications) "\n" 'suffix))))))
+    (cond
+     ((equal? format "sexp")
+      (map serialize structured))
+     ((equal? format "event")
+      (let* ((communications (filter (conjoin (negate q-out?) external?) merged))
+             (communications (map step->event communications)))
+        (string-join communications "\n" 'suffix)))
+     ((equal? format "diagram")
+      (let* ((communications (filter (disjoin (conjoin (negate q-out?)
+                                                       (if internal? communication? external?))
+                                              eligible? labels? message? state? trail?)
+                                     merged))
+             (header (find header? structured))
+             (communications (step:steps->diagram header communications
+                                                  #:internal? internal?
+                                                  #:locations? locations?)))
+        (string-join communications "\n" 'suffix)))
+     ((equal? format "json")
+      (trace:steps->json merged))
+     (else
+      (let* ((communications (filter (disjoin (conjoin (negate q-out?) communication?)
+                                              message? state?)
+                                     merged))
+             (communications (map
+                              (cut step->code <> #:locations? locations?)
+                              communications)))
+        (string-join communications "\n" 'suffix))))))
 
 (define (main args)
   (let* ((options (parse-opts args))
@@ -942,10 +946,12 @@ ws               <   [ \t]
                         (with-input-from-file (car files) read-string))))
          (format (option-ref options 'format "event"))
          (internal? (command-line:get 'internal #f))
+         (locations? (command-line:get 'locations #f))
          (debug? (dzn:command-line:get 'debug))
          (trace (trace:format-trace trace
                                     #:debug? debug?
                                     #:file-name file-name
                                     #:format format
-                                    #:internal? internal?)))
+                                    #:internal? internal?
+                                    #:locations? locations?)))
     (display trace)))
