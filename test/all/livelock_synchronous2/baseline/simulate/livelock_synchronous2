@@ -1,3 +1,4 @@
+test/all/livelock_synchronous2/livelock_synchronous2.dzn:37:24: error: queue-full in component "livelock_synchronous2"
 h.hello
 w.hello
 w.cruel
@@ -7,4 +8,7 @@ w.hello
 w.cruel
 w.world
 w.return
-<livelock>
+w.hello
+w.cruel
+w.world
+<queue-full>
