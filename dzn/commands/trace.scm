@@ -460,15 +460,6 @@ ws               <   [ \t]
         ((message? o)
          (message->string o))))
 
-(define* (trace:step->trace:code pijltjes #:key debug?)
-  (let* ((steps (trace:trace->steps pijltjes #:debug? debug?))
-         (debug? #f)
-         (foo (when debug? (format (current-error-port) "steps:") (pretty-print steps (current-error-port))))
-         (steps (map (lambda (s) (or (step->communication s) s)) steps))
-         (merged (merge-communications steps))
-         (communications (filter (disjoin state? message? (conjoin (negate q-out?) communication?)) merged)))
-    (string-join (map step->code communications) "\n" 'suffix)))
-
 (define (serialize o)
   (let ((x (record->alist o)))
     (match x
