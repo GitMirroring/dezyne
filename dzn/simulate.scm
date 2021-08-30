@@ -62,17 +62,18 @@
 (define (zip trace port-trace)
   "Merge PORT-TRACE into TRACE, and synthesize corresponding actions and
 returns to support the split-arrow trace format."
-  (define ((action-equal? port-name) a b)
-    (let ((b (.statement b)))
+  (define ((action-equal? r:port) a b)
+    (let* ((instance (.instance b))
+           (b (.statement b)))
       (and (is-a? a <action>) (is-a? b <action>)
-           (equal? (.port.name a) port-name)
+           (eq? instance r:port)
            (equal? (.event.name a) (.event.name b)))))
 
-  (define ((return-equal? port-name) a b)
+  (define ((return-equal? r:port) a b)
     (let ((instance (.instance b))
           (b (.statement b)))
       (and (is-a? a <trigger-return>) (is-a? b <trigger-return>)
-           (eq? instance port-name))))
+           (eq? instance r:port))))
 
   (let* ((port-on (list-index (compose (is? <on>) .statement) port-trace))
          (trace (append trace (drop port-trace port-on)))
@@ -94,7 +95,9 @@ returns to support the split-arrow trace format."
                                       (runtime:port pc-instance port)))
                           (port (.ast r:port))
                           (port-name (.name port))
-                          (port-action+trace (member statement port-trace (action-equal? port-name))))
+                          (r:other-port (runtime:other-port r:port))
+                          (port-action+trace (member statement port-trace
+                                                     (action-equal? r:other-port))))
                      (match port-action+trace
                        ((action-pc tail ...)
                         (cons* action-pc pc (loop (cdr trace) tail)))
