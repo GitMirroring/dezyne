@@ -277,9 +277,14 @@ ws               <   [ \t]
                             ((null? (cdr steps))
                              (let ((message "error: split-arrows missing complement arrow")
                                    (arrow (string-append "error: arrow: "
-                                                         (communication->string step))))
-                               (list (make-message #f message message)
-                                     (make-message #f arrow arrow))))
+                                                         (communication->string step)))
+                                   (location (communication-location step)))
+                               (list (make-message
+                                      (string-append (or location "") message)
+                                      location message)
+                                     (make-message
+                                      (string-append (or location "") arrow)
+                                      location arrow))))
                             (else
                              (let ((step2 (cadr steps)))
                                (cond
@@ -292,14 +297,22 @@ ws               <   [ \t]
                                        (arrow1 (string-append "error: arrow1: "
                                                               (communication->string step)))
                                        (arrow2 (string-append "error: arrow2: "
-                                                              (communication->string step2))))
-                                   (list (make-message #f message message)
-                                         (make-message #f arrow1 arrow1)
-                                         (make-message #f arrow2 arrow2))))))))))))))
+                                                              (communication->string step2)))
+                                       (location (communication-location step))
+                                       (location2 (communication-location step2)))
+                                   (list (make-message
+                                          (string-append (or location "") message)
+                                          location message)
+                                         (make-message
+                                          (string-append (or location "") arrow1)
+                                          location arrow1)
+                                         (make-message
+                                          (string-append (or location2 "") arrow2)
+                                          location2 arrow2))))))))))))))
 
-(define (communication->string o)
+(define* (communication->string o #:key locations?)
   (let* ((event (communication-event o))
-         (location (or (communication-location o) "")))
+         (location (or (and locations? (communication-location o)) "")))
     (cond
      ((communication-complete? o)
       (string-append
@@ -701,13 +714,14 @@ ws               <   [ \t]
   (time lifeline-activity-time)
   (location lifeline-activity-location))
 
+(define (location-string->scm-location string)
+  (let ((loc (string->location string)))
+    (if (not loc) '()
+        `((location . ((file-name . ,(location-file loc))
+                       (line      . ,(location-line loc))
+                       (column    . ,(location-column loc))))))))
+
 (define (lifeline-activity->scm o)
-  (define (location-string->scm-location string)
-    (let ((loc (string->location string)))
-      (if (not loc) '()
-          `((location . ((file-name . ,(location-file loc))
-                         (line      . ,(location-line loc))
-                         (column    . ,(location-column loc))))))))
   `((key      . ,(lifeline-activity-key o))
     (time     . ,(lifeline-activity-time o))
     ,@(let ((location (lifeline-activity-location o)))
@@ -736,15 +750,16 @@ ws               <   [ \t]
 
 (define (lifeline-event->scm o)
   (define (message->scm message)
-    `((location  . ,(message-location message))
-      (text      . ,(message-message message))))
+    `((text      . ,(message-message message))
+      ,@(let ((location (message-location message)))
+          (if location (location-string->scm-location location) '()))))
   `((text     . ,(lifeline-event-text o))
     (from     . ,(lifeline-event-from o))
     (to       . ,(lifeline-event-to o))
     (type     . ,(lifeline-event-type o))
     ,@(let ((messages (lifeline-event-messages o)))
         (if (null? messages) '()
-            `((messages . ,(list->vector (map message-message messages))))))))
+            `((messages . ,(list->vector (map message->scm messages))))))))
 
 (define (instance-state->json-scm sut-name o)
   (define state->json-scm
@@ -826,54 +841,79 @@ ws               <   [ \t]
          (messages (delete-duplicates (filter message? steps) message-text-equal?)))
 
     ;; loop: cdr through communications, building up activities and events from each communication
-    (let loop ((communications communications) (activities activities-alist) (events '()))
-      (if (null? communications)
-          (let ((lifelines (map (cute instance->lifeline <> activities labels eligible) instances)))
-            (scm->json-string
-             `((working-directory . ,(getcwd))
-               (lifelines . ,(list->vector (map lifeline->scm lifelines)))
-               (events    . ,(list->vector (map lifeline-event->scm events)))
-               (states    . ,(list->vector (map (cute lifeline-state->json-scm sut-name <>) states))))))
-          (let* ((communication  (car communications))
-                 (last?          (null? (cdr communications)))
-                 (direction      (communication-direction communication))
-                 (left           (communication-left communication))
-                 (right          (communication-right communication))
-                 (from           (if (eq? direction 'in) left right))
-                 (to             (if (eq? direction 'in) right left))
-                 (from           (and from (communication-instance->path from)))
-                 (to             (and to (communication-instance->path to)))
-                 (label          (communication-event communication))
-                 (time           (length events))
-                 (key-from       (1+ (* 2 time)))
-                 (location-left  (communication-left-location communication))
-                 (location-right (communication-right-location communication))
-                 (location-from  (if (eq? direction 'in) location-left location-right))
-                 (location-to    (if (eq? direction 'in) location-right location-left))
-                 (activity-from  (make-lifeline-activity key-from time location-from))
-                 (key-to         (1+ key-from))
-                 (activity-to    (make-lifeline-activity key-to time location-to))
-                 (type           (if (or (member label '("true" "false" "return"))
-                                         (string->number label)
-                                         (string-index label #\:))
-                                     "return"
-                                     direction))
-                 (messages       (if (or (null? messages) (not last?)) '()
-                                     messages))
-                 ;; XXX FIXME: type overload?
-                 (type           (if (null? messages) type "error"))
-                 (event          (make-lifeline-event label key-from key-to type messages))
-                 (activities     (acons from
-                                        (append (or (assoc-ref activities from) '())
-                                                (list activity-from))
-                                        activities))
-                 (activities     (acons to
-                                        (append (or (assoc-ref activities to) '())
-                                                (list activity-to))
-                                        activities)))
-            (loop (cdr communications)
-                  activities
-                  (append events (list event))))))))
+    (let loop ((communications communications) (messages messages) (activities activities-alist) (events '()))
+      (cond
+       ;; FIXME: Systhesize event for adding messages to.
+       ;; TODO: Add toplevel messages.
+       ((and (null? communications)
+             (pair? messages))
+        (let* ((from           '(sut))
+               (to             '(sut))
+               (time           (length events))
+               (key-from       (1+ (* 2 time)))
+               (key-to         (1+ key-from))
+               (location       (message-location (car messages)))
+               (activity-from  (make-lifeline-activity key-from time location))
+               (activity-to    (make-lifeline-activity key-to time location))
+               (label          "")
+               (type           "error")
+               (event          (make-lifeline-event label key-from key-to type messages))
+               (activities     (acons from
+                                      (append (or (assoc-ref activities from) '())
+                                              (list activity-from))
+                                      activities))
+               (activities     (acons to
+                                      (append (or (assoc-ref activities to) '())
+                                              (list activity-to))
+                                      activities)))
+          (loop '()
+                '()
+                activities
+                (append events (list event)))))
+       ((null? communications)
+        (let ((lifelines (map (cute instance->lifeline <> activities labels eligible) instances)))
+          (scm->json-string
+           `((working-directory . ,(getcwd))
+             (lifelines . ,(list->vector (map lifeline->scm lifelines)))
+             (events    . ,(list->vector (map lifeline-event->scm events)))
+             (states    . ,(list->vector (map (cute lifeline-state->json-scm sut-name <>) states)))))))
+       (else
+        (let* ((communication  (car communications))
+               (direction      (communication-direction communication))
+               (left           (communication-left communication))
+               (right          (communication-right communication))
+               (from           (if (eq? direction 'in) left right))
+               (to             (if (eq? direction 'in) right left))
+               (from           (and from (communication-instance->path from)))
+               (to             (and to (communication-instance->path to)))
+               (label          (communication-event communication))
+               (time           (length events))
+               (key-from       (1+ (* 2 time)))
+               (location-left  (communication-left-location communication))
+               (location-right (communication-right-location communication))
+               (location-from  (if (eq? direction 'in) location-left location-right))
+               (location-to    (if (eq? direction 'in) location-right location-left))
+               (activity-from  (make-lifeline-activity key-from time location-from))
+               (key-to         (1+ key-from))
+               (activity-to    (make-lifeline-activity key-to time location-to))
+               (type           (if (or (member label '("true" "false" "return"))
+                                       (string->number label)
+                                       (string-index label #\:))
+                                   "return"
+                                   direction))
+               (event          (make-lifeline-event label key-from key-to type '()))
+               (activities     (acons from
+                                      (append (or (assoc-ref activities from) '())
+                                              (list activity-from))
+                                      activities))
+               (activities     (acons to
+                                      (append (or (assoc-ref activities to) '())
+                                              (list activity-to))
+                                      activities)))
+          (loop (cdr communications)
+                messages
+                activities
+                (append events (list event)))))))))
 
 (define* (trace:format-trace trace #:key debug? file-name format internal? locations?)
   (let* ((structured (trace:trace->structured trace #:file-name file-name #:debug? debug?))
