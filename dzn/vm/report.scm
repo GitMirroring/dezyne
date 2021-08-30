@@ -501,6 +501,12 @@
   "The split-arrows format needs a PC for both ends of the arrow.
 Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
 
+  (define (action-matches? r:port pc)
+    (let ((statement (.statement pc)))
+      (and (is-a? statement <action>)
+           (eq? r:port (.instance pc))
+           statement)))
+
   (define (external-triggers pc)
     (append-map cdr (.external-q pc)))
 
@@ -628,9 +634,10 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (component (.type (.ast next-instance)))
                    (port-name (if (eq? r:port r:other-port) (injected-port-name component interface)
                                   (.name (.ast r:other-port))))
+                   (action (any (cute action-matches? (.container r:other-port) <>) trace))
                    (return (clone statement
                                   #:port.name port-name
-                                  #:location (.location statement)))
+                                  #:location (.location (or action statement))))
                    (return (clone return #:parent component))
                    (return-pc (clone pc #:instance next-instance #:statement return)))
               (loop (cdr trace) (cons* pc return-pc result))))
