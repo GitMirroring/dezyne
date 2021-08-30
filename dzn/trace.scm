@@ -864,7 +864,9 @@ ws               <   [ \t]
          (activities-alist (map (compose list car) instances))
          (communications (filter communication? steps))
          (states (filter state? steps))
-         (messages (delete-duplicates (filter message? steps) message-text-equal?)))
+         (messages (delete-duplicates (filter message? steps) message-text-equal?))
+         (error? (find (compose (cute string-prefix? "error:" <>) message-message) messages))
+         (messages (if error? messages '())))
 
     ;; loop: cdr through communications, building up activities and events from each communication
     (let loop ((communications communications) (messages messages) (activities activities-alist) (events '()))
