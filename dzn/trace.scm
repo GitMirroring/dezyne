@@ -244,6 +244,12 @@ ws               <   [ \t]
              (eq? (communication-direction step2) 'out)
              (communication-left step2)
              (not (communication-right step2)))))
+  (define (first-half? step)
+    (or (and (eq? (communication-direction step) 'in)
+             (communication-left step)
+             (not (communication-right step)))
+        (and (eq? (communication-direction step) 'out)
+             (not (communication-left step)))))
   (define (merge step step2)
     (let* ((event (communication-event step))
            (event (or (and (not (member event '("inevitable" "optional")))
@@ -274,6 +280,26 @@ ws               <   [ \t]
                       (and (communication-left step)
                            (communication-right step))) (cons step (loop (cdr steps)))
                            (cond
+                            ((and (null? (cdr steps))
+                                  (first-half? step))
+                             (let ((step2 (if (communication-left step)
+                                              (make-communication (communication-line step)
+                                                                  #f
+                                                                  #f
+                                                                  (communication-left-location step)
+                                                                  (communication-left step)
+                                                                  (communication-event step)
+                                                                  (communication-direction step)
+                                                                  (communication-arrow step))
+                                              (make-communication (communication-line step)
+                                                                  (communication-right-location step)
+                                                                  (communication-right step)
+                                                                  #f
+                                                                  #f
+                                                                  (communication-event step)
+                                                                  (communication-direction step)
+                                                                  (communication-arrow step)))))
+                               (list (merge step step2))))
                             ((null? (cdr steps))
                              (let ((message "error: split-arrows missing complement arrow")
                                    (arrow (string-append "error: arrow: "
