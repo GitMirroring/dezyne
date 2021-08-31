@@ -151,6 +151,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_implicit_illegal		\
  %D%/compliance_livelock			\
+ %D%/compliance_external_inevitable		\
  %D%/compliance_failures_choice			\
  %D%/compliance_failures_illegal		\
  %D%/compliance_failures_inevitable		\

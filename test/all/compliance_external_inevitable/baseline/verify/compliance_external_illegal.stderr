@@ -1,0 +1,7 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: compliance_external_illegal: check: deterministic: ok
+verify: compliance_external_illegal: check: illegal: ok
+verify: compliance_external_illegal: check: deadlock: ok
+verify: compliance_external_illegal: check: livelock: ok
+verify: compliance_external_illegal: check: compliance: ok

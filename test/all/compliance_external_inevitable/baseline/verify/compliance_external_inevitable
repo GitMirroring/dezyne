@@ -1,0 +1,12 @@
+model: compliance_external_inevitable
+h.hello
+w.hello
+w.return
+h.return
+h.bye
+w.bye
+w.return
+h.return
+w.cruel
+h.cruel
+<compliance>
