@@ -136,7 +136,7 @@ valid PCs that are executing an imperative statement."
   "Truncate TRACE up to including the component <initial-compound> and
 mark it with <determinism-error>."
   (let* ((index (list-index (conjoin (compose (is? <runtime:component>) .instance)
-                                     (compose (is? <initial-compound>) .statement))
+                                     (compose ast:imperative? .statement))
                             trace))
          (pc (list-ref trace index))
          (trace (drop trace index))
