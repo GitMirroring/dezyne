@@ -695,6 +695,7 @@ status."
             (let ((fork (component-check-provides-fork component)))
               (and fork
                    (report fork
+                           #:eligible '()
                            #:internal? internal?
                            #:locations? locations?
                            #:trace trace
@@ -724,6 +725,7 @@ status."
               (and (pair? refusals)
                    (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
                      (report traces
+                             #:eligible '()
                              #:internal? internal?
                              #:locations? locations?
                              #:state? state?
