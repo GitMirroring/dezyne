@@ -900,53 +900,53 @@ intermediate steps such as assignments, function calls, replies,
     labels))
 
 (define* (report traces #:key eligible (trace "event") internal? locations? state? verbose?)
-  (let* ((pcs (and (pair? traces) (map car traces)))
-         (pc (and pcs (car pcs)))
+  "Print any error messages and the trail of (car TRACES) in
+trace-format TRACE, given that the trail is the same for all TRACES."
+  (let* ((trace-format trace)
+         (trace (and (pair? traces) (car traces)))
+         (pc (and trace (car trace)))
          (status (and pc (.status pc)))
          (initial-message (and status (initial-error-message traces))))
     (when initial-message
       (display initial-message)
       (display initial-message (current-error-port)))
 
-    ;; XXX TODO: handle set of (non-deterministic) traces.
-    ;;(for-each display-trace-n traces (iota (length traces)))
     (cond ((null? traces))
-          ((equal? trace "event")
-           (display-trails traces))
-          ((equal? trace "trace")
-           (display-trace (car traces)
+          ((equal? trace-format "event")
+           (display-trail trace))
+          ((equal? trace-format "trace")
+           (display-trace trace
                           #:locations? locations? #:state? state? #:verbose? verbose?))
-          ((equal? trace "diagram")
-           (let* ((trace (car traces))
-                  (split-arrows
-                   (with-output-to-string
-                     (lambda _
-                       (serialize-header (.state pc) (current-output-port))
-                       (newline)
-                       (serialize (.state pc) (current-output-port))
-                       (newline)
-                       (display-trace (car traces)
-                                      #:locations? locations? #:state? state? #:verbose? verbose?)))))
+          ((equal? trace-format "diagram")
+           (let ((split-arrows
+                  (with-output-to-string
+                    (lambda _
+                      (serialize-header (.state pc) (current-output-port))
+                      (newline)
+                      (serialize (.state pc) (current-output-port))
+                      (newline)
+                      (display-trace trace
+                                     #:locations? locations? #:state? state? #:verbose? verbose?)))))
              (display (trace:format-trace split-arrows #:format "diagram" #:internal? internal?)))))
 
     (when (and pc
-               (not (equal? trace "diagram")))
+               (not (equal? trace-format "diagram")))
       (serialize (.state pc) (current-output-port))
       (newline))
 
-    (when (and (equal? trace "trace") initial-message)
+    (when (and (equal? trace-format "trace") initial-message)
       (display initial-message))
     (when (pair? traces)
       (let ((final-messages (final-error-messages traces)))
         (when final-messages
           (display final-messages (current-error-port)))
-        (when (equal? trace "trace")
-          (let* ((trail (trace->trail (car traces)))
+        (when (equal? trace-format "trace")
+          (let* ((trail (trace->trail trace))
                  (trail (map cdr trail)))
             (when (pair? trail)
               (format #t "~s\n" (cons 'trail trail)))))))
 
-    (when (and (equal? trace "trace")
+    (when (and (equal? trace-format "trace")
                eligible)
       (let* ((eligible (if (and (is-a? status <end-of-trail>) (.ast status)) (end-of-trail-labels pc)
                            eligible))
