@@ -274,12 +274,7 @@ p     external_multiple_out      r
 .         return:                .
 .<--------------:                .
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . false)))
-.               :                .
-.               :               a.
-.               :<---------------.
-.               :                .
-.               :               b.
-.               :<---------------.
+(trail p.e r.e r.return p.return)
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . true)))
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . true)))
 .               :                .
@@ -304,17 +299,11 @@ p indirect_blocking_multiple_external_out r1 r2
 .                    :a                   .  .
 .                    :------------------->.  .
 .                    :                    .  .
-.                    :                   b.  .
-.                    :<-------------------.  .
-.                    :                    .  .
 .                    :              return.  .
 .                    :<-------------------.  .
 .                    :                    .  .
 .                    :a                   .  .
 .                    :---------------------->.
-.                    :                    .  .
-.                    :                    . b.
-.                    :<----------------------.
 .                    :                    .  .
 .                    :                 return.
 .                    :<----------------------.
