@@ -446,21 +446,13 @@ of traces, possibly marked with <compliance-error>."
   (if (is-a? (%sut) <runtime:system>) (system-event-traces-alist pc)
       (event-traces-alist pc)))
 
-(define-method (is-not-deadlock? (pc <program-counter>))
-  (conjoin (negate .status)
-           (lambda (new)
-             (or (null? (.blocked pc))
-                 (and (pair? (.blocked pc))
-                      (or (.released new)
-                          (null? (.blocked new))))))))
-
 (define-method (eligible-labels (pc <program-counter>) event-traces-alist)
   (let* ((eligible-traces
           (filter (match-lambda
                     ((event)
                      #f)
                     ((event (pcs tails ...) ...)
-                     (find (is-not-deadlock? pc) pcs)))
+                     (find (negate .status) pcs)))
                   event-traces-alist))
          (eligible-labels (map car eligible-traces))
          (async-traces (if (null? (.async pc)) '()
@@ -509,7 +501,7 @@ of traces, possibly marked with <compliance-error>."
               (valid-pcs-alist (map
                                 (match-lambda
                                   ((event pcs ...)
-                                   (cons event (filter (is-not-deadlock? pc) pcs))))
+                                   (cons event (filter (negate .status) pcs))))
                                 pcs-alist))
               (valid-pcs (append-map cdr valid-pcs-alist)))
          (and (null? valid-pcs)
