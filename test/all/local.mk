@@ -44,6 +44,7 @@ HELLO_TESTS =					\
  %D%/hello_alpha				\
  %D%/hello_async				\
  %D%/hello_block				\
+ %D%/hello_blocking_external			\
  %D%/hello_bool					\
  %D%/hello_comment				\
  %D%/hello_data					\
