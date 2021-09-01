@@ -396,7 +396,15 @@ of traces, possibly marked with <compliance-error>."
              (traces (parameterize ((%exploring? #t))
                        (run-to-completion* pc event))))
         (cons event traces)))
-    (map (cute event->label-traces pc <>) (labels)))
+    (define (async-trace->alist trace)
+      (match (trace->string-trail trace)
+        ((event rest ...)
+         (cons event (list trace)))))
+    (let* ((alist (map (cute event->label-traces pc <>) (labels)))
+           (traces (append-map cdr alist))
+           (async-traces (flush-async pc))
+           (async-alist (map async-trace->alist async-traces)))
+      (merge-alist2 alist async-alist)))
 
   (define (provides-event->label-traces pc event)
     (let* ((pc (clone pc #:trail '()))
@@ -446,20 +454,21 @@ of traces, possibly marked with <compliance-error>."
   (if (is-a? (%sut) <runtime:system>) (system-event-traces-alist pc)
       (event-traces-alist pc)))
 
-(define-method (eligible-labels (pc <program-counter>) event-traces-alist)
+(define-method (event-traces-alist (pcs <list>))
+  (let ((pcs (map (cute clone <> #:status #f) pcs)))
+    (merge-alist-list
+     (map event-traces-alist pcs))))
+
+(define-method (eligible-labels event-traces-alist)
   (let* ((eligible-traces
           (filter (match-lambda
-                    ((event)
-                     #f)
                     ((event (pcs tails ...) ...)
                      (find (negate .status) pcs)))
                   event-traces-alist))
-         (eligible-labels (map car eligible-traces))
-         (async-traces (if (null? (.async pc)) '()
-                           (flush-async pc)))
-         (async-trails (map trace->string-trail async-traces))
-         (async-labels (map car async-trails)))
-    (append eligible-labels async-labels)))
+         (labels (map car eligible-traces))
+         (labels (delete-duplicates labels))
+         (labels (sort labels string<)))
+    labels))
 
 (define (optional-trace? trace)
   (let* ((requires-on (filter
@@ -617,31 +626,32 @@ optional labels only and stop when observable event seen."
   "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
 refusals-check.  Run final REPORT and return exit status."
 
-  (define* (deadlock-report pc traces)
+  (define* (deadlock-report pcs traces)
     "Run check-deadlock and report.  Return exit status."
-    (let ((event pc ((%next-input) pc)))
-      (let* ((event-traces-alist (event-traces-alist pc))
-             (eligible (eligible-labels pc event-traces-alist))
-             (deadlock-traces (check-deadlock pc event-traces-alist event))
-             (status (and deadlock-traces (pair? (.blocked pc))
-                          (report traces
+    (let* ((pc (car pcs))
+           (event pc ((%next-input) pc))
+           (event-traces-alist (event-traces-alist pcs))
+           (eligible (eligible-labels event-traces-alist))
+           (deadlock-traces (check-deadlock pc event-traces-alist event))
+           (status (and deadlock-traces (pair? (.blocked pc))
+                        (report traces
+                                #:internal? internal?
+                                #:locations? locations?
+                                #:trace trace
+                                #:verbose? verbose?)))
+           (status (cond ((is-a? status <error>)
+                          status)
+                         (deadlock-traces
+                          (report deadlock-traces
+                                  #:eligible eligible
                                   #:internal? internal?
                                   #:locations? locations?
                                   #:trace trace
-                                  #:verbose? verbose?)))
-             (status (cond ((is-a? status <error>)
-                            status)
-                           (deadlock-traces
-                            (report deadlock-traces
-                                    #:eligible eligible
-                                    #:internal? internal?
-                                    #:locations? locations?
-                                    #:trace trace
-                                    #:verbose? verbose?))
-                           (else
-                            #f))))
-        (and (is-a? status <error>)
-             status))))
+                                  #:verbose? verbose?))
+                         (else
+                          #f))))
+      (and (is-a? status <error>)
+           status)))
 
   (define (refusals-report from-pcs pc traces)
     "Run check-provides-fork and check-refusals and report.  Return exit
@@ -736,19 +746,9 @@ status."
                              #:trace trace
                              #:verbose? verbose?))))))))
 
-  (define (eligible traces)
-    (match traces
-      (((pc rest ...) trace ...)
-       (and (is-a? (.status pc) <end-of-trail>)
-            (not (.labels (.status pc)))
-            (let* ((pc (clone pc #:status #f))
-                   (event-traces-alist (event-traces-alist pc)))
-              (eligible-labels pc event-traces-alist))))
-      (_
-       #f)))
-
   (let* ((traces (apply append list-of-traces))
          (traces (filter-match-error traces))
+         (pcs (map car traces))
          (status (any (compose
                        (conjoin .status
                                 (disjoin (negate (is-status? <end-of-trail>))
@@ -760,21 +760,22 @@ status."
          (refusals-check? (and refusals-check?
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
-    (or (and deadlock-check? (null? traces)
-             (any (cute deadlock-report <> '()) from-pcs))
-        (and deadlock-check? (pair? traces)
-             (any deadlock-report from-pcs list-of-traces))
+    (or (and deadlock-check?
+             (deadlock-report from-pcs traces))
         (and refusals-check? (null? traces)
              (any (cute refusals-report from-pcs <> '()) from-pcs))
         (and refusals-check? (pair? traces)
              (any (cute refusals-report from-pcs <> <>) from-pcs list-of-traces))
-        (report traces
-                #:eligible (or (and deadlock-check? (eligible traces)) '())
-                #:internal? internal?
-                #:locations? locations?
-                #:state? state?
-                #:trace trace
-                #:verbose? verbose?))))
+        (let ((eligible
+               (and deadlock-check?
+                    (eligible-labels (event-traces-alist pcs)))))
+          (report traces
+                  #:eligible (or eligible '())
+                  #:internal? internal?
+                  #:locations? locations?
+                  #:state? state?
+                  #:trace trace
+                  #:verbose? verbose?)))))
 
 (define* (run-trail trail #:key deadlock-check? refusals-check? internal?
                     locations? state? trace verbose?)
@@ -801,7 +802,7 @@ status."
                 (when deadlock-check?
                   (let* ((pc (car from-pcs))
                          (event-traces-alist (event-traces-alist pc))
-                         (eligible (eligible-labels pc event-traces-alist)))
+                         (eligible (eligible-labels event-traces-alist)))
                     (show-eligible eligible))))
               (let* ((list-of-traces (map run-sut traces))
                      (traces (apply append list-of-traces))
