@@ -534,9 +534,10 @@
   (with-output-to-string
     (lambda _
       ;; TODO c&p serialize <state>
-      (let ((port (current-output-port)))
+      (let ((port (current-output-port))
+            (path ((compose runtime:instance->path .instance) o)))
         (display "(" port)
-        (display ((compose runtime:instance->path .instance) o) port)
+        (display path port)
         (for-each (match-lambda ((x . y)
                                  (display " " port)
                                  (display (cons x (->sexp y)) port)))
@@ -552,13 +553,15 @@
   (display ")" port))
 
 (define-method (serialize (o <state>) port)
-  (display "(" port)
-  (display ((compose runtime:instance->path .instance) o) port)
-  (for-each (match-lambda ((x . y)
-                           (display " " port)
-                           (display (cons x (->sexp y)) port)))
-            (.variables o))
-  (display ")" port))
+  (let ((path ((compose runtime:instance->path .instance) o)))
+    (display "(" port)
+    (display path port)
+    (unless (equal? path '("client"))
+      (for-each (match-lambda ((x . y)
+                               (display " " port)
+                               (display (cons x (->sexp y)) port)))
+                (.variables o)))
+    (display ")" port)))
 
 (define-method (serialize-header (o <system-state>))
   (with-output-to-string
