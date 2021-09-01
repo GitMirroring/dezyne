@@ -396,7 +396,7 @@
 (define-method (dequeue-external (pc <program-counter>) (instance <runtime:port>))
   (let* ((external-q (.external-q pc))
          (q (assoc-ref external-q instance)))
-    (if (null? q) (values pc #f)
+    (if (or (not q) (null? q)) (values pc #f)
         (let* ((tail (cdr q))
                (external-q (alist-delete instance external-q))
                (external-q (if (null? tail) external-q
