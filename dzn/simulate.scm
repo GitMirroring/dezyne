@@ -76,52 +76,61 @@ returns to support the split-arrow trace format."
            (eq? instance r:port))))
 
   (let* ((port-on (list-index (compose (is? <on>) .statement) port-trace))
-         (trace (append trace (drop port-trace port-on)))
+         (port-trace-prefix (drop port-trace port-on))
+         (port-start (car port-trace-prefix))
+         (trace (if (find (cute eq? port-start <>) trace) trace
+                    (append trace port-trace-prefix)))
          (port-trace (take port-trace port-on))
          (instance (and=> (find (compose (is? <runtime:component>) .instance) trace)
-                          .instance)))
+                          .instance))
+         (full-trace trace))
 
     (let loop ((trace trace) (port-trace port-trace))
       (if (null? trace) '()
           (let* ((pc (car trace))
                  (pc-instance (.instance pc))
                  (statement (.statement pc)))
-            (cond ((and (not (is-a? (%sut) <runtime:port>))
-                        (is-a? statement <action>)
-                        (is-a? pc-instance <runtime:component>)
-                        (ast:out? statement))
-                   (let* ((port (.port statement))
-                          (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
-                                      (runtime:port pc-instance port)))
-                          (port (.ast r:port))
-                          (port-name (.name port))
-                          (r:other-port (runtime:other-port r:port))
-                          (port-action+trace (member statement port-trace
-                                                     (action-equal? r:other-port))))
-                     (match port-action+trace
-                       ((action-pc tail ...)
-                        (cons* action-pc pc (loop (cdr trace) tail)))
-                       (_
-                        (cons pc (loop (cdr trace) port-trace))))))
-                  ((and (not (is-a? (%sut) <runtime:port>))
-                        (is-a? statement <trigger-return>)
-                        (.port.name statement))
-                   (let* ((port (.port statement))
-                          (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
-                                      (runtime:port pc-instance port)))
-                          (r:other-port (runtime:other-port r:port))
-                          (port-return+trace (member statement port-trace
-                                                     (return-equal? r:other-port))))
-                     (match port-return+trace
-                       ((return-pc tail ...)
-                        (let* ((port-state (get-state return-pc))
-                               (return-pc (clone return-pc #:state (.state pc)))
-                               (return-pc (set-state return-pc port-state)))
-                          (cons* return-pc pc (loop (cdr trace) tail))))
-                       (_
-                        (cons pc (loop (cdr trace) port-trace))))))
-                  (else
-                   (cons pc (loop (cdr trace) port-trace)))))))))
+            (cond
+             ((and (not (is-a? (%sut) <runtime:port>))
+                   (is-a? statement <action>)
+                   (is-a? pc-instance <runtime:component>)
+                   (ast:out? statement))
+              (let* ((port (.port statement))
+                     (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
+                                 (runtime:port pc-instance port)))
+                     (port (.ast r:port))
+                     (port-name (.name port))
+                     (r:other-port (runtime:other-port r:port))
+                     (port-action+trace (member statement port-trace
+                                                (action-equal? r:other-port))))
+                (match port-action+trace
+                  ((action-pc tail ...)
+                   (if (find (cute ast:equal? <> action-pc) full-trace)
+                       (cons pc (loop (cdr trace) port-trace))
+                       (cons* action-pc pc (loop (cdr trace) tail))))
+                  (_
+                   (cons pc (loop (cdr trace) port-trace))))))
+             ((and (not (is-a? (%sut) <runtime:port>))
+                   (is-a? statement <trigger-return>)
+                   (.port.name statement))
+              (let* ((port (.port statement))
+                     (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
+                                 (runtime:port pc-instance port)))
+                     (r:other-port (runtime:other-port r:port))
+                     (port-return+trace (member statement port-trace
+                                                (return-equal? r:other-port))))
+                (match port-return+trace
+                  ((return-pc tail ...)
+                   (let* ((port-state (get-state return-pc))
+                          (return-pc (clone return-pc #:state (.state pc)))
+                          (return-pc (set-state return-pc port-state)))
+                     (if (find (cute ast:equal? <> return-pc) full-trace)
+                         (cons pc (loop (cdr trace) port-trace))
+                         (cons* return-pc pc (loop (cdr trace) tail)))))
+                  (_
+                   (cons pc (loop (cdr trace) port-trace))))))
+             (else
+              (cons pc (loop (cdr trace) port-trace)))))))))
 
 (define (check-provides-fork port trace)
   "Check TRACE for a fork with respect to PORT.  If TRACE contains
@@ -191,7 +200,7 @@ never extend a trace, but do continue as long as the trail is silent."
                                          (trace->string-trail b)))))))
             traces)))))
 
-(define (check-provides-compliance pc event port-traces-alist trace)
+(define* (check-provides-compliance pc event port-traces-alist trace)
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
 Update the state of the provides port in TRACE for EVENT.  Return a list
 of traces, possibly marked with <compliance-error>."
@@ -302,7 +311,7 @@ of traces, possibly marked with <compliance-error>."
                                       (cons (set-state (car trace) (get-state port-pc port-instance))
                                             (cdr trace)))
                                     port-pcs)))
-                  (if (or blocked? (not provides-trigger?)) traces
+                  (if (not provides-trigger?) traces
                       (map zip traces port-traces))))
                ((and (null? non-compliances)
                      (null? port-traces)
@@ -543,7 +552,10 @@ of traces, possibly marked with <compliance-error>."
       (_
        (let* ((pc (clone pc #:status (make <end-of-trail>)))
               (trace (cons pc (cdr pc+blocked-trace))))
-         (list trace))))))
+         (if (is-a? (%sut) <runtime:port>) (list trace)
+             (let* ((port-traces-alist (provides-instance-traces-alist pc))
+                    (traces (check-provides-compliance pc event port-traces-alist trace)))
+               traces)))))))
 
 (define-method (pc->modeling-lts (pc <program-counter>))
   "Create a partial modeling-LTS at PC, i.e., use inevitable and
