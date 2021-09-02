@@ -1,0 +1,11 @@
+h.hello
+w.hello
+w.return
+h.return
+h.bye
+w.bye
+w.return
+h.return
+test/all/illegal_external_inevitable/illegal_external_inevitable.dzn:68:3: error: illegal
+w.world
+<illegal>
