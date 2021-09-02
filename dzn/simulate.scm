@@ -268,12 +268,10 @@ of traces, possibly marked with <compliance-error>."
                                      ;; Check prefix only as long as trace is blocked
                                      (list-head port-trail (min (length port-trail)
                                                                 (length sut-trail)))))
-                     (foo (%debug "     port trail : ~s\n" port-trail))
                      (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
                      (port-name ((compose .name .ast) port-instance))
-                     (foo (%debug "      sut trail : ~s\n" (map cdr sut-trail)))
                      (events (map (compose last (cut string-split <> #\.) cdr) sut-trail))
-                     (foo (%debug "      sut trail : ~s\n" events)))
+                     (foo (%debug "      sut trail : ~s\n\n" events)))
                 (or (any non-matching-pair? port-trail sut-trail)
                     (let ((port-length (length port-trail))
                           (sut-length (length sut-trail)))
