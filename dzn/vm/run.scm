@@ -44,6 +44,7 @@
             %strict?
             did-provides-out?
             filter-error
+            filter-illegal+implicit-illegal
             filter-match-error
             flush-async
             flush-async-trace
@@ -104,6 +105,16 @@
                        traces)))
     (if (pair? rest) rest
         illegal)))
+
+(define (filter-illegal+implicit-illegal traces)
+  (let ((illegal rest (partition
+                       (compose
+                        (disjoin (is-status? <illegal-error>)
+                                 (is-status? <implicit-illegal-error>))
+                        car)
+                       traces)))
+    (if (pair? illegal) illegal
+        rest)))
 
 (define (filter-match-error traces)
   (let ((match-error rest (partition

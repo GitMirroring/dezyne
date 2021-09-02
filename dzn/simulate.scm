@@ -747,6 +747,7 @@ status."
                              #:verbose? verbose?))))))))
 
   (let* ((traces (apply append list-of-traces))
+         (traces (filter-illegal+implicit-illegal traces))
          (traces (filter-match-error traces))
          (pcs (map car traces))
          (status (any (compose
