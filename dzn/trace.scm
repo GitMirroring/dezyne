@@ -325,16 +325,19 @@ ws               <   [ \t]
                                        (arrow2 (string-append "error: arrow2: "
                                                               (communication->string step2)))
                                        (location (communication-location step))
-                                       (location2 (communication-location step2)))
-                                   (list (make-message
-                                          (string-append (or location "") message)
-                                          location message)
-                                         (make-message
-                                          (string-append (or location "") arrow1)
-                                          location arrow1)
-                                         (make-message
-                                          (string-append (or location2 "") arrow2)
-                                          location2 arrow2))))))))))))))
+                                       (location2 (communication-location step2))
+                                       (messages (filter message? steps)))
+                                   (append
+                                    messages
+                                    (list (make-message
+                                           (string-append (or location "") message)
+                                           location message)
+                                          (make-message
+                                           (string-append (or location "") arrow1)
+                                           location arrow1)
+                                          (make-message
+                                           (string-append (or location2 "") arrow2)
+                                           location2 arrow2)))))))))))))))
 
 (define* (communication->string o #:key locations?)
   (let* ((event (communication-event o))
