@@ -432,7 +432,8 @@ until RTC?."
   (let* ((pc (clone pc #:reply #f))
          (interface ((compose .type .ast %sut)))
          (modeling-names (modeling-names interface))
-         (xpc (clone pc #:trail (cons event (.trail pc))))
+         (xpc (if (member event '("inevitable" "optional")) pc
+                  (clone pc #:trail (cons event (.trail pc)))))
          (traces (append-map (cut run-to-completion xpc <>) modeling-names)))
     (match event
       ((? (cute in-event? interface <>))
