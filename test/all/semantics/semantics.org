@@ -276,7 +276,6 @@ p     external_multiple_out      r
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . false)))
 (trail p.e r.e r.return p.return)
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . true)))
-(state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . true)))
 .               :                .
 .              a:                .
 .<--------------:                .

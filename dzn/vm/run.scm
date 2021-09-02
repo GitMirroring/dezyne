@@ -524,12 +524,17 @@ until RTC?."
                     livelock
                     traces)))))))
 
-(define-method (external-event? (pc <program-counter>) event)
+(define-method (external-trigger-in-q? (pc <program-counter>) event)
   (and (requires-trigger? event)
        (find (match-lambda
                ((port trigger tail ...)
                 (equal? (trigger->string trigger) event)))
              (.external-q pc))))
+
+(define-method (external-trigger? event)
+  (and (requires-trigger? event)
+       (let ((port (and=> (string->trigger event) .port)))
+         (and port (ast:external? port)))))
 
 (define-method (run-external-q (pc <program-counter>) (instance <runtime:port>))
   (let* ((pc trigger (dequeue-external pc instance))
@@ -544,17 +549,23 @@ until RTC?."
   (let ((queues (.external-q pc)))
     (if (or (null? queues)
             (pair? (.async pc))) '()
-            (match (external-event? pc event)
+            (match (external-trigger-in-q? pc event)
               ((port q ...)
-               (run-external-q pc (or port (%sut))))))))
+               (run-external-q pc (or port (%sut))))
+              (_
+               (let ((pc (clone pc #:status (make <match-error> #:ast (.ast (%sut)) #:input event #:message "match"))))
+                 (list (list pc) )))))))
 
 (define-method (run-to-completion* (pc <program-counter>) event)
   (let ((pc (clone pc #:instance #f #:reply #f)))
     (cond
      ((is-a? (%sut) <runtime:port>)
       (run-interface pc event))
-     ((external-event? pc event)
+     ((external-trigger-in-q? pc event)
       (run-external pc event))
+     ((external-trigger? event)
+      (let ((pcs (cons pc (run-silent pc event))))
+        (append-map (cute run-external <> event) pcs)))
      ((requires-trigger? event)
       (let ((async-traces (if (null? (.async pc)) '()
                               (run-async pc event))))

@@ -1,4 +1,3 @@
-test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:53:43: error: non-compliance
-test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:29:3: trigger: w.cruel
-test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:53:43: component accept: -
+test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:75:21: error: non-compliance
+test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:75:21: component accept: h.cruel
 test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:53:43: port accept: world

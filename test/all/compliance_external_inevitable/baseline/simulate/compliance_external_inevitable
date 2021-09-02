@@ -6,5 +6,7 @@ h.bye
 w.bye
 w.return
 h.return
-test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:53:43: error: non-compliance
+test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:75:21: error: non-compliance
+w.cruel
+h.cruel
 <compliance>
