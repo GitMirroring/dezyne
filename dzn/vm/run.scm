@@ -157,7 +157,11 @@ mark it with <determinism-error>."
 
 (define (mark-livelock-error trace)
   (let* ((pc (car trace))
-         (error (make <livelock-error> #:ast (.statement pc) #:message "livelock"))
+         (model (runtime:%sut-model))
+         (ast (or (.statement pc)
+                  (if (is-a? model <system>) model
+                      (.behaviour model))))
+         (error (make <livelock-error> #:ast ast #:message "livelock"))
          (pc (clone pc #:status error)))
     (cons pc (cdr trace))))
 
@@ -553,7 +557,10 @@ until RTC?."
               ((port q ...)
                (run-external-q pc (or port (%sut))))
               (_
-               (let ((pc (clone pc #:status (make <match-error> #:ast (.ast (%sut)) #:input event #:message "match"))))
+               (let* ((model (runtime:%sut-model))
+                      (ast (if (is-a? model <system>) model
+                               (.behaviour model)))
+                      (pc (clone pc #:status (make <match-error> #:ast ast #:input event #:message "match"))))
                  (list (list pc) )))))))
 
 (define-method (run-to-completion* (pc <program-counter>) event)

@@ -484,7 +484,7 @@ of traces, possibly marked with <compliance-error>."
   (define (mark-deadlock pc)
     (let* ((error (.status pc))
            (ast (or (and error (.ast error))
-                    (let ((model (.type (.ast (%sut)))))
+                    (let ((model (runtime:%sut-model)))
                       (if (is-a? model <system>) model
                           (.behaviour model))))))
       (if (and error (not (is-a? error <implicit-illegal-error>))) pc
@@ -496,7 +496,7 @@ of traces, possibly marked with <compliance-error>."
               event-traces-alist)))
     (cond
      ((and (is-a? (%sut) <runtime:port>)
-           (let ((interface (.type (.ast (%sut)))))
+           (let ((interface (runtime:%sut-model)))
              (and (null? (ast:in-event* interface))
                   (list (list (mark-deadlock pc)))))))
      (else
@@ -543,8 +543,7 @@ of traces, possibly marked with <compliance-error>."
               (traces (if (is-a? (%sut) <runtime:port>) traces
                           (check-provides-compliance* pc event traces))))
          (if (pair? traces) traces
-             (let* ((ast (.ast (%sut)))
-                    (model (if (is-a? ast <instance>) (.type ast) ast))
+             (let* ((model (runtime:%sut-model))
                     (error (make <match-error> #:message "match" #:ast model #:input event)))
                (list (list (clone pc #:status error)))))))
       ((? (const (pair? (.async pc))))
@@ -701,7 +700,7 @@ status."
     (define blocked?
       (compose pair? .blocked car))
 
-    (let ((component (.type (.ast (%sut)))))
+    (let ((component (runtime:%sut-model)))
       (or
        ;; Forking from one to another provides port is a compliance
        ;; error.

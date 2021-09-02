@@ -676,6 +676,9 @@
 (define-method (ast:type (o <extern>))
   o)
 
+(define-method (ast:type (o <model>))
+  o)
+
 (define-method (ast:argument->formal (o <expression>))
   (let* ((call (parent o <call>))
          (arguments (ast:argument* call))

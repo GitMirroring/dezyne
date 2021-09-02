@@ -185,7 +185,7 @@ begin -> 1
 }
 ")
   (string-append
-   (preamble (ast:dotted-name (.type (.ast (%sut)))))
+   (preamble (ast:dotted-name (runtime:%sut-model)))
    (string-join
     (map (match-lambda ((from pc (trigger actions ...) to trigger-location)
                         (let* ((separator (make-string (apply max (map string-length (cons trigger actions))) #\-))

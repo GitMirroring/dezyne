@@ -31,6 +31,8 @@
   #:export (%sut
             %instances
             ast->runtime:instance
+            runtime:%sut-model
+            runtime:ast-model
             runtime:get-sut
             runtime:boundary-port?
             runtime:component-instance?
@@ -363,6 +365,12 @@
   (list
    (make <runtime:port> #:ast (.ast o) #:boundary? #t)
    o))
+
+(define-method (runtime:ast-model (o <runtime:instance>))
+  (ast:type (.type (.ast o))))
+
+(define (runtime:%sut-model)
+  (runtime:ast-model (%sut)))
 
 
 ;;;
