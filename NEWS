@@ -5,6 +5,25 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.13.2 since 2.13.1
+** Noteworthy bug fixes
+  - The simulator would produce an invalid split-arrows trace for
+    certain combinations of blocking and external ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/34][#34]]).
+  - In the simulator, events on the input trail now determine when an
+    external event is executed, i.e., taken out of the queue.
+  - On the split-arrows trace, external q-in events are now hidden.
+  - Six new regression-tests on the `external' feature where added along
+    with fixes for the simulator.
+  - The simulator's major performance bottle necks have been addressed
+    ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/36][#36]]).
+  - The simulator now prioritizes errors in the same order as
+    verification does; a possible error trace is always shown.
+  - On `dzn simulate', the `--queue-size' parameter now works.
+  - dzn explore:
+    + A bug that left some states without a label has been fixed,
+    + The "tau" label on tau-transitions has been removed,
+    + Duplicate transitions due to non-determinism are merged.
+
 * Changes in 2.13.1 since 2.13.0
 ** Parser
   - The well-formedness check now reports an error when the ports of a
