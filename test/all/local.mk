@@ -51,6 +51,7 @@ HELLO_TESTS =					\
  %D%/hello_else					\
  %D%/hello_expression				\
  %D%/hello_external				\
+ %D%/hello_external_inevitable			\
  %D%/hello_flush				\
  %D%/hello_foreign				\
  %D%/hello_function				\

@@ -1,0 +1,84 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  in void bye();
+
+  out void world();
+  out void cruel();
+
+  behaviour
+  {
+    enum S {A,B,C,D};
+    S s = S.A;
+
+    [s.A]
+    {
+      on hello: s = S.B;
+      on bye: illegal;
+    }
+    [s.B]
+    {
+      on hello: illegal;
+      on bye: s = S.D;
+      on optional: {s = S.C; world;}
+    }
+    [s.C]
+    {
+      on hello: illegal;
+      on bye: s = S.D;
+    }
+    [s.D]
+    {
+      on hello: illegal;
+      on bye: illegal;
+      on inevitable: {s = S.A; cruel;}
+    }
+  }
+}
+
+component hello_external_inevitable
+{
+  provides ihello h;
+  requires external ihello w;
+
+  behaviour
+  {
+    enum S {A,B,C};
+    S s = S.A;
+
+    [s.A] on h.hello(): {s = S.B; w.hello();}
+    [s.B]
+    {
+      on w.world(): h.world();
+      on h.bye(): {s = S.C; w.bye();}
+    }
+    [s.C]
+    {
+      on w.world(): {}
+      on w.cruel(): {s = S.A; h.cruel();}
+    }
+  }
+}
