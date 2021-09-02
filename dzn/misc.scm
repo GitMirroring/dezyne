@@ -32,6 +32,8 @@
             disjoin
             hash-table->alist
             json-string->alist-scm
+            merge-alist2
+            merge-alist-list
             pke))
 
 (define (disjoin . predicates)
@@ -79,3 +81,19 @@ guile-json-4 (which produces vectors)."
     ("true" #t)
     ('true #t)
     (_ src)))
+
+(define (merge-alist2 a b)
+  (fold
+   (lambda (entry result)
+     (match entry
+       ((event traces ...)
+        (acons event
+               (append traces
+                       (or (assoc-ref result event) '()))
+               (alist-delete event result)))))
+   a b))
+
+(define (merge-alist-list alist-list)
+  (match alist-list
+    ((h t ...)
+     (fold merge-alist2 h t))))
