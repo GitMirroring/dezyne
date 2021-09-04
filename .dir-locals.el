@@ -47,7 +47,10 @@
     .
     (progn
       (defun prefix-dir-locals-dir (elt)
-        (concat (locate-dominating-file buffer-file-name ".dir-locals.el") elt))
+        (let* ((root-dir (locate-dominating-file buffer-file-name
+                                                 ".dir-locals.el"))
+               (root-dir (expand-file-name root-dir)))
+          (concat root-dir elt)))
       (mapcar
        (lambda (dir) (add-to-list 'geiser-guile-load-path dir))
        (mapcar
