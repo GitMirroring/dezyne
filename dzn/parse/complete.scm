@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -349,6 +349,8 @@
           (cond ((is-a? incomplete 'on)
                  (context:trigger-names context))
                 (else '("on")))))))
+    (('behaviour-statements x ...)
+     '("on"))
     ((? (is? 'name))
      (cond ((parent context 'enum-literal)
             => (cute complete-enum-literal <> o context))
@@ -417,20 +419,22 @@
                 (filter (negate (cute equal? <> name)) (complete-enum type context))))
              (else
               '()))))
-    (('guard x ... BRACKET-CLOSE)
-     (context:complete (.expression o) (cons (.expression o) context) offset))
-    (('expression x ... BRACKET-CLOSE)
+    (('guard x ...)
+     (cond ((incomplete? o) (context:complete (.expression o) (cons (.expression o) context) offset))
+           ((not (parent context 'on)) '("on"))
+           (else '())))
+    (('expression x ...)
      (context:complete (.value o) (cons (.value o) context) offset))
     (('or 'otherwise 'expression)
      (complete:boolean-expressions context))
 
     ('statement
      (context:action-names context))
-    (('compound (? tree:location?))
-     '("on")) ;;FIXME point solution: fixes component7.dzn
 
-    (('compound (? (disjoin incomplete? tree:location?)) ...)
-     (context:action-names context))
+    (('compound x ...)
+     (cond ((parent context 'on) (context:action-names context))
+           (else '("on"))))
+
     ((? (is? 'action))
      (context:action-names context))
 
@@ -438,9 +442,10 @@
          'BRACE-OPEN
          (? symbol?))
      '())
-    (_ (if (complete? o) '()
-           (or (context:complete (find incomplete? (cdr o)) context offset)
-               (context:complete (before-location? o offset) context offset))))))
+    (_
+     (if (complete? o) '()
+         (or (and=> (find incomplete? (cdr o)) (cute context:complete <> context offset))
+             (context:complete (before-location? o offset) context offset))))))
 
 ;; TODO: rewrite above as:
 ;; (define (context:complete o context offset)
