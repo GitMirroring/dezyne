@@ -473,6 +473,23 @@
   "global.space.dzn:1:7"
   (test-lookup #:file-name "global.space.dzn" #:line 8 #:column 7))
 
+(test-equal "lookup double.space"
+  "double.space.dzn:3:9"
+  (test-lookup #:file-name "double.space.dzn" #:line 11 #:column 9))
+
+(test-equal "lookup double.space prefix"
+  "double.space.dzn:3:9"
+  (test-lookup #:file-name "double.space.dzn" #:line 11 #:column 9))
+
+(test-equal "lookup import-double.space"
+  "double.space.dzn:3:9"
+  (test-lookup #:file-name "import-double.space.dzn" #:line 7 #:column 9
+               #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "lookup import-double.space prefix"
+  "double.space.dzn:3:9"
+  (test-lookup #:file-name "import-double.space.dzn" #:line 8 #:column 9
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-end)
 

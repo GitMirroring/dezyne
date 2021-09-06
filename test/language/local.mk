@@ -68,6 +68,8 @@ EXTRA_DIST +=					\
  %D%/typo.dzn					\
 						\
  %D%/deep-space-enum.dzn			\
+ %D%/double.space.dzn				\
+ %D%/import-double.space.dzn			\
  %D%/enum.dzn					\
  %D%/function.dzn				\
  %D%/global.space.dzn				\

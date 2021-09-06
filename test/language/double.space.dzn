@@ -1,0 +1,17 @@
+namespace bar {
+  namespace double {
+    enum Bool {False, True};
+  }
+}
+
+namespace bar {
+  subint int {0..1};
+  namespace double {
+    interface i {
+      in Bool foo();
+      in bar.double.Bool bar();
+      in int baz();
+     behaviour {}
+    }
+  }
+}
