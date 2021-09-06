@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,10 +26,15 @@ EXTRA_DIST +=					\
  %D%/component1a.dzn				\
  %D%/component1b.dzn				\
  %D%/component2.dzn				\
+ %D%/component2a.dzn				\
+ %D%/component2b.dzn				\
  %D%/component3.dzn				\
+ %D%/component3a.dzn				\
  %D%/component4.dzn				\
  %D%/component5.dzn				\
  %D%/component6.dzn				\
+ %D%/component6a.dzn				\
+ %D%/component6b.dzn				\
  %D%/component7.dzn				\
  %D%/component8.dzn				\
  %D%/component9.dzn				\
@@ -57,6 +62,8 @@ EXTRA_DIST +=					\
  %D%/interface6.dzn				\
  %D%/interface7.dzn				\
  %D%/interface8.dzn				\
+ %D%/interface8a.dzn				\
+ %D%/interface8b.dzn				\
  %D%/interface9.dzn				\
  %D%/interface9b.dzn				\
  %D%/interface10.dzn				\

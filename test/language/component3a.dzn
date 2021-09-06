@@ -1,19 +1,22 @@
 interface I
 {
   in void e();
+  out void f();
   behaviour {}
 }
 
 interface J
 {
-  in void f();
+  in void e();
+  out void f();
   behaviour {}
 }
 
 component C
 {
   provides I p;
-  provides J r;
+  requires J r;
 
   behaviour
   {
+    on p.

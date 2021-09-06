@@ -17,3 +17,5 @@ component C
 
   behaviour
   {
+    [true]
+    {

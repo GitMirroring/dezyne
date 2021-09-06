@@ -142,6 +142,14 @@
   '("on")
   (test-complete #:file-name "interface8.dzn"))
 
+(test-equal "language interface8a"
+  '("on")
+  (test-complete #:file-name "interface8a.dzn"))
+
+(test-equal "language interface8b"
+  '("on")
+  (test-complete #:file-name "interface8b.dzn"))
+
 (test-equal "language interface9"
   '("foo")
   (test-complete #:file-name "interface9.dzn"))
@@ -203,12 +211,24 @@
   (test-complete #:file-name "component1b.dzn" #:line 16 #:column 0))
 
 (test-equal "language component2"
-  '("p.e()" "r.f()")
+  '("on")
   (test-complete #:file-name "component2.dzn"))
+
+(test-equal "language component2a"
+  '("on")
+  (test-complete #:file-name "component2a.dzn"))
+
+(test-equal "language component2b"
+  '("on")
+  (test-complete #:file-name "component2b.dzn"))
 
 (test-equal "language component3"
   '("p.e()" "r.f()")
   (test-complete #:file-name "component3.dzn"))
+
+(test-equal "language component3a"
+  '("p.e()" "r.f()")
+  (test-complete #:file-name "component3a.dzn"))
 
 (test-equal "language component4"
   '("p.e()" "r.f()")
@@ -221,6 +241,14 @@
 (test-equal "language component6"
   '("p.f()" "r.e()")
   (test-complete #:file-name "component6.dzn"))
+
+(test-equal "language component6a"
+  '("p.f()" "r.e()")
+  (test-complete #:file-name "component6a.dzn" #:line 24))
+
+(test-equal "language component6b"
+  '("p.f()" "r.e()")
+  (test-complete #:file-name "component6b.dzn"))
 
 (test-equal "language component7"
   '("on")
