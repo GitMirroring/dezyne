@@ -62,6 +62,7 @@
             .file-name
             .from
             .function-name
+            .global
             .instance-name
             .location
             .name
@@ -85,7 +86,7 @@
             context:full-name
 
             tree:component?
-            debug-name
+            tree:debug-context
 
             tree->context
 
@@ -141,7 +142,7 @@
 (define (context:type-name o)
   (tree:type-name (.tree o)))
 
-(define (debug-name context)
+(define (tree:debug-context context)
   (and context
        (let ((tree (.tree context)))
          (if (is-a? tree 'root) (.file-name tree)
@@ -238,6 +239,12 @@ procedure)."
 (define (.from o)
   (assert-type o 'range)
   (slot o 'from))
+
+(define (.global o)
+  (match o
+    ((? (is? 'compound-name))
+     (slot o 'global))
+    (_ #f)))
 
 (define (.location o)
   (assert-type o tree?)

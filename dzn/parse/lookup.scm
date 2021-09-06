@@ -91,7 +91,8 @@
   "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a tree:context? or
 null) and return its CONTEXT."
   (if (not context) '()
-      (let ((scope name (tree:scope+name name)))
+      (let* ((context (if (.global name) (parent-context context 'root) context))
+             (scope name (tree:scope+name name)))
         (search-or-widen-context scope name context))))
 
 (define (tree:lookup name context)
@@ -251,7 +252,8 @@ null) and return its CONTEXT."
 (define (context-lookup-definition name context)
   "Return declaration of NAME in CONTEXT, or #f if not found."
   (or
-   (and (is-a? name 'name)
+   (and (or (is-a? name 'name)
+            (is-a? name 'global))
         (cond
          ((or (parent context 'action)
               (parent context 'interface-action))
@@ -287,6 +289,7 @@ null) and return its CONTEXT."
   "Return declaration of NAME in CONTEXT, using FILE-NAME->PARSE-TREE to
 search in imports, as (FILE-NAME DECLARATION), or #f if not found."
   (and (or (is-a? name 'name)
+           (is-a? name 'global)
            (is-a? name 'import))
        (parameterize ((%file-name->parse-tree file-name->parse-tree)
                       (%resolve-file resolve-file))
