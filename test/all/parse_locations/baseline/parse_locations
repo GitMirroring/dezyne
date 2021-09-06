@@ -68,10 +68,10 @@
              "test/all/parse_locations/ihello.dzn")
            (line . 28)
            (column . 3)
-           (end-line . 32)
-           (end-column . 1)
+           (end-line . 31)
+           (end-column . 4)
            (offset . 874)
-           (length . 35))))
+           (length . 34))))
        (types ("types"))
        (ports ("ports"))
        (variables ("variables"))
@@ -85,10 +85,10 @@
                 "test/all/parse_locations/ihello.dzn")
               (line . 29)
               (column . 3)
-              (end-line . 32)
-              (end-column . 1)
+              (end-line . 31)
+              (end-column . 4)
               (offset . 886)
-              (length . 23))))
+              (length . 22))))
           (("on"
             (location
               (("location"
@@ -97,10 +97,10 @@
                   "test/all/parse_locations/ihello.dzn")
                 (line . 30)
                 (column . 5)
-                (end-line . 31)
-                (end-column . 3)
+                (end-line . 30)
+                (end-column . 17)
                 (offset . 892)
-                (length . 15))))
+                (length . 12))))
             (triggers
               ("triggers"
                (("trigger"
@@ -126,10 +126,10 @@
                      "test/all/parse_locations/ihello.dzn")
                    (line . 30)
                    (column . 15)
-                   (end-line . 31)
-                   (end-column . 3)
+                   (end-line . 30)
+                   (end-column . 17)
                    (offset . 902)
-                   (length . 5))))))))))))))
+                   (length . 2))))))))))))))
   (("file-name"
     (name .
           "test/all/parse_locations/parse_locations.dzn")))
@@ -172,10 +172,10 @@
              "test/all/parse_locations/parse_locations.dzn")
            (line . 29)
            (column . 3)
-           (end-line . 33)
-           (end-column . 1)
+           (end-line . 32)
+           (end-column . 4)
            (offset . 894)
-           (length . 39))))
+           (length . 38))))
        (types ("types"))
        (ports ("ports"))
        (variables ("variables"))
@@ -189,10 +189,10 @@
                 "test/all/parse_locations/parse_locations.dzn")
               (line . 30)
               (column . 3)
-              (end-line . 33)
-              (end-column . 1)
+              (end-line . 32)
+              (end-column . 4)
               (offset . 906)
-              (length . 27))))
+              (length . 26))))
           (("on"
             (location
               (("location"
@@ -201,10 +201,10 @@
                   "test/all/parse_locations/parse_locations.dzn")
                 (line . 31)
                 (column . 5)
-                (end-line . 32)
-                (end-column . 3)
+                (end-line . 31)
+                (end-column . 21)
                 (offset . 912)
-                (length . 19))))
+                (length . 16))))
             (triggers
               ("triggers"
                (("trigger"
@@ -231,8 +231,8 @@
                      "test/all/parse_locations/parse_locations.dzn")
                    (line . 31)
                    (column . 19)
-                   (end-line . 32)
-                   (end-column . 3)
+                   (end-line . 31)
+                   (end-column . 21)
                    (offset . 926)
-                   (length . 5))))))))))))))
+                   (length . 2))))))))))))))
   (working-directory . ".")))

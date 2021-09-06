@@ -26,11 +26,11 @@
                   (trigger-formals (location 922 924))
                   (location 915 924))
                 (location 915 924))
-              (compound (location 926 931))
-              (location 912 931))
-          (location 912 931))
-        (location 906 933))
-      (location 894 933))
+              (compound (location 926 928))
+              (location 912 928))
+          (location 912 928))
+        (location 906 932))
+      (location 894 932))
     (location 853 934))
   (comment
     "// Dezyne --- Dezyne command line tools//// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>//// This file is part of Dezyne.//// Dezyne is free software: you can redistribute it and/or modify it// under the terms of the GNU Affero General Public License as// published by the Free Software Foundation, either version 3 of the// License, or (at your option) any later version.//// Dezyne is distributed in the hope that it will be useful, but// WITHOUT ANY WARRANTY; without even the implied warranty of// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU// Affero General Public License for more details.//// You should have received a copy of the GNU Affero General Public// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.//// Commentary://// Code:"
@@ -66,11 +66,11 @@
                   (name "hello" (location 895 900))
                   (location 895 900))
                 (location 895 900))
-              (compound (location 902 907))
-              (location 892 907))
-          (location 892 907))
-        (location 886 909))
-      (location 874 909))
+              (compound (location 902 904))
+              (location 892 904))
+          (location 892 904))
+        (location 886 908))
+      (location 874 908))
     (location 833 910))
   (comment
     "// Dezyne --- Dezyne command line tools//// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>//// This file is part of Dezyne.//// Dezyne is free software: you can redistribute it and/or modify it// under the terms of the GNU Affero General Public License as// published by the Free Software Foundation, either version 3 of the// License, or (at your option) any later version.//// Dezyne is distributed in the hope that it will be useful, but// WITHOUT ANY WARRANTY; without even the implied warranty of// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU// Affero General Public License for more details.//// You should have received a copy of the GNU Affero General Public// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.//// Commentary://// Code:"
