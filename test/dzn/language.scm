@@ -465,6 +465,15 @@
   "test/language/ihello.dzn:1:0"
   (test-lookup #:file-name "import.dzn" #:line 1 #:column 0))
 
+(test-equal "lookup global.space global"
+  "global.space.dzn:4:9"
+  (test-lookup #:file-name "global.space.dzn" #:line 7 #:column 7))
+
+(test-equal "lookup global.space namespaced"
+  "global.space.dzn:1:7"
+  (test-lookup #:file-name "global.space.dzn" #:line 8 #:column 7))
+
+
 (test-end)
 
 (test-end)

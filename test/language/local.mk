@@ -70,6 +70,7 @@ EXTRA_DIST +=					\
  %D%/deep-space-enum.dzn			\
  %D%/enum.dzn					\
  %D%/function.dzn				\
+ %D%/global.space.dzn				\
  %D%/ienum.dzn       				\
  %D%/ihello.dzn					\
  %D%/ihello-enum.dzn 				\

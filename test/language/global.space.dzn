@@ -1,0 +1,13 @@
+subint int {0..0};
+
+namespace global {
+  subint int {1..1};
+
+  interface space {
+    in int hello ();
+    in .int bye ();
+    behaviour {
+      on hello: reply (0);
+    }
+  }
+}
