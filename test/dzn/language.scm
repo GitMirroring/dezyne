@@ -539,6 +539,14 @@
   (test-lookup #:file-name "import-double.space.dzn" #:line 8 #:column 9
                #:file-name->parse-tree file-name->parse-tree))
 
+(test-equal "lookup reply-port->port"
+  "blocking.dzn:16:18"
+  (test-lookup #:file-name "blocking.dzn" #:line 24 #:column 27))
+
+(test-equal "lookup out-binding->variable"
+  "blocking.dzn:21:8"
+  (test-lookup #:file-name "blocking.dzn" #:line 23 #:column 37))
+
 (test-end)
 
 (test-end)

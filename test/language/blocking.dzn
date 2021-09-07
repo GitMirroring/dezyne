@@ -1,0 +1,26 @@
+extern int $int$;
+
+interface ihello
+{
+  in void hello(inout int i);
+  out void world();
+
+  behaviour
+  {
+    on hello: world;
+  }
+}
+
+component blocking_binding
+{
+  provides ihello h;
+  requires ihello w;
+
+  behaviour
+  {
+    int g = $123$;
+    bool busy = false;
+    [!busy] blocking on h.hello(n <- g): { n = g; w.hello(n); busy = true; }
+    [busy] on w.world(): { h.reply(); busy = false; }
+  }
+}
