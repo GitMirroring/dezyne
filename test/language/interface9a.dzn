@@ -5,5 +5,4 @@ interface I
 
  behaviour
  {
-   on foo: bar;
    on

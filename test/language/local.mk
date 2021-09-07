@@ -28,6 +28,7 @@ EXTRA_DIST +=					\
  %D%/component2.dzn				\
  %D%/component2a.dzn				\
  %D%/component2b.dzn				\
+ %D%/component2c.dzn				\
  %D%/component3.dzn				\
  %D%/component3a.dzn				\
  %D%/component4.dzn				\
@@ -65,7 +66,10 @@ EXTRA_DIST +=					\
  %D%/interface8a.dzn				\
  %D%/interface8b.dzn				\
  %D%/interface9.dzn				\
+ %D%/interface9a.dzn				\
  %D%/interface9b.dzn				\
+ %D%/interface9c.dzn				\
+ %D%/interface9d.dzn				\
  %D%/interface10.dzn				\
  %D%/interface10a.dzn				\
  %D%/interface11.dzn				\

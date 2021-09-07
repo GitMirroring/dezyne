@@ -154,9 +154,21 @@
   '("foo")
   (test-complete #:file-name "interface9.dzn"))
 
+(test-equal "language interface9a"
+  '("foo" "bar")
+  (test-complete #:file-name "interface9a.dzn"))
+
 (test-equal "language interface9b"
   '("foo" "bar")
   (test-complete #:file-name "interface9b.dzn"))
+
+(test-equal "language interface9c"
+  '("foo" "bar")
+  (test-complete #:file-name "interface9c.dzn" #:line 10))
+
+(test-equal "language interface9d"
+  '("foo" "bar")
+  (test-complete #:file-name "interface9d.dzn" #:line 10))
 
 (test-equal "language interface10"
   '("b" "e" "false" "true")
@@ -221,6 +233,10 @@
 (test-equal "language component2b"
   '("on")
   (test-complete #:file-name "component2b.dzn"))
+
+(test-equal "language component2c"
+  '("on")
+  (test-complete #:file-name "component2c.dzn" #:line 20))
 
 (test-equal "language component3"
   '("p.e()" "r.f()")

@@ -7,3 +7,7 @@ interface I
  {
    on foo: bar;
    on
+
+   on foo: bar;
+  }
+}
