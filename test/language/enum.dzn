@@ -7,5 +7,13 @@ interface ihello
   behaviour {
     Bool e = Bool.True;
     [e.True] on hello: world;
+    Tri_bool t = Tri_bool.Whatever;
   }
 }
+
+enum Tri_bool
+{
+  False,   /* #true */
+  True,    /* #false */
+  Whatever /* #unspecified */
+};

@@ -343,6 +343,10 @@
   '("e.False" "e.True")
   (test-complete #:file-name "enum.dzn" #:line 9 #:column 7))
 
+(test-equal "completion enum-literal with comment"
+  '("Tri_bool.False" "Tri_bool.True" "Tri_bool.Whatever")
+  (test-complete #:file-name "enum.dzn" #:line 10 #:column 17))
+
 (test-equal "completion provides imported interfaces"
   '("ihello" "ihello_enum" "ihello_int")
   (test-complete #:file-name "import.dzn" #:line 8 #:column 10
@@ -450,6 +454,10 @@
 (test-equal "lookup field-test->enum-field"
   "enum.dzn:1:17"
   (test-lookup #:file-name "enum.dzn" #:line 9 #:column 7))
+
+(test-equal "lookup enum-literal->field with comment"
+  "enum.dzn:18:2"
+  (test-lookup #:file-name "enum.dzn" #:line 10 #:column 26))
 
 (test-equal "lookup variable-type->interface enum"
   "interface-enum.dzn:3:7"
