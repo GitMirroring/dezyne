@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -107,26 +107,26 @@ function blocking_binding_fill_event_map(m)
   c._dzn.flushes = dzn.flush;
 
   var e = {
-    'p.e': function () {var v = {value:0}; m.p.in.e(v); assert(v.value == 456);},
-    'r.cb': function () {m.r.out.cb();},
+    'h.hello': function () {var v = {value:0}; m.p.in.e(v); assert(v.value == 456);},
+    'w.world': function () {m.r.out.world();},
   };
   if (dzn.flush) {
     m.p._dzn.meta.requires.component = c;
-    m.p._dzn.meta.requires.name = '<external>.p';
+    m.p._dzn.meta.requires.name = '<external>.h';
   }
 
   if (dzn.flush) {
     m.r._dzn.meta.provides.component = c;
-    m.r._dzn.meta.provides.name = '<external>.r';
+    m.r._dzn.meta.provides.name = '<external>.w';
   }
-  e['r.<flush>'] = function() {console.error('r.<flush>'); m._dzn.rt.flush(m.r._dzn.meta.provides.component);};
+  e['w.<flush>'] = function() {console.error('w.<flush>'); m._dzn.rt.flush(m.r._dzn.meta.provides.component);};
 
-  m.r.in.e = function() {log_in('r.', 'e', e);};
+  m.r.in.e = function() {log_in('w.', 'hello', e);};
 
-  m.p._dzn.meta.provides.name = "p";
-  m.p._dzn.meta.requires.name = "p";
-  m.r._dzn.meta.provides.name = "r";
-  m.r._dzn.meta.requires.name = "r";
+  m.p._dzn.meta.provides.name = "h";
+  m.p._dzn.meta.requires.name = "h";
+  m.r._dzn.meta.provides.name = "w";
+  m.r._dzn.meta.requires.name = "w";
 
   return e;
 }

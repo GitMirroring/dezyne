@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -33,10 +33,10 @@ void to_void(std::string){}
 void
 connect_ports (dzn::container<blocking_binding, std::function<void()> >& c)
 {
-  c.system.r.in.e = [&] () {
-    dzn::trace(std::clog, c.system.r.meta, "e");
-    c.match("r.e"); std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
+  c.system.w.in.hello = [&] () {
+    dzn::trace(std::clog, c.system.w.meta, "hello");
+    c.match("w.hello"); std::string tmp = c.match_return();
+    dzn::trace_out(std::clog, c.system.w.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     return to_void(tmp.substr(tmp.rfind('.')+1));
   };
 }
@@ -45,20 +45,20 @@ connect_ports (dzn::container<blocking_binding, std::function<void()> >& c)
 std::map<std::string, std::function<void()> >
 event_map (dzn::container<blocking_binding, std::function<void()> >& c)
 {
-  c.system.p.meta.require.port = "p";
+  c.system.h.meta.require.port = "h";
 
-  c.system.r.meta.provide.address = &c;
-  c.system.r.meta.provide.meta = &c.meta;
-  c.system.r.meta.provide.port = "r";
+  c.system.w.meta.provide.address = &c;
+  c.system.w.meta.provide.meta = &c.meta;
+  c.system.w.meta.provide.port = "w";
 
 
   return {
-    {"p.e",[&]{int _0 = 0; c.system.p.in.e(_0);
+    {"h.hello",[&]{int _0 = 0; c.system.h.in.hello(_0);
         assert(_0 == 456);
-        c.match("p.return");}}
-    ,{"r.cb",[&]{c.system.r.out.cb();
+        c.match("h.return");}}
+    ,{"w.world",[&]{c.system.w.out.world();
       }}
-    ,{"r.<flush>",[&]{std::clog << "r.<flush>" << std::endl; c.dzn_rt.flush(&c);}}
+    ,{"w.<flush>",[&]{std::clog << "w.<flush>" << std::endl; c.dzn_rt.flush(&c);}}
   };
 }
 
@@ -69,5 +69,5 @@ main(int argc, char* argv[])
   dzn::container<blocking_binding, std::function<void()> > c(argc > 1 && argv[1] == std::string("--flush"));
 
   connect_ports (c);
-  c(event_map (c), {"r"});
+  c(event_map (c), {"w"});
 }

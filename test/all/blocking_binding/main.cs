@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -31,32 +31,32 @@ class main {
 
   static void connect_ports (dzn.container<blocking_binding> c)
   {
-    c.system.r.inport.e = () => {
-      dzn.Runtime.traceIn(c.system.r.dzn_meta, "e"); //System.Console.Error.WriteLine("");
-      c.match("r.e"); String tmp = c.match_return();
-      dzn.Runtime.traceOut(c.system.r.dzn_meta, tmp.Split('.')[1]); //System.Console.Error.WriteLine("");
+    c.system.w.inport.hello = () => {
+      dzn.Runtime.traceIn(c.system.w.dzn_meta, "hello"); //System.Console.Error.WriteLine("");
+      c.match("w.hello"); String tmp = c.match_return();
+      dzn.Runtime.traceOut(c.system.w.dzn_meta, tmp.Split('.')[1]); //System.Console.Error.WriteLine("");
       return;
     };
   }
 
   static Dictionary<String, Action> event_map (dzn.container<blocking_binding> c)
   {
-    c.system.p.dzn_meta.requires.name = "p";
+    c.system.h.dzn_meta.requires.name = "h";
 
-    c.system.r.dzn_meta.provides.component = c;
-    c.system.r.dzn_meta.provides.meta = c.dzn_meta;
-    c.system.r.dzn_meta.provides.name = "r";
+    c.system.w.dzn_meta.provides.component = c;
+    c.system.w.dzn_meta.provides.meta = c.dzn_meta;
+    c.system.w.dzn_meta.provides.name = "w";
 
 
 
     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
-    lookup.Add("p.e",()=>{int _0 = 0;
-                          c.system.p.inport.e(ref _0);
-                          Debug.Assert(_0 == 456);
-                          c.match("p.return");});
-    lookup.Add("r.cb",()=>{c.system.r.outport.cb();
+    lookup.Add("h.hello",()=>{int _0 = 0;
+      c.system.h.inport.hello(ref _0);
+      Debug.Assert(_0 == 456);
+      c.match("h.return");});
+    lookup.Add("w.world",()=>{c.system.w.outport.world();
     });
-    lookup.Add("r.<flush>",()=>{System.Console.Error.WriteLine("r.<flush>"); c.system.dzn_runtime.flush(c.system);});
+    lookup.Add("w.<flush>",()=>{System.Console.Error.WriteLine("w.<flush>"); c.system.dzn_runtime.flush(c.system);});
     return lookup;
   }
 
@@ -69,7 +69,7 @@ class main {
 
     using(dzn.container<blocking_binding> c = new dzn.container<blocking_binding>((loc,name)=>{return new blocking_binding(loc,name);}, Array.Exists(args, s => s == "--flush"))) {
       connect_ports (c);
-      c.run(event_map (c), new List<String> {"r"});
+      c.run(event_map (c), new List<String> {"w"});
     }
   }
 }
