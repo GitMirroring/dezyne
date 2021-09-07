@@ -253,7 +253,7 @@ procedure)."
 
 (define (.name o) ;; XXX FIXME: access NAME field (a string, a 'name, or 'compound-name)
   (match o
-    (('name (? string? name) (? (is? 'location)))
+    (('name (? string? name) rest ...)
      name)
     ((or (? (is? tree:model?))
          (? (is? 'enum))
@@ -718,7 +718,6 @@ procedure)."
   "Return name of O as a string, scopes separated by dots."
   (match o
     ((? (is? 'name)) (.name o))
-
     ((? (is? 'compound-name)) (string-join (filter-map tree:dotted-name `(,@(.scope o) ,(.name o))) "."))
     ((? (is? 'event-name)) (tree:dotted-name (.name o)))
     ((? (is? 'port)) (tree:dotted-name (.name o)))
@@ -784,8 +783,8 @@ procedure)."
 
 (define (tree:id* o)
   (match o
-    (('name (? string? name) (? (is? 'location) location))
-     (list name))
+    ((? (is? 'name))
+     (list (.name o)))
     (('scope (? (is? 'name) name) ... (? (is? 'location) location))
      (append-map tree:id* name))
     ((? (is? 'compound-name))
