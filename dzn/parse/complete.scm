@@ -396,10 +396,14 @@
             (complete:boolean-expressions context))))
     (('triggers (? (disjoin incomplete? tree:location?)) ...)
      (context:trigger-names context))
+    (('triggers rest ...)
+     (context:trigger-names context))
     ((? (is? 'trigger))
      (context:trigger-names context))
     (('on (? (is? 'triggers)) (? tree:location?))
      (context:action-names context))
+    (('on (? (is? 'triggers)) rest ...)
+     (context:trigger-names context))
     ((and (? (is? 'variable)) (? incomplete?))
      (let* ((type-name (.type-name o))
             (type (false-if-exception (tree:lookup type-name context)))
@@ -438,14 +442,21 @@
     ((? (is? 'action))
      (context:action-names context))
 
+    ((? (is? 'comment))
+     (context:complete (parent context tree?)
+                       (parent-context context tree?) offset))
+
     ((or 'BRACE-CLOSE
          'BRACE-OPEN
          (? symbol?))
      '())
     (_
-     (if (complete? o) '()
-         (or (and=> (find incomplete? (cdr o)) (cute context:complete <> context offset))
-             (context:complete (before-location? o offset) context offset))))))
+     (if (and (complete? o)
+              (not (is-a? o 'comment))) '()
+              (or (and (pair? o)
+                       (and=> (find incomplete? (cdr o))
+                              (cute context:complete <> context offset)))
+                  (context:complete (before-location? o offset) context offset))))))
 
 ;; TODO: rewrite above as:
 ;; (define (context:complete o context offset)
