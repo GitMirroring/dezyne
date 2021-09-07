@@ -296,6 +296,8 @@ procedure)."
     (((or 'action 'interface-action 'illegal-trigger 'trigger)
       (? (is? 'name) event) rest ...) #f)
     ((? (is? 'end-point)) (.port-name (slot o 'compound-name)))
+    ((? (is? 'reply))
+     (slot o 'name))
     (('compound-name (? (is? 'scope) instance) (? (is? 'name) port) rest ...) port)
     (('compound-name (? (is? 'name) port) rest ...) port)))
 
