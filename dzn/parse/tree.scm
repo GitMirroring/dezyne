@@ -101,6 +101,7 @@
             tree:provides?
             tree:requires?
             tree:scope?
+            tree:statement?
             tree:system?
             tree:type?
 
