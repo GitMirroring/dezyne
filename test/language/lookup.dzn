@@ -49,7 +49,7 @@ component hello_bool
   {
     bool b = true;
     on p2.hello(): {b = r2.hello();}
-    [!b] on r2.world(): {b=!b; p2.world();}
+    [!b] on r2.world(): {b=!b; p2.world(); bool tmp = b;}
   }
 }
 

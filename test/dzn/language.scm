@@ -387,6 +387,10 @@
   "lookup.dzn:33:9"
   (test-lookup #:file-name "lookup.dzn" #:line 34 #:column 4))
 
+(test-equal "lookup variable-expression->variable"
+  "lookup.dzn:50:9"
+  (test-lookup #:file-name "lookup.dzn" #:line 52 #:column 54))
+
 (test-equal "lookup enum-literal->type"
   "lookup.dzn:33:9"
   (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 28))
