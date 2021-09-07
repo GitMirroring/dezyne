@@ -107,21 +107,22 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-pattern is-port body -is-port-)
 
 
-  (define variable-stack '(()))
+  (define variable-stack '())
 
   (define (-enter-frame- str len pos)
-    (set! variable-stack (cons (car variable-stack) variable-stack))
+    (set! variable-stack (cons (if (null? variable-stack) '() (car variable-stack))
+                               variable-stack))
     (list pos '()))
   (define-skip-parser enter-frame none -enter-frame-)
 
   (define (-exit-frame- str len pos)
-    (set! variable-stack (or (and (pair? variable-stack) (cdr variable-stack)) '()))
+    (set! variable-stack (if (null? variable-stack) '()  (cdr variable-stack)))
     (list pos '()))
   (define-skip-parser exit-frame none -exit-frame-)
 
   (define (-add-var- str len pos)
     (let ((res (name str len pos))
-          (top (car variable-stack))
+          (top (if (null? variable-stack) '() (car variable-stack)))
           (bottom (cdr variable-stack)))
       (when res
         (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom)))
@@ -130,8 +131,8 @@ SKIP < !IMPORT . 'import'*")
 
   (define (-var- str len pos)
     (let* ((res (name str len pos))
-           (top (car variable-stack))
-           (var-name (and res (substring str pos (car res)))))
+           (var-name (and res (substring str pos (car res))))
+           (top (if (null? variable-stack) '() (car variable-stack))))
       (and var-name
            (find (cut equal? var-name <>) top)
            res)))
