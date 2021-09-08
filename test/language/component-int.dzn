@@ -1,0 +1,39 @@
+subint sint {0..1};
+
+interface ihello
+{
+  in sint hello();
+  out void world();
+
+  behaviour
+  {
+    sint m = 1;
+
+    [m.1] on hello:
+    {
+      sint b = 0;
+      reply (b);
+    }
+  }
+}
+
+component hello
+{
+  provides ihello p;
+
+  behaviour
+  {
+    sint m = 1;
+
+    sint fun (sint b)
+    {
+      return b;
+    }
+
+    on p.hello ():
+    {
+      sint b = 1;
+      reply (b);
+    }
+  }
+}

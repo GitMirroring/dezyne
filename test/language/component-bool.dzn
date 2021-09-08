@@ -1,0 +1,39 @@
+// keep line numbers same as component-enum.dzn
+
+interface ihello
+{
+  in bool hello();
+  out void world();
+
+  behaviour
+  {
+    bool m = true;
+
+    [m.true] on hello:
+    {
+      bool b = false;
+      reply (b);
+    }
+  }
+}
+
+component hello
+{
+  provides ihello p;
+
+  behaviour
+  {
+    bool m = true;
+
+    bool fun (bool b)
+    {
+      return b;
+    }
+
+    on p.hello ():
+    {
+      bool b = true;
+      reply (b);
+    }
+  }
+}

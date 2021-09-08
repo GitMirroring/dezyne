@@ -343,6 +343,38 @@
   '("b" "m" "fun(_)" "Bool.False" "Bool.True")
   (test-complete #:file-name "component-enum.dzn" #:line 30 #:column 13))
 
+(test-equal "completion bool literal"
+  '("false" "true")
+  (test-complete #:file-name "component-bool.dzn" #:line 10 #:column 13))
+
+(test-equal "completion bool local"
+  '("m" "fun(_)" "false" "true")
+  (test-complete #:file-name "component-bool.dzn" #:line 35 #:column 15))
+
+(test-equal "completion bool reply"
+  '("b" "m" "fun(_)" "false" "true")
+  (test-complete #:file-name "component-bool.dzn" #:line 36 #:column 13))
+
+(test-equal "completion bool formal"
+  '("b" "m" "fun(_)" "false" "true")
+  (test-complete #:file-name "component-bool.dzn" #:line 30 #:column 13))
+
+(test-equal "completion int literal"
+  '()
+  (test-complete #:file-name "component-int.dzn" #:line 10 #:column 13))
+
+(test-equal "completion int local"
+  '("m" "fun(_)")
+  (test-complete #:file-name "component-int.dzn" #:line 35 #:column 15))
+
+(test-equal "completion int reply"
+  '("b" "m" "fun(_)")
+  (test-complete #:file-name "component-int.dzn" #:line 36 #:column 13))
+
+(test-equal "completion int formal"
+  '("b" "m" "fun(_)")
+  (test-complete #:file-name "component-int.dzn" #:line 30 #:column 13))
+
 (test-equal "completion field-test field"
   '("e.False" "e.True")
   (test-complete #:file-name "enum.dzn" #:line 9 #:column 7))
@@ -446,6 +478,14 @@
 (test-equal "lookup enum var->formal"
   "component-enum.dzn:28:19"
   (test-lookup #:file-name "component-enum.dzn" #:line 30 #:column 13))
+
+(test-equal "lookup bool var->formal"
+  "component-bool.dzn:28:19"
+  (test-lookup #:file-name "component-bool.dzn" #:line 30 #:column 13))
+
+(test-equal "lookup int var->formal"
+  "component-int.dzn:28:19"
+  (test-lookup #:file-name "component-int.dzn" #:line 30 #:column 13))
 
 (test-equal "lookup variable->enum-type"
   "lookup.dzn:33:9"

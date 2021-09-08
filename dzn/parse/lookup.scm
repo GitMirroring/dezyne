@@ -107,9 +107,13 @@ null) and return its CONTEXT."
            (search-or-widen-context scope name context))))))
 
 (define (tree:lookup name context)
-  (let ((scope (if (tree:scope? (.tree context)) context
-                   (parent-context context tree:scope?))))
-    (and=> (tree:context? (context:lookup name context)) .tree)))
+  (cond
+   ((tree:name-equal? (.name name) (.name tree:bool))
+    tree:bool)
+   (else
+    (let ((scope (if (tree:scope? (.tree context)) context
+                     (parent-context context tree:scope?))))
+      (and=> (tree:context? (context:lookup name context)) .tree)))))
 
 (define (tree:lookup-var name context)
   (define (helper name o)

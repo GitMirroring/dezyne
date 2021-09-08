@@ -90,6 +90,9 @@
 
             tree->context
 
+            tree:bool
+            tree:void
+
             tree:context?
             tree:declaration?
             tree:foreign?
@@ -263,13 +266,15 @@ procedure)."
          (? (is? 'component))
          (? (is? 'interface)))
      (slot o 'compound-name))
-    ((or (? (is? 'call))
+    ((or (? (is? 'bool))
+         (? (is? 'call))
          (? (is? 'compound-name))
          (? (is? 'event-name))
          (? (is? 'port))
          (? (is? 'interface))
          (? (is? 'var))
-         (? (is? 'variable)))
+         (? (is? 'variable))
+         (? (is? 'void)))
      (slot o 'name))
     ((? (is? 'event))
      (.name (slot o 'event-name)))
@@ -352,7 +357,7 @@ procedure)."
     ((? (is? 'trigger)) (slot o 'trigger-formals))))
 
 (define (.type-name o)
-  (assert-type o 'enum-literal 'event 'formal 'function 'port 'variable)
+  (assert-type o 'compound-name 'enum-literal 'event 'formal 'function 'port 'variable)
   (match o
     ((? (is? 'port))   ;; Hmm: .compound-name??
      (slot o 'compound-name))
@@ -368,17 +373,21 @@ procedure)."
              name     (tree:scope+name names))
             (location (.location type)))
        (if (null? scope) `(compound-name ,name ,location)
-           `(compound-name (scope ,@scope ,location) ,name ,location))))))
+           `(compound-name (scope ,@scope ,location) ,name ,location))))
+    ((? (is? 'compound-name))
+     (.name o))))
 
 (define (.types-and-events o)
   (match o
     ((? (is? 'interface)) (slot o 'types-and-events))))
 
 (define (.value o)
-  (assert-type o 'expression)
+  (assert-type o 'expression 'literal)
   (match o
     (('expression (? (is? 'location))) #f)
-    (('expression expression (? (is? 'location))) expression)))
+    (('expression expression (? (is? 'location))) expression)
+    (('literal (? (is? 'location))) #f)
+    (('literal literal (? (is? 'location))) literal)))
 
 (define (.var o)
   (assert-type o 'field-test)
@@ -388,6 +397,9 @@ procedure)."
 ;;;
 ;;; Parse tree predicates.
 ;;;
+
+(define tree:bool '(bool (name "bool")))
+(define tree:void '(void (name "void")))
 
 (define tree:declarative
   '(blocking
@@ -575,8 +587,12 @@ procedure)."
 
 (define (tree:type? o)
   (match o
-    (((? symbol? type) slot ...)
-     (memq type tree:type))
+    ((? (is? 'enum)) o)
+    ((? (is? 'int)) o)
+    ((or "true" "false") tree:bool)
+    ((and (? string?) (? string->number)) '(int))
+    ((? (is? 'enum-literal)) '(enum))
+    ((? (is? 'literal)) (tree:type? (.value o)))
     (_ #f)))
 
 (define (tree:location? o)
