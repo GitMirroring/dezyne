@@ -1,0 +1,21 @@
+interface ihello
+{
+  in void hello();
+
+  behaviour
+  {
+    on hello: {}
+  }
+}
+
+component hello
+{
+  provides  ;
+  requires  ;
+  requires external  ;
+  requires injected  ;
+  requires external injected  ;
+  requires injected external  ;
+
+  behaviour {}
+}

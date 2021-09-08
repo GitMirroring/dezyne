@@ -69,6 +69,7 @@
             .namespace-root
             .parent
             .port-name
+            .port-qualifiers
             .ports
             .pos
             .range
@@ -101,6 +102,7 @@
             tree:model?
             tree:name-equal?
             tree:out?
+            tree:port-qualifier?
             tree:provides?
             tree:requires?
             tree:scope?
@@ -128,6 +130,7 @@
             tree:interface*
             tree:model*
             tree:port*
+            tree:port-qualifier*
             tree:trigger*
             tree:type*
             tree:statement*
@@ -319,6 +322,10 @@ procedure)."
 (define (.function-name o)
   (match o
     ((? (is? 'call)) (.name o))))
+
+(define (.port-qualifiers o)
+  (match o
+    ((? (is? 'port)) (slot o 'port-qualifiers))))
 
 (define (.ports o)
   (match o
@@ -621,6 +628,10 @@ procedure)."
     ((? (is? 'direction)) (equal? (.direction o) "out"))
     ((? (is? 'event)) (tree:out? (.direction o)))))
 
+(define (tree:port-qualifier? o)
+  (or (is-a? o 'external)
+      (is-a? o 'injected)))
+
 (define (tree:provides? o)
   (match o
     ((? (is? 'port)) (slot o 'provides))))
@@ -826,6 +837,13 @@ procedure)."
   (match o
     ((? (is? 'port)) (list o))
     ((? pair?) (append-map tree:port* o))
+    (_ '())))
+
+(define (tree:port-qualifier* o)
+  (match o
+    ((? (is? 'port)) (tree:port-qualifier* (.port-qualifiers o)))
+    ((? (is? 'port-qualifiers))  (slots o tree:port-qualifier?))
+    ((? (or (is? 'external) (is? 'injected))) (list o))
     (_ '())))
 
 (define* (tree:top* o #:key (imports '()) (seen '()))

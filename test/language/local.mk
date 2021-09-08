@@ -52,6 +52,7 @@ EXTRA_DIST +=					\
  %D%/component-int.dzn				\
  %D%/component-on.dzn				\
  %D%/component-provides.dzn			\
+ %D%/component-requires.dzn			\
  %D%/component-state.dzn			\
  %D%/interface-I-enum-in.dzn			\
  %D%/interface-I-in.dzn				\

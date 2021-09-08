@@ -290,6 +290,30 @@
   '("i.a0()" "i.a1()")
   (test-complete #:file-name "component10a.dzn" #:offset 188))
 
+(test-equal "completion component-requires provides"
+  '( "ihello")
+  (test-complete #:file-name "component-requires.dzn" #:line 13 #:column 11))
+
+(test-equal "completion component-requires requires"
+  '("external" "injected" "ihello")
+  (test-complete #:file-name "component-requires.dzn" #:line 14 #:column 11))
+
+(test-equal "completion component-requires external"
+  '("injected" "ihello")
+  (test-complete #:file-name "component-requires.dzn" #:line 15 #:column 20))
+
+(test-equal "completion component-requires injected"
+  '("external" "ihello")
+  (test-complete #:file-name "component-requires.dzn" #:line 16 #:column 20))
+
+(test-equal "completion component-requires external injected"
+  '("ihello")
+  (test-complete #:file-name "component-requires.dzn" #:line 17 #:column 29))
+
+(test-equal "completion component-requires injected external"
+  '("ihello")
+  (test-complete #:file-name "component-requires.dzn" #:line 18 #:column 29))
+
 (test-equal "completion component-empty"
   '("behaviour" "provides" "requires" "system")
   (test-complete #:file-name "component-empty.dzn" #:line 13))
@@ -396,7 +420,7 @@
   (test-complete #:file-name "enum.dzn" #:line 10 #:column 17))
 
 (test-equal "completion provides imported interfaces"
-  '("ihello" "ihello_enum" "ihello_int")
+  '("external" "injected" "ihello" "ihello_enum" "ihello_int")
   (test-complete #:file-name "import.dzn" #:line 8 #:column 10
                  #:file-name->parse-tree file-name->parse-tree))
 
