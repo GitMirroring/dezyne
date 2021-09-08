@@ -318,18 +318,33 @@
   '("behaviour" "provides" "requires" "system")
   (test-complete #:file-name "component-empty.dzn" #:line 13))
 
-(test-equal "completion component-provides"
+(test-equal "completion component-provides before"
   '("behaviour" "provides" "requires" "system")
-  (test-complete #:file-name "component-provides.dzn" #:line 15))
+  (test-complete #:file-name "component-provides.dzn" #:line 13))
 
-(test-equal "completion component-provides"
+(test-equal "completion component-provides inside"
   '("IHello")
-  ;; ?? "after provides"
-  (test-complete #:file-name "component-provides.dzn" #:line 13 #:column 10))
+  (test-complete #:file-name "component-provides.dzn" #:line 14 #:column 10))
 
-(test-equal "completion component-behaviour"
+(test-equal "completion component-provides after"
+  '("behaviour" "provides" "requires" "system")
+  (test-complete #:file-name "component-provides.dzn" #:line 16))
+
+(test-equal "completion component-behaviour before"
   '("provides" "requires")
-  (test-complete #:file-name "component-behaviour.dzn" #:line 14))
+  (test-complete #:file-name "component-behaviour.dzn" #:line 13))
+
+(test-equal "completion component-behaviour after"
+  '("provides" "requires")
+  (test-complete #:file-name "component-behaviour.dzn" #:line 15))
+
+(test-equal "completion component-behaviour behaviour"
+  '("on")
+  (test-complete #:file-name "component-behaviour.dzn" #:line 19))
+
+(test-equal "completion component-behaviour end"
+  '("on")
+  (test-complete #:file-name "component-behaviour.dzn" #:line 21))
 
 (test-equal "completion component-state"
   '("State.Uninitialized" "State.Initialized" "State.Active" "State.Inactive")

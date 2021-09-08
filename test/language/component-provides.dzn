@@ -10,7 +10,7 @@ interface IHello
 
 component Hello
 {
-  provides IHello p;
 
+  provides IHello p;
 
 }

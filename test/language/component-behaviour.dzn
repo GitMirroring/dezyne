@@ -10,7 +10,14 @@ interface IHello
 
 component Hello
 {
-  provides IHello p;
 
-  behaviour {}
+  provides IHello h;
+
+  behaviour
+  {
+    on h.hello(): {}
+
+    on h.hello(): {}
+
+  }
 }
