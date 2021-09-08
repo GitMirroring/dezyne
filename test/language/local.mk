@@ -44,6 +44,7 @@ EXTRA_DIST +=					\
  %D%/component10a.dzn				\
  %D%/component-behaviour.dzn			\
  %D%/component-bool.dzn				\
+ %D%/component-data.dzn				\
  %D%/component-empty.dzn			\
  %D%/component-enum.dzn				\
  %D%/component-enum-local.dzn			\

@@ -299,6 +299,30 @@
         #:type-predicate (cute type-equal? <> type))
        (tree:type-value-names type))))))
 
+(define (complete-for-type type context)
+  (assert-type type 'bool 'enum 'extern 'int)
+  (append
+   (complete:variable-names type context)
+   (tree:function-names
+    (parent context 'behaviour)
+    #:type-predicate (cute type-equal? <> type))
+   (tree:type-value-names type)))
+
+(define (context:complete-for-type context)
+  (assert-type context tree:context?)
+  (let* ((tree (.tree context))
+         (type (cond
+                ((parent context 'variable)
+                 => (lambda (variable)
+                      (let ((type-name (.type-name variable)))
+                        (and type-name (tree:lookup type-name context)))))))
+         (name (and=> type .name)))
+    (cond
+     ((not type)
+      (complete:type-names context))
+     (else
+      (complete-for-type type context)))))
+
 (define (complete-function o context)
   (assert-type o 'function)
   (let* ((type-name (.type-name o))
@@ -403,6 +427,8 @@
                 (else '("on")))))))
     (('behaviour-statements x ...)
      '("on"))
+    ((? (is? 'dollars))
+     (filter-self context (context:complete-for-type context)))
     ((? (is? 'literal))
      (cond
       ((is-a? (tree:type? o) 'bool)
@@ -445,6 +471,14 @@
                    (enum (and type (tree:lookup type context))))
               (is-a? enum 'enum))
             => (cute tree:enum-field-tests <> (tree:name o)))
+           ((let* ((name (tree:name o))
+                   (variable (tree:lookup name context))
+                   (type (and (or (is-a? variable 'formal)
+                                  (is-a? variable 'variable)) (.type-name variable)))
+                   (type (tree:lookup type context)))
+             (tree:type? type))
+            => (lambda (type)
+                 (filter-self context (complete-for-type type context))))
            (else
             '())))
     (('field-test var name ...)
@@ -480,16 +514,24 @@
             (expression (and expression (.value expression))))
        (cond ((not type)
               (complete:type-names context))
-             ((or (not (is-a? type 'enum))
+             ((or (eq? type tree:bool)
                   (and (not (is-a? type 'enum))
                        (not expression)
-                       (not (parent context 'on))))
+                       (not (parent context 'on))
+                       (not (parent context 'function))))
               (filter-self context (tree:type-value-names type)))
              ((or (not expression) (incomplete? expression))
               (let ((name (tree:dotted-name o)))
                 (filter-self context (complete-enum type context))))
+             (type
+              (filter-self context (complete-for-type type context)))
              (else
               '()))))
+    ((and (? (is? 'variable)))
+     (let* ((type-name (.type-name o))
+            (type (false-if-exception (tree:lookup type-name context)))
+            (type (tree:lookup type-name context)))
+       (filter-self context (complete-for-type type context))))
     (('guard x ...)
      (cond ((incomplete? o) (context:complete (.expression o) (cons (.expression o) context) offset))
            ((not (parent context 'on)) '("on"))

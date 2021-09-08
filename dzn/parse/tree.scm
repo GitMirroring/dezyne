@@ -260,6 +260,7 @@ procedure)."
      name)
     ((or (? (is? tree:model?))
          (? (is? 'enum))
+         (? (is? 'extern))
          (? (is? 'int))
          (? (is? 'namespace))
          (? (is? 'type-name))
@@ -272,6 +273,7 @@ procedure)."
          (? (is? 'event-name))
          (? (is? 'port))
          (? (is? 'interface))
+         (? (is? 'trigger-formal))
          (? (is? 'var))
          (? (is? 'variable))
          (? (is? 'void)))
@@ -588,6 +590,7 @@ procedure)."
 (define (tree:type? o)
   (match o
     ((? (is? 'enum)) o)
+    ((? (is? 'extern)) o)
     ((? (is? 'int)) o)
     ((or "true" "false") tree:bool)
     ((and (? string?) (? string->number)) '(int))
@@ -904,6 +907,8 @@ procedure)."
     ((? (is? 'event)) (tree:formal* (slot o 'formals)))
     ((? (is? 'formals)) (slots o 'formal))
     ((? (is? 'function)) (tree:formal* (slot o 'formals)))
+    ((? (is? 'trigger)) (tree:formal* ( slot o 'trigger-formals)))
+    ((? (is? 'trigger-formals)) (slots o 'trigger-formal))
     (_ '())))
 
 (define (tree:trigger* o)

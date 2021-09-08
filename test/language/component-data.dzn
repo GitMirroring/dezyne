@@ -1,0 +1,40 @@
+extern data $int$;
+
+interface ihello
+{
+  in bool hello(data i);
+  out void world(data i);
+
+  behaviour
+  {
+    data m = $0$;
+
+    [true] on hello:
+    {
+      data b = $1$;
+      reply (false);
+    }
+  }
+}
+
+component hello
+{
+  provides ihello p;
+
+  behaviour
+  {
+    data m = $1$;
+
+    bool fun (data b) // return type data not allowed
+    {
+      data x=b; return true; // keep locations similar to component-enum.dzn
+    }
+
+    on p.hello (alpha):
+    {
+      data b = $1$;
+      b = alpha;
+      p.world(alpha);
+    }
+  }
+}
