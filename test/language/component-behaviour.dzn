@@ -12,5 +12,5 @@ component Hello
 {
   provides IHello p;
 
-
+  behaviour {}
 }
