@@ -491,14 +491,17 @@ livelock to deadlock.)"
   "Trace to non-deterministic state extended with non-det edge or #f
 if no non-deterministic states found. Only transitions with LABELS are
 required to be non-deterministic."
+  (define (edge-canonical-label edge)
+    (let ((label (edge-label edge)))
+      (if (string-prefix? "<state>" label) "<state>" label)))
   (define (nondet-edge-sets lts)
     "Sets of edges with identical start-state and label"
     (let* ((edges (lts-edges lts))
            (edges (sort edges (lambda (a b) (or (< (edge-start-state a) (edge-start-state b))
                                                 (and (= (edge-start-state a) (edge-start-state b))
-                                                     (string<? (edge-label a) (edge-label b)))))))
+                                                     (string<? (edge-canonical-label a) (edge-canonical-label b)))))))
            (equivalent-edge (lambda (a b) (and (= (edge-start-state a) (edge-start-state b))
-                                               (equal? (edge-label a) (edge-label b)))))
+                                               (equal? (edge-canonical-label a) (edge-canonical-label b)))))
            (nondet-edges (if (null? edges) '()
                              (fold (lambda (elem prev)
                                      (if (and (equivalent-edge (car (car prev)) elem))
@@ -508,13 +511,18 @@ required to be non-deterministic."
                                    (cdr edges)))))
       (filter (lambda (es) (> (length es) 1)) nondet-edges)))
   (let* ((witness-edge-sets (nondet-edge-sets lts))
-         (witness-edge-sets (map (lambda (wes) (filter (lambda (e) (member (edge-label e) labels)) wes)) witness-edge-sets))
+         (witness-edge-sets (map (lambda (wes) (filter (lambda (e) (member (edge-canonical-label e) labels)) wes)) witness-edge-sets))
          (witness-edge-sets (filter (negate null?) witness-edge-sets))
          (nondet-states (map (compose edge-start-state car) witness-edge-sets)))
     (if (null? nondet-states) #f
         (let* ((nodes (lts->nodes lts))
                (nondet-traces (map (cut trace nodes <>) nondet-states))
-               (witness-traces (map (lambda (trc wes) (append trc (list (car wes)))) nondet-traces witness-edge-sets)))
+               (witness-traces
+                 (map (lambda (trc wes)
+                   (append trc
+                     (if (equal? (edge-canonical-label (car wes)) "<state>") '()
+                         (list (car wes)))))
+                   nondet-traces witness-edge-sets)))
           (car witness-traces)))))
 
 (define (assert-deterministic lts)
