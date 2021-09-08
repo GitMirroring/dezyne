@@ -442,17 +442,27 @@ livelock to deadlock.)"
                                     new-node))
                       (vector->list nodes)))))
 
+(define (remove-state-edges nodes)
+  (define (state-edge? edge)
+    (string-prefix? "<state>" (edge-label edge)))
+  (list->vector (map (lambda (n) (let ((new-node (clone-node n)))
+                                   (set-node-succ! new-node (filter (negate state-edge?) (node-succ n)))
+                                   new-node))
+                      (vector->list nodes))))
+
 (define (deadlock-nodes nodes)
   "States without outgoing edges"
-  (define (has-deadlock? state)
-      (null? (filter (lambda (e) ((negate node-color) (vector-ref nodes (edge-end-state e)))) (node-succ (vector-ref nodes state)))))
-  (begin
+  (let* ((nodes (remove-state-edges nodes)))
+    (define (has-deadlock? state)
+      (null? (filter
+              (lambda (e) ((negate node-color) (vector-ref nodes (edge-end-state e))))
+              (node-succ (vector-ref nodes state)))))
     (annotate-exclude nodes (list "<declarative-illegal>"))
     (filter has-deadlock?
-     (filter (compose not node-color (cut vector-ref nodes <>))
-      (sort (iota (vector-length nodes))
-            (lambda (a b) (< (node-distance (vector-ref nodes a))
-                             (node-distance (vector-ref nodes b)))))))))
+            (filter (compose not node-color (cut vector-ref nodes <>))
+                    (sort (iota (vector-length nodes))
+                          (lambda (a b) (< (node-distance (vector-ref nodes a))
+                                           (node-distance (vector-ref nodes b)))))))))
 
 (define (assert-deadlock nodes)
   "Trace to node without outgoing edges or #f if no deadlock found"
@@ -773,6 +783,7 @@ required to be non-deterministic."
     (let* ((lts (aut-text->lts (string-join data "\n")))
            (lts (remove-edges-to-illegal (add-illegal-state lts)))
            (nodes (lts->nodes lts #t))
+           (nodes (remove-state-edges nodes))
            (root (car (lts-state lts))))
       (generate-trace root nodes provides-in (string-append model ".trace") out))))
 
@@ -783,7 +794,7 @@ required to be non-deterministic."
 
 (define (parse-label label)
   (define-peg-string-patterns
-    "tree               <-- event / modeling / reply / return / queue / tau-literal / illegal / error / end / flush / parse-error
+    "tree               <-- event / modeling / reply / state / return / queue / tau-literal / illegal / error / end / flush / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
@@ -792,8 +803,12 @@ required to be non-deterministic."
      return             <-- 'return'
      flush              <-- port-scope* identifier tick 'flush'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
+     state              <-- port-name tick state-literal state-arguments
+     state-literal      <   'state'
+     state-arguments    <-  (lpar state-argument (comma state-argument)* rpar)?
+     state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
-     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / 'queue_full' / 'flush')
+     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / state-literal / 'queue_full' / 'flush')
      port-name          <-  port-scope* identifier
      event-name         <-  identifier
      reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
@@ -824,6 +839,7 @@ required to be non-deterministic."
      tick               <   [']
      lpar               <   [(]
      rpar               <   [)]
+     comma              <   [,][ ]*
      identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ / !direction [a-zA-Z_][a-zA-Z0-9_]*")
   (let* ((match (match-pattern tree label))
          (end (peg:end match))
@@ -843,6 +859,9 @@ required to be non-deterministic."
   (string-append "<" (string-map (lambda (c) (if (eq? c #\_) #\- c)) e) ">"))
 
 (define* (cleanup-label label #:key internal? illegal?)
+  (define (helper-params parameters)
+    (let* ((parameters (if (pair? (car parameters)) parameters (list parameters))))
+      (string-join (map helper parameters) ",")))
   (define (helper tree)
     (match tree
       (('parse-error parse-error) (format (current-error-port) "parse error:~s\n" tree) parse-error)
@@ -859,6 +878,13 @@ required to be non-deterministic."
       (('reply ('identifier port) ('enum-literal scope ... ('identifier name) ('identifier field))) (string-append port "." name ":" field))
       (('reply ('identifier port) ('enum-literal (scope ... ('identifier name)) ('identifier field))) (string-append port "." name ":" field))
       (('return return) (and internal? "return"))
+      (('state ('identifier port) parameters) (string-append port ".<state>(" (helper-params parameters) ")"))
+      (('state ('identifier port)) (string-append port ".<state>"))
+      (('state-argument value) (helper value))
+      (('bool value) value)
+      (('int value) value)
+      (('enum-literal  scope ... ('identifier name)  ('identifier field)) (string-append name ":" field))
+      (('enum-literal (scope ... ('identifier name)) ('identifier field)) (string-append name ":" field))
       ((h) (helper h))
       (_ label)))
   (or (helper (parse-label label)) "tau"))
