@@ -90,11 +90,11 @@ EXTRA_DIST +=					\
  %D%/enum.dzn					\
  %D%/function.dzn				\
  %D%/global.space.dzn				\
- %D%/ienum.dzn       				\
+ %D%/ienum.dzn					\
  %D%/ihello.dzn					\
- %D%/ihello-enum.dzn 				\
- %D%/ihello-int.dzn  				\
- %D%/iint.dzn        				\
+ %D%/ihello-enum.dzn				\
+ %D%/ihello-int.dzn				\
+ %D%/iint.dzn					\
  %D%/ilookup.dzn				\
  %D%/illegal.dzn				\
  %D%/import.dzn					\
@@ -104,4 +104,5 @@ EXTRA_DIST +=					\
  %D%/namespace-enum.dzn				\
  %D%/space-hello.dzn				\
  %D%/space-ihello.dzn				\
- %D%/system.dzn
+ %D%/system.dzn					\
+ %D%/system-binding.dzn

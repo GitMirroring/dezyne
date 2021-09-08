@@ -367,6 +367,66 @@
                (complete:variable-names #f context))
         string<))
 
+(define (instance-ports instance)
+  (let ((component (.type instance)))
+    (context:port* component)))
+
+(define (instance-ports-alist context)
+  (let* ((system (.tree context))
+         (instances (tree:instance* system))
+         (instance-contexts (map (cute cons <> context) instances))
+         (instance-names (map tree:dotted-name instances)))
+    (map cons
+         instance-names
+         (map instance-ports instance-contexts))))
+
+(define (instance-binding entry)
+  (match entry
+    ((instance ports ...)
+     (map (cute string-append instance "." <>)
+          (map (compose tree:dotted-name .tree) ports)))))
+
+(define (complete-other-end-point o context)
+  (define (filter-alist alist port predicate)
+    (map
+     (match-lambda
+       ((instance ports ...)
+        (let* ((ports (filter
+                       (compose (cute tree:type-equal? <> (.tree port)) .tree)
+                       ports))
+               (ports (if (predicate (.tree port))
+                          (filter (compose tree:provides? .tree) ports)
+                          (filter (compose tree:requires? .tree) ports))))
+          (cons instance ports))))
+     alist))
+  (let ((port (.port (cons o context)))
+        (instance (.instance (cons o context)))
+        (system (parent-context context 'system)))
+    (cond
+     ((and port (not instance))
+      (let* ((alist (instance-ports-alist system))
+             (alist (filter-alist alist port tree:provides?))
+             (bindings (append-map instance-binding alist)))
+        (sort (delete-duplicates bindings) string<)))
+     (port
+      (let* ((component (parent context 'component))
+             (ports (tree:port* component))
+             (ports (filter (cute tree:type-equal? <> (.tree port)) ports))
+             (ports (if (tree:provides? (.tree port))
+                        (filter tree:provides? ports)
+                        (filter tree:requires? ports)))
+             (alist (instance-ports-alist system))
+             (alist (filter-alist alist port tree:requires?))
+             (instance-name (tree:dotted-name (.tree instance)))
+             (alist (filter
+                     (compose (negate (cute equal? <> instance-name)) car)
+                     alist))
+             (bindings (append (map tree:dotted-name ports)
+                               (append-map instance-binding alist))))
+        (sort (delete-duplicates bindings) string<)))
+     (else
+      '()))))
+
 (define (filter-self context list)
   (let* ((variable (or (is-a? (.tree context) 'formal)
                        (is-a? (.tree context) 'variable)
@@ -382,6 +442,19 @@
                                  (filter (negate (is? 'extern))
                                          (tree:type* context)))))
         string<))
+
+(define (system-top context)
+  (let* ((root (parent context 'root))
+         (component (parent context 'component))
+         (alist (instance-ports-alist context))
+         (bindings (append-map instance-binding alist)))
+
+    (sort (append
+           (delete-duplicates (map tree:dotted-name (tree:component* root)))
+           (delete-duplicates (map tree:dotted-name (tree:instance* (.tree context))))
+           (delete-duplicates (append bindings
+                                      (map tree:dotted-name (tree:port* component)))))
+          string<)))
 
 (define %completion-top
   '("component" "enum" "extern" "import" "interface" "namespace" "subint"))
@@ -416,6 +489,8 @@
                  (not (.system o)))
             %completion-component)
            ((after-location? (.behaviour o) offset)
+            '("provides" "requires"))
+           ((after-location? (.system o) offset)
             '("provides" "requires"))
            (else '())))
     ((or (? (is? 'port-qualifiers))
@@ -463,6 +538,27 @@
      (behaviour-top context))
     (('behaviour-compound x ...)
      (behaviour-top context))
+    ((? (is? 'system))
+     (system-top context))
+    ((? (is? 'instances-and-bindings))
+     (system-top context))
+    ((and (? (is? 'binding)) (? incomplete?))
+     (let ((left (.left o))
+           (right (.right o)))
+       (cond ((and left (not right))
+              (complete-other-end-point left context))
+             (else
+              '()))))
+    ((? (is? 'binding))
+     (let ((left (.left o))
+           (right (.right o)))
+       (cond ((and left (.port-name left)
+                   right (.port-name right)
+                   (not (.instance-name left))
+                   (not (.instance-name right)))
+              (complete-other-end-point left context))
+             (else
+              '()))))
     ((? (is? 'dollars))
      (filter-self context (context:complete-for-type context)))
     ((? (is? 'literal))

@@ -64,6 +64,8 @@
             .function-name
             .global
             .instance-name
+            .instances-and-bindings
+            .left
             .location
             .name
             .namespace-root
@@ -73,6 +75,7 @@
             .ports
             .pos
             .range
+            .right
             .scope
             .statement
             .system
@@ -84,6 +87,8 @@
             .var
 
             context:dotted-name
+            context:port*
+
 
             tree:component?
             tree:debug-context
@@ -108,6 +113,7 @@
             tree:statement?
             tree:system?
             tree:type?
+            tree:type-equal?
 
             context:collect
             tree:collect
@@ -127,6 +133,7 @@
             tree:event*
             tree:formal*
             tree:id*
+            tree:instance*
             tree:import*
             tree:int*
             tree:interface*
@@ -280,6 +287,7 @@ procedure)."
          (? (is? 'compound-name))
          (? (is? 'event-name))
          (? (is? 'port))
+         (? (is? 'instance))
          (? (is? 'interface))
          (? (is? 'trigger-formal))
          (? (is? 'var))
@@ -323,6 +331,20 @@ procedure)."
     ((? (is? 'end-point)) (.instance-name (slot o 'compound-name)))
     (('compound-name (? (is? 'scope) instance) (? (is? 'name) port) rest ...) instance)
     (('compound-name (? (is? 'name) port) rest ...) #f)))
+
+(define (.instances-and-bindings o)
+  (match o
+    ((? (is? 'system)) (slot o 'instances-and-bindings))))
+
+(define (.left o)
+  (match o
+    ((? (is? 'binding)) (slot o 'end-point))))
+
+(define (.right o)
+  (match o
+    ((? (is? 'binding)) (match (slots o 'end-point)
+                          (((? (is? 'end-point)) (and (? (is? 'end-point)) right)) right)
+                          (_ #f)))))
 
 (define (.function-name o)
   (match o
@@ -371,9 +393,11 @@ procedure)."
     ((? (is? 'trigger)) (slot o 'trigger-formals))))
 
 (define (.type-name o)
-  (assert-type o 'compound-name 'enum-literal 'event 'formal 'function 'port 'variable)
+  (assert-type o 'compound-name 'enum-literal 'event 'formal 'function 'instance 'port 'variable)
   (match o
-    ((? (is? 'port))   ;; Hmm: .compound-name??
+    ((? (is? 'port))    ;; Hmm: .compound-name??
+     (slot o 'compound-name))
+    ((? (is? 'instance))
      (slot o 'compound-name))
     ((or (? (is? 'event))
          (? (is? 'formal))
@@ -611,6 +635,9 @@ procedure)."
     ((? (is? 'literal)) (tree:type? (.value o)))
     (_ #f)))
 
+(define (tree:type-equal? a b)
+  (tree:name-equal? (.type-name a)  (.type-name b)))
+
 (define (tree:location? o)
   ((is? 'location) o))
 
@@ -773,6 +800,7 @@ procedure)."
     ((? (is? 'name)) (.name o))
     ((? (is? 'compound-name)) (string-join (filter-map tree:dotted-name `(,@(.scope o) ,(.name o))) "."))
     ((? (is? 'event-name)) (tree:dotted-name (.name o)))
+    ((? (is? 'instance)) (tree:dotted-name (.name o)))
     ((? (is? 'port)) (tree:dotted-name (.name o)))
     ((? (is? 'type-name)) #f)
     ((? pair?) (tree:dotted-name (find tree:dotted-name o)))
@@ -783,11 +811,6 @@ procedure)."
 
 (define (tree:file-name o)
   (and=> (.location o) .file-name))
-
-(define (tree:instance* o)
-  (match o
-    ((? (is? 'component)) (or (and=> (.system o) tree:instance*) '()))
-    ((? (is? 'system)) (slots o 'instance))))
 
 (define (tree:declaration* o)
   (match o
@@ -847,6 +870,12 @@ procedure)."
     ((? string?)
      (list o))))
 
+(define (tree:instance* o)
+  (match o
+    ((? (is? 'instances-and-bindings)) (slots o 'instance))
+    ((? (is? 'system)) (tree:instance* (.instances-and-bindings o)))
+    (_ '())))
+
 (define (tree:import* o)
   (match o
     ((? (is? 'root)) (slots o 'import))
@@ -856,6 +885,11 @@ procedure)."
   (match o
     ((? (is? 'port)) (list o))
     ((? pair?) (append-map tree:port* o))
+    (_ '())))
+
+(define (context:port* o)
+  (match (.tree o)
+    ((? (is? 'component)) (map (cute cons <> o) (tree:port* (.tree o))))
     (_ '())))
 
 (define (tree:port-qualifier* o)

@@ -38,6 +38,7 @@
   #:use-module (dzn parse util)
 
   #:export (.event
+            .instance
             .port
             .type
             context:lookup
@@ -174,17 +175,30 @@ null) and return its CONTEXT."
                (else
                 (search '() event-name (.parent context)))))))))
 
+(define (.instance context)
+  (let ((tree (.tree context)))
+    (match tree
+      ((? (is? 'end-point))
+       (and=> (.instance-name tree) (cute context:lookup <> (.parent context)))))))
+
 (define (.port context)
   (let ((tree (.tree context)))
     (match tree
       ((? (is? 'trigger))
        ;;<trigger> opens a new scope, so lookup the port name the parent scope
-       (and=> (.port-name tree) (cute context:lookup <> (.parent context)))))))
+       (and=> (.port-name tree) (cute context:lookup <> (.parent context))))
+      ((? (is? 'end-point))
+       (let* ((instance (.instance context))
+              (component (and=> instance .type)))
+         (if component
+             (and=> (.port-name tree) (cute context:lookup <> component))
+             (and=> (.port-name tree) (cute context:lookup <> (.parent context)))))))))
 
 (define (.type context)
   (let ((tree (.tree context)))
     (match tree
-      ((? (is? 'port)) (context:lookup (.type-name tree) context)))))
+      ((? (is? 'port)) (context:lookup (.type-name tree) context))
+      ((? (is? 'instance)) (context:lookup (.type-name tree) context)))))
 
 (define (resolve-action o name context)
   (resolve-trigger o name context))

@@ -473,6 +473,54 @@
   (test-complete #:file-name "space-hello.dzn" #:line 12 #:column 12
                  #:file-name->parse-tree file-name->parse-tree))
 
+(test-equal "completion system before ports"
+  '("provides" "requires")
+  (test-complete #:file-name "system.dzn" #:line 26))
+
+(test-equal "completion system between ports"
+  '("provides" "requires")
+  (test-complete #:file-name "system.dzn" #:line 28))
+
+(test-equal "completion system after ports"
+  '("provides" "requires")
+  (test-complete #:file-name "system.dzn" #:line 30))
+
+(test-equal "completion system before instance"
+  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "system_hello" "w")
+  (test-complete #:file-name "system.dzn" #:line 33))
+
+(test-equal "completion system after instance"
+  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "system_hello" "w")
+  (test-complete #:file-name "system.dzn" #:line 35))
+
+(test-equal "completion system after binding"
+  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "system_hello" "w")
+  (test-complete #:file-name "system.dzn" #:line 37))
+
+(test-equal "completion system binding port provides"
+  '("c.hh" "d.hh")
+  (test-complete #:file-name "system-binding.dzn" #:line 50 #:column 12))
+
+(test-equal "completion system binding port requires"
+  '("c.ww" "d.ww")
+  (test-complete #:file-name "system-binding.dzn" #:line 51 #:column 12))
+
+(test-equal "completion system binding instance provides"
+  '("d.ww" "h")
+  (test-complete #:file-name "system-binding.dzn" #:line 52 #:column 12))
+
+(test-equal "completion system binding instance requires"
+  '("d.hh" "w")
+  (test-complete #:file-name "system-binding.dzn" #:line 53 #:column 12))
+
+(test-equal "completion system end-point provides"
+  '("c.hh" "d.hh")
+  (test-complete #:file-name "system-binding.dzn" #:line 54 #:column 14))
+
+(test-equal "completion system end-point requires"
+  '("c.ww" "d.ww")
+  (test-complete #:file-name "system-binding.dzn" #:line 55 #:column 14))
+
 (test-end)
 
 (test-begin "lookup")

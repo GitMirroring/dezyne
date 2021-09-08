@@ -9,32 +9,49 @@ interface ihello
   }
 }
 
-component hello
+
+interface iworld
 {
-  provides ihello hh;
-  requires ihello ww;
+  in void hello ();
+  out void world ();
 
   behaviour
   {
-    on hh.hello (): ww.hello ();
-    on ww.world (): hh.world ();
+    on hello: world;
+  }
+}
+
+component hello
+{
+  provides ihello hh;
+  provides iworld hx;
+  requires ihello ww;
+  requires iworld wx;
+
+  behaviour
+  {
   }
 }
 
 component system_hello
 {
-
   provides ihello h;
-
+  provides iworld hx;
   requires ihello w;
+  requires iworld wx;
 
   system
     {
-
       hello c;
       hello d;
 
       h <=> c.hh;
 
+      h <=>  ;
+      w <=>  ;
+      c.hh <=>  ;
+      c.ww <=>  ;
+      h <=> c. ;
+      w <=> c. ;
     }
 }
