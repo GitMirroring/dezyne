@@ -1,6 +1,7 @@
 verify: ihello: check: deadlock: fail
 error: deadlock in model ihello
 verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
 verify: illegal_provides: check: deterministic: ok
 verify: illegal_provides: check: illegal: ok
 verify: illegal_provides: check: deadlock: fail

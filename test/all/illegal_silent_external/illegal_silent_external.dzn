@@ -44,22 +44,18 @@ component illegal_silent_external {
   requires external ihello w;
 
   behaviour {
-    bool canceled = false;
     bool triggered = false;
     [!triggered] on h.hello(): {
       w.hello();
       triggered = true;
     }
-    [!canceled] on h.cancel(): {
+    on h.cancel(): {
       w.cancel();
-      canceled = true;
-      if (triggered) triggered = false;
+      triggered = false;
     }
-    [canceled] on h.cancel(): {}
     [triggered] on w.world(): {
       h.world();
       triggered = false;
-      canceled = false;
     }
   }
 }

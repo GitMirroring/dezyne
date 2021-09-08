@@ -1,3 +1,4 @@
 verify: range_return: check: deadlock: fail
 error: integer range error in model range_return
 verify: range_return: check: livelock: ok
+verify: range_return: check: deterministic: ok

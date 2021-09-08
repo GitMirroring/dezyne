@@ -212,14 +212,19 @@
 (define in-out:lps->lpsconstelm
   '("lpsconstelm" "--quiet" "--remove-singleton-sorts" "--remove-trivial-summands"))
 
-(define in-out:lpsconstelm->lpsparelm
+(define in-out:lps->lpsparelm
   '("lpsparelm"))
 
-(define in-out:lpsparelm->aut
+(define in-out:lps->aut
   '("lps2lts" "--quiet" "--cached" "--out=aut""--save-at-end" "-" "-"))
 
-(define in-out:aut->aut-weak-trace
-  '("ltsconvert" "-eweak-trace" "--in=aut" "--out=aut"))
+(define (in-out:aut->aut-weak-trace options)
+  (let* ((model (options-model options))
+         (model-name (makreel:name model))
+         (taus (if (is-a? model <interface>)
+                   (list (format #f "--tau=~a'silent" model-name))
+                   '())))
+    `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
 (define in-out:aut->aut-dpweak-bisim
   '("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut"))
@@ -231,7 +236,7 @@
     `(,%dzn "lts" "--cleanup"
             ,@(if (is-a? model <interface>) `("--prefix" ,prefix) '()))))
 
-(define in-out:aut-dpweak-bisim->aut-failures
+(define in-out:aut->aut-failures
   `(,%dzn "lts" "--failures" "-"))
 
 (define (model-taus options)
@@ -246,18 +251,27 @@
       (if (string-null? exclude-taus) '()
           (list (string-append "--exclude-tau=" exclude-taus))))))
 
-(define (in-out:aut-dpweak-bisim->verify-interface options)
+(define (in-out:aut->verify-interface options)
   (let ((taus (model-taus options)))
-    `(,%dzn "lts" "--single-line" "--deadlock" ,@taus "--livelock" "-")))
+    `(,%dzn "lts" "--single-line"
+            "--deadlock"
+            ,@taus
+            "--livelock"
+            "-")))
 
-(define (in-out:aut-dpweak-bisim->verify-component options)
+(define in-out:aut->verify-interface-nondet
+  `(,%dzn "lts" "--single-line"
+          "--deterministic-labels" "<state>"))
+
+(define (in-out:aut->verify-component options)
   (let* ((taus (model-taus options))
          (model (options-model options))
          (deterministic (deterministic-labels model)))
     `(,%dzn "lts" "--single-line"
             "--deterministic-labels" ,deterministic
             "--illegal"
-            "--deadlock" ,@taus
+            "--deadlock"
+            ,@taus
             "--livelock"
             "--failures"
             "-")))
@@ -272,22 +286,23 @@
       "--in1=aut" "--in2=aut" "-" "-")))
 
 (define in-out.pipeline
-  `((("dzn"               "makreel")           . ,in-out:dzn->makreel)
-    (("makreel"           "mcrl2")             . ,in-out:makreel->mcrl2)
-    (("mcrl2"             "lps")               . ,in-out:mcrl2->lps)
-    (("lps"               "lpsconstelm")       . ,in-out:lps->lpsconstelm)
-    (("lpsconstelm"       "lpsparelm")         . ,in-out:lpsconstelm->lpsparelm)
-    (("lpsparelm"         "maut")              . ,in-out:lpsparelm->aut)
-    (("maut"              "aut")               . ,in-out:maut->aut)
-    (("maut"              "maut-weak-trace")   . ,in-out:aut->aut-weak-trace)
-    (("maut"              "maut-dpweak-bisim") . ,in-out:aut->aut-dpweak-bisim)
-    (("maut-weak-trace"   "aut-weak-trace")    . ,in-out:maut->aut)
-    (("maut-dpweak-bisim" "aut-dpweak-bisim")  . ,in-out:maut->aut)
-    (("aut-dpweak-bisim"  "aut-failures")      . ,in-out:aut-dpweak-bisim->aut-failures)
-    (("aut-dpweak-bisim"  "verify-interface")  . ,in-out:aut-dpweak-bisim->verify-interface)
-    (("aut-dpweak-bisim"  "verify-component")  . ,in-out:aut-dpweak-bisim->verify-component)
-    (("dzn"               "aut+provides-aut")  . ,in-out:dzn->aut+provides-aut)
-    (("aut+provides-aut"  "verify-compliance") . ,in-out:aut+provides-aut->verify-compliance)))
+  `((("dzn"               "makreel")                 . ,in-out:dzn->makreel)
+    (("makreel"           "mcrl2")                   . ,in-out:makreel->mcrl2)
+    (("mcrl2"             "lps")                     . ,in-out:mcrl2->lps)
+    (("lps"               "lpsconstelm")             . ,in-out:lps->lpsconstelm)
+    (("lpsconstelm"       "lpsparelm")               . ,in-out:lps->lpsparelm)
+    (("lpsparelm"         "maut")                    . ,in-out:lps->aut)
+    (("maut"              "aut")                     . ,in-out:maut->aut)
+    (("maut"              "maut-weak-trace")         . ,in-out:aut->aut-weak-trace)
+    (("maut"              "maut-dpweak-bisim")       . ,in-out:aut->aut-dpweak-bisim)
+    (("maut-weak-trace"   "aut-weak-trace")          . ,in-out:maut->aut)
+    (("maut-dpweak-bisim" "aut-dpweak-bisim")        . ,in-out:maut->aut)
+    (("aut-dpweak-bisim"  "aut-failures")            . ,in-out:aut->aut-failures)
+    (("aut-dpweak-bisim"  "verify-interface")        . ,in-out:aut->verify-interface)
+    (("aut-weak-trace"    "verify-interface-nondet") . ,in-out:aut->verify-interface-nondet)
+    (("aut-dpweak-bisim"  "verify-component")        . ,in-out:aut->verify-component)
+    (("dzn"               "aut+provides-aut")        . ,in-out:dzn->aut+provides-aut)
+    (("aut+provides-aut"  "verify-compliance")       . ,in-out:aut+provides-aut->verify-compliance)))
 
 (define (verification:formats)
   (map (match-lambda (((from to) . command) to)) in-out.pipeline))
@@ -438,7 +453,10 @@ init for MODEL unless INIT."
                   (else assert)))
          (message (case error
                     ((illegal) (format #f "illegal action performed in model ~a" model-name))
-                    ((deterministic) (format #f "component ~a is non-deterministic due to overlapping guards" model-name))
+                    ((deterministic)
+                     (case model-type
+                       ((component) (format #f "component ~a is non-deterministic due to overlapping guards" model-name))
+                       ((interface) (format #f "interface ~a is unobservably non-deterministic" model-name))))
                     ((compliance) (format #f "component ~a is non-compliant with interface(s) of provides port(s)" model-name))
                     ((<range-error>) (format #f "integer range error in model ~a" model-name))
                     ((<type-error>) (format #f "type error in model ~a" model-name))
@@ -482,11 +500,21 @@ init for MODEL unless INIT."
 
 (define (mcrl2:verify-interface-asserts model root)
   (let* ((model-name (makreel:unticked-dotted-name model))
-         (result (verify-pipeline "verify-interface" root model))
+         (result (string-append
+                  (verify-pipeline "verify-interface" root model)
+                  (verify-pipeline "verify-interface-nondet" root model)))
          (result (result-split result)))
+    (define (has-line? key result)
+      (let ((key (symbol->string key)))
+        (find (compose (cute equal? key <>) car) result)))
+    (define (report-assert assert)
+      (report assert #f (get-trace assert result) 'interface model-name))
     (reduce-or (command-line:get 'all)
-               (list (cut report 'deadlock #f (get-trace 'deadlock result) 'interface model-name)
-                     (cut report 'livelock #f (get-trace 'livelock result) 'interface model-name)))))
+               (list (cute report-assert 'deadlock)
+                     (cute report-assert 'livelock)
+                     (if (has-line? 'deterministic result)
+                         (cute report-assert 'deterministic)
+                         (const #f))))))
 
 (define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))

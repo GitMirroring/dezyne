@@ -1,6 +1,7 @@
 verify: irange_member: check: deadlock: fail
 error: integer range error in model irange_member
 verify: irange_member: check: livelock: ok
+verify: irange_member: check: deterministic: ok
 verify: range_member: check: deterministic: ok
 verify: range_member: check: illegal: ok
 verify: range_member: check: deadlock: fail

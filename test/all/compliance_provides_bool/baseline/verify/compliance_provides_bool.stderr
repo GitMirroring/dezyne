@@ -1,5 +1,6 @@
 verify: ibool: check: deadlock: ok
 verify: ibool: check: livelock: ok
+verify: ibool: check: deterministic: ok
 verify: compliance_provides_bool: check: deterministic: ok
 verify: compliance_provides_bool: check: illegal: ok
 verify: compliance_provides_bool: check: deadlock: ok

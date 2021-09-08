@@ -1,7 +1,9 @@
 verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
 verify: iworld: check: deadlock: ok
 verify: iworld: check: livelock: ok
+verify: iworld: check: deterministic: ok
 verify: compliance_optional: check: deterministic: ok
 verify: compliance_optional: check: illegal: ok
 verify: compliance_optional: check: deadlock: ok

@@ -1,6 +1,7 @@
 verify: ihello: check: deadlock: fail
 error: model ihello is incomplete: event 'hello' not handled
 verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
 verify: incomplete: check: deterministic: ok
 verify: incomplete: check: illegal: ok
 verify: incomplete: check: deadlock: fail

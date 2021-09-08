@@ -1,5 +1,6 @@
 verify: I: check: deadlock: ok
 verify: I: check: livelock: ok
+verify: I: check: deterministic: ok
 verify: illegal_external_nonsynchronous: check: deterministic: ok
 verify: illegal_external_nonsynchronous: check: illegal: fail
 error: illegal action performed in model illegal_external_nonsynchronous

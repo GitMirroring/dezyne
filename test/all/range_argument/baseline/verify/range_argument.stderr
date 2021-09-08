@@ -1,3 +1,4 @@
 verify: range_argument: check: deadlock: fail
 error: integer range error in model range_argument
 verify: range_argument: check: livelock: ok
+verify: range_argument: check: deterministic: ok
