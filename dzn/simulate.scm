@@ -794,6 +794,7 @@ status."
     (or (report (list (list pc)) #:trace trace)
         (parameterize ((%next-input (if (or (not (isatty? (current-input-port))) (pair? trail)) trail-input read-input)))
           (let loop ((traces (list (list pc))))
+            (%debug "run-trail #traces ~a\n" (length traces))
             (let ((from-pcs (map car traces)))
               (when (interactive?)
                 (format (current-error-port) "labels: ~a\n" (string-join (labels)))
@@ -826,13 +827,14 @@ status."
                       ((pair? blocked)
                        (loop blocked))
                       ((pair? non-blocked)
-                       (let ((pcs (map car valid-traces)))
-                         (or (report non-blocked
-                                     #:internal? internal?
-                                     #:locations? locations?
-                                     #:state? state?
-                                     #:trace trace
-                                     #:verbose? verbose?)
+                       (or (report non-blocked
+                                   #:internal? internal?
+                                   #:locations? locations?
+                                   #:state? state?
+                                   #:trace trace
+                                   #:verbose? verbose?)
+                           (let* ((pcs (map car valid-traces))
+                                  (pcs (delete-duplicates pcs rtc-program-counter-equal?)))
                              (loop (map list pcs)))))))))))))
 
 
