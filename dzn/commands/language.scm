@@ -37,6 +37,7 @@
   #:use-module (dzn parse tree)
   #:use-module (dzn parse util)
   #:use-module (dzn parse peg)
+  #:use-module (dzn parse stress)
 
   #:export (main))
 
@@ -60,6 +61,7 @@
             (lookup (single-char #\l))
             (offset (value #t))
             (point (single-char #\p) (value #t))
+            (stress (single-char #\s))
             (verbose (single-char #\v))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
@@ -77,6 +79,7 @@ Dezyne language tool for completion and lookup information
  -I, --import=DIR+               add DIR to import path
      --offset=OFFSET             use offset=OFFSET to determine context
  -p, --point=LINE[,COLUMN]       calculate offset from line LINE and column COLUMN [0]
+ -s, --stress                    stress test the completion engine
  -v, --verbose                   display input, parse tree, offset, context and completions
 "))
       (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
@@ -96,6 +99,7 @@ Dezyne language tool for completion and lookup information
          (imports (delete-duplicates (cons* (dirname file-name) "." imports)))
          (help? (option-ref options 'help #f))
          (lookup? (option-ref options 'lookup #f))
+         (stress? (option-ref options 'stress #f))
          (errors '())
          (parse-alist '()))
 
@@ -149,6 +153,8 @@ Dezyne language tool for completion and lookup information
           (display "context:\n" (current-error-port))
           (pretty-print context (current-error-port)))
         (cond
+         (stress?
+          (stress file-name))
          (lookup?
           (let* ((token (.tree context))
                  (def   (lookup-definition
