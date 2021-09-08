@@ -91,6 +91,9 @@
 (define-templates recurse makreel:recurse?)
 (define-templates return-process-parameter makreel:non-recurse?)
 
+(define-templates global-state-type members pair-grammar)
+(define-templates state-sum members sum-grammar)
+(define-templates members-name members members-name-grammar)
 
 ;; statement process
 (define-templates silent makreel:silent)

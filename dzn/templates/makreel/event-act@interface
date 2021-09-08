@@ -19,4 +19,6 @@
 #x:makreel:model-name end'reordered;
 #x:makreel:model-name silent_end;
 #x:makreel:model-name silent_end';
+#x:makreel:model-name state #x:global-state-type;
+#x:makreel:model-name state' #x:global-state-type;
 #x:makreel:model-name flush;

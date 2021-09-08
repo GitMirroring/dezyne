@@ -4,6 +4,7 @@ proc
                                                                        +#x:makreel:model-name reorder_end . missing_reply . delta)
  + sum m : #x:makreel:model-name modeling. #x:makreel:model-name internal (m) . #x:makreel:model-name end .  #x:makreel:model-name reorder
  + sum m : #x:makreel:model-name silent. #x:makreel:model-name silent (m) . #x:makreel:model-name silent_end . #x:makreel:model-name reorder
+ + #x:state-sum #x:makreel:model-name state #x:members-name  . #x:makreel:model-name reorder
  ;
 
 #x:makreel:model-name reorder_replied(r : #x:makreel:model-name replies)
@@ -21,6 +22,7 @@ define(#x:makreel:model-name reordered_comm, comm({
  , #x:makreel:model-name silent | #x:makreel:model-name silent -> #x:makreel:model-name silent'
  , #x:makreel:model-name silent_end | #x:makreel:model-name silent_end -> #x:makreel:model-name silent_end'
  , #x:makreel:model-name reorder_end | #x:makreel:model-name reorder_end -> #x:makreel:model-name reorder_end'
+ , #x:makreel:model-name state | #x:makreel:model-name state -> #x:makreel:model-name state'
  }, #x:makreel:model-name reordered_parallel))
 
 define(#x:makreel:model-name reordered_allow, allow({
@@ -36,6 +38,7 @@ define(#x:makreel:model-name reordered_allow, allow({
  , #x:makreel:model-name out
  , #x:makreel:model-name reply'
  , #x:makreel:model-name reply'reordered
+ , #x:makreel:model-name state'
  , declarative_illegal
  , incomplete
  , missing_reply
@@ -53,6 +56,7 @@ define(#x:makreel:model-name reordered, rename({
  , #x:makreel:model-name end' -> #x:makreel:model-name end
  , #x:makreel:model-name silent' -> #x:makreel:model-name silent
  , #x:makreel:model-name silent_end' -> #x:makreel:model-name silent_end
+ , #x:makreel:model-name state' -> #x:makreel:model-name state
  , #x:makreel:model-name reorder_end' -> tau_void
  }, #x:makreel:model-name reordered_allow))
 
@@ -92,6 +96,7 @@ define(#x:makreel:model-name allow, allow({
   , #x:makreel:model-name silent_end
   , #x:makreel:model-name out'
   , #x:makreel:model-name flush
+  , #x:makreel:model-name state
   , declarative_illegal
   , incomplete
   , missing_reply
@@ -109,6 +114,7 @@ define(#x:makreel:model-name interface_internal, rename({
   , #x:makreel:model-name reply' -> #x:makreel:model-name reply
   , #x:makreel:model-name internal' -> #x:makreel:model-name internal
   , #x:makreel:model-name end'reordered -> #x:makreel:model-name end
+  , #x:makreel:model-name state' -> #x:makreel:model-name state
   , #x:makreel:model-name end' -> tau_void
   , #x:makreel:model-name silent_end -> tau_void
   }, #x:makreel:model-name allow))
@@ -119,7 +125,8 @@ define(#x:makreel:model-name interface_internal, rename({
  , #x:makreel:model-name tau_reply}, #x:makreel:model-name interface_internal);
 
 #x:makreel:model-name behaviour #x:process-parameters
- = #x:behaviour-proc
+ = #x:makreel:model-name state #x:members-name  . #x:makreel:model-name behaviour ()
+ + #x:behaviour-proc
 
 %%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
 #x:function

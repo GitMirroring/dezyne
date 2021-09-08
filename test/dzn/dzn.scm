@@ -492,7 +492,7 @@ output, and standard error as three values."
                             (flushes (list-matches "\"([^\"]*<flush>)\"" makreel-lts))
                             (flushes (map (cute match:substring <> 1) flushes))
                             (flushes (delete-duplicates flushes))
-                            (taus (append '("<deadlock>" "<livelock>" "optional" "inevitable") flushes)))
+                            (taus (append '("<deadlock>" "<livelock>" "optional" "inevitable" "<state>") flushes)))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
                        (mkdir-p out-lang)
