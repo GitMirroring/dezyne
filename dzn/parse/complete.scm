@@ -378,7 +378,7 @@
               (is-a? enum 'enum))
             => (cute tree:enum-field-tests <> (tree:name o)))
            (else
-            (context:complete (.tree (.parent context)) (.parent context) offset))))
+            '())))
     (('field-test var name ...)
      (cond ((let* ((name (tree:name var))
                    (variable (and name (tree:lookup name context))))
