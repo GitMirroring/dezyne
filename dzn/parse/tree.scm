@@ -161,10 +161,10 @@
 (define (is-a? o predicate)
   "Return if O (a tree'ish pair) meets PREDICATE (a tree-type symbol or
 procedure)."
-  (and (pair? o)
-       (match predicate
+  (and (match predicate
          ((? symbol?)
-          (and (eq? predicate (car o)) o))
+          (and (pair? o)
+               (and (eq? predicate (car o)) o)))
          ((? procedure? predicate)
           (and (predicate o) o)))))
 
@@ -273,6 +273,8 @@ procedure)."
      (slot o 'name))
     ((? (is? 'event))
      (.name (slot o 'event-name)))
+    ((? (is? 'formal))
+     (.name (slot o 'name)))
     ((? (is? 'root))
      "")
     (_ #f)))
@@ -350,11 +352,12 @@ procedure)."
     ((? (is? 'trigger)) (slot o 'trigger-formals))))
 
 (define (.type-name o)
-  (assert-type o 'enum-literal 'event 'function 'port 'variable)
+  (assert-type o 'enum-literal 'event 'formal 'function 'port 'variable)
   (match o
     ((? (is? 'port))   ;; Hmm: .compound-name??
      (slot o 'compound-name))
     ((or (? (is? 'event))
+         (? (is? 'formal))
          (? (is? 'function))
          (? (is? 'variable)))
      (.name (slot o 'type-name)))
@@ -584,8 +587,8 @@ procedure)."
 
 (define (tree:name-equal? a b)
   (and a b
-       (assert-type a 'name 'compound-name 'scope)
-       (assert-type b 'name 'compound-name 'scope)
+       (assert-type a string? 'name 'compound-name 'scope)
+       (assert-type b string? 'name 'compound-name 'scope)
        (equal? (last (tree:id* a))
                (last (tree:id* b)))))
 
@@ -709,7 +712,8 @@ procedure)."
     ((? (is? 'name) name)
      (values '() name))
     (((? string? scope) ... (? string? name))
-     (values scope name))))
+     (values scope name))
+    ((? string?) (values '() o))))
 
 (define (tree:full-name o) ;;; XXX TODO: namespaces
   (tree:id* o))
@@ -872,8 +876,12 @@ procedure)."
     (_ (slots o tree:statement?))))
 
 (define (tree:variable* o)
-  (assert-type o 'behaviour-statements 'compound)
-  (slots o 'variable))
+  (assert-type o 'behaviour-statements 'compound 'function)
+  (match o
+    ((? (is? 'function))
+     '())
+    (_
+     (slots o 'variable))))
 
 (define (tree:formal* o)
   (match o

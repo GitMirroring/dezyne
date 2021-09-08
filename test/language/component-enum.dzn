@@ -9,7 +9,8 @@ interface ihello
   {
     Bool m = Bool.True;
 
-    [m.True] on hello: {
+    [m.True] on hello:
+    {
       Bool b = Bool.False;
       reply (b);
     }
@@ -24,9 +25,9 @@ component hello
   {
     Bool m = Bool.True;
 
-    Bool fun (bool b)
+    Bool fun (Bool b)
     {
-      return Bool.True;
+      return b;
     }
 
     on p.hello ():
