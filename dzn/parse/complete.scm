@@ -375,24 +375,46 @@
          (name (and=> variable tree:dotted-name)))
     (filter (negate (cute equal? <> name)) list)))
 
+(define (behaviour-top context)
+  (sort (append
+         '("bool" "enum" "extern" "on" "subint" "void")
+         (delete-duplicates (map tree:dotted-name
+                                 (filter (negate (is? 'extern))
+                                         (tree:type* context)))))
+        string<))
+
+(define %completion-top
+  '("component" "enum" "extern" "import" "interface" "namespace" "subint"))
+(define %completion-interface '("behaviour" "enum" "extern" "in" "out" "subint"))
+(define %completion-component '("behaviour" "provides" "requires" "system"))
+(define %completion-behaviour '("bool" "enum" "extern" "on" "subint" "void"))
+
 
 ;;;
 ;;; Entry points.
 ;;;
 
+
 (define (context:complete o context offset)
   (match o
     (('root (? (disjoin complete? tree:location?)) ...)
-     '("component" "enum" "import" "interface" "namespace" "subint"))
+     %completion-top)
     ((? (is? 'file-name))
      (context:complete (.tree (.parent context)) (.parent context) offset))
+    ((and (? (is? 'interface))
+          (? complete?))
+     (cond ((not (.behaviour o))
+            %completion-interface)
+           ((after-location? (.behaviour o) offset)
+            '("in" "out" "enum" "extern" "subint"))
+           (else '())))
     (('interface (? (disjoin incomplete? tree:location?)) ..1)
      '())
     ((and (? (is? 'component))
           (? complete?))
      (cond ((and (not (.behaviour o))
                  (not (.system o)))
-            '("behaviour" "provides" "requires" "system"))
+            %completion-component)
            ((after-location? (.behaviour o) offset)
             '("provides" "requires"))
            (else '())))
@@ -415,18 +437,18 @@
                       (if injected? '() '("injected"))
                       (context:interface-names (parent context 'root)))))))
     ('types-and-events
-     '("bool" "enum" "in" "out"))
+     '("in" "out" "enum" "extern" "subint"))
     (('types-and-events types-events ...)
-     '("behaviour" "bool" "enum" "in" "out"))
+     %completion-interface)
     ('type-name
      (complete:type-names context))
     ((and (? (is? 'ports)) (? (cute around-location? <> offset)))
      '("provides" "requires"))
     ((or 'body
          (? (is? 'ports)))
-     '("behaviour" "provides" "requires" "system"))
+     %completion-component)
     ('behaviour
-     '("behaviour" "bool" "enum" "in" "out"))
+     %completion-interface)
     (('behaviour-statements (? (disjoin incomplete? tree:location?)) ...)
      (match context
        ((o ('BRACE-OPEN b ...) t ...)
@@ -435,11 +457,12 @@
         (let ((incomplete (find incomplete? (cdr o))))
           (cond ((is-a? incomplete 'on)
                  (context:trigger-names context))
-                (else '("on")))))))
+                (else
+                 (behaviour-top context)))))))
     (('behaviour-statements x ...)
-     '("on"))
+     (behaviour-top context))
     (('behaviour-compound x ...)
-     '("on"))
+     (behaviour-top context))
     ((? (is? 'dollars))
      (filter-self context (context:complete-for-type context)))
     ((? (is? 'literal))
@@ -547,7 +570,7 @@
        (filter-self context (complete-for-type type context))))
     (('guard x ...)
      (cond ((incomplete? o) (context:complete (.expression o) (cons (.expression o) context) offset))
-           ((not (parent context 'on)) '("on"))
+           ((not (parent context 'on)) (behaviour-top context))
            (else '())))
     (('expression x ...)
      (context:complete (.value o) (cons (.value o) context) offset))
@@ -559,7 +582,7 @@
 
     (('compound x ...)
      (cond ((parent context 'on) (context:action-names context))
-           (else '("on"))))
+           (else (behaviour-top context))))
 
     ((? (is? 'action))
      (context:action-names context))

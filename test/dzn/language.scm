@@ -91,10 +91,10 @@
 
 (test-begin "completion")
 
-(define %completion-top
-  '("component" "enum" "import" "interface" "namespace" "subint"))
-(define %completion-interface '("bool" "enum" "in" "out"))
-(define %completion-component '("behaviour" "provides" "requires" "system"))
+(define %completion-top (@@ (dzn parse complete) %completion-top))
+(define %completion-interface (@@ (dzn parse complete) %completion-interface))
+(define %completion-component (@@ (dzn parse complete) %completion-component))
+(define %completion-behaviour(@@ (dzn parse complete) %completion-behaviour))
 
 (test-equal "completion empty" ;0
   %completion-top
@@ -113,7 +113,7 @@
   (test-complete #:file-name "interface-I.dzn"))
 
 (test-equal "language interface I {" ;3
-  %completion-interface
+  '("in" "out" "enum" "extern" "subint")
   (test-complete #:file-name "interface-I-open.dzn"))
 
 (test-equal "language interface I { in _" ;4
@@ -131,7 +131,7 @@
   (test-complete #:file-name "interface5b.dzn"))
 
 (test-equal "language interface6"
-  '("behaviour" "bool" "enum" "in" "out")
+  %completion-interface
   (test-complete #:file-name "interface6.dzn"))
 
 (test-equal "language interface7"
@@ -139,15 +139,15 @@
   (test-complete #:file-name "interface7.dzn"))
 
 (test-equal "language interface8"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "interface8.dzn"))
 
 (test-equal "language interface8a"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "interface8a.dzn"))
 
 (test-equal "language interface8b"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "interface8b.dzn"))
 
 (test-equal "language interface9"
@@ -194,6 +194,26 @@
   '("e.False" "e.True")
   (test-complete #:file-name "interface12a.dzn" #:line 11 #:column 7))
 
+(test-equal "language interface-behaviour before"
+  '("in" "out" "enum" "extern" "subint")
+  (test-complete #:file-name "interface-behaviour.dzn" #:line 3))
+
+(test-equal "language interface-behaviour after"
+  '("in" "out" "enum" "extern" "subint")
+  (test-complete #:file-name "interface-behaviour.dzn" #:line 5))
+
+(test-equal "language interface-behaviour before on"
+  %completion-behaviour
+  (test-complete #:file-name "interface-behaviour.dzn" #:line 8))
+
+(test-equal "language interface-behaviour between on"
+  %completion-behaviour
+  (test-complete #:file-name "interface-behaviour.dzn" #:line 10))
+
+(test-equal "language interface-behaviour after on"
+  %completion-behaviour
+  (test-complete #:file-name "interface-behaviour.dzn" #:line 12))
+
 (test-equal "language component1"
   %completion-component
   (test-complete #:file-name "component1.dzn"))
@@ -223,19 +243,19 @@
   (test-complete #:file-name "component1b.dzn" #:line 16 #:column 0))
 
 (test-equal "language component2"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "component2.dzn"))
 
 (test-equal "language component2a"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "component2a.dzn"))
 
 (test-equal "language component2b"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "component2b.dzn"))
 
 (test-equal "language component2c"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "component2c.dzn" #:line 20))
 
 (test-equal "language component3"
@@ -267,7 +287,7 @@
   (test-complete #:file-name "component6b.dzn"))
 
 (test-equal "language component7"
-  '("on")
+  '("E" "bool" "enum" "extern" "on" "subint" "void")
   (test-complete #:file-name "component7.dzn"))
 
 (test-equal "language component8"
@@ -339,11 +359,11 @@
   (test-complete #:file-name "component-behaviour.dzn" #:line 15))
 
 (test-equal "completion component-behaviour behaviour"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "component-behaviour.dzn" #:line 19))
 
 (test-equal "completion component-behaviour end"
-  '("on")
+  %completion-behaviour
   (test-complete #:file-name "component-behaviour.dzn" #:line 21))
 
 (test-equal "completion component-state"

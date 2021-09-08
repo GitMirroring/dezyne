@@ -59,6 +59,7 @@ EXTRA_DIST +=					\
  %D%/interface-I-in2.dzn			\
  %D%/interface-I-open.dzn			\
  %D%/interface-I.dzn				\
+ %D%/interface-behaviour.dzn			\
  %D%/interface2.dzn				\
  %D%/interface3.dzn				\
  %D%/interface4.dzn				\

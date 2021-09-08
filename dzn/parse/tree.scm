@@ -431,6 +431,7 @@ procedure)."
 (define tree:type
   '(bool
     enum
+    extern
     interface
     int
     void))
@@ -459,7 +460,6 @@ procedure)."
      event-name
      events
      expression
-     extern
      external
      field-test
      fields
@@ -843,7 +843,7 @@ procedure)."
   (match o
     ((? (is? 'port)) (tree:port-qualifier* (.port-qualifiers o)))
     ((? (is? 'port-qualifiers))  (slots o tree:port-qualifier?))
-    ((? (or (is? 'external) (is? 'injected))) (list o))
+    ((or (? (is? 'external) (? (is? 'injected)))) (list o))
     (_ '())))
 
 (define* (tree:top* o #:key (imports '()) (seen '()))
@@ -877,11 +877,12 @@ procedure)."
 
 (define (tree:type* o)
   (match o
-    ((? (is? 'interface)) (append-map tree:type* (slots o tree?)))
-    ((or (? (is? 'enum)) (? (is? 'int))) `(,o))
+    ((? (is? 'behaviour)) (append-map tree:type* (slots o tree?)))
+    ((? (is? 'interface)) (append-map tree:type* (slots o 'types-and-events)))
+    ((or (? (is? 'enum)) (? (is? 'extern)) (? (is? 'int))) `(,o))
     ((? (is? 'root))
      (append (append-map tree:type* (filter (is? 'interface) (tree:top* o)))
-             (filter (disjoin (is? 'enum) (is? 'int)) (tree:top* o))))
+             (filter (disjoin (is? 'enum) (is? 'int) (is? 'extern)) (tree:top* o))))
     ((? pair?) (append-map tree:type* o))
     (_ '())))
 
