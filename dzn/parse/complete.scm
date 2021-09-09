@@ -221,7 +221,7 @@
 
 (define (context:members o)
   (let ((scope (parent-context o 'behaviour-statements)))
-    (tree:variable* (.tree scope))))
+    (or (and scope (tree:variable* (.tree scope))) '())))
 
 (define (type-equal? o type)
   (let ((type-name (and=> type .name)))
@@ -446,6 +446,11 @@
 (define (context:trigger* context)
   (map (cute cons <> context) (tree:trigger* (.tree context))))
 
+(define (context:on-type context)
+  (let* ((triggers (context:trigger* context))
+         (types (map .type triggers)))
+    (find (negate (cute equal? <> context:void)) types)))
+
 (define (context:statements context)
   (let ((statements (cond
                      ((parent context 'function)
@@ -454,11 +459,7 @@
                           (parent-context context 'on))
                       =>
                       (lambda (on)
-                        (let* ((triggers (context:trigger* on))
-                               (types (map .type triggers))
-                               (type (find
-                                      (negate (cute equal? <> context:void))
-                                      types)))
+                        (let ((type (context:on-type on)))
                           (if type '("reply(_)")
                               '()))))
                      (else
@@ -467,6 +468,7 @@
            ;;'("if") ;;TODO
            statements
            (context:type-names context)
+           (complete:variable-names #f context)
            (context:action-names context))
           string<)))
 
@@ -620,7 +622,12 @@
        (complete-function (parent context 'function) context))
       (else
        (context:complete (.tree (.parent context)) (.parent context) offset))))
-    ((? (is? 'return))
+    ((and (? (is? 'reply)) (? (negate .expression)))
+     (let* ((on (parent-context context 'on))
+            (type (context:on-type on)))
+       (if type (complete-for-type (.tree type) context)
+           '())))
+    ((and (? (is? 'return)) (? (negate .expression)))
      (complete-function (parent context 'function) context))
     (('var 'DOT 'name)
      (if (not (parent context 'field-test)) (complete:variable-names #f context)
