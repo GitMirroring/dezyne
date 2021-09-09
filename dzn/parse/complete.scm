@@ -115,12 +115,6 @@
     ((? pair?) (tree:port-dir (find tree:port-dir o)))
     (_ #f)))
 
-(define (context:enum-names o)
-  (map tree:dotted-name (tree:enum* (slot o 'root))))
-
-(define (context:int-names o)
-  (map tree:dotted-name (tree:int* (slot o 'root))))
-
 (define (context:type-names context)
   (define (strip-prefix prefix str)
     (if (not (string-prefix? prefix str)) str
@@ -258,9 +252,6 @@
          (variables (filter enum? variables)))
     (map tree:dotted-name variables)))
 
-(define (complete:type-names context)
-  (context:type-names context))
-
 (define (complete-enum o context)
   (assert-type o 'enum)
   (let ((name (.name o)))
@@ -281,7 +272,7 @@
          (enum      (tree:lookup type-name context)))
     (cond
      ((not enum)
-      (complete:type-names context))
+      (context:type-names context))
      ((equal? field name)
       (tree:type-value-names enum))
      ((and (not (parent context 'function))
@@ -304,7 +295,7 @@
          (name (and=> type .name)))
     (cond
      ((not type)
-      (complete:type-names context))
+      (context:type-names context))
      (else
       (append
        (complete:variable-names type context)
@@ -333,7 +324,7 @@
          (name (and=> type .name)))
     (cond
      ((not type)
-      (complete:type-names context))
+      (context:type-names context))
      (else
       (complete-for-type type context)))))
 
@@ -344,7 +335,7 @@
          (name      (and type (.name type))))
     (cond
      ((not type)
-      (complete:type-names context))
+      (context:type-names context))
      (else
       (append
        (complete:variable-names type context)
@@ -365,7 +356,7 @@
          (name      (and type (.name type))))
     (cond
      ((not type)
-      (complete:type-names context))
+      (context:type-names context))
      (else
       (append
        (complete:variable-names type context)
@@ -561,13 +552,13 @@
            (type (.type context))
            (name (.name o)))
        (cond ((and direction (or (not type) (not name)))
-              (complete:type-names context))
+              (context:type-names context))
              (else
               '()))))
     ((and (? (is? 'direction)) (? complete?))
      (context:complete (.tree (.parent context)) (.parent context) offset))
     ('type-name
-     (complete:type-names context))
+     (context:type-names context))
     ((and (? (is? 'ports)) (? (cute around-location? <> offset)))
      '("provides" "requires"))
     ((or 'body
@@ -703,7 +694,7 @@
             (expression (false-if-exception (.expression o)))
             (expression (and expression (.value expression))))
        (cond ((not type)
-              (complete:type-names context))
+              (context:type-names context))
              ((or (eq? type tree:bool)
                   (and (not (is-a? type 'enum))
                        (not expression)
