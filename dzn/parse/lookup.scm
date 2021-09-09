@@ -107,19 +107,22 @@
    (lambda (name context)
      "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a tree:context? or
 null) and return its CONTEXT."
-     (if (not context) '()
-         (let* ((context (if (.global name) (parent-context context 'root) context))
-                (scope name (tree:scope+name name)))
-           (search-or-widen-context scope name context))))))
+     (cond
+      ((not context)
+       '())
+      ((tree:name-equal? (.name name) (.name tree:bool))
+       context:bool)
+      ((tree:name-equal? (.name name) (.name tree:void))
+       context:void)
+      (else
+       (let* ((context (if (.global name) (parent-context context 'root) context))
+              (scope name (tree:scope+name name)))
+         (search-or-widen-context scope name context)))))))
 
 (define (tree:lookup name context)
-  (cond
-   ((tree:name-equal? (.name name) (.name tree:bool))
-    tree:bool)
-   (else
-    (let ((scope (if (tree:scope? (.tree context)) context
-                     (parent-context context tree:scope?))))
-      (and=> (tree:context? (context:lookup name context)) .tree)))))
+  (let ((scope (if (tree:scope? (.tree context)) context
+                   (parent-context context tree:scope?))))
+    (and=> (tree:context? (context:lookup name context)) .tree)))
 
 (define (tree:lookup-var name context)
   (define (helper name o)
@@ -199,6 +202,7 @@ null) and return its CONTEXT."
     (match tree
       ((? (is? 'event)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'port)) (and=> (.type-name tree) (cute context:lookup <> context)))
+      ((? (is? 'trigger)) (and=> (.event context) .type))
       ((? (is? 'instance)) (and=> (.type-name tree) (cute context:lookup <> context))))))
 
 (define (resolve-action o name context)

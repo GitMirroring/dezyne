@@ -95,6 +95,8 @@
 
             tree->context
 
+            context:bool
+            context:void
             tree:bool
             tree:void
 
@@ -435,9 +437,6 @@ procedure)."
 ;;;
 ;;; Parse tree predicates.
 ;;;
-
-(define tree:bool '(bool (name "bool")))
-(define tree:void '(void (name "void")))
 
 (define tree:declarative
   '(blocking
@@ -991,6 +990,17 @@ procedure)."
     ((? (is? 'triggers)) (slots o 'trigger))
     ((? (is? 'on)) (tree:trigger* (.triggers o)))
     (_ '())))
+
+
+;;;
+;;; Constants.
+;;;
+
+(define context:bool '((bool (name "bool"))))
+(define context:void '((void (name "void"))))
+
+(define tree:bool (.tree context:bool))
+(define tree:void (.tree context:void))
 
 
 ;;;

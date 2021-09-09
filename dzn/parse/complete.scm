@@ -443,18 +443,30 @@
                                          (tree:type* context)))))
         string<))
 
+(define (context:trigger* context)
+  (map (cute cons <> context) (tree:trigger* (.tree context))))
+
 (define (context:statements context)
-  (let ((statements (cond ((parent context 'function)
-                           '("return"))
-                          ((parent context 'on)
-                           ;; TODO reply
-                           '())
-                          (else
-                           '()))))
+  (let ((statements (cond
+                     ((parent context 'function)
+                      '("return"))
+                     ((or (and (is-a? (.tree context) 'on) context)
+                          (parent-context context 'on))
+                      =>
+                      (lambda (on)
+                        (let* ((triggers (context:trigger* on))
+                               (types (map .type triggers))
+                               (type (find
+                                      (negate (cute equal? <> context:void))
+                                      types)))
+                          (if type '("reply(_)")
+                              '()))))
+                     (else
+                      '()))))
     (sort (append
            ;;'("if") ;;TODO
            statements
-           ;;(context:type-names context) ;;TODO
+           (context:type-names context)
            (context:action-names context))
           string<)))
 
@@ -481,7 +493,6 @@
 ;;;
 ;;; Entry points.
 ;;;
-
 
 (define (context:complete o context offset)
   (match o
