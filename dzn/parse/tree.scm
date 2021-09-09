@@ -771,7 +771,7 @@ procedure)."
     ((or (? (is? 'name))
          (? (is? 'compound-name)))
      o)
-    ((? (is? 'event)) (tree:name (slot o 'event-name)))
+    ((? (is? 'event)) (and=>  (slot o 'event-name) tree:name))
     (_   (or (slot o 'name)
              (slot o 'compound-name)))))
 

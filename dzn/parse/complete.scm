@@ -515,6 +515,17 @@
      '("in" "out" "enum" "extern" "subint"))
     (('types-and-events types-events ...)
      %completion-interface)
+    ((and (? (is? 'event)) (? incomplete?))
+     (let ((direction (.direction o))
+           (type-name (.type-name o))
+           (type (.type context))
+           (name (.name o)))
+       (cond ((and direction (or (not type) (not name)))
+              (complete:type-names context))
+             (else
+              '()))))
+    ((and (? (is? 'direction)) (? complete?))
+     (context:complete (.tree (.parent context)) (.parent context) offset))
     ('type-name
      (complete:type-names context))
     ((and (? (is? 'ports)) (? (cute around-location? <> offset)))

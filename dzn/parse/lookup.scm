@@ -197,8 +197,9 @@ null) and return its CONTEXT."
 (define (.type context)
   (let ((tree (.tree context)))
     (match tree
-      ((? (is? 'port)) (context:lookup (.type-name tree) context))
-      ((? (is? 'instance)) (context:lookup (.type-name tree) context)))))
+      ((? (is? 'event)) (and=> (.type-name tree) (cute context:lookup <> context)))
+      ((? (is? 'port)) (and=> (.type-name tree) (cute context:lookup <> context)))
+      ((? (is? 'instance)) (and=> (.type-name tree) (cute context:lookup <> context))))))
 
 (define (resolve-action o name context)
   (resolve-trigger o name context))
