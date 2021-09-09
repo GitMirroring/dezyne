@@ -470,6 +470,8 @@
 
 (define (context:complete o context offset)
   (match o
+    (#f
+     '())
     (('root (? (disjoin complete? tree:location?)) ...)
      %completion-top)
     ((? (is? 'file-name))
