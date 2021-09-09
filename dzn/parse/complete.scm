@@ -649,6 +649,8 @@
      (context:trigger-names context))
     (('on (? (is? 'triggers)) (? tree:location?))
      (context:action-names context))
+    (('on (? (is? 'triggers)) (? (is? 'skip-statement)) (? tree:location?))
+     (context:action-names context))
     (('on (? (is? 'triggers)) rest ...)
      (context:trigger-names context))
     ((and (? (is? 'variable)) (? incomplete?))
