@@ -171,6 +171,11 @@ left-handed word boundaries."
                      =>
                      (lambda (m)
                        (+ len (string-length (match:substring m 1)))))
+                    ((string-match "^( *[a-zA-Z_.][0-9a-zA-Z_]* *=.*;)"
+                      (substring str (+ offset len)))
+                     =>
+                     (lambda (m)
+                       (+ len (string-length (match:substring m 1)))))
                     (else
                      len)))
               (end (+ start len)))
