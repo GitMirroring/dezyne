@@ -129,7 +129,7 @@ left-handed word boundaries."
          (expect (cdr offset-expect))
          (len (string-length expect))
          (start offset)
-         (end (+ start len))
+         (end (+ start len 1))
          (str (string-replace str (make-string len #\space) start end)))
     ((pure-funcq
       (lambda (str offset)
@@ -141,7 +141,7 @@ left-handed word boundaries."
                              (%peg:error (const #f)))
                           (string->parse-tree str))
                         offset)))
-          (complete (.tree context) context offset))))
+          (complete (.tree context) context (1+ offset)))))
      str offset)))
 
 (define (assert-completions str predicate)
@@ -153,7 +153,7 @@ left-handed word boundaries."
     (filter-map
      (lambda (offset expect completions)
        (if (find (cute string-contains <> expect) completions) #f
-           (list offset expect completions)))
+           (list (1+ offset) expect completions)))
      offsets
      completions
      (map (test:complete str) offset-completion))))
