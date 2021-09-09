@@ -88,7 +88,8 @@
 
             context:dotted-name
             context:port*
-
+            context:top*
+            context:type*
 
             tree:component?
             tree:debug-context
@@ -412,7 +413,7 @@ procedure)."
             (scope
              name     (tree:scope+name names))
             (location (.location type)))
-       (if (null? scope) `(compound-name ,name ,location)
+       (if (not (tree:context? scope)) `(compound-name ,name ,location)
            `(compound-name (scope ,@scope ,location) ,name ,location))))
     ((? (is? 'compound-name))
      (.name o))))
@@ -572,6 +573,8 @@ procedure)."
       (is-a? o 'system)
       (is-a? o 'compound)
       (is-a? o 'enum)
+      (is-a? o 'extern)
+      (is-a? o 'int)
       (is-a? o 'trigger)
       (is-a? o 'behaviour-statements)
       (is-a? o 'function)
@@ -738,6 +741,59 @@ procedure)."
 (define (context:dotted-name context)
   (string-join (filter (negate string-null?) (context:full-name context)) "."))
 
+(define (context:port* o)
+  (match (.tree o)
+    ((? (is? 'component)) (map (cute cons <> o) (tree:port* (.tree o))))
+    (_ '())))
+
+(define* (context:top* o #:key (imports '()) (seen '()))
+  (match (.tree o)
+    ((? (is? 'root))
+     (let* ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports))
+            (imports (cons (dirname file-name) imports))
+            (seen (cons file-name seen)))
+       (map (lambda (x) (if (tree:context? x) x (tree->context x o)))
+            (append-map (cut context:top* <> #:imports imports #:seen seen)
+                        (map (cute tree->context <> o) (slots (.tree o) tree?))))))
+    ((? (is? 'import))
+     (let ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports)))
+       (if (member file-name seen) '()
+           (and=> ((%file-name->parse-tree) file-name)
+                  (compose context:top* tree->context)))))
+    ((? (is? 'interface))
+     (cons o
+           (map (cute cons <> o)
+                (and=> (slot (.tree o) 'types-and-events) (cute slots <> tree?)))))
+    ((? (is? 'namespace))
+     (append-map (cut context:top* <> #:imports imports #:seen seen)
+                 (map (cute tree->context <> o)
+                      (slots (.namespace-root (.tree o)) tree?))))
+    ((? tree?)
+     (list o))
+    (_
+     '())))
+
+(define (context:type* o)
+  (define (helper o)
+    (match (.tree o)
+      ((or (? (is? 'behaviour))
+           (? (is? 'behaviour-compound))
+           (? (is? 'behaviour-statements))
+           (? (is? 'types-and-events)))
+       (append-map helper
+                   (map (cute cons <> o)
+                        (slots (.tree o) tree?))))
+      ((? (is? 'root))
+       (filter (compose tree:type? .tree) (context:top* o)))
+      ((? tree:type?)
+       (list o))
+      (_
+       '())))
+
+  (let loop ((o o))
+    (if (not (tree:context? o)) '()
+        (append (helper o) (loop (.parent o))))))
+
 
 ;;;
 ;;; Parse tree accessors.
@@ -884,11 +940,6 @@ procedure)."
   (match o
     ((? (is? 'port)) (list o))
     ((? pair?) (append-map tree:port* o))
-    (_ '())))
-
-(define (context:port* o)
-  (match (.tree o)
-    ((? (is? 'component)) (map (cute cons <> o) (tree:port* (.tree o))))
     (_ '())))
 
 (define (tree:port-qualifier* o)

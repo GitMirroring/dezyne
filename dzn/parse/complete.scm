@@ -121,8 +121,20 @@
 (define (context:int-names o)
   (map tree:dotted-name (tree:int* (slot o 'root))))
 
-(define (context:type-names o)
-  (map tree:dotted-name (tree:type* (slot o 'root))))
+(define (context:type-names context)
+  (define (strip-prefix prefix str)
+    (if (not (string-prefix? prefix str)) str
+        (substring str (string-length prefix))))
+  (let* ((type-names (map context:dotted-name
+                          (filter (compose (negate (is? 'extern)) .tree)
+                                  (context:type* context))))
+         (interface (parent-context context 'interface))
+         (type-names (if (not interface) type-names
+                         (let ((prefix (string-append (context:dotted-name interface) ".")))
+                           (map (cute strip-prefix prefix <>) type-names)))))
+    (delete-duplicates
+     (cons* "bool" "void"
+            type-names))))
 
 (define* (context:event-names o event-dir #:key (predicate identity))
   (let* ((events (tree:event* (find (is? 'interface) o)))
@@ -247,7 +259,7 @@
     (map tree:dotted-name variables)))
 
 (define (complete:type-names context)
-  (cons* "bool" "void" (context:type-names context)))
+  (context:type-names context))
 
 (define (complete-enum o context)
   (assert-type o 'enum)
@@ -437,10 +449,8 @@
 
 (define (behaviour-top context)
   (sort (append
-         '("bool" "enum" "extern" "on" "subint" "void")
-         (delete-duplicates (map tree:dotted-name
-                                 (filter (negate (is? 'extern))
-                                         (tree:type* context)))))
+         '( "enum" "extern" "on" "subint")
+         (context:type-names context))
         string<))
 
 (define (context:trigger* context)

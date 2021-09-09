@@ -271,23 +271,23 @@
   (test-complete #:file-name "component4.dzn"))
 
 (test-equal "language component5"
-  '("p.f()" "r.e()")
+  '("bool" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component5.dzn"))
 
 (test-equal "language component6"
-  '("p.f()" "r.e()")
+  '("bool" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6.dzn"))
 
 (test-equal "language component6a"
-  '("p.f()" "r.e()")
+  '("bool" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6a.dzn" #:line 24))
 
 (test-equal "language component6b"
-  '("p.f()" "r.e()")
+  '("bool" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6b.dzn"))
 
 (test-equal "language component7"
-  '("E" "bool" "enum" "extern" "on" "subint" "void")
+  '("J.E" "bool" "enum" "extern" "on" "subint" "void")
   (test-complete #:file-name "component7.dzn"))
 
 (test-equal "language component8"
@@ -303,11 +303,11 @@
   (test-complete #:file-name "component9a.dzn" #:offset 145))
 
 (test-equal "language component10"
-  '("i.a0()" "i.a1()")
+  '("bool" "i.a0()" "i.a1()" "void")
   (test-complete #:file-name "component10.dzn" #:offset 185))
 
 (test-equal "language component10a"
-  '("i.a0()" "i.a1()")
+  '("bool" "i.a0()" "i.a1()" "void")
   (test-complete #:file-name "component10a.dzn" #:offset 188))
 
 (test-equal "completion component-requires provides"
@@ -381,6 +381,10 @@
 (test-equal "completion component-enum local"
   '("fun(_)" "r.hello()" "Bool.False" "Bool.True")
   (test-complete #:file-name "component-enum-local.dzn" #:line 27 #:column 20))
+
+(test-equal "completion interface-enum"
+  '("bool" "enum" "extern" "ihello.Bool" "on" "subint" "void")
+  (test-complete #:file-name "interface-enum.dzn" #:line 20))
 
 (test-equal "language typo"
   '("provides" "requires")

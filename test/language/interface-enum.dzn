@@ -17,5 +17,6 @@ component hello
   {
     ihello.Bool e = ihello.Bool.True;
     on h.hello (): {h.world ();reply (e);}
+
   }
 }
