@@ -443,6 +443,21 @@
                                          (tree:type* context)))))
         string<))
 
+(define (context:statements context)
+  (let ((statements (cond ((parent context 'function)
+                           '("return"))
+                          ((parent context 'on)
+                           ;; TODO reply
+                           '())
+                          (else
+                           '()))))
+    (sort (append
+           ;;'("if") ;;TODO
+           statements
+           ;;(context:type-names context) ;;TODO
+           (context:action-names context))
+          string<)))
+
 (define (system-top context)
   (let* ((root (parent context 'root))
          (component (parent context 'component))
@@ -648,9 +663,9 @@
     ((? (is? 'trigger))
      (context:trigger-names context))
     (('on (? (is? 'triggers)) (? tree:location?))
-     (context:action-names context))
+     (context:statements context))
     (('on (? (is? 'triggers)) (? (is? 'skip-statement)) (? tree:location?))
-     (context:action-names context))
+     (context:statements context))
     (('on (? (is? 'triggers)) rest ...)
      (context:trigger-names context))
     ((and (? (is? 'variable)) (? incomplete?))
@@ -689,14 +704,17 @@
      (complete:boolean-expressions context))
 
     ('statement
-     (context:action-names context))
+     (cond ((parent context 'on) (context:statements context))
+           ((parent context 'function) (context:statements context))
+           (else (behaviour-top context))))
 
     (('compound x ...)
-     (cond ((parent context 'on) (context:action-names context))
+     (cond ((parent context 'on) (context:statements context))
+           ((parent context 'function) (context:statements context))
            (else (behaviour-top context))))
 
     ((? (is? 'action))
-     (context:action-names context))
+     (context:statements context))
 
     ((? (is? 'comment))
      (context:complete (parent context tree?)
