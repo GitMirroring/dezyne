@@ -165,6 +165,14 @@ left-handed word boundaries."
       ((offset . expect)
        (let* ((len (string-length expect))
               (start offset)
+              (len (cond
+                    ((and (equal? expect "reply")
+                          (string-match "^( *\\([^()]*\\))" (substring str (+ offset len))))
+                     =>
+                     (lambda (m)
+                       (+ len (string-length (match:substring m 1)))))
+                    (else
+                     len)))
               (end (+ start len)))
          (string-replace str (make-string len #\space) start end)))))
 
