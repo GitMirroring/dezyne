@@ -25,6 +25,7 @@
 ;;; Code:
 
 (define-module (dzn parse stress)
+  #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
@@ -123,40 +124,54 @@ left-handed word boundaries."
                 (match:substring m)))))
       (list-matches identifiers-regex str)))))
 
-(define* ((test:complete str) offset-expect)
+(define (test:complete str offset)
   "COMPLETE produces the completion list for OFFSET in STR"
-  (let* ((offset (car offset-expect))
-         (expect (cdr offset-expect))
-         (len (string-length expect))
-         (start offset)
-         (end (+ start len 1))
-         (str (string-replace str (make-string len #\space) start end)))
-    ((pure-funcq
-      (lambda (str offset)
-        (let ((context (complete:context
-                        (parameterize
-                            ((%peg:locations? #t)
-                             (%peg:skip? peg:skip-parse)
-                             (%peg:fall-back? #t)
-                             (%peg:error (const #f)))
-                          (string->parse-tree str))
-                        offset)))
-          (complete (.tree context) context (1+ offset)))))
-     str offset)))
+  ((pure-funcq
+    (lambda (str offset)
+      (let* ((context (complete:context
+                       (parameterize
+                           ((%peg:locations? #t)
+                            (%peg:skip? peg:skip-parse)
+                            (%peg:fall-back? #t)
+                            (%peg:error (const #f)))
+                         (string->parse-tree str))
+                       offset)))
+        (complete (.tree context) context (1+ offset)))))
+   str offset))
 
-(define (assert-completions str predicate)
+(define* (assert-completions str predicate #:key debug? file-name)
   "Call complete for every relevant OFFSET in STR according to PREDICATE"
-  (let* ((offset-completion (select-completions str predicate))
-         (offsets (map car offset-completion))
-         (completions (map cdr offset-completion)))
+
+  (define (assert-completion offset-expect str)
+    (match offset-expect
+      ((offset . expect)
+       (let ((completions (test:complete str offset))
+             (snippet-name (format #f "~a-~a.dzn" file-name (1+ offset))))
+
+         (when debug?
+           (with-output-to-file snippet-name
+             (cute display str)))
+
+         (cond ((find (cute string-contains <> expect) completions)
+                #f)
+               (else
+                (with-output-to-file snippet-name
+                  (cute display str))
+                (list (1+ offset) expect completions)))))))
+
+  (define* ((make-hole str) offset-expect)
+    "Return STR with a whitepace hole inserted at OFFSET-EXPECT."
+    (match offset-expect
+      ((offset . expect)
+       (let* ((len (string-length expect))
+              (start offset)
+              (end (+ start len)))
+         (string-replace str (make-string len #\space) start end)))))
+
+  (let* ((offset-expects (select-completions str predicate))
+         (strings (map (make-hole str) offset-expects)))
     ;;(pretty-print offset-completion)
-    (filter-map
-     (lambda (offset expect completions)
-       (if (find (cute string-contains <> expect) completions) #f
-           (list (1+ offset) expect completions)))
-     offsets
-     completions
-     (map (test:complete str) offset-completion))))
+    (filter-map assert-completion offset-expects strings)))
 
 (define (tipex-comments str)
   (let ((comment-regexp (make-regexp "//[^\n]*")))
@@ -173,8 +188,11 @@ left-handed word boundaries."
 ;;;
 
 (define (stress file-name)
-  (let ((str (tipex-comments (with-input-from-file file-name read-string))))
-    (pretty-print (assert-completions str completion-heuristics))))
+  (let* ((str (tipex-comments (with-input-from-file file-name read-string))))
+    (pretty-print (assert-completions
+                   str
+                   completion-heuristics
+                   #:file-name (basename file-name ".dzn")))))
 
 (when (equal? (command-line) '("dzn/parse/stress.scm"))
   (stress "test/all/helloworld/helloworld.dzn"))
