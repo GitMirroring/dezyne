@@ -187,11 +187,12 @@ left-handed word boundaries."
 ;;; Entry points.
 ;;;
 
-(define (stress file-name)
+(define* (stress file-name #:key debug?)
   (let* ((str (tipex-comments (with-input-from-file file-name read-string))))
     (pretty-print (assert-completions
                    str
                    completion-heuristics
+                   #:debug? debug?
                    #:file-name (basename file-name ".dzn")))))
 
 (when (equal? (command-line) '("dzn/parse/stress.scm"))

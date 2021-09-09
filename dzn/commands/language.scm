@@ -94,6 +94,7 @@ Dezyne language tool for completion and lookup information
   (let* ((options (parse-opts args))
          (verbose? (option-ref options 'verbose #f))
          (debugity (dzn:debugity))
+         (debug? (and (not (zero? debugity)) debugity))
          (file-name (and+pred=> (option-ref options '() #f) last pair?))
          (imports (multi-opt options 'import))
          (imports (delete-duplicates (cons* (dirname file-name) "." imports)))
@@ -154,7 +155,7 @@ Dezyne language tool for completion and lookup information
           (pretty-print context (current-error-port)))
         (cond
          (stress?
-          (stress file-name))
+          (stress file-name #:debug? debug?))
          (lookup?
           (let* ((token (.tree context))
                  (def   (lookup-definition
