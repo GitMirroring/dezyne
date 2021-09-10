@@ -403,8 +403,11 @@
          (types (map .type triggers)))
     (find (negate (cute equal? <> context:void)) types)))
 
-(define (context:statements context)
-  (let ((statements (cond
+(define (context:statements context offset)
+  (let* ((statements (tree:statement* (.tree context)))
+         (before (filter-map (cute before-location? <> offset) statements))
+         (before (and (pair? before) (last before)))
+         (statements (cond
                      ((parent context 'function)
                       '("return"))
                      ((or (and (is-a? (.tree context) 'on) context)
@@ -418,6 +421,11 @@
                       '()))))
     (sort (append
            '("if")
+           (if (and (is-a? before 'if-statement)
+                    (.then before)
+                    (not (.else before)))
+               '("else")
+               '())
            statements
            (context:type-names context)
            (complete:variable-names #f context)
@@ -649,10 +657,10 @@
      (cond ((null? (tree:trigger* o))
             (context:trigger-names context))
            (else
-            (context:statements context))))
+            (context:statements context offset))))
     ((? (is? 'if-statement))
      (cond ((is-a? (.then o) 'skip-statement)
-            (context:statements context))
+            (context:statements context offset))
            (else
             '())))
     ((and (? (is? 'variable)) (? incomplete?))
@@ -689,17 +697,24 @@
      (sort (cons "otherwise" (complete:boolean-expressions context)) string<))
 
     ((? (is? 'statement))
-     (cond ((parent context 'on) (context:statements context))
-           ((parent context 'function) (context:statements context))
+     (cond ((parent context 'on) (context:statements context offset))
+           ((parent context 'function) (context:statements context offset))
            (else (behaviour-top context))))
 
     ((? (is? 'compound))
-     (cond ((parent context 'on) (context:statements context))
-           ((parent context 'function) (context:statements context))
+     (cond ((parent context 'on) (context:statements context offset))
+           ((parent context 'function) (context:statements context offset))
            (else (behaviour-top context))))
 
     ((? (is? 'action))
-     (context:statements context))
+     (cond ((or (parent-context context 'compound)
+                (parent-context context 'on))
+            => (cute context:statements <> offset))
+           ((or (parent-context context 'behaviour-statements)
+                (parent-context context 'behaviour-compound))
+            => behaviour-top)
+           (else
+            '())))
 
     ((? (is? 'comment))
      (context:complete (parent context tree?)
