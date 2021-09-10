@@ -94,6 +94,14 @@
   (let ((ports (ast:required+async model)))
     (string-join (map makreel:.name ports) ",")))
 
+(define (component-exclude-taus model)
+  (let ((ports (ast:requires-port* model)))
+    (define (port-exclude-taus port)
+      (let* ((interface (.type port))
+             (port-name (makreel:.name port)))
+        (list (string-append port-name ".optional") (string-append port-name ".inevitable"))))
+    (string-join (append-map port-exclude-taus ports) ",")))
+
 (define (compliance-taus model)
   (define (provides-taus port)
     (let ((port-name (makreel:.name port)))
@@ -229,9 +237,14 @@
 (define (model-taus options)
   (let* ((model (options-model options))
          (taus (if (is-a? model <interface>) (interface-taus model)
-                   (component-taus model))))
-    (if (string-null? taus) '()
-        (list (string-append "--tau=" taus)))))
+                   (component-taus model)))
+         (exclude-taus (if (is-a? model <interface>) ""
+                           (component-exclude-taus model))))
+    (append
+      (if (string-null? taus) '()
+          (list (string-append "--tau=" taus)))
+      (if (string-null? exclude-taus) '()
+          (list (string-append "--exclude-tau=" exclude-taus))))))
 
 (define (in-out:aut-dpweak-bisim->verify-interface options)
   (let ((taus (model-taus options)))
