@@ -1,4 +1,1 @@
-test/all/undefined/interface/if/if.dzn:26:14: error
-    on e: if(p) {}
-             ^
-             `expression' expected
+test/all/undefined/interface/if/if.dzn:26:11: error: undefined identifier `p'

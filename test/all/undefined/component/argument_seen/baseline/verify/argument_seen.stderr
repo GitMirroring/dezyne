@@ -1,4 +1,1 @@
-test/all/undefined/component/argument_seen/argument_seen.dzn:50:30: error
-    on h.hello (i): h.world (j);
-                             ^
-                             `PAREN-CLOSE' expected
+test/all/undefined/component/argument_seen/argument_seen.dzn:50:29: error: undefined identifier `j'

@@ -186,7 +186,7 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
       port-direction <- provides / requires
       port-qualifiers <-- (external / injected / &compound-name)*
       formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
-        formal <-- (INOUT / IN / OUT)? type-name add-var
+        formal <-- (INOUT / IN / OUT)? type-name add-var#
 
 type-name <-- compound-name / BOOL / VOID
 
@@ -245,7 +245,7 @@ or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
 compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
-not-expression <- not / group / dollars / (!var !is-port enum-literal / literal / var !DOT / action / call / interface-action / field-test)
+not-expression <- not / group / dollars / (!var !is-port enum-literal / literal / var !DOT / action / call / interface-action / field-test / unknown-identifier)
 not <-- NOT not-expression#
 enum-literal <-- global? scope name
 field-test <-- !is-port var DOT# name#

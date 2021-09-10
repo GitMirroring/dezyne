@@ -1,4 +1,1 @@
-test/all/undefined/interface/guard/guard.dzn:26:6: error
-    [foo] on e: {}
-     ^
-     `otherwise, expression' expected
+test/all/undefined/interface/guard/guard.dzn:26:5: error: undefined identifier `foo'

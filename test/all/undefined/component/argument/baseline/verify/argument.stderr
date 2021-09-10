@@ -1,4 +1,1 @@
-test/all/undefined/component/argument/argument.dzn:36:17: error
-    on p.e(): f(a);
-                ^
-                `PAREN-CLOSE' expected
+test/all/undefined/component/argument/argument.dzn:36:15: error: undefined identifier `f'
