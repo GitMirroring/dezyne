@@ -42,6 +42,7 @@
             .instance
             .port
             .type
+            .variable
             context:lookup
             context:look-down
             declaration->offset
@@ -206,11 +207,20 @@ null) and return its CONTEXT."
 (define (.type context)
   (let ((tree (.tree context)))
     (match tree
+      ((? (is? 'enum-literal)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'event)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'formal)) (and=> (.type-name tree) (cute context:lookup <> context)))
+      ((? (is? 'function)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'port)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'trigger)) (and=> (.event context) .type))
+      ((? (is? 'variable)) (and=> (.type-name tree) (cute context:lookup <> context)))
+      ((? (is? 'var)) (and=> (.variable context) .type))
       ((? (is? 'instance)) (and=> (.type-name tree) (cute context:lookup <> context))))))
+
+(define (.variable context)
+  (let ((tree (.tree context)))
+    (match tree
+      ((? (is? 'var)) (and=> (.name tree) (cute context:lookup <> context))))))
 
 (define (resolve-action o name context)
   (resolve-trigger o name context))

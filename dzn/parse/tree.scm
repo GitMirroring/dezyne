@@ -87,10 +87,13 @@
             .var
 
             context:dotted-name
+            context:formal*
             context:port*
             context:stripped-dotted-name
             context:top*
+            context:trigger*
             context:type*
+            context:variable*
 
             tree:component?
             tree:debug-context
@@ -796,6 +799,15 @@ procedure)."
      (list o))
     (_
      '())))
+
+(define (context:formal* context)
+  (map (cute cons <> context) (tree:formal* (.tree context))))
+
+(define (context:variable* context)
+  (map (cute cons <> context) (tree:variable* (.tree context))))
+
+(define (context:trigger* context)
+  (map (cute cons <> context) (tree:trigger* (.tree context))))
 
 (define (context:type* o)
   (define (helper o)
