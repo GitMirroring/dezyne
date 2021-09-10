@@ -201,6 +201,7 @@ null) and return its CONTEXT."
   (let ((tree (.tree context)))
     (match tree
       ((? (is? 'event)) (and=> (.type-name tree) (cute context:lookup <> context)))
+      ((? (is? 'formal)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'port)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'trigger)) (and=> (.event context) .type))
       ((? (is? 'instance)) (and=> (.type-name tree) (cute context:lookup <> context))))))

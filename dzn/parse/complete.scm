@@ -666,6 +666,14 @@
                  (filter-self context (complete-for-type type context))))
            (else
             '())))
+    ((and (? (is? 'formal)) (? incomplete?))
+     (let ((type-name (.type-name o))
+           (type (.type context))
+           (name (.name o)))
+       (cond ((or (not type) (not name))
+              (context:type-names context))
+             (else
+              '()))))
     (('field-test var name ...)
      (cond ((let* ((name (tree:name var))
                    (variable (and name (tree:lookup name context))))
