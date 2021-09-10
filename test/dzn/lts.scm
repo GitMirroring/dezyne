@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@yahoo.com>
-;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2019, 2020, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -145,7 +145,7 @@
                                    2
                                    (list (make-edge 0 "aap" 1)
                                          (make-edge 1 "return" 0)))
-                         (list "aap")))
+                         (list "aap") '()))
        (equal? (make-lts 0
                          2
                          (list (make-edge_ 0 "aap(0)" #t 1)
@@ -162,7 +162,7 @@
                                          (make-edge 0 "aap'return(0)" 1)
                                          (make-edge 0 "aapje" 1)
                                          (make-edge 1 "return" 0)))
-                         (list "aap" "aap'return" "noot" "mies")))))
+                         (list "aap" "aap'return" "noot" "mies") '()))))
 (test-assert (test:lts-hide))
 
 (define (test:lts->alphabet)
@@ -264,14 +264,14 @@
                  (lts-tau-loops nodes)))
        (equal? '(5)
                (let ((nodes (lts->nodes (lts-hide (aut-file->lts "test/lts/double-entry.aut")
-                                                  (list "listIt'return" "listIt'event" "ListIt'flush")))))
+                                                  (list "listIt'return" "listIt'event" "ListIt'flush") '()))))
                  (lts-tau-loops nodes)))
        ))
 (test-assert (test:lts-tau-loops))
 
 (define (test:trace)
   (equal? '(() ("create") ("create" "return") ("create" "return" "tau") ("cancel"))
-          (let* ((lts (lts-hide (aut-file->lts "test/lts/itimer.aut") '()))
+          (let* ((lts (lts-hide (aut-file->lts "test/lts/itimer.aut") '() '()))
                  (test-nodes (lts->nodes lts)))
             (map (cut map edge-label <>) (map (cut trace test-nodes <>) (iota 5))))))
 (test-assert (test:trace))
@@ -301,7 +301,7 @@
                      (make-edge_ 0 "tau" #t 0))
                (let ((nodes (lts->nodes test-lts-livelock-2)))
                  (assert-livelock nodes)))
-       (not (let* ((lts (lts-hide (aut-file->lts "test/lts/no-livelock.aut") '()))
+       (not (let* ((lts (lts-hide (aut-file->lts "test/lts/no-livelock.aut") '() '()))
                    (test-nodes (lts->nodes lts)))
               (assert-livelock test-nodes)))))
 (test-assert (test:assert-livelock))

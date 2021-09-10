@@ -240,14 +240,16 @@
 (define (aut-file->lts file-name)
   (aut-text->lts (with-input-from-file file-name read-string)))
 
-(define (lts-hide lts tau)
+(define (lts-hide lts tau exclude-tau)
   "Mark edges labeled with name occurring in TAU as tau-edge."
   (make-lts (lts-state lts)
             (lts-states lts)
-            (map (lambda (edge) (if (or (member (edge-label edge) tau)
-                                        (find (cut string-prefix? <> (edge-label edge))
-                                              (append (map (cut string-append <> ".") tau)
-                                                      (map (cut string-append <> "(") tau))))
+            (map (lambda (edge) (if (and
+                                      (or (member (edge-label edge) tau)
+                                          (find (cut string-prefix? <> (edge-label edge))
+                                                  (append (map (cut string-append <> ".") tau)
+                                                          (map (cut string-append <> "(") tau))))
+                                      (not (member (edge-label edge) exclude-tau)))
                                     (make-edge_ (edge-start-state edge)
                                                     (edge-label edge)
                                                     #t

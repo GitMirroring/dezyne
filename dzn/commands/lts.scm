@@ -45,6 +45,7 @@
                         (deterministic)
                         (list-events (single-char #\e))
                         (exclude-illegal)
+                        (exclude-tau (value #t))
                         (failures (single-char #\f))
                         (help (single-char #\h))
                         (illegal (single-char #\i))
@@ -81,6 +82,8 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
   -p, --prefix=EVENT[,EVENT...]   find states reachable by EVENTs
                                     [default: empty trace => initial state]
   -t, --tau=EVENT[,EVENT...]      hide all EVENTs
+      --exclude-tau=EVENT[,EVENT...]
+                                  exclude given EVENTs from '--tau' list
   -s, --single-line               report an error including trace on a single line
   -v, --validate                  validate Aldebran (AUT)-files
 ")
@@ -93,6 +96,8 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (options (parse-opts args))
          (list-accepts? (option-ref options 'list-accepts #f))
          (cleanup? (option-ref options 'cleanup #f))
+         (exclude-tau (option-ref options 'exclude-tau #f))
+         (exclude-tau (if exclude-tau (string-split exclude-tau sep) '()))
          (files (option-ref options '() '()))
          (file-name (and (pair? files) (car files)))
          (list-events? (option-ref options 'list-events #f))
@@ -128,7 +133,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
       (if (not lts-nodes-) (set! lts-nodes- (lts->nodes (get-lts))))
       lts-nodes-)
     (define (get-lts-hide)
-      (if (not lts-hide-) (set! lts-hide- (lts-hide (get-lts) tau)))
+      (if (not lts-hide-) (set! lts-hide- (lts-hide (get-lts) tau exclude-tau)))
       lts-hide-)
     (define (get-lts-hide-nodes)
       (if (not lts-hide-nodes-) (set! lts-hide-nodes- (lts->nodes (get-lts-hide))))
@@ -156,7 +161,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
       (let ((prefix (option-ref options 'prefix #f)))
         (cleanup-aut #:file-name file-name #:prefix prefix)))
     (when list-events?
-      (let ((alphabets (map (compose lts->alphabet (cut lts-hide <> tau) aut-file->lts) files)))
+      (let ((alphabets (map (compose lts->alphabet (cut lts-hide <> tau exclude-tau) aut-file->lts) files)))
         (map (lambda (f a) (format #t "Events in lts ~a:\n~a\n" f a)) files alphabets)))
     (when list-accepts?
       (let* ((lts (get-lts-hide))
