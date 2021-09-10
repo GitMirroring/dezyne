@@ -744,7 +744,7 @@
     (('expression x ...)
      (context:complete (.value o) (cons (.value o) context) offset))
     (('or 'otherwise 'expression)
-     (complete:boolean-expressions context))
+     (sort (cons "otherwise" (complete:boolean-expressions context)) string<))
 
     ('statement
      (cond ((parent context 'on) (context:statements context))

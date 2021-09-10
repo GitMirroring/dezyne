@@ -171,11 +171,11 @@
   (test-complete #:file-name "interface9d.dzn" #:line 10))
 
 (test-equal "language interface10"
-  '("b" "e" "false" "true")
+  '("b" "e" "false" "otherwise" "true")
   (test-complete #:file-name "interface10.dzn"))
 
 (test-equal "language interface10a"
-  '("b" "e" "false" "true")
+  '("b" "e" "false" "otherwise" "true")
   (test-complete #:file-name "interface10a.dzn" #:line 11 #:column 5))
 
 (test-equal "language interface11"
