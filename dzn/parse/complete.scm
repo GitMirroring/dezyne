@@ -452,7 +452,7 @@
   (match o
     (#f
      '())
-    (('root (? (disjoin complete? tree:location?)) ...)
+    ((? (is? 'root))
      %completion-top)
     ((? (is? 'file-name))
      (context:complete (.tree (.parent context)) (.parent context) offset))
@@ -463,8 +463,6 @@
            ((after-location? (.behaviour o) offset)
             '("in" "out" "enum" "extern" "subint"))
            (else '())))
-    (('interface (? (disjoin incomplete? tree:location?)) ..1)
-     '())
     ((and (? (is? 'component))
           (? complete?))
      (cond ((and (not (.behaviour o))
@@ -495,7 +493,7 @@
                       (context:interface-names (parent context 'root)))))))
     ('types-and-events
      '("in" "out" "enum" "extern" "subint"))
-    (('types-and-events types-events ...)
+    ((? (is? 'types-and-events))
      %completion-interface)
     ((and (? (is? 'event)) (? incomplete?))
      (let ((direction (.direction o))
@@ -517,7 +515,7 @@
      %completion-component)
     ('behaviour
      %completion-interface)
-    (('behaviour-statements (? (disjoin incomplete? tree:location?)) ...)
+    ((? (is? 'behaviour-statements))
      (match context
        ((o ('BRACE-OPEN b ...) t ...)
         '())
@@ -527,9 +525,7 @@
                  (context:trigger-names context))
                 (else
                  (behaviour-top context)))))))
-    (('behaviour-statements x ...)
-     (behaviour-top context))
-    (('behaviour-compound x ...)
+    ((? (is? 'behaviour-compound))
      (behaviour-top context))
     ((? (is? 'system))
      (system-top context))
@@ -580,9 +576,6 @@
            '())))
     ((and (? (is? 'return)) (? (negate .expression)))
      (complete-function context))
-    (('var 'DOT 'name)
-     (if (not (parent context 'field-test)) (complete:variable-names #f context)
-         (context:complete (.tree (.parent context)) (.parent context) offset)))
     ((? (is? 'var))
      (cond ((not (parent context 'expression)) '())
            ((let* ((type (.type context))
@@ -632,13 +625,15 @@
                           (let* ((formal (list-ref formals (length arguments)))
                                  (type (.type (cons formal function))))
                             (complete-for-type type context))))))))))
-    (('field-test var name ...)
-     (cond ((let ((variable (.variable (cons var context))))
+    ((? (is? 'field-test))
+     (cond ((let* ((var (.var o))
+                   (variable (.variable (cons var context))))
               (and (is-a? (.tree variable) 'variable) variable))
             =>
             (lambda (variable)
-              (let ((enum (.type variable))
-                    (name (.name var)))
+              (let* ((enum (.type variable))
+                     (var (.var o))
+                     (name (.name var)))
                 (tree:enum-field-tests (.tree enum) name))))
            ((parent-context context 'variable)
             =>
@@ -646,18 +641,15 @@
               (context:complete (.tree context) context offset)))
            (else
             (complete:boolean-expressions context))))
-    (('triggers (? (disjoin incomplete? tree:location?)) ...)
-     (context:trigger-names context))
-    (('triggers rest ...)
+    ((? (is? 'triggers))
      (context:trigger-names context))
     ((? (is? 'trigger))
      (context:trigger-names context))
-    (('on (? (is? 'triggers)) (? tree:location?))
-     (context:statements context))
-    (('on (? (is? 'triggers)) (? (is? 'skip-statement)) (? tree:location?))
-     (context:statements context))
-    (('on (? (is? 'triggers)) rest ...)
-     (context:trigger-names context))
+    ((? (is? 'on))
+     (cond ((null? (tree:trigger* o))
+            (context:trigger-names context))
+           (else
+            (context:statements context))))
     ((and (? (is? 'variable)) (? incomplete?))
      (let* ((type (.type context))
             (expression (false-if-exception (.expression o)))
@@ -677,21 +669,21 @@
     ((and (? (is? 'variable)))
      (let ((type (.type context)))
        (filter-self context (complete-for-type type context))))
-    (('guard x ...)
+    ((? (is? 'guard))
      (cond ((incomplete? o) (context:complete (.expression o) (cons (.expression o) context) offset))
            ((not (parent context 'on)) (behaviour-top context))
            (else '())))
-    (('expression x ...)
+    ((? (is? 'expression))
      (context:complete (.value o) (cons (.value o) context) offset))
     (('or 'otherwise 'expression)
      (sort (cons "otherwise" (complete:boolean-expressions context)) string<))
 
-    ('statement
+    ((? (is? 'statement))
      (cond ((parent context 'on) (context:statements context))
            ((parent context 'function) (context:statements context))
            (else (behaviour-top context))))
 
-    (('compound x ...)
+    ((? (is? 'compound))
      (cond ((parent context 'on) (context:statements context))
            ((parent context 'function) (context:statements context))
            (else (behaviour-top context))))
@@ -714,13 +706,6 @@
                        (and=> (find incomplete? (cdr o))
                               (cute context:complete <> context offset)))
                   (context:complete (before-location? o offset) context offset))))))
-
-;; TODO: rewrite above as:
-;; (define (context:complete o context offset)
-;;   (match o
-;;     ((? (is? 'trigger)) (context:trigger-names context))
-;;     ((? (is? 'name)) (context:complete (.tree (.parent context)) (.parent context) offset))
-;;     (_ '())))
 
 (define* (complete o context offset #:key
                    (file-name->parse-tree (const '()))
