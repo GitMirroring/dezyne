@@ -209,7 +209,7 @@ completed, such as removal of BEHAVIOUR, SYSTEM and type definitions."
     (filter-map assert-completion offset-expects strings)))
 
 (define (tipex-comments str)
-  (let ((comment-regexp (make-regexp "//[^\n]*")))
+  (let ((comment-regexp (make-regexp "//[^\n]*|(/\\*([^*]|\\*[^/])*\\*/)")))
     (let loop ((str str) (matches (list-matches comment-regexp str)))
       (if (null? matches) str
           (let* ((m (car matches))
