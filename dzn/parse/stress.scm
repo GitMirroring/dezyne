@@ -180,13 +180,15 @@ completed, such as removal of BEHAVIOUR, SYSTEM and type definitions."
        (let* ((len (string-length expect))
               (start offset)
               (len (cond
-                    ((and (equal? expect "reply")
+                    ;; whitespace dangling parameter list
+                    ((and ;;(equal? expect "reply")
                           (string-match "^( *\\([^()]*\\))" (substring str (+ offset len))))
                      =>
                      (lambda (m)
                        (+ len (string-length (match:substring m 1)))))
+                    ;; whitespace variable declaration's name and expression
                     ((string-match "^( *[a-zA-Z_.][0-9a-zA-Z_]* *=.*;)"
-                      (substring str (+ offset len)))
+                                   (substring str (+ offset len)))
                      =>
                      (lambda (m)
                        (+ len (string-length (match:substring m 1)))))
