@@ -124,6 +124,7 @@
 
             context:collect
             tree:collect
+            tree:direction
             tree:dotted-name
             tree:file-name
             tree:location
@@ -228,8 +229,11 @@ procedure)."
      (slot o 'behaviour-statements))))
 
 (define (.direction o)
-  (assert-type o 'event 'formal 'port)
-  (slot o 'direction))
+  (match o
+    (('direction (? string? direction) rest ...) direction)
+    ((? (is? 'event)) (slot o 'direction))
+    ((? (is? 'formal)) (slot o 'direction))
+    ((? (is? 'port)) (slot o 'direction))))
 
 (define (.end o)
   (match o
@@ -856,6 +860,15 @@ procedure)."
              (rest (append-map (cute context:collect predicate <> context) tree)))
         (if (not (predicate tree)) rest
             (cons context rest)))))
+
+(define (tree:direction o)
+  (match o
+    ((? (is? 'event)) (tree:direction (.direction o)))
+    ((? (is? 'direction)) (string->symbol (.direction o)))
+    ((? (is? 'provides)) 'provides)
+    ((? (is? 'requires)) 'requires)
+    ((? pair?) (tree:direction (find tree:direction o)))
+    (_ #f)))
 
 (define (tree:name o)
   (match o

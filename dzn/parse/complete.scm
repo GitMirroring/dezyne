@@ -89,32 +89,6 @@
 ;;; Tree to (dotted) name string.
 ;;;
 
-(define (tree:type-name o)
-  (match o
-    ((? (is? 'port)) (tree:dotted-name (.type-name o)))
-    ((? pair?) (tree:type-name (find tree:type-name o)))
-    (_ #f)))
-
-(define (.direction o)
-  (match o
-    (('direction (? string? direction) rest ...) direction)
-    ((? (is? 'event)) (slot o 'direction))
-    ((? (is? 'port)) (slot o 'direction))))
-
-(define (tree:event-dir o)
-  (match o
-    ((? (is? 'event)) (tree:event-dir (.direction o)))
-    ((? (is? 'direction)) (string->symbol (.direction o)))
-    ((? pair?) (tree:event-dir (find tree:event-dir o)))
-    (_ #f)))
-
-(define (tree:port-dir o)
-  (match o
-    ((? (is? 'provides)) 'provides)
-    ((? (is? 'requires)) 'requires)
-    ((? pair?) (tree:port-dir (find tree:port-dir o)))
-    (_ #f)))
-
 (define (context:type-names context)
   (let* ((types (context:type* context))
          (type-names (map (cute context:stripped-dotted-name <> context)
@@ -126,7 +100,7 @@
 
 (define* (context:event-names o event-dir #:key (predicate identity))
   (let* ((events (tree:event* (find (is? 'interface) o)))
-         (events (filter (conjoin predicate (compose (cute eq? event-dir <>) tree:event-dir)) events)))
+         (events (filter (conjoin predicate (compose (cute eq? event-dir <>) tree:direction)) events)))
     (map tree:dotted-name events)))
 
 (define* (context:interface-names o)
@@ -141,23 +115,17 @@
 (define* (context:port-event-names o   ;context
                                    dir ;'trigger or 'action
                                    #:key (event-predicate identity))
-  (let* ((ports (tree:port* (find (is? 'component) o)))
-         (interface-names (map tree:type-name ports))
-         (interfaces (filter (compose (cute member <> interface-names string=?)
-                                      tree:dotted-name)
-                             (tree:interface* (find (is? 'root) o)))))
+  (let* ((component (parent-context o 'component))
+         (ports  (context:port* component)))
     (define (port->event-names port)
-      (let* ((port-type (tree:type-name port))
-             (port-dir (tree:port-dir port))
-             (interface (find (compose (cute string=? port-type <>)
-                                       tree:dotted-name)
-                              interfaces))
+      (let* ((port-dir (tree:direction (.tree port)))
+             (interface (.type port))
              (events (filter
                       tree:dotted-name
                       (filter (conjoin event-predicate
                                        (compose (cute eq? (port-dir->event-dir port-dir dir) <>)
-                                        tree:event-dir))
-                              (tree:event* interface)))))
+                                                tree:direction))
+                              (tree:event* (.tree interface))))))
         (define (event->name event)
           (let* ((port (tree:dotted-name port))
                  (formals (map tree:dotted-name (tree:formal* event)))
