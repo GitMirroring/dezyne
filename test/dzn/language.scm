@@ -151,23 +151,23 @@
   (test-complete #:file-name "interface8b.dzn"))
 
 (test-equal "language interface9"
-  '("foo")
+  '("foo" "inevitable" "optional")
   (test-complete #:file-name "interface9.dzn"))
 
 (test-equal "language interface9a"
-  '("foo" "bar")
+  '("bar" "foo" "inevitable" "optional")
   (test-complete #:file-name "interface9a.dzn"))
 
 (test-equal "language interface9b"
-  '("foo" "bar")
+  '("bar" "foo" "inevitable" "optional")
   (test-complete #:file-name "interface9b.dzn"))
 
 (test-equal "language interface9c"
-  '("foo" "bar")
+  '("bar" "foo" "inevitable" "optional")
   (test-complete #:file-name "interface9c.dzn" #:line 10))
 
 (test-equal "language interface9d"
-  '("foo" "bar")
+  '("bar" "foo" "inevitable" "optional")
   (test-complete #:file-name "interface9d.dzn" #:line 10))
 
 (test-equal "language interface10"

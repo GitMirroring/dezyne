@@ -174,9 +174,15 @@
     (append-map port->event-names ports)))
 
 (define* (context:trigger-names o #:key (event-predicate identity))
-  (cond ((slot o 'interface) (context:event-names o 'in #:predicate event-predicate))
-        ((slot o 'component) (context:port-event-names o 'trigger #:event-predicate event-predicate))
-        (else '())))
+  (cond ((slot o 'interface)
+         (sort (cons* "inevitable" "optional"
+                      (context:event-names o 'in #:predicate event-predicate))
+               string<))
+        ((slot o 'component)
+         (sort (context:port-event-names o 'trigger #:event-predicate event-predicate)
+               string<))
+        (else
+         '())))
 
 (define* (context:action-names o #:key (event-predicate identity))
   (cond ((slot o 'interface) (context:event-names o 'out #:predicate event-predicate))
