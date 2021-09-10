@@ -54,6 +54,7 @@
             .behaviour-compound
             .behaviour-statements
             .direction
+            .else
             .end
             .event-name
             .expression
@@ -79,6 +80,7 @@
             .scope
             .statement
             .system
+            .then
             .to
             .tree
             .triggers
@@ -235,6 +237,15 @@ procedure)."
     ((? (is? 'formal)) (slot o 'direction))
     ((? (is? 'port)) (slot o 'direction))))
 
+(define (.else o)
+  (match o
+    ((? (is? 'if-statement))
+     (let* ((slots (slots o tree?))
+            (statements (filter tree:statement? slots)))
+       (match statements
+         ((then else) else)
+         (_ #f))))))
+
 (define (.end o)
   (match o
     (('location pos end) end)
@@ -386,6 +397,15 @@ procedure)."
   (assert-type o 'blocking 'guard 'on)
   (slot o tree:statement?))
 
+(define (.then o)
+  (match o
+    ((? (is? 'if-statement))
+     (let* ((slots (slots o tree?))
+            (statements (filter tree:statement? slots)))
+       (match statements
+         ((then else ...) then)
+         (_ #f))))))
+
 (define (.to o)
   (assert-type o 'range)
   (slot o 'to))
@@ -439,6 +459,7 @@ procedure)."
   (match o
     (('expression (? (is? 'location))) #f)
     (('expression expression (? (is? 'location))) expression)
+    (('expression expression) expression)
     (('literal (? (is? 'location))) #f)
     (('literal literal (? (is? 'location))) literal)))
 
@@ -463,6 +484,7 @@ procedure)."
     if-statement
     illegal
     reply
+    skip-statement
     variable))
 
 (define tree:model

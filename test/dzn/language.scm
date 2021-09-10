@@ -271,19 +271,19 @@
   (test-complete #:file-name "component4.dzn"))
 
 (test-equal "language component5"
-  '("bool" "p.f()" "r.e()" "void")
+  '("bool" "if" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component5.dzn"))
 
 (test-equal "language component6"
-  '("bool" "p.f()" "r.e()" "void")
+  '("bool" "if" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6.dzn"))
 
 (test-equal "language component6a"
-  '("bool" "p.f()" "r.e()" "void")
+  '("bool" "if" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6a.dzn" #:line 24))
 
 (test-equal "language component6b"
-  '("bool" "p.f()" "r.e()" "void")
+  '("bool" "if" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6b.dzn"))
 
 (test-equal "language component7"
@@ -303,11 +303,11 @@
   (test-complete #:file-name "component9a.dzn" #:offset 145))
 
 (test-equal "language component10"
-  '("bool" "i.a0()" "i.a1()" "void")
+  '("bool" "i.a0()" "i.a1()" "if" "void")
   (test-complete #:file-name "component10.dzn" #:offset 185))
 
 (test-equal "language component10a"
-  '("bool" "i.a0()" "i.a1()" "void")
+  '("bool" "i.a0()" "i.a1()" "if" "void")
   (test-complete #:file-name "component10a.dzn" #:offset 188))
 
 (test-equal "completion component-requires provides"

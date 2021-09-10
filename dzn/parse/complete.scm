@@ -417,7 +417,7 @@
                      (else
                       '()))))
     (sort (append
-           ;;'("if") ;;TODO
+           '("if")
            statements
            (context:type-names context)
            (complete:variable-names #f context)
@@ -650,6 +650,11 @@
             (context:trigger-names context))
            (else
             (context:statements context))))
+    ((? (is? 'if-statement))
+     (cond ((is-a? (.then o) 'skip-statement)
+            (context:statements context))
+           (else
+            '())))
     ((and (? (is? 'variable)) (? incomplete?))
      (let* ((type (.type context))
             (expression (false-if-exception (.expression o)))
