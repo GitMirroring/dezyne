@@ -315,7 +315,8 @@ procedure)."
     (((or 'action 'interface-action 'illegal-trigger 'trigger)
       (? (is? 'name) port) (? (is? 'name) event) rest ...) event)
     (((or 'action 'interface-action 'illegal-trigger 'trigger)
-      (? (is? 'name) event) rest ...) event)))
+      (? (is? 'name) event) rest ...) event)
+    (('trigger (and (or "inevitable" "optional") event) rest ...) event)))
 
 (define (.port-name o)
   (match o
@@ -323,6 +324,8 @@ procedure)."
       (? (is? 'name) port) (? (is? 'name) event) rest ...) port)
     (((or 'action 'interface-action 'illegal-trigger 'trigger)
       (? (is? 'name) event) rest ...) #f)
+    (((or 'action 'interface-action 'illegal-trigger 'trigger)
+      rest ...) #f)
     ((? (is? 'end-point)) (.port-name (slot o 'compound-name)))
     ((? (is? 'reply))
      (slot o 'name))
@@ -736,7 +739,8 @@ procedure)."
             (cons context rest)))))
 
 (define (context:full-name context)
-  (append-map (compose tree:id* .name) (filter tree:scope? (reverse context))))
+  (append-map tree:id*
+              (filter-map .name (filter tree:scope? (reverse context)))))
 
 (define (context:dotted-name context)
   (string-join (filter (negate string-null?) (context:full-name context)) "."))
