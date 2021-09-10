@@ -123,7 +123,7 @@ SKIP < !IMPORT . 'import'*")
   (define (-add-var- str len pos)
     (let ((res (name str len pos))
           (top (if (null? variable-stack) '() (car variable-stack)))
-          (bottom (cdr variable-stack)))
+          (bottom (if (null? variable-stack) '() (cdr variable-stack))))
       (when res
         (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom)))
       res))
