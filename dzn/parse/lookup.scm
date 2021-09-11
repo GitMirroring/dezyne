@@ -83,13 +83,13 @@
 (define widen-to-parent
   (pure-funcq
    (lambda (scope name context)
-     (let ((parent-context (parent-context context tree:scope?)))
-       (and parent-context
-            (let* ((parent-tree (and=> parent-context .tree))
+     (let ((context:parent (context:parent context tree:scope?)))
+       (and context:parent
+            (let* ((parent-tree (and=> context:parent .tree))
                    (scope-name (.name (.tree context)))
                    (scope+ (if scope-name (cons scope-name scope) scope)))
-              (or (search-or-widen-context scope name parent-context)
-                  (search-or-widen-context scope+ name parent-context))))))))
+              (or (search-or-widen-context scope name context:parent)
+                  (search-or-widen-context scope+ name context:parent))))))))
 
 (define widen-to-imports
   (pure-funcq
@@ -107,7 +107,7 @@
 (define context:lookup
   (pure-funcq
    (lambda (name context)
-     "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a tree:context? or
+     "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a context? or
 null) and return its CONTEXT."
      (cond
       ((not context)
@@ -117,14 +117,14 @@ null) and return its CONTEXT."
       ((tree:name-equal? (.name name) (.name tree:void))
        context:void)
       (else
-       (let* ((context (if (.global name) (parent-context context 'root) context))
+       (let* ((context (if (.global name) (context:parent context 'root) context))
               (scope name (tree:scope+name name)))
          (search-or-widen-context scope name context)))))))
 
 (define (tree:lookup name context)
   (let ((scope (if (tree:scope? (.tree context)) context
-                   (parent-context context tree:scope?))))
-    (and=> (tree:context? (context:lookup name context)) .tree)))
+                   (context:parent context tree:scope?))))
+    (and=> (context? (context:lookup name context)) .tree)))
 
 (define (tree:lookup-var name context)
   (define (helper name o)
@@ -149,10 +149,10 @@ null) and return its CONTEXT."
              (helper name (.parent o))))
         ((? (is? 'variable))
          (or (name? tree)
-             (tree:lookup-var name (parent-context context tree:statement?))))
+             (tree:lookup-var name (context:parent context tree:statement?))))
         ((? (is? 'trigger-formal))
          (or (name? tree)
-             (tree:lookup-var name (parent-context context tree:statement?))))
+             (tree:lookup-var name (context:parent context tree:statement?))))
         ((? (cute parent <> 'variable))
          (helper name (.parent (parent o 'variable))))
         ((? tree?)

@@ -82,14 +82,14 @@
 ;;;
 
 (define (context:locals o)
-  (let loop ((scope (parent-context o tree:scope?)))
+  (let loop ((scope (context:parent o tree:scope?)))
     (if (or (not scope) (is-a? (.tree scope) 'behaviour-statements)) '()
         (append (context:formal* scope)
                 (context:variable* scope)
-                (loop (parent-context scope tree:scope?))))))
+                (loop (context:parent scope tree:scope?))))))
 
 (define (context:members o)
-  (let ((scope (parent-context o 'behaviour-statements)))
+  (let ((scope (context:parent o 'behaviour-statements)))
     (or (and scope (context:variable* scope)) '())))
 
 
@@ -113,7 +113,7 @@
            string<))))
 
 (define* (complete:event-names o event-dir #:key (predicate identity))
-  (let* ((events (context:event* (parent-context o 'interface)))
+  (let* ((events (context:event* (context:parent o 'interface)))
          (events (filter (conjoin
                           predicate
                           (compose (cute eq? event-dir <>) tree:direction .tree))
@@ -132,7 +132,7 @@
 (define* (complete:port-event-names o   ;context
                                    dir ;'trigger or 'action
                                    #:key (event-predicate identity))
-  (let* ((component (parent-context o 'component))
+  (let* ((component (context:parent o 'component))
          (ports     (context:port* component)))
     (define (port->event-names port)
       (let* ((port-dir (tree:direction (.tree port)))
@@ -248,7 +248,7 @@
        (append
         (complete:variable-names (.tree enum) context)
         (complete:function-names
-         (parent-context context 'behaviour)
+         (context:parent context 'behaviour)
          #:type-predicate (cute context:type-equal? <> (.tree enum)))
         (complete:action-names
          context
@@ -268,7 +268,7 @@
        (append
         (complete:variable-names type context)
         (complete:function-names
-         (parent-context context 'behaviour)
+         (context:parent context 'behaviour)
          #:type-predicate (cute context:type-equal? <> type))
         (complete:action-names
          context
@@ -285,17 +285,17 @@
      context
      #:event-predicate (cute context:type-equal? <> (.tree type)))
     (complete:function-names
-     (parent-context context 'behaviour)
+     (context:parent context 'behaviour)
      #:type-predicate (cute context:type-equal? <> (.tree type)))
     (complete:type-literal-names type #:context context))
    string<))
 
 (define (complete:type context)
-  (assert-type context tree:context?)
+  (assert-type context context?)
   (let ((type (cond
-               ((parent-context context 'var)
+               ((context:parent context 'var)
                 => .type)
-               ((parent-context context 'variable)
+               ((context:parent context 'variable)
                 => .type)
                (else
                 #f))))
@@ -306,8 +306,8 @@
       (complete:for-type type context)))))
 
 (define (complete:function context)
-  (assert-type context tree:context?)
-  (let* ((function (parent-context context 'function))
+  (assert-type context context?)
+  (let* ((function (context:parent context 'function))
          (type (and=> function .type)))
     (cond
      ((not type)
@@ -317,14 +317,14 @@
        (append
         (complete:variable-names (.tree type) context)
         (complete:function-names
-         (parent-context context 'behaviour)
+         (context:parent context 'behaviour)
          #:type-predicate (cute context:type-equal? <> (.tree type)))
         (complete:type-literal-names type #:context context))
        string<)))))
 
 (define (complete:on context)
-  (assert-type context tree:context?)
-  (let* ((on (parent-context context 'on))
+  (assert-type context context?)
+  (let* ((on (context:parent context 'on))
          (triggers  (and=> on context:trigger*))
          (trigger   (and (pair? triggers) (car triggers)))
          (type      (and=> trigger .type)))
@@ -336,7 +336,7 @@
        (append
         (complete:variable-names (.tree type) context)
         (complete:function-names
-         (parent-context context 'behaviour)
+         (context:parent context 'behaviour)
          #:type-predicate (cute context:type-equal? <> (.tree type)))
         (complete:type-literal-names type #:context context))
        string<)))))
@@ -379,7 +379,7 @@
      alist))
   (let ((port (.port (cons o context)))
         (instance (.instance (cons o context)))
-        (system (parent-context context 'system)))
+        (system (context:parent context 'system)))
     (cond
      ((and port (not instance))
       (let* ((alist (instance-ports-alist system))
@@ -424,7 +424,7 @@
                       ((parent context 'function)
                        '("return"))
                       ((or (and (is-a? (.tree context) 'on) context)
-                           (parent-context context 'on))
+                           (context:parent context 'on))
                        =>
                        (lambda (on)
                          (let ((type (.type-of-on on)))
@@ -496,7 +496,7 @@
     ((or (? (is? 'port-qualifiers))
          (? (is? 'provides))
          (? (is? 'requires)))
-     (let ((context (parent-context context 'port)))
+     (let ((context (context:parent context 'port)))
        (complete:root (.tree context) context offset)))
     ((? (is? 'port))
      (cond ((and (not (slot o 'provides))
@@ -580,7 +580,7 @@
        '())))
     ((? (is? 'name))
      (cond
-      ((parent-context context 'enum-literal)
+      ((context:parent context 'enum-literal)
        => (compose (cute filter-self context <>)
                    (cute complete:enum-literal o <>)))
       ((parent context 'reply)
@@ -590,7 +590,7 @@
       (else
        (complete:root (.tree (.parent context)) (.parent context) offset))))
     ((and (? (is? 'reply)) (? (negate .expression)))
-     (let* ((on (parent-context context 'on))
+     (let* ((on (context:parent context 'on))
             (type (.type-of-on on)))
        (if type (complete:for-type type context)
            '())))
@@ -614,7 +614,7 @@
             => (cute complete:field-test-names <> (tree:name o)))
            ((let* ((variable (.variable context))
                    (type (and=> variable .type)))
-              (tree:context? type))
+              (context? type))
             => (lambda (type)
                  (filter-self context (complete:for-type type context))))
            (else
@@ -629,12 +629,12 @@
               '()))))
     ((? (is? 'arguments))
      (cond ((and (parent context 'component)
-                 (parent-context context 'action))
+                 (context:parent context 'action))
             =>
             (lambda (action)
               (let ((type context:extern))
                 (complete:for-type type context))))
-           ((parent-context context 'call)
+           ((context:parent context 'call)
             =>
             (lambda (call)
               (let ((function (.function call)))
@@ -660,7 +660,7 @@
                      (var (.var o))
                      (name (.name var)))
                 (complete:field-test-names (.tree enum) name))))
-           ((parent-context context 'variable)
+           ((context:parent context 'variable)
             =>
             (lambda (context)
               (complete:root (.tree context) context offset)))
@@ -724,18 +724,18 @@
            (else (complete:behaviour context))))
 
     ((? (is? 'action))
-     (cond ((or (parent-context context 'compound)
-                (parent-context context 'on))
+     (cond ((or (context:parent context 'compound)
+                (context:parent context 'on))
             => (cute complete:statements <> offset))
-           ((or (parent-context context 'behaviour-statements)
-                (parent-context context 'behaviour-compound))
+           ((or (context:parent context 'behaviour-statements)
+                (context:parent context 'behaviour-compound))
             => complete:behaviour)
            (else
             '())))
 
     ((? (is? 'comment))
      (complete:root (parent context tree?)
-                       (parent-context context tree?) offset))
+                       (context:parent context tree?) offset))
 
     ((or 'BRACE-CLOSE
          'BRACE-OPEN

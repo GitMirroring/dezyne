@@ -38,16 +38,18 @@
 
   #:export (%file-name->parse-tree
             %resolve-file
-            assert-type
 
             complete?
+            context?
+            has-location?
             incomplete?
             is-a?
             is?
-            has-location?
-            parent
-            parent-context
             tree?
+
+            assert-type
+            parent
+            context:parent
             slot
 
             .behaviour
@@ -88,32 +90,14 @@
             .value
             .var
 
-            context:dotted-name
-            context:event*
-            context:formal*
-            context:function*
-            context:port*
-            context:stripped-dotted-name
-            context:top*
-            context:trigger*
-            context:type*
-            context:variable*
-
-            tree:component?
-            tree:debug-context
-
             tree->context
 
-            context:bool
-            context:extern
-            context:int
-            context:void
             tree:bool
             tree:extern
             tree:int
             tree:void
 
-            tree:context?
+            tree:component?
             tree:declaration?
             tree:foreign?
             tree:in?
@@ -127,11 +111,12 @@
             tree:scope?
             tree:statement?
             tree:system?
-            tree:type?
             tree:type-equal?
+            tree:type?
 
-            context:collect
+            tree:add-file-name
             tree:collect
+            tree:debug-context
             tree:direction
             tree:dotted-name
             tree:file-name
@@ -143,15 +128,14 @@
             tree:argument*
             tree:component*
             tree:declaration*
-            tree:declaration*
-            tree:field*
-            tree:function*
             tree:enum*
             tree:event*
+            tree:field*
             tree:formal*
+            tree:function*
             tree:id*
-            tree:instance*
             tree:import*
+            tree:instance*
             tree:int*
             tree:interface*
             tree:list-model*
@@ -159,13 +143,29 @@
             tree:namespace*
             tree:port*
             tree:port-qualifier*
-            tree:trigger*
-            tree:type*
             tree:statement*
             tree:top*
+            tree:trigger*
+            tree:type*
             tree:variable*
 
-            tree:add-file-name))
+            context:bool
+            context:extern
+            context:int
+            context:void
+
+            context:collect
+            context:dotted-name
+            context:stripped-dotted-name
+
+            context:event*
+            context:formal*
+            context:function*
+            context:port*
+            context:top*
+            context:trigger*
+            context:type*
+            context:variable*))
 
 ;;;
 ;;; Utilities.
@@ -298,7 +298,7 @@ procedure)."
   (assert-type o tree?)
   (slot o 'location))
 
-(define (.name o) ;; XXX FIXME: access NAME field (a string, a 'name, or 'compound-name)
+(define (.name o)
   (match o
     (('name (? string? name) rest ...)
      name)
@@ -451,7 +451,7 @@ procedure)."
             (scope
              name     (tree:scope+name names))
             (location (.location type)))
-       (if (not (tree:context? scope)) `(compound-name ,name ,location)
+       (if (not (context? scope)) `(compound-name ,name ,location)
            `(compound-name (scope ,@scope ,location) ,name ,location))))
     ((? (is? 'compound-name))
      (.name o))))
@@ -722,23 +722,19 @@ procedure)."
 ;;;
 ;;; Context.
 ;;;
-;;; A context is a list of tree?'is elements:
+;;; A context is a list of tree elements:
 ;;;
-;;; (tree?
-;;;   (parent tree? ... tree?)
-;;;   (grand-parent ... (parent-tree? ... tree?))
-;;;   ..
-;;;   ('root ....))
+;;; (tree parent grand-parent ... root)
 ;;;
 
 (define (.tree context)
-  (and (tree:context? context) (car context)))
+  (and (context? context) (car context)))
 
 (define* (tree->context tree #:optional (context '()))
   (cons tree context))
 
 (define (.parent context)
-  (and (tree:context? context) (cdr context)))
+  (and (context? context) (cdr context)))
 
 (define (complete? o)
   ((disjoin string?
@@ -751,125 +747,20 @@ procedure)."
 
 (define incomplete? (negate complete?))
 
-(define (tree:context? context)
+(define (context? context)
   (and (pair? context) (tree? (car context)) context))
 
-(define (parent-context context type)
+(define (context:parent context type)
   (let loop ((context (.parent context)))
-    (and (tree:context? context)
+    (and (context? context)
          (let ((tree (.tree context)))
            (if (is-a? tree type) context
                (and tree
                     (loop (.parent context))))))))
 
 (define (parent context type)
-  (and=> (parent-context context type)
+  (and=> (context:parent context type)
          .tree))
-
-
-;;;
-;;; Context accessors.
-;;;
-
-(define* (context:collect predicate tree #:optional (context '()))
-  (if (not (tree? tree)) '()
-      (let* ((context (tree->context tree context))
-             (rest (append-map (cute context:collect predicate <> context) tree)))
-        (if (not (predicate tree)) rest
-            (cons context rest)))))
-
-(define (context:full-name context)
-  (filter (negate string-null?)
-          (append-map tree:id*
-                      (filter-map .name (filter tree:scope? (reverse context))))))
-
-(define (context:dotted-name context)
-  (string-join (context:full-name context) "."))
-
-(define (context:stripped-dotted-name o context)
-  (define (strip-prefix prefix str)
-    (let loop ((prefix prefix))
-      (let ((prefix-string (string-join prefix "." 'suffix)))
-        (cond ((null? prefix)
-               str)
-              ((string-prefix? prefix-string str)
-               (substring str (string-length prefix-string)))
-              (else
-               (loop (cdr prefix)))))))
-  (let ((name (context:dotted-name o))
-        (namespace (or (parent-context context tree:model?)
-                       (parent-context context (is? 'namespace)))))
-    (if (not namespace) name
-        (let ((prefix (context:full-name namespace)))
-          (strip-prefix prefix name)))))
-
-(define (context:port* o)
-  (match (.tree o)
-    ((? (is? 'component)) (map (cute cons <> o) (tree:port* (.tree o))))
-    (_ '())))
-
-(define* (context:top* o #:key (imports '()) (seen '()))
-  (match (.tree o)
-    ((? (is? 'root))
-     (let* ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports))
-            (imports (cons (dirname file-name) imports))
-            (seen (cons file-name seen)))
-       (map (lambda (x) (if (tree:context? x) x (tree->context x o)))
-            (append-map (cut context:top* <> #:imports imports #:seen seen)
-                        (map (cute tree->context <> o) (slots (.tree o) tree?))))))
-    ((? (is? 'import))
-     (let ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports)))
-       (if (member file-name seen) '()
-           (and=> ((%file-name->parse-tree) file-name)
-                  (compose context:top* tree->context)))))
-    ((? (is? 'interface))
-     (cons o
-           (map (cute cons <> o)
-                (and=> (slot (.tree o) 'types-and-events) (cute slots <> tree?)))))
-    ((? (is? 'namespace))
-     (append-map (cut context:top* <> #:imports imports #:seen seen)
-                 (map (cute tree->context <> o)
-                      (slots (.namespace-root (.tree o)) tree?))))
-    ((? tree?)
-     (list o))
-    (_
-     '())))
-
-(define (context:event* context)
-  (map (cute cons <> context) (tree:event* (.tree context))))
-
-(define (context:formal* context)
-  (map (cute cons <> context) (tree:formal* (.tree context))))
-
-(define (context:function* context)
-  (map (cute cons <> context) (tree:function* (.tree context))))
-
-(define (context:variable* context)
-  (map (cute cons <> context) (tree:variable* (.tree context))))
-
-(define (context:trigger* context)
-  (map (cute cons <> context) (tree:trigger* (.tree context))))
-
-(define (context:type* o)
-  (define (helper o)
-    (match (.tree o)
-      ((or (? (is? 'behaviour))
-           (? (is? 'behaviour-compound))
-           (? (is? 'behaviour-statements))
-           (? (is? 'types-and-events)))
-       (append-map helper
-                   (map (cute cons <> o)
-                        (slots (.tree o) tree?))))
-      ((? (is? 'root))
-       (filter (compose tree:type? .tree) (context:top* o)))
-      ((? tree:type?)
-       (list o))
-      (_
-       '())))
-
-  (let loop ((o o))
-    (if (not (tree:context? o)) '()
-        (append (helper o) (loop (.parent o))))))
 
 
 ;;;
@@ -880,8 +771,6 @@ procedure)."
   (if (not (tree? tree)) '()
       (context:collect tree:model? tree)))
 
-;; FIXME: this breaks
-;; ./pre-inst-env dzn language test/language/component10a.dzn --offset=188
 (define (tree:collect o predicate)
   (if (not (tree? o)) '()
       (if (predicate o) (cons o (append-map (cute tree:collect <> predicate) o))
@@ -932,10 +821,10 @@ procedure)."
      (values scope name))
     ((? string?) (values '() o))))
 
-(define (tree:full-name o) ;;; XXX TODO: namespaces
+(define (tree:full-name o)
   (tree:id* o))
 
-(define (tree:dotted-name o) ;; XXX This is not full-name, we need context/parent for that.
+(define (tree:dotted-name o)
   "Return name of O as a string, scopes separated by dots."
   (match o
     ((? (is? 'name)) (.name o))
@@ -1163,3 +1052,99 @@ procedure)."
      (let ((slots (map (cute tree:add-file-name <> file-name) slots)))
        `(,type ,@slots)))
     (_ o)))
+
+
+;;;
+;;; Context accessors.
+;;;
+
+(define* (context:collect predicate tree #:optional (context '()))
+  (if (not (tree? tree)) '()
+      (let* ((context (tree->context tree context))
+             (rest (append-map (cute context:collect predicate <> context) tree)))
+        (if (not (predicate tree)) rest
+            (cons context rest)))))
+
+(define (context:full-name context)
+  (filter (negate string-null?)
+          (append-map tree:id*
+                      (filter-map .name (filter tree:scope? (reverse context))))))
+
+(define (context:dotted-name context)
+  (string-join (context:full-name context) "."))
+
+(define (context:stripped-dotted-name o context)
+  (define (strip-prefix prefix str)
+    (let loop ((prefix prefix))
+      (let ((prefix-string (string-join prefix "." 'suffix)))
+        (cond ((null? prefix)
+               str)
+              ((string-prefix? prefix-string str)
+               (substring str (string-length prefix-string)))
+              (else
+               (loop (drop-right prefix 1)))))))
+  (let ((name (context:dotted-name o))
+        (namespace (or (context:parent context tree:model?)
+                       (context:parent context (is? 'namespace)))))
+    (if (not namespace) name
+        (let ((prefix (context:full-name namespace)))
+          (strip-prefix prefix name)))))
+
+(define* (context:top* o #:key (imports '()) (seen '()))
+  (match (.tree o)
+    ((? (is? 'root))
+     (let* ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports))
+            (imports (cons (dirname file-name) imports))
+            (seen (cons file-name seen)))
+       (map (lambda (x) (if (context? x) x (tree->context x o)))
+            (append-map (cut context:top* <> #:imports imports #:seen seen)
+                        (map (cute tree->context <> o) (slots (.tree o) tree?))))))
+    ((? (is? 'import))
+     (let ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports)))
+       (if (member file-name seen) '()
+           (and=> ((%file-name->parse-tree) file-name)
+                  (compose context:top* tree->context)))))
+    ((? (is? 'interface))
+     (cons o
+           (map (cute cons <> o)
+                (and=> (slot (.tree o) 'types-and-events) (cute slots <> tree?)))))
+    ((? (is? 'namespace))
+     (append-map (cut context:top* <> #:imports imports #:seen seen)
+                 (map (cute tree->context <> o)
+                      (slots (.namespace-root (.tree o)) tree?))))
+    ((? tree?)
+     (list o))
+    (_
+     '())))
+
+(define (context:type* o)
+  (define (helper o)
+    (match (.tree o)
+      ((or (? (is? 'behaviour))
+           (? (is? 'behaviour-compound))
+           (? (is? 'behaviour-statements))
+           (? (is? 'types-and-events)))
+       (append-map helper
+                   (map (cute cons <> o)
+                        (slots (.tree o) tree?))))
+      ((? (is? 'root))
+       (filter (compose tree:type? .tree) (context:top* o)))
+      ((? tree:type?)
+       (list o))
+      (_
+       '())))
+
+  (let loop ((o o))
+    (if (not (context? o)) '()
+        (append (helper o) (loop (.parent o))))))
+
+(define (tree*->context* accessor)
+  (lambda (context)
+    (map (cute tree->context <> context) (accessor (.tree context)))))
+
+(define context:event*    (tree*->context* tree:event*))
+(define context:formal*   (tree*->context* tree:formal*))
+(define context:function* (tree*->context* tree:function*))
+(define context:port*     (tree*->context* tree:port*))
+(define context:trigger*  (tree*->context* tree:trigger*))
+(define context:variable* (tree*->context* tree:variable*))
