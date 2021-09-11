@@ -26,11 +26,10 @@
 
 (define-module (dzn parse complete)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 receive)
 
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (dzn misc)
   #:use-module (dzn parse lookup)
@@ -64,14 +63,14 @@
 
 (define (tree:around-location? o at)
   (and (pair? o)
-       (receive (after before)
-           (partition (cute tree:after-location? <> at) (cdr o))
+       (let ((after before
+                    (partition (cute tree:after-location? <> at) (cdr o))))
          (and (pair? before) (pair? after)))))
 
 (define (tree:before-location? o at)
   (and (pair? o)
-       (receive (after before)
-           (partition (cute tree:after-location? <> at) (cdr o))
+       (let ((after before
+                    (partition (cute tree:after-location? <> at) (cdr o))))
          (and (pair? before)
               (let ((result (filter (negate (disjoin symbol? tree:location?)) before)))
                 (and (pair? result) (last result)))))))
@@ -647,17 +646,14 @@
      (complete:root (.value o) (cons (.value o) context) offset #:debug? debug?))
     (('or 'otherwise 'expression)
      (sort (cons "otherwise" (complete:boolean-expression context)) string<))
-
     ((? (is? 'statement))
      (cond ((parent context 'on) (complete:statements context offset))
            ((parent context 'function) (complete:statements context offset))
            (else (complete:behaviour context))))
-
     ((? (is? 'compound))
      (cond ((parent context 'on) (complete:statements context offset))
            ((parent context 'function) (complete:statements context offset))
            (else (complete:behaviour context))))
-
     ((? (is? 'action))
      (cond ((or (context:parent context 'compound)
                 (context:parent context 'on))
@@ -667,11 +663,9 @@
             => complete:behaviour)
            (else
             '())))
-
     ((? (is? 'comment))
      (complete:root (parent context tree?)
                     (context:parent context tree?) offset #:debug? debug?))
-
     ((or 'BRACE-CLOSE
          'BRACE-OPEN
          (? symbol?))
