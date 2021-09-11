@@ -137,6 +137,26 @@
         (peg:error-message content-alist file-name string pos message)))
     (apply throw key args)))
 
+(define (peg:flatten-tree tree)
+  "When in fall-back mode, the parse tree may contain non-tree
+constructs like ...((action ...)) or ((variable ...) ...).  Remove
+such unnamed lists."
+  (define (tree? x)
+    (match x
+      (((? symbol?) slot ...) #t)
+      (_ #f)))
+  (define (helper tree)
+    (match tree
+      ((? tree?)
+       (map helper tree))
+      (((and (? tree?) tree))
+       (map helper tree))
+      ((and (((? symbol?) rest ...) x ...) tree)
+       (cons 'compound (map helper tree)))
+      (_
+       tree)))
+  (map helper tree))
+
 (define* (string->parse-tree string #:key (file-name "-") (content-alist '()))
   (let ((fall-back? (%peg:fall-back?)))
     (define (parse)
@@ -146,7 +166,9 @@
                             `(root
                                  ,@(if (not file-name) '()
                                        `((file-name ,file-name (location 0 0))))
-                                 ,@tree)))))
+                               ,@tree))))
+             (parse-tree (if (%peg:fall-back?) (peg:flatten-tree parse-tree)
+                             parse-tree)))
         (when (> (dzn:debugity) 2)
           (format (current-error-port) "parse-tree: ~a\n" file-name)
           (pretty-print parse-tree (current-error-port)))
