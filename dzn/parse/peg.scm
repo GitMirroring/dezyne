@@ -178,7 +178,7 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
     system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
       instances-and-bindings <-- (instance / binding)*
         instance <-- compound-name name SEMICOLON#
-        binding <-- end-point BIND end-point SEMICOLON#
+        binding <-- end-point BIND end-point# SEMICOLON#
           end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
 
   ports <-- (port / &BEHAVIOUR / &SYSTEM / &BRACE-CLOSE)#*
