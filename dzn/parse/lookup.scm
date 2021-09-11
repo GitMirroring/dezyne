@@ -67,7 +67,7 @@
   (pure-funcq
    (lambda (scope name context)
      (let* ((target (if (null? scope) name (car scope)))
-            (found (filter (compose (cute tree:name-equal? <> target) tree:name)
+            (found (filter (compose (cute tree:name-equal? <> target) .name)
                            (tree:declaration* (.tree context)))))
        (and (pair? found)
             (let* ((found (if (null? scope) (and (pair? found) (cons (car found) context))

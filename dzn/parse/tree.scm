@@ -314,6 +314,8 @@ procedure)."
     ((or (? (is? 'bool))
          (? (is? 'call))
          (? (is? 'compound-name))
+         (? (is? 'formal))
+         (? (is? 'function))
          (? (is? 'event-name))
          (? (is? 'port))
          (? (is? 'instance))
@@ -325,11 +327,13 @@ procedure)."
      (slot o 'name))
     ((? (is? 'event))
      (.name (slot o 'event-name)))
-    ((? (is? 'formal))
-     (.name (slot o 'name)))
-    ((? (is? 'root))
-     "")
-    (_ #f)))
+    (_
+     #f)))
+
+(define (tree:name o)
+  (or (is-a? o 'name)
+      (is-a? o 'compound-name)
+      (.name o)))
 
 (define (.namespace-root o)
   (match o
@@ -795,15 +799,6 @@ procedure)."
     ((? (is? 'requires)) 'requires)
     ((? pair?) (tree:direction (find tree:direction o)))
     (_ #f)))
-
-(define (tree:name o)
-  (match o
-    ((or (? (is? 'name))
-         (? (is? 'compound-name)))
-     o)
-    ((? (is? 'event)) (and=>  (slot o 'event-name) tree:name))
-    (_   (or (slot o 'name)
-             (slot o 'compound-name)))))
 
 (define (tree:scope+name o)
   (match o

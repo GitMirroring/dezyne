@@ -611,7 +611,7 @@
                    (type (and=> variable .type))
                    (enum (and=> type .tree)))
               (is-a? enum 'enum))
-            => (cute complete:field-test-names <> (tree:name o)))
+            => (cute complete:field-test-names <> (.name o)))
            ((let* ((variable (.variable context))
                    (type (and=> variable .type)))
               (context? type))
