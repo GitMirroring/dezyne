@@ -22,6 +22,7 @@
 # Code:
 
 EXTRA_DIST +=					\
+ %D%/component0.dzn				\
  %D%/component1.dzn				\
  %D%/component1a.dzn				\
  %D%/component1b.dzn				\
@@ -54,12 +55,10 @@ EXTRA_DIST +=					\
  %D%/component-provides.dzn			\
  %D%/component-requires.dzn			\
  %D%/component-state.dzn			\
- %D%/interface-I-enum-in.dzn			\
- %D%/interface-I-in.dzn				\
- %D%/interface-I-in2.dzn			\
- %D%/interface-I-open.dzn			\
- %D%/interface-I.dzn				\
  %D%/interface-behaviour.dzn			\
+ %D%/interface0.dzn				\
+ %D%/interface1.dzn				\
+ %D%/interface1b.dzn				\
  %D%/interface2.dzn				\
  %D%/interface3.dzn				\
  %D%/interface4.dzn				\
@@ -82,7 +81,6 @@ EXTRA_DIST +=					\
  %D%/interface12.dzn				\
  %D%/interface12a.dzn				\
  %D%/typo.dzn					\
-						\
  %D%/blocking.dzn				\
  %D%/deep-space-enum.dzn			\
  %D%/double.space.dzn				\

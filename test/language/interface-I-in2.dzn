@@ -1,4 +1,0 @@
-interface I
-{
- in void e();
- in
