@@ -741,13 +741,13 @@
          'BRACE-OPEN
          (? symbol?))
      '())
+    ((and (? complete?) (? (negate (is? 'comment))))
+     '())
     (_
-     (if (and (complete? o)
-              (not (is-a? o 'comment))) '()
-              (or (and (pair? o)
-                       (and=> (find incomplete? (cdr o))
-                              (cute complete:root <> context offset)))
-                  (complete:root (tree:before-location? o offset) context offset))))))
+     (or (and (pair? o)
+              (and=> (find incomplete? (cdr o))
+                     (cute complete:root <> context offset)))
+         (complete:root (tree:before-location? o offset) context offset)))))
 
 
 ;;;
