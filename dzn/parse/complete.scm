@@ -120,8 +120,11 @@
                          events)))
     (map (compose tree:dotted-name .tree) events)))
 
-(define* (complete:interface-names o)
-  (map tree:dotted-name (tree:interface* o)))
+(define* (complete:interface-names context)
+  (sort (delete-duplicates
+         (map (cute context:stripped-dotted-name <> context)
+              (context:interface* (context:parent context 'root))))
+        string<))
 
 (define (port-dir->event-dir port-dir dir)
   (cond ((and (eq? 'provides port-dir) (eq? 'trigger dir)) 'in)
@@ -130,8 +133,8 @@
         ((and (eq? 'requires port-dir) (eq? 'action dir)) 'in)))
 
 (define* (complete:port-event-names o   ;context
-                                   dir ;'trigger or 'action
-                                   #:key (event-predicate identity))
+                                    dir ;'trigger or 'action
+                                    #:key (event-predicate identity))
   (let* ((component (context:parent o 'component))
          (ports     (context:port* component)))
     (define (port->event-names port)
@@ -450,14 +453,14 @@
                  (not (slot o 'requires)))
             '("provides" "requires"))
            ((slot o 'provides)
-            (complete:interface-names (parent context 'root)))
+            (complete:interface-names (context:parent context 'component)))
            (else
             (let* ((qualifiers (tree:port-qualifier* o))
                    (external? (find (is? 'external) qualifiers))
                    (injected? (find (is? 'injected) qualifiers)))
               (append (if external? '() '("external"))
                       (if injected? '() '("injected"))
-                      (complete:interface-names (parent context 'root)))))))
+                      (complete:interface-names (context:parent context 'component)))))))
     ('types-and-events
      '("in" "out" "enum" "extern" "subint"))
     ((? (is? 'types-and-events))

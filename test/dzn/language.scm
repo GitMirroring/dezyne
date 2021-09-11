@@ -473,7 +473,7 @@
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "completion provides interfaces, imported, namespace"
-  '("ihello" "igoodbye" "iworld")
+  '("igoodbye" "ihello" "iworld")
   (test-complete #:file-name "space-hello.dzn" #:line 12 #:column 12
                  #:file-name->parse-tree file-name->parse-tree))
 
