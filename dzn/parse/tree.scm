@@ -158,9 +158,12 @@
             context:dotted-name
             context:stripped-dotted-name
 
+            context:component*
             context:event*
             context:formal*
             context:function*
+            context:interface*
+            context:model*
             context:port*
             context:top*
             context:trigger*
@@ -1143,3 +1146,11 @@ procedure)."
 (define context:port*     (tree*->context* tree:port*))
 (define context:trigger*  (tree*->context* tree:trigger*))
 (define context:variable* (tree*->context* tree:variable*))
+
+(define (tree:top*->context* predicate)
+  (lambda (context)
+    (filter (compose predicate .tree) (context:top* context))))
+
+(define context:interface* (tree:top*->context* (is? 'interface)))
+(define context:component* (tree:top*->context* (is? 'component)))
+(define context:model*     (tree:top*->context* tree:model))

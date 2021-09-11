@@ -231,6 +231,29 @@
 ;;; Completion helpers.
 ;;;
 
+(define* (complete:type context #:key (actions? #t) type)
+  ;;(assert-type (.tree type) 'bool 'enum 'extern 'int)
+  (let ((type (or type
+                  (and (is-a? (.tree context) 'variable) (.type context))
+                  (and=> (context:parent context 'var) .type)
+                  (and=> (context:parent context 'variable) .type))))
+    (if (not type) (complete:type-names context)
+        (let* ((type-predicate (cute context:type-equal? <> (.tree type)))
+               (actions   (if (not actions?) '()
+                              (complete:action-names
+                               context
+                               #:event-predicate type-predicate)))
+               (functions (complete:function-names
+                           (context:parent context 'behaviour)
+                           #:type-predicate type-predicate))
+               (literals  (complete:type-literal-names type #:context context))
+               (variables (complete:variable-names (.tree type) context)))
+          (sort (append actions
+                        variables
+                        functions
+                        literals)
+                string<)))))
+
 (define (complete:enum-literal name context)
   (assert-type (.tree context) 'enum-literal)
   (let* ((field (.field (.tree context)))
@@ -244,102 +267,34 @@
            (not (parent context 'on)))
       (complete:type-literal-names enum #:context context))
      (else
-      (sort
-       (append
-        (complete:variable-names (.tree enum) context)
-        (complete:function-names
-         (context:parent context 'behaviour)
-         #:type-predicate (cute context:type-equal? <> (.tree enum)))
-        (complete:action-names
-         context
-         #:event-predicate (cute context:type-equal? <> (.tree enum)))
-        (complete:type-literal-names enum #:context context))
-       string<)))))
+      (complete:type context #:type enum)))))
 
 (define (complete:literal o context)
   (assert-type o 'literal)
   (let* ((type (tree:type? o))
-         (name (and=> type .name)))
-    (cond
-     ((not type)
-      (complete:type-names context))
-     (else
-      (sort
-       (append
-        (complete:variable-names type context)
-        (complete:function-names
-         (context:parent context 'behaviour)
-         #:type-predicate (cute context:type-equal? <> type))
-        (complete:action-names
-         context
-         #:event-predicate (cute context:type-equal? <> type))
-        (complete:type-literal-names (cons type context)))
-       string<)))))
+         (actions? (parent context 'variable)))
+    (complete:type context
+                   #:type (tree->context type context)
+                   #:actions? actions?)))
 
-(define (complete:for-type type context)
-  (assert-type (.tree type) 'bool 'enum 'extern 'int)
-  (sort
-   (append
-    (complete:variable-names (.tree type) context)
-    (complete:action-names
-     context
-     #:event-predicate (cute context:type-equal? <> (.tree type)))
-    (complete:function-names
-     (context:parent context 'behaviour)
-     #:type-predicate (cute context:type-equal? <> (.tree type)))
-    (complete:type-literal-names type #:context context))
-   string<))
+(define (.type-of-on context)
+  (let* ((triggers (context:trigger* context))
+         (types (map .type triggers)))
+    (find (negate (cute equal? <> context:void)) types)))
 
-(define (complete:type context)
+(define (complete:reply context)
   (assert-type context context?)
-  (let ((type (cond
-               ((context:parent context 'var)
-                => .type)
-               ((context:parent context 'variable)
-                => .type)
-               (else
-                #f))))
-    (cond
-     ((not type)
-      (complete:type-names context))
-     (else
-      (complete:for-type type context)))))
+  (let* ((on   (context:parent context 'on))
+         (type (and=> on .type-of-on)))
+    (if (or (not type) (eq? type context:void)) '()
+        (complete:type context #:type type #:actions? #f))))
 
-(define (complete:function context)
+(define (complete:return context)
   (assert-type context context?)
   (let* ((function (context:parent context 'function))
          (type (and=> function .type)))
-    (cond
-     ((not type)
-      (complete:type-names context))
-     (else
-      (sort
-       (append
-        (complete:variable-names (.tree type) context)
-        (complete:function-names
-         (context:parent context 'behaviour)
-         #:type-predicate (cute context:type-equal? <> (.tree type)))
-        (complete:type-literal-names type #:context context))
-       string<)))))
-
-(define (complete:on context)
-  (assert-type context context?)
-  (let* ((on (context:parent context 'on))
-         (triggers  (and=> on context:trigger*))
-         (trigger   (and (pair? triggers) (car triggers)))
-         (type      (and=> trigger .type)))
-    (cond
-     ((not type)
-      (complete:type-names context))
-     (else
-      (sort
-       (append
-        (complete:variable-names (.tree type) context)
-        (complete:function-names
-         (context:parent context 'behaviour)
-         #:type-predicate (cute context:type-equal? <> (.tree type)))
-        (complete:type-literal-names type #:context context))
-       string<)))))
+    (if (or (not type) (eq? type context:void)) '()
+        (complete:type context #:type type #:actions? #f))))
 
 (define (complete:boolean-expression context)
   (sort (cons* "true" "false"
@@ -406,20 +361,17 @@
       '()))))
 
 (define (complete:behaviour context)
-  (sort (append
-         '( "enum" "extern" "on" "subint")
-         (complete:type-names context))
+  (sort (append '("enum" "extern" "on" "subint")
+                (complete:type-names context))
         string<))
-
-(define (.type-of-on context)
-  (let* ((triggers (context:trigger* context))
-         (types (map .type triggers)))
-    (find (negate (cute equal? <> context:void)) types)))
 
 (define (complete:statements context offset)
   (let* ((statements (tree:statement* (.tree context)))
-         (before (filter-map (cute tree:before-location? <> offset) statements))
-         (before (and (pair? before) (last before)))
+         (before     (filter-map (cute tree:before-location? <> offset) statements))
+         (before     (and (pair? before) (last before)))
+         (else?      (and (is-a? before 'if-statement)
+                          (.then before)
+                          (not (.else before))))
          (statements (cond
                       ((parent context 'function)
                        '("return"))
@@ -431,32 +383,27 @@
                            (if type '("reply(_)")
                                '()))))
                       (else
-                       '()))))
-    (sort (append
-           '("if")
-           (if (and (is-a? before 'if-statement)
-                    (.then before)
-                    (not (.else before)))
-               '("else")
-               '())
-           statements
-           (complete:type-names context)
-           (complete:variable-names #f context)
-           (complete:action-names context))
+                       '())))
+         (statements (cons "if" statements))
+         (statements (if else? (cons "else" statements) statements))
+         (actions    (complete:action-names context))
+         (types      (complete:type-names context))
+         (variables  (complete:variable-names #f context)))
+    (sort (append actions statements types variables)
           string<)))
 
 (define (complete:system context)
-  (let* ((root (parent context 'root))
-         (component (parent context 'component))
-         (alist (instance-ports-alist context))
-         (bindings (append-map instance-binding alist)))
-
-    (sort (append
-           (delete-duplicates (map tree:dotted-name (tree:component* root)))
-           (delete-duplicates (map tree:dotted-name (tree:instance* (.tree context))))
-           (delete-duplicates (append bindings
-                                      (map tree:dotted-name (tree:port* component)))))
-          string<)))
+  (let* ((root       (context:parent context 'root))
+         (component  (parent context 'component))
+         (alist      (instance-ports-alist context))
+         (bindings   (append-map instance-binding alist))
+         (components (map (cute context:stripped-dotted-name <> context)
+                          (context:component* root)))
+         (instances  (map tree:dotted-name (tree:instance* (.tree context))))
+         (ports      (map tree:dotted-name (tree:port* component))))
+    (sort
+     (delete-duplicates (append bindings components instances ports))
+     string<)))
 
 (define (filter-self context list)
   (let* ((variable (or (is-a? (.tree context) 'formal)
@@ -571,43 +518,29 @@
     ((? (is? 'dollars))
      (filter-self context (complete:type context)))
     ((? (is? 'literal))
-     (cond
-      ((is-a? (tree:type? o) 'bool)
-       (filter-self context (complete:literal o context)))
-      ((is-a? (tree:type? o) 'int)
-       (filter-self context (complete:literal o context)))
-      (else
-       '())))
+     (cond ((is-a? (tree:type? o) 'bool)
+            (filter-self context (complete:literal o context)))
+           ((is-a? (tree:type? o) 'int)
+            (filter-self context (complete:literal o context)))
+           (else
+            '())))
     ((? (is? 'name))
-     (cond
-      ((context:parent context 'enum-literal)
-       => (compose (cute filter-self context <>)
-                   (cute complete:enum-literal o <>)))
-      ((parent context 'reply)
-       (complete:on context))
-      ((parent context 'return)
-       (complete:function context))
-      (else
-       (complete:root (.tree (.parent context)) (.parent context) offset))))
+     (cond ((context:parent context 'enum-literal)
+            => (compose (cute filter-self context <>)
+                        (cute complete:enum-literal o <>)))
+           ((parent context 'reply)
+            (complete:reply context))
+           ((parent context 'return)
+            (complete:return context))
+           (else
+            (complete:root (.tree (.parent context)) (.parent context) offset
+                           #:debug? debug?))))
     ((and (? (is? 'reply)) (? (negate .expression)))
-     (let* ((on (context:parent context 'on))
-            (type (.type-of-on on)))
-       (if type (complete:for-type type context)
-           '())))
+     (complete:reply context))
     ((and (? (is? 'return)) (? (negate .expression)))
-     (complete:function context))
+     (complete:return context))
     ((? (is? 'var))
-     (cond ((not (parent context 'expression)) '())
-           ((let* ((type (.type context))
-                   (enum (and type .tree)))
-              (is-a? (.tree enum) 'enum))
-            => (lambda (enum)
-                 (let* ((variable (or (parent context 'formal)
-                                      (parent context 'variable)))
-                        (name (and variable (tree:dotted-name variable))))
-                   (filter-self context (complete:for-type enum context)))))
-           ;; field test
-           ((let* ((variable (.variable context))
+     (cond ((let* ((variable (.variable context))
                    (type (and=> variable .type))
                    (enum (and=> type .tree)))
               (is-a? enum 'enum))
@@ -615,8 +548,7 @@
            ((let* ((variable (.variable context))
                    (type (and=> variable .type)))
               (context? type))
-            => (lambda (type)
-                 (filter-self context (complete:for-type type context))))
+            (filter-self context (complete:type context)))
            (else
             '())))
     ((and (? (is? 'formal)) (? incomplete?))
@@ -633,7 +565,7 @@
             =>
             (lambda (action)
               (let ((type context:extern))
-                (complete:for-type type context))))
+                (complete:type context #:type type))))
            ((context:parent context 'call)
             =>
             (lambda (call)
@@ -644,7 +576,7 @@
                       (if (< (length formals) (length arguments)) '()
                           (let* ((formal (list-ref formals (length arguments)))
                                  (type (.type (cons formal function))))
-                            (complete:for-type type context))))))))
+                            (complete:type context #:type type))))))))
            (else
             '())))
     ((? (is? 'field-test))
@@ -663,7 +595,7 @@
            ((context:parent context 'variable)
             =>
             (lambda (context)
-              (complete:root (.tree context) context offset)))
+              (complete:root (.tree context) context offset #:debug? debug?)))
            (else
             (complete:boolean-expression context))))
     ((? (is? 'triggers))
@@ -693,14 +625,14 @@
                        (not (parent context 'function))))
               (filter-self context (complete:type-literal-names type #:context context)))
              (type
-              (filter-self context (complete:for-type type context)))
+              (filter-self context (complete:type context)))
              (else
               '()))))
     ((? (is? 'variable))
-     (let ((type (.type context)))
-       (filter-self context (complete:for-type type context))))
+     (filter-self context (complete:type context)))
     ((? (is? 'guard))
-     (cond ((incomplete? o) (complete:root (.expression o) (cons (.expression o) context) offset))
+     (cond ((incomplete? o) (complete:root (.expression o) (cons (.expression o) context) offset
+                                           #:debug? debug?))
            ((not (parent context 'on)) (complete:behaviour context))
            (else '())))
     (('expression 'PAREN-CLOSE x ...)
@@ -709,7 +641,7 @@
            (else
             '())))
     ((? (is? 'expression))
-     (complete:root (.value o) (cons (.value o) context) offset))
+     (complete:root (.value o) (cons (.value o) context) offset #:debug? debug?))
     (('or 'otherwise 'expression)
      (sort (cons "otherwise" (complete:boolean-expression context)) string<))
 
@@ -735,7 +667,7 @@
 
     ((? (is? 'comment))
      (complete:root (parent context tree?)
-                       (context:parent context tree?) offset))
+                    (context:parent context tree?) offset #:debug? debug?))
 
     ((or 'BRACE-CLOSE
          'BRACE-OPEN
@@ -746,8 +678,9 @@
     (_
      (or (and (pair? o)
               (and=> (find incomplete? (cdr o))
-                     (cute complete:root <> context offset)))
-         (complete:root (tree:before-location? o offset) context offset)))))
+                     (cut complete:root <> context offset #:debug? debug?)))
+         (complete:root (tree:before-location? o offset) context offset
+                        #:debug? debug?)))))
 
 
 ;;;
