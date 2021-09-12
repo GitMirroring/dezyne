@@ -89,7 +89,9 @@
             .var
 
             context:dotted-name
+            context:event*
             context:formal*
+            context:function*
             context:port*
             context:stripped-dotted-name
             context:top*
@@ -103,8 +105,12 @@
             tree->context
 
             context:bool
+            context:extern
+            context:int
             context:void
             tree:bool
+            tree:extern
+            tree:int
             tree:void
 
             tree:context?
@@ -663,11 +669,13 @@ procedure)."
 
 (define (tree:type? o)
   (match o
+    ((? (is? 'bool)) o)
     ((? (is? 'enum)) o)
     ((? (is? 'extern)) o)
     ((? (is? 'int)) o)
+    ((? (is? 'void)) o)
     ((or "true" "false") tree:bool)
-    ((and (? string?) (? string->number)) '(int))
+    ((and (? string?) (? string->number)) tree:int)
     ((? (is? 'enum-literal)) '(enum))
     ((? (is? 'literal)) (tree:type? (.value o)))
     (_ #f)))
@@ -827,8 +835,14 @@ procedure)."
     (_
      '())))
 
+(define (context:event* context)
+  (map (cute cons <> context) (tree:event* (.tree context))))
+
 (define (context:formal* context)
   (map (cute cons <> context) (tree:formal* (.tree context))))
+
+(define (context:function* context)
+  (map (cute cons <> context) (tree:function* (.tree context))))
 
 (define (context:variable* context)
   (map (cute cons <> context) (tree:variable* (.tree context))))
@@ -1127,9 +1141,13 @@ procedure)."
 ;;;
 
 (define context:bool '((bool (name "bool"))))
+(define context:extern '((extern (name "extern"))))
+(define context:int '((int (name "int"))))
 (define context:void '((void (name "void"))))
 
 (define tree:bool (.tree context:bool))
+(define tree:extern (.tree context:extern))
+(define tree:int (.tree context:int))
 (define tree:void (.tree context:void))
 
 

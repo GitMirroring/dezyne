@@ -20,6 +20,7 @@ interface ihello
 component hello
 {
   provides ihello p;
+  requires ihello w;
 
   behaviour
   {
@@ -36,5 +37,13 @@ component hello
       b = alpha;
       p.world(alpha);
     }
+
+    bool w = false;
+    enum Bool {False,True};
+    Bool x = Bool.False;
+    // extern data $int$;
+    // data y = $0$;
+    subint int {0..1};
+    int z = 0;
   }
 }
