@@ -109,6 +109,7 @@
             tree:system?
             tree:type?
 
+            context:collect
             tree:collect
             tree:dotted-name
             tree:file-name
@@ -117,6 +118,8 @@
             tree:offset
             tree:scope+name
 
+            tree:component*
+            tree:declaration*
             tree:declaration*
             tree:field*
             tree:function*
@@ -127,12 +130,15 @@
             tree:import*
             tree:int*
             tree:interface*
+            tree:list-model*
             tree:model*
+            tree:namespace*
             tree:port*
             tree:port-qualifier*
             tree:trigger*
             tree:type*
             tree:statement*
+            tree:top*
             tree:variable*
 
             tree:add-file-name))
@@ -711,14 +717,27 @@ procedure)."
 ;;; Parse tree accessors.
 ;;;
 
-(define (tree:model* tree)
+(define (tree:list-model* tree)
   (if (not (tree? tree)) '()
       (context:collect tree:model? tree)))
 
+;; FIXME: this breaks
+;; ./pre-inst-env dzn language test/language/component10a.dzn --offset=188
+(define (tree:collect o predicate)
+  (if (not (tree? o)) '()
+      (if (predicate o) (cons o (append-map (cute tree:collect <> predicate) o))
+          (append-map (cute tree:collect <> predicate) o))))
 
 (define (tree:collect o predicate)
   (if (predicate o) (cons o (append-map (cute tree:collect <> predicate) o))
       '()))
+
+(define* (context:collect predicate tree #:optional (context '()))
+  (if (not (tree? tree)) '()
+      (let* ((context (tree->context tree context))
+             (rest (append-map (cute context:collect predicate <> context) tree)))
+        (if (not (predicate tree)) rest
+            (cons context rest)))))
 
 (define (tree:name o)
   (match o
@@ -874,6 +893,9 @@ procedure)."
 
 (define (tree:interface* o)
   (filter (is? 'interface) (tree:top* o)))
+
+(define (tree:model* o)
+  (filter (is? tree:model?) (tree:top* o)))
 
 (define (tree:type* o)
   (match o

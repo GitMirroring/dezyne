@@ -128,7 +128,7 @@ Parse a Dezyne file and produce an AST
                          ((tree:foreign? model) 'foreign)
                          ((tree:system? model) 'system))))
         (format #t "~a ~a\n" (context:dotted-name context) type)))
-    (for-each print-model (tree:model* tree))))
+    (for-each print-model (tree:list-model* tree))))
 
 (define (main args)
   (let* ((options (parse-opts args))
