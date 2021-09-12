@@ -115,12 +115,12 @@ left-handed word boundaries."
       (list-matches keywords-regex str))
      (filter-map
       (lambda (m)
-        (let* ((offset (match:end m))
-               (m (regexp-exec identifier-regex str offset)))
+        (let* ((end (match:end m))
+               (m (regexp-exec identifier-regex str end)))
           (and m
                (not (find (cute string-contains <> (match:substring m)) separators ))
                (cons
-                offset
+                (match:start m)
                 (match:substring m)))))
       (list-matches identifiers-regex str)))))
 
