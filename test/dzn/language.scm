@@ -536,6 +536,32 @@
   '("Bool.False" "Bool.True")
   (test-complete #:file-name "enum-variable-expression-missing.dzn" #:line 8 #:column 13))
 
+(test-equal "component-incomplete-port before port"
+  '("provides" "requires")
+  (test-complete #:file-name "component-incomplete-port.dzn" #:line 13))
+
+(test-equal "component-incomplete-port after port"
+  '("provides" "requires")
+  (test-complete #:file-name "component-incomplete-port.dzn" #:line 18))
+
+(test-expect-fail 1)
+(test-equal "component-incomplete-port after behaviour"
+  '()
+  (test-complete #:file-name "component-incomplete-port.dzn" #:line 30))
+
+(test-equal "component-incomplete-port behaviour"
+  %completion-behaviour
+  (test-complete #:file-name "component-incomplete-port.dzn" #:line 21))
+
+(test-expect-fail 1)
+(test-equal "component-incomplete-port behaviour end"
+  %completion-behaviour
+  (test-complete #:file-name "component-incomplete-port.dzn" #:line 28))
+
+(test-equal "component-incomplete-port on"
+  '("bool" "if" "void" "w.hello()")
+  (test-complete #:file-name "component-incomplete-port.dzn" #:line 26))
+
 (test-end)
 
 (test-begin "lookup")
