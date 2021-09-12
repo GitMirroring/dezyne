@@ -34,6 +34,7 @@ EXTRA_DIST +=					\
  %D%/component3a.dzn				\
  %D%/component4.dzn				\
  %D%/component5.dzn				\
+ %D%/component5a.dzn				\
  %D%/component6.dzn				\
  %D%/component6a.dzn				\
  %D%/component6b.dzn				\

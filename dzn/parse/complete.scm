@@ -156,15 +156,25 @@
     (append-map port->event-names ports)))
 
 (define* (complete:trigger-names o #:key (event-predicate identity))
-  (cond ((slot o 'interface)
-         (sort (cons* "inevitable" "optional"
-                      (complete:event-names o 'in #:predicate event-predicate))
-               string<))
-        ((slot o 'component)
-         (sort (complete:port-event-names o 'trigger #:event-predicate event-predicate)
-               string<))
-        (else
-         '())))
+  (let* ((interface? (parent o 'interface))
+         (on (parent o 'on))
+         (statements (and on (tree:statement* on)))
+         (triggers (and statements (tree:trigger* on)))
+         (trigger (and (pair? triggers) (last triggers)))
+         (trigger-complete? (and trigger
+                                 (or (and interface? (.event-name trigger))
+                                     (and (.port-name trigger)
+                                          (.event-name trigger)))))
+         (triggers (if interface?
+                       (append '("inevitable" "optional")
+                               (complete:event-names
+                                o 'in #:predicate event-predicate))
+                       (complete:port-event-names
+                        o 'trigger #:event-predicate event-predicate))))
+    (sort (append (if (and (null? statements) trigger-complete?) '("illegal")
+                      '())
+           triggers)
+     string<)))
 
 (define* (complete:action-names o #:key (event-predicate identity))
   (cond ((slot o 'component) (complete:port-event-names o 'action #:event-predicate event-predicate))
@@ -369,6 +379,9 @@
 
 (define (complete:statements context offset)
   (let* ((statements (tree:statement* (.tree context)))
+         (illegal?   (and (null? statements)
+                          (not (is-a? (.tree context) 'compound))
+                          (not (parent context 'compound))))
          (before     (filter-map (cute tree:before-location? <> offset) statements))
          (before     (and (pair? before) (last before)))
          (else?      (and (is-a? before 'if-statement)
@@ -386,6 +399,7 @@
                                '()))))
                       (else
                        '())))
+         (statements (if illegal? (cons "illegal" statements) statements))
          (statements (cons "if" statements))
          (statements (if else? (cons "else" statements) statements))
          (actions    (complete:action-names context))

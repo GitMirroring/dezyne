@@ -270,12 +270,16 @@
   (test-complete #:file-name "component3a.dzn"))
 
 (test-equal "component4"
-  '("p.e()" "r.f()")
+  '("illegal" "p.e()" "r.f()")
   (test-complete #:file-name "component4.dzn"))
 
 (test-equal "component5"
-  '("bool" "if" "p.f()" "r.e()" "void")
+  '("bool" "if" "illegal" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component5.dzn"))
+
+(test-equal "component5a"
+  '("illegal" "p.e()" "r.f()")
+  (test-complete #:file-name "component5a.dzn"))
 
 (test-equal "component6"
   '("bool" "if" "p.f()" "r.e()" "void")
@@ -302,11 +306,11 @@
   (test-complete #:file-name "component9.dzn" #:offset 142))
 
 (test-equal "component9a"
-  '("i.e0()" "i.e1()")
+  '("i.e0()" "i.e1()" "illegal")
   (test-complete #:file-name "component9a.dzn" #:offset 145))
 
 (test-equal "component10"
-  '("bool" "i.a0()" "i.a1()" "if" "void")
+  '("bool" "i.a0()" "i.a1()" "if" "illegal" "void")
   (test-complete #:file-name "component10.dzn" #:offset 185))
 
 (test-equal "component10a"
