@@ -192,6 +192,12 @@ completed, such as removal of BEHAVIOUR, SYSTEM and type definitions."
                      =>
                      (lambda (m)
                        (+ len (string-length (match:substring m 1)))))
+                    ;; whitespace assignment's expression
+                    ((string-match "^( *= *[^;]*;)"
+                                   (substring str (+ offset len)))
+                     =>
+                     (lambda (m)
+                       (+ len (string-length (match:substring m 1)))))
                     (else
                      len)))
               (end (+ start len)))
