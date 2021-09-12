@@ -58,6 +58,7 @@
           '((complete (single-char #\c))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
+            (line (value #t))
             (lookup (single-char #\l))
             (offset (value #t))
             (point (single-char #\p) (value #t))
@@ -77,8 +78,9 @@ Dezyne language tool for completion and lookup information
  -h, --help                      display this help and exit
  -l, --lookup                    show lookup
  -I, --import=DIR+               add DIR to import path
-     --offset=OFFSET             use offset=OFFSET to determine context
- -p, --point=LINE[,COLUMN]       calculate offset from line LINE and column COLUMN [0]
+     --line=LINE                 use line LINE as context
+     --offset=OFFSET             use offset OFFSET as context
+ -p, --point=LINE[,COLUMN]       use line LINE and column COLUMN [0] as context
  -s, --stress                    stress test the completion engine
  -v, --verbose                   display input, parse tree, offset, context and completions
 "))
@@ -135,7 +137,8 @@ Dezyne language tool for completion and lookup information
                            (cons (string-length input)
                                  (string->parse-tree input #:file-name file-name))))
            (offset (or (and+pred=> (option-ref options 'offset #f) string->number)
-                       (and+pred=> (option-ref options 'point #f)
+                       (and+pred=> (or (option-ref options 'line #f)
+                                       (option-ref options 'point #f))
                                    (lambda (str)
                                      (call-with-values (cute string->point str)
                                        (lambda (line col)

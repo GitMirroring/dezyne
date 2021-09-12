@@ -4761,13 +4761,14 @@ Add directory @var{dir} to the import path.
 @item --import=@var{offset}
 Use offset @var{offset} to determine context.
 
+@item --line=@var{line},@var{column}
+@itemx --point=@var{line},@var{column}
+@itemx -p @var{line},@var{column}
+Calculate offset from line @var{line} and column @var{column}.
+
 @item --lookup
 @itemx -l
 Show lookup result.
-
-@item --point=@var{line},@var{column}
-@itemx -p @var{line},@var{column}
-Calculate offset from line @var{line} and column @var{column}.
 
 @c XXX TODO: is dzn lang --verbose really dzn --debug language?
 @item --verbose
