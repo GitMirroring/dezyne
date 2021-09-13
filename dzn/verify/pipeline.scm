@@ -25,6 +25,7 @@
 (define-module (dzn verify pipeline)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
@@ -514,16 +515,19 @@ init for MODEL unless INIT."
 
 (define (mcrl2:verify-interface-asserts model root)
   (let* ((model-name (makreel:unticked-dotted-name model))
+         (skip-nondet? (command-line:get 'no-interface-determinism))
          (result (string-append
                   (verify-pipeline "verify-interface" root model)
-                  (verify-pipeline "verify-interface-nondet" root model)))
+                  (if skip-nondet? ""
+                      (verify-pipeline "verify-interface-nondet" root model))))
          (result (result-split result)))
     (define (report-assert assert)
       (report assert #f (get-trace assert result) 'interface model-name))
     (reduce-or (command-line:get 'all)
                (list (cute report-assert 'deadlock)
                      (cute report-assert 'livelock)
-                     (cute report-assert 'deterministic)))))
+                     (if skip-nondet? (const #f)
+                         (cute report-assert 'deterministic))))))
 
 (define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))

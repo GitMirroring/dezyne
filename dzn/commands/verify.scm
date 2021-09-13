@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2020 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 ;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
@@ -51,6 +51,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
+            (no-interface-determinism)
             (out (value #t))
             (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec))
@@ -72,6 +73,8 @@ Check DZN-FILE for verification errors in Dezyne models
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL
       --out=FORMAT            produce output FORMAT (use \"help\" for a list)
+      --no-interface-determinism
+                              skip interface RTC determinism check
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
 	(exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
