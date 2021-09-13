@@ -42,7 +42,7 @@
 ;;; Parse tree context.
 ;;;
 
-(define (tree:at-location? o at)
+(define (tree:at-location-incomplete? o at)
   (and (pair? o)
        (or (let ((end (last o)))
              (and ((is? 'location) end)
@@ -51,24 +51,37 @@
                     (and (<= from at)
                          (or (<= at to)
                              (incomplete? o))))))
+           (find (cute tree:at-location-incomplete? <> at) o))))
+
+(define (tree:at-location? o at)
+  (and (pair? o)
+       (or (let ((end (last o)))
+             (and ((is? 'location) end)
+                  (let ((from (.pos end))
+                        (to (.end end)))
+                    (and (<= from at)
+                         (<= at to)))))
            (find (cute tree:at-location? <> at) o))))
 
 (define (tree:after-location? o at)
   (and (pair? o)
+       (not (tree:at-location? o at))
        (or (let ((end (last o)))
              (and ((is? 'location) end)
                   (let ((to (.end end)))
-                    (> to at))))
+                    (and (> to at) o))))
            (find (cute tree:after-location? <> at) o))))
 
 (define (tree:around-location? o at)
   (and (pair? o)
-       (let ((after before
-                    (partition (cute tree:after-location? <> at) (cdr o))))
-         (and (pair? before) (pair? after)))))
+       (or (tree:at-location? o at)
+           (let* ((after before
+                         (partition (cute tree:after-location? <> at) (cdr o))))
+             (and (pair? before) (pair? after))))))
 
 (define (tree:before-location? o at)
   (and (pair? o)
+       (not (tree:at-location? o at))
        (let ((after before
                     (partition (cute tree:after-location? <> at) (cdr o))))
          (and (pair? before)
@@ -511,13 +524,14 @@
        ((o ('BRACE-OPEN b ...) t ...)
         '())
        (_
-        (let ((incomplete (find incomplete? (cdr o))))
-          (cond ((is-a? incomplete 'on)
-                 (complete:trigger-names context))
-                (else
-                 (complete:behaviour context)))))))
+        (complete:behaviour context))))
     ((? (is? 'behaviour-compound))
-     (complete:behaviour context))
+     (cond ((tree:after-location? o offset)
+            '("provides" "requires"))
+           ((tree:before-location? o offset)
+            '())
+           (else
+            (complete:behaviour context))))
     ((? (is? 'system))
      (complete:system context))
     ((? (is? 'instances-and-bindings))
@@ -704,7 +718,7 @@
 
 (define (complete:context o at)
   (let ((narrow (conjoin incomplete? (negate symbol?) (negate tree:location?)))
-        (context (reverse (tree:collect o (cute tree:at-location? <> at)))))
+        (context (reverse (tree:collect o (cute tree:at-location-incomplete? <> at)))))
     (if (null? context) `(,o)
         (let ((narrow (find narrow (cdar context))))
           (if narrow (cons narrow context)

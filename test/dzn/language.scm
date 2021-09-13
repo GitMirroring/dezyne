@@ -218,11 +218,11 @@
   (test-complete #:file-name "component0.dzn"))
 
 (test-equal "component1"
-  %completion-component
+  '("provides" "requires")
   (test-complete #:file-name "component1.dzn"))
 
 (test-equal "component1a"
-  %completion-component
+  '("provides" "requires")
   (test-complete #:file-name "component1a.dzn"))
 
 (test-equal "component1b"
