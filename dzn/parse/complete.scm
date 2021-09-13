@@ -678,6 +678,11 @@
      (cond ((incomplete? o) (context:complete (.expression o) (cons (.expression o) context) offset))
            ((not (parent context 'on)) (behaviour-top context))
            (else '())))
+    (('expression 'PAREN-CLOSE x ...)
+     (cond ((parent context 'if-statement)
+            (complete:boolean-expressions context))
+           (else
+            '())))
     ((? (is? 'expression))
      (context:complete (.value o) (cons (.value o) context) offset))
     (('or 'otherwise 'expression)

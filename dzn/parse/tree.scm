@@ -459,7 +459,8 @@ procedure)."
   (match o
     (('expression (? (is? 'location))) #f)
     (('expression expression (? (is? 'location))) expression)
-    (('expression expression) expression)
+    (('expression expression x ...) expression)
+    (('expression) #f)
     (('literal (? (is? 'location))) #f)
     (('literal literal (? (is? 'location))) literal)))
 
