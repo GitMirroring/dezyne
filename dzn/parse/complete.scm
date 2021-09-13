@@ -433,8 +433,18 @@
   (when debug?
     (format (current-error-port) "tree:~a\n" o))
   (match o
-    (#f
+    ('types-and-events
+     '("in" "out" "enum" "extern" "subint"))
+    ((? symbol?)
      '())
+    ;; parse-tree damage: move up
+    ((or #f (? (negate tree?)))
+     (let ((context (and (pair? context)
+                         (drop-while (negate tree?) (cdr context)))))
+       (cond ((context? context)
+              (complete:root (.tree context) context offset #:debug? debug?))
+             (else
+              '()))))
     ((? (is? 'root))
      %completion-top)
     ((? (is? 'file-name))
@@ -474,8 +484,6 @@
               (append (if external? '() '("external"))
                       (if injected? '() '("injected"))
                       (complete:interface-names (context:parent context 'component)))))))
-    ('types-and-events
-     '("in" "out" "enum" "extern" "subint"))
     ((? (is? 'types-and-events))
      %completion-interface)
     ((and (? (is? 'event)) (? incomplete?))
@@ -680,10 +688,6 @@
     ((? (is? 'comment))
      (complete:root (parent context tree?)
                     (context:parent context tree?) offset #:debug? debug?))
-    ((or 'BRACE-CLOSE
-         'BRACE-OPEN
-         (? symbol?))
-     '())
     ((and (? complete?) (? (negate (is? 'comment))))
      '())
     (_
