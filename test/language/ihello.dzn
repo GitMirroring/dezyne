@@ -5,6 +5,6 @@ interface ihello
 
   behaviour
   {
-    on hello: world ();
+    on hello: world;
   }
 }

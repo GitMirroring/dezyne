@@ -22,6 +22,6 @@ component hello_enum
       reply (b);
     }
 
-    on r.world (): r.hello ();
+    on r.world (): int i = r.hello ();
   }
 }

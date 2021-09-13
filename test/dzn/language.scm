@@ -158,11 +158,11 @@
   (test-complete #:file-name "interface9a.dzn"))
 
 (test-equal "interface9b"
-  '("bar" "foo" "inevitable" "optional")
+  '("foo" "inevitable" "optional")
   (test-complete #:file-name "interface9b.dzn"))
 
 (test-equal "interface9c"
-  '("bar" "foo" "inevitable" "optional")
+  '("foo" "inevitable" "optional")
   (test-complete #:file-name "interface9c.dzn" #:line 10))
 
 (test-equal "interface9d"

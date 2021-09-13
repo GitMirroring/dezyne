@@ -11,7 +11,7 @@ namespace space
 
     behaviour
     {
-      on hello: world ();
+      on hello: world;
     }
   }
 }

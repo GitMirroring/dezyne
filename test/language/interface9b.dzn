@@ -1,7 +1,7 @@
 interface I
 {
  in void foo();
- in void bar();
+ out void bar();
 
  behaviour
  {
