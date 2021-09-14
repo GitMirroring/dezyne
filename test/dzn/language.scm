@@ -127,7 +127,7 @@
 ;;; XXX TODO: devise a better test naming scheme and remove all
 ;;; numbering (or revert to numbering above?)
 (test-equal "language interface I { enum E; in _" ;5b
-  '("bool" "void" "E")
+  '("E" "bool" "void")
   (test-complete #:file-name "interface5b.dzn"))
 
 (test-equal "language interface6"
@@ -367,7 +367,7 @@
   (test-complete #:file-name "component-behaviour.dzn" #:line 21))
 
 (test-equal "completion component-state"
-  '("State.Uninitialized" "State.Initialized" "State.Active" "State.Inactive")
+  '("State.Active" "State.Inactive" "State.Initialized" "State.Uninitialized")
   (test-complete #:file-name "component-state.dzn" #:line 18 #:column 24))
 
 (test-equal "completion component-on"
@@ -375,11 +375,11 @@
   (test-complete #:file-name "component-on.dzn" #:line 17 #:column 7))
 
 (test-equal "completion component-enum member"
-  '("fun()" "r.hello()" "Bool.False" "Bool.True")
+  '("Bool.False" "Bool.True" "fun()" "r.hello()")
   (test-complete #:file-name "component-enum-member.dzn" #:line 25 #:column 18))
 
 (test-equal "completion component-enum local"
-  '("fun(_)" "r.hello()" "Bool.False" "Bool.True")
+  '("Bool.False" "Bool.True" "fun(_)" "r.hello()")
   (test-complete #:file-name "component-enum-local.dzn" #:line 27 #:column 20))
 
 (test-equal "completion interface-enum"
@@ -399,15 +399,15 @@
   (test-complete #:file-name "component-enum.dzn" #:line 10 #:column 19))
 
 (test-equal "completion enum local"
-  '("m" "fun(_)" "Bool.False" "Bool.True")
+  '("Bool.False" "Bool.True" "fun(_)" "m")
   (test-complete #:file-name "component-enum.dzn" #:line 35 #:column 15))
 
 (test-equal "completion enum reply"
-  '("b" "m" "fun(_)" "Bool.False" "Bool.True")
+  '("Bool.False" "Bool.True" "b" "fun(_)" "m")
   (test-complete #:file-name "component-enum.dzn" #:line 36 #:column 13))
 
 (test-equal "completion enum formal"
-  '("b" "m" "fun(_)" "Bool.False" "Bool.True")
+  '("Bool.False" "Bool.True" "b" "fun(_)" "m")
   (test-complete #:file-name "component-enum.dzn" #:line 30 #:column 13))
 
 (test-equal "completion bool literal"
@@ -415,15 +415,15 @@
   (test-complete #:file-name "component-bool.dzn" #:line 10 #:column 13))
 
 (test-equal "completion bool local"
-  '("m" "fun(_)" "false" "true")
+  '("false" "fun(_)" "m" "true")
   (test-complete #:file-name "component-bool.dzn" #:line 35 #:column 15))
 
 (test-equal "completion bool reply"
-  '("b" "m" "fun(_)" "false" "true")
+  '("b" "false" "fun(_)" "m" "true")
   (test-complete #:file-name "component-bool.dzn" #:line 36 #:column 13))
 
 (test-equal "completion bool formal"
-  '("b" "m" "fun(_)" "false" "true")
+  '("b" "false" "fun(_)" "m" "true")
   (test-complete #:file-name "component-bool.dzn" #:line 30 #:column 13))
 
 (test-equal "completion int literal"
@@ -431,15 +431,15 @@
   (test-complete #:file-name "component-int.dzn" #:line 10 #:column 13))
 
 (test-equal "completion int local"
-  '("m" "fun(_)")
+  '("fun(_)" "m")
   (test-complete #:file-name "component-int.dzn" #:line 35 #:column 15))
 
 (test-equal "completion int reply"
-  '("b" "m" "fun(_)")
+  '("b" "fun(_)" "m")
   (test-complete #:file-name "component-int.dzn" #:line 36 #:column 13))
 
 (test-equal "completion int formal"
-  '("b" "m" "fun(_)")
+  '("b" "fun(_)" "m")
   (test-complete #:file-name "component-int.dzn" #:line 30 #:column 13))
 
 (test-equal "completion data literal"

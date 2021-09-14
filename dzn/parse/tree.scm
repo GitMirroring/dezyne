@@ -88,6 +88,7 @@
 
             context:dotted-name
             context:port*
+            context:stripped-dotted-name
             context:top*
             context:type*
 
@@ -127,6 +128,7 @@
             tree:offset
             tree:scope+name
 
+            tree:argument*
             tree:component*
             tree:declaration*
             tree:declaration*
@@ -739,11 +741,29 @@ procedure)."
             (cons context rest)))))
 
 (define (context:full-name context)
-  (append-map tree:id*
-              (filter-map .name (filter tree:scope? (reverse context)))))
+  (filter (negate string-null?)
+          (append-map tree:id*
+                      (filter-map .name (filter tree:scope? (reverse context))))))
 
 (define (context:dotted-name context)
-  (string-join (filter (negate string-null?) (context:full-name context)) "."))
+  (string-join (context:full-name context) "."))
+
+(define (context:stripped-dotted-name o context)
+  (define (strip-prefix prefix str)
+    (let loop ((prefix prefix))
+      (let ((prefix-string (string-join prefix "." 'suffix)))
+        (cond ((null? prefix)
+               str)
+              ((string-prefix? prefix-string str)
+               (substring str (string-length prefix-string)))
+              (else
+               (loop (cdr prefix)))))))
+  (let ((name (context:dotted-name o))
+        (namespace (or (parent-context context tree:model?)
+                       (parent-context context (is? 'namespace)))))
+    (if (not namespace) name
+        (let ((prefix (context:full-name namespace)))
+          (strip-prefix prefix name)))))
 
 (define (context:port* o)
   (match (.tree o)
@@ -1001,6 +1021,13 @@ procedure)."
 
 (define (tree:int* o)
   (filter (is? 'int) (tree:type* o)))
+
+(define (tree:argument* o)
+  (match o
+    ((? (is? 'action)) (tree:argument* (slot o 'arguments)))
+    ((? (is? 'call)) (tree:argument* (slot o 'arguments)))
+    ((? (is? 'arguments)) (slots o 'argument))
+    (_ '())))
 
 (define (tree:event* o)
   (match o

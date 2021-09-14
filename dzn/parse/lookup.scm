@@ -38,6 +38,7 @@
   #:use-module (dzn parse util)
 
   #:export (.event
+            .function
             .instance
             .port
             .type
@@ -177,6 +178,11 @@ null) and return its CONTEXT."
                 (and=> (.type port) (cute context:lookup event-name <>)))
                (else
                 (search '() event-name (.parent context)))))))))
+
+(define (.function context)
+  (let ((tree (.tree context)))
+    (match tree
+      ((? (is? 'call)) (and=> (.name tree) (cute context:lookup <> context))))))
 
 (define (.instance context)
   (let ((tree (.tree context)))

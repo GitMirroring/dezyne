@@ -116,19 +116,13 @@
     (_ #f)))
 
 (define (context:type-names context)
-  (define (strip-prefix prefix str)
-    (if (not (string-prefix? prefix str)) str
-        (substring str (string-length prefix))))
-  (let* ((type-names (map context:dotted-name
-                          (filter (compose (negate (is? 'extern)) .tree)
-                                  (context:type* context))))
-         (interface (parent-context context 'interface))
-         (type-names (if (not interface) type-names
-                         (let ((prefix (string-append (context:dotted-name interface) ".")))
-                           (map (cute strip-prefix prefix <>) type-names)))))
+  (let* ((types (context:type* context))
+         (type-names (map (cute context:stripped-dotted-name <> context)
+                          types)))
     (delete-duplicates
-     (cons* "bool" "void"
-            type-names))))
+     (sort (cons* "bool" "void"
+                  type-names)
+           string<))))
 
 (define* (context:event-names o event-dir #:key (predicate identity))
   (let* ((events (tree:event* (find (is? 'interface) o)))
@@ -199,11 +193,10 @@
         (format #f "~a(~a)" name formals)))
     (map function->name functions)))
 
-(define (tree:enum-value-names o)
-  (assert-type o 'enum)
-  (let* ((name (.name o))
-         (fields (tree:field* o)))
-    (map (cute string-append (tree:dotted-name name) "." <>)
+(define* (context:enum-value-names o #:key (context o))
+  (assert-type (.tree o) 'enum)
+  (let ((fields (tree:field* (.tree o))))
+    (map (cute string-append (context:stripped-dotted-name o context) "." <>)
          (map tree:dotted-name fields))))
 
 (define (tree:int-value-names o)
@@ -218,10 +211,10 @@
     (map (cute string-append (tree:dotted-name name) "." <>)
          (map tree:dotted-name fields))))
 
-(define (tree:type-value-names o)
-  (cond ((is-a? o 'enum) (tree:enum-value-names o))
-        ;;((is-a? o 'int) (tree:int-value-names o))
-        ((is-a? o 'bool) '("false" "true"))
+(define* (context:type-value-names o #:key (context o))
+  (cond ((is-a? (.tree o) 'enum) (context:enum-value-names o #:context context))
+        ;;((is-a? (.tree o) 'int) (context:int-value-names o))
+        ((is-a? (.tree o) 'bool) '("false" "true"))
         (else '())))
 
 (define (context:locals o)
@@ -258,42 +251,31 @@
          (variables (filter enum? variables)))
     (map tree:dotted-name variables)))
 
-(define (complete-enum o context)
-  (assert-type o 'enum)
-  (let ((name (.name o)))
-    (append
-     (complete:variable-names o context)
-     (tree:function-names
-      (parent context 'behaviour)
-      #:type-predicate (cute type-equal? <> o))
-     (context:action-names
-      context
-      #:event-predicate (compose (cute tree:name-equal? <> name) .type-name))
-     (tree:type-value-names o))))
-
 (define (complete-enum-literal o name context)
   (assert-type o 'enum-literal)
   (let* ((type-name (.type-name o))
          (field     (.field o))
-         (enum      (tree:lookup type-name context)))
+         (enum      (context:lookup type-name context)))
     (cond
      ((not enum)
       (context:type-names context))
      ((equal? field name)
-      (tree:type-value-names enum))
+      (context:type-value-names enum #:context context))
      ((and (not (parent context 'function))
            (not (parent context 'on)))
-      (tree:type-value-names enum))
+      (context:type-value-names enum #:context context))
      (else
-      (append
-       (complete:variable-names enum context)
-       (tree:function-names
-        (parent context 'behaviour)
-        #:type-predicate (cute type-equal? <> enum))
-       (context:action-names
-        context
-        #:event-predicate (compose (cute tree:name-equal? <> type-name) .type-name))
-       (tree:type-value-names enum))))))
+      (sort
+       (append
+        (complete:variable-names (.tree enum) context)
+        (tree:function-names
+         (parent context 'behaviour)
+         #:type-predicate (cute type-equal? <> (.tree enum)))
+        (context:action-names
+         context
+         #:event-predicate (compose (cute type-equal? <> (.tree enum)) .type-name))
+        (context:type-value-names enum #:context context))
+       string<)))))
 
 (define (complete-literal o context)
   (assert-type o 'literal)
@@ -303,21 +285,28 @@
      ((not type)
       (context:type-names context))
      (else
-      (append
-       (complete:variable-names type context)
-       (tree:function-names
-        (parent context 'behaviour)
-        #:type-predicate (cute type-equal? <> type))
-       (tree:type-value-names type))))))
+      (sort
+       (append
+        (complete:variable-names type context)
+        (tree:function-names
+         (parent context 'behaviour)
+         #:type-predicate (cute type-equal? <> type))
+        (context:type-value-names (cons type context)))
+       string<)))))
 
 (define (complete-for-type type context)
-  (assert-type type 'bool 'enum 'extern 'int)
-  (append
-   (complete:variable-names type context)
-   (tree:function-names
-    (parent context 'behaviour)
-    #:type-predicate (cute type-equal? <> type))
-   (tree:type-value-names type)))
+  (assert-type (.tree type) 'bool 'enum 'extern 'int)
+  (sort
+   (append
+    (complete:variable-names (.tree type) context)
+    (context:action-names
+     context
+     #:event-predicate (compose (cute type-equal? <> (.tree type)) .type-name))
+    (tree:function-names
+     (parent context 'behaviour)
+     #:type-predicate (cute type-equal? <> (.tree type)))
+    (context:type-value-names type #:context context))
+   string<))
 
 (define (context:complete-for-type context)
   (assert-type context tree:context?)
@@ -326,7 +315,9 @@
                 ((parent context 'variable)
                  => (lambda (variable)
                       (let ((type-name (.type-name variable)))
-                        (and type-name (tree:lookup type-name context)))))))
+                        (and type-name (context:lookup type-name context)))))
+                (else
+                 #f)))
          (name (and=> type .name)))
     (cond
      ((not type)
@@ -337,18 +328,20 @@
 (define (complete-function o context)
   (assert-type o 'function)
   (let* ((type-name (.type-name o))
-         (type      (and type-name (tree:lookup type-name context)))
-         (name      (and type (.name type))))
+         (type      (and type-name (context:lookup type-name context)))
+         (name      (and type (.name (.tree type)))))
     (cond
      ((not type)
       (context:type-names context))
      (else
-      (append
-       (complete:variable-names type context)
-       (tree:function-names
-        (parent context 'behaviour)
-        #:type-predicate (cute type-equal? <> type))
-       (tree:type-value-names type))))))
+      (sort
+       (append
+        (complete:variable-names (.tree type) context)
+        (tree:function-names
+         (parent context 'behaviour)
+         #:type-predicate (cute type-equal? <> (.tree type)))
+        (context:type-value-names type #:context context))
+       string<)))))
 
 (define (complete-on o context)
   (assert-type o 'on)
@@ -358,18 +351,20 @@
          (interface (and port (tree:lookup (.type-name port) context)))
          (event     (and interface (tree:lookup (.event-name trigger) (list interface))))
          (type-name (and event (.type-name event)))
-         (type      (and type-name (tree:lookup type-name context)))
-         (name      (and type (.name type))))
+         (type      (and type-name (context:lookup type-name context)))
+         (name      (and type (.name (.tree type)))))
     (cond
      ((not type)
       (context:type-names context))
      (else
-      (append
-       (complete:variable-names type context)
-       (tree:function-names
-        (parent context 'behaviour)
-        #:type-predicate (cute tree:name-equal? <> name))
-       (tree:type-value-names type))))))
+      (sort
+       (append
+        (complete:variable-names (.tree type) context)
+        (tree:function-names
+         (parent context 'behaviour)
+         #:type-predicate (cute tree:name-equal? <> name))
+        (context:type-value-names type #:context context))
+       string<)))))
 
 (define (complete:boolean-expressions context)
   (sort (cons* "true" "false"
@@ -632,7 +627,7 @@
     ((and (? (is? 'reply)) (? (negate .expression)))
      (let* ((on (parent-context context 'on))
             (type (context:on-type on)))
-       (if type (complete-for-type (.tree type) context)
+       (if type (complete-for-type type context)
            '())))
     ((and (? (is? 'return)) (? (negate .expression)))
      (complete-function (parent context 'function) context))
@@ -642,13 +637,13 @@
     ((? (is? 'var))
      (cond ((not (parent context 'expression)) '())
            ((let* ((name (tree:name o))
-                   (enum (tree:lookup name context)))
-              (is-a? enum 'enum))
+                   (enum (context:lookup name context)))
+              (is-a? (.tree enum) 'enum))
             => (lambda (enum)
                  (let* ((variable (or (parent context 'formal)
                                       (parent context 'variable)))
                         (name (and variable (tree:dotted-name variable))))
-                   (filter-self context (complete-enum enum context)))))
+                   (filter-self context (complete-for-type enum context)))))
            ((let* ((name (tree:name o))
                    (variable (tree:lookup name context))
                    (type (and (or (is-a? variable 'formal)
@@ -660,8 +655,8 @@
                    (variable (tree:lookup name context))
                    (type (and (or (is-a? variable 'formal)
                                   (is-a? variable 'variable)) (.type-name variable)))
-                   (type (tree:lookup type context)))
-              (tree:type? type))
+                   (type (context:lookup type context)))
+              (tree:context? type))
             => (lambda (type)
                  (filter-self context (complete-for-type type context))))
            (else
@@ -674,6 +669,24 @@
               (context:type-names context))
              (else
               '()))))
+    ((? (is? 'arguments))
+     (cond ((and (parent context 'component)
+                 (parent-context context 'action))
+            =>
+            (lambda (action)
+              (let ((type (.type action)))
+                (complete-for-type type context))))
+           ((parent-context context 'call)
+            =>
+            (lambda (call)
+              (let ((function (.function call)))
+                (if (not function) '()
+                    (let ((arguments (tree:argument* (.tree call)))
+                          (formals (tree:formal* (.tree function))))
+                      (if (< (length formals) (length arguments)) '()
+                          (let* ((formal (list-ref formals (length arguments)))
+                                 (type (.type (cons formal function))))
+                            (complete-for-type type context))))))))))
     (('field-test var name ...)
      (cond ((let* ((name (tree:name var))
                    (variable (and name (tree:lookup name context))))
@@ -704,22 +717,17 @@
     ((and (? (is? 'variable)) (? incomplete?))
      (let* ((type-name (.type-name o))
             (type (false-if-exception (tree:lookup type-name context)))
-            (type (tree:lookup type-name context))
+            (type (context:lookup type-name context))
             (expression (false-if-exception (.expression o)))
             (expression (and expression (.value expression))))
        (cond ((not type)
               (context:type-names context))
-             ((or (eq? type tree:bool)
+             ((or (eq? type context:bool)
                   (and (not (is-a? type 'enum))
                        (not expression)
                        (not (parent context 'on))
                        (not (parent context 'function))))
-              (filter-self context (tree:type-value-names type)))
-             ((or (not expression) (incomplete? expression))
-              (let ((name (tree:dotted-name o)))
-                (filter-self context (complete-enum type context))))
-             ((is-a? type 'enum)
-              (filter-self context (complete-enum type context)))
+              (filter-self context (context:type-value-names type #:context context)))
              (type
               (filter-self context (complete-for-type type context)))
              (else
@@ -727,7 +735,7 @@
     ((and (? (is? 'variable)))
      (let* ((type-name (.type-name o))
             (type (false-if-exception (tree:lookup type-name context)))
-            (type (tree:lookup type-name context)))
+            (type (context:lookup type-name context)))
        (filter-self context (complete-for-type type context))))
     (('guard x ...)
      (cond ((incomplete? o) (context:complete (.expression o) (cons (.expression o) context) offset))
