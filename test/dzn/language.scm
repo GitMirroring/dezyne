@@ -499,9 +499,24 @@
   '("space.ihello" "space.nest.iworld")
   (test-complete #:file-name "space-ihello.dzn" #:line 50 #:column 10))
 
+(test-equal "space-hello space interfaces"
+  '("ihello" "iworld" "nest.iworld")
+  (test-complete #:file-name "space-hello.dzn" #:line 27 #:column 12
+                 #:file-name->parse-tree file-name->parse-tree))
+
 (test-equal "space-hello interfaces"
   '("iworld" "space.ihello" "space.iworld" "space.nest.iworld")
   (test-complete #:file-name "space-hello.dzn" #:line 38 #:column 10
+                 #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "space-hello space types"
+  '("Bool" "bool" "data_t" "enum" "extern" "ihello.Bool" "int" "nest.iworld.Bool" "on" "subint" "void")
+  (test-complete #:file-name "space-hello.dzn" #:line 31
+                 #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "space-hello types"
+  '("bool" "enum" "extern" "on" "space.Bool" "space.data_t" "space.ihello.Bool" "space.int" "space.nest.iworld.Bool" "subint" "void")
+  (test-complete #:file-name "space-hello.dzn" #:line 42
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "system before ports"
