@@ -718,6 +718,8 @@
              ((or (not expression) (incomplete? expression))
               (let ((name (tree:dotted-name o)))
                 (filter-self context (complete-enum type context))))
+             ((is-a? type 'enum)
+              (filter-self context (complete-enum type context)))
              (type
               (filter-self context (complete-for-type type context)))
              (else
