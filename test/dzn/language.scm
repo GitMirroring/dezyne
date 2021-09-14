@@ -469,9 +469,19 @@
   '("Tri_bool.False" "Tri_bool.True" "Tri_bool.Whatever")
   (test-complete #:file-name "enum.dzn" #:line 10 #:column 17))
 
-(test-equal "provides imported interfaces"
+(test-equal "import requires"
   '("external" "injected" "ihello" "ihello_enum" "ihello_int")
   (test-complete #:file-name "import.dzn" #:line 8 #:column 10
+                 #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "import statemement"
+  '("Bool" "bool" "if" "int" "m" "p.world()" "r.hello()" "void")
+  (test-complete #:file-name "import.dzn" #:line 25 #:column 18
+                 #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "import event expression"
+  '("r.hello()")
+  (test-complete #:file-name "import.dzn" #:line 25 #:column 27
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "on imported triggers"
