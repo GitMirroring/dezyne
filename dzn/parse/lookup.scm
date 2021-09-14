@@ -32,6 +32,7 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
 
   #:use-module (dzn parse tree)
   #:use-module (dzn parse util)
@@ -47,53 +48,63 @@
 ;;; Lookup.
 ;;;
 
-(define (search-import scope name import)
-  (let* ((file-name (.file-name import))
-         (tree      (and file-name ((%file-name->parse-tree) file-name))))
-    (and tree (search-or-widen-context scope name (tree->context tree)))))
+(define search-import
+  (pure-funcq
+   (lambda (scope name import)
+     (let* ((file-name (.file-name import))
+            (tree      (and file-name ((%file-name->parse-tree) file-name))))
+       (and tree (search-or-widen-context scope name (tree->context tree)))))))
 
-(define (search scope name context)
-  (let* ((target (if (null? scope) name (car scope)))
-         (found (filter (compose (cute tree:name-equal? <> target) tree:name)
-                        (tree:declaration* (.tree context)))))
-    (and (pair? found)
-         (let* ((found (if (null? scope) (and (pair? found) (cons (car found) context))
-                           (let ((tail (cdr scope)))
-                             (any (compose (cute search tail name <>)
-                                           (cute tree->context <> context))
-                                  found))))
-                (root (find (is? 'root) context))
-                (file-name (and=> root .file-name)))
-           (and found
-                (map (cute tree:add-file-name <> file-name) found))))))
+(define search
+  (pure-funcq
+   (lambda (scope name context)
+     (let* ((target (if (null? scope) name (car scope)))
+            (found (filter (compose (cute tree:name-equal? <> target) tree:name)
+                           (tree:declaration* (.tree context)))))
+       (and (pair? found)
+            (let* ((found (if (null? scope) (and (pair? found) (cons (car found) context))
+                              (let ((tail (cdr scope)))
+                                (any (compose (cute search tail name <>)
+                                              (cute tree->context <> context))
+                                     found))))
+                   (root (find (is? 'root) context))
+                   (file-name (and=> root .file-name)))
+              (and found
+                   (map (cute tree:add-file-name <> file-name) found))))))))
 
-(define (widen-to-parent scope name context)
-  (let ((parent-context (parent-context context tree:scope?)))
-    (and parent-context
-         (let* ((parent-tree (and=> parent-context .tree))
-                (scope-name (.name (.tree context)))
-                (scope+ (if scope-name (cons scope-name scope) scope)))
-           (or (search-or-widen-context scope name parent-context)
-               (search-or-widen-context scope+ name parent-context))))))
+(define widen-to-parent
+  (pure-funcq
+   (lambda (scope name context)
+     (let ((parent-context (parent-context context tree:scope?)))
+       (and parent-context
+            (let* ((parent-tree (and=> parent-context .tree))
+                   (scope-name (.name (.tree context)))
+                   (scope+ (if scope-name (cons scope-name scope) scope)))
+              (or (search-or-widen-context scope name parent-context)
+                  (search-or-widen-context scope+ name parent-context))))))))
 
-(define (widen-to-imports scope name context)
-  (and context (is-a? (.tree context) 'root)
-       (let* ((root (.tree context))
-              (imports (tree:import* root)))
-         (any (cute search-import scope name <>) imports))))
+(define widen-to-imports
+  (pure-funcq
+   (lambda (scope name context)
+     (and context (is-a? (.tree context) 'root)
+          (let* ((root (.tree context))
+                 (imports (tree:import* root)))
+            (any (cute search-import scope name <>) imports))))))
 
 (define (search-or-widen-context scope name context)
   (or (search scope name context)
       (widen-to-parent scope name context)
       (widen-to-imports scope name context)))
 
-(define (context:lookup name context)
-  "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a tree:context? or
+(define context:lookup
+  (pure-funcq
+   (lambda (name context)
+     "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a tree:context? or
 null) and return its CONTEXT."
-  (if (not context) '()
-      (let* ((context (if (.global name) (parent-context context 'root) context))
-             (scope name (tree:scope+name name)))
-        (search-or-widen-context scope name context))))
+     (if (not context) '()
+         (let* ((context (if (.global name) (parent-context context 'root) context))
+                (scope name (tree:scope+name name)))
+           (search-or-widen-context scope name context))))))
 
 (define (tree:lookup name context)
   (let ((scope (if (tree:scope? (.tree context)) context
