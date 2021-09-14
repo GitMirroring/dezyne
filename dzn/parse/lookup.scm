@@ -318,7 +318,8 @@ null) and return its CONTEXT."
   (assert-type o 'import)
   (let* ((file-name (.file-name o))
          (file-name ((%resolve-file) file-name)))
-    `(root (location 0 0 ,file-name))))
+    (and file-name
+         `(root (location 0 0 ,file-name)))))
 
 
 ;;;

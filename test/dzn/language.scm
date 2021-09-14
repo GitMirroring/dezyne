@@ -812,7 +812,11 @@
 
 (test-equal "import"
   "test/language/ihello.dzn:1:0"
-  (test-lookup #:file-name "import.dzn" #:line 1 #:column 0))
+  (test-lookup #:file-name "import.dzn" #:line 1))
+
+(test-equal "import nonexistent"
+  #f
+  (test-lookup #:file-name "import-nonexistent.dzn" #:line 1))
 
 (test-equal "global.space global"
   "global.space.dzn:4:9"
