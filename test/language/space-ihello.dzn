@@ -6,6 +6,8 @@ namespace space
 
   interface ihello
   {
+    enum Bool {False, True};
+
     in void hello();
     out void world();
 
@@ -13,5 +15,42 @@ namespace space
     {
       on hello: world;
     }
+  }
+
+  namespace nest
+  {
+    interface iworld
+    {
+      enum Bool {False, True};
+
+      in void hello();
+      out void world();
+
+      behaviour
+      {
+
+        on hello: world;
+      }
+    }
+  }
+
+  component foo
+  {
+    provides ihello h;
+
+    behaviour
+    {
+
+    }
+  }
+}
+
+component foo
+{
+  provides space.ihello h;
+
+  behaviour
+  {
+
   }
 }

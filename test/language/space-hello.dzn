@@ -1,38 +1,44 @@
 import space-ihello.dzn;
 
+interface iworld
+{
+  in void world();
+
+  behaviour
+  {
+    on world: {}
+  }
+}
+
 namespace space
 {
-  component foo
-  {
-    provides ihello p;
-  }
-
-  component hello
-  {
-    provides ihello p;
-
-    behaviour
-    {
-
-    on p.hello (): p.world ();
-    }
-  }
-
-  interface igoodbye
+  interface iworld
   {
     in void bye();
+
     behaviour
     {
       on bye: {}
     }
   }
+
+  component hello
+  {
+    provides ihello h;
+
+    behaviour
+    {
+
+    }
+  }
 }
 
-interface iworld
+component hello
 {
-  in void world();
+  provides ihello h;
+
   behaviour
   {
-    on world: {}
+
   }
 }

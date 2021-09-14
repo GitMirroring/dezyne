@@ -479,9 +479,29 @@
   (test-complete #:file-name "import.dzn" #:line 19 #:column 9
                  #:file-name->parse-tree file-name->parse-tree))
 
-(test-equal "provides interfaces, imported, namespace"
-  '("igoodbye" "ihello" "iworld")
-  (test-complete #:file-name "space-hello.dzn" #:line 12 #:column 12
+(test-equal "space-ihello space nest types"
+  '("Bool" "bool" "data_t" "enum" "extern" "ihello.Bool" "int" "on" "subint" "void")
+  (test-complete #:file-name "space-ihello.dzn" #:line 31))
+
+(test-equal "space-ihello space types"
+  '("Bool" "bool" "data_t" "enum" "extern" "ihello.Bool" "int" "nest.iworld.Bool" "on" "subint" "void")
+  (test-complete #:file-name "space-ihello.dzn" #:line 43))
+
+(test-equal "space-ihello types"
+  '("bool" "enum" "extern" "on" "space.Bool" "space.data_t" "space.ihello.Bool" "space.int" "space.nest.iworld.Bool" "subint" "void")
+  (test-complete #:file-name "space-ihello.dzn" #:line 54))
+
+(test-equal "space-ihello space interfaces"
+  '("ihello" "nest.iworld")
+  (test-complete #:file-name "space-ihello.dzn" #:line 39 #:column 12))
+
+(test-equal "space-ihello interfaces"
+  '("space.ihello" "space.nest.iworld")
+  (test-complete #:file-name "space-ihello.dzn" #:line 50 #:column 10))
+
+(test-equal "space-hello interfaces"
+  '("iworld" "space.ihello" "space.iworld" "space.nest.iworld")
+  (test-complete #:file-name "space-hello.dzn" #:line 38 #:column 10
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "system before ports"
@@ -750,7 +770,7 @@
 
 (test-equal "port->namespace-interface"
   "space-ihello.dzn:7:12"
-  (test-lookup #:file-name "space-hello.dzn" #:line 12 #:column 13
+  (test-lookup #:file-name "space-hello.dzn" #:line 27 #:column 13
                #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "illegal interface trigger->event"
