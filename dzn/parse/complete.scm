@@ -685,8 +685,12 @@
             (complete:boolean-expression context))
            (else
             '())))
-    ((? (is? 'expression))
-     (complete:root (.value o) (cons (.value o) context) offset #:debug? debug?))
+    ((and (? (is? 'expression)) (? incomplete?))
+     (let ((value (.value o)))
+       (cond ((complete? value)
+              (complete:root (.value o) (cons (.value o) context) offset #:debug? debug?))
+             (else
+              '()))))
     (('or 'otherwise 'expression)
      (sort (cons "otherwise" (complete:boolean-expression context)) string<))
     ((? (is? 'statement))

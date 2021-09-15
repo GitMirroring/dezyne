@@ -1,0 +1,10 @@
+interface ihello
+{
+  in void hello();
+
+  behaviour
+  {
+    bool  /* --line=7,9 */
+    [!t] on hello: t = true;
+  }
+}

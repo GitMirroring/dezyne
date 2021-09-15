@@ -664,6 +664,10 @@
   '("bool" "if" "void" "w.hello()" "w_o_w.hello()")
   (test-complete #:file-name "component-incomplete-action.dzn" #:line 26))
 
+(test-equal "variable-incomplete"
+  '()
+  (test-complete #:file-name "variable-incomplete.dzn" #:line 7 #:column 9))
+
 (test-end)
 
 (test-begin "lookup")

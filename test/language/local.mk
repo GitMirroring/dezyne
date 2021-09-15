@@ -115,4 +115,5 @@ EXTRA_DIST +=					\
  %D%/space-hello.dzn				\
  %D%/space-ihello.dzn				\
  %D%/system.dzn					\
- %D%/system-binding.dzn
+ %D%/system-binding.dzn				\
+ %D%/variable-incomplete.dzn
