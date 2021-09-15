@@ -1,0 +1,26 @@
+interface I
+{
+  in void e0();
+  in bool e1();
+
+  out void a0();
+  out void a1();
+
+  behaviour
+  {
+    on e0: {}
+    on e1: reply (true);
+  }
+}
+
+component C
+{
+  provides I i;
+  requires I j;
+
+  behaviour
+  {
+    bool m = false;
+    on i.e0(): bool b =
+  }
+}

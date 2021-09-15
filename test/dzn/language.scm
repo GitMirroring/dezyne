@@ -325,6 +325,22 @@
   '("bool" "i.a0()" "i.a1()" "if" "void")
   (test-complete #:file-name "component10a.dzn" #:offset 188))
 
+(test-equal "component11"
+  '("false" "j.e1()" "m" "true")
+  (test-complete #:file-name "component11.dzn"))
+
+(test-equal "component11a"
+  '("false" "j.e1()" "m" "true")
+  (test-complete #:file-name "component11a.dzn" #:line 24 #:column 18))
+
+(test-equal "component12"
+  '("false" "j.e1()" "m" "true")
+  (test-complete #:file-name "component12.dzn"))
+
+(test-equal "component12a"
+  '("false" "j.e1()" "m" "true")
+  (test-complete #:file-name "component12a.dzn" #:line 24 #:column 23))
+
 (test-equal "component-requires provides"
   '( "ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 13 #:column 11))
@@ -483,18 +499,23 @@
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "import statemement"
-  '("Bool" "bool" "if" "int" "m" "p.world()" "r.hello()" "void")
-  (test-complete #:file-name "import.dzn" #:line 25 #:column 18
+  '("Bool" "bool" "if" "int" "m" "p.world()" "r.hello()" "s.hello()" "void")
+  (test-complete #:file-name "import.dzn" #:line 27 #:column 18
                  #:file-name->parse-tree file-name->parse-tree))
 
-(test-equal "import event expression"
+(test-equal "import event assign expression"
+  '("Bool.False" "Bool.True" "b" "fun(_)" "m" "s.hello()")
+  (test-complete #:file-name "import.dzn" #:line 23 #:column 10
+                 #:file-name->parse-tree file-name->parse-tree))
+
+(test-equal "import event variable expression"
   '("r.hello()")
-  (test-complete #:file-name "import.dzn" #:line 25 #:column 27
+  (test-complete #:file-name "import.dzn" #:line 27 #:column 27
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "on imported triggers"
-  '("p.hello()" "r.world()")
-  (test-complete #:file-name "import.dzn" #:line 19 #:column 9
+  '("p.hello()" "r.world()" "s.world()")
+  (test-complete #:file-name "import.dzn" #:line 20 #:column 9
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "space-ihello space nest types"
@@ -778,7 +799,7 @@
 
 (test-equal "on->imported trigger-port"
   "import.dzn:7:23"
-  (test-lookup #:file-name "import.dzn" #:line 19  #:column 7
+  (test-lookup #:file-name "import.dzn" #:line 20  #:column 7
                #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "port->imported-interface"
@@ -788,7 +809,7 @@
 
 (test-equal "type->imported enum"
   "ienum.dzn:1:5"
-  (test-lookup #:file-name "import.dzn" #:line 12 #:column 4
+  (test-lookup #:file-name "import.dzn" #:line 13 #:column 4
                #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "type->imported enum"

@@ -259,6 +259,7 @@
 (define* (complete:type context #:key (actions? #t) type)
   ;;(assert-type (.tree type) 'bool 'enum 'extern 'int)
   (let ((type (or type
+                  (and (is-a? (.tree context) 'assign) (.type context))
                   (and (is-a? (.tree context) 'variable) (.type context))
                   (and=> (context:parent context 'var) .type)
                   (and=> (context:parent context 'variable) .type))))
@@ -643,6 +644,11 @@
     ((? (is? 'on))
      (cond ((null? (tree:trigger* o))
             (complete:trigger-names context))
+           ((.statement o)
+            =>
+            (lambda (statement)
+              (if (complete? statement) (complete:statements context offset)
+                  (complete:root statement (tree->context statement context) offset #:debug? debug?))))
            (else
             (complete:statements context offset))))
     ((? (is? 'if-statement))
@@ -656,16 +662,12 @@
             (expression (and expression (.value expression))))
        (cond ((not type)
               (complete:type-names context))
-             ((or (eq? type context:bool)
-                  (and (not (is-a? type 'enum))
-                       (not expression)
-                       (not (parent context 'on))
-                       (not (parent context 'function))))
-              (filter-self context (complete:type-literal-names type #:context context)))
              (type
               (filter-self context (complete:type context)))
              (else
               '()))))
+    ((? (is? 'assign))
+     (filter-self context (complete:type context)))
     ((? (is? 'variable))
      (filter-self context (complete:type context)))
     ((? (is? 'guard))
@@ -711,6 +713,9 @@
                 (and=> (parent context 'on)
                        (cute tree:before-location? <> offset)))
             (complete:behaviour context))
+           ((or (context:parent context 'assign))
+            => (lambda (context)
+                 (complete:root (.tree context) context offset #:debug? debug?)))
            ((or (context:parent context 'variable))
             => (lambda (context)
                  (complete:root (.tree context) context offset #:debug? debug?)))

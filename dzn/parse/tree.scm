@@ -476,7 +476,7 @@ procedure)."
     (('literal literal (? (is? 'location))) literal)))
 
 (define (.var o)
-  (assert-type o 'field-test)
+  (assert-type o 'assign 'field-test)
   (slot o 'var))
 
 

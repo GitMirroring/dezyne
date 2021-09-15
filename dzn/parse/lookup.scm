@@ -207,6 +207,7 @@ null) and return its CONTEXT."
 (define (.type context)
   (let ((tree (.tree context)))
     (match tree
+      ((? (is? 'assign)) (and=> (.var tree) (compose .type (cute tree->context <> context))))
       ((? (is? 'enum-literal)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'event)) (and=> (.type-name tree) (cute context:lookup <> context)))
       ((? (is? 'formal)) (and=> (.type-name tree) (cute context:lookup <> context)))

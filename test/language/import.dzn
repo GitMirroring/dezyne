@@ -6,6 +6,7 @@ component hello_enum
 {
   provides ihello_enum p;
   requires ihello_int r;
+  requires ihello_enum s;
 
   behaviour
   {
@@ -19,6 +20,7 @@ component hello_enum
     on p.hello ():
     {
       Bool b = Bool.True;
+      m = s.hello();
       reply (b);
     }
 

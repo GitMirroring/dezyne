@@ -44,6 +44,10 @@ EXTRA_DIST +=					\
  %D%/component9a.dzn				\
  %D%/component10.dzn				\
  %D%/component10a.dzn				\
+ %D%/component11.dzn				\
+ %D%/component11a.dzn				\
+ %D%/component12.dzn				\
+ %D%/component12a.dzn				\
  %D%/component-behaviour.dzn			\
  %D%/component-bool.dzn				\
  %D%/component-data.dzn				\
