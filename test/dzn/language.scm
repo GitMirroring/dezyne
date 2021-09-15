@@ -668,6 +668,14 @@
   '()
   (test-complete #:file-name "variable-incomplete.dzn" #:line 7 #:column 9))
 
+(test-equal "partial-type-name"
+  '("bool" "void")
+  (test-complete #:file-name "partial-type-name.dzn"))
+
+(test-equal "partial-type-name on"
+  '("bool" "void")
+  (test-complete #:file-name "partial-type-name.dzn" #:line 3 #:column 6))
+
 (test-end)
 
 (test-begin "lookup")

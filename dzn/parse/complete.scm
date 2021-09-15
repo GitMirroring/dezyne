@@ -513,6 +513,8 @@
      (complete:root (.tree (.parent context)) (.parent context) offset))
     ('type-name
      (complete:type-names context))
+    ((? (is? 'type-name))
+     (complete:type-names context))
     ((and (? (is? 'ports)) (? (cute tree:around-location? <> offset)))
      '("provides" "requires"))
     ((or 'body
@@ -575,10 +577,8 @@
             (complete:root (.tree (.parent context)) (.parent context) offset
                            #:debug? debug?))))
     ((and (? (is? 'compound-name)) (? complete?))
-     (cond ((context:parent context 'port)
-            (complete:interface-names (context:parent context 'component)))
-           (else
-            '())))
+     (complete:root (.tree (.parent context)) (.parent context) offset
+                    #:debug? debug?))
     ((and (? (is? 'reply)) (? (negate .expression)))
      (complete:reply context))
     ((and (? (is? 'return)) (? (negate .expression)))
