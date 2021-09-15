@@ -229,29 +229,33 @@
   '("provides" "requires")
   (test-complete #:file-name "component1.dzn"))
 
-(test-equal "component1a"
-  '("provides" "requires")
-  (test-complete #:file-name "component1a.dzn"))
+(test-equal "component1a --point=15,10"
+  '("Ihello" "Iworld")
+  (test-complete #:file-name "component1a.dzn" #:line 15 #:column 10))
+
+(test-equal "component1a --point=15,11"
+  '("Ihello" "Iworld")
+  (test-complete #:file-name "component1a.dzn" #:line 15 #:column 11))
+
+(test-equal "component1a --point=15,12"
+  '("Ihello" "Iworld")
+  (test-complete #:file-name "component1a.dzn" #:line 15 #:column 12))
+
+(test-equal "component1a --point=16,0"
+  '("Ihello" "Iworld")
+  (test-complete #:file-name "component1a.dzn" #:line 16 #:column 0))
 
 (test-equal "component1b"
-  '("I" "J")
+  '("Ihello" "Iworld")
   (test-complete #:file-name "component1b.dzn"))
 
-(test-equal "component1b --point=15,10"
-  '("I" "J")
-  (test-complete #:file-name "component1b.dzn" #:line 15 #:column 10))
-
 (test-equal "component1b --point=15,11"
-  '("I" "J")
+  '("Ihello" "Iworld")
   (test-complete #:file-name "component1b.dzn" #:line 15 #:column 11))
 
-(test-equal "component1b --point=15,12"
-  '("I" "J")
-  (test-complete #:file-name "component1b.dzn" #:line 15 #:column 12))
-
-(test-equal "component1b --point=16,0"
-  '("I" "J")
-  (test-complete #:file-name "component1b.dzn" #:line 16 #:column 0))
+(test-equal "component1c"
+  '("provides" "requires")
+  (test-complete #:file-name "component1c.dzn"))
 
 (test-equal "component2"
   %completion-behaviour

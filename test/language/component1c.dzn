@@ -12,4 +12,4 @@ interface Iworld
 
 component C
 {
-  provides I
+  provides Ihello p;

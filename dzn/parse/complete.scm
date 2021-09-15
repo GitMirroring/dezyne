@@ -563,7 +563,7 @@
             (filter-self context (complete:literal o context)))
            (else
             '())))
-    ((? (is? 'name))
+    ((and (? (is? 'name)) (? complete?))
      (cond ((context:parent context 'enum-literal)
             => (compose (cute filter-self context <>)
                         (cute complete:enum-literal o <>)))
@@ -574,6 +574,11 @@
            (else
             (complete:root (.tree (.parent context)) (.parent context) offset
                            #:debug? debug?))))
+    ((and (? (is? 'compound-name)) (? complete?))
+     (cond ((context:parent context 'port)
+            (complete:interface-names (context:parent context 'component)))
+           (else
+            '())))
     ((and (? (is? 'reply)) (? (negate .expression)))
      (complete:reply context))
     ((and (? (is? 'return)) (? (negate .expression)))
