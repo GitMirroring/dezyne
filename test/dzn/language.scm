@@ -193,6 +193,14 @@
   '("e.False" "e.True")
   (test-complete #:file-name "interface12a.dzn" #:line 11 #:column 7))
 
+(test-equal "interface13"
+  '("e.False" "e.True")
+  (test-complete #:file-name "interface13.dzn"))
+
+(test-equal "interface13a"
+  '("e.False" "e.True")
+  (test-complete #:file-name "interface13a.dzn" #:line 11 #:column 10))
+
 (test-equal "interface-behaviour before"
   '("in" "out" "enum" "extern" "subint")
   (test-complete #:file-name "interface-behaviour.dzn" #:line 3))

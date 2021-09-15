@@ -1,0 +1,11 @@
+enum Bool {False,True};
+
+interface I
+{
+  in void foo();
+
+  behaviour
+  {
+    bool b = false;
+    Bool e = Bool.False;
+    [e ==
