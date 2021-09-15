@@ -5,6 +5,42 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.13.3 since 2.13.2
+** Noteworthy bug fixes
+  - A bug in the simulator was fixed that lead to quadratic duplication
+    of identical traces for each extra event on the input, with dramatic
+    impact on performance ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/52][#52]]).
+  - A bug in the parser has been fixed that allowed using parentheses on
+    actions in an interface; this is now an error (improves [[https://gitlab.com/dezyne/dezyne-issues/-/issues/39][#39]]).
+  - The `dzn lts' command now has a new --exclude-tau option that is
+    used in the verification pipeline.  This reduces the length of the
+    command-line by about 2/3rds, allowing Windows users to verify
+    larger models (still up to the [[https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/command-line-string-limitation][arbitrary 8191 command-line limit]]).
+  - The `dzn language' command has been greatly improved ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/38][#38]],[[https://gitlab.com/dezyne/dezyne-issues/-/issues/41][#41]]):
+    + Incomplete or "damaged" parse-trees are handled more gracefully,
+    + Lookup was rewritten to breadth-first and to allow memoization
+      for better performance,
+    + Lookup now supports bool, subint and extern variables, arguments,
+      event type, formals, expresions, blocking out-bindings, component
+      instances, system bindings, and namespaces,
+    + Completion was rewritten to use type resolving based on context
+      accessors,
+    + Completion now supports bool, subint and extern variables,
+      arguments, assignments, formals, if and else, optional and
+      inevitable, otherwise, port-qualifiers, reply, return, system
+      bindings, and namespaces,
+    + Completion now includes the full type signature when completing
+      triggers ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/51][#51]]),
+    + Completion now better handles "damaged" parse trees,
+    + Two bugs were fixed where completion would enter unbounded
+      recursion,
+    + The `--line' option was added as an alias for `--point',
+    + When using the `-d,--debug' option on `dzn', the relevant parse
+      tree element is shown,
+    + A new `--stress' option was added to test completion in an
+      automated and exhaustive way,
+    + 117 new tests for lookup and completion were added.
+
 * Changes in 2.13.2 since 2.13.1
 ** Noteworthy bug fixes
   - The simulator would produce an invalid split-arrows trace for
