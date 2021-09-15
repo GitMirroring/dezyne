@@ -147,15 +147,16 @@ Dezyne language tool for completion and lookup information
            (parse-tree (cdr parse-result)))
       (let ((context (complete:context parse-tree offset)))
         (when (> debugity 2)
-          (display "input:\n" (current-error-port ))
+          (display "input:\n" (current-error-port))
           (display input (current-error-port))
           (display "parse-tree:\n" (current-error-port))
-          (pretty-print parse-tree (current-error-port))
-          (display "offset: " (current-error-port))
-          (pretty-print offset (current-error-port)))
+          (pretty-print parse-tree (current-error-port)))
         (when (> debugity 1)
           (display "context:\n" (current-error-port))
           (pretty-print context (current-error-port)))
+        (when debug?
+          (format (current-error-port) "offset:~a\n" offset)
+          (format (current-error-port) "tree:~a\n" (.tree context)))
         (cond
          (stress?
           (stress file-name #:debug? debug?))
