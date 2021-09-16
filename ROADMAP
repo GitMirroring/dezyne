@@ -53,9 +53,10 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       + Test in combination with foreign
 
   - postponed non-determinism check + deprecation
+    + Review and merge paul/wip-state
+    + simulator
 
   - Simulator
-    + deadlock check should consider all toplevel traces
     + deadlock check should prevail over <compliance>
     + Skipped tests (trace and baseline missing)
       - livelock_interface0: What's this, a silent livelock?  How to
@@ -186,8 +187,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish JavaScript support
     + Review and finish Scheme support
 * DONE
+  - Lazy import in lookup
+    + Rewrite ast lookup/lookdown modeled after tree/lookup library.
   - Remove command-line:get from trace library
   - Simulator performance
+    + deadlock check should consider all toplevel traces
     + Add simulate** entry point for resident simulator in daemon
     + Optimize livelock check
     + Optimize purge-data and annotate-otherwise
