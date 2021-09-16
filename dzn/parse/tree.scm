@@ -27,6 +27,7 @@
 
 (define-module (dzn parse tree)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -920,25 +921,27 @@ procedure)."
     ((or (? (is? 'external) (? (is? 'injected)))) (list o))
     (_ '())))
 
-(define* (tree:top* o #:key (imports '()) (seen '()))
-  (match o
-    ((? (is? 'root))
-     (let* ((file-name ((%resolve-file) (.file-name o) #:imports imports))
-            (imports (cons (dirname file-name) imports))
-            (seen (cons file-name seen)))
-       (append-map (cut tree:top* <> #:imports imports #:seen seen)
-                   (slots o tree?))))
-    ((? (is? 'import))
-     (let ((file-name ((%resolve-file) (.file-name o) #:imports imports)))
-       (if (member file-name seen) '()
-           (and=> ((%file-name->parse-tree) file-name) tree:top*))))
-    ((? (is? 'namespace))
-     (append-map (cut tree:top* <> #:imports imports #:seen seen)
-                 (slots (.namespace-root o) tree?)))
-    ((? tree?)
-     (list o))
-    (()
-     '())))
+(define* tree:top*
+  (pure-funcq
+   (lambda* (o #:key (imports '()) (seen '()))
+     (match o
+       ((? (is? 'root))
+        (let* ((file-name ((%resolve-file) (.file-name o) #:imports imports))
+               (imports (cons (dirname file-name) imports))
+               (seen (cons file-name seen)))
+          (append-map (cut tree:top* <> #:imports imports #:seen seen)
+                      (slots o tree?))))
+       ((? (is? 'import))
+        (let ((file-name ((%resolve-file) (.file-name o) #:imports imports)))
+          (if (member file-name seen) '()
+              (and=> ((%file-name->parse-tree) file-name) tree:top*))))
+       ((? (is? 'namespace))
+        (append-map (cut tree:top* <> #:imports imports #:seen seen)
+                    (slots (.namespace-root o) tree?)))
+       ((? tree?)
+        (list o))
+       (()
+        '())))))
 
 (define (tree:namespace* o)
   (filter (is? 'namespace) (tree:top* o)))
@@ -1086,15 +1089,25 @@ procedure)."
         (let ((prefix (context:full-name namespace)))
           (strip-prefix prefix name)))))
 
+(define* context:root-top*
+  (pure-funcq
+   (lambda* (o #:key (imports '()) (seen '()))
+     (let ((context (list o)))
+       (match o
+         ((? (is? 'root))
+          (let* ((file-name ((%resolve-file) (.file-name o) #:imports imports))
+                 (imports (cons (dirname file-name) imports))
+                 (seen (cons file-name seen)))
+            (map (lambda (x) (if (context? x) x (tree->context x context)))
+                 (append-map (cut context:top* <> #:imports imports #:seen seen)
+                             (map (cute tree->context <> context) (slots o tree?))))))
+         (_
+          '()))))))
+
 (define* (context:top* o #:key (imports '()) (seen '()))
   (match (.tree o)
     ((? (is? 'root))
-     (let* ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports))
-            (imports (cons (dirname file-name) imports))
-            (seen (cons file-name seen)))
-       (map (lambda (x) (if (context? x) x (tree->context x o)))
-            (append-map (cut context:top* <> #:imports imports #:seen seen)
-                        (map (cute tree->context <> o) (slots (.tree o) tree?))))))
+     (context:root-top* (.tree o)))
     ((? (is? 'import))
      (let ((file-name ((%resolve-file) (.file-name (.tree o)) #:imports imports)))
        (if (member file-name seen) '()
