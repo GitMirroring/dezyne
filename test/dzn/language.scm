@@ -532,6 +532,10 @@
   '("c.ww" "d.ww")
   (test-complete #:file-name "system-binding.dzn" #:line 55 #:column 14))
 
+(test-equal "enum-variable-expression missing"
+  '("Bool.False" "Bool.True")
+  (test-complete #:file-name "enum-variable-expression-missing.dzn" #:line 8 #:column 13))
+
 (test-end)
 
 (test-begin "lookup")

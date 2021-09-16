@@ -56,6 +56,7 @@ EXTRA_DIST +=					\
  %D%/component-provides.dzn			\
  %D%/component-requires.dzn			\
  %D%/component-state.dzn			\
+ %D%/enum-variable-expression-missing.dzn	\
  %D%/interface-behaviour.dzn			\
  %D%/interface0.dzn				\
  %D%/interface1.dzn				\

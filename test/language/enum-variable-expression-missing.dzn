@@ -1,0 +1,10 @@
+interface ihello
+{
+  in void gello();
+
+  behaviour
+  {
+    enum Bool {False,True};
+    Bool b =  
+  }
+}
