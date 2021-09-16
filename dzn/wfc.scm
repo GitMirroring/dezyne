@@ -182,14 +182,18 @@
            (else '())))
    (append-map wfc (ast:formal* o))))
 
-(define (argument-type-check argument formal)
+(define ((argument-type-check o) argument formal)
   (let ((argument-type (ast:type argument))
         (formal-type (ast:type formal)))
-    (if (equal-type? argument-type formal-type) '()
-        `(,(wfc-error argument (format #f "type mismatch: expected `~a', found `~a'"
-                                       (type-name formal-type)
-                                       (type-name argument-type)))
-          ,(wfc-error formal (format #f "for formal `~a' defined here" (.name formal)))))))
+    (cond ((string? argument)
+           `(,(wfc-error o (format #f "undefined identifier `~a'" argument))))
+          ((equal-type? argument-type formal-type)
+           '())
+          (else
+           `(,(wfc-error argument (format #f "type mismatch: expected `~a', found `~a'"
+                                          (type-name formal-type)
+                                          (type-name argument-type)))
+             ,(wfc-error formal (format #f "for formal `~a' defined here" (.name formal))))))))
 
 (define-method (wfc (o <arguments>))
   (cond
@@ -207,7 +211,7 @@
                (if (= count event-count) '()
                    `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
                      ,(wfc-error event (format #f "for formals of event `~a' defined here" (.name event)))))
-               (append-map argument-type-check arguments formals)))))))
+               (append-map (argument-type-check o) arguments formals)))))))
    ((let ((ast (parent o <call>)))
       (and ast
            (.function ast)
@@ -223,7 +227,7 @@
          (if (= count function-count) '()
              `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" function-count count))
                ,(wfc-error function (format #f "for formals of function `~a' defined here" (.name function)))))
-         (append-map argument-type-check arguments formals)))))
+         (append-map (argument-type-check o) arguments formals)))))
    (else
     '())))
 

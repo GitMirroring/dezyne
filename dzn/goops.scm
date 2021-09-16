@@ -338,7 +338,7 @@
 (define-ast <declarative> (<statement>))
 (define-ast <imperative> (<statement>))
 
-(define-ast <arguments> (<ast-list>))
+(define-ast <arguments> (<ast-list> <locationed>))
 (define-ast <bindings> (<ast-list>))
 (define-ast <out-bindings> (<ast-list> <imperative>)
   (port))
