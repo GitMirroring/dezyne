@@ -52,6 +52,7 @@ EXTRA_DIST +=					\
  %D%/component-enum-local.dzn			\
  %D%/component-enum-member.dzn			\
  %D%/component-int.dzn				\
+ %D%/component-incomplete-action.dzn		\
  %D%/component-incomplete-port.dzn		\
  %D%/component-on.dzn				\
  %D%/component-provides.dzn			\

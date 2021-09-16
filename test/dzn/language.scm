@@ -562,6 +562,30 @@
   '("bool" "if" "void" "w.hello()")
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 26))
 
+(test-equal "component-incomplete-action before port"
+  '("provides" "requires")
+  (test-complete #:file-name "component-incomplete-action.dzn" #:line 13))
+
+(test-equal "component-incomplete-action after port"
+  '("provides" "requires")
+  (test-complete #:file-name "component-incomplete-action.dzn" #:line 18))
+
+(test-equal "component-incomplete-action after behaviour"
+  '()
+  (test-complete #:file-name "component-incomplete-action.dzn" #:line 30))
+
+(test-equal "component-incomplete-action behaviour"
+  %completion-behaviour
+  (test-complete #:file-name "component-incomplete-action.dzn" #:line 21))
+
+(test-equal "component-incomplete-action behaviour end"
+  %completion-behaviour
+  (test-complete #:file-name "component-incomplete-action.dzn" #:line 28))
+
+(test-equal "component-incomplete-action on"
+  '("bool" "if" "void" "w.hello()" "w_o_w.hello()")
+  (test-complete #:file-name "component-incomplete-action.dzn" #:line 26))
+
 (test-end)
 
 (test-begin "lookup")

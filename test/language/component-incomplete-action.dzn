@@ -1,0 +1,31 @@
+interface ihello
+{
+  in void hello();
+
+  behaviour
+  {
+    on hello: {}
+  }
+}
+
+component hello
+{
+
+  provides ihello h;
+
+  requires ihello w;
+  requires ihello w_o_w;
+
+  behaviour
+  {
+
+    on h.hello():
+    {
+
+      w_o_w./*hello*/();
+
+    }
+
+  }
+
+}
