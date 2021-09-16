@@ -510,7 +510,7 @@
              (else
               '()))))
     ((and (? (is? 'direction)) (? complete?))
-     (complete:root (.tree (.parent context)) (.parent context) offset))
+     (complete:root (.tree (.parent context)) (.parent context) offset #:debug? debug?))
     ('type-name
      (complete:type-names context))
     ((? (is? 'type-name))
@@ -544,6 +544,8 @@
            (right (.right o)))
        (cond ((and left (not right))
               (complete:other-end-point left context))
+             ((and left (.port-name left) (not (.instance-name left)))
+              (complete:other-end-point left context))
              (else
               '()))))
     ((? (is? 'binding))
@@ -556,6 +558,8 @@
               (complete:other-end-point left context))
              (else
               '()))))
+    ((? (is? 'end-point))
+     (complete:root (.tree (.parent context)) (.parent context) offset #:debug? debug?))
     ((? (is? 'dollars))
      (filter-self context (complete:type context)))
     ((? (is? 'literal))

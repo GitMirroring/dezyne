@@ -602,17 +602,53 @@
   '("d.hh" "w")
   (test-complete #:file-name "system-binding.dzn" #:line 53 #:column 12))
 
-(test-equal "system end-point provides"
+(test-equal "system end-point provides instance."
   '("c.hh" "d.hh")
   (test-complete #:file-name "system-binding.dzn" #:line 54 #:column 14))
 
-(test-equal "system end-point requires"
+(test-equal "system end-point provides instance. on"
+  '("c.hh" "d.hh")
+  (test-complete #:file-name "system-binding.dzn" #:line 54 #:column 13))
+
+(test-equal "system end-point require instance."
   '("c.ww" "d.ww")
   (test-complete #:file-name "system-binding.dzn" #:line 55 #:column 14))
 
-(test-equal "enum-variable-expression missing"
-  '("Bool.False" "Bool.True")
-  (test-complete #:file-name "enum-variable-expression-missing.dzn" #:line 8 #:column 13))
+(test-equal "system end-point requires instance. on"
+  '("c.ww" "d.ww")
+  (test-complete #:file-name "system-binding.dzn" #:line 55 #:column 13))
+
+(test-equal "system end-point provides instance"
+  '("c.hh" "d.hh")
+  (test-complete #:file-name "system-binding.dzn" #:line 56 #:column 13))
+
+(test-equal "system end-point provides instance on"
+  '("c.hh" "d.hh")
+  (test-complete #:file-name "system-binding.dzn" #:line 56 #:column 12))
+
+(test-equal "system end-point requires instance"
+  '("c.ww" "d.ww")
+  (test-complete #:file-name "system-binding.dzn" #:line 57 #:column 13))
+
+(test-equal "system end-point requires instance on"
+  '("c.ww" "d.ww")
+  (test-complete #:file-name "system-binding.dzn" #:line 57 #:column 12))
+
+(test-equal "system end-point provides instance incomplete"
+  '("c.hh" "d.hh")
+  (test-complete #:file-name "system-binding.dzn" #:line 56 #:column 13))
+
+(test-equal "system end-point provides instance on incomplete"
+  '("c.hh" "d.hh")
+  (test-complete #:file-name "system-binding.dzn" #:line 56 #:column 12))
+
+(test-equal "system end-point requires instance incomplete"
+  '("c.ww" "d.ww")
+  (test-complete #:file-name "system-binding.dzn" #:line 57 #:column 13))
+
+(test-equal "system end-point requires instance on incomplete"
+  '("c.ww" "d.ww")
+  (test-complete #:file-name "system-binding.dzn" #:line 57 #:column 12))
 
 (test-equal "component-incomplete-port before port"
   '("provides" "requires")
@@ -683,6 +719,10 @@
 (test-equal "partial-enum-literal on"
   '("E.A" "E.B")
   (test-complete #:file-name "partial-enum-literal.dzn" #:line 7 #:column 11))
+
+(test-equal "enum-variable-expression missing"
+  '("Bool.False" "Bool.True")
+  (test-complete #:file-name "enum-variable-expression-missing.dzn" #:line 8 #:column 13))
 
 (test-end)
 

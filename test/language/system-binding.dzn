@@ -53,5 +53,9 @@ component system_hello
       c.ww <=>  ;
       h <=> c. ;
       w <=> c. ;
+      h <=> c ;
+      w <=> c ;
+      h <=> c  
+      w <=> c  
     }
 }
