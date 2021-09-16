@@ -1,0 +1,10 @@
+interface I
+{
+  in void e();
+  behaviour
+  {
+    enum E { A, B};
+    E v = E.
+    bool b = false;
+  }
+}

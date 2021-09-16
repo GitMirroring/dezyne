@@ -565,6 +565,8 @@
             (filter-self context (complete:literal o context)))
            (else
             '())))
+    ((? (is? 'enum-literal))
+     (complete:enum-literal o context))
     ((and (? (is? 'name)) (? complete?))
      (cond ((context:parent context 'enum-literal)
             => (compose (cute filter-self context <>)
@@ -577,6 +579,9 @@
             (complete:root (.tree (.parent context)) (.parent context) offset
                            #:debug? debug?))))
     ((and (? (is? 'compound-name)) (? complete?))
+     (complete:root (.tree (.parent context)) (.parent context) offset
+                    #:debug? debug?))
+    ((and (? (is? 'scope) (? complete?)))
      (complete:root (.tree (.parent context)) (.parent context) offset
                     #:debug? debug?))
     ((and (? (is? 'reply)) (? (negate .expression)))

@@ -676,6 +676,14 @@
   '("bool" "void")
   (test-complete #:file-name "partial-type-name.dzn" #:line 3 #:column 6))
 
+(test-equal "partial-enum-literal"
+  '("E.A" "E.B")
+  (test-complete #:file-name "partial-enum-literal.dzn" #:line 7 #:column 12))
+
+(test-equal "partial-enum-literal on"
+  '("E.A" "E.B")
+  (test-complete #:file-name "partial-enum-literal.dzn" #:line 7 #:column 11))
+
 (test-end)
 
 (test-begin "lookup")
