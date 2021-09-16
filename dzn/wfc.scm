@@ -338,17 +338,19 @@
                    ,(wfc-error (car non-guards) "non-guard statement here"))
                  '())
              (if (pair? otherwises)
-                  `(,(wfc-error o "cannot use otherwise guard more than once")
-                    ,(wfc-error (car otherwises) "second otherwise here"))
-                  '()))))))
-  (let* ((expression (.expression o))
-         (otherwise? (is-a? (.expression o) <otherwise>))
-         (wfce (wfc expression)))
-    (append wfce
-            (if (or otherwise? (pair? wfce)) '()
-                (typed-expression expression <bool>))
-            (if otherwise? (otherwise o) '())
-            (wfc (.statement o)))))
+                 `(,(wfc-error o "cannot use otherwise guard more than once")
+                   ,(wfc-error (car otherwises) "second otherwise here"))
+                 '()))))))
+  (let ((expression (.expression o)))
+    (if (string? expression)
+        `(,(wfc-error o (format #f "undefined identifier `~a'" expression)))
+        (let* ((otherwise? (is-a? expression <otherwise>))
+               (wfce (wfc expression)))
+          (append wfce
+                  (if (or otherwise? (pair? wfce)) '()
+                      (typed-expression expression <bool>))
+                  (if otherwise? (otherwise o) '())
+                  (wfc (.statement o)))))))
 
 (define-method (wfc (o <declarative-illegal>)) ;; is-a <declarative>
   ;; TODO; in source??
