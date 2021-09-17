@@ -493,36 +493,32 @@ of traces, possibly marked with <compliance-error>."
           (clone pc #:status (make <deadlock-error> #:ast ast #:message "deadlock")))))
   (let ((event-traces-alist
          (map (match-lambda
+                (("optional" traces ...)
+                 '("optional"))
                 ((event traces ...)
                  (cons event (filter (negate optional-trace?) traces))))
               event-traces-alist)))
-    (cond
-     ((and (is-a? (%sut) <runtime:port>)
-           (let ((interface (runtime:%sut-model)))
-             (and (null? (ast:in-event* interface))
-                  (list (list (mark-deadlock pc)))))))
-     (else
-      (and
-       (pair? event-traces-alist)
-       (let* ((pcs-alist (map
-                          (match-lambda
-                            ((event traces ...)
-                             (cons event (map car traces))))
-                          event-traces-alist))
-              (valid-pcs-alist (map
-                                (match-lambda
-                                  ((event pcs ...)
-                                   (cons event (filter (negate .status) pcs))))
-                                pcs-alist))
-              (valid-pcs (append-map cdr valid-pcs-alist)))
-         (and (null? valid-pcs)
-              (let* ((traces (assoc-ref event-traces-alist event))
-                     (traces (if (pair? traces) traces (list (list pc))))
-                     (traces (map (cute rewrite-trace-head mark-deadlock <>) traces)))
-                (if (is-a? (%sut) <runtime:port>) traces
-                    (append-map (cute check-provides-compliance pc #f
-                                      (provides-instance-traces-alist pc) <>)
-                                traces))))))))))
+    (and
+     (pair? event-traces-alist)
+     (let* ((pcs-alist (map
+                        (match-lambda
+                          ((event traces ...)
+                           (cons event (map car traces))))
+                        event-traces-alist))
+            (valid-pcs-alist (map
+                              (match-lambda
+                                ((event pcs ...)
+                                 (cons event (filter (negate .status) pcs))))
+                              pcs-alist))
+            (valid-pcs (append-map cdr valid-pcs-alist)))
+       (and (null? valid-pcs)
+            (let* ((traces (assoc-ref event-traces-alist event))
+                   (traces (if (pair? traces) traces (list (list pc))))
+                   (traces (map (cute rewrite-trace-head mark-deadlock <>) traces)))
+              (if (is-a? (%sut) <runtime:port>) traces
+                  (append-map (cute check-provides-compliance pc #f
+                                    (provides-instance-traces-alist pc) <>)
+                              traces))))))))
 
 (define-method (run-state (pc <program-counter>) (state <list>))
   (let ((pc (set-state pc state)))
