@@ -520,6 +520,16 @@ of traces, possibly marked with <compliance-error>."
                                     (provides-instance-traces-alist pc) <>)
                               traces))))))))
 
+(define (check-silence pcs)
+  (let* ((pcs (append pcs (append-map (cute run-silent <> (%sut)) pcs)))
+         (pcs (delete-duplicates pcs rtc-program-counter-equal?)))
+    (match pcs
+      ((pc) #f)
+      ((pc pc2 rest ...)
+       (let* ((error (make <determinism-error> #:ast (.statement pc) #:message "determinism"))
+              (pc (clone pc #:status error)))
+         (list (list pc)))))))
+
 (define-method (run-state (pc <program-counter>) (state <list>))
   (let ((pc (set-state pc state)))
     (serialize (.state pc) (current-output-port))
@@ -759,7 +769,16 @@ status."
          (refusals-check? (and refusals-check?
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
-    (or (and deadlock-check?
+    (or (and (is-a? (%sut) <runtime:port>)
+             (and=> (check-silence from-pcs)
+                    (cute report <>
+                          #:eligible '()
+                          #:internal? internal?
+                          #:locations? locations?
+                          #:state? state?
+                          #:trace trace
+                          #:verbose? verbose?)))
+        (and deadlock-check?
              (deadlock-report from-pcs traces))
         (and refusals-check? (null? traces)
              (any (cute refusals-report from-pcs <> '()) from-pcs))
