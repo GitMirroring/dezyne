@@ -40,13 +40,13 @@
             <flush-async>
             <flush-return>
             <initial-compound>
-            <program-counter>
-
             <q-in>
             <q-out>
             <q-trigger>
             <synth-trigger>
+            <trigger-return>
 
+            <program-counter>
             <state>
             <system-state>
 
@@ -128,6 +128,10 @@
   (trigger))
 
 (define-ast <synth-trigger> (<trigger>))
+
+(define-ast <trigger-return> (<imperative>)
+  (port.name)
+  (event.name #:init-value "return"))
 
 (define-ast <acceptances> (<ast-list>))
 

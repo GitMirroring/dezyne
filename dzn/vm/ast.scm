@@ -33,11 +33,15 @@
             ast:statement
             ast:trigger-equal?
             ast:valued?)
-  #:re-export (ast:async?
+  #:re-export (.port
+               ast:async?
                ast:external?
                ast:provides?
                ast:requires?
                ast:type))
+
+(define-method (.port (o <trigger-return>))
+  (and (.port.name o) (ast:lookup o (.port.name o))))
 
 (define-method (ast:acceptance* (o <acceptances>)) (.elements o))
 (define-method (ast:acceptance* (o <compliance-error>)) ((compose ast:acceptance* .port-acceptance) o))

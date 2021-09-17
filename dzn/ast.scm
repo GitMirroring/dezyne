@@ -921,8 +921,6 @@
 
 (define-method (ast:rescope (o <ast>) (parent <model>))
   (match o
-    ((and ($ <trigger-return>) (= .expression expression))
-     (clone o #:expression (ast:rescope expression parent)))
     ((and ($ <reply>) (= .expression expression))
      (clone o #:expression (ast:rescope expression parent)))
     ((and ($ <enum-literal>) (= .type.name type.name))
@@ -1138,9 +1136,6 @@
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
 (define-method (.port (o <reply>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
-
-(define-method (.port (o <trigger-return>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
 (define-method (.port (o <end-point>))

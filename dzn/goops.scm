@@ -226,7 +226,6 @@
            <system>
            <the-end-blocking>
            <the-end>
-           <trigger-return>
            <trigger>
            <triggers>
            <type>
@@ -587,11 +586,6 @@
 
 (define-ast <return> (<imperative>)
   (expression #:init-form (make <literal-node>)))
-
-(define-ast <trigger-return> (<imperative>)
-  (expression)
-  (port.name)
-  (event.name #:init-value "return"))
 
 (define-ast <stack> (<ast>))
 (define-ast <return-value> (<ast>))
