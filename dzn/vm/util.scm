@@ -51,6 +51,7 @@
             enqueue-external
             flush
             get-handling?
+            get-reply
             get-state
             get-variables
             in-event?
@@ -75,6 +76,7 @@
             push-pc
             read-input
             requires-trigger?
+            reset-replies
             rewrite-trace-head
             rtc-program-counter-equal?
             rtc-program-counter-equal-state-diagram?
@@ -84,6 +86,7 @@
             serialize-header
             set-deferred
             set-handling?
+            set-reply
             set-state
             set-variables
             show-eligible
@@ -456,6 +459,25 @@
 (define-method (set-state (pc <program-counter>) (state <list>))
   (fold (cut update-state state <> <>) pc ((compose .state-list .state) pc)))
 
+(define-method (get-reply (pc <program-counter>) (instance <runtime:instance>))
+  (.reply (get-state pc instance)))
+
+(define-method (get-reply (pc <program-counter>))
+  (get-reply pc (.instance pc)))
+
+(define-method (set-reply (pc <program-counter>) (instance <runtime:instance>) value)
+  (set-state pc (clone (get-state pc instance) #:reply value)))
+
+(define-method (set-reply (pc <program-counter>) value)
+  (set-reply pc (.instance pc) value))
+
+(define-method (reset-replies (pc <program-counter>))
+  (fold (lambda (instance pc) (set-reply pc instance #f))
+        pc
+        (filter (disjoin (is? <runtime:component>)
+                         runtime:boundary-port?)
+                (%instances))))
+
 (define-method (get-variables (pc <program-counter>))
   ((compose .variables get-state) pc))
 
@@ -503,13 +525,13 @@
         (set-state pc result))))
 
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <action>))
-  (assign (clone pc #:reply #f) variable (.reply pc)))
+  (let* ((instance (.instance pc))
+         (r:port (runtime:port instance (.port e)))
+         (other-instance other-port (runtime:other-instance+port instance r:port)))
+    (assign (set-reply pc other-instance #f) variable (get-reply pc other-instance))))
 
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <call>))
-  (assign (clone pc #:reply #f) variable (.return pc)))
-
-(define-method (assign (pc <program-counter>) (variable <variable>) (e <variable>))
-  (assign (clone pc #:reply #f) variable (.reply pc)))
+  (assign pc variable (.return pc)))
 
 (define (rewrite-trace-head rewriter trace)
   (match trace

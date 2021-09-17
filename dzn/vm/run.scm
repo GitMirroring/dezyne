@@ -270,8 +270,8 @@ PC until RTC?."
 
   (define (choice-label trace)
     (match (trace->trail trace)
-      ((label ... (($ <trigger-return>) . string) (#f . "<postponed-match>"))
-       (or (.reply (car trace)) "return"))
+      ((label ... ((and ($ <trigger-return>) return) . string) (#f . "<postponed-match>"))
+       (.event.name return))
       ((label ... (choice . string) (#f . "<postponed-match>")) choice)))
 
   (define (choice-labels traces)
@@ -372,7 +372,6 @@ with EVENT as first step, until RTC?."
   "Return a list of traces produced running PRODUCER or the PC (head
 of) TRACE, extending TRACE."
   (let* ((pc (car trace))
-         (pc (clone pc #:reply #f))
          (traces (producer pc)))
     (map (cut append <> trace) traces)))
 
@@ -429,8 +428,7 @@ until RTC?."
     (run-silent pc port-instance)))
 
 (define-method (run-interface (pc <program-counter>) (event <string>))
-  (let* ((pc (clone pc #:reply #f))
-         (interface ((compose .type .ast %sut)))
+  (let* ((interface ((compose .type .ast %sut)))
          (modeling-names (modeling-names interface))
          (xpc (if (member event '("inevitable" "optional")) pc
                   (clone pc #:trail (cons event (.trail pc)))))
@@ -565,7 +563,7 @@ until RTC?."
                  (list (list pc) )))))))
 
 (define-method (run-to-completion* (pc <program-counter>) event)
-  (let ((pc (clone pc #:instance #f #:reply #f)))
+  (let ((pc (clone pc #:instance #f)))
     (cond
      ((is-a? (%sut) <runtime:port>)
       (run-interface pc event))

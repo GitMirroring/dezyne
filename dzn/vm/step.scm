@@ -288,13 +288,13 @@
 
 (define-method (step (pc <program-counter>) (o <reply>))
   (%debug "  ~s ~s ~a => ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (.expression o))
-  (let* ((value (.reply pc))
+  (let* ((value (get-reply pc))
          (pc (if value
                  (let ((error (make <second-reply-error> #:ast o #:previous (.parent value) #:message "second-reply")))
                    (%debug "second reply, previous=~a\n" ((@@ (dzn vm report) step->location) value))
                    (clone pc #:status error))
                  (let ((value (eval-expression pc (.expression o))))
-                   (continuation (clone pc #:reply value) o))))
+                   (continuation (set-reply pc value) o))))
          (port (.port o)))
     (cond ((ast:modeling? (.trigger pc))
            (let ((pc (clone pc #:status (make <deadlock-error> #:ast o #:message "deadlock"))))
@@ -402,7 +402,7 @@
             (let ((pc (if (.status pc) pc
                           (pop-locals pc (filter (is? <variable>) (ast:statement* (.parent o)))))))
               (list (pop-pc pc)))
-            (let* ((value (->sexp (.reply pc)))
+            (let* ((value (->sexp (get-reply pc)))
                    (value (or (and (not (equal? value "void")) value) "return"))
                    (return (make <trigger-return>
                              #:location (.location o)
@@ -429,7 +429,7 @@
            (let* ((trigger (.trigger pc))
                   (type (ast:type trigger))
                   (typed? (ast:typed? type))
-                  (value (.reply pc)))
+                  (value (get-reply pc)))
              (and typed? (not value))))))
 
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))

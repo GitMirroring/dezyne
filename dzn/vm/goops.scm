@@ -191,7 +191,6 @@
 (define-class <program-counter> ()
   (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
   (previous #:getter .previous #:init-value #f #:init-keyword #:previous)
-  (reply #:getter .reply #:init-form #f #:init-keyword #:reply)
   (return #:getter .return #:init-form #f #:init-keyword #:return)
   (state #:getter .state #:init-value #f #:init-keyword #:state)
   (status #:getter .status #:init-value #f #:init-keyword #:status)
@@ -210,6 +209,7 @@
   (deferred #:getter .deferred #:init-form #f #:init-keyword #:deferred)
   (handling? #:getter .handling? #:init-form #f #:init-keyword #:handling?)
   (q #:getter .q #:init-form (list) #:init-keyword #:q)
+  (reply #:getter .reply #:init-form #f #:init-keyword #:reply)
   (variables #:getter .variables #:init-form (list) #:init-keyword #:variables))
 
 (define-method (clone (o <state>) . setters)
@@ -279,7 +279,6 @@
     (display (map (compose runtime:dotted-name cadr) (.async o)) port))
   (when (.released o) (display " *released*" port))
   (when (pair? (.blocked o)) (display " *blocked*" port))
-  (and=> (.reply o) (cut format port " reply: ~a" <>))
   (and=> (.return o) (cut format port " return: ~a" <>))
   (when (pair? (.external-q o))
     (format port " ext-q: ~a" (external-q->string (.external-q o))))
@@ -301,6 +300,7 @@
   (display " " port)
   (when (pair? (.variables o)) (display (map (match-lambda ((x . y) (cons x (->sexp y)))) (.variables o)) port))
   (when (pair? (.q o)) (format port " q: ~s" (map trigger->string (.q o))))
+  (and=> (.reply o) (cut format port " reply: ~a" <>))
   (display ">" port))
 
 (define-method (write (o <system-state>) port)

@@ -61,7 +61,8 @@
               (append-map (cute run-external-q pc <>) instances)))))
 
 (define (run-to-completion** pc event)
-  (let ((pc (clone pc #:instance #f #:reply #f #:trail '())))
+  (let* ((pc (clone pc #:instance #f #:trail '()))
+         (pc (reset-replies pc)))
     (cond
      ((eq? event 'async)
       (flush-async pc '()))

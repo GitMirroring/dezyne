@@ -236,6 +236,7 @@ of traces, possibly marked with <compliance-error>."
         (%debug "check-provides-compliance... ~s: ~a\n" port-name event)
         (let* ((interface ((compose .type .ast) port-instance))
                (ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
+               (ipc (set-reply pc port-instance #f))
                (modeling-traces (assoc-ref port-traces-alist port-instance))
                (traces (cons (list ipc) modeling-traces))
                ;; provides trace
@@ -391,6 +392,7 @@ of traces, possibly marked with <compliance-error>."
   (define (event-traces-alist pc)
     (define (event->label-traces pc event)
       (let* ((pc (clone pc #:trail '()))
+             (pc (reset-replies pc))
              (traces (parameterize ((%exploring? #t))
                        (run-to-completion* pc event))))
         (cons event traces)))
@@ -406,12 +408,14 @@ of traces, possibly marked with <compliance-error>."
 
   (define (provides-event->label-traces pc event)
     (let* ((pc (clone pc #:trail '()))
+           (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t))
                      (run-to-completion* pc event))))
       (cons event traces)))
 
   (define (requires-event->label-traces pc event)
     (let* ((pc (clone pc #:trail '()))
+           (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t))
                      (run-to-completion* pc event)))
            (trails (map trace->string-trail traces)))
@@ -528,6 +532,7 @@ of traces, possibly marked with <compliance-error>."
 
 (define-method (run-sut (pc+blocked-trace <list>))
   (let* ((pc (car pc+blocked-trace))
+         (pc (reset-replies pc))
          (event pc ((%next-input) pc)))
     (%debug "run-sut pc: ~s\n" pc)
     (%debug "     event: ~s\n" event)
