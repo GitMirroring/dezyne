@@ -75,6 +75,7 @@ HELLO_TESTS =					\
  %D%/hello_out_state				\
  %D%/hello_parse				\
  %D%/hello_reorder				\
+ %D%/hello_reply				\
  %D%/hello_system				\
  %D%/hello_system_reply				\
  %D%/hello_two					\
