@@ -22,7 +22,7 @@
 //
 // Code:
 
-interface deadlock_interface_out_only
+interface deadlock_optional_out_only
 {
   out void world ();
   behaviour

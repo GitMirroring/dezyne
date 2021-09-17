@@ -177,7 +177,7 @@ REGRESSION_TESTS =				\
  %D%/component_modeling_loop			\
  %D%/compound_local_assign_call			\
  %D%/data_full					\
- %D%/deadlock_interface_out_only		\
+ %D%/deadlock_optional_out_only		\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\

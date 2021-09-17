@@ -1,0 +1,3 @@
+verify: deadlock_optional_out_only: check: deadlock: fail
+error: deadlock in model deadlock_optional_out_only
+verify: deadlock_optional_out_only: check: livelock: ok
