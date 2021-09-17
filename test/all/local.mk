@@ -76,6 +76,7 @@ HELLO_TESTS =					\
  %D%/hello_parse				\
  %D%/hello_reorder				\
  %D%/hello_system				\
+ %D%/hello_system_reply				\
  %D%/hello_two					\
  %D%/illegal_component0				\
  %D%/livelock_interface0			\
