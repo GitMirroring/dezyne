@@ -224,13 +224,11 @@
     (cons q-out (trigger->string trigger))))
 
 (define-method (pc->event (pc <program-counter>) (o <trigger-return>))
-  (let* ((value (->sexp (.reply pc)))
-         (value (and (not (equal? value "void")) value)))
-    (pc->event (.instance pc) (clone o #:event.name (or value (format #f "~a" (.event.name o)))))))
+  (pc->event (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
 
 (define-method (pc->event (o <runtime:port>) (return <trigger-return>))
   (cons return
-        (let ((value (or (.expression return) (.event.name return))))
+        (let ((value (.event.name return)))
           (if (or (eq? o (%sut)) (not (trace-name o))) (format #f "~a" value)
               (format #f "~a.~a" (trace-name o) value)))))
 
@@ -243,7 +241,7 @@
                                           ;no chance to find our way back
                                           ;and use ast:injected?
                 (format #f "~a.~a" (.name port) (.event.name return))
-                (let ((value (or (.expression return) (.event.name return))))
+                (let ((value (.event.name return)))
                   (format #f "~a.~a" (trace-name r:other-port) value)))))))
 
 (define-method (pc->event x y)
@@ -397,13 +395,11 @@
           (format #f "~a.~a <- ..." (runtime:instance->string r:port) (.event.name trigger)))))
 
 (define-method (pc->arrow (pc <program-counter>) (o <trigger-return>))
-  (let* ((value (->sexp (.reply pc)))
-         (value (and (not (equal? value "void")) value)))
-    (pc->arrow (.instance pc) (clone o #:event.name (or value (format #f "~a" (.event.name o)))))))
+  (pc->arrow (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
 
 (define-method (pc->arrow (o <runtime:port>) (return <trigger-return>))
   (cons return
-        (let ((value (or (.expression return) (.event.name return))))
+        (let ((value (.event.name return)))
           (cond ((ast:eq? o (%sut))
                  (format #f "... <- ~a.~a" (runtime:instance->string o) value))
                 ((or (ast:provides? o)
@@ -418,7 +414,7 @@
         (let ((port (.port return)))
           (let* ((r:port (and port (runtime:port o port)))
                  (r:other-port (and r:port (runtime:other-port r:port)))
-                 (value (or (.expression return) (.event.name return)))                 )
+                 (value (.event.name return))                 )
             (cond
              ((ast:injected? port)
               (format #f "~a.~a <- ..." (runtime:instance->string r:port) (.event.name return)))
@@ -697,14 +693,9 @@ intermediate steps such as assignments, function calls, replies,
      (label->string (.value o)))
     ((? (is? <trigger>))
      (trigger->string o))
-    ((and ($ <trigger-return>) (= .expression #f))
-     "return")
-    ((and ($ <trigger-return>) (= .expression expression) (= .port.name #f))
-     (string-append (label->string expression)))
-    ((and ($ <trigger-return>) (= .expression #f) (= .port.name port))
-          (string-append port "." "return"))
-    ((and ($ <trigger-return>) (= .expression expression) (= .port.name port))
-     (string-append port "." (label->string expression)))
+    (($ <trigger-return>)
+     (let ((prefix (or (and=> (.port.name o) (cute string-append <> ".")) "")))
+       (string-append prefix (label->string (.event.name o)))))
     ((? (is? <model>))
      #f)
     ((? string?)

@@ -1,1 +1,1 @@
-test/all/end_of_trail/end_of_trail.dzn:31:5: info: end of trail; stopping here: <external>.w.return
+test/all/end_of_trail/end_of_trail.dzn:31:5: info: end of trail; stopping here: <external>.w.false

@@ -402,7 +402,12 @@
             (let ((pc (if (.status pc) pc
                           (pop-locals pc (filter (is? <variable>) (ast:statement* (.parent o)))))))
               (list (pop-pc pc)))
-            (let* ((return (make <trigger-return> #:location (.location o) #:port.name (.port.name (.trigger pc))))
+            (let* ((value (->sexp (.reply pc)))
+                   (value (or (and (not (equal? value "void")) value) "return"))
+                   (return (make <trigger-return>
+                             #:location (.location o)
+                             #:port.name (.port.name (.trigger pc))
+                             #:event.name value))
                    (pc (clone pc #:statement (clone return #:parent (.parent o)))))
               (list pc))))))
 
