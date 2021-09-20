@@ -7,17 +7,32 @@
 
 * Changes in 2.13.3 since 2.13.2
 ** Noteworthy bug fixes
+  - Verification and simulation now have a new check that dissallows
+    non-deterministic behavior in interfaces which is not directly but
+    indirectly observable by the client.
+  - The new option `--no-interface-determinism' can be used to disable
+    this check on `dzn verify' and `dzn simulate'.
   - A bug in the simulator was fixed that lead to quadratic duplication
     of identical traces for each extra event on the input, with dramatic
     impact on performance ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/52][#52]]).
+  - A bug in the simulator was fixed that lead to unbounded retry of
+    silent event execution.  This regression was introduced in 2.13.2.
+  - A bug in the simulator was fixed that could cause a reply value in a
+    port to be overwritten by the reply value of its component, leading
+    to a wrong and incomprehensible output trace.
+  - A bug in the verifier since 2.8.0 was fixed.  It caused back-to-back
+    function calls to produce invalid mCRL2 code.
   - A bug in the parser has been fixed that allowed using parentheses on
     actions in an interface; this is now an error (improves [[https://gitlab.com/dezyne/dezyne-issues/-/issues/39][#39]]).
+  - An oversight since 2.10 in the c++ code generator was fixed.
+    Component constructors now default initialize reply values.
   - The `dzn lts' command now has a new --exclude-tau option that is
     used in the verification pipeline.  This reduces the length of the
     command-line by about 2/3rds, allowing Windows users to verify
-    larger models (still up to the [[https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/command-line-string-limitation][arbitrary 8191 command-line limit]]).
+    larger models (still up to the [[https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/command-line-string-limitation][arbitrary 8191 command-line limit]])
+    ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/31][#31]]).
   - The `dzn language' command has been greatly improved ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/38][#38]],[[https://gitlab.com/dezyne/dezyne-issues/-/issues/41][#41]]):
-    + Incomplete or "damaged" parse-trees are handled more gracefully,
+    + Incomplete or garbled parse-trees are handled more gracefully,
     + Lookup was rewritten to breadth-first and to allow memoization
       for better performance,
     + Lookup now supports bool, subint and extern variables, arguments,
@@ -31,7 +46,7 @@
       bindings, and namespaces,
     + Completion now includes the full type signature when completing
       triggers ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/51][#51]]),
-    + Completion now better handles "damaged" parse trees,
+    + Completion now better handles incomplete or garbled parse trees,
     + Two bugs were fixed where completion would enter unbounded
       recursion,
     + The `--line' option was added as an alias for `--point',
@@ -39,7 +54,7 @@
       tree element is shown,
     + A new `--stress' option was added to test completion in an
       automated and exhaustive way,
-    + 117 new tests for lookup and completion were added.
+    + 121 new tests for lookup and completion were added.
 
 * Changes in 2.13.2 since 2.13.1
 ** Noteworthy bug fixes
