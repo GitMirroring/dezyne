@@ -202,6 +202,11 @@
            "\n\x04\n"
            (verify-pipeline "aut-failures" root model #:init provides-init)))))
 
+(define (in-out:dzn->aut-dpweak-bisim-cached options)
+  (let* ((model (options-model options))
+         (root (options-root options)))
+    (cute display (verify-pipeline "aut-dpweak-bisim" root model))))
+
 (define (in-out:makreel->mcrl2 options)
   `("m4-cw" ,(string-append "--define=init_process=" (options-init options))))
 
@@ -222,7 +227,7 @@
   (let* ((model (options-model options))
          (model-name (makreel:name model))
          (taus (if (is-a? model <interface>)
-                   (list (format #f "--tau=~a'silent" model-name))
+                   '("--tau=inevitable,optional")
                    '())))
     `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
@@ -286,23 +291,25 @@
       "--in1=aut" "--in2=aut" "-" "-")))
 
 (define in-out.pipeline
-  `((("dzn"               "makreel")                 . ,in-out:dzn->makreel)
-    (("makreel"           "mcrl2")                   . ,in-out:makreel->mcrl2)
-    (("mcrl2"             "lps")                     . ,in-out:mcrl2->lps)
-    (("lps"               "lpsconstelm")             . ,in-out:lps->lpsconstelm)
-    (("lpsconstelm"       "lpsparelm")               . ,in-out:lps->lpsparelm)
-    (("lpsparelm"         "maut")                    . ,in-out:lps->aut)
-    (("maut"              "aut")                     . ,in-out:maut->aut)
-    (("maut"              "maut-weak-trace")         . ,in-out:aut->aut-weak-trace)
-    (("maut"              "maut-dpweak-bisim")       . ,in-out:aut->aut-dpweak-bisim)
-    (("maut-weak-trace"   "aut-weak-trace")          . ,in-out:maut->aut)
-    (("maut-dpweak-bisim" "aut-dpweak-bisim")        . ,in-out:maut->aut)
-    (("aut-dpweak-bisim"  "aut-failures")            . ,in-out:aut->aut-failures)
-    (("aut-dpweak-bisim"  "verify-interface")        . ,in-out:aut->verify-interface)
-    (("aut-weak-trace"    "verify-interface-nondet") . ,in-out:aut->verify-interface-nondet)
-    (("aut-dpweak-bisim"  "verify-component")        . ,in-out:aut->verify-component)
-    (("dzn"               "aut+provides-aut")        . ,in-out:dzn->aut+provides-aut)
-    (("aut+provides-aut"  "verify-compliance")       . ,in-out:aut+provides-aut->verify-compliance)))
+  `((("dzn"                     "makreel")                 . ,in-out:dzn->makreel)
+    (("makreel"                 "mcrl2")                   . ,in-out:makreel->mcrl2)
+    (("mcrl2"                   "lps")                     . ,in-out:mcrl2->lps)
+    (("lps"                     "lpsconstelm")             . ,in-out:lps->lpsconstelm)
+    (("lpsconstelm"             "lpsparelm")               . ,in-out:lps->lpsparelm)
+    (("lpsparelm"               "maut")                    . ,in-out:lps->aut)
+    (("maut"                    "aut")                     . ,in-out:maut->aut)
+    (("maut"                    "maut-weak-trace")         . ,in-out:aut->aut-weak-trace)
+    (("maut"                    "maut-dpweak-bisim")       . ,in-out:aut->aut-dpweak-bisim)
+    (("maut-weak-trace"         "aut-weak-trace")          . ,in-out:maut->aut)
+    (("maut-dpweak-bisim"       "aut-dpweak-bisim")        . ,in-out:maut->aut)
+    (("aut-dpweak-bisim"        "aut-failures")            . ,in-out:aut->aut-failures)
+    (("dzn"                     "aut-dpweak-bisim-cached") . ,in-out:dzn->aut-dpweak-bisim-cached)
+    (("aut-dpweak-bisim-cached" "verify-interface")        . ,in-out:aut->verify-interface)
+    (("aut-dpweak-bisim-cached" "aut-weak-trace-cached")   . ,in-out:aut->aut-weak-trace)
+    (("aut-weak-trace-cached"   "verify-interface-nondet") . ,in-out:aut->verify-interface-nondet)
+    (("aut-dpweak-bisim"        "verify-component")        . ,in-out:aut->verify-component)
+    (("dzn"                     "aut+provides-aut")        . ,in-out:dzn->aut+provides-aut)
+    (("aut+provides-aut"        "verify-compliance")       . ,in-out:aut+provides-aut->verify-compliance)))
 
 (define (verification:formats)
   (map (match-lambda (((from to) . command) to)) in-out.pipeline))
@@ -344,10 +351,11 @@ for MODEL, using ROOT."
          (format #f "~a verify --model=~a --out=aut+provides-aut~a ~a"
                  (program->string %dzn) model-name (imports->string) file-name))
         (_
-         (format #f "~a code --language=makreel --model=~a~a ~a"
-                 (program->string %dzn) model-name (imports->string)
-                 file-name)))))
-   (string-join (map command->string commands) " \\\n  | "))
+         (and (not (string-prefix? "verify-interface" out))
+              (format #f "~a code --language=makreel --model=~a~a ~a"
+                      (program->string %dzn) model-name (imports->string)
+                      file-name))))))
+  (string-join (filter-map command->string commands) " \\\n  | "))
 
 (define* (unmemoized-verify-pipeline out root model #:key (init (get-init model)) stdout?)
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
@@ -360,27 +368,32 @@ to (current-output-port)."
          (commands (get-commands in-out.pipeline out))
          (commands (reverse (fold (prepare options) '() commands))))
     (when (dzn:command-line:get 'debug)
-      (format (current-error-port) "~a\n"
+      (format (current-error-port)
+              (if (equal? out "aut-dpweak-bisim") "~a\\\n  | " "~a\n")
               (pretty-verify-pipeline commands out root model)))
     (let* ((pipeline (if stdout? pipeline->port pipeline->string))
            (result status (pipeline commands)))
       (values result status))))
 
+(define verify-pipeline-wrapper
+  (lambda* (out root model #:key init)
+    (let* ((out (symbol->string out))
+           (init (symbol->string init))
+           (result status (unmemoized-verify-pipeline
+                           out root model #:init init)))
+      (list result status))))
+
 (define memoizing-verify-pipeline
-  (pure-funcq
-   (lambda* (out root model #:key init)
-     (let* ((out (symbol->string out))
-            (init (symbol->string init))
-            (result status (unmemoized-verify-pipeline
-                            out root model #:init init)))
-       (list result status)))))
+  (pure-funcq verify-pipeline-wrapper))
 
 (define* (verify-pipeline out root model #:key (init (get-init model)))
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
 init for MODEL unless INIT."
   (let ((out (string->symbol out))
-        (init (string->symbol init)))
-    (apply values (memoizing-verify-pipeline out root model #:init init))))
+        (init (string->symbol init))
+        (debug? (dzn:command-line:get 'debug)))
+    (apply values ((if debug? verify-pipeline-wrapper
+                       memoizing-verify-pipeline) out root model #:init init))))
 
 
 ;;;
@@ -504,17 +517,12 @@ init for MODEL unless INIT."
                   (verify-pipeline "verify-interface" root model)
                   (verify-pipeline "verify-interface-nondet" root model)))
          (result (result-split result)))
-    (define (has-line? key result)
-      (let ((key (symbol->string key)))
-        (find (compose (cute equal? key <>) car) result)))
     (define (report-assert assert)
       (report assert #f (get-trace assert result) 'interface model-name))
     (reduce-or (command-line:get 'all)
                (list (cute report-assert 'deadlock)
                      (cute report-assert 'livelock)
-                     (if (has-line? 'deterministic result)
-                         (cute report-assert 'deterministic)
-                         (const #f))))))
+                     (cute report-assert 'deterministic)))))
 
 (define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))
