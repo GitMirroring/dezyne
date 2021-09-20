@@ -1,0 +1,10 @@
+interface ihello
+{
+  in void hello();
+  in void option();
+
+  behaviour
+  {
+    void func() {
+      bool bla = false;
+      if (bl

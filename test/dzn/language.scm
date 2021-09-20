@@ -728,6 +728,10 @@
   '("hello" "inevitable" "option" "optional")
   (test-complete #:file-name "partial-trigger-name.dzn"))
 
+(test-equal "partial-if-expression"
+  '("bla" "false" "true")
+  (test-complete #:file-name "partial-if-expression.dzn"))
+
 (test-end)
 
 (test-begin "lookup")

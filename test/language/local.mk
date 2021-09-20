@@ -113,6 +113,7 @@ EXTRA_DIST +=					\
  %D%/lookup.dzn					\
  %D%/namespace-enum.dzn				\
  %D%/partial-enum-literal.dzn			\
+ %D%/partial-if-expression.dzn			\
  %D%/partial-trigger-name.dzn			\
  %D%/partial-type-name.dzn			\
  %D%/space-hello.dzn				\

@@ -700,6 +700,19 @@
               (complete:root (.value o) (cons (.value o) context) offset #:debug? debug?))
              (else
               '()))))
+    ((? (is? 'expression))
+     (let ((parent (or (is-a? (and=> (.parent context) .tree) 'if-statement)
+                       (is-a? (and=> (.parent context) .tree) 'guard))))
+       (cond ((and parent
+                   (tree:after-location? parent offset))
+              '())
+             ((and parent
+                   (tree:before-location? parent offset))
+              '())
+             (parent
+              (complete:boolean-expression context))
+             (else
+              '()))))
     (('or 'otherwise 'expression)
      (sort (cons "otherwise" (complete:boolean-expression context)) string<))
     ((? (is? 'statement))
