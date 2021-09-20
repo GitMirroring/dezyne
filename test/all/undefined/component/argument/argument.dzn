@@ -34,5 +34,6 @@ component function
   behaviour
   {
     on p.e(): f(a);
+    void f(){}
   }
 }

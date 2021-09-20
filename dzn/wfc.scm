@@ -431,6 +431,7 @@
 
 (define-method (wfc (o <call>)) ;; is-a <imperative>
   (append
+   (defined-function o)
    (call-context o)
    (tail-recursion o)
    (wfc (.arguments o))))
@@ -688,6 +689,11 @@
   '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; helper functions
+(define-method (defined-function (o <call>))
+  (if (find (compose (cute ast:equal? (.function.name o) <>) .name)
+            (ast:function* (parent o <behaviour>))) '()
+      `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
+
 (define-method (tail-recursion (o <call>))
   (let ((function (parent o <function>)))
     (if (or (not function) (not (.recursive function))) '()
@@ -1048,8 +1054,8 @@
     (cond
      ((global-var? o) '())
      ((is-a? p <behaviour>)  '())
-     ((and is-aorc (not (if (is-a? o <action>) (.event o) (.function o))))
-      (let ((name (if (is-a? o <action>) (.event.name o) (.function.name o))))
+     ((and (is-a? o <action>) (not (.event o)))
+      (let ((name (.event.name o)))
         `(,(wfc-error o (format #f "undefined identifier `~a'" name)))))
      ((and (not (is-a? p <variable>))
            (or (is-a? p <expression>)

@@ -426,6 +426,7 @@ PARSER_TESTS =					\
  %D%/wf_systemRecursion				\
  %D%/wf_typeerror				\
  %D%/wf_undefined				\
+ %D%/wf_undefined_function			\
  %D%/wf_variableInitExpression			\
  %D%/undefined/component/action			\
  %D%/undefined/component/argument		\

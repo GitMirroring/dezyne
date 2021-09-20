@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +28,16 @@ interface ihello
 
   behaviour
   {
-    on hello: world;
+    on hello: world();
+  }
+}
+
+component wf_undefined_function
+{
+  provides ihello h;
+
+  behaviour
+  {
+    on h.hello(): {h.world(); foo();}
   }
 }
