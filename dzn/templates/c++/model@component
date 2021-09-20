@@ -4,6 +4,7 @@
 , dzn_rt(dzn_locator.get<dzn::runtime>())
 , dzn_locator(dzn_locator)
  #x:variable-member-initializer
+ #x:reply-member-initializer
  #x:injected-member-initializer
  #x:provided-member-initializer
  #x:required-member-initializer

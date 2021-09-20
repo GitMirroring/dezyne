@@ -59,7 +59,6 @@
            ast:direction
            ast:dotted-name
            ast:dzn-scope?
-           ast:dotted-name
            ast:eq?
            ast:equal?
            ast:empty-namespace?
