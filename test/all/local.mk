@@ -56,6 +56,7 @@ HELLO_TESTS =					\
  %D%/hello_foreign				\
  %D%/hello_function				\
  %D%/hello_function_argument			\
+ %D%/hello_function_void_bool_if		\
  %D%/hello_global_enum				\
  %D%/hello_global_int				\
  %D%/hello_guard				\
