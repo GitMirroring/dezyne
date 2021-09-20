@@ -750,6 +750,9 @@
                     (context:parent context tree?) offset #:debug? debug?))
     ((and (? complete?) (? (negate (is? 'comment))))
      '())
+    ((and (? (is? 'or)) (? incomplete?))
+     (cond ((context:parent context 'on)
+            => complete:trigger-names)))
     (_
      (or (and (pair? o)
               (and=> (find incomplete? (cdr o))

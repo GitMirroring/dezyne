@@ -1,0 +1,8 @@
+interface ihello
+{
+  in void hello();
+  in void option();
+
+  behaviour
+  {
+    on opt

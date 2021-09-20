@@ -724,6 +724,10 @@
   '("Bool.False" "Bool.True")
   (test-complete #:file-name "enum-variable-expression-missing.dzn" #:line 8 #:column 13))
 
+(test-equal "partial-trigger-name"
+  '("hello" "inevitable" "option" "optional")
+  (test-complete #:file-name "partial-trigger-name.dzn"))
+
 (test-end)
 
 (test-begin "lookup")
