@@ -418,7 +418,7 @@ until RTC?."
                                         (compose (negate .status) car))
                                traces))
                (pcs (map car traces)))
-          (cons pc (map (cute update-state pc <>) pcs))))))
+          (map (cute update-state pc <>) pcs)))))
 
 (define-method (run-silent (pc <program-counter>) event)
   (let* ((component ((compose .type .ast) (%sut)))
