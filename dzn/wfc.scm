@@ -1078,8 +1078,8 @@
   ((@@ (dzn code makreel) makreel:continuation) o))
 
 (define-method (wfc:continuation (o <if>))
-  (cons ((@@ (dzn code makreel) makreel:then-continuation) o)
-        ((@@ (dzn code makreel) makreel:else-continuation) o)))
+  (append ((@@ (dzn code makreel) makreel:then-continuation) o)
+          ((@@ (dzn code makreel) makreel:else-continuation) o)))
 
 (define-method (recursive? (o <system>))
   (ast:graph-cyclic? ast:system* o))
