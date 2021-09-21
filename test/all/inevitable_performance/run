@@ -1,0 +1,3 @@
+#! /bin/sh
+set -x
+timeout 2 dzn simulate -t '' test/all/inevitable_performance/inevitable_performance.dzn
