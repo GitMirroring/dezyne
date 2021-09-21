@@ -51,6 +51,9 @@
 ;; scp kluit.dezyne.org:.../download/dezyne-2.10.0.tar.gz .
 ;; guix download ./dezyne-2.10.0.tar.gz
 
+;; This makes `git am 0001-guix-dezyne-Update-to-2.13.2.patch' work.
+(define guile-3.0-latest guile-next)
+
 (define-public dezyne
   (package
     (name "dezyne")
