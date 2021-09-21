@@ -53,6 +53,7 @@
             makreel:.name
             makreel:enum-fields
             makreel:get-model
+            makreel:init-process
             makreel:model->makreel
             makreel:model-name
             makreel:name
@@ -924,6 +925,9 @@
 (define-method (makreel:enum-name (o <enum>))
   (ast:full-name o))
 
+(define (makreel:init-process process)
+  (format #f "init ~a;\n" process))
+
 (define-templates-macro define-templates makreel)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/makreel.scm")
@@ -944,12 +948,15 @@
 ;;;
 (define (root-> o)
   (let ((queue-size (or (%queue-size)
-                        (command-line:get 'queue-size 3))))
+                        (command-line:get 'queue-size 3)))
+        (init (command-line:get 'init)))
     (parameterize ((%queue-size queue-size)
                    (%id-alist '())
                    (%next-alist '()))
       (x:source o)
-      (newline))))
+      (newline)
+      (when init
+        (display (makreel:init-process init))))))
 
 (define* (ast-> ast #:key dir model)
   (let ((root (makreel:om ast)))

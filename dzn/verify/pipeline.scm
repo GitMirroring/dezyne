@@ -204,7 +204,7 @@ actions."
     (lambda _
       (display makreel)
       (newline)
-      (format #t "init ~a;\n" (options-init options)))))
+      (display (makreel:init-process (options-init options))))))
 
 (define (in-out:dzn->aut+provides-aut options)
   (let* ((model (options-model options))

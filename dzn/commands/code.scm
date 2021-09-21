@@ -56,6 +56,7 @@
             (debug (single-char #\d))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
+            (init (value #t))
             (language (single-char #\l) (value #t))
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
@@ -75,6 +76,7 @@ Generate code for Dezyne models in DZN-FILE
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
+      --init=PROCESS          use init PROCESS for mCRL2
   -l, --language=LANG         generate code for language=LANG [~a]
   -L, --locations             prepend locations to output trace
   -m, --model=MODEL           generate main for MODEL

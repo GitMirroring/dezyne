@@ -4639,13 +4639,16 @@ Generate extra parameter of @var{type} for every event.
 @itemx -g @var{type}
 Generate glue for @var{type} var.
 
+@item --help
+@itemx -h
+Display help on invoking @code{dzn code}, and then exit.
+
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
 
-@item --help
-@itemx -h
-Display help on invoking @code{dzn code}, and then exit.
+@item --init=@var{PROCESS}
+When generating @code{mCRL2} code, use init @var{PROCESS}.
 
 @item --language=@var{language}
 @itemx -l @var{language}
