@@ -367,10 +367,10 @@ for MODEL, using ROOT."
         (_
          (and (not (string-prefix? "verify-interface" out))
               (string-append
-               (format #f "~a code --language=makreel --model=~a~a ~a"
+               (format #f "~a code --language=makreel --model=~a~a --init=~s  ~a"
                        (program->string %dzn) model-name (imports->string)
-                       file-name)
-               (format #f "\\\n  | (cat -; echo \"init ~a;\")" (get-init model))))))))
+                       (get-init model)
+                       file-name)))))))
   (string-join (filter-map command->string commands) " \\\n  | "))
 
 (define* (unmemoized-verify-pipeline out root model #:key (init (get-init model)) stdout?)
