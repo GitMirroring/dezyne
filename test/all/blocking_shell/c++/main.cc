@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <thread>
 
 int to_int(std::string s){return std::stoi (s);}
 bool to_bool(std::string s){return s == "true";}

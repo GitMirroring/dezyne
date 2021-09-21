@@ -26,6 +26,7 @@
 #include "collateral_blocking_shell2.hh"
 
 #include <limits>
+#include <thread>
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
