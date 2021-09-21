@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rob@dezyne.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -36,6 +36,11 @@
 #include <queue>
 #include <tuple>
 #include <vector>
+
+// Set to 1 for tracing of internal async events
+#ifndef DZN_ASYNC_TRACING
+#define DZN_ASYNC_TRACING 0
+#endif
 
 // Set to 1 for experimental state tracing feature.
 #ifndef DZN_STATE_TRACING
@@ -209,8 +214,12 @@ namespace dzn
     if(handle && handle != coroutine::get_id()
        && (!other_port || !port_blocked_p(c->dzn_locator, other_port)))
       collateral_block(c, c->dzn_locator);
+#if !DZN_ASYNC_TRACING
     if (!dynamic_cast<async_base*> (&p))
       trace_qin(os, p.meta, event);
+#else // DZN_ASYNC_TRACING
+    trace_qin(os, p.meta, event);
+#endif // DZN_ASYNC_TRACING
 #if DZN_STATE_TRACING
     os << *c << std::endl;
 #endif
