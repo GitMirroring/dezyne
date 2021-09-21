@@ -52,9 +52,8 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       + Make test fail if without flush
       + Test in combination with foreign
 
-  - postponed non-determinism check + deprecation
-    + Review and merge paul/wip-state
-    + simulator
+  - unobservable non-determinism check + deprecation
+    + Review and merge wip-state
 
   - Simulator
     + deadlock check should prevail over <compliance>
@@ -62,15 +61,19 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - livelock_interface0: What's this, a silent livelock?  How to
         test, no trace possible?
       - queuefull_external: <queue-full> without trace.  How to test?
-    + UX
 
 ** Release 2.13.4
   - component behaviour diagram
   - Simulator
     + livelock: show loop, e.g.,: <livelock>...<livelock>
+      - livelock_component.dzn: "end of trail" (world, world, world ...)
+      - livelock_iterator
+  - implicit interface illegals
 
 ** Release 2.13.5
   - collateral blocking
+    + Finish and merge wip-blocking
+      - async traces / async_blocking_ranking_disorder
   - Documentation
     + Blocking, thread-safe-shell, external, collateral-block.
 
@@ -85,6 +88,19 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + FAIL: illegal_external_nonsynchronous (no queue-full after illegal)
     + FAIL: compliance_nonsynchronous_sync (deadlock after 1 rondje)
 
+  - interface constraints and shared state
+    + Finish and merge wip-shared-state
+    + Increase regression test coverage
+      - hello_proxy_nondet
+      - constrained_alarm
+      - ... need more tests!!!
+    + Document it!
+    + Cleanup c++ spek
+    + Non compliant interfaces deadlock the component
+      - Anything we can do besides documenting this?
+    + Add CSP alphabetized parallel support (weak illegals, modules)
+    + Refactor makreel with alphabetized parallel
+
   - Full foreign support
     + Generated main
     + Simulate system with foreign with requires port
@@ -97,7 +113,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 
   - Fix ambiguities:
     + Puntje van Paul aka Paul sugar aka field test in language
-    + dzn trace: Whether an arrow label is in, out or return.
+    + Use before define (see LSP/wcf)?
 
   - Disable internal tracing in code, such that simulator can reproduce
     the internal tracing (including state).
@@ -108,29 +124,13 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + memoize or remove oeverloos redundant interface verification
 
   - Simulate
+     + Remove silent
      + show trace in all diagrams consistently and interactively
      + give user more insight/control w.r.t. silent and async
 
-  - Finish and merge wip-lazy
-    + Lazy import in lookup
-    + prototype in tree
-    + lazy lookup in ast/during resolve
-
-  - Finish and merge wip-shared-state
-    + Increase regression test coverage
-      - hello_proxy_nondet
-      - constrained_alarm
-      - ... need more tests!!!
-    + Document it!
-    + Cleanup c++ spek
-    +  Deprecate non-observable non-determinism in interfaces
-      - Add --disable-implicit-interface-constraints option
-      - Report non-observable non-determinism in interfaces as error
-        unless --disable-implicit-interface-constraints
-    + Non compliant interfaces deadlock the component
-      - Anything we can do besides documenting this?
-    + Add CSP alphabetized parallel support (weak illegals, modules)
-    + Refactor makreel with alphabetized parallel
+  - Lazy import in lookup
+    + Rewrite ast lookup/lookdown modeled after tree/lookup library.
+    + What about normalizations, must be lazy too?
 
   - UX
     + wfc: check for reply on modeling event
@@ -187,8 +187,20 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish JavaScript support
     + Review and finish Scheme support
 * DONE
-  - Lazy import in lookup
-    + Rewrite ast lookup/lookdown modeled after tree/lookup library.
+  - UX
+    + "client" shows in state of state-diagram
+    + interface trace: state shows in client
+    + range_declaration_expression.dzn: state scheme expression in diagram
+    + range_action.dzn: local variable as action in state (also in diagram):
+      (state ((p)) ((sut) (n . (action** "r" "e" (arguments-node*)))) ((r)))
+  -  Deprecate unobservable non-determinism in interfaces
+    + Add --no-interface-determinism option
+    + Report unbservable non-determinism in interfaces as error
+      unless --no-interface-determinism
+    + Add check in simulator
+  - Finish and merge wip-lazy
+    + Lazy import in lookup
+    + prototype in tree
   - Remove command-line:get from trace library
   - Simulator performance
     + deadlock check should consider all toplevel traces
