@@ -82,6 +82,7 @@ HELLO_TESTS =					\
  %D%/hello_system_reply				\
  %D%/hello_two					\
  %D%/illegal_component0				\
+ %D%/illegal_interface_incomplete		\
  %D%/livelock_interface0			\
  %D%/livelock_component				\
  %D%/queuefull_component0			\

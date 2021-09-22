@@ -1,0 +1,63 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  in void bye();
+  out void world();
+
+  behaviour
+  {
+    bool seen = false;
+    on hello: {seen=true;world;}
+    [seen] on bye: {seen=false;world;}
+  }
+}
+
+interface iworld
+{
+  in void hello();
+  in void bye();
+
+  behaviour
+  {
+    bool idle = false;
+    on hello: {}
+    [idle] on bye: {}
+  }
+}
+
+component illegal_interface_incomplete
+{
+  provides ihello h;
+  requires iworld w;
+
+  behaviour
+  {
+    bool seen = false;
+    on h.hello(): {seen=true;w.hello(); h.world();}
+    [seen] on h.bye(): {seen=false; w.bye(); h.world();}
+  }
+}

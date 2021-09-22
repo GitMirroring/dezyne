@@ -1,0 +1,9 @@
+model: illegal_interface_incomplete
+h.hello
+w.hello
+w.return
+h.world
+h.return
+h.bye
+w.bye
+<illegal>
