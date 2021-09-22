@@ -1,0 +1,1 @@
+test/all/determinism_interface/determinism_interface.dzn:31:3: error: interface is unobservably non-deterministic
