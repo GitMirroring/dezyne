@@ -512,17 +512,16 @@
                 (make <range-error> #:ast o #:variable o #:value value
                       #:message "range-error"))))))
 
-(define-method (assign (state <state>) (variable <variable>) expression)
-  (let ((name (.name variable))
-        (value (eval-expression state expression)))
-    (or (range-error variable value)
-        (clone state #:variables (assoc-set! (copy-tree (.variables state)) name value)))))
+(define-method (assign (pc <program-counter>) (variable <variable>) expression)
+  (let* ((name (.name variable))
+         (state (get-state pc))
+         (value (eval-expression state expression))
+         (state (clone state #:variables (assoc-set! (copy-tree (.variables state)) name value)))
+         (pc (set-state pc state)))
+    (clone pc #:status (range-error variable value))))
 
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <expression>))
-  (let ((result (assign (get-state pc) variable e)))
-    (if (is-a? result <error>)
-        (clone pc #:status result)
-        (set-state pc result))))
+  (next-method))
 
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <action>))
   (let* ((instance (.instance pc))
@@ -624,18 +623,19 @@
             (make <enum-literal> #:type.name (make <scope.name> #:ids ids) #:field field))))) ;; FIXME: what about resolving
     ))
 
-(define (update-variable update-list variable state)
+(define (update-variable update-list variable pc)
   (let ((name (string->symbol (.name variable))))
-    (or (and=> (assoc-ref update-list name) (compose (cut assign state variable <>) sexp->value))
-        state)))
+    (or (and=> (assoc-ref update-list name)
+               (compose (cute assign pc variable <>) sexp->value))
+        pc)))
 
 (define (update-state event state pc)
   (let* ((instance (.instance state))
          (path (map string->symbol (runtime:instance->path instance)))
          (update-list (assoc-ref event path))
-         (result (fold (cut update-variable update-list <> <>) state ((compose ast:variable* .type .ast) instance))))
-    (if (is-a? result <error>) (clone pc #:status result)
-        (set-state pc result))))
+         (pc (clone pc #:instance instance))
+         (variables ((compose ast:variable* .type .ast) instance)))
+    (fold (cute update-variable update-list <> <>) pc variables)))
 
 
 ;;;
