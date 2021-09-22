@@ -194,6 +194,11 @@ output, and standard error as three values."
     (and json
          (assoc-ref json "non-strict?"))))
 
+(define (no-interface-determinism? file-name)
+  (let ((json (get-meta file-name)))
+    (and json
+         (assoc-ref json "no-interface-determinism?"))))
+
 (define (error-model? file-name)
   (or (directory-exists? (string-append file-name "/baseline/verify"))
       ;; no verify baseline for system error models
@@ -246,11 +251,14 @@ output, and standard error as three values."
          (includes (filter directory-exists? includes))
          (includes (append-map (cut list "-I" <>) includes))
          (model (or (model? file-name) base-name))
-         (command `("dzn" "--verbose" "verify"
-                    ,@includes
-                    "--all"
-                    ,@(if (model-unset? file-name) '() `("-m" ,model))
-                    ,dzn-name)))
+         (no-determinism? (no-interface-determinism? file-name))
+         (command
+          `("dzn" "--verbose" "verify"
+            ,@includes
+            "--all"
+            ,@(if (model-unset? file-name) '() `("-m" ,model))
+            ,@(if no-determinism? '("--no-interface-determinism") `())
+            ,dzn-name)))
     (or (skip? file-name "verify")
         (run-baseline file-name command
                       #:baseline baseline))))
@@ -407,12 +415,14 @@ output, and standard error as three values."
          (model (or (model? file-name) base-name))
          ;; FIXME: METAs `model' is used for component/system tricksery
          (model base-name)
-         (trace-format (or (trace-format file-name) "event")))
+         (trace-format (or (trace-format file-name) "event"))
+         (no-determinism? (no-interface-determinism? file-name)))
     (receive (status stdout stderr)
         (observe `("dzn" "simulate"
                    ,@includes
                    "--format" ,trace-format
                    ,@(if (non-strict? file-name) '() '("--strict"))
+                   ,@(if no-determinism? '("--no-interface-determinism") `())
                    "-m" ,model
                    ,dzn-name)
                  input)

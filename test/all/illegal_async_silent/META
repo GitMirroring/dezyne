@@ -1,1 +1,1 @@
-{"skip":["c","javascript","verify"],"comment":{"c":"async-refine: not supported","verify":"non-observable non-determinism"}}
+{"skip":["c","javascript"],"no-interface-determinism?":true,"comment":{"c":"async-refine: not supported"}}

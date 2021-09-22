@@ -1,1 +1,1 @@
-{"skip":["verify"],"comment":{"verify":"interface determinism check cannot be disabled"}}
+{"no-interface-determinism?":true}
