@@ -1,1 +1,1 @@
-{"skip":["build","simulate"],"comment":{"build":"interface model: cannot build.","simulate":"interface determinism check cannot be disabled"}}
+{"skip":["build","simulate"],"no-interface-determinism?":true,"comment":{"build":"interface model: cannot build.","simulate":"interface determinism check cannot be disabled"}}
