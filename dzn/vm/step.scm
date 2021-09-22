@@ -105,24 +105,6 @@
 ;;; uses ’continuation’ (see below) to return a list of program counters
 ;;; that pointing to the next statement.
 
-(define-method (step (pcs <list>))
-  (define (non-rtc-step pc)
-    (if (rtc? pc) (list pc)
-        (step pc (.statement pc))))
-  (if (null? (filter (compose (negate (is? <incomplete>)) .statement) pcs)) (car pcs)
-      (let* ((pcs (append-map non-rtc-step pcs)))
-        (if (null? pcs) '()
-            (let* ((pc (car pcs))
-                   (statement (.statement pc)))
-              (if (and (null? pcs) (ast:declarative? statement))
-                  (let ((pc (clone pc #:statement (clone (make <incomplete> "incomplete")
-                                                         #:parent (.parent statement)))))
-                    (if (is-a? (%sut) <runtime:port>)
-                        (list (clone pc #:status (make <match-error>
-                                                   #:message "match")))
-                        (list pc)))
-                  pcs))))))
-
 (define-method (step (pc <program-counter>) (statement <boolean>))
   (step (pop-pc pc))) ;; .previous == #f => RTC
 
