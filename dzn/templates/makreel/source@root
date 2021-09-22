@@ -6,7 +6,6 @@ Void = struct void;
 act
 declarative_illegal;
 illegal;
-incomplete;
 missing_reply;
 range_error;
 recurse;

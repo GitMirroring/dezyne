@@ -124,7 +124,7 @@
          (guard (combine-not (map triple-guard triples)))
          (provides? (and=> (.port trigger) ast:provides?))
          (statement (make (cond (provides? <declarative-illegal>)
-                                ((is-a? model <interface>) <incomplete>)
+                                ((is-a? model <interface>) <declarative-illegal>)
                                 (else <illegal>)))))
     (append triples (list (make-triple on guard #f statement)))))
 
@@ -260,7 +260,7 @@
                                          (clone (triple-guard t) #:statement statement)))
                                      triples))
                         ;; code need <otherwise>
-                        (otherwise (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal> #:incomplete #t))))
+                        (otherwise (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>))))
                         (otherwise? (not (find (compose ast:literal-true? .expression) guards)))
                         (guards (if otherwise? (append guards otherwise)
                                     guards)))

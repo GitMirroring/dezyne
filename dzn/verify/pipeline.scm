@@ -477,7 +477,7 @@ init for MODEL unless INIT."
          (last (and last-el (string->symbol last-el)))
          (error (case assert
                   ((deadlock) (cond
-                               ((member last '(<range-error> <type-error> <missing-reply> <second-reply> <incomplete>)) last)
+                               ((member last '(<range-error> <type-error> <missing-reply> <second-reply>)) last)
                                ((find (cut equal? "<queue-full>" <>) trace) '<queue-full>)
                                (else assert)))
                   (else assert)))
@@ -492,7 +492,6 @@ init for MODEL unless INIT."
                     ((<type-error>) (format #f "type error in model ~a" model-name))
                     ((<missing-reply>) (format #f "reply missing from model ~a" model-name))
                     ((<second-reply>) (format #f "double reply in model ~a" model-name))
-                    ((<incomplete>) (format #f "model ~a is incomplete: event '~a' not handled" model-name second-last))
                     ((<queue-full>) (format #f "queue full in model ~a" model-name))
                     (else (format #f "~a in model ~a" error model-name))))
          (trace (remove-flushes trace))

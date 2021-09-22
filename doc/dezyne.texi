@@ -819,48 +819,23 @@ interface IProtocolStack
              state = State.ON;
           @}
           on enable: reply(Result.Failed);  // The other possible response to enable is Failed
-          on disable: illegal;              // Disabling the Protocol Stack is not allowed in OFF state
+          // disable not specfied: Disabling the Protocol Stack is implicitly illegal
+          // and thus not allowed in OFF state
       @}
       [state.ON]
-      @{
-          on enable: illegal;               // Enabling the Protocol Stack is not allowed in ON state
           on disable: state = State.OFF;
-      @}
+          // enable not specfied: Enabling the Protocol Stack is implicitly illegal
+          // and thus not allowed in ON state
   @}
 @}
 @end example
 
-In the interface specification three things stand-out: 1) actions for
-all possible events have to be specified, 2) events can be marked as
-'illegal' and 3) all possible replies are specified.
+In the interface specification events that are not specified in a
+particular state are marked ``implicitly illegal'' @footnote{Before
+2.14, the user had to specify all @b{illegal} actions accurately and
+specifically}.
 
-1) In the interface specification above a state machine has been
-introduced to define what is allowed at each stage: the protocol
-specified by this state machine must be obeyed.  In order to have an
-unambiguously defined interface in each state, the actions for all
-possible events have to be specified.  That is why you see for each
-state the "on enable" and "on disable" statement.  A Dezyne model is
-complete when it specifies for each possible state and each possible
-incoming event what happens in terms of actions when this event is
-received while the interface is in this particular state.  Dezyne will
-check that the specification is complete and thereby ensure that there
-will be no undefined actions for all possible events.  In Dezyne this is
-referred to as a @b{completeness check}.
-
-
-2) For completely specifying the behaviour of an interface, one must
-specify also all actions that should not happen or are not allowed at
-certain stages, i.e., will not be serviced when the component
-implementing the interface is in a particular state.  This is done by
-marking actions that are not allowed as @b{illegal}.  The Dezyne
-verification will verify that all components using the interface will
-adhere to it and in case a component is sending an event that is illegal
-at that stage Dezyne will point this out as a interface incompliancy.
-Note that marking behaviour as illegal is a requirement or design
-decision, in the example above the ProtocolStack could also be such that
-it is allowed to send a disable when the component is not yet enabled.
-
-3) To unambiguously define all possible behaviour, an interface must
+To unambiguously define all possible behaviour, an interface must
 specify all replies that are possible.  Definition of all possible
 replies is described in way that is abstract from implementation
 details.  What you see specified in the OFF state when the enable event
@@ -935,17 +910,14 @@ interface IProtocolStack
              state = State.ON;
           @}
           on enable: reply(Result.Failed);  // The other possible response to enable is Failed
-          on disable,connectReq: illegal;
       @}
       [state.ON]
       @{
-          on enable: illegal;
           on disable: state = State.OFF;
           on connectReq: state = State.CONNECTING;
       @}
       [state.CONNECTING]
       @{
-          on enable, connectReq: illegal;
           on disable: state = State.OFF;
           on inevitable:                   // inevitably the connectReq request will be done and a response will be given
           @{
@@ -954,10 +926,7 @@ interface IProtocolStack
           @}
       @}
       [state.CONNECTED]
-      @{
-          on enable, connectReq: illegal;
           on disable: state = State.OFF;
-      @}
   @}
 @}
 @end example
@@ -1135,23 +1104,17 @@ interface IMotion
       enum State @{Off, Active@};
       State state = State.Off;
       [state.Off]
-      @{
           on start:
           @{
               state = State.Active;
               started;
           @}
-          on stop: illegal;
-      @}
       [state.Active]
-      @{
-          on start: illegal;
           on stop:
           @{
               state = State.Off;
               ready;
           @}
-      @}
   @}
 @}
 @end example
@@ -1610,7 +1573,6 @@ interface ITimer @{
   behaviour @{
     bool is_armed = false;
     [!is_armed] on create: is_armed = true;
-    [is_armed] on create: illegal;
     on cancel: is_armed = false;
     [is_armed] on inevitable: @{timeout; is_armed = false;@}
   @}
@@ -1621,15 +1583,11 @@ component RemoteTimerProxy @{
   behaviour
   @{
     bool is_armed = false;
-    on pp.create(s): @{
+    on pp.create(s):
       [!is_armed] @{rp.create(s); is_armed = true;@}
-      [is_armed] illegal;
-    @}
     on pp.cancel(): @{rp.cancel(); is_armed = false;@}
-    on rp.timeout(): @{
+    on rp.timeout():
       [is_armed] @{pp.timeout(); is_armed = false;@}
-      [!is_armed] illegal;
-    @}
   @}
 @}
 @end example
@@ -1750,15 +1708,9 @@ interface IMotion
       enum State @{Off, Active@};
       State state = State.Off;
       [state.Off]
-      @{
           on start: state = State.Active;
-          on stop:  illegal;
-      @}
       [state.Active]
-      @{
-          on start: illegal;
           on stop:  state = State.Off;
-      @}
    @}
 @}
 @end example
@@ -1782,16 +1734,8 @@ interface IMotion
   @{
       enum State @{Off, Active@};
       State state = State.Off;
-      on start:
-      @{
-          [state.Off] state = State.Active;
-          [state.Active] illegal;
-      @}
-      on stop:
-      @{
-          [state.Off] illegal;
-          [state.Active]  state = State.Off;
-      @}
+      on start: [state.Off]    state = State.Active;
+      on stop:  [state.Active] state = State.Off;
    @}
 @}
 @end example
@@ -1863,18 +1807,14 @@ interface Siren
   behaviour
   @{
     enum State @{ SirenOff, SirenOn @}; // type declaration
-    State state = State.SirenOff;     // variable declaration
-    [state.SirenOff] // if the Siren is off, only allow to turn it on
-    @{
-      on turnOn:  state = State.SirenOn;
-      on turnOff: illegal;
-    @}
-    [state.SirenOn] // if the Siren is on, only allow to turn it off
-    @{
-      on turnOff: state = State.SirenOff;
-      on turnOn:  illegal;
-    @}
-  @}
+    State state = State.SirenOff;       // variable declaration
+                                        // if the Siren is off,
+                                        // only allow to turn it on
+    [state.SirenOff] on turnOn:  state = State.SirenOn;
+                                        // if the Siren is on,
+                                        // only allow to turn it off
+    [state.SirenOn]  on turnOff: state = State.SirenOff;
+   @}
 @}
 @end example
 
@@ -1891,16 +1831,9 @@ interface Siren
   behaviour
   @{
     bool SirenOn = false;
-    [SirenOn] // if the Siren is on, only allow to turn it off
-    @{
-      on turnOff: SirenOn = false;
-      on turnOn:  illegal;
-    @}
-    [otherwise]
-    @{
-      on turnOn:  SirenOn = true;
-      on turnOff: illegal;
-    @}
+    // if the Siren is on, only allow to turn it off
+    [SirenOn]   on turnOff: SirenOn = false;
+    [otherwise] on turnOn:  SirenOn = true;
   @}
 @}
 @end example
@@ -1955,10 +1888,6 @@ component AlarmSystemComp
       @{
         Sensor.Values val = Sensor.Activate();
         activating(val);                    // call the activation function
-      @}
-      on alarmSystem.SwitchOff(), sensor.DetectedMovement(), sensor.Deactivated():
-      @{
-        illegal;
       @}
     @}
     /* ...  */
@@ -2066,10 +1995,7 @@ interface ICodeBuilder
       on GetCode: @{@}
     @}
     [state.Complete]
-    @{
-      on AddDigit: illegal;
       on GetCode: state = State.Building;
-    @}
   @}
 @}
 @end example
@@ -2234,16 +2160,8 @@ interface IMotion
   @{
       enum State @{Off, Active@};
       State state = State.Off;
-      [state.Off]
-      @{
-          on start: state = State.Active;
-          on stop:  illegal;
-      @}
-      [state.Active]
-      @{
-          on start: illegal;
-          on stop:  state = State.Off;
-      @}
+      [state.Off]    on start: state = State.Active;
+      [state.Active] on stop:  state = State.Off;
    @}
 @}
 @end example
@@ -2267,16 +2185,8 @@ interface IMotion
   @{
       enum State @{Off, Active@};
       State state = State.Off;
-      on start:
-      @{
-          [state.Off] state = State.Active;
-          [state.Active] illegal;
-      @}
-      on stop:
-      @{
-          [state.Off] illegal;
-          [state.Active]  state = State.Off;
-      @}
+      on start: [state.Off]     state = State.Active;
+      on stop:  [state.Active]  state = State.Off;
    @}
 @}
 @end example
@@ -2381,15 +2291,9 @@ interface Siren
     enum State @{ SirenOff, SirenOn @}; // type declaration
     State state = State.SirenOff;     // variable declaration
     [state.SirenOff] // if the Siren is off, only allow to turn it on
-    @{
       on TurnOn:  state = State.SirenOn;
-      on TurnOff: illegal;
-    @}
     [state.SirenOn] // if the Siren is on, only allow to turn it off
-    @{
       on TurnOff: state = State.SirenOff;
-      on TurnOn:  illegal;
-    @}
   @}
 @}
 @end example
@@ -2703,15 +2607,9 @@ interface Siren
     enum State @{ SirenOff, SirenOn @}; // type declaration
     State state = State.SirenOff;    // variable declaration
     [state.SirenOff] // if the Siren is off, only allow to turn it on
-    @{
       on TurnOn:  state = State.SirenOn;
-      on TurnOff: illegal;
-    @}
     [state.SirenOn] // if the Siren is on, only allow to turn it off
-    @{
       on TurnOff: state = State.SirenOff;
-      on TurnOn:  illegal;
-    @}
   @}
 @}
 @end example
@@ -3147,13 +3045,9 @@ interface iTimer
         enum State @{Idle, Busy@};
         State state = State.Idle;
         [state.Idle]
-        @{
             on createTimer: @{state = State.Busy;@}
-            on cancelTimer: illegal;
-        @}
         [state.Busy]
         @{
-            on createTimer: illegal;
             on cancelTimer: @{state = State.Idle;@}
             on inevitable:
             @{
@@ -3191,21 +3085,14 @@ interface Sensor
     enum States @{ Disabled, Enabled, Triggered @};
     States state = States.Disabled;
     [state.Disabled]
-    @{
       on enable:        state = States.Enabled;
-      on disable:       illegal;
-    @}
     [state.Enabled]
     @{
-      on enable:        illegal;
       on disable:       state = States.Disabled;
       on optional:      @{ triggered; state = States.Triggered; @}
     @}
     [state.Triggered]
-    @{
-      on enable:        illegal;
       on disable:       state = States.Disabled;
-    @}
   @}
 @}
 @end example
@@ -3942,12 +3829,6 @@ These are the checks that can be performed:
 
 @itemize
 
-@item @i{completeness}:
-	guards in Dezyne enable and disable event clauses.
-	It is a required that in every state of a model each event is enabled, either by being unguarded,
-	or by having a guard that evaluates to "true" for the given state.@*
-	Upon violation, The following error is reported : @*
-@i{M is incomplete: e not handled}
 @item @i{deterministic}:
 	in Dezyne all components are required to be deterministic.
 	The most common cause of non-determinism in a component is overlapping guards, i.e.
@@ -4014,7 +3895,6 @@ The checks that are executed differ for interfaces and components:
 
 @itemize
 
-@item completeness
 @item deadlock
 @item illegal
 @item range error
@@ -4026,7 +3906,6 @@ The checks that are executed differ for interfaces and components:
 
 @itemize
 
-@item completeness
 @item deterministic
 @item illegal
 @item range error

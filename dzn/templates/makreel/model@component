@@ -72,7 +72,6 @@ provides_comm = comm ({
 provides_allow = allow ({
    declarative_illegal
  , illegal
- , incomplete
  , missing_reply
  , range_error
  , second_reply

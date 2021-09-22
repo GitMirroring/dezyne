@@ -1255,6 +1255,9 @@ equivalent.
 @}
 @end example
 
+Uncluttering code by making use of implicit illegals has the downside of
+hiding logic from a code reviewer.
+
 In your model code, mismatches between an interface and its provider
 that involve @kwd{illegal} will show up as verification errors, but
 only the Trace and Sequence views can point out the exact problem.  Once

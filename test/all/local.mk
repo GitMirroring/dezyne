@@ -61,6 +61,7 @@ HELLO_TESTS =					\
  %D%/hello_guard				\
  %D%/hello_if					\
  %D%/hello_if_action				\
+ %D%/hello_incomplete				\
  %D%/hello_inevitable				\
  %D%/hello_injected				\
  %D%/hello_interface				\
@@ -289,7 +290,6 @@ REGRESSION_TESTS =				\
  %D%/importPath					\
  %D%/import_strip_component			\
  %D%/imported.space				\
- %D%/incomplete					\
  %D%/inevitable_performance			\
  %D%/injected_dangling				\
  %D%/inner.space				\

@@ -17,7 +17,6 @@ req_and_queue_allow = allow({
  , async_pending
  , declarative_illegal
  , illegal
- , incomplete
  , queue_empty
  , queue_not_empty
  , queue_full

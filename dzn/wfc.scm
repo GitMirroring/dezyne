@@ -365,10 +365,6 @@
   ;; TODO; in source??
   '())
 
-(define-method (wfc (o <incomplete>)) ;; is-a <declarative>
-  ;; TODO; in source??
-  '())
-
 (define-method (wfc (o <blocking>)) ;; is-a <declarative>
   (define (blocking o)
     (let ((model (parent o <model>)))

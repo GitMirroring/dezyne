@@ -90,7 +90,6 @@
            .function.name
            .functions
            .ids
-           .incomplete
            .injected
            .instances
            .last?
@@ -179,7 +178,6 @@
            <illegal>
            <imperative>
            <import>
-           <incomplete>
            <inevitable>
            <instance>
            <instances>
@@ -566,11 +564,9 @@
   (else))
 
 (define-ast <declarative-illegal> (<declarative>))
-(define-ast <incomplete> (<declarative>))
 
 (define-ast <illegal> (<imperative>)
-  (event.name)
-  (incomplete))
+  (event.name))
 
 (define-ast <blocking> (<declarative>)
   (statement))

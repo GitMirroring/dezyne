@@ -40,7 +40,6 @@ proc
  , #x:makreel:model-name reply'reordered
  , #x:makreel:model-name state'
  , declarative_illegal
- , incomplete
  , missing_reply
  , range_error
  , recurse
@@ -98,7 +97,6 @@ proc
   , #x:makreel:model-name flush
   , #x:makreel:model-name state
   , declarative_illegal
-  , incomplete
   , missing_reply
   , range_error
   , recurse
