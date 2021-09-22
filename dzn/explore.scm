@@ -218,7 +218,8 @@ begin -> 1
                                           (value . ,(->sexp value)))))
                          (.variables o)))
          (q (.q o)))
-    (and (or (pair? variables) (pair? q))
+    (and (not (equal? path '("client")))
+         (or (pair? variables) (pair? q))
          `((instance . ,name)
            (state    . ,(list->vector
                          `(,@variables

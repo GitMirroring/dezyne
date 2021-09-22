@@ -651,7 +651,8 @@
                                         (format #f "~a=~a" x (->sexp y))))
                          (.variables o)))
          (q (.q o)))
-    (and (or (pair? variables) (pair? q))
+    (and (not (equal? path '("client")))
+         (or (pair? variables) (pair? q))
          (string-append
           (string-join path ".")
           (if (pair? path) "=" "")
