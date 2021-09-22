@@ -1,0 +1,17 @@
+interface Ihello
+{
+  in void e();
+  behaviour {}
+}
+
+interface Iworld
+{
+  in void f();
+  behaviour {}
+}
+
+component C
+{
+  provides Ihello p;
+
+  beh

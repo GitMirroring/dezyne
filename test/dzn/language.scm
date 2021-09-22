@@ -133,6 +133,10 @@
   %completion-interface
   (test-complete #:file-name "interface6.dzn"))
 
+(test-equal "interface6a"
+  %completion-interface
+  (test-complete #:file-name "interface6a.dzn"))
+
 (test-equal "interface7"
   '()
   (test-complete #:file-name "interface7.dzn"))
@@ -254,8 +258,12 @@
   (test-complete #:file-name "component1b.dzn" #:line 15 #:column 11))
 
 (test-equal "component1c"
-  '("provides" "requires")
+  %completion-component
   (test-complete #:file-name "component1c.dzn"))
+
+(test-equal "component1d"
+  %completion-component
+  (test-complete #:file-name "component1d.dzn"))
 
 (test-equal "component2"
   %completion-behaviour
@@ -370,11 +378,11 @@
   (test-complete #:file-name "component-requires.dzn" #:line 18 #:column 29))
 
 (test-equal "component-empty"
-  '("behaviour" "provides" "requires" "system")
+  '("provides" "requires")
   (test-complete #:file-name "component-empty.dzn" #:line 13))
 
 (test-equal "component-provides before"
-  '("behaviour" "provides" "requires" "system")
+  %completion-component
   (test-complete #:file-name "component-provides.dzn" #:line 13))
 
 (test-equal "component-provides inside"
@@ -382,7 +390,7 @@
   (test-complete #:file-name "component-provides.dzn" #:line 14 #:column 10))
 
 (test-equal "component-provides after"
-  '("behaviour" "provides" "requires" "system")
+  %completion-component
   (test-complete #:file-name "component-provides.dzn" #:line 16))
 
 (test-equal "component-behaviour before"
