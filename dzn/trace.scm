@@ -687,6 +687,24 @@ ws               <   [ \t]
                       (lambda (key . args)
                         (format (current-error-port) "<- ~a ~s\n" key args)
                         (list ">>>>>" life-line))))
+                   ((q-out? communication)
+                    (catch #t
+                      (lambda _
+                        (let ((arrow (string-append "<" (make-string (max 1 (- right-margin left-margin 2)) #\-))))
+                          (list (string-append (location-prefix "") life-line)
+                                (string-append
+                                 (location-prefix communication #:from? #t)
+                                 (substring life-line 0 (max 0 (1+ right-margin)))
+                                event
+                                (substring life-line (+ right-margin 2)))
+                                (string-append
+                                 (location-prefix communication #:from? #f)
+                                 (substring life-line 0 (max 0 (1+ right-margin)))
+                                 arrow
+                                 (substring life-line (+ right-margin 3))))))
+                      (lambda (key . args)
+                        (format (current-error-port) "<- ~a ~s\n" key args)
+                        (list "<<<<<" life-line))))
                    ((equal? arrow "<-")
                     (catch #t
                       (lambda _
@@ -694,12 +712,12 @@ ws               <   [ \t]
                           (list (string-append (location-prefix "") life-line)
                                 (string-append
                                  (location-prefix communication #:from? #t)
-                                 (substring life-line 0 (max 0 (- right-margin (string-length event) 0)))
+                                 (substring life-line 0 (max 0 (- right-margin (string-length event))))
                                  event
                                  (substring life-line right-margin))
                                 (string-append
                                  (location-prefix communication #:from? #f)
-                                 (substring life-line 0 (max 0 (- right-margin (string-length arrow) 0)))
+                                 (substring life-line 0 (max 0 (- right-margin (string-length arrow))))
                                  arrow
                                  (substring life-line right-margin)))))
                       (lambda (key . args)
@@ -969,15 +987,20 @@ ws               <   [ \t]
              (communications (map step->event communications)))
         (string-join communications "\n" 'suffix)))
      ((equal? format "diagram")
-      (let* ((communications (filter (disjoin (conjoin (negate q-out?)
-                                                       (if internal? communication? external?))
-                                              eligible? labels? message? state? trail?)
-                                     merged))
-             (header (find header? structured))
-             (communications (step:steps->diagram header communications
-                                                  #:internal? internal?
-                                                  #:locations? locations?)))
-        (string-join communications "\n" 'suffix)))
+      (let* ((header (find header? structured))
+             (system? (find (match-lambda ((('sut x) rest ...) #t)
+                                          (_ #f))
+                            (header-sexp header)))
+             (header (find header? merged))
+             (steps (filter (disjoin
+                             (if (or (not system?) internal?) communication?
+                                 external?)
+                             eligible? labels? message? state? trail?)
+                            merged))
+             (lines (step:steps->diagram header steps
+                                         #:internal? internal?
+                                         #:locations? locations?)))
+        (string-join lines "\n" 'suffix)))
      ((equal? format "json")
       (trace:steps->json merged))
      (else
