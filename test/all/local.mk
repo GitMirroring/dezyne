@@ -67,6 +67,7 @@ HELLO_TESTS =					\
  %D%/hello_inevitable				\
  %D%/hello_injected				\
  %D%/hello_interface				\
+ %D%/hello_interface_silent			\
  %D%/hello_local				\
  %D%/hello_local_bool				\
  %D%/hello_multiple_provides			\
