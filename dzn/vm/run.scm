@@ -430,14 +430,18 @@ until RTC?."
 (define-method (run-interface (pc <program-counter>) (event <string>))
   (let* ((interface ((compose .type .ast %sut)))
          (modeling-names (modeling-names interface))
-         (xpc (if (member event '("inevitable" "optional")) pc
-                  (clone pc #:trail (cons event (.trail pc)))))
-         (traces (append-map (cut run-to-completion xpc <>) modeling-names)))
-    (match event
-      ((? (cute in-event? interface <>))
-       (append-map (cut run-to-completion <> event) (cons (list pc) traces)))
-      (else
-       traces))))
+         (silent-pcs (if (null? modeling-names) '()
+                         (run-silent pc (%sut))))
+         (pcs (cons pc silent-pcs))
+         (traces (map list pcs)))
+    (cond
+     ((in-event? event)
+      (append-map (cut run-to-completion <> event) (cons (list pc) traces)))
+     (else
+      (let* ((pc (if (member event '("inevitable" "optional")) pc
+                     (clone pc #:trail (cons event (.trail pc)))))
+             (traces (append-map (cut run-to-completion pc <>) modeling-names)))
+        traces)))))
 
 (define-method (run-requires (pc <program-counter>) event)
   (define (event-executed? port-instance trace)
