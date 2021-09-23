@@ -594,7 +594,9 @@ ws               <   [ \t]
                                                    (if (zero? pos) "" " ")
                                                    name
                                                    (if (null? rest) "" " ")))
-                                     (index (+ (string-contains header-line header-name)
+                                     (header-rest (substring header-line pos))
+                                     (index (+ pos
+                                               (string-contains header-rest header-name)
                                                (if (zero? pos) 0 1)
                                                (modulo (string-length name) 2)
                                                (quotient (string-length name) 2)))
@@ -668,7 +670,7 @@ ws               <   [ \t]
                                       (substring life-line 0 (1+ left-margin))
                                       event))
                                (len (string-length line))
-                               (arrow (string-append (make-string (- right-margin left-margin 2) #\-) ">"))
+                               (arrow (string-append (make-string (max 1 (- right-margin left-margin 2)) #\-) ">"))
                                (arrow-line (string-append
                                             (substring life-line 0 (1+ left-margin))
                                             arrow))
@@ -688,16 +690,16 @@ ws               <   [ \t]
                    ((equal? arrow "<-")
                     (catch #t
                       (lambda _
-                        (let ((arrow (string-append "<" (make-string (- right-margin left-margin 2) #\-))))
+                        (let ((arrow (string-append "<" (make-string (max 1 (- right-margin left-margin 2)) #\-))))
                           (list (string-append (location-prefix "") life-line)
                                 (string-append
                                  (location-prefix communication #:from? #t)
-                                 (substring life-line 0 (- right-margin (string-length event) 0))
+                                 (substring life-line 0 (max 0 (- right-margin (string-length event) 0)))
                                  event
                                  (substring life-line right-margin))
                                 (string-append
                                  (location-prefix communication #:from? #f)
-                                 (substring life-line 0 (- right-margin (string-length arrow) 0))
+                                 (substring life-line 0 (max 0 (- right-margin (string-length arrow) 0)))
                                  arrow
                                  (substring life-line right-margin)))))
                       (lambda (key . args)
