@@ -630,7 +630,8 @@ optional labels only and stop when observable event seen."
   (apply append (hash-map->list node-observables lts)))
 
 (define* (end-report from-pcs list-of-traces #:key deadlock-check?
-                     refusals-check? state? trace internal? locations? verbose?)
+                     interface-determinism-check? refusals-check?
+                     state? trace internal? locations? verbose?)
   "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
 refusals-check.  Run final REPORT and return exit status."
 
@@ -769,7 +770,8 @@ status."
          (refusals-check? (and refusals-check?
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
-    (or (and (is-a? (%sut) <runtime:port>)
+    (or (and interface-determinism-check?
+             (is-a? (%sut) <runtime:port>)
              (and=> (check-silence from-pcs)
                     (cute report <>
                           #:eligible '()
@@ -795,7 +797,8 @@ status."
                   #:trace trace
                   #:verbose? verbose?)))))
 
-(define* (run-trail trail #:key deadlock-check? refusals-check? internal?
+(define* (run-trail trail #:key deadlock-check? interface-determinism-check?
+                    refusals-check? internal?
                     locations? state? trace verbose?)
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
 
@@ -838,6 +841,8 @@ status."
                            error-trace?)
                        (end-report from-pcs list-of-traces
                                    #:deadlock-check? deadlock-check?
+                                   #:interface-determinism-check?
+                                   interface-determinism-check?
                                    #:refusals-check? refusals-check?
                                    #:state? state?
                                    #:trace trace
@@ -948,7 +953,8 @@ status."
     (%next-input read-input)
     (%pc)))
 
-(define* (simulate root #:key deadlock-check? refusals-check? model-name
+(define* (simulate root #:key deadlock-check? interface-determinism-check?
+                   refusals-check? model-name
                    queue-size strict? trace trail internal? locations? state?
                    verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
@@ -968,6 +974,7 @@ at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
       (close-port (current-input-port)))
     (simulate* root trail
                #:deadlock-check? deadlock-check?
+               #:interface-determinism-check? interface-determinism-check?
                #:refusals-check? refusals-check?
                #:model-name model-name
                #:queue-size queue-size
@@ -978,7 +985,8 @@ at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
                #:state? state?
                #:verbose? verbose?)))
 
-(define* (simulate* root trail #:key deadlock-check? refusals-check? model-name
+(define* (simulate* root trail #:key deadlock-check?
+                    interface-determinism-check? refusals-check? model-name
                     queue-size strict? trace internal? locations? state?
                     verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
@@ -995,6 +1003,7 @@ REFUSALS-CHECK?, run refusals-check at the end."
            (instances (runtime:create-instances sut)))
       (simulate** sut instances trail
                   #:deadlock-check? deadlock-check?
+                  #:interface-determinism-check? interface-determinism-check?
                   #:refusals-check? refusals-check?
                   #:queue-size queue-size
                   #:strict? strict?
@@ -1004,7 +1013,8 @@ REFUSALS-CHECK?, run refusals-check at the end."
                   #:state? state?
                   #:verbose? verbose?))))
 
-(define* (simulate** sut instances trail #:key deadlock-check? refusals-check?
+(define* (simulate** sut instances trail #:key deadlock-check?
+                     interface-determinism-check? refusals-check?
                      queue-size strict? trace internal? locations? state?
                      verbose?)
   "Entry point for simulate library, much like simulate*.  This
@@ -1016,6 +1026,7 @@ memoizations to work."
                  (%sut sut))
     (run-trail trail
                #:deadlock-check? deadlock-check?
+               #:interface-determinism-check? interface-determinism-check?
                #:refusals-check? refusals-check?
                #:trace trace
                #:internal? internal?

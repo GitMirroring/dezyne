@@ -45,6 +45,7 @@
             (locations (single-char #\l))
             (model (single-char #\m) (value #t))
             (no-deadlock (single-char #\D))
+            (no-interface-determinism)
             (no-refusals (single-char #\R))
             (queue-size (single-char #\q) (value #t))
             (state (single-char #\s))
@@ -70,6 +71,8 @@ Simulate a Dezyne model
   -l, --locations        prepend locations to output trail,
                            implies --format=trace
   -m, --model=MODEL      generate main for MODEL
+      --no-interface-determinism
+                         skip interface RTC determinism check
   -q, --queue-size=SIZE  use queue size=SIZE for simulation [3]
       --state            show state after every action, trigger
   -s, --strict           use strict matching of trail
@@ -90,6 +93,8 @@ Simulate a Dezyne model
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
          (no-deadlock? (option-ref options 'no-deadlock #f))
+         (no-interface-determinism?
+          (option-ref options 'no-interface-determinism #f))
          (no-refusals? (option-ref options 'no-refusals #f))
          (queue-size (command-line:get 'queue-size "3"))
          (queue-size (string->number queue-size))
@@ -103,6 +108,8 @@ Simulate a Dezyne model
          (status (simulate ast
                            #:model-name model-name
                            #:deadlock-check? (not no-deadlock?)
+                           #:interface-determinism-check?
+                           (not no-interface-determinism?)
                            #:refusals-check? (not no-refusals?)
                            #:internal? internal?
                            #:locations? locations?
