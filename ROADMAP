@@ -38,12 +38,13 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - BUGS
     + verify crash:
        ./pre-inst-env dzn verify test/all/parse_import_both/parse_import_both.dzn
+    + explore hangup
+       ./pre-inst-env dzn explore test/all/livelock_synchronous_illegal/livelock_synchronous_illegal.dzn
   - Pass regression test
     + XFAIL: alpha_local2
     + XFAIL: external_blocking_livelock
     + XFAIL: compliance_livelock
     + XFAIL: compound_local_assign_call
-    + XFAIL: parse_interface_parens
     + livelock_synchronous2: NOT a livelock, rename to queuefull_synchronous2?
     + data_full: split into smaller tests, preferrably trace-based,
       and without handwritten main's
@@ -51,21 +52,16 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       + Require flush on provides port: h.<flush>
       + Make test fail if without flush
       + Test in combination with foreign
-
-  - unobservable non-determinism check + deprecation
-    + Review and merge wip-state
-
-  - Simulator
-    + deadlock check should prevail over <compliance>
-    + Skipped tests (trace and baseline missing)
-      - livelock_interface0: What's this, a silent livelock?  How to
-        test, no trace possible?
-      - queuefull_external: <queue-full> without trace.  How to test?
+    + queuefull_external: Skipped for simulator: no trace
+      How to test a <queue-full> without trace?
+    + livelock_interface0: Simulator does not see the livelock
+      How to find a livelock without a trace?
 
 ** Release 2.13.4
   - component behaviour diagram
-  - Simulator
-    + livelock: show loop, e.g.,: <livelock>...<livelock>
+  - livelock: show loop: <loop>...<livelock>
+    + Finish and merge wip-loop
+      - Simulator
       - livelock_component.dzn: "end of trail" (world, world, world ...)
       - livelock_iterator
   - implicit interface illegals
@@ -187,6 +183,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish JavaScript support
     + Review and finish Scheme support
 * DONE
+  - messages in browser clickable to location
+  - deadlock check should prevail over <compliance>
+    + WONTFIX: shortest trace wins
+  - unobservable non-determinism check + deprecation
+    + Review and merge wip-state
   - UX
     + "client" shows in state of state-diagram
     + interface trace: state shows in client
