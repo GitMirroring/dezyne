@@ -170,6 +170,9 @@
 (define (clone-edge e)
   (make-edge_ (edge-start-state e) (edge-label e) (edge-tau? e) (edge-end-state e)))
 
+(define (make-edge-loop)
+  (make-edge_ -1 "<loop>" #t -1))
+
 (define (states edges)
   "List of states referenced in edges."
   (sort (delete-duplicates (append (map edge-start-state edges) (map edge-end-state edges))) <))
@@ -415,7 +418,9 @@ states. Stable state has no outgoing tau edges.)"
          (loop-entry-node (and loop-entry-trace (car livelock-nodes)))
          (loop-trace (and loop-entry-node (tau-loop loop-entry-node nodes))))
     (if (null? livelock-nodes) #f
-        (append (or loop-entry-trace '()) (or loop-trace '())))))
+        (append (or loop-entry-trace '())
+                (list (make-edge-loop))
+                (or loop-trace '())))))
 
 (define (rm-tau-loops lts)
   "Remove all edges starting in a tau-loop entry state. (Promotes
