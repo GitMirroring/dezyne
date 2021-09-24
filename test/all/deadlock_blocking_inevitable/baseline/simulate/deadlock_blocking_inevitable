@@ -1,6 +1,6 @@
-p.e
-r.e
-r.return
-r.cb
-test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:48:3: error: deadlock
+h.hello
+w.hello
+w.return
+w.world
+test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:40:3: error: deadlock
 <deadlock>

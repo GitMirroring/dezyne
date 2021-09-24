@@ -1,6 +1,6 @@
 model: deadlock_blocking_inevitable
-p.e
-r.e
-r.return
-r.cb
+h.hello
+w.hello
+w.return
+w.world
 <deadlock>
