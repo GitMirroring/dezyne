@@ -536,10 +536,9 @@ of traces, possibly marked with <compliance-error>."
     (newline)
     (list (list pc))))
 
-(define-method (run-sut (pc+blocked-trace <list>))
+(define-method (run-sut (pc+blocked-trace <list>) event)
   (let* ((pc (car pc+blocked-trace))
-         (pc (reset-replies pc))
-         (event pc ((%next-input) pc)))
+         (pc (reset-replies pc)))
     (%debug "run-sut pc: ~s\n" pc)
     (%debug "     event: ~s\n" event)
     (match event
@@ -803,12 +802,15 @@ status."
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
 
   (define (trail-input pc)
-    (let ((trail (.trail pc)))
-      (if (null? trail) (values #f pc)
-          (let* ((event (car trail))
-                 (trail (cdr trail)))
-            (%debug "  pop trail ~s ~s\n" event trail)
-            (values event (clone pc #:trail trail))))))
+    (match (.trail pc)
+      ((event trail ...)
+       (%debug "  pop trail ~s ~s\n" event trail)
+       (values event (clone pc #:trail trail)))
+      (() (values #f pc))))
+
+  (define (drop-event pc)
+    (let ((event pc (trail-input pc)))
+      pc))
 
   (let ((pc (make-pc #:trail trail)))
     (when (equal? trace "trace")
@@ -826,7 +828,9 @@ status."
                          (event-traces-alist (event-traces-alist pc))
                          (eligible (eligible-labels event-traces-alist)))
                     (show-eligible eligible))))
-              (let* ((list-of-traces (map run-sut traces))
+              (let* ((event pc ((%next-input) (car from-pcs)))
+                     (traces (map (cute rewrite-trace-head drop-event <>) traces))
+                     (list-of-traces (map (cute run-sut <> event) traces))
                      (traces (apply append list-of-traces))
                      (valid-traces (filter (compose (negate .status) car) traces))
                      (blocked non-blocked (partition (compose pair? .blocked car)
