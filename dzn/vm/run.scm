@@ -531,18 +531,6 @@ until RTC?."
                     livelock
                     traces)))))))
 
-(define-method (external-trigger-in-q? (pc <program-counter>) event)
-  (and (requires-trigger? event)
-       (find (match-lambda
-               ((port trigger tail ...)
-                (equal? (trigger->string trigger) event)))
-             (.external-q pc))))
-
-(define-method (external-trigger? event)
-  (and (requires-trigger? event)
-       (let ((port (and=> (string->trigger event) .port)))
-         (and port (ast:external? port)))))
-
 (define-method (run-external-q (pc <program-counter>) (instance <runtime:port>))
   (let* ((pc trigger (dequeue-external pc instance))
          (q-out (make <q-out> #:trigger trigger))

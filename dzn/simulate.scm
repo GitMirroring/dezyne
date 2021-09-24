@@ -59,9 +59,11 @@
 ;;;
 ;;; Code:
 
-(define (zip trace port-trace)
-  "Merge PORT-TRACE into TRACE, and synthesize corresponding actions and
-returns to support the split-arrow trace format."
+(define (zip trigger trace port-trace)
+  "Merge PORT-TRACE into TRACE, the first part starting just before the
+component TRIGGER, the last part at the end.  Also synthesize
+corresponding actions and returns to support the split-arrow trace
+format."
   (define ((action-equal? r:port) a b)
     (let* ((instance (.instance b))
            (b (.statement b)))
@@ -69,19 +71,36 @@ returns to support the split-arrow trace format."
            (eq? instance r:port)
            (equal? (.event.name a) (.event.name b)))))
 
+  (define (port-pc-equal? a b)
+    (and (ast:eq? (.statement a) (.statement b))
+         (eq? (.instance a) (.instance b))))
+
   (define ((return-equal? r:port) a b)
     (let ((instance (.instance b))
           (b (.statement b)))
       (and (is-a? a <trigger-return>) (is-a? b <trigger-return>)
            (eq? instance r:port))))
 
-  (let* ((port-on (list-index (compose (is? <on>) .statement) port-trace))
-         (port-trace-prefix (drop port-trace port-on))
+  (let* ((trigger (and=> trigger trigger->component-trigger))
+         (port-on-index (or (list-index (compose (is? <on>) .statement)
+                                        port-trace)
+                            0))
+         (port-trace-suffix
+          port-trace-prefix (split-at port-trace port-on-index))
          (port-start (car port-trace-prefix))
-         (trace (if (find (cute eq? port-start <>) trace) trace
-                    (append trace port-trace-prefix)))
-         (port-trace (take port-trace port-on))
-         (instance (and=> (find (compose (is? <runtime:component>) .instance) trace)
+         (instance (and=> (find .instance trace) .instance))
+         (trace-index (- (length trace)
+                         (or (list-index
+                              (conjoin
+                               (compose (cute ast:equal? <> trigger) .trigger)
+                               (compose (cute eq? <> instance) .instance))
+                              (reverse trace))
+                             0)))
+         (trace-suffix trace-prefix (split-at trace trace-index))
+         (trace (if (find (cute port-pc-equal? <> port-start) trace) trace
+                    (append trace-suffix port-trace-prefix trace-prefix)))
+         (instance (and=> (find (compose (is? <runtime:component>) .instance)
+                                (reverse trace))
                           .instance))
          (full-trace trace))
 
@@ -92,6 +111,7 @@ returns to support the split-arrow trace format."
                  (statement (.statement pc)))
             (cond
              ((and (not (is-a? (%sut) <runtime:port>))
+                   (eq? instance pc-instance)
                    (is-a? statement <action>)
                    (is-a? pc-instance <runtime:component>)
                    (ast:out? statement))
@@ -102,7 +122,9 @@ returns to support the split-arrow trace format."
                      (port-name (.name port))
                      (r:other-port (runtime:other-port r:port))
                      (port-action+trace (member statement port-trace
-                                                (action-equal? r:other-port))))
+                                                (action-equal? r:other-port)))
+                     (port-action+trace (if (member statement trace-suffix (action-equal? r:other-port)) #f
+                                            port-action+trace)))
                 (match port-action+trace
                   ((action-pc tail ...)
                    (if (find (cute ast:equal? <> action-pc) full-trace)
@@ -111,6 +133,7 @@ returns to support the split-arrow trace format."
                   (_
                    (cons pc (loop (cdr trace) port-trace))))))
              ((and (not (is-a? (%sut) <runtime:port>))
+                   (eq? pc-instance instance)
                    (is-a? statement <trigger-return>)
                    (.port.name statement))
               (let* ((port (.port statement))
@@ -204,12 +227,35 @@ never extend a trace, but do continue as long as the trail is silent."
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
 Update the state of the provides port in TRACE for EVENT.  Return a list
 of traces, possibly marked with <compliance-error>."
-  (let* ((pc (if (and (pair? (.blocked pc)) (pair? trace)) (last trace) pc))
+  (let* ((pc (if (and (external-trigger? event)
+                      (pair? (.blocked pc)) (pair? trace))
+                 (last trace)
+                 pc))
          (component ((compose .type .ast) (%sut)))
          (sut-trail (trace->trail trace))
-         (event (match sut-trail
-                  (((ast . event) step ...) event)
-                  (() event)))
+         (event (cond
+                 ((and (pair? (.blocked pc))
+                       (requires-trigger? event)
+                       (let* ((return (find (compose (is? <trigger-return>)
+                                                     .statement)
+                                            trace))
+                              (instance (and=> return .instance)))
+                         (find
+                          (conjoin
+                           (compose (cute eq? <> instance) .instance)
+                           (compose (is? <initial-compound>) .statement)
+                           (compose ast:provides? .trigger))
+                          trace)))
+                  =>
+                  (lambda (pc)
+                    (let ((trail (trace->trail pc)))
+                      (match trail
+                        ((ast . event) event)
+                        (_ event)))))
+                 (else
+                  (match sut-trail
+                    (((ast . event) step ...) event)
+                    (() event)))))
          (trigger (and event (clone (string->trigger event) #:parent component)))
          (provides-trigger? (provides-trigger? event))
          (port-event (and provides-trigger? (.event.name trigger)))
@@ -301,7 +347,7 @@ of traces, possibly marked with <compliance-error>."
                        (status (.status pc))
                        (trace (rewrite-trace-head (cut clone <> #:status #f #:statement #f) trace))
                        (trace (if (not provides-trigger?) trace
-                                  (zip trace (car (append port-traces non-compliances)))))
+                                  (zip trigger trace (car (append port-traces non-compliances)))))
                        (trace (rewrite-trace-head (cut clone <> #:status status) trace)))
                   (list trace)))
                ((pair? port-traces)
@@ -311,7 +357,7 @@ of traces, possibly marked with <compliance-error>."
                                             (cdr trace)))
                                     port-pcs)))
                   (if (not provides-trigger?) traces
-                      (map zip traces port-traces))))
+                      (map (cute zip trigger <> <>) traces port-traces))))
                ((and (null? non-compliances)
                      (null? port-traces)
                      (pair? sut-trail))
@@ -351,7 +397,7 @@ of traces, possibly marked with <compliance-error>."
                       (let* ((tail (cdr trace))
                              (trace (cons pc tail)))
                         (if (not provides-trigger?) (list trace)
-                            (list (zip trace (car non-compliances))))))))))))))
+                            (list (zip trigger trace (car non-compliances))))))))))))))
 
     (if port (or (and (> (length (ast:provides-port* component)) 1)
                       (check-provides-fork port trace))

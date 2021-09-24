@@ -49,6 +49,8 @@
             dequeue-external
             enqueue
             enqueue-external
+            external-trigger?
+            external-trigger-in-q?
             flush
             get-handling?
             get-reply
@@ -737,6 +739,18 @@
 
 (define (requires-trigger? string)
   (and (string? string) (provides/requires-trigger? string ast:requires? ast:out?)))
+
+(define-method (external-trigger? event)
+  (and (requires-trigger? event)
+       (let ((port (and=> (string->trigger event) .port)))
+         (and port (ast:external? port)))))
+
+(define-method (external-trigger-in-q? (pc <program-counter>) event)
+  (and (requires-trigger? event)
+       (find (match-lambda
+               ((port trigger tail ...)
+                (equal? (trigger->string trigger) event)))
+             (.external-q pc))))
 
 (define-method (in-event? (o <interface>) (event <string>))
   (let* ((events (ast:in-event* o))

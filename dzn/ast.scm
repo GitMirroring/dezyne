@@ -612,6 +612,10 @@
   (and (equal? (.port.name a) (.port.name b))
        (equal? (.event.name a) (.event.name b))))
 
+(define-method (ast:equal? (a <trigger>) (b <trigger>))
+  (and (equal? (.port.name a) (.port.name b))
+       (equal? (.event.name a) (.event.name b))))
+
 (define-method (ast:type (o <action>))
   ((compose ast:type .event) o))
 (define-method (ast:type (o <call>))
