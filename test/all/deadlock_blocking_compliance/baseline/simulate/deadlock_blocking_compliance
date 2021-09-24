@@ -1,0 +1,4 @@
+test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: error: non-compliance
+h.hello
+h.world
+<compliance>
