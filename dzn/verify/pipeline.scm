@@ -69,28 +69,6 @@
   (let ((alphabet '("inevitable" "optional")))
     (string-join alphabet ",")))
 
-(define (enum-literal->event o)
-  (string-append (makreel:name (.type o)) ":" (.field o)))
-
-(define (event-returns event)
-  (let ((type (ast:type event)))
-    (match type
-      (($ <bool>)
-       '("false" "true"))
-      (($ <enum>)
-       (map enum-literal->event (makreel:enum-fields type)))
-      (($ <int>)
-       (let* ((range (.range type))
-              (from (.from range)))
-         (map number->string (iota (1+ (- (.to range) from)) from))))
-      (($  <void>)
-       '("return")))))
-
-(define (event-alpabet event)
-  (cons* (.name event)
-         (string-append "qout." (.name event))
-         (event-returns event)))
-
 (define (component-taus model)
   (let ((ports (ast:required+async model)))
     (string-join (map makreel:.name ports) ",")))
@@ -103,20 +81,56 @@
         (list (string-append port-name ".optional") (string-append port-name ".inevitable"))))
     (string-join (append-map port-exclude-taus ports) ",")))
 
+(define (event-alphabet event)
+  "Return the labels that may be used in an LTS for EVENT."
+  (define (event-returns event)
+    "Return the labels that may be used in an LTS for at the return of
+EVENT."
+    (define (enum-literal->event o)
+      (string-append (makreel:name (.type o)) ":" (.field o)))
+    (let ((type (ast:type event)))
+      (match type
+        (($ <bool>)
+         '("false" "true"))
+        (($ <enum>)
+         (map enum-literal->event (makreel:enum-fields type)))
+        (($ <int>)
+         (let* ((range (.range type))
+                (from (.from range)))
+           (map number->string (iota (1+ (- (.to range) from)) from))))
+        (($  <void>)
+         (if (ast:out? event) '()
+             '("return"))))))
+  (let ((event-name (.name event)))
+    `("<flush>"
+      ,event-name
+      ,@(event-returns event)
+      ,@(if (ast:in? event) '()
+            `(,(string-append "qout." event-name))))))
+
 (define (compliance-taus model)
-  (define (provides-taus port)
-    (let ((port-name (makreel:.name port)))
-      (map (cute string-append port-name "." <>) '("inevitable" "optional"))))
-  (define (requires-taus port)
-    (let* ((interface (.type port))
-           (port-name (makreel:.name port))
-           (alphabet (append-map event-alpabet (ast:event* interface)))
-           (alphabet (cons* "<flush>"  "inevitable" "optional" "qout.ack" alphabet)))
-      (map (cute string-append port-name "." <>) alphabet)))
-  (let* ((provides-ports (ast:provides-port* model))
-         (requires-ports (ast:required+async model))
-         (taus (append (append-map provides-taus provides-ports)
-                       (append-map requires-taus requires-ports))))
+  "Return the list of events to hide, i.e. map to tau, for the provides
+compliance check of MODEL: the requires-out triggers and requires-in
+actions."
+  (define (events-trigger/action o)
+    (map (cute string-append (makreel:.name (.port o)) "." <>)
+         (event-alphabet (.event o))))
+  (let* ((behaviour (.behaviour model))
+         (compound (.statement behaviour))
+         (trigger-lists (tree-collect-filter
+                         (disjoin (is? <declarative>)
+                                  (is? <triggers>))
+                         (is? <triggers>)
+                         compound))
+         (out-triggers (filter ast:out?
+                               (append-map ast:trigger* trigger-lists)))
+         (in-actions (filter ast:in?
+                             (tree-collect-filter
+                              (negate (is? <location>)) (is? <action>)
+                              behaviour)))
+         (taus (delete-duplicates
+                (append-map events-trigger/action
+                            (append out-triggers in-actions)))))
     (string-join taus ",")))
 
 (define (deterministic-labels component)
