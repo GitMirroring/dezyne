@@ -1,0 +1,7 @@
+model: deadlock_blocking_flush
+h.hello
+w.hello
+w.world
+w.return
+h.world
+<deadlock>

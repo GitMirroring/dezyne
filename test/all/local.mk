@@ -182,10 +182,11 @@ REGRESSION_TESTS =				\
  %D%/compound_local_assign_call			\
  %D%/data_full					\
  %D%/deadlock_optional_out_only			\
- %D%/deadlock_blocking_replies			\
+ %D%/deadlock_blocking_flush			\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
+ %D%/deadlock_blocking_replies			\
  %D%/deadlock_port_blocked			\
  %D%/dollars					\
  %D%/empty_dollars				\

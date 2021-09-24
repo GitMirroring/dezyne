@@ -1,0 +1,7 @@
+h.hello
+w.hello
+w.world
+w.return
+h.world
+test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:43:3: error: deadlock
+<deadlock>
