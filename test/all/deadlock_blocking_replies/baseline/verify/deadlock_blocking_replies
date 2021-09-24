@@ -1,0 +1,5 @@
+model: deadlock_blocking_replies
+h.hello
+h.true
+h.bye
+<deadlock>

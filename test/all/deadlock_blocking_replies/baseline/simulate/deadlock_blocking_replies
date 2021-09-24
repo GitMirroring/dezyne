@@ -1,0 +1,5 @@
+h.hello
+h.true
+h.bye
+test/all/deadlock_blocking_replies/deadlock_blocking_replies.dzn:42:3: error: deadlock
+<deadlock>
