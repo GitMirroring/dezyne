@@ -1,5 +1,16 @@
-h.hello
-w.hello
-w.world
-w.return
-w.hello
+(header ((h) ihello provides) ((sut) livelock_component component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.world <- ...
+sut.w.hello -> ...
+... -> <external>.w.hello
+(trail "h.hello" "w.hello" "w.world" "w.return" "w.hello")
+(labels "h.hello" "w.world" "w.bye")
+(eligible "w.world" "w.bye")

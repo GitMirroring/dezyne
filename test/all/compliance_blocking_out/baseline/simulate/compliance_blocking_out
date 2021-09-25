@@ -1,4 +1,10 @@
+(header ((h) ihello provides) ((sut) compliance_blocking_out component) ((w) iworld requires))
 test/all/compliance_blocking_out/compliance_blocking_out.dzn:50:43: error: non-compliance
-h.hello
-h.planet
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.planet
 <compliance>
+test/all/compliance_blocking_out/compliance_blocking_out.dzn:50:43: error: non-compliance
+(trail "h.hello" "h.planet" "<compliance>")
+(labels "h.hello" "w.world")
+(eligible)

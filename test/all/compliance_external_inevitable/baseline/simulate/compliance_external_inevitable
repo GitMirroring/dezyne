@@ -1,12 +1,29 @@
-h.hello
-w.hello
-w.return
-h.return
-h.bye
-w.bye
-w.return
-h.return
+(header ((h) ihello provides) ((sut) compliance_external_inevitable component) ((w) ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "w.hello" "w.return" "h.return")
+<external>.h.bye -> ...
+... -> sut.h.bye
+sut.w.bye -> ...
+... -> <external>.w.bye
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.bye" "w.bye" "w.return" "h.return")
 test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:75:21: error: non-compliance
-w.cruel
-h.cruel
+... <- sut.<q>
+sut.w.cruel <- ...
+... <- sut.h.cruel
+<external>.h.cruel <- ...
 <compliance>
+test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:75:21: error: non-compliance
+(trail "w.cruel" "h.cruel" "<compliance>")
+(labels "h.hello" "h.bye" "w.cruel" "w.world")
+(eligible)

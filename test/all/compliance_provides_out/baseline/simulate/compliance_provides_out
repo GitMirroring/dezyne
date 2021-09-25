@@ -1,5 +1,12 @@
+(header ((p) i provides) ((sut) compliance_provides_out component))
 test/all/compliance_provides_out/compliance_provides_out.dzn:42:19: error: non-compliance
-p.hello
-p.planet
-p.return
+<external>.p.hello -> ...
+... -> sut.p.hello
+... <- sut.p.planet
+... <- sut.p.return
+<external>.p.return <- ...
 <compliance>
+test/all/compliance_provides_out/compliance_provides_out.dzn:42:19: error: non-compliance
+(trail "p.hello" "p.planet" "p.return" "<compliance>")
+(labels "p.hello")
+(eligible)

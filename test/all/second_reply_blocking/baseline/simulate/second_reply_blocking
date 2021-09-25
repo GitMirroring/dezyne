@@ -1,6 +1,17 @@
+(header ((p) I provides) ((sut) second_reply_blocking component) ((r) II requires))
 test/all/second_reply_blocking/second_reply_blocking.dzn:56:32: error: second-reply
-p.e
-r.e
-r.return
-r.cb
+<external>.p.e -> ...
+... -> sut.p.e
+sut.r.e -> ...
+... -> <external>.r.e
+... <- <external>.r.return
+sut.r.return <- ...
+... <- <external>.r.cb
+sut.<q> <- ...
+... <- sut.<q>
+sut.r.cb <- ...
 <second-reply>
+test/all/second_reply_blocking/second_reply_blocking.dzn:56:32: error: second-reply
+(trail "p.e" "r.e" "r.return" "r.cb" "<second-reply>")
+(labels "p.e" "r.cb")
+(eligible)

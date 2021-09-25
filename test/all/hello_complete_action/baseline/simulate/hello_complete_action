@@ -1,6 +1,18 @@
-h.hello
-w.hello
-w.cruel
-w.return
-h.cruel
-h.return
+(header ((h) ihello provides) ((sut) hello_complete_action component) ((w) ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.cruel
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.cruel <- ...
+... <- sut.h.cruel
+<external>.h.cruel <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "w.hello" "w.cruel" "w.return" "h.cruel" "h.return")
+(labels "h.hello" "w.cruel" "w.world")
+(eligible "h.hello")

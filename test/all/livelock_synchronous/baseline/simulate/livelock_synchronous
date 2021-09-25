@@ -1,12 +1,31 @@
-test/all/livelock_synchronous/livelock_synchronous.dzn:44:5: error: livelock
-h.hello
-w.hello
-w.world
-w.return
-w.hello
-w.world
-w.return
-w.hello
-w.world
-w.return
+(header ((h) ihello provides) ((sut) livelock_synchronous component) ((w) iworld requires))
+test/all/livelock_synchronous/livelock_synchronous.dzn:45:5: error: livelock
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.world <- ...
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.world <- ...
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
 <livelock>
+test/all/livelock_synchronous/livelock_synchronous.dzn:45:5: error: livelock
+(trail "h.hello" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "<livelock>")
+(labels "h.hello" "w.world")
+(eligible)

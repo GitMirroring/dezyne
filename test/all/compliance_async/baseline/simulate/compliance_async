@@ -1,6 +1,17 @@
-p.e
-p.return
-p.cb
+(header ((p) IAsync provides) ((sut) compliance_async component))
+<external>.p.e -> ...
+... -> sut.p.e
+... <- sut.p.return
+<external>.p.return <- ...
+(trail "p.e" "p.return")
+... <- sut.p.cb
+<external>.p.cb <- ...
+(trail "p.cb")
 test/all/compliance_async/compliance_async.dzn:63:17: error: illegal
-p.e
+<external>.p.e -> ...
+... -> sut.p.e
 <illegal>
+test/all/compliance_async/compliance_async.dzn:63:17: error: illegal
+(trail "p.e" "<illegal>")
+(labels "p.e" "p.c")
+(eligible)

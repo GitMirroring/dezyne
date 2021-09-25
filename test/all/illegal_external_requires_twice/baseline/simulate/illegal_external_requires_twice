@@ -1,9 +1,22 @@
-p.e
-q.e
-q.return
-r.e
-r.return
-p.return
+(header ((p) I provides) ((sut) illegal_external_requires_twice component) ((q) J requires) ((r) J requires))
+<external>.p.e -> ...
+... -> sut.p.e
+sut.q.e -> ...
+... -> <external>.q.e
+... <- <external>.q.return
+sut.q.return <- ...
+sut.r.e -> ...
+... -> <external>.r.e
+... <- <external>.r.return
+sut.r.return <- ...
+... <- sut.p.return
+<external>.p.return <- ...
+(trail "p.e" "q.e" "q.return" "r.e" "r.return" "p.return")
 test/all/illegal_external_requires_twice/illegal_external_requires_twice.dzn:53:3: error: illegal
-q.a
+... <- sut.<q>
+sut.q.a <- ...
 <illegal>
+test/all/illegal_external_requires_twice/illegal_external_requires_twice.dzn:53:3: error: illegal
+(trail "q.a" "<illegal>")
+(labels "p.e" "q.a" "r.a")
+(eligible)

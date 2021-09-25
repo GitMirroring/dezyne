@@ -1,3 +1,9 @@
+(header ((h) ihello provides) ((sut) deadlock_implicit component))
 test/all/deadlock_implicit/deadlock_implicit.dzn:38:3: error: illegal
-h.hello
+<external>.h.hello -> ...
+... -> sut.h.hello
 <illegal>
+test/all/deadlock_implicit/deadlock_implicit.dzn:38:3: error: illegal
+(trail "h.hello" "<illegal>")
+(labels "h.hello")
+(eligible)

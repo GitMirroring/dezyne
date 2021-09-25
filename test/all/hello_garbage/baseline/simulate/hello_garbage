@@ -1,2 +1,7 @@
+(header ((h) ihello provides) ((sut) hello_garbage component))
 test/all/hello_garbage/hello_garbage.dzn:36:1: error: garbage
 <match>
+test/all/hello_garbage/hello_garbage.dzn:36:1: error: garbage
+(trail "<match>")
+(labels "h.hello")
+(eligible)

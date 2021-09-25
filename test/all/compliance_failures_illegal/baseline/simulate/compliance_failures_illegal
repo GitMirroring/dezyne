@@ -1,10 +1,23 @@
-h.hello
-w.hello
-w.return
-h.return
+(header ((h) ihello provides) ((sut) compliance_failures_illegal component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "w.hello" "w.return" "h.return")
 test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:61:5: error: non-compliance
-h.hello
-w.hello
-w.return
-h.return
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
 <compliance>
+test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:61:5: error: non-compliance
+(trail "h.hello" "w.hello" "w.return" "h.return" "<compliance>")
+(labels "h.hello" "w.world")
+(eligible)

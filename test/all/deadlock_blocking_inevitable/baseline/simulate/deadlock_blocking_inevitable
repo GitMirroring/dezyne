@@ -1,6 +1,18 @@
-h.hello
-w.hello
-w.return
-w.world
+(header ((h) ihello provides) ((sut) deadlock_blocking_inevitable component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- <external>.w.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.world <- ...
+(trail "h.hello" "w.hello" "w.return" "w.world")
 test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:40:3: error: deadlock
 <deadlock>
+test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:40:3: error: deadlock
+(trail "<deadlock>")
+(labels "h.hello" "w.world")
+(eligible)

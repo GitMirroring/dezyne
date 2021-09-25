@@ -1,4 +1,11 @@
+(header ((pp) ibool provides) ((sut) compliance_system_provides_bool system) ((sut c) compliance_provides_bool component))
 test/all/compliance_system_provides_bool/compliance_system_provides_bool.dzn:39:5: error: non-compliance
-pp.hello
-pp.false
+<external>.pp.hello -> ...
+... -> sut.c.p.hello
+... <- sut.c.p.false
+<external>.pp.true <- ...
 <compliance>
+test/all/compliance_system_provides_bool/compliance_system_provides_bool.dzn:39:5: error: non-compliance
+(trail "pp.hello" "pp.false" "<compliance>")
+(labels "pp.hello")
+(eligible)

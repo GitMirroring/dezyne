@@ -1,6 +1,17 @@
+(header ((h) ihello provides) ((sut) compliance_provides_illegal4 component) ((w) ihello requires))
 test/all/compliance_provides_illegal4/compliance_provides_illegal4.dzn:46:20: error: illegal
-h.hello
-w.cruel
-w.world
-w.return
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.cruel -> ...
+... -> <external>.w.cruel
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.world <- ...
 <illegal>
+test/all/compliance_provides_illegal4/compliance_provides_illegal4.dzn:46:20: error: illegal
+(trail "h.hello" "w.cruel" "w.world" "w.return" "<illegal>")
+(labels "h.cruel" "h.hello" "w.world")
+(eligible)

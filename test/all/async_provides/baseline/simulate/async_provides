@@ -1,3 +1,11 @@
-h.hello
-h.return
-h.world
+(header ((h) ihello provides) ((sut) async_provides component))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "h.return")
+... <- sut.h.world
+<external>.h.world <- ...
+(trail "h.world")
+(labels "h.hello")
+(eligible "h.hello")

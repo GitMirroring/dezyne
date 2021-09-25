@@ -1,4 +1,11 @@
+(header ((p) iint provides) ((sut) compliance_provides_int component))
 test/all/compliance_provides_int/compliance_provides_int.dzn:40:5: error: non-compliance
-p.hello
-p.0
+<external>.p.hello -> ...
+... -> sut.p.hello
+... <- sut.p.0
+<external>.p.1 <- ...
 <compliance>
+test/all/compliance_provides_int/compliance_provides_int.dzn:40:5: error: non-compliance
+(trail "p.hello" "p.0" "<compliance>")
+(labels "p.hello")
+(eligible)

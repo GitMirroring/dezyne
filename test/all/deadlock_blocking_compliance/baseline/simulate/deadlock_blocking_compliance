@@ -1,4 +1,10 @@
+(header ((h) ihello provides) ((sut) deadlock_blocking_compliance component) ((w) ihello requires))
 test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: error: non-compliance
-h.hello
-h.world
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.world
 <compliance>
+test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: error: non-compliance
+(trail "h.hello" "h.world" "<compliance>")
+(labels "h.hello" "w.world")
+(eligible)

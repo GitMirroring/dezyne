@@ -1,4 +1,12 @@
-iter.map
-list.next
-list.true
-list.next
+(header ((iter) Iterate provides) ((sut) livelock_iterator component) ((list) List requires))
+<external>.iter.map -> ...
+... -> sut.iter.map
+sut.list.next -> ...
+... -> <external>.list.next
+... <- <external>.list.true
+sut.list.true <- ...
+sut.list.next -> ...
+... -> <external>.list.next
+(trail "iter.map" "list.next" "list.true" "list.next")
+(labels "list.false" "list.true")
+(eligible "list.false" "list.true")

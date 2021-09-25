@@ -1,3 +1,9 @@
+(header ((h) ihello provides) ((sut) compliance_implicit_illegal component))
 test/all/compliance_implicit_illegal/compliance_implicit_illegal.dzn:40:3: error: illegal
-h.hello
+<external>.h.hello -> ...
+... -> sut.h.hello
 <illegal>
+test/all/compliance_implicit_illegal/compliance_implicit_illegal.dzn:40:3: error: illegal
+(trail "h.hello" "<illegal>")
+(labels "h.hello" "h.avoid_deadlock")
+(eligible)

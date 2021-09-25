@@ -1,5 +1,15 @@
-pp.ia
-pp.return
-pp.ia
+(header ((pp) Ideadlock_blocking_guard provides) ((sut) deadlock_blocking_guard component))
+<external>.pp.ia -> ...
+... -> sut.pp.ia
+... <- sut.pp.return
+<external>.pp.return <- ...
+(trail "pp.ia" "pp.return")
+<external>.pp.ia -> ...
+... -> sut.pp.ia
+(trail "pp.ia")
 test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:38:3: error: deadlock
 <deadlock>
+test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:38:3: error: deadlock
+(trail "<deadlock>")
+(labels "pp.ia")
+(eligible)

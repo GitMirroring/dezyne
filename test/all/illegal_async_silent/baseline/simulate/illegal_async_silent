@@ -1,8 +1,20 @@
-p.e
-r.e
-r.return
-p.return
+(header ((p) IAsync provides) ((sut) illegal_async_silent component) ((r) IAsync2 requires))
+<external>.p.e -> ...
+... -> sut.p.e
+sut.r.e -> ...
+... -> <external>.r.e
+... <- <external>.r.return
+sut.r.return <- ...
+... <- sut.p.return
+<external>.p.return <- ...
+(trail "p.e" "r.e" "r.return" "p.return")
 test/all/illegal_async_silent/illegal_async_silent.dzn:101:11: error: illegal
-r.f
-r.Res:NOK
+sut.r.f -> ...
+... -> <external>.r.f
+... <- <external>.r.Res:NOK
+sut.r.Res:NOK <- ...
 <illegal>
+test/all/illegal_async_silent/illegal_async_silent.dzn:101:11: error: illegal
+(trail "r.f" "r.Res:NOK" "<illegal>")
+(labels "p.e" "p.c" "r.cb")
+(eligible)

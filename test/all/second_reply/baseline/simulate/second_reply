@@ -1,3 +1,9 @@
+(header ((h) ihello provides) ((sut) second_reply component))
 test/all/second_reply/second_reply.dzn:43:9: error: second-reply
-h.hello
+<external>.h.hello -> ...
+... -> sut.h.hello
 <second-reply>
+test/all/second_reply/second_reply.dzn:43:9: error: second-reply
+(trail "h.hello" "<second-reply>")
+(labels "h.hello")
+(eligible)

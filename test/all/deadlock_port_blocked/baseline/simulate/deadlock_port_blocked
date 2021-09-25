@@ -1,3 +1,9 @@
+(header ((h) ihello provides) ((sut) deadlock_port_blocked component) ((w) iworld requires))
 test/all/deadlock_port_blocked/deadlock_port_blocked.dzn:44:13: error: port `h' is blocked
-h.hello
+<external>.h.hello -> ...
+... -> sut.h.hello
 <deadlock>
+test/all/deadlock_port_blocked/deadlock_port_blocked.dzn:44:13: error: port `h' is blocked
+(trail "h.hello" "<deadlock>")
+(labels "h.hello" "h.cruel" "w.world")
+(eligible)

@@ -1,2 +1,7 @@
+(header ((h) ihello provides) ((sut) incomplete component) ((w) ihello requires))
 test/all/incomplete/incomplete.dzn:37:3: error: deadlock
 <deadlock>
+test/all/incomplete/incomplete.dzn:37:3: error: deadlock
+(trail "<deadlock>")
+(labels "h.hello")
+(eligible)

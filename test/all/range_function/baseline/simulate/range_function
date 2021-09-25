@@ -1,3 +1,9 @@
+(header ((client) range_function provides) ((sut) range_function interface))
 test/all/range_function/range_function.dzn:34:13: error: range-error: invalid value `4' for variable `s'
-e
+<external>.e -> ...
+... -> sut.e
 <range-error>
+test/all/range_function/range_function.dzn:34:13: error: range-error: invalid value `4' for variable `s'
+(trail "e" "<range-error>")
+(labels "e")
+(eligible)

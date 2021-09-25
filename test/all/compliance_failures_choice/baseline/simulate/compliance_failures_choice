@@ -1,6 +1,16 @@
-h.hello
-w.hello
-w.return
-h.return
+(header ((h) ihello provides) ((sut) compliance_failures_choice component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "w.hello" "w.return" "h.return")
 test/all/compliance_failures_choice/compliance_failures_choice.dzn:62:3: error: non-compliance
 <compliance>
+test/all/compliance_failures_choice/compliance_failures_choice.dzn:62:3: error: non-compliance
+(trail "<compliance>")
+(labels "h.hello")
+(eligible)

@@ -1,11 +1,27 @@
-h.hello
-w.hello
-w.return
-h.return
-h.bye
-w.bye
-w.return
-h.return
+(header ((h) ihello provides) ((sut) illegal_pessimism_external component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "w.hello" "w.return" "h.return")
+<external>.h.bye -> ...
+... -> sut.h.bye
+sut.w.bye -> ...
+... -> <external>.w.bye
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.bye" "w.bye" "w.return" "h.return")
 test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:91:3: error: illegal
-w.cruel
+... <- sut.<q>
+sut.w.cruel <- ...
 <illegal>
+test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:91:3: error: illegal
+(trail "w.cruel" "<illegal>")
+(labels "h.hello" "h.bye" "w.cruel" "w.world")
+(eligible)

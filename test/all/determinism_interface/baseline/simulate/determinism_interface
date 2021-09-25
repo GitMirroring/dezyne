@@ -1,5 +1,14 @@
-hello
-world
-return
+(header ((client) determinism_interface provides) ((sut) determinism_interface interface))
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.world
+<external>.world <- ...
+... <- sut.return
+<external>.return <- ...
+(trail "hello" "world" "return")
 test/all/determinism_interface/determinism_interface.dzn:31:3: error: interface is unobservably non-deterministic
 <determinism>
+test/all/determinism_interface/determinism_interface.dzn:31:3: error: interface is unobservably non-deterministic
+(trail "<determinism>")
+(labels "hello")
+(eligible)

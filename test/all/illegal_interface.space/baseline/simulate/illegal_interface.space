@@ -1,4 +1,12 @@
-hello
-return
+(header ((client) illegal_interface.space provides) ((sut) illegal_interface.space interface))
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+(trail "hello" "return")
 test/all/illegal_interface.space/illegal_interface.space.dzn:29:3: error: deadlock
 <deadlock>
+test/all/illegal_interface.space/illegal_interface.space.dzn:29:3: error: deadlock
+(trail "<deadlock>")
+(labels "hello" "world")
+(eligible)

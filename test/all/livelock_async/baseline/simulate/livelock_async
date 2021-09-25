@@ -1,6 +1,17 @@
-h.hello
-h.return
-h.hello
-h.return
+(header ((h) ihello provides) ((sut) livelock_async component))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "h.return")
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "h.return")
 test/all/livelock_async/livelock_async.dzn:39:3: error: livelock
 <livelock>
+test/all/livelock_async/livelock_async.dzn:39:3: error: livelock
+(trail "<livelock>")
+(labels "h.hello")
+(eligible)

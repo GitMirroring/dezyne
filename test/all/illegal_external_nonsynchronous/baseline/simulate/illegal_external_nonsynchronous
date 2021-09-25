@@ -1,7 +1,18 @@
-p.e
-r.e
-r.return
-p.return
+(header ((p) I provides) ((sut) illegal_external_nonsynchronous component) ((r) I requires))
+<external>.p.e -> ...
+... -> sut.p.e
+sut.r.e -> ...
+... -> <external>.r.e
+... <- <external>.r.return
+sut.r.return <- ...
+... <- sut.p.return
+<external>.p.return <- ...
+(trail "p.e" "r.e" "r.return" "p.return")
 test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:66:18: error: illegal
-r.ec
+... <- sut.<q>
+sut.r.ec <- ...
 <illegal>
+test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:66:18: error: illegal
+(trail "r.ec" "<illegal>")
+(labels "p.e" "p.a" "r.ec" "r.ac")
+(eligible)

@@ -415,7 +415,10 @@ output, and standard error as three values."
          (model (or (model? file-name) base-name))
          ;; FIXME: METAs `model' is used for component/system tricksery
          (model base-name)
-         (trace-format (or (trace-format file-name) "event"))
+         (baseline? (file-exists? (string-append baseline "/" base-name)))
+         (trace-format (cond ((trace-format file-name))
+                             (baseline? "trace")
+                             (else "event")))
          (no-determinism? (no-interface-determinism? file-name)))
     (receive (status stdout stderr)
         (observe `("dzn" "simulate"

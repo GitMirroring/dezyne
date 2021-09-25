@@ -1,2 +1,7 @@
+(header ((client) deadlock_optional_out_only provides) ((sut) deadlock_optional_out_only interface))
 test/all/deadlock_optional_out_only/deadlock_optional_out_only.dzn:28:3: error: deadlock
 <deadlock>
+test/all/deadlock_optional_out_only/deadlock_optional_out_only.dzn:28:3: error: deadlock
+(trail "<deadlock>")
+(labels "optional")
+(eligible "optional")

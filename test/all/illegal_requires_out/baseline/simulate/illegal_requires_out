@@ -1,3 +1,11 @@
+(header ((h) ihello provides) ((sut) illegal_requires_out component) ((w) ihello requires))
 test/all/illegal_requires_out/illegal_requires_out.dzn:44:19: error: illegal
-w.world
+... <- <external>.w.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.world <- ...
 <illegal>
+test/all/illegal_requires_out/illegal_requires_out.dzn:44:19: error: illegal
+(trail "w.world" "<illegal>")
+(labels "h.hello" "w.world")
+(eligible)

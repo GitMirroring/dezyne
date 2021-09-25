@@ -1,3 +1,9 @@
+(header ((client) deadlock_reply_modeling provides) ((sut) deadlock_reply_modeling interface))
 test/all/deadlock_reply_modeling/deadlock_reply_modeling.dzn:33:26: error: deadlock
-world
+... <- sut.world
+<external>.world <- ...
 <deadlock>
+test/all/deadlock_reply_modeling/deadlock_reply_modeling.dzn:33:26: error: deadlock
+(trail "world" "<deadlock>")
+(labels "hello" "optional")
+(eligible)

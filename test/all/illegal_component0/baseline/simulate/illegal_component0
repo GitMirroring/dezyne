@@ -1,5 +1,13 @@
+(header ((i) I provides) ((sut) illegal_component0 component) ((ii) I requires))
 test/all/illegal_component0/illegal_component0.dzn:39:41: error: illegal
-i.e
-ii.e
-ii.return
+<external>.i.e -> ...
+... -> sut.i.e
+sut.ii.e -> ...
+... -> <external>.ii.e
+... <- <external>.ii.return
+sut.ii.return <- ...
 <illegal>
+test/all/illegal_component0/illegal_component0.dzn:39:41: error: illegal
+(trail "i.e" "ii.e" "ii.return" "<illegal>")
+(labels "i.e")
+(eligible)

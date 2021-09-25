@@ -1,11 +1,27 @@
-h.hello
-w.hello
-w.return
-h.return
-h.bye
-w.bye
-w.return
-h.return
+(header ((h) ihello provides) ((sut) illegal_external_inevitable component) ((w) ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "w.hello" "w.return" "h.return")
+<external>.h.bye -> ...
+... -> sut.h.bye
+sut.w.bye -> ...
+... -> <external>.w.bye
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.bye" "w.bye" "w.return" "h.return")
 test/all/illegal_external_inevitable/illegal_external_inevitable.dzn:68:3: error: illegal
-w.world
+... <- sut.<q>
+sut.w.world <- ...
 <illegal>
+test/all/illegal_external_inevitable/illegal_external_inevitable.dzn:68:3: error: illegal
+(trail "w.world" "<illegal>")
+(labels "h.hello" "h.bye" "w.world" "w.cruel")
+(eligible)

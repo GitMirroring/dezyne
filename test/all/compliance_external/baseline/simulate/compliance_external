@@ -1,7 +1,18 @@
-h.hello
-w.hello
-w.return
-h.return
+(header ((h) ihello provides) ((sut) compliance_external component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "w.hello" "w.return" "h.return")
 test/all/compliance_external/compliance_external.dzn:43:13: error: illegal
-h.hello
+<external>.h.hello -> ...
+... -> sut.h.hello
 <illegal>
+test/all/compliance_external/compliance_external.dzn:43:13: error: illegal
+(trail "h.hello" "<illegal>")
+(labels "h.hello" "w.world")
+(eligible)

@@ -1,23 +1,60 @@
-console.arm
-sensor.enable
-sensor.return
-console.return
-sensor.triggered
-console.detected
-siren.turnon
-siren.return
-console.disarm
-sensor.disable
-sensor.return
-console.return
-sensor.disabled
-console.deactivated
-console.arm
-sensor.enable
-sensor.return
-console.return
-test/all/Alarm/Alarm.dzn:135:25: error: illegal
-sensor.triggered
-console.detected
-siren.turnon
+(header ((console) IConsole provides) ((sut) Alarm component) ((sensor) ISensor requires) ((siren) ISiren requires))
+<external>.console.arm -> ...
+... -> sut.console.arm
+sut.sensor.enable -> ...
+... -> <external>.sensor.enable
+... <- <external>.sensor.return
+sut.sensor.return <- ...
+... <- sut.console.return
+<external>.console.return <- ...
+(trail "console.arm" "sensor.enable" "sensor.return" "console.return")
+... <- <external>.sensor.triggered
+sut.<q> <- ...
+... <- sut.<q>
+sut.sensor.triggered <- ...
+... <- sut.console.detected
+<external>.console.detected <- ...
+sut.siren.turnon -> ...
+... -> <external>.siren.turnon
+... <- <external>.siren.return
+sut.siren.return <- ...
+(trail "sensor.triggered" "console.detected" "siren.turnon" "siren.return")
+<external>.console.disarm -> ...
+... -> sut.console.disarm
+sut.sensor.disable -> ...
+... -> <external>.sensor.disable
+... <- <external>.sensor.return
+sut.sensor.return <- ...
+... <- sut.console.return
+<external>.console.return <- ...
+(trail "console.disarm" "sensor.disable" "sensor.return" "console.return")
+... <- <external>.sensor.disabled
+sut.<q> <- ...
+... <- sut.<q>
+sut.sensor.disabled <- ...
+... <- sut.console.deactivated
+<external>.console.deactivated <- ...
+(trail "sensor.disabled" "console.deactivated")
+<external>.console.arm -> ...
+... -> sut.console.arm
+sut.sensor.enable -> ...
+... -> <external>.sensor.enable
+... <- <external>.sensor.return
+sut.sensor.return <- ...
+... <- sut.console.return
+<external>.console.return <- ...
+(trail "console.arm" "sensor.enable" "sensor.return" "console.return")
+test/all/Alarm/Alarm.dzn:136:25: error: illegal
+... <- <external>.sensor.triggered
+sut.<q> <- ...
+... <- sut.<q>
+sut.sensor.triggered <- ...
+... <- sut.console.detected
+<external>.console.detected <- ...
+sut.siren.turnon -> ...
+... -> <external>.siren.turnon
 <illegal>
+test/all/Alarm/Alarm.dzn:136:25: error: illegal
+(trail "sensor.triggered" "console.detected" "siren.turnon" "<illegal>")
+(labels "console.arm" "console.disarm" "sensor.triggered" "sensor.disabled")
+(eligible)

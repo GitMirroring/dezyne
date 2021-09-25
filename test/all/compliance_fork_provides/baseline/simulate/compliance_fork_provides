@@ -1,4 +1,9 @@
+(header ((p_left) ihello provides) ((p_right) ihello provides) ((sut) compliance_fork_provides component))
 test/all/compliance_fork_provides/compliance_fork_provides.dzn:43:25: error: non-compliance
-p_left.hello
-p_right.world
+... -> sut.p_left.hello
+... <- sut.p_right.world
 <compliance>
+test/all/compliance_fork_provides/compliance_fork_provides.dzn:43:25: error: non-compliance
+(trail "p_left.hello" "p_right.world" "<compliance>")
+(labels "p_left.hello" "p_right.hello")
+(eligible)

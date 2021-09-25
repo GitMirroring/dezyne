@@ -1,8 +1,19 @@
+(header ((h) ihello provides) ((sut) queuefull_component0 component) ((w) ihello requires))
 test/all/queuefull_component0/queuefull_component0.dzn:33:34: error: queue-full in component "queuefull_component0"
-h.hello
-w.hello
-w.world
-w.world
-w.world
-w.world
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.world
+sut.<q> <- ...
 <queue-full>
+test/all/queuefull_component0/queuefull_component0.dzn:33:34: error: queue-full in component "queuefull_component0"
+(trail "h.hello" "w.hello" "w.world" "w.world" "w.world" "w.world" "<queue-full>")
+(labels "h.hello" "w.world")
+(eligible)

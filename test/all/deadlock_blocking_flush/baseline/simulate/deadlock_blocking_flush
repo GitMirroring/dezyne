@@ -1,7 +1,20 @@
-h.hello
-w.hello
-w.world
-w.return
-h.world
+(header ((h) ihello provides) ((sut) deadlock_blocking_flush component) ((w) ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.world <- ...
+... <- sut.h.world
+<external>.h.world <- ...
+(trail "h.hello" "w.hello" "w.world" "w.return" "h.world")
 test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:43:3: error: deadlock
 <deadlock>
+test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:43:3: error: deadlock
+(trail "<deadlock>")
+(labels "h.hello" "w.world" "w.cruel")
+(eligible)

@@ -1,4 +1,11 @@
+(header ((h) ihello provides) ((sut) missing_reply component))
 test/all/missing_reply/missing_reply.dzn:40:5: error: missing-reply: bool reply expected
-h.hello
-h.return
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.true <- ...
 <missing-reply>
+test/all/missing_reply/missing_reply.dzn:40:5: error: missing-reply: bool reply expected
+(trail "h.hello" "h.return" "<missing-reply>")
+(labels "h.hello")
+(eligible)

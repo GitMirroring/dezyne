@@ -1,4 +1,12 @@
-h.hello
-w.hello
-w.false
-h.false
+(header ((h) ihello provides) ((sut) hello_choice_reply component) ((w) ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.false
+sut.w.false <- ...
+... <- sut.h.false
+<external>.h.false <- ...
+(trail "h.hello" "w.hello" "w.false" "h.false")
+(labels "h.hello")
+(eligible "h.hello")

@@ -1,3 +1,9 @@
+(header ((client) range_assign provides) ((sut) range_assign interface))
 test/all/range_assign/range_assign.dzn:35:7: error: range-error: invalid value `4' for variable `state'
-e
+<external>.e -> ...
+... -> sut.e
 <range-error>
+test/all/range_assign/range_assign.dzn:35:7: error: range-error: invalid value `4' for variable `state'
+(trail "e" "<range-error>")
+(labels "e")
+(eligible)

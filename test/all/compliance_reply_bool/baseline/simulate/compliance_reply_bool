@@ -1,10 +1,24 @@
-h.hello
-w.bye
-w.true
-h.true
+(header ((h) ihello provides) ((sut) compliance_reply_bool component) ((w) ihello requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.bye -> ...
+... -> <external>.w.bye
+... <- <external>.w.true
+sut.w.true <- ...
+... <- sut.h.true
+<external>.h.true <- ...
+(trail "h.hello" "w.bye" "w.true" "h.true")
 test/all/compliance_reply_bool/compliance_reply_bool.dzn:47:10: error: non-compliance
-h.hello
-w.bye
-w.false
-h.false
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.bye -> ...
+... -> <external>.w.bye
+... <- <external>.w.false
+sut.w.false <- ...
+... <- sut.h.false
+<external>.h.true <- ...
 <compliance>
+test/all/compliance_reply_bool/compliance_reply_bool.dzn:47:10: error: non-compliance
+(trail "h.hello" "w.bye" "w.false" "h.false" "<compliance>")
+(labels "h.hello" "h.bye")
+(eligible)

@@ -1,4 +1,11 @@
+(header ((h) ihello provides) ((sut) illegal_system_requires system) ((sut c) compliance_requires_illegal component) ((w) ihello requires))
 test/all/illegal_system_requires/illegal_system_requires.dzn:32:15: error: illegal
-h.hello
-w.cruel
+<external>.h.hello -> ...
+... -> sut.c.hh.hello
+sut.c.ww.cruel -> ...
+... -> <external>.w.cruel
 <illegal>
+test/all/illegal_system_requires/illegal_system_requires.dzn:32:15: error: illegal
+(trail "h.hello" "w.cruel" "<illegal>")
+(labels "h.hello" "h.cruel")
+(eligible)
