@@ -12,6 +12,9 @@
     indirectly observable by the client.
   - The new option `--no-interface-determinism' can be used to disable
     this check on `dzn verify' and `dzn simulate'.
+  - The deadlock check in the simulator no longer performs a full
+    (expensive) run of all events, greatly improving the performance for
+    some models.
   - A bug in the simulator was fixed that lead to quadratic duplication
     of identical traces for each extra event on the input, with dramatic
     impact on performance ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/52][#52]]).

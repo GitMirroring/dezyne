@@ -439,7 +439,8 @@ of traces, possibly marked with <compliance-error>."
     (define (event->label-traces pc event)
       (let* ((pc (clone pc #:trail '()))
              (pc (reset-replies pc))
-             (traces (parameterize ((%exploring? #t))
+             (traces (parameterize ((%exploring? #t)
+                                    (%liveness? #t))
                        (run-to-completion* pc event))))
         (cons event traces)))
     (define (async-trace->alist trace)
@@ -455,14 +456,16 @@ of traces, possibly marked with <compliance-error>."
   (define (provides-event->label-traces pc event)
     (let* ((pc (clone pc #:trail '()))
            (pc (reset-replies pc))
-           (traces (parameterize ((%exploring? #t))
+           (traces (parameterize ((%exploring? #t)
+                                  (%liveness? #t))
                      (run-to-completion* pc event))))
       (cons event traces)))
 
   (define (requires-event->label-traces pc event)
     (let* ((pc (clone pc #:trail '()))
            (pc (reset-replies pc))
-           (traces (parameterize ((%exploring? #t))
+           (traces (parameterize ((%exploring? #t)
+                                  (%liveness? #t))
                      (run-to-completion* pc event)))
            (trails (map trace->string-trail traces)))
       (fold
@@ -511,7 +514,8 @@ of traces, possibly marked with <compliance-error>."
   (let* ((eligible-traces
           (filter (match-lambda
                     ((event (pcs tails ...) ...)
-                     (find (disjoin (is-status? <livelock-error>)
+                     (find (disjoin (is-status? <end-of-trail>)
+                                    (is-status? <livelock-error>)
                                     (negate .status)) pcs)))
                   event-traces-alist))
          (labels (map car eligible-traces))
@@ -555,7 +559,8 @@ of traces, possibly marked with <compliance-error>."
             (valid-pcs-alist (map
                               (match-lambda
                                 ((event pcs ...)
-                                 (cons event (filter (disjoin (is-status? <livelock-error>)
+                                 (cons event (filter (disjoin (is-status? <end-of-trail>)
+                                                              (is-status? <livelock-error>)
                                                               (negate .status))
                                                      pcs))))
                               pcs-alist))

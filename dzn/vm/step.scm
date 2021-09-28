@@ -36,7 +36,8 @@
   #:use-module (dzn vm normalize)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
-  #:export (begin-step
+  #:export (%liveness?
+            begin-step
             step))
 
 ;;; Commentary:
@@ -44,6 +45,9 @@
 ;;; ’step’ implements single stepping the Dezyne vm.
 ;;;
 ;;; Code:
+
+;; Are we running the "livess" check?
+(define %liveness? (make-parameter #f))
 
 ;;;
 ;;; A ’step’ run starts by inserting an EVENT (’coin’) in BEGIN-STEP.
@@ -127,15 +131,34 @@
   (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (map (cut clone pc #:statement <>) (ast:statement* o)))
 
+(define (mark-liveness? pc statement)
+  (and (%liveness?)
+       (is-a? (.instance pc) <runtime:component>)
+       (not (is-a? statement <compound>))
+       (not (is-a? statement <illegal>))
+       (ast:imperative? statement)
+       (let* ((pc (clone pc #:status (make <end-of-trail>))))
+         (list pc))))
+
 (define-method (step (pc <program-counter>) (o <guard>))
   (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (if (not (true? (eval-expression pc (.expression o)))) '()
-      (list (continuation pc (list (.statement o))))))
+  (let* ((statement (.statement o))
+         (continuation (continuation pc (list statement)))
+         (statement (.statement continuation)))
+    (cond ((not (true? (eval-expression pc (.expression o))))
+           '())
+          ((mark-liveness? pc statement))
+          (else
+           (list continuation)))))
 
 (define-method (step (pc <program-counter>) (o <on>))
   (%debug "  ~s ~s |~a ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) ((compose trigger->string car ast:trigger*) o))
-  (if (not (find (cute ast:trigger-equal? <> (.trigger pc)) (ast:trigger* o))) '()
-      (list (clone pc #:statement (.statement o)))))
+  (let ((statement (.statement o)))
+    (cond ((not (find (cute ast:trigger-equal? <> (.trigger pc)) (ast:trigger* o)))
+           '())
+          ((mark-liveness? pc statement))
+          (else
+           (list (clone pc #:statement statement))))))
 
 (define-method (step (pc <program-counter>) (o <illegal>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
@@ -143,7 +166,11 @@
 
 (define-method (step (pc <program-counter>) (o <compound>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (list (continuation pc o)))
+  (let* ((continuation (continuation pc o))
+         (statement (.statement continuation)))
+    (cond ((mark-liveness? pc statement))
+          (else
+           (list continuation)))))
 
 (define-method (step (pc <program-counter>) (o <if>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
