@@ -511,7 +511,8 @@ of traces, possibly marked with <compliance-error>."
   (let* ((eligible-traces
           (filter (match-lambda
                     ((event (pcs tails ...) ...)
-                     (find (negate .status) pcs)))
+                     (find (disjoin (is-status? <livelock-error>)
+                                    (negate .status)) pcs)))
                   event-traces-alist))
          (labels (map car eligible-traces))
          (labels (delete-duplicates labels))
@@ -554,7 +555,9 @@ of traces, possibly marked with <compliance-error>."
             (valid-pcs-alist (map
                               (match-lambda
                                 ((event pcs ...)
-                                 (cons event (filter (negate .status) pcs))))
+                                 (cons event (filter (disjoin (is-status? <livelock-error>)
+                                                              (negate .status))
+                                                     pcs))))
                               pcs-alist))
             (valid-pcs (append-map cdr valid-pcs-alist)))
        (and (null? valid-pcs)
