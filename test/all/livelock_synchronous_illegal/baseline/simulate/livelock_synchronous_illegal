@@ -1,0 +1,3 @@
+(header ((h) ihello provides) ((sut) livelock_synchronous_illegal component) ((w) iworld requires) ((d) isilly requires))
+(labels "h.hello" "h.cruel" "w.world")
+(eligible "h.cruel" "h.hello")

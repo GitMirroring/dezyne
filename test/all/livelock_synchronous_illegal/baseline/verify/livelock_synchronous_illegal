@@ -1,0 +1,17 @@
+model: livelock_synchronous_illegal
+h.cruel
+d.cruel
+<illegal>
+model: livelock_synchronous_illegal
+h.hello
+w.hello
+w.world
+w.return
+d.hello
+d.E1:D
+w.hello
+w.world
+w.return
+d.world
+d.E2:D
+<livelock>
