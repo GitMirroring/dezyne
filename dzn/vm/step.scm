@@ -86,6 +86,8 @@
   (let* ((pc (push-pc pc trigger instance))
          (pc (set-handling? pc #t))
          (port (.port trigger))
+         (pc (if (and port (ast:provides? port)) (set-reply pc #f)
+                 pc))
          (r:port (and port (runtime:port instance port))))
     (if (not (assoc r:port (.blocked pc))) pc
         (clone pc #:status (make <blocked-error>
@@ -94,7 +96,9 @@
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
-  (push-pc pc trigger instance))
+  (let* ((pc (push-pc pc trigger instance))
+         (pc (set-reply pc #f)))
+    pc))
 
 
 ;;;
@@ -429,6 +433,7 @@
            (type (ast:type trigger))
            (typed? (ast:typed? type))
            (error (make <missing-reply-error> #:ast o #:type type #:message "missing-reply")))
+      (%debug "missing reply\n")
       (list (clone pc #:status error))))
    (else
     (let* ((parent (.parent o))
