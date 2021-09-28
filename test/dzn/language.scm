@@ -36,17 +36,19 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
   #:use-module (srfi srfi-71)
+  #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse complete)
   #:use-module (dzn parse lookup)
   #:use-module (dzn parse tree)
   #:use-module (dzn parse util)
+  #:use-module (dzn shell-util)
   #:use-module (test dzn automake))
 
 (define (resolve-file file-name)
   (let ((dir "test/language"))
-    (if (string-prefix? dir file-name) file-name
+    (if (or (file-exists? file-name) (string-prefix? dir file-name)) file-name
         (string-append dir "/" file-name))))
 
 (define (file-name->text file-name)
@@ -68,12 +70,14 @@
     (values (complete:context root offset) offset)))
 
 (define* (test-complete #:key file-name text line (column 0) offset
+                        (imports '())
                         (file-name->parse-tree (const '())))
   (let* ((ctx offset (test-context #:file-name file-name #:text text
                                    #:line line #:column column
                                    #:offset offset))
          (token      (.tree ctx)))
-    (complete token ctx offset #:file-name->parse-tree file-name->parse-tree)))
+    (complete token ctx offset #:file-name->parse-tree file-name->parse-tree
+              #:imports imports)))
 
 (define* (test-lookup #:key file-name text line (column 0) offset
                       (file-name->parse-tree (const '())))
@@ -739,6 +743,27 @@
 (test-equal "partial-if-expression"
   '("bla" "false" "true")
   (test-complete #:file-name "partial-if-expression.dzn"))
+
+(test-equal "imports"
+  '("import.dzn" "lib/")
+  (test-complete #:file-name "test/language/import/import.dzn"))
+
+(test-equal "imports path"
+  '("import.dzn" "lib.dzn" "lib/")
+  (with-directory-excursion "test/language/import"
+    (test-complete #:file-name "import.dzn" #:imports '("lib"))))
+
+(test-equal "imports lib/"
+  '("import.dzn" "lib/")
+  (test-complete #:file-name "test/language/import/import.dzn" #:line 1 #:column 19))
+
+(test-equal "imports lib"
+  '("lib.dzn")
+  (test-complete #:file-name "test/language/import/lib/lib.dzn"))
+
+(test-equal "imports lib ../"
+  '("../import.dzn" "../lib/")
+  (test-complete #:file-name "test/language/import/lib/lib.dzn" #:line 1 #:column 9))
 
 (test-end)
 

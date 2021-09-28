@@ -34,6 +34,7 @@
   #:use-module (dzn misc)
   #:use-module (dzn parse lookup)
   #:use-module (dzn parse tree)
+  #:use-module (dzn shell-util)
 
   #:export (complete
             complete:context))
@@ -450,6 +451,51 @@
      (delete-duplicates (append bindings components instances ports))
      string<)))
 
+(define (annotate-dir file-name)
+  (if (or (not (directory-exists? file-name))
+          (string-suffix? file-name "/"))
+      file-name
+      (string-append file-name "/")))
+
+(define (dzn-file? file-name)
+  (and (string? file-name)
+       (not (directory-exists? file-name))
+       (string-suffix? ".dzn" file-name)))
+
+(define* (list-dir dir #:key (prefix dir))
+  (let ((dir (annotate-dir dir))
+        (prefix (annotate-dir prefix)))
+    (map (compose (cute strip-prefix prefix <>) annotate-dir)
+         (list-directory dir
+                         (disjoin
+                          dzn-file?
+                          (conjoin (negate (cute member <> '("." "..")))
+                                   (compose
+                                    directory-exists?
+                                    (cute string-append dir "/" <>))))))))
+
+(define (strip-prefix prefix string)
+           (if (and (string? string) (string-prefix? prefix string))
+               (substring string (string-length prefix))
+               string))
+
+(define* (complete:imports o context #:key (imports '()))
+  (let* ((file-name (.file-name o))
+         (root (parent context 'root))
+         (root-file (.file-name root))
+         (dir (dirname root-file))
+         (full-name (string-append (annotate-dir dir) file-name))
+         (path (cons dir imports))
+         (found (search-path path file-name))
+         (found-dir (or (and full-name (directory-exists? full-name))
+                        (and found (directory-exists? found))
+                        (and (directory-exists? (dirname full-name)))))
+         (found-dir (and (not (equal? found-dir ".")) found-dir)))
+    (if found-dir (list-dir found-dir #:prefix dir)
+        (sort (delete-duplicates
+               (append-map list-dir path))
+              string<))))
+
 (define (filter-self context list)
   (let* ((variable (or (is-a? (.tree context) 'formal)
                        (is-a? (.tree context) 'variable)
@@ -458,7 +504,7 @@
          (name (and=> variable tree:dotted-name)))
     (filter (negate (cute equal? <> name)) list)))
 
-(define* (complete:root o context offset #:key debug?)
+(define* (complete:root o context offset #:key debug? (imports '()))
   (when debug?
     (format (current-error-port) "tree:~a\n" o))
   (match o
@@ -478,6 +524,8 @@
      %completion-top)
     ((? (is? 'file-name))
      (complete:root (.tree (.parent context)) (.parent context) offset))
+    ((? (is? 'import))
+     (complete:imports o context #:imports imports))
     ((and (? (is? 'interface))
           (? complete?))
      (cond ((not (.behaviour o))
@@ -798,7 +846,8 @@
 (define* (complete o context offset #:key
                    debug?
                    (file-name->parse-tree (const '()))
+                   (imports '())
                    (resolve-file (lambda args (car args))))
   (parameterize ((%file-name->parse-tree file-name->parse-tree)
                  (%resolve-file resolve-file))
-    (complete:root o context offset #:debug? debug?)))
+    (complete:root o context offset #:debug? debug? #:imports imports)))

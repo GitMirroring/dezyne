@@ -187,4 +187,5 @@ Dezyne language tool for completion and lookup information
             (display "completions:\n"))
           (pretty-print (complete (.tree context) context offset
                                   #:debug? debug?
-                                  #:file-name->parse-tree file-name->parse-tree))))))))
+                                  #:file-name->parse-tree file-name->parse-tree
+                                  #:imports imports))))))))

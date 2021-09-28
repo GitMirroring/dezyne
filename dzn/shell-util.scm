@@ -52,14 +52,15 @@
   (let ((s (stat dir #f)))
     (and s
          (eq? (stat:type s) 'directory)
-         s)))
+         dir)))
 
 (define* (list-directory dir #:optional (predicate identity))
   "Run SCANDIR on dir, using PREDICATE, and prepend DIR to results."
   (let ((dir (if (string-suffix? "/" dir) dir
-                 (string-append dir "/"))))
-    (map (cute string-append dir <>)
-         (scandir dir predicate))))
+                 (string-append dir "/")))
+        (files (scandir dir predicate)))
+    (if (equal? dir "./") files
+        (map (cute string-append dir <>) files))))
 
 (define (mkdir-p dir)
   "Create directory DIR and all its ancestors."
