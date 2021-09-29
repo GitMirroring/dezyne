@@ -143,6 +143,9 @@ ws               <   [ \t]
 (define (message-text-equal? a b)
   (equal? (message-message a) (message-message b)))
 
+(define (message-equal? a b)
+  (equal? (message-line a) (message-line b)))
+
 (define-immutable-record-type <eligible>
   (make-eligible sexp)
   eligible?
@@ -897,7 +900,7 @@ ws               <   [ \t]
          (activities-alist (map (compose list car) instances))
          (communications (filter communication? steps))
          (states (filter state? steps))
-         (messages (delete-duplicates (filter message? steps) message-text-equal?))
+         (messages (delete-duplicates (filter message? steps) message-equal?))
          (error? (find (compose (cute string-prefix? "error:" <>) message-message) messages))
          (messages (if error? messages '())))
 
