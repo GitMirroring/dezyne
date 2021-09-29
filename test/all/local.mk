@@ -122,6 +122,7 @@ REGRESSION_TESTS =				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
  %D%/determinism_async				\
+ %D%/determinism_modeling			\
  %D%/async_order				\
  %D%/async_order2				\
  %D%/async_prio					\
