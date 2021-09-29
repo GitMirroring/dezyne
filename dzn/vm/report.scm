@@ -45,6 +45,7 @@
             display-trace-n
             display-trails
             label->string
+            set-trigger-locations
             step->location
             trace->trail
             trace->string-trail

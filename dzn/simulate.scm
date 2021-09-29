@@ -574,15 +574,127 @@ of traces, possibly marked with <compliance-error>."
                                     (provides-instance-traces-alist pc) <>)
                               traces))))))))
 
-(define (check-silence pcs)
-  (let* ((pcs (append pcs (append-map (cute run-silent <> (%sut)) pcs)))
-         (pcs (delete-duplicates pcs rtc-program-counter-equal?)))
-    (match pcs
-      ((pc) #f)
-      ((pc pc2 rest ...)
-       (let* ((error (make <determinism-error> #:ast (.statement pc) #:message "determinism"))
-              (pc (clone pc #:status error)))
-         (list (list pc)))))))
+(define (check-interface-determinism pcs)
+  "Run labels for PCS and return traces that are unobservably
+nonterministic, or false."
+  (define (optional->inevitable trail)
+    (match trail
+      (("optional" trail ...) `("inevitable" ,@trail))
+      (_ trail)))
+  (define trail-traces-alist
+    (match-lambda ((event traces ...)
+                   (let* ((trails (parameterize ((%modeling? #t))
+                                    (map trace->string-trail traces)))
+                          (trails (map optional->inevitable trails)))
+                     (map cons trails (map list traces))))))
+  (define (mark-determinism trace)
+    (let* ((trace (set-trigger-locations trace))
+           (index (list-index (compose (is? <on>) .statement)
+                              trace))
+           (pc (if index (list-ref trace index)
+                   (car trace)))
+           (index (and=>
+                   (list-index (compose (is? <initial-compound>) .statement)
+                               trace)
+                   1+))
+           (trace (if index (drop trace index)
+                      trace))
+           (error (make <determinism-error>
+                    #:ast (or (.trigger pc)
+                              (.behaviour (runtime:%sut-model)))
+                    #:message "determinism"))
+           (pc (clone pc #:status error)))
+      (cons pc trace)))
+  (define extend-silent-traces
+    (match-lambda
+      (((and ("inevitable") trail) traces ...)
+       (cons trail (append traces (map list pcs))))
+      (trail+traces
+       trail+traces)))
+  (define check-determisistic
+    (match-lambda
+      ((trail traces ...)
+       (let* ((traces
+               (delete-duplicates
+                traces
+                (lambda (a b)
+                  (rtc-program-counter-equal? (car a) (car b))))))
+         (match traces
+           ((trace trace2 rest ...)
+            (map mark-determinism traces))
+           (_ '()))))))
+  (and (pair? (ast:variable* (.behaviour (runtime:%sut-model))))
+       (let* ((event-alist (event-traces-alist pcs))
+              (trail-alists (map trail-traces-alist event-alist))
+              (trail-alist (merge-alist-list (append trail-alists '(()))))
+              (trail-alist (map extend-silent-traces trail-alist))
+              (traces (append-map check-determisistic trail-alist)))
+         (and (pair? traces) traces))))
+
+(define (check-interface-determinism traces)
+  "Determine wether TRACES contain unobservably nonterministic traces,
+possibly after running RUN-SILENT and return them, or false."
+  (define (optional->inevitable event)
+    (if (equal? event "optional") "inevitable"
+        event))
+  (define (trace->trail-traces trace)
+    (let* ((trail (parameterize ((%modeling? #t))
+                    (trace->string-trail trace)))
+           (trail (map optional->inevitable trail)))
+      (cons trail (list trace))))
+  (define (mark-determinism trace)
+    (let* ((trace (set-trigger-locations trace))
+           (index (list-index (compose (is? <on>) .statement)
+                              trace))
+           (pc (if index (list-ref trace index)
+                   (car trace)))
+           (index (and=>
+                   (list-index (compose (is? <initial-compound>) .statement)
+                               trace)
+                   1+))
+           (trace (if index (drop trace index)
+                      trace))
+           (error (make <determinism-error>
+                    #:ast (or (.trigger pc)
+                              (.behaviour (runtime:%sut-model)))
+                    #:message "determinism"))
+           (pc (clone pc #:status error)))
+      (cons pc trace)))
+  (define extend-silent-traces
+    (match-lambda
+      (((and ("inevitable") trail) silent-traces ...)
+       (cons trail (append silent-traces traces)))
+      (trail+traces
+       trail+traces)))
+  (define check-determisistic
+    (match-lambda
+      ((trail traces ...)
+       (let* ((traces
+               (delete-duplicates
+                traces
+                (lambda (a b)
+                  (rtc-program-counter-equal? (car a) (car b))))))
+         (match traces
+           ((trace trace2 rest ...)
+            (map mark-determinism traces))
+           (_ '()))))))
+  (define (check-traces traces)
+    (let* ((trail-alist (map trace->trail-traces traces))
+           (trail-alist (merge-alist-list (list trail-alist '())))
+           (trail-alist (map extend-silent-traces trail-alist))
+           (traces (append-map check-determisistic trail-alist)))
+      (and (pair? traces) traces)))
+  (define (check-silence traces)
+    (let* ((pcs (map last traces))
+           (pcs (map (cute clone <> #:status #f) pcs))
+           (silent-traces (append-map (cute run-silent <> (%sut)) pcs))
+           (traces (append traces silent-traces))
+           (alist (cons '() traces))
+           (traces (check-determisistic alist)))
+      (and (pair? traces) traces)))
+  (and (pair? (ast:variable* (.behaviour (runtime:%sut-model))))
+       (or (check-traces traces)
+           (check-silence traces))))
 
 (define-method (run-state (pc <program-counter>) (state <list>))
   (let ((pc (set-state pc state)))
@@ -824,8 +936,9 @@ status."
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
     (or (and interface-determinism-check?
+             (not status)
              (is-a? (%sut) <runtime:port>)
-             (and=> (check-silence from-pcs)
+             (and=> (check-interface-determinism traces)
                     (cute report <>
                           #:eligible '()
                           #:internal? internal?
@@ -866,6 +979,11 @@ status."
     (let ((event pc (trail-input pc)))
       pc))
 
+  (define (end-of-trail? traces)
+    (and (not (isatty? (current-input-port)))
+         (pair? traces)
+         (not ((%next-input) (caar traces)))))
+
   (let* ((trail (if (and (null? trail)
                          (not (isatty? (current-input-port))))
                     '(#f) trail))
@@ -889,15 +1007,21 @@ status."
                      (traces (map (cute rewrite-trace-head drop-event <>) traces))
                      (list-of-traces (map (cute run-sut <> event) traces))
                      (traces (apply append list-of-traces))
-                     (valid-traces (filter (compose (negate .status) car) traces))
-                     (blocked non-blocked (partition (compose pair? .blocked car)
-                                                     valid-traces))
                      (error-trace? (find (compose
                                           (conjoin .status
                                                    (negate (is-status? <end-of-trail>))
                                                    (negate (is-status? <match-error>)))
                                           car)
-                                         traces)))
+                                         traces))
+                     (traces (or (and interface-determinism-check?
+                                      (not error-trace?)
+                                      (is-a? (%sut) <runtime:port>)
+                                      (end-of-trail? traces)
+                                      (check-interface-determinism traces))
+                                 traces))
+                     (valid-traces (filter (compose (negate .status) car) traces))
+                     (blocked non-blocked (partition (compose pair? .blocked car)
+                                                     valid-traces)))
                 (cond ((or (null? valid-traces)
                            error-trace?)
                        (end-report from-pcs list-of-traces

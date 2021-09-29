@@ -1,1 +1,2 @@
 test/all/determinism_silent/determinism_silent.dzn:28:3: error: interface is unobservably non-deterministic
+test/all/determinism_silent/determinism_silent.dzn:32:12: error: interface is unobservably non-deterministic
