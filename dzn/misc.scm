@@ -86,11 +86,11 @@ guile-json-4 (which produces vectors)."
   (fold
    (lambda (entry result)
      (match entry
-       ((event traces ...)
-        (acons event
-               (append traces
-                       (or (assoc-ref result event) '()))
-               (alist-delete event result)))))
+       ((h t ...)
+        (acons h
+               (append t
+                       (or (assoc-ref result h) '()))
+               (alist-delete h result)))))
    a b))
 
 (define (merge-alist-list alist-list)
