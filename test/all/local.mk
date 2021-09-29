@@ -460,8 +460,7 @@ XFAIL_TESTS =					\
  %D%/foreign_conflict				\
  %D%/import_strip_component			\
  %D%/livelock_synchronous			\
- %D%/livelock_synchronous2			\
- %D%/parse_interface_parens
+ %D%/livelock_synchronous2
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
