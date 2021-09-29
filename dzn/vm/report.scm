@@ -647,7 +647,11 @@ the location of the executed <on>-statement."
                                                   .statement))
                                 trace)
                           .statement))
-               (trigger (and trigger on (clone trigger #:location (.location on))))
+               (triggers (and on (ast:trigger* on)))
+               (on-trigger (and triggers
+                                (find (cute ast:equal? <> trigger) triggers)))
+               (trigger (and trigger on-trigger
+                             (clone trigger #:location (.location on-trigger))))
                (pc (if (not trigger) pc (clone pc #:trigger trigger))))
           (cons pc (loop (cdr trace)))))))
 
