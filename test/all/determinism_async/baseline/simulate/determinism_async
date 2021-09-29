@@ -5,10 +5,10 @@
 <external>.h.return <- ...
 (trail "h.hello" "h.return")
 test/all/determinism_async/determinism_async.dzn:54:19: error: component is non-deterministic due to overlapping guards
-test/all/determinism_async/determinism_async.dzn:54:19: error: component is non-deterministic due to overlapping guards
+test/all/determinism_async/determinism_async.dzn:55:19: error: component is non-deterministic due to overlapping guards
 <determinism>
 test/all/determinism_async/determinism_async.dzn:54:19: error: component is non-deterministic due to overlapping guards
-test/all/determinism_async/determinism_async.dzn:54:19: error: component is non-deterministic due to overlapping guards
+test/all/determinism_async/determinism_async.dzn:55:19: error: component is non-deterministic due to overlapping guards
 (trail "<determinism>")
 (labels "h.hello")
 (eligible)

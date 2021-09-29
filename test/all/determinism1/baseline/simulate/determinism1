@@ -5,12 +5,12 @@
 <external>.i.return <- ...
 (trail "i.e" "i.return")
 test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
-test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
+test/all/determinism1/determinism1.dzn:46:14: error: component is non-deterministic due to overlapping guards
 <external>.i.e -> ...
 ... -> sut.i.e
 <determinism>
 test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
-test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
+test/all/determinism1/determinism1.dzn:46:14: error: component is non-deterministic due to overlapping guards
 (trail "i.e" "<determinism>")
 (labels "i.e")
 (eligible)

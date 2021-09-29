@@ -1,2 +1,2 @@
 test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
-test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
+test/all/determinism1/determinism1.dzn:46:14: error: component is non-deterministic due to overlapping guards
