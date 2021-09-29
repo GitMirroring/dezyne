@@ -35,14 +35,11 @@ HELLO_TESTS =					\
  %D%/compliance0				\
  %D%/compliance_external			\
  %D%/deadlock_component0			\
- %D%/deadlock_component1			\
  %D%/deadlock_implicit				\
  %D%/deadlock_interface0			\
- %D%/deadlock_interface1			\
  %D%/determinism0				\
  %D%/determinism1				\
  %D%/determinism_interface			\
- %D%/determinism_silent				\
  %D%/hello_alpha				\
  %D%/hello_async				\
  %D%/hello_block				\
@@ -121,8 +118,11 @@ REGRESSION_TESTS =				\
  %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
+ %D%/deadlock_component1			\
+ %D%/deadlock_interface1			\
  %D%/determinism_async				\
  %D%/determinism_modeling			\
+ %D%/determinism_silent				\
  %D%/async_order				\
  %D%/async_order2				\
  %D%/async_prio					\
