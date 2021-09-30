@@ -1250,7 +1250,10 @@
           (and formal (.direction formal))))))
 
 (define-method (.type (o <instance>))
-  (ast:lookup o (.type.name o)))
+  (let* ((name (.type.name o))
+         (found (ast:lookdown (.parent o) name)))
+    (if (pair? found) (car found)
+        (ast:lookup o name))))
 
 (define-method (.type (o <port>))
   (ast:lookup o (.type.name o)))
