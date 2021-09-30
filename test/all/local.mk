@@ -287,6 +287,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_system_requires			\
  %D%/importPath					\
  %D%/import_strip_component			\
+ %D%/imported.space				\
  %D%/incomplete					\
  %D%/inevitable_performance			\
  %D%/injected_dangling				\
