@@ -857,10 +857,11 @@
           (throw 'error (format #f "No such model: ~s" model-name)))
         model))
      (else
-      (or (let ((systems (filter (is? <system>) models)))
-            (find (negate ast:instance?) systems))
-          (find (is? <component>) models)
-          (find (is? <interface>) models))))))
+      (let ((models (filter (negate ast:imported?) models)))
+        (or (let ((systems (filter (is? <system>) models)))
+              (find (negate ast:instance?) systems))
+            (find (is? <component>) models)
+            (find (is? <interface>) models)))))))
 
 (define-method (ast:dotted-name (o <ast>))
   (string-join (ast:full-name o) "."))
