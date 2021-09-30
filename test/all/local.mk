@@ -326,6 +326,7 @@ REGRESSION_TESTS =				\
  %D%/silent_optional_function			\
  %D%/silent_unused_out				\
  %D%/simple.space				\
+ %D%/space.space				\
  %D%/state_deadlock				\
  %D%/step_state					\
  %D%/stress_comment				\
