@@ -866,7 +866,10 @@ status."
     (let ((event pc (trail-input pc)))
       pc))
 
-  (let ((pc (make-pc #:trail trail)))
+  (let* ((trail (if (and (null? trail)
+                         (not (isatty? (current-input-port))))
+                    '(#f) trail))
+         (pc (make-pc #:trail trail)))
     (when (equal? trace "trace")
       (serialize-header (.state pc) (current-output-port))
       (newline))
@@ -1027,7 +1030,7 @@ at the end.  When REFUSALS-CHECK?, run refusals-check at the end."
                     ""))
          (trail trail-model (string->trail+model trail))
          (model-name (or model-name trail-model))
-         (trail (if (and trail? (null? trail)) '(#f) trail)))
+         (trail (if (and trail? (null? trail)) '() trail)))
     (when trail?
       (close-port (current-input-port)))
     (simulate* root trail
