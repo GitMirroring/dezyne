@@ -220,7 +220,8 @@
      ((is-a? other-instance <runtime:component>)
       (list (begin-step pc other-instance trigger)))
      ((runtime:boundary-port? other-port)
-      (let* ((silent-pcs ((@ (dzn vm run) run-silent) pc other-instance))
+      (let* ((silent-traces ((@ (dzn vm run) run-silent) pc other-instance))
+             (silent-pcs (map car silent-traces))
              (pcs (cons pc silent-pcs)))
         (map (cute begin-step <> other-instance trigger) pcs)))
      (ast:injected? port
