@@ -148,7 +148,7 @@ SKIP < !IMPORT . 'import'*")
   (define-peg-string-patterns
     "root <-- (import / dollars / type / namespace / interface / component / EOF)#*
 
-dollars- <- DOLLAR (!DOLLAR !NEWLINE .)* DOLLAR#
+dollars- <- DOLLAR (!DOLLAR .)* DOLLAR#
 
 import <-- IMPORT file-name SEMICOLON#
   file-name <- (!SEMICOLON .)+

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018,2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -22,5 +22,8 @@
 //
 // Code:
 
-$#include "foobar.h"$
+$
+#include "foo.h"
+#include "bar.h"
+$
 extern foobar $foobar$;

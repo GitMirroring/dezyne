@@ -1,4 +1,0 @@
-test/all/newlines_between_dollars/newlines_between_dollars.dzn:20:31: error
-$a newline is not allowed here
-                              ^
-                              `$' expected

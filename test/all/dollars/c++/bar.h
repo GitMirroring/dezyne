@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2020 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -17,5 +17,6 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
-$a newline is not allowed here
-$
+// Commentary:
+//
+// Code:
