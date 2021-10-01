@@ -1,1 +1,1 @@
-test/all/livelock_async/livelock_async.dzn:39:3: error: livelock
+test/all/livelock_async/livelock_async.dzn:44:5: error: livelock

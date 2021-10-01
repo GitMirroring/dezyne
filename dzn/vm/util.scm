@@ -811,26 +811,30 @@
        (equal? (async-ports a) (async-ports b))
        (ast:equal? (.blocked a) (.blocked b))))
 
-(define-method (pc-equal? (pc0 <program-counter>) (pc1 <program-counter>))
-  (and (rtc-program-counter-equal? pc0 pc1)
-       (equal? (and=> (.instance pc0) runtime:instance->path) (and=> (.instance pc1) runtime:instance->path))
-       (pc:ast:eq? (.statement pc0) (.statement pc1))
-       (pc-equal? (.previous pc0) (.previous pc1))))
+(define-method (pc:ast:equal? (a <flush-return>) (b <flush-return>))
+  #t)
 
-(define-method (pc-equal? (pc0 <top>) (pc1 <top>))
-  (eq? pc0 pc1))
+(define-method (pc:ast:equal? (a <trigger-return>) (b <trigger-return>))
+  #t)
+
+(define-method (pc:ast:equal? (a <top>) (b <top>))
+  (ast:eq? a b))
+
+(define-method (pc-equal? (a <program-counter>) (b <program-counter>))
+  (and (eq? (.instance a) (.instance b))
+       (ast:equal? (.status a) (.status b))
+       (pc:ast:equal? (.statement a) (.statement b))
+       (equal? (serialize (.state a)) (serialize (.state b)))
+       (equal? (async-ports a) (async-ports b))
+       (ast:equal? (.blocked a) (.blocked b))
+       (ast:equal? (.external-q a) (.external-q b))
+       (pc-equal? (.previous a) (.previous b))))
+
+(define-method (pc-equal? (a <top>) (b <top>))
+  (eq? a b))
 
 (define (trace-head:eq? a b)
   (pc-equal? (car a) (car b)))
-
-(define-method (pc:ast:eq? (a <flush-return>) (b <flush-return>))
-  #t)
-
-(define-method (pc:ast:eq? (a <trigger-return>) (b <trigger-return>))
-  #t)
-
-(define-method (pc:ast:eq? (a <top>) (b <top>))
-  (ast:eq? a b))
 
 (define-method (async-event? (pc <program-counter>) event)
   (and (string? event) (not (member event (labels))) (pair? (.async pc))))

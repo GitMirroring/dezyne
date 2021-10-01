@@ -165,32 +165,57 @@ mark it with <determinism-error>."
          (pc (clone pc #:status error)))
     (cons pc trace)))
 
-(define (mark-livelock-error trace)
-  (let* ((pc (car trace))
-         (model (runtime:%sut-model))
-         (ast (or (.statement pc)
-                  (if (is-a? model <system>) model
-                      (.behaviour model))))
+(define (mark-livelock-error trace index)
+  (let* ((model (runtime:%sut-model))
+         (ast-model (if (is-a? model <system>) model
+                        (.behaviour model)))
+         (pc-loop (list-ref trace index))
+         (ast-loop (or (.statement pc-loop) ast-model))
+         (loop (make <livelock-error> #:ast ast-loop #:message "loop"))
+         (pc-loop-error (clone pc-loop #:status loop))
+         (trace-prefix trace-suffix (split-at trace index))
+         (shorter-index (and=> (list-index
+                                (cute pc-equal? <> pc-loop)
+                                (reverse trace-prefix))
+                               (cute - (length trace-prefix) <> 1)))
+         (rest shorter-prefix (split-at trace-prefix shorter-index))
+         (pc (car shorter-prefix))
+         (ast (or (.statement pc) ast-model))
          (error (make <livelock-error> #:ast ast #:message "livelock"))
          (pc (clone pc #:status error)))
-    (cons pc (cdr trace))))
+    `(,pc
+      ,@shorter-prefix
+      ,pc-loop-error
+      ,@trace-suffix)))
 
 (define %livelock-threshold (make-parameter 42))
 (define (livelock? trace)
+  "Return the index of the start of the livelock loop, or false.  Use
+%LIVELOCK-THRESHOLD for heuristics to avoid re-evaluating the same
+prefix."
   (define* (trace-head-recurrence? trace)
     (let ((trace (filter
                   (conjoin (compose (is? <runtime:component>) .instance)
-                           (negate (compose (is? <initial-compound>) .statement)))
+                           (negate (compose (is? <initial-compound>) .statement))
+                           (negate (compose (is? <end-of-on>) .statement))
+                           )
                   trace)))
       (and (pair? trace)
-           (find (cute pc-equal? (car trace) <>) (cdr trace)))))
+           (find (cute pc-equal?
+                       (car trace) <>) (reverse (cdr trace))))))
 
   (and (>= (length trace) (%livelock-threshold))
-       (let* ((suffixes (unfold null? identity cdr trace))
-              (trace (find trace-head-recurrence? suffixes)))
-         (when (not trace)
-           (%livelock-threshold (* 2 (%livelock-threshold))))
-         trace)))
+       (let* ((suffixes (reverse (unfold null? identity cdr trace)))
+              (loop (find trace-head-recurrence? suffixes)))
+         (match loop
+           (#f
+            (%livelock-threshold (* 2 (%livelock-threshold)))
+            #f)
+           ((pc tail ...)
+            (let ((index (and=> (list-index (cute pc-equal? <> pc)
+                                            (reverse trace))
+                                (cute - (length trace) <> 1))))
+              index))))))
 
 (define (interactive?)
   (isatty? (current-input-port)))
@@ -211,10 +236,12 @@ program-counters produced by taking a step."
            (clone pc #:status (make <postponed-match> #:ast o #:input input)))))
 
   (let loop ((trace trace))
-    (let* ((pc (car trace))
-           (livelock-trace (and (not (.status pc))
-                                (livelock? trace))))
-      (cond (livelock-trace (list (mark-livelock-error livelock-trace)))
+    (let ((pc (car trace)))
+      (cond ((.status pc)
+             (list trace))
+            ((livelock? trace)
+             =>
+             (compose list (cute mark-livelock-error trace <>)))
             ((rtc? pc) (list trace))
             (else
              (let* ((o (.statement pc))
@@ -509,7 +536,7 @@ until RTC?."
            (list trace))
           ((livelock? trace)
            =>
-           (compose list mark-livelock-error))
+           (compose list (cute mark-livelock-error trace <>)))
           (else
            (let* ((pc (car trace))
                   (traces (flush-async pc trace)))
@@ -543,7 +570,9 @@ until RTC?."
                               traces))
                  (traces (append-map (cute flush-async-trace <> previous-trace) flush))
                  (livelock traces (partition livelock? traces))
-                 (livelock (map (compose mark-livelock-error livelock?) livelock)))
+                 (livelock (map (cute mark-livelock-error <> <>)
+                                livelock
+                                (map livelock? livelock))))
             (append stop
                     livelock
                     traces)))))))

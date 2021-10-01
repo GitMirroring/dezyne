@@ -1,9 +1,10 @@
 (header ((h) ihello provides) ((sut) livelock_recurse component))
-test/all/livelock_recurse/livelock_recurse.dzn:42:7: error: livelock
+test/all/livelock_recurse/livelock_recurse.dzn:41:31: error: livelock
 <external>.h.hello -> ...
 ... -> sut.h.hello
+<loop>
 <livelock>
-test/all/livelock_recurse/livelock_recurse.dzn:42:7: error: livelock
-(trail "h.hello" "<livelock>")
+test/all/livelock_recurse/livelock_recurse.dzn:41:31: error: livelock
+(trail "h.hello" "<loop>" "<livelock>")
 (labels "h.hello")
 (eligible)
