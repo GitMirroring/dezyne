@@ -371,8 +371,11 @@
         (let* ((port (.port action))
                (r:port (runtime:port o port))
                (r:other-port (runtime:other-port r:port))
-               (trigger (action->trigger r:other-port action)))
+               (trigger (and r:other-port
+                             (action->trigger r:other-port action))))
           (cond
+           ((not trigger)
+            (format #f "~a.~a -> ..." (runtime:instance->string r:port) (.event.name action)))
            ((ast:injected? port)
             (format #f "~a.~a -> ..." (runtime:instance->string r:port) (.event.name action)))
            ((ast:out? action)
@@ -446,7 +449,7 @@
 ;;; step predicate
 
 (define-method (pc-step? (o <program-counter>))
-  (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc-event? (.status o))
+  (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc-event? o)
       (pc-step? o (.statement o))))
 
 (define-method (pc-step? (pc <program-counter>) (o <initial-compound>))
@@ -479,8 +482,9 @@
 ;;; step formatting
 
 (define-method (pc->step (o <program-counter>))
-  (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc->event (.status o))
-      (pc->step o (.statement o))))
+  (cons o
+        (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc->event (.status o))
+            (pc->step o (.statement o)))))
 
 (define-method (pc->step (pc <program-counter>) (o <guard>))
   (cons o (format #f "[~a]" (string-trim-both (ast->dzn (.expression o))))))
