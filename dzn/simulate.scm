@@ -540,7 +540,10 @@ of traces, possibly marked with <compliance-error>."
                     (let ((model (runtime:%sut-model)))
                       (if (is-a? model <system>) model
                           (.behaviour model))))))
-      (if (and error (not (is-a? error <implicit-illegal-error>))) pc
+      (if (and error
+               (not (is-a? error <implicit-illegal-error>))
+               (not (is-a? error <end-of-trail>)))
+          pc
           (clone pc #:status (make <deadlock-error> #:ast ast #:message "deadlock")))))
   (let ((event-traces-alist
          (map (match-lambda
@@ -800,7 +803,7 @@ optional labels only and stop when observable event seen."
   "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
 refusals-check.  Run final REPORT and return exit status."
 
-  (define* (deadlock-report pcs traces)
+  (define (deadlock-report pcs traces)
     "Run check-deadlock and report.  Return exit status."
     (let* ((pc (car pcs))
            (event pc ((%next-input) pc))
@@ -826,6 +829,21 @@ refusals-check.  Run final REPORT and return exit status."
                           #f))))
       (and (is-a? status <error>)
            status)))
+
+  (define (interface-deadlock-report pcs traces)
+    "Run deadlock check for all PCs per state."
+    (let ((pcs (if (pair? traces) (map car traces) pcs)))
+      (let loop ((pcs pcs))
+        (match pcs
+          (() #f)
+          ((pc rest ...)
+           (let ((pcs rest
+                      (partition (cute rtc-program-counter-equal? <> pc) pcs))
+                 (traces other
+                         (partition (compose (cute rtc-program-counter-equal? <> pc) car)
+                                    traces)))
+             (or (deadlock-report pcs traces)
+                 (loop rest))))))))
 
   (define (refusals-report from-pcs pc traces)
     "Run check-provides-fork and check-refusals and report.  Return exit
@@ -935,7 +953,13 @@ status."
          (refusals-check? (and refusals-check?
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
-    (or (and interface-determinism-check?
+    (or (and deadlock-check?
+             (is-a? (%sut) <runtime:port>)
+             (interface-deadlock-report from-pcs traces))
+        (and deadlock-check?
+             (not (is-a? (%sut) <runtime:port>))
+             (deadlock-report from-pcs traces))
+        (and interface-determinism-check?
              (not status)
              (is-a? (%sut) <runtime:port>)
              (and=> (check-interface-determinism traces)
@@ -946,8 +970,6 @@ status."
                           #:state? state?
                           #:trace trace
                           #:verbose? verbose?)))
-        (and deadlock-check?
-             (deadlock-report from-pcs traces))
         (and refusals-check? (null? traces)
              (any (cute refusals-report from-pcs <> '()) from-pcs))
         (and refusals-check? (pair? traces)
