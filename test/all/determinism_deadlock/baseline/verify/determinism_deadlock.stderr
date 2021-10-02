@@ -1,0 +1,5 @@
+verify: determinism_deadlock: check: deadlock: fail
+error: deadlock in model determinism_deadlock
+verify: determinism_deadlock: check: livelock: ok
+verify: determinism_deadlock: check: deterministic: fail
+error: interface determinism_deadlock is unobservably non-deterministic

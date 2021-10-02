@@ -1,0 +1,4 @@
+verify: determinism_inevitable: check: deadlock: ok
+verify: determinism_inevitable: check: livelock: ok
+verify: determinism_inevitable: check: deterministic: fail
+error: interface determinism_inevitable is unobservably non-deterministic

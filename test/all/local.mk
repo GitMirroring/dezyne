@@ -121,6 +121,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_component1			\
  %D%/deadlock_interface1			\
  %D%/determinism_async				\
+ %D%/determinism_deadlock			\
  %D%/determinism_modeling			\
  %D%/determinism_silent				\
  %D%/async_order				\

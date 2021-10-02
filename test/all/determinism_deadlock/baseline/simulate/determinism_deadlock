@@ -1,0 +1,7 @@
+(header ((client) determinism_deadlock provides) ((sut) determinism_deadlock interface))
+test/all/determinism_deadlock/determinism_deadlock.dzn:29:3: error: deadlock
+<deadlock>
+test/all/determinism_deadlock/determinism_deadlock.dzn:29:3: error: deadlock
+(trail "<deadlock>")
+(labels "hello" "inevitable")
+(eligible)
