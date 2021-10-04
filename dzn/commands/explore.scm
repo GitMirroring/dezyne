@@ -82,7 +82,7 @@ Explore the state space of a Dezyne model
                  #:backtrace? debug?
                  #:file-name file-name))
          (fmt (option-ref options 'format #f))
-         (queue-size (command-line:get 'queue-size 3))
+         (queue-size (string->number (command-line:get 'queue-size "3")))
          (state-diagram? (option-ref options 'state-diagram #f))
          (lts? (option-ref options 'lts #f)))
     (unless model
