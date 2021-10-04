@@ -34,12 +34,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.13.3
-  - BUGS
-    + verify crash:
-       ./pre-inst-env dzn verify test/all/parse_import_both/parse_import_both.dzn
-    + explore hangup
-       ./pre-inst-env dzn explore test/all/livelock_synchronous_illegal/livelock_synchronous_illegal.dzn
+** Release 2.14
   - Pass regression test
     + XFAIL: alpha_local2
     + XFAIL: external_blocking_livelock
@@ -56,8 +51,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       How to test a <queue-full> without trace?
     + livelock_interface0: Simulator does not see the livelock
       How to find a livelock without a trace?
-
-** Release 2.13.4
   - component behaviour diagram
   - livelock: show loop: <loop>...<livelock>
     + Finish and merge wip-loop
@@ -65,18 +58,19 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       - livelock_component.dzn: "end of trail" (world, world, world ...)
       - livelock_iterator
   - implicit interface illegals
+  - implicit temporary variables
 
-** Release 2.13.5
+** Release 2.15
   - collateral blocking
     + Finish and merge wip-blocking
       - async traces / async_blocking_ranking_disorder
   - Documentation
     + Blocking, thread-safe-shell, external, collateral-block.
 
-** Release 2.13.6
+** Release 2.16
   - async -> defer; deprecate async
 
-** Release 2.14
+** Release 2.17
   - Pass regression test -- shared state
     + FAIL: compliance_provides_bool (deadlock due to compliance error)
     + FAIL: illegal_requires2 (interface constraint with deadlock in interface)
@@ -109,7 +103,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 
   - Fix ambiguities:
     + Puntje van Paul aka Paul sugar aka field test in language
-    + Use before define (see LSP/wcf)?
+    + Use before define (see LSP/wfc)?
 
   - Disable internal tracing in code, such that simulator can reproduce
     the internal tracing (including state).
