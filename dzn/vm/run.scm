@@ -174,6 +174,7 @@ mark it with <determinism-error>."
                   trace)))
       (and (pair? trace)
            (find (cute pc-equal? (car trace) <>) (cdr trace)))))
+
   (and (>= (length trace) (%livelock-threshold))
        (let* ((suffixes (unfold null? identity cdr trace))
               (trace (find trace-head-recurrence? suffixes)))
@@ -313,6 +314,9 @@ PC until RTC?."
       (cond
        ((null? traces)
         '())
+       ((and (%exploring?)
+             (find (compose (is-status? <livelock-error>) car) traces))
+        traces)
        ((every (conjoin (negate (is-status? <postponed-match>))
                         (disjoin rtc? (is-status? <match-error>)))
                pcs)

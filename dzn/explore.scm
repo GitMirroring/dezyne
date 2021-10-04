@@ -120,7 +120,12 @@ recursion.  Return a run-to-completion LTS
       (let ((from (pc->state-number pc)))
         (unless (or (.status pc) (hash-ref lts from))
           (let* ((pc (clone pc #:instance #f #:trail '()))
-                 (traces (append-map (cute run-to-completion** pc <>) labels))
+                 (traces
+                  (let loop ((labels labels) (traces '()))
+                    (if (null? labels) traces
+                        (let ((new (run-to-completion** pc (car labels))))
+                          (if (find (compose (is-status? <livelock-error>) car) new) '()
+                              (loop (cdr labels) (append new traces)))))))
                  (pcs (map car traces)))
             (map pc->state-number pcs)
             (hash-set! lts from (cons pc traces))
