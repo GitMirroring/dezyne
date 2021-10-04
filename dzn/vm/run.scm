@@ -386,8 +386,9 @@ of) TRACE, extending TRACE."
 (define-method (run-flush (pc <program-counter>))
   "Return a list of traces produced by taking steps, starting by flushing (%SUT),
 until RTC?."
-  (let ((pc (flush pc)))
-    (run-to-completion-unmemoized pc)))
+  (if (.status pc) '()
+      (let ((pc (flush pc)))
+        (run-to-completion-unmemoized pc))))
 
 (define-method (run-flush (trace <list>))
   "Return a list of traces produced by RUN-FLUSH, extending TRACE."
