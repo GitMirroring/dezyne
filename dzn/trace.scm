@@ -190,6 +190,9 @@ ws               <   [ \t]
     ((('location location) ('message message))
      (make-message o location message))
 
+    (('message message)
+     (make-message o #f message))
+
     ((('location location) communication)
      (let ((communication (step->communication communication)))
        (and communication
@@ -867,6 +870,14 @@ ws               <   [ \t]
 (define (trace:steps->json steps)
   "Produce P5 JSON output from STEPS."
 
+  (define (loop-message? o)
+    (and (message? o)
+         (equal? (message-message o) "<loop>")))
+
+  (define (marker-message? o)
+    (and (message? o)
+         (string-prefix? "<" (message-message o))))
+
   (define* (instance->lifeline instance activities labels eligible)
     (define (lifeline-label label kind)
       (make-lifeline-label label kind (and (not (equal? label "<back>"))
@@ -898,11 +909,16 @@ ws               <   [ \t]
          (instances (filter (match-lambda ((path name type) (not (eq? type 'system)))) header))
          (sut-name (match (assoc-ref instances '(sut)) ((name kind) (symbol->string name)) (_ #f)))
          (activities-alist (map (compose list car) instances))
-         (communications (filter communication? steps))
+         (communications (filter (disjoin communication? loop-message?) steps))
          (states (filter state? steps))
-         (messages (delete-duplicates (filter message? steps) message-equal?))
+         (messages (filter (conjoin message? (negate marker-message?)) steps))
+         (messages (delete-duplicates messages message-equal?))
          (error? (find (compose (cute string-prefix? "error:" <>) message-message) messages))
-         (messages (if error? messages '())))
+         (messages (if error? messages '()))
+         (sut-path (or (any (match-lambda ((path name type)
+                                           (and (eq? type 'component) path)))
+                            instances)
+                       '(sut))))
 
     ;; loop: cdr through communications, building up activities and events from each communication
     (let loop ((communications communications) (messages messages) (activities activities-alist) (events '()))
@@ -911,11 +927,7 @@ ws               <   [ \t]
        ;; TODO: Add toplevel messages.
        ((and (null? communications)
              (pair? messages))
-        (let* ((sut-path       (or (any (match-lambda ((path name type)
-                                                       (and (eq? type 'component) path)))
-                                        instances)
-                                   '(sut)))
-               (from           sut-path)
+        (let* ((from           sut-path)
                (to             sut-path)
                (time           (length events))
                (key-from       (1+ (* 2 time)))
@@ -945,6 +957,33 @@ ws               <   [ \t]
              (lifelines . ,(list->vector (map lifeline->scm lifelines)))
              (events    . ,(list->vector (map lifeline-event->scm events)))
              (states    . ,(list->vector (map (cute lifeline-state->json-scm sut-name <>) states)))))))
+       ((and (pair? communications)
+             (loop-message?
+              (car communications)))
+        (let* ((message        (car communications))
+               (from           sut-path)
+               (to             sut-path)
+               (time           (length events))
+               (key-from       (1+ (* 2 time)))
+               (key-to         (1+ key-from))
+               (location       (message-location (car messages)))
+               (activity-from  (make-lifeline-activity key-from time location))
+               (activity-to    (make-lifeline-activity key-to time location))
+               (label          "")
+               (type           "error")
+               (event          (make-lifeline-event label key-from key-to type (list message)))
+               (activities     (acons from
+                                      (append (or (assoc-ref activities from) '())
+                                              (list activity-from))
+                                      activities))
+               (activities     (acons to
+                                      (append (or (assoc-ref activities to) '())
+                                              (list activity-to))
+                                      activities)))
+          (loop (cdr communications)
+                messages
+                activities
+                (append events (list event)))))
        (else
         (let* ((communication  (car communications))
                (direction      (communication-direction communication))
@@ -969,6 +1008,10 @@ ws               <   [ \t]
                                        (string-index label #\:))
                                    "return"
                                    direction))
+               (loop-message   (match communications
+                                 ((x (and (? loop-message?) loop-message) rest ...)
+                                  loop-message)
+                                 (_ #f)))
                (event          (make-lifeline-event label key-from key-to type '()))
                (activities     (acons from
                                       (append (or (assoc-ref activities from) '())
