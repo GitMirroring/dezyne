@@ -526,6 +526,8 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                (pc-instance (.instance pc))
                (statement (.statement pc)))
           (cond
+           ((.status pc)
+            (loop (cdr trace) (cons pc result)))
            ((and (pair? result)
                  ((is-status? <compliance-error>) (last result))
                  (is-a? statement <action>)
