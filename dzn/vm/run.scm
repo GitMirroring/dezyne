@@ -211,8 +211,9 @@ program-counters produced by taking a step."
            (clone pc #:status (make <postponed-match> #:ast o #:input input)))))
 
   (let loop ((trace trace))
-    (let ((pc (car trace))
-          (livelock-trace (livelock? trace)))
+    (let* ((pc (car trace))
+           (livelock-trace (and (not (.status pc))
+                                (livelock? trace))))
       (cond (livelock-trace (list (mark-livelock-error livelock-trace)))
             ((rtc? pc) (list trace))
             (else
