@@ -466,9 +466,7 @@ XFAIL_TESTS =					\
  %D%/compound_local_assign_call			\
  %D%/external_blocking_livelock                 \
  %D%/foreign_conflict				\
- %D%/import_strip_component			\
- %D%/livelock_synchronous			\
- %D%/livelock_synchronous2
+ %D%/import_strip_component
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
