@@ -149,7 +149,13 @@
   (let* ((trail (string-join (string-split trail #\,) " "))
          (trail (with-input-from-string trail read-input-file))
          (trail (map ->string trail))
-         (trail (filter (negate (conjoin string? (cute string-prefix? "<" <>))) trail)))
+         (loop-index (list-index (cute equal? <> "<loop>") trail))
+         (trail (filter (negate (conjoin string? (cute string-prefix? "<" <>))) trail))
+         (loop  (and loop-index (call-with-values
+                                    (cute split-at trail loop-index)
+                                  (lambda (a b) b))))
+         (trail (if loop (append trail loop loop)
+                    trail)))
     trail))
 
 (define (string->trail+model trail)
