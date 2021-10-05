@@ -303,6 +303,7 @@ REGRESSION_TESTS =				\
  %D%/livelock_synchronous			\
  %D%/livelock_synchronous2			\
  %D%/livelock_synchronous_illegal		\
+ %D%/livelock_unfold				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\

@@ -1,0 +1,7 @@
+model: livelock_unfold
+h.hello
+<loop>
+w.hello
+w.world
+w.return
+<livelock>
