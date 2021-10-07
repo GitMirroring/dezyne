@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -35,21 +36,9 @@ interface ISensor
 
     on cancel: state = State.Idle;
 
-    [state.Idle]
-    {
-      on prepare: state = State.Ready;
-      on acquire: illegal;
-    }
-    [state.Ready]
-    {
-      on prepare: illegal;
-      on acquire: state = State.Acquire;
-    }
-    [state.Acquire]
-    {
-      on prepare, acquire : illegal;
-      on inevitable: {state = State.Idle; image;}
-    }
+    [state.Idle] on prepare: state = State.Ready;
+    [state.Ready] on acquire: state = State.Acquire;
+    [state.Acquire] on inevitable: {state = State.Idle; image;}
   }
 }
 
@@ -86,24 +75,10 @@ interface IAcquisition
     enum State {Idle, Ready, Acquiring};
     State state = State.Idle;
 
-    on prepare:
-    {
-      [state.Idle] state = State.Ready;
-      [otherwise]  illegal;
-    }
-    on acquire:
-    {
-      [state.Ready] state = State.Acquiring;
-      [otherwise] illegal;
-    }
-    on cancel:
-    {
-      state = State.Idle;
-    }
-    on inevitable:
-    {
-      [state.Acquiring] {state = State.Idle; image;}
-    }
+    on prepare: [state.Idle] state = State.Ready;
+    on acquire: [state.Ready] state = State.Acquiring;
+    on cancel: {state = State.Idle;}
+    on inevitable: [state.Acquiring] {state = State.Idle; image;}
   }
 }
 

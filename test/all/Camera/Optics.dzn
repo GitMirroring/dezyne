@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2019,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,22 +34,21 @@ interface ILens
   {
     bool moving = false;
 
-    [!moving] {
-      on forward: {moving = true;}
-      on backward: {moving = true;}
+    [!moving]
+    {
+      on forward: moving = true;
+      on backward: moving = true;
     }
-    [moving] {
-      on forward: illegal;
-      on backward: illegal;
-      on inevitable: {moving = false; stopped;}
-    }
+    [moving] on inevitable: {moving = false; stopped;}
     on stop: moving = false;
   }
 }
+
 component Lens
 {
   provides ILens port;
 }
+
 interface IFocus
 {
   in void measure();
@@ -59,7 +59,6 @@ interface IFocus
   {
     bool idle = true;
     [idle] on measure: idle = false;
-    [!idle] on measure: illegal;
     on cancel: idle = true;
     [!idle] on optional: {idle = true; maximum;}
   }
@@ -107,7 +106,8 @@ component FocusControl
     IContrast.EContrast contrast_was = IContrast.EContrast.Blurrier;
     [idle] on port.measure(): {idle = false; contrast_was = sensor.measure(); lens.forward();}
     on port.cancel(): {idle = true; lens.stop();}
-    [!idle] on lens.stopped(): {
+    [!idle] on lens.stopped():
+    {
       IContrast.EContrast contrast_is = sensor.measure();
       if(contrast_was.Sharper && contrast_is.Blurrier) {idle = true; port.maximum();}
       else if(contrast_was.Sharper && contrast_is.Sharper) lens.forward();
@@ -141,21 +141,11 @@ interface IOptics
   {
     enum State {Idle, Prepare, Ready};
     State state = State.Idle;
-    on prepare:
-    {
-      [state.Idle] state = State.Prepare;
-      [otherwise]  illegal;
-    }
-    on cancel:
-    {
-      state = State.Idle;
-    }
+
+    on prepare:  [state.Idle] state = State.Prepare;
+    on cancel:   state = State.Idle;
     on optional: [state.Prepare] {ready; state = State.Ready;}
-    on capture:
-    {
-      [state.Idle] illegal;
-      [otherwise]  state = State.Idle;
-    }
+    on capture:  [!state.Idle]  state = State.Idle;
   }
 }
 component OpticsControl

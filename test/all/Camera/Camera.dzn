@@ -53,28 +53,19 @@ interface IControl
     enum State {Idle, Setup, Ready, Acquire};
     State state = State.Idle;
 
-    [state.Idle] {
-      on setup:{ state = State.Setup; }
-      on shoot,
-      release: illegal;
-    }
-    [state.Setup] {
-      on setup: illegal;
+    [state.Idle] on setup:{ state = State.Setup; }
+    [state.Setup]
+    {
       on shoot: { state = State.Acquire; }
       on release: { state = State.Idle; }
       on optional: { state = State.Ready; focus_lock; }
     }
-    [state.Ready] {
-      on setup: illegal;
+    [state.Ready]
+    {
       on release: { state = State.Idle; }
       on shoot: { state = State.Acquire; }
     }
-    [state.Acquire] {
-      on setup,
-      release,
-      shoot: illegal;
-      on inevitable: { image; state = State.Idle; }
-    }
+    [state.Acquire] on inevitable: { image; state = State.Idle; }
   }
 }
 
