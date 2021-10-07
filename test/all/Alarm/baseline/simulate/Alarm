@@ -44,7 +44,7 @@ sut.sensor.return <- ...
 ... <- sut.console.return
 <external>.console.return <- ...
 (trail "console.arm" "sensor.enable" "sensor.return" "console.return")
-test/all/Alarm/Alarm.dzn:136:25: error: illegal
+test/all/Alarm/Alarm.dzn:96:3: error: illegal
 ... <- <external>.sensor.triggered
 sut.<q> <- ...
 ... <- sut.<q>
@@ -54,7 +54,7 @@ sut.sensor.triggered <- ...
 sut.siren.turnon -> ...
 ... -> <external>.siren.turnon
 <illegal>
-test/all/Alarm/Alarm.dzn:136:25: error: illegal
+test/all/Alarm/Alarm.dzn:96:3: error: illegal
 (trail "sensor.triggered" "console.detected" "siren.turnon" "<illegal>")
 (labels "console.arm" "console.disarm" "sensor.triggered" "sensor.disabled")
 (eligible)
