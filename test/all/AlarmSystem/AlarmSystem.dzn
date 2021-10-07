@@ -40,24 +40,8 @@ interface ISiren
     };
     States state = States.Off;
 
-    [state.Off]
-    {
-      on turnon:
-      {
-        state = States.On;
-      }
-      on turnoff:
-        illegal;
-    }
-    [state.On]
-    {
-      on turnoff:
-      {
-        state = States.Off;
-      }
-      on turnon:
-        illegal;
-    }
+    [state.Off] on turnon: state = States.On;
+    [state.On] on turnoff: state = States.Off;
   }
 }
 interface ISensor
@@ -78,50 +62,17 @@ interface ISensor
     };
     States state = States.Disabled;
 
-    [state.Disabled]
-    {
-      on enable:
-      {
-        state = States.Enabled;
-      }
-      on disable:
-        illegal;
-    }
+    [state.Disabled] on enable: state = States.Enabled;
     [state.Enabled]
     {
-      on enable:
-        illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
-      on optional:
-      {
-        triggered;
-        state = States.Triggered;
-      }
+      on disable: state = States.Disabling;
+      on optional: {triggered; state = States.Triggered;}
     }
-    [state.Disabling]
-    {
-      on enable, disable:
-        illegal;
-      on inevitable:
-      {
-        disabled;
-        state = States.Disabled;
-      }
-    }
-    [state.Triggered]
-    {
-      on enable:
-        illegal;
-      on disable:
-      {
-        state = States.Disabling;
-      }
-    }
+    [state.Disabling] on inevitable: {disabled; state = States.Disabled;}
+    [state.Triggered] on disable: state = States.Disabling;
   }
 }
+
 interface IConsole
 {
     in void arm();
@@ -141,51 +92,17 @@ interface IConsole
 
     States state = States.Disarmed;
 
-    [state.Disarmed]
-    {
-      on arm:
-      {
-        state = States.Armed;
-      }
-      on disarm:
-        illegal;
-    }
+    [state.Disarmed] on arm: state = States.Armed;
 
     [state.Armed]
     {
-      on disarm:
-      {
-        state = States.Disarming;
-      }
-      on optional:
-      {
-        detected;
-        state = States.Triggered;
-      }
-      on arm:
-        illegal;
+      on disarm: state = States.Disarming;
+      on optional: {detected; state = States.Triggered;}
     }
 
-    [state.Triggered]
-    {
-      on disarm:
-      {
-        state = States.Disarming;
-      }
-      on arm:
-        illegal;
-    }
+    [state.Triggered] on disarm: state = States.Disarming;
 
-    [state.Disarming]
-    {
-      on inevitable:
-      {
-        deactivated;
-        state = States.Disarmed;
-      }
-      on arm, disarm:
-        illegal;
-    }
+    [state.Disarming] on inevitable: {deactivated; state = States.Disarmed;}
   }
 }
 
@@ -209,9 +126,9 @@ component AlarmSystem
 
 component Alarm
 {
-    provides IConsole console;
-    requires ISensor sensor;
-    requires ISiren siren;
+  provides IConsole console;
+  requires ISensor sensor;
+  requires ISiren siren;
 
   behaviour d
   {
@@ -219,21 +136,9 @@ component Alarm
     States state = States.Disarmed;
     bool sounding = false;
 
-    [state.Disarmed]
-    {
-      on console.arm():
-      {
-        sensor.enable();
-        state = States.Armed;
-      }
-      on console.disarm(), sensor.triggered(), sensor.disabled():
-        illegal;
-    }
+    [state.Disarmed] on console.arm(): {sensor.enable(); state = States.Armed;}
     [state.Armed]
     {
-      on console.arm():
-
-        illegal;
       on console.disarm():
       {
         sensor.disable();
@@ -246,13 +151,9 @@ component Alarm
         sounding = true;
         state = States.Triggered;
       }
-      on sensor.disabled():
-        illegal;
     }
     [state.Disarming]
     {
-      on console.arm(), console.disarm():
-        illegal;
       on sensor.triggered():
       {
         //illegal;
@@ -275,9 +176,6 @@ component Alarm
     }
     [state.Triggered]
     {
-      on console.arm():
-        illegal;
-
       on console.disarm():
       {
         sensor.disable();
@@ -285,8 +183,6 @@ component Alarm
         sounding = false;
         state = States.Disarming;
       }
-      on sensor.triggered(), sensor.disabled():
-        illegal;
     }
   }
 }
