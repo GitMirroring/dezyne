@@ -597,10 +597,17 @@ Installing goes along these lines:
 @item
 @cindex downloading Dezyne binary
 Download the binary zip archive from
-@indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-i686-windows.zip},
+@indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-windows.zip},
 @end enumerate
 
-@c XXX TODO
+after which you can extract the archive by using 7zip
+@url{https://www.7-zip.org/}.  Please do not use the built-in Windows
+archive extraction tool: It does not honor the time stamps of the files
+in the archive and thus produces a faulty installation.
+
+If your system comes with a virus scanner, consider creating an
+exception for dezyne-@value{VERSION}.
+
 @dots{}
 
 @noindent
