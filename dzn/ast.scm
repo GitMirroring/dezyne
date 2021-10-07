@@ -69,15 +69,16 @@
            ast:get-model
            ast:graph-cyclic?
            ast:id-path
+           ast:imperative?
            ast:import*
+           ast:imported?
            ast:in-event*
            ast:in-triggers
            ast:in?
            ast:injected-port*
            ast:inout?
            ast:instance?
-           ast:imperative?
-           ast:imported?
+           ast:interface*
            ast:literal-false?
            ast:literal-true?
            ast:location
@@ -255,6 +256,13 @@
 (define-method (ast:provides-port o)
   (let ((ports (ast:provides-port* o)))
     (and (pair? ports) (car ports))))
+
+(define-method (ast:interface* (o <component>))
+  (delete-duplicates
+   (map .type
+        (append (ast:port* o)
+                (ast:async-port* o)))
+   ast:eq?))
 
 (define-method (ast:component-model* (o <system>))
   (filter-map .type (ast:instance* o)))

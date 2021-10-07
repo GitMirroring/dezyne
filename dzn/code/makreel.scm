@@ -554,13 +554,6 @@
 (define-method (makreel:interface-proc (o <interface>))
   o)
 
-(define-method (ast:interface* (o <component>))
-  (delete-duplicates
-   (append
-    (map .type (ast:port* o))
-    (filter (conjoin (negate ast:imported?) (is? <interface>)) (ast:model* (parent o <root>))))
-   ast:eq?))
-
 (define-method (makreel:interface-proc (o <component>))
   (ast:interface* o))
 
