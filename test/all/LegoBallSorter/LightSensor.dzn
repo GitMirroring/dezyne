@@ -2,7 +2,7 @@
 //
 // Copyright © 2014, 2015 Henk Katerberg <henk.katerberg@yahoo.com>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,7 +36,6 @@ interface ILightSense
     on cancel: settling = false;
     [!settling] on measure: settling = !settling;
     [settling] {
-      on measure: illegal;
       on inevitable: { accept; settling = !settling; }
       on inevitable: { reject; settling = !settling; }
     }

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -48,10 +48,8 @@ interface IConstrainedMove
 
     on calibrate: [s.lost] s = State.calibrating;
     on calibrate: [s.lost] notifyHomed();
-    on calibrate: [!s.lost] illegal;
 
     on move: [s.idle] s = State.moving;
-    on move: [!s.idle] illegal;
     on stop: s = State.lost;
 
     [s.moving] on inevitable: notifyArrived();

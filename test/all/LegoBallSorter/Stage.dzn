@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 //
@@ -48,11 +48,9 @@ interface IMove2D
 
     on calibrate: [s.Lost] s = State.Calibrating;
     on calibrate: [s.Lost] {calibrated; s = State.Ready;}
-    on calibrate: [!s.Lost] illegal;
     on calibrate: [!s.Lost] {}
 
     on move: [s.Ready] s = State.Moving;
-    on move: [!s.Ready] illegal;
     on move: [!s.Ready] {}
 
     on inevitable: [s.Calibrating] {s = State.Ready; calibrated;}
@@ -150,6 +148,5 @@ component Move2D
     }
     on ctrl.move(x, y): [nMoving != 0 || nCalibrated != 2] {}
     on xAxis.arrived(), yAxis.arrived(): [nMoving > 0] tryArrived();
-    on xAxis.arrived(), yAxis.arrived(): [nMoving == 0] illegal;
   }
 }

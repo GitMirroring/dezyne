@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -53,21 +53,17 @@ interface IInspect
     {
       on calibrate: s = State.Calibrating;
       on calibrate: {calibrated; s = State.Ready;}
-      on inspect, prepare: illegal;
     }
     [s.Calibrating]
     {
-      on calibrate, inspect, prepare: illegal;
       on inevitable: {calibrated; s = State.Ready;}
     }
     [s.Ready]
     {
-      on calibrate, prepare: illegal;
       on inspect: s = State.Inspecting;
     }
     [s.Inspecting]
     {
-      on calibrate, prepare, inspect: illegal;
       on inevitable: {accepted; s = State.Waiting;}
       on inevitable: {rejected; s = State.Waiting;}
     }
@@ -75,11 +71,9 @@ interface IInspect
     {
       on prepare: s = State.Preparing;
       on prepare: {prepared; s = State.Ready;}
-      on calibrate, inspect: illegal;
     }
     [s.Preparing]
     {
-      on calibrate, prepare, inspect: illegal;
       on inevitable: {prepared; s = State.Ready;}
     }
   }

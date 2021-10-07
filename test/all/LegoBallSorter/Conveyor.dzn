@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -43,11 +43,7 @@ interface IConvey
 
     [s.Idle] on convey: s = State.Conveying;
     [s.Idle] on convey: conveyed;
-    [s.Conveying]
-    {
-      on convey: illegal;
-      on inevitable: {conveyed; s = State.Idle;}
-    }
+    [s.Conveying] on inevitable: {conveyed; s = State.Idle;}
   }
 }
 

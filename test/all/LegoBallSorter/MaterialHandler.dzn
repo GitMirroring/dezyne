@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
 //
@@ -56,29 +56,23 @@ interface IHandle
     {
       on calibrate: {s = State.Calibrating;}
       on calibrate: {calibrated; s = State.Idle;}
-      on operate: illegal;
       on operate: {}
     }
     [s.Calibrating]
     {
-      on calibrate: illegal;
       on calibrate: {}
-      on operate: illegal;
       on operate: {}
       on inevitable: {calibrated; s = State.Idle;}
     }
     [s.Idle]
     {
-      on calibrate: illegal;
       on calibrate: {}
       on operate: s = State.Operating;
       on operate: finished;
     }
     [s.Operating]
     {
-      on calibrate: illegal;
       on calibrate: {}
-      on operate: illegal;
       on operate: {}
       on inevitable: {s = State.Idle; finished;}
     }
@@ -267,7 +261,6 @@ component Handle
         on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true; tryInputTransfer();}
         on inspector.prepared(): {isInspectorAtInput = true; tryInputTransfer();}
         on robot.arrived(): {isRobotAtInput = true; tryInputTransfer();}
-        on robot.picked(), robot.placed(): illegal;
         on acceptPort.conveyed(): isAcceptEmpty = true;
         on rejectPort.conveyed(): isRejectEmpty = true;
       }
@@ -275,7 +268,6 @@ component Handle
       {
         on feedPort.consumeNextBall(): {isLastBall = false; isBallAtInput = true;}
         on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
-        on inspector.prepared(), inspector.accepted(), inspector.rejected(): illegal;
         on robot.picked(): [!isLastBall] {feedPort.produceBall(); isBallAtInput = false;}
         on robot.picked(): [isLastBall] {isBallAtInput = false;}
         on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($(config.get("Position::Robot::X::OutputPick"))$, $(config.get("Position::Robot::Y::OutputPick"))$); o = Operation.PreparingOutput;}
@@ -340,13 +332,10 @@ interface ITransfer
     {
       on calibrate: s = State.Calibrating;
       on calibrate: {calibrated; s = State.Ready;}
-      on move, transfer: illegal;
     }
     [s.Calibrating]
     {
       on inevitable: {calibrated; s = State.Ready;}
-
-      on calibrate, move, transfer: illegal;
     }
     [s.Ready]
     {
@@ -362,15 +351,11 @@ interface ITransfer
     [s.Moving]
     {
       on inevitable: {arrived; s = State.Ready;}
-
-      on calibrate, move, transfer: illegal;
     }
     [s.Transferring]
     {
       on inevitable: [!isPicked] {picked; isPicked = true;}
       on inevitable: [isPicked] {placed; s = State.Ready;}
-
-      on calibrate, move, transfer: illegal;
     }
   }
 }
@@ -524,8 +509,6 @@ component Transfer
           nMoving = 2;
           ts = TransferState.Moving;
         }
-
-        on gripper.ready(), trolley.arrived(), truck.arrived(): illegal;
       }
       [ts.Moving]
       {
@@ -585,13 +568,10 @@ interface IRetain
     {
       on calibrate: s = State.Calibrating;
       on calibrate: {calibrated; s = State.Ready; isHolding = true;} // hoist is up => safe to move
-      on retain, release: illegal;
     }
     [s.Calibrating]
     {
       on inevitable: {calibrated; s = State.Ready; isHolding = true;}  // hoist is up => safe to move
-
-      on calibrate, retain, release: illegal;
     }
     [s.Ready]
     {
@@ -599,13 +579,11 @@ interface IRetain
       {
         on retain: s = State.Moving;
         on retain: {ready; isHolding = true;}
-        on calibrate, release: illegal;
       }
       [isHolding]
       {
         on release: s = State.Moving;
         on release: {ready; isHolding = false;}
-        on calibrate, retain: illegal;
       }
     }
     [s.Moving]
@@ -616,8 +594,6 @@ interface IRetain
           s = State.Ready;
           isHolding = !isHolding;
         }
-
-      on calibrate, retain, release: illegal;
     }
   }
 }
