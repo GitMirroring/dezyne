@@ -126,10 +126,7 @@
       (($ <guard>)
        (clone o #:statement (add-end-of-on (.statement o) r)))
       (($ <blocking>)
-       (clone o #:statement (add-end-of-on (.statement o) r)))
-      (($ <declarative-illegal>)
-       (let ((illegal (make <illegal>)))
-         (clone illegal #:parent (.parent o))))))
+       (clone o #:statement (add-end-of-on (.statement o) r)))))
 
   (match o
     (($ <on>)

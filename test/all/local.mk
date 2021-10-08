@@ -240,6 +240,7 @@ REGRESSION_TESTS =				\
  %D%/hello_ifelse				\
  %D%/hello_ifif					\
  %D%/hello_implicit_illegal			\
+ %D%/hello_implicit_temporaries			\
  %D%/hello_imported				\
  %D%/hello_import_component			\
  %D%/hello_inevitable_action			\
