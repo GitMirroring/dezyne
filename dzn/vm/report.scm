@@ -178,7 +178,7 @@
       (pc->event o (.statement o))))
 
 (define-method (pc->event (o <error>))
-  (cons #f (format #f "<~a>" (or (.message o) "error"))))
+  (cons (.ast o) (format #f "<~a>" (or (.message o) "error"))))
 
 (define-method (pc->event (o <blocked-error>))
   (cons #f "<deadlock>"))
