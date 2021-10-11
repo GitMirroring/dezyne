@@ -345,8 +345,6 @@
 
         (('type-name name) (helper name))
         (('event-name name) (helper name))
-        (('identifier identifier) (helper identifier))
-        (('unknown-identifier name) (helper name))
 
         (('interface-action event) (make <action-node> #:event.name (helper event)))
 
@@ -500,6 +498,8 @@
         (('type name) (make <type-node> #:name (helper name)))
 
         (('types types ...) (make <types-node> #:elements (helper types)))
+
+        (('unknown-identifier name) (make <undefined-node> #:name (helper name)))
 
         (('var name) (make <var-node> #:name (helper name)))
 

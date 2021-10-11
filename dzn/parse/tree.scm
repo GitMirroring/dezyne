@@ -581,6 +581,7 @@ procedure)."
      triggers
      type-name
      types-and-events
+     unknown-identifier
      var
      void)))
 

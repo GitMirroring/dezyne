@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 ;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>;;;
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -816,6 +817,9 @@
            (else
             '())))
     ((? (is? 'comment))
+     (complete:root (parent context tree?)
+                    (context:parent context tree?) offset #:debug? debug?))
+    ((? (is? 'unknown-identifier))
      (complete:root (parent context tree?)
                     (context:parent context tree?) offset #:debug? debug?))
     ((and (? complete?) (? (negate (is? 'comment))))

@@ -229,6 +229,7 @@
            <type>
            <types>
            <unary>
+           <undefined>
            <unspecified>
            <var>
            <variable>
@@ -486,6 +487,9 @@
   (value))
 
 (define-ast <var> (<named> <expression>))
+
+(define-ast <undefined> (<expression>)
+  (name))
 
 (define-ast <variable> (<declaration> <imperative> <expression>)
   (type.name)

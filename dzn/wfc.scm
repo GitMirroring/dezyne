@@ -185,8 +185,8 @@
 (define ((argument-type-check o) argument formal)
   (let ((argument-type (ast:type argument))
         (formal-type (ast:type formal)))
-    (cond ((string? argument)
-           `(,(wfc-error o (format #f "undefined identifier `~a'" argument))))
+    (cond ((not argument-type)
+           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name argument)))))
           ((equal-type? argument-type formal-type)
            '())
           (else
@@ -350,16 +350,14 @@
                  `(,(wfc-error o "cannot use otherwise guard more than once")
                    ,(wfc-error (car otherwises) "second otherwise here"))
                  '()))))))
-  (let ((expression (.expression o)))
-    (if (string? expression)
-        `(,(wfc-error o (format #f "undefined identifier `~a'" expression)))
-        (let* ((otherwise? (is-a? expression <otherwise>))
-               (wfce (wfc expression)))
-          (append wfce
-                  (if (or otherwise? (pair? wfce)) '()
-                      (typed-expression expression <bool>))
-                  (if otherwise? (otherwise o) '())
-                  (wfc (.statement o)))))))
+  (let* ((expression (.expression o))
+         (otherwise? (is-a? expression <otherwise>))
+         (wfce (wfc expression)))
+    (append wfce
+            (if (or otherwise? (pair? wfce)) '()
+                (typed-expression expression <bool>))
+            (if otherwise? (otherwise o) '())
+            (wfc (.statement o)))))
 
 (define-method (wfc (o <declarative-illegal>)) ;; is-a <declarative>
   ;; TODO; in source??
@@ -438,16 +436,14 @@
    (wfc (.arguments o))))
 
 (define-method (wfc (o <if>)) ;; is-a <imperative>
-  (let ((expression (.expression o)))
-    (if (is-a? expression <string>)
-        `(,(wfc-error o (format #f "undefined identifier `~a'" expression)))
-        (let ((wfce (wfc expression)))
-          (append wfce
-                  (if (pair? wfce) '()
-                      (typed-expression expression <bool>))
-                  (call-context o)
-                  (wfc (.then o))
-                  (if (.else o) (wfc (.else o)) '()))))))
+  (let* ((expression (.expression o))
+         (wfce (wfc expression)))
+    (append wfce
+            (if (pair? wfce) '()
+                (typed-expression expression <bool>))
+            (call-context o)
+            (wfc (.then o))
+            (if (.else o) (wfc (.else o)) '()))))
 
 (define-method (wfc (o <illegal>)) ;; is-a <imperative>
   (define (illegal o)
@@ -612,6 +608,8 @@
   (let* ((expr-wfc (wfc o))
          (expr-type (ast:type o)))
     (cond ((pair? expr-wfc) expr-wfc)
+          ((not expr-type)
+           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
           ((not (is-a? expr-type type))
            `(,(wfc-error o (format #f "~a expression expected" (class-name type)))))
           (else '()))))
@@ -676,11 +674,15 @@
 (define-method (wfc (o <otherwise>)) '())
 
 (define-method (wfc (o <var>))
-  (let ((variable (.variable o)))
-    (cond ((not variable)
-           `(,(wfc-error o (format #f "undefined variable  `~a'" (.name o)))))
-          (else '()))))
+  (append
+   (call-context o)
+   (let ((variable (.variable o)))
+     (cond ((not variable)
+            `(,(wfc-error o (format #f "undefined variable `~a'" (.name o)))))
+           (else '())))))
 
+(define-method (wfc (o <undefined>))
+  `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
 
 (define-method (wfc (o <data>)) '())
 
@@ -770,11 +772,11 @@
 (define-method (assign (o <ast>))
   (let* ((assign-type (ast:type o))
          (expression (.expression o))
-         (wfce (if (is-a? expression <string>) '() (wfc expression)))
-         (expression-type (if (null? wfce) (ast:type expression) #f)))
+         (wfce (wfc expression))
+         (expression-type (ast:type expression)))
     (cond ((pair? wfce) wfce)
-          ((is-a? expression <string>)
-           `(,(wfc-error o (format #f "undefined identifier `~a'" expression))))
+          ((not expression-type)
+           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name expression)))))
           ((and (not assign-type) (is-a? o <variable>))
            `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
           ((and (is-a? o <variable>) (is-a? expression-type <void>))
@@ -823,7 +825,7 @@
           ((and (not unblock?) (not event)) '()) ; already covered in trigger check
           ((and (not unblock?) (not event-type)) '()) ; reported before
           ((and (not unblock?) (ast:in? event)) ; also covers interfaces
-           (if (not (equal-type? event-type reply-type))
+           (if (and reply-type (not (equal-type? event-type reply-type)))
                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
                                        (type-name event-type)
                                        (type-name reply-type)))
@@ -1055,41 +1057,41 @@
          (grand-parent (.parent p))
          (great-grand-parent (.parent grand-parent))
          (class (ast-name (class-of o)))
-         (is-aorc (or (is-a? o <action>) (is-a? o <call>))))
+         (action-or-call? (or (is-a? o <action>) (is-a? o <call>))))
     (cond
      ((global-var? o) '())
      ((is-a? p <behaviour>)  '())
      ((and (is-a? o <action>) (not (.event o)))
       (let ((name (.event.name o)))
         `(,(wfc-error o (format #f "undefined identifier `~a'" name)))))
-     ((and (not (is-a? p <variable>))
-           (or (is-a? p <expression>)
-               (and (is-a? p <if>)
-                    (not (ast:eq? o (.then p)))
-                    (not (ast:eq? o (.else p))))))
-      `(,(wfc-error o (format #f "~a in expression" class))))
-     ((and is-aorc (parent o <variable>) (global-var? (parent o <variable>)))
-        `(,(wfc-error o (format #f "~a in variable declaration" class))))
-     ((and (not (parent o <on>))
+     ((and (or action-or-call? (is-a? o <var>))
+           (parent o <variable>)
+           (global-var? (parent o <variable>)))
+      (let ((class (if (equal? class "var") "variable reference" class)))
+        `(,(wfc-error o (format #f "~a in member variable initializer" class)))))
+     ((and (is-a? o <statement>)
+           (not (ast:declarative? o))
+           (not (parent o <on>))
            (not (parent o <function>))
            (not (and (equal? class "compound") (ast:declarative? o))))
-      `(,(wfc-error o (format #f "~a outside on" (if (equal? class "compound") "imperative compound" class)))))
-     ((and is-aorc
+      (let ((class (if (equal? class "compound") "imperative compound" class)))
+        `(,(wfc-error o (format #f "~a outside on" class)))))
+     ((and action-or-call?
            (is-a? (ast:type o) <void>)
            (is-a? p <variable>))
       `(,(wfc-error o "void value not ignored as it ought to be")))
-     ((and is-aorc
+     ((and action-or-call?
            (not (is-a? (ast:type o) <void>))
            (or (is-a? p <compound>)
                (is-a? p <guard>)
                (is-a? p <on>)))
       `(,(wfc-error o (format #f "~a value discarded" class))))
-     ((and is-aorc
+     ((and action-or-call?
            (not (is-a? (ast:type o) <void>))
            (or (is-a? p <return>)
                (is-a? grand-parent <return>)))
       `(,(wfc-error o (format #f "valued ~a used in a return expression" class))))
-     ((and is-aorc
+     ((and action-or-call?
            (not (is-a? (ast:type o) <void>))
            (not
             (or (is-a? p <assign>)

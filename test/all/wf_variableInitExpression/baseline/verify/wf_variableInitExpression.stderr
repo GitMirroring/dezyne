@@ -1,1 +1,2 @@
-test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:37:5: error: undefined identifier `c'
+test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:37:14: error: undefined identifier `c'
+test/all/wf_variableInitExpression/wf_variableInitExpression.dzn:39:22: error: variable reference in member variable initializer

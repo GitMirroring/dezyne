@@ -3,6 +3,7 @@
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>;;;
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -262,7 +263,7 @@ global <-- DOT
 
 identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
 
-unknown-identifier <- identifier
+unknown-identifier <-- identifier
 
 otherwise <-- OTHERWISE
 provides <-- PROVIDES
