@@ -158,5 +158,6 @@
     set-blocking-reply-port
     transform-end-of-on
     (annotate-otherwise)
+    add-explicit-temporaries
     purge-data)
    root))

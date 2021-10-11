@@ -5642,28 +5642,28 @@ In a component behaviour specification an action statement is expressed as:
 where @code{myPort} is a port of the component with an interface type
 that contains event @code{myEvent} with one data parameter.
 
-
-Note that the event in an action statement must be a void event.
-For a valued event the return value must be caught, so an
-assignment statement is the appropriate way to handle that:
-
-
+Note that the event in an action statement must be a void event.  For a
+valued event the return value must be caught, a variable declaration or
+an assignment statement are the appropriate ways to handle that:
 
 @example
-  myVariable = myEvent;
+  bool b = r.bool_event ();
+  @dots{}
+  b = r.bool_event2 ();
 @end example
 
-
-or
-
-
+or used in a simple expression, possibly using @b{==}, @b{!=}, @b{!}, @b{&&}, @b{||}
+(since v2.14)
 
 @example
-  myVariable = myPort.myEvent(myParameterExpression);
+  if (r.bool_event ()) ...;
+  if (!r.bool_event ()) ...;
+  if (!r.bool_event () && b) ...;
+  if (r.enum_event () == Enum.OK) ...;
+  if (r.enum_event () != Enum.OK || b) ...;
+  reply (r.enum_event ());
+  reply (r.enum_event () != Enum.FAIL);
 @end example
-
-
-in an interface or component behaviour respectively.
 
 @subsubsection Function Call Statement
 A function defined in a behavioral specification can be called with
@@ -5684,18 +5684,26 @@ a function call statement might look like:
   myFunc(myEnumExpression, myBooleanExpression);
 @end example
 
-
-Note that the function in a function call statement must be a void function.
-For a valued function the return value must be caught, so an
-assignment statement is the appropriate way to handle that:
-
-
+Note that the function in a function call statement must be a void
+function.  For a valued function the return value must be caught, a a
+variable declaration or an assignment statement are the appropriate ways
+to handle that:
 
 @example
-  myVariable = myValuedFunc(myBooleanExpression);
+  bool b = bool_function ();
+  @dots{}
+  b = bool_function ();
 @end example
 
+or used in a simple expression, possibly using @b{==}, @b{!=} or @b{!}
+(since v2.14)
 
+@example
+  if (bool_function ()) ...;
+  if (!bool_function ()) ...;
+  if (enum_function () == Enum.OK) ...;
+  reply (enum_function ());
+@end example
 
 @subsubsection Reply Statement
 A valued trigger event will have to set the appropriate return value in

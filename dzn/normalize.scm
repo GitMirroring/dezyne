@@ -48,6 +48,7 @@
   #:export (normalize:state
             normalize:event
             add-function-return
+            add-explicit-temporaries
             add-reply-port
             binding-into-blocking
             guards-not-or
@@ -626,6 +627,80 @@ We follow the following renaming strategy:
      (tree-map remove-behaviour o))
     (_
      o)))
+
+(define (add-explicit-temporaries o)
+
+  (define (add-temporary? o)
+    (let ((expression (tree-collect (disjoin (is? <action>) (is? <call>))
+                                    (.expression o))))
+      (match expression
+        (() #f)
+        ((statement) statement))))
+
+  (define (replace-action/call o var)
+    (cond ((or (is-a? o <action>) (is-a? o <call>))
+           var)
+          ((is-a? o <expression>)
+           (tree-map (cute replace-action/call <> var) o))
+          (else o)))
+
+  (define (temp-name o)
+    (format #f "dzn'tmp~a" (.offset (.location o))))
+
+  (define (add-temporary o)
+    (let* ((expression (.expression o))
+           (nested? (not (or (is-a? expression <action>)
+                             (is-a? expression <call>))))
+           (variable-expression (add-temporary? o))
+           (type (ast:type variable-expression))
+           (name (temp-name o))
+           (location (.location o))
+           (temporary (make <variable> #:name name
+                            #:type.name (.name type)
+                            #:expression variable-expression
+                            #:location location))
+           (var (make <var> #:name name #:location location))
+           (expression (if nested?
+                           (tree-map
+                            (cute replace-action/call <> var)
+                            expression)
+                           var))
+           (statements (list temporary
+                             (clone o #:expression expression))))
+      (make <compound> #:elements statements
+            #:location location)))
+
+  (match o
+    (($ <if>)
+     (let* ((then (add-explicit-temporaries (.then o)))
+            (else (add-explicit-temporaries (.else o)))
+            (o (clone o #:then then #:else else)))
+       (if (add-temporary? o) (add-temporary o)
+           o)))
+    (($ <reply>)
+     (if (add-temporary? o) (add-temporary o)
+         o))
+    (($ <guard>)
+     (clone o #:statement (add-explicit-temporaries (.statement o))))
+    (($ <on>)
+     (clone o #:statement (add-explicit-temporaries (.statement o))))
+    (($ <compound>)
+     (clone o #:elements (map add-explicit-temporaries (ast:statement* o))))
+    ((? (is? <statement>))
+     o)
+
+    (($ <function>)
+     (clone o #:statement (add-explicit-temporaries (.statement o))))
+    (($ <behaviour>)
+     (clone o #:statement (add-explicit-temporaries (.statement o))))
+    (($ <interface>)
+     (clone o #:behaviour (add-explicit-temporaries (.behaviour o))))
+    (($ <component>)
+     (clone o #:behaviour (add-explicit-temporaries (.behaviour o))))
+    (($ <foreign>) o)
+    (($ <system>) o)
+    ((? (is? <ast>)) (tree-map add-explicit-temporaries o))
+    (_ o)))
 
 (define-method (root-> (o <root>))
   ((compose

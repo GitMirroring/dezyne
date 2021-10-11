@@ -1,1 +1,1 @@
-test/all/wf_functionValueDiscarded/wf_functionValueDiscarded.dzn:36:7: error: valued call must be used in variable assignment
+test/all/wf_functionValueDiscarded/wf_functionValueDiscarded.dzn:36:7: error: call value discarded

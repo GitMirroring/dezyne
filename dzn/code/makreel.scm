@@ -939,6 +939,7 @@
     normalize:state
     (remove-otherwise)
     makreel:tick-names
+    add-explicit-temporaries
     purge-data
     ) ast))
 

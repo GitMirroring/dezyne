@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -35,9 +35,8 @@ component SensorComp {
     Sensor.Status s = sensor2.activate();
     bool b= true;
     on sensor1.activate(): {
-      if (sensor2.activate() == Sensor.Status.OK) { }
-      reply(sensor2.activate());
+      if (false && sensor2.activate() == Sensor.Status.OK) { }
+      reply((sensor2.activate()));
     }
   }
 }
-

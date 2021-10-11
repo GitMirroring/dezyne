@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,8 +37,7 @@ component SensorComp {
 
     on sensor.activate(): {
       b = b || f();
-      if (f()) {}
+      if (false || f()) {}
     }
   }
 }
-

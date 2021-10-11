@@ -1,3 +1,3 @@
 test/all/wf_undefined_function/wf_undefined_function.dzn:31:15: error: undefined function call: "world"
 test/all/wf_undefined_function/wf_undefined_function.dzn:41:31: error: undefined function call: "foo"
-test/all/wf_undefined_function/wf_undefined_function.dzn:41:31: error: valued call must be used in variable assignment
+test/all/wf_undefined_function/wf_undefined_function.dzn:41:31: error: call value discarded
