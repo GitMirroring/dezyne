@@ -441,6 +441,11 @@ PARSER_TESTS =					\
  %D%/wf_undefined				\
  %D%/wf_undefined_function			\
  %D%/wf_variableInitExpression			\
+ %D%/undefined/and				\
+ %D%/undefined/group				\
+ %D%/undefined/not				\
+ %D%/undefined/reply				\
+ %D%/undefined/return				\
  %D%/undefined/component/action			\
  %D%/undefined/component/argument		\
  %D%/undefined/component/argument_seen		\
