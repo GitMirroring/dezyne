@@ -441,6 +441,7 @@ PARSER_TESTS =					\
  %D%/undefined/component/action			\
  %D%/undefined/component/argument		\
  %D%/undefined/component/argument_seen		\
+ %D%/undefined/component/enum_as_action		\
  %D%/undefined/component/port			\
  %D%/undefined/component/trigger		\
  %D%/undefined/guard				\

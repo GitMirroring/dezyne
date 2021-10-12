@@ -204,7 +204,7 @@
       (let* ((arguments (ast:argument* o))
              (count (length arguments))
              (event (.event ast)))
-        (if (not event) '()
+        (if (not (is-a? event <event>)) '()
             (let* ((formals (ast:formal* event))
                    (event-count (length formals)))
               (append
@@ -847,7 +847,8 @@
            ((and (is-a? model <interface>) (ast:in? event))
             `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
               ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
-           ((and (is-a? model <component>) (not event))
+           ((and (is-a? model <component>)
+                 (not (is-a? event <event>)))
             (let ((port (.port o)))
               (if (not port)
                   `()
