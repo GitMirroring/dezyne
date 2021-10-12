@@ -521,6 +521,9 @@
   (let ((type ((compose .type .signature) o)))
     (not (as type <void>))))
 
+(define-method (ast:typed? (o <action>))
+  (ast:typed? (.event o)))
+
 (define-method (ast:typed? (o <signature>))
   (not (as (.type o) <void>)))
 
@@ -737,6 +740,9 @@
           ((as type <enum>) (map (cut make <enum-literal> #:type.name (.name type) #:field <>) (ast:field* type)))
           ((as type <bool>) (map (cut make <literal> #:value <>) '("true" "false")))
           ((as type <int>) (map (cut make <literal> #:value <>) (iota (1+ (- (.to (.range type)) (.from (.range type)))) (.from (.range type))))))))
+
+(define-method (ast:return-values (o <action>))
+  (ast:return-values (.event o)))
 
 (define-method (ast:location (o <locationed>))
   (.location o))

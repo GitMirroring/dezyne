@@ -4716,6 +4716,8 @@ Use queue size @var{size} for exploration, the default is @code{3}.
 
 @item --state-diagram
 Generate a state-diagram it @code{dot} format.  This is the default.
+When @option{--verbose} is used on @code{dzn}, the state of the requires
+ports behaviours and state also considered.
 
 @end table
 
