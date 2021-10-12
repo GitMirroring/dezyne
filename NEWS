@@ -5,6 +5,38 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.14.0 since 2.13.3
+** Language
+  - The need for temporary variables has been removed for the most
+    common cases; the expression of the `if' and `reply' statement now
+    allows the use of a single valued action or function call.  The '&&'
+    and the '||' operators allow them as their left-hand operand only
+    ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/26][#26]]).
+  - The need for explicit illegals in interfaces has been removed.
+** Verification
+  - The interface completeness check has been removed; just like
+    components, unspecified events in an interface behaviour are now
+    marked implicitly illegal.
+  - The beginning of a livelock loop is now marked in the trace with
+    "<loop>" ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/44][#44]]).
+  - The dependency on the `m4-cw' tool has been removed from the
+    verification pipeline.
+** Simulation
+  - The beginning of a livelock loop is now marked in the trace with
+    "<loop>" ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/44][#44]]).
+** Views
+  - A new command `dzn graph' can be used to generate graphs using
+    different backends: "dependency", "lts", "state", and "system".  The
+    "state" backend with option `--behaviour' produces a state diagram
+    disregarding port interactions and port state.
+  - The `dzn explore' command has been deprecated and users are
+    requested to use `dzn graph' instead.  `dzn explore' is planned to
+    be removed in the next release.
+** Noteworthy bug fixes
+  - The use of an undefined variable now produces a parse error.  This
+    regression was introduced in 2.13.3.
+  - The use of an interface enum as event now produces a parse error.
+
 * Changes in 2.13.3 since 2.13.2
 ** Parser
   - Using newlines in `dollar'-expressions and toplevel
