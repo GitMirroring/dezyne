@@ -449,7 +449,7 @@ PARSER_TESTS =					\
  %D%/undefined/interface/action			\
  %D%/undefined/guard				\
  %D%/undefined/interface/function		\
- %D%/undefined/interface/if			\
+ %D%/undefined/if				\
  %D%/undefined/interface/trigger		\
  %D%/undefined/interface/var
 
