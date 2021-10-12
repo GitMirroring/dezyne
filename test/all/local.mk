@@ -441,15 +441,12 @@ PARSER_TESTS =					\
  %D%/undefined/component/action			\
  %D%/undefined/component/argument		\
  %D%/undefined/component/argument_seen		\
- %D%/undefined/component/guard			\
- %D%/undefined/component/if			\
  %D%/undefined/component/port			\
  %D%/undefined/component/trigger		\
- %D%/undefined/component/var			\
- %D%/undefined/interface/action			\
  %D%/undefined/guard				\
- %D%/undefined/interface/function		\
  %D%/undefined/if				\
+ %D%/undefined/interface/action			\
+ %D%/undefined/interface/function		\
  %D%/undefined/interface/trigger		\
  %D%/undefined/var
 
