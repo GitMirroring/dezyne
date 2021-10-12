@@ -451,7 +451,7 @@ PARSER_TESTS =					\
  %D%/undefined/interface/function		\
  %D%/undefined/if				\
  %D%/undefined/interface/trigger		\
- %D%/undefined/interface/var
+ %D%/undefined/var
 
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
