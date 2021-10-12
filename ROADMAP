@@ -51,14 +51,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       How to test a <queue-full> without trace?
     + livelock_interface0: Simulator does not see the livelock
       How to find a livelock without a trace?
-  - component behaviour diagram
-  - livelock: show loop: <loop>...<livelock>
-    + Finish and merge wip-loop
-      - Simulator
-      - livelock_component.dzn: "end of trail" (world, world, world ...)
-      - livelock_iterator
-  - implicit interface illegals
-  - implicit temporary variables
 
 ** Release 2.15
   - collateral blocking
@@ -126,7 +118,14 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + wfc: check for reply on modeling event
     + vm: <modeling-reply-error> reply on modeling event
   - Documentation
-    + Review doc/dezyne-tutorial.texi
+    + Finish and merge wip-doc
+    + Review/rewrite doc/dezyne.texi
+      - Introduction
+      - The Dezyne Modeling Language
+      - Dezyne Syntax
+      - Execution Semantics: generate!
+      - Well-formedness-tests: generate!
+    + Review/rewrite doc/dezyne-tutorial.texi
   - Code cleanups
     + parse options => parse #:imports #:model ...
     + cleanup and upstream PEG
@@ -176,7 +175,15 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish C99 support (what about MISRA-C?)
     + Finish JavaScript support
     + Review and finish Scheme support
+
 * DONE
+  - component behaviour diagram
+  - livelock: show loop: <loop>...<livelock>
+    + Finish and merge wip-loop
+  - implicit interface illegals
+    + Finish and merge wip-implicit-interface-illegals
+  - implicit temporary variables
+    + Finish and merge wip-implicit-temporaries
   - messages in browser clickable to location
   - deadlock check should prevail over <compliance>
     + WONTFIX: shortest trace wins
