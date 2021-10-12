@@ -40,11 +40,15 @@ from_dir=$(dirname $from)
 from_base=$(basename $from)
 to_base=$(basename $to)
 
-git mv $to/$from_base.dzn $to/$to_base.dzn
-sed -i -e "s,$from_base,$to_base,g" $to/$to_base.dzn
-git add $to/$to_base.dzn
+if [ $to/$from_base.dzn != $to/$to_base.dzn ]; then
+    git mv $to/$from_base.dzn $to/$to_base.dzn
+    sed -i -e "s,$from_base,$to_base,g" $to/$to_base.dzn
+    git add $to/$to_base.dzn
+fi
 
-sed -i -re "s,/$from_base([ \t]),/$to_base\1,g" all/local.mk
+all_from=$(echo $from | sed s,^all/,,)
+all_to=$(echo $to | sed s,^all/,,)
+sed -i -re "s,/$all_from([ \t]),/$all_to\1,g" all/local.mk
 git add all/local.mk
 
 for i in $(ls -1 $to/baseline 2>/dev/null); do
@@ -53,7 +57,9 @@ for i in $(ls -1 $to/baseline 2>/dev/null); do
     fi
     sed -i -e s,$from_base,$to_base,g $to/baseline/$i/*trace* ||:
     if [ -f $to/baseline/$i/$from_base ]; then
-        git mv $to/baseline/$i/$from_base $to/baseline/$i/$to_base
+        if [ $to/baseline/$i/$from_base != $to/baseline/$i/$to_base ]; then
+            git mv $to/baseline/$i/$from_base $to/baseline/$i/$to_base
+        fi
         if [ "$i" = verify -o "$i" = fdr2 ]; then
             mv $to/baseline/$i/$to_base $to/baseline/$i/$to_base-
             cat $to/baseline/$i/$to_base- \
@@ -62,14 +68,16 @@ for i in $(ls -1 $to/baseline 2>/dev/null); do
                 > $to/baseline/$i/$to_base
             rm -f $to/baseline/$i/$to_base-
         else
-            sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base
+            sed -i -e s,$from,$to,g $to/baseline/$i/$to_base
         fi
         git add $to/baseline/$i/$to_base
     fi
 
     if [ -f $to/baseline/$i/$from_base.stderr ]; then
-        git mv $to/baseline/$i/$from_base.stderr $to/baseline/$i/$to_base.stderr
-        sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base.stderr
+        if [ $to/baseline/$i/$from_base.stderr != $to/baseline/$i/$to_base.stderr ]; then
+            git mv $to/baseline/$i/$from_base.stderr $to/baseline/$i/$to_base.stderr
+        fi
+        sed -i -e s,$from,$to,g $to/baseline/$i/$to_base.stderr
         git add $to/baseline/$i/$to_base.stderr
     fi
 done
