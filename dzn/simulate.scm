@@ -1032,6 +1032,7 @@ status."
                      (traces (map (cute rewrite-trace-head drop-event <>) traces))
                      (list-of-traces (map (cute run-sut <> event) traces))
                      (traces (apply append list-of-traces))
+                     (traces (filter-implicit-illegal traces))
                      (error-trace? (find (compose
                                           (conjoin .status
                                                    (negate (is-status? <end-of-trail>))

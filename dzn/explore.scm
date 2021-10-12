@@ -126,7 +126,8 @@ recursion.  Return a run-to-completion LTS
                  (traces
                   (let loop ((labels labels) (traces '()))
                     (if (null? labels) traces
-                        (let ((new (run-to-completion** pc (car labels))))
+                        (let* ((new (run-to-completion** pc (car labels)))
+                               (new (filter-implicit-illegal-only new)))
                           (if (find (compose (is-status? <livelock-error>) car) new) '()
                               (loop (cdr labels) (append new traces)))))))
                  (pcs (map car traces)))

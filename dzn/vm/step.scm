@@ -123,7 +123,7 @@
 (define-method (step (pc <program-counter>) (o <initial-compound>))
   (append
    (next-method pc o)
-   (if (is-a? (%sut) <runtime:port>) '()
+   (if (ast:modeling? (.trigger pc)) '()
        (let ((illegal (make <implicit-illegal-error> #:ast o #:message "illegal")))
          (list (clone pc #:previous #f #:status illegal))))))
 
