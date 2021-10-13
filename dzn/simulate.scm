@@ -87,6 +87,9 @@ format."
                             0))
          (port-trace-suffix
           port-trace-prefix (split-at port-trace port-on-index))
+         (port-trace-prefix (rewrite-trace-head
+                             (cut clone <> #:status #f #:statement #f)
+                             port-trace-prefix))
          (port-start (car port-trace-prefix))
          (instance (and=> (find .instance trace) .instance))
          (trace-index (- (length trace)
