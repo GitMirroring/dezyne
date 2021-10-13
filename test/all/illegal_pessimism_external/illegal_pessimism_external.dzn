@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,11 +35,9 @@ interface ihello
     [s.A]
     {
       on hello: s = S.B;
-//      on bye: illegal;
     }
     [s.B]
     {
-//      on hello: illegal;
       on bye: {s = S.C;}
     }
     [s.C]
@@ -66,13 +65,10 @@ interface iworld
     {
       on hello: {s = S.B; cruel;}
       on hello: s = S.B;
-//      on bye: illegal;
     }
     [s.B]
     {
-//      on hello: illegal;
       on bye: s = S.C;
-      //on bye: {s = S.A; world;}
     }
     [s.C]
     {

@@ -7,11 +7,11 @@
 ... <- sut.p.cb
 <external>.p.cb <- ...
 (trail "p.cb")
-test/all/compliance_async/compliance_async.dzn:63:17: error: illegal
+test/all/compliance_async/compliance_async.dzn:62:17: error: illegal
 <external>.p.e -> ...
 ... -> sut.p.e
 <illegal>
-test/all/compliance_async/compliance_async.dzn:63:17: error: illegal
+test/all/compliance_async/compliance_async.dzn:62:17: error: illegal
 (trail "p.e" "<illegal>")
 (labels "p.e" "p.c")
 (eligible)

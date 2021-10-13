@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -35,13 +35,10 @@ interface I {
       on a: s = State.aborting;
     }
     [s.busy] {
-//      on e: illegal;
       on a: s = State.aborting;
       on inevitable: { ec; s = State.idle;}
     }
     [s.aborting] {
-//      on e: illegal;
-//      on a: illegal;
       on inevitable: { ac; s = State.idle;}
     }
   }

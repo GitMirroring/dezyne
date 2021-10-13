@@ -6,9 +6,9 @@ sut.r.e -> ...
 ... <- <external>.r.return
 sut.r.return <- ...
 (trail "p.e" "r.e" "r.return")
-test/all/deadlock_blocking_optional/deadlock_blocking_optional.dzn:50:3: error: deadlock
+test/all/deadlock_blocking_optional/deadlock_blocking_optional.dzn:49:3: error: deadlock
 <deadlock>
-test/all/deadlock_blocking_optional/deadlock_blocking_optional.dzn:50:3: error: deadlock
+test/all/deadlock_blocking_optional/deadlock_blocking_optional.dzn:49:3: error: deadlock
 (trail "<deadlock>")
 (labels "p.e" "r.cb")
 (eligible "r.cb")

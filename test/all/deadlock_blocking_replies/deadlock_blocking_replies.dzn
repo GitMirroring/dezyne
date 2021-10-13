@@ -71,7 +71,6 @@ interface iworld
     [idle] on hello: idle = false;
     [!idle]
     {
-//      on hello: illegal;
       on optional: {idle = true; cruel;}
       on inevitable: {idle = true; world;}
     }

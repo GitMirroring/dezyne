@@ -8,11 +8,11 @@ sut.r.return <- ...
 ... <- sut.p.return
 <external>.p.return <- ...
 (trail "p.e" "r.e" "r.return" "p.return")
-test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:66:18: error: illegal
+test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:63:18: error: illegal
 ... <- sut.<q>
 sut.r.ec <- ...
 <illegal>
-test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:66:18: error: illegal
+test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:63:18: error: illegal
 (trail "r.ec" "<illegal>")
 (labels "p.e" "p.a" "r.ec" "r.ac")
 (eligible)

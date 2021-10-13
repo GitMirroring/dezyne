@@ -4,9 +4,9 @@
 ... <- sut.p.return
 <external>.p.return <- ...
 (trail "p.e" "p.return")
-test/all/livelock_async_cancel/livelock_async_cancel.dzn:60:12: error: livelock
+test/all/livelock_async_cancel/livelock_async_cancel.dzn:59:12: error: livelock
 <livelock>
-test/all/livelock_async_cancel/livelock_async_cancel.dzn:60:12: error: livelock
+test/all/livelock_async_cancel/livelock_async_cancel.dzn:59:12: error: livelock
 (trail "<livelock>")
 (labels "p.e" "p.c")
 (eligible)

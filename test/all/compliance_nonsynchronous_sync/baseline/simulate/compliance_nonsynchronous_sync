@@ -1,5 +1,5 @@
 (header ((h) ihello provides) ((sut) compliance_nonsynchronous_sync component) ((w) iworld requires))
-test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:54:19: error: non-compliance
+test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:51:19: error: non-compliance
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -15,7 +15,7 @@ sut.w.world <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 <compliance>
-test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:54:19: error: non-compliance
+test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:51:19: error: non-compliance
 (trail "h.hello" "w.hello" "w.world" "w.return" "h.world" "h.return" "<compliance>")
 (labels "h.hello" "w.world")
 (eligible)

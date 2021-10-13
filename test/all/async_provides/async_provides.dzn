@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,10 +28,7 @@ interface ihello
   behaviour {
     bool idle = true;
     [idle] on hello: idle=false;
-    [!idle] {
-      on inevitable: {idle=true;world;}
-//      on hello: illegal;
-    }
+    [!idle] on inevitable: {idle=true;world;}
   }
 }
 

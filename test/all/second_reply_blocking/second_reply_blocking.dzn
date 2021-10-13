@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,7 +36,6 @@ interface II {
     [!busy]
        on e: busy = true;
     [busy] {
-//       on e: illegal;
        on inevitable: { cb; busy = false; }
     }
   }

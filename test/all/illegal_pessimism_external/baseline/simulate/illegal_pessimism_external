@@ -17,11 +17,11 @@ sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 (trail "h.bye" "w.bye" "w.return" "h.return")
-test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:91:3: error: illegal
+test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:87:3: error: illegal
 ... <- sut.<q>
 sut.w.cruel <- ...
 <illegal>
-test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:91:3: error: illegal
+test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:87:3: error: illegal
 (trail "w.cruel" "<illegal>")
 (labels "h.hello" "h.bye" "w.cruel" "w.world")
 (eligible)

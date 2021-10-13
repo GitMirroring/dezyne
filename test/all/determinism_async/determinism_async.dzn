@@ -33,7 +33,6 @@ interface ihello
     bool idle = true;
     [idle] on hello: idle = !idle;
     [!idle] {
-//      on hello: illegal;
       on inevitable: {idle = !idle; cruel;}
       on inevitable: {idle = !idle; world;}
     }

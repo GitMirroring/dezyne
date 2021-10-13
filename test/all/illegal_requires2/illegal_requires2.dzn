@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,7 +27,6 @@ interface ihello
 
   behaviour
   {
-//    on hello: illegal;
   }
 }
 

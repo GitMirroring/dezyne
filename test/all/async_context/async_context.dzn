@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,43 +22,51 @@
 //
 // Code:
 
-interface IAsync {
+interface IAsync
+{
   in void e();
   in void c();
   out void cb();
 
-  behaviour {
+  behaviour
+  {
     bool idle = true;
-    [idle] {
+    [idle]
+    {
       on e: idle = false;
       on c: {}
     }
-    [!idle] {
-//      on e: illegal;
+    [!idle]
+    {
       on c: idle = true;
       on inevitable: { cb; idle = true; }
     }
   }
 }
 
-component async_context {
+component async_context
+{
   provides IAsync p;
-  behaviour {
+  behaviour
+  {
     enum State { S0, S1, S2 };
     requires dzn.async i;
     requires dzn.async ii;
 
     State s = State.S0;
 
-    [s.S0] {
+    [s.S0]
+    {
       on p.e(): { i.req(); ii.req(); s = State.S1; }
       on p.c(): i.clr();
     }
-    [s.S1] {
+    [s.S1]
+    {
       on p.c(): { i.clr(); ii.clr(); s = State.S0; }
       on i.ack(): s = State.S2;
     }
-    [s.S2] {
+    [s.S2]
+    {
       on p.c(): illegal; // between the two ack's it is not possible to receive c
       on ii.ack(): { p.cb(); s = State.S0; }
     }

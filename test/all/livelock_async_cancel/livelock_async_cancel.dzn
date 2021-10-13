@@ -34,7 +34,6 @@ interface IAsync {
       on c: {}
     }
     [!idle] {
-//      on e: illegal;
       on c: idle = true;
       on inevitable: { cb; idle = true; }
     }
@@ -63,5 +62,3 @@ component livelock_async_cancel {
     }
   }
 }
-
-

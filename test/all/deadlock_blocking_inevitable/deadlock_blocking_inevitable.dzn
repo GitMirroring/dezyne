@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -54,10 +54,6 @@ interface iworld
   {
     bool idle = true;
     [idle] on hello: idle = false;
-    [!idle]
-    {
-//      on hello: illegal;
-      on inevitable: {idle = true; world;}
-    }
+    [!idle] on inevitable: {idle = true; world;}
   }
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -29,15 +29,11 @@ interface i
   in void e(T t);
   in void c(T t);
   out void a(T t);
-  behaviour {
+  behaviour
+  {
     bool idle = true;
-    [idle] {
-      on e: idle=false;
-    }
-    [!idle] {
-      on inevitable: {idle=true;a;}
-//      on e: illegal;
-    }
+    [idle] on e: idle=false;
+    [!idle] on inevitable: {idle=true;a;}
     on c: idle=true;
   }
 }
@@ -45,7 +41,8 @@ interface i
 component async_cancel
 {
   provides i p;
-  behaviour {
+  behaviour
+  {
     requires dzn.async(T t) defer;
     bool idle = true;
     [idle] on p.e (t): {idle=false; defer.req (t);}

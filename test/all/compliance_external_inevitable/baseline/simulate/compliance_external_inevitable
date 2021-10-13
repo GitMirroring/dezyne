@@ -17,13 +17,13 @@ sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 (trail "h.bye" "w.bye" "w.return" "h.return")
-test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:75:21: error: non-compliance
+test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:73:21: error: non-compliance
 ... <- sut.<q>
 sut.w.cruel <- ...
 ... <- sut.h.cruel
 <external>.h.cruel <- ...
 <compliance>
-test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:75:21: error: non-compliance
+test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:73:21: error: non-compliance
 (trail "w.cruel" "h.cruel" "<compliance>")
 (labels "h.hello" "h.bye" "w.cruel" "w.world")
 (eligible)

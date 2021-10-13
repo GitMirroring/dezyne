@@ -40,7 +40,6 @@ interface I
       on bye: {}
     }
     [!idle] {
-//      on hello: illegal;
       on bye: idle = true;
       on inevitable: {idle = true; world;}
     }

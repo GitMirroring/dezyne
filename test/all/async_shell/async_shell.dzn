@@ -2,6 +2,7 @@
 //
 // Copyright © 2021 Joran Jessurun <joran.jessurun@gmail.com>
 // Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -48,10 +49,7 @@ interface ihello {
   behaviour {
     bool idle = true;
     [idle] on hello: idle = false;
-    [!idle] {
-//      on hello: illegal;
-      on inevitable:  {idle = true; world;}
-    }
+    [!idle] on inevitable:  {idle = true; world;}
   }
 }
 

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
@@ -43,11 +43,7 @@ interface iworld
   {
     bool busy = false;
     [!busy] on hello: busy = true;
-    [busy]
-    {
-//       on hello: illegal;
-       on inevitable: { world; busy = false; }
-    }
+    [busy] on inevitable: { world; busy = false; }
   }
 }
 
@@ -60,14 +56,7 @@ component blocking_binding
   {
     int g = $123$;
     bool busy = false;
-    [!busy]
-    {
-       on h.hello(n <- g): blocking { n = g; w.hello(); busy = true; }
-       on w.world(): illegal;
-    }
-    [busy] {
-       on h.hello(): illegal;
-       on w.world(): { g = $456$; h.reply(); g = $789$; busy = false; }
-    }
+    [!busy] on h.hello(n <- g): blocking { n = g; w.hello(); busy = true; }
+    [busy] on w.world(): { g = $456$; h.reply(); g = $789$; busy = false; }
   }
 }

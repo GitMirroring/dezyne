@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018,2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2018, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -68,8 +68,6 @@ interface isilly
      on world: reply(E2.D);
      on world: reply(E2.E);
      on world: reply(E2.F);
-
-//     on cruel: illegal;
    }
 }
 

@@ -1,1 +1,1 @@
-test/all/deadlock_blocking_optional/deadlock_blocking_optional.dzn:50:3: error: deadlock
+test/all/deadlock_blocking_optional/deadlock_blocking_optional.dzn:49:3: error: deadlock

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,12 +33,8 @@ interface II {
   out void cb();
   behaviour {
     bool busy = false;
-    [!busy]
-       on e: busy = true;
-    [busy] {
-//       on e: illegal;
-       on inevitable: { cb; busy = false; }
-    }
+    [!busy] on e: busy = true;
+    [busy] on inevitable: { cb; busy = false; }
   }
 }
 
@@ -48,14 +44,8 @@ component blocking_requires_normalize {
   behaviour {
     bool busy = false;
     blocking {
-      [!busy] {
-         on p.e(): { r.e(); busy = true; }
-         on r.cb(): illegal;
-      }
-      [busy] {
-         on p.e(): illegal;
-         on r.cb(): { p.reply(); busy = false; }
-      }
+      [!busy] on p.e(): { r.e(); busy = true; }
+      [busy] on r.cb(): { p.reply(); busy = false; }
     }
   }
 }

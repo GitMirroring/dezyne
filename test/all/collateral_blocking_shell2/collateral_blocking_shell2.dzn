@@ -2,6 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
 //
 // This file is part of Dezyne.
 //
@@ -46,12 +47,10 @@ interface iworld
   behaviour {
     bool idle = true;
     [idle] on hello: idle = !idle;
-    [!idle] {
-//      on hello: illegal;
-      on inevitable: {world; idle = true;}
-    }
+    [!idle] on inevitable: {world; idle = true;}
     on cruel: bye;
-  }
+
+}
 }
 
 extern Exception $int$;

@@ -38,7 +38,6 @@ interface ihello
     }
     [b]
     {
-//      on hello: illegal;
       on inevitable: {b = false; world;}
     }
   }

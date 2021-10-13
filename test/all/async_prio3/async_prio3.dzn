@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Paul Hoogendijk <paul.hoogendijk@verum.com>
-// Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -35,7 +35,6 @@ interface IAsync {
       on c: {}
     }
     [!idle] {
-//      on e: illegal;
       on c: idle = true;
       on inevitable: { cb; idle = true; }
     }
