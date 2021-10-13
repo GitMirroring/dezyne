@@ -22,7 +22,7 @@ interface I
   in void e();
   behaviour
   {
-    on e: illegal;
+//    on e: illegal;
   }
 }
 

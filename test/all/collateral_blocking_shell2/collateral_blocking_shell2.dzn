@@ -47,7 +47,7 @@ interface iworld
     bool idle = true;
     [idle] on hello: idle = !idle;
     [!idle] {
-      on hello: illegal;
+//      on hello: illegal;
       on inevitable: {world; idle = true;}
     }
     on cruel: bye;

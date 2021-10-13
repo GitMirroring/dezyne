@@ -1,11 +1,11 @@
 (header ((h) ihello provides) ((sut) illegal_requires2 component) ((w) ihello requires))
-test/all/illegal_requires2/illegal_requires2.dzn:30:15: error: illegal
+test/all/illegal_requires2/illegal_requires2.dzn:29:3: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
 ... -> <external>.w.hello
 <illegal>
-test/all/illegal_requires2/illegal_requires2.dzn:30:15: error: illegal
+test/all/illegal_requires2/illegal_requires2.dzn:29:3: error: illegal
 (trail "h.hello" "w.hello" "<illegal>")
 (labels "h.hello")
 (eligible)

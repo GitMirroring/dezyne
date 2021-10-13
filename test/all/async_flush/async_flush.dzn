@@ -27,7 +27,7 @@ interface ihello {
   out void world();
 
   behaviour {
-    on hello: illegal;
+//    on hello: illegal;
     on inevitable: { cruel;world; }
   }
 }

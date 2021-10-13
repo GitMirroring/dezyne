@@ -31,7 +31,7 @@ interface ihello
   behaviour
   {
     on hello: {}
-    on world: illegal;
+//    on world: illegal;
   }
 }
 

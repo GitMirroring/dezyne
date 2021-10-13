@@ -91,7 +91,7 @@ interface iworld
     bool idle = true;
     [idle] on hello: idle = false;
     [!idle] {
-      on hello: illegal;
+//      on hello: illegal;
       on inevitable: {idle = true; world;}
     }
   }

@@ -35,13 +35,13 @@ interface I {
       on a: s = State.aborting;
     }
     [s.busy] {
-      on e: illegal;
+//      on e: illegal;
       on a: s = State.aborting;
       on inevitable: { ec; s = State.idle;}
     }
     [s.aborting] {
-      on e: illegal;
-      on a: illegal;
+//      on e: illegal;
+//      on a: illegal;
       on inevitable: { ac; s = State.idle;}
     }
   }
@@ -73,18 +73,18 @@ component external_asynchronous_sync {
     [s.idle] {
       on p.e(): { r.e(); s = State.busy; }
       on p.a(): { r.a(); s = State.aborting;}
-      on r.ec: illegal;
-      on r.ac: illegal;
+     on r.ec: illegal;
+     on r.ac: illegal;
     }
     [s.busy] {
-      on p.e: illegal;
+     on p.e: illegal;
       on p.a(): { r.a(); s = State.aborting;}
       on r.ec(): { p.ec(); s = State.idle;}
-      on r.ac(): illegal;
+     on r.ac(): illegal;
     }
     [s.aborting] {
-      on p.e: illegal;
-      on p.a: illegal;
+     on p.e: illegal;
+     on p.a: illegal;
       on r.ec(): {}
       on r.ac(): { p.ac(); s = State.idle;}
     }

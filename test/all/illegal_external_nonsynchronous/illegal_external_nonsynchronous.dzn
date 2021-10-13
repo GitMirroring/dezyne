@@ -35,13 +35,13 @@ interface I {
       on a: s = State.aborting;
     }
     [s.busy] {
-      on e: illegal;
+//      on e: illegal;
       on a: s = State.aborting;
       on inevitable: { ec; s = State.idle;}
     }
     [s.aborting] {
-      on e: illegal;
-      on a: illegal;
+//      on e: illegal;
+//      on a: illegal;
       on inevitable: { ac; s = State.idle;}
     }
   }

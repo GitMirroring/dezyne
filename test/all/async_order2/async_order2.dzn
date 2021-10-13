@@ -36,12 +36,12 @@ interface IAsync {
       on c: {}
     }
     [!idle && first] {
-      on e: illegal;
+//      on e: illegal;
       on c: idle = true;
       on inevitable: { cb1; first = false; }
     }
     [!idle && !first] {
-      on e: illegal;
+//      on e: illegal;
       on c: idle = true;
       on inevitable: { cb2; idle = true; }
     }

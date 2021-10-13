@@ -36,7 +36,7 @@ interface II {
     [!busy]
        on e: busy = true;
     [busy] {
-       on e: illegal;
+//       on e: illegal;
        on inevitable: { cb; busy = false; }
     }
   }
@@ -57,4 +57,3 @@ component blocking_requires {
     }
   }
 }
-

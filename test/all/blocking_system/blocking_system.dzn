@@ -68,7 +68,7 @@ interface I3
     }
     [otherwise]
     {
-      on e: illegal;
+//      on e: illegal;
       on inevitable: {pending = false; f;}
     }
   }

@@ -37,7 +37,7 @@ interface II {
     [!busy]
        on e: busy = true;
     [busy] {
-       on e: illegal;
+//       on e: illegal;
        on optional: { cb; busy = false; }
     }
     on f: {}
@@ -59,4 +59,3 @@ component deadlock_blocking_optional {
     }
   }
 }
-

@@ -31,7 +31,7 @@ interface illegal_interface.space
     bool idle = true;
     [idle] {
       on hello: idle = false;
-      on world: illegal;
+//      on world: illegal;
     }
     [!idle] {
       on hello, world: illegal;

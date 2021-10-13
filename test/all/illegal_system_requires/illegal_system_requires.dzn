@@ -29,7 +29,7 @@ interface ihello
   behaviour
   {
     on hello: {}
-    on cruel: illegal;
+//    on cruel: illegal;
   }
 }
 

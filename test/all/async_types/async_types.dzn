@@ -29,7 +29,7 @@ interface i
     [idle] on e: idle=false;
     [!idle] {
       on inevitable: {idle=true;a;}
-      on e: illegal;
+//      on e: illegal;
     }
   }
 }

@@ -30,7 +30,7 @@ interface ihello
     [idle] on hello: idle=false;
     [!idle] {
       on inevitable: {idle=true;world;}
-      on hello: illegal;
+//      on hello: illegal;
     }
   }
 }

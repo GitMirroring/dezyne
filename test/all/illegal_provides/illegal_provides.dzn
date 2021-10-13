@@ -27,7 +27,7 @@ interface ihello
 
   behaviour
   {
-    on hello: illegal;
+//    on hello: illegal;
   }
 }
 

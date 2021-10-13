@@ -34,7 +34,7 @@ interface I
 
     [idle] on hello: {idle = !idle; cruel;}
     [!idle] {
-      on hello: illegal;
+//      on hello: illegal;
       on inevitable: {idle = !idle; world;}
     }
   }

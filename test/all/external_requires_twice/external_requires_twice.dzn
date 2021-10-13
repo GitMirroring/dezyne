@@ -27,7 +27,7 @@ interface I
     bool idle=true;
     [idle] on e: idle = false;
     [!idle] {
-      on e: illegal;
+//      on e: illegal;
       on inevitable: {idle = true; a;}
     }
   }

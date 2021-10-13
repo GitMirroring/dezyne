@@ -69,7 +69,7 @@ interface isilly
      on world: reply(E2.E);
      on world: reply(E2.F);
 
-     on cruel: illegal;
+//     on cruel: illegal;
    }
 }
 

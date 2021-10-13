@@ -54,7 +54,7 @@ interface J
 
     [idle] on hello: {idle = !idle;}
     [!idle] {
-      on hello: illegal;
+//      on hello: illegal;
       on inevitable: {idle = !idle; world;}
     }
   }

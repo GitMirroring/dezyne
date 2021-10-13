@@ -45,7 +45,7 @@ interface iworld
     [!busy] on hello: busy = true;
     [busy]
     {
-       on hello: illegal;
+//       on hello: illegal;
        on inevitable: { world; busy = false; }
     }
   }

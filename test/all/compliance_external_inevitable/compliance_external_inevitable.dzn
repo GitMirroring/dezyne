@@ -38,18 +38,18 @@ interface ihello
     [state.Idle]
     {
       on hello: {once = true; state = State.Ready;}
-      on bye: illegal;
+//      on bye: illegal;
     }
     [state.Ready]
     {
-      on hello: illegal;
+//      on hello: illegal;
       on bye: state = State.Busy;
       [once] on inevitable: {once = false; cruel;}
     }
     [state.Busy]
     {
-      on hello: illegal;
-      on bye: illegal;
+//      on hello: illegal;
+//      on bye: illegal;
       on inevitable: {state = State.Idle; world;}
     }
   }

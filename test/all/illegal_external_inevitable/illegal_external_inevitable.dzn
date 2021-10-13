@@ -37,23 +37,23 @@ interface ihello
     [s.A]
     {
       on hello: s = S.B;
-      on bye: illegal;
+//      on bye: illegal;
     }
     [s.B]
     {
-      on hello: illegal;
+//      on hello: illegal;
       on bye: s = S.D;
       on optional: {s = S.C; world;}
     }
     [s.C]
     {
-      on hello: illegal;
+//      on hello: illegal;
       on bye: s = S.D;
     }
     [s.D]
     {
-      on hello: illegal;
-      on bye: illegal;
+//      on hello: illegal;
+//      on bye: illegal;
       on inevitable: {s = S.A; cruel;}
     }
   }

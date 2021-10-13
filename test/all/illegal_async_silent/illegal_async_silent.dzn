@@ -36,7 +36,7 @@ interface IAsync {
       on c: {}
     }
     [!idle] {
-      on e: illegal;
+//      on e: illegal;
       on c: idle = true;
       on inevitable: { cb; idle = true; }
     }
@@ -60,21 +60,21 @@ interface IAsync2 {
       on f: illegal;
     }
     [s.S1] {
-      on e: illegal;
+//      on e: illegal;
       on c: s = State.S0;
       on f: reply(Res.OK);
       on inevitable: { cb; s = State.S0; }
       on optional: s = State.S2;
     }
     [s.S2] {
-      on e: illegal;
+//      on e: illegal;
       on c: s = State.S0;
       on f: reply(Res.NOK);
       on inevitable: s = State.S3;
       on inevitable: { cb; s = State.S0; }
     }
     [s.S3] {
-      on e: illegal;
+//      on e: illegal;
       on c: s = State.S0;
       on f: reply(Res.OK);
       on inevitable: { cb; s = State.S0; }

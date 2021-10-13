@@ -35,7 +35,7 @@ interface IAsync {
       on c: {}
     }
     [!idle] {
-      on e: illegal;
+//      on e: illegal;
       on c: idle = true;
       on inevitable: { cb; idle = true; }
     }
@@ -55,7 +55,7 @@ interface IAsync2 {
       on c: {}
     }
     [!idle] {
-      on e: illegal;
+//      on e: illegal;
       on c: idle = true;
       on inevitable: { cb1; cb2; idle = true; }
     }
@@ -86,4 +86,3 @@ component async_synccb2 {
     }
   }
 }
-
