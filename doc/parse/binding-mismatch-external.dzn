@@ -1,0 +1,47 @@
+interface i {
+  in void e();
+  behaviour {
+    on e: {}
+  }
+}
+
+component c1 {
+  provides i p;
+  requires external i r1;
+  requires external i r2;
+  behaviour {
+    on p.e(): {}
+  }
+}
+
+component c2 {
+  provides i p;
+  behaviour {
+    on p.e(): {}
+  }
+}
+
+component s1 {
+  provides i p;
+  requires i r;
+  system {
+    c1 ci1;
+    c2 ci2;
+    p <=> ci1.p;
+    ci1.r1 <=> r;
+    ci1.r2 <=> ci2.p;
+  }
+}
+
+component s2 {
+  provides i p1;
+  provides i p2;
+  requires external i r1;
+  requires external i r2;
+  system {
+    s1 si1;
+    p1 <=> si1.p;
+    p2 <=> r2;
+    r1 <=> si1.r;
+  }
+}

@@ -1,0 +1,1 @@
+action-outside-on.dzn:6:12: error: action outside on

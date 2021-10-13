@@ -1,0 +1,31 @@
+interface ihello
+{
+  in void hello ();
+  behaviour {}
+}
+
+component hello
+{
+  provides ihello p;
+  requires injected ihello r;
+  behaviour {}
+}
+
+component logger
+{
+  provides ihello p;
+  behaviour {}
+}
+
+component binding_two_wildcards
+{
+  provides ihello p;
+  system
+  {
+    hello h;
+    logger log;
+
+    p <=> h.p;
+    log.* <=> *;
+  }
+}

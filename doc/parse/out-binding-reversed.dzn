@@ -1,0 +1,22 @@
+extern int $int$;
+interface ihello
+{
+  in void hello (int i);
+  in void cruel (int i);
+  behaviour
+  {
+    on hello:;
+    on cruel:;
+  }
+}
+
+component parse_out_binding
+{
+  provides ihello p;
+  behaviour
+  {
+    int data;
+    blocking on p.hello (i <- data): {}
+    blocking on p.cruel (data <- i): {}
+  }
+}

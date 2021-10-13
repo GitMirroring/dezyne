@@ -1,0 +1,2 @@
+requires-port-reply.dzn:21:21: error: requires port `r' not allowed in reply
+requires-port-reply.dzn:15:3: info: port defined here

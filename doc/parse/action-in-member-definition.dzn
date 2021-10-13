@@ -1,0 +1,18 @@
+interface ihello
+{
+  in bool hello ();
+  behaviour
+  {
+    on hello: reply (true);
+  }
+}
+
+component action_in_member_definition
+{
+  provides ihello p;
+  requires ihello r;
+  behaviour
+  {
+    bool b = r.hello ();
+  }
+}

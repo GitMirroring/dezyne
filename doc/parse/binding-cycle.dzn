@@ -1,0 +1,21 @@
+interface ihello
+{
+  in void hello ();
+  behaviour {}
+}
+
+component hello
+{
+  provides ihello p;
+  requires ihello r;
+  behaviour {}
+}
+
+component binding_cycle
+{
+  system
+  {
+    hello h;
+    h.p <=> h.r;
+  }
+}

@@ -1,0 +1,8 @@
+interface interface_trigger_used_as_action
+{
+  in void hello();
+  behaviour
+  {
+    on hello: hello;
+  }
+}

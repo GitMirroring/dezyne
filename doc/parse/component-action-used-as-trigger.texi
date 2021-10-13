@@ -1,0 +1,6 @@
+component-action-used-as-trigger.dzn:14:8: error: cannot use provides out-event `world' as trigger
+component-action-used-as-trigger.dzn:10:3: info: port `p' defined here
+component-action-used-as-trigger.dzn:4:3: info: event `world' defined here
+component-action-used-as-trigger.dzn:15:8: error: cannot use requires in-event `hello' as trigger
+component-action-used-as-trigger.dzn:11:3: info: port `r' defined here
+component-action-used-as-trigger.dzn:3:3: info: event `hello' defined here

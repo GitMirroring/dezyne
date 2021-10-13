@@ -1,0 +1,12 @@
+interface mixing_declarative
+{
+  in void hello();
+  behaviour
+  {
+    [true]
+    {
+      on hello: {}
+      if (true);
+    }
+  }
+}

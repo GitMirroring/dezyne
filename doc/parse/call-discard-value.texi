@@ -1,0 +1,1 @@
+call-discard-value.dzn:11:15: error: call value discarded

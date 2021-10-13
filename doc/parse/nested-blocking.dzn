@@ -1,0 +1,17 @@
+interface ihello
+{
+  in void hello();
+  behaviour
+  {
+    on hello:;
+  }
+}
+
+component nested_blocking
+{
+  provides ihello p;
+  behaviour
+  {
+    blocking on p.hello(): [true] blocking p.reply ();
+  }
+}

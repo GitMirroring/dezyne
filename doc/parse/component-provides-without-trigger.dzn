@@ -1,0 +1,11 @@
+interface iworld
+{
+  out void world();
+  behaviour {}
+}
+
+component component_provides_without_trigger
+{
+  provides iworld p;
+  behaviour {}
+}

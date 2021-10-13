@@ -1,0 +1,8 @@
+interface interface_action_used_as_trigger
+{
+  out void world();
+  behaviour
+  {
+    on world: {}
+  }
+}

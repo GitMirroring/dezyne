@@ -1,0 +1,5 @@
+interface valued_out_event
+{
+  out bool world();
+  behaviour {}
+}

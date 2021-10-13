@@ -1,0 +1,2 @@
+nested-on.dzn:8:15: error: nested on used
+nested-on.dzn:8:5: info: within on here

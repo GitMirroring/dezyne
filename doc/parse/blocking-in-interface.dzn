@@ -1,0 +1,8 @@
+interface blocking_in_interface
+{
+  in void hello();
+  behaviour
+  {
+    blocking on hello:;
+  }
+}

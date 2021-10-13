@@ -1,0 +1,1 @@
+mixing-imperative.dzn:10:7: error: imperative statement expected

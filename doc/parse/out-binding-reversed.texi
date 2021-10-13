@@ -1,0 +1,1 @@
+out-binding-reversed.dzn:20:26: error: i is not a member variable

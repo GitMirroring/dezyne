@@ -1,0 +1,2 @@
+function-not-tail-recursive.dzn:11:9: error: no statement allowed after recursive function call
+function-not-tail-recursive.dzn:12:9: error: statement after call

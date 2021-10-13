@@ -1,0 +1,13 @@
+interface imperative_illegal
+{
+  in void hello();
+  behaviour
+  {
+    bool b = false;
+    on hello:
+    {
+      b = true;
+      illegal;
+    }
+  }
+}

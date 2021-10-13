@@ -1,0 +1,28 @@
+enum result {OK, FAIL};
+interface call_in_complex_expression
+{
+  in result hello ();
+  behaviour
+  {
+    result f ()
+    {
+      return result.OK;
+    }
+
+    result g (result r)
+    {
+      return r;
+    }
+
+    result r = result.OK;
+    on hello:
+    {
+      bool b = f () != result.OK;   // not allowed
+      result r = g (f ());          // not allowed
+      if (f () == g (result.OK))    // not allowed
+        reply (result.OK);
+      else if (f () != result.OK)
+        reply (f ());
+    }
+  }
+}

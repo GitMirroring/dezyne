@@ -24,6 +24,7 @@
 DEZYNE_EXAMPLES =				\
  %D%/ca.dzn					\
  %D%/compliance-multiple-provides-fork.dzn	\
+ %D%/component-if-illegal.dzn			\
  %D%/decompose2-proxy.dzn			\
  %D%/decompose2.dzn				\
  %D%/function-call-status.dzn			\

@@ -1,0 +1,13 @@
+interface call_discard_value
+{
+  in void hello ();
+  behaviour
+  {
+    bool f ()
+    {
+      return true;
+    }
+
+    on hello: f();
+  }
+}

@@ -1,0 +1,17 @@
+interface ihello
+{
+  in void hello();
+  out void world();
+  behaviour {}
+}
+
+component component_action_used_as_trigger
+{
+  provides ihello p;
+  requires ihello r;
+  behaviour
+  {
+    on p.world(): {}
+    on r.hello(): {}
+  }
+}

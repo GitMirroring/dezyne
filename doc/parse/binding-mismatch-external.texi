@@ -1,0 +1,3 @@
+binding-mismatch-external.dzn:45:5: error: cannot bind external port `r1' to non-external port `r'
+binding-mismatch-external.dzn:39:3: info: port `r1' defined here
+binding-mismatch-external.dzn:26:3: info: port `r' defined here

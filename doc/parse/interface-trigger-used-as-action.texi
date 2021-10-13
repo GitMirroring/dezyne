@@ -1,0 +1,2 @@
+interface-trigger-used-as-action.dzn:6:15: error: cannot use in-event `hello' as action
+interface-trigger-used-as-action.dzn:3:3: info: event `hello' defined here

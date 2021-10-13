@@ -1,0 +1,48 @@
+interface ihello
+{
+  in void hello ();
+  behaviour {}
+}
+
+component hello
+{
+  provides ihello p;
+  requires ihello r;
+  behaviour {}
+}
+
+component world
+{
+  provides ihello p_left;
+  provides ihello p_right;
+  requires ihello r_left;
+  requires ihello r_right;
+  behaviour {}
+}
+
+component binding_cycle
+{
+  provides ihello p_left;
+  provides ihello p_right;
+  requires ihello r_left;
+  requires ihello r_right;
+  system
+  {
+    hello h1;
+    hello h2;
+    world w1;
+    world w2;
+
+    p_left <=> w1.p_left;
+    p_right <=> w2.p_left;
+
+    w1.r_left <=> h1.p;
+    w1.r_right <=> h2.p;
+
+    w2.r_left <=> w1.p_right;
+    w2.r_right <=> r_right;
+
+    h1.r <=> r_left;
+    h2.r <=> w2.p_right;
+  }
+}

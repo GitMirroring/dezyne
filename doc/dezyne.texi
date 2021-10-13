@@ -5334,7 +5334,7 @@ The well-formedness checks in alphabetical order:
 @xref{Out Parameter is not allowed for out Event},@*
 @xref{Parameter Binding not allowed here},@*
 @xref{Parameter type must be a data type Code},@*
-@xref{Port is bound twice},@*
+@xref{Port is bound more than once},@*
 @xref{Port is not bound},@*
 @xref{Port of an instance is not bound},@*
 @xref{Reply not allowed on 'requires' port},@*
@@ -5375,43 +5375,37 @@ Well-formedness checks for a composite Component are:
 
 @section Well-formedness Checks -- Top level
 
+@anchor{Interface must define at least one event}
+@subsection Interface must define at least one event
+
+Completely 'passive' interfaces are not allowed; at least one @b{in} or
+@b{out} event is required:
+
+@example
+@verbatiminclude parse/interface-without-event.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/interface-without-event.texi
+@end example
+
 @anchor{Interface must define behaviour}
 @subsection Interface must define behaviour
 Interfaces without behaviour are not allowed.  No adequate default
 behaviour is available:
 
 @example
- 1 interface Sensor @{
- 2   in void enable();
- 3   in void disable();
- 4   out void triggered();
- 5   out void disabled();
- 6 @}
+@verbatiminclude parse/interface-without-behaviour.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-1:11: Interface must define behaviour: Sensor
-@end example
-
-@anchor{Interface must define at least one event}
-@subsection Interface must define at least one event
-Completely 'passive' interfaces are not allowed; at least one @b{in} or
-@b{out} event is required:
-
-@example
- 1 interface Sensor @{
- 2   behaviour @{
- 3     // ...
- 4   @}
- 5 @}
-@end example
-
-This results in the following error message:
-
-@example
-1:11: Interface must define at least one event: Sensor
+@verbatiminclude parse/interface-without-behaviour.texi
 @end example
 
 @anchor{Out Event with non void return type is not allowed}
@@ -5419,20 +5413,14 @@ This results in the following error message:
 Only @i{in} Event can have a return type.
 
 @example
- 1 interface Sensor @{
- 2   enum Value@{ New, Old @};
- 3   in void enable();
- 4   in void disable();
- 5   out Value triggered();
- 6   out void disabled();
- 7   ...
- 8 @}
+@verbatiminclude parse/valued-out-event.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-5:13: Out Event with non void return type is not allowed: triggered
+@verbatiminclude parse/valued-out-event.texi
 @end example
 
 @anchor{Component with behaviour needs at least one trigger event}
@@ -5441,43 +5429,35 @@ Any Component with a @b{behaviour} specification is supposed to be
 'reactive'.  This implies that it should have at least one @b{provides}
 Interface with an @b{in} Event, or at least one @b{requires} Interface
 with an @b{out} Event.  Such an Event acts as a 'trigger' for the
-Component to react on.  So-called 'active' Components are not allowed
-(yet) in the ASD language.
+Component to react on.  So-called 'active' Components are not supported
+yet.
 
+@noindent
 An example:
 
 @example
-  1 interface Sensor @{
-  2   in void activate();
-  3   in void deactivate();
-  4   behaviour @{ ...  @}
-  5 @}
-  6
-  7 component Alarm @{
-  8   requires Sensor sensor;
-  9   behaviour @{ ...  @}
- 10 @}
+@verbatiminclude parse/component-provides-without-trigger.dzn
 @end example
 
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/component-provides-without-trigger.texi
+@end example
+
+@noindent
 Another example:
 
 @example
-  1 interface Siren @{
-  2   out void start();
-  3   out void stop();
-  4   behaviour @{ ...  @}
-  5 @}
-  6
-  7 component Alarm @{
-  8   provides Siren siren;
-  9   behaviour @{ ...  @}
- 10 @}
+@verbatiminclude parse/component-requires-without-trigger.dzn
 @end example
 
-Both examples result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-7:11: Component with behaviour needs at least one trigger event: Alarm
+@verbatiminclude parse/component-requires-without-trigger.texi
 @end example
 
 @anchor{Component with behaviour must have at least one provides port}
@@ -5485,46 +5465,83 @@ Both examples result in the following error message:
 Any Component with a @b{behaviour} specification must have a provides
 port through which the Component is activated.
 
+@noindent
 An example:
 
 @example
- 1 component Alarm @{
- 2   requires Sensor sensor;
- 3   behaviour @{ ...  @}
- 4 @}
+@verbatiminclude parse/component-without-provides.dzn
 @end example
 
-The examples result in the following error message:
+@noindent
+The examples results in the following error message:
 
 @example
-1:11: Component with behaviour must have at least one provides port: Alarm
+@verbatiminclude parse/component-without-provides.texi
 @end example
 
 @section Well-formedness Checks -- Directional
 
 @anchor{Event is not an action}
 @subsection Event is not an action
-Event @i{console.arm} is used as @i{action}, but is introduced as a
-@i{trigger}.
 
 In an Interface this indicates the Event is defined as an @b{in}
 event.
 
+@example
+@verbatiminclude parse/interface-trigger-used-as-action.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/interface-trigger-used-as-action.texi
+@end example
+
 In a Component this indicates that either it is an @b{in} Event of a
-@b{provides} interface of the design, or an @b{out} Event of a
-@b{requires} interface.
+@b{provides} interface, or an @b{out} Event of a @b{requires} interface.
+
+@example
+@verbatiminclude parse/component-trigger-used-as-action.dzn
+@end example
+
+@noindent
+This results in the following error messages:
+
+@example
+@verbatiminclude parse/component-trigger-used-as-action.texi
+@end example
 
 @anchor{Event is not a valid trigger}
 @subsection Event is not a valid trigger
-Event @i{console.detected} is used as @i{trigger}, but is introduced as
-an @i{action}.
 
 In an Interface this indicates the Event is defined as an @b{out}
 event.
 
+@example
+@verbatiminclude parse/interface-action-used-as-trigger.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/interface-action-used-as-trigger.texi
+@end example
+
 In a Component this indicates that either it is an @b{out} Event of a
-@b{provides} interface of the design, or an @b{in} Event of a
-@b{requires} interface.
+@b{provides} interface, or an @b{in} Event of a @b{requires} interface.
+
+@example
+@verbatiminclude parse/component-action-used-as-trigger.dzn
+@end example
+
+@noindent
+This results in the following error messages:
+
+@example
+@verbatiminclude parse/component-action-used-as-trigger.texi
+@end example
 
 @section Well-formedness Checks -- Nesting
 The nesting of language constructs is restricted.  When we conceptually
@@ -5558,15 +5575,16 @@ a declarative context:
 @end itemize
 
 @example
- 1 [state.Armed]
- 2 @{
- 3   on sensor.triggered():
- 4   @{
- 5     // the imperative part:
- 6     console.detected();
- 7     state = States.Triggered;
- 8   @}
- 9 @}
+ 1 // the declarative part:
+ 2 [state.ARMED]
+ 3 @{
+ 4   on sensor.triggered():
+ 5   // the imperative part:
+ 6   @{
+ 7     console.detected();
+ 8     state = status.TRIGGERED;
+ 9   @}
+10  @}
 @end example
 
 @anchor{@code{assign} only allowed within @code{on}}
@@ -5575,16 +5593,14 @@ An @code{assign} occurred outside the scope of a declarative
 context:
 
 @example
- 1 [state.Armed]
- 2 @{
- 3   state = States.Triggered;
- 4 @}
+@verbatiminclude parse/assign-outside-on.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-3:3: Well-formedness error: Assignment Statement only allowed within On Statement
+@verbatiminclude parse/assign-outside-on.texi
 @end example
 
 @anchor{@code{action} only allowed within @code{on}}
@@ -5592,56 +5608,42 @@ This results in the following error message:
 An @code{action} occurred outside the scope of a declarative context:
 
 @example
- 1 [state.Disarming]
- 2 @{
- 3   console.detected();
- 4 @}
+@verbatiminclude parse/action-outside-on.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-3:3: Well-formedness error: Action Statement only allowed within On Statement
+@verbatiminclude parse/action-outside-on.texi
 @end example
 
 @anchor{@code{on} not allowed within other @code{on}}
 @subsection @code{on} not allowed within other @code{on}
 
 @example
- 1 on console.arm():
- 2 @{
- 3   [state.Disarming]
- 4   @{
- 5     on sensor.triggered():
- 6     @{ ...  @}
- 7   @}
- 8 @}
+@verbatiminclude parse/nested-on.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-5:5: Well-formedness error: On Statement not allowed within other On Statement
+@verbatiminclude parse/nested-on.texi
 @end example
 
 @anchor{@code{blocking} not allowed within other @code{blocking}}
 @subsection @code{blocking} not allowed within other @code{blocking}
 
 @example
- 1 blocking on console.arm():
- 2 @{
- 3   [state.Disarming]
- 4   @{
- 5     blocking
- 6     @{ ...  @}
- 7   @}
- 8 @}
+@verbatiminclude parse/nested-blocking.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-5:5: Well-formedness error: Blocking Statement not allowed within other Blocking Statement
+@verbatiminclude parse/nested-blocking.texi
 @end example
 
 @anchor{@code{blocking} not allowed in interface behaviour}
@@ -5650,20 +5652,14 @@ Events handling can be 'blocking' in component behaviour only.  It is not
 allowed in interfaces.  So:
 
 @example
- 1 interface Sensor @{
- 2   in void enable();
- 3   in void disable();
- 4   behaviour @{
- 5     on enable: @{ ....  @}
- 6     blocking on disable: @{ ...  @}
- 7   @}
- 8 @}
+@verbatiminclude parse/blocking-in-interface.dzn
 @end example
 
-results in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-6:5: Well-formedness error: Blocking Statement not allowed in interface behaviour
+@verbatiminclude parse/blocking-in-interface.texi
 @end example
 
 @anchor{@code{blocking} not allowed with multiple provides ports}
@@ -5672,38 +5668,14 @@ A component with more than one provides port is not allowed to block
 events, due to implementation restrictions.  So:
 
 @example
-  1 interface Sensor @{
-  2   in void activate();
-  3   out void activated();
-  4   behaviour @{
-  5     on activate: @{@}
-  6     on inevitable: activated;
-  7   @}
-  8 @}
-  9
- 10 interface Test @{
- 11   in void test();
- 12   behaviour @{
- 13     on test: @{@}
- 14   @}
- 15 @}
- 16
- 17 component SensorComp @{
- 18   provides Sensor sensor1;
- 19   provides Test test;
- 20   requires Sensor sensor2;
- 21   behaviour @{
- 22     blocking on sensor1.activate(): sensor2.activate();
- 23     on sensor2.activated(): @{ sensor1.activated(); sensor1.reply(); @}
- 24     on test.test(): @{@}
- 25   @}
- 26 @}
+@verbatiminclude parse/blocking-multiple-provides.dzn
 @end example
 
-results in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-22:5: Well-formedness error: Blocking Statement not allowed with multiple provides ports
+@verbatiminclude parse/blocking-multiple-provides.texi
 @end example
 
 @section Well-formedness Checks -- Mixing
@@ -5751,25 +5723,20 @@ This results in the following error message:
 
 @anchor{Otherwise guard combined with second otherwise is not allowed}
 @subsection Otherwise guard combined with second otherwise is not allowed
-An @i{otherwise} guard catches the remaining cases for a list of guards.
-For that reason it is not allowed to have more than one @i{otherwise}
-statement in a list.  So:
+
+An @code{otherwise} guard catches the remaining cases for a list of
+guards.  For that reason it is not allowed to have more than one
+@code{otherwise} statement in a list.  So:
 
 @example
- 1 on console.arm():
- 2 @{
- 3   [sounding] sounding = false;
- 4   [otherwise] sounding = true;
- 5   [otherwise] illegal;
- 6 @}
- 7
+@verbatiminclude parse/second-otherwise.dzn
 @end example
 
-will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-4:4: Well-formedness error: Otherwise guard combined with second otherwise is not allowed
-5:3: Well-formedness error: Second otherwise defined here
+@verbatiminclude parse/second-otherwise.texi
 @end example
 
 @anchor{Otherwise guard combined with non @code{guard} is not
@@ -5781,16 +5748,14 @@ For that reason it is not allowed combine an @code{otherwise} statement
 with a non-@code{guard}.  So:
 
 @example
- 1 on console.arm(): sounding = false;
- 2 [otherwise] @{ on console.disarm(): sounding = true; @}
- 3
+@verbatiminclude parse/otherwise-without-guard.dzn
 @end example
 
-will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-4:2: Well-formedness error: Otherwise guard combined with non Guard Statement is not allowed
-1:2: Well-formedness error: non Guard Statement defined here
+@verbatiminclude parse/otherwise-without-guard.texi
 @end example
 
 @anchor{Illegal must be the only statement in a compound}
@@ -5801,19 +5766,14 @@ An @code{illegal} statement must occur on its own; no other
 @code{illegal} occurs in a nested @code{compound}:
 
 @example
- 1 on console.arm():
- 2 @{
- 3   @{
- 4     @{ illegal; @}
- 5   @}
- 6   sounding = true;
- 7 @}
+@verbatiminclude parse/imperative-illegal.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-4:7: Well-formedness error: Illegal must be the only Statement in a compound
+@verbatiminclude parse/imperative-illegal.texi
 @end example
 
 In a component, using an @code{illegal} within a conditional statement
@@ -5821,13 +5781,7 @@ In a component, using an @code{illegal} within a conditional statement
 @code{action}s, e.g:
 
 @example
- 1 on console.arm():
- 2 @{
- 3   s = sensor.enable();
- 4   if (s.NOK) @{
- 5     illegal;
- 6   @}
- 7 @}
+@verbatiminclude examples/component-if-illegal.dzn
 @end example
 
 @anchor{Illegal is not allowed in @code{if}s in interface}
@@ -5838,18 +5792,14 @@ direct way.  This is due to the declarative character of interfaces.  To
 be more specific, it must not occur in an @code{if}.  An example:
 
 @example
- 1 bool b = true;
- 2 on arm:
- 3 @{
- 4   if (b) @{ illegal; @}
- 5   else @{ state = States.Armed; @}
- 6 @}
+@verbatiminclude parse/interface-if-illegal.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-4:12: Well-formedness error: Illegal is not allowed in if-then-else statements
+@verbatiminclude parse/interface-if-illegal.texi
 @end example
 
 @anchor{Illegal is not allowed in functions in interface}
@@ -5861,52 +5811,41 @@ interfaces.  To be more specific, it must not occur in a function body.
 An example:
 
 @example
- 1 void ill()
- 2 @{
- 3   illegal;
- 4 @}
- 5 on arm:
- 6 @{
- 7   ill();
- 8 @}
+@verbatiminclude parse/interface-function-illegal.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-3:3: Well-formedness error: Illegal is not allowed in functions
+@verbatiminclude parse/interface-function-illegal.texi
 @end example
 
 @section Well-formedness Checks -- Reply
+
 A 'reply' is required in the handling of a valued (i.e.  non-void) event.
 It is also required in case an event (that might be void) is used in
 'blocking' mode; in that case the occurrence of the reply might be
 postponed.  In general this is hard to check statically.  What can be
 checked is described below.
 
-@anchor{Reply not allowed on 'requires' Port 'sensor'}
-@subsection Reply not allowed on 'requires' Port: 'sensor'
+@anchor{Reply not allowed on 'requires' port}
+@subsection Reply not allowed on 'requires' port
+
 A 'reply' which is issued to release a blocking event refers to the
 event's port.  Since blocking is effective on 'provides' ports only, a
 well-formedness error is issued when a 'requires' port name is used.  An
 example:
 
 @example
-  1 component Test @{
-  2   provides Start start;
-  3   requires Sensor sensor;
-  4   behaviour @{
-  5     on start.start(): @{ sensor.activate(); @}
-  6     blocking on start.stop(): @{ sensor.activate(); @}
-  7     on sensor.deactivated(): @{ sensor.reply(); @}
-  8   @}
-  9 @}
+@verbatiminclude parse/requires-port-reply.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-7:32: Well-formedness error: Reply not allowed on 'requires' Port: 'sensor'
+@verbatiminclude parse/requires-port-reply.texi
 @end example
 
 @section Well-formedness Checks -- Valued Actions and Functions
@@ -5928,255 +5867,166 @@ Actions and Functions at all, since Actions are only allowed within an
 
 @anchor{Actions are not allowed here}
 @subsection Actions are not allowed here
+
 An Action is used in a complex expression.
 
 @example
-  1 interface Sensor @{
-  2   enum Status @{ OK, NOK @};
-  3   in Status enable();
-  4 @}
-  5 component Alarm @{
-  6   provides Console console;
-  7   requires Sensor sensor;
-  8   behaviour @{
-  9     ....
- 10     bool b = true;
- 11     on console.arm():
- 12     @{
- 13       if (sensor.enable() == Sensor.Status.OK) @{
- 14         state = States.Armed;
- 15       @}
- 16       bool b = sensor.enable();
- 17       bool b = b || sensor.enable();
- 18     @}
- 19   @}
- 20 @}
+@verbatiminclude parse/action-in-complex-expression.dzn
 @end example
 
-This results in the following error messages:
-
-@example
-13:10: Well-formedness error: Actions are not allowed here
-17:20: Well-formedness error: Actions are not allowed here
-@end example
-The call of the @i{sensor.enable()} action on line 16 is the only
-acceptable one.
-
-Action is used as initial value of a global variable.
-
-@example
-  1 interface Sensor @{
-  2   enum Status @{ OK, NOK @};
-  3   in Status enable();
-  4 @}
-  5 component Alarm @{
-  6   provides Console console;
-  7   requires Sensor sensor;
-  8   behaviour @{
-  9     ...
- 10     Sensor.Status st = sensor.enable();
- 11     on console.arm():
- 12     @{
- 13       ...
- 14     @}
- 15   @}
- 16 @}
-@end example
-
+@noindent
 This results in the following error message:
 
 @example
-10:24: Well-formedness error: Actions are not allowed here
+@verbatiminclude parse/action-in-complex-expression.texi
+@end example
+
+Action is used as initial value of a member variable.
+
+@example
+@verbatiminclude parse/action-in-member-definition.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/action-in-member-definition.texi
 @end example
 
 @anchor{Function calls are not allowed here}
 @subsection Function calls are not allowed here
+
 A Function call is used in a complex expression.
 
 @example
-  1 interface Sensor @{
-  2   enum Status @{ OK, NOK @};
-  3   in Status enable();
-  4 @}
-  5 component Alarm @{
-  6   provides Console console;
-  7   requires Sensor sensor;
-  8   behaviour @{
-  9     ....
- 10     bool ok() @{
- 11       return (enab() == OK);
- 12     @}
- 13     Sensor.Status enab() @{
- 14       Sensor.Status r = sensor.enable();
- 15       return r;
- 16     @}
- 17     ...
- 18   @}
- 19 @}
+@verbatiminclude parse/call-in-complex-expression.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-11:14: Well-formedness error: Function calls are not allowed here
+@verbatiminclude parse/call-in-complex-expression.texi
 @end example
 
 @anchor{Function value discarded}
 @subsection Function value discarded
-A valued Function is called without assigning its return value.
+
+A valued Function is called without using its return value.
 
 @example
-  1 ...
-  2 bool negate(bool b)
-  3 @{
-  4   return !b;
-  5 @}
-  6 void test(bool b)
-  7 @{
-  8   negate(b);
-  9 @}
- 10 ...
+@verbatiminclude parse/call-discard-value.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-8:7: Well-formedness error: Function value discarded: negate
+@verbatiminclude parse/call-discard-value.texi
 @end example
 
 @anchor{Action value discarded}
 @subsection Action value discarded
-A valued Function is called without assigning its return value.  An
-example:
+
+A valued Action is called without using its return value.
 
 @example
-  1 interface Sensor @{
-  2   enum Status @{ OK, NOK @};
-  3   in Status enable();
-  4 @}
-  5 component Alarm @{
-  6   provides Console console;
-  7   requires Sensor sensor;
-  8   behaviour @{
-  9     ....
- 10     on console.arm():
- 11     @{
- 12       sensor.enable();
- 13     @}
- 14   @}
- 15 @}
+@verbatiminclude parse/action-discard-value.dzn
 @end example
 
+@noindent
 This results in the following error message:
 
 @example
-12:7: Well-formedness error: Action value discarded: enable
+@verbatiminclude parse/action-discard-value.texi
 @end example
 
 @section Well-formedness Checks -- Injection
 
 @anchor{Injected Port has out event}
 @subsection Injected Port has out event
+
 When a Component has a required injected Port, the corresponding
-Interface shall not have out events.  An example:
+Interface must not have out events.
 
 @example
- 1 interface Intf @{
- 2   in void evt();
- 3   out void notif();
- 4 @}
- 5
- 6 component Comp @{
- 7   requires injected Intf i;
- 8   .....
- 9 @}
+@verbatiminclude parse/injected-with-out-event.dzn
 @end example
 
-The following error message will be issued:
+@noindent
+This results in the following error message:
 
 @example
-7:26: Well-formedness error: Injected Port has out event: i
+@verbatiminclude parse/injected-with-out-event.texi
 @end example
 
 @section Well-formedness Checks -- Binding
-In a composite Component the Component's ports and all sub Component
+
+In a system Component the Component's ports and all sub Component
 ports must be bound correctly.
-
-We'll use the following (somewhat artificial) example to elaborate on
-binding errors below:
-
-@example
-  1 import console.dzn;
-  2 import alarm.dzn;
-  3 import sensor.dzn;
-  4 import siren.dzn;
-  5
-  6 component Alarm_system
-  7 @{
-  8   provides Console console;
-  9   provides Console console_alt;
- 10
- 11   system
- 12   @{
- 13     Alarm alarm;
- 14     Sensor sensor;
- 15     Siren siren;
- 16
- 17     // bindings .....
- 18   @}
- 19 @}
-@end example
 
 Bindings in which 'wildcards' are involved will be described at the end
 of this section.
 
 @anchor{Port is not bound}
 @subsection Port is not bound
-No binding is specified for a port of a composite Component.  If no
-bindings are added in the Alarm_system Component above, the following
-error message will be issued (among others):
+
+No binding is specified for a port of a system Component.
 
 @example
-8:19: Well-formedness error: Port is not bound: console
-9:19: Well-formedness error: Port is not bound: console_alt
+@verbatiminclude parse/port-not-bound.dzn
 @end example
 
-@anchor{Port is not bound sub-component}
-@subsection Port is not bound sub-component
-No binding is specified for a port of a sub-component.  If no bindings
-are added in the Alarm_system Component above, the following error
-message will be issued (among others):
+@noindent
+This results in the following error message:
 
 @example
-12:16: Well-formedness error: Port is not bound: @i{alarm.console}
+@verbatiminclude parse/port-not-bound.texi
 @end example
 
-@anchor{Port is bound twice}
-@subsection Port is bound twice
-More than one binding is specified for a port of a composite Component
-or one of its sub Components.  If line 17 in the Alarm_system Component
-above is followed by
+@anchor{Port of an instance is not bound}
+@subsection Port of an instance is not bound
+
+No binding is specified for a port of a component instance.
 
 @example
- 18 console <=> alarm.console;
- 19 alarm.sensor <=> sensor.sensor;
- 20 console_alt <=> alarm.console;
+@verbatiminclude parse/instance-port-not-bound.dzn
 @end example
 
-the following error message will be issued (among others):
+@noindent
+This results in the following error message:
 
 @example
-20:20: Well-formedness error: Port is bound twice: alarm.console
+@verbatiminclude parse/instance-port-not-bound.texi
+@end example
+
+@anchor{Port is bound more than once}
+@subsection Port is bound more than once
+
+More than one binding is specified for a port of a system Component
+or one of its component instances:
+
+@example
+@verbatiminclude parse/port-bound-twice.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/port-bound-twice.texi
 @end example
 
 @anchor{Binding directions do not match}
 @subsection Binding directions do not match
+
 The directions of the left and right port mentioned in the binding do
 not match.  The following constructs are allowed:
 
 @itemize
 
-@item When binding a port of the Component to a port of a sub Component, the
+@item When binding a port of the system Component to a port of a component instance, the
 directions must be the same:
 
 @itemize
@@ -6185,8 +6035,8 @@ directions must be the same:
 @item @b{requires} binds to @b{requires}
 @end itemize
 
-@item When binding a port of the Component to another port of the Component
-(does this make sense??), the directions must be the opposite:
+@item When binding a port of the system Component to another port of the system Component,
+the directions must be the opposite:
 
 @itemize
 
@@ -6194,8 +6044,8 @@ directions must be the same:
 
 @end itemize
 
-@item When binding a port of a sub Component to a port of another (or the same)
-sub Component, the directions must be the opposite:
+@item When binding a port of a component instance to a port of another (or the same)
+component instance, the directions must be the opposite:
 
 @itemize
 
@@ -6204,57 +6054,48 @@ sub Component, the directions must be the opposite:
 @end itemize
 
 @end itemize
-If line 17 in the Alarm_system Component above is followed by
 
 @example
- 18 console <=> console_alt;
+@verbatiminclude parse/binding-mismatch-direction.dzn
 @end example
 
-the following error message will be issued (among others):
+@noindent
+This results in the following error message:
 
 @example
-18:5: Well-formedness error: Binding directions do not match
+@verbatiminclude parse/binding-mismatch-direction.texi
 @end example
 
 @anchor{Binding two wildcards is not allowed}
 @subsection Binding two wildcards is not allowed
-When a 'wildcard' is used in a binding the other side of the binding
-cannot have a wildcard also.
-
-An example:
 
 @example
-  1 component Sys @{
-  2   provides Console console;
-  3   system @{
-  4     Logger logger;
-  5     SubSystem sub;
-  6     ...
-  7     logger.* <=> sub.*;
-  8     ...
-  9   @}
- 10 @}
+@verbatiminclude parse/binding-two-wildcards.dzn
 @end example
 
-This will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-7:14: Well-formedness error: Binding two wildcards is not allowed
+@verbatiminclude parse/binding-two-wildcards.texi
 @end example
 
 @anchor{Component is part of a cyclic binding}
 @subsection Component is part of a cyclic binding
+
 We can define communication 'direction' for bindings as follows:
 
 @itemize
 
-@item For two sub components communicating: the @code{requires} port directs to
+@item
+For two component instances communicating: the @code{requires} port directs to
 the @code{provides} port in the binding.
 
-@item For port forwarding (an external port is forwarded to a sub-component port) or vice versa:
-A @code{provides} external port directs to a @code{provides}
-sub-component port, and a @code{requires} sub-component port directs to
-a @code{requires} external port.
+@item
+For port forwarding (an external port is forwarded to a component
+instance port) or vice versa: A @code{provides} external port directs to
+a component instance @code{provides} port, and a component instance
+@code{requires} directs to a @code{requires} external port.
 
 @end itemize
 To prevent component re-entrancy and guarantee run-to-completion
@@ -6264,110 +6105,51 @@ system component.
 In the most trivial example, which creates a one-component cycle:
 
 @example
-  1 component Comp @{
-  2   provides Intf prov;
-  3   requires Intf req;
-  4 @}
-  5
-  6 component Sys @{
-  7   system @{
-  8     Comp c;
-  9     c.prov <=> c.req;
- 10   @}
- 11 @}
+@verbatiminclude parse/binding-cycle.dzn
 @end example
 
-the following error message will be issued:
+@noindent
+This results in the following error message:
 
 @example
-8:5: Well-formedness error: Component is part of a cyclic binding: @i{c}
+@verbatiminclude parse/binding-cycle.texi
 @end example
 
+@noindent
 A more elaborate example creates a cycle over three components:
 
 @example
-  1 component Comp1 @{
-  2   provides Intf p;
-  3   requires Intf r;
-  4 @}
-  5
-  6 component Comp2 @{
-  7   provides Intf p1;
-  8   provides Intf p2;
-  9   requires Intf r1;
- 10   requires Intf r2;
- 11 @}
- 12
- 13 component Sys @{
- 14   provides Intf p1;
- 15   provides Intf p2;
- 16
- 17   requires Intf r1;
- 18   requires Intf r2;
- 19
- 20   system @{
- 21     Comp2 c21;
- 22     Comp2 c22;
- 23     Comp1 c11;
- 24     Comp1 c12;
- 25
- 26     p1 <=> c21.p1;
- 27     p2 <=> c22.p1;
- 28     c21.r1 <=> c11.p;
- 29     c21.r2 <=> c12.p;
- 30     c22.r1 <=> c21.p2;
- 31     c22.r2 <=> r2;
- 32
- 33     c11.r <=> r1;
- 34     c12.r <=> c22.p2;
- 35   @}
- 36 @}
+@verbatiminclude parse/binding-cycle-elaborate.dzn
 @end example
 
-As a result the following error messages will be issued:
+@noindent
+This results in the following error message:
 
 @example
-21:5: Well-formedness error: Component is part of a cyclic binding: @i{c21}
-22:5: Well-formedness error: Component is part of a cyclic binding: @i{c22}
-24:5: Well-formedness error: Component is part of a cyclic binding: @i{c12}
+@verbatiminclude parse/binding-cycle-elaborate.texi
 @end example
 
 @anchor{Wildcard can be bound to a provided port only}
 @subsection Wildcard can be bound to a provided port only
-Since @b{injected} Ports are always @b{requires}Ports, and a wildcard is
-used to bind such a Port, the other side of a wildcard binding must be a
-@b{provides} Port.  In this example:
+
+Since @code{injected} Ports are always @code{requires} Ports and a
+wildcard is used to bind such a Port, the other side of a wildcard
+binding must be a @code{provides} Port.  In this example:
 
 @example
-  1 component comp @{
-  2   requires injected ilogger logger;
-  3   .....
-  4 @}
-  5
-  6 component logging_comp @{
-  7   requires ilogger logger;
-  8   ...
-  9 @}
- 10
- 11 component sys @{
- 12   provides iconsole console;
- 13   system @{
- 14     logging_comp logger;
- 15     sub_system sub;
- 16     ...
- 17     logger.logger <=> *;
- 18   @}
- 19 @}
+@verbatiminclude parse/binding-wildcard-requires.dzn
 @end example
 
-the following error message will be issued:
+@noindent
+This results in the following error message:
 
 @example
-17:20: Well-formedness error: Wildcard can be bound to a provided port only
+@verbatiminclude parse/binding-wildcard-requires.texi
 @end example
 
 @anchor{System composition is recursive}
 @subsection System composition is recursive
+
 A system component may instantiate an arbitrary set of other components,
 which can be system components themselves.  It is not allowed to have a
 self-instance neither directly nor indirectly, since that would lead to
@@ -6378,110 +6160,34 @@ instances.  Component @code{c1} instantiates @code{c3}, which
 instantiates @code{c4}, which instantiates @code{c1}.
 
 @example
-  1 component c1 @{
-  2   system @{
-  3     c2 ci2;
-  4     c3 ci3;
-  5   @}
-  6 @}
-  7
-  8 component c2 @{
-  9   system @{
- 10     c5 ci5;
- 11   @}
- 12 @}
- 13
- 14 component c3 @{
- 15   system @{
- 16     c4 ci4;
- 17     c2 ci2;
- 18   @}
- 19 @}
- 20
- 21 component c4 @{
- 22   system @{
- 23     c1 ci1;
- 24   @}
- 25 @}
- 26
- 27 component c5 @{
- 28   system @{ @} // an empty system
- 29 @}
+@verbatiminclude parse/recursive-system.dzn
 @end example
 
-All components involved in the cyclic instantiation will be report in
-the error messages:
+@noindent
+This results in the following error message:
 
 @example
-1:11: Well-formedness error: System composition is recursive: 'c1'
-14:11: Well-formedness error: System composition is recursive: 'c3'
-21:11: Well-formedness error: System composition is recursive: 'c4'
+@verbatiminclude parse/recursive-system.texi
 @end example
 
 @anchor{External port must be bound to external port}
 @subsection External port must be bound to external port
+
 There is a restriction in the binding of external ports: when an
 external requires port of a system Component is bound, the other side of
 the binding must be an external requires port also (this is only
-possible when that is a port of a sub Component)
-
-In the example below some errors are reported.
+possible when that is a port of a sub Component).  In the example below
+some errors are reported.
 
 @example
-  1 interface i @{
-  2   in void e();
-  3   behaviour @{
-  4     on e: @{@}
-  5   @}
-  6 @}
-  7
-  8 component c1 @{
-  9   provides i p;
- 10   requires external i r1;
- 11   requires external i r2;
- 12   behaviour @{
- 13     on p.e(): @{@}
- 14   @}
- 15 @}
- 16
- 17 component c2 @{
- 18   provides i p;
- 19   behaviour @{
- 20     on p.e(): @{@}
- 21   @}
- 22 @}
- 23
- 24 component s1 @{
- 25   provides i p;
- 26   requires i r;
- 27   system @{
- 28     c1 ci1;
- 29     c2 ci2;
- 30     p <=> c1.p;
- 31     ci1.r1 <=> r;
- 32     ci1.r2 <=> ci2.p;
- 33   @}
- 34 @}
- 35
- 36 component s2 @{
- 37   provides i p1;
- 38   provides i p2;
- 39   requires external i r1;
- 40   requires external i r2;
- 41   system @{
- 42     s1 si1;
- 43     p1 <=> si1.p;
- 44     p2 <=> r2;
- 45     r1 <=> si1.r;
- 46   @}
- 47 @}
+@verbatiminclude parse/binding-mismatch-external.dzn
 @end example
 
-the following error message will be issued on @i{S2}:
+@noindent
+This results in the following error message:
 
 @example
-44:12: Well-formedness error: External port must be bound to external port: @i{r2}
-45:5: Well-formedness error: External port must be bound to external port: @i{r1}
+@verbatiminclude parse/binding-mismatch-external.texi
 @end example
 
 @section Well-formedness Checks -- Functions
@@ -6501,23 +6207,20 @@ the following error message will be issued on @i{S2}:
 
 @anchor{Function does not return a value in all cases}
 @subsection Function does not return a value in all cases
-A valued Function should return a value using the ReturnStatement.  An
-error is issued when a return is not guaranteed.  An example:
+
+A valued Function should return a value using the @code{return}
+statement.  An error is issued when a return is not guaranteed.  An
+example:
 
 @example
- 1 bool func()
- 2 @{
- 3   if (a && b)
- 4   @{ return true; @}
- 5   else if (c)
- 6   @{ illegal; @}
- 7 @}
+@verbatiminclude parse/function-missing-return.dzn
 @end example
 
-For this code fragment the following error message will be issued:
+@noindent
+This results in the following error message:
 
 @example
-1:10: Well-formedness error: Function does not return a value in all cases: func
+@verbatiminclude parse/function-missing-return.texi
 @end example
 
 @anchor{@code{return} not allowed here}
@@ -6526,19 +6229,14 @@ For this code fragment the following error message will be issued:
 A @code{return} statement is restricted to Function bodies.  So
 
 @example
- 1 on sensor.disabled():
- 2 @{
- 3   [sounding]
- 4   @{
- 5     return; // triggers an error
- 6   @}
- 7 @}
+@verbatiminclude parse/return-outside-function.dzn
 @end example
 
-This will cause the following error to be reported:
+@noindent
+This results in the following error message:
 
 @example
-5:5: Well-formedness error: Return Statement not allowed here
+@verbatiminclude parse/return-outside-function.texi
 @end example
 
 @anchor{Statement violates tail recursion in recursive Function}
@@ -6546,31 +6244,21 @@ This will cause the following error to be reported:
 
 A function that is recursive must be tail recursive, i.e., in its body
 any recursive function call shall not be followed by other statements.
-So
+nSo
 
 @example
-  1 component Sensor @{
-  2   ...
-  3   behaviour @{
-  4     ...
-  5     void f() @{
-  6       bool b = false;
-  7       if (b) @{
-  8         f();
-  9         b = true;
- 10       @}
- 11     @}
- 12   @}
- 13 @}
+@verbatiminclude parse/function-not-tail-recursive.dzn
 @end example
 
-will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-9:9: Well-formedness error: Statement violates tail recursion in recursive Function
+@verbatiminclude parse/function-not-tail-recursive.texi
 @end example
-Remark: two functions @i{f} and @i{g} that are defined in terms of each
-other are considered (mutual) recursive also.
+
+Remark: two functions @code{f} and @code{g} that are defined in terms of
+each other are considered (mutual) recursive also.
 
 @section Well-formedness Checks -- Data Parameters
 The restrictions on Data parameters are summarised here.
@@ -6582,84 +6270,65 @@ All event parameters specified in an event definition must be data
 parameters; in other words, they must have a data type.  An example:
 
 @example
-  1 interface Sensor @{
-  2   enum Code @{ ok, nok @};
-  3   in Code activate(Code c);
-  4   behaviour @{ ...  @}
-  5 @}
+@verbatiminclude parse/event-with-bool-parameter.dzn
 @end example
 
-This will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-3:20: Well-formedness error: Parameter type must be a data type: 'Code'
+@verbatiminclude parse/event-with-bool-parameter.texi
 @end example
 
 @anchor{Out Parameter is not allowed for out Event}
 @subsection Out Parameter is not allowed for out Event
-An out Event is not allowed to have an out Data Parameter.  This example:
+
+An out Event is not allowed to have an out Data Parameter.
 
 @example
- 1 interface Sensor @{
- 2   extern INT $int$;
- 3   in void enable();
- 4   in void disable();
- 5   out void triggered(out INT value);
- 6   out void disabled();
- 7 @}
+@verbatiminclude parse/out-parameter-on-out-event.dzn
 @end example
 
-will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-5:30: Well-formedness error: Out Parameter is not allowed for out Event: value
+@verbatiminclude parse/out-parameter-on-out-event.texi
 @end example
 
 @anchor{Inout Parameter is not allowed for out Event}
 @subsection Inout Parameter is not allowed for out Event
+
 An out Event is not allowed to have an inout Data Parameter.  An example:
 
 @example
- 1 interface Sensor @{
- 2   extern INT $int$;
- 3   in void enable();
- 4   in void disable();
- 5   out void triggered();
- 6   out void disabled(inout INT dis);
- 7 @}
+@verbatiminclude parse/inout-parameter-on-out-event.dzn
 @end example
 
-will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-6:31: Well-formedness error: Inout Parameter is not allowed for out Event: dis
+@verbatiminclude parse/inout-parameter-on-out-event.texi
 @end example
 
 @anchor{Parameter Binding not allowed here}
 @subsection Parameter Binding not allowed here
-Parameter binding, which is the binding of a global data variable 'D' to
-an event parameter 'p' using the 'p <- D' construct, is allowed in an
-'on event' context only.  Any other location is reported as an
-error.  So:
+
+Parameter binding, which is the binding of a data member variable
+@code{data} to an event parameter @code{p} using the @code{p <- data}
+construct, is only allowed in a component, in an @code{on}
+context.  Any other location is reported as an error.  So:
 
 @example
-  1 extern int $int$;
-  2 component test @{
-  3   provides itest p;
-  4   behaviour @{
-  5     int NR;
-  6     on p.evt(number):
-  7       fn(number <- NR);
-  8
-  9     void fn(int i) @{ ...  @}
- 10   @}
- 11 @}
+@verbatiminclude parse/out-binding-reversed.dzn
 @end example
 
-will result in the following error message:
+@noindent
+This results in the following error message:
 
 @example
-7:17: Well-formedness error: '<-' not allowed here
+@verbatiminclude parse/out-binding-reversed.texi
 @end example
 
 @c *********************************************************************

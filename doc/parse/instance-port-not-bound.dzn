@@ -1,0 +1,19 @@
+interface ihello
+{
+  in bool hello ();
+  behaviour {}
+}
+
+component hello
+{
+  provides ihello p;
+  behaviour {}
+}
+
+component instance_port_not_bound
+{
+  system
+  {
+    hello h;
+  }
+}

@@ -1,0 +1,10 @@
+interface otherwise_without_guard
+{
+  in void hello();
+  in void cruel();
+  behaviour
+  {
+    on hello: {}
+    [otherwise] on cruel: {}
+  }
+}

@@ -1,0 +1,26 @@
+interface ihello
+{
+  in void hello ();
+  behaviour {}
+}
+
+component hello
+{
+  requires injected ihello r;
+}
+
+component logger
+{
+  requires ihello r;
+}
+
+component binding_wildcard_requires
+{
+  system
+  {
+    hello h;
+    logger log;
+
+    log.r <=> *;
+  }
+}

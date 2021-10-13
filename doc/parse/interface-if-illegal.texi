@@ -1,0 +1,1 @@
+interface-if-illegal.dzn:10:9: error: cannot use illegal in if-statement

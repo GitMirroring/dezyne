@@ -1,0 +1,18 @@
+interface ihello
+{
+  in bool hello ();
+  out void world ();
+  behaviour
+  {
+    on hello: world;
+  }
+}
+
+component injected_with_out_event
+{
+  provides ihello p;
+  requires injected ihello r;
+  behaviour
+  {
+  }
+}

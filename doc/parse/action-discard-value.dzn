@@ -1,0 +1,18 @@
+interface ihello
+{
+  in bool hello ();
+  behaviour
+  {
+    on hello: reply (true);
+  }
+}
+
+component action_discard_value
+{
+  provides ihello p;
+  requires ihello r;
+  behaviour
+  {
+    on p.hello (): r.hello ();
+  }
+}

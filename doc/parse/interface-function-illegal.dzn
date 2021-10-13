@@ -1,0 +1,12 @@
+interface interface_function_illegal
+{
+  in void hello();
+  behaviour
+  {
+    void f()
+    {
+      illegal;
+    }
+    on hello: f ();
+  }
+}

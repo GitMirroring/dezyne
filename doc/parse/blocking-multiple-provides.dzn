@@ -1,0 +1,18 @@
+interface ihello
+{
+  in void hello();
+  behaviour
+  {
+    on hello:;
+  }
+}
+
+component blocking_multiple_provides
+{
+  provides ihello left;
+  provides ihello right;
+  behaviour
+  {
+    blocking on left.hello(): left.reply ();
+  }
+}

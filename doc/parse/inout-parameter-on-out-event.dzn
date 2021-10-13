@@ -1,0 +1,6 @@
+extern int $int$;
+interface inout_parameter_on_out_event
+{
+  out void world (inout int value);
+  behaviour {}
+}

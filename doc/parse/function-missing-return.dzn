@@ -1,0 +1,25 @@
+interface ihello
+{
+  in void hello ();
+  behaviour
+  {
+  }
+}
+
+component function_missing_return
+{
+  provides ihello p;
+  behaviour
+  {
+    bool a = true;
+    bool b = false;
+    bool c = true;
+    bool func()
+    {
+      if (a && b)
+        return true;
+      else if (c)
+        illegal;
+    }
+  }
+}

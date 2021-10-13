@@ -1,0 +1,24 @@
+interface ihello
+{
+  in void hello();
+  out void world();
+  behaviour
+  {
+    on hello:;
+    on inevitable: world;
+  }
+}
+
+component requires_port_repyl
+{
+  provides ihello p;
+  requires ihello r;
+  behaviour
+  {
+    blocking
+    {
+      on p.hello(): p.reply();
+      on r.world(): r.reply();
+    }
+  }
+}

@@ -1,0 +1,2 @@
+instance-port-not-bound.dzn:9:3: error: port `p' not bound
+instance-port-not-bound.dzn:17:5: error: of instance: `h'

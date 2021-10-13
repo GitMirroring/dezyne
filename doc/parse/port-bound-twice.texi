@@ -1,0 +1,2 @@
+port-bound-twice.dzn:20:5: error: port `p' is bound more than once
+port-bound-twice.dzn:21:5: error: port `p' is bound more than once

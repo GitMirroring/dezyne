@@ -1,0 +1,2 @@
+binding-wildcard-requires.dzn:24:5: error: cannot bind wildcard to requires port `r'
+binding-wildcard-requires.dzn:14:3: info: port `r' defined here

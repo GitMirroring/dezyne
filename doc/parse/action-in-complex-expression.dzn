@@ -1,0 +1,32 @@
+interface ihello
+{
+  in bool hello ();
+  in bool cruel ();
+  behaviour
+  {
+    on hello: reply (true);
+    on cruel: reply (true);
+  }
+}
+
+component action_in_complex_expression
+{
+  provides ihello p;
+  requires ihello r;
+  behaviour
+  {
+    bool b = true;
+    void f (bool b)
+    {
+      reply (b);
+    }
+    on p.hello ():
+      if (r.hello () && r.cruel ())  // not allowed
+        reply (false || r.cruel ()); // not allowed
+      else if (r.hello () || true)
+        reply (r.hello () == true);
+      else
+        reply (!r.hello ());
+    on p.cruel (): f (r.hello ());   // not allowed
+  }
+}

@@ -1,0 +1,13 @@
+interface mixing_imperative
+{
+  in void hello();
+  behaviour
+  {
+    bool b = true;
+    on hello:
+    {
+      b = false;
+      [b] b = false;
+    }
+  }
+}

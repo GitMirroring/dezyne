@@ -144,7 +144,13 @@ EXTRA_DIST +=					\
   $(dezyne_TEXINFOS)
 
 include doc/images/local.mk
+include doc/parse/local.mk
 include doc/semantics/local.mk
+
+update-doc: $(dezyne_TEXINFOS)
+
+doc/parse/%.texi: doc/parse/%.dzn $(ALL_GO)
+	$(AM_V_GEN)(cd $(<D) && ../../pre-inst-env dzn parse $(<F);:) > $@ 2>&1
 
 info_imagesdir = $(infodir)/images
 EXTRA_DIST += $(info_image_DATA)

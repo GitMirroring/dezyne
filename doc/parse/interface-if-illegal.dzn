@@ -1,0 +1,13 @@
+interface interface_if_illegal
+{
+  in void hello();
+  behaviour
+  {
+    bool b = false;
+    on hello:
+    {
+      if (b)
+        illegal;
+    }
+  }
+}

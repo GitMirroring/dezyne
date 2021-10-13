@@ -1,0 +1,6 @@
+binding-mismatch-direction.dzn:27:5: error: cannot bind provides port `p' to requires port `r'
+binding-mismatch-direction.dzn:22:3: info: port `p' defined here
+binding-mismatch-direction.dzn:10:3: info: port `r' defined here
+binding-mismatch-direction.dzn:28:5: error: cannot bind provides port `p' to provides port `p'
+binding-mismatch-direction.dzn:9:3: info: port `p' defined here
+binding-mismatch-direction.dzn:16:3: info: port `p' defined here

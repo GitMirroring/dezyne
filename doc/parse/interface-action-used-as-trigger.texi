@@ -1,0 +1,2 @@
+interface-action-used-as-trigger.dzn:6:8: error: cannot use out-event `world' as trigger
+interface-action-used-as-trigger.dzn:3:3: info: event `world' defined here

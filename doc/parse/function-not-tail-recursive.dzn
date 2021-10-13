@@ -1,0 +1,16 @@
+interface function_not_tail_recursive
+{
+  in void hello ();
+  behaviour
+  {
+    void f ()
+    {
+      bool b = false;
+      if (b)
+      {
+        f ();
+        b = true;
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+interface interface_without_event
+{
+  behaviour {}
+}

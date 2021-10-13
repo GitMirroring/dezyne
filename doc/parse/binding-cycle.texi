@@ -1,0 +1,1 @@
+binding-cycle.dzn:18:5: error: instance `h' is in a cyclic binding

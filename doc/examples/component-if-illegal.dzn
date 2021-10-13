@@ -1,0 +1,23 @@
+interface ihello
+{
+  in void hello();
+  behaviour
+  {
+    on hello: {}
+  }
+}
+
+component component_if_illegal
+{
+  provides ihello p;
+  behaviour
+  {
+    bool b = true;
+    on p.hello():
+    {
+      b = false;
+      if (b)
+        illegal;
+    }
+  }
+}

@@ -1,0 +1,29 @@
+component c1 {
+  system {
+    c2 ci2;
+    c3 ci3;
+  }
+}
+
+component c2 {
+  system {
+    c5 ci5;
+  }
+}
+
+component c3 {
+  system {
+    c4 ci4;
+    c2 ci2;
+  }
+}
+
+component c4 {
+  system {
+    c1 ci1;
+  }
+}
+
+component c5 {
+  system { } // an empty system
+}

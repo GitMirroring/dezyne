@@ -1,0 +1,8 @@
+interface action_outside_on
+{
+  out void world();
+  behaviour
+  {
+    [true] world;
+  }
+}

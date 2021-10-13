@@ -1,0 +1,1 @@
+interface-without-event.dzn:1:1: error: interface must have an event
