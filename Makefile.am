@@ -142,33 +142,8 @@ dezyne_TEXINFOS = doc/fdl-1.3.texi
 EXTRA_DIST +=					\
   $(dezyne_TEXINFOS)
 
-EXTRA_DIST +=						\
- doc/semantics/direct_in.dzn				\
- doc/semantics/direct_multiple_out1.dzn			\
- doc/semantics/direct_multiple_out2.dzn			\
- doc/semantics/direct_out.dzn				\
- doc/semantics/external_multiple_out.dzn		\
- doc/semantics/indirect_blocking_multiple_external_out.dzn	\
- doc/semantics/indirect_blocking_out.dzn		\
- doc/semantics/indirect_in.dzn				\
- doc/semantics/indirect_multiple_out1.dzn		\
- doc/semantics/indirect_multiple_out2.dzn		\
- doc/semantics/indirect_multiple_out3.dzn		\
- doc/semantics/indirect_out.dzn
-
-dist_info_images_DATA =					\
- doc/images/direct_in.png				\
- doc/images/direct_multiple_out1.png			\
- doc/images/direct_multiple_out2.png			\
- doc/images/direct_out.png				\
- doc/images/external_multiple_out.png			\
- doc/images/indirect_blocking_multiple_external_out.png	\
- doc/images/indirect_blocking_out.png			\
- doc/images/indirect_in.png				\
- doc/images/indirect_multiple_out1.png			\
- doc/images/indirect_multiple_out2.png			\
- doc/images/indirect_multiple_out3.png			\
- doc/images/indirect_out.png
+include doc/images/local.mk
+include doc/semantics/local.mk
 
 info_imagesdir = $(infodir)/images
 EXTRA_DIST += $(info_image_DATA)
