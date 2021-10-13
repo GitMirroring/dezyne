@@ -1,0 +1,12 @@
+interface isiren
+{
+  in void turn_on();
+  in void turn_off();
+  behaviour
+  {
+    bool siren_on = false;
+    // if the Siren is on, only allow to turn it off
+    [siren_on]  on turn_off: siren_on = false;
+    [otherwise] on turn_on:  siren_on = true;
+  }
+}

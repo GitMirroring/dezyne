@@ -1,0 +1,30 @@
+interface function_call_action
+{
+  in void do_it();
+  out void done();
+  out void skip();
+  behaviour
+  {
+    enum toggle {ON, OFF};
+    toggle state = toggle.ON;
+    bool test()                  // the function returns a Boolean value, is called test and has no parameters
+    {
+      bool result = false;
+      result = (state == toggle.ON);
+      return result;                     // the result of the evaluation is returned
+    }
+    on do_it:
+    {
+      if (test ())
+      {
+        done;
+        state = toggle.OFF;
+      }
+      else
+      {
+        skip;
+        state = toggle.ON;
+      }
+    }
+  }
+}

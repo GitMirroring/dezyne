@@ -1,0 +1,29 @@
+interface icode
+{
+  extern char $char$;
+  extern int $int$;
+  enum result
+  {
+    CHAR_ADDED,
+    CHAR_INVALID,
+    CODE_COMPLETE,
+    BUFFER_CLEARED
+  };
+  in result add_digit(in char digit);
+  in void get_code(out int code);
+  behaviour
+  {
+    enum status {BUILDING, COMPLETE};
+    status state = status.BUILDING;
+    [state.BUILDING]
+    {
+      on add_digit: reply(result.CHAR_ADDED);
+      on add_digit: reply(result.CHAR_INVALID);
+      on add_digit: {reply(result.CODE_COMPLETE); state = status.COMPLETE;}
+      on add_digit: reply(result.BUFFER_CLEARED);
+      on get_code: {}
+    }
+    [state.COMPLETE]
+      on get_code: state = status.BUILDING;
+  }
+}

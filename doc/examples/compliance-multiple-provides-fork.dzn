@@ -1,0 +1,40 @@
+interface ihello
+{
+  in void hello();
+  out void world();
+  behaviour
+  {
+    on hello: {}
+    on optional: world;
+  }
+}
+
+component v_fork
+{
+  provides ihello left;
+  provides ihello right;
+  behaviour
+  {
+    on left.hello():
+    {
+      right.world(); //is non-compliant with interface(s) of provides port(s)
+    }
+    on right.hello(): {}
+  }
+}
+
+component y_fork
+{
+  provides ihello left;
+  provides ihello right;
+  requires ihello r;
+  behaviour
+  {
+    on left.hello(), right.hello(): {}
+    on r.world():
+    {
+      left.world();
+      right.world(); //is non-compliant with interface(s) of provides port(s)
+    }
+  }
+}

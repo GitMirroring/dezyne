@@ -1,0 +1,11 @@
+interface isimple_protocol
+{
+  enum result {OK, FAILED, ERROR};
+  in result connect();
+  in result disconnect();
+  behaviour
+  {
+    on connect: reply(result.OK);    // Set reply value to 'result.OK'
+    on disconnect: reply(result.OK); // Set reply value to 'result.OK'
+  }
+}

@@ -1,0 +1,30 @@
+extern double $double$;
+
+interface itimer
+{
+  in void create(double seconds);
+  in void cancel();
+  out void timeout();
+  behaviour
+  {
+    bool is_armed = false;
+    [!is_armed] on create: is_armed = true;
+    on cancel: is_armed = false;
+    [is_armed] on inevitable: {timeout; is_armed = false;}
+  }
+}
+
+component RemoteTimerProxy
+{
+  provides itimer pp;
+  requires external itimer rp;
+  behaviour
+  {
+    bool is_armed = false;
+    on pp.create(s):
+      [!is_armed] {rp.create(s); is_armed = true;}
+    on pp.cancel(): {rp.cancel(); is_armed = false;}
+    on rp.timeout():
+      [is_armed] {pp.timeout(); is_armed = false;}
+  }
+}

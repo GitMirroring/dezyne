@@ -1,0 +1,10 @@
+interface imotion
+{
+  in void start();
+  in void stop();
+  out void ready();
+  behaviour
+  {
+    on start, stop: {}
+  }
+}

@@ -1,0 +1,28 @@
+interface iprocess_safety
+{
+  in void connect();
+  in void disconnect();
+  out void connected();
+  out void error();
+  behaviour
+  {
+    enum protocol_status {disconnected, connected}; // type declaration
+    protocol_status state = protocol_status.disconnected; // variable declaration
+    bool is_error = false; // variable declaration
+    // Alternative 1: using guards based on, e.g., status value inside the action statements
+    on connect:
+    {
+      // Select action to be performed based on status variable values.
+      [state.disconnected && !is_error]
+      { // Action
+        connected; // Output event
+        state = protocol_status.connected; // Assign to status variable
+      }
+      [otherwise]
+      { // Action
+        error; // Output event
+        is_error = true; // Assign to status variable
+      }
+    }
+  }
+}

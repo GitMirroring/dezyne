@@ -1,0 +1,39 @@
+namespace foo {
+  interface I {
+    enum Bool {F,T};
+    in Bool e();
+    out void a();
+    behaviour {
+      on e: {a; reply (Bool.T); }
+    }
+  }
+}
+namespace inner {
+  namespace foo {
+    interface I {
+      enum Bool {f,t};
+      in Bool e();
+      out void a();
+      behaviour { }
+    }
+  }
+  component space {
+    provides foo.I inner;
+    provides .foo.I fooi;
+    behaviour {
+      foo.I.Bool inner_state = foo.I.Bool.t;
+      .foo.I.Bool foo_state = .foo.I.Bool.T;
+      on inner.e(): { }
+      on fooi.e(): { }
+    }
+  }
+}
+namespace bar {
+  component c {
+    provides foo.I i;
+    behaviour {
+      foo.I.Bool state = foo.I.Bool.T;
+      on i.e(): { }
+    }
+  }
+}

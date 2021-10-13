@@ -1,0 +1,12 @@
+interface imotion
+{
+  in void start();
+  in void stop();
+  behaviour
+  {
+    enum status {OFF, ACTIVE};
+    status state = status.OFF;
+    on start: [state.OFF]   state = status.ACTIVE;
+    on stop:  [state.ACTIVE] state = status.OFF;
+  }
+}

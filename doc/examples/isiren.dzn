@@ -1,0 +1,16 @@
+interface isiren
+{
+  in void turn_on();
+  in void turn_off();
+  behaviour
+  {
+    enum status { OFF, ON };           // type definition
+    status state = status.OFF;         // variable declaration
+
+    [state.OFF]                        // if the Siren is off,
+      on turn_on:  state = status.ON;  //   only allow to turn it on
+
+    [state.ON]                         // if the Siren is on,
+      on turn_off: state = status.OFF; // only allow to turn it off
+  }
+}

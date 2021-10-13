@@ -1,0 +1,33 @@
+interface Imperative_action
+{
+  in void do_it();
+  out void done();
+  out void skip();
+  behaviour
+  {
+    enum toggle {PING, PONG};
+    toggle state = toggle.PING;
+    on do_it:
+    {
+      bool b = false;
+      if (state.PING)
+      {
+        b = true;
+      }
+      else
+      {
+        b = (state == toggle.PING);
+      }
+      if (b)
+      {
+        done;
+        state = toggle.PONG;
+      }
+      else
+      {
+        skip;
+        state = toggle.PING;
+      }
+    }
+  }
+}

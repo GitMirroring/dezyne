@@ -1,0 +1,11 @@
+interface imotion
+{
+  in void start();
+  in void stop();
+  behaviour
+  {
+    bool started = false;
+    on start: started = true;
+    on stop: started = false;
+  }
+}

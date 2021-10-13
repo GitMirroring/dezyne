@@ -1,0 +1,23 @@
+// interface for a basic timer
+interface itimer
+{
+  in void create_timer();
+  in void cancel_timer();
+  out void timeout();
+  behaviour
+  {
+    enum status {IDLE, BUSY};
+    status state = status.IDLE;
+    [state.IDLE]
+      on create_timer: {state = status.BUSY;}
+    [state.BUSY]
+      {
+        on cancel_timer: {state = status.IDLE;}
+        on inevitable:
+        {
+          timeout;
+          state = status.IDLE;
+        }
+      }
+    }
+}

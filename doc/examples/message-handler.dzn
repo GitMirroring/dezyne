@@ -1,0 +1,29 @@
+import imessage-handler.dzn;
+import iprotocol-stack.dzn;
+
+component message_handler
+{
+  provides imessage_handler mh;
+  requires imessage_handler ps;
+  behaviour
+  {
+    bool idle = true;
+    // initial or idle state
+    [idle]
+    on mh.send_message():
+    {
+      ps.send_message(); //forward the message to protocol_stack
+      idle = false;
+    }
+    // State to capture that a message is being send
+    [!idle]
+    on ps.message_sent():
+    // the protocol_stack has send the message, now we need to inform
+    // our client and go to the idle state so another message can
+    // be processed
+    {
+      mh.message_sent();
+      idle = true;
+    }
+  }
+}

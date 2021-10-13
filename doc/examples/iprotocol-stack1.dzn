@@ -1,0 +1,30 @@
+interface iprotocol_stack
+{
+  enum result                               // enumeration type used for the reply value of
+  {                                         // the event enable
+    OK,
+    FAILED
+  };
+  in result enable();                       // in event to enable the protocol_stack
+                                            //   the event will return if enabling was successful or not
+  in void disable();                        // in event to disable the protocol_stack
+  behaviour                                 // the specification of the externally visible behaviour
+  {
+      enum status {OFF, ON};
+      status state = status.OFF;
+      [state.OFF]
+      {
+          on enable:                        // One possible response to enable is Ok
+          {
+             reply(result.OK);
+             state = status.ON;
+          }
+          on enable: reply(result.FAILED);  // The other possible response to enable is Failed
+          on disable: illegal;              // Disabling the protocol_stack is not allowed in OFF state
+      }
+      [state.ON]
+          on disable: state = status.OFF;
+          // enable not specfied: Enabling the Protocol_stack is implicitly illegal
+          // and thus not allowed in ON state
+  }
+}
