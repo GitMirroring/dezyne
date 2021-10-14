@@ -17,9 +17,13 @@ Run all parser tests
 
     make check TESTS='$(PARSER_TESTS)'
 
+or
+
+    make check TESTS="$(find test/all -maxdepth 1 -type d -a '(' -name '*wf_*' -o -name 'parse_*' -o -path '*/undefined/*' ')' )"
+
 Run all blocking tests
 
-    make check TESTS="$(find test/all -maxdepth 1 -name '*block*' -a -type d)"
+    make check TESTS="$(find test/all -maxdepth 1 -type d -a -name '*block*')"
 
 * The Perfect GNU Emacs Setup
 
