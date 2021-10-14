@@ -1,0 +1,15 @@
+(header ((left) ihello provides) ((right) ihello provides) ((sut) compliance_fork_requires component) ((r) ihello requires))
+test/all/compliance_fork_requires/compliance_fork_requires.dzn:44:35: error: non-compliance
+... <- <external>.r.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.r.world <- ...
+... <- sut.left.world
+<external>.left.world <- ...
+... <- sut.right.world
+<external>.right.world <- ...
+<compliance>
+test/all/compliance_fork_requires/compliance_fork_requires.dzn:44:35: error: non-compliance
+(trail "r.world" "left.world" "right.world" "<compliance>")
+(labels "left.hello" "right.hello" "r.world")
+(eligible)

@@ -1,0 +1,3 @@
+test/all/compliance_fork_requires/compliance_fork_requires.dzn:44:35: error: non-compliance
+test/all/compliance_fork_requires/compliance_fork_requires.dzn:44:35: forking not allowed, action on port: right
+test/all/compliance_fork_requires/compliance_fork_requires.dzn:44:21: after action on port: left

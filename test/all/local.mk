@@ -207,6 +207,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_external_inevitable		\
  %D%/external_requires_twice			\
  %D%/compliance_fork_provides			\
+ %D%/compliance_fork_requires			\
  %D%/failures_inevitable			\
  %D%/failures_nondet_inevitable			\
  %D%/failures_nondet_optional			\
