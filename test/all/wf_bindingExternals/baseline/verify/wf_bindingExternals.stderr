@@ -1,3 +1,3 @@
 test/all/wf_bindingExternals/wf_bindingExternals.dzn:68:5: error: cannot bind external port `r1' to non-external port `r'
-test/all/wf_bindingExternals/wf_bindingExternals.dzn:62:3: error: port `r1' declared here
-test/all/wf_bindingExternals/wf_bindingExternals.dzn:49:3: error: port `r' declared here
+test/all/wf_bindingExternals/wf_bindingExternals.dzn:62:3: info: port `r1' defined here
+test/all/wf_bindingExternals/wf_bindingExternals.dzn:49:3: info: port `r' defined here

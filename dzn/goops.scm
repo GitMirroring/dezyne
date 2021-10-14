@@ -179,6 +179,7 @@
            <imperative>
            <import>
            <inevitable>
+           <info>
            <instance>
            <instances>
            <int-expr>
@@ -602,6 +603,9 @@
   (ast))
 
 (define-ast <error> (<status>)
+  (message #:init-value ""))
+
+(define-ast <info> (<status>)
   (message #:init-value ""))
 
 (define-ast <skip> (<imperative>))

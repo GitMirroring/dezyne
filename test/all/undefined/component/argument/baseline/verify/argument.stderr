@@ -1,2 +1,2 @@
 test/all/undefined/component/argument/argument.dzn:36:15: error: argument count mismatch, expected 0, found: 1
-test/all/undefined/component/argument/argument.dzn:37:5: error: for formals of function `f' defined here
+test/all/undefined/component/argument/argument.dzn:37:5: info: for formals of function `f' defined here

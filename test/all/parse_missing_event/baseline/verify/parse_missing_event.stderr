@@ -1,3 +1,3 @@
 test/all/parse_missing_event/parse_missing_event.dzn:46:8: error: event `hallo' not defined for port `h'
-test/all/parse_missing_event/parse_missing_event.dzn:38:3: error: port `h' declared here
+test/all/parse_missing_event/parse_missing_event.dzn:38:3: info: port `h' defined here
 test/all/parse_missing_event/parse_missing_event.dzn:48:7: error: undefined identifier `i'

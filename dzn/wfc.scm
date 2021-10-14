@@ -19,10 +19,6 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-;;;
-;;; Commentary:
-;;;
-;;; Code:
 
 (define-module (dzn wfc)
   #:use-module (ice-9 curried-definitions)
@@ -40,11 +36,20 @@
 
   #:use-module (dzn misc)
 
-  #:export (
-            ast:wfc
+  #:export (ast:wfc
             type-name
-            wfc:report-error
-           ))
+            wfc:report-error))
+
+;;; Commentary:
+;;;
+;;; The well-formednes check.
+;;;
+;;; Parsing is implemented in three stages:
+;;;   1) PEG creates a parse-tree
+;;;   2) the parse tree is converted to an AST root
+;;;   3) the AST root is checked for well-formedness errors
+;;;
+;;; Code:
 
 (define (ast:wfc o)
   (let ((errors (wfc o)))
@@ -57,17 +62,15 @@
          (loc (.location ast)))
     (if loc
         (format (current-error-port)
-                "~a:~a:~a: error: ~a\n"
-                (.file-name loc) (.line loc) (.column loc) (.message o))
+                "~a:~a:~a: ~a: ~a\n"
+                (.file-name loc) (.line loc) (.column loc) (ast-name o) (.message o))
         (format (current-error-port) "error: ~a\n" (.message o)))))
 
 (define (wfc-error o message)
   (make <error> #:ast o #:message message))
 
-(define-method (wfc (o <root>))
-  (append
-   (append-map wfc (ast:model* o))
-   (append-map wfc (ast:type* o))))
+(define (wfc-info o message)
+  (make <info> #:ast o #:message message))
 
 (define-method (wfc (o <model>))
   '())
@@ -134,7 +137,7 @@
                         '())))
            (loop (cdr fields) (append wf result)))))
    (if (and (parent o <model>) (ast:name-equal? (.name (parent o <model>)) (.name o)))
-       `(,(wfc-error o (format #f "enum `~a' must not have the same name as the model it is declared in" (type-name (.name o)))))
+       `(,(wfc-error o (format #f "enum `~a' must not have the same name as the model it is defined in" (type-name (.name o)))))
        '())
    '()))
 
@@ -148,7 +151,7 @@
   (append
    (re-declaration o)
    (if (ast:name-equal? (.name (parent o <model>)) (.name o))
-       `(,(wfc-error o (format #f "port `~a' must not have the same name as the model it is declared in" (.name o))))
+       `(,(wfc-error o (format #f "port `~a' must not have the same name as the model it is defined in" (.name o))))
        '())
    (let ((interface (.type o)))
      (cond ((not interface)
@@ -160,7 +163,7 @@
                    (and (pair? out-events)
                         `(,(wfc-error o (format #f "injected port `~a' has out events: ~a" (.name o)
                                                 (string-join (map .name out-events) ", ")))
-                          ,@(map (cut wfc-error <> (format #f "defined here")) out-events))))))
+                          ,@(map (cut wfc-info <> (format #f "port defined here")) out-events))))))
            (else '())))
    ;; TODO; do include async port in behaviour
    ))
@@ -195,7 +198,7 @@
            `(,(wfc-error argument (format #f "type mismatch: expected `~a', found `~a'"
                                           (type-name formal-type)
                                           (type-name argument-type)))
-             ,(wfc-error formal (format #f "for formal `~a' defined here" (.name formal))))))))
+             ,(wfc-info formal (format #f "for formal `~a' defined here" (.name formal))))))))
 
 (define-method (wfc (o <arguments>))
   (cond
@@ -212,7 +215,7 @@
               (append
                (if (= count event-count) '()
                    `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
-                     ,(wfc-error event (format #f "for formals of event `~a' defined here" (.name event)))))
+                     ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event)))))
                (append-map (argument-type-check o) arguments formals)))))))
    ((let ((ast (parent o <call>)))
       (and ast
@@ -228,7 +231,7 @@
         (append
          (if (= count function-count) '()
              `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" function-count count))
-               ,(wfc-error function (format #f "for formals of function `~a' defined here" (.name function)))))
+               ,(wfc-info function (format #f "for formals of function `~a' defined here" (.name function)))))
          (append-map (argument-type-check o) arguments formals)))))
    (else
     '())))
@@ -253,7 +256,7 @@
                                         (_ #f))))))
               (if (or illegal? (= count event-count)) '()
                   `(,(wfc-error ast (format #f "parameter count mismatch, expected ~a, found: ~a" event-count count))
-                    ,(wfc-error event (format #f "for formals of event `~a' defined here" (.name event))))))))))
+                    ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event))))))))))
    (else
     '())))
 
@@ -303,7 +306,7 @@
   (if (ast:name-equal? (.name model) (.name o))
       `(,(wfc-error o
                     (format #f
-                            "variable `~a' must not have the same name as the model it is declared in"
+                            "variable `~a' must not have the same name as the model it is defined in"
                             (.name o))))
       '()))
 
@@ -314,8 +317,10 @@
    (wfc (.statement o))
    (missing-return o)))
 
-;;;;;;;;;;;;;;;;;;;;;;; statements
-
+
+;;;
+;;; Statements
+;;;
 (define-method (wfc (o <statement>))
   '())
 
@@ -346,11 +351,11 @@
             (append
              (if (pair? non-guards)
                  `(,(wfc-error o "cannot use otherwise with non-guard statements")
-                   ,(wfc-error (car non-guards) "non-guard statement here"))
+                   ,(wfc-info (car non-guards) "non-guard statement here"))
                  '())
              (if (pair? otherwises)
                  `(,(wfc-error o "cannot use otherwise guard more than once")
-                   ,(wfc-error (car otherwises) "second otherwise here"))
+                   ,(wfc-info (car otherwises) "second otherwise here"))
                  '()))))))
   (let* ((expression (.expression o))
          (otherwise? (is-a? expression <otherwise>))
@@ -372,7 +377,7 @@
              `(,(wfc-error o "cannot use blocking in an interface")))
             ((parent (.parent o) <blocking>)
              `(,(wfc-error o "nested blocking used")
-               ,(wfc-error (parent (.parent o) <blocking>) "within blocking here")))
+               ,(wfc-info (parent (.parent o) <blocking>) "within blocking here")))
             ((> (length (ast:provides-port* model)) 1)
              `(,(wfc-error o "blocking with multiple provide ports not supported")))
             (else '()))))
@@ -383,7 +388,7 @@
     (append
      (let ((parent (parent (.parent o) <on>)))
        (if parent `(,(wfc-error o "nested on used")
-                    ,(wfc-error parent "within on here"))
+                    ,(wfc-info parent "within on here"))
            '()))
      (if (is-a? (parent o <model>) <interface>) (modeling-silent o)
          '())))
@@ -400,10 +405,6 @@
   '())
 
 (define-method (wfc (o <variable>)) ;; is-a <imperative>
-  ;; (assign o):
-  ;;   (.type o) defined?
-  ;;   (.expression o) wfc?
-  ;;   .expression matches .type
   (append
    (imperative-context o)
    (re-declaration o)
@@ -420,12 +421,6 @@
    '()))
 
 (define-method (wfc (o <assign>)) ;; is-a <imperative>
-  ;; (.variable o) defined?
-
-  ;; (assign o):
-  ;;   (.type o) defined?
-  ;;   (.expression o) wfc?
-  ;;   .expression matches .type
   (append
    (assign o)
    (imperative-context o)))
@@ -461,7 +456,7 @@
                     (or (and (let ((statements (ast:statement* compound)))
                                (and (> (length statements) 1)
                                     `(,(wfc-error o "cannot use illegal with imperative statements")
-                                      ,(wfc-error (car (filter (negate (cut member <> (ast:path o) ast:eq?)) statements))
+                                      ,(wfc-info (car (filter (negate (cut member <> (ast:path o) ast:eq?)) statements))
                                                   "imperative statement here")))))
                         (loop (parent (.parent compound) <compound>))))))
             (else '()))))
@@ -485,7 +480,7 @@
           ((ast:requires? port)
            `(,(wfc-error o (format #f "requires port `~a' not allowed in reply"
                                    (.name port)))
-             ,(wfc-error port "port defined here")))
+             ,(wfc-info port "port defined here")))
           (on (reply-in-on o))
           (else (wfc-reply-expression o port)))))
 
@@ -520,7 +515,7 @@
            (port
             `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a' for port `~a'"
                                     reply-type-name (.name port)))
-              ,(wfc-error port "port defined here")))
+              ,(wfc-info port "port defined here")))
            (else
             `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a'"
                                     reply-type-name)))))))))
@@ -555,7 +550,7 @@
             `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
            ((and (is-a? model <component>) (not (is-a? port <port>)))
             `(,(wfc-error o (format #f "`~a' is not a port" (.port.name o)))
-              ,(wfc-error (.port o) (format #f "`~a' declared here" (.port.name o)))))
+              ,(wfc-info (.port o) (format #f "`~a' declared here" (.port.name o)))))
            (else (let ((event (.event o)))
                    (cond
                     ((and (is-a? model <interface>) (not event))
@@ -564,22 +559,24 @@
                     ((and (is-a? model <component>) (not event))
                      `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
                                              (.event.name o) (.port.name o)))
-                       ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))
+                       ,(wfc-info (.port o) (format #f "port `~a' defined here" (.port.name o)))))
                     ((and (is-a? model <interface>) (ast:out? event))
                      `(,(wfc-error o (format #f "cannot use ~a-event `~a' as trigger" (.direction event) (.event.name o)))
-                       ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+                       ,(wfc-info event (format #f "event `~a' defined here" (.event.name o)))))
                     ((and (is-a? model <component>)
                           (or (and (ast:out? event) (ast:provides? (.port o)))
                               (and (ast:in? event) (ast:requires? (.port o)))))
                      `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as trigger"
                                              (.direction (.port o)) (.direction event) (.event.name o)))
-                       ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-                       ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+                       ,(wfc-info (.port o) (format #f "port `~a' defined here" (.port.name o)))
+                       ,(wfc-info event (format #f "event `~a' defined here" (.event.name o)))))
                     (else '())))))
      (wfc (.formals o)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; expressions
-
+
+;;;
+;;; Expressions.
+;;;
 (define-method (wfc (o <enum-literal>))
   (let ((type (.type o)))
     (cond ((not type)
@@ -593,7 +590,7 @@
                                               field
                                               (type-name o)
                                               (string-join fields ", ")))
-                        ,(wfc-error type "enum declared here"))
+                        ,(wfc-info type "enum defined here"))
                       '()))))))
 
 (define-method (wfc (o <literal>)) '())
@@ -670,7 +667,7 @@
                                    field
                                    (type-name type)
                                    (string-join fields ", ")))
-             ,(wfc-error type "enum declared here")))
+             ,(wfc-info type "enum defined here")))
           (else '()))))
 
 (define-method (wfc (o <otherwise>)) '())
@@ -691,12 +688,14 @@
 
 (define-method (wfc (o <data>)) '())
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-method (wfc (o <ast>))
   ;;  (warn 'wfc:--------------UNCOVERED-------------- o)
   '())
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; helper functions
+
+;;;
+;;; helper functions
+;;;
 (define-method (defined-function (o <call>))
   (if (find (compose (cute ast:equal? (.function.name o) <>) .name)
             (ast:function* (parent o <behaviour>))) '()
@@ -749,7 +748,7 @@
              (not (ast:eq? previous o))
              (not (is-a? previous <namespace>)))
         `(,(wfc-error o (format #f "identifier `~a' declared before" (ast:name o)))
-          ,(wfc-error previous (format #f "previous `~a' declared here" (ast:name previous))))
+          ,(wfc-info previous (format #f "previous `~a' declared here" (ast:name previous))))
         '())))
 
 
@@ -834,11 +833,11 @@
                `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
                                        (type-name event-type)
                                        (type-name reply-type)))
-                 ,(wfc-error event "event defined here"))
+                 ,(wfc-info event "event defined here"))
                '()))
           ((not (%model-blocking?))     ; also covers interfaces
            `(,(wfc-error o (format #f "reply not allowed on out event `~a'" (.name event)))
-             ,(wfc-error event (format #f "event `~a' declared here" (.name event)))))
+             ,(wfc-info event (format #f "event `~a' defined here" (.name event)))))
           (else (wfc-reply-expression o port)))))
 
 (define-method (action (o <action>))
@@ -849,7 +848,7 @@
             `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
            ((and (is-a? model <interface>) (ast:in? event))
             `(,(wfc-error o (format #f "cannot use ~a-event `~a' as action" (.direction event) (.event.name o)))
-              ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+              ,(wfc-info event (format #f "event `~a' defined here" (.event.name o)))))
            ((and (is-a? model <component>)
                  (not (is-a? event <event>)))
             (let ((port (.port o)))
@@ -857,14 +856,14 @@
                   `()
                   `(,(wfc-error o (format #f "event `~a' not defined for port `~a'"
                                           (.event.name o) (.port.name o)))
-                    ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))))))
+                    ,(wfc-info (.port o) (format #f "port `~a' defined here" (.port.name o)))))))
            ((and (is-a? model <component>)
                  (or (and (ast:in? event) (ast:provides? (.port o)))
                      (and (ast:out? event) (ast:requires? (.port o)))))
             `(,(wfc-error o (format #f "cannot use ~a ~a-event `~a' as action"
                                     (.direction (.port o)) (.direction event) (.event.name o)))
-              ,(wfc-error (.port o) (format #f "port `~a' declared here" (.port.name o)))
-              ,(wfc-error event (format #f "event `~a' declared here" (.event.name o)))))
+              ,(wfc-info (.port o) (format #f "port `~a' defined here" (.port.name o)))
+              ,(wfc-info event (format #f "event `~a' defined here" (.event.name o)))))
            (else '()))
      (wfc (.arguments o)))))
 
@@ -880,7 +879,7 @@
                                       `(,(wfc-error o (format #f "instance expected, found ~a" (type-name (.name instance))))))
                                      ((not (is-a? (.type instance) <component-model>))
                                       `(,(wfc-error o (format #f "instance expected, found `~a'" (.instance.name o)))
-                                        ,(wfc-error instance (format #f "defined here"))))
+                                        ,(wfc-info instance (format #f "defined here"))))
                                      (else '())))))
          (port-error (if (or (pair? instance-error) (ast:wildcard? (.port.name o))) '()
                          (let ((port (.port o)))
@@ -889,7 +888,7 @@
                                                      (parent o <system>)))
                                       (cname (type-name (.name component))))
                                       `(,(wfc-error o (format #f "undefined port `~a' for `~a'" (.port.name o) cname))
-                                        ,(wfc-error component (format #f "`~a' defined here" cname)))))))))
+                                        ,(wfc-info component (format #f "`~a' defined here" cname)))))))))
     (append instance-error port-error))
 )
 
@@ -908,11 +907,11 @@
           ((and (ast:wildcard? (.port.name left))
                 (ast:requires? (.port right)))
            `(,(wfc-error o (format #f "cannot bind wildcard to ~a port `~a'" (.direction (.port right)) (.port.name right)))
-             ,(wfc-error (.port right) (format #f "port `~a' declared here" (.port.name right)))))
+             ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right)))))
           ((and (ast:wildcard? (.port.name right))
                 (ast:requires? (.port left)))
            `(,(wfc-error o (format #f "cannot bind wildcard to ~a port `~a'" (.direction (.port left)) (.port.name left)))
-             ,(wfc-error (.port left) (format #f "port `~a' declared here" (.port.name left)))))
+             ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))))
           ((or (and
                 (.instance.name left)
                 (.instance.name right)
@@ -930,8 +929,8 @@
            `(,(wfc-error o (format #f "cannot bind ~a port `~a' to ~a port `~a'"
                                    (.direction (.port left)) (.port.name left)
                                    (.direction (.port right)) (.port.name right)))
-             ,(wfc-error (.port left) (format #f "port `~a' declared here" (.port.name left)))
-             ,(wfc-error (.port right) (format #f "port `~a' declared here" (.port.name right)))))
+             ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
+             ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right)))))
           ((and
             (.port left)
             (ast:requires? (.port left))
@@ -950,8 +949,8 @@
            `(,(wfc-error o (format #f "cannot bind ~a port `~a' to ~a port `~a'"
                                    (or (.external (.port left)) 'non-external) (.port.name left)
                                    (or (.external (.port right)) 'non-external) (.port.name right)))
-             ,(wfc-error (.port left) (format #f "port `~a' declared here" (.port.name left)))
-             ,(wfc-error (.port right) (format #f "port `~a' declared here" (.port.name right)))))
+             ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
+             ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right)))))
           (else '()))))
 
 (define-method (binding-type (o <system>))
@@ -969,8 +968,8 @@
         `(,(wfc-error o (format #f "type mismatch: cannot bind port ~a of type `~a' to port ~a of type `~a'"
                                 (.port.name left) (type-name (.type (.port left)))
                                 (.port.name right) (type-name (.type (.port right)))))
-          ,(wfc-error (.port left) (format #f "port `~a' declared here" (.port.name left)))
-          ,(wfc-error (.port right) (format #f "port `~a' declared here" (.port.name right))))
+          ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
+          ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right))))
         '())))
 
 (define-method (double-bindings (o <system>))
@@ -1191,8 +1190,11 @@
                                 '()))
                 instances)))
 
-(define (ast-> ast)
-  ((compose
-    ast:pretty-print
-    ast:wfc)
-   ast))
+
+;;;
+;;; Entry points.
+;;;
+(define-method (wfc (o <root>))
+  (append
+   (append-map wfc (ast:model* o))
+   (append-map wfc (ast:type* o))))

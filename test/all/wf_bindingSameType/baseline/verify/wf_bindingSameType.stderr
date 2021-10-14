@@ -1,12 +1,12 @@
 test/all/wf_bindingSameType/wf_bindingSameType.dzn:57:9: error: type mismatch: cannot bind port p of type `II' to port p of type `I'
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:49:5: error: port `p' declared here
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:39:5: error: port `p' declared here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:49:5: info: port `p' defined here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:39:5: info: port `p' defined here
 test/all/wf_bindingSameType/wf_bindingSameType.dzn:58:9: error: type mismatch: cannot bind port r of type `I' to port p of type `II'
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:40:5: error: port `r' declared here
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:44:5: error: port `p' declared here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:40:5: info: port `r' defined here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:44:5: info: port `p' defined here
 test/all/wf_bindingSameType/wf_bindingSameType.dzn:59:9: error: type mismatch: cannot bind port r of type `II' to port p of type `I'
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:45:5: error: port `r' declared here
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:39:5: error: port `p' declared here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:45:5: info: port `r' defined here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:39:5: info: port `p' defined here
 test/all/wf_bindingSameType/wf_bindingSameType.dzn:60:9: error: type mismatch: cannot bind port r of type `I' to port r of type `II'
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:40:5: error: port `r' declared here
-test/all/wf_bindingSameType/wf_bindingSameType.dzn:50:5: error: port `r' declared here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:40:5: info: port `r' defined here
+test/all/wf_bindingSameType/wf_bindingSameType.dzn:50:5: info: port `r' defined here
