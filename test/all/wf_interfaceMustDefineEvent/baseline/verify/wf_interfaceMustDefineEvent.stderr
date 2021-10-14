@@ -1,4 +1,1 @@
-test/all/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:24:19: error
-interface Sensor {
-                  ^
-                  `types-and-events' expected
+test/all/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:24:1: error: interface must have an event

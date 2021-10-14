@@ -77,6 +77,8 @@
    (re-declaration o)
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))
+   (if (pair? (ast:event* o)) '()
+       `(,(wfc-error o "interface must have an event")))
    (if (.behaviour o) (wfc (.behaviour o))
        `(,(wfc-error o "interface must have a behaviour")))))
 

@@ -168,9 +168,9 @@ type <- enum / int / extern
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
   namespace-root <-- (type / namespace / interface / component / &BRACE-CLOSE)#*
 
-interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# behaviour# BRACE-CLOSE#
+interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# (behaviour / &BRACE-CLOSE)# BRACE-CLOSE#
 
-  types-and-events <-- (type / event / &behaviour)#+
+  types-and-events <-- (type / event / &behaviour / &BRACE-CLOSE)#*
     event <-- direction type-name# event-name# enter-frame formals# exit-frame SEMICOLON#
       direction <-- IN / OUT
 

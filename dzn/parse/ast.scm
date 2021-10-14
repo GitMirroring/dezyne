@@ -28,12 +28,12 @@
 (define-module (dzn parse ast)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
-  #:use-module (ice-9 receive)
   #:use-module (ice-9 curried-definitions)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
+  #:use-module (srfi srfi-71)
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
@@ -156,19 +156,39 @@
         (('extern name data)
          (make <extern-node> #:name (helper name) #:value (helper data)))
 
+        (('interface name)
+         (make <interface-node>
+           #:name (helper name)))
+
+        (('interface name (and ('types-and-events x ...) types-and-events))
+         (let* ((types-and-events (helper types-and-events))
+                (types events (partition (is? <type-node>) types-and-events)))
+           (make <interface-node>
+             #:name (helper name)
+             #:types (make <types-node> #:elements types)
+             #:events (make <events-node> #:elements events))))
+
+        (('interface name (and ('behaviour x ...) behaviour))
+         (let* ((behaviour (set-recursive (helper behaviour)))
+                (behaviour (and behaviour
+                                (.node ((mark-silent)
+                                        (make <behaviour> #:node behaviour))))))
+           (make <interface-node>
+             #:name (helper name)
+             #:behaviour behaviour)))
+
         (('interface name types-and-events behaviour)
          (let* ((types-and-events (helper types-and-events))
+                (types events (partition (is? <type-node>) types-and-events))
                 (behaviour (set-recursive (helper behaviour)))
                 (behaviour (and behaviour
                                 (.node ((mark-silent)
                                         (make <behaviour> #:node behaviour))))))
-           (receive (types events)
-               (partition (is? <type-node>) types-and-events)
-             (make <interface-node>
-               #:name (helper name)
-               #:types (make <types-node> #:elements types)
-               #:events (make <events-node> #:elements events)
-               #:behaviour behaviour))))
+           (make <interface-node>
+             #:name (helper name)
+             #:types (make <types-node> #:elements types)
+             #:events (make <events-node> #:elements events)
+             #:behaviour behaviour)))
 
         (('types-and-events types-and-events ...)
          (helper types-and-events))
@@ -208,14 +228,14 @@
            #:behaviour (set-recursive (helper behaviour))))
 
         (('component name ports ('system instances-and-bindings rest ...))
-         (let ((instances-and-bindings (helper instances-and-bindings)))
-           (receive (instances bindings)
-               (partition (is? <instance-node>) instances-and-bindings)
-             (make <system-node>
-               #:name (helper name)
-               #:ports (helper ports)
-               #:instances (make <instances-node> #:elements instances)
-               #:bindings (make <bindings-node> #:elements bindings)))))
+         (let* ((instances-and-bindings (helper instances-and-bindings))
+                (instances
+                 bindings (partition (is? <instance-node>) instances-and-bindings)))
+           (make <system-node>
+             #:name (helper name)
+             #:ports (helper ports)
+             #:instances (make <instances-node> #:elements instances)
+             #:bindings (make <bindings-node> #:elements bindings))))
 
         (('instances-and-bindings instances-and-bindings ...)
          (helper instances-and-bindings))
