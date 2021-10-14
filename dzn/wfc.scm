@@ -93,7 +93,9 @@
    (re-declaration o)
    (if (> (length (ast:provides-port* o)) 0) '()
        `(,(wfc-error o "component with behaviour must have a provides port")))
-   (append-map wfc (ast:port* o))
+   (let ((port-errors (append-map wfc (ast:port* o))))
+     (if (or (pair? port-errors) (pair? (ast:in-triggers o))) port-errors
+         `(,(wfc-error o "component with behaviour must have a trigger"))))
    (or (and=> (.behaviour o) wfc) '())))
 
 (define-method (wfc (o <system>)) ;; is-a <component-model>

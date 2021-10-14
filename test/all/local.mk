@@ -362,6 +362,7 @@ endif
 PARSER_TESTS =					\
  %D%/parse_assign_void				\
  %D%/parse_block_comment_import			\
+ %D%/parse_component_without_trigger		\
  %D%/parse_duplicate_declaration		\
  %D%/parse_duplicate_import_prefix		\
  %D%/parse_import_both				\
