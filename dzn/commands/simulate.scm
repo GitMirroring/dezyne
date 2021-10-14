@@ -85,7 +85,6 @@ Simulate a Dezyne model
 
 (define (main args)
   (let* ((options (parse-opts args))
-         (options (acons 'behaviour #t options))
          (files (option-ref options '() '()))
          (file-name (car files))
          (model-name (option-ref options 'model #f))

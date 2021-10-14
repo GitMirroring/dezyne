@@ -47,6 +47,7 @@
   #:export (%calling-context
             %queue-size
             %shell
+            code
             code:add-calling-context
             code:add-calling-context-argument
             code:add-calling-context-formal
@@ -666,3 +667,20 @@
   (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))
          (models (map .type (append-map ast:instance* systems))))
     (filter (is? <foreign>) models)))
+
+
+;;;
+;;; Entry point.
+;;;
+(define* (code ast #:key (ast-> 'ast->) calling-context dir language locations?
+               model queue-size shell)
+  (let* ((module (resolve-module `(dzn code ,(string->symbol language))))
+         (ast-> (false-if-exception (module-ref module ast->))))
+    (unless ast->
+      (format (current-error-port) "code: no such language: ~a\n" language)
+      (exit EXIT_OTHER_FAILURE))
+    (parameterize ((%calling-context calling-context)
+                   (%locations? locations?)
+                   (%queue-size queue-size)
+                   (%shell shell))
+      (ast-> ast #:dir dir #:model model))))

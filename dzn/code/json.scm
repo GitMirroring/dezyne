@@ -33,10 +33,10 @@
   #:use-module (dzn code)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
-  #:export (ast->
-            json:get-fields
+  #:export (json:get-fields
             json:elements
-            json:value))
+            json:value
+            system-diagram))
 
 (define-class <json:field> ()
   (name #:getter .name #:init-value #f #:init-keyword #:name)
@@ -92,7 +92,14 @@
 (define-templates-macro define-templates json)
 (include-from-path "dzn/templates/json.scm")
 
-(define* (ast-> ast #:key dir model)
-  (let* ((root (remove-behaviour ast))
-         (root (if (%locations?) (remove-location root) root)))
+
+;;;
+;;; Entry points.
+;;;
+(define* (system-diagram root #:key dir model)
+  (let* ((root (remove-behaviour root))
+         (root (if (%locations?) root (remove-location root))))
     (x:source (.node root))))
+
+(define* (ast-> ast #:key dir model)
+  (system-diagram ast #:dir dir #:model model))

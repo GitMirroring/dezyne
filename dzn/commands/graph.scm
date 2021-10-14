@@ -23,13 +23,14 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn commands explore)
+(define-module (dzn commands graph)
   #:use-module (ice-9 getopt-long)
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn command-line)
   #:use-module (dzn explore)
   #:use-module (dzn ast)
+  #:use-module (dzn code)
   #:use-module (dzn parse)
   #:use-module (dzn commands parse)
   #:use-module (dzn vm normalize)
@@ -38,32 +39,35 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((format (single-char #\f) (value #t))
+          '((backend (single-char #\b) (value #t))
+            (behaviour (single-char #\B))
+            (format (single-char #\f) (value #t))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
-            (lts)
+            (locations (single-char #\L))
             (model (single-char #\m) (value #t))
-            (queue-size (single-char #\q) (value #t))
-            (state-diagram)))
+            (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
          (usage? (and (not help?) (null? files))))
     (when (or help? usage?)
       (let ((port (if usage? (current-error-port) (current-output-port))))
-        (format port "
-explore is DEPRECATED, please use graph instead
+        (format port "\
+Usage: dzn graph [OPTION]... [FILE]...
+Generate graph from a Dezyne model
 
-Usage: dzn explore [OPTION]... [FILE]...
-Explore the state space of a Dezyne model
-
-  -f, --format=FORMAT    display trace in format FORMAT [dot] {dot,json}
+  -b, --backend=TYPE     write a graph of TYPE to stdout [system]
+                           {dependency,lts,state,system}
+  -B, --behaviour        disregard the interaction with, and state of ports
+                           implies --backend=state
+  -f, --format=FORMAT    produce graph in format FORMAT [dot] {aut,dot,json}
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
-      --lts              write the lts in AUT format to stdout
-      --state-diagram    write the state diagram to stdout [default]
-  -m, --model=MODEL      generate main for MODEL
+  -L, --locations        include locations in graph
+  -m, --model=MODEL      produce graph for MODEL
   -q, --queue-size=SIZE  use queue size=SIZE for exploration [3]
+
 ")
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
@@ -73,24 +77,44 @@ Explore the state space of a Dezyne model
          (files (option-ref options '() '()))
          (file-name (car files))
          (model-name (option-ref options 'model #f))
+         (behaviour? (option-ref options 'behaviour #f))
+         (backend (option-ref options 'backend (if behaviour? "state"
+                                                   "system")))
+         (dependency? (equal? backend "dependency"))
+         (lts? (equal? backend "lts"))
+         (state? (equal? backend "state"))
          (debug? (dzn:command-line:get 'debug #f))
+         (locations? (option-ref options 'locations #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
-         (parse-options (filter (negate (compose (cute eq? <> 'model) car)) options))
+         (parse-options (filter (negate (compose (cute eq? <> 'model) car))
+                                options))
          (ast (parse parse-options file-name))
-         (root (vm:normalize ast))
+         (root (if (member backend '("lts" "state")) (vm:normalize ast) ast))
          (model (call-with-handle-exceptions
                  (lambda _ (ast:get-model root model-name))
                  #:backtrace? debug?
                  #:file-name file-name))
-         (fmt (option-ref options 'format #f))
-         (queue-size (string->number (command-line:get 'queue-size "3")))
-         (state-diagram? (option-ref options 'state-diagram #f))
-         (lts? (option-ref options 'lts #f)))
+         (language (option-ref options 'format "dot"))
+         (queue-size (string->number (command-line:get 'queue-size "3"))))
     (unless model
       (format (current-error-port) "~a: No dezyne model found.\n" file-name)
       (exit EXIT_OTHER_FAILURE))
-    (cond (lts? (lts root #:model model #:queue-size 3))
-          (else (state-diagram root
-                               #:format fmt
-                               #:model model
-                               #:queue-size queue-size)))))
+    (cond (behaviour? (state-diagram root
+                                     #:behaviour? #t
+                                     #:format language
+                                     #:model model
+                                     #:queue-size queue-size))
+          (dependency? (code root
+                             #:ast-> 'dependency-diagram
+                             #:model model
+                             #:language language))
+          (lts? (lts root #:model model #:queue-size queue-size))
+          (state? (state-diagram root
+                                 #:format language
+                                 #:model model
+                                 #:queue-size queue-size))
+          (else (code root
+                      #:ast-> 'system-diagram
+                      #:model model
+                      #:language language
+                      #:locations? locations?)))))

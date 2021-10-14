@@ -39,7 +39,8 @@ Documentation License''.
 * Dezyne Tutorial: (dezyne-tutorial).   Dezyne Tutorial.
 * dzn: (dezyne)Invoking dzn.            Running Dezyne commands.
 * dzn: (dezyne)Invoking dzn code.       Generating code from a Dezyne file.
-* dzn: (dezyne)Invoking dzn exlpore.    Exploring Dezyne models.
+* dzn: (dezyne)Invoking dzn explore.    Exploring Dezyne models.
+* dzn: (dezyne)Invoking dzn graph.      Generating graphs of Dezyne models.
 * dzn: (dezyne)Invoking dzn parse.      Checking the syntax of Dezyne file.
 * dzn: (dezyne)Invoking dzn simulate.   Simulating Dezyne models.
 * dzn: (dezyne)Invoking dzn verify.     Verifying Dezyne models.
@@ -177,6 +178,7 @@ The Dezyne command-line tools
 * Invoking dzn::
 * Invoking dzn code::
 * Invoking dzn explore::
+* Invoking dzn graph::
 * Invoking dzn hello::
 * Invoking dzn language::
 * Invoking dzn lts::
@@ -4414,6 +4416,7 @@ foreigns that use the same interfaces need to form a chain of
 * Invoking dzn::
 * Invoking dzn code::
 * Invoking dzn explore::
+* Invoking dzn graph::
 * Invoking dzn hello::
 * Invoking dzn language::
 * Invoking dzn lts::
@@ -4556,6 +4559,10 @@ Generate thread-safe system shell for model @var{model}.
 @node Invoking dzn explore
 @section Invoking @command{dzn explore}
 
+@quotation Note
+explore is deprecated, please use graph @xref{Invoking dzn graph}.
+@end quotation
+
 @cindex Aldebaran
 @cindex @code{lts}
 
@@ -4595,8 +4602,61 @@ Use queue size @var{size} for exploration, the default is @code{3}.
 
 @item --state-diagram
 Generate a state-diagram it @code{dot} format.  This is the default.
-When @option{--verbose} is used on @code{dzn}, the state of the requires
-ports behaviours and state also considered.
+
+@end table
+
+
+@node Invoking dzn graph
+@section Invoking @command{dzn graph}
+
+@cindex Aldebaran
+@cindex @code{lts}
+
+The @command{dzn graph} command generates a graph from a Dezyne model.
+
+@example
+dzn @var{dzn-option}@dots{} graph @var{option}@dots{} @file{FILE}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --backend=@var{type}
+@itemx -b @var{type}
+Generate a diagram using backend @var{type}; one of @code{dependency},
+@code{lts}, @code{state}, or @code{system} and write it to standard
+output.  The default is @code{system}.
+
+@item --behaviour
+@itemx -B
+Generate state-diagram disregarding port interactions and port state.
+Using @option{--behaviour} implies @option{type}=@var{state}.
+
+@item --format=@var{format}
+@itemx -f @var{format}
+Print trace in format @var{format}; one of @code{aut}, @code{dot}, or
+@code{json}.  For @option{--lts} the default is @code{aut}, for other
+formats the default is @code{dot}.
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn graph}, and then exit.
+
+@item --import=@var{dir}
+@itemx -I @var{dir}
+Add directory @var{dir} to the import path.
+
+Under the hood, @command{dzn graph} uses the Dezyne VM.
+
+@item --model=@var{model}
+@itemx -m @var{model}
+Generate graph for model @var{model}.  The default is to use the most
+``interesting'' model.
+
+@item --queue-size=@var{size}
+@itemx -q @var{size}
+Use queue size @var{size} for exploration, the default is @code{3}.
 
 @end table
 
@@ -4675,7 +4735,7 @@ Display input, parse tree, offset, context and completions.
 @cindex @code{lts}
 
 The @command{dzn lts} command can be used t navigate and query an
-@var{lts} in Aldebaran (@code{aut}) format (@xref{Invoking dzn explore},
+@var{lts} in Aldebaran (@code{aut}) format (@xref{Invoking dzn graph},
 @xref{Invoking dzn traces}).
 
 @example

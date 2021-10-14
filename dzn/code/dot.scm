@@ -28,7 +28,9 @@
   #:use-module (dzn misc)
   #:use-module (dzn templates)
   #:use-module (dzn vm ast)
-  #:use-module (dzn vm runtime))
+  #:use-module (dzn vm runtime)
+  #:export (dependency-diagram
+            system-diagram))
 
 ;;; Commentary:
 ;;;
@@ -128,11 +130,15 @@
 
 
 ;;;
-;;; Entry point.
+;;; Entry points.
 ;;;
+(define* (dependency-diagram root #:key dir model)
+  (x:source-dependent root))
+
+(define* (system-diagram root #:key dir model)
+  (parameterize ((%sut (runtime:get-sut root (ast:get-model root (ast:dotted-name model)))))
+    (parameterize ((%instances (runtime:create-instances (%sut))))
+      (x:source-sut (%sut)))))
+
 (define* (ast-> ast #:key dir model)
-  ;; FIXME: meaningful switch -- dzn graph --dependency?
-  (if (dzn:command-line:get 'verbose #f) (x:source-dependent ast)
-   (parameterize ((%sut (runtime:get-sut ast (ast:get-model ast (command-line:get 'model #f)))))
-     (parameterize ((%instances (runtime:create-instances (%sut))))
-       (x:source-sut (%sut))))))
+  (system-diagram ast #:model model))

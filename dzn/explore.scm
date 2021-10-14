@@ -364,12 +364,12 @@ RTC-LTS->LTS."
 ;;; Entry points.
 ;;;
 
-(define* (state-diagram root #:key format model queue-size)
+(define* (state-diagram root #:key behaviour? format model queue-size)
   "Entry-point for dzn explore --state-diagram."
   (when (> (dzn:debugity) 0)
     (set! %debug? #t))
   (parameterize ((%exploring? #t)
-                 (%explore-behaviour? (not (dzn:command-line:get 'verbose)))
+                 (%explore-behaviour? behaviour?)
                  (%queue-size queue-size)
                  (%sut (runtime:get-sut root model)))
     (parameterize ((%instances (runtime:create-instances (%sut))))

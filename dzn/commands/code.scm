@@ -102,14 +102,16 @@ Languages: ~a
          (shell (option-ref options 'shell #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
-         (ast (parse parse-options file-name))
-         (module (resolve-module `(dzn code ,(string->symbol language))))
-         (ast-> (false-if-exception (module-ref module 'ast->))))
-    (unless ast->
-      (format (current-error-port) "code: no such language: ~a\n" language)
-      (exit EXIT_OTHER_FAILURE))
+         (ast (parse parse-options file-name)))
     (parameterize ((%calling-context calling-context)
                    (%locations? locations?)
                    (%queue-size queue-size)
                    (%shell shell))
-      (ast-> ast #:dir dir #:model model))))
+    (code ast
+          #:calling-context calling-context
+          #:dir dir
+          #:model model
+          #:language language
+          #:locations? locations?
+          #:shell shell
+          #:queue-size queue-size))))
