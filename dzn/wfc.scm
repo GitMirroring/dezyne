@@ -397,7 +397,8 @@
   (append
    (on o)
    (append-map wfc (ast:trigger* o))
-   (wfc (.statement o))))
+   (if (is-a? (.statement o) <statement>) (wfc (.statement o))
+       `(,(wfc-error o "statement expected")))))
 
 (define-method (wfc (o <imperative>)) ;; is-a <statement>
   '())

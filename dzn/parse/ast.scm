@@ -319,6 +319,9 @@
                      <compound-node>)
              #:elements body)))
 
+        (('on triggers)
+         (make <on-node> #:triggers (helper triggers)))
+
         (('on triggers statement)
          (make <on-node> #:triggers (helper triggers) #:statement (helper statement)))
 

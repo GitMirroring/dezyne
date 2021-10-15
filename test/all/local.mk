@@ -374,6 +374,7 @@ PARSER_TESTS =					\
  %D%/parse_locations				\
  %D%/parse_missing_event			\
  %D%/parse_non_existent_import			\
+ %D%/parse_on_without_statement			\
  %D%/parse_parameter_mismatch			\
  %D%/parse_peg_locations			\
  %D%/parse_preprocessed_foo			\
