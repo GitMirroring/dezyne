@@ -1,0 +1,4 @@
+test/all/parse_out_binding_argument/parse_out_binding_argument.dzn:42:11: error
+      f (i <- data);
+          ^
+          `comma' expected
