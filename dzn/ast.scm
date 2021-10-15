@@ -1228,7 +1228,7 @@
   (and=> (.variable.name o) (cut ast:lookup-var o <>)))
 
 (define-method (.variable (o <formal-binding>))
-  (and=> (.variable.name o) (cut ast:lookup-var o <>)))
+  (and=> (.variable.name o) (cut ast:lookup-var (.parent o) <>)))
 
 (define-method (.variable (o <var>))
   (and=> (.name o) (cut ast:lookup-var o <>)))

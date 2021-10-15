@@ -246,19 +246,23 @@
     (lambda (ast)
       (let* ((count (length (ast:formal* o)))
              (event (.event ast)))
-        (if (not event) '()
-            (let* ((formals (ast:formal* event))
-                   (event-count (length formals))
-                   (on (parent o <on>))
-                   (statement (.statement on))
-                   (illegal? (or (is-a? statement <illegal>)
-                                 (and (is-a? statement <compound>)
-                                      (match (ast:statement* statement)
-                                        ((($ <illegal>)) #t)
-                                        (_ #f))))))
-              (if (or illegal? (= count event-count)) '()
-                  `(,(wfc-error ast (format #f "parameter count mismatch, expected ~a, found: ~a" event-count count))
-                    ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event))))))))))
+        (append
+         (let* ((formals (ast:formal* o))
+                (formal-bindings (filter (is? <formal-binding>) formals)))
+           (append-map wfc formal-bindings))
+         (if (not event) '()
+             (let* ((formals (ast:formal* event))
+                    (event-count (length formals))
+                    (on (parent o <on>))
+                    (statement (.statement on))
+                    (illegal? (or (is-a? statement <illegal>)
+                                  (and (is-a? statement <compound>)
+                                       (match (ast:statement* statement)
+                                         ((($ <illegal>)) #t)
+                                         (_ #f))))))
+               (if (or illegal? (= count event-count)) '()
+                   `(,(wfc-error ast (format #f "parameter count mismatch, expected ~a, found: ~a" event-count count))
+                     ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event)))))))))))
    (else
     '())))
 
@@ -277,6 +281,10 @@
        ((and event (ast:out? event) (or (ast:out? o) (ast:inout? o)))
         `(,(wfc-error o (format #f "~a-parameter not allowed on out-event `~a'" (.direction o) (.name event)))))
        (else '()))))))
+
+(define-method (wfc (o <formal-binding>))
+  (if (.variable o) '()
+      `(,(wfc-error o (format #f "~a is not a member variable" (.variable.name o))))))
 
 (define-method (model-blocking? (o <model>))
   (and (is-a? o <component>)
@@ -401,10 +409,6 @@
        `(,(wfc-error o "statement expected")))))
 
 (define-method (wfc (o <imperative>)) ;; is-a <statement>
-  '())
-
-(define-method (wfc (o <out-bindings>)) ;; is-a <imperative>
-  ;; TODO: ??
   '())
 
 (define-method (wfc (o <variable>)) ;; is-a <imperative>
