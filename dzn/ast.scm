@@ -137,6 +137,7 @@
            ast:lookup
            ast:lookup-var
            ast:member*
+           ast:member?
            ast:model*
            ast:namespace*
            ast:name-equal?
@@ -275,6 +276,12 @@
 
 (define-method (ast:dzn-scope? (o <model>))
   (member (car (.ids (.name o))) '("dzn" "dzn'")))
+
+(define-method (ast:member? (o <variable>))
+  (is-a? (.parent (.parent o)) <behaviour>))
+
+(define-method (ast:member? (o <top>))
+  #f)
 
 (define-method (ast:provides? (o <port>))
   (and (eq? (.direction o) 'provides) o))

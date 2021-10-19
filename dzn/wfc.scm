@@ -319,7 +319,7 @@
 
 (define-method (wfc (o <compound>)) ;; is-a <statement>
   (append
-   (call-context o)
+   (imperative-context o)
    (mixing-declarative-imperative o)
    (append-map wfc (ast:statement* o))))
 
@@ -403,7 +403,7 @@
   ;;   (.expression o) wfc?
   ;;   .expression matches .type
   (append
-   (call-context o)
+   (imperative-context o)
    (re-declaration o)
    (assign o)))
 
@@ -426,7 +426,7 @@
   ;;   .expression matches .type
   (append
    (assign o)
-   (call-context o)))
+   (imperative-context o)))
 
 (define-method (wfc (o <call>)) ;; is-a <imperative>
   (append
@@ -441,7 +441,7 @@
     (append wfce
             (if (pair? wfce) '()
                 (typed-expression expression <bool>))
-            (call-context o)
+            (imperative-context o)
             (wfc (.then o))
             (if (.else o) (wfc (.else o)) '()))))
 
@@ -464,12 +464,12 @@
                         (loop (parent (.parent compound) <compound>))))))
             (else '()))))
   (append
-   (call-context o)
+   (imperative-context o)
    (illegal o)))
 
 (define-method (wfc (o <reply>)) ;; is-a <imperative>
   (append
-   (call-context o)
+   (imperative-context o)
    (if (.expression o) (wfc (.expression o)) '())
    (if (.port.name o) (reply-with-port o) (reply-without-port o))))
 
@@ -675,7 +675,10 @@
 
 (define-method (wfc (o <var>))
   (append
-   (call-context o)
+   (if (ast:member? (parent o <variable>))
+       (let ((class "variable reference"))
+         `(,(wfc-error o (format #f "~a in member variable initializer" class))))
+       '())
    (let ((variable (.variable o)))
      (cond ((not variable)
             `(,(wfc-error o (format #f "undefined variable `~a'" (.name o)))))
@@ -1051,48 +1054,36 @@
         (map (cute wfc-error <> "error: missing return") missing))))
 
 (define-method (call-context (o <ast>))
-  (define (global-var? o)
-    (and (is-a? o <variable>) (is-a? (.parent (.parent o)) <behaviour>)))
   (let* ((p (.parent o))
          (grand-parent (.parent p))
          (great-grand-parent (.parent grand-parent))
-         (class (ast-name (class-of o)))
-         (action-or-call? (or (is-a? o <action>) (is-a? o <call>))))
+         (class (ast-name (class-of o))))
     (cond
-     ((global-var? o) '())
-     ((is-a? p <behaviour>)  '())
      ((and (is-a? o <action>) (not (.event o)))
       (let ((name (.event.name o)))
         `(,(wfc-error o (format #f "undefined identifier `~a'" name)))))
-     ((and (or action-or-call? (is-a? o <var>))
-           (parent o <variable>)
-           (global-var? (parent o <variable>)))
+     ((and (parent o <variable>)
+           (ast:member? (parent o <variable>)))
       (let ((class (if (equal? class "var") "variable reference" class)))
         `(,(wfc-error o (format #f "~a in member variable initializer" class)))))
-     ((and (is-a? o <statement>)
-           (not (ast:declarative? o))
-           (not (parent o <on>))
+     ((and (not (parent o <on>))
            (not (parent o <function>))
            (not (and (equal? class "compound") (ast:declarative? o))))
       (let ((class (if (equal? class "compound") "imperative compound" class)))
         `(,(wfc-error o (format #f "~a outside on" class)))))
-     ((and action-or-call?
-           (is-a? (ast:type o) <void>)
+     ((and (is-a? (ast:type o) <void>)
            (is-a? p <variable>))
       `(,(wfc-error o "void value not ignored as it ought to be")))
-     ((and action-or-call?
-           (not (is-a? (ast:type o) <void>))
+     ((and (not (is-a? (ast:type o) <void>))
            (or (is-a? p <compound>)
                (is-a? p <guard>)
                (is-a? p <on>)))
       `(,(wfc-error o (format #f "~a value discarded" class))))
-     ((and action-or-call?
-           (not (is-a? (ast:type o) <void>))
+     ((and (not (is-a? (ast:type o) <void>))
            (or (is-a? p <return>)
                (is-a? grand-parent <return>)))
       `(,(wfc-error o (format #f "valued ~a used in a return expression" class))))
-     ((and action-or-call?
-           (not (is-a? (ast:type o) <void>))
+     ((and (not (is-a? (ast:type o) <void>))
            (not
             (or (is-a? p <assign>)
                 (is-a? p <variable>)
@@ -1133,6 +1124,19 @@
                        (is-a? great-grand-parent <reply>)))
                  (ast:eq? (.left grand-parent) p))))
       `(,(wfc-error o (format #f "valued ~a used in a complex expression" class))))
+     (else '()))))
+
+(define-method (imperative-context (o <ast>))
+  (let* ((p (.parent o))
+         (class (ast-name (class-of o))))
+    (cond
+     ((ast:member? o) '())
+     ((is-a? p <behaviour>)  '())
+     ((and (not (parent o <on>))
+           (not (parent o <function>))
+           (not (and (equal? class "compound") (ast:declarative? o))))
+      (let ((class (if (equal? class "compound") "imperative compound" class)))
+        `(,(wfc-error o (format #f "~a outside on" class)))))
      (else '()))))
 
 (define-method (wfc:continuation (o <ast>))
