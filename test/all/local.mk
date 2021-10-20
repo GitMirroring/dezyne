@@ -360,6 +360,7 @@ EXTRA_DIST +=					\
 endif
 
 PARSER_TESTS =					\
+ %D%/parse_assign_void				\
  %D%/parse_block_comment_import			\
  %D%/parse_duplicate_declaration		\
  %D%/parse_duplicate_import_prefix		\
