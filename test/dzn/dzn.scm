@@ -491,7 +491,7 @@ output, and standard error as three values."
                "lts")
         (receive (status stdout stderr)
             (observe
-             `("dzn" "explore" "--lts"
+             `("dzn" "graph" "--backend=lts"
                ,@includes
                "-m" ,model
                ,dzn-name)
