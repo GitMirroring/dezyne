@@ -67,6 +67,7 @@
             <refusals-error>
             <second-reply-error>
 
+            .action
             .async
             .blocked
             .component-acceptance
@@ -152,7 +153,8 @@
 (define-ast <end-of-trail> (<status>)
   (labels))
 
-(define-ast <fork-error> (<error>))
+(define-ast <fork-error> (<error>)
+  (action))
 
 (define-ast <illegal-error> (<error>))
 

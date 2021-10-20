@@ -809,7 +809,7 @@ intermediate steps such as assignments, function calls, replies,
           (append
            (if (not trigger) '()
                (let ((location (step->location (.event trigger))))
-                (list (format #f "~atrigger: ~a\n" location (trigger->string trigger)))))
+                 (list (format #f "~atrigger: ~a\n" location (trigger->string trigger)))))
            (list (format #f "~acomponent accept: ~a\n" location acceptance))
            (if (not port-acceptances)
                (let* ((interface (.type (.ast r:port)))
@@ -829,14 +829,19 @@ intermediate steps such as assignments, function calls, replies,
               (location (step->location action))
               (action-port (.port action))
               (action-port-name (.name action-port))
-              (trigger (.trigger pc))
-              (trigger-location (step->location (parent action <on>)))
-              (trigger-port (.port trigger))
-              (trigger-port-name (.name trigger-port)))
+              (first (.action status)))
          (string-join
           (list
            (format #f "~aforking not allowed, action on port: ~a\n" location action-port-name)
-           (format #f "~afor trigger on port ~a\n" trigger-location trigger-port-name))
+           (if first
+               (let* ((first-location (step->location first))
+                      (first-port-name (.name (.port first))))
+                 (format #f "~aafter action on port: ~a\n" first-location first-port-name))
+               (let* ((trigger (.trigger pc))
+                      (trigger-location (step->location (parent action <on>)))
+                      (trigger-port (.port trigger))
+                      (trigger-port-name (.name trigger-port)))
+                 (format #f "~afor trigger on port ~a\n" trigger-location trigger-port-name))))
           "")))
       (($ <refusals-error>)
        (let ((refusals (sort (.refusals status) equal?))

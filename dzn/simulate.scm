@@ -158,19 +158,20 @@ format."
              (else
               (cons pc (loop (cdr trace) port-trace)))))))))
 
+(define (action-other-provides-port? port pc)
+  (let ((statement (.statement pc)))
+    (and (is-a? statement <action>)
+         (let ((action-port (.port statement)))
+           (and action-port
+                (not (ast:eq? action-port port))
+                (ast:provides? action-port))))))
+
 (define (check-provides-fork port trace)
-  "Check TRACE for a fork with respect to PORT.  If TRACE contains
+  "Check TRACE for a V-fork with respect to PORT.  If TRACE contains
 actions to a provides port other than PORT, mark the trace as
 <fork-error>, otherwise return false."
-  (define (action-other-port pc)
-    (let ((statement (.statement pc)))
-      (and (is-a? statement <action>)
-           (let ((action-port (.port statement)))
-             (and action-port
-                  (not (ast:eq? action-port port))
-                  (ast:provides? action-port))))))
-  (let* ((trail (trace->trail trace))
-         (action-step (list-index action-other-port trace)))
+  (let ((action-step (list-index (cute action-other-provides-port? port <>)
+                                 trace)))
     (and action-step
          (let* ((trace (drop trace action-step))
                 (pc (car trace))
@@ -180,6 +181,27 @@ actions to a provides port other than PORT, mark the trace as
                                       #:ast (.statement pc)
                                       #:message "compliance"))))
            (list (cons pc trace))))))
+
+(define (check-requires-provides-fork trace)
+  "Check TRACE for a Y-fork.  If TRACE contains actions to more than one
+provides port, mark the trace as <fork-error>, otherwise return false."
+  (let ((pc (find (cute action-other-provides-port? #f <>) (reverse trace))))
+    (and pc
+         (let* ((action (.statement pc))
+                (port (.port action))
+                (action-step (list-index
+                              (cute action-other-provides-port? port <>)
+                              trace)))
+           (and action-step
+                (let* ((trace (drop trace action-step))
+                       (pc (car trace))
+                       (pc (clone pc
+                                  #:previous #f
+                                  #:status (make <fork-error>
+                                             #:action action
+                                             #:ast (.statement pc)
+                                             #:message "compliance"))))
+                  (list (cons pc trace))))))))
 
 (define (rtc-lts-node->traces lts from)
   "Return traces for FROM node of LTS."
@@ -406,7 +428,9 @@ of traces, possibly marked with <compliance-error>."
                       (check-provides-fork port trace))
                  (check-compliance port (list trace)))
         (let ((ports (ast:provides-port* component)))
-          (fold check-compliance (list trace) ports)))))
+          (or (and (> (length ports) 1)
+                   (check-requires-provides-fork trace))
+              (fold check-compliance (list trace) ports))))))
 
 (define (pc->provides-traces r:provides pc)
   (let* ((interface (.type (.ast r:provides)))
