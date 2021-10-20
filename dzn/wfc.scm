@@ -375,7 +375,8 @@
             (if (or otherwise? (pair? wfce)) '()
                 (typed-expression expression <bool>))
             (if otherwise? (otherwise o) '())
-            (wfc (.statement o)))))
+            (if (is-a? (.statement o) <statement>) (wfc (.statement o))
+                `(,(wfc-error o "statement expected"))))))
 
 (define-method (wfc (o <declarative-illegal>)) ;; is-a <declarative>
   ;; TODO; in source??

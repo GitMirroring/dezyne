@@ -452,6 +452,10 @@
         (('functions functions ...)
          (make <functions-node> #:elements (helper functions)))
 
+        (('guard expression)
+         (make <guard-node>
+           #:expression (helper expression)))
+
         (('guard expression statement)
          (make <guard-node>
            #:expression (helper expression)
