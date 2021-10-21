@@ -13,6 +13,11 @@
     and the '||' operators allow them as their left-hand operand only
     ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/26][#26]]).
   - The need for explicit illegals in interfaces has been removed.
+** Parser
+  - The well-formedness check now reports incorrect usage of blocking
+    out-bindings.
+  - The well-formedness check now uses `info' for any informational
+    messages that follow an error.
 ** Verification
   - The interface completeness check has been removed; just like
     components, unspecified events in an interface behaviour are now
@@ -28,7 +33,7 @@
   - A new command `dzn graph' can be used to generate graphs using
     different backends: "dependency", "lts", "state", and "system".  The
     "state" backend with option `--behaviour' produces a state diagram
-    disregarding port interactions and port state.
+    disregarding port interactions and port state ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/29][#29]]).
   - The `dzn explore' command has been deprecated and users are
     requested to use `dzn graph' instead.  `dzn explore' is planned to
     be removed in the next release.
@@ -36,6 +41,8 @@
   - The use of an undefined variable now produces a parse error.  This
     regression was introduced in 2.13.3.
   - The use of an interface enum as event now produces a parse error.
+  - The simulator now also reports a Y-fork: forking a requires-out
+    event to more than one provides ports.
 
 * Changes in 2.13.3 since 2.13.2
 ** Parser
