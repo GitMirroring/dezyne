@@ -163,6 +163,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_implicit_illegal		\
  %D%/compliance_livelock			\
+ %D%/compliance_livelock_escape			\
  %D%/compliance_external_inevitable		\
  %D%/compliance_failures_choice			\
  %D%/compliance_failures_illegal		\
@@ -471,6 +472,7 @@ XFAIL_TESTS =					\
  %D%/alpha_local2				\
  %D%/async_ranking_disorder			\
  %D%/compliance_livelock			\
+ %D%/compliance_livelock_escape			\
  %D%/compound_local_assign_call			\
  %D%/external_blocking_livelock                 \
  %D%/foreign_conflict				\
