@@ -128,8 +128,11 @@ recursion.  Return a run-to-completion LTS
                     (if (null? labels) traces
                         (let* ((new (run-to-completion** pc (car labels)))
                                (new (filter-implicit-illegal-only new)))
-                          (if (find (compose (is-status? <livelock-error>) car) new) '()
-                              (loop (cdr labels) (append new traces)))))))
+                          (cond ((find (compose (is-status? <livelock-error>) car) new)
+                                 (format (current-error-port) "warning: livelock, bailing out\n")
+                                 '())
+                                (else
+                                 (loop (cdr labels) (append new traces))))))))
                  (pcs (map car traces)))
             (map pc->state-number pcs)
             (hash-set! lts from (cons pc traces))
