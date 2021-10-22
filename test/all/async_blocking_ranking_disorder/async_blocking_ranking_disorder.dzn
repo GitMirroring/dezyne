@@ -1,0 +1,185 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Joran Jessurun <joran.jessurun@ajmail.nl>
+// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Ranking makes sure that top.ack starts running in Top, but
+// collaterally blocks since w.hello is already blocked in Bottom.  Then
+// bottom.ack in Bottom runs out of order with the desired ranking.  See
+// the trace below:
+//
+// <external>.p.start -> sut.top.p.start
+// sut.top.tick.req -> <external>.req
+// sut.top.tick.return -> <external>.return
+// sut.top.w.hello -> sut.bottom.p.hello
+// sut.bottom.async.req -> <external>.req
+// sut.bottom.async.return -> <external>.return
+// sut.top.<q> <- <external>.ack
+// sut.bottom.<q> <- <external>.ack
+// sut.bottom.async.ack <- sut.bottom.<q>
+// sut.bottom.async.req -> <external>.req
+// sut.bottom.async.return -> <external>.return
+// sut.top.w.return <- sut.bottom.p.return
+// <external>.p.return <- sut.top.p.return
+// sut.bottom.<q> <- <external>.ack
+// sut.bottom.async.ack <- sut.bottom.<q>
+// sut.bottom.p.<q> <- sut.top.w.world
+// sut.top.w.world <- sut.top.<q>
+// sut.top.p.<q> <- <external>.p.tick
+// sut.top.tick.ack <- sut.top.<q>
+// illegal
+//
+// The illegal is a mere side effect, which helps the test to fail.
+//
+// Code:
+
+interface ihello
+{
+  in void start();
+  out void tick();
+
+  behavior
+  {
+    bool operational = false;
+
+    [!operational]
+      {
+        on start: operational = true;
+      }
+
+    [operational]
+      {
+        on start: illegal;
+        on inevitable: {operational = false; tick;}
+      }
+    }
+}
+
+component Top
+{
+  provides ihello p;
+  requires iworld w;
+
+  behavior
+  {
+    requires dzn.async tick;
+
+    bool operational = false;
+
+    [!operational]
+      {
+        on p.start():
+        {
+          tick.req();
+          w.hello();
+          operational = true;
+        }
+      }
+
+    [operational]
+      {
+        on w.world(): {operational = false; p.tick();}
+        on tick.ack(): {}
+      }
+    }
+}
+
+interface iworld
+{
+  in void hello();
+  out void world();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle]
+    {
+      on hello: illegal;
+      on inevitable: {idle = true; world;}
+    }
+  }
+}
+
+component Bottom_async
+{
+  provides iworld p;
+  behavior
+  {
+    requires dzn.async async;
+    bool idle = true;
+    [idle]
+    {
+      on p.hello(): blocking async.req();
+      on async.ack(): {idle = false; p.reply(); async.req();}
+    }
+    [!idle] on async.ack(): {idle = true; p.world();}
+  }
+}
+
+interface ISync
+{
+  in void ping();
+  out void pong();
+
+  behavior
+  {
+    on ping: pong;
+  }
+}
+
+component Sync
+{
+  provides ISync p;
+  behavior
+  {
+    on p.ping(): p.pong();
+  }
+}
+
+// component Bottom_sync
+// {
+//   provides iworld p;
+//   requires ISync w;
+//   behavior
+//   {
+//     on p.hello(): blocking w.ping();
+//     on w.pong(): {p.reply(); p.world();}
+//   }
+// }
+
+component async_blocking_ranking_disorder
+{
+  provides ihello p;
+  system
+  {
+    Top top;
+    top.p <=> p;
+
+    Bottom_async bottom;
+
+    // Bottom_sync bottom;
+    // Sync sync;
+    // bottom.w <=> sync.p;
+
+    bottom.p <=> top.w;
+  }
+}
