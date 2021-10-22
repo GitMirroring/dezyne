@@ -209,7 +209,8 @@ namespace dzn
     if(handle && handle != coroutine::get_id()
        && (!other_port || !port_blocked_p(c->dzn_locator, other_port)))
       collateral_block(c, c->dzn_locator);
-    trace_qin(os, p.meta, event);
+    if (!dynamic_cast<async_base*> (&p))
+      trace_qin(os, p.meta, event);
 #if DZN_STATE_TRACING
     os << *c << std::endl;
 #endif

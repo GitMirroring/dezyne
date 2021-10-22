@@ -109,8 +109,13 @@ int const version_patch = @VERSION_PATCH@;
     {}
   };
 
+  struct async_base
+  {
+    virtual ~async_base() = default;
+  };
+
   template <typename Signature>
-  struct async
+  struct async : public async_base
   {
     dzn::port::meta meta;
 

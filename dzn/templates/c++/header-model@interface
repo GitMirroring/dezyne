@@ -17,6 +17,7 @@ struct #x:model-name
     } out;
 
    inline #x:model-name(const dzn::port::meta& m) : meta(m) {}
+   inline virtual ~#x:model-name() = default;
 
    void check_bindings() const
    {
