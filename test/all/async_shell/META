@@ -1,1 +1,1 @@
-{"skip":["traces","c","javascript"],"languages":["c++"],"tss":true,"comment":"async-refine: not supported"}
+{"skip":["traces","c","javascript"],"tss":true,"comment":"async-refine: not supported"}
