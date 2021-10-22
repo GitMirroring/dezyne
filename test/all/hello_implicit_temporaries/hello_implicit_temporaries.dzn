@@ -24,11 +24,14 @@
 interface ihello
 {
   in bool hello ();
+  in bool cruel ();
 
   behaviour
   {
     on hello: reply (false);
     on hello: reply (true);
+    on cruel: reply (false);
+    on cruel: reply (true);
   }
 }
 
@@ -49,5 +52,20 @@ component hello_implicit_temporaries
     else if (foo ()) reply (!foo () && true);
     else if (w.hello () && true) reply (w.hello () || true);
     else reply (false);
+    on h.cruel ():
+    {
+      bool b = true;
+      if (w.hello ())
+      {
+        reply (w.hello ());
+      }
+      else
+      {
+        reply (false);
+        b = false;
+      }
+      if (true) b = true;
+      if (true) if (true) b = true;
+    }
   }
 }
