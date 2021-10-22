@@ -1,0 +1,101 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Async prioritizes ack's over other optional and inevitable out
+// events.  Combining this with blocking can cause this async invariant
+// to be violated.  Details: in the pump, the loop flushing all the
+// pending ack's is interrupted by a previously released blocked event.
+// The continuation of this coroutine could enter a single out event
+// into the pump queue.  The example below demonstrates this.
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+component async_blocking_missing_ack
+{
+  provides ihello h;
+  requires iworld w;
+
+  system
+  {
+    Top top;
+    Bottom bottom;
+
+    h <=> top.h1;
+    top.h2 <=> bottom.h;
+    bottom.w <=> w;
+  }
+}
+
+
+component Top
+{
+  provides ihello h1;
+  requires ihello h2;
+
+  behavior
+  {
+    requires dzn.async async;
+
+    blocking on h1.hello(): {async.req(); h2.hello();}
+    on async.ack(): h1.reply();
+  }
+}
+
+component Bottom
+{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  {
+    enum S {A,B,C};
+    S s = S.A;
+
+    requires dzn.async async;
+
+    blocking [s.A] on h.hello(): {s = S.B; async.req(); w.hello();}
+    on async.ack(): {s = S.C;h.reply();}
+    [s.C] on w.world(): s = S.A;
+  }
+}
+
+interface iworld
+{
+  in void hello();
+  out void world();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}

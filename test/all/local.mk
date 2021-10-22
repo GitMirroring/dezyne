@@ -117,6 +117,7 @@ REGRESSION_TESTS =				\
  %D%/assign_formal				\
  %D%/async_async_prio				\
  %D%/async_blocking				\
+ %D%/async_blocking_missing_ack			\
  %D%/async_blocking_ranking_disorder		\
  %D%/async_blocking_verify			\
  %D%/async_cancel				\
@@ -482,6 +483,7 @@ PARSER_TESTS =					\
  %D%/undefined/var
 
 XFAIL_TESTS =					\
+ %D%/async_blocking_missing_ack			\
  %D%/async_blocking_ranking_disorder		\
  %D%/async_blocking_verify			\
  %D%/compliance_livelock			\
