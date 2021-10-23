@@ -26,11 +26,15 @@ enum Bool {False,True};
 interface ihello
 {
   in Bool hello ();
+  enum Result {OK, NOK};
+  in Result cruel ();
 
   behaviour
   {
     on hello: reply (Bool.False);
     on hello: reply (Bool.True);
+    on cruel: reply (Result.OK);
+    on cruel: reply (Result.NOK);
   }
 }
 
@@ -50,5 +54,12 @@ component hello_implicit_enum
     if (w.hello () == Bool.True) reply (w.hello ());
     else if (Bool.False == foo () && true) reply (foo ());
     else reply (Bool.False);
+    on h.cruel ():
+    {
+      if (w.cruel () == ihello.Result.OK)
+        reply (w.cruel ());
+      else
+        reply (ihello.Result.NOK);
+    }
   }
 }

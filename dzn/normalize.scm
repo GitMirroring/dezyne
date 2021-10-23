@@ -653,10 +653,13 @@ We follow the following renaming strategy:
                              (is-a? expression <call>))))
            (variable-expression (add-temporary? o))
            (type (ast:type variable-expression))
+           (type-name (make <scope.name> #:ids (ast:full-name type)))
+           (foo (ast:full-name type))
+           (foo (ast:full-scope type))
            (name (temp-name o))
            (location (.location o))
            (temporary (make <variable> #:name name
-                            #:type.name (.name type)
+                            #:type.name type-name
                             #:expression variable-expression
                             #:location location))
            (var (make <var> #:name name #:location location))
