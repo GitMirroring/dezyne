@@ -44,6 +44,8 @@ component hello_implicit_temporaries
   {
     bool foo ()
     {
+      if (w.hello ())
+        return true;
       return true;
     }
 

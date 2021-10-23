@@ -705,7 +705,9 @@ We follow the following renaming strategy:
     (($ <function>)
      (clone o #:statement (add-explicit-temporaries (.statement o))))
     (($ <behaviour>)
-     (clone o #:statement (add-explicit-temporaries (.statement o))))
+     (clone o
+            #:functions (add-explicit-temporaries (.functions o))
+            #:statement (add-explicit-temporaries (.statement o))))
     (($ <interface>)
      (clone o #:behaviour (add-explicit-temporaries (.behaviour o))))
     (($ <component>)
