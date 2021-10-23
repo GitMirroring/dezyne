@@ -2778,8 +2778,7 @@ interface IFunctionCallAction
     @}
     on doIt:
     @{
-      bool localVariable = shouldWeDoIt(); // the function is called and the return value stored in localVariable
-      if (localVariable)
+      if (shouldWeDoIt ())
       @{
         done;
         state = Toggle.Off;

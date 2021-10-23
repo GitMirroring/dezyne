@@ -1,7 +1,7 @@
 /* armouring at the requires side (interface IStrict)
  * create a robust copy of the requires interface IRobust
  * create an armouring component Armour
- *  
+ *
  * IllegalBooleanValueInRequiresReply_
  * a reply value from a required interface can contain a boolean value that is not allowed
  */
@@ -33,13 +33,12 @@ component ArmourIBVIRR // IStrict to IRobust
   provides IStrict pStrict;
   requires IRobust rRobust;
   requires injected ILogger iLog;
-  
+
   behaviour {
     on pStrict.ia(): {
-    	bool b = rRobust.ia();
-    	if (!b) iLog.Log($"Reply value false from ia not allowed by port"$);
+    	if (!rRobust.ia ()) iLog.Log($"Reply value false from ia not allowed by port"$);
     	reply(true);
-    } // armour ignore (false) case 
+    } // armour ignore (false) case
   }
 }
 
@@ -50,7 +49,7 @@ component Dezyne
 
   behaviour
   {
-    on pp.ia(): {bool b = rStrict.ia(); reply(b);}
+    on pp.ia(): reply (rStrict.ia());
   }
 }
 
@@ -59,7 +58,7 @@ component Dezyne
  * depends on application whether this is ok or error should be raised higher up
  */
 interface IA
-{  
+{
   in bool ia();
 
   behaviour
@@ -76,12 +75,12 @@ component Native {
 component ArmouredSystemIBVIRR {
 	provides IA pp;
 	requires IRobust ir;
-	
+
 	system {
 		Dezyne re;
 		ArmourIBVIRR am;
 		Native n;
-		
+
 		pp <=> re.pp;
 		re.rStrict <=> am.pStrict;
 		am.rRobust <=> n.pRobust;

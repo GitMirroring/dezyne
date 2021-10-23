@@ -6831,10 +6831,9 @@ component ArmourIBVIRR // IStrict to IRobust
   requires injected ILogger iLog;
 
   behaviour @{
-    on pStrict.ia(): @{
-        bool b = rRobust.ia();
-        if (!b) iLog.Log($"Reply value false from ia not allowed by port"$);
-        reply(true);
+    on pStrict.ia (): @{
+        if (!rRobust.ia ()) iLog.Log($"Reply value false from ia not allowed by port"$);
+        reply (true);
     @} // armour ignore (false) case
   @}
 @}
