@@ -35,7 +35,7 @@ component proxy
 
   behaviour
   {
-    on p.hello(): {bool b = r.hello(); reply(b);}
+    on p.hello(): reply (r.hello());
     on r.world(): p.world();
   }
 }

@@ -46,7 +46,7 @@ component hello
 
   behaviour
   {
-    on h.hello(): {bool b = w.world(); reply(b);}
+    on h.hello(): reply (w.world ());
   }
 }
 

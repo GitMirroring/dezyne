@@ -40,6 +40,6 @@ component hello_complete_reply
 
   behaviour
   {
-    on h.hello(): {bool b = w.hello(); reply(b);}
+    on h.hello (): reply (w.hello ());
   }
 }

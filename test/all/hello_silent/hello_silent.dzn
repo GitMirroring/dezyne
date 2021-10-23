@@ -40,6 +40,6 @@ component hello_silent
 
   behaviour
   {
-    on hi.hello(): {bool b = wi.hello(); reply(b);}
+    on hi.hello(): reply (wi.hello ());
   }
 }

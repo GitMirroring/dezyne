@@ -67,8 +67,7 @@ component EndConstrainedAxis
     {
       on ctrl.calibrate():
         {
-          ITouchSense.TouchState ess = endSensor.enable();
-          if (ess == ITouchSense.TouchState.Pressed)
+          if (endSensor.enable() == ITouchSense.TouchState.Pressed)
           {
             recordHome();
             s = State.idle;

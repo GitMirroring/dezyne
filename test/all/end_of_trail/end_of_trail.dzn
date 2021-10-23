@@ -40,6 +40,6 @@ component end_of_trail
 
   behaviour
   {
-    on h.hello(): {bool b = w.hello(); reply(b);}
+    on h.hello(): reply (w.hello ());
   }
 }

@@ -84,8 +84,7 @@ component TouchSense
 
     ITouchSense.TouchState getStatus()
     {
-      itouch.status val = sensor.detect();
-      if (val == itouch.status.released) return ITouchSense.TouchState.Released;
+      if (sensor.detect() == itouch.status.released) return ITouchSense.TouchState.Released;
       else return ITouchSense.TouchState.Pressed;
     }
 

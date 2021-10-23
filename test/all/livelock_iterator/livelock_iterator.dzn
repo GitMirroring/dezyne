@@ -51,8 +51,7 @@ component livelock_iterator
   {
     void next()
     {
-      bool r = list.next();
-      if(r) next();
+      if (list.next()) next();
     }
 
     on iter.map(): next();

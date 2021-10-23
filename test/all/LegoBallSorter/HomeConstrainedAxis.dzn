@@ -65,8 +65,7 @@ component HomeConstrainedAxis
     {
       on ctrl.calibrate():
         {
-          ITouchSense.TouchState hss = homeSensor.enable();
-          if (hss == ITouchSense.TouchState.Pressed)
+          if (homeSensor.enable() == ITouchSense.TouchState.Pressed)
           {
             recordHome();
             s = State.idle;

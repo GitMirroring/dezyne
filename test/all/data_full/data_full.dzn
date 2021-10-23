@@ -183,20 +183,20 @@ component proxy
       top.a(i);
     }
     on top.e0(): bottom.e0();
-    on top.e0r(): {Idata_full.Status r = bottom.e0r(); reply(r);}
+    on top.e0r(): reply (bottom.e0r());
     on top.e(pi): bottom.e(pi);
-    on top.er(pi): {Idata_full.Status r = bottom.er(pi); reply(r);}
-    on top.eer(i,j): {Idata_full.Status r = bottom.eer(i,j); reply(r);}
+    on top.er(pi): reply (bottom.er (pi));
+    on top.eer(i,j): reply (bottom.eer(i,j));
 
-    on top.eo(i): { outfunc(i); }
-    on top.eoo(i,j): { bottom.eoo(i,j); }
-    on top.eio(i,j): { bottom.eio(i,j); }
-    on top.eio2(i): { bottom.eio2(i); }
+    on top.eo(i): outfunc(i);
+    on top.eoo(i,j): bottom.eoo(i,j);
+    on top.eio(i,j): bottom.eio(i,j);
+    on top.eio2(i): bottom.eio2(i);
 
-    on top.eor(i): { Idata_full.Status s = bottom.eor(i); reply(s); }
-    on top.eoor(i,j): { Idata_full.Status s = bottom.eoor(i,j); reply(s); }
-    on top.eior(i,j): { Idata_full.Status s = bottom.eior(i,j); reply(s); }
-    on top.eio2r(i): { Idata_full.Status s = bottom.eio2r(i); reply(s); }
+    on top.eor(i): reply (bottom.eor(i));
+    on top.eoor(i,j): reply (bottom.eoor(i,j));
+    on top.eior(i,j): reply (bottom.eior(i,j));
+    on top.eio2r(i): reply (bottom.eio2r(i));
 
     on bottom.a0(): top.a0();
     on bottom.a6(A0,A1,A2,A3,A4,A5): top.a6(A0,A1,A2,A3,A4,A5);

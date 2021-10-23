@@ -8,13 +8,13 @@ sut.r.return <- ...
 ... <- sut.p.return
 <external>.p.return <- ...
 (trail "p.e" "r.e" "r.return" "p.return")
-test/all/illegal_async_silent/illegal_async_silent.dzn:97:11: error: illegal
+test/all/illegal_async_silent/illegal_async_silent.dzn:96:11: error: illegal
 sut.r.f -> ...
 ... -> <external>.r.f
 ... <- <external>.r.Res:NOK
 sut.r.Res:NOK <- ...
 <illegal>
-test/all/illegal_async_silent/illegal_async_silent.dzn:97:11: error: illegal
+test/all/illegal_async_silent/illegal_async_silent.dzn:96:11: error: illegal
 (trail "r.f" "r.Res:NOK" "<illegal>")
 (labels "p.e" "p.c" "r.cb")
 (eligible)

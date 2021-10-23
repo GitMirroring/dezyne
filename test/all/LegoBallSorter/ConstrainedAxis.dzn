@@ -75,12 +75,10 @@ component ConstrainedAxis
     {
       on ctrl.calibrate():
         {
-          ITouchSense.TouchState hss = homeSensor.enable();
-          if (hss == ITouchSense.TouchState.Pressed)
+          if (homeSensor.enable() == ITouchSense.TouchState.Pressed)
           {
             recordHome();
-            ITouchSense.TouchState ess = endSensor.enable();
-            if (ess == ITouchSense.TouchState.Pressed) // axis length 0 is not an error
+            if (endSensor.enable() == ITouchSense.TouchState.Pressed) // axis length 0 is not an error
             {
               recordLength();
               s = State.idle;
@@ -105,8 +103,7 @@ component ConstrainedAxis
       on homeSensor.pressed():
         {
           recordHome();
-          ITouchSense.TouchState ess = endSensor.enable();
-          if (ess == ITouchSense.TouchState.Pressed) // axis length 0
+          if (endSensor.enable() == ITouchSense.TouchState.Pressed) // axis length 0
           {
             recordLength();
             s = State.idle;

@@ -71,8 +71,7 @@ component Conveyor
     {
       on ctrl.convey():
         {
-          ITouchSense.TouchState ss = sensor.enable();
-          if(ss == ITouchSense.TouchState.Pressed) {
+          if(sensor.enable() == ITouchSense.TouchState.Pressed) {
             sensor.disable();
             ctrl.conveyed();
           } else {

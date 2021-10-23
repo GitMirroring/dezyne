@@ -39,11 +39,7 @@ component hellobool
 
   behaviour
   {
-    on hc.hello():
-      {
-        bool b = wc.hello();
-        reply (b);
-      }
+    on hc.hello(): reply (wc.hello());
   }
 }
 
