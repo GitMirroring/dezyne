@@ -1,0 +1,7 @@
+model: livelock_async_choice
+h.hello
+h.return
+<loop>
+w.hello
+w.false
+<livelock>

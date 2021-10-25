@@ -1,0 +1,21 @@
+(header ((h) ihello provides) ((sut) livelock_async_choice component) ((w) iworld requires))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(trail "h.hello" "h.return")
+test/all/livelock_async_choice/livelock_async_choice.dzn:58:5: error: livelock
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.false
+sut.w.false <- ...
+<loop>
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.false
+sut.w.false <- ...
+<livelock>
+test/all/livelock_async_choice/livelock_async_choice.dzn:58:5: error: livelock
+(trail "w.hello" "w.false" "<loop>" "w.hello" "w.false" "<livelock>")
+(labels "h.hello")
+(eligible)

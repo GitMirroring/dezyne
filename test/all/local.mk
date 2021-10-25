@@ -119,6 +119,7 @@ REGRESSION_TESTS =				\
  %D%/async_provides				\
  %D%/livelock_async				\
  %D%/livelock_async_cancel			\
+ %D%/livelock_async_choice			\
  %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
