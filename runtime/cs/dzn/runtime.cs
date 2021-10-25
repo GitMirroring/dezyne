@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 // Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
@@ -82,7 +82,7 @@ namespace dzn
 
         public class info
         {
-            public bool handling;
+            public int handling;
             public Component deferred;
             public Queue<Action> q;
             public bool flushes;
@@ -116,7 +116,7 @@ namespace dzn
                         {
                             Component t = infos[c].deferred;
                             infos[c].deferred = null;
-                            if (!infos[t].handling)
+                            if (infos[t].handling == 0)
                                 {
                                     flush(t);
                                 }
@@ -130,7 +130,7 @@ namespace dzn
         }
         public void defer(Component i, Component o, Action f)
         {
-            if (!(i != null && infos[i].flushes) && !infos[o].handling)
+            if (!(i != null && infos[i].flushes) && infos[o].handling == 0)
                 {
                     handle(o, f);
                 }
@@ -145,31 +145,26 @@ namespace dzn
         }
         public R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible
         {
-            if (infos[c].handling) throw new RuntimeException("a valued event cannot be deferred");
-
-            infos[c].handling = true;
+            if (infos[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
+            int initial = infos[c].handling;
+            infos[c].handling = coroutine.get_id();
             R r = f();
-            infos[c].handling = false;
+            infos[c].handling = initial;
             flush(c);
             return r;
         }
         public void handle(Object c, Action f)
         {
-            if (!infos[c].handling)
-                {
-                    infos[c].handling = true;
-                    f();
-                    infos[c].handling = false;
-                    flush(c);
-                }
-            else
-                {
-                    throw new RuntimeException("component already handling an event");
-                }
+            if (infos[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
+            int initial = infos[c].handling;
+            infos[c].handling = coroutine.get_id();
+            f();
+            infos[c].handling = initial;
+            flush(c);
         }
         public void call_in<Port>(Component c, Action f, Port p, String e)
         {
-            if(infos[c].handling || dzn.pump.port_blocked_p(c.dzn_locator, p))
+            if(infos[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
                 dzn.pump.collateral_block(c.dzn_locator);
             }
@@ -180,7 +175,7 @@ namespace dzn
         }
         public R call_in<R,Port>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
         {
-            if(infos[c].handling || dzn.pump.port_blocked_p(c.dzn_locator, p))
+            if(infos[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
                 dzn.pump.collateral_block(c.dzn_locator);
             }

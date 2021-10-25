@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -48,8 +48,11 @@ namespace dzn
           return pump.blocked_p(p);
       return false;
     }
-    public static void port_block(Locator loc, Object p)
+    public static void port_block(Locator loc, Object c, Object p)
     {
+      Runtime rt = loc.get<Runtime>();
+      rt.infos[c].handling = 0;
+      rt.flush(c);
       loc.get<pump>().block(p);
     }
 
