@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
-// Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //

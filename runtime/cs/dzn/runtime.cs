@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace dzn
 {
@@ -41,6 +42,11 @@ namespace dzn
         public Port()
         {
             dzn_meta = new dzn.port.Meta ();
+        }
+        public Port other ()
+        {
+            return (this == this.dzn_meta.provides.port)
+            ? this.dzn_meta.requires.port : this.dzn_meta.provides.port;
         }
     }
 
@@ -203,6 +209,12 @@ namespace dzn
         }
         public void call_out(Component c, Action f, Port p, String e)
         {
+            Port other_port = p.other();
+            if(infos[c].handling != 0 && infos[c].handling != coroutine.get_id()
+               && (other_port == null || !pump.port_blocked_p(c.dzn_locator, other_port)))
+            {
+              pump.collateral_block(c.dzn_locator);
+            }
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceQin(m, e);
             defer(m.provides.component, c, f);
