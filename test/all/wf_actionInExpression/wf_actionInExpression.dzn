@@ -34,7 +34,11 @@ component SensorComp {
   behaviour {
     Sensor.Status s = sensor2.activate();
     bool b= true;
+    void f (Status s)
+    {
+    }
     on sensor1.activate(): {
+      f (sensor2.activate ());
       if (false && sensor2.activate() == Sensor.Status.OK) { }
       reply((sensor2.activate()));
     }

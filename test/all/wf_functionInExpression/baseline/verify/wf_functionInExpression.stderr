@@ -1,3 +1,4 @@
 test/all/wf_functionInExpression/wf_functionInExpression.dzn:34:14: error: call in member variable initializer
-test/all/wf_functionInExpression/wf_functionInExpression.dzn:39:16: error: valued call used in a complex expression
-test/all/wf_functionInExpression/wf_functionInExpression.dzn:40:20: error: valued call used in a complex expression
+test/all/wf_functionInExpression/wf_functionInExpression.dzn:40:16: error: valued call used in a complex expression
+test/all/wf_functionInExpression/wf_functionInExpression.dzn:41:20: error: valued call used in a complex expression
+test/all/wf_functionInExpression/wf_functionInExpression.dzn:42:10: error: valued call used in a complex expression

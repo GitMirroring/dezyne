@@ -203,40 +203,41 @@
              ,(wfc-info formal (format #f "for formal `~a' defined here" (.name formal))))))))
 
 (define-method (wfc (o <arguments>))
-  (cond
-   ((and (parent o <component>)
-         (parent o <action>))
-    =>
-    (lambda (ast)
-      (let* ((arguments (ast:argument* o))
-             (count (length arguments))
-             (event (.event ast)))
-        (if (not (is-a? event <event>)) '()
-            (let* ((formals (ast:formal* event))
-                   (event-count (length formals)))
-              (append
-               (if (= count event-count) '()
-                   `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
-                     ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event)))))
-               (append-map (argument-type-check o) arguments formals)))))))
-   ((let ((ast (parent o <call>)))
-      (and ast
-           (.function ast)
-           ast))
-    =>
-    (lambda (ast)
-      (let* ((arguments (ast:argument* o))
-             (count (length arguments))
-             (function (.function ast))
-             (formals (if function (ast:formal* function) '()))
-             (function-count (length formals)))
-        (append
-         (if (= count function-count) '()
-             `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" function-count count))
-               ,(wfc-info function (format #f "for formals of function `~a' defined here" (.name function)))))
-         (append-map (argument-type-check o) arguments formals)))))
-   (else
-    '())))
+  (let ((arguments (ast:argument* o)))
+    (append
+     (append-map wfc arguments)
+     (cond
+      ((and (parent o <component>)
+            (parent o <action>))
+       =>
+       (lambda (ast)
+         (let* ((count (length arguments))
+                (event (.event ast)))
+           (if (not (is-a? event <event>)) '()
+               (let* ((formals (ast:formal* event))
+                      (event-count (length formals)))
+                 (append
+                  (if (= count event-count) '()
+                      `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
+                        ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event)))))
+                  (append-map (argument-type-check o) arguments formals)))))))
+      ((let ((ast (parent o <call>)))
+         (and ast
+              (.function ast)
+              ast))
+       =>
+       (lambda (ast)
+         (let* ((count (length arguments))
+                (function (.function ast))
+                (formals (if function (ast:formal* function) '()))
+                (function-count (length formals)))
+           (append
+            (if (= count function-count) '()
+                `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" function-count count))
+                  ,(wfc-info function (format #f "for formals of function `~a' defined here" (.name function)))))
+            (append-map (argument-type-check o) arguments formals)))))
+      (else
+       '())))))
 
 (define-method (wfc (o <formals>))
   (cond

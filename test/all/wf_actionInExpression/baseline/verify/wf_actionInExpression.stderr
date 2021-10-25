@@ -1,3 +1,7 @@
 test/all/wf_actionInExpression/wf_actionInExpression.dzn:35:23: error: action in member variable initializer
-test/all/wf_actionInExpression/wf_actionInExpression.dzn:38:20: error: valued action used in a complex expression
-test/all/wf_actionInExpression/wf_actionInExpression.dzn:39:14: error: valued action used in a complex expression
+test/all/wf_actionInExpression/wf_actionInExpression.dzn:37:13: error: unknown type name `Status'
+test/all/wf_actionInExpression/wf_actionInExpression.dzn:41:10: error: valued action used in a complex expression
+test/all/wf_actionInExpression/wf_actionInExpression.dzn:41:10: error: type mismatch: expected `<unknown type>', found `Sensor.Status'
+test/all/wf_actionInExpression/wf_actionInExpression.dzn:37:13: info: for formal `s' defined here
+test/all/wf_actionInExpression/wf_actionInExpression.dzn:42:20: error: valued action used in a complex expression
+test/all/wf_actionInExpression/wf_actionInExpression.dzn:43:14: error: valued action used in a complex expression
