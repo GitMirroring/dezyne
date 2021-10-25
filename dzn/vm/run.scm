@@ -534,12 +534,6 @@ until RTC?."
   (let ((trace (step pc (make <flush-async>))))
     (extend-trace trace run-to-completion-unmemoized)))
 
-(define-method (run-async (pc <program-counter>) event)
-  (let* ((trail (.trail pc))
-         (pc (clone pc #:trail (cons event trail)))
-         (traces (run-async-event pc)))
-    traces))
-
 (define-method (flush-async-trace (trace <list>) previous-trace)
   (let ((trace (append trace previous-trace)))
     (cond ((.status (car trace))
@@ -551,9 +545,6 @@ until RTC?."
            (let* ((pc (car trace))
                   (traces (flush-async pc trace)))
              (map (cut append <> trace) traces))))))
-
-(define-method (flush-async (pc <program-counter>))
-  (flush-async pc '()))
 
 (define (did-provides-out? trace)
   (let* ((trail (map cdr (trace->trail trace)))
@@ -586,6 +577,13 @@ until RTC?."
             (append stop
                     livelock
                     traces)))))))
+
+(define-method (flush-async (pc <program-counter>))
+  (flush-async pc '()))
+
+(define-method (flush-async-event (pc <program-counter>) event)
+  (let ((pc (clone pc #:trail (cons event (.trail pc)))))
+    (flush-async pc)))
 
 (define-method (run-external-q (pc <program-counter>) (instance <runtime:port>))
   (let* ((pc trigger (dequeue-external pc instance))
@@ -622,15 +620,15 @@ until RTC?."
         (append-map (cute run-external <> event) pcs)))
      ((requires-trigger? event)
       (let ((async-traces (if (null? (.async pc)) '()
-                              (run-async pc event))))
+                              (flush-async-event pc event))))
         (if (pair? async-traces) async-traces
             (let ((pcs (cons pc (run-silent pc event))))
               (append-map (cute run-requires <> event) pcs)))))
      ((provides-trigger? event)
       (run-to-completion pc event))
      ((async-event? pc event)
-      (run-async pc event))
+      (flush-async-event pc event))
      ((and (eq? event #f) (pair? (.async pc)))
-      (run-async pc #f))
+      (flush-async pc))
      (else
       '()))))
