@@ -1103,8 +1103,7 @@
                      (is-a? p <not-equal>))
                  (or (is-a? grand-parent <if>)
                      (is-a? grand-parent <reply>))
-                 (or (ast:eq? (.left p) o)
-                     (ast:eq? (.right p) o))))
+                 (ast:eq? (.left p) o)))
            (not
             (and (or (is-a? p <and>)
                      (is-a? p <or>))

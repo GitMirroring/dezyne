@@ -40,6 +40,9 @@ component SensorComp {
     on sensor1.activate(): {
       f (sensor2.activate ());
       if (false && sensor2.activate() == Sensor.Status.OK) { }
+      if (sensor2.activate () == Sensor.Status.OK
+          && sensor2.activate () == Sensor.Status.OK)
+        ;
       reply((sensor2.activate()));
     }
   }

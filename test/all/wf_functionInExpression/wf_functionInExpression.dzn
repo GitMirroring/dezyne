@@ -39,6 +39,7 @@ component SensorComp {
     on sensor.activate(): {
       b = b || f();
       if (false || f()) {}
+      if (f () && f()) {}
       g (f ());
     }
   }
