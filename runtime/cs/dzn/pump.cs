@@ -68,12 +68,6 @@ namespace dzn
       return coroutines.Find(c => c.port == null && !c.finished);
     }
 
-    public static void remove_finished_coroutines(list<coroutine> coroutines)
-    {
-      coroutine self = find_self(coroutines);
-      self.finished = true;
-      Debug.WriteLine("[" + self.id + "] finish coroutine");
-    }
     public struct Deadline: IComparable
     {
       public int id;
@@ -193,7 +187,7 @@ namespace dzn
         };
 
         coroutine zero = new coroutine();
-        this.exit = ()=>{Debug.WriteLine("exit"); zero.release();};
+        this.exit = ()=>{Debug.WriteLine("enter exit"); zero.release();};
         create_context();
 
         context.lck(this, () => {
@@ -236,12 +230,14 @@ namespace dzn
               worker();
               if(unblocked) collateral_release(self);
             }
-            if(self.released) remove_finished_coroutines(this.coroutines);
+            if(self.released) self.finished = true;
+
             if(this.switch_context != null) {
               Action switch_context = this.switch_context;
               this.switch_context = null;
               switch_context();
             }
+
             if(!self.released) collateral_release(self);
 
             this.exit();
@@ -273,7 +269,7 @@ namespace dzn
     }
     public void collateral_release(coroutine self)
     {
-      if(this.collateral_blocked.Count != 0) remove_finished_coroutines(coroutines);
+      if(this.collateral_blocked.Count != 0) self.finished = true;
       while(this.collateral_blocked.Count != 0) {
         this.coroutines.Add(this.collateral_blocked[0]);
         this.collateral_blocked.RemoveAt(0);
@@ -301,7 +297,7 @@ namespace dzn
       Debug.WriteLine("[" + self.id + "] block");
       create_context();
       self.yield_to(this.coroutines.Last());
-      Debug.WriteLine("[" + self.id + "] re-entered context");
+      Debug.WriteLine("[" + self.id + "] entered context");
       Debug.Write("routines: ");
       foreach (coroutine c in this.coroutines){ Debug.Write(c.id + " ");}
       Debug.WriteLine("");
