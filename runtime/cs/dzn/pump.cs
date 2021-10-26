@@ -23,11 +23,11 @@
 // Code:
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace dzn
 {
@@ -53,14 +53,26 @@ namespace dzn
       Runtime rt = loc.get<Runtime>();
       rt.states[c].handling = 0;
       rt.flush(c);
-      loc.get<pump>().block(p);
+      var pump = loc.get<pump>();
+      if(pump.skip_block.Remove(p)) return;
+
+      var self = find_self(pump.coroutines);
+      Debug.Assert(!rt.blocked_port_component_stack.ContainsKey(self.id)
+                   || rt.blocked_port_component_stack[self.id].Count == 0);
+
+      rt.blocked_port_component_stack[self.id] = rt.component_stack;
+      rt.component_stack = new Stack<Object>();
+
+      pump.block(rt, c, p);
     }
 
     public static void port_release(Locator loc, Object p, Action out_binding)
     {
       if(out_binding!=null) out_binding();
       out_binding = null;
-      loc.get<pump>().release(p);
+      var pump = loc.get<pump>();
+      pump.skip_block.Add(p);
+      pump.release(loc.get<dzn.Runtime>(),p);
     }
 
     public static coroutine find_self(list<coroutine> coroutines)
@@ -257,60 +269,138 @@ namespace dzn
       this.switch_context = () => {};
       context();
     }
-    public static void collateral_block(dzn.Locator l)
+    public static void collateral_block(Object c, dzn.Locator l)
     {
-      dzn.pump pump = l.try_get<dzn.pump>();
-      if(pump != null)
-          pump.collateral_block();
+      l.get<dzn.pump>().collateral_block(c, l.get<dzn.Runtime>());
     }
-    public void collateral_block()
+    public void collateral_block(Object c, Runtime rt)
     {
       coroutine self = find_self(this.coroutines);
       Debug.WriteLine("[" + self.id + "] collateral_block");
+
+      //splice
       this.collateral_blocked.Add(self);
       this.coroutines.Remove(self);
+
+      self.component = c;
+      Debug.Assert(self.port == null);
+      foreach(var id in rt.blocked_port_component_stack.Keys)
+        if(rt.blocked_port_component_stack[id].Contains(c))
+        {
+          int i = this.coroutines.FindIndex(o => o.id == id);
+          self.port = this.coroutines[i].port;
+        }
+      Debug.Assert(self.port != null, "no port found associated to component " + c.GetHashCode());
+
+      var v = rt.blocked_port_component_stack.ContainsKey(self.id)
+            ? rt.blocked_port_component_stack[self.id]
+            : new Stack<Object>();
+      foreach(var o in v.ToArray().Reverse())
+        rt.component_stack.Push(o);
+      v.Clear();
+      Debug.Assert(!rt.blocked_port_component_stack.ContainsKey(self.id)
+                   || rt.blocked_port_component_stack[self.id].Count == 0);
+      rt.blocked_port_component_stack[self.id] = rt.component_stack;
+      rt.component_stack = v;
+
       create_context();
       self.yield_to(this.coroutines.Last());
       Debug.WriteLine("[" + self.id + "] collateral_unblock");
+
+      v = rt.blocked_port_component_stack[self.id];
+      foreach (var o in v.Reverse ())
+        rt.component_stack.Push (o);
+      rt.blocked_port_component_stack[self.id].Clear ();
     }
     public void collateral_release(coroutine self)
     {
-      if(this.collateral_blocked.Count != 0) self.finished = true;
-      while(this.collateral_blocked.Count != 0) {
-        this.coroutines.Add(this.collateral_blocked[0]);
-        this.collateral_blocked.RemoveAt(0);
-        self.yield_to(this.coroutines.Last());
+      Debug.WriteLine("[" + self.id + "] collateral_release");
+
+      if(this.collateral_blocked.FindIndex(c => c.port == unblocked) != -1)
+        self.finished = true;
+
+      int it = -1;
+      do
+      {
+        it = this.collateral_blocked.FindIndex(c => c.port == unblocked);
+        if(it != -1)
+        {
+          //splice
+          this.coroutines.Add(this.collateral_blocked[it]);
+          this.collateral_blocked.RemoveAt(it);
+          Debug.WriteLine("collateral_unblocking: " + this.coroutines.Last().id +
+                          " for port: " + unblocked.GetHashCode());
+          this.coroutines.Last().port = null;
+          self.yield_to(this.coroutines.Last());
+        }
       }
-      if(unblocked != null && collateral_blocked.Count == 0) {
+      while(it != -1);
+
+      if(unblocked != null && collateral_blocked.FindIndex(c => c.port == unblocked) == -1) {
         Debug.WriteLine("resetting unblocked to null");
         unblocked = null;
       }
     }
     public bool blocked_p(Object p)
     {
-      return this.coroutines.Find(c => c.port == p) != null;
+      return this.coroutines.FindIndex(c => c.port == p) != -1;
     }
-    public void block(Object p)
+    public void block(Runtime rt, Object c, Object p)
     {
-      int skip = this.skip_block.FindIndex(o => o == p);
-      if(skip != -1) {
-        this.skip_block.RemoveAt(skip);
-        return;
-      }
-
       coroutine self = find_self(this.coroutines);
       self.port = p;
-      Debug.WriteLine("[" + self.id + "] block");
-      create_context();
+      Debug.WriteLine("[" + self.id + "] block on " + p.GetHashCode());
+
+      bool collateral_skip = collateral_release_skip_block(rt, c);
+      if(!collateral_skip)
+      {
+        int it = this.collateral_blocked.FindIndex(i => i.port == this.unblocked);
+        if(it != -1)
+        {
+          Debug.WriteLine("[" + this.collateral_blocked[it].id + "]"
+                          + " move from " + this.collateral_blocked[it].port.GetHashCode()
+                          + " to " + p.GetHashCode());
+          this.collateral_blocked[it].port = p;
+        }
+        create_context();
+      }
+
       self.yield_to(this.coroutines.Last());
       Debug.WriteLine("[" + self.id + "] entered context");
       Debug.Write("routines: ");
-      foreach (coroutine c in this.coroutines){ Debug.Write(c.id + " ");}
+      foreach (coroutine r in this.coroutines){ Debug.Write(r.id + " ");}
       Debug.WriteLine("");
 
       remove_finished_coroutines(this.coroutines);
     }
-    void release(Object p)
+    bool collateral_release_skip_block(Runtime rt, Object c)
+    {
+      bool have_collateral = false;
+      this.collateral_blocked.Reverse();
+      int it = 0;
+      while(it < this.collateral_blocked.Count())
+      {
+        coroutine zelf = this.collateral_blocked[it++];
+        if(zelf.port == this.unblocked && zelf.component == c)
+        {
+          Debug.WriteLine("[" + zelf.id + "]" + "relay skip "
+                          + zelf.port.GetHashCode());
+          //swap
+          var v = rt.blocked_port_component_stack[zelf.id];
+          rt.blocked_port_component_stack[zelf.id] = rt.component_stack;
+          rt.component_stack = v;
+          have_collateral = true;
+          zelf.component = null;
+          zelf.port = null;
+          //splice
+          this.coroutines.Add(zelf);
+          this.collateral_blocked.Remove(zelf);
+        }
+      }
+      collateral_blocked.Reverse();
+      return have_collateral;
+    }
+    void release(Runtime rt, Object p)
     {
       coroutine self = find_self(this.coroutines);
       coroutine blocked = this.coroutines.Find(c => c.port == p);
@@ -328,12 +418,25 @@ namespace dzn
       this.switch_context = () => {
         Debug.WriteLine("setting unblocked to port " + blocked.port.GetHashCode());
         unblocked = blocked.port;
+        blocked.component = null;
         blocked.port = null;
 
         Debug.WriteLine("[" + self.id + "] switch from");
         Debug.WriteLine("[" + blocked.id + "] to");
 
+        Debug.Assert(rt.component_stack.Count == 0);
+
+        if(p == null) Console.Error.WriteLine("null port");
+        if(!rt.blocked_port_component_stack.ContainsKey(blocked.id))
+          Console.Error.WriteLine("id " + blocked.id + " not found");
+
+        //swap
+        var v = rt.blocked_port_component_stack[blocked.id];
+        rt.blocked_port_component_stack[blocked.id] = rt.component_stack;
+        rt.component_stack = v;
+
         self.yield_to(blocked);
+        Debug.Assert(false, "we must never return here!!!");
       };
     }
     public void execute(Action e)

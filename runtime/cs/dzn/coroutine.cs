@@ -50,6 +50,7 @@ namespace dzn
     public Action<context> yield;
 
     public Object port;
+    public Object component;
     public bool finished;
     public bool skip_block;
     public coroutine(Action worker)
@@ -57,6 +58,7 @@ namespace dzn
       this.id = context.get_id();
       this.yield = null;
       this.port = null;
+      this.component = null;
       this.finished = false;
       this.skip_block = false;
 

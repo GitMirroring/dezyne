@@ -101,19 +101,29 @@ namespace dzn
             public Component deferred;
             public Queue<Action> q;
             public bool flushes;
-            public State() { this.q = new Queue<Action>(); }
+            public State()
+            {
+                this.handling = 0;
+                this.q = new Queue<Action>();
+                this.flushes = false;
+            }
         }
 
         public Dictionary<Object, State> states;
+        public Stack<Object> component_stack;
+        public Dictionary<int, Stack<Object>> blocked_port_component_stack;
         public Action illegal;
+
         public Runtime(Action illegal = null)
         {
             if (illegal == null)
-                {
-                    illegal = () => { throw new RuntimeException("illegal"); };
-                }
+            {
+               illegal = () => { throw new RuntimeException("illegal"); };
+            }
             this.illegal = illegal;
             this.states = new Dictionary<Object, State>();
+            this.component_stack = new Stack<Object>();
+            this.blocked_port_component_stack = new Dictionary<int, Stack<Object>>();
         }
         public bool external(Object c)
         {
@@ -181,19 +191,22 @@ namespace dzn
         {
             if(states[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
-                dzn.pump.collateral_block(c.dzn_locator);
+              dzn.pump.collateral_block(c, c.dzn_locator);
             }
+            component_stack.Push(c);
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
             handle(c, f);
             traceOut(m, "return");
+            component_stack.Pop();
         }
         public R call_in<R>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
         {
             if(states[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
-                dzn.pump.collateral_block(c.dzn_locator);
+              dzn.pump.collateral_block(c, c.dzn_locator);
             }
+            component_stack.Push(c);
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
             R r = valued_helper(c, f);
@@ -205,6 +218,7 @@ namespace dzn
             else
                 s = r.GetType().Name + ":" + Enum.GetName(r.GetType(), r);
             traceOut(m, s);
+            component_stack.Pop();
             return r;
         }
         public void call_out(Component c, Action f, Port p, String e)
@@ -213,11 +227,16 @@ namespace dzn
             if(states[c].handling != 0 && states[c].handling != coroutine.get_id()
                && (other_port == null || !pump.port_blocked_p(c.dzn_locator, other_port)))
             {
-              pump.collateral_block(c.dzn_locator);
+              System.Console.Error.WriteLine("collateral_block");
+              pump.collateral_block(c, c.dzn_locator);
             }
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceQin(m, e);
-            defer(m.provides.component, c, f);
+            defer(m.provides.component, c, () => {
+              component_stack.Push(c);
+              f();
+              component_stack.Pop();
+            });
         }
         public static String path(Meta m, String p = "")
         {
