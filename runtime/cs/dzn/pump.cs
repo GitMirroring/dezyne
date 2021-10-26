@@ -102,13 +102,13 @@ namespace dzn
     public List<Object> skip_block = new List<Object>();
     public Queue<Action> queue = new Queue<Action>();
     public bool running;
-    public bool unblocked;
+    public Object unblocked;
     public Thread task;
 
     public pump()
     {
       this.running = true;
-      this.unblocked = false;
+      this.unblocked = null;
       this.task = new Thread(this.run);
       this.task.Start();
     }
@@ -228,7 +228,7 @@ namespace dzn
             while((this.running || this.queue.Count != 0) && !self.released)
             {
               worker();
-              if(unblocked) collateral_release(self);
+              if(unblocked != null) collateral_release(self);
             }
             if(self.released) self.finished = true;
 
@@ -275,9 +275,9 @@ namespace dzn
         this.collateral_blocked.RemoveAt(0);
         self.yield_to(this.coroutines.Last());
       }
-      if(unblocked && collateral_blocked.Count == 0) {
-        Debug.WriteLine("resetting unblocked to false");
-        unblocked = false;
+      if(unblocked != null && collateral_blocked.Count == 0) {
+        Debug.WriteLine("resetting unblocked to null");
+        unblocked = null;
       }
     }
     public bool blocked_p(Object p)
@@ -325,12 +325,12 @@ namespace dzn
       self.released = true;
 
       this.switch_context = () => {
+        Debug.WriteLine("setting unblocked to port " + blocked.port.GetHashCode());
+        unblocked = blocked.port;
         blocked.port = null;
+
         Debug.WriteLine("[" + self.id + "] switch from");
         Debug.WriteLine("[" + blocked.id + "] to");
-
-        Debug.WriteLine("setting unblocked to true");
-        unblocked = true;
 
         self.yield_to(blocked);
       };
