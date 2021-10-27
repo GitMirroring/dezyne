@@ -99,7 +99,8 @@ namespace dzn
     {}
   }
 
-  public class async<Signature> : dzn.Port
+  public class async_base : dzn.Port {}
+  public class async<Signature>: async_base
   {
     public class In
     {

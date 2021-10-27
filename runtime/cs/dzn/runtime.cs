@@ -231,7 +231,8 @@ namespace dzn
               pump.collateral_block(c, c.dzn_locator);
             }
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
-            traceQin(m, e);
+            if(!(p is async_base))
+              traceQin(m, e);
             defer(m.provides.component, c, () => {
               component_stack.Push(c);
               f();
