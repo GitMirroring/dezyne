@@ -46,4 +46,4 @@ ifneq ($(filter %/main.cs,$(IN_SOURCES)),)
 OUT_SOURCES := $(filter-out %/main.cs,$(OUT_SOURCES))
 endif
 $(OUT)/test.exe: $(OUT_SOURCES) $(IN_SOURCES) $(RUNTIME_SOURCES)
-	mcs -debug -out:$@ $^
+	mcs -debug -d:DEBUG -out:$@ $^
