@@ -168,6 +168,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system4				\
  %D%/blocking_shell				\
  %D%/calling_context				\
+ %D%/collateral_blocking_async			\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_shell			\
  %D%/collateral_blocking_shell2			\
@@ -486,6 +487,7 @@ XFAIL_TESTS =					\
  %D%/async_blocking_missing_ack			\
  %D%/async_blocking_ranking_disorder		\
  %D%/async_blocking_verify			\
+ %D%/collateral_blocking_async			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock                 \
