@@ -92,7 +92,9 @@ format."
                              (cut clone <> #:status #f #:statement #f)
                              port-trace-prefix))
          (port-start (car port-trace-prefix))
-         (instance (and=> (find .instance trace) .instance))
+         (port-instance (and=> (find .instance port-trace) .instance))
+         (other-port (runtime:other-port port-instance))
+         (instance (.container other-port))
          (trace-index (- (length trace)
                          (or (list-index
                               (conjoin
