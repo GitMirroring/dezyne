@@ -426,10 +426,12 @@ of traces, possibly marked with <compliance-error>."
                             (list (zip trigger trace (car non-compliances))))))))))))))
 
     (if port (or (and (> (length (ast:provides-port* component)) 1)
+                      (is-a? (%sut) <runtime:component>)
                       (check-provides-fork port trace))
                  (check-compliance port (list trace)))
         (let ((ports (ast:provides-port* component)))
           (or (and (> (length ports) 1)
+                   (is-a? (%sut) <runtime:component>)
                    (check-requires-provides-fork trace))
               (fold check-compliance (list trace) ports))))))
 
