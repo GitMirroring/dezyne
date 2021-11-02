@@ -245,8 +245,17 @@ never extend a trace, but do continue as long as the trail is silent."
 
 (define* (check-provides-compliance pc event port-traces-alist trace)
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
-Update the state of the provides port in TRACE for EVENT.  Return a list
-of traces, possibly marked with <compliance-error>."
+Update the state of the provides port in TRACE for EVENT.  For a blocked
+trace, the check is done in an incremental way: only the part that the
+component has executed is considered.
+
+Return a list of traces, possibly marked with <compliance-error>."
+  (define (drop-prefix event trail)
+    (let* ((reversed (reverse trail))
+           (at (list-index (compose (cute equal? <> event) cdr) reversed)))
+      (if at (reverse (list-head reversed (1+ at)))
+          trail)))
+
   (let* ((pc (if (and (external-trigger? event)
                       (pair? (.blocked pc)) (pair? trace))
                  (last trace)
@@ -279,6 +288,8 @@ of traces, possibly marked with <compliance-error>."
          (trigger (and event (clone (string->trigger event) #:parent component)))
          (provides-trigger? (provides-trigger? event))
          (port-event (and provides-trigger? (.event.name trigger)))
+         (sut-trail (if (or port-event (not event)) sut-trail
+                        (drop-prefix event sut-trail)))
          (port (and provides-trigger? (.port trigger))))
 
     (define (check-compliance port traces)
@@ -299,7 +310,7 @@ of traces, possibly marked with <compliance-error>."
                          (%exploring? #t))
             (run-to-completion trace event)))
 
-        (%debug "check-provides-compliance... ~s: ~a\n" port-name event)
+        (%debug "check-provides-compliance... ~s: ~a [~a]\n" port-name event port-event)
         (let* ((interface ((compose .type .ast) port-instance))
                (ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
                (ipc (set-reply pc port-instance #f))
@@ -310,11 +321,6 @@ of traces, possibly marked with <compliance-error>."
                                 (append-map (cut run-provides-port <> port-event)
                                             traces)))
                (port-traces (append port-traces modeling-traces)))
-
-          (when (> (dzn:debugity) 0)
-            (%debug "port-traces[~s]:\n" (length port-traces))
-            (parameterize ((%sut port-instance))
-              (display-trails port-traces)))
 
           (let* ((port-prefix (format #f "~a." port-name))
                  (sut-trail (filter (compose (disjoin (cut equal? <> "illegal")
@@ -355,6 +361,12 @@ of traces, possibly marked with <compliance-error>."
               (let* ((trail (port-trace->trail trace))
                      (trail (map cdr trail)))
                 (member event-name trail)))
+
+            (when (> (dzn:debugity) 0)
+              (%debug "sut-trail:~s\n" (map cdr sut-trail))
+              (%debug "port-traces[~s]:\n" (length port-traces))
+              (parameterize ((%sut port-instance))
+                (display-trails port-traces)))
 
             (let ((port-traces non-compliances
                                (partition (negate first-non-match) port-traces)))
