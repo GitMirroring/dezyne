@@ -1,12 +1,16 @@
 h.hello
 w0.hello
+w0.return
 w1.hello
+w1.return
 w0.world
 w1.world
 h.return
 h.hello
 w0.hello
+w0.return
 w1.hello
+w1.return
 w0.world
 w1.world
 h.return

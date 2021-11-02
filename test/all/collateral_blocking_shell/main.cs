@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-
+//
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -44,6 +44,7 @@ class main
       sut.w0.inport.hello = () =>
       {
         System.Console.Error.WriteLine("sut.blocked.w0.hello -> <external>.w0.hello");
+        System.Console.Error.WriteLine("sut.blocked.w0.return -> <external>.w0.return");
       };
       sut.w1.inport.hello = () =>
       {
@@ -59,13 +60,13 @@ class main
 
         new System.Threading.Thread (() =>
         {
-          System.Threading.Thread.Sleep(200);
+          System.Threading.Thread.Sleep(50);
           System.Console.Error.WriteLine("world0");
           sut.w0.outport.world ();
-          System.Threading.Thread.Sleep(200);
           System.Console.Error.WriteLine("world1");
           sut.w1.outport.world ();
         }).Start();
+        System.Console.Error.WriteLine("sut.blocked.w1.return -> <external>.w1.return");
       };
 
       System.Console.Error.WriteLine("hello happy");

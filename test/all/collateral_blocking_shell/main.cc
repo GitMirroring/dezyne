@@ -51,6 +51,7 @@ main ()
   sut.w0.in.hello = [&]
   {
     std::clog << "sut.blocked.w0.hello -> <external>.w0.hello\n";
+    std::clog << "<external>.w0.return <- sut.blocked.w0.return\n";
   };
   sut.w1.in.hello = [&]
   {
@@ -66,13 +67,13 @@ main ()
 
     std::thread ([&]
     {
-      std::this_thread::sleep_for (std::chrono::milliseconds (200));
+      std::this_thread::sleep_for (std::chrono::milliseconds (50));
       std::clog << "world0\n";
       sut.w0.out.world ();
-      std::this_thread::sleep_for (std::chrono::milliseconds (200));
       std::clog << "world1\n";
       sut.w1.out.world ();
     }).detach();
+    std::clog << "<external>.w1.return <- sut.blocked.w1.return\n";
   };
 
   std::clog << "hello happy\n";
