@@ -1,2 +1,0 @@
-blocking-multiple-provides.dzn:16:5: error: cannot use blocking with
-    multiple provide ports

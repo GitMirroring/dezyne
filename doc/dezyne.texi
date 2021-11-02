@@ -294,7 +294,6 @@ Well-formedness -- Nesting
 * Nested on used::
 * Nested blocking used::
 * Cannot use blocking in an interface::
-* Cannot use blocking with multiple provides ports::
 
 Well-formedness -- Mixing
 
@@ -4555,19 +4554,16 @@ to the imperative statement after the guard or @code{on}.
 
 @itemize
 @item
-@code{blocking} may only be used in components with a single
-@code{provides} port.  This limitation may be lifted in a future
-release.
+When @code{blocking} is used in component which is not the top component
+in a system and the system has multiple @code{provide}s ports, the
+system must be verified for deadlocks.  Merely verifying all individual
+components is not enough.
 
 @item
 Systems containing @code{blocking} component instances must be
 contained in a thread-safe shell (@pxref{Thread-safe Shell}).
-
-@item
-A @code{blocking} component may only appear as the top component in a
-system.  This restriction will be lifted in version 2.15, or see the
-``wip-blocking'' branch in git.
 @end itemize
+
 @end quotation
 
 For example:
@@ -5249,7 +5245,6 @@ The well-formedness checks in alphabetical order:
 @xref{Cannot bind two wildcards},@*
 @xref{Cannot bind wildcard to requires port},@*
 @xref{Cannot use blocking in an interface},@*
-@xref{Cannot use blocking with multiple provides ports},@*
 @xref{Cannot use event as action},@*
 @xref{Cannot use event as trigger},@*
 @xref{Cannot use illegal in function},@*
@@ -5497,7 +5492,6 @@ declarative statements cannot be used inside an imperative statement
 * Nested on used::
 * Nested blocking used::
 * Cannot use blocking in an interface::
-* Cannot use blocking with multiple provides ports::
 @end menu
 
 @node Assign outside on
@@ -5576,23 +5570,6 @@ This results in the following error message:
 
 @example
 @verbatiminclude parse/blocking-in-interface.texi
-@end example
-
-@node Cannot use blocking with multiple provides ports
-@subsection Cannot use @code{blocking} with multiple @code{provides} ports
-
-A component with more than one provides port is not allowed to block
-events, due to implementation restrictions.  So:
-
-@example
-@verbatiminclude parse/blocking-multiple-provides.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/blocking-multiple-provides.texi
 @end example
 
 @node Well-formedness -- Mixing

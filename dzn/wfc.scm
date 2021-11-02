@@ -419,8 +419,6 @@
             ((parent (.parent o) <blocking>)
              `(,(wfc-error o "nested blocking used")
                ,(wfc-info (parent (.parent o) <blocking>) "within blocking here")))
-            ((> (length (ast:provides-port* model)) 1)
-             `(,(wfc-error o "cannot use blocking with multiple provide ports")))
             (else '()))))
   (append (blocking o) (wfc (.statement o))))
 

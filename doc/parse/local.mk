@@ -36,7 +36,6 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/binding-two-wildcards.dzn			\
  %D%/binding-wildcard-requires.dzn		\
  %D%/blocking-in-interface.dzn			\
- %D%/blocking-multiple-provides.dzn		\
  %D%/call-discard-value.dzn			\
  %D%/call-in-complex-expression.dzn		\
  %D%/call-in-member-definition.dzn		\
