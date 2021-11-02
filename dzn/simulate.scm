@@ -430,7 +430,6 @@ port return."
         (blocking? (find (compose pair? .blocked) trace)))
     (cond
      ((and blocking?
-           (requires-trigger? event)
            (let* ((return (find (compose (is? <trigger-return>)
                                          .statement)
                                 trace))
@@ -440,7 +439,7 @@ port return."
                (compose (cute eq? <> instance) .instance)
                (compose (is? <initial-compound>) .statement)
                (compose ast:provides? .trigger))
-              trace)))
+              (reverse trace))))
       =>
       (lambda (tpc)
         (let* ((trail (trace->trail tpc))
