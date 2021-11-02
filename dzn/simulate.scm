@@ -550,6 +550,26 @@ of traces, possibly marked with <compliance-error>."
          (labels (sort labels string<)))
     labels))
 
+(define (labels-filter-blocked-ports traces labels)
+  "Remove from LABELS every label for all ports that are blocked in
+TRACES."
+  (define (blocked-port trace)
+    (match trace
+      (() #f)
+      ((pc trace ...)
+       (match (.blocked pc)
+         (() #f)
+         ((port . pc)
+          (any .instance (reverse trace)))))))
+
+  (let* ((blocked-ports (filter-map blocked-port traces))
+         (blocked-port-names (map (compose .name .ast) blocked-ports)))
+    (filter (compose
+             (negate (cute member <> blocked-port-names))
+             .port.name
+             string->trigger)
+            labels)))
+
 (define (optional-trace? trace)
   (let* ((requires-on (filter
                        (conjoin (compose (conjoin (is? <runtime:port>)
@@ -780,6 +800,7 @@ refusals-check.  Run final REPORT and return exit status."
            (event pc ((%next-input) pc))
            (event-traces-alist (event-traces-alist pcs))
            (eligible (eligible-labels event-traces-alist))
+           (eligible (labels-filter-blocked-ports traces eligible))
            (deadlock-traces (check-deadlock pc event-traces-alist event))
            (status (and deadlock-traces (pair? (.blocked pc))
                         (report traces
@@ -945,9 +966,11 @@ status."
              (any (cute refusals-report from-pcs <> '()) from-pcs))
         (and refusals-check? (pair? traces)
              (any (cute refusals-report from-pcs <> <>) from-pcs list-of-traces))
-        (let ((eligible
+        (let* ((eligible
                (and deadlock-check?
-                    (eligible-labels (event-traces-alist pcs)))))
+                    (eligible-labels (event-traces-alist pcs))))
+               (eligible (and eligible
+                              (labels-filter-blocked-ports traces eligible))))
           (report traces
                   #:eligible (or eligible '())
                   #:internal? internal?
