@@ -16,8 +16,8 @@ sut.w.hello -> ...
 ... <- <external>.w.return
 sut.w.return <- ...
 ... <- sut.h.return
-<compliance>
+<non-compliance>
 test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:61:5: error: non-compliance
-(trail "h.hello" "w.hello" "w.return" "h.return" "<compliance>")
+(trail "h.hello" "w.hello" "w.return" "h.return" "<non-compliance>")
 (labels "h.hello" "w.world")
 (eligible)

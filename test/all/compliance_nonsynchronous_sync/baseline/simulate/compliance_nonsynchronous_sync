@@ -14,8 +14,8 @@ sut.w.world <- ...
 <external>.h.world <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_nonsynchronous_sync/compliance_nonsynchronous_sync.dzn:51:19: error: non-compliance
-(trail "h.hello" "w.hello" "w.world" "w.return" "h.world" "h.return" "<compliance>")
+(trail "h.hello" "w.hello" "w.world" "w.return" "h.world" "h.return" "<non-compliance>")
 (labels "h.hello" "w.world")
 (eligible)

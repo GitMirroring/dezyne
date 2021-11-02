@@ -3,8 +3,8 @@ test/all/compliance_blocking_out/compliance_blocking_out.dzn:50:43: error: non-c
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.planet
-<compliance>
+<non-compliance>
 test/all/compliance_blocking_out/compliance_blocking_out.dzn:50:43: error: non-compliance
-(trail "h.hello" "h.planet" "<compliance>")
+(trail "h.hello" "h.planet" "<non-compliance>")
 (labels "h.hello" "w.world")
 (eligible)

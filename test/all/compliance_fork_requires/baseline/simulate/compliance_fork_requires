@@ -8,8 +8,8 @@ sut.r.world <- ...
 <external>.left.world <- ...
 ... <- sut.right.world
 <external>.right.world <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_fork_requires/compliance_fork_requires.dzn:44:35: error: non-compliance
-(trail "r.world" "left.world" "right.world" "<compliance>")
+(trail "r.world" "left.world" "right.world" "<non-compliance>")
 (labels "left.hello" "right.hello" "r.world")
 (eligible)

@@ -22,8 +22,8 @@ test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:73:21
 sut.w.cruel <- ...
 ... <- sut.h.cruel
 <external>.h.cruel <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:73:21: error: non-compliance
-(trail "w.cruel" "h.cruel" "<compliance>")
+(trail "w.cruel" "h.cruel" "<non-compliance>")
 (labels "h.hello" "h.bye" "w.cruel" "w.world")
 (eligible)

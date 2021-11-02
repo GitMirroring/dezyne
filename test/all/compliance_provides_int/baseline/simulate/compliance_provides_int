@@ -4,8 +4,8 @@ test/all/compliance_provides_int/compliance_provides_int.dzn:40:5: error: non-co
 ... -> sut.p.hello
 ... <- sut.p.0
 <external>.p.1 <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_provides_int/compliance_provides_int.dzn:40:5: error: non-compliance
-(trail "p.hello" "p.0" "<compliance>")
+(trail "p.hello" "p.0" "<non-compliance>")
 (labels "p.hello")
 (eligible)

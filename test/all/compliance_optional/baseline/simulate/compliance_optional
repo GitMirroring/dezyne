@@ -6,8 +6,8 @@ sut.<q> <- ...
 sut.w.world <- ...
 ... <- sut.h.world
 <external>.h.world <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_optional/compliance_optional.dzn:44:19: error: non-compliance
-(trail "w.world" "h.world" "<compliance>")
+(trail "w.world" "h.world" "<non-compliance>")
 (labels "h.hello" "w.world")
 (eligible)

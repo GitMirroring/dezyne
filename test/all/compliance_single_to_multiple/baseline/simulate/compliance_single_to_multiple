@@ -8,8 +8,8 @@ sut.w.world <- ...
 <external>.h.world <- ...
 ... <- sut.h.world
 <external>.h.world <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_single_to_multiple/compliance_single_to_multiple.dzn:36:32: error: non-compliance
-(trail "w.world" "h.world" "h.world" "<compliance>")
+(trail "w.world" "h.world" "h.world" "<non-compliance>")
 (labels "w.world")
 (eligible)

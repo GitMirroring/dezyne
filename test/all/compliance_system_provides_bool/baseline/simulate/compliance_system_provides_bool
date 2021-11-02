@@ -4,8 +4,8 @@ test/all/compliance_system_provides_bool/compliance_system_provides_bool.dzn:39:
 ... -> sut.c.p.hello
 ... <- sut.c.p.false
 <external>.pp.true <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_system_provides_bool/compliance_system_provides_bool.dzn:39:5: error: non-compliance
-(trail "pp.hello" "pp.false" "<compliance>")
+(trail "pp.hello" "pp.false" "<non-compliance>")
 (labels "pp.hello")
 (eligible)

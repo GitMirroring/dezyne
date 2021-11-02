@@ -179,7 +179,7 @@ actions to a provides port other than PORT, mark the trace as
                            #:previous #f
                            #:status (make <fork-error>
                                       #:ast (.statement pc)
-                                      #:message "compliance"))))
+                                      #:message "non-compliance"))))
            (list (cons pc trace))))))
 
 (define (check-requires-provides-fork trace)
@@ -200,7 +200,7 @@ provides port, mark the trace as <fork-error>, otherwise return false."
                                   #:status (make <fork-error>
                                              #:action action
                                              #:ast (.statement pc)
-                                             #:message "compliance"))))
+                                             #:message "non-compliance"))))
                   (list (cons pc trace))))))))
 
 (define (rtc-lts-node->traces lts from)
@@ -388,7 +388,7 @@ of traces, possibly marked with <compliance-error>."
                      (null? port-traces)
                      (pair? sut-trail))
                 (let ((status (make <compliance-error>
-                                #:message "compliance"
+                                #:message "non-compliance"
                                 #:component-acceptance (caar sut-trail)
                                 #:port port-instance)))
                   (list (rewrite-trace-head (cut clone <> #:status status) trace))))
@@ -414,7 +414,7 @@ of traces, possibly marked with <compliance-error>."
                        (pc (clone pc
                                   #:previous #f
                                   #:status (make <compliance-error>
-                                             #:message "compliance"
+                                             #:message "non-compliance"
                                              #:component-acceptance component-acceptance
                                              #:port port-instance
                                              #:port-acceptance port-acceptances
@@ -901,7 +901,7 @@ status."
               (define (mark-refusals pc)
                 (clone pc #:status (make <refusals-error>
                                      #:ast (.behaviour component)
-                                     #:message "compliance"
+                                     #:message "non-compliance"
                                      #:refusals refusals)))
 
               (and (pair? refusals)

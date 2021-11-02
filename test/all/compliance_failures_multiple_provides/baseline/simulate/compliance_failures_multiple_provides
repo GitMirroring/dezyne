@@ -1,7 +1,7 @@
 (header ((p) iworld provides) ((h) ihello provides) ((sut) compliance_failures_multiple_provides component) ((w) iworld requires))
 test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:58:3: error: non-compliance
-<compliance>
+<non-compliance>
 test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:58:3: error: non-compliance
-(trail "<compliance>")
+(trail "<non-compliance>")
 (labels "p.hello" "h.hello" "w.world")
 (eligible)

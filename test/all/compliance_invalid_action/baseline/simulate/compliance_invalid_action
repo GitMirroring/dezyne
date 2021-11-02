@@ -2,8 +2,8 @@
 test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: error: non-compliance
 ... <- <external>.h.inevitable
 <external>.h.world <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: error: non-compliance
-(trail "<compliance>")
+(trail "<non-compliance>")
 (labels "h.hello" "w.cruel" "w.world")
 (eligible)

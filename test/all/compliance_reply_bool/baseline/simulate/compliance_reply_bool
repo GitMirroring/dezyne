@@ -17,8 +17,8 @@ sut.w.bye -> ...
 sut.w.false <- ...
 ... <- sut.h.false
 <external>.h.true <- ...
-<compliance>
+<non-compliance>
 test/all/compliance_reply_bool/compliance_reply_bool.dzn:47:10: error: non-compliance
-(trail "h.hello" "w.bye" "w.false" "h.false" "<compliance>")
+(trail "h.hello" "w.bye" "w.false" "h.false" "<non-compliance>")
 (labels "h.hello" "h.bye")
 (eligible)
