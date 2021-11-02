@@ -271,6 +271,7 @@ REGRESSION_TESTS =				\
  %D%/hello_choice_reply				\
  %D%/hello_complete_action			\
  %D%/hello_complete_reply			\
+ %D%/hello_modeling_nondet			\
  %D%/hello_optional_flush			\
  %D%/hellooutevent				\
  %D%/hello_out_data				\

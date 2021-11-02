@@ -609,63 +609,6 @@ of traces, possibly marked with <compliance-error>."
                                     (provides-instance-traces-alist pc) <>)
                               traces))))))))
 
-(define (check-interface-determinism pcs)
-  "Run labels for PCS and return traces that are unobservably
-nonterministic, or false."
-  (define (optional->inevitable trail)
-    (match trail
-      (("optional" trail ...) `("inevitable" ,@trail))
-      (_ trail)))
-  (define trail-traces-alist
-    (match-lambda ((event traces ...)
-                   (let* ((trails (parameterize ((%modeling? #t))
-                                    (map trace->string-trail traces)))
-                          (trails (map optional->inevitable trails)))
-                     (map cons trails (map list traces))))))
-  (define (mark-determinism trace)
-    (let* ((trace (set-trigger-locations trace))
-           (index (list-index (compose (is? <on>) .statement)
-                              trace))
-           (pc (if index (list-ref trace index)
-                   (car trace)))
-           (index (and=>
-                   (list-index (compose (is? <initial-compound>) .statement)
-                               trace)
-                   1+))
-           (trace (if index (drop trace index)
-                      trace))
-           (error (make <determinism-error>
-                    #:ast (or (.trigger pc)
-                              (.behaviour (runtime:%sut-model)))
-                    #:message "determinism"))
-           (pc (clone pc #:status error)))
-      (cons pc trace)))
-  (define extend-silent-traces
-    (match-lambda
-      (((and ("inevitable") trail) traces ...)
-       (cons trail (append traces (map list pcs))))
-      (trail+traces
-       trail+traces)))
-  (define check-determisistic
-    (match-lambda
-      ((trail traces ...)
-       (let* ((traces
-               (delete-duplicates
-                traces
-                (lambda (a b)
-                  (rtc-program-counter-equal? (car a) (car b))))))
-         (match traces
-           ((trace trace2 rest ...)
-            (map mark-determinism traces))
-           (_ '()))))))
-  (and (pair? (ast:variable* (.behaviour (runtime:%sut-model))))
-       (let* ((event-alist (event-traces-alist pcs))
-              (trail-alists (map trail-traces-alist event-alist))
-              (trail-alist (merge-alist-list (append trail-alists '(()))))
-              (trail-alist (map extend-silent-traces trail-alist))
-              (traces (append-map check-determisistic trail-alist)))
-         (and (pair? traces) traces))))
-
 (define (check-interface-determinism traces)
   "Determine wether TRACES contain unobservably nonterministic traces,
 possibly after running RUN-SILENT and return them, or false."
@@ -723,7 +666,8 @@ possibly after running RUN-SILENT and return them, or false."
     (let* ((pcs (map last traces))
            (pcs (map (cute clone <> #:status #f) pcs))
            (silent-traces (append-map (cute run-silent <> (%sut)) pcs))
-           (traces (append traces silent-traces))
+           (start-traces (map list pcs))
+           (traces (append start-traces silent-traces))
            (alist (cons '() traces))
            (traces (check-determisistic alist)))
       (and (pair? traces) traces)))

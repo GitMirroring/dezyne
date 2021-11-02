@@ -36,6 +36,7 @@
   #:re-export (.port
                ast:async?
                ast:external?
+               ast:equal?
                ast:provides?
                ast:requires?
                ast:type))
@@ -106,3 +107,6 @@
 
 (define-method (ast:external? (o <runtime:instance>))
   #f)
+
+(define-method (ast:equal? (a <end-of-trail>) (b <end-of-trail>))
+  (ast:equal? (.labels a) (.labels b)))
