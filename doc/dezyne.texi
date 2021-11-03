@@ -3766,9 +3766,6 @@ Generate a state-diagram it @code{dot} format.  This is the default.
 @node Invoking dzn graph
 @section Invoking @command{dzn graph}
 
-@cindex Aldebaran
-@cindex @code{lts}
-
 The @command{dzn graph} command generates a graph from a Dezyne model.
 
 @example
@@ -3785,6 +3782,14 @@ Generate a diagram using backend @var{type}; one of @code{dependency},
 @code{lts}, @code{state}, or @code{system} and write it to standard
 output.  The default is @code{system}.
 
+The @code{state} diagram can simplified using options @option{--hide}
+and @option{remove}.
+
+@cindex Aldebaran
+@cindex @code{lts}
+Under the hood, @code{lts} and @code{state} use the Dezyne VM.  See also
+@ref{Invoking dzn lts}, and @ref{Invoking dzn traces}).
+
 @item --format=@var{format}
 @itemx -f @var{format}
 Print trace in format @var{format}; one of @code{aut}, @code{dot}, or
@@ -3795,11 +3800,14 @@ formats the default is @code{dot}.
 @itemx -h
 Display help on invoking @code{dzn graph}, and then exit.
 
+@item --hide=@var{hide}
+@itemx -H @var{hide}
+Generate a state diagram and hide @var{hide} from the transitions; one
+of @code{labels} (hide everything) or @code{actions}.
+
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
-
-Under the hood, @command{dzn graph} uses the Dezyne VM.
 
 @item --model=@var{model}
 @itemx -m @var{model}
@@ -3809,6 +3817,15 @@ Generate graph for model @var{model}.  The default is to use the most
 @item --queue-size=@var{size}
 @itemx -q @var{size}
 Use queue size @var{size} for exploration, the default is @code{3}.
+
+@item --remove=@var{vars}
+@itemx -R @var{vars}
+Generate a state diagram and remove variables from nodes @var{remove};
+one of @code{ports} or @code{extended}.
+
+@code{ports} Hides the state of the component's or system's ports,
+@code{extended} hides the interface's or component's extended state,
+i.e., all but the main (first) state variable and implies @code{ports}.
 
 @end table
 

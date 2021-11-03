@@ -41,6 +41,7 @@
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
+  #:use-module (dzn vm step)
   #:use-module (dzn vm util)
   #:export (lts
             pc->rtc-lts
@@ -138,6 +139,99 @@ recursion.  Return a run-to-completion LTS
     (when (= (car state-number-count) 1)
       (hash-set! lts 1 (cons pc (list (list pc)))))
     (values lts pc->state-number state-number-count)))
+
+(define* (lts-remove lts size #:key ports? extended? actions? labels?
+                     (self? #t))
+  "Remove from the LTS transitions which only differ in terms of
+EXTENDED?, PORTS?, LABELS? or ACTIONS?  When SELF?, remove all self
+transitions."
+
+  (define (variable-equal? a b)
+    (equal? (match a ((name . expression) name)) b))
+
+  (define (remove-extended state)
+    (let* ((instance (.instance state))
+           (path (runtime:instance->path instance))
+           (variables (.variables state))
+           (instance (.instance state))
+           (model (runtime:ast-model instance)))
+      (and (not (equal? path '("client")))
+           (pair? variables)
+           (or (is-a? (%sut) <runtime:port>)
+               (not ports?)
+               (not (is-a? instance <runtime:port>)))
+           (let* ((members (ast:variable* model))
+                  (main (car members))
+                  (main-name (.name main))
+                  (variables (if (not extended?) variables
+                                 (filter (cute variable-equal? <> main-name)
+                                         variables))))
+             (make <state>
+               #:instance instance
+               #:variables variables)))))
+
+  (define (remove-state pc)
+    (if (and (not ports?) (not extended?)) pc
+        (let* ((state-list (.state-list (.state pc)))
+               (state-list (filter-map remove-extended state-list))
+               (state (make <system-state> #:state-list state-list)))
+          (clone pc #:state state))))
+
+  (define (hide-return-value pc)
+    (let ((statement (.statement pc)))
+      (if (is-a? statement <trigger-return>)
+          (clone pc #:statement (clone statement #:event.name "return"))
+          pc)))
+
+  (define hide-actions
+    (match-lambda
+      ((pc trace ...)
+       (let* ((reversed (reverse trace))
+              (trigger (any .trigger reversed))
+              (action (find (compose (is? <action>) .statement) reversed))
+              (trace (filter (compose not (is? <action>) .statement) trace))
+              (trace (map hide-return-value trace))
+              (trace (if (ast:modeling? trigger)
+                         (reverse (cons action (reverse trace)))
+                         trace)))
+         (cons pc trace)))))
+
+  (let* ((state-number-table (make-hash-table))
+         (state-number-count (list 1))
+         (pc->state-number
+          (pc->state-number state-number-table state-number-count)))
+
+    (define (merge from result)
+      (let ((pc+traces (hash-ref lts from)))
+        (if (not pc+traces) result
+            (let* ((pc traces (match pc+traces ((pc . traces)
+                                                (values pc traces))))
+                   (pc (remove-state pc))
+                   (traces (map (lambda (trace) (map remove-state trace))
+                                traces))
+                   (from (pc->state-number pc))
+                   (pc+traces (hash-ref result from))
+                   (pc traces (match pc+traces
+                                ((pc . new-traces)
+                                 (values pc (append traces new-traces)))
+                                (#f
+                                 (values pc traces))))
+                   (traces (if (not self?) traces
+                               (filter (compose not
+                                                (cute = from <>)
+                                                pc->state-number car)
+                                       traces)))
+                   (traces
+                    (if (or labels? (not actions?)) traces
+                        (map hide-actions traces)))
+                   (traces (if (not labels?) traces
+                               (map (compose list car) traces))))
+              (hash-set! result from (cons pc traces))
+              result))))
+
+    (values (fold merge (make-hash-table) (iota size 1))
+            pc->state-number
+            state-number-count)))
 
 
 ;;;
@@ -366,7 +460,8 @@ RTC-LTS->LTS."
 ;;; Entry points.
 ;;;
 
-(define* (state-diagram root #:key behaviour? format model queue-size)
+(define* (state-diagram root #:key format model queue-size
+                        ports? extended? actions? labels?)
   "Entry-point for dzn explore --state-diagram."
   (when (> (dzn:debugity) 0)
     (set! %debug? #t))
@@ -376,9 +471,20 @@ RTC-LTS->LTS."
     (parameterize ((%instances (runtime:create-instances (%sut))))
       (let* ((pc (make-pc))
              (lts pc->state-number state-count (pc->rtc-lts pc))
+             (remove? (or ports? extended? actions? labels?))
+             (size (1- (car state-count)))
+             (lts pc->state-number state-count
+                  (if remove? (lts-remove lts size
+                                          #:ports? (or ports? extended?)
+                                          #:extended? extended?
+                                          #:actions? actions?
+                                          #:labels? labels?
+                                          #:self? #t)
+                      (values lts pc->state-number state-count)))
              (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
-        (if (equal? format "json") (display (state-diagram->json
-                                             state-diagram (.working-directory root)))
+        (if (equal? format "json") (display
+                                    (state-diagram->json
+                                     state-diagram (.working-directory root)))
             (display (state-diagram->dot state-diagram (pc->hash pc))))))))
 
 (define* (lts root #:key model queue-size)
