@@ -1,0 +1,11 @@
+(header ((client) hello_optional_nondet provides) ((sut) hello_optional_nondet interface))
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.false
+<external>.false <- ...
+(trail "hello" "false")
+... <- sut.world
+<external>.world <- ...
+(trail "world")
+(labels "hello" "optional" "inevitable")
+(eligible "inevitable" "optional")

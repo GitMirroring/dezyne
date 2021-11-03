@@ -471,20 +471,28 @@ until RTC?."
     (map car traces)))
 
 (define-method (run-interface (pc <program-counter>) (event <string>))
-  (let* ((interface ((compose .type .ast %sut)))
-         (modeling-names (modeling-names interface))
-         (silent-traces (if (null? modeling-names) '()
-                            (run-silent pc (%sut))))
-         (silent-pcs (map car silent-traces))
-         (pcs (cons pc silent-pcs))
-         (traces (map list pcs)))
+  (define (event-executed? trace)
+    (let ((trail (trace->string-trail trace)))
+      (and (pair? trail)
+           (equal? event (car trail)))))
+  (let* ((interface ((compose .type .ast %sut))))
     (cond
      ((in-event? event)
-      (append-map (cut run-to-completion <> event) (cons (list pc) traces)))
+      (let* ((modeling-names (modeling-names interface))
+             (silent-traces (if (null? modeling-names) '()
+                                (run-silent pc (%sut))))
+             (silent-pcs (map car silent-traces))
+             (pcs (cons pc silent-pcs))
+             (traces (map list pcs)))
+        (append-map (cut run-to-completion <> event) (cons (list pc) traces))))
      (else
-      (let* ((pc (if (member event '("inevitable" "optional")) pc
+      (let* ((modeling? (member event '("inevitable" "optional")))
+             (pc (if modeling? pc
                      (clone pc #:trail (cons event (.trail pc)))))
-             (traces (append-map (cut run-to-completion pc <>) modeling-names)))
+             (modeling-names (if modeling? (list event) (modeling-names)))
+             (traces (append-map (cut run-to-completion pc <>) modeling-names))
+             (traces (parameterize ((%modeling? modeling?))
+                       (filter event-executed? traces))))
         traces)))))
 
 (define-method (run-requires (pc <program-counter>) event)
