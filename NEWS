@@ -29,11 +29,25 @@
 ** Simulation
   - The beginning of a livelock loop is now marked in the trace with
     "<loop>" ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/44][#44]]).
+  - In case of a non-compliance error related to mixing inevitable and
+    optional the simulator now reports which events are expected to be
+    inevitable and which are optional in the interface ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/61][#61]]).
+** Code
+  - In the generated C++, the initialization of the meta object in the
+    member initialization list of a component or system uses the address
+    of the meta objects of its ports.  An instance of the Clang compiler
+    reports a false positive when using the -Wuninitialized
+    option. Although the ports have not been initialized at this point
+    the address of a member is valid and can be safely captured. This is
+    now side stepped by deferring the initalization of this field to the
+    body of the constructor.
 ** Views
   - A new command `dzn graph' can be used to generate graphs using
     different backends: "dependency", "lts", "state", and "system".  The
-    "state" backend with option `--behaviour' produces a state diagram
-    disregarding port interactions and port state ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/29][#29]]).
+    "state" backend now supports hiding of unwanted detail.  The new
+    options `-R,--remove=...' and `-H,--hide=...' can be used to
+    filter-out port state or extended state from the nodes, action
+    transition labels or even all transition labels ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/29][#29]]).
   - The `dzn explore' command has been deprecated and users are
     requested to use `dzn graph' instead.  `dzn explore' is planned to
     be removed in the next release.
@@ -43,6 +57,15 @@
   - The use of an interface enum as event now produces a parse error.
   - The simulator now also reports a Y-fork: forking a requires-out
     event to more than one provides ports.
+  - The simulator no longer reports false positives for the interface
+    unobservably non-deterministic check.
+  - The simulator no longer lists events on a blocked port as eligible.
+  - The simulator no longer reports false potitives for the compliance
+    check in the case of a blocking trace with a stateful provides port.
+  - A quadratic performance problem when parsing pre-processed dezyne
+    input has been fixed.
+  - The parser now avoids repeating `stat' calls, improving the
+    performance of parsing large projects on Windows.
 
 * Changes in 2.13.3 since 2.13.2
 ** Parser
