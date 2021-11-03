@@ -1,4 +1,4 @@
 model: determinism_async
 h.hello
 h.return
-<deterministic>
+<non-deterministic>

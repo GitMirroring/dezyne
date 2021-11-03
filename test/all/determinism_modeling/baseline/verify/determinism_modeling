@@ -1,3 +1,3 @@
 model: determinism_modeling
 world
-<deterministic>
+<non-deterministic>

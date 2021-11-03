@@ -481,10 +481,11 @@ init for MODEL unless INIT."
                                ((find (cut equal? "<queue-full>" <>) trace) '<queue-full>)
                                (else assert)))
                   ((compliance) 'non-compliance)
+                  ((deterministic) 'non-deterministic)
                   (else assert)))
          (message (case error
                     ((illegal) (format #f "illegal action performed in model ~a" model-name))
-                    ((deterministic)
+                    ((non-deterministic)
                      (case model-type
                        ((component) (format #f "component ~a is non-deterministic due to overlapping guards" model-name))
                        ((interface) (format #f "interface ~a is unobservably non-deterministic" model-name))))
@@ -496,7 +497,7 @@ init for MODEL unless INIT."
                     ((<queue-full>) (format #f "queue full in model ~a" model-name))
                     (else (format #f "~a in model ~a" error model-name))))
          (trace (remove-flushes trace))
-         (trace (if (member error '(non-compliance deadlock deterministic illegal livelock))
+         (trace (if (member error '(non-compliance deadlock non-deterministic illegal livelock))
                     (append trace (list (cleanup-error (symbol->string error))))
                     trace))
          (trace (if (eq? error '<queue-full>) (drop-queue-full-tail trace) trace))

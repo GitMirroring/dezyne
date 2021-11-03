@@ -3,4 +3,4 @@ world
 <deadlock>
 model: determinism_deadlock
 world
-<deterministic>
+<non-deterministic>

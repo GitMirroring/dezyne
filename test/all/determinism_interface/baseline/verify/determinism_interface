@@ -2,4 +2,4 @@ model: determinism_interface
 hello
 world
 return
-<deterministic>
+<non-deterministic>

@@ -2,4 +2,4 @@ model: determinism1
 i.e
 i.return
 i.e
-<deterministic>
+<non-deterministic>
