@@ -88,7 +88,8 @@ HELLO_TESTS =					\
  %D%/livelock_interface0			\
  %D%/livelock_component				\
  %D%/queuefull_component0			\
- %D%/semantics
+ %D%/semantics					\
+ %D%/state-diagram
 
 SEMANTICS_TESTS =				\
  %D%/direct_in					\
