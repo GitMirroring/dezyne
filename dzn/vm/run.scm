@@ -161,7 +161,9 @@ mark it with <determinism-error>."
                             trace))
          (pc (list-ref trace index))
          (trace (drop trace index))
-         (error (make <determinism-error> #:ast (.statement pc) #:message "determinism"))
+         (error (make <determinism-error>
+                  #:ast (.statement pc)
+                  #:message "non-deterministic"))
          (pc (clone pc #:status error)))
     (cons pc trace)))
 

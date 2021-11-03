@@ -635,7 +635,7 @@ possibly after running RUN-SILENT and return them, or false."
            (error (make <determinism-error>
                     #:ast (or (.trigger pc)
                               (.behaviour (runtime:%sut-model)))
-                    #:message "determinism"))
+                    #:message "non-deterministic"))
            (pc (clone pc #:status error)))
       (cons pc trace)))
   (define extend-silent-traces

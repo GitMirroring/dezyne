@@ -3,9 +3,9 @@ test/all/determinism0/determinism0.dzn:40:14: error: component is non-determinis
 test/all/determinism0/determinism0.dzn:41:14: error: component is non-deterministic due to overlapping guards
 <external>.i.e -> ...
 ... -> sut.i.e
-<determinism>
+<non-deterministic>
 test/all/determinism0/determinism0.dzn:40:14: error: component is non-deterministic due to overlapping guards
 test/all/determinism0/determinism0.dzn:41:14: error: component is non-deterministic due to overlapping guards
-(trail "i.e" "<determinism>")
+(trail "i.e" "<non-deterministic>")
 (labels "i.e")
 (eligible)

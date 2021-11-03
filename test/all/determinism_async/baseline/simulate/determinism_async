@@ -6,9 +6,9 @@
 (trail "h.hello" "h.return")
 test/all/determinism_async/determinism_async.dzn:53:19: error: component is non-deterministic due to overlapping guards
 test/all/determinism_async/determinism_async.dzn:54:19: error: component is non-deterministic due to overlapping guards
-<determinism>
+<non-deterministic>
 test/all/determinism_async/determinism_async.dzn:53:19: error: component is non-deterministic due to overlapping guards
 test/all/determinism_async/determinism_async.dzn:54:19: error: component is non-deterministic due to overlapping guards
-(trail "<determinism>")
+(trail "<non-deterministic>")
 (labels "h.hello")
 (eligible)
