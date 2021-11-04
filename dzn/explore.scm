@@ -131,7 +131,6 @@ recursion.  Return a run-to-completion LTS
                                 (else
                                  (loop (cdr labels) (append new traces))))))))
                  (pcs (map car traces)))
-            (map pc->state-number pcs)
             (hash-set! lts from (cons pc traces))
             (let* ((traces (filter (negate trace-done?) traces))
                    (pcs (map car traces)))
