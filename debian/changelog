@@ -1,3 +1,9 @@
+dezyne (2.14.0.rc1-0) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Jan (janneke) Nieuwenhuizen <janneke@gnu.org>  Thu, 04 Nov 2021 22:28:36 +0100
+
 dzn (0.0+31.f1bedb39-1-1) UNRELEASED; urgency=low
 
   * Initial release from git commit f1bedb39.

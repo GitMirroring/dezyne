@@ -1,18 +1,20 @@
-Source: dzn
+Source: dezyne
 Section: devel
 Priority: optional
 Maintainer: Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 Build-Depends: debhelper-compat (=12),
- guile-0.0,
+ g++ (>= 5.4),
+ guile-3.0,
  guile-3.0-dev,
  guile-json,
  help2man,
  install-info,
+ mcrl2 (= 202106.0.ce8cf9f00d),
  texinfo,
 Standards-Version: 4.4.0
-Homepage: https://verum.com
+Homepage: https://dezyne.org
 
-Package: dzn
+Package: dezyne
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends},
