@@ -170,6 +170,14 @@ recursion.  Return a run-to-completion LTS
            (pcs (map car traces))
            (transition (map trace->string-trail traces))
            (to (map pc->state-number pcs))
+           (to+transition (delete-duplicates
+                           (map cons to transition)
+                           (match-lambda*
+                             (((a-to a-transition ...) (b-to b-transition ...))
+                              (and (= a-to b-to)
+                                   (equal? a-transition b-transition))))))
+           (to (map car to+transition))
+           (transition (map cdr to+transition))
            (trigger-location (map trigger-location traces)))
       (if (null? to) (list (list from pc #f #f #f))
           (map (cut list from pc <> <> <>)
@@ -184,7 +192,7 @@ recursion.  Return a run-to-completion LTS
 RTC-LTS->STATE-DIAGRAM."
   (define (preamble title)
     (format #f
-            "strict digraph G {
+            "digraph G {
 label=~s begin[shape=\"circle\" width=0.3 fillcolor=\"black\" style=\"filled\" label=\"\"]
 node[shape=\"rectangle\" style=\"rounded\"]
 begin -> 1
@@ -257,23 +265,21 @@ RTC-LTS->STATE-DIAGRAM."
                 (.column trigger-location)
                 (.end-line trigger-location)
                 (.end-column trigger-location))))
-  (let ((graph (cons `(* #f ("" "") 1 #f) graph)))
+  (let ((graph (cons `(* #f ("" "") 1 #f) graph))
+        (seen (make-hash-table)))
     (string-append
      "{\"states\":[\n"
      (string-join
-      (map
+      (filter-map
        (match-lambda
          ((from pc label to trigger-location)
-          (let ((states (if (not pc) "[]"
-                            (scm->json-string (state->scm pc)))))
-            (string-append
-             (format #f "{\"id\":\"~a\", \"state\":~a}" from states)))))
-       (delete-duplicates graph
-                          (match-lambda* (((from-a pc-a traces-a ...)
-                                           (from-b pc-b traces-b ...))
-                                          (and (equal? from-a from-b)
-                                               (rtc-program-counter-equal-state-diagram?
-                                                pc-a pc-b))))))
+          (and (not (hash-ref seen from))
+               (hash-set! seen from #t)
+               (let ((states (if (not pc) "[]"
+                                 (scm->json-string (state->scm pc)))))
+                 (string-append
+                  (format #f "{\"id\":\"~a\", \"state\":~a}" from states))))))
+       graph)
       ",\n")
      "],\n"
      "\"transitions\":[\n"

@@ -47,6 +47,7 @@
             label->string
             set-trigger-locations
             step->location
+            trace-equal?
             trace->trail
             trace->string-trail
             report))
@@ -81,6 +82,11 @@
     (define (strip-sut-prefix o)
       (if (string-prefix? "sut." o) (substring o 4) o))
     (map strip-sut-prefix trail)))
+
+(define (trace-equal? a b)
+  (and (rtc-program-counter-equal? (car a) (car b))
+       (equal? (trace->string-trail a)
+               (trace->string-trail b))))
 
 (define (debug:lts->alist pc->state-number lts)
   (define (entry->pair from pc+traces)

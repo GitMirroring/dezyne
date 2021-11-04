@@ -240,12 +240,7 @@ never extend a trace, but do continue as long as the trail is silent."
                                  (if (null? continuations) todo
                                      (if continue-on-silent? continuations
                                          (append-map (cute extend todo <>) continuations)))))
-                 (traces (delete-duplicates
-                          traces
-                          (lambda (a b)
-                            (and (rtc-program-counter-equal? (car a) (car b))
-                                 (equal? (trace->string-trail a)
-                                         (trace->string-trail b)))))))
+                 (traces (delete-duplicates traces trace-equal?)))
             traces)))))
 
 (define* (check-provides-compliance pc event port-traces-alist trace)

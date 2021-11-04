@@ -302,11 +302,7 @@ PC until RTC?."
              (trace (rewrite-trace-head (cut clone <> #:status #f #:trail trail) trace)))
         trace))
     (let* ((traces (map reset-posponed-match traces))
-           (traces (delete-duplicates
-                    traces
-                    (lambda (a b)
-                      (and (rtc-program-counter-equal? (car a) (car b))
-                           (equal? (trace->string-trail a) (trace->string-trail b)))))))
+           (traces (delete-duplicates traces trace-equal?)))
       (loop (append-map extend-trace traces))))
 
   (define (choice-label trace)
