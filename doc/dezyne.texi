@@ -3785,11 +3785,6 @@ Generate a diagram using backend @var{type}; one of @code{dependency},
 @code{lts}, @code{state}, or @code{system} and write it to standard
 output.  The default is @code{system}.
 
-@item --behaviour
-@itemx -B
-Generate state-diagram disregarding port interactions and port state.
-Using @option{--behaviour} implies @option{type}=@var{state}.
-
 @item --format=@var{format}
 @itemx -f @var{format}
 Print trace in format @var{format}; one of @code{aut}, @code{dot}, or

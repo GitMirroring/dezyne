@@ -39,7 +39,6 @@
   #:use-module (dzn vm runtime)
   #:export (%debug
             %debug?
-            %explore-behaviour?
             %next-input
             %queue-size
 
@@ -125,9 +124,6 @@
 (define-syntax-rule (%debug fmt arg ...)
   (when %debug?
     (format (current-error-port) fmt arg ...)))
-
-;; Are we exploring component behaviour only?
-(define %explore-behaviour? (make-parameter #f))
 
 ;;; The size of the component queues and external queues.
 (define %queue-size (make-parameter 3))
@@ -666,9 +662,6 @@
                          (.variables o)))
          (q (.q o)))
     (and (not (equal? path '("client")))
-         (or (is-a? (%sut) <runtime:port>)
-             (not (%explore-behaviour?))
-             (not (is-a? instance <runtime:port>)))
          (or (pair? variables) (pair? q))
          (string-append
           (string-join path ".")

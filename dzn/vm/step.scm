@@ -219,17 +219,12 @@
     (cond
      ((is-a? other-instance <runtime:component>)
       (list (begin-step pc other-instance trigger)))
-     ((and (runtime:boundary-port? other-port)
-           (not (%explore-behaviour?)))
+     ((runtime:boundary-port? other-port)
       (let* ((silent-traces ((@ (dzn vm run) run-silent) pc other-instance))
              (silent-pcs (map car silent-traces))
              (pcs (cons pc silent-pcs)))
         (map (cute begin-step <> other-instance trigger) pcs)))
-     ((and (runtime:boundary-port? other-port)
-           (%explore-behaviour?)
-           (ast:typed? o))
-      (map (cute set-reply pc other-port <>) (ast:return-values o)))
-     (else
+     (ast:injected? port
       (list pc)))))
 
 (define (step-async-action-down pc o)
