@@ -33,6 +33,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn command-line)
@@ -393,6 +394,11 @@ and the working directory.
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
+  (define (canonicalize-path-memoized path)
+    ((pure-funcq
+      (lambda (path-symbol)
+        (canonicalize-path (symbol->string path-symbol))))
+     (string->symbol path)))
 
   (define (read-file file-name)
     (let ((content (with-input-from-file file-name read-string)))
@@ -417,22 +423,26 @@ specified in IMPORTS."
              (alist
               (let loop ((file-names file-names) (content-alist content-alist))
                 (if (null? file-names) (reverse content-alist)
-                    (let* ((canonical-string=? (lambda (a b)
-                                                 (string=? (canonicalize-path a)
-                                                           (canonicalize-path b))))
-                           (file-names (delete-duplicates file-names canonical-string=?))
+                    (let* ((canonical-string=?
+                            (lambda (a b)
+                              (string=? (canonicalize-path-memoized a)
+                                        (canonicalize-path-memoized b))))
+                           (file-names (delete-duplicates file-names
+                                                          canonical-string=?))
                            (file-names (lset-difference canonical-string=?
                                                         file-names
-                                                        (map car content-alist)))
+                                                        (map car
+                                                             content-alist)))
                            (alist (reverse (map read-file file-names)))
                            (content-alist (append alist content-alist))
-                           (file-names (append-map
-                                        (match-lambda
-                                          ((file-name . content)
-                                           (resolve file-name imports
-                                                    (imported-file-names content)
-                                                    content-alist)))
-                                        alist)))
+                           (file-names
+                            (append-map
+                             (match-lambda
+                               ((file-name . content)
+                                (resolve file-name imports
+                                         (imported-file-names content)
+                                         content-alist)))
+                             alist)))
                       (loop file-names content-alist))))))
           (values alist (getcwd))))))
 
