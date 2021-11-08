@@ -10,6 +10,7 @@
  #x:provided-port-reference-initializer
  #x:required-port-reference-initializer
 {
+  dzn_meta.require = {#x:ports-meta-list };
   #x:constructor-meta-initializer
   #x:injected-instance-meta-initializer
   #x:non-injected-instance-meta-initializer
