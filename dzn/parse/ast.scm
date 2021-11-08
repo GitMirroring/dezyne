@@ -58,9 +58,9 @@
                       (if (not index) result
                           (loop (1+ index) (append result (list index)))))))
            (lines (let loop ((start 0) (todo lines) (result '()))
-                    (if (null? todo) (append result (list (cons start last)))
-                        (loop (1+ (car todo)) (cdr todo) (append result (list (cons start (car todo)))))))))
-      (list->vector lines)))
+                    (if (null? todo) (cons (cons start last) result)
+                        (loop (1+ (car todo)) (cdr todo) (cons (cons start (car todo)) result))))))
+      (list->vector (reverse lines))))
 
   (define (compare-pos pos nl)
     (cond ((< (cdr pos) (car nl)) -1)
