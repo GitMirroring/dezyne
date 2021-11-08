@@ -3,7 +3,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2015, 2016, 2017, 2019, 2020 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2016, 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2016, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;

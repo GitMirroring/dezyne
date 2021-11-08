@@ -1,7 +1,8 @@
+#! /bin/sh
+
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-# Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -18,9 +19,16 @@
 # You should have received a copy of the GNU Affero General Public
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 #
-dir=$1
-base=$(basename $1)
+# Commentary:
+#
+# Code:
 
-mkdir -p $dir/out
-dzn --skip-wfc parse -E -o- $dir/$base.dzn | sed 's,^#dir.*,#dir ".",' > $dir/out/$base.dzn
-run-baseline $dir dzn --skip-wfc parse --locations -o- $dir/out/$base.dzn
+sed -i                                                          \
+    -e s,johri.van.eerd[@]verum.com,vaneerd.johri@gmail.com,gi  \
+    -e s,paul.hoogendijk[@]verum.com,paul@dezyne.org,gi         \
+    -e s,rob.wieringa[@]verum.com,rob@dezyne.org,gi             \
+    -e s,rutger.van.beusekom[@]gmail.com,rutger@dezyne.org,gi   \
+    -e s,rutger.van.beusekom[@]verum.com,rutger@dezyne.org,gi   \
+    $(git grep -l @verum.com)
+
+git grep @verum.com

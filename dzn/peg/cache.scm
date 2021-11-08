@@ -1,7 +1,7 @@
 ;;; cache.scm --- cache the results of parsing
 ;;;
 ;;; Copyright © 2010, 2011 Free Software Foundation, Inc.
-;;; Copyright © 2018 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Lesser General Public

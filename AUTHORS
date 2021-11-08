@@ -5,7 +5,7 @@ Initial author of Gaiag -- https://gitlab.com/janneke/gaiag
 Initial author of the Scheme and JavaScript code generators
 Initial author of the VM and system simulator
 
-Rutger van Beusekom <rutger.van.beusekom@gmail.com>
+Rutger van Beusekom <rutger@dezyne.org>
 Initial author of the CSP generator
 Initial author of the C++ runtime and C++ code generator
 Initial author of the CS runtime and CS code generator
@@ -26,7 +26,7 @@ Initial author of the mCRL2 generator prototype
 Main author of the mCRL2 generator
 Initial author of the CS runtime and CS code generator
 
-Paul Hoogendijk <paul.hoogendijk@verum.com>
+Paul Hoogendijk <paul@dezyne.org>
 Initial author of the first C code generator
 Initial author of AST normalisations
 Initial author of the traces tool

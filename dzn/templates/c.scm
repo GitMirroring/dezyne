@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;

@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Henk Katerberg <henk.katerberg@yahoo.com>
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2016, 2017 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //

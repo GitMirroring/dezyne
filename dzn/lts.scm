@@ -1,9 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@yahoo.com>
-;;; Copyright © 2018, 2019, 2020, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
+;;; Copyright © 2018, 2019, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;

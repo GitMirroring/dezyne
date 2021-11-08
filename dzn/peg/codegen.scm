@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2011 Free Software Foundation, Inc.
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Lesser General Public

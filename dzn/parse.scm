@@ -2,8 +2,8 @@
 ;;;
 ;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2014, 2021 Paul Hoogendijk <paul.hoogendijk@verum.com>
-;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+;;; Copyright © 2014, 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
