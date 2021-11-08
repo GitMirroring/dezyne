@@ -18,7 +18,7 @@
 
 @copying
 Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
-Copyright @copyright{} 2014, 2020 Rutger van Beusekom@*
+Copyright @copyright{} 2014, 2020, 2021 Rutger van Beusekom@*
 Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
 Copyright @copyright{} 2014, 2016, 2019, 2020, 2021 Jan Nieuwenhuizen@*
@@ -246,18 +246,46 @@ Coding Style
 @node Introduction
 @chapter Introduction
 
-Dezyne is a component based language, as well as a method for the
-development of event-driven systems.  The language has formal semantics,
-which is coherently expressed in: a textual representation, a graphical
-representation, a mathematical representation, a source code
-representation, and the observable behavior of a machine executing the
-resulting program.  The concepts available in the language denote the
-different properties@footnote{ Structural: events and their direction in
-an interface, ports on a component, components in a system, bindings
-between the ports; behavioral: guarded trigger => action | assignment |
-if-else | function} that can be observed and have meaning in one or more
-of the reprentations: textual, graphical, mathematical, program and
-execution.
+Dezyne is a programming language and a set of tools to specify,
+validate, verify, simulate, document, and implement concurrent control
+software for embedded and cyber-physical systems.
+
+Dezyne incorporates both model based as well as component based
+development.  It enables an incremental and collaborative approach to
+complex system development by using a novel way of design by
+contract.  The Dezyne language allows defining not just the structure,
+but equally the detailed behavior of a software system using a C like
+syntax.  Its rigorous notation enables automatically creating both
+abstract and detailed diagrams consistent with both the structure and
+the behavior.
+
+The Dezyne language has formal semantics expressed in
+@url{https://mcrl2.org, mCRL2} developed at the department of
+Mathematics and Computer Science of the Eindhoven University of
+Technology (@url{https://tue.nl,TUE}).  Dezyne requires that every model
+is finite, deterministic and free of deadlocks, livelocks, and contract
+violations.  This achieved by means of the language itself as well as
+builtin verification through model checking.  This allows the
+construction of complex systems by assembling independently verified
+components.
+
+What Dezyne sets apart from other programming languages is the fact that
+it treats the language primitives of the message passing programming
+model as first class citizens.
+
+Dezyne is Free Software.  Everyone is encouraged to share this software
+with others under the terms of the GNU Affero General Public License
+version 3 or later (see @url{https://gnu.org/licenses#AGPL, AGPL3+}).
+Fundamentally, the Affero General Public License is a license which says
+that you have these freedoms and that you cannot take these freedoms
+away from anyone else.
+
+If you find Dezyne useful, please let us know.  We are always interested
+to find out how Dezyne is being used.
+
+You are also encouraged to help make Dezyne more useful by writing and
+contributing additional functions for it, and by reporting any problems
+you may have, (@xref{Contributing}).
 
 @menu
 * Purpose::                     Why are we creating Dezyne?
