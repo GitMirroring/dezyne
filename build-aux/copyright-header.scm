@@ -143,7 +143,7 @@ All rights reserved.
     (and=> m match:string)))
 
 (define (code-file? o)
-  (let ((m (string-match "\\.(dzn|js)(|.in)$" o)))
+  (let ((m (string-match "\\.(cc|cs|dzn|js)(|.in)$" o)))
     (and=> m match:string)))
 
 (define (author-unique author)
@@ -285,7 +285,7 @@ All rights reserved.
 
 (define (main args)
   (setenv "GIT_COMMIT" "HEAD")
-    (match (pke "Cl" (command-line))
+  (match (command-line)
       ((copyright-header)
        (let* ((files (string-split (gulp-pipe "git ls-tree -r --name-only $GIT_COMMIT") #\newline))
               (files (filter (negate skip?) files)))
