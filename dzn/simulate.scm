@@ -247,46 +247,23 @@ trace, the check is done in an incremental way: only the part that the
 component has executed is considered.
 
 Return a list of traces, possibly marked with <compliance-error>."
-  (define (drop-prefix event trail)
-    (let* ((reversed (reverse trail))
-           (at (list-index (compose (cute equal? <> event) cdr) reversed)))
-      (if at (reverse (list-head reversed (1+ at)))
-          trail)))
 
-  (let* ((pc (if (and (external-trigger? event)
-                      (pair? (.blocked pc)) (pair? trace))
-                 (last trace)
-                 pc))
-         (component ((compose .type .ast) (%sut)))
-         (sut-trail (trace->trail trace))
-         (event (cond
-                 ((and (pair? (.blocked pc))
-                       (requires-trigger? event)
-                       (let* ((return (find (compose (is? <trigger-return>)
-                                                     .statement)
-                                            trace))
-                              (instance (and=> return .instance)))
-                         (find
-                          (conjoin
-                           (compose (cute eq? <> instance) .instance)
-                           (compose (is? <initial-compound>) .statement)
-                           (compose ast:provides? .trigger))
-                          trace)))
-                  =>
-                  (lambda (pc)
-                    (let ((trail (trace->trail pc)))
-                      (match trail
-                        ((ast . event) event)
-                        (_ event)))))
-                 (else
-                  (match sut-trail
-                    (((ast . event) step ...) event)
-                    (() event)))))
-         (trigger (and event (clone (string->trigger event) #:parent component)))
+  (define (drop-prefix pc trigger trace)
+    (let* ((at (list-index (compose (cute ast:equal? <> trigger) .trigger)
+                           (reverse trace))))
+      (if (not at) trace
+          (drop-right trace at))))
+
+  (let* ((component ((compose .type .ast) (%sut)))
+         (trigger (and event
+                       (clone (string->trigger event) #:parent component)))
+         (component-trigger (and trigger (trigger->component-trigger trigger)))
+         (blocking? (find (compose pair? .blocked) trace))
+         (sut-trace (if (not blocking?) trace
+                        (drop-prefix pc component-trigger trace)))
+         (sut-trail (trace->trail sut-trace))
          (provides-trigger? (provides-trigger? event))
          (port-event (and provides-trigger? (.event.name trigger)))
-         (sut-trail (if (or port-event (not event)) sut-trail
-                        (drop-prefix event sut-trail)))
          (port (and provides-trigger? (.port trigger))))
 
     (define (check-compliance port traces)
@@ -389,6 +366,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                   (if (not provides-trigger?) traces
                       (map (cute zip trigger <> <>) traces port-traces))))
                ((and (null? non-compliances)
+                     (not blocking?)
                      (null? port-traces)
                      (pair? sut-trail))
                 (let ((status (make <compliance-error>
@@ -407,7 +385,8 @@ Return a list of traces, possibly marked with <compliance-error>."
                 (let* ((port-acceptances (map first-non-match non-compliances))
                        (port-acceptances (delete-duplicates port-acceptances port-acceptance-equal?))
                        (component-acceptance (and (pair? trace)
-                                                  (or (cadar port-acceptances)
+                                                  (or (and (pair? port-acceptances)
+                                                           (cadar port-acceptances))
                                                       (and=> (.status pc) .ast)
                                                       (trigger->component-trigger trigger))))
                        (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
@@ -439,6 +418,40 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (check-requires-provides-fork trace))
               (fold check-compliance (list trace) ports))))))
 
+(define* (check-provides-compliance+ pc event port-traces-alist trace)
+  "Run check-provides-compliance.  For a blocking trace that has been
+released by a requires event, also rerun check-provides-compliance for
+the full trace, i.e., starting from the initial blocking provides
+event.  This ensures proper of zipping the port trace, including the
+port return."
+  (let ((traces (check-provides-compliance pc event port-traces-alist trace))
+        (blocking? (find (compose pair? .blocked) trace)))
+    (cond
+     ((and blocking?
+           (requires-trigger? event)
+           (let* ((return (find (compose (is? <trigger-return>)
+                                         .statement)
+                                trace))
+                  (instance (and=> return .instance)))
+             (find
+              (conjoin
+               (compose (cute eq? <> instance) .instance)
+               (compose (is? <initial-compound>) .statement)
+               (compose ast:provides? .trigger))
+              trace)))
+      =>
+      (lambda (tpc)
+        (let* ((trail (trace->trail tpc))
+               (event (match trail ((ast . event) event) (_ event)))
+               (cpc (last trace))
+               (cpc (reset-replies cpc))
+               (cpc (clone cpc #:instance #f)))
+          (append-map
+           (cute check-provides-compliance cpc event port-traces-alist <>)
+           traces))))
+     (else
+      traces))))
+
 (define (pc->provides-traces r:provides pc)
   (let* ((interface (.type (.ast r:provides)))
          (pc (clone pc #:async '() #:external-q '()))
@@ -465,7 +478,9 @@ Return a list of traces, possibly marked with <compliance-error>."
      ((null? traces)
       (check-provides-compliance pc event port-traces-alist '()))
      (else
-      (append-map (cute check-provides-compliance pc event port-traces-alist <>) traces)))))
+      (append-map
+       (cute check-provides-compliance+ pc event port-traces-alist <>)
+       traces)))))
 
 (define-method (event-traces-alist (pc <program-counter>))
 
@@ -717,7 +732,8 @@ possibly after running RUN-SILENT and return them, or false."
        (let* ((pc (clone pc #:instance #f))
               (traces (run-to-completion* pc event))
               (traces (map (cute append <> pc+blocked-trace) traces))
-              (cpc (last pc+blocked-trace))
+              (cpc (if (requires-trigger? event) pc
+                       (last pc+blocked-trace)))
               (cpc (reset-replies cpc))
               (cpc (clone cpc #:instance #f))
               (traces (if (is-a? (%sut) <runtime:port>) traces
