@@ -25,6 +25,8 @@
 #
 # Code:
 
+EXTRA_DIST += README
+
 SMOKE_TESTS =					\
  %D%/parse_syntax				\
  %D%/parse_type_mismatch			\

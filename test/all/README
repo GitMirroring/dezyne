@@ -1,0 +1,17 @@
+                                                              -*- org -*-
+#+TITLE: Dezyne test baseline
+
+Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+Additional test data files:
+
+    META:     */META
+    baseline: */baseline/...
+    trace:    */trace
+
+    All META, baseline and trace files are distributed under the GNU Affero
+    General Public License version 3 or later.
