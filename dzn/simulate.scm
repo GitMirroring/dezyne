@@ -708,11 +708,15 @@ possibly after running RUN-SILENT and return them, or false."
        (let* ((pc (clone pc #:instance #f))
               (traces (run-to-completion* pc event))
               (traces (map (cute append <> pc+blocked-trace) traces))
+              (cpc (last pc+blocked-trace))
+              (cpc (reset-replies cpc))
+              (cpc (clone cpc #:instance #f))
               (traces (if (is-a? (%sut) <runtime:port>) traces
-                          (check-provides-compliance* pc event traces))))
+                          (check-provides-compliance* cpc event traces))))
          (if (pair? traces) traces
              (let* ((model (runtime:%sut-model))
-                    (error (make <match-error> #:message "match" #:ast model #:input event)))
+                    (error (make <match-error>
+                             #:message "match" #:ast model #:input event)))
                (list (list (clone pc #:status error)))))))
       ((? (const (pair? (.async pc))))
        (let ((traces (flush-async pc)))
@@ -722,7 +726,8 @@ possibly after running RUN-SILENT and return them, or false."
               (trace (cons pc (cdr pc+blocked-trace))))
          (if (is-a? (%sut) <runtime:port>) (list trace)
              (let* ((port-traces-alist (provides-instance-traces-alist pc))
-                    (traces (check-provides-compliance pc event port-traces-alist trace)))
+                    (traces (check-provides-compliance
+                             pc event port-traces-alist trace)))
                traces)))))))
 
 (define-method (pc->modeling-lts (pc <program-counter>))
