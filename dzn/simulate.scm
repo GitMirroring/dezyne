@@ -37,6 +37,7 @@
   #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn shell-util)
+  #:use-module (dzn ast)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm goops)
@@ -803,8 +804,8 @@ optional labels only and stop when observable event seen."
     (let ((trail (parameterize ((%modeling? #t))
                    (trace->string-trail trace))))
       (match trail
-        (((or "inevitable" "optional") observable event ...)
-         observable)
+        (((and modeling (or "inevitable" "optional")) observable event ...)
+         (list modeling observable))
         (_
          #f))))
 
@@ -908,7 +909,10 @@ status."
              (port-name (.name port))
              (refusals (parameterize ((%sut instance))
                          (modeling-lts->observables lts)))
-             (refusals (map (cute string-append port-name "." <>) refusals))
+             (refusals (map (match-lambda
+                              ((modeling action)
+                               (list modeling (string-append port-name "." action))))
+                            refusals))
              (refusals (map list refusals)))
         (and (pair? refusals) refusals)))
 

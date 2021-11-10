@@ -1,2 +1,3 @@
 test/all/compliance_failures_optional/compliance_failures_optional.dzn:57:3: error: non-compliance
-test/all/compliance_failures_optional/compliance_failures_optional.dzn:57:3: error: component refusal: h.world
+test/all/compliance_failures_optional/compliance_failures_optional.dzn:57:3: component can omit all of: h.world
+test/all/compliance_failures_optional/compliance_failures_optional.dzn:57:3: the interface promises inevitably: h.world 

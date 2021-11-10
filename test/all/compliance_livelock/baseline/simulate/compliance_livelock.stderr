@@ -1,2 +1,3 @@
 test/all/compliance_livelock/compliance_livelock.dzn:49:3: error: non-compliance
-test/all/compliance_livelock/compliance_livelock.dzn:49:3: error: component refusal: p.cb
+test/all/compliance_livelock/compliance_livelock.dzn:49:3: error: component can omit any of: p.cb
+test/all/compliance_livelock/compliance_livelock.dzn:49:3: error: the interface promises inevatiably: p.cb

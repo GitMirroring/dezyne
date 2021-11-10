@@ -1,3 +1,3 @@
 test/all/compliance_failures_inevitable2/compliance_failures_inevitable2.dzn:43:3: error: non-compliance
-test/all/compliance_failures_inevitable2/compliance_failures_inevitable2.dzn:43:3: error: component refusal: h.cruel
-test/all/compliance_failures_inevitable2/compliance_failures_inevitable2.dzn:43:3: error: component refusal: h.world
+test/all/compliance_failures_inevitable2/compliance_failures_inevitable2.dzn:43:3: component can omit all of: h.cruel, h.world
+test/all/compliance_failures_inevitable2/compliance_failures_inevitable2.dzn:43:3: the interface promises inevitably: h.cruel,h.world 

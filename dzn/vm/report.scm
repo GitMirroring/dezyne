@@ -26,6 +26,7 @@
 (define-module (dzn vm report)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
@@ -853,15 +854,25 @@ intermediate steps such as assignments, function calls, replies,
                  (format #f "~afor trigger on port ~a\n" trigger-location trigger-port-name))))
           "")))
       (($ <refusals-error>)
-       (let ((refusals (sort (.refusals status) equal?))
-             (location (or (and=> (.ast status) step->location)
-                           "<unknown-file>:")))
-         (string-join
-          (map (compose
-                (cute format #f "~aerror: component refusal: ~a\n" location <>)
-                string-join)
-               refusals)
-          "")))
+       (let* ((refusals (sort (.refusals status) equal?))
+              (refusals (apply append refusals))
+              (location (or (and=> (.ast status) step->location)
+                            "<unknown-file>:"))
+              (inevitables optionals
+                           (partition
+                            (compose (cute equal? "inevitable" <>) car)
+                            refusals)))
+         (string-append
+          (format #f "~acomponent can omit all of: ~a\n"
+                  location
+                  (string-join (map cadr refusals) ", "))
+          (format #f "~athe interface promises inevitably: ~a \n"
+                  location
+                  (string-join (map cadr inevitables) ","))
+          (if (null? optionals) ""
+              (format #f "~aor optionally: ~a\n"
+                      location
+                      (string-join (map cadr optionals) ","))))))
       (($ <range-error>)
        (let* ((variable (.variable status))
               (name (.name variable))
