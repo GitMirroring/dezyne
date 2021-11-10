@@ -1,0 +1,4 @@
+test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:50:3: error: non-compliance
+test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:50:3: component can omit all of: h.cruel, h.world
+test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:50:3: the interface promises inevitably: h.world 
+test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:50:3: or optionally: h.cruel
