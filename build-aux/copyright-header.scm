@@ -139,7 +139,7 @@ All rights reserved.
     (and=> m match:string)))
 
 (define (script-file? o)
-  (let ((m (string-match "(configure.ac|pre-inst-env.in|test/bin/rename|\\.mk|\\.make|Makefile.*|\\.sh$)$" o)))
+  (let ((m (string-match "(configure.ac|pre-inst-env.in|test/bin/rename|\\.mk|\\.make|Makefile.*|\\.sh|/run)$" o)))
     (and=> m match:string)))
 
 (define (code-file? o)
