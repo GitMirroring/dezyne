@@ -22,8 +22,9 @@ Copyright @copyright{} 2014, 2020 Rutger van Beusekom@*
 Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
 Copyright @copyright{} 2014, 2016, 2019, 2020, 2021 Jan Nieuwenhuizen@*
-Copyright @copyright{} 2014, 2015, 2016 Rob Wieringa@@*
+Copyright @copyright{} 2014, 2015, 2016 Rob Wieringa@*
 Copyright @copyright{} 2014 Paul Hoogendijk@*
+Copyright @copyright{} 2021 Ludovic Courtès@*
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -218,7 +219,17 @@ Binding
 
 Contributing
 
-* The Perfect Setup::
+* Building from Git::           The latest and greatest.
+* Running Dezyne Before It Is Installed::  Hacker tricks.
+* The Perfect Setup::           The right tools.
+* Coding Style::                Hygiene of the contributor.
+* Submitting Patches::          Share your work.
+
+Coding Style
+
+* Programming Paradigm::        How to compose your elements.
+* Data Types and Pattern Matching::  Implementing data structures.
+* Formatting Code::             Writing conventions.
 
 @end detailmenu
 @end menu
@@ -5179,14 +5190,66 @@ known problem first at
 gitlab}.
 
 @menu
-* The Perfect Setup::
+* Building from Git::           The latest and greatest.
+* Running Dezyne Before It Is Installed::  Hacker tricks.
+* The Perfect Setup::           The right tools.
+* Coding Style::                Hygiene of the contributor.
+* Submitting Patches::          Share your work.
 @end menu
+
+@node Building from Git
+@section Building from Git
+
+If you want to hack Dezyne yourself, it is recommended to use the latest
+version from the Git repository:
+
+@example
+git clone git://git.savannah.nongnu.org/dezyne
+@end example
+
+To setup a development environment, we use
+@url{https://gnu.org/software/guix/, GNU Guix} (@xref{top,,, guix, The
+GNU Guix Manual}); run
+
+@example
+guix environment -l guix.scm
+@end example
+
+If you are unable to use Guix when building Dezyne from a Git checkout,
+the following are the required packages in addition to those mentioned
+in the installation instructions (@pxref{Requirements}).
+
+@itemize
+@item @url{https://gnu.org/software/autoconf/, GNU Autoconf};
+@item @url{https://gnu.org/software/automake/, GNU Automake};
+@item @url{https://gnu.org/software/gettext/, GNU Gettext};
+@item @url{https://gnu.org/software/texinfo/, GNU Texinfo};
+@item @url{https://gnu.org/software/help2man/, GNU Help2man (optional)}.
+@end itemize
+
+Run @command{./autogen.sh} to generate the build system infrastructure
+using Autoconf and Automake.
+
+Then, run @command{./configure} and @command{make} as usual.
+
+@node Running Dezyne Before It Is Installed
+@section Running Dezyne Before It Is Installed
+
+After making changes you will want to test them.  To that end, all the
+command-line tools can be used even if you have not run @code{make
+install}.  To do that, you first need to have an environment with all
+the dependencies available (@pxref{Building from Git}), and then simply
+prefix each command with @command{./pre-inst-env}.  As an example, here
+is how you would verify the trivial the @code{hello} test:
+
+@example
+$ ./pre-inst-env dzn -v verify test/all/hello/hello.dzn
+@end example
+
+See the file @file{HACKING} for some developer tips and tricks.
 
 @node The Perfect Setup
 @section The Perfect Setup
-
-The Perfect Setup for using Dezyne is to use the Dezyne IDE,
-@pxref{Top, ,,dezyne-ide,the Dezyne IDE Manual}.
 
 The Perfect Setup to hack on Dezyne is basically the perfect setup used
 for GNU Guile hacking (@pxref{Using Guile in Emacs,,, guile, GNU Guile
@@ -5200,6 +5263,80 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item ...
 ...
 @end table
+
+@node Coding Style
+@section Coding Style
+
+In general our code follows the GNU Coding Standards (@pxref{Top,,,
+standards, GNU Coding Standards})@footnote{A notable exception is the
+@code{c++} runtime and handwritten code}.  However, they do not say much
+about Scheme, so here are some additional rules.
+
+@menu
+* Programming Paradigm::        How to compose your elements.
+* Data Types and Pattern Matching::  Implementing data structures.
+* Formatting Code::             Writing conventions.
+@end menu
+
+@node Programming Paradigm
+@subsection Programming Paradigm
+
+Scheme code in Dezyne is written in a purely functional style.  One
+exception is code that involves input/output, and procedures that
+implement low-level concepts, such as memoization.
+
+@node Data Types and Pattern Matching
+@subsection Data Types and Pattern Matching
+
+The tendency in classical Lisp is to use lists to represent everything,
+and then to browse them ``by hand'' using @code{car}, @code{cdr},
+@code{cadr}, and co.  There are several problems with that style,
+notably the fact that it is hard to read, error-prone, and a hindrance
+to proper type error reports.
+
+Dezyne code should define appropriate data types (@code{AST} or
+@code{GOOPS} classes, or using @code{define-immutable-record-type})
+rather than abuse lists.  In addition, it should use pattern matching,
+via Guile’s @code{(ice-9 match)} module, especially when matching lists
+(@pxref{Pattern Matching,,, guile, GNU Guile Reference Manual}).
+
+@node Formatting Code
+@subsection Formatting Code
+
+@cindex formatting code
+@cindex coding style
+When writing Scheme code, we follow common wisdom among Scheme
+programmers.  In general, we follow the
+@url{https://mumble.net/~campbell/scheme/style.txt, Riastradh's Lisp
+Style Rules}.  This document happens to describe the conventions mostly
+used in Guile’s code too.  It is very thoughtful and well written, so
+please do read it.
+
+In addition, Dezyne uses the following formatting for @code{if}
+
+@example
+(if test? trivial-case
+    the-more-elaborate-case)
+@end example
+
+@cindex indentation, of code
+@cindex formatting, of code
+If you do not use Emacs, please make sure to let your editor knows these
+rules.
+
+@node Submitting Patches
+@section Submitting Patches
+
+Development is done using the Git distributed version control system.
+Thus, access to the repository is not strictly necessary.  We welcome
+contributions in the form of patches as produced by @code{git
+format-patch} sent to the @email{dezyne-devels@@nongnu.org} mailing list
+(@pxref{submitting patches,, Submitting patches to a project, git, Git
+User Manual}).
+
+Please write commit logs in the ChangeLog format (@pxref{Change Logs,,,
+standards, GNU Coding Standards}); you can check the commit history for
+examples.
 
 @c *********************************************************************
 @node Glossary
