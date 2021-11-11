@@ -28,6 +28,7 @@ ACLOCAL_AMFLAGS = -I build-aux
 
 EXTRA_DIST =					\
  .dir-locals.el					\
+ COPYING.GPL					\
  COPYING.LESSER					\
  HACKING					\
  ROADMAP					\
