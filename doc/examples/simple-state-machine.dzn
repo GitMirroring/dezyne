@@ -1,0 +1,35 @@
+import ihello-bool.dzn;
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    on hello: {}
+    on hello: world;
+  }
+}
+
+component simple_state_machine
+{
+  provides ihello_bool p;
+  requires ihello_bool r1;
+  requires iworld r2;
+  behavior
+  {
+    enum status {A, B, C};
+    status s = status.A;
+    [s.A]
+    {
+      on p.hello (): {s=status.B; r1.hello (); r2.hello ();}
+    }
+    [s.B]
+    {
+      on p.cruel (): {if (r1.cruel ()) s=status.A; reply (s.A);}
+      on r2.world (): s=status.C;
+    }
+    [s.B || s.C] on r1.world (): {s=status.A; p.world ();}
+    [s.C] on p.cruel (): reply (s.A);
+  }
+}

@@ -29,10 +29,12 @@ dist_info_images_DATA =					\
  %D%/direct_multiple_out2.png				\
  %D%/direct_out.png					\
  %D%/external_multiple_out.png				\
+ %D%/ihello-bool.png					\
  %D%/indirect_blocking_multiple_external_out.png	\
  %D%/indirect_blocking_out.png				\
  %D%/indirect_in.png					\
  %D%/indirect_multiple_out1.png				\
  %D%/indirect_multiple_out2.png				\
  %D%/indirect_multiple_out3.png				\
- %D%/indirect_out.png
+ %D%/indirect_out.png					\
+ %D%/simple-state-machine.png

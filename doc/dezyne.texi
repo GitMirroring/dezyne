@@ -102,6 +102,7 @@ Installation
 Getting Started
 
 * Hello World!::                First contact with Dezyne.
+* A Simple State Machine::      Stateful behavior and protocol.
 
 Code Integration
 
@@ -695,6 +696,7 @@ doc/examples/ in git}.
 
 @menu
 * Hello World!::                First contact with Dezyne.
+* A Simple State Machine::      Stateful behavior and protocol.
 @end menu
 
 @node Hello World!
@@ -823,6 +825,196 @@ echo 'p.hello p.world p.return' | ./a.out
 <external>.p.world <- sut.p.world
 <external>.p.return <- sut.p.return
 @end example
+
+@node A Simple State Machine
+@section A Simple State Machine
+
+The @code{ihello_bool} interface introduces stateful behavior that is
+somewhat more interesting
+
+@example
+@verbatiminclude examples/ihello-bool.dzn
+@end example
+
+This example introduces some new language aspects
+
+@table @code
+@item bool idle = true;
+A boolean state variable, defining @code{idle=true} as the initial
+state,
+@item [idle]
+A @emph{guard}.  Only when the expression between the brackets evaluates
+to @code{true} the @code{on} is eligible to execute.  In the initial
+state, the @code{hello} trigger is the only thing that can occur.
+The guard and the on are @emph{declarative} statements.  After the
+declarative statements follows a,
+@item idle = false;
+An @emph{imperative} statement.  When @code{hello} trigger occurs, the
+interface transitions to state @code{!idle},
+@item on cruel: @dots{} on cruel: @dots{}
+A non-deterministic choice@footnote{the caller does not resolve the choice
+between the two cruel triggers, this is decided by the implementation}.
+In the @code{!idle} state, @code{cruel} is accepted; it can either...
+@item reply (true)
+reply @code{false} and remain not idle, or
+@item @{idle = true; reply (idle);@}
+execute a compound of two imperative statements: Set the reply value to
+@code{true} and transition to the idle state,
+@item inevitable
+If no @code{cruel} trigger occurs, @emph{inevitably} the @code{world}
+action will occur.  @code{inevitable} is a @emph{modeling} event and is
+not visible on the trail.  The effect is that @code{world} action now
+has become @emph{decoupled} from the caller.
+@end table
+
+The state diagram (@xref{Invoking dzn graph}) depicts this protocol
+graphically:
+
+@image{images/ihello-bool,,,,.png}
+
+This model is already interesting enough to have the mCRL2 model-checker
+verify if all is well (@xref{Invoking dzn verify} and @xref{Verification
+Checks and Errors})
+
+@example
+$ dzn -v verify doc/examples/ihello-bool.dzn
+verify: ihello_bool: check: deadlock: ok
+verify: ihello_bool: check: livelock: ok
+verify: ihello_bool: check: deterministic: ok
+@end example
+
+which is luckily the case.  The model-checker can also be used to
+generate all possible@footnote{the algorithm produces [traces that cover
+every transition and every state} traces (@xref{Invoking dzn traces})
+for @code{ihello_bool}:
+
+@example
+$ dzn -v traces doc/examples/ihello-bool.dzn
+@end example
+
+produces three trace files
+(@file{ihello_bool.trace.0},@file{ihello_bool.trace.1}, and
+@file{ihello_bool.trace.2}) with these traces (the order may differ):
+
+@enumerate
+@item
+hello,return,world
+@item
+hello,return,cruel,true
+@item
+hello,return,cruel,false
+@end enumerate
+
+The sequence for the first trace with the asynchronous @code{world}
+looks like this
+
+@example
+client          ihello_bool
+  .                  :
+  .                  :
+  .hello             :
+  .----------------->:
+  .                  :
+  .            return:
+  .<-----------------:
+  .                  :
+  .                  :
+  .             world:
+  .<-----------------:
+@end example
+
+@noindent
+and for the second trace where @code{cruel} happens looks like this
+
+@example
+client          ihello_bool
+  .                  :
+  .                  :
+  .hello             :
+  .----------------->:
+  .                  :
+  .            return:
+  .<-----------------:
+  .                  :
+  .                  :
+  .cruel             :
+  .----------------->:
+  .                  :
+  .              true:
+  .<-----------------:
+@end example
+
+@noindent
+the third trace is looks like this
+
+@example
+client          ihello_bool
+  .                  :
+  .                  :
+  .hello             :
+  .----------------->:
+  .                  :
+  .            return:
+  .<-----------------:
+  .                  :
+  .                  :
+  .cruel             :
+  .----------------->:
+  .                  :
+  .             false:
+  .<-----------------:
+@end example
+
+@noindent
+You may have noticed that the first two traces start and end in the
+initial state, while the third trace starts in the initial state and
+ends in the @code{!idle} state (also see the corresponding state
+diagram).
+
+Now have a look at the component @code{simple_state_machine}
+
+@example
+@verbatiminclude examples/simple-state-machine.dzn
+@end example
+
+It introduces the following concepts:
+@table @code
+@item enum status @{A, B, C@}
+User defined @code{enum} type named @code{status},
+@item [s.A]
+Field test of enum variable @code{s}: evaluates to @code{true} if
+@code{s} has field value @code{A}, it is equivalent to @code{s ==
+status.A},
+@item [s.B || s.C]
+Logical or @code{||} in guard expression (see @xref{Expressions}),
+@item on r2.world (): @{@}
+A skip statement: upon receiving the @code{r2.world} trigger, the
+component does ``nothing'' and is ready for the next event.  Omitting
+this line would make the occurrence of @code{r2.world} @emph{illegal}.
+@end table
+
+@image{images/simple-state-machine,,,,.png}
+
+Verification suceeds
+
+@example
+$ dzn -v verify doc/examples/simple-state-machine.dzn
+verify: ihello_bool: check: deadlock: ok
+verify: ihello_bool: check: livelock: ok
+verify: ihello_bool: check: deterministic: ok
+verify: iworld: check: deadlock: ok
+verify: iworld: check: livelock: ok
+verify: iworld: check: deterministic: ok
+verify: simple_state_machine: check: deterministic: ok
+verify: simple_state_machine: check: illegal: ok
+verify: simple_state_machine: check: deadlock: ok
+verify: simple_state_machine: check: livelock: ok
+verify: simple_state_machine: check: compliance: ok
+@end example
+
+you may want to see what happens to verification or the state diagram
+when you comment-out a statement of your choosing in the component's
+behavior.
 
 @c *********************************************************************
 @node Execution Semantics

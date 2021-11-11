@@ -29,10 +29,12 @@ DEZYNE_EXAMPLES =				\
  %D%/component-if-illegal.dzn			\
  %D%/dzn.async.dzn				\
  %D%/hello-world.dzn				\
+ %D%/ihello-bool.dzn				\
  %D%/ihello-world.dzn				\
  %D%/inner-space.dzn				\
  %D%/inevitable-optional			\
  %D%/remote-timer-proxy.dzn			\
+ %D%/simple-state-machine.dzn			\
  %D%/top-middle-bottom.dzn
 
 EXTRA_DIST += $(DEZYNE_EXAMPLES)
