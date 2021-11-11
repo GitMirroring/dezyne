@@ -71,6 +71,7 @@ This document describes Dezyne version @value{VERSION}.
 @menu
 * Introduction::                What is Dezyne about?
 * Installation::                Installing Dezyne.
+* Getting Started::             Writing a program in Dezyne.
 * Execution Semantics::         How does it work?
 * Verifying Models::            A guide to model verification.
 * Code Integration::            Creating an executable.
@@ -97,6 +98,10 @@ Installation
 
 * Binary Installation::         Getting Dezyne running in no time!
 * Requirements::                Software needed to build and run Dezyne.
+
+Getting Started
+
+* Hello World!::                First contact with Dezyne.
 
 Code Integration
 
@@ -673,6 +678,151 @@ regression test:
 @itemize
 @item @url{https://gcc.gnu.org, GCC's g++}, version 5.4 or later.
 @end itemize
+
+@c *********************************************************************
+@node Getting Started
+@chapter Getting Started
+
+In general a program in Dezyne consists of interfaces, components, and
+``handwritten'' code, including a @code{main}.  For simple cases such as
+the examples in this chapter, a generic @code{main} can be generated and
+no handwritten code is needed.
+
+The examples used in this chapter can be found in the Dezyne source tree
+at @file{doc/examples/} or downloaded from
+@url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/doc/examples,
+doc/examples/ in git}.
+
+@menu
+* Hello World!::                First contact with Dezyne.
+@end menu
+
+@node Hello World!
+@section Hello World!
+
+Consider the trivial Dezyne interface @code{ihello_world}
+
+@example
+@verbatiminclude examples/ihello-world.dzn
+@end example
+
+It defines two events, named @code{hello} and @code{world} of type
+@code{void} and a trivial protocol in its @code{behavior}: whenever the
+@code{hello} trigger is received (@code{on hello:}), it responds
+synchronously with a @code{world} action.
+
+This scenario can be explored using the simulator (@xref{Invoking dzn
+simulate}):
+
+@example
+$ dzn simulate doc/examples/ihello-world.dzn
+(header ((client) ihello_world provides) ((sut) ihello_world interface))
+(state ((client)) ((sut)))
+labels: hello
+eligible: hello
+>
+@end example
+
+As expected, @code{hello} is the only trigger that is eligible to
+execute; entering @code{hello} gives
+
+@example
+> hello
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.world
+<external>.world <- ...
+... <- sut.return
+<external>.return <- ...
+(state ((client)) ((sut)))
+(trail "hello" "world" "return")
+labels: hello
+eligible: hello
+>
+@end example
+
+The simulator can also be run non-interactively to produce a friendlier
+trace view or sequence diagram
+
+@c generate automagically?
+@c print less (state) ??
+@c ./pre-inst-env dzn simulate --format=diagram doc/examples/ihello-world.dzn -t hello | tail +4 | head -11
+@c XXX use ide diagram?
+@example
+client          ihello_world
+  .                  :
+  .                  :
+  .hello             :
+  .----------------->:
+  .                  :
+  .             world:
+  .<-----------------:
+  .                  :
+  .            return:
+  .<-----------------:
+@end example
+
+Now consider a trivial component @code{hello_world}
+
+@example
+@verbatiminclude examples/hello-world.dzn
+@end example
+
+it provides the @code{ihello_world} interface, which means that it
+promises to behave according to the protocol specified in the interface.
+
+The trigger @code{p.hello} is the event @code{hello} when communicated
+over the port @code{p}, similarly the action is named @code{p.world}.
+Simulation gives:
+
+@example
+$ dzn simulate --trail=p.hello doc/examples/hello-world.dzn
+(header ((p) ihello_world provides) ((sut) hello_world component))
+(state ((p)) ((sut)))
+<external>.p.hello -> ...
+... -> sut.p.hello
+... <- sut.p.world
+<external>.p.world <- ...
+... <- sut.p.return
+<external>.p.return <- ...
+(state ((p)) ((sut)))
+(trail "p.hello" "p.world" "p.return")
+(state ((p)) ((sut)))
+(labels "p.hello")
+(eligible "p.hello")
+@end example
+
+with this trace diagram
+
+@example
+p          hello_world
+.               :
+.               :
+.hello          :
+.-------------->:
+.               :
+.          world:
+.<--------------:
+.               :
+.         return:
+.<--------------:
+@end example
+
+From this component an executable program can be created (@xref{Invoking dzn
+code})
+@example
+$ dzn code doc/examples/ihello-world.dzn
+$ dzn code --model=hello_world doc/examples/hello-world.dzn
+$ g++ -I runtime/c++ hello-world.cc main.cc runtime/c++/runtime.cc runtime/c++/pump.cc -lpthread
+@end example
+
+When running this executable and feeding it the trail, we get
+@example
+echo 'p.hello p.world p.return' | ./a.out
+<external>.p.hello -> sut.p.hello
+<external>.p.world <- sut.p.world
+<external>.p.return <- sut.p.return
+@end example
 
 @c *********************************************************************
 @node Execution Semantics

@@ -1,0 +1,11 @@
+import ihello-world.dzn;
+
+component hello_world
+{
+  provides ihello_world p;
+
+  behavior
+  {
+    on p.hello (): p.world ();
+  }
+}
