@@ -1,24 +1,24 @@
-interface iblocking_request
+interface iblocking
 {
-  in bool request_reply();
-  in void request_notify();
-  out void accept();
-  out void reject();
+  in bool request_reply ();
+  in void request_notify ();
+  out void accept ();
+  out void reject ();
 
   behavior
   {
-    on request_reply: reply(true);
-    on request_reply: reply(false);
+    on request_reply: reply (true);
+    on request_reply: reply (false);
     on request_notify: accept;
     on request_notify: reject;
   }
 }
 
-interface inon_blocking_request
+interface iasynchronous
 {
-  in void request();
-  out void accept();
-  out void reject();
+  in void request ();
+  out void accept ();
+  out void reject ();
   behavior
   {
     bool is_considering = false;
@@ -30,16 +30,16 @@ interface inon_blocking_request
 
 component ca
 {
-  provides iblocking_request pp;
-  requires inon_blocking_request rp;
+  provides iblocking pp;
+  requires iasynchronous rp;
   behavior
   {
     bool reply_requested = true;
-    on pp.request_reply(): blocking {reply_requested = true; rp.request();}
-    on pp.request_notify(): blocking {reply_requested = false; rp.request();}
-    [reply_requested] on rp.accept(): pp.reply(true);
-    [!reply_requested] on rp.accept(): {pp.accept(); pp.reply();}
-    [reply_requested] on rp.reject(): {bool b = false; pp.reply(b);}
-    [!reply_requested] on rp.reject(): {pp.reject(); pp.reply();}
+    on pp.request_reply (): blocking {reply_requested = true; rp.request ();}
+    on pp.request_notify (): blocking {reply_requested = false; rp.request ();}
+    [reply_requested] on rp.accept (): pp.reply (true);
+    [!reply_requested] on rp.accept (): {pp.accept (); pp.reply ();}
+    [reply_requested] on rp.reject (): {bool b = false; pp.reply (b);}
+    [!reply_requested] on rp.reject (): {pp.reject (); pp.reply ();}
   }
 }

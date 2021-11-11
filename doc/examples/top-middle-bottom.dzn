@@ -1,0 +1,27 @@
+interface i
+{
+  in void event();
+  behavior {}
+}
+
+component c
+{
+  provides i pp;
+  requires i rr;
+}
+
+component top_middle_bottom
+{
+  provides i p;
+  requires i r;
+  system
+  {
+    c top;
+    c middle;
+    c bottom;
+    p <=> top.pp;
+    top.rr <=> middle.pp;
+    middle.rr <=> bottom.pp;
+    bottom.rr <=> r;
+  }
+}

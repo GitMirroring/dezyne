@@ -1,0 +1,25 @@
+interface intevitable_optional
+{
+  in bool hello ();
+  in void bye ();
+  out void world ();
+  out void cruel ();
+
+  behavior
+  {
+    enum status {IDLE, WORLD, CRUEL};
+    status state = status.IDLE;
+
+    [state.IDLE]
+    {
+      on hello: {state = status.WORLD; reply (true);}
+      on hello: {state = status.CRUEL; reply (false);}
+    }
+    [state.WORLD] on inevitable: {state = status.IDLE; world;}
+    [state.CRUEL]
+    {
+      on optional: {state = status.WORLD; cruel;}
+      on bye: state = status.IDLE;
+    }
+  }
+}

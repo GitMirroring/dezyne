@@ -2,9 +2,9 @@ extern double $double$;
 
 interface itimer
 {
-  in void create(double seconds);
-  in void cancel();
-  out void timeout();
+  in void create (double seconds);
+  in void cancel ();
+  out void timeout ();
   behavior
   {
     bool is_armed = false;
@@ -14,17 +14,17 @@ interface itimer
   }
 }
 
-component RemoteTimerProxy
+component remote_timer_proxy
 {
   provides itimer pp;
   requires external itimer rp;
   behavior
   {
     bool is_armed = false;
-    on pp.create(s):
-      [!is_armed] {rp.create(s); is_armed = true;}
-    on pp.cancel(): {rp.cancel(); is_armed = false;}
-    on rp.timeout():
-      [is_armed] {pp.timeout(); is_armed = false;}
+    on pp.create (s):
+      [!is_armed] {rp.create (s); is_armed = true;}
+    on pp.cancel (): {rp.cancel (); is_armed = false;}
+    on rp.timeout ():
+      [is_armed] {pp.timeout (); is_armed = false;}
   }
 }

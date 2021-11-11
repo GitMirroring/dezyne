@@ -27,30 +27,9 @@ DEZYNE_EXAMPLES =				\
  %D%/ca.dzn					\
  %D%/compliance-multiple-provides-fork.dzn	\
  %D%/component-if-illegal.dzn			\
- %D%/decompose2-proxy.dzn			\
- %D%/decompose2.dzn				\
- %D%/function-call-status.dzn			\
- %D%/icode.dzn					\
- %D%/iconsole.dzn				\
- %D%/imessage-handler.dzn			\
- %D%/imotion1.dzn				\
- %D%/imotion2.dzn				\
- %D%/imotion3.dzn				\
- %D%/imotion4.dzn				\
- %D%/imotion5.dzn				\
- %D%/imperative-action.dzn			\
  %D%/inner-space.dzn				\
- %D%/iprocess-safety1.dzn			\
- %D%/iprocess-safety2.dzn			\
- %D%/iprotocol-stack.dzn			\
- %D%/iprotocol-stack1.dzn			\
- %D%/isensor.dzn				\
- %D%/isimple-protocol.dzn			\
- %D%/isiren.dzn					\
- %D%/isiren1.dzn				\
- %D%/isiren2.dzn				\
- %D%/itimer.dzn					\
- %D%/itimer2.dzn				\
- %D%/message-handler.dzn
+ %D%/inevitable-optional			\
+ %D%/remote-timer-proxy.dzn			\
+ %D%/top-middle-bottom.dzn
 
 EXTRA_DIST += $(DEZYNE_EXAMPLES)

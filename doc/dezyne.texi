@@ -70,12 +70,11 @@ This document describes Dezyne version @value{VERSION}.
 @menu
 * Introduction::                What is Dezyne about?
 * Installation::                Installing Dezyne.
-* The Dezyne Modeling Language::  Writing a program in Dezyne.
 * Execution Semantics::         How does it work?
 * Verifying Models::            A guide to model verification.
 * Code Integration::            Creating an executable.
 * The Dezyne command-line tools::  Running the tools.
-* Dezyne Syntax::               The syntactic language details.
+* Dezyne Language Reference::   All the language details.
 * Well-formedness::             Interpreting parse errors.
 * Contributing::                Your help needed!
 * Glossary::                    Cheat sheet.
@@ -97,69 +96,6 @@ Installation
 
 * Binary Installation::         Getting Dezyne running in no time!
 * Requirements::                Software needed to build and run Dezyne.
-
-The Dezyne Modeling Language
-
-* System Decomposition::
-* Creating an Interface::
-* Creating a Component::
-* Using Local Variables::
-* Using Data Variables and Parameters::
-* Specifying Behavior::
-* Decomposing a Component::
-
-System Decomposition
-
-* Synchronous and asynchronous communication::
-* Interfaces as abstraction of a component's behavior::
-* Modelling events not visible to the outside world but leading to external visible behavior::
-* Dezyne modelling language versus programming languages::
-* How to use the language help topics::
-
-Creating an Interface
-
-* Interface Syntax::
-* Interface Examples::
-* Specifying Events::
-
-Specifying Events
-
-* Event Syntax::
-* Event Examples::
-
-Creating a Component
-
-* Component Syntax::
-* Importing Models::
-* Ports::
-* External::
-* Injected::
-* Behavior::
-
-Using Local Variables
-
-* Variable Syntax::
-* Variable Examples::
-
-Specifying Behavior
-
-* Interface Versus Component Behavior::
-* Actions::
-* Specifying Stateful Behavior::
-* Using Guards::
-* Using Conditional Statements::
-* Using functions::
-* Reply::
-* Using inevitable and optional::
-* Using illegal::
-* Restrictions Multiple Provides::
-* Blocking::
-
-Decomposing a Component
-
-* Systems of Components::
-* Specifying Ports::
-* Binding Ports::
 
 Code Integration
 
@@ -186,16 +122,98 @@ The Dezyne command-line tools
 * Invoking dzn traces::
 * Invoking dzn verify::
 
-Dezyne Syntax
+Dezyne Language Reference
 
-* Identifiers::
-* Dezyne Files::
-* Types and Expressions::
-* Interface Models::
-* Component Models::
-* Interface and Component Behavior::
-* System Components::
-* Namespaces::
+* Lexical Analysis::            Tokens, separators and whitespace.
+* Dezyne Files::                What goes into a Dezyne file?
+* Types and Expressions::       Manipulating data in Dezyne.
+* Interfaces::                  Defining contracts for components and systems.
+* Components::                  Defining a program's behavior in Dezyne.
+* Systems::                     Decomposing a system.
+* Namespaces::                  Avoiding name collision.
+
+Lexical Analysis
+
+* Identifiers::                 Choosing names.
+* Keywords::                    Restricted words.
+* Operators::                   Building blocks for expressions.
+* Delimiters::                  Constructing lists.
+* Lexical Scoping::             Locality of names.
+* Comments::                    Explanations for human readers.
+
+Types and Expressions
+
+* Void::                        Definitions without type.
+* Bool::                        Builtin boolean type.
+* Enum::                        Enumerated user types.
+* Subint::                      Integer user types.
+* Extern Data Type::            Foreign data user types.
+* Expressions::                 Constants and data.
+
+Interfaces
+
+* Events::                      Event or message definitions.
+* Behavior::                    Specifying an interface protocol.
+* Declarative Statements::      Define when to run which trigger.
+* Imperative Statements::       The code that runs upon a trigger.
+* Functions::                   Avoiding code duplication.
+
+Behavior
+
+* Behavior Variable::           The detailed state of the behavior.
+
+Declarative Statements
+
+* On::                          Defining what happens upon a trigger.
+* Guard::                       Declarative trigger condition.
+* Using inevitable and optional::  Nitty gritty details on using modeling events.
+
+Imperative Statements
+
+* Action::                      Emitting events.
+* Assign::                      Updating state.
+* Function Call::               A named collection of imperative statements.
+* Empty Statement::             When a trigger has no effect, or there is nothing to do.
+* If::                          Imperative decisions.
+* Illegal::                     Specifying what is not allowed.
+* Reply::                       Determining the reply for a valued trigger.
+* Return::                      Returning from a function.
+* Variable::                    Defining a local variable.
+
+Components
+
+* Ports::                       Defining a component's communication channels.
+* Component Behavior::          Defining a component's behavior.
+* Component Types::             Three types of components.
+* Component Declarative Statements::  Component-specific declarative statements.
+* Component Imperative Statements::  Component-specific imperative statements.
+* Multiple Provides Ports::     Providing more than one interface.
+
+Ports
+
+* Injection::                   Ports sharing a resource.
+* External::                    Ports with external delay.
+
+Component Declarative Statements
+
+* Component On::                Defining what happens on a trigger.
+* Blocking::                    Implementing a synchronous call on decoupled events.
+
+Component Imperative Statements
+
+* Component Action::            Sending messages over ports.
+* Component If::                Imperative decisions in a component.
+* Component Illegal::           Using illegal in a component.
+* Component Reply::             Using reply in a component.
+
+Systems
+
+* Component Instances::         The components of a system.
+* Binding::                     The plumbing of a system.
+
+Binding
+
+* Using Injection::             Binding injected ports.
 
 Contributing
 
@@ -490,7 +508,7 @@ you may want to skip the sections on binary installation.
 @node Binary Installation
 @section Binary Installation
 
-@cindex installing Dezyne from binaries
+@cindex installing Dezyne, binary
 This section describes how to install Dezyne on an arbitrary system from a
 self-contained tarball providing binaries for Dezyne and for all its
 dependencies.  This is often quicker than installing from source, which
@@ -503,7 +521,9 @@ Installing goes along these lines:
 
 @enumerate
 @item
+@cindex binary installation
 @cindex downloading Dezyne binary
+@cindex GNU/Linux
 Download the binary tarball from
 @indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz},
 e.g.:
@@ -594,7 +614,9 @@ Installing goes along these lines:
 
 @enumerate
 @item
-@cindex downloading Dezyne binary
+@cindex downloading Dezyne binary, Windows
+@cindex binary installation, Windows
+@cindex Windows
 Download the binary zip archive from
 @indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-windows.zip},
 @end enumerate
@@ -621,7 +643,7 @@ build procedure for Dezyne is the same as for GNU software, and is not
 covered here.  Please see the files @file{README} and @file{INSTALL} in
 the Dezyne source tree for additional details.
 
-@cindex official website
+@cindex website
 Dezyne is available for download from its website at
 @url{https://dezyne.org/download.html}.
 
@@ -648,2189 +670,6 @@ to provide support for the views of the Dezyne IDE, @pxref{Dezyne
 Views,Dezyne Views,,dezyne-ide,Dezyne Views}.
 
 @c *********************************************************************
-@node The Dezyne Modeling Language
-@chapter The Dezyne Modeling Language
-
-When a software system is built, it is good practice to split it up
-(decompose) in parts that have high cohesion and low coupling.  High
-cohesion means that the system part performs a dedicated task or
-responsibility.  Low coupling means that the system parts are able to
-perform their responsibility without much interaction with other parts,
-system parts thus have simple interfaces to interact with each other.
-
-@menu
-* System Decomposition::
-* Creating an Interface::
-* Creating a Component::
-* Using Local Variables::
-* Using Data Variables and Parameters::
-* Specifying Behavior::
-* Decomposing a Component::
-@end menu
-
-@node System Decomposition
-@section System Decomposition
-
-As an illustration, below a picture of a system with four parts where
-the loader loads raw input into a machine, the processor transforms the
-raw input into the final product and the output part moves the product
-out of the machine and the complete process is controlled by the
-controller.
-
-@example
-                         [controller]
-                              |
-         ---------------------------------------------
-         |                    |                      |
-     [loader]            [processor]             [output]
-@end example
-
-Software development using Dezyne is component based, meaning that the
-system parts are @code{component}s.
-
-@itemize
-@item
-A component implements a certain functionality.
-@item
-A component implementation may use the functionality offered by other
-components.
-@item
-The functionality that is offered by a component to others is defined in
-the component's @code{interface}.
-@item
-The functionality of a component can be used by sending and receiving
-@code{event}s to and from the @code{component} over the
-@code{interface}, which is similar to calling one or more methods on the
-component interface.
-@end itemize
-
-To illustrate this, in the interaction diagram below the component
-called @code{application} requests the component @code{protocol_stack}
-to activate itself by sending the @code{enable} event to the
-@code{protocol_stack} component.  The protocol_stack responds
-synchronously with a @code{reply}, either a void reply or a value
-returned as result of the @code{enable}.
-
-@example
- [application]     [protocol_stack]
-      |                     |
-      |       enable        |
-      |-------------------->|
-      |      "reply"        |
-      |<- - - - - - - - - - |
-@end example
-
-Events have a direction.  The direction is determined as seen from the
-@code{component} providing the service.  For the @code{protocol_stack}
-component in this example the @code{enable} event is an ``in event''.
-
-@menu
-* Synchronous and asynchronous communication::
-* Interfaces as abstraction of a component's behavior::
-* Modelling events not visible to the outside world but leading to external visible behavior::
-* Dezyne modelling language versus programming languages::
-* How to use the language help topics::
-@end menu
-
-@node Synchronous and asynchronous communication
-@subsection Synchronous and asynchronous communication
-
-Between components there are two fundamental type of interactions: 1)
-synchronous and 2) asynchronous.
-
-The example above depicts a synchronous action, after sending the event
-enable to the protocol_stack, the Application execution will be blocked
-until the "reply" (either a void reply or a value returned as result) is
-received.
-
-When the protocol_stack is activated, it can be requested to setup a
-connection by sending the event @code{connect} to it.  After giving a
-@code{reply} on this event the protocol_stack component will start
-setting up a connection and the two components continue to run
-concurrently, i.e., are able to perform other tasks while the connection
-request is being processed by the protocol_stack component.  Once the
-request is completed the protocol_stack will send a notification
-connected to the Application.  This illustrates an asynchronous action.
-
-@example
-   [application]     [protocol_stack]
-        |                     |
-        |     connect         |
-        |-------------------->|
-        |      "reply"        |
-        |<- - - - - - - - - - |
-        |                     |
-        |                     |
-        |                     |
-        |    connected        |
-        |<--------------------|
-        |      "reply"        |
-        |- - - - - - - - - - >|
-@end example
-
-Remember that events have a direction.  For the protocol_stack component
-in this example the connected event is an ``out event''.  The
-application, however, receives this event as an in event that has a void
-return or some other return type (currently Dezyne only supports void
-out events).
-
-@node Interfaces as abstraction of a component's behavior
-@subsection Interfaces as abstraction of a component's behavior
-
-In the Dezyne Modelling language, an @code{interface} contains the
-definition of the events, their direction and optionally their
-parameters, and a specification of the externally visible behavior of
-the component that will provide an implementation of the interface.
-
-With behavior we mean which events (or method calls) can be received
-and can be sent at which stages in the execution process, or in other
-words the protocol a user of the interface should obey.  In the case of
-the Application and protocol_stack the interface defines that the
-protocol_stack should first be enabled before anything else can be done
-with it, that a connect must be followed by a connected and that
-it is not allowed to send a second connect before a connected has
-been received.
-
-As described above, components use or provide functionality via
-interfaces and not by interacting directly with other
-components.  Therefore, interface specifications can not contain
-component implementation details.
-
-An interface specification that defines part of the
-@code{protocol_stack} interface (the enabling and disabling) in the
-example above could look like:
-
-@example
-@verbatiminclude examples/iprotocol-stack1.dzn
-@end example
-
-In the interface specification events that are not specified in a
-particular state are marked ``implicitly illegal'' @footnote{Before
-2.14, the user had to specify all @code{illegal} actions accurately and
-specifically}.
-
-To unambiguously define all possible behavior, an interface must
-specify all replies that are possible.  Definition of all possible
-replies is described in way that is abstract from implementation
-details.  What you see specified in the OFF state when the enable event
-is received is an example of how this is done in the Dezyne Modeling
-language.  What is described here is that as a result of the enable
-event two things can happen: a reply plus a state transition in case
-enabling is successful and a reply when enabling fails.  In Dezyne this
-is referred to as a @dfn{non deterministic choice}.  With this
-definition it is clear that for a user of this interface that it should
-be able to deal with both replies at this stage.
-
-In the interface above, there is no definition yet the connectionReq and
-especially how the connected will be returned in case processing of
-the connection request is ready.  How to specify this is outlined next.
-
-@node Modelling events not visible to the outside world but leading to external visible behavior
-@subsection Modelling events not visible to the outside world but leading to external visible behavior
-
-@i{The following is crucial for understanding how to develop models in Dezyne.}
-
-As mentioned, components use or provide functionality via interfaces and
-not by interacting directly with other components.  Therefore, interface
-specifications can not contain component implementation details.
-
-However, when this leads to externally visible behavior, interfaces
-necessarily capture decisions that are internal to the
-implementation.  As an example consider in the case above the completion
-of the connection request that will trigger the server component to
-return a notification @code{connected}.  But how is that captured in an
-interface specification that should not contain implementation details?
-
-There are two options to specify internal events (like the completion of
-the request initiated by @code{connect}), that lead to external events
-in interfaces:
-
-@itemize
-@item
-by using @dfn{on inevitable}; meaning that when nothing else happens and
-the system is not triggered externally, the event will eventually always
-occur.  For example a timeout event of a timer will eventually always
-take place if the timer is not cancelled by the client.
-@item
-by using @dfn{on optional}; meaning that it may or may not occur.  For
-example, an error message may not be generated when the system is
-working properly.
-@end itemize
-
-With this knowledge the interface specification for the protocol_stack
-in the example we have been using so-far could look like:
-
-@example
-@verbatiminclude examples/iprotocol-stack.dzn
-@end example
-
-@node Dezyne modelling language versus programming languages
-@subsection Dezyne modelling language versus programming languages
-
-The Dezyne modelling language syntax closely resembles C, C++ and Java,
-making it easy to work with in terms of data types, scope, and so
-forth.  But you must keep in mind always that the Dezyne Modelling
-language is truly a modelling language, not a language that directly
-compiles at the same level of abstraction as C/C++/Java, even though it
-looks and feels like these familiar languages.  Instead, verified Dezyne
-models ultimately generate real C/C++/Java source code, which in turn
-goes through standard C/C++/Java compilers or interpreters to become
-actual machine-executable code.
-
-Models are compiled by Dezyne into formal language which is then model
-checked (formally verified) by checking every possible path through the
-communication and state structures of the modelled system, seeking
-problems such as interface incompliancies, deadlocks, live-locks, race
-conditions and unhandled events.  Each path has steps like "component A
-presents information x via interface I to component B, and component B
-responds through interface I, perhaps now or perhaps later (or perhaps
-never), with information y intended for A, then A presents y or some
-transformation of y via interface J to component C, …” Sequences matter,
-but timing does not matter except for the problem case of “never
-returns”.  Dezyne will either find no problems, or it will find one and
-tell you, the model developer, the exact sequence of communications and
-actions that leads to the problem.
-
-From this viewpoint, Dezyne and its modelling language are both a
-specification tool and an exploration tool.  You do not need to concern
-yourself up front about, say, infinite loops or deadlocks; just design
-what seem to be correct interfaces and component states, and then verify
-the model.  Dezyne will tell you if your conceptual model has a flaw.  You
-might be surprised by what Dezyne tells you.  In fact, the power of
-Dezyne is precisely here: Dezyne uncovers complex, subtle, hard-to-find
-bugs in your communications and behavior logic – before you write or
-generate even one line of C, C++ or Java!
-
-@node How to use the language help topics
-@subsection How to use the language help topics
-
-The language help topics are setup in such a way that they provide
-support on how to use the Dezyne Modelling Language (DML) constructs.
-
-For each topic there is a general intent, followed by the syntax and
-examples.
-
-The topics can be read in any order, however, there is a certain
-sequence that can guide you in setting up your first DML models:
-
-First it is outlined how an interface and events should be constructed,
-next how a component is constructed and how to specify that a component
-provides or requires an interface.  Then you can find how to define
-variables and how to specify interface and component behavior with all
-the possible constructs (functions, conditionals, etc).  Finally it is
-shown how you can decompose components into others / group components
-into systems.
-
-@cindex verify
-@cindex Introduction to Building Models
-@cindex type
-@cindex system
-@cindex synchronous
-@cindex state
-@cindex sequence
-@cindex return
-@cindex requires
-@cindex reply
-@cindex provides
-@cindex parameter
-@cindex optional
-@cindex modelling
-@cindex machine
-@cindex interface
-@cindex inevitable
-@cindex illegal
-@cindex generate
-@cindex function
-@cindex event
-@cindex enum
-@cindex decomposition
-@cindex data
-@cindex conditional
-@cindex component
-@cindex c++
-@cindex asynchronous
-@cindex action
-
-@node Creating an Interface
-@section Creating an Interface
-
-Interfaces define how components interact: the events that can be
-communicated and the interaction protocol.
-
-Each event has a direction specified by the @code{in} or @code{out} keywords.
-
-The interface protocol is specified in a 'behavior' section.  For each
-in event it specifies the actions performed.
-
-An interface does not lead to any code being generated.  It serves as a
-specification only.
-
-@menu
-* Interface Syntax::
-* Interface Examples::
-* Specifying Events::
-@end menu
-
-@node Interface Syntax
-@subsection Interface Syntax
-
-The @code{interface} keyword is used to declare an interface, followed by the
-interface name.
-
-Within the interface definition, a list of in and out events is defined
-followed by a behavior definition.
-
-@example
-@b{interface} simple_interface
-@{
-   @b{in} type in_event();   // list of in events
-   @b{in} type in_event2();
-   /* ...  */
-   @b{out} void out_event(); // list of out events
-   @b{out} void out_event2();
-   /* ...  */
-   @b{behavior}             // contract; protocol description
-   @{ /* ...  */ @}
-@}
-@end example
-
-where @code{type} is one of @code{bool}, @code{void} or a user-defined
-type.
-
-@node  Interface Examples
-@subsection Interface Examples
-
-@subsubsection An interface with three events and a simple behavior
-
-The following interface has three events defined: two in events and one
-out event.  The direction is as seen from the component implementing
-this interface.
-
-@example
-@b{interface} imotion
-@{
-  @b{in} @b{void} start();
-  @b{in} @b{void} stop();
-  @b{out} @b{void} ready();
-  @{behavior@}
-  @{
-    on start, stop: @{@}
-  @}
-@}
-@end example
-
-@subsubsection An interface specifying an interaction protocol
-
-This example shows an interface with a more complex interaction
-protocol, where the start event is only allowed in case the interface is
-in state @code{OFF} and the stop event is only allowed in case the
-interface is in state @code{ACTIVE}.
-
-@example
-@b{interface} imotion
-@{
-  @b{in} @b{void} start();
-  @b{in} @b{void} stop();
-  @b{out} @b{void} started();
-  @b{out} @b{void} ready();
-  @{behavior@}
-  @{
-    @b{enum} status @{OFF, ACTIVE@};
-    status state = status.OFF;
-    [state.OFF]
-    @b{on} start:
-    @{
-      state = status.ACTIVE;
-      started;
-    @}
-    [state.ACTIVE]
-    @b{on} stop:
-    @{
-      state = status.OFF;
-      ready;
-    @}
-  @}
-@}
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Specifying Events},
-@item @ref{Specifying Behavior},
-@end itemize
-
-@cindex interface
-@cindex Creating an Interface
-@cindex event
-
-@node Specifying Events
-@subsection Specifying Events
-
-Component interaction is performed via so-called @b{@i{events}} through
-instances of interfaces (that are called ports).
-
-In each interface therefore the events that can be received (in events)
-and sent (out events) are specified.
-
-@menu
-* Event Syntax::
-* Event Examples::
-@end menu
-
-@node Event Syntax
-@subsubsection Event Syntax
-
-An event is declared by its direction (@b{in} or @b{out}), type and name.
-
-The direction indicates if the event is received by (in) or sent (out)
-from a component that will be implementing the interface
-
-Out events are only allowed to have @b{void} type.
-
-@example
-   @b{in} return-type event-name();     // an in event definition
-   @b{out} @b{void} event-name();          // an out event definition
-@end example
-
-Events can also have a parameter list to pass data variables,
-@pxref{Using Data Variables and Parameters},.
-
-@example
-[in/out] return-type event-name(parameter-list)
-@end example
-
-The parameter list is a set of the following: [in/out/inout] indicating
-whether the datatype is input for or output from the event, the
-parameter type and parameter name.  See also @ref{Using Data Variables
-and Parameters}.
-
-@node Event Examples
-@subsubsection Event Examples
-
-@subsubsection An interface with three void events (and a simple behavior)
-
-The following interface has three events defined: two in events and one
-out event.
-
-The direction is as seen from the component implementing this interface.
-
-@example
-@b{interface} imotion
-@{
-  @b{in} @b{void} start();
-  @b{in} @b{void} stop();
-  @b{out} @b{void} ready();
-  @{behavior@}
-  @{
-    on start, stop: @{@}
-  @}
-@}
-@end example
-
-@subsubsection An interface with an enum type event
-
-This interface has three events defined: two incoming events and one
-outgoing event.  One of the incoming events is of an enum type, that is
-defined in the first line of the interface definition.
-
-@example
-@b{interface} isimple_protocol
-@{
-  @b{enum} result @{OK, FAILED, ERROR@};
-  @b{in} result connect();
-  @b{in} result disconnect();
-  @b{behavior}
-  @{
-    @b{on} connect: @b{reply}(result.OK);    // Set reply value to 'result.OK'
-    @b{on} disconnect: @b{reply}(result.OK); // Set reply value to 'result.OK'
-  @}
-@}
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Creating an Interface},
-@item @ref{Using Data Variables and Parameters},
-@end itemize
-
-@cindex parameter
-@cindex Specifying Events
-@cindex event
-@cindex data
-@cindex action
-
-@node Creating a Component
-@section Creating a Component
-
-Three types of component can be defined in Dezyne:
-
-@itemize
-
-@item     The first type is a component that has only a name defined and has no implementation.  In Dezyne this is
-        a placeholder for a component that is implemented in another programming language.
-
-@item     The second type is a component that has an implementation marked by the ‘behavior’ keyword.
-
-@item     The third type is a component decomposed into others that has an implementation marked by the @code{system} keyword.  The system specifies contained component instances, see further
-@ref{Decomposing a Component},.
-@end itemize
-
-@menu
-* Component Syntax::
-* Importing Models::
-* Ports::
-* External::
-* Injected::
-* Behavior::
-@end menu
-
-@node Component Syntax
-@subsection Component Syntax
-
-A component definition is named, and introduces a list of provides and
-requires interfaces and optionally behavior or a system.
-
-@subsubheading 1) regular component with behavior
-
-@example
-@b{component} component_name
-@{
-  @b{provides} iprotocol p; // list of provided interfaces
-  @b{requires} iused r;     // list of required interfaces
-  @b{behavior}             // the component's behavior
-  @{ ...  @}
-@}
-@end example
-
-@subsubheading 2) foreign component: placeholder for component implemented in another programming language
-
-@example
-@b{component} component_name
-@{
-  @b{provides} iprotocol p; // list of provided interfaces
-  @b{requires} iused r;     // list of required interfaces
-@}
-@end example
-
-@subsubheading 3) system component
-@example
-@b{component} component_name
-@{
-  @b{provides} iprotocol p; // list of provided interfaces
-  @b{requires} iused r;     // list of required interfaces
-  @b{system}                // the component's system composition
-  @{ ...  @}
-@}
-@end example
-
-@subsubsection Examples
-
-@subsubsection A Simple Leaf Component
-
-The following component implements one interface and a straightforward
-behavior section.
-
-@example
-@b{component} leaf
-@{
-  @b{provides} icontrol control;
-  @b{requires} isensor sensor;
-  @b{behavior}
-  @{
-    @b{on} control.event(): @{ @}
-  @}
-@}
-@end example
-
-@subsubsection A Foreign Component
-
-This component has no implementation in Dezyne.  It represents a
-component implemented in another programming language.
-
-@example
-@b{component} foreign_leaf
-@{
-  @b{requires} isensor sensor;
-@}
-@end example
-
-@subsubsection A System Component
-
-A component decomposed into two components where these components are
-connected via their ports.
-
-@example
-@b{component} composition
-@{
-  provides icontrol control;
-  @b{system}
-  @{
-    leaf l;
-    foreign_leaf f;
-    control <=> l.control;
-    l.sensor <=> f.sensor;
-  @}
-@}
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Specifying Behavior},
-@item @ref{Decomposing a Component},
-@item @ref{Ports},
-@end itemize
-
-@cindex system
-@cindex Creating a Component
-@cindex requires
-@cindex provides
-@cindex port
-@cindex decomposition
-@cindex component
-
-@node Importing Models
-@subsection Importing Models
-
-When a component refers to other components or interfaces and their
-details, the definition of these has to be known.
-
-An import clause is available to load the definition from separate
-files holding interface or component definitions.
-
-@subsubsection Syntax
-
-The keyword @b{import} is used to import interface or component
-definition files.
-
-@example
-@b{import} file-name.dzn;
-@b{import} lib/another-name.dzn;
-@end example
-
-Each import clause will search the import path on the file system for a
-file with the required name, and include the content.
-
-@subsubsection Examples
-
-@subsubsection A component importing an interface
-
-The component @code{leaf} implements the @code{icontrol} interface for
-which the definition is imported using @code{import}.
-
-@example
-@b{import} icontrol.dzn
-@b{component} leaf
-@{
-  @b{provides} icontrol control;
-  @b{behavior}
-  @{
-    @b{on} control.event(): @{ @}
-  @}
-@}
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Creating a Component},
-@end itemize
-
-@cindex import
-@cindex importing models
-@cindex file
-@cindex component
-@node Ports
-@subsection Ports
-
-A port is an instance of an interface.  A component has ports to
-communicate with other components.
-
-The keyword @b{provides} is used to specify that a component provides an
-implementation of an interface.
-
-The keyword @b{requires} is used to specify that a component uses or
-requires an interface.
-
-A component must provide an implementation for all in-events of provided
-and all out events of required interfaces.
-
-@subsubsection Syntax
-
-@example
-@b{provides} some_interface port;
-@end example
-
-@example
-@b{requires} some_interface port;
-@end example
-
-@example
-@b{requires} @b{external} some_interface port; // (1) (Since 2.0.0)
-@end example
-
-@example
-@b{requires} @b{injected} Interface port;   // (2)
-@end example
-
-1) port to a component with possibly delaying communication channel (@pxref{External})
-
-2) port to a shared resource (@pxref{Injected})
-
-@subsubsection Examples
-
-@subsubsection A component implementing one interface
-
-The component Leaf implements the ISensor interface that has one
-in-event called event.
-
-@example
-@b{component} leaf
-@{
-  @b{provides} icontrol control;
-  @b{behavior}
-  @{
-    @b{on} control.event(): @{ @}
-  @}
-@}
-@end example
-
-@subsubsection A component implementing one interface and requiring another interface
-
-The component @code{message_handler} below is providing an
-implementation of the @code{imessage_handler} interface and also
-requires the @code{imessage_handler} interface.
-
-@example
-@verbatiminclude examples/message-handler.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Creating a Component},
-@item @ref{External},
-@end itemize
-
-@cindex requires
-@cindex Ports
-@cindex provides
-@cindex interface
-@node External
-@subsection External
-(since 2.0.0) The @code{external} keyword specifies that communication over a
-port may be delayed.  (The delay may be caused by inter-process
-communication.) Model verification will consider this delay for out
-events on an external port.  The delay may cause race conditions leading
-to illegal behavior or interface compliance errors.
-
-@b{Note:} 'external' delay is taken into account for required port out
-events.  Marking a provided port as external has no effect on
-verification.
-
-@subsubsection Syntax
-
-@example
-@b{requires} @b{external} some_interface p;   //(1) (Since 2.0.0)
-@end example
-
-@c XXX What is provides external?
-@example
-@b{provides} @b{external} some_interface p;   //(2) (Since 2.0.0)
-@end example
-
-Explanation:
-
-1, 2) Communication over port @code{p} is possibly delayed.
-
-@subsubsection Examples
-
-@subsubsection Race condition due to external delay
-
-Component RemoteTimerProxy illustrates how a delayed communication
-channel may cause a race condition leading to illegal behavior.
-
-The implementation of component RemoteTimerProxy is correct for
-@code{requires itimer rp} but incorrect for @code{requires external
-itimer rp} due to race between @code{pp.cancel} and @code{rp.timeout}.
-
-@example
-@verbatiminclude examples/itimer.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Reply},
-@item @ref{Actions},
-@end itemize
-
-@node Injected
-@subsection Injected
-
-A single provided port can be bound to multiple requires ports.  The
-@code{injected} keyword must be used to specify that a port can be bound
-to multiple times.  This section explains
-
-@itemize
-
-@item Constraints imposed on interface protocol to allow injection.
-@item How to specify a system in which a single component is bound multiple times.
-@end itemize
-
-Regular Dezyne port bindings are peer-to-peer.
-
-TODO: Explain meaning, implications and justification.@* Multiple
-requires ports can be bound to a single provided port.  TODO: Explain
-constraints
-
-@node Behavior
-@subsection Behavior
-
-A behavior section is used to define the actions an interface or
-component will perform based on the events received.
-
-@subsubsection Interface Versus Component Behavior
-
-Behavior in an interface is a specification.  It is an agreement
-between components providing and requiring this interface about the
-messages and protocol exchanged.  Both components must adhere to this
-specification.  Interface conformance is an imprtant check in the
-verifier.  The code generator does not generate any code based on the
-behavior specification of an interface.
-
-Behavior in a component is a definition.  It defines the actual
-behavior expressed by the object modeled.  Whereas an interface might
-still allow some freedom, sometimes multiple messages are allowed,
-inside a component the behavior must be fully deterministic.  The code
-generator uses this component behavior specification to generate target
-code.
-
-@subsubsection Syntax
-
-The @code{behavior} keyword is used to declare a behavior
-section.  Optionally it may have a name.
-
-@example
-@{behavior@} [Optional_Name]
-@{
-   <behavior-body>
-@}
-@end example
-
-The behavior body contains a collection of statements that define the
-actions that will be performed based on events received.
-
-The following elements can be used in the behavior body:
-
-@itemize
-
-@item Local variables: @pxref{Using Local Variables},
-@item Functions: @pxref{Using functions},
-@item @pxref{Actions},
-@item State definitions and initialisations: @pxref{Specifying Stateful Behavior},
-@item @pxref{Reply},
-@item Conditions: @pxref{Using Conditional Statements},
-@item Guards: @pxref{Using Guards},
-@end itemize
-
-@subsubsection Examples
-
-@subsubsection A basic behavior section
-
-This example shows an interface with a basic behavior section.
-
-@example
-@verbatiminclude examples/imotion2.dzn
-@end example
-
-@subsubsection A behavior section with a protocol definition
-
-This example shows an interface with a more complex behavior section,
-where the start event is only allowed in case the interface is in state
-Off and the stop event is only allowed in case the interface is in state
-Active.
-
-@example
-@verbatiminclude examples/imotion3.dzn
-@end example
-
-@subsubsection A behavior section with a protocol definition, alternative form
-
-This example shows an interface with the same behavior as the one
-above, but an alternative form is used to define the behavior.
-
-In the previous example based on the state value (using @code{guard}s)
-the actions for the events per state were defined.  In the alternative
-below based on the events the actions in each state are defined.
-
-@example
-@verbatiminclude examples/imotion4.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Using Local Variables},
-@item @ref{Using functions},
-@item @ref{Actions},
-@item @ref{Specifying Stateful Behavior},
-@item @ref{Reply},
-@item @ref{Using Conditional Statements},
-@item @ref{Using Guards},
-@end itemize
-
-@cindex statement
-@cindex Specifying Behavior
-@cindex state
-@cindex protocol
-@cindex behavior
-@node Using Local Variables
-@section Using Local Variables
-
-Variables can be defined and used.
-
-@menu
-* Variable Syntax::
-* Variable Examples::
-@end menu
-
-@node Variable Syntax
-@subsection Variable Syntax
-
-Variables are named, have a type, and an initial value, which is an expression:
-
-@example
-variableType variableName = initialValue;
-@end example
-
-Supported types are:
-
-@itemize
-
-@item @b{enum}: enumerated type.
-@item @b{bool}: boolean type (@b{true}, @b{false})
-@item @b{subint}: integer type.
-@end itemize
-
-To ensure that an integer variable falls within a finite set (in order
-to have a limited range of possible paths / states in the system), use a
-type definition, e.g., @code{subint int @{0..10@}}.
-
-@node Variable Examples
-@subsection Variable Examples
-
-@subsubsection Simple state machine where the state is captured in a variable of enum type
-
-This example shows a simple state machine for a siren where the state is
-captured in an enumeration.
-
-@example
-@verbatiminclude examples/isiren1.dzn
-@end example
-
-@subsubsection Simple state machine where the state is captured in a boolean type
-
-This example shows a simple state machine for a siren where the state is
-captured in a variable of boolean type
-
-@example
-@verbatiminclude examples/isiren2.dzn
-@end example
-
-@subsubsection Limited retrying activation of a device using a variable of integer type
-
-This example shows how a counter based on an integer type can be used to
-limit retrying activation of a device.
-
-@example
-component alarm_system
-@{
-  provides ialarm alarm;
-  requires isensor sensor;
-  requires isiren siren;
-  behavior
-  @{
-    enum status
-    @{
-      NOT_ACTIVATED,
-      ACTIVATED_IDLE,
-      ACTIVATED_ALARM,
-      DEACTIVATING
-    @};
-    subint int @{0..10@};                 // int is defined as integer within the range 0-10
-    int counter = 0;                    // int is initialised with value 0.
-    status state = status.NOTACTIVATED;
-    void activating(sensor.values value)  // recursive function to activate the sensor, it will retry 10 times.
-    @{
-      if (value == sensor.values.OK)
-      @{
-        reply(alarm.values.OK);
-        state = status.ACTIVATED_IDLE;
-      @}
-      else
-      @{
-        if (counter <10)
-          @{
-          counter = counter + 1;
-          sensor.values val = sensor.activate();
-          activating(val);                 // try again
-          @}
-        else
-          @{
-          reply(alarm.values.FAILED);
-          @}
-       @}
-    @}
-    [state.NOTACTIVATED]
-    @{
-      on alarm.switch_on():
-      @{
-        sensor.values val = sensor.activate();
-        activating(val);                    // call the activation function
-      @}
-    @}
-    /* ...  */
-    /* ...  */
-  @}
-@}
-@end example
-
-@unnumberedsubsec See also:
-
-@itemize
-
-@item @ref{Actions},
-@item @ref{Using functions},
-@item @ref{Types and Expressions},
-@end itemize
-
-@cindex variable
-@cindex Using Local Variables and types
-@cindex type
-@cindex subint
-@cindex bool
-@node Using Data Variables and Parameters
-@section Using Data Variables and Parameters
-
-Data variables are used as input for or output from external components.
-
-Apart from assignment, data operation / manipulation is done in handwritten code.
-
-@subsection Data Syntax
-
-Use the keyword @code{extern} to define a datatype in Dezyne and the external
-datatype it will be transformed to when code is generated:
-
-@example
-extern datatypeInternal $datatypeExternal$;
-@end example
-
-After the definition variables of this type can be used to further
-define event (or method) signatures.
-
-@unnumberedsubsec See also:
-
-@itemize
-@item @ref{Specifying Events}
-@end itemize
-
-@subsection Data Examples
-
-@subsubsection Using an character type in an interface definition
-
-This example shows an interface definition for an handwritten component
-that will evaluate input based on a character type.
-
-Note that in interface definitions there is no data handling at all and
-therefore no parentheses and parameters are needed in e.g., @code{on}s.
-
-@example
-@verbatiminclude examples/iconsole.dzn
-@end example
-
-@subsubsection Using character and integer type in an interface definition
-
-This example shows an interface definition for a handwritten component
-that will accept characters for a PIN code and will also return the
-complete code.
-
-@example
-@verbatiminclude examples/icode.dzn
-@end example
-
-@subsubsection Passing data parameters between components
-
-This example shows how to pass parameters between components, using the
-interfaces of the examples above.
-
-@example
-component alarm_console
-@{
-  provides iconsole console;
-  requires icode codestore;
-  requires ialarm_system alarm;
-  /* ...  */
-  /* ...  */
-  behavior
-  @{
-    /* ...  */
-    /* ...  */
-    [state.UNARMED]
-    @{
-      /* ...  */
-      /* ...  */
-      on console.key_pressed(key):                         // parameter key contains value of the key pressed on the console
-      @{
-        icode.result val = codestore.add_digit(key);     // add the value to the pincode
-        if (val == icode.result.CODE_COMPLETE)           // if the pincode is complete
-        @{
-          int pin;
-          codestore.get_code(pin);                              // get the value of the pin code
-          ialarm_system.result val = alarm.switch_on(pin); // turn on the alarm system with the pin code
-          /* ...  */
-          /* ...  */
-        @}
-      @}
-    /* ...  */
-    /* ...  */
-    @}
-  /* ...  */
-  /* ...  */
-  @}
-@}
-@end example
-
-@unnumberedsubsec See also:
-
-@itemize
-
-@item @ref{Actions},
-@item @ref{Using functions},
-@end itemize
-
-@cindex parameter
-@cindex Using Data Variables and Parameters
-@cindex generate
-@cindex extern
-@cindex data
-
-@node Specifying Behavior
-@section Specifying Behavior
-
-A behavior section is used to define the actions an interface or
-component will perform based on the events received.
-
-@menu
-* Interface Versus Component Behavior::
-* Actions::
-* Specifying Stateful Behavior::
-* Using Guards::
-* Using Conditional Statements::
-* Using functions::
-* Reply::
-* Using inevitable and optional::
-* Using illegal::
-* Restrictions Multiple Provides::
-* Blocking::
-@end menu
-
-@node Interface Versus Component Behavior
-@subsection Interface Versus Component Behavior
-
-Behavior in an interface is a specification.  It is an agreement
-between components providing and requiring this interface about the
-messages and protocol exchanged.  Both components must adhere to this
-specification.  Interface conformance is an imprtant check in the
-verifier.  The code generator does not generate any code based on the
-behavior specification of an interface.
-
-Behavior in a component is a definition.  It defines the actual
-behavior expressed by the object modeled.  Whereas an interface might
-still allow some freedom, sometimes multiple messages are allowed,
-inside a component the behavior must be fully deterministic.  The code
-generator uses this component behavior specification to generate target
-code.
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Using Local Variables},
-@item @ref{Using functions},
-@item @ref{Actions},
-@item @ref{Specifying Stateful Behavior},
-@item @ref{Reply},
-@item @ref{Using Conditional Statements},
-@item @ref{Using Guards},
-@end itemize
-
-@cindex statement
-@cindex Specifying Behavior
-@cindex state
-@cindex protocol
-@cindex behavior
-
-@node Actions
-@subsection Actions
-
-The actions an interface or component should perform when an event is
-received are specified within a Behavior (@pxref{Specifying
-Behavior}).
-
-Actions can be changing the value of a variable, invoking a function,
-generating another event or changing to another state and any
-combination.
-
-In response to one event trigger, there can be different actions to be
-taken as long as they have non-overlapping guards.  Guards are boolean
-expressions.  The statement behind the guard is selected when the
-expression evaluates to true.  The keyword @code{otherwise} defines a
-catch-all guard which is true only when none of the other guard
-expressions in a list of @code{guard}s evaluates to true.
-
-Note that the use of guards is reserved for action selection.  The
-guards in combination with the trigger event determine which action is
-activated.  Thus, the action is a (compound) statement inside an
-@code{on} (optionally) behind an innermost guard.
-
-@subsubsection Syntax
-
-Defining an action statement:
-
-@example
-@b{on} port1.event(), port.another_event():
-@{
-  action-body;
-@}
-@end example
-
-Here @code{port1.event} and @code{port2.anther_event} are event
-instances, which refer to port variables @code{port1} and @code{port2}
-and to events @code{event} and @code{another_event}.
-
-Intentionally the 'Statement' will be executed when one of the two
-triggers occurs.
-
-action-body: a collection of conditions / guards and statements
-(function invocations, changing variable values, changing to another
-state, setting a reply value, generating another event, marking the
-event as illegal) that define what actions to perform.
-
-Defining a guarded action statement:
-
-@example
-[state.State1]
-on port1.event(), port2.another_event():
-@{
-  action-body;
-@}
-@end example
-
-Here the action statement will only be selected when guard
-[state.State1] evaluates to true.
-
-Special action statements can defined that will be performed in case no
-other events occur, or that optionally may be performed in case no other
-events occur, @pxref{Using inevitable and optional}.
-
-@subsubsection Examples
-
-@subsubsection Simple state machine with guarded action statements
-
-This example shows a simple state machine for a siren interface.
-
-Here the value of a variable representing the state of the state machine
-is used as a guard to select which action statements to evaluate.
-
-@example
-@verbatiminclude examples/isiren.dzn
-@end example
-
-@subsubsection Two alternative styles to define actions based on events
-
-This example shows an interface with two alternative styles to define
-the actions based on incoming events.
-
-@example
-@verbatiminclude examples/iprocess-safety1.dzn
-@end example
-
-@example
-@verbatiminclude examples/iprocess-safety2.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Specifying Behavior},
-@item @ref{Specifying Stateful Behavior},
-@item @ref{Using functions},
-@item @ref{Using Conditional Statements},
-@item @ref{Using illegal},
-@item @ref{Reply},
-@item @ref{Using inevitable and optional},
-@end itemize
-
-@cindex statement
-@cindex Actions
-@cindex state
-@cindex reply
-@cindex guard
-@cindex function
-@cindex event
-@cindex action
-@node Specifying Stateful Behavior
-@subsection Specifying Stateful Behavior
-
-State variables and guard expressions enable specification of protocols
-in a behavior section.  They specify the selection of one of multiple
-different actions.  @xref{Actions} for an input event.
-
-The state of an interface is composed of the values of all its state
-variables.
-
-State variables can refer to public types (e.g., defined for use as
-event return values) or to private type definitions local to the
-'behavior' section.  Types can be boolean, integer with limited
-contiguous range or enumerated.
-
-Guards are boolean expressions based on state variables.  The statement
-behind the guard is selected when the expression evaluates to true.  The
-keyword @code{otherwise} defines a catch-all guard which is true only
-when none of the other guard expressions in a list of @code{guard}s
-evaluates to true.
-
-@subsubsection Syntax
-
-Defining a state variable type based on an enum.
-
-@example
-enum status @{state1, state2@};
-@end example
-
-Defining a state variable based on the above type and initialising it:
-
-@example
-status state = status.state1;
-@end example
-
-Defining a guarded action statement
-
-@example
-[state == status.state1]
-@{
-  action-statement ;
-@}
-@end example
-
-or using the @code{field-test} shorthand
-
-@example
-[state.state2]
-@{
-  action-statement ;
-@}
-@end example
-
-Here the action statement will only be selected when guard
-@code{[state.state1]} evaluates to true.
-
-@xref{Actions}, for how to declare action statements.
-
-@subsubsection Examples
-
-@subsubsection Simple state machine
-
-This example shows a simple state machine for a siren.
-
-@example
-@verbatiminclude examples/isiren.dzn
-@end example
-
-@subsubsection Two alternative styles to define actions based on events
-
-This example shows an interface with two alternative styles to define
-the actions based on incoming events.
-
-@example
-@verbatiminclude examples/iprocess-safety1.dzn
-@end example
-
-@example
-@verbatiminclude examples/iprocess-safety2.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Specifying Behavior},
-@item @ref{Actions},
-@end itemize
-
-@cindex variable
-@cindex Specifying Stateful Behavior
-@cindex state
-@cindex machine
-@cindex expression
-@cindex enum
-@node Using Guards
-@subsection Using Guards
-
-Guards are boolean expressions based on variables.  The statement behind
-the guard is selected if the expression evaluates to true.  If more than
-one guard evaluates to true, a non-deterministic choice for one of
-guards must be made.  Guards can be nested.
-
-@subsubsection Syntax
-
-An expression between @code{[} and @code{]} is used to declare a @code{guard}
-
-@example
-[expression] statement;
-@end example
-
-Here the statement will only be executed when expression evaluates to true.
-
-Expression can be a compound expression using the logic operators || (OR) and &&(AND):
-
-@example
-[expression1 || expression2] statement;  // statement will be executed when expression1 or expression2 is true
-[expression1 && expression2] statement;  // statement will be executed when exrpession1 and expression2 is true
-@end example
-
-The keyword @code{otherwise} defines a catch-all guard which is true only
-when none of the other guard expressions in a list of @code{guard}s
-evaluates to true.
-
-@example
-[expression1] statement-true-1;
-[expression2] statement-true-2;
-[otherwise]   statement-false-1-2;
-@end example
-
-Here @code{statement-true-1} will be executed when expression1 evaluates
-to @code{true}, @code{statement-true-2} will be executed when
-@code{expression2} evaluates to @code{true} and
-@code{statement-false-1-2} will be executed when both expression1 and
-@code{expression2} evaluate to @code{false}.
-
-@subsubsection Examples
-
-@subsubsection Simple state machine
-
-This example shows a simple state machine for a siren interface where
-guards are used to select the correct actions based on the state.
-
-@example
-@verbatiminclude examples/isiren.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Actions},
-@item @ref{Using Conditional Statements},
-@end itemize
-
-@cindex statement
-@cindex Using Guards
-@cindex otherwise
-@cindex guard
-@cindex expression
-@cindex compound
-@node Using Conditional Statements
-@subsection Using Conditional Statements
-
-Conditional statements (if-else) can be used to program decision making
-on which actions to perform
-
-@subsubsection Syntax
-
-The keyword @code{if} is used for a simple conditional statement:
-
-@example
-if (expression) statement-true;
-@end example
-
-In this case when the expression is true then statement-true will be executed.
-
-An if-else construction can be used for programming more elaborate
-decisions.
-
-@example
-if (expression) statement-true;
-else statement-false;
-@end example
-
-if the expression is true then statement-true will be executed, else
-statement-true is skipped and statement-false is executed.
-
-@subsubsection Examples
-
-@subsubsection A basic if-else example
-
-This example shows an interface with a behavior section where if else
-is used to select the actions to be performed based on the value of
-a state variable and a local variable.
-
-@example
-@verbatiminclude examples/imperative-action.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Using Guards},
-@end itemize
-
-@cindex statement
-@cindex using conditional statements
-@cindex if
-@cindex expression
-@cindex conditional
-@node Using functions
-@subsection Using functions
-
-Functions are defined in a behavior section.
-
-These functions can be called as part of an action.
-
-Functions can access global variables.
-
-@subsubsection Syntax
-
-Function definition:
-
-@example
-return-type function-name (parameter-list)
-@{
-  function-body;
-@}
-@end example
-
-A function definition consists of a function header and a function body.
-
-Here are all the parts of a function:
-
-@itemize
-
-@item return-type: The return-type is the data type of the value the function returns.
-    Use the keyword @code{void} for functions that do not return a value.
-@item function-name: This is the actual name of the function.
-
-@item parameter-list: A parameter is like a placeholder.  When a function is invoked, you pass a value to the parameter.
-
-This value is referred to as actual parameter or argument.  The
-parameter list refers to the type, order, and number of the parameters
-of a function.  Parameters are optional; that is, a function may contain
-no parameters.
-
-@item function-body: The function body contains a collection of statements that define what the function does.
-
-@end itemize
-
-@subsubsection Examples
-
-@subsubsection A basic function
-
-This example shows an interface with a behavior section where a
-function is defined and used to determine the proper actions.
-
-@example
-@verbatiminclude examples/function-call-status.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item ?
-@end itemize
-
-@cindex statement
-@cindex Using functions
-@cindex return
-@cindex parameter
-@cindex function
-@node Reply
-@subsection Reply
-
-The @code{reply} keyword assigns a value to be returned.  The
-@code{reply} keyword also specifies that a blocked thread is allowed to
-return when all statements in the enclosing action block have been
-performed.
-
-A 'reply' statement may appear anywhere in an 'action'.  Execution of an
-action block continues after a 'reply' statement is performed.  Thread
-returns occur when the current execution thread reaches the end of the
-current action block.  Then all threads return for which a 'reply' has
-been executed in the current action block.
-
-Void 'reply' must be omitted in interface models and in non-blocking
-component action statements.  In these cases the void reply is implicit.
-
-@subsubsection Syntax
-
-@example
-1) reply(reply-expression);
-@end example
-
-@example
-2) port-name.reply(); (since 2.0.0)
-@end example
-
-@example
-3) port-name.reply(reply-expression); (since 2.0.0)
-@end example
-
-Explanation:
-
-1) Evaluate @code{reply-expression} and use it to set the reply value.
-
-2) Allow void return on port with name 'port-name'.  (This form applies
-to component models when the current 'action' was specified as
-'blocking' or when port 'port-name' is still blocked.)
-
-3) Evaluate @code{reply-expression} and use it to a allow valued return
-on port with name 'port-name'.
-
-A @code{reply-expression} must be a simple expression and may contain
-only one unconditional @code{call} or @code{action} (since 2.14).
-
-@subsubsection Examples
-
-@subsubsection Setting an enum as reply value.
-
-This example shows how to set a reply value using an enumerated type.
-
-@example
-interface inetwork
-@{
-// interface to the Network.
-// The Network can be requested to send a message by using send_message.
-// When the message has been sent the Network will inform it's client
-// by using message_sent.
-  in bool send_message();
-  out void message_sent();
-  behavior
-  @{
-    enum status @{IDLE, BUSY@};
-    status state = status.IDLE;
-    [state.IDLE]
-    // initial or idle status
-    @{
-      on send_message: // the interface must cover the case that a message is received successfully:
-      @{
-        reply(true);
-        state = state.BUSY;
-      @}
-      on send_message: // the interface must cover the case that a message is not received successfully:
-        reply(false);
-    @}
-    ...
-  @}
-@}
-@end example
-
-@cindex reply
-@cindex Reply
-@cindex event
-@cindex enum
-@node Using inevitable and optional
-@subsection Using inevitable and optional
-
-To specify in an interface model that the implementation behind the
-interface will at a certain moment perform an action requiring a
-response to be sent over the interface the keyword @code{inevitable} or
-optional can be used.
-
-Inevitable means that when no other events occur, this event will
-occur.  Optional means that the event may or may not occur.
-
-Note that an Inevitable event is not guaranteed to occur always.  If
-there are other (optional or inevitable) events that can occur, the
-inevitable event may or may not occur.  So it is only inevitable in the
-absence of other events.
-
-The difference between the two is how the event is handled by the model
-verification.  For inevitable events, the verification only checks the
-cases where the event does occur, i.e.  it assumes that the event will
-eventually occur if no other events occur.  For optional events, the
-model verification also checks the cases where the event never happens
-(which could be a cause of deadlock).  Note: when both optional and
-inevitable events are used in the same state, it is only guaranteed that
-one of the two events will occur, but it is not guaranteed that the
-inevitable event will always occur.
-
-@subsubsection Syntax
-
-Definition of an inevitable or optional event trigger and the actions
-that need to be performed as a result of it:
-
-@example
-on inevitable: action-body ; // collection of optional conditions / guards and statements
-on optional: action-body ;
-@end example
-
-The definition of inevitable and optional actions follows the
-definition of actions (@pxref{Actions}), where action-body: a
-collection of conditions / guards and statements (function invocations,
-changing variable values, changing to another state, generating another
-event) that define what actions to perform.
-
-@subsubsection Examples
-
-@subsubsection An inevitable time-out
-
-This example shows the interface specification for a timer.
-
-As it is up to the implementation to define exactly how the timer will
-expire, the (internal or implementation specific) trigger leading to
-that the time-out event has to be send over the Timer interface can not
-be specified in the interface definition.  However, we define here that
-that inevitably the timer will expire and the time-out event has to be
-send.
-
-@example
-@verbatiminclude examples/itimer2.dzn
-@end example
-
-@subsubsection An interface for a sensor with an optional event when the sensor is triggered
-
-This example shows the interface specification for a sensor.
-
-As it is up to the implementation to define exactly what happens when
-the sensor is triggered, the (internal or implementation specific)
-trigger leading to that the triggered event has to be send over the
-Sensor interface can not be specified in the interface
-definition.  However, we define here that that optionally the sensor
-might be triggered and the triggered event has to be send.
-
-@example
-@verbatiminclude examples/isensor.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Actions},
-@end itemize
-
-@cindex verify
-@cindex Using inevitable and optional
-@cindex optional
-@cindex inevitable
-@cindex guard
-@node Using illegal
-@subsection Using illegal
-
-To specify that an event is not allowed at a certain stage, the keyword
-@code{illegal} can be used.
-
-@subsubsection Syntax
-
-The keyword @code{illegal} is used to indicate that an event is not allowed:
-
-@example
-@b{on} port1.event(), port2.another_event(): illegal;
-@end example
-
-Here @code{port1.event} and @code{port2.anther_event} are event
-instances, which refer to port variables @code{port1} and @code{port2}
-and to events @code{event} and @code{another_event}.
-
-Note: @b{do not use illegal in conditional statements (if / if else) or
-functions in interface definitions} ! This is because an event can only
-be declared illegal in a direct way due to the declarative character of
-interfaces.  (Or in other words: in an interface one declares the
-expected behavior and an illegal inside conditional statements or
-functions would require an evaluation of the conditional statement or
-function for the be expected behavior.)
-
-@subsubsection Examples
-
-@subsubsection A timer where depending on the state certain events are allowed and others not
-
-This example shows the interface specification for a timer.  Initially a
-timer can be created and it is not allowed to cancel the timer before
-creation.  When the timer has been created it is not possible to request
-again creation of the timer.
-
-@example
-@verbatiminclude examples/itimer2.dzn
-@end example
-
-@subsubsection Incorrect and correct interface definition with a conditional illegal
-
-An interface has to be defined that does not allows a second event
-(check_model in this case) before the asynchronous reply (check_done)
-has been sent to the first event.
-
-The following code snippet shows an incorrect interface definition with
-an illegal inside an if-else construction.
-
-@example
- [state.AUTHENTICATED]
-    @{
-      on check_model:
-      @{
-         if (checking_model == false)
-         @{
-            reply(res.Ok);
-            checking_model = true;
-         @}
-         else illegal;
-      @}
-      on inevitable:
-      @{
-          if (checking_model == true)
-          @{
-              checking_model = false;
-              check_done;
-          @}
-      @}
-   @}
-@}
-@end example
-
- The following snippet shows how to correctly define this:.
-
-@example
-[state.AUTHENTICATED]
-@{
-      [!checking_model] on check_model:
-      @{
-          reply(res.Ok);
-          checking_model = true;
-      @}
-      [checking_model] on check_model: illegal;
-      [checking_model] on inevitable:
-      @{
-        checking_model = false;
-        check_done;
-      @}
-@}
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Actions},
-@end itemize
-
-@cindex illegal
-@cindex Using illegal
-@cindex conditional
-@cindex asynchronous
-@node Restrictions Multiple Provides
-@subsection Restrictions Multiple Provides
-
-For a component with a behavior and with multiple provides ports, two
-restrictions hold.  These restrictions relate to the fact that activity
-cannot be forked.  These are the restrictions:
-
-@table @code
-@item V-fork
-Within the handling of an in-event of a provides port, it is not allowed
-to post an out-event on another provides port.
-
-@item Y-fork
-Within the handling of an out-event of a requires port, it is not
-allowed to post an out-event to more than one provides port.
-
-The violation of any of these restrictions will be reported as a
-compliance error.
-@end table
-
-@noindent
-These are examples of the two types of fork leading to a compliance
-error:
-
-@example
-@verbatiminclude examples/compliance-multiple-provides-fork.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item  The example project MultipleProvides.
-
-@end itemize
-
-@node Blocking
-@subsection Blocking
-(since 2.0.0)
-
-The @code{blocking} keyword allows omission of a @code{reply} from an
-action statement and supresses the implicit void reply performed after
-the last statement in an action statement.  An action statement in
-another port in-event should perform the @code{reply} for the blocked
-port.  Thus, time and value of a blocked port reply depend on another
-in-event.  The keyword @code{blocking} is allowed to appear once in the
-path of statements prefixing an action statement.
-
-Only 'provides' ports are affected by 'blocking'.  A call of a provided
-port in-event will not return before a @code{reply} is performed for
-that port.
-
-Guard expressions or 'on event' is commutative with respect to
-blocking.  If 'blocking' appears before a guard or 'on event' it applies
-to the action statement after the guard or 'on event'.
-
-@b{Note:} 'blocking' may only be used in components with a single
-'provides' port.  This limitation may be lifted in a future release.
-
-@b{Note:} Systems containing 'blocking' component instances must be
-contained in a thread-safe shell (@pxref{Thread-safe Shell}).
-
-@subsubsection Syntax
-
-@example
-  on event: blocking action-statement; (1)
-@end example
-
-@example
-  blocking on event: action-statement; (2)
-@end example
-
-@example
-  on event: blocking [guard] action-statement; (3)
-@end example
-
-@example
-  on event: @{blocking [guard] action-statement1; [guard] action-statement2;@} (4)
-@end example
-
-Explanation:
-
-2) The @code{blocking} keyword applies to the action-statement following 'on
-event:'.  This form is semantically equivalent to 1).
-
-3) The @code{blocking} keyword applies to the action-statement following
-[guard].  This form is semantically equivalent to "on event: [guard]
-blocking action-statement;"
-
-4) The @code{blocking} keyword applies to action-statement1.  It does NOT
-apply to action-statement2.
-
-@subsubsection Examples
-
-@subsubsection Thread signalling
-
-component @code{ca} illustrates the use of @code{blocking} to postpone
-thread return.  An 'on event' on a different port performs the
-@code{reply} statement for the blocked port.
-
-The action statement in @code{on pp.request_value} is marked as
-@code{blocking} and does not contain a @code{reply}.  A thread calling
-@code{pp.request_reply} blocks after the @code{rp.request()} action.
-The blocked thread returns when the action statement for @code{on
-rp.accept} or @code{on rp.reject} have been performed.
-
-@example
-@verbatiminclude examples/ca.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Reply},
-@item @ref{Actions},
-@item @ref{Thread-safe Shell},
-@end itemize
-
-@node Decomposing a Component
-@section Decomposing a Component
-
-A component can be decomposed into a group of components.  A grouping of
-components is called a @b{@i{system}}.  A component that is decomposed
-into a system has no own behavior definition, the behavior of the
-system is defined by the component into which it is decomposed.
-
-@menu
-* Systems of Components::
-* Specifying Ports::
-* Binding Ports::
-@end menu
-
-@node Systems of Components
-@subsection Systems of Components
-
-The components within a system can also be composite components, so it
-is possible to define systems of systems.
-
-Composite components can also expose ports of contained components by
-binding their own provided or required ports to ports of contained
-components.  In that case the binding looks like
-
-@example
-port <=> component1_instance_name.port
-@end example
-
-@subsubsection Syntax
-
-The keyword @b{@i{system}} is used to define a composition.  Inside the
-system definition the instances of the components that are contained in
-the system are specified.
-
-To define a system inside the composite component use:
-
-@example
-component composition
-@{
-  provides interface1 port;
-  system
-  @{
-    component1 component1_instance;
-    component2 component2_instance;
-// binding of the components:
-// where component1 provides or requires port1
-// and component2 requires or provides port1
-    component1instance.port1 <=> component2instance.port1;
-  @}
-@}
-@end example
-
-Within a system components have to be connected together.  A
-@code{binding} takes the form of
-@example
-component1_instance.port <=> component2_instance.port
-@end example
-
-Only ports with an equal interface definition and opposite direction can
-be bound together.
-
-Composite components can also expose ports of contained components by
-binding their own provided or required ports to ports of contained
-components.  In that case the binding looks like
-
-@example
-port <=> component1_instance.port
-@end example
-
-@example
-component composition
-@{
-  provides interface1 port1;
-  system
-  @{
-    component1 component1_instance;
-    component2 component2_instance;
-// binding of the components:
-// where component1 provides port1;
-// where component1 provides or requires port2
-// and Component2 requires or provides port2
-    port1 <=> component1_instance1.port1
-    component1_instance.port2 <=> component2_instance.port2;
-  @}
-@}
-@end example
-
-@subsubsection Examples
-
-@subsubsection Decomposition into components and binding their ports.
-
-Here the component @code{decompose2} is decomposed into two other
-components @code{c1} and @code{c2}.
-
-@example
-@verbatiminclude examples/decompose2.dzn
-@end example
-
-@subsubsection Exposing ports
-
-Here the component @code{decompose2_proxy} is decomposed into two other
-components @code{c1} and @code{c2} and the interface provided by
-component @code{c2} is exposed.
-
-@example
-@verbatiminclude examples/decompose2-proxy.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Specifying Ports},
-@item @ref{Binding Ports},
-@end itemize
-
-@cindex system
-@cindex Decomposing a Component
-@cindex port
-@cindex decomposition
-@cindex composition
-@cindex component
-@cindex bind
-
-@node Specifying Ports
-@subsection Specifying Ports
-
-See @ref{Ports},
-
-@cindex requires
-@cindex specifying ports
-@cindex provides
-@node Binding Ports
-@subsection Binding Ports
-
-A component can be decomposed into a group of components.  A grouping of
-components is called a @b{@i{system}}.
-
-Component instances in the composition are connected by binding their
-ports.  Only ports with an equal interface definition and opposite
-direction can be bound together.
-
-@subsubsection Syntax
-
-A @code{binding} takes the form of
-
-@example
-component1_instance_name.port <=> component2_instance_name.port
-@end example
-Only ports with an equal interface definition and opposite direction can be bound together.
-
-@subsubsection Examples
-
-@subsubsection Decomposition into components and binding their ports.
-
-Here the component @code{decompose2} is decomposed into two other
-components @code{c1} and @code{c2}.
-
-@example
-@verbatiminclude examples/decompose2.dzn
-@end example
-
-@unnumberedsubsubsec See also:
-
-@itemize
-
-@item @ref{Specifying Ports},
-@item @ref{Decomposing a Component},
-@end itemize
-
-@cindex port
-@cindex binding ports
-@cindex interface
-@cindex bind
 @node Execution Semantics
 @chapter Execution Semantics
 
@@ -3112,6 +951,8 @@ reported as part of the illegal check.
 @node Integrating C++ Code
 @section Integrating C++ Code
 
+@cindex c++
+
 @subsection Purpose
 This text briefly describes the C++ code that is generated from Dezyne
 models and the integration thereof.
@@ -3173,7 +1014,7 @@ port.in.in_event = port.out.out_event;
 @end example
 
 Note that the last statement above short circuits the in_event to the
-out_event as is described in the Dezyne interface model.
+out_event as is described in the Dezyne interface.
 
 @subsection Components
 
@@ -3306,6 +1147,7 @@ caller and the callee when this is required.
 Locator: The locator allows injecting the implementation behind a port
 deep into the system from the outside.
 
+@cindex injection, c++
 In the example you can see that
 the locator facility is also responsible for passing an instance of
 the runtime into the system.  Injection example:
@@ -3341,13 +1183,6 @@ int main()
 @}
 @end example
 
-@cindex system
-@cindex Understanding and integrating the generated C++ code
-@cindex migrating
-@cindex interface
-@cindex generate
-@cindex component
-@cindex c++
 @node Thread-safe Shell
 @section Thread-safe Shell
 
@@ -4254,67 +2089,91 @@ Use queue size @var{size} for verification, the default is @code{3}.
 
 @end table
 
-@node Dezyne Syntax
-@chapter Dezyne Syntax
+@node Dezyne Language Reference
+@chapter Dezyne Language Reference
+
+Dezyne is a component based language as well as a method for the
+development of event-driven systems.  The language has formal semantics,
+which is coherently expressed in: a textual representation, a graphical
+representation, a mathematical representation, a source code
+representation, and the observable behavior of a machine executing the
+resulting program.  The concepts available in the language denote the
+different properties@footnote{ Structural: events and their direction in
+an interface, ports on a component, components in a system, bindings
+between the ports; behavioral: guarded triggers performing actions |
+assignments | if-else | functions} that can be observed and have meaning
+in one or more of the representations: textual, graphical, mathematical,
+program and execution.
+
+The @code{C}-like syntax of Dezyne should give it a familiar feel to
+many programmers.  Dezyne has some unique language concepts and syntax
+elements that are described in this chapter.
 
 @menu
-* Identifiers::
-* Dezyne Files::
-* Types and Expressions::
-* Interface Models::
-* Component Models::
-* Interface and Component Behavior::
-* System Components::
-* Namespaces::
+* Lexical Analysis::            Tokens, separators and whitespace.
+* Dezyne Files::                What goes into a Dezyne file?
+* Types and Expressions::       Manipulating data in Dezyne.
+* Interfaces::                  Defining contracts for components and systems.
+* Components::                  Defining a program's behavior in Dezyne.
+* Systems::                     Decomposing a system.
+* Namespaces::                  Avoiding name collision.
+@end menu
+
+@node Lexical Analysis
+@section Lexical Analysis
+
+@cindex parser
+@cindex parsing
+@cindex PEG
+Dezyne is a @code{C}-like language.  This means that identifiers must be
+separated by either whitespace, delimiters or operators and is otherwise
+whitespace invariant.  The Dezyne parser is defined using a partial
+expression grammar or ``PEG'' (@pxref{PEG Parsing,,, guile, GNU Guile
+Reference Manual}).
+
+@menu
+* Identifiers::                 Choosing names.
+* Keywords::                    Restricted words.
+* Operators::                   Building blocks for expressions.
+* Delimiters::                  Constructing lists.
+* Lexical Scoping::             Locality of names.
+* Comments::                    Explanations for human readers.
 @end menu
 
 @node Identifiers
-@section Identifiers
-In Dezyne identifiers are used to denote objects like interfaces,
+@subsection Identifiers
+
+In Dezyne identifiers are used to name objects like interfaces,
 components, events, user defined types, variables, etc.  A keyword
 cannot be used as an identifier and identifiers are case-sensitive.
 
-An identifier starts with a letter, which can be followed by further
-letters, digits, or underscores.  Following are legal identifiers:
+@example
+identifier ::= [a-zA-Z_][a-zA-Z0-9_]*
+@end example
 
-Alarm, turn_on, VAL_123
-
-@subsection Scoping
-In order to properly refer to types and objects defined in a context
-different from the current one, that context has to be included in the
-name of such a type or object.  This is done using a 'dot notation',
-like in @code{some_interface.enum_type}.  Possible dot constructs are:
-
-@itemize
-
-@item @code{enum_type.ENUM_FIELD} denotes an enumeration value,
-where @code{enum_type} denotes its enumeration type defined in the current context.
-
-@item @code{some_interface.enum_type} denotes an enumeration type defined in the
-context of interface @code{some_interface}.
-
-@item @code{some_interface.enum_type.ENUM_FIELD} denotes an enumeration value,
-where @code{some_interface.enum_type} denotes its enumeration type defined in the
-context of interface @code{some_interface}.
-
-@item @code{some_port.some_event} denotes an event defined in the context of some
-interface @code{some_interface} of which port @code{some_port} is an instance.
-
-@item @code{some_instance.some_port} denotes a port defined in the context of some
-component @code{some_component} of which @code{some_instance} is an instance.
-
-@item @code{some_namespace.some_name} denotes an object named @code{some_name}, such as
-a component, interface, enumeration value defined in a namespace @code{some_namespace}.
-Since namespaces can be nested, long names can be constructed, like
-@code{some_namespace1.some_namespace2.some_namespace2.some_interface.enum_type.ENUM_FIELD}.
-
-@end itemize
-Where appropriate in the sections below, examples will be given to illustrate this notation.
-The following list shows the keywords in Dezyne.
-These keywords may not be used as constant or variable or any other identifier names.
+An identifier starts with a letter or an underscore, which can be
+followed by further letters, digits, or underscores.  The following are
+all valid identifiers:
 
 @example
-behavior       blocking        bool            component
+p, hello, Alarm, turn_on, VALUE_123, _
+@end example
+
+@quotation Note
+That by convention Dezyne identifiers are also used in the target
+language, however the target language may impose further restrictions on
+identifiers.
+@end quotation
+
+@node Keywords
+@subsection Keywords
+
+The following list shows identifiers that are reserved words in Dezyne,
+or @emph{keywords}.  These keywords may not be used as an identifier
+name.
+
+@example
+behavior        blocking        bool            component
 else            extern          external        enum
 false           if              illegal         import
 inevitable      injected        inout           interface
@@ -4323,777 +2182,1724 @@ otherwise       out             provides        reply
 requires        return          subint          system
 true
 @end example
-Dezyne supports single-line and multi-line comments very similar to C++.
-Multi-line comments may be nested.
-All characters available inside any comment are ignored by the Dezyne compiler.
+
+@node Operators
+@subsection Operators
+
+Dezyne uses infix notation for expressions.  The following are operators
+in Dezyne:
+@example
++       -       !
+<       >       <=      >=      ==      !=      <=>
+@end example
+
+@node Delimiters
+@subsection Delimiters
+
+The following are delimiters in Dezyne, for introducing lists:
 
 @example
-component Alarm @{
-  /* This is an example of multi-line comment.
-   * The line below is ignored also:
-   * interface IA
-   */
-  provides IAlarm ia; // a single-line comment
+(       )       @{       @}       $
+@end example
+
+and for elements in lists:
+
+@example
+,       .       ;       =
+@end example
+
+@node Lexical Scoping
+@subsection Lexical Scoping
+
+A lexical @emph{scope} adds locality to a name.  Names in one lexical
+scope do not interfere (collide or shadow) with another scope.
+Referring to a scoped identifier
+
+@example
+  reference :: scope* identifier
+  scope :: identifier "."
+@end example
+
+Dezyne defines the following scopes:
+
+@table @code
+@item enum
+The field values of an enum:
+
+@example
+enum result @{TRUE, FALSE, ERROR@};
+@end example
+
+are referenced to by using the enum type name as scope:
+
+@example
+result.TRUE
+@end example
+
+@item interface
+A type defined in an interface:
+
+@example
+interface ihello
+@{
+   enum result @{TRUE, FALSE, ERROR@};
 @}
 @end example
 
-@cindex type
-@cindex Basics Syntax
-@cindex scoping
-@cindex namespace
-@cindex identifier
-@cindex comment
-@cindex blocking
+can be used in a component, e.g., to define a variable:
+
+@example
+ihello.result status = ihello.result.TRUE;
+@end example
+
+@item behavior
+All definitions in a behavior are local to that behavior and cannot be
+referenced from outside it@footnote{This may change when Dezyne gains
+support for hierarchical behaviors, a.k.a. submachines.},
+
+@item port
+A port is an interface instance; events that are communicated over a
+port use the name of the port as their scope:
+
+@example
+provides ihello p;
+@dots{}
+on p.hello (): p.world ();
+@end example
+
+@item instance
+An @code{instance} (or component instance), is an instance of a
+component.  A port defined in a component
+
+@example
+component hello
+@{
+  provides ihello p;
+  requires ihello r;
+@}
+
+@end example
+
+can be referenced to by using the component instance name as their scope
+
+@example
+component sys
+@{
+  provides ihello sp;
+  requires ihello sr;
+  system
+  @{
+    hello h;
+    sp <=> h.p;
+    h.r <=> sr;
+  @}
+@}
+@end example
+
+@item namespace
+Types defined in a namespace are referenced to by using the name of the
+namespace as their scope.
+@c TODO add example
+@end table
+
+@node Comments
+@subsection Comments
+
+Dezyne supports single-line and multi-line comments very similar to
+@code{C}.  Multi-line comments may be nested.  All characters part of a
+comment are skipped by the parser.
+
+@example
+/* This is an example of multi-line comment.
+ * The line below is ignored also:
+ * this component implements...
+ */
+component hello
+@{
+  provides ihello p; // a single-line comment
+@}
+@end example
+
 @node Dezyne Files
 @section Dezyne Files
-Dezyne components and interfaces are organized in files.  A file, with
-extension '.dzn', contains a number of components and interfaces.
 
-Components can refer to interfaces and other components.  An 'import'
-clause is needed when the referred information is defined in another
-file (see below).
+Dezyne types, interfaces, and components are organized in files.  A
+file, with extension '.dzn' by convention, may contain zero or more of
+type definitions, interfaces, and/or components.
 
-The order of specification in one file is as follows:
+The toplevel Dezyne program text is defined as follows:
 
-@itemize
+@example
+text ::= root
+root ::= (import | data-expression
+           | namespace | type | interface | component)*
+@end example
 
-@item All necessary imports.
-@item All interface and component definitions in arbitrary order.
-@end itemize
+An interface can refer to a global type definition.  A component can
+refer to types, interfaces and other components.  An explicit
+@code{import} clause is needed when the referred information is defined
+in another file.
 
 @subsection Import
+
+@cindex file import
+@cindex import
 An @code{import} clause makes available all types, interfaces and
 components that are defined in another file.  From an imported interface
-or component the 'public' parts are available, i.e.  all information but
+or component the 'public' parts are available, i.e., all information but
 the interface or component behavior, or the component system details.
-Syntax:
+
+@example
+import    ::= "import" (file-name "/")* file-name ";"
+file-name ::= [a-zA-Z0-9_+.-]+
+@end example
+
+@quotation Note
+That by convention the basename of the Dezyne file-name is used as the
+target language basename, however the target platform may impose further
+restrictions on a file-name.
+@end quotation
+
+By convention, Dezyne files use the extension @code{.dzn}.  Some
+examples:
 
 @example
 import file-name.dzn;
+import ../global-types.dzn;
+import some/directory/prefix/library.dzn;
 @end example
 
-where @code{file-name.dzn} is a Dezyne file.
-
-An imported file may contain imports itself, which are 'expanded' also.
+An imported file may contain imports itself, these are also imported.
 When a file occurs twice in the resulting set of imports, it is expanded
-only once.  This prevents the introduction of duplicate definitions.
-Also recursive imports are handled correctly.
+only once.  This avoids introducing duplicate definitions.  Mutually
+recursive imports are allowed (@xref{Invoking dzn parse}).
 
-@cindex import
-@cindex Files Syntax
-@cindex file
 @node Types and Expressions
 @section Types and Expressions
-In Dezyne all variables and constants are typed.
-A number of type constructs are available.
 
-@subsection Bool
-@code{bool} is pre-defined and denotes the boolean type, with constants @code{true} and @code{false}.
+In Dezyne all variables and constants are typed.  A number of type
+constructs are available.
+
+@example
+type      ::= bool / enum / subint / void
+data-type ::= extern
+@end example
+
+@code{type}s are used for event reply types, variables,
+function parameters, function, function return types, and function call
+arguments.  @code{data-types} are used for event parameters, action
+arguments, and variables.
+
+@menu
+* Void::                        Definitions without type.
+* Bool::                        Builtin boolean type.
+* Enum::                        Enumerated user types.
+* Subint::                      Integer user types.
+* Extern Data Type::            Foreign data user types.
+* Expressions::                 Constants and data.
+@end menu
+
+@node Void
+@subsection @code{void}
+
+@code{void} is used for defining untyped events and functions, e.g.,
+
+an event without reply value:
+
+@example
+in void hello ();
+@end example
+
+a function without return value:
+
+@example
+void foo ()
+@{
+  world;
+@}
+@end example
+
+@node Bool
+@subsection @code{bool}
+
+@cindex bool type
+@cindex true
+@cindex false
+Dezyne has a builtin boolean type @code{bool} with constants
+@code{false} and @code{true}.
 
 Available boolean operators are:
 
-@itemize
+@table @code
+@item !b
+Logical negation of a boolean expression,
+@item b1 && b2
+Logical and of two boolean expressions,
+@item b1 || b2
+Logical or of two boolean expressions,
+@item b1 == b2
+Equality of two boolean expressions,
+@item b1 != b2
+Inequality of two boolean expressions,
+@end table
+where @code{b}, @code{b1}, and @code{b2} are boolean expressions.
 
-@item Logical negation, denoted by @code{! b1}.
-@item Logical and, denoted by @code{b1 && b2}.
-@item Logical or, denoted by @code{b1 || b2}.
-@item Equality of two boolean expressions, denoted by @code{b1 == b2}.
-@item Inequality of two boolean expressions, denoted by @code{b1 != b2}.
-@end itemize
-where @code{b1} and @code{b2} denote booleans.
+It is used to define boolean events
 
-@subsection Enum
+@example
+in bool test ();
+@end example
 
+boolean variables
+
+@example
+bool idle = true;
+@end example
+
+and parameters and functions
+
+@example
+bool negate (bool input)
+@{
+  return !input;
+@}
+@end example
+
+@node Enum
+@subsection @code{enum}
+
+@cindex enum type
 An interface or component can specify a user defined enumerated
-type.  Such a type has a name and a collection of values.  An example:
+type.  Such a type has a name and a list of values.
 
 @example
-  enum enum_type @{ value1, value2, value3 @};
+enum   ::= "enum" identifier "@{" fields "@}" ";"
+fields ::= identifier ("," identifier)* ","?
 @end example
-
-where @code{enum} is a keyword; this defines the enum type @code{enum_type} with three values.
-
-In expressions the enum values are referred to with a dot notation:
-@code{enum_type.value2} .
-Available enum operators are:
-
-@itemize
-
-@item Equality of two enum expressions, denoted by @code{e1 == e2}.
-@item Inequality of two enum expressions, denoted by @code{e1 != e2}.
-@item Testing the value of an enum variable, denoted by @code{v.value2}, which is shorthand for
-@code{v == enum_type.value2}
-@end itemize
-where @code{e1} and @code{e2} denote enum expressions, and @code{v} an enum variable.
-
-@subsection Subint
-
-The integer type is available in Dezyne in a restricted way: only a
-finite subset of integers can be used.  An explicit type definition is
-needed for such a subset, where a C++-like syntax is used.  An example:
-
-@example
-  subint some_int_type @{2..5@};
-@end example
-
-where @code{subint} is a keyword.  This defines the finite type
-@code{some_int_type} with possible values 2, 3, 4, and 5.  Available
-integer operators are:
-
-@itemize
-
-@item A number of integer comparisons, denoted by:
-
-@itemize
-
-@item @code{i1}
-@item @code{i1 <= i2}
-@item @code{i1 >= i2}
-@item @code{i1 >  i2}
-@item @code{i1 == i2}
-@item @code{i1 != i2}
-@end itemize
-
-@item Integer addition, denoted by @code{i1 + i2}.
-@item Integer subtraction, denoted by @code{i1 - i2}.
-@end itemize
-where @code{i1} and @code{i2} denote integers.
-
-@subsection Data Types
-
-Apart from the @code{bool}, @code{enum}, and @code{int} types introduced
-above, which play an important role in the description of interface and
-component behavior, so-called 'data types' can be defined.  These play a
-restricted role and are used as types of 'data parameters' in events
-(see below).  A data type is defined as follows:
-
-@example
-  extern some_data_type $some external type expression$;
-@end example
-
-where @code{extern} is a keyword, and in @code{$some external type
-expression$} the dollar signs is a type expression in the target
-language (C++, java, ...).
-
-No Dezyne supported expressions are available for data types, apart from
-'dollar expressions': @code{$some expression$} will be passed as-is.
-
-@cindex type
-@cindex Types Syntax
-@cindex subint
-@cindex expression
-@cindex enum
-@cindex data
-@cindex bool
-@node Interface Models
-@section Interface Models
-An interface has a name, can define some local types, defines a collection of events,
-and a behavior describing the protocol on its events.
-A syntax example:
-
-@example
-interface some_interface
-@{
-  enum enum_type @{ Val1, Val2, Val3 @};
-  extern some_string $std::string$;
-  in enum_type valued_event(some_string s);
-  out void reply_event();
-  behavior
-  @{
-    on valued_event(s) : @{ reply enum_type.Val3; @}
-  @}
-@}
-@end example
-
-In this example a number of keywords are introduced:
-@code{interface}, @code{in}, @code{out},
-@code{void}, @code{behavior}, @code{on}, and @code{reply}.
-
-The example defines an interface named @code{some_interface} with two local types,
-two events, and the interface behavior  (see below for a syntax description of events and behavior).
-
-@subsection Events
-An event has (in this order):
-
-@itemize
-
-@item a direction (@code{in} or @code{out}),
-@item optionally a reply type (@code{void} if it is absent),
-@item a user defined name,
-@item a data parameter list, which may be empty.
-
-@end itemize
-Some examples:
-
-@example
-  in void e2();            // a void in event called 'e2' with an empty parameter list
-  in enum_type e3();      // a valued in event called 'e3'
-  out void e4(some_string s); // a void out event called 'e4' with one data parameter
-@end example
-
-There is a restriction on event definitions: an @code{out} event must be @code{void}.
-
-@subsection Behavior
-The @code{behavior} section of an interface contains the protocol description of the interface.
-@xref{Interface and Component Behavior}, for an elaborate description.
-
-@cindex type
-@cindex Interfaces Syntax
-@cindex protocol
-@cindex interface
-@cindex event
-@cindex data
-@node Component Models
-@section Component Models
-
-A component has a name, a collection of ports by which it communicates
-with the outside world, and optionally a description of its internals.
-A syntax example:
-
-@example
-component some_component
-@{
-  provides some_interface1 some_port1;
-  requires some_interface2 some_port2;
-  requires some_interface3 some_port3;
-  /*
-   * internals description....
-   */
-@}
-@end example
-
-In this example a number of keywords are introduced:
-@code{component}, @code{provides}, and @code{requires}.
-
-The example defines a component named @code{some_component} with three ports.
-
-@subsection Ports
-
-A component provides some functionality, and requires functionality of
-other components.  Communication between components is performed through
-their ports, which are instances of interfaces.  Each port has a
-direction according to its intention (@code{provides} or
-@code{requires}), the interface it implements and a local name.  A
-component refers to these ports in its behavior.
-
-@subsubsection Injection
-A @code{requires} port can be specified to be @code{injected}:
-
-@example
-  requires injected some_interface some_port;
-@end example
-
-The intention is, that binding such a port will occur at a high level in the system hierarchy
-to some component port @code{someComponent.somePort}, and that more than one injected port can be bound to that port.
-For that reason @code{some_interface} cannot define @code{out} events.
-
-@xref{System Components} for a detailed description of the binding of injected ports.
-
-@subsection Internal Description
-The component's internal description comes in three flavors:
-
-@itemize
-
-@item
-Behavioral: Like in the interface protocol the internals are given as a
-behavioral description, in which for each event the required actions
-are given.  @xref{Interface and Component Behavior}.
-
-@item
-Compositional: The functionality is described as the composition of a
-number of sub components.  @xref{System Components}.
-
-@item
-Hand-written: The internals are missing indicating the intention to have
-a hand-written implementation of the component.  This implementation
-must be such that it satisfies the specified ports.  The component
-is a place-holder only.
-
-@end itemize
-
-@cindex system
-@cindex Components Syntax
-@cindex requires
-@cindex provides
-@cindex port
-@cindex injection
-@cindex component
-
-@node Interface and Component Behavior
-@section Interface and Component Behavior
-
-A behavior description might look like this:
-
-@example
-behavior
-@{
-  enum enum_type @{ value1, value2 @};
-  type enum_var = enum_type.value1;
-  bool bool_var = true;
-  on some_port1.some_event1():
-  @{
-    bool blocal = bool_var;
-    bool_var = false;
-    some_port2.some_event2();
-    f(blocal);
-  @}
-  [enum_var.value2]
-  @{
-    on some_port1.some_event2(): illegal;
-  @}
-  void f(bool b)
-  @{
-    if (b) some_port2.some_event5();
-    else @{ some_port2.some_event5(); bool_var = true; @}
-  @}
-@}
-@end example
-
-This behavior section introduces a local enum type (@code{enum_type}),
-two variables (called @code{enum_var} and @code{bool_var}),
-a number of statements, and a function definition (@code{void f(bool b)}) with one parameter.
-Note that in a sub scope a local variable @code{blocal} is defined.
-The different constructs are handled in more detail below.
-
-@subsection Variable Definitions
-
-As demonstrated in the example above, variables can be defined in a
-behavior description, both at top level and in a local scope.  Variables
-must be given an initial value.
-
-The member variables are often referred to as 'state variables'.
-Their scope extends to the complete behavior description, including the
-body of functions defined in the behavior.
-
-Variables defined at other places have a scope which is restricted to the @code{compound}
-(@code{@{ ....  @}}) they are defined in.
-
-@subsubsection Member Variables
-
-@subsection Declarative versus Imperative Statements
-
-There are two 'kinds' of behavioral statements: 'declarative' and
-'imperative'.  The declarative part describes the trigger events and the
-conditions in which they have to be handled, while the imperative part
-describes the response that has to occur as result of a trigger.
-
-@subsection @code{compound}
-Statements of the same 'kind' can be grouped using curly braces:
-
-@example
-  @{ Statement1; Statement2; Statement3; @}
-@end example
-
-It results in a single '@code{compound}', of the same 'kind' as its
-sub statements, and can be used as such.
-Note that the list of statements within the curly braces can be empty:
-
-@example
-  @{ /* this is an empty statement sequence */ @}
-@end example
-
-@subsection Declarative Statements
-The triggers an interface or component has to handle and the conditions
-in which they occur are described as declarative statements.
-The conditions are expressed as @code{guard}s, the triggers as
-@code{on}s.
-
-@subsubsection @code{guard}
-A @code{guard} looks like:
-
-@example
-  [ bool-expression ] statement
-@end example
-
-The square brackets (@code{[} and @code{]}) must contain a boolean expression
-expressing the validity of the guard.  The statement following the guard can be either
-declarative or imperative.
-
-@subsubsection @code{on}
-In an interface behavior specification an @code{on} is expressed as:
-
-@example
-  on some_event: statement
-@end example
-
-The statement contains a keyword @code{on}, the name of an event
-introduced in the interface, a colon (@code{:}), and a statement,
-which can be either be declarative or imperative.
-A declarative statement must not contain further @code{on}s:
-nesting these statements is not allowed.
-
-Note that no event parameters must be specified in an interface.
-
-In a component behavior specification an @code{on} is expressed as:
-
-@example
-  on some_port.some_event(param1): statement
-@end example
-
-where @code{some_port} is a port of the component with an interface type
-that contains event @code{some_event} with one data parameter.  Note
-that in a component behavior specification data parameters have to be
-used where specified.  On the trigger each data parameter must be a
-fresh variable, implicitly typed conform the event specification.
-
-@subsection Imperative Statements
-The response on a (guarded) trigger event are expressed in the
-imperative statement following the declarative part.  All variable
-assignments, event actions, function calls, etc.  are handled here.
-
-@subsubsection Variable Definition
-New variables can be declared as follows:
-
-@example
-  some_type some_variable = initial_value_expression;
-@end example
-
-where @code{some_type} denotes a previously defined type,
-@code{some_variable} is a 'fresh' name, and
-@code{initial_value_expression} an expression of type
-@code{some_type}.
-
-After the variable has been declared it can be referred to as long as the
-referring place is in scope (scopes being introduced by compounds).
-'Fresh' should be interpreted as follows:
-
-@itemize
-
-@item No two variables with the same name can be declared in one scope.
-@item A variable @code{some_variable} that has been declared in a wider scope
-can be 'shadowed' by a variable definition with the same name in a sub scope
-@end itemize
-
-@subsubsection @code{assign}
-A previously declared variable can change value using an @code{assign}:
-
-@example
-  some_variable = value_expression;
-@end example
-
-@subsubsection Action Statement
-In handling the response on a trigger event, an event action can be called.
-The syntax in an interface definition is:
-
-@example
-  some_event;
-@end example
-
-where @code{some_event} is the name of an out event introduced in the interface.
-Note that no event parameters must be specified.
-
-In a component behavior specification an action statement is expressed as:
-
-@example
-  some_port.some_event(parameter_expression);
-@end example
-
-where @code{some_port} is a port of the component with an interface type
-that contains event @code{some_event} with one data parameter.
-
-Note that the event in an action statement must be a void event.  For a
-valued event the return value must be caught, a variable definition or
-an @code{assign} are the appropriate ways to handle that:
-
-@example
-  bool b = r.bool_event ();
-  @dots{}
-  b = r.bool_event2 ();
-@end example
-
-or used in a simple expression, possibly using @b{==}, @b{!=}, @b{!}, @b{&&}, @b{||}
-(since v2.14)
-
-@example
-  if (r.bool_event ()) ...;
-  if (!r.bool_event ()) ...;
-  if (!r.bool_event () && b) ...;
-  if (r.enum_event () == Enum.OK) ...;
-  if (r.enum_event () != Enum.OK || b) ...;
-  reply (r.enum_event ());
-  reply (r.enum_event () != Enum.FAIL);
-@end example
-
-@subsubsection Function @code{call}
-A function defined in a behavioral specification can be called with
-properly typed parameter expressions.  Given a function definition
-
-@example
-  void some_function(enum_type e, bool b) @{ /* ...  */ @}
-@end example
-
-a function @code{call} might look like:
-
-@example
-  some_function(enum-expression, bool-expression);
-@end example
-
-Note that the function in a function @code{call} must be a void
-function.  For a valued function the return value must be caught, a a
-variable definition or an @code{assign} are the appropriate ways
-to handle that:
-
-@example
-  bool b = bool_function ();
-  @dots{}
-  b = bool_function ();
-@end example
-
-or used in a simple expression, possibly using @b{==}, @b{!=} or @b{!}
-(since v2.14)
-
-@example
-  if (bool_function ()) ...;
-  if (!bool_function ()) ...;
-  if (enum_function () == Enum.OK) ...;
-  reply (enum_function ());
-@end example
-
-@subsubsection @code{reply}
-A valued trigger event will have to set the appropriate return value in
-its response handling.  Setting that value (not returning yet) is denoted as:
-
-@example
-  reply(valued_expression);
-@end example
-
-@subsubsection @code{return}
-A valued function has to return with a value of the appropriate type.
-This looks like:
-
-@example
-  return valued_expression;
-@end example
-
-@subsubsection @code{if}
-Conditional handling of statements is supported by the @code{if},
-which can have an optional else part:
-
-@example
-  if (bool-expression) statement1
-@end example
-
-or:
-
-@example
-  if (bool-expression) then-statement else else-statement
-@end example
-
-where @code{if} and @code{else} are keywords, and the parentheses are
-part of the construct.
-
-@noindent
-The @code{bool-expression} between the
-parentheses must be a simple boolean expression and may contain only one
-unconditional @code{call} or @code{action} (since 2.14).
-
-@noindent
-The statements @code{then-statement} and @code{else-statement} are
-arbitrary imperative statements.
-
-Note that nested @code{if}s are allowed, and that
-
-@example
-  if (b1) if (b2) then-statement else else-statement
-@end example
-
-will be interpreted as
-
-@example
-  if (b1)
-  @{ if (b2) then-statement else else-statement @}
-@end example
-
-and not as
-
-@example
-  if (b1)
-  @{ if (b2) then-statement @}
-  else else-statement
-@end example
-
-In other words: @code{else} binds to the closest if.
-
-@subsection Functions
-
-A function definition introduces the signature of a function and its
-body.  The signature is built up from the return type, the name of the
-function, and a list of typed parameters.  The body is a @code{compound}
-in the imperative part of the language, so no on-event and @code{guard}s
-are allowed.  It is allowed however to refer to action events and member
-variables, and of course to the function parameters.
 
 An example:
 
 @example
-bool some_function(bool param1, some_enum param2)
-@{
-  bool b = param2;
-  if (param1)
-  @{
-    some_port.some_event();
-    b = false;
-  @}
-  member_var = param2;
-  other_function(b);
-  return true;
-@}
+enum result @{FALSE,TRUE,ERROR@};
 @end example
 
-This declares a function called @code{some_function} with two parameters
-(of type @code{bool} and @code{some_enum} respectively) and returning a
-value of type @code{bool}.  In the function body a local variable is
-declared, a conditional action event is called, a member variable
-is set, another function is called, and the return value is set.
+where @code{enum} is a keyword; this defines the enum type @code{result}
+with three values.
 
-Functions are allowed to be recursive, and also mutual recursive
-(function @code{f}calling function @code{g} and vice versa), under one
-condition: A recursive function must be "tail recursive"; this means
-that the recursive call must be the last statement in the function.  The
-rationale for this restriction comes from the need for verification: the
-generic recursive case cannot be verified.
+In expressions the enum values are referred to with a dot notation:
+@code{result.FALSE}.
 
-@cindex variable
-@cindex Behavior Syntax
-@cindex statement
-@cindex state
-@cindex scoping
-@cindex return
-@cindex reply
-@cindex imperative
-@cindex if
-@cindex guard
-@cindex function
-@cindex expression
+Available enum operators are:
+
+@table @code
+@item e1 == e2
+Equality of two enum expressions,
+@item e1 != e2
+Inequality of two enum expressions,
+@item v.ERROR
+A field-test: testing the value of an enum variable, denoted by
+@code{v.ERROR}, which is shorthand for @code{v == result.ERROR}
+@end table
+where @code{e1} and @code{e2} denote enum expressions, and @code{v} an
+enum variable of type @code{result}.
+
+@node Subint
+@subsection @code{subint}
+
+@cindex integer type
+@cindex subint type
+The integer type is available in Dezyne in a restricted way@footnote{the
+subint definition allows range checking and prevents accidental
+unboundedness during model checking}: only a finite contiguous subrange
+of integer numbers can be used.  An explicit type definition is needed
+for each subset, where a @code{C}-like syntax is used.
+
+@example
+subint  ::= "subint" identifier "@{" range "@}" ";"
+range   ::= integer ".." integer
+integer ::= ("-")? [0-9]+
+@end example
+
+An example:
+
+@example
+subint int @{-1..2@};
+@end example
+
+where @code{subint} is a keyword.  This defines the finite type
+@code{int} with possible values -1, 0, 1, and 2.  Available integer
+operators are:
+
+@table @code
+
+@item comparison
+
+@table @code
+@item i1
+@item i1 <= i2
+@item i1 >= i2
+@item i1 >  i2
+@item i1 == i2
+@item i1 != i2
+@end table
+
+@item i1 + i2,
+Integer addition,
+@item i1 - i2
+Integer subtraction,
+@end table
+where @code{i1} and @code{i2} denote integers.
+
+@quotation note
+Integers of different @code{subint} types can be used in comparison,
+assignment, and function calls.  The verifier will check that the
+resulting integer value is within the defined @code{subint} range.
+@end quotation
+
+@node Extern Data Type
+@subsection @code{extern} data
+
+@cindex data type
+@cindex extern
+Apart from @code{bool}, @code{enum}, and @code{int} types introduced
+above, also @code{extern} data types can be defined.  An @code{extern}
+data type is defined as follows:
+
+@cindex data-expression
+@example
+extern          ::= "extern" identifier data-expression ";"
+data-expression ::= "$" (!"$")* "$"
+@end example
+
+The @code{data-expression} is a type expression in the target
+language.
+
+No Dezyne-supported expressions are available for data types, apart from
+@code{data-expression}s.  The content of the data-expression is passed
+to the target language verbatim.
+
+For example, a @code{C++} string type could be defined as follows:
+
+@example
+extern string $std::string$;
+@end example
+
+@node Expressions
+@subsection Expressions
+
+Expressions in Dezyne are strictly typed.
+
+@cindex bool-expression
+@cindex boolean-expression
+@example
+expression ::= bool-expression | data-expression | enum-expression
+                | integer-expression
+@end example
+
+@quotation Note
+The well-formedness check (@xref{Well-formedness}) verifies that
+expressions are of the correct type.
+@end quotation
+
+@subsubheading Bool Expressions
+
+@example
+bool-expression ::= bool-literal
+                     | action
+                     | call
+                     | field-test
+                     | "!" bool-expression
+                     | "(" bool-expression ")"
+                     | bool-expression bool-operator bool-expression
+                     | int-expression comparison-operator int-expression
+bool-literal    ::= "false" | "true"
+field-test      ::= enum-variable "." enum-field
+bool-operator   ::= "==" | "!=" | "&&" | "||"
+comparison-operator
+                ::= "==" | "!=" | "<" | "<=" | ">" | ">="
+@end example
+
+where @code{action} and @code{call} are of type @code{bool}.
+
+@subsubheading Enum Expressions
+
+@cindex enum-expression
+@example
+enum-expression ::= enum-literal
+                     | action
+                     | call
+enum-literal    ::= enum "." field
+@end example
+
+where @code{action} and @code{call} are of the correct @code{enum} type.
+
+@subsubheading Int Expressions
+
+@cindex int-expression
+@cindex integer-expression
+@example
+int-expression ::= int-literal
+                     | action
+                     | call
+                     | int-expression int-operator int-expression
+int-literal    ::= "-"? [0-9]+
+int-operator   ::= "+" | "-"
+@end example
+
+where @code{action} and @code{call} are of a @code{subint} type.
+
+@node Interfaces
+@section Interfaces
+
 @cindex event
-@cindex enum
-@cindex declarative
-@cindex conditional
-@cindex compound
-@cindex behavior
-@cindex assignment
-@cindex action
-
-@node System Components
-@section System Components
-
-A component which is composed from a number of sub components has a
-'system' internal description.  This description specifies the available
-sub component instances, and all connections between the component
-ports.  An example: suppose the following components to be defined:
+@cindex interface
+@cindex message
+Interfaces describe the interaction between two components: the events
+(or messages) that can and cannot be communicated, i.e., the interaction
+protocol.
 
 @example
-component foo @{
-  provides ifoo f;
-  requires ibar b;
-  requires inut n;
-  //  ...  internals ...
-@}
-component bar @{
-  provides ibar b;
-  // ...  internals ...
-@}
-component nut @{
-  provides inut n;
-  requires iwell w;
-  // ...  internals ...
+interface ::= "interface" identifier "@{" types-and-events behavior "@}"
+type-and-events
+          ::= (type | event)*
+behavior  ::= "behavior" "@{" behavior-statement* "@}"
+@end example
+
+Each event has a direction specified by the @code{in} or @code{out}
+keywords.  An event labeled with @code{in} (@code{in}-event) is received
+by the implementation providing the interface.  Conversely, an event
+labeled with @code{out} (@code{out}-event) is emitted by the
+implementation providing the interface.  Note that from the point of
+view of an implementation requiring an interface the interpretation of
+@code{in} and @code{out} is inverted.
+
+The interface protocol is specified in the @code{behavior} section.
+
+@example
+$include <string>;$
+interface ihello
+@{
+  @b{enum} result @{FALSE,TRUE,ERROR@};
+  @b{extern} string $std::string$;
+  @b{in} result hello (string greeting);
+  @b{out} void world ();
+  @b{behavior} @{ @dots{} @}
 @}
 @end example
 
-Then a system component @code{sys} could be defined:
+@menu
+* Events::                      Event or message definitions.
+* Behavior::                    Specifying an interface protocol.
+* Declarative Statements::      Define when to run which trigger.
+* Imperative Statements::       The code that runs upon a trigger.
+* Functions::                   Avoiding code duplication.
+@end menu
+
+@node Events
+@subsection Events
+
+Events are messages or function calls and returns that are communicated
+between components.
 
 @example
-component sys @{
-  provides ifoo top;
-  requires iwell bot;
-  // ...  internals ...
+event     ::= direction type identifier "(" parameter-list? ")" ";"
+direction ::= "in" | "out"
+parameter-list
+          ::= parameter ( "," parameter)*
+parameter ::= parameter-direction? data-type identifier
+parameter-direction
+          ::= "in" | "out" | "inout"
+@end example
+
+Some examples.
+
+A void in-event called @code{e} with an empty parameter list:
+
+@example
+in void e ();
+@end example
+
+a valued in-event called @code{e2}:
+
+@example
+in enum_type e2 ();
+@end example
+
+a void in-event called @code{e3} with two data parameters
+
+@example
+out void e3 (some_id in_id, out some_id out_id);
+@end example
+
+a void out-event called @code{e4} with a data parameter
+
+@example
+out void e4 (some_string s);
+@end example
+
+@quotation Note
+There are two restrictions on @code{out}-event definitions:
+@itemize
+@item
+@code{out}-events must be of type @code{void}, and
+@item
+@code{out}-events can only take @code{in} parameters.
+@end itemize
+@end quotation
+
+@subsubsection Modeling Events
+
+Apart from user-defined events, Dezyne has two special builtin events
+called @code{optional} and @code{inevitable}.  These are called
+``modeling events'' and are used in interface to specify
+@emph{decoupled} behavior (@xref{Using inevitable and optional}).
+
+@node Behavior
+@subsection Behavior
+
+The @code{behavior} section of an interface defines the protocol of the
+interface.  The protocol prescribes the causal relation between events
+and state.  The behavior is akin to a state machine.
+
+@example
+behavior           ::= "behavior" "@{" behavior-statement* "@}"
+behavior-statement ::= type | variable | function | declarative-statement
+@end example
+
+@menu
+* Behavior Variable::           The detailed state of the behavior.
+@end menu
+
+@node Behavior Variable
+@subsubsection Behavior @code{variable}
+
+The @code{behavior} variables define the state of the behavior.
+They are sometime referred to as @emph{state variables}.
+
+@example
+variable ::= (type identifier = expression
+                | data-type identifier = data-expression
+                | data-type identifier) ";"
+@end example
+
+where @code{type} and @code{expression} must match.
+
+For example:
+
+@example
+bool idle = true;
+@end example
+
+@quotation Note
+The @code{expression} used in the definition of a behavior variable must
+be a constant expression, i.e.: no @code{action}, @code{call} or
+@code{variable}-reference is allowed.
+@end quotation
+
+@node Declarative Statements
+@subsection Declarative Statements
+
+A trigger is prescribed by an interface to be handled by an
+implementation as is the condition under which it occurs.  Collectively
+this is referred to as a declarative statement.  The condition is
+expressed as a @code{guard}, the trigger in an @code{on}.  The code that
+is executed when both the guard expression evaluates to @code{true} and
+the trigger occurs, is called the @emph{imperative statement}
+(@xref{Imperative Statements}).
+
+@example
+declarative-statement ::= guard | on | "@{" declarative-statement "@}"
+@end example
+
+The combination of all declarative statements leading up to a
+@code{imperative statement} is also called the declarative
+@emph{prefix}.  The combination of all @code{guard}s, the @code{on} and
+the @code{imperative statement} is sometimes referred to as a
+@emph{transition}.
+
+@example
+transition   ::= prefix imperative-statement
+prefix       ::= <guards> <on>
+@end example
+
+@menu
+* On::                          Defining what happens upon a trigger.
+* Guard::                       Declarative trigger condition.
+* Using inevitable and optional::  Nitty gritty details on using modeling events.
+@end menu
+
+@node On
+@subsubsection @code{on}
+
+The @code{on} defines which trigger is to be handled:
+
+@example
+on        ::= "on" trigger ("," trigger)* ":" statement
+trigger   ::= event-name | "inevitable" | "optional"
+statement ::= declarative-statement | imperative-statement | illegal
+imperative-statement
+          ::= action | assign | call | if | reply | return | variable
+                | imperative-compound
+                | empty-statement
+illegal   ::= "illegal"
+imperative-compound
+          ::= "@{" (imperative-statement ";")+ "@}"
+empty-statement
+          ::= ";" | "@{" "@}"
+@end example
+
+For example:
+
+@example
+on hello: @{@}
+on inevitable: @{world; idle = true;@}
+@end example
+
+@quotation Note
+
+@itemize
+@item
+There must be exactly one imperative statement for every combination of
+@code{guard} and @code{on},
+@item
+There can be only one @code{on} leading to an imperative statement.
+@end itemize
+@end quotation
+
+@node Guard
+@subsubsection @code{guard}
+
+@example
+guard ::= "[" bool-expression "]" statement
+@end example
+
+For example:
+
+@example
+[idle]  on hello: idle = false;
+[!idle]
+@{
+  on hello: idle = true;
+  on inevitable: @{world; idle = true;@}
 @}
 @end example
 
-where its internals are composed of the @code{foo}, @code{bar}, and
-@code{nut} components:
+@node Using inevitable and optional
+@subsubsection Using @code{inevitable} and @code{optional}
+
+In interfaces, two @emph{modeling} events may be used as abstract
+triggers, i.e.@: @code{inevitable} and @code{optional}:
 
 @example
-component sys @{
-  provides ifoo top;
-  requires iwell bot;
-  system @{
-    foo cfoo;
-    bar cbar;
-    nut cnut;
-    top <=> cfoo.f;
-    cfoo.b <=> cbar.b;
-    cfoo.n <=> cnut.n;
-    cnut.w <=> bot;
+on inevitable: imperative-statement;
+on optional:   imperative-statement;
+@end example
+
+Where @code{inevitable} implies that if no other triggers occur, this
+trigger is guaranteed to occur, and @code{optional} implies that the
+trigger may or may never occur.
+
+Note that an inevitable event is not allways guaranteed to occur, it is
+only inevitable in the absence of other events.
+
+An example of an interface using both inevitable and optional.
+
+@example
+@verbatiminclude examples/inevitable-optional.dzn
+@end example
+
+In the interface above a reply value of @code{true} on @code{hello}
+informs the client sending the @code{hello} that the @code{world} can be
+waited on.  However in case the reply value of @code{hello} is
+@code{false} and the client would sit there waiting for @code{cruel} to
+happen, they may sit there forever because @code{cruel} might never
+happen.  This is what we refer to as a @emph{deadlock}.  To avoid this
+@emph{deadlock} as a client, they must make sure that they can handle a
+@code{cruel} in case it does happen and that they have another way of
+making progress in case @code{cruel} never happens.
+
+Conversely, the implementation of this interface may choose to perform
+the cruel always, never or intermittently after a @code{hello} followed
+by a @code{false}, but it must (being contractually required) always do
+a @code{world} after a @code{hello} followed by a @code{true}.
+
+@node Imperative Statements
+@subsection Imperative Statements
+
+The imperative statement is the statement that will be executed when a
+guarded trigger occurs (see also @xref{Declarative Statements}).
+
+@menu
+* Action::                      Emitting events.
+* Assign::                      Updating state.
+* Function Call::               A named collection of imperative statements.
+* Empty Statement::             When a trigger has no effect, or there is nothing to do.
+* If::                          Imperative decisions.
+* Illegal::                     Specifying what is not allowed.
+* Reply::                       Determining the reply for a valued trigger.
+* Return::                      Returning from a function.
+* Variable::                    Defining a local variable.
+@end menu
+
+@node Action
+@subsubsection @code{action}
+
+When handling a trigger (a @code{in}-event), an interface can emit zero
+or more @code{out}-events.  The event that follows a trigger is are
+referred to as an @code{action}.
+
+@example
+action ::= event-name ";"
+@end example
+
+where @code{event-name} is the name of an @code{out}-event defined in
+the interface.
+
+For example
+
+@example
+world;
+@end example
+
+@node Assign
+@subsubsection @code{assign}
+
+The value of a previously defined variable can be updated using an
+@code{assign}:
+
+@example
+assign ::= variable "=" expression ";"
+@end example
+
+For example:
+
+@example
+idle = true;
+idle = !b;
+idle = negate (idle);
+@end example
+
+where @code{b} and @code{idle} are variables of type @code{bool},
+@code{negate} is a function with one @code{bool} parameter and
+return-type @code{bool} (see @xref{Function Call}).
+
+@node Function Call
+@subsubsection @code{call}
+
+@example
+call          ::= identifier "(" argument-list ")"
+argument-list ::= (expression ",")*
+@end example
+
+For example:
+
+@example
+foo ();
+bar (true, 12);
+@end example
+
+Note that the value returned by a @code{call} to a non-@code{void}
+@code{function} is not allowed to be ignored.  Therefore in the example
+above both @code{foo} and @code{bar} must be @code{function}s of type
+@code{void}.  By capturing the value in a variable definition or the use
+of an @code{assign} to an existing variable is the proper way to handle
+the return value:
+
+@example
+bool b = bool_function ();
+b = bool_function ();
+@end example
+
+Another way is to properly use a return value is in simple expressions,
+possibly combined with: @b{==}, @b{!=}, @b{!}, @b{&&}, @b{||} (since
+2.14.0)
+
+@example
+if (bool_function ()) @dots{};
+if (!bool_function ()) @dots{};
+if (!bool_function () && b) @dots{};
+if (enum_function () == result.FALSE) @dots{};
+if (enum_function () != result.TRUE || b) @dots{};
+reply (enum_function ());
+reply (enum_function () != result.ERROR);
+@end example
+
+@node Empty Statement
+@subsubsection Empty Statement
+
+@cindex empty statement
+@cindex skip
+The empty statement or @code{skip} statement defines for @emph{nothing}
+to happen.
+
+@example
+empty-statement ::=  ";" | "@{" "@}"
+@end example
+
+For example:
+
+@example
+on hello: @{@}
+on cruel: ;
+@end example
+
+@node If
+@subsubsection @code{if}
+
+Conditional handling of statements is supported by the @code{if}, which
+can have an optional else:
+
+@example
+if ::= ("if" "(" bool-expression ")" imperative-statement)
+         | ("if" "(" bool-expression ")" imperative-statement
+              "else" imperative-statement)
+@end example
+
+For example
+
+@example
+if (idle)
+  @{world; idle = false;@}
+else
+  cruel;
+@end example
+
+Since 2.14.0, a valued @code{call} may be used in an
+@code{if}-expression.
+
+For example:
+
+@example
+if (bool_function ()) @dots{};
+if (!bool_function ()) @dots{};
+if (!bool_function () && b) @dots{};
+if (enum_function () == result.TRUE) @dots{};
+if (enum_function () != result.ERROR || b) @dots{};
+@end example
+
+Note that nested @code{if}s are allowed:
+
+@example
+if (b1) if (b2) then-statement else else-statement
+@end example
+
+is interpreted as
+
+@example
+if (b1)
+@{ if (b2) then-statement else else-statement @}
+@end example
+
+In other words: @code{else} binds to the closest @code{if}.
+
+@quotation Note
+In an interface, an @code{illegal} is not allowed as a then-statement or
+an else-statement, however the same can be expressed using a
+@code{guard}.
+@end quotation
+
+@node Illegal
+@subsubsection @code{illegal}
+
+A trigger can be explicitly marked as being @code{illegal} in a certain
+state.  In that case, @code{illegal} must be the only imperative
+statement for that trigger.
+
+@example
+illegal ::= "illegal" ";"
+@end example
+
+For example:
+
+@example
+on hello: illegal;
+@end example
+
+@quotation Note
+Since 2.14.0, a declarative-statement followed by an @code{illegal} can
+be completely omitted, since it has the same meaning.  It is however
+still available for backwards compatibility.
+@end quotation
+
+@node Reply
+@subsubsection @code{reply}
+
+Define the value to be returned at the end of an @code{on} with a valued
+trigger.
+
+@example
+reply ::= "reply" "(" expression ")" ";"
+@end example
+
+For example:
+
+@example
+on hello: reply (true);
+@end example
+
+@quotation Note
+Reply does not mean ``return'', it merely defines the value that is
+returned when the @code{on} has finished executing.  @code{reply} does
+not have to be the final imperative statement, however it must occur
+exactly once on every path through every sequence statements.
+@end quotation
+
+@node Return
+@subsubsection @code{return}
+
+@code{return} is used to return program execution from the body of a
+function to the caller, possibly providing a value.
+
+Implicitly returning from a @code{void} function is allowed.  Also it is
+not required to use @code{return} as the last statement of a @code{void}
+function, i.e., an early return skipping over remaining statements is
+allowed.
+
+@example
+return ::= "return" ";"
+             | "return" expression ";"
+@end example
+
+For example:
+
+@example
+void foo ()
+@{
+  if (idle) return;
+  world;
+@}
+
+bool negate (bool b)
+@{
+  return !b;
+@}
+@end example
+
+@node Variable
+@subsubsection @code{variable}
+
+Defining a local variable is syntactically identical to a behavior
+variable:
+
+@example
+variable ::= (type identifier = expression
+               | data-type identifier = data-expression
+               | data-type identifier) ";"
+@end example
+
+For example:
+
+@example
+bool b = true;
+bool not_idle = !idle;
+bool c = negate (idle);
+@end example
+
+@node Functions
+@subsection Functions
+
+A function can is used to name and reuse a sequence of imperative
+statements.
+
+@example
+function ::= type identifier "(" parameter-list ")"
+               "@{" imperative-statement* "@}"
+@end example
+
+For example:
+
+@example
+void foo ()
+@{
+  bye;
+  cruel;
+  world;
+@}
+
+bool bar (bool b, int i)
+@{
+  if (b)
+    world;
+  idle = i == 12;
+  return idle;
+@}
+@end example
+
+Functions are allowed to be called recursively.  This includes mutual
+recursive functions (function @code{f} calling function @code{g} and
+vice versa).  However only as long as every function involved in the
+recursion is @emph{tail recursive}; which means that a recursive call is
+the last statement in the function.
+
+@node Components
+@section Components
+
+Components are the building blocks in a Dezyne.  They allow composition
+into bigger components called system components.
+
+A component has a list of ports and optionally a behavior or a system
+block.
+
+@example
+component ::= "component" "@{" port+ (behavior | system)? "@}"
+behavior  ::= "behavior" "@{" behavior-statement* "@}"
+system    ::= "system" "@{" system-statement* "@}"
+@end example
+
+@menu
+* Ports::                       Defining a component's communication channels.
+* Component Behavior::          Defining a component's behavior.
+* Component Types::             Three types of components.
+* Component Declarative Statements::  Component-specific declarative statements.
+* Component Imperative Statements::  Component-specific imperative statements.
+* Multiple Provides Ports::     Providing more than one interface.
+@end menu
+
+@node Ports
+@subsection Ports
+
+@cindex port
+@cindex provides
+@cindex requires
+A port is an instance of an interface.  A component has ports through
+which it interacts with other components.  As such a port is one of the
+two end-points connecting two components.
+
+@example
+port      ::= ("provides" interface-type identifier ";")
+              | ("requires" qualifier? interface-type identifier ";")
+qualifier ::= "external" | "injected";
+@end example
+
+The keyword @code{provides} indicates that a component implements all
+of the interface behavior.
+
+The keyword @code{requires} indicates that a component relies on some
+or all of the interface behavior in its implementation.
+
+For example:
+
+@example
+@b{provides} ihello p;
+@b{requires} ihello r;
+@b{requires} @b{external} itimer t;  // (1)
+@b{requires} @b{injected} ilogger l; // (2)
+@end example
+
+1) port to a component with a potential delay in its communication
+(@pxref{External})
+
+2) port to a shared resource (@pxref{Systems})
+
+Furthermore a component receives its @code{trigger}s from its
+surroundings through its ports.  Note that a component @code{trigger} is
+either a @code{provides-in} or a @code{requires-out} event.  If the
+component emits events over its ports they are referred to as
+@code{action}s.  An @code{action} is either a @code{provides-out} or a
+@code{requires-in} event.
+
+@menu
+* Injection::                   Ports sharing a resource.
+* External::                    Ports with external delay.
+@end menu
+
+@node Injection
+@subsubsection Injection
+
+@cindex injection
+A @code{requires} port can be specified to be @code{injected}:
+
+@example
+@b{requires} @b{injected} ilogger l;
+@end example
+
+This indicates that the port can be bound to a corresponding port
+residing at any level in the system hierarchy.  An @code{injected} port
+is the exception to the one to one rule, i.e., it allows many ports to
+be connected to a single instance.  For this reason @code{out} events
+are not allowed in interfaces which are @code{injected}.
+
+@xref{Systems} for a detailed description of the binding of injected
+ports.
+
+@node External
+@subsubsection @code{external}
+
+@cindex external
+The @code{external} keyword specifies that communication over a port may
+experience a delay.  This may for instance be caused by the switch
+between execution contexts as in inter-process communication or the use
+of threads.
+
+@example
+@b{requires} @b{external} itimer t;
+@end example
+
+During verification the delay on an @code{external} interface is
+experienced an additional interleaving of events that would otherwise
+not occur.
+
+@subsubsection Race condition due to external delay
+
+Component @code{remote_timer_proxy} illustrates how a delayed
+communication channel may cause a race condition leading to illegal
+behavior.
+
+The implementation of component @code{remote_timer_proxy} is correct (no
+illegal behavior) for @code{requires itimer rp} but incorrect for
+@code{requires external itimer rp} due to race between @code{pp.cancel}
+and @code{rp.timeout}.
+
+@example
+@verbatiminclude examples/remote-timer-proxy.dzn
+@end example
+
+@node Component Behavior
+@subsection Component Behavior
+
+The @code{behavior} section of a component defines its behavior.
+
+@example
+behavior           ::= "behavior" "@{" behavior-statement* "@}"
+behavior-statement ::= type | variable | function | declarative-statement
+@end example
+
+@node Component Types
+@subsection Component Types
+
+There are tree types of component:
+
+@table @code
+@item component, regular component, or leaf
+A component that defines its implementation in its @code{behavior},
+@item foreign
+A component that defines only ports.  Its behavior is said to be defined
+elsewhere.  This is a placeholder for a component that is implemented by
+some other means, like another programming language (e.g. @code{C++}),
+@item system
+A component that comprises other components in its @code{system}
+specification, @xref{Systems}.
+@end table
+
+@subsubsection A Leaf Component
+
+Every component in Dezyne is a leaf component, unless it is a system
+component.  The following component implements one interface and a
+straightforward behavior section:
+
+@example
+@b{component} hello
+@{
+  @b{provides} ihello p;
+  @b{requires} ihello r;
+  @b{requires} itimer t;
+  @b{behavior}
+  @{
+    @b{on} p.hello (): t.create ();
+    @b{on} t.timeout (): r.hello ();
+    @b{on} r.world (): p.world ();
   @}
 @}
 @end example
 
-The system description shows the instantiation of the three sub
-components, and four connections between various ports.
+@subsubsection A Foreign Component
 
+This component does not reveal its implementation in Dezyne under this
+name.  It represents a component implemented elsewhere.  It may be
+implemented in another programming language, or it is implemented in
+Dezyne without exposing any of its implementation details.
+
+@example
+@b{component} timer
+@{
+  @b{provides} itimer t;
+@}
+@end example
+
+@subsubsection A System Component
+
+A component @code{timer_system} decomposed into two components
+@code{ihello} and @code{timer} where these components are connected via
+their ports.
+
+@example
+@b{component} timer_system
+@{
+  @b{provides} ihello p;
+  @b{requires} ihello r;
+  @b{system}
+  @{
+    hello h;
+    timer t;
+    p @b{<=>} h.p;
+    h.t @b{<=>} t.t;
+    h.r @b{<=>} r;
+  @}
+@}
+@end example
+
+@node Component Declarative Statements
+@subsection Component Declarative Statements
+
+For a component behavior, the list of declarative statements is extended
+with @code{blocking} (@xref{Blocking}).  So we get:
+
+@example
+component-declarative-statement ::= declarative-statement | blocking
+@end example
+
+Thus, in a component, the ``declarative prefix'' includes blocking such
+that the prefix consists of three elements.
+
+@example
+transition  ::= prefix imperative-statement
+prefix      ::= <blocking?> <guards> <on>
+@end example
+
+@menu
+* Component On::                Defining what happens on a trigger.
+* Blocking::                    Implementing a synchronous call on decoupled events.
+@end menu
+
+@node Component On
+@subsubsection Component @code{on}
+
+Similar to an interface, in a component the @code{on} defines which
+trigger is to be handled.  Component triggers, however, belong to
+a port and carry formal parameters:
+
+@example
+on          ::= ("on" triggers ":" statement)
+                  | ("on" illegal-triggers ":" illegal)
+triggers    ::= trigger ("," trigger)*
+trigger     ::= port-name "." event-name "(" formal-list? ")"
+formal-list ::= identifier ("," identifier)*
+statement   ::= declarative-statement | imperative-statement | illegal
+imperative-statement
+            ::= action | assign | call | if | reply | return | variable
+                  | imperative-compound
+                  | empty-statement
+illegal     ::= "illegal"
+imperative-compound
+            ::= "@{" (imperative-statement ";")* "@}"
+empty-statement
+            ::=
+illegal-triggers
+            ::= illegal-trigger ("," illegal-trigger)*
+illegal-trigger
+            ::= port-name "." event-name
+@end example
+
+The @code{formal-list} to be used is defined by the parameters of the
+event definition in the interface.  Their relation is position-based.
+Formal parameters may introduce another name than specified in the
+@code{event} definition in the interface.
+
+For example:
+
+@example
+on p.hello (greeting): @{ w.hello (greeting); @}
+on p.cruel, r.hello: illegal;
+@end example
+
+@node Blocking
+@subsubsection @code{blocking}
+
+The @code{blocking} keyword is a declarative statement that can be used
+in a component.
+
+@example
+blocking ::= "blocking" statement
+@end example
+
+Using @code{blocking} requires an explicit @code{reply}.  It can only be
+used in a component.  If the @code{reply} is omitted for the
+@code{blocking} @code{trigger}, the imperative statement of another
+@code{trigger} must perform the @code{reply} for the blocked port.
+Thus, time and value of a blocked port reply depend on another
+@code{trigger}.  @code{blocking} may be used once in the declarative
+prefix.
+
+Only @code{provides} ports are affected by @code{blocking}.  A call of a
+provides port in-event will not return before a @code{reply} is
+performed for that port.
+
+Guards or @code{on} is commutative with respect to blocking.  If
+@code{blocking} appears before a guard or @code{on} it applies
+to the imperative statement after the guard or @code{on}.
+
+@quotation Note
+
+@itemize
+@item
+@code{blocking} may only be used in components with a single
+@code{provides} port.  This limitation may be lifted in a future
+release.
+
+@item
+Systems containing @code{blocking} component instances must be
+contained in a thread-safe shell (@pxref{Thread-safe Shell}).
+
+@item
+A @code{blocking} component may only appear as the top component in a
+system.  This restriction will be lifted in version 2.15, or see the
+``wip-blocking'' branch in git.
+@end itemize
+@end quotation
+
+For example:
+
+@example
+on trigger (): blocking imperative-statement;         (1)
+@end example
+
+@example
+blocking on trigger (): imperative-statement;         (2)
+@end example
+
+@example
+on trigger (): blocking [guard] imperative-statement; (3)
+@end example
+
+@example
+on trigger ():
+@{
+  blocking [guard] imperative-statement1;             (4)
+  [guard] imperative-statement2;
+@}
+@end example
+
+Explanation:
+
+2) The @code{blocking} keyword applies to the
+@code{imperative-statement} following @code{on trigger:}.  This form is
+semantically equivalent to 1).
+
+3) The @code{blocking} keyword applies to the @code{imperative-statement}
+following @code{[guard]}.  This form is semantically equivalent to
+@code{on trigger (): [guard] blocking imperative-statement;}"
+
+4) The @code{blocking} keyword applies to @code{imperative-statement1}.
+It does @emph{not} apply to @code{imperative-statement2}.
+
+@subsubsection Thread signalling
+
+component @code{ca} illustrates the use of @code{blocking} to postpone
+thread return.  An 'on event' on a different port performs the
+@code{reply} statement for the blocked port.
+
+The action statement in @code{on pp.request_value} is marked as
+@code{blocking} and does not contain a @code{reply}.  A thread calling
+@code{pp.request_reply} blocks after the @code{rp.request} action.  The
+blocked thread returns when the action statement for @code{on rp.accept}
+or @code{on rp.reject} have been performed.
+
+@example
+@verbatiminclude examples/ca.dzn
+@end example
+
+@node Component Imperative Statements
+@subsection Component Imperative Statements
+
+@menu
+* Component Action::            Sending messages over ports.
+* Component If::                Imperative decisions in a component.
+* Component Illegal::           Using illegal in a component.
+* Component Reply::             Using reply in a component.
+@end menu
+
+@node Component Action
+@subsubsection Component @code{action}
+
+When handling the response of a @code{trigger}, a component can send one
+or more events over its ports.  The sending of a
+@code{provides-out}-event or a @code{requires-in} event is referred to
+as an @code{action}.
+
+@example
+action        ::= port-name "." event-name "(" argument-list? ")"
+argument-list ::= expression ("," expression)*
+@end example
+
+where @code{port-name} is the name of a port defined in the component,
+and @code{event-name} is the name of an event defined in the interface
+associated with the port.
+
+Note that the @code{event} in an @code{action} statement must be of type
+@code{void}.  For a valued @code{action} the @code{reply} value may not
+be ignored.  A variable definition or an @code{assign} are the
+appropriate ways to handle a @code{reply} value:
+
+@example
+bool b = r.bool_event ();
+b = r.bool_event2 ();
+@end example
+
+or it can be used directly in a simple expression, optionally in
+combination with @b{==}, @b{!=}, @b{!}, @b{&&}, or @b{||} (since 2.14.0)
+
+@example
+if (r.bool_event ()) @dots{};
+if (!r.bool_event ()) @dots{};
+if (!r.bool_event () && b) @dots{};
+if (r.enum_event () == result.FALSE) @dots{};
+if (r.enum_event () != result.TRUE || b) @dots{};
+reply (r.enum_event ());
+reply (r.enum_event () != result.ERROR);
+@end example
+
+@quotation Note
+Only one @code{action} or @code{call} may be used in such an
+@code{expression}.
+@end quotation
+
+@node Component If
+@subsubsection Component @code{if}
+
+In a component an @code{illegal} can be used as an imperative
+statement in the branch of an @code{if} as any other imperative
+statement (@xref{Component Illegal}).
+
+@example
+if ::= ("if" "(" bool-expression ")" then-statement)
+         | ("if" "(" bool-expression ")" then-statement
+            "else" else-statement)
+then-statement := imperative-statement | illegal
+else-statement := imperative-statement | illegal
+@end example
+
+For example:
+
+@example
+if (error) illegal;
+@end example
+
+Since 2.14.0, one valued @code{action} or valued @code{call} may be used
+in an @code{if}-expression.
+
+For example:
+
+@example
+if (r.bool_event ()) @dots{};
+if (!r.bool_event ()) @dots{};
+if (!r.bool_event () && b) @dots{};
+if (r.enum_event () == result.FALSE) @dots{};
+if (r.enum_event () != result.TRUE || b) @dots{};
+if (bool_function ()) @dots{};
+if (!bool_function ()) @dots{};
+if (!bool_function () && b) @dots{};
+if (enum_function () == result.TRUE) @dots{};
+if (enum_function () != result.ERROR || b) @dots{};
+@end example
+
+@node Component Illegal
+@subsubsection Component @code{illegal}
+
+A @code{trigger} can be explicitly marked as @code{illegal}.  In that
+case, @code{illegal} must be the only imperative statement for that
+trigger.
+
+@example
+on      ::= "on" illegal-triggers ":" illegal
+illegal-triggers
+        ::= illegal-trigger ("," illegal-trigger)*
+illegal-trigger
+        ::= port-name "." event-name
+illegal ::= "illegal" ";"
+@end example
+
+Note that in this case the @code{trigger}'s formal parameter list may be
+omitted.
+
+For example:
+
+@example
+on p.hello,r,world: illegal;
+@end example
+
+@quotation Note
+A trigger with an @code{illegal} response can also be omitted since an
+@code{illegal} response is the default behavior for every
+@code{trigger}.
+@end quotation
+
+In a component an @code{illegal} can be used as an imperative statement
+in the branch of an @code{if} as any other imperative statement
+(@xref{Component If}).
+
+@node Component Reply
+@subsubsection Component @code{reply}
+
+A valued trigger event requires an appropriate return value in its
+response handling, the @code{reply} only determines the value not the
+moment of returning it:
+
+@example
+  reply (valued_expression);
+@end example
+
+@code{reply} is also used to release a blocked call (@xref{Blocking}),
+like so:
+
+@example
+  port.reply ();
+  port.reply (expression);
+@end example
+
+@node Multiple Provides Ports
+@subsection Multiple Provides Ports
+
+A component is not limited to a single provides port, it is allowed to
+offer multiple interfaces simultaneously.  When a component provides
+multiple ports it can receive @code{in}-events via any of its provides
+ports.  As a result the interface behaviors of the provides ports are
+effectively interleaved and the component is expected to handle that
+appropriately.
+
+When providing multiple ports, two restrictions hold for the component
+behavior:
+
+@table @code
+@item V-fork
+Within the handling of an @code{in}-event of a provides port, it is not
+allowed to directly post an @code{out}-event on another provides port.
+
+@item Y-fork
+Within the handling of an @code{out}-event of a requires port, it is not
+allowed to post an @code{out}-event to more than one provides port.
+@end table
+
+The rationale behind both limitations is that if V-forking or Y-forking
+would be allowed that it potentially leads to behavior which is beyond
+the scope of single component verification.
+
+Violating of any of these restrictions is reported as a compliance
+error.
+
+Here are examples of the two types of forking that lead to a compliance
+error:
+
+@example
+@verbatiminclude examples/compliance-multiple-provides-fork.dzn
+@end example
+
+@node Systems
+@section Systems
+
+A @code{system} component, or @code{system} is a component which is
+composed from one or more sub components.  The @code{system} block
+instantiates each of the sub components and either connects their ports
+together or exposes them as its own, such that all ports are bound.
+
+@example
+system-component ::= "component" "@{" port* system "@}"
+system           ::= "system" "@{" system-statement* "@}"
+system-statement ::= (instance | binding)
+instance         ::= component-name identifier ";"
+binding          ::= end-point "<=>" end-point ";"
+end-point        ::= port-name
+                     | wildcard
+                     | (instance-name "." port-name)
+                     | (instance-name "." wildcard)
+wildcard         ::= "*"
+@end example
+
+@quotation Note
+A binding can have only one @code{wildcard}, @xref{Using Injection}.
+@end quotation
+
+For example:
+
+@example
+@verbatiminclude examples/top-middle-bottom.dzn
+@end example
+
+The system description shows the instantiation of the two component
+instances @code{ci1} and @code{ic2} and two connections or bindings
+between ports.
+
+@menu
+* Component Instances::         The components of a system.
+* Binding::                     The plumbing of a system.
+@end menu
+
+@node Component Instances
 @subsection Component Instances
+
 In a system description a sub component is specified by its type and
 local name:
 
 @example
-  some_component some_instance;
+instance ::= component-name identifier ";"
 @end example
 
-The definition of some_component has to be available, potentially through
-an 'import'.
+The component definition of @code{component-name} has to be available,
+potentially through an @code{import}.
 
 It is allowed to have more than one instance of the same type:
 
 @example
-  some_component some_instance1;
-  some_component some_instance2;
+hello h1;
+hello h2;
 @end example
 
+@node Binding
 @subsection Binding
+
 Communication between components is achieved through component ports.
-Communication is specified as binding:
+The lines of communication are established by binding ports:
 
 @example
-  some_component1.port1 <=> some_component2.port2;
+binding   ::= end-point "<=>" end-point ";"
+end-point ::= port-name
+              | wildcard
+              | (instance-name "." port-name)
+              | (instance-name "." wildcard)
+wildcard  ::= "*"
 @end example
 
-indicates components @code{some_component1} and @code{some_component2}communicate
-through their respective ports @code{port1}and @code{port2}.  This is
-often expressed as: @code{port1} is bound to @code{port2}.
-
-Binding is symmetric: @code{some_component1.port1 <=> some_component2.port2}and
-@code{some_component2.port2 <=> some_component1.port1} have identical meaning.
-
-Communication is restricted to ports of the same (interface) type.
-Moreover communication 'direction' has to be preserved.  There are two
-cases:
+Note that bindings are symmetrical, i.e., left and right
+@code{end-points} can be exchanged.  Communication is restricted to
+ports of the same (interface) type.  Moreover the communication
+'direction' has to be compatible.  There are two cases:
 
 @itemize
 
-@item Two sub components communicating: always a @code{provides} port binds to
-a @code{requires} port, like in @code{cfoo.bar <=> cbar.b}in the example
-above.
+@item
+Two sub components communicating: always a @code{provides} port binds to
+a @code{requires} port, like in @code{top.rr <=> middle.pp} in the
+@code{top_middle_bottom} system example above.
 
-@item Port forwarding (an external port is forwarded to a sub-component port):
-always the directions have to be the same, like in @code{top <=>
-cfoo.foo}and @code{cnut.wl <=> bot} in the example above.
+@item
+In the case of port forwarding, where a sub-component port is exposed as a
+system port, the directions of the ports must be the same, like in
+@code{p <=> top.pp} and @code{bottom.rr <=> r} in the
+@code{top_middle_bottom} system example above.
 
 @end itemize
 
-@subsubsection Injection
-Binding of @code{injected} ports is done at a higher system level
-(@pxref{Component Models}).  A wild-card character (@code{*}) is used to
-achieve the binding of one @code{provides} port to all @code{injected
-requires} ports.
+@menu
+* Using Injection::             Binding injected ports.
+@end menu
 
-Let's take a typical example involving logging:
+@node Using Injection
+@subsubsection Using Injection
+
+@cindex injection
+Binding of @code{injected} ports is done at a higher system level
+(@pxref{Components}).  A wild-card character (@code{*}) is used to
+achieve the binding of the @code{provides} port of a single instance to
+all @code{injected requires} ports.
+
+Let's take a logging interface as an example:
 
 @example
-interface ilog @{
+interface ilog
+@{
   ...
 @}
-component logger @{
+component logger
+@{
   provides ilog log;
   ...
 @}
@@ -5103,7 +3909,8 @@ Suppose a lot of components require logging:
 
 @example
 ...
-component some_component12 @{
+component some_component12
+@{
   provides some_interface12 p;
   requires injected ilog l;
   ...
@@ -5119,9 +3926,11 @@ component some_component13 @{
 then some system component can bind all logging in one go:
 
 @example
-component some_system @{
+component some_system
+@{
   ...
-  system @{
+  system
+  @{
     logger clog;
     ...
     some_component12 c12;
@@ -5135,7 +3944,8 @@ component some_system @{
 It is allowed to group some components in a sub system:
 
 @example
-component some_sub_system @{
+component some_sub_system
+@{
   ...
   system @{
     ...
@@ -5146,12 +3956,14 @@ component some_sub_system @{
 @}
 @end example
 
-and do the wild-card binding for that sub system only:
+and use the wild-card binding for that sub system:
 
 @example
-component some_system @{
+component some_system
+@{
   ...
-  system @{
+  system
+  @{
     logger clog;
     some_sub_system subsys;
     ...
@@ -5160,64 +3972,41 @@ component some_system @{
 @}
 @end example
 
-@cindex system
-@cindex System Syntax
-@cindex port
-@cindex injection
-@cindex bind
-
 @node Namespaces
 @section Namespaces
 
-All component, interface, and type definitions can be defined in a
-@i{namespace}, which provides name scoping.  The scope can be used when
-referring to such a definition.
-
-@subsection Namespace Syntax
-
-A namespace has a name, and within its scope components, interfaces,
-types, and sub-namespaces can be defined.
-
-A syntax example:
+@cindex scoping
+@cindex namespace
+All component, interface, and type definitions are defined in a
+@code{namespace}, which provides name scoping.  The scope is used as a
+prefix when referring to the name from another scope.
 
 @example
-namespace some_namespace @{
-  extern some_string $std::string$;
-  interface some_interface @{
-    enum enum_type @{ val1, val2, val3 @};
-    in enum_type valued_event(some_string s);
-    out void reply_event();
-    behavior @{
-      on valued_event(s) : @{ reply enum_type.val3; @}
+namespace      ::= "namespace" identifier "@{" namespace-root "@}"
+namespace-root ::= (namespace | type | interface | component)*
+@end example
+
+For example:
+
+@example
+namespace space
+@{
+  extern string $std::string$;
+  interface ihello
+  @{
+     enum result @{FALSE, TRUE, ERROR@};
+     in result hello (string s);
+     out void world ();
+     behavior
+     @{
+       on hello (s): reply (result.TRUE);
     @}
   @}
 @}
 @end example
 
-In this example namespace @code{some_namespace} is introduced.  In its scope
-data type @code{some_string} and interface @code{some_interface}are defined.
+@subsection Namespace Extension
 
-An example with nested namespaces introduces namespace
-@code{some_namespace1}, and within that (among others) namespace
-@code{some_namespace2}, which itself contains interface @code{some_interface}:
-
-@example
-namespace some_namespace1 @{
-  extern some_string $std::string$;
-  namespace some_namespace2 @{
-    interface some_interface @{
-      enum enum_type @{ val1, val2, val3 @};
-      in type valued_event(some_string s);
-      out void reply_event();
-      behavior @{
-         on valued_event(s) : @{ reply type.val3; @}
-      @}
-    @}
-  @}
-@}
-@end example
-
-@subsubsection Namespace Re-definition
 It is allowed to spread the definition of types, interfaces, components,
 and sub-namespaces over multiple instances of a namespace scope.  This is
 most useful since in a 'real' project definitions are spread over
@@ -5226,34 +4015,38 @@ multiple files.
 So
 
 @example
-namespace some_namespace1 @{
-  extern some_string $std::string$;
-  interface some_interface @{ ...  @}
+namespace space
+@{
+  extern string $std::string$;
+  interface ihello @{ ...  @}
 @}
 @end example
 
 is equivalent to
 
 @example
-namespace some_namespace1 @{
-  extern some_string $std::string$;
+namespace space
+@{
+  extern string $std::string$;
 @}
-namespace some_namespace1 @{
-  interface some_interface @{ ...  @}
+namespace space
+@{
+  interface ihello @{ ...  @}
 @}
 @end example
 
 @subsection Referencing
-When within namespace @code{some_namespace} @code{some_type} is defined, then
-outside that namespace it is referred to by prefixing it with the name
-of that namespace and a dot, as in: @code{some_namespace.some_type}
 
-Within its own namespace the short name @code{some_type} is to be used.
+When within namespace @code{space} the type @code{string} is defined,
+then outside that namespace it is referred to by prefixing it with the
+name of that namespace and a dot, as in: @code{space.string}.
 
-In complex cases it may be necessary to refer to the @i{global}
-namespace which has an empty name; this results in name references
-starting with a dot, as can be seen in the following somewhat convoluted
-example.
+Within its own namespace the short name @code{string} is also accepted.
+
+In complex cases it may be necessary to refer to the default
+@emph{global} namespace which has an empty name; this results in a
+namespace prefix starting with a dot, as can be seen in the following
+(somewhat convoluted) example.
 
 @example
 @verbatiminclude examples/inner-space.dzn
@@ -5275,35 +4068,13 @@ expands to @code{inner.foo.I.Bool} since it is defined in namespace
 @code{inner}.  The starting dot in the second definition prevents this
 expansion.
 
-@subsection Shorthand Namespace Syntax
-In trivial cases, e.g.  where only one definition is provided within a
-namespace, a dot notation can be used.  Using this notation,
-
-@example
-namespace some_namespace1 @{
-  namespace some_namespace2 @{
-    extern some_string $std::string$;
-  @}
-  interface some_interface @{ ...  @}
-@}
-@end example
-
-can be written as:
-
-@example
-extern some_namespace1.some_namespace2.some_string $std::string$;
-interface some_namespace1.some_interface @{ ...  @}
-@end example
-
-@cindex namespace
-@cindex Namespace Syntax
 @node Well-formedness
 @chapter Well-formedness
-The syntax as defined in @ref{Dezyne Syntax} defines an asd language
-which is not restrictive enough for practical use.  This page describes
-a collection of well-formedness checks that are defined on top of the
-syntax.  Some of these checks are "common sense", other ones are needed
-to define appropriate semantics.
+The syntax as defined in @ref{Dezyne Language Reference} defines an asd
+language which is not restrictive enough for practical use.  This page
+describes a collection of well-formedness checks that are defined on top
+of the syntax.  Some of these checks are "common sense", other ones are
+needed to define appropriate semantics.
 
 @section Summary
 The well-formedness checks in alphabetical order:
@@ -5717,7 +4488,7 @@ This results in the following error message:
 @anchor{Only imperative statement allowed here}
 @subsection Only imperative statement allowed here
 
-If a @code{compound} statement starts with an imparative statement, all
+If a @code{compound} statement starts with an imperative statement, all
 other statements must be imperative statements.
 
 @example
@@ -6161,13 +4932,13 @@ This results in the following error message:
 @anchor{System composition is recursive}
 @subsection System composition is recursive
 
-A system component may instantiate an arbitrary set of other components,
-which can be system components themselves.  It is not allowed to have a
-self-instance neither directly nor indirectly, since that would lead to
-an infinite tree of components.
+A system may instantiate an arbitrary set of other components, which can
+be systems themselves.  It is not allowed to have a self-instance
+neither directly nor indirectly, since that would lead to an infinite
+tree of components.
 
-In the example below five system components are defined that have mutual
-instances.  Component @code{c1} instantiates @code{c3}, which
+In the example below five systems are defined that have mutual
+instances.  System @code{c1} instantiates @code{c3}, which
 instantiates @code{c4}, which instantiates @code{c1}.
 
 @example
@@ -6403,7 +5174,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item behavior
 @tab Keyword
 @tab Start of the behavior section within an interface or component definition; this keyword must be followed by @{@}.
-@tab @xref{Interface and Component Behavior}
+@tab @xref{Behavior} and @xref{Component Behavior}
 
 @item Bind
 @tab Concept
@@ -6433,7 +5204,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item component
 @tab Keyword
 @tab Begins the definition of a component; this keyword must be followed by an identifier and @{@}.
-@tab @xref{Component Models}
+@tab @xref{Components}
 
 @item condition
 @tab Concept
@@ -6493,7 +5264,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item illegal
 @tab Keyword
 @tab @code{illegal}.  As a direct response indicates that the given event in the given state is not allowed to be communicated.  Within a component, the @code{illegal} is also allowed within a function or @code{if}, indicating that the @code{illegal} should never be executed, i.e.  comparable with @code{assert(FALSE)}; of the C-language.
-@tab @xref{Using illegal}
+@tab @xref{Illegal} and @xref{Component Illegal}
 
 @item import
 @tab Keyword
@@ -6503,7 +5274,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item in
 @tab Keyword
 @tab Indicates for an event of an interface that the event is an incoming event '''or''' indicates for a data parameter of an event or function that the value of the parameter is incoming
-@tab @xref{Specifying Events}
+@tab @xref{Interfaces}
 
 @item inevitable
 @tab Keyword
@@ -6513,7 +5284,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item injected
 @tab Keyword
 @tab Qualifier of a required port to indicate that the binding of the port occurs at a higher level in the system hierarchy.
-@tab @xref{Component Models}
+@tab @xref{Components}
 
 @item inout
 @tab Keyword
@@ -6529,7 +5300,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item interface
 @tab Keyword
 @tab Begins the definition of an interface; this keyword must be followed by an identifier and @{@}.
-@tab @xref{Interface Models}
+@tab @xref{Interfaces}
 
 @item namespace
 @tab Keyword
@@ -6539,7 +5310,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item on
 @tab Keyword
 @tab Identifies an @code{on} which for one or more trigger events defines the corresponding response.
-@tab @xref{Actions}
+@tab @xref{Imperative Statements}
 
 @item optional
 @tab Keyword
@@ -6549,12 +5320,12 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item otherwise
 @tab Keyword
 @tab Defines a catch-all guard which is true only if all the other guard expressions in a list of @code{guard}s evaluate to false.
-@tab @xref{Specifying Stateful Behavior}
+@tab @xref{Declarative Statements}
 
 @item out
 @tab Keyword
 @tab Indicates for an event of an interface that the event is an outgoing event '''or''' indicates for a data parameter of an event of function that the value of the parameter is outgoing
-@tab @xref{Specifying Events}
+@tab @xref{Interfaces}
 
 @item Port
 @tab Concept
@@ -6569,7 +5340,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item reply
 @tab Keyword
 @tab Statement that defines the value that will be returned as result of the triggering event.
-@tab @xref{Reply}
+@tab @xref{Imperative Statements}
 
 @item requires
 @tab Keyword
@@ -6579,7 +5350,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item return
 @tab Keyword
 @tab @code{return}; specifies the return value of a function (if any) and exits the function.
-@tab @xref{Using functions}
+@tab @xref{Functions}
 
 @item Sequence view
 @tab Window
@@ -6605,7 +5376,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @tab Keyword
 @tab Starts the system section of a component.  A system section consists of two parts: instantiations of subcomponents, followed by all the bindings
  among the sub-components and ports of the component.
-@tab @xref{Decomposing a Component}
+@tab @xref{Systems}
 
 @item Trace
 @tab Concept
