@@ -39,37 +39,6 @@ Run all blocking tests
    (push "~/src/dezyne/doc" Info-directory-list)
    (require 'info)
 
-* GNU/Linux binary pack (generic, relocatable)
-
-    guix environment -l guix.scm
-
-    git clean -fdx
-
-    git describe                           # input for version and sha256 field of
-    guix hash -rx .
-
-    edit guix/gnu/packages/dzn.scm         # dzn package to update
-    git commit -am 'release: v2.9.0-287'
-    git push buildmaster                   # push your commit/branch for dzn to find
-
-    ./autogen.sh                           # updates version
-    ./configure
-
-    make
-    GUIX_PACKAGE_PATH=guix guix build dzn  # offloaded dzn package build
-
-* MinGW cross build
-
-Try something like
-
-    guix environment -l mingw.scm --pure --ad-hoc guix
-
-    guile="$(GUIX_PACKAGE_PATH=guix guix build --target=x86_64-w64-mingw32 guile-mingw | grep -v debug)"
-    export PKG_CONFIG_PATH="$guile/lib/pkgconfig"
-    export GUILE_TOOLS=$GUIX_ENVIRONMENT/bin/guild
-    ./configure --host=x86_64-w64-mingw32
-    make GUILE_TOOLS=$GUILE_TOOLS
-
 * Documentation
 
 ** For the Dezyne manual, do something like:
