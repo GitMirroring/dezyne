@@ -300,9 +300,10 @@
 
 (define-method (trigger->component-trigger (trigger <trigger>))
   (let* ((port-name (.port.name trigger))
-         (r:port (runtime:port-name->instance port-name))
-         (r:component-port (runtime:other-port r:port)))
-    (trigger->component-trigger r:component-port trigger)))
+         (r:port (and port-name (runtime:port-name->instance port-name)))
+         (r:component-port (and r:port (runtime:other-port r:port))))
+    (and r:component-port
+         (trigger->component-trigger r:component-port trigger))))
 
 (define-method (trigger->port-trigger (o <runtime:port>) (trigger <trigger>))
   (let* ((interface ((compose .type .ast) o))
