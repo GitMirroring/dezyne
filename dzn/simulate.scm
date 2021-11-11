@@ -102,9 +102,6 @@ format."
          (trace-suffix trace-prefix (split-at trace trace-index))
          (trace (if (find (cute port-pc-equal? <> port-start) trace) trace
                     (append trace-suffix port-trace-prefix trace-prefix)))
-         (instance (and=> (find (compose (is? <runtime:component>) .instance)
-                                (reverse trace))
-                          .instance))
          (full-trace trace))
 
     (let loop ((trace trace) (port-trace port-trace))
