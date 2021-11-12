@@ -72,6 +72,7 @@ This document describes Dezyne version @value{VERSION}.
 * Introduction::                What is Dezyne about?
 * Installation::                Installing Dezyne.
 * Getting Started::             Writing a program in Dezyne.
+* Ideas and Concepts::          Explaining the underlying thinking.
 * Execution Semantics::         How does it work?
 * Formal Verification::         A guide to verification errors.
 * Code Integration::            Creating an executable.
@@ -102,6 +103,26 @@ Getting Started
 * A Simple State Machine::      Stateful behavior and protocol.
 * A Camera Example::            A System of Components and Systems.
 * The Lego Ball Sorter::        A Machine Operating System.
+
+Ideas and Concepts
+
+* Concurrency::                 A message passing programming model.
+* Component Based::             Recursive decompositioning.
+* Model Based::                 Modeling the real world.
+* Design by Contract::          Contracts for message interaction.
+* Managing Complexity::         Abstraction and encapsulation.
+
+Execution Semantics
+
+* Direct in event::
+* Direct out event::
+* Direct multiple out events::
+* Indirect in event::
+* Indirect out event::
+* Indirect multiple out events::
+* Indirect blocking out event::
+* External multiple out events::
+* Indirect blocking multiple external out events::
 
 Formal Verification
 
@@ -1004,6 +1025,103 @@ The full example is contained in the source tree at
 @file{test/all/LegoBallSorter/LegoBallSorter.dzn} or
 @url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/test/all/LegoBallSorter/LegoBallSorter.dzn,
 LegoBallSorter.dzn}.
+
+@c *********************************************************************
+@node Ideas and Concepts
+@chapter Ideas and Concepts
+
+Dezyne aspires to evolve into a general-purpose operating-system
+language.  The operating-system qualification refers to programs that
+are stateful, highly concurrent, long-lived, resilient, and
+exceptionally reliable.  In contrast, short lived programs or programs
+that can be completely written in a pure functional way are not the
+primary target of Dezyne.  By bringing mathematics and computer
+engineering together we hope to foster the creation and evolution of
+verified ``operating system''@footnote{preferably microkernel based or
+at least distributed, the @url{https://hurd.gnu.org/hurd,GNU Hurd}
+anyone?} like applications.
+
+The syntax of Dezyne may feel pretty familiar.  The semantics is quite
+distinct from most other languages.  Simply put Dezyne is the super
+position of a process calculus onto a general purpose language.  As a
+result it adds new levels of organizational structure to the general
+purpose programming language.
+
+@menu
+* Concurrency::                 A message passing programming model.
+* Component Based::             Recursive decompositioning.
+* Model Based::                 Modeling the real world.
+* Design by Contract::          Contracts for message interaction.
+* Managing Complexity::         Abstraction and encapsulation.
+@end menu
+
+@node Concurrency
+@section Concurrency
+
+Dezyne is based on a message passing programming model.  Messages are
+explicitly represented in the language and expressed in the underlying
+process algebra.  The approach allows reasoning about equivalences which
+in turn is used in verification and allows compositions to retain their
+individually verified properties.
+
+Message passing is a natural way of describing concurrency, from
+cooperative multitasking to multi threading and multi processing.  It
+abstracts away from cumbersome primitives like semaphores, mutexes,
+condition variables, critical sections, etc.  It also removes the
+passing of time completely and focuses our reasoning on the ordering of
+messages.  Which allows combining synchronous and asynchronous activity
+in a single formalism.
+
+@node Component Based
+@section Component Based
+
+In Dezyne programs are divided into components by means of formal
+interfaces isolating the components from their surroundings.  Components
+are composed into systems by connecting their ports.  Communication
+across port must follow the behavior as defined by their respective
+interfaces.  An interface behavior describes the message exchange
+between the components on either side of the interface that separates
+them.  A component behavior defines the interactions in terms of the
+messages exchanged across all of the component ports.
+
+@node Model Based
+@section Model Based
+
+As Dezyne is typically used to operate a machine, usually real world
+identities are represented.  They are identified by name and their
+interaction with their environment is captured as a behavior.  A
+behavior is the observable interaction in terms of message exchange.
+Interface models and component models both define behaviors.
+
+@node Design by Contract
+@section Design by Contract
+
+As interface behaviors prescribe an interaction protocol, they provide a
+convenient and compact way to define contracts.  A contract lists both
+expectations and obligations.  Components in turn are a convenient and
+compact way to implement such contracts using other sub contractors.
+Components distinguish two levels of hierarchy in their interface
+contracts: The interfaces they provide and the interfaces they require.
+The essential difference between the two is that an interface which is
+provided must be completely implemented.  While an interface that is
+required may or may not be used completely.
+
+@node Managing Complexity
+@section Managing Complexity
+
+The single biggest challenge, when programming at scale, is managing
+complexity.  What do we mean by complexity?  The literal meaning is
+derived from weaving together.  In programming it refers to the
+resulting behavior that emerges from combined interaction.  As the
+number of parts and their dependencies increase, the resulting behavior
+increases exponentially and very soon it reaches the point where it is no
+longer humanly possible to know and understand it.  As a result making
+changes will inadvertently lead to unknowingly interfering with those
+interactions and defects are introduced.  With increasing complexity
+existing techniques, methods and paradigms no longer suffice to enable
+the programmer to adequately manage it.  Dezyne offers both
+encapsulation as well as abstraction of unencapsulated interaction to
+manage complexity.
 
 @c *********************************************************************
 @node Execution Semantics
