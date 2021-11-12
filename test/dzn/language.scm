@@ -323,23 +323,23 @@
 
 (test-equal "component8"
   '("provides" "requires")
-  (test-complete #:file-name "component8.dzn" #:offset 170))
+  (test-complete #:file-name "component8.dzn" #:line 19))
 
 (test-equal "component9"
   '("i.e0()" "i.e1()")
-  (test-complete #:file-name "component9.dzn" #:offset 142))
+  (test-complete #:file-name "component9.dzn" #:line 19))
 
 (test-equal "component9a"
   '("i.e0()" "i.e1()" "illegal")
-  (test-complete #:file-name "component9a.dzn" #:offset 145))
+  (test-complete #:file-name "component9a.dzn" #:line 18 #:column 9))
 
 (test-equal "component10"
   '("bool" "i.a0()" "i.a1()" "if" "illegal" "void")
-  (test-complete #:file-name "component10.dzn" #:offset 185))
+  (test-complete #:file-name "component10.dzn" #:line 21 #:column 14))
 
 (test-equal "component10a"
   '("bool" "i.a0()" "i.a1()" "if" "void")
-  (test-complete #:file-name "component10a.dzn" #:offset 188))
+  (test-complete #:file-name "component10a.dzn" #:line 21 #:column 17))
 
 (test-equal "component11"
   '("false" "j.e1()" "m" "true")
@@ -435,7 +435,7 @@
 
 (test-equal "typo"
   '("provides" "requires")
-  (test-complete #:file-name "typo.dzn" #:offset 219))
+  (test-complete #:file-name "typo.dzn" #:line 22 #:column 6))
 
 (test-equal "bool literal"
   '("false" "true")
