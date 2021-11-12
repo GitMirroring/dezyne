@@ -162,11 +162,11 @@ Generate exhaustive set of traces for Dezyne model
     (define (named? o)
       (equal? (makreel:unticked-dotted-name o) model-name))
     (let* ((models (ast:model* root))
-           (components-interfaces (append (filter (conjoin (is? <component>) .behaviour) models)
+           (components-interfaces (append (filter (conjoin (is? <component>) .behavior) models)
                                           (filter (is? <interface>) models)))
            (model (or (and model-name (find named? models))
                       (and (pair? components-interfaces) (car components-interfaces)))))
       (cond ((and model-name (not model)) (error "no such model:" model-name))
             ((is-a? model <system>) #t) ;; silently no traces
-            ((and model-name (or (is-a? model <foreign>) (not (.behaviour model)))) (error "no model with behaviour:" model-name))
+            ((and model-name (or (is-a? model <foreign>) (not (.behavior model)))) (error "no model with behavior:" model-name))
             (model (model->traces options root model file-name))))))

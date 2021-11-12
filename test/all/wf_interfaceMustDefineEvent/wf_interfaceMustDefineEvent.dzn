@@ -22,6 +22,6 @@
 // Code:
 
 interface Sensor {
-  behaviour { }
+  behavior { }
 }
 

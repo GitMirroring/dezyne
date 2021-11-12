@@ -1,7 +1,7 @@
 interface ihello
 {
   in void hello();
-  behaviour
+  behavior
   {
     on hello:;
   }
@@ -11,7 +11,7 @@ component blocking_multiple_provides
 {
   provides ihello left;
   provides ihello right;
-  behaviour
+  behavior
   {
     blocking on left.hello(): left.reply ();
   }

@@ -32,7 +32,7 @@ namespace imported
     provides imported.ihello h;
     requires imported.iworld w;
 
-    behaviour
+    behavior
     {
       on h.hello(): w.hello();
     }

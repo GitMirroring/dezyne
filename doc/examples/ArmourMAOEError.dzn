@@ -18,7 +18,7 @@ interface IStrict
   in void Reset();
   out void Recovered();
 
-  behaviour
+  behavior
   {
 	enum State {Idle, WaitingForOutput, RaisedErr, ResetErr};
 	State state = State.Idle;
@@ -60,7 +60,7 @@ interface IRobust
   in void Reset();
   out void Recovered();
 
-  behaviour
+  behavior
   {
   	bool inError = false;
 
@@ -78,7 +78,7 @@ component ArmourMAOEError {
 	requires ITimer it;
 	requires injected ILogger iLog;
 
-	behaviour {	
+	behavior {	
 		enum State {Idle, WaitingForOutput, RaisedErr, ResetErr};
 		State state = State.Idle;
 
@@ -115,7 +115,7 @@ component Dezyne {
 	provides IA pp;
 	requires IStrict rStrict;
 	
-	behaviour {
+	behavior {
 		enum State {Idle, WaitingForOutput, Error};
 		State state = State.Idle;
 			
@@ -143,7 +143,7 @@ interface IA
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   {
 	bool waiting_for_oa = false;
 				
@@ -162,7 +162,7 @@ interface ITimer
 	in void cancel();
 	out void timeout();
 	
-	behaviour {
+	behavior {
 		bool running = false;
 		
 		on start: running = true;

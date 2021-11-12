@@ -24,14 +24,14 @@
 interface Sensor {
   in void activate();
   out void activated();
-  behaviour {
+  behavior {
     on activate: activated;
   }
 }
 
 interface Start {
   in bool start();
-  behaviour {
+  behavior {
     on start: reply(false);
     on start: reply(true);
   }
@@ -40,7 +40,7 @@ interface Start {
 component Test {
   provides Start start;
   requires Sensor sensor;
-  behaviour {
+  behavior {
     on start.start(): sensor.reply();
   }
 }

@@ -21,7 +21,7 @@ interface I
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -31,7 +31,7 @@ component function
 {
   provides I p;
 
-  behaviour
+  behavior
   {
     on p.e(): f(a);
     void f(){}

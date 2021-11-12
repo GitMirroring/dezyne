@@ -28,7 +28,7 @@ interface ihello
   in void bye();
   out void world();
 
-  behaviour
+  behavior
   {
     bool seen = false;
     on hello: {seen=true;world;}
@@ -40,7 +40,7 @@ component hello_incomplete
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     bool seen = false;
     on h.hello(): {seen=true;h.world();}

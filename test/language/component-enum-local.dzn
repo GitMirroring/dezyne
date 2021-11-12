@@ -4,7 +4,7 @@ interface ihello
 {
   in Bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (Bool.True);
   }
@@ -15,7 +15,7 @@ component hello
   provides ihello p;
   requires ihello r;
 
-  behaviour
+  behavior
   {
     Bool fun (bool b)
     {

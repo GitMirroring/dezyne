@@ -2,7 +2,7 @@ interface I
 {
   out void a();
   out void b();
-  behaviour
+  behavior
   {
     on inevitable: {a; b;}
   }

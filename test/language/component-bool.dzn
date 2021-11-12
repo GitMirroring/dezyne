@@ -5,7 +5,7 @@ interface ihello
   in bool hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool m = true;
 
@@ -22,7 +22,7 @@ component hello
   provides ihello p;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     bool m = true;
 

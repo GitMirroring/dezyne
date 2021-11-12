@@ -29,7 +29,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = false;
 
@@ -44,7 +44,7 @@ interface iworld
   in void hello();
   in bool terminated();
 
-  behaviour
+  behavior
   {
     bool b = false;
 
@@ -59,7 +59,7 @@ component compliance_failures_choice
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     bool b = true;
 

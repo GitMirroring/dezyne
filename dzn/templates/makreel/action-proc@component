@@ -1,4 +1,4 @@
-#x:type-check  #x:makreel:model-name behaviour #x:member-init;
+#x:type-check  #x:makreel:model-name behavior #x:member-init;
 
 %%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
 #x:function

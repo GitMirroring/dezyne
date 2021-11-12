@@ -4,7 +4,7 @@ interface ihello
 
   in Bool hello();
   out void world();
-  behaviour {
+  behavior {
     Bool e = Bool.True;
     [e.True] on hello: world;
   }
@@ -13,7 +13,7 @@ interface ihello
 component hello
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     ihello.Bool e = ihello.Bool.True;
     on h.hello (): {h.world ();reply (e);}

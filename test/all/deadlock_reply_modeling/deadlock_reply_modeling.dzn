@@ -27,7 +27,7 @@ interface deadlock_reply_modeling
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: {}
     on optional: {world; reply();}

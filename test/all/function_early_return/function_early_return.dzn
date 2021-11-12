@@ -25,7 +25,7 @@ interface function_early_return
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     bool b = false;
     on hello: g();

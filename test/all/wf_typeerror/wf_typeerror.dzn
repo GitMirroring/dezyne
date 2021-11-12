@@ -26,13 +26,13 @@ enum E {A};
 enum EE {AA};
 interface I {
     in E e();
-    behaviour {
+    behavior {
         on e: reply(E.A);
     }
 }
 interface II {
     in EE ee();
-    behaviour {
+    behavior {
         on ee: reply(EE.AA);
     }
 }
@@ -40,7 +40,7 @@ interface II {
 component wf_typeerror {
     provides E p;
     provides I q;
-    behaviour {
+    behavior {
         on p.e(): {}
         on q.e(): reply(EE.AA);
     }

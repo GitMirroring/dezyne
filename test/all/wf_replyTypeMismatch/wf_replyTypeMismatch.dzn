@@ -26,7 +26,7 @@ interface I
 {
   in void ia();
 
-  behaviour
+  behavior
   {
     on ia: {}
   }
@@ -37,7 +37,7 @@ component wf_replyTypeMismatch
   provides I pp;
   requires I rp;
 
-  behaviour
+  behavior
   {
     void fn() { reply(false); }
     on pp.ia(): { rp.ia(); fn(); }

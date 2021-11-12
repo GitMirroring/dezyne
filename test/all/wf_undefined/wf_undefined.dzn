@@ -24,7 +24,7 @@ extern xint $int$;
 interface I0 {
   in void hello(xxint xx);
   out void world(xxxint xxx);
-  behaviour {
+  behavior {
     yint y;
     on hello: {
       zint z = $0$;
@@ -37,7 +37,7 @@ interface I1 {
   enum EN { EN1, EN2, EN3 };
   in EE hello();
   out void world();
-  behaviour {
+  behavior {
     EN en = EN.EN4;
     ENN enn = EN.EN3;
     on hello: {
@@ -53,7 +53,7 @@ interface I1 {
 interface I2 {
   in void hello();
   out void world();
-  behaviour {
+  behavior {
     // on hello: { mundo; } // reported by peg parser
     // on hola: {} // reported by peg parser
     on inevitable: world;
@@ -68,7 +68,7 @@ component C1 {
   provides I3 p2;
   requires I1 r1;
   requires I4 r2;
-  behaviour {
+  behavior {
     on p1.hello(x): {
       // r.hello(x); // reported by peg parser
       // r1.hola(x); // reported by peg parser

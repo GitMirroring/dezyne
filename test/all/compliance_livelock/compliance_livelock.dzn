@@ -25,7 +25,7 @@ interface i
 {
   out void cb();
 
-  behaviour
+  behavior
   {
     on inevitable: cb;
   }
@@ -35,7 +35,7 @@ interface ii
 {
   out void cb();
 
-  behaviour
+  behavior
   {
     on inevitable: cb;
   }
@@ -46,7 +46,7 @@ component compliance_livelock
   provides i p;
   requires ii r;
 
-  behaviour
+  behavior
   {
     on r.cb(): {}
   }

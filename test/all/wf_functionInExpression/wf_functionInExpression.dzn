@@ -24,13 +24,13 @@
 interface Sensor {
   enum Status { OK, NOK };
   in void activate();
-  behaviour {
+  behavior {
     on activate: { }
   }
 }
 component SensorComp {
   provides Sensor sensor;
-  behaviour {
+  behavior {
     bool b = f();
 
     bool f() { return true; }

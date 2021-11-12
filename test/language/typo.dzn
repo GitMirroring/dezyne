@@ -8,7 +8,7 @@ interface I
   in void f();
   typo
 
-  behaviour {
+  behavior {
     on e: {}
   }
 }
@@ -22,7 +22,7 @@ component C
   typo
   requires I r;
   typo
-  behaviour
+  behavior
   {
     on p.e(): { [true] r.e(); }
   }

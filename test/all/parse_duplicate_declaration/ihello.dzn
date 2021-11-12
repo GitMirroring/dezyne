@@ -29,7 +29,7 @@ interface ihello
 {
   in int hello(float f);
 
-  behaviour
+  behavior
   {
     on hello: reply (0);
   }

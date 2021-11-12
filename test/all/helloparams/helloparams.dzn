@@ -27,7 +27,7 @@ interface ihello
 {
   in void hello(int i, int j);
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -38,7 +38,7 @@ component helloparams
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(i, j): w.world(i, j);
   }
@@ -48,7 +48,7 @@ interface iworld
 {
   in void world(int i, int j);
 
-  behaviour
+  behavior
   {
     on world: {}
   }

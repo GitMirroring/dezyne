@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -36,7 +36,7 @@ component parse_assign_void
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello(): bool b = w.hello();
   }

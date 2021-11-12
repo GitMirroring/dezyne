@@ -28,7 +28,7 @@ interface hello_nondet
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = false;
     on hello: {b = !b;if (b) world;}

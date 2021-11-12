@@ -21,7 +21,7 @@ interface group
 {
   in bool e();
 
-  behaviour
+  behavior
   {
     on e: if ((foo));
   }

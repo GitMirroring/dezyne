@@ -3,7 +3,7 @@ interface ihello
   in void hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -15,7 +15,7 @@ interface iworld
   in void hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -28,7 +28,7 @@ component hello
   requires ihello ww;
   requires iworld wx;
 
-  behaviour
+  behavior
   {
   }
 }

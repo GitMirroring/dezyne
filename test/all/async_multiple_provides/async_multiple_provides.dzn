@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool pending = false;
     [!pending] on hello: pending = true;
@@ -40,7 +40,7 @@ component async_multiple_provides
   provides ihello l;
   provides ihello r;
 
-  behaviour
+  behavior
   {
     requires dzn.async i;
 

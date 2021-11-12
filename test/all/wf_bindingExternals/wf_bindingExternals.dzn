@@ -23,7 +23,7 @@
 
 interface I {
   in void e();
-  behaviour {
+  behavior {
     on e: {}
   }
 }
@@ -32,14 +32,14 @@ component C1 {
   provides I p;
   requires external I r1;
   requires external I r2;
-  behaviour {
+  behavior {
     on p.e(): {}
   }
 }
 
 component C2 {
   provides I p;
-  behaviour {
+  behavior {
     on p.e(): {}
   }
 }

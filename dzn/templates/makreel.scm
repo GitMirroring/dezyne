@@ -83,7 +83,7 @@
 (define-templates pretty-print-dzn pretty-print-dzn)
 
 (define-templates interface-proc makreel:interface-proc)
-(define-templates behaviour-proc .behaviour)
+(define-templates behavior-proc .behavior)
 
 (define-templates function makreel:called-function*)
 (define-templates function-return-proc makreel:function-return-proc)

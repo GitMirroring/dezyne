@@ -27,7 +27,7 @@ namespace space
   {
     in void hello();
 
-    behaviour
+    behavior
     {
       on hello: {}
     }

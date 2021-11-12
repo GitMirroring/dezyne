@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     subint count {0..10};
     count c = 0;
@@ -39,7 +39,7 @@ component silent_provides
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     on h.hello(): {}
   }

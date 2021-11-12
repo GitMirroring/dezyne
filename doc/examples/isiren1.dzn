@@ -2,7 +2,7 @@ interface isiren
 {
   in void turn_on();
   in void turn_off();
-  behaviour
+  behavior
   {
     enum status { OFF, ON };         // type definition
     status state = status.OFF;       // variable definition

@@ -2,4 +2,4 @@ interface I
 {
   in void e();
 
-  behaviour
+  behavior

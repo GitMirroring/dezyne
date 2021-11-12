@@ -1,7 +1,7 @@
 interface assign_outside_on
 {
   in void hello();
-  behaviour
+  behavior
   {
     bool b = true;
     [true] b = false;

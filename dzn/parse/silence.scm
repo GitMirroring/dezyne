@@ -39,7 +39,7 @@
 
 (define* ((mark-silent #:optional (function-silence '())) o)
   (match o
-    (($ <behaviour>) (tree-map (mark-silent (function-silence-fixpoint o)) o))
+    (($ <behavior>) (tree-map (mark-silent (function-silence-fixpoint o)) o))
     ((and ($ <compound>) (? ast:declarative?)) (tree-map (mark-silent function-silence) o))
     ((and ($ <on>) (? any-modeling?))
      (let ((silence (silence (.statement o) function-silence)))

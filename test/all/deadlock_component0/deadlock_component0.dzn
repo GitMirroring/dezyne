@@ -25,7 +25,7 @@ interface I
 {
   in void e();
 
-  behaviour
+  behavior
   {
     [true]
     {
@@ -38,7 +38,7 @@ interface I
 component deadlock_component0
 {
   provides I i;
-  behaviour
+  behavior
   {
     [true] on i.e(): illegal;
   }

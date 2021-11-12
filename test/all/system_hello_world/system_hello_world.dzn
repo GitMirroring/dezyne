@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -37,7 +37,7 @@ component hello
   provides ihello hh;
   requires ihello hw;
 
-  behaviour
+  behavior
   {
     on hh.hello(): hw.hello();
     on hw.world(): hh.world();
@@ -49,7 +49,7 @@ component world
   provides ihello ww;
   requires ihello wh;
 
-  behaviour
+  behavior
   {
     on ww.hello(): wh.hello();
     on wh.world(): ww.world();

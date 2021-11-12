@@ -3,7 +3,7 @@ interface ihello
   in void hello();
   in void option();
 
-  behaviour
+  behavior
   {
     void func() {
       bool bla = false;

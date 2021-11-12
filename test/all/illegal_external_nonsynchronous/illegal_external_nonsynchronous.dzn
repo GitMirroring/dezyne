@@ -27,7 +27,7 @@ interface I {
   out void ec();
   out void ac();
 
-  behaviour {
+  behavior {
     enum State { idle, busy, aborting };
     State s = State.idle;
     [s.idle] {
@@ -48,7 +48,7 @@ component illegal_external_nonsynchronous {
   provides I p;
   requires external I r;
 
-  behaviour {
+  behavior {
     enum State { idle, busy, aborting };
     State s = State.idle;
     [s.idle] {

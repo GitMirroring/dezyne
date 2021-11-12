@@ -112,7 +112,7 @@
                  (if location (clone ast #:location location)
                      ast)))))
 
-        (((and (or 'root 'interface 'behaviour 'component 'types 'events 'event) type) body ... (? string?))
+        (((and (or 'root 'interface 'behavior 'component 'types 'events 'event) type) body ... (? string?))
          ;; FIXME: junking non-comment-parsed string
          (helper (cons type body)))
 
@@ -168,27 +168,27 @@
              #:types (make <types-node> #:elements types)
              #:events (make <events-node> #:elements events))))
 
-        (('interface name (and ('behaviour x ...) behaviour))
-         (let* ((behaviour (set-recursive (helper behaviour)))
-                (behaviour (and behaviour
+        (('interface name (and ('behavior x ...) behavior))
+         (let* ((behavior (set-recursive (helper behavior)))
+                (behavior (and behavior
                                 (.node ((mark-silent)
-                                        (make <behaviour> #:node behaviour))))))
+                                        (make <behavior> #:node behavior))))))
            (make <interface-node>
              #:name (helper name)
-             #:behaviour behaviour)))
+             #:behavior behavior)))
 
-        (('interface name types-and-events behaviour)
+        (('interface name types-and-events behavior)
          (let* ((types-and-events (helper types-and-events))
                 (types events (partition (is? <type-node>) types-and-events))
-                (behaviour (set-recursive (helper behaviour)))
-                (behaviour (and behaviour
+                (behavior (set-recursive (helper behavior)))
+                (behavior (and behavior
                                 (.node ((mark-silent)
-                                        (make <behaviour> #:node behaviour))))))
+                                        (make <behavior> #:node behavior))))))
            (make <interface-node>
              #:name (helper name)
              #:types (make <types-node> #:elements types)
              #:events (make <events-node> #:elements events)
-             #:behaviour behaviour)))
+             #:behavior behavior)))
 
         (('types-and-events types-and-events ...)
          (helper types-and-events))
@@ -221,11 +221,11 @@
            #:name (helper name)
            #:ports (helper ports)))
 
-        (('component name ports (and ('behaviour elements ...) behaviour))
+        (('component name ports (and ('behavior elements ...) behavior))
          (make <component-node>
            #:name (helper name)
            #:ports (helper ports)
-           #:behaviour (set-recursive (helper behaviour))))
+           #:behavior (set-recursive (helper behavior))))
 
         (('component name ports ('system instances-and-bindings rest ...))
          (let* ((instances-and-bindings (helper instances-and-bindings))
@@ -304,7 +304,7 @@
         (('external) 'external)
         (('injected) 'injected)
 
-        (('declarative-compound 'behaviour-statement-list)
+        (('declarative-compound 'behavior-statement-list)
          (make <error-node> #:message "empty declarative-compound"))
 
         (('skip-statement)
@@ -385,24 +385,24 @@
                                     #:variable.name (.name (helper var))
                                     #:expression (helper expression)))
 
-        (('behaviour-statement statement ...)
+        (('behavior-statement statement ...)
          (map helper statement))
 
-        (('behaviour-compound statement)
+        (('behavior-compound statement)
          (make <compound-node> #:elements (helper statement)))
 
-        (('behaviour compound)
+        (('behavior compound)
          (let ((compound (helper compound)))
-           (make <behaviour-node>
+           (make <behavior-node>
              #:types (make <types-node> #:elements (filter (is? <type-node>) (.elements compound)))
              #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
              #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
              #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
              #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <port-node>)) (negate (is? <variable-node>))) (.elements compound))))))
 
-        (('behaviour name compound)
+        (('behavior name compound)
          (let ((compound (helper compound)))
-           (make <behaviour-node>
+           (make <behavior-node>
              #:types (make <types-node> #:elements (filter (is? <type-node>) (.elements compound)))
              #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
              #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
@@ -584,7 +584,7 @@
                                                  (append-map (compose .elements .root) imports))))))
     (tree-map make-namespaces root)))
 
-(define-method (set-recursive (o <behaviour>))
+(define-method (set-recursive (o <behavior>))
   (let* ((functions (.functions o))
          (function-list (.elements functions))
          (function-list (map (lambda (f) (if (ast:recursive? f) (clone f #:recursive #t) f))
@@ -592,8 +592,8 @@
          (functions (clone functions #:elements function-list)))
     (clone o #:functions functions)))
 
-(define-method (set-recursive (o <behaviour-node>))
-  (.node (set-recursive (make <behaviour> #:node o))))
+(define-method (set-recursive (o <behavior-node>))
+  (.node (set-recursive (make <behavior> #:node o))))
 
 
 (define-method (make-namespaces (o <ast>))
@@ -640,8 +640,8 @@
                      (list (make <event> #:name "req" #:direction 'in #:signature signature)
                            (make <event> #:name "clr" #:direction 'in #:signature (make <signature> #:type.name void))
                            (make <event> #:name "ack" #:direction 'out #:signature signature)))
-      #:behaviour
-      (make <behaviour>
+      #:behavior
+      (make <behavior>
         #:variables (make <variables>
                       #:elements (list (make <variable> #:type.name "bool" #:name "idle" #:expression true)))
         #:statement

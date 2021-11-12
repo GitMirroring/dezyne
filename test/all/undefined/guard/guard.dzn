@@ -21,7 +21,7 @@ interface guard
 {
   in void e();
 
-  behaviour
+  behavior
   {
     [foo] on e: {}
   }

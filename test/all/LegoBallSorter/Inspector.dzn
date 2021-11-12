@@ -42,7 +42,7 @@ interface IInspect
   in void prepare(); // move to input take-over and prepare to receive next ball
   out void prepared(); // at input take-over ready to receive next ball
 
-  behaviour
+  behavior
   {
     enum State {Lost, Ready, Calibrating, Inspecting, Waiting, Preparing};
     State s = State.Lost;
@@ -119,7 +119,7 @@ component Inspect
   requires IMove2D stage;
   requires ILightSense sensor;
 
-  behaviour
+  behavior
   {
     enum State {Lost, Ready, Calibrating, Inspecting, Waiting, Preparing};
     enum InspectPosition {Unknown, Receive, Inspect, Accept, Reject};

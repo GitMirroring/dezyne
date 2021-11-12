@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello ();
   in void world ();
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -36,7 +36,7 @@ component illegal_requires
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello (): w.world ();
   }

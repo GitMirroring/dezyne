@@ -44,7 +44,7 @@ interface ihello {
   in void hello();
   out void world();
 
-  behaviour {
+  behavior {
     on hello: world;
   }
 }
@@ -53,7 +53,7 @@ component C {
   provides ihello hh;
   requires ihello ww;
 
-  behaviour {
+  behavior {
     bool idle = true;
 
     [idle] {

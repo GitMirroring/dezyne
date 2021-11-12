@@ -2,7 +2,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: illegal;
     on inevitable: illegal;
@@ -12,7 +12,7 @@ interface ihello
 component hello_illegal
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     on h.hello: illegal;
   }

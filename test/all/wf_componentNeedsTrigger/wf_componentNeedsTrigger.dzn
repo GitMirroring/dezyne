@@ -24,7 +24,7 @@
 interface Sensor {
   in void activate();
   in void deactivate();
-  behaviour {
+  behavior {
     on activate: {}
     on deactivate: {}
   }
@@ -32,7 +32,7 @@ interface Sensor {
 
 component Alarm1 {
   requires Sensor sensor;
-  behaviour {
+  behavior {
 
   }
 }
@@ -40,7 +40,7 @@ component Alarm1 {
 interface Siren {
   out void start();
   out void stop();
-  behaviour {
+  behavior {
     bool b = true;
     on inevitable: {}
   }
@@ -48,6 +48,6 @@ interface Siren {
 
 component Alarm2 {
   provides Siren siren;
-  behaviour { }
+  behavior { }
 }
 

@@ -23,7 +23,7 @@
 
 interface Start {
   in bool start();
-  behaviour {
+  behavior {
     on start: reply(false);
     on start: reply(true);
   }
@@ -32,7 +32,7 @@ interface Start {
 interface Action {
   enum E {E1, E2};
   in E action();
-  behaviour {
+  behavior {
     on action: reply(E.E1);
   }
 }
@@ -40,7 +40,7 @@ interface Action {
 component Test {
   provides Start start;
   requires Action action;
-  behaviour {
+  behavior {
     void func() {
       reply(Action.E.E1);
     }

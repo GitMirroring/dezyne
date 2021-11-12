@@ -25,7 +25,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (false);
     on hello: reply (true);
@@ -37,7 +37,7 @@ component hello_local_enum
   provides ihello h;
   requires ihello r;
 
-  behaviour
+  behavior
   {
     enum e_t {f,t};
     e_t e = e_t.f;

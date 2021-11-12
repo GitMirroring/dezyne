@@ -2,7 +2,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     bool  /* --line=7,9 */
     [!t] on hello: t = true;

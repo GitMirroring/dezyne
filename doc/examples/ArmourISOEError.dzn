@@ -17,7 +17,7 @@ interface IStrict
   in void Reset();
   out void Recovered();
 
-  behaviour
+  behavior
   {
    	enum InError {noErr, raisedErr, resetErr};
    	InError inError = InError.noErr;
@@ -49,7 +49,7 @@ interface IRobust
   in void Reset();
   out void Recovered();
 
-  behaviour
+  behavior
   {
   	bool inError = false;
 
@@ -67,7 +67,7 @@ component ArmourISOEError {
 	requires IRobust rRobust;
 	requires injected ILogger iLog;
 
-	behaviour {	
+	behavior {	
 		requires dzn.async p;
 	   	enum InError {noErr, raisedErr, resetErr};
    		InError inError = InError.noErr;
@@ -107,7 +107,7 @@ component Dezyne {
 	provides IA pp;
 	requires IStrict rStrict;
 
-	behaviour {			
+	behavior {			
 	    bool inError = false;
 
 		on pp.ia(): {rStrict.ia();}
@@ -127,7 +127,7 @@ interface IA
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: {}
     on inevitable: oa;

@@ -27,7 +27,7 @@ interface ihello
 {
   in void hello ();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -38,7 +38,7 @@ component hello_out_state
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello (): int x = w.world ();
   }
@@ -48,7 +48,7 @@ interface iworld
 {
   in int world ();
 
-  behaviour
+  behavior
   {
     int i = 0;
     [i < 3] on world: {i = i + 1;reply (i);}

@@ -7,7 +7,7 @@ interface isensor
   in void enable();
   in void disable();
   out void triggered();
-  behaviour
+  behavior
   {
     enum status { DISABLED, ENABLED, TRIGGERED };
     status state = status.DISABLED;

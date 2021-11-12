@@ -40,7 +40,7 @@ interface imotor
   enum result_t {yes, no};
   in result_t at(position_t pos);
 
-  behaviour
+  behavior
   {
     on move: {}
     on run: {}
@@ -57,7 +57,7 @@ interface itouch
 {
   enum status {pressed, released};
   in status detect();
-  behaviour
+  behavior
   {
     on detect: reply(status.pressed);
     on detect: reply(status.released);
@@ -72,7 +72,7 @@ interface ilight
   enum status {accept, reject};
   in status detect();
 
-  behaviour
+  behavior
   {
     on turnon: {}
     on turnoff: {}

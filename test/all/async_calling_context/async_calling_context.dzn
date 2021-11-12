@@ -32,7 +32,7 @@ interface I
   in void bye();
   out void world(string s);
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] {
@@ -50,7 +50,7 @@ component async_calling_context
 {
   provides I p;
 
-  behaviour
+  behavior
   {
     bool idle = true;
     requires dzn.async(string s) a;

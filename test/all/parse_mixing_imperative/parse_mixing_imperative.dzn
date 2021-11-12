@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
   in void cruel();
-  behaviour
+  behavior
   {
     bool b = false;
     on hello:

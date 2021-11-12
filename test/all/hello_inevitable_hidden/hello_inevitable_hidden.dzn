@@ -26,7 +26,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -36,7 +36,7 @@ interface iworld
 {
   out void world();
 
-  behaviour
+  behavior
   {
     on inevitable: world;
   }
@@ -47,7 +47,7 @@ component hello_inevitable_hidden
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(): {}
     on w.world(): {}

@@ -28,7 +28,7 @@ interface i
   out void world();
   out void planet();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -37,7 +37,7 @@ interface i
 component compliance_provides_out
 {
   provides i p;
-  behaviour
+  behavior
   {
     on p.hello(): p.planet();
   }

@@ -28,7 +28,7 @@ interface ihello
   in void bye();
   out void world();
 
-  behaviour
+  behavior
   {
     enum S {A,B,C};
     S s = S.A;
@@ -57,7 +57,7 @@ interface iworld
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     enum S {A,B,C};
     S s = S.A;
@@ -83,7 +83,7 @@ component illegal_pessimism_external
   provides ihello h;
   requires external iworld w;
 
-  behaviour
+  behavior
   {
     enum S {A,B,C};
     S s = S.A;

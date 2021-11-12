@@ -21,7 +21,7 @@ interface I
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -29,7 +29,7 @@ interface I
 
 component port
 {
-  behaviour
+  behavior
   {
     on p.e(): {}
   }

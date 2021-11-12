@@ -2,7 +2,7 @@ interface ihello
 {
   in bool hello ();
   in bool cruel ();
-  behaviour
+  behavior
   {
     on hello: reply (true);
     on cruel: reply (true);
@@ -13,7 +13,7 @@ component action_in_complex_expression
 {
   provides ihello p;
   requires ihello r;
-  behaviour
+  behavior
   {
     bool b = true;
     void f (bool b)

@@ -34,7 +34,7 @@ interface IConvey
   out void conveyed();
   in void stop();
 
-  behaviour
+  behavior
   {
     enum State {Idle, Conveying};
     State s = State.Idle;
@@ -53,7 +53,7 @@ component Conveyor
   requires IMove motor;
   requires ITouchSense sensor;
 
-  behaviour
+  behavior
   {
     enum State { Idle, Conveying };
     State s = State.Idle;

@@ -1,7 +1,7 @@
 interface call_discard_value
 {
   in void hello ();
-  behaviour
+  behavior
   {
     bool f ()
     {

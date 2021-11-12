@@ -24,7 +24,7 @@
 interface I
 {
   in void e();
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -35,7 +35,7 @@ interface II
   in void e();
   in void f();
   out void cb();
-  behaviour
+  behavior
   {
     bool busy = false;
     [!busy] on e: busy = true;
@@ -48,7 +48,7 @@ component deadlock_blocking_optional
 {
   provides I p;
   requires II r;
-  behaviour
+  behavior
   {
     bool busy = false;
     [!busy]

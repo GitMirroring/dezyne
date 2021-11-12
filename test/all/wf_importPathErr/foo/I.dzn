@@ -23,7 +23,7 @@
 
 interface I2 {
   in void e();
-  behaviour {
+  behavior {
     on e: {}
   }
 }

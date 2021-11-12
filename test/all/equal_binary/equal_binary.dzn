@@ -20,7 +20,7 @@
 interface equal_binary
 {
   in void e();
-  behaviour
+  behavior
   {
     on e:
     {

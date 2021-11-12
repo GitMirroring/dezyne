@@ -28,13 +28,13 @@ enum E { A };
 extern xint $int$;
 interface I {
   in void e(xint v);
-  behaviour {
+  behavior {
     on e: {}
   }
 }
 component alpha_variable {
   provides I p;
-  behaviour {
+  behavior {
     on p.e(a): {
       E v = E.A;
       if (v.A) {}

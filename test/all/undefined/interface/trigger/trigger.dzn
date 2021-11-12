@@ -21,7 +21,7 @@ interface trigger
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on a: {}
   }

@@ -27,14 +27,14 @@ namespace name {
     enum Bool {f,t};
     in Bool e();
     out void a();
-    behaviour {
+    behavior {
       on e: {a;reply(Bool.t);}
     }
   }
 
   component space {
     provides I i;
-    behaviour {
+    behavior {
       I.Bool state = I.Bool.t;
       on i.e(): {i.a();reply(I.Bool.t);}
     }

@@ -25,7 +25,7 @@ interface hello_interface_silent
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     bool b = true;
     on hello: reply(b);

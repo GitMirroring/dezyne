@@ -31,7 +31,7 @@ interface ILightSense
   in void cancel();
   out void accept();
   out void reject();
-  behaviour {
+  behavior {
     bool settling = false;
     on cancel: settling = false;
     [!settling] on measure: settling = !settling;
@@ -63,7 +63,7 @@ component LightSense
   provides ILightSense ctrl;
   requires ilight sensor;
   requires itimer timer;
-  behaviour {
+  behavior {
     bool settling = false;
     [!settling] on ctrl.measure(): {
       timer.create($100$);

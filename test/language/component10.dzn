@@ -6,7 +6,7 @@ interface I
   out void a0();
   out void a1();
 
-  behaviour
+  behavior
   {
     on e0, e1: {}
   }
@@ -16,7 +16,7 @@ component C
 {
   provides I i;
 
-  behaviour
+  behavior
   {
     on i.e0(): 
   }

@@ -24,7 +24,7 @@
 interface Sensor {
   in void activate();
   out void activated();
-  behaviour {
+  behavior {
     on activate: {}
     on inevitable: activated;
   }
@@ -32,7 +32,7 @@ interface Sensor {
 
 interface Test {
   in void test();
-  behaviour {
+  behavior {
     on test: {}
   }
 }
@@ -41,7 +41,7 @@ component SensorComp {
   provides Sensor sensor1;
   provides Test test;
   requires Sensor sensor2;
-  behaviour {
+  behavior {
     blocking on sensor1.activate(): sensor2.activate();
     on sensor2.activated(): { sensor1.activated(); sensor1.reply(); }
     on test.test(): {}

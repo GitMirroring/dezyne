@@ -25,7 +25,7 @@
 interface ihello {
   out void world();
 
-  behaviour {
+  behavior {
     on inevitable: world;
   }
 }
@@ -36,7 +36,7 @@ interface iworld {
   out void cruel();
   out void world();
 
-  behaviour {
+  behavior {
     on hello: { cruel; world;}
     on inevitable: sunrise;
   }
@@ -46,7 +46,7 @@ component hello_flush {
   provides ihello h;
   requires iworld w;
 
-  behaviour {
+  behavior {
     on w.sunrise(): w.hello();
     on w.cruel(): h.world();
     on w.world(): {}

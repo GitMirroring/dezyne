@@ -26,7 +26,7 @@ interface hello_interface_optional
   in void a();
   out void b();
 
-  behaviour
+  behavior
   {
     bool c = false;
     [c] on a: b;

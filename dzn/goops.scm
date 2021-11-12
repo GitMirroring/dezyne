@@ -70,7 +70,7 @@
 (export
            .arguments
            .ast
-           .behaviour
+           .behavior
            .bindings
            .column
            .direction
@@ -130,7 +130,7 @@
            <assign>
            <ast-list>
            <ast-node-list>
-           <behaviour>
+           <behavior>
            <binary>
            <binding>
            <bindings>
@@ -374,7 +374,7 @@
 (define-ast <interface> (<model>)
   (types #:init-form (make <types-node>))
   (events #:init-form (make <events-node>))
-  (behaviour))
+  (behavior))
 
 (define-ast <type> (<declaration>))
 
@@ -520,7 +520,7 @@
 (define-ast <foreign> (<component-model>))
 
 (define-ast <component> (<component-model>)
-  (behaviour))
+  (behavior))
 
 (define-ast <system> (<component-model>)
   (instances #:init-form (make <instances-node>))
@@ -528,7 +528,7 @@
 
 (define-ast <shell-system> (<system>))
 
-(define-ast <behaviour> (<scope> <declaration>)
+(define-ast <behavior> (<scope> <declaration>)
   (types #:init-form (make <types-node>))
   (ports #:init-form (make <ports-node>))
   (variables #:init-form (make <variables-node>))

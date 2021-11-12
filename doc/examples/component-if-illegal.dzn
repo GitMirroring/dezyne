@@ -1,7 +1,7 @@
 interface ihello
 {
   in void hello();
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -10,7 +10,7 @@ interface ihello
 component component_if_illegal
 {
   provides ihello p;
-  behaviour
+  behavior
   {
     bool b = true;
     on p.hello():

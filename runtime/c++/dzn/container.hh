@@ -91,7 +91,7 @@ namespace dzn
 
       if(expect != perform)
         throw std::runtime_error("unmatched expectation: trail expects: \"" + expect +
-                                 "\" behaviour expects: \"" + perform + "\"");
+                                 "\" behavior expects: \"" + perform + "\"");
     }
     void operator()(std::map<std::string, Function>&& lookup, std::set<std::string>&& required_ports)
     // to be executed on the main thread

@@ -30,7 +30,7 @@ interface I
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     enum State { Idle, Cruel, World};
     State state = State.Idle;
@@ -48,7 +48,7 @@ interface J
 
   out void world();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 
@@ -62,7 +62,7 @@ component async_async_prio
   provides I i;
   requires J j;
 
-  behaviour
+  behavior
   {
     requires dzn.async k;
 

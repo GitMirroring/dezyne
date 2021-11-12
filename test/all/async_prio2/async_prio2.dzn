@@ -28,7 +28,7 @@ interface IAsync {
   in void c();
   out void cb();
 
-  behaviour {
+  behavior {
     bool idle = true;
     [idle] {
       on e: idle = false;
@@ -45,7 +45,7 @@ interface IAsync {
 component async_prio2 {
   provides IAsync p;
   requires IAsync r;
-  behaviour {
+  behavior {
     requires dzn.async i;
     bool idle = true;
     [idle] {

@@ -170,7 +170,7 @@ mark it with <determinism-error>."
 (define (mark-livelock-error trace index)
   (let* ((model (runtime:%sut-model))
          (ast-model (if (is-a? model <system>) model
-                        (.behaviour model)))
+                        (.behavior model)))
          (pc-loop (list-ref trace index))
          (ast-loop (or (.statement pc-loop) ast-model))
          (loop (make <livelock-error> #:ast ast-loop #:message "loop"))
@@ -600,7 +600,7 @@ until RTC?."
               (_
                (let* ((model (runtime:%sut-model))
                       (ast (if (is-a? model <system>) model
-                               (.behaviour model)))
+                               (.behavior model)))
                       (pc (clone pc #:status (make <match-error> #:ast ast #:input event #:message "match"))))
                  (list (list pc) )))))))
 

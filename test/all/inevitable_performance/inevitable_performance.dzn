@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -36,7 +36,7 @@ interface iworld
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: {}
     on inevitable: world;
@@ -48,7 +48,7 @@ component inevitable_performance
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello():
     {

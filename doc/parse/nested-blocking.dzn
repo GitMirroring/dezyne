@@ -1,7 +1,7 @@
 interface ihello
 {
   in void hello();
-  behaviour
+  behavior
   {
     on hello:;
   }
@@ -10,7 +10,7 @@ interface ihello
 component nested_blocking
 {
   provides ihello p;
-  behaviour
+  behavior
   {
     blocking on p.hello(): [true] blocking p.reply ();
   }

@@ -29,7 +29,7 @@ interface ihello
   in Int hello();
   in INT bye();
 
-  behaviour
+  behavior
   {
     on hello: reply (1);
     on bye: reply (-1);
@@ -41,7 +41,7 @@ component hello_int
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     ihello.Int i = -1;
     on h.hello():
@@ -58,7 +58,7 @@ interface iworld
 {
   in ihello.Int world();
 
-  behaviour
+  behavior
   {
     on world: {
       ihello.Int i = 0;

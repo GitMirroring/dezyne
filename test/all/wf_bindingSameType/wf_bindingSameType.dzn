@@ -23,14 +23,14 @@
 
 interface I {
     in void e();
-    behaviour {
+    behavior {
         on e: {}
     }
 }
 
 interface II {
     in void e();
-    behaviour {
+    behavior {
         on e: {}
     }
 }

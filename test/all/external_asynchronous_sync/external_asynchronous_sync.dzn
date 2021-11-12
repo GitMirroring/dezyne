@@ -27,7 +27,7 @@ interface I {
   out void ec();
   out void ac();
 
-  behaviour {
+  behavior {
     enum State { idle, busy, aborting };
     State s = State.idle;
     [s.idle] {
@@ -50,7 +50,7 @@ interface II {
   out void ec();
   out void ac();
 
-  behaviour {
+  behavior {
     enum State { idle };
     State s = State.idle;
     [s.idle] {
@@ -64,7 +64,7 @@ component external_asynchronous_sync {
   provides I p;
   requires external II r;
 
-  behaviour {
+  behavior {
     enum State { idle, busy, aborting };
     State s = State.idle;
     [s.idle] {

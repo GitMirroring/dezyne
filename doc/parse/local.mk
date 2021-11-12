@@ -53,7 +53,7 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/interface-function-illegal.dzn		\
  %D%/interface-if-illegal.dzn			\
  %D%/interface-trigger-used-as-action.dzn	\
- %D%/interface-without-behaviour.dzn		\
+ %D%/interface-without-behavior.dzn		\
  %D%/interface-without-event.dzn		\
  %D%/mixing-declarative.dzn			\
  %D%/mixing-imperative.dzn			\

@@ -29,7 +29,7 @@ interface IAsync {
   out void cb();
   out void ping();
 
-  behaviour {
+  behavior {
     bool idle = true;
     [idle] {
       on e: idle = false;
@@ -47,7 +47,7 @@ interface IPing {
   in void dummy();
   out void ping();
 
-  behaviour {
+  behavior {
     on dummy: {}
     on optional: ping;
   }
@@ -56,7 +56,7 @@ interface IPing {
 component async_prio {
   provides IAsync p;
   requires IPing r;
-  behaviour {
+  behavior {
     requires dzn.async i;
     bool idle = true;
     [idle] {

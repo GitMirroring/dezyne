@@ -27,7 +27,7 @@ interface I
 {
   in void aap(noot_t noot);
 
-  behaviour
+  behavior
   {
     on aap: {}
   }
@@ -37,7 +37,7 @@ interface J
 {
   in void mies(noot_t noot);
 
-  behaviour
+  behavior
   {
     on mies: {}
   }
@@ -48,7 +48,7 @@ component alpha_event
   provides I p;
   requires J r;
 
-  behaviour
+  behavior
   {
     on p.aap(mies): r.mies(mies);
   }

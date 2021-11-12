@@ -27,7 +27,7 @@ interface ihello
 {
   in BOOL hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (1);
   }
@@ -38,7 +38,7 @@ component hello_global_int
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     BOOL b = 0;
     on h.hello():
@@ -53,7 +53,7 @@ interface iworld
 {
   in BOOL world();
 
-  behaviour
+  behavior
   {
     on world: {
       BOOL i = 0;

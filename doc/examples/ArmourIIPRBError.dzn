@@ -16,7 +16,7 @@ interface IStrict
   out void Reset();
   in void Recovered();
 
-  behaviour
+  behavior
   {
   	bool inError = false;
 
@@ -42,7 +42,7 @@ interface IRobust
   out void Reset();
   in void Recovered();
 
-  behaviour
+  behavior
   {
     on ia: {reply(false);}
     on inevitable: oa;
@@ -59,7 +59,7 @@ component ArmourIIPRBError // IStrict to IRobust
   requires IStrict rStrict;
   requires injected ILogger iLog;
   
-  behaviour {
+  behavior {
   	bool InError = false;
 
    	on rStrict.Reset(): {pRobust.Reset(); InError = true;} 	
@@ -84,7 +84,7 @@ component Dezyne
   provides IStrict pp;
   requires IB rp;
 
-  behaviour
+  behavior
   {
   	bool InError = false;
 
@@ -101,7 +101,7 @@ interface IB
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: illegal;
     on inevitable: oa;

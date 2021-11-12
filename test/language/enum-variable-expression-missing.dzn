@@ -2,7 +2,7 @@ interface ihello
 {
   in void gello();
 
-  behaviour
+  behavior
   {
     enum Bool {False,True};
     Bool b =  

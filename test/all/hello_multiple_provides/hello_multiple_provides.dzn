@@ -29,7 +29,7 @@ make && { set -o pipefail; rm -f my.aut; { echo "eqn  I'allow_dillegals = true; 
 interface ihello {
   in void a ();
   in void b ();
-  behaviour {
+  behavior {
     bool open = true;
     on a: open = !open;
     [open] on b: {}
@@ -40,7 +40,7 @@ interface ihello {
 component hello_multiple_provides {
   provides ihello p1;
   provides ihello p2;
-  behaviour {
+  behavior {
     bool p1_open = true;
     bool p2_open = true;
 

@@ -5,7 +5,7 @@ interface iblocking_request
   out void accept();
   out void reject();
 
-  behaviour
+  behavior
   {
     on request_reply: reply(true);
     on request_reply: reply(false);
@@ -19,7 +19,7 @@ interface inon_blocking_request
   in void request();
   out void accept();
   out void reject();
-  behaviour
+  behavior
   {
     bool is_considering = false;
     on request: is_considering = true;
@@ -32,7 +32,7 @@ component ca
 {
   provides iblocking_request pp;
   requires inon_blocking_request rp;
-  behaviour
+  behavior
   {
     bool reply_requested = true;
     on pp.request_reply(): blocking {reply_requested = true; rp.request();}

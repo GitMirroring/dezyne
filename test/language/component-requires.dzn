@@ -2,7 +2,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -17,5 +17,5 @@ component hello
   requires external injected  ;
   requires injected external  ;
 
-  behaviour {}
+  behavior {}
 }

@@ -30,7 +30,7 @@ component import_strip_component
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(): w.world();
   }

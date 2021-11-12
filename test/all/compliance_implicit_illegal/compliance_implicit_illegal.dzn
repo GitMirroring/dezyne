@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   in void avoid_deadlock ();
 
-  behaviour
+  behavior
   {
     on hello: {}
     on avoid_deadlock: {}
@@ -36,7 +36,7 @@ interface ihello
 component compliance_implicit_illegal
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     on h.avoid_deadlock (): {}
   }

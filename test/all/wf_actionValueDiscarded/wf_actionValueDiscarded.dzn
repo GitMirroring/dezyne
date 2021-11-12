@@ -25,7 +25,7 @@ interface Sensor {
   enum Code { ok, nok };
   in Code activate();
   in void deactivate();
-  behaviour {
+  behavior {
 
     on activate: reply(Code.ok);
     on activate: reply(Code.nok);
@@ -35,7 +35,7 @@ interface Sensor {
 
 interface Start {
   in void start();
-  behaviour {
+  behavior {
     on start: {}
   }
 }
@@ -43,7 +43,7 @@ interface Start {
 component Test {
   provides Start start;
   requires Sensor sensor;
-  behaviour {
+  behavior {
     on start.start(): sensor.activate();
   }
 }

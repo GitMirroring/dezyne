@@ -29,7 +29,7 @@ interface ihello
   in void stop();
   out void tick();
 
-  behaviour
+  behavior
   {
     bool operational = false;
 
@@ -53,7 +53,7 @@ component Top
   provides ihello p;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     requires dzn.async tick;
 
@@ -87,7 +87,7 @@ interface iworld
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on hello: idle = false;
@@ -98,7 +98,7 @@ interface iworld
 component Bottom
 {
   provides iworld p;
-  behaviour
+  behavior
   {
     requires dzn.async async;
     on p.hello(): async.req();

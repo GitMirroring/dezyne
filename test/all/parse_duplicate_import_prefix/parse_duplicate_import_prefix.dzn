@@ -23,7 +23,7 @@ import ../parse_duplicate_import_prefix/duplicate.dzn;
 interface parse_duplicate_import_prefix
 {
   in void e();
-  behaviour
+  behavior
   {
     on e:{}
   }

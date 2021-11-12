@@ -35,7 +35,7 @@ component HomeConstrainedAxis
   requires IMove motor; // required by motor
   requires ITouchSense homeSensor; // required by sensor
 
-  behaviour
+  behavior
   {
     enum State {lost, idle, moving, calibratingHome};
     State s = State.lost;

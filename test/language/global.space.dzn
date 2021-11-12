@@ -6,7 +6,7 @@ namespace global {
   interface space {
     in int hello ();
     in .int bye ();
-    behaviour {
+    behavior {
       on hello: reply (0);
     }
   }

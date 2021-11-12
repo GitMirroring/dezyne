@@ -4,7 +4,7 @@ interface ILogger
 {
 	in void Log(str msg);
 	
-	behaviour {
+	behavior {
 		on Log: {}
 	}
 }

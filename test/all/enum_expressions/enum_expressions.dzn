@@ -26,7 +26,7 @@ interface ihello
   enum e {one, two, three, four};
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -37,7 +37,7 @@ component enum_expressions
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     ihello.e e = ihello.e.one;
     on h.hello():
@@ -73,7 +73,7 @@ interface iworld
   in void hello();
   in void world();
 
-  behaviour
+  behavior
   {
     on cruel: {}
     on goodbye: {}

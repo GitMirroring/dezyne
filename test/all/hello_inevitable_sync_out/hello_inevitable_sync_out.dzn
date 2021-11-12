@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
   out void world();
-  behaviour
+  behavior
   {
     on hello: {}
     on inevitable: world;
@@ -38,7 +38,7 @@ interface iworld
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     bool enabled = false;
     on inevitable: {enabled = true; cruel; world;}
@@ -52,7 +52,7 @@ component hello_inevitable_sync_out
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(): {}
     on w.cruel(): w.hello();

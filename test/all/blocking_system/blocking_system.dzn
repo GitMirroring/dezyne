@@ -25,7 +25,7 @@ interface I1
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -35,7 +35,7 @@ interface I2
 {
   out void f();
 
-  behaviour
+  behavior
   {
     on inevitable: f;
   }
@@ -47,7 +47,7 @@ component A
   requires I1 r1;
   requires I2 r2;
 
-  behaviour
+  behavior
   {
     on p.e(): r1.e();
     on r2.f(): r1.e();
@@ -59,7 +59,7 @@ interface I3
   in void e();
   out void f();
 
-  behaviour
+  behavior
   {
     bool pending = false;
     [!pending]
@@ -78,7 +78,7 @@ component Blocked
   provides I1 p;
   requires I3 r;
 
-  behaviour
+  behavior
   {
     blocking on p.e(): {r.e();}
     on r.f(): p.reply();

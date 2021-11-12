@@ -1,7 +1,7 @@
 interface blocking_in_interface
 {
   in void hello();
-  behaviour
+  behavior
   {
     blocking on hello:;
   }

@@ -26,7 +26,7 @@ interface itop
 {
   in void e();
   out void f();
-  behaviour
+  behavior
   {
     on e: f;
   }
@@ -36,7 +36,7 @@ interface imiddle
 {
   in void e();
   out void f();
-  behaviour
+  behavior
   {
     on e: f;
   }
@@ -46,7 +46,7 @@ interface ibottom
 {
   in void e();
   out void f();
-  behaviour
+  behavior
   {
     on e: f;
   }
@@ -55,7 +55,7 @@ interface ibottom
 interface ilogger
 {
   in void log();
-  behaviour
+  behavior
   {
     on log:{}
   }
@@ -64,7 +64,7 @@ interface ilogger
 component logger
 {
   provides ilogger log;
-  behaviour
+  behavior
   {
     on log.log(): {}
   }
@@ -76,7 +76,7 @@ component middle
   requires ibottom b;
   requires injected ilogger l;
 
-  behaviour
+  behavior
   {
     on t.e(): {l.log(); b.e();}
     on b.f(): {l.log(); t.f();}
@@ -86,7 +86,7 @@ component middle
 component bottom
 {
   provides ibottom b;
-  behaviour
+  behavior
   {
     on b.e(): b.f();
   }

@@ -21,7 +21,7 @@ interface action
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on e: a;
   }

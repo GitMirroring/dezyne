@@ -2,7 +2,7 @@ interface IHello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -12,7 +12,7 @@ component Hello
 {
   provides IHello p;
 
-  behaviour
+  behavior
   {
     enum State { Uninitialized, Initialized, Active, Inactive };
     State state = State.

@@ -25,7 +25,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply(false);
     on hello: reply(true);
@@ -38,7 +38,7 @@ interface iworld
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: cruel;
     on hello: world;
@@ -50,7 +50,7 @@ component hello_blocking_sync
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     blocking on h.hello(): w.hello();
     on w.cruel(): h.reply(false);

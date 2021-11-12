@@ -3,7 +3,7 @@ interface ihello
   in void hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -14,7 +14,7 @@ component hello
   provides ihello hh;
   requires ihello ww;
 
-  behaviour
+  behavior
   {
     on hh.hello (): ww.hello ();
     on ww.world (): hh.world ();

@@ -32,7 +32,7 @@ interface ihello
 {
   in int hello(float f);
 
-  behaviour
+  behavior
   {
     on hello: reply(0);
   }
@@ -41,7 +41,7 @@ interface ihello
 component hello
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     on h.hello(i): reply (0);
   }

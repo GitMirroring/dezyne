@@ -1,20 +1,20 @@
 interface ihello
 {
   in bool hello ();
-  behaviour {}
+  behavior {}
 }
 
 component hello
 {
   provides ihello p;
   requires ihello r;
-  behaviour {}
+  behavior {}
 }
 
 component world
 {
   provides ihello p;
-  behaviour {}
+  behavior {}
 }
 
 component instance_port_not_bound

@@ -5,7 +5,7 @@ component message_handler
 {
   provides imessage_handler mh;
   requires imessage_handler ps;
-  behaviour
+  behavior
   {
     bool idle = true;
     // initial or idle state

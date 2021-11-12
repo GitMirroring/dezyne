@@ -25,7 +25,7 @@ interface iworld
 {
   in void world();
 
-  behaviour
+  behavior
   {
     on world: {}
   }

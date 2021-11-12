@@ -21,7 +21,7 @@
 // Commentary:
 //
 // A minimal, valid example for external, i.e., no illegals or
-// queue-fulls, with observable other behaviour.  When port 'w' is
+// queue-fulls, with observable other behavior.  When port 'w' is
 // external, we see reply values h.true and h.false.  When port 'w' is
 // non-external, we never see h.false.
 //
@@ -31,7 +31,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour {
+  behavior {
     on hello: reply (true);
     on hello: reply (false);
   }
@@ -42,7 +42,7 @@ component hello_external
   provides ihello h;
   requires external iworld w;
 
-  behaviour {
+  behavior {
     bool idle = true;
     [idle] on h.hello (): {idle = false; w.hello (); reply (true);}
     [!idle] on h.hello (): reply (false);
@@ -54,7 +54,7 @@ interface iworld
 {
   in void hello ();
   out void world ();
-  behaviour {
+  behavior {
     on hello: world;
   }
 }

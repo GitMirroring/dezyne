@@ -3,7 +3,7 @@ interface iconsole
   extern char $char$;
   in void key_pressed(char key);
   in void initialize();
-  behaviour
+  behavior
   {
     on key_pressed: {}
     on initialize: {}

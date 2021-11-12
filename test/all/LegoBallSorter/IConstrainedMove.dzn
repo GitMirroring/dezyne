@@ -38,7 +38,7 @@ interface IConstrainedMove
   out void arrived();
 
 
-  behaviour
+  behavior
   {
     enum State {lost, idle, calibrating, moving};
     State s = State.lost;

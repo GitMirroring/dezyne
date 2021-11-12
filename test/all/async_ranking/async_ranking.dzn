@@ -28,7 +28,7 @@ interface IA {
 
   out void done();
 
-  behaviour {
+  behavior {
     bool idle = true;
 
     [idle] {
@@ -47,7 +47,7 @@ interface IB {
 
   out void ack();
 
-  behaviour {
+  behavior {
     bool idle = true;
 
     [idle]
@@ -63,7 +63,7 @@ component A {
   provides IA p;
   requires IB r;
 
-  behaviour {
+  behavior {
     enum State { S0, S1, S2, S3};
 
     requires dzn.async i;
@@ -90,7 +90,7 @@ component A {
 component B {
   provides IB p;
 
-  behaviour {
+  behavior {
     enum State { S0, S1 };
 
     requires dzn.async i;

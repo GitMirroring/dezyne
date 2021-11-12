@@ -28,7 +28,7 @@ interface ihello
   in int hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     on hello: {world;reply (0);}
     on hello: {world;reply (1);}
@@ -43,7 +43,7 @@ component inevitable_multiple_requires
   requires iworld wl;
   requires iworld wr;
 
-  behaviour
+  behavior
   {
     int x = 0;
     on h.hello (): {x=wl.hello ();h.world ();reply (x);}
@@ -58,7 +58,7 @@ interface iworld
   in int hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     int i = 0;
     [i==0] on hello: {i=i+1;reply (i);}

@@ -26,7 +26,7 @@ interface parse_type_mismatch
   extern x $int$;
   in void hello();
 
-  behaviour
+  behavior
   {
     enum e {f,t};
     enum f {f,w};

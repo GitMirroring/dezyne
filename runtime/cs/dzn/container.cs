@@ -85,7 +85,7 @@ namespace dzn
 
       if(expect != perform)
         throw new runtime_error("unmatched expectation: trail expects: \"" + expect +
-                               "\" behaviour expects: \"" + perform + "\"");
+                               "\" behavior expects: \"" + perform + "\"");
     }
     public void run(Dictionary<String, Action> lookup, List<String> required_ports)
     {

@@ -27,7 +27,7 @@ interface I
   out void f();
   out void g();
 
-  behaviour
+  behavior
   {
     subint Count {0..2};
     Count count = 0;
@@ -44,7 +44,7 @@ component C
   provides I p;
   requires I r;
 
-  behaviour
+  behavior
   {
     requires dzn.async i;
 

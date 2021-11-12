@@ -27,7 +27,7 @@ interface ihello
   in bool hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = true;
     on hello: reply(b);
@@ -40,7 +40,7 @@ component silent_unused_out
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello(): reply (w.hello ());
   }

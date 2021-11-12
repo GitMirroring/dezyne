@@ -23,7 +23,7 @@ interface I
   in void e();
   out void a();
 
-  behaviour
+  behavior
   {
     bool idle=true;
     [idle] on e: idle = false;
@@ -36,7 +36,7 @@ interface J
   in void e();
   out void a();
 
-  behaviour
+  behavior
   {
     on e: a;
   }
@@ -47,7 +47,7 @@ component illegal_external_requires_twice
   provides I p;
   requires external J q;
   requires external J r;
-  behaviour
+  behavior
   {
     enum S {A,B,C};
     S s = S.A;

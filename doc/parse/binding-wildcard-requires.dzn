@@ -1,7 +1,7 @@
 interface ihello
 {
   in void hello ();
-  behaviour {}
+  behavior {}
 }
 
 component hello

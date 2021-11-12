@@ -28,7 +28,7 @@ interface ihello
   out void world ();
   out void cruel ();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 
@@ -48,7 +48,7 @@ component failures_nondet_inevitable
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello (): w.hello ();
     on w.world (): h.world ();

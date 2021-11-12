@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -35,7 +35,7 @@ interface iconfig
 {
   in bool test();
 
-  behaviour
+  behavior
   {
     on test: reply(true);
     on test: reply(false);
@@ -47,7 +47,7 @@ component hello
   provides ihello h;
   requires injected iconfig c;
 
-  behaviour
+  behavior
   {
     on h.hello(): bool b = c.test();
   }

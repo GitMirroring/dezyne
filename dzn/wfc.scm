@@ -82,8 +82,8 @@
    (append-map wfc (ast:event* o))
    (if (pair? (ast:event* o)) '()
        `(,(wfc-error o "interface must have an event")))
-   (if (.behaviour o) (wfc (.behaviour o))
-       `(,(wfc-error o "interface must have a behaviour")))))
+   (if (.behavior o) (wfc (.behavior o))
+       `(,(wfc-error o "interface must have a behavior")))))
 
 (define-method (wfc (o <component-model>)) ;; is-a <model>
   (append-map wfc (ast:port* o)))
@@ -92,11 +92,11 @@
   (append
    (re-declaration o)
    (if (> (length (ast:provides-port* o)) 0) '()
-       `(,(wfc-error o "component with behaviour must have a provides port")))
+       `(,(wfc-error o "component with behavior must have a provides port")))
    (let ((port-errors (append-map wfc (ast:port* o))))
      (if (or (pair? port-errors) (pair? (ast:in-triggers o))) port-errors
-         `(,(wfc-error o "component with behaviour must have a trigger"))))
-   (or (and=> (.behaviour o) wfc) '())))
+         `(,(wfc-error o "component with behavior must have a trigger"))))
+   (or (and=> (.behavior o) wfc) '())))
 
 (define-method (wfc (o <system>)) ;; is-a <component-model>
   (append
@@ -167,7 +167,7 @@
                                                 (string-join (map .name out-events) ", ")))
                           ,@(map (cut wfc-info <> (format #f "port defined here")) out-events))))))
            (else '())))
-   ;; TODO; do include async port in behaviour
+   ;; TODO; do include async port in behavior
    ))
 
 
@@ -289,12 +289,12 @@
 
 (define-method (model-blocking? (o <model>))
   (and (is-a? o <component>)
-       (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) (.statement (.behaviour o))))))
+       (pair? (tree-collect-filter (disjoin (is? <declarative>) (is? <compound>)) (is? <blocking>) (.statement (.behavior o))))))
 
 (define %model-event-types (make-parameter '()))
 (define %model-blocking? (make-parameter #f))
 
-(define-method (wfc (o <behaviour>))
+(define-method (wfc (o <behavior>))
   (let ((model (parent o <model>)))
     (parameterize ((%model-event-types
                     (if (is-a? model <interface>) (ast:return-types model)
@@ -707,7 +707,7 @@
 ;;;
 (define-method (defined-function (o <call>))
   (if (find (compose (cute ast:equal? (.function.name o) <>) .name)
-            (ast:function* (parent o <behaviour>))) '()
+            (ast:function* (parent o <behavior>))) '()
       `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
 
 (define-method (tail-recursion (o <call>))
@@ -777,10 +777,10 @@
   (.parent o))
 
 (define-method (decl-scope (o <function>))
-  (parent o <behaviour>))
+  (parent o <behavior>))
 
 (define-method (decl-scope (o <variable>))
-  (or (parent o <compound>) (parent o <behaviour>)))
+  (or (parent o <compound>) (parent o <behavior>)))
 
 (define-method (assign (o <ast>))
   (let* ((assign-type (ast:type o))
@@ -1140,7 +1140,7 @@
          (class (ast-name (class-of o))))
     (cond
      ((ast:member? o) '())
-     ((is-a? p <behaviour>)  '())
+     ((is-a? p <behavior>)  '())
      ((and (not (parent o <on>))
            (not (parent o <function>))
            (not (and (equal? class "compound") (ast:declarative? o))))

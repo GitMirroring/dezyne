@@ -2,7 +2,7 @@ interface imotion
 {
   in void start();
   in void stop();
-  behaviour
+  behavior
   {
     bool started = false;
     on start: started = true;

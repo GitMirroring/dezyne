@@ -26,7 +26,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (false);
   }
@@ -36,7 +36,7 @@ component alpha_local2
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     bool b = false;
     [!b] on h.hello():

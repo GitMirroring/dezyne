@@ -11,7 +11,7 @@ interface icode
   };
   in result add_digit(in char digit);
   in void get_code(out int code);
-  behaviour
+  behavior
   {
     enum status {BUILDING, COMPLETE};
     status state = status.BUILDING;

@@ -25,7 +25,7 @@ interface iworld
 {
   in bool world();
 
-  behaviour
+  behavior
   {
     on world: reply(true);
     on world: reply(false);

@@ -6,7 +6,7 @@ interface I
   out void a0();
   out void a1();
 
-  behaviour
+  behavior
   {
     on e0: {}
     on e1: reply (true);
@@ -18,7 +18,7 @@ component C
   provides I i;
   requires I j;
 
-  behaviour
+  behavior
   {
     bool m = false;
     on i.e0(): m =

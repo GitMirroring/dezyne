@@ -27,7 +27,7 @@ interface ihello
 
   in void hello(int i);
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -38,7 +38,7 @@ component extern_in_interface
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(i): {
       ihello.int j;
@@ -53,7 +53,7 @@ interface iworld
 {
   in bool world(ihello.int i);
 
-  behaviour
+  behavior
   {
     on world: reply(true);
   }

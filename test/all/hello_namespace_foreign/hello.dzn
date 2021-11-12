@@ -28,7 +28,7 @@ namespace library
      in void hello();
      out void goodbye();
 
-     behaviour
+     behavior
      {
        on hello: {}
      }
@@ -37,7 +37,7 @@ namespace library
   component foreign
     {
       provides iworld w;
-      // behaviour {}
+      // behavior {}
     }
 
   component hello
@@ -45,7 +45,7 @@ namespace library
       provides ihello h;
       requires iworld w;
 
-      behaviour
+      behavior
         {
           bool b = true;
           on h.hello(): {b = false; w.world();}
@@ -58,7 +58,7 @@ namespace library
       in void world();
       out void howdy();
 
-      behaviour
+      behavior
         {
           bool b = true;
           on world: b = false;

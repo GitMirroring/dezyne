@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -36,7 +36,7 @@ component hello_guard_two
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     bool b = false;
     [true] {
@@ -55,7 +55,7 @@ interface iworld
   in void cruel();
   in void world();
 
-  behaviour
+  behavior
   {
     on cruel: {}
     on world: {}

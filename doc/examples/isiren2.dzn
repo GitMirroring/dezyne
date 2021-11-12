@@ -2,7 +2,7 @@ interface isiren
 {
   in void turn_on();
   in void turn_off();
-  behaviour
+  behavior
   {
     bool siren_on = false;
     // if the Siren is on, only allow to turn it off

@@ -3,7 +3,7 @@ interface second_otherwise
   in void hello();
   in void cruel();
   in void world();
-  behaviour
+  behavior
   {
     bool b = true;
     [b] on hello: b = false;

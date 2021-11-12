@@ -27,7 +27,7 @@ interface ihello
 {
   in void hello(int i);
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -38,7 +38,7 @@ component parse_missing_event
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     enum Bool {False,True};
     void f (bool b) {}
@@ -54,7 +54,7 @@ interface iworld
 {
   in void world(int i);
 
-  behaviour
+  behavior
   {
     on world: {}
   }

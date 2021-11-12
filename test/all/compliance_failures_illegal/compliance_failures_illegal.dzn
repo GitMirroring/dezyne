@@ -30,7 +30,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool once = true;
     [once] on hello: once = false;
@@ -44,7 +44,7 @@ interface iworld
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: {}
     on inevitable: world;
@@ -56,7 +56,7 @@ component compliance_failures_illegal
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(): w.hello();
     on w.world(): h.world();

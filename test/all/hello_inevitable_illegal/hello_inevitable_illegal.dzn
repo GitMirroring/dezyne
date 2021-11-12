@@ -26,7 +26,7 @@ interface ihello
 {
   in void hello();
   out void world();
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on hello: idle = !idle;
@@ -43,7 +43,7 @@ component hello_inevitable_illegal
   provides ihello p;
   requires ihello r;
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on p.hello(): {idle = !idle; r.hello();}

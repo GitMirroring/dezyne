@@ -1,13 +1,13 @@
 interface Ihello
 {
   in void e();
-  behaviour {}
+  behavior {}
 }
 
 interface Iworld
 {
   in void f();
-  behaviour {}
+  behavior {}
 }
 
 component C

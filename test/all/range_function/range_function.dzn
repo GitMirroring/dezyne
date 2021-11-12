@@ -25,7 +25,7 @@ interface range_function
 {
   in void e();
 
-  behaviour
+  behavior
   {
     subint State {0..3};
 

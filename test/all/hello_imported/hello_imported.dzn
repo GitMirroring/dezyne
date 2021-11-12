@@ -33,7 +33,7 @@ component hello_imported
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(): w.world();
   }
@@ -45,7 +45,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -55,7 +55,7 @@ interface iworld
 {
   in void world();
 
-  behaviour
+  behavior
   {
     on world: {}
   }
@@ -63,14 +63,14 @@ interface iworld
 #imported "components.dzn"
 //import interfaces.dzn;
 
-// This originally tested removing behaviour content from imported
+// This originally tested removing behavior content from imported
 // models (this feature has been removed), and check compatible
 // behavior when using the pre-processor.
 /*
 component comp {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     on h.hello(): {
       //f(); // this error will not be detected!

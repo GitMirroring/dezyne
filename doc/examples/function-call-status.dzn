@@ -3,7 +3,7 @@ interface function_call_action
   in void do_it();
   out void done();
   out void skip();
-  behaviour
+  behavior
   {
     enum toggle {ON, OFF};
     toggle state = toggle.ON;

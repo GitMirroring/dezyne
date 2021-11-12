@@ -106,14 +106,14 @@ The Dezyne Modeling Language
 * Creating a Component::
 * Using Local Variables::
 * Using Data Variables and Parameters::
-* Specifying Behaviour::
+* Specifying Behavior::
 * Decomposing a Component::
 
 System Decomposition
 
 * Synchronous and asynchronous communication::
-* Interfaces as abstraction of a component's behaviour::
-* Modelling events not visible to the outside world but leading to external visible behaviour::
+* Interfaces as abstraction of a component's behavior::
+* Modelling events not visible to the outside world but leading to external visible behavior::
 * Dezyne modelling language versus programming languages::
 * How to use the language help topics::
 
@@ -135,18 +135,18 @@ Creating a Component
 * Ports::
 * External::
 * Injected::
-* Behaviour::
+* Behavior::
 
 Using Local Variables
 
 * Variable Syntax::
 * Variable Examples::
 
-Specifying Behaviour
+Specifying Behavior
 
-* Interface Versus Component Behaviour::
+* Interface Versus Component Behavior::
 * Actions::
-* Specifying Stateful Behaviour::
+* Specifying Stateful Behavior::
 * Using Guards::
 * Using Conditional Statements::
 * Using functions::
@@ -194,7 +194,7 @@ Dezyne Syntax
 * Types and Expressions::
 * Interface Models::
 * Component Models::
-* Interface and Component Behaviour::
+* Interface and Component Behavior::
 * System Components::
 * Namespaces::
 
@@ -213,11 +213,11 @@ Dezyne is a component based language, as well as a method for the
 development of event-driven systems.  The language has formal semantics,
 which is coherently expressed in: a textual representation, a graphical
 representation, a mathematical representation, a source code
-representation, and the observable behaviour of a machine executing the
+representation, and the observable behavior of a machine executing the
 resulting program.  The concepts available in the language denote the
 different properties@footnote{ Structural: events and their direction in
 an interface, ports on a component, components in a system, bindings
-between the ports; behavioural: guarded trigger => action | assignment |
+between the ports; behavioral: guarded trigger => action | assignment |
 if-else | function} that can be observed and have meaning in one or more
 of the reprentations: textual, graphical, mathematical, program and
 execution.
@@ -247,7 +247,7 @@ clarity and ease of discovery
 @item
 visual overview of architecture (layers of decomposition)
 @item
-visual overiew of behaviour (event trace scenarios)
+visual overiew of behavior (event trace scenarios)
 @end itemize
 @item
 rigor and formality
@@ -276,7 +276,7 @@ point relation
 @end itemize
 @itemize
 @item
-composition is separated from behaviour
+composition is separated from behavior
 @end itemize
 @itemize
 @item
@@ -363,7 +363,7 @@ algorithms or lambda functions.
 @item
 Formally specify communication protocols
 @item
-Formally specify hardware constraints/behaviour
+Formally specify hardware constraints/behavior
 @end itemize
 
 If you are new to Dezyne and wonder how or where it could work for
@@ -665,7 +665,7 @@ system parts thus have simple interfaces to interact with each other.
 * Creating a Component::
 * Using Local Variables::
 * Using Data Variables and Parameters::
-* Specifying Behaviour::
+* Specifying Behavior::
 * Decomposing a Component::
 @end menu
 
@@ -727,8 +727,8 @@ component in this example the @code{enable} event is an ``in event''.
 
 @menu
 * Synchronous and asynchronous communication::
-* Interfaces as abstraction of a component's behaviour::
-* Modelling events not visible to the outside world but leading to external visible behaviour::
+* Interfaces as abstraction of a component's behavior::
+* Modelling events not visible to the outside world but leading to external visible behavior::
 * Dezyne modelling language versus programming languages::
 * How to use the language help topics::
 @end menu
@@ -775,15 +775,15 @@ application, however, receives this event as an in event that has a void
 return or some other return type (currently Dezyne only supports void
 out events).
 
-@node Interfaces as abstraction of a component's behaviour
-@subsection Interfaces as abstraction of a component's behaviour
+@node Interfaces as abstraction of a component's behavior
+@subsection Interfaces as abstraction of a component's behavior
 
 In the Dezyne Modelling language, an @code{interface} contains the
 definition of the events, their direction and optionally their
-parameters, and a specification of the externally visible behaviour of
+parameters, and a specification of the externally visible behavior of
 the component that will provide an implementation of the interface.
 
-With behaviour we mean which events (or method calls) can be received
+With behavior we mean which events (or method calls) can be received
 and can be sent at which stages in the execution process, or in other
 words the protocol a user of the interface should obey.  In the case of
 the Application and protocol_stack the interface defines that the
@@ -810,7 +810,7 @@ particular state are marked ``implicitly illegal'' @footnote{Before
 2.14, the user had to specify all @code{illegal} actions accurately and
 specifically}.
 
-To unambiguously define all possible behaviour, an interface must
+To unambiguously define all possible behavior, an interface must
 specify all replies that are possible.  Definition of all possible
 replies is described in way that is abstract from implementation
 details.  What you see specified in the OFF state when the enable event
@@ -826,8 +826,8 @@ In the interface above, there is no definition yet the connectionReq and
 especially how the connected will be returned in case processing of
 the connection request is ready.  How to specify this is outlined next.
 
-@node Modelling events not visible to the outside world but leading to external visible behaviour
-@subsection Modelling events not visible to the outside world but leading to external visible behaviour
+@node Modelling events not visible to the outside world but leading to external visible behavior
+@subsection Modelling events not visible to the outside world but leading to external visible behavior
 
 @i{The following is crucial for understanding how to develop models in Dezyne.}
 
@@ -835,7 +835,7 @@ As mentioned, components use or provide functionality via interfaces and
 not by interacting directly with other components.  Therefore, interface
 specifications can not contain component implementation details.
 
-However, when this leads to externally visible behaviour, interfaces
+However, when this leads to externally visible behavior, interfaces
 necessarily capture decisions that are internal to the
 implementation.  As an example consider in the case above the completion
 of the connection request that will trigger the server component to
@@ -899,7 +899,7 @@ what seem to be correct interfaces and component states, and then verify
 the model.  Dezyne will tell you if your conceptual model has a flaw.  You
 might be surprised by what Dezyne tells you.  In fact, the power of
 Dezyne is precisely here: Dezyne uncovers complex, subtle, hard-to-find
-bugs in your communications and behaviour logic – before you write or
+bugs in your communications and behavior logic – before you write or
 generate even one line of C, C++ or Java!
 
 @node How to use the language help topics
@@ -917,7 +917,7 @@ sequence that can guide you in setting up your first DML models:
 First it is outlined how an interface and events should be constructed,
 next how a component is constructed and how to specify that a component
 provides or requires an interface.  Then you can find how to define
-variables and how to specify interface and component behaviour with all
+variables and how to specify interface and component behavior with all
 the possible constructs (functions, conditionals, etc).  Finally it is
 shown how you can decompose components into others / group components
 into systems.
@@ -960,7 +960,7 @@ communicated and the interaction protocol.
 
 Each event has a direction specified by the @code{in} or @code{out} keywords.
 
-The interface protocol is specified in a 'behaviour' section.  For each
+The interface protocol is specified in a 'behavior' section.  For each
 in event it specifies the actions performed.
 
 An interface does not lead to any code being generated.  It serves as a
@@ -979,7 +979,7 @@ The @code{interface} keyword is used to declare an interface, followed by the
 interface name.
 
 Within the interface definition, a list of in and out events is defined
-followed by a behaviour definition.
+followed by a behavior definition.
 
 @example
 @b{interface} simple_interface
@@ -990,7 +990,7 @@ followed by a behaviour definition.
    @b{out} void out_event(); // list of out events
    @b{out} void out_event2();
    /* ...  */
-   @b{behaviour}             // contract; protocol description
+   @b{behavior}             // contract; protocol description
    @{ /* ...  */ @}
 @}
 @end example
@@ -1001,7 +1001,7 @@ type.
 @node  Interface Examples
 @subsection Interface Examples
 
-@subsubsection An interface with three events and a simple behaviour
+@subsubsection An interface with three events and a simple behavior
 
 The following interface has three events defined: two in events and one
 out event.  The direction is as seen from the component implementing
@@ -1013,7 +1013,7 @@ this interface.
   @b{in} @b{void} start();
   @b{in} @b{void} stop();
   @b{out} @b{void} ready();
-  @{behaviour@}
+  @{behavior@}
   @{
     on start, stop: @{@}
   @}
@@ -1034,7 +1034,7 @@ interface is in state @code{ACTIVE}.
   @b{in} @b{void} stop();
   @b{out} @b{void} started();
   @b{out} @b{void} ready();
-  @{behaviour@}
+  @{behavior@}
   @{
     @b{enum} status @{OFF, ACTIVE@};
     status state = status.OFF;
@@ -1059,7 +1059,7 @@ interface is in state @code{ACTIVE}.
 @itemize
 
 @item @ref{Specifying Events},
-@item @ref{Specifying Behaviour},
+@item @ref{Specifying Behavior},
 @end itemize
 
 @cindex interface
@@ -1110,7 +1110,7 @@ and Parameters}.
 @node Event Examples
 @subsubsection Event Examples
 
-@subsubsection An interface with three void events (and a simple behaviour)
+@subsubsection An interface with three void events (and a simple behavior)
 
 The following interface has three events defined: two in events and one
 out event.
@@ -1123,7 +1123,7 @@ The direction is as seen from the component implementing this interface.
   @b{in} @b{void} start();
   @b{in} @b{void} stop();
   @b{out} @b{void} ready();
-  @{behaviour@}
+  @{behavior@}
   @{
     on start, stop: @{@}
   @}
@@ -1142,7 +1142,7 @@ defined in the first line of the interface definition.
   @b{enum} result @{OK, FAILED, ERROR@};
   @b{in} result connect();
   @b{in} result disconnect();
-  @b{behaviour}
+  @b{behavior}
   @{
     @b{on} connect: @b{reply}(result.OK);    // Set reply value to 'result.OK'
     @b{on} disconnect: @b{reply}(result.OK); // Set reply value to 'result.OK'
@@ -1174,7 +1174,7 @@ Three types of component can be defined in Dezyne:
 @item     The first type is a component that has only a name defined and has no implementation.  In Dezyne this is
         a placeholder for a component that is implemented in another programming language.
 
-@item     The second type is a component that has an implementation marked by the ‘behaviour’ keyword.
+@item     The second type is a component that has an implementation marked by the ‘behavior’ keyword.
 
 @item     The third type is a component decomposed into others that has an implementation marked by the @code{system} keyword.  The system specifies contained component instances, see further
 @ref{Decomposing a Component},.
@@ -1186,23 +1186,23 @@ Three types of component can be defined in Dezyne:
 * Ports::
 * External::
 * Injected::
-* Behaviour::
+* Behavior::
 @end menu
 
 @node Component Syntax
 @subsection Component Syntax
 
 A component definition is named, and introduces a list of provides and
-requires interfaces and optionally behaviour or a system.
+requires interfaces and optionally behavior or a system.
 
-@subsubheading 1) regular component with behaviour
+@subsubheading 1) regular component with behavior
 
 @example
 @b{component} component_name
 @{
   @b{provides} iprotocol p; // list of provided interfaces
   @b{requires} iused r;     // list of required interfaces
-  @b{behaviour}             // the component's behaviour
+  @b{behavior}             // the component's behavior
   @{ ...  @}
 @}
 @end example
@@ -1233,14 +1233,14 @@ requires interfaces and optionally behaviour or a system.
 @subsubsection A Simple Leaf Component
 
 The following component implements one interface and a straightforward
-behaviour section.
+behavior section.
 
 @example
 @b{component} leaf
 @{
   @b{provides} icontrol control;
   @b{requires} isensor sensor;
-  @b{behaviour}
+  @b{behavior}
   @{
     @b{on} control.event(): @{ @}
   @}
@@ -1282,7 +1282,7 @@ connected via their ports.
 
 @itemize
 
-@item @ref{Specifying Behaviour},
+@item @ref{Specifying Behavior},
 @item @ref{Decomposing a Component},
 @item @ref{Ports},
 @end itemize
@@ -1329,7 +1329,7 @@ which the definition is imported using @code{import}.
 @b{component} leaf
 @{
   @b{provides} icontrol control;
-  @b{behaviour}
+  @b{behavior}
   @{
     @b{on} control.event(): @{ @}
   @}
@@ -1395,7 +1395,7 @@ in-event called event.
 @b{component} leaf
 @{
   @b{provides} icontrol control;
-  @b{behaviour}
+  @b{behavior}
   @{
     @b{on} control.event(): @{ @}
   @}
@@ -1430,7 +1430,7 @@ requires the @code{imessage_handler} interface.
 port may be delayed.  (The delay may be caused by inter-process
 communication.) Model verification will consider this delay for out
 events on an external port.  The delay may cause race conditions leading
-to illegal behaviour or interface compliance errors.
+to illegal behavior or interface compliance errors.
 
 @b{Note:} 'external' delay is taken into account for required port out
 events.  Marking a provided port as external has no effect on
@@ -1456,7 +1456,7 @@ Explanation:
 @subsubsection Race condition due to external delay
 
 Component RemoteTimerProxy illustrates how a delayed communication
-channel may cause a race condition leading to illegal behaviour.
+channel may cause a race condition leading to illegal behavior.
 
 The implementation of component RemoteTimerProxy is correct for
 @code{requires itimer rp} but incorrect for @code{requires external
@@ -1493,51 +1493,51 @@ TODO: Explain meaning, implications and justification.@* Multiple
 requires ports can be bound to a single provided port.  TODO: Explain
 constraints
 
-@node Behaviour
-@subsection Behaviour
+@node Behavior
+@subsection Behavior
 
-A behaviour section is used to define the actions an interface or
+A behavior section is used to define the actions an interface or
 component will perform based on the events received.
 
-@subsubsection Interface Versus Component Behaviour
+@subsubsection Interface Versus Component Behavior
 
-Behaviour in an interface is a specification.  It is an agreement
+Behavior in an interface is a specification.  It is an agreement
 between components providing and requiring this interface about the
 messages and protocol exchanged.  Both components must adhere to this
 specification.  Interface conformance is an imprtant check in the
 verifier.  The code generator does not generate any code based on the
-behaviour specification of an interface.
+behavior specification of an interface.
 
-Behaviour in a component is a definition.  It defines the actual
-behaviour expressed by the object modeled.  Whereas an interface might
+Behavior in a component is a definition.  It defines the actual
+behavior expressed by the object modeled.  Whereas an interface might
 still allow some freedom, sometimes multiple messages are allowed,
-inside a component the behaviour must be fully deterministic.  The code
-generator uses this component behaviour specification to generate target
+inside a component the behavior must be fully deterministic.  The code
+generator uses this component behavior specification to generate target
 code.
 
 @subsubsection Syntax
 
-The @code{behaviour} keyword is used to declare a behaviour
+The @code{behavior} keyword is used to declare a behavior
 section.  Optionally it may have a name.
 
 @example
-@{behaviour@} [Optional_Name]
+@{behavior@} [Optional_Name]
 @{
-   <behaviour-body>
+   <behavior-body>
 @}
 @end example
 
-The behaviour body contains a collection of statements that define the
+The behavior body contains a collection of statements that define the
 actions that will be performed based on events received.
 
-The following elements can be used in the behaviour body:
+The following elements can be used in the behavior body:
 
 @itemize
 
 @item Local variables: @pxref{Using Local Variables},
 @item Functions: @pxref{Using functions},
 @item @pxref{Actions},
-@item State definitions and initialisations: @pxref{Specifying Stateful Behaviour},
+@item State definitions and initialisations: @pxref{Specifying Stateful Behavior},
 @item @pxref{Reply},
 @item Conditions: @pxref{Using Conditional Statements},
 @item Guards: @pxref{Using Guards},
@@ -1545,17 +1545,17 @@ The following elements can be used in the behaviour body:
 
 @subsubsection Examples
 
-@subsubsection A basic behaviour section
+@subsubsection A basic behavior section
 
-This example shows an interface with a basic behaviour section.
+This example shows an interface with a basic behavior section.
 
 @example
 @verbatiminclude examples/imotion2.dzn
 @end example
 
-@subsubsection A behaviour section with a protocol definition
+@subsubsection A behavior section with a protocol definition
 
-This example shows an interface with a more complex behaviour section,
+This example shows an interface with a more complex behavior section,
 where the start event is only allowed in case the interface is in state
 Off and the stop event is only allowed in case the interface is in state
 Active.
@@ -1564,10 +1564,10 @@ Active.
 @verbatiminclude examples/imotion3.dzn
 @end example
 
-@subsubsection A behaviour section with a protocol definition, alternative form
+@subsubsection A behavior section with a protocol definition, alternative form
 
-This example shows an interface with the same behaviour as the one
-above, but an alternative form is used to define the behaviour.
+This example shows an interface with the same behavior as the one
+above, but an alternative form is used to define the behavior.
 
 In the previous example based on the state value (using @code{guard}s)
 the actions for the events per state were defined.  In the alternative
@@ -1584,17 +1584,17 @@ below based on the events the actions in each state are defined.
 @item @ref{Using Local Variables},
 @item @ref{Using functions},
 @item @ref{Actions},
-@item @ref{Specifying Stateful Behaviour},
+@item @ref{Specifying Stateful Behavior},
 @item @ref{Reply},
 @item @ref{Using Conditional Statements},
 @item @ref{Using Guards},
 @end itemize
 
 @cindex statement
-@cindex Specifying Behaviour
+@cindex Specifying Behavior
 @cindex state
 @cindex protocol
-@cindex behaviour
+@cindex behavior
 @node Using Local Variables
 @section Using Local Variables
 
@@ -1659,7 +1659,7 @@ component alarm_system
   provides ialarm alarm;
   requires isensor sensor;
   requires isiren siren;
-  behaviour
+  behavior
   @{
     enum status
     @{
@@ -1782,7 +1782,7 @@ component alarm_console
   requires ialarm_system alarm;
   /* ...  */
   /* ...  */
-  behaviour
+  behavior
   @{
     /* ...  */
     /* ...  */
@@ -1825,16 +1825,16 @@ component alarm_console
 @cindex extern
 @cindex data
 
-@node Specifying Behaviour
-@section Specifying Behaviour
+@node Specifying Behavior
+@section Specifying Behavior
 
-A behaviour section is used to define the actions an interface or
+A behavior section is used to define the actions an interface or
 component will perform based on the events received.
 
 @menu
-* Interface Versus Component Behaviour::
+* Interface Versus Component Behavior::
 * Actions::
-* Specifying Stateful Behaviour::
+* Specifying Stateful Behavior::
 * Using Guards::
 * Using Conditional Statements::
 * Using functions::
@@ -1845,21 +1845,21 @@ component will perform based on the events received.
 * Blocking::
 @end menu
 
-@node Interface Versus Component Behaviour
-@subsection Interface Versus Component Behaviour
+@node Interface Versus Component Behavior
+@subsection Interface Versus Component Behavior
 
-Behaviour in an interface is a specification.  It is an agreement
+Behavior in an interface is a specification.  It is an agreement
 between components providing and requiring this interface about the
 messages and protocol exchanged.  Both components must adhere to this
 specification.  Interface conformance is an imprtant check in the
 verifier.  The code generator does not generate any code based on the
-behaviour specification of an interface.
+behavior specification of an interface.
 
-Behaviour in a component is a definition.  It defines the actual
-behaviour expressed by the object modeled.  Whereas an interface might
+Behavior in a component is a definition.  It defines the actual
+behavior expressed by the object modeled.  Whereas an interface might
 still allow some freedom, sometimes multiple messages are allowed,
-inside a component the behaviour must be fully deterministic.  The code
-generator uses this component behaviour specification to generate target
+inside a component the behavior must be fully deterministic.  The code
+generator uses this component behavior specification to generate target
 code.
 
 @unnumberedsubsubsec See also:
@@ -1869,24 +1869,24 @@ code.
 @item @ref{Using Local Variables},
 @item @ref{Using functions},
 @item @ref{Actions},
-@item @ref{Specifying Stateful Behaviour},
+@item @ref{Specifying Stateful Behavior},
 @item @ref{Reply},
 @item @ref{Using Conditional Statements},
 @item @ref{Using Guards},
 @end itemize
 
 @cindex statement
-@cindex Specifying Behaviour
+@cindex Specifying Behavior
 @cindex state
 @cindex protocol
-@cindex behaviour
+@cindex behavior
 
 @node Actions
 @subsection Actions
 
 The actions an interface or component should perform when an event is
-received are specified within a Behaviour (@pxref{Specifying
-Behaviour}).
+received are specified within a Behavior (@pxref{Specifying
+Behavior}).
 
 Actions can be changing the value of a variable, invoking a function,
 generating another event or changing to another state and any
@@ -1974,8 +1974,8 @@ the actions based on incoming events.
 
 @itemize
 
-@item @ref{Specifying Behaviour},
-@item @ref{Specifying Stateful Behaviour},
+@item @ref{Specifying Behavior},
+@item @ref{Specifying Stateful Behavior},
 @item @ref{Using functions},
 @item @ref{Using Conditional Statements},
 @item @ref{Using illegal},
@@ -1991,11 +1991,11 @@ the actions based on incoming events.
 @cindex function
 @cindex event
 @cindex action
-@node Specifying Stateful Behaviour
-@subsection Specifying Stateful Behaviour
+@node Specifying Stateful Behavior
+@subsection Specifying Stateful Behavior
 
 State variables and guard expressions enable specification of protocols
-in a behaviour section.  They specify the selection of one of multiple
+in a behavior section.  They specify the selection of one of multiple
 different actions.  @xref{Actions} for an input event.
 
 The state of an interface is composed of the values of all its state
@@ -2003,7 +2003,7 @@ variables.
 
 State variables can refer to public types (e.g., defined for use as
 event return values) or to private type definitions local to the
-'behaviour' section.  Types can be boolean, integer with limited
+'behavior' section.  Types can be boolean, integer with limited
 contiguous range or enumerated.
 
 Guards are boolean expressions based on state variables.  The statement
@@ -2076,12 +2076,12 @@ the actions based on incoming events.
 
 @itemize
 
-@item @ref{Specifying Behaviour},
+@item @ref{Specifying Behavior},
 @item @ref{Actions},
 @end itemize
 
 @cindex variable
-@cindex Specifying Stateful Behaviour
+@cindex Specifying Stateful Behavior
 @cindex state
 @cindex machine
 @cindex expression
@@ -2183,7 +2183,7 @@ statement-true is skipped and statement-false is executed.
 
 @subsubsection A basic if-else example
 
-This example shows an interface with a behaviour section where if else
+This example shows an interface with a behavior section where if else
 is used to select the actions to be performed based on the value of
 a state variable and a local variable.
 
@@ -2206,7 +2206,7 @@ a state variable and a local variable.
 @node Using functions
 @subsection Using functions
 
-Functions are defined in a behaviour section.
+Functions are defined in a behavior section.
 
 These functions can be called as part of an action.
 
@@ -2248,7 +2248,7 @@ no parameters.
 
 @subsubsection A basic function
 
-This example shows an interface with a behaviour section where a
+This example shows an interface with a behavior section where a
 function is defined and used to determine the proper actions.
 
 @example
@@ -2327,7 +2327,7 @@ interface inetwork
 // by using message_sent.
   in bool send_message();
   out void message_sent();
-  behaviour
+  behavior
   @{
     enum status @{IDLE, BUSY@};
     status state = status.IDLE;
@@ -2459,9 +2459,9 @@ Note: @b{do not use illegal in conditional statements (if / if else) or
 functions in interface definitions} ! This is because an event can only
 be declared illegal in a direct way due to the declarative character of
 interfaces.  (Or in other words: in an interface one declares the
-expected behaviour and an illegal inside conditional statements or
+expected behavior and an illegal inside conditional statements or
 functions would require an evaluation of the conditional statement or
-function for the be expected behaviour.)
+function for the be expected behavior.)
 
 @subsubsection Examples
 
@@ -2542,7 +2542,7 @@ an illegal inside an if-else construction.
 @node Restrictions Multiple Provides
 @subsection Restrictions Multiple Provides
 
-For a component with a behaviour and with multiple provides ports, two
+For a component with a behavior and with multiple provides ports, two
 restrictions hold.  These restrictions relate to the fact that activity
 cannot be forked.  These are the restrictions:
 
@@ -2663,7 +2663,7 @@ rp.accept} or @code{on rp.reject} have been performed.
 
 A component can be decomposed into a group of components.  A grouping of
 components is called a @b{@i{system}}.  A component that is decomposed
-into a system has no own behaviour definition, the behaviour of the
+into a system has no own behavior definition, the behavior of the
 system is defined by the component into which it is decomposed.
 
 @menu
@@ -2840,7 +2840,7 @@ examples and the corresponding sequence diagrams.
 
 When interpreting the models and corresponding sequence diagrams, keep
 in mind that the body of an event is executed atomically in the context
-of its behaviour.
+of its behavior.
 
 For an in-event all action statements are executed depth-first.  All
 out-events are stored in event queues at the receiving components.  After
@@ -2919,9 +2919,9 @@ returns.
 @section Indirect multiple out events
 
 Since the provided interface is the same in the 3 cases below the
-externally visible behaviour is identical.
+externally visible behavior is identical.
 
-The 3 different behaviour implementations of the component show the
+The 3 different behavior implementations of the component show the
 subtle differences in the internal handling of messages.
 
 @example
@@ -2980,7 +2980,7 @@ occurrence of the inevitable event in combination with external.
 
 The 2 required out-events (r1.b, r2.b) can come in any order.  The
 message sequence chart shows only one scenario.  The implementation of
-the component is such that the provided behaviour is the same in both
+the component is such that the provided behavior is the same in both
 cases.
 
 @example
@@ -2995,10 +2995,10 @@ cases.
 @section Introduction
 Verification in Dezyne focuses on verifying properties that are hard for
 humans to verify.  These properties mainly concern ordering of events,
-asynchronous behaviour, deadlock and/or livelock.  Verifying a component
+asynchronous behavior, deadlock and/or livelock.  Verifying a component
 together with its provided and required interfaces ensures that the
 component behaves correctly in its environment according to the
-specified behaviour.
+specified behavior.
 
 @section What is verified
 Components developed in Dezyne can be verified, after proven to be valid for verification
@@ -3049,12 +3049,12 @@ These are the checks that can be performed:
 	Upon violation, The following error is reported : @*
 @i{deadlock in model M}
 @item @i{compliance}: it checks that the component together with the required interfaces implements the
-	behaviour: it checks that the component together with the required interfaces implements the behaviour
+	behavior: it checks that the component together with the required interfaces implements the behavior
 	specified in the provided interface(s).@*
 	Upon violation, The following error is reported : @*
 @i{Component M is non-compliant with interface of provided port}
 @item @i{livelock}:
-	a component is said to be livelocked when it is permanently busy with internal behaviour
+	a component is said to be livelocked when it is permanently busy with internal behavior
 	but ceases to serve its clients.  For example, due to a design error such that the design
 	is constantly interacting with its used components and starving the client;
 	or due to the arrival rate of unconstrained external events such that processing them
@@ -3122,7 +3122,7 @@ models and the integration thereof.
 Every wellformed Dezyne model can be automatically converted into a
 corresponding wellformed C++ representation.  A verified Dezyne model
 can be automatically converted into a corresponding C++ representation
-which when executed exhibits the same behaviour as one can observe in
+which when executed exhibits the same behavior as one can observe in
 the Dezyne simulation and verification of said model.
 
 In Dezyne there are three model types: interface, component and system.
@@ -3139,7 +3139,7 @@ interface some_interface
 @{
   in void in_event();
   out void out_event();
-  behaviour
+  behavior
   @{
     on in_event: out_event;
   @}
@@ -3315,7 +3315,7 @@ the runtime into the system.  Injection example:
 interface Foo
 @{
   in void bar();
-  behaviour
+  behavior
   @{
     on bar:@{@}
   @}
@@ -3324,7 +3324,7 @@ component some_component2
 @{
   provides some_component2 provided_port;
   requires injected Foo required_port;
-  behaviour @{ /* ...  */ @}
+  behavior @{ /* ...  */ @}
 @}
 @end example
 
@@ -3424,7 +3424,7 @@ extern int $int$;
 interface IA @{
   in void iv(int i);
   out void o(int i);
-  behaviour @{
+  behavior @{
     on iv: @{@}
     on optional: o;
   @}
@@ -4140,7 +4140,7 @@ Use trail @var{trail}.  The default is to read from standard input.
 @cindex @code{lts}
 
 The @command{dzn traces} command generates an exhaustive set of traces
-for a behavioural Dezyne model.  It can also be used to generate an
+for a behavioral Dezyne model.  It can also be used to generate an
 @var{lts} in Aldebaran format (@xref{Invoking dzn lts}, @xref{Invoking
 dzn explore}).
 
@@ -4223,7 +4223,7 @@ Add directory @var{dir} to the import path.
 
 @item --model=@var{model}
 @itemx -m @var{model}
-Limit verification to @var{model}, and for a behavioural component
+Limit verification to @var{model}, and for a behavioral component
 model, to its interfaces.
 
 @quotation Note
@@ -4264,7 +4264,7 @@ Use queue size @var{size} for verification, the default is @code{3}.
 * Types and Expressions::
 * Interface Models::
 * Component Models::
-* Interface and Component Behaviour::
+* Interface and Component Behavior::
 * System Components::
 * Namespaces::
 @end menu
@@ -4315,7 +4315,7 @@ The following list shows the keywords in Dezyne.
 These keywords may not be used as constant or variable or any other identifier names.
 
 @example
-behaviour       blocking        bool            component
+behavior       blocking        bool            component
 else            extern          external        enum
 false           if              illegal         import
 inevitable      injected        inout           interface
@@ -4366,7 +4366,7 @@ The order of specification in one file is as follows:
 An @code{import} clause makes available all types, interfaces and
 components that are defined in another file.  From an imported interface
 or component the 'public' parts are available, i.e.  all information but
-the interface or component behaviour, or the component system details.
+the interface or component behavior, or the component system details.
 Syntax:
 
 @example
@@ -4464,7 +4464,7 @@ where @code{i1} and @code{i2} denote integers.
 
 Apart from the @code{bool}, @code{enum}, and @code{int} types introduced
 above, which play an important role in the description of interface and
-component behaviour, so-called 'data types' can be defined.  These play a
+component behavior, so-called 'data types' can be defined.  These play a
 restricted role and are used as types of 'data parameters' in events
 (see below).  A data type is defined as follows:
 
@@ -4489,7 +4489,7 @@ No Dezyne supported expressions are available for data types, apart from
 @node Interface Models
 @section Interface Models
 An interface has a name, can define some local types, defines a collection of events,
-and a behaviour describing the protocol on its events.
+and a behavior describing the protocol on its events.
 A syntax example:
 
 @example
@@ -4499,7 +4499,7 @@ interface some_interface
   extern some_string $std::string$;
   in enum_type valued_event(some_string s);
   out void reply_event();
-  behaviour
+  behavior
   @{
     on valued_event(s) : @{ reply enum_type.Val3; @}
   @}
@@ -4508,10 +4508,10 @@ interface some_interface
 
 In this example a number of keywords are introduced:
 @code{interface}, @code{in}, @code{out},
-@code{void}, @code{behaviour}, @code{on}, and @code{reply}.
+@code{void}, @code{behavior}, @code{on}, and @code{reply}.
 
 The example defines an interface named @code{some_interface} with two local types,
-two events, and the interface behaviour  (see below for a syntax description of events and behaviour).
+two events, and the interface behavior  (see below for a syntax description of events and behavior).
 
 @subsection Events
 An event has (in this order):
@@ -4534,9 +4534,9 @@ Some examples:
 
 There is a restriction on event definitions: an @code{out} event must be @code{void}.
 
-@subsection Behaviour
-The @code{behaviour} section of an interface contains the protocol description of the interface.
-@xref{Interface and Component Behaviour}, for an elaborate description.
+@subsection Behavior
+The @code{behavior} section of an interface contains the protocol description of the interface.
+@xref{Interface and Component Behavior}, for an elaborate description.
 
 @cindex type
 @cindex Interfaces Syntax
@@ -4575,7 +4575,7 @@ other components.  Communication between components is performed through
 their ports, which are instances of interfaces.  Each port has a
 direction according to its intention (@code{provides} or
 @code{requires}), the interface it implements and a local name.  A
-component refers to these ports in its behaviour.
+component refers to these ports in its behavior.
 
 @subsubsection Injection
 A @code{requires} port can be specified to be @code{injected}:
@@ -4596,9 +4596,9 @@ The component's internal description comes in three flavors:
 @itemize
 
 @item
-Behavioural: Like in the interface protocol the internals are given as a
-behavioural description, in which for each event the required actions
-are given.  @xref{Interface and Component Behaviour}.
+Behavioral: Like in the interface protocol the internals are given as a
+behavioral description, in which for each event the required actions
+are given.  @xref{Interface and Component Behavior}.
 
 @item
 Compositional: The functionality is described as the composition of a
@@ -4620,13 +4620,13 @@ is a place-holder only.
 @cindex injection
 @cindex component
 
-@node Interface and Component Behaviour
-@section Interface and Component Behaviour
+@node Interface and Component Behavior
+@section Interface and Component Behavior
 
-A behaviour description might look like this:
+A behavior description might look like this:
 
 @example
-behaviour
+behavior
 @{
   enum enum_type @{ value1, value2 @};
   type enum_var = enum_type.value1;
@@ -4650,7 +4650,7 @@ behaviour
 @}
 @end example
 
-This behaviour section introduces a local enum type (@code{enum_type}),
+This behavior section introduces a local enum type (@code{enum_type}),
 two variables (called @code{enum_var} and @code{bool_var}),
 a number of statements, and a function definition (@code{void f(bool b)}) with one parameter.
 Note that in a sub scope a local variable @code{blocal} is defined.
@@ -4659,12 +4659,12 @@ The different constructs are handled in more detail below.
 @subsection Variable Definitions
 
 As demonstrated in the example above, variables can be defined in a
-behaviour description, both at top level and in a local scope.  Variables
+behavior description, both at top level and in a local scope.  Variables
 must be given an initial value.
 
 The member variables are often referred to as 'state variables'.
-Their scope extends to the complete behaviour description, including the
-body of functions defined in the behaviour.
+Their scope extends to the complete behavior description, including the
+body of functions defined in the behavior.
 
 Variables defined at other places have a scope which is restricted to the @code{compound}
 (@code{@{ ....  @}}) they are defined in.
@@ -4673,7 +4673,7 @@ Variables defined at other places have a scope which is restricted to the @code{
 
 @subsection Declarative versus Imperative Statements
 
-There are two 'kinds' of behavioural statements: 'declarative' and
+There are two 'kinds' of behavioral statements: 'declarative' and
 'imperative'.  The declarative part describes the trigger events and the
 conditions in which they have to be handled, while the imperative part
 describes the response that has to occur as result of a trigger.
@@ -4711,7 +4711,7 @@ expressing the validity of the guard.  The statement following the guard can be 
 declarative or imperative.
 
 @subsubsection @code{on}
-In an interface behaviour specification an @code{on} is expressed as:
+In an interface behavior specification an @code{on} is expressed as:
 
 @example
   on some_event: statement
@@ -4725,7 +4725,7 @@ nesting these statements is not allowed.
 
 Note that no event parameters must be specified in an interface.
 
-In a component behaviour specification an @code{on} is expressed as:
+In a component behavior specification an @code{on} is expressed as:
 
 @example
   on some_port.some_event(param1): statement
@@ -4733,7 +4733,7 @@ In a component behaviour specification an @code{on} is expressed as:
 
 where @code{some_port} is a port of the component with an interface type
 that contains event @code{some_event} with one data parameter.  Note
-that in a component behaviour specification data parameters have to be
+that in a component behavior specification data parameters have to be
 used where specified.  On the trigger each data parameter must be a
 fresh variable, implicitly typed conform the event specification.
 
@@ -4783,7 +4783,7 @@ The syntax in an interface definition is:
 where @code{some_event} is the name of an out event introduced in the interface.
 Note that no event parameters must be specified.
 
-In a component behaviour specification an action statement is expressed as:
+In a component behavior specification an action statement is expressed as:
 
 @example
   some_port.some_event(parameter_expression);
@@ -4955,7 +4955,7 @@ rationale for this restriction comes from the need for verification: the
 generic recursive case cannot be verified.
 
 @cindex variable
-@cindex Behaviour Syntax
+@cindex Behavior Syntax
 @cindex statement
 @cindex state
 @cindex scoping
@@ -4971,7 +4971,7 @@ generic recursive case cannot be verified.
 @cindex declarative
 @cindex conditional
 @cindex compound
-@cindex behaviour
+@cindex behavior
 @cindex assignment
 @cindex action
 
@@ -5188,7 +5188,7 @@ namespace some_namespace @{
     enum enum_type @{ val1, val2, val3 @};
     in enum_type valued_event(some_string s);
     out void reply_event();
-    behaviour @{
+    behavior @{
       on valued_event(s) : @{ reply enum_type.val3; @}
     @}
   @}
@@ -5210,7 +5210,7 @@ namespace some_namespace1 @{
       enum enum_type @{ val1, val2, val3 @};
       in type valued_event(some_string s);
       out void reply_event();
-      behaviour @{
+      behavior @{
          on valued_event(s) : @{ reply type.val3; @}
       @}
     @}
@@ -5318,12 +5318,12 @@ The well-formedness checks in alphabetical order:
 @xref{@code{assign} only allowed within @code{on}},@*
 @xref{Binding directions do not match},@*
 @xref{Binding two wildcards is not allowed},@*
-@xref{@code{blocking} not allowed in interface behaviour},@*
+@xref{@code{blocking} not allowed in interface behavior},@*
 @xref{@code{blocking} not allowed with multiple provides ports},@*
 @xref{@code{blocking} not allowed within other @code{blocking}},@*
 @xref{Component is part of a cyclic binding},@*
-@xref{Component with behaviour must have at least one provides port},@*
-@xref{Component with behaviour needs at least one trigger event},@*
+@xref{Component with behavior must have at least one provides port},@*
+@xref{Component with behavior needs at least one trigger event},@*
 @xref{Event is not a valid trigger},@*
 @xref{Event is not an action},@*
 @xref{External port must be bound to external port},@*
@@ -5336,7 +5336,7 @@ The well-formedness checks in alphabetical order:
 @xref{Injected Port has out event},@*
 @xref{Inout Parameter is not allowed for out Event},@*
 @xref{Interface must define at least one event},@*
-@xref{Interface must define behaviour},@*
+@xref{Interface must define behavior},@*
 @xref{@code{on} not allowed within other @code{on}},@*
 @xref{Only declarative statement allowed here},@*
 @xref{Only imperative statement allowed here},@*
@@ -5356,7 +5356,7 @@ The well-formedness checks in alphabetical order:
 @xref{Wildcard can be bound to a provided port only}.@*
 
 @section Checks
-Well-formedness checks on the Behaviour part of a model come in a number
+Well-formedness checks on the Behavior part of a model come in a number
 of categories:
 
 @itemize
@@ -5374,7 +5374,7 @@ constructs.
 @item Functions: a function body should be imperative, and have a well-defined return.
 
 @end itemize
-@i{Note: a trigger is an event prefixed by 'on' in the behaviour, an
+@i{Note: a trigger is an event prefixed by 'on' in the behavior, an
 action is an event inside the body of a trigger.}
 
 Well-formedness checks for a composite Component are:
@@ -5404,20 +5404,20 @@ This results in the following error message:
 @verbatiminclude parse/interface-without-event.texi
 @end example
 
-@anchor{Interface must define behaviour}
-@subsection Interface must define behaviour
-Interfaces without behaviour are not allowed.  No adequate default
-behaviour is available:
+@anchor{Interface must define behavior}
+@subsection Interface must define behavior
+Interfaces without behavior are not allowed.  No adequate default
+behavior is available:
 
 @example
-@verbatiminclude parse/interface-without-behaviour.dzn
+@verbatiminclude parse/interface-without-behavior.dzn
 @end example
 
 @noindent
 This results in the following error message:
 
 @example
-@verbatiminclude parse/interface-without-behaviour.texi
+@verbatiminclude parse/interface-without-behavior.texi
 @end example
 
 @anchor{Out Event with non void return type is not allowed}
@@ -5435,9 +5435,9 @@ This results in the following error message:
 @verbatiminclude parse/valued-out-event.texi
 @end example
 
-@anchor{Component with behaviour needs at least one trigger event}
-@subsection Component with behaviour needs at least one trigger event
-Any Component with a @b{behaviour} specification is supposed to be
+@anchor{Component with behavior needs at least one trigger event}
+@subsection Component with behavior needs at least one trigger event
+Any Component with a @b{behavior} specification is supposed to be
 'reactive'.  This implies that it should have at least one @b{provides}
 Interface with an @b{in} Event, or at least one @b{requires} Interface
 with an @b{out} Event.  Such an Event acts as a 'trigger' for the
@@ -5472,9 +5472,9 @@ This results in the following error message:
 @verbatiminclude parse/component-requires-without-trigger.texi
 @end example
 
-@anchor{Component with behaviour must have at least one provides port}
-@subsection Component with behaviour must have at least one provides port
-Any Component with a @b{behaviour} specification must have a provides
+@anchor{Component with behavior must have at least one provides port}
+@subsection Component with behavior must have at least one provides port
+Any Component with a @b{behavior} specification must have a provides
 port through which the Component is activated.
 
 @noindent
@@ -5658,9 +5658,9 @@ This results in the following error message:
 @verbatiminclude parse/nested-blocking.texi
 @end example
 
-@anchor{@code{blocking} not allowed in interface behaviour}
-@subsection @code{blocking} not allowed in interface behaviour
-Events handling can be 'blocking' in component behaviour only.  It is not
+@anchor{@code{blocking} not allowed in interface behavior}
+@subsection @code{blocking} not allowed in interface behavior
+Events handling can be 'blocking' in component behavior only.  It is not
 allowed in interfaces.  So:
 
 @example
@@ -5691,7 +5691,7 @@ This results in the following error message:
 @end example
 
 @section Well-formedness Checks -- Mixing
-A behaviour description introduces a sequence of statements.  A statement
+A behavior description introduces a sequence of statements.  A statement
 itself can be a @code{compound}, which is a sequence of statements
 between curly braces.
 
@@ -5873,7 +5873,7 @@ variable definition, or (since version 2.14) in simple
 @code{if}-expressions and @code{reply}-expressions.
 
 An extra restriction to this rule is put on the initial value of a
-global variable in a behaviour.  Such an expression can not contain
+global variable in a behavior.  Such an expression can not contain
 Actions and Functions at all, since Actions are only allowed within an
 @code{on}.
 
@@ -6401,10 +6401,10 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @tab Concept
 @tab Statement as part of the response to a trigger event.
 @tab -
-@item behaviour
+@item behavior
 @tab Keyword
-@tab Start of the behaviour section within an interface or component definition; this keyword must be followed by @{@}.
-@tab @xref{Interface and Component Behaviour}
+@tab Start of the behavior section within an interface or component definition; this keyword must be followed by @{@}.
+@tab @xref{Interface and Component Behavior}
 
 @item Bind
 @tab Concept
@@ -6423,12 +6423,12 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item Compliance
 @tab Concept
-@tab Whether or not, the behaviour of a component complies to the behaviour specification of the interface of each provided port.
+@tab Whether or not, the behavior of a component complies to the behavior specification of the interface of each provided port.
 @tab -
 
 @item Component
 @tab Concept
-@tab Unit of definition and instantiation.  A component has zero or more ports.  A component has a behaviour section, system section, or none.
+@tab Unit of definition and instantiation.  A component has zero or more ports.  A component has a behavior section, system section, or none.
 @tab -
 
 @item component
@@ -6481,7 +6481,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item Hand-written
 @tab Concept
-@tab A hand-written component is defined as a component without a behaviour or system section in the component definition.  The implementation should be
+@tab A hand-written component is defined as a component without a behavior or system section in the component definition.  The implementation should be
  provided in the target source language.
 @tab -
 
@@ -6550,7 +6550,7 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @item otherwise
 @tab Keyword
 @tab Defines a catch-all guard which is true only if all the other guard expressions in a list of @code{guard}s evaluate to false.
-@tab @xref{Specifying Stateful Behaviour}
+@tab @xref{Specifying Stateful Behavior}
 
 @item out
 @tab Keyword
@@ -6625,15 +6625,15 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item Variable
 @tab Concept
-@tab Declared within a behaviour section.  A member variable can be either a state variable which can be used a part of a guard of condition or a data variable
+@tab Declared within a behavior section.  A member variable can be either a state variable which can be used a part of a guard of condition or a data variable
  which can be used as a parameter of events or functions
 @tab -
 
 @item Verification
 @tab Concept
 @tab The execution of the verification
- engine which verifies for interfaces and components whether they are free of livelock, deadlock, and illegal behaviour.  Also, for a component it is
- verified whether a component adheres to all the protocols (behaviour) of the interfaces of the ports of the component.  During verification, all possible
+ engine which verifies for interfaces and components whether they are free of livelock, deadlock, and illegal behavior.  Also, for a component it is
+ verified whether a component adheres to all the protocols (behavior) of the interfaces of the ports of the component.  During verification, all possible
  execution scenarios are considered guaranteeing a 100% coverage.
 @tab -
 @end multitable

@@ -29,7 +29,7 @@ interface ihello
   enum Result {OK, NOK};
   in Result cruel ();
 
-  behaviour
+  behavior
   {
     on hello: reply (Bool.False);
     on hello: reply (Bool.True);
@@ -43,7 +43,7 @@ component hello_implicit_enum
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     Bool foo ()
     {

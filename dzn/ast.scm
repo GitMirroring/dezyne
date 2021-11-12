@@ -182,8 +182,8 @@
 (define-method (ast:top* (o <root>)) (receive (imports rest) (partition (is? <import>) (.elements o)) (append rest (append-map ast:top* imports))))
 (define-method (ast:top* (o <namespace>)) (.elements o))
 (define-method (ast:top* (o <import>)) (ast:top* (.root o)))
-(define-method (ast:member* (o <behaviour>)) (ast:variable* o))
-(define-method (ast:member* (o <model>)) ((compose ast:member* .behaviour) o))
+(define-method (ast:member* (o <behavior>)) (ast:variable* o))
+(define-method (ast:member* (o <model>)) ((compose ast:member* .behavior) o))
 (define-method (ast:namespace* (o <namespace>)) (filter (is? <namespace>) (ast:top* o)))
 (define-method (ast:trigger* (o <triggers>)) (.elements o))
 (define-method (ast:type* (o <types>)) (.elements o))
@@ -204,7 +204,7 @@
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
 (define-method (ast:event* (o <interface>)) ((compose ast:event* .events) o))
 (define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
-(define-method (ast:function* (o <component>)) ((compose ast:function* .behaviour) o))
+(define-method (ast:function* (o <component>)) ((compose ast:function* .behavior) o))
 (define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
 (define-method (ast:formal* (o <event>)) ((compose ast:formal* .signature) o))
 (define-method (ast:formal* (o <function>)) ((compose ast:formal* .signature) o))
@@ -212,18 +212,18 @@
 (define-method (ast:formal* (o <signature>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <trigger>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <out-bindings>)) (.elements o))
-(define-method (ast:function* (o <behaviour>)) ((compose ast:function* .functions) o))
+(define-method (ast:function* (o <behavior>)) ((compose ast:function* .functions) o))
 (define-method (ast:instance* (o <system>)) ((compose ast:instance* .instances) o))
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
-(define-method (ast:port* (o <behaviour>)) ((compose ast:port* .ports) o))
-(define-method (ast:statement* (o <behaviour>)) ((compose ast:statement* .statement) o))
-(define-method (ast:variable* (o <behaviour>)) ((compose ast:variable* .variables) o))
-(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
+(define-method (ast:port* (o <behavior>)) ((compose ast:port* .ports) o))
+(define-method (ast:statement* (o <behavior>)) ((compose ast:statement* .statement) o))
+(define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
+(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behavior) o))
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
 (define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))
-(define-method (ast:type* (o <behaviour>)) ((compose ast:type* .types) o))
-(define-method (ast:variable* (o <behaviour>)) ((compose ast:variable* .variables) o))
-(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behaviour) o))
+(define-method (ast:type* (o <behavior>)) ((compose ast:type* .types) o))
+(define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
+(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behavior) o))
 (define-method (ast:variable* (o <compound>)) (filter (is? <variable>) (.elements o)))
 
 (define-method (ast:model* (o <model>))
@@ -243,7 +243,7 @@
             (components (delete-duplicates components ast:eq?)))
        (cons o (append ports components))))))
 
-(define-method (ast:async? (o <port>)) (parent o <behaviour>))
+(define-method (ast:async? (o <port>)) (parent o <behavior>))
 (define-method (ast:async? (o <trigger>)) (ast:async? (.port o)))
 (define-method (ast:async? (o <action>)) (ast:async? (.port o)))
 (define-method (ast:async? (o <interface>))
@@ -251,7 +251,7 @@
 (define-method (ast:async? (o <ast>))
   #f)
 
-(define-method (ast:async-port* (o <component>)) ((compose ast:port* .behaviour) o))
+(define-method (ast:async-port* (o <component>)) ((compose ast:port* .behavior) o))
 (define-method (ast:async-port* (o <component-model>)) '())
 
 (define-method (ast:provides-port o)
@@ -278,7 +278,7 @@
   (member (car (.ids (.name o))) '("dzn" "dzn'")))
 
 (define-method (ast:member? (o <variable>))
-  (is-a? (.parent (.parent o)) <behaviour>))
+  (is-a? (.parent (.parent o)) <behavior>))
 
 (define-method (ast:member? (o <top>))
   #f)
@@ -337,7 +337,7 @@
   (.direction (.event o)))
 
 (define-method (trigger-in-component (t <trigger>) (c <component>))
-  (let ((parent (or (and=> (.behaviour c) .statement) c)))
+  (let ((parent (or (and=> (.behavior c) .statement) c)))
     (clone t #:parent parent)))
 
 (define-method (trigger-in-component (t <trigger>) (c <component-model>))
@@ -361,7 +361,7 @@
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
                           (filter (conjoin ast:in? (compose (cut equal? "req" <>) .name)) (ast:event* (.type port)))))
-                   (if (.behaviour o) (ast:port* (.behaviour o))
+                   (if (.behavior o) (ast:port* (.behavior o))
                        '()))))
 
 (define-method (ast:clr-events (o <component>))
@@ -369,7 +369,7 @@
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
                           (filter (conjoin ast:in? (compose (cut equal? "clr" <>) .name)) (ast:event* (.type port)))))
-                   (if (.behaviour o) (ast:port* (.behaviour o))
+                   (if (.behavior o) (ast:port* (.behavior o))
                        '()))))
 
 (define-method (ast:required-out-triggers (o <component-model>))
@@ -390,7 +390,7 @@
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
                           (filter ast:out? (ast:event* (.type port)))))
-                   (if (.behaviour o) (ast:port* (.behaviour o))
+                   (if (.behavior o) (ast:port* (.behavior o))
                        '()))))
 
 (define-method (ast:in-triggers (o <component-model>))
@@ -505,9 +505,9 @@
 
 (define-method (ast:optional* (o <ast>))
    (match o
-     (($ <interface>) ((compose ast:optional* .behaviour) o))
+     (($ <interface>) ((compose ast:optional* .behavior) o))
      (($ <component>) '())
-     (($ <behaviour>) (append-map ast:optional* (ast:statement* o)))
+     (($ <behavior>) (append-map ast:optional* (ast:statement* o)))
      (($ <guard>) ((compose ast:optional* .statement) o))
      (($ <on>) (filter (cut equal? "optional" <>) (map .event.name (ast:trigger* o))))
      ((? (disjoin (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
@@ -972,7 +972,7 @@
 
 (define-method (ast:declarative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (or (and (null? statements) (is-a? (.parent o) <behaviour>))
+    (or (and (null? statements) (is-a? (.parent o) <behavior>))
         (and (pair? statements) ((compose ast:declarative? car) statements)))))
 
 (define-method (ast:imperative? (o <imperative>))
@@ -983,7 +983,7 @@
 
 (define-method (ast:imperative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (or (and (null? statements) (not (is-a? (.parent o) <behaviour>)))
+    (or (and (null? statements) (not (is-a? (.parent o) <behavior>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
 (define (ast:call-statement o)
@@ -1135,7 +1135,7 @@
 (define-method (ast:declaration* (o <system>))
   (append (ast:port* o) (ast:instance* o)))
 
-(define-method (ast:declaration* (o <behaviour>))
+(define-method (ast:declaration* (o <behavior>))
   (append (ast:type* o) (ast:function* o) (ast:variable* o) (ast:port* o)))
 
 (define-method (ast:declaration* (o <compound>))
@@ -1208,7 +1208,7 @@
 (define-method (ast:lookup-var (o <ast>) name)
   (define (name? o) (and (equal? (.name o) name) o))
   (match o
-    (($ <behaviour>) (find name? (ast:variable* o)))
+    (($ <behavior>) (find name? (ast:variable* o)))
     ((? (is? <compound>)) (or (find name? (filter (is? <variable>) (ast:statement* o))) (ast:lookup-var (.parent o) name)))
     (($ <function>) (or (find name? ((compose ast:formal* .signature) o)) (ast:lookup-var (.parent o) name)))
     (($ <formal>) (and (equal? (.name o) name) o))

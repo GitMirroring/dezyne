@@ -29,7 +29,7 @@ interface I
   out void hi();
   out void lo();
 
-  behaviour
+  behavior
   {
     subint State {0..3};
 
@@ -76,7 +76,7 @@ component integer_expressions
 {
   provides I i;
 
-  behaviour
+  behavior
   {
     subint State {0..3};
 

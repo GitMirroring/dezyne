@@ -56,7 +56,7 @@ component FeedConvey
   requires IFeed feeder;
   requires IConvey conveyor;
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     enum FeedPhase {Idle, Feeding, ConveyingNext, ConveyingLast};

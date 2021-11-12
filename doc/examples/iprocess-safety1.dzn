@@ -4,7 +4,7 @@ interface iprocess_safety
   in void disconnect();
   out void connected();
   out void error();
-  behaviour
+  behavior
   {
     enum protocol_status {disconnected, connected}; // type declaration
     protocol_status state = protocol_status.disconnected; // variable declaration

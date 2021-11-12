@@ -29,7 +29,7 @@ interface ihello
   in void hello();
   out void goodbye();
 
-  behaviour
+  behavior
   {
     on hello: {}
     on optional: goodbye;
@@ -39,7 +39,7 @@ interface ihello
 component Foreign
 {
   provides iworld w;
-  // behaviour {}
+  // behavior {}
 }
 
 component hello
@@ -47,7 +47,7 @@ component hello
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     bool b = true;
     on h.hello(): {b = false; w.world();}

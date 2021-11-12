@@ -2,14 +2,14 @@ interface ihello
 {
   in void hello();
   out void world();
-  behaviour {}
+  behavior {}
 }
 
 component component_action_used_as_trigger
 {
   provides ihello p;
   requires ihello r;
-  behaviour
+  behavior
   {
     on p.world(): {}
     on r.hello(): {}

@@ -1,7 +1,7 @@
 interface ihello
 {
   in void hello ();
-  behaviour
+  behavior
   {
   }
 }
@@ -9,7 +9,7 @@ interface ihello
 component function_missing_return
 {
   provides ihello p;
-  behaviour
+  behavior
   {
     bool a = true;
     bool b = false;

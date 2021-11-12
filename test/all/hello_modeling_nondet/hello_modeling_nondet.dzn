@@ -28,7 +28,7 @@ interface hello_modeling_nondet
   out void world();
   out void bye();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on hello: idle = false;

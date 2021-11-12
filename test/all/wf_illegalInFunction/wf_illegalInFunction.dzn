@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     void f() {illegal;}
     on hello: f();
@@ -35,7 +35,7 @@ interface ihello
 component wf_illegalInFunction
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     void f() {illegal;}
     on h.hello(): f ();

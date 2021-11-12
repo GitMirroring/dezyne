@@ -27,7 +27,7 @@ interface I
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on e: { }
   }
@@ -37,7 +37,7 @@ component hello_function_argument
 {
   provides I i;
 
-  behaviour
+  behavior
   {
     // type definition for a finite integer subset
     subint counter_t {0..2};

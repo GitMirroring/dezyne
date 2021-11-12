@@ -29,7 +29,7 @@ interface i
   in void e(T t);
   in void c(T t);
   out void a(T t);
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on e: idle=false;
@@ -41,7 +41,7 @@ interface i
 component async_cancel
 {
   provides i p;
-  behaviour
+  behavior
   {
     requires dzn.async(T t) defer;
     bool idle = true;

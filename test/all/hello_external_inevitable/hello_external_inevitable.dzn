@@ -30,7 +30,7 @@ interface ihello
   out void world();
   out void cruel();
 
-  behaviour
+  behavior
   {
     enum S {A,B,C,D};
     S s = S.A;
@@ -60,7 +60,7 @@ component hello_external_inevitable
   provides ihello h;
   requires external ihello w;
 
-  behaviour
+  behavior
   {
     enum S {A,B,C};
     S s = S.A;

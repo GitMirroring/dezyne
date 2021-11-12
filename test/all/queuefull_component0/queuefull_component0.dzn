@@ -28,7 +28,7 @@ interface ihello
 {
   in void hello ();
   out void world ();
-  behaviour
+  behavior
   {
     on hello: {world;world;world;world;}
   }
@@ -38,7 +38,7 @@ component queuefull_component0
 {
   provides ihello h;
   requires ihello w;
-  behaviour
+  behavior
   {
     on h.hello (): w.hello ();
     on w.world (): h.world ();

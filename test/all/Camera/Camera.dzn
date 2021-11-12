@@ -48,7 +48,7 @@ interface IControl
   out void focus_lock();
   out void image();
 
-  behaviour
+  behavior
   {
     enum State {Idle, Setup, Ready, Acquire};
     State state = State.Idle;
@@ -75,7 +75,7 @@ component Driver
   requires IAcquisition acquisition;
   requires IOptics optics;
 
-  behaviour
+  behavior
   {
     enum State {Idle, Setup, Ready, Acquire};
 

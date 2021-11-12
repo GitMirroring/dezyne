@@ -7,7 +7,7 @@ namespace bar {
       in Bool foo();
       in .bar.double.Bool bar();
       in int baz();
-      behaviour {}
+      behavior {}
     }
   }
 }

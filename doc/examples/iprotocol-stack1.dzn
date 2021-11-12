@@ -8,7 +8,7 @@ interface iprotocol_stack
   in result enable();                       // in event to enable the protocol_stack
                                             //   the event will return if enabling was successful or not
   in void disable();                        // in event to disable the protocol_stack
-  behaviour                                 // the specification of the externally visible behaviour
+  behavior                                 // the specification of the externally visible behavior
   {
       enum status {OFF, ON};
       status state = status.OFF;

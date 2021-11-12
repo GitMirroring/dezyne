@@ -26,7 +26,7 @@ interface end_of_trail_interface
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (false);
     on hello: reply (true);

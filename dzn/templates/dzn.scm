@@ -58,7 +58,7 @@
 (define-templates signature dzn:signature space-infix)
 (define-templates formal-type dzn:formal-type comma-infix)
 (define-templates formal ast:formal* formal-grammar)
-(define-templates behaviour .behaviour)
+(define-templates behavior .behavior)
 (define-templates define-function ast:function*)
 (define-templates trigger ast:trigger* comma-infix)
 

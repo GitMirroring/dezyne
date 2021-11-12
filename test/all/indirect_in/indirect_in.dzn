@@ -20,7 +20,7 @@
 interface U
 {
   in void a();
-  behaviour
+  behavior
   {
     on a: {}
   }
@@ -31,7 +31,7 @@ interface I
 {
   in void b();
   out void a();
-  behaviour
+  behavior
   {
     on inevitable: a;
     on b: {}
@@ -43,7 +43,7 @@ component indirect_in
 {
   provides U p;
   requires I r;
-  behaviour
+  behavior
   {
     on p.a(): {}
     on r.a(): r.b();

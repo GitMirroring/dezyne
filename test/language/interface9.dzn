@@ -2,6 +2,6 @@ interface I
 {
  in void foo();
 
- behaviour
+ behavior
  {
    on 

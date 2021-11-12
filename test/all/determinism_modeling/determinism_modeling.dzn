@@ -26,7 +26,7 @@ interface determinism_modeling
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     enum State {idle, one, two};
     State state = State.idle;

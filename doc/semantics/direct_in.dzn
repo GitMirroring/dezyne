@@ -1,7 +1,7 @@
 interface I
 {
  in void a();
- behaviour
+ behavior
  {
    on a: {}
  }
@@ -11,7 +11,7 @@ component direct_in
 {
   provides I p;
   requires I r;
-  behaviour
+  behavior
   {
     on p.a(): r.a();
   }

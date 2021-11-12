@@ -28,7 +28,7 @@ interface wf_functionReturnValue
 {
   in void hello ();
 
-  behaviour
+  behavior
   {
     int f ()
     {

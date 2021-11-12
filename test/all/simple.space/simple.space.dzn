@@ -25,14 +25,14 @@ interface simple.I {
   enum Bool {f,t};
   in Bool e();
   out void a();
-  behaviour {
+  behavior {
     on e: {a;reply(Bool.t);}
   }
 }
 
 component simple.space {
   provides simple.I i;
-  behaviour {
+  behavior {
     simple.I.Bool state = simple.I.Bool.t;
     on i.e(): {i.a();reply(simple.I.Bool.t);}
   }

@@ -2,7 +2,7 @@ interface ihello
 {
   in void hello();
   out void world();
-  behaviour
+  behavior
   {
     on hello: {}
     on optional: world;
@@ -13,7 +13,7 @@ component v_fork
 {
   provides ihello left;
   provides ihello right;
-  behaviour
+  behavior
   {
     on left.hello():
     {
@@ -28,7 +28,7 @@ component y_fork
   provides ihello left;
   provides ihello right;
   requires ihello r;
-  behaviour
+  behavior
   {
     on left.hello(), right.hello(): {}
     on r.world():

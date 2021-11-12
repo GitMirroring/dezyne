@@ -27,7 +27,7 @@ namespace imported
   {
     in void hello();
 
-    behaviour
+    behavior
     {
       on hello: {}
     }

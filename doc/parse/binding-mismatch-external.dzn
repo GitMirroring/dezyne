@@ -1,6 +1,6 @@
 interface i {
   in void e();
-  behaviour {
+  behavior {
     on e: {}
   }
 }
@@ -9,14 +9,14 @@ component c1 {
   provides i p;
   requires external i r1;
   requires external i r2;
-  behaviour {
+  behavior {
     on p.e(): {}
   }
 }
 
 component c2 {
   provides i p;
-  behaviour {
+  behavior {
     on p.e(): {}
   }
 }

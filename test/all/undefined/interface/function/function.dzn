@@ -21,7 +21,7 @@
 interface function
 {
   in void e ();
-  behaviour
+  behavior
   {
     on e: bool res = f (false);
   }

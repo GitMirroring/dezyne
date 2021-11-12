@@ -28,7 +28,7 @@ interface ihello
 
   out void world();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on hello: idle=!idle;
@@ -43,7 +43,7 @@ component hello_multiple_provides_requires
 
   requires ihello i3;
 
-  behaviour
+  behavior
   {
     bool i1_idle = true;
     bool i2_idle = true;

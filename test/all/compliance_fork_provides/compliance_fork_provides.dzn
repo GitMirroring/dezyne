@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
       on hello: {}
       on inevitable: world;
@@ -38,7 +38,7 @@ component compliance_fork_provides
   provides ihello p_left;
   provides ihello p_right;
 
-  behaviour
+  behavior
   {
     on p_left.hello (): p_right.world();
     on p_right.hello (): p_left.world();

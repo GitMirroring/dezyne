@@ -1,12 +1,12 @@
 interface i1
 {
   in void event();
-  behaviour {}
+  behavior {}
 }
 interface i2
 {
   in void event();
-  behaviour {}
+  behavior {}
 }
 component c1
 {

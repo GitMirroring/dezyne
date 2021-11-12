@@ -27,7 +27,7 @@
 interface ihello
 {
   in void hello ();
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -37,7 +37,7 @@ component hello_garbage
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     on h.hello (): {}
   }

@@ -25,7 +25,7 @@ interface ibool
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (true);
   }
@@ -34,7 +34,7 @@ interface ibool
 component compliance_provides_bool
 {
   provides ibool p;
-  behaviour
+  behavior
   {
     on p.hello(): reply (false);
   }

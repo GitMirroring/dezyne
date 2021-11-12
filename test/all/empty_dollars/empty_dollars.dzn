@@ -26,7 +26,7 @@ interface ihello
   extern Data $$;
   in void hello(Data data);
 
-  behaviour {
+  behavior {
     on hello: {}
   }
 }
@@ -35,7 +35,7 @@ component empty_dollars
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     on h.hello(data): data = $$;
   }

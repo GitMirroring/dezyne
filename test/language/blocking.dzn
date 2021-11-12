@@ -5,7 +5,7 @@ interface ihello
   in void hello(inout int i);
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -16,7 +16,7 @@ component blocking_binding
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     int g = $123$;
     bool busy = false;

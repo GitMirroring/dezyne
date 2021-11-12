@@ -39,7 +39,7 @@ interface IMove2D
   in void move(MovePosition x, MovePosition y);
   out void arrived();
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
@@ -96,7 +96,7 @@ component Move2D
   requires IConstrainedMove xAxis;
   requires IConstrainedMove yAxis;
 
-  behaviour
+  behavior
   {
     subint AxisCount {0..2};
     bool isCalibrating = false;

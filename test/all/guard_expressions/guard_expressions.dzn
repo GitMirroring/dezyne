@@ -27,7 +27,7 @@ interface ihello
   enum E {OK, NOK};
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -38,7 +38,7 @@ component guard_expressions
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     subint range {0..2};
     range i = 0;
@@ -95,7 +95,7 @@ interface iworld
   in void cruel();
   in void world();
 
-  behaviour
+  behavior
   {
     on cruel: {}
     on world: {}

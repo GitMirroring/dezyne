@@ -29,7 +29,7 @@ interface ISensor
   in void cancel();
   out void image();
 
-  behaviour
+  behavior
   {
     enum State {Idle, Ready, Acquire};
     State state = State.Idle;
@@ -50,7 +50,7 @@ component CMOS
 interface IMemory
 {
   in void store();
-  behaviour
+  behavior
   {
     on store:{}
   }
@@ -70,7 +70,7 @@ interface IAcquisition
   out void image();
   out void focus();
 
-  behaviour
+  behavior
   {
     enum State {Idle, Ready, Acquiring};
     State state = State.Idle;
@@ -88,7 +88,7 @@ component Acquire
   requires IMemory memory;
   requires ISensor sensor;
 
-  behaviour
+  behavior
   {
     enum State {Idle, Ready, Acquiring};
     State state = State.Idle;

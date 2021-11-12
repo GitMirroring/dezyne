@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: world();
   }
@@ -36,7 +36,7 @@ component wf_undefined_function
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     on h.hello(): {h.world(); foo();}
   }

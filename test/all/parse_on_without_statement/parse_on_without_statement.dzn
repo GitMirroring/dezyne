@@ -21,7 +21,7 @@ interface parse_on_without_statement
 {
   in void hello ();
 
-  behaviour
+  behavior
   {
     on hello:
   }

@@ -27,7 +27,7 @@ interface ihello
   in void hello ();
   in void cruel ();
 
-  behaviour {
+  behavior {
     on hello: {}
     on cruel: {}
   }
@@ -38,7 +38,7 @@ interface iworld
   in void hello ();
   out void world ();
 
-  behaviour {
+  behavior {
     bool idle = true;
     on hello: idle = !idle;
     [!idle] on inevitable: {world; idle = true;}
@@ -50,7 +50,7 @@ component Top
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello (): w.hello ();
     on h.cruel (): w.cruel ();
@@ -63,7 +63,7 @@ component Blocked
   requires iworld w0;
   requires iworld w1;
 
-  behaviour
+  behavior
   {
     bool idle = true;
     bool idle_w0 = true;

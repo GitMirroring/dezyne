@@ -611,7 +611,7 @@ TRACES."
            (ast (or (and error (.ast error))
                     (let ((model (runtime:%sut-model)))
                       (if (is-a? model <system>) model
-                          (.behaviour model))))))
+                          (.behavior model))))))
       (if (and error
                (not (is-a? error <implicit-illegal-error>))
                (not (is-a? error <end-of-trail>)))
@@ -674,7 +674,7 @@ possibly after running RUN-SILENT and return them, or false."
                       trace))
            (error (make <determinism-error>
                     #:ast (or (.trigger pc)
-                              (.behaviour (runtime:%sut-model)))
+                              (.behavior (runtime:%sut-model)))
                     #:message "non-deterministic"))
            (pc (clone pc #:status error)))
       (cons pc trace)))
@@ -711,7 +711,7 @@ possibly after running RUN-SILENT and return them, or false."
            (alist (cons '() traces))
            (traces (check-determisistic alist)))
       (and (pair? traces) traces)))
-  (and (pair? (ast:variable* (.behaviour (runtime:%sut-model))))
+  (and (pair? (ast:variable* (.behavior (runtime:%sut-model))))
        (or (check-traces traces)
            (check-silence traces))))
 
@@ -950,7 +950,7 @@ status."
 
               (define (mark-refusals pc)
                 (clone pc #:status (make <refusals-error>
-                                     #:ast (.behaviour component)
+                                     #:ast (.behavior component)
                                      #:message "non-compliance"
                                      #:refusals refusals)))
 

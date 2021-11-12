@@ -24,7 +24,7 @@
 import H.dzn;
 interface I {
   in E esub();
-  behaviour {
+  behavior {
     on esub: { reply(E.E1); }
   }
 }

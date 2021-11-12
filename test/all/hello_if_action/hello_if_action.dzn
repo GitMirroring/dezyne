@@ -28,7 +28,7 @@ interface ihello
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: cruel;
     on hello: world;
@@ -39,7 +39,7 @@ component hello_if_action
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     bool b = false;
     on h.hello():

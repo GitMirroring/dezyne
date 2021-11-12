@@ -23,14 +23,14 @@
 
 interface I {
   in void e();
-  behaviour {
+  behavior {
     on e: {}
   }
 }
 
 component wf_variableInitExpression {
   provides I p;
-  behaviour {
+  behavior {
     enum E { E1, E2 };
     E s = E.E1;
 

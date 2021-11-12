@@ -1,20 +1,20 @@
 interface ihello
 {
   in void hello ();
-  behaviour {}
+  behavior {}
 }
 
 component hello
 {
   provides ihello p;
   requires injected ihello r;
-  behaviour {}
+  behavior {}
 }
 
 component logger
 {
   provides ihello p;
-  behaviour {}
+  behavior {}
 }
 
 component binding_two_wildcards

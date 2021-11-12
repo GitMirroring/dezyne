@@ -27,7 +27,7 @@ interface ihello
   out void world ();
   out void cruel ();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 
@@ -47,7 +47,7 @@ component compliance_failures_inevitable_optional
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello (): w.hello ();
     on w.world (): h.world ();
@@ -61,7 +61,7 @@ interface iworld
   out void world ();
   out void cruel ();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 

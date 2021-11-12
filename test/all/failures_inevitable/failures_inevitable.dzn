@@ -28,7 +28,7 @@ interface ihello
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: {}
     on inevitable: cruel;
@@ -42,7 +42,7 @@ component failures_inevitable
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello(): {}
     on w.cruel(): h.world();

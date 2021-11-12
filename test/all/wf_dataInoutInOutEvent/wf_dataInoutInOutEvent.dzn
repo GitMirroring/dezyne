@@ -27,7 +27,7 @@ interface wf_dataInoutInOutEvent {
   in void evt();
   out void callback(inout xint val);
 
-  behaviour {
+  behavior {
     on evt: {}
   }
 }

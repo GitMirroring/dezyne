@@ -35,7 +35,7 @@ interface ihello
   //                                 `PAREN-CLOSE' expected
   // this survices parser, and crashes in wfc
   out void world(int j);
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -45,7 +45,7 @@ component argument_seen
 {
   provides ihello h;
   requires ihello data;
-  behaviour
+  behavior
   {
     on h.hello (i): h.world (j);
   }

@@ -34,7 +34,7 @@ interface ihello
   out void world ();
   out void planet ();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -44,7 +44,7 @@ component compliance_blocking_out
 {
   provides ihello h;
   requires iworld w;
-  behaviour
+  behavior
   {
     bool blocked = false;
     blocking on h.hello (): {blocked=true;h.planet ();}
@@ -57,7 +57,7 @@ interface iworld
 {
   out void world ();
 
-  behaviour
+  behavior
   {
     on inevitable: world;
   }

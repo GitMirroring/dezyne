@@ -216,7 +216,7 @@
         (else
          o)))
 
-(define-method (dzn:statement (o <behaviour>))
+(define-method (dzn:statement (o <behavior>))
   ((compose dzn:expand-statement .statement) o))
 
 (define-method (dzn:statement (o <function>))

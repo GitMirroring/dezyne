@@ -34,7 +34,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -45,7 +45,7 @@ interface iworld
   in void world();
   in void cruel();
 
-  behaviour main
+  behavior main
   {
     on world: {}
     on cruel: {}
@@ -57,7 +57,7 @@ component hello_parse
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(): w.world();
   }

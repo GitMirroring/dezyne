@@ -34,7 +34,7 @@ interface ITouchSense
   out void released();
   in void disable();
 
-  behaviour
+  behavior
   {
     bool disabled = true;
     TouchState ts = TouchState.Released;
@@ -76,7 +76,7 @@ component TouchSense
   requires itimer timer;
   requires itouch sensor;
 
-  behaviour
+  behavior
   {
     ITouchSense.TouchState previous = ITouchSense.TouchState.Released;
     itimer.milliseconds_t time = $50$;

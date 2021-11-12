@@ -30,7 +30,7 @@ interface ILens
 
   out void stopped();
 
-  behaviour
+  behavior
   {
     bool moving = false;
 
@@ -55,7 +55,7 @@ interface IFocus
   in void cancel();
   out void maximum();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on measure: idle = false;
@@ -68,7 +68,7 @@ interface IContrast
   enum EContrast {Sharper, Blurrier};
   in EContrast measure();
 
-  behaviour
+  behavior
   {
     on measure: reply(EContrast.Sharper);
     on measure: reply(EContrast.Blurrier);
@@ -100,7 +100,7 @@ component FocusControl
   requires ILens lens;
   requires IContrast sensor;
 
-  behaviour
+  behavior
   {
     bool idle = true;
     IContrast.EContrast contrast_was = IContrast.EContrast.Blurrier;
@@ -120,7 +120,7 @@ component FocusControl
 interface IShutter
 {
   in void expose();
-  behaviour
+  behavior
   {
     on expose: {}
   }
@@ -137,7 +137,7 @@ interface IOptics
   in void cancel();
   out void ready();
 
-  behaviour
+  behavior
   {
     enum State {Idle, Prepare, Ready};
     State state = State.Idle;
@@ -155,7 +155,7 @@ component OpticsControl
   requires IFocus focus;
   requires IShutter shutter;
 
-  behaviour
+  behavior
   {
     enum State {Idle, Prepare, Ready};
     State state = State.Idle;

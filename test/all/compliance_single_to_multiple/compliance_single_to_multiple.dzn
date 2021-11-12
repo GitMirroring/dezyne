@@ -25,7 +25,7 @@
 interface ihello
 {
   out void world();
-  behaviour
+  behavior
   {
     on inevitable: world;
   }
@@ -35,7 +35,7 @@ component compliance_single_to_multiple
 {
   provides ihello h;
   requires ihello w;
-  behaviour
+  behavior
   {
     on w.world(): { h.world(); h.world(); }
   }

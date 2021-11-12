@@ -99,7 +99,7 @@
 (define %completion-top (@@ (dzn parse complete) %completion-top))
 (define %completion-interface (@@ (dzn parse complete) %completion-interface))
 (define %completion-component (@@ (dzn parse complete) %completion-component))
-(define %completion-behaviour(@@ (dzn parse complete) %completion-behaviour))
+(define %completion-behavior(@@ (dzn parse complete) %completion-behavior))
 
 (test-equal "interface0"
   %completion-top
@@ -146,15 +146,15 @@
   (test-complete #:file-name "interface7.dzn"))
 
 (test-equal "interface8"
-  %completion-behaviour
+  %completion-behavior
   (test-complete #:file-name "interface8.dzn"))
 
 (test-equal "interface8a"
-  %completion-behaviour
+  %completion-behavior
   (test-complete #:file-name "interface8a.dzn"))
 
 (test-equal "interface8b"
-  %completion-behaviour
+  %completion-behavior
   (test-complete #:file-name "interface8b.dzn"))
 
 (test-equal "interface9"
@@ -209,25 +209,25 @@
   '("e.False" "e.True")
   (test-complete #:file-name "interface13a.dzn" #:line 11 #:column 10))
 
-(test-equal "interface-behaviour before"
+(test-equal "interface-behavior before"
   '("in" "out" "enum" "extern" "subint")
-  (test-complete #:file-name "interface-behaviour.dzn" #:line 3))
+  (test-complete #:file-name "interface-behavior.dzn" #:line 3))
 
-(test-equal "interface-behaviour after"
+(test-equal "interface-behavior after"
   '("in" "out" "enum" "extern" "subint")
-  (test-complete #:file-name "interface-behaviour.dzn" #:line 5))
+  (test-complete #:file-name "interface-behavior.dzn" #:line 5))
 
-(test-equal "interface-behaviour before on"
-  %completion-behaviour
-  (test-complete #:file-name "interface-behaviour.dzn" #:line 8))
+(test-equal "interface-behavior before on"
+  %completion-behavior
+  (test-complete #:file-name "interface-behavior.dzn" #:line 8))
 
-(test-equal "interface-behaviour between on"
-  %completion-behaviour
-  (test-complete #:file-name "interface-behaviour.dzn" #:line 10))
+(test-equal "interface-behavior between on"
+  %completion-behavior
+  (test-complete #:file-name "interface-behavior.dzn" #:line 10))
 
-(test-equal "interface-behaviour after on"
-  %completion-behaviour
-  (test-complete #:file-name "interface-behaviour.dzn" #:line 12))
+(test-equal "interface-behavior after on"
+  %completion-behavior
+  (test-complete #:file-name "interface-behavior.dzn" #:line 12))
 
 (test-equal "component0"
   %completion-top
@@ -270,19 +270,19 @@
   (test-complete #:file-name "component1d.dzn"))
 
 (test-equal "component2"
-  %completion-behaviour
+  %completion-behavior
   (test-complete #:file-name "component2.dzn"))
 
 (test-equal "component2a"
-  %completion-behaviour
+  %completion-behavior
   (test-complete #:file-name "component2a.dzn"))
 
 (test-equal "component2b"
-  %completion-behaviour
+  %completion-behavior
   (test-complete #:file-name "component2b.dzn"))
 
 (test-equal "component2c"
-  %completion-behaviour
+  %completion-behavior
   (test-complete #:file-name "component2c.dzn" #:line 20))
 
 (test-equal "component3"
@@ -397,21 +397,21 @@
   %completion-component
   (test-complete #:file-name "component-provides.dzn" #:line 16))
 
-(test-equal "component-behaviour before"
+(test-equal "component-behavior before"
   '("provides" "requires")
-  (test-complete #:file-name "component-behaviour.dzn" #:line 13))
+  (test-complete #:file-name "component-behavior.dzn" #:line 13))
 
-(test-equal "component-behaviour after"
+(test-equal "component-behavior after"
   '("provides" "requires")
-  (test-complete #:file-name "component-behaviour.dzn" #:line 15))
+  (test-complete #:file-name "component-behavior.dzn" #:line 15))
 
-(test-equal "component-behaviour behaviour"
-  %completion-behaviour
-  (test-complete #:file-name "component-behaviour.dzn" #:line 19))
+(test-equal "component-behavior behavior"
+  %completion-behavior
+  (test-complete #:file-name "component-behavior.dzn" #:line 19))
 
-(test-equal "component-behaviour end"
-  %completion-behaviour
-  (test-complete #:file-name "component-behaviour.dzn" #:line 21))
+(test-equal "component-behavior end"
+  %completion-behavior
+  (test-complete #:file-name "component-behavior.dzn" #:line 21))
 
 (test-equal "component-state"
   '("State.Active" "State.Inactive" "State.Initialized" "State.Uninitialized")
@@ -671,17 +671,17 @@
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 18))
 
 (test-expect-fail 1)
-(test-equal "component-incomplete-port after behaviour"
+(test-equal "component-incomplete-port after behavior"
   '()
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 30))
 
-(test-equal "component-incomplete-port behaviour"
-  %completion-behaviour
+(test-equal "component-incomplete-port behavior"
+  %completion-behavior
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 21))
 
 (test-expect-fail 1)
-(test-equal "component-incomplete-port behaviour end"
-  %completion-behaviour
+(test-equal "component-incomplete-port behavior end"
+  %completion-behavior
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 28))
 
 (test-equal "component-incomplete-port on"
@@ -696,16 +696,16 @@
   '("provides" "requires")
   (test-complete #:file-name "component-incomplete-action.dzn" #:line 18))
 
-(test-equal "component-incomplete-action after behaviour"
+(test-equal "component-incomplete-action after behavior"
   '()
   (test-complete #:file-name "component-incomplete-action.dzn" #:line 30))
 
-(test-equal "component-incomplete-action behaviour"
-  %completion-behaviour
+(test-equal "component-incomplete-action behavior"
+  %completion-behavior
   (test-complete #:file-name "component-incomplete-action.dzn" #:line 21))
 
-(test-equal "component-incomplete-action behaviour end"
-  %completion-behaviour
+(test-equal "component-incomplete-action behavior end"
+  %completion-behavior
   (test-complete #:file-name "component-incomplete-action.dzn" #:line 28))
 
 (test-equal "component-incomplete-action on"

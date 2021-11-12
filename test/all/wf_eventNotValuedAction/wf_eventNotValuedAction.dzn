@@ -28,7 +28,7 @@ interface I {
 	in V e();
 	in V a();
 	
-	behaviour {
+	behavior {
 		on e: { V v = a; reply(v); }
 	}
 }

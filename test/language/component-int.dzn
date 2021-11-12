@@ -5,7 +5,7 @@ interface ihello
   in sint hello();
   out void world();
 
-  behaviour
+  behavior
   {
     sint m = 1;
 
@@ -22,7 +22,7 @@ component hello
   provides ihello p;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     sint m = 1;
 

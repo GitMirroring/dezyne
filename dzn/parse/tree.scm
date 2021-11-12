@@ -51,9 +51,9 @@
             context:parent
             slot
 
-            .behaviour
-            .behaviour-compound
-            .behaviour-statements
+            .behavior
+            .behavior-compound
+            .behavior-statements
             .direction
             .else
             .end
@@ -222,21 +222,21 @@ procedure)."
 ;;; Parse record accessors.
 ;;;
 
-(define (.behaviour o)
+(define (.behavior o)
   (match o
     ((or (? (is? 'component))
          (? (is? 'interface)))
-     (slot o 'behaviour))))
+     (slot o 'behavior))))
 
-(define (.behaviour-compound o)
+(define (.behavior-compound o)
   (match o
-    ((? (is? 'behaviour))
-     (slot o 'behaviour-compound))))
+    ((? (is? 'behavior))
+     (slot o 'behavior-compound))))
 
-(define (.behaviour-statements o)
+(define (.behavior-statements o)
   (match o
-    ((? (is? 'behaviour-compound))
-     (slot o 'behaviour-statements))))
+    ((? (is? 'behavior-compound))
+     (slot o 'behavior-statements))))
 
 (define (.direction o)
   (match o
@@ -520,9 +520,9 @@ procedure)."
    tree:type
    '(arguments
      argument
-     behaviour
-     behaviour-compound
-     behaviour-statements
+     behavior
+     behavior-compound
+     behavior-statements
      binding
      comment
      compound
@@ -609,7 +609,7 @@ procedure)."
       (is-a? o 'port)
       (is-a? o 'variable)
       (is-a? o 'formal)
-      (is-a? o 'behaviour)
+      (is-a? o 'behavior)
       (is-a? o 'function)
       (is-a? o 'variable)))
 
@@ -624,7 +624,7 @@ procedure)."
       (is-a? o 'extern)
       (is-a? o 'int)
       (is-a? o 'trigger)
-      (is-a? o 'behaviour-statements)
+      (is-a? o 'behavior-statements)
       (is-a? o 'function)
       (is-a? o 'instances-and-bindings)))
 
@@ -660,7 +660,7 @@ procedure)."
 
 (define (tree:component? o)
   (and (is-a? o 'component)
-       (.behaviour o)
+       (.behavior o)
        o))
 
 (define (tree:foreign? o)
@@ -843,7 +843,7 @@ procedure)."
 (define (tree:declaration* o)
   (match o
     ((or (? (is? 'root))
-         (? (is? 'behaviour-statements))
+         (? (is? 'behavior-statements))
          (? (is? 'compound))
          (? (is? 'ports))
          (? (is? 'types-and-events)))
@@ -855,10 +855,10 @@ procedure)."
     ((? (is? 'component))
      (append (tree:declaration* (.ports o))
              (append-map tree:declaration* (tree:instance* o))))
-    ((? (is? 'behaviour))
-     (tree:declaration* (.behaviour-compound o)))
-    ((? (is? 'behaviour-compound))
-     (tree:declaration* (.behaviour-statements o)))
+    ((? (is? 'behavior))
+     (tree:declaration* (.behavior-compound o)))
+    ((? (is? 'behavior-compound))
+     (tree:declaration* (.behavior-statements o)))
     ((? (is? 'field))
      (slots o 'name))
     ((? (is? 'enum))
@@ -958,7 +958,7 @@ procedure)."
 
 (define (tree:type* o)
   (match o
-    ((? (is? 'behaviour)) (append-map tree:type* (slots o tree?)))
+    ((? (is? 'behavior)) (append-map tree:type* (slots o tree?)))
     ((? (is? 'interface)) (append-map tree:type* (slots o 'types-and-events)))
     ((or (? (is? 'enum)) (? (is? 'extern)) (? (is? 'int))) `(,o))
     ((? (is? 'root))
@@ -988,21 +988,21 @@ procedure)."
     (_ '())))
 
 (define (tree:function* o)
-  (assert-type o 'behaviour-statements 'behaviour-compound 'behaviour)
+  (assert-type o 'behavior-statements 'behavior-compound 'behavior)
   (match o
-    ((? (is? 'behaviour)) (tree:function* (.behaviour-compound o)))
-    ((? (is? 'behaviour-compound)) (tree:function* (.behaviour-statements o)))
-    ((? (is? 'behaviour-statements)) (slots o (is? 'function)))))
+    ((? (is? 'behavior)) (tree:function* (.behavior-compound o)))
+    ((? (is? 'behavior-compound)) (tree:function* (.behavior-statements o)))
+    ((? (is? 'behavior-statements)) (slots o (is? 'function)))))
 
 (define (tree:statement* o)
-  (assert-type o 'behaviour 'behaviour-compound 'behaviour-statements 'blocking 'compound 'guard 'function 'if 'on)
+  (assert-type o 'behavior 'behavior-compound 'behavior-statements 'blocking 'compound 'guard 'function 'if 'on)
   (match o
-    ((? (is? 'behaviour)) (tree:statement* (.behaviour-compound o)))
-    ((? (is? 'behaviour-compound)) (tree:statement* (.behaviour-statements o)))
+    ((? (is? 'behavior)) (tree:statement* (.behavior-compound o)))
+    ((? (is? 'behavior-compound)) (tree:statement* (.behavior-statements o)))
     (_ (slots o tree:statement?))))
 
 (define (tree:variable* o)
-  (assert-type o 'behaviour-statements 'compound 'function)
+  (assert-type o 'behavior-statements 'compound 'function)
   (match o
     ((? (is? 'function))
      '())
@@ -1130,9 +1130,9 @@ procedure)."
 (define (context:type* o)
   (define (helper o)
     (match (.tree o)
-      ((or (? (is? 'behaviour))
-           (? (is? 'behaviour-compound))
-           (? (is? 'behaviour-statements))
+      ((or (? (is? 'behavior))
+           (? (is? 'behavior-compound))
+           (? (is? 'behavior-statements))
            (? (is? 'types-and-events)))
        (append-map helper
                    (map (cute cons <> o)

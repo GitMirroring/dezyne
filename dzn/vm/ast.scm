@@ -57,7 +57,7 @@
   ((compose ast:statement ast:type) o))
 
 (define-method (ast:statement (o <model>))
-  ((compose .statement .behaviour) o))
+  ((compose .statement .behavior) o))
 
 (define-method (ast:statement (o <runtime:system>))
   #f)

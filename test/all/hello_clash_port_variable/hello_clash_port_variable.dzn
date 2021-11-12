@@ -27,7 +27,7 @@ interface IPort
 {
   in void i();
   out void o();
-  behaviour {
+  behavior {
     number r = 0;
     on i: {}
     on optional: o;
@@ -39,7 +39,7 @@ component hello_clash_port_variable
   provides IPort p;
   requires IPort r;
 
-  behaviour
+  behavior
   {
     on p.i(): {}
     on r.o(): {}

@@ -27,7 +27,7 @@ interface Intf {
   in void evt();
   out void callback(out xint val);
 
-  behaviour {
+  behavior {
     on evt: {}
   }
 }

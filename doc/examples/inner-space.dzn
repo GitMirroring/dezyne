@@ -3,7 +3,7 @@ namespace foo {
     enum Bool {F,T};
     in Bool e();
     out void a();
-    behaviour {
+    behavior {
       on e: {a; reply (Bool.T); }
     }
   }
@@ -14,13 +14,13 @@ namespace inner {
       enum Bool {f,t};
       in Bool e();
       out void a();
-      behaviour { }
+      behavior { }
     }
   }
   component space {
     provides foo.I inner;
     provides .foo.I fooi;
-    behaviour {
+    behavior {
       foo.I.Bool inner_state = foo.I.Bool.t;
       .foo.I.Bool foo_state = .foo.I.Bool.T;
       on inner.e(): { }
@@ -31,7 +31,7 @@ namespace inner {
 namespace bar {
   component c {
     provides foo.I i;
-    behaviour {
+    behavior {
       foo.I.Bool state = foo.I.Bool.T;
       on i.e(): { }
     }

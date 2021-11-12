@@ -1,14 +1,14 @@
 interface ihello
 {
   in void hello ();
-  behaviour {}
+  behavior {}
 }
 
 component hello
 {
   provides ihello p;
   requires ihello r;
-  behaviour {}
+  behavior {}
 }
 
 component binding_cycle

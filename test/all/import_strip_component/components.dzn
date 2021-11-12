@@ -27,7 +27,7 @@ import interfaces.dzn;
 component comp {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     on h.hello(): {
       f(); // this error will not be detected!

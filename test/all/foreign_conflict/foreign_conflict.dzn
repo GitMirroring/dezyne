@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -35,7 +35,7 @@ interface iworld
 {
   in void world();
 
-  behaviour
+  behavior
   {
     on world: {}
   }
@@ -46,7 +46,7 @@ component hello
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello(): w.world();
   }

@@ -28,7 +28,7 @@ interface determinism_interface
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = false;
     on hello: {b = !b;if (b) world;}

@@ -97,7 +97,7 @@
 ;;; Entry points.
 ;;;
 (define* (system-diagram root #:key dir model)
-  (let* ((root (remove-behaviour root))
+  (let* ((root (remove-behavior root))
          (root (if (%locations?) root (remove-location root))))
     (x:source (.node root))))
 

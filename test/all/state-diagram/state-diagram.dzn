@@ -29,7 +29,7 @@ interface icruel
 {
   in M mode();
 
-  behaviour
+  behavior
   {
     on mode: reply(M.E);
     on mode: reply(M.F);
@@ -46,7 +46,7 @@ interface ihello
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     S s = S.A;
 
@@ -75,7 +75,7 @@ interface iworld
 
   out void world();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle]
@@ -98,7 +98,7 @@ component state_diagram
   requires iworld w2;
   requires icruel c;
 
-  behaviour
+  behavior
   {
     S s = S.A;
     M m = M.E;

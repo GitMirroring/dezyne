@@ -27,7 +27,7 @@ interface ihello
   in void hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -38,7 +38,7 @@ component compliance_out_sync
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello (): w.hello();
     on w.world (): {}

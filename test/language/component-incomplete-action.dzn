@@ -2,7 +2,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -16,7 +16,7 @@ component hello
   requires ihello w;
   requires ihello w_o_w;
 
-  behaviour
+  behavior
   {
 
     on h.hello():

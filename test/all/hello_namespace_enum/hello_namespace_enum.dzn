@@ -26,7 +26,7 @@ enum NS.Result { OK, NOK };
 
 interface ihello_namespace_enum {
   in NS.Result e();
-  behaviour {
+  behavior {
     on e: reply(NS.Result.NOK);
   }
 }
@@ -36,7 +36,7 @@ component hello_namespace_enum
   provides ihello_namespace_enum p;
   requires ihello_namespace_enum q;
 
-  behaviour {
+  behavior {
     on p.e(): {NS.Result r = q.e(); reply(r);}
   }
 }

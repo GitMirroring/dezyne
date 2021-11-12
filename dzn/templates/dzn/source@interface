@@ -3,5 +3,5 @@ interface #x:type  {
   #x:in-event
   #x:out-event
 
-  #x:behaviour
+  #x:behavior
 }

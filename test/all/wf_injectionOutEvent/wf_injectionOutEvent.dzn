@@ -23,13 +23,13 @@
 
 interface Intf {
   in void e();
-  behaviour { on e: { } }
+  behavior { on e: { } }
 }
 
 interface InjIntf {
   in void evt();
   out void notif();
-  behaviour {
+  behavior {
     on evt: {}
   }
 }
@@ -37,7 +37,7 @@ interface InjIntf {
 component Comp {
   provides Intf i;
   requires injected InjIntf ii;
-  behaviour {
+  behavior {
     on i.e(): {}
     on ii.notif(): {}
   }

@@ -26,7 +26,7 @@ interface irange_member
 {
   in void e();
 
-  behaviour
+  behavior
   {
     subint State {0..3};
 
@@ -39,7 +39,7 @@ interface irange_member
 component range_member
 {
   provides irange_member p;
-  behaviour
+  behavior
   {
     subint State {0..3};
 

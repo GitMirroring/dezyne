@@ -48,7 +48,7 @@ interface Idata_full
   out void aa (in xint i, in xint j);
   out void a6 (in xint a0,in xint a1,in xint a2,in xint a3,in xint a4,in xint a5);
 
-  behaviour
+  behavior
   {
     on e0: a6;
     on e0r: {a0;reply(Status.Yes);}
@@ -85,7 +85,7 @@ component data_full_
 {
   provides Idata_full port;
 
-  behaviour
+  behavior
   {
     Idata_full.xint mi = $0$;
     Idata_full.Status s = Idata_full.Status.Yes;
@@ -170,7 +170,7 @@ component proxy
   provides Idata_full top;
   requires Idata_full bottom;
 
-  behaviour
+  behavior
   {
     void outfunc (out Idata_full.xint i)
     {

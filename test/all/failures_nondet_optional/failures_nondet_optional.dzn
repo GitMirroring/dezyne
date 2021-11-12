@@ -30,7 +30,7 @@ interface ihello
   out void world ();
   out void cruel ();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     bool do_world = true;
@@ -49,7 +49,7 @@ interface iworld
   in void hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 
@@ -63,7 +63,7 @@ component failures_nondet_optional
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     on h.hello (): w.hello ();
     on w.world (): h.cruel ();

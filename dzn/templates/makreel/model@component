@@ -92,7 +92,7 @@ provides = hide ({
 
 #x:proc
 
-component_behaviour = #x:action-proc
+component_behavior = #x:action-proc
 
 %%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
 
@@ -120,7 +120,7 @@ component_reorder_block
  + #x:reorder-block
  ;
 
-component_reorder_parallel = component_behaviour || component_reorder;
+component_reorder_parallel = component_behavior || component_reorder;
 
 component_reorder_comm = comm({
   #x:makreel:model-name end | #x:makreel:model-name end  -> #x:makreel:model-name end'

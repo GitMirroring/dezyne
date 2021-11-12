@@ -21,7 +21,7 @@ interface not
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on e: bool b = !c;
   }

@@ -19,7 +19,7 @@
 //
 interface wf_expressionExpected {
   in void e();
-  behaviour {
+  behavior {
     enum EN { E1, E2, E3 };
     EN en = EN.E1;
     bool b = false;

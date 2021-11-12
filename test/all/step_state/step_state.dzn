@@ -23,7 +23,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -34,7 +34,7 @@ component hello_bool
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     bool b = false;
     on h.hello():
@@ -49,7 +49,7 @@ component world_int
 {
   provides ihello h;
   requires iworld w;
-  behaviour
+  behavior
     {
       bool b = false;
       int i = 0;
@@ -93,7 +93,7 @@ interface iworld
   in void up();
   in void doc();
 
-  behaviour
+  behavior
   {
     on goodbye: {}
     on cruel: {}

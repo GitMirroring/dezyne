@@ -27,7 +27,7 @@ interface ihello
   enum r {f,t};
   in r hello();
 
-  behaviour
+  behavior
   {
     on hello: reply(r.f);
   }
@@ -38,7 +38,7 @@ component hello_enum_function
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     ihello.r f (ihello.r v)
       {
@@ -58,7 +58,7 @@ interface iworld
 {
   in void world();
 
-  behaviour
+  behavior
   {
     on world: {}
   }

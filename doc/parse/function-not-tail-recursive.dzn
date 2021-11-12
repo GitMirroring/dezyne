@@ -1,7 +1,7 @@
 interface function_not_tail_recursive
 {
   in void hello ();
-  behaviour
+  behavior
   {
     void f ()
     {

@@ -2,7 +2,7 @@ interface I
 {
   in void e();
   out void f();
-  behaviour {}
+  behavior {}
 }
 
 interface J
@@ -10,7 +10,7 @@ interface J
   enum E {A, B};
   in E e();
   out void f();
-  behaviour {}
+  behavior {}
 }
 
 component C
@@ -18,4 +18,4 @@ component C
   provides I p;
   requires J r;
 
-  behaviour
+  behavior

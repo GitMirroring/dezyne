@@ -26,7 +26,7 @@ interface ihello
   enum r {t,f};
   in r hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (r.f);
   }
@@ -37,7 +37,7 @@ component hello_tick
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     enum r {f,t};
 
@@ -55,7 +55,7 @@ interface iworld
 {
   in ihello.r world();
 
-  behaviour
+  behavior
   {
     on world: reply (ihello.r.f);
   }

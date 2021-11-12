@@ -25,7 +25,7 @@ interface hello_function_void_bool_if
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     on hello:

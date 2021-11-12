@@ -53,7 +53,7 @@ component Feed
   provides IFeed ctrl;
   requires IConstrainedMove axis;
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     subint Count {0..4};

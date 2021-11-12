@@ -25,7 +25,7 @@ interface function_reply_early_return
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     bool b = false;
     on hello: f();

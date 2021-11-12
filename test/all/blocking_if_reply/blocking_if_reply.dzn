@@ -26,7 +26,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (false);
   }
@@ -36,7 +36,7 @@ component blocking_if_reply
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     blocking on h.hello():
     {

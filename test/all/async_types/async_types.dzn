@@ -24,7 +24,7 @@ interface i
 {
   in void e(T t);
   out void a(T t);
-  behaviour {
+  behavior {
     bool idle = true;
     [idle] on e: idle=false;
     [!idle] on inevitable: {idle=true;a;}
@@ -34,7 +34,7 @@ interface i
 component async_types_interference
 {
   provides i p;
-  behaviour {
+  behavior {
     requires dzn.async interference;
     requires dzn.async(T t) defer;
     bool idle = true;
@@ -46,7 +46,7 @@ component async_types_interference
 component async_types
 {
   provides i p;
-  behaviour {
+  behavior {
     requires dzn.async interference;
     requires dzn.async(T t) defer;
     bool idle = true;

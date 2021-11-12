@@ -100,7 +100,7 @@ Toggle on/off: M-x dzn-save RET."
   (let ((text (buffer-string))
         (result nil))
     (string-match "" text)
-    (while (string-match "^\\(component\\|interface\\|system\\)\\s *\\([_A-Za-z][_0-9A-Za-z]*\\)[^{}]*{[^{}]*?\\(behaviour\\|system\\)" text (match-end 0))
+    (while (string-match "^\\(component\\|interface\\|system\\)\\s *\\([_A-Za-z][_0-9A-Za-z]*\\)[^{}]*{[^{}]*?\\(behavior\\|system\\)" text (match-end 0))
       (push (list (match-string 1 text) (match-string 2 text) (match-string 3 text)) result))
     (reverse result)))
 

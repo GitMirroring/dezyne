@@ -2,7 +2,7 @@ enum result {OK, FAIL};
 interface call_in_complex_expression
 {
   in result hello ();
-  behaviour
+  behavior
   {
     result f ()
     {

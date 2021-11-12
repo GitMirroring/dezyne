@@ -25,7 +25,7 @@
 interface deadlock_optional_out_only
 {
   out void world ();
-  behaviour
+  behavior
   {
     on optional: world;
   }

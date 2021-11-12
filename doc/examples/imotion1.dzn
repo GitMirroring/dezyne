@@ -3,7 +3,7 @@ interface imotion
   in void start();
   in void stop();
   out void ready();
-  behaviour
+  behavior
   {
     on start, stop: {}
   }

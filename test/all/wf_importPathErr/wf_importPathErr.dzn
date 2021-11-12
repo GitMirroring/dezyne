@@ -28,7 +28,7 @@ component wf_importPathErr {
   provides I i;
   provides I2 i2;
 
-  behaviour {
+  behavior {
     on i.esub(): {}
     on i2.e(): {}
   }

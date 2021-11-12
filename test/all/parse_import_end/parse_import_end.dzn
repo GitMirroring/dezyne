@@ -25,7 +25,7 @@
 component parse_import_end
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     on h.hello(): {}
   }

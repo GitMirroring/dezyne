@@ -41,7 +41,7 @@
   #:export (stress))
 
 (define keywords
-  '("behaviour"
+  '("behavior"
     "blocking"
     "component"
     "else"
@@ -126,13 +126,13 @@ left-handed word boundaries."
 
 (define (filtered heuristics)
   "Return a new HEURISTICS that filters-out expectations that cannot be
-completed, such as removal of BEHAVIOUR, SYSTEM and type definitions."
+completed, such as removal of BEHAVIOR, SYSTEM and type definitions."
   (lambda* (str #:optional (offset 0))
     (filter (match-lambda
               ((offset . expect)
                (let ((start (string-rindex str #\newline 0 offset)))
                  (not (or
-                       (member expect '("behaviour" "system"))
+                       (member expect '("behavior" "system"))
                        (string-contains str " enum " start offset)
                        (string-contains str " extern " start offset)
                        (string-contains str " subint " start offset))))))

@@ -31,7 +31,7 @@ interface i
   out void f();
   out void g(xint a);
 
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -42,7 +42,7 @@ component alpha_local
   provides i p;
   requires i r;
 
-  behaviour
+  behavior
   {
     {
       on p.e(): {}

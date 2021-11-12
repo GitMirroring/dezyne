@@ -28,7 +28,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: world;
     on inevitable: world;
@@ -45,7 +45,7 @@ component hello
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     bool b = false;
     on h.hello(): {b=!b;w.hello();}

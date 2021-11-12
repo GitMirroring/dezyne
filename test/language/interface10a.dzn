@@ -4,7 +4,7 @@ interface I
 {
   in void foo();
 
-  behaviour
+  behavior
   {
     bool b = false;
     Bool e = Bool.False;

@@ -1,7 +1,7 @@
 interface mixing_imperative
 {
   in void hello();
-  behaviour
+  behavior
   {
     bool b = true;
     on hello:

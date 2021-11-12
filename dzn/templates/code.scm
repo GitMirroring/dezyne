@@ -68,7 +68,7 @@
 (define-templates expand-on code:expand-on)
 (define-templates method code:trigger)
 
-(define-templates async-member-initializer (lambda (o) (ast:port* (.behaviour o))))
+(define-templates async-member-initializer (lambda (o) (ast:port* (.behavior o))))
 (define-templates variable-member-initializer ast:variable*)
 (define-templates reply-member-initializer code:reply-types)
 

@@ -25,7 +25,7 @@ interface wf_modelingSilent {
   in void e();
   out void a1();
   out void a2();
-  behaviour {
+  behavior {
 
     void f() {
       f();

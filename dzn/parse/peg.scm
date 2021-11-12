@@ -168,21 +168,21 @@ type <- enum / int / extern
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
   namespace-root <-- (type / namespace / interface / component / &BRACE-CLOSE)#*
 
-interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# (behaviour / &BRACE-CLOSE)# BRACE-CLOSE#
+interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# (behavior / &BRACE-CLOSE)# BRACE-CLOSE#
 
-  types-and-events <-- (type / event / &behaviour / &BRACE-CLOSE)#*
+  types-and-events <-- (type / event / &behavior / &BRACE-CLOSE)#*
     event <-- direction type-name# event-name# enter-frame formals# exit-frame SEMICOLON#
       direction <-- IN / OUT
 
 component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-OPEN# ports# body# BRACE-CLOSE#
-  body <- behaviour / system / &BRACE-CLOSE
+  body <- behavior / system / &BRACE-CLOSE
     system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
       instances-and-bindings <-- (instance / binding)*
         instance <-- compound-name name SEMICOLON#
         binding <-- end-point BIND end-point# SEMICOLON#
           end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
 
-  ports <-- (port / &BEHAVIOUR / &SYSTEM / &BRACE-CLOSE)#*
+  ports <-- (port / &BEHAVIOR / &SYSTEM / &BRACE-CLOSE)#*
     port <-- port-direction port-qualifiers? compound-name# formals? port-name# SEMICOLON#
       port-direction <- provides / requires
       port-qualifiers <-- (external / injected / &compound-name)*
@@ -191,9 +191,9 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
 
 type-name <-- compound-name / BOOL / VOID
 
-behaviour <-- BEHAVIOUR (name)? behaviour-compound
-  behaviour-compound <-- BRACE-OPEN# enter-frame behaviour-statements BRACE-CLOSE# exit-frame
-    behaviour-statements <-- (port / function / variable / declarative-statement / type / &BRACE-CLOSE)#*
+behavior <-- BEHAVIOR (name)? behavior-compound
+  behavior-compound <-- BRACE-OPEN# enter-frame behavior-statements BRACE-CLOSE# exit-frame
+    behavior-statements <-- (port / function / variable / declarative-statement / type / &BRACE-CLOSE)#*
       function <-- type-name name &(formals BRACE-OPEN) enter-frame formals compound# exit-frame
 
 declarative-statement <- on / blocking / guard / compound
@@ -302,7 +302,7 @@ NOT                 <   '!'
 EOF                 <   !.
 COMPARE             <-  EQUAL / NOT-EQUAL / LESS-EQUAL / LESS / GREATER-EQUAL / GREATER
 
-BEHAVIOUR           <  'behavior' ![a-zA-Z_0-9] / 'behaviour' ![a-zA-Z_0-9]
+BEHAVIOR            <  'behavior' ![a-zA-Z_0-9] / 'behaviour' ![a-zA-Z_0-9]
 BLOCKING            <  'blocking' ![a-zA-Z_0-9]
 BOOL                <- 'bool' ![a-zA-Z_0-9]
 COMPONENT           <  'component' ![a-zA-Z_0-9]

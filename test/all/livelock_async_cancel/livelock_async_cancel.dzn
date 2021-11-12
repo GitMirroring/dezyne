@@ -27,7 +27,7 @@ interface IAsync {
   in void c();
   out void cb();
 
-  behaviour {
+  behavior {
     bool idle = true;
     [idle] {
       on e: idle = false;
@@ -42,7 +42,7 @@ interface IAsync {
 
 component livelock_async_cancel {
   provides IAsync p;
-  behaviour {
+  behavior {
     enum State { S0, S1, S2 };
     requires dzn.async i;
 

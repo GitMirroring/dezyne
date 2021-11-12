@@ -26,7 +26,7 @@ interface ihello
   enum Bool {False,True};
   in void hello ();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -35,7 +35,7 @@ interface ihello
 component enum_as_action
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     on h.hello (): ihello.Bool b = h.Bool ();
   }

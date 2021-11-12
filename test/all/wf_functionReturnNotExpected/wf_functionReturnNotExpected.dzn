@@ -23,7 +23,7 @@
 
 interface Intf {
   in void evt();
-  behaviour {
+  behavior {
     on evt: { return; }
   }
 }

@@ -28,7 +28,7 @@ interface idollars
 {
   in void e(in foobar fb);
 
-  behaviour
+  behavior
   {
     on e: {}
   }

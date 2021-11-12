@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = true;
     [b]  on hello: b=!b;
@@ -40,7 +40,7 @@ component helloworld1
   provides ihello pc1;
   requires ihello rc1;
 
-  behaviour
+  behavior
   {
     bool b = false;
     [b]  on pc1.hello(): {b=!b; rc1.hello();}
@@ -53,7 +53,7 @@ component helloworld2
   provides ihello pc2;
   requires ihello rc2;
 
-  behaviour
+  behavior
   {
     bool b = true;
     [b]  on pc2.hello(): {b=!b; rc2.hello();}

@@ -23,7 +23,7 @@
 
 interface I {
   in void esub();
-  behaviour {
+  behavior {
     on esub: {}
   }
 }

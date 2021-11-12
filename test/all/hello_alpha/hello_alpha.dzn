@@ -30,7 +30,7 @@ interface i
   out void f();
   out void g(xint a);
 
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -41,7 +41,7 @@ component hello_alpha
   provides i p;
   requires i r;
 
-  behaviour
+  behavior
   {
     xint a;
     {

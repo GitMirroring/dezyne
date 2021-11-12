@@ -26,7 +26,7 @@ interface ihello
 {
   in void hello();
   in void cruel();
-  behaviour
+  behavior
   {
     on hello: {}
     on cruel: {}
@@ -36,7 +36,7 @@ interface ihello
 interface iworld
 {
   out void world();
-  behaviour
+  behavior
   {
     on inevitable: world;
   }
@@ -46,7 +46,7 @@ component deadlock_port_blocked
 {
   provides ihello h;
   requires iworld w;
-  behaviour
+  behavior
   {
     bool blocked=false;
     [!blocked]

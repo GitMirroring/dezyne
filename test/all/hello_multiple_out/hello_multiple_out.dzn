@@ -27,7 +27,7 @@ interface ihello
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = false;
     [!b] on hello: b=!b;
@@ -41,7 +41,7 @@ component hello_multiple_out
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     bool b = false;
     [!b] on h.hello(): {b=!b;w.hello();}

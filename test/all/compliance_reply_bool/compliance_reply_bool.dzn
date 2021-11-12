@@ -27,7 +27,7 @@ interface ihello
   in bool hello ();
   in bool bye ();
 
-  behaviour
+  behavior
   {
     on hello: reply (true);
     on bye: reply (true);
@@ -40,7 +40,7 @@ component compliance_reply_bool
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     bool bb = false;
     [!bb] on h.hello (): {bb = true; bool b = w.bye(); reply (true);}

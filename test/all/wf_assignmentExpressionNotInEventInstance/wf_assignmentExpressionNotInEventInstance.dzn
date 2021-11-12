@@ -26,14 +26,14 @@ extern long $long$;
 interface Sensor {
   enum Status { OK, NOK };
   in Status activate(long l);
-  behaviour {
+  behavior {
     on activate: { reply(Status.OK); }
   }
 }
 component SensorComp {
   provides Sensor sensor1;
   requires Sensor sensor2;
-  behaviour {
+  behavior {
     long l = $0.0$;
     Sensor.Status s = Sensor.Status.OK;
     bool b= true;

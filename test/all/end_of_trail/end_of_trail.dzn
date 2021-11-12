@@ -26,7 +26,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (false);
     on hello: reply (true);
@@ -38,7 +38,7 @@ component end_of_trail
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello(): reply (w.hello ());
   }

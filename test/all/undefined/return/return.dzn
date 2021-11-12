@@ -21,7 +21,7 @@ interface Return
 {
   in bool e();
 
-  behaviour
+  behavior
   {
     bool f() {
       return(b);

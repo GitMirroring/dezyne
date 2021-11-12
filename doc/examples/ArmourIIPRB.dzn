@@ -12,7 +12,7 @@ interface IStrict
   in bool ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: illegal;
     on inevitable: oa;
@@ -24,7 +24,7 @@ interface IRobust
   in bool ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: {reply(false);}
     on inevitable: oa;
@@ -37,7 +37,7 @@ component ArmourIIPRB // IStrict to IRobust
   requires IStrict rStrict;
   requires injected ILogger iLog;
   
-  behaviour {
+  behavior {
     on pRobust.ia(): {reply(false); iLog.Log($"In-event ia is illegal in port"$);} // armour illegal ia
     on rStrict.oa(): pRobust.oa();  
   }
@@ -48,7 +48,7 @@ component Dezyne
   provides IStrict pStrict;
   requires IB rp;
 
-  behaviour
+  behavior
   {
     on pStrict.ia(): illegal;
     on rp.oa(): pStrict.oa();  
@@ -60,7 +60,7 @@ interface IB
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: illegal;
     on inevitable: oa;

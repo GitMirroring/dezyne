@@ -102,7 +102,7 @@
          (accessors (append (map (compose string->accessor .name)
                                  (ast:port* o))
                             (if (or (is-a? o <foreign>)
-                                    (not (.behaviour o))) '()
+                                    (not (.behavior o))) '()
                                 (map (compose string->accessor .name) (ast:variable* o))))))
     (append classes accessors)))
 
@@ -201,12 +201,12 @@
 (define (wrap-lonely-variable o)
   (match o
     (($ <variable>) (make <compound> #:elements (list o)))
-    (($ <behaviour>) (clone o #:statement (wrap-lonely-variable (.statement o))))
-    (($ <component>) (clone o #:behaviour (wrap-lonely-variable (.behaviour o))))
+    (($ <behavior>) (clone o #:statement (wrap-lonely-variable (.statement o))))
+    (($ <component>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
     ((and ($ <compound>) (? ast:imperative?)) o)
     (($ <system>) o)
     (($ <foreign>) o)
-    (($ <interface>) (clone o #:behaviour (wrap-lonely-variable (.behaviour o))))
+    (($ <interface>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
     ((? (is? <ast>)) (tree-map wrap-lonely-variable o))
     (_ o)))
 

@@ -2,7 +2,7 @@ interface otherwise_without_guard
 {
   in void hello();
   in void cruel();
-  behaviour
+  behavior
   {
     on hello: {}
     [otherwise] on cruel: {}

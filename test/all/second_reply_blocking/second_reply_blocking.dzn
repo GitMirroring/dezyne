@@ -23,7 +23,7 @@
 
 interface I {
   in void e();
-  behaviour {
+  behavior {
     on e: {}
   }
 }
@@ -31,7 +31,7 @@ interface I {
 interface II {
   in void e();
   out void cb();
-  behaviour {
+  behavior {
     bool busy = false;
     [!busy]
        on e: busy = true;
@@ -44,7 +44,7 @@ interface II {
 component second_reply_blocking {
   provides I p;
   requires II r;
-  behaviour {
+  behavior {
     bool busy = false;
     [!busy] {
        on p.e(): blocking { r.e(); busy = true; }

@@ -1,0 +1,4 @@
+interface interface_without_behavior
+{
+  in void hello();
+}

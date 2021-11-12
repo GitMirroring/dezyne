@@ -23,7 +23,7 @@
 
 interface I {
   in void e();
-  behaviour {
+  behavior {
     on e: {}
   }
 }
@@ -31,7 +31,7 @@ interface I {
 interface II {
   in void e();
   out void cb();
-  behaviour {
+  behavior {
     bool busy = false;
     [!busy] on e: busy = true;
     [busy] on inevitable: { cb; busy = false; }
@@ -41,7 +41,7 @@ interface II {
 component blocking_requires_normalize {
   provides I p;
   requires II r;
-  behaviour {
+  behavior {
     bool busy = false;
     blocking {
       [!busy] on p.e(): { r.e(); busy = true; }

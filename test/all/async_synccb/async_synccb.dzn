@@ -29,7 +29,7 @@ interface IAsync {
   out void cb1();
   out void cb2();
 
-  behaviour {
+  behavior {
     bool idle = true;
     [idle] {
       on e: { cb1; idle = false; }
@@ -44,7 +44,7 @@ interface IAsync {
 
 component async_synccb {
   provides IAsync p;
-  behaviour {
+  behavior {
     requires dzn.async i;
     bool idle = true;
     [idle] {

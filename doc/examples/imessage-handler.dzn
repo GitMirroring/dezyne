@@ -2,7 +2,7 @@ interface imessage_handler
 {
   in void send_message();
   out void message_sent();
-  behaviour
+  behavior
   {
     on send_message: message_sent;
   }

@@ -28,7 +28,7 @@ interface i
 {
   in void e(xint a);
 
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -38,7 +38,7 @@ component alpha_field_test
 {
   provides i p;
 
-  behaviour
+  behavior
   {
     enum E {a,x,ax,axx};
     xint a;

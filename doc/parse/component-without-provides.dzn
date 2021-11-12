@@ -1,11 +1,11 @@
 interface iworld
 {
   in void hello();
-  behaviour {}
+  behavior {}
 }
 
 component component_without_provides
 {
   requires iworld r;
-  behaviour {}
+  behavior {}
 }

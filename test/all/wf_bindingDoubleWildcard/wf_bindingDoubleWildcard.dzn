@@ -23,14 +23,14 @@
 
 interface Intf {
   in void evt();
-  behaviour {
+  behavior {
     on evt: {}
   }
 }
 
 component Comp {
   provides Intf i;
-  behaviour {
+  behavior {
     on i.evt(): {}
   }
 }

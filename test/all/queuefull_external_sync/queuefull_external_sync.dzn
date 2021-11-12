@@ -23,7 +23,7 @@
 
 interface ihello {
   in void hello();
-  behaviour {
+  behavior {
     on hello: {}
   }
 }
@@ -31,7 +31,7 @@ interface ihello {
 interface iworld {
   in void hello();
   out void world();
-  behaviour {
+  behavior {
     on hello: world;
   }
 }
@@ -40,7 +40,7 @@ component queuefull_external_sync {
   provides ihello h;
   requires external iworld w;
 
-  behaviour {
+  behavior {
     on h.hello(): w.hello();
     on w.world(): w.hello();
   }

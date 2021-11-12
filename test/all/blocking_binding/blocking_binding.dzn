@@ -28,7 +28,7 @@ interface ihello
 {
   in void hello(inout int i);
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -39,7 +39,7 @@ interface iworld
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool busy = false;
     [!busy] on hello: busy = true;
@@ -52,7 +52,7 @@ component blocking_binding
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     int g = $123$;
     bool busy = false;

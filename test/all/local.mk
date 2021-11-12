@@ -434,7 +434,7 @@ PARSER_TESTS =					\
  %D%/wf_imperativeDeclarative			\
  %D%/wf_importPathErr				\
  %D%/wf_injectionOutEvent			\
- %D%/wf_interfaceMustDefineBehaviour		\
+ %D%/wf_interfaceMustDefineBehavior		\
  %D%/wf_interfaceMustDefineEvent		\
  %D%/wf_modelingSilent				\
  %D%/wf_NameClash				\

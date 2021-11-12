@@ -13,7 +13,7 @@ interface IStrict
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: {}
     on inevitable: oa;
@@ -25,7 +25,7 @@ interface IRobust
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: {}
     on ia: oa;
@@ -38,7 +38,7 @@ component ArmourISOE {
 	requires IRobust rRobust;
 	requires injected ILogger iLog;
 
-	behaviour {	
+	behavior {	
 		requires dzn.async p;
 				
 		bool requested = false;
@@ -61,7 +61,7 @@ component Dezyne {
 	provides IA pp;
 	requires IStrict rStrict;
 
-	behaviour {			
+	behavior {			
 		on pp.ia(): {rStrict.ia();}
 		on rStrict.oa(): {pp.oa();}
     }
@@ -72,7 +72,7 @@ interface IA
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   {
     on ia: {}
     on inevitable: oa;

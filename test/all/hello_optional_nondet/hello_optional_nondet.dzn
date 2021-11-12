@@ -29,7 +29,7 @@ interface hello_optional_nondet
   out void world ();
   out void bye ();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     bool hidden = true;

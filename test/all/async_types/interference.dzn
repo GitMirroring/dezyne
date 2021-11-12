@@ -23,7 +23,7 @@ import async_types.dzn;
 component interference
 {
   provides i p;
-  behaviour {
+  behavior {
     requires dzn.async defer_interference;
     requires dzn.async(T t) defer;
     bool idle = true;

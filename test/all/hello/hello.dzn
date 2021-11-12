@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -34,7 +34,7 @@ interface ihello
 component hello
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     on h.hello(): {}
   }

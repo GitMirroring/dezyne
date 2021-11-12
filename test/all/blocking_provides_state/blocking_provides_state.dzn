@@ -27,7 +27,7 @@ interface ihello
   in void hello ();
   in void bye ();
 
-  behaviour
+  behavior
   {
     bool b = true;
     [b] on hello: b = false;
@@ -41,7 +41,7 @@ interface iworld
   out void world ();
   in void bye ();
 
-  behaviour
+  behavior
   {
     enum status {A, B, C};
     status state = status.A;
@@ -56,7 +56,7 @@ component blocking_provides_state
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     enum status {A, B, C};
     status state = status.A;

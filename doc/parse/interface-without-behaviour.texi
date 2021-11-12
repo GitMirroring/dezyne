@@ -1,1 +1,0 @@
-interface-without-behaviour.dzn:1:1: error: interface must have a behaviour

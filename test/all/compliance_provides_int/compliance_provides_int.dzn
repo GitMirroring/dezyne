@@ -26,7 +26,7 @@ interface iint
   subint int {0..1};
   in int hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (1);
   }
@@ -35,7 +35,7 @@ interface iint
 component compliance_provides_int
 {
   provides iint p;
-  behaviour
+  behavior
   {
     on p.hello(): reply (0);
   }

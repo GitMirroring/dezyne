@@ -24,7 +24,7 @@
 interface I {
   in void e();
 
-  behaviour {
+  behavior {
     [true] {
        on e: {}
     }
@@ -35,7 +35,7 @@ interface I {
 component determinism0 {
   provides I i;
   requires I ii;
-  behaviour {
+  behavior {
     [true] on i.e(): {
       [true] { ii.e(); }
       [true] {}

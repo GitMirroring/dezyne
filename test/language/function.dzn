@@ -2,7 +2,7 @@ interface ihello
 {
   in void hello();
   out void world();
-  behaviour
+  behavior
   {
     void fun ()
     {

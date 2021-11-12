@@ -27,5 +27,5 @@ import iworld.dzn;
 component stranger
 {
   provides iworld w;
-  // behaviour {}
+  // behavior {}
 }

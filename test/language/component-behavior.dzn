@@ -2,7 +2,7 @@ interface IHello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -13,7 +13,7 @@ component Hello
 
   provides IHello h;
 
-  behaviour
+  behavior
   {
     on h.hello(): {}
 

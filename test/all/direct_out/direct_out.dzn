@@ -20,7 +20,7 @@
 interface I
 {
   out void a();
-  behaviour
+  behavior
   {
     on inevitable: a;
   }
@@ -30,7 +30,7 @@ component direct_out
 {
   provides I p;
   requires I r;
-  behaviour
+  behavior
   {
     on r.a(): p.a();
   }

@@ -32,7 +32,7 @@ interface ISiren
   in void turnon();
   in void turnoff();
 
-  behaviour c
+  behavior c
   {
     enum States {
         Off,
@@ -52,7 +52,7 @@ interface ISensor
   out void triggered();
   out void disabled();
 
-  behaviour b
+  behavior b
   {
     enum States {
         Disabled,
@@ -81,7 +81,7 @@ interface IConsole
     out void detected();
     out void deactivated();
 
-  behaviour a
+  behavior a
   {
     enum States {
         Disarmed,
@@ -130,7 +130,7 @@ component Alarm
   requires ISensor sensor;
   requires ISiren siren;
 
-  behaviour d
+  behavior d
   {
     enum States { Disarmed, Armed, Triggered, Disarming };
     States state = States.Disarmed;
@@ -192,7 +192,7 @@ component Siren
   provides ISiren p;
   requires ISiren r;
 
-  behaviour
+  behavior
   {
     on p.turnon(): r.turnon();
     on p.turnoff(): r.turnoff();

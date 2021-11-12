@@ -2,7 +2,7 @@ interface IHello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }

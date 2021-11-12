@@ -28,7 +28,7 @@ namespace r {
     interface ihello {
       enum r {t,f};
       in void hello ();
-      behaviour {
+      behavior {
         on hello: {}
         }
       }
@@ -42,7 +42,7 @@ interface ihello
   enum r {t,f};
   in .r.r.ihello.r hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (.r.r.ihello.r.f);
   }
@@ -53,7 +53,7 @@ component hello_namespace_shadow
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     enum R {f,t};
 
@@ -72,7 +72,7 @@ interface iworld
 {
   in r.r.ihello.r world();
 
-  behaviour
+  behavior
   {
     on world: reply (r.r.ihello.r.f);
   }

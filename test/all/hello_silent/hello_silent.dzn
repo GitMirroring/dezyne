@@ -25,7 +25,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     bool b = true;
     on hello: reply(b);
@@ -38,7 +38,7 @@ component hello_silent
   provides ihello hi;
   requires ihello wi;
 
-  behaviour
+  behavior
   {
     on hi.hello(): reply (wi.hello ());
   }

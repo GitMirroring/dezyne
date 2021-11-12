@@ -20,23 +20,23 @@
 interface iworld
 {
   out void world();
-  behaviour {}
+  behavior {}
 }
 
 component component_provides_without_trigger
 {
   provides iworld p;
-  behaviour {}
+  behavior {}
 }
 
 interface ihello
 {
   in void hello();
-  behaviour {}
+  behavior {}
 }
 
 component component_requires_without_trigger
 {
   requires ihello r;
-  behaviour {}
+  behavior {}
 }

@@ -23,7 +23,7 @@
 
 interface Start {
   in bool start();
-  behaviour {
+  behavior {
     on start: reply(false);
     on start: reply(true);
   }
@@ -32,7 +32,7 @@ interface Start {
 component Test {
   provides Start start1;
   provides Start start2;
-  behaviour {
+  behavior {
     on start1.start(): start2.reply(true);
   }
 }

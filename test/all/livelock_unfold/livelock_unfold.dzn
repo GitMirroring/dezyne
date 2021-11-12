@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -37,7 +37,7 @@ component livelock_unfold
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     subint Count {0..10};
     Count c = 0;

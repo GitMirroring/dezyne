@@ -24,7 +24,7 @@
 
 interface Intf {
   in void evt();
-  behaviour {
+  behavior {
     void f() {
       bool b = false;
       if (b) {
@@ -39,7 +39,7 @@ interface Intf {
 
 interface Intf2 {
   in void evt();
-  behaviour {
+  behavior {
     bool f() {
       bool b = g();
       return b;
@@ -55,7 +55,7 @@ interface Intf2 {
 
 interface Intf3 {
   in void evt();
-  behaviour {
+  behavior {
     void f() {
       f();
     }
@@ -70,7 +70,7 @@ interface Intf3 {
 
 interface Intf4 {
   in void evt();
-  behaviour {
+  behavior {
     void f() {
       g();
     }

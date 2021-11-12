@@ -24,7 +24,7 @@
 
 interface I2 {
   out void e();
-  behaviour {
+  behavior {
     on inevitable: e;
   }
 }

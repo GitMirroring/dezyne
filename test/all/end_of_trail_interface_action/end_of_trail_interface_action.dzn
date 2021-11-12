@@ -28,7 +28,7 @@ interface end_of_trail_interface_action
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: cruel;
     on hello: world;

@@ -69,7 +69,7 @@
 (define-method (c++:formal-type (o <port>))
   (code:formals (car (ast:event* o))))
 
-(define (c++:pump-include o) (if (pair? (ast:port* (.behaviour o))) "#include <dzn/pump.hh>" ""))
+(define (c++:pump-include o) (if (pair? (ast:port* (.behavior o))) "#include <dzn/pump.hh>" ""))
 
 (define-method (c++:enum-field->string (o <enum>))
   (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))

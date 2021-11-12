@@ -24,7 +24,7 @@
 
 interface ihello {
   in void hello();
-  behaviour {
+  behavior {
     on hello: {}
   }
 }
@@ -32,7 +32,7 @@ interface ihello {
 interface iworld {
   in void hello();
   out void world();
-  behaviour {
+  behavior {
     on hello: world;
   }
 }
@@ -41,7 +41,7 @@ component livelock_synchronous {
   provides ihello h;
   requires iworld w;
 
-  behaviour {
+  behavior {
     on h.hello(): w.hello();
     on w.world(): w.hello();
   }

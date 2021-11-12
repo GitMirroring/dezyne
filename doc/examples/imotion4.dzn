@@ -2,7 +2,7 @@ interface imotion
 {
   in void start();
   in void stop();
-  behaviour
+  behavior
   {
     enum status {OFF, ACTIVE};
     status state = status.OFF;

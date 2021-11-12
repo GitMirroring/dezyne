@@ -26,7 +26,7 @@ interface ihello
 {
   in void hello();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -35,7 +35,7 @@ interface ihello
 component illegal_async_req
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     requires dzn.async i;
     bool b = true;

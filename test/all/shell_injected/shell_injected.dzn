@@ -29,7 +29,7 @@ import ilogger.dzn;
 component Logger
 {
   provides ILogger log;
-  // behaviour {}
+  // behavior {}
 }
 
 interface IRelaxed
@@ -37,7 +37,7 @@ interface IRelaxed
   in void e();
   out void f();
 
-  behaviour
+  behavior
   {
     on e: {}
     on optional: f;
@@ -50,7 +50,7 @@ interface IStrict
   in void e();
   out void f();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 
@@ -66,7 +66,7 @@ component TopArmor
 
   requires injected ILogger l;
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] {
@@ -87,7 +87,7 @@ component BottomArmor
 
   requires injected ILogger l;
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] {
@@ -106,7 +106,7 @@ component C
   provides IStrict p;
   requires IStrict r;
 
-  behaviour
+  behavior
   {
     on p.e(): r.e();
     on r.f(): p.f();

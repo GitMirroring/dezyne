@@ -28,7 +28,7 @@ interface ILogger
 {
   in void log(in string m);
 
-  behaviour
+  behavior
   {
     on log: {}
   }

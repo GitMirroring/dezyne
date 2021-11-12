@@ -31,7 +31,7 @@ interface itimer
   in void cancel();
   out void timeout();
 
-  behaviour
+  behavior
   {
     enum State {Idle, Pending};
     State state = State.Idle;

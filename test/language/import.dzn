@@ -8,7 +8,7 @@ component hello_enum
   requires ihello_int r;
   requires ihello_enum s;
 
-  behaviour
+  behavior
   {
     Bool m = Bool.True;
 

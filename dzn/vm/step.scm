@@ -232,7 +232,7 @@
     ("req"
      (let* ((instance (.instance pc))
             (trigger (clone (make <q-trigger> #:port.name (.port.name o) #:event.name "ack")
-                            #:parent ((compose .behaviour .type .ast) instance)))
+                            #:parent ((compose .behavior .type .ast) instance)))
             (ack (lambda (pc) (list (begin-step pc instance trigger))))
             (rank (.rank instance))
             (r:port (runtime:port instance (.port o)))

@@ -23,10 +23,10 @@
 //
 // Code:
 
-//purpose: Show illegal behaviour in component
+//purpose: Show illegal behavior in component
 
 /////////////////////////////////////////////////////////////////////////////
-// This example shows how an illegal behaviour is revealed when verifying a
+// This example shows how an illegal behavior is revealed when verifying a
 // Dezyne component and (in a commented out section) provides guidelines on how
 // to ensure that the reported problem does not occur anymore.
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ interface IConsole
     out void detected();
     out void deactivated();
 
-  behaviour
+  behavior
   {
     enum State { Disarmed, Armed, Triggered, Disarming };
     State state = State.Disarmed;
@@ -69,7 +69,7 @@ interface ISensor
   out void triggered();
   out void disabled();
 
-  behaviour
+  behavior
   {
     enum State { Disabled, Enabled, Disabling, Triggered };
     State state = State.Disabled;
@@ -92,7 +92,7 @@ interface ISiren
   in void turnon();
   in void turnoff();
 
-  behaviour
+  behavior
   {
     enum State { Off, On };
     State state = State.Off;
@@ -110,7 +110,7 @@ component Alarm
     requires ISensor sensor;
     requires ISiren siren;
 
-  behaviour
+  behavior
   {
     enum State { Disarmed, Armed, Disarming };
     State state = State.Disarmed;
@@ -133,7 +133,7 @@ component Alarm
       on sensor.disabled():
           { [sounding]          { console.deactivated();
 /*
-If the next line is left commented out then an illegal behaviour is spotted;
+If the next line is left commented out then an illegal behavior is spotted;
 the Alarm makes an attempt to turn on the Siren when that is already turned on.
 (run Verify and check the Sequence Diagram).
 

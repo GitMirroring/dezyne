@@ -1,7 +1,7 @@
 interface return_outside_function
 {
   in void hello ();
-  behaviour
+  behavior
   {
     on hello: return;
   }

@@ -9,7 +9,7 @@
       (end-line . 34)
       (end-column . 1)
       (offset . 833)
-      (length . 102))))
+      (length . 101))))
   (("bool" (name . bool)))
   (("void" (name . void)))
   (("file-name"
@@ -25,7 +25,7 @@
         (end-line . 32)
         (end-column . 2)
         (offset . 833)
-        (length . 77))))
+        (length . 76))))
     (name . ihello)
     (types ("types"))
     (events
@@ -59,8 +59,8 @@
             (type.name . void)
             (formals ("formals"))))
          (direction . in)))))
-    (behaviour
-      ("behaviour"
+    (behavior
+      ("behavior"
        (location
          (("location"
            (file-name
@@ -71,7 +71,7 @@
            (end-line . 31)
            (end-column . 4)
            (offset . 874)
-           (length . 34))))
+           (length . 33))))
        (types ("types"))
        (ports ("ports"))
        (variables ("variables"))
@@ -87,7 +87,7 @@
               (column . 3)
               (end-line . 31)
               (end-column . 4)
-              (offset . 886)
+              (offset . 885)
               (length . 22))))
           (("on"
             (location
@@ -99,7 +99,7 @@
                 (column . 5)
                 (end-line . 30)
                 (end-column . 17)
-                (offset . 892)
+                (offset . 891)
                 (length . 12))))
             (triggers
               ("triggers"
@@ -113,7 +113,7 @@
                      (column . 8)
                      (end-line . 30)
                      (end-column . 13)
-                     (offset . 895)
+                     (offset . 894)
                      (length . 5))))
                  (event.name . "hello")
                  (formals ("formals"))))))
@@ -128,7 +128,7 @@
                    (column . 15)
                    (end-line . 30)
                    (end-column . 17)
-                   (offset . 902)
+                   (offset . 901)
                    (length . 2))))))))))))))
   (("file-name"
     (name .
@@ -144,7 +144,7 @@
         (end-line . 33)
         (end-column . 2)
         (offset . 853)
-        (length . 81))))
+        (length . 80))))
     (name . hello)
     (ports ("ports"
             (("port"
@@ -163,8 +163,8 @@
               (type.name . ihello)
               (direction . provides)
               (formals ("formals"))))))
-    (behaviour
-      ("behaviour"
+    (behavior
+      ("behavior"
        (location
          (("location"
            (file-name
@@ -175,7 +175,7 @@
            (end-line . 32)
            (end-column . 4)
            (offset . 894)
-           (length . 38))))
+           (length . 37))))
        (types ("types"))
        (ports ("ports"))
        (variables ("variables"))
@@ -191,7 +191,7 @@
               (column . 3)
               (end-line . 32)
               (end-column . 4)
-              (offset . 906)
+              (offset . 905)
               (length . 26))))
           (("on"
             (location
@@ -203,7 +203,7 @@
                 (column . 5)
                 (end-line . 31)
                 (end-column . 21)
-                (offset . 912)
+                (offset . 911)
                 (length . 16))))
             (triggers
               ("triggers"
@@ -217,7 +217,7 @@
                      (column . 8)
                      (end-line . 31)
                      (end-column . 17)
-                     (offset . 915)
+                     (offset . 914)
                      (length . 9))))
                  (port.name . "h")
                  (event.name . "hello")
@@ -233,6 +233,6 @@
                    (column . 19)
                    (end-line . 31)
                    (end-column . 21)
-                   (offset . 926)
+                   (offset . 925)
                    (length . 2))))))))))))))
   (working-directory . ".")))

@@ -27,7 +27,7 @@ interface ihello
   in bool hello();
   in bool bye();
 
-  behaviour
+  behavior
   {
     on hello:reply(true);
     on bye:reply(true);
@@ -39,7 +39,7 @@ component deadlock_blocking_replies
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     enum S {A,B,C};
     S s = S.A;
@@ -65,7 +65,7 @@ interface iworld
   out void world();
   out void cruel();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on hello: idle = false;

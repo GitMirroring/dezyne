@@ -1,13 +1,13 @@
 interface I
 {
   in void e();
-  behaviour {}
+  behavior {}
 }
 
 interface J
 {
   in void f();
-  behaviour {}
+  behavior {}
 }
 
 component C
@@ -15,7 +15,7 @@ component C
   provides I p;
   provides J r;
 
-  behaviour
+  behavior
   {
     [true]
     {

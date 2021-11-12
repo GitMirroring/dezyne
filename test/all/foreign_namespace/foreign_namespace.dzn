@@ -29,7 +29,7 @@ namespace S
     in void e();
     in R f();
 
-    behaviour
+    behavior
     {
       on e: {}
       on f: reply (R.r);
@@ -41,7 +41,7 @@ namespace S
     provides I p;
     requires I r;
 
-    behaviour
+    behavior
     {
       on p.e(): r.e();
       on p.f(): reply (I.R.r);
@@ -51,7 +51,7 @@ namespace S
   component Foreign
   {
     provides I p;
-    // behaviour {}
+    // behavior {}
   }
 }
 

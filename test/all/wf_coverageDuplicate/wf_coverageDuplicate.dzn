@@ -24,14 +24,14 @@
 interface Sensor {
   in void activate();
   in void deactivate();
-  behaviour {
+  behavior {
     on activate: { }
     on deactivate: { }
   }
 }
 component wf_coverageDuplicate {
   provides Sensor sensor;
-  behaviour {
+  behavior {
     on sensor.activate(), sensor.deactivate(), sensor.activate(): { }
   }
 }

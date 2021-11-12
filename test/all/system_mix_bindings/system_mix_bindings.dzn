@@ -27,7 +27,7 @@
 
 interface A {
   in void a();
-  behaviour {
+  behavior {
     on a: {}
   }
 }
@@ -36,7 +36,7 @@ component B {
   provides A api;
   requires A apj;
 
-  behaviour {
+  behavior {
     on api.a(): apj.a();
   }
 }

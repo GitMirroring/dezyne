@@ -54,7 +54,7 @@
             guards-not-or
             purge-data
             remove-otherwise
-            remove-behaviour
+            remove-behavior
             remove-location))
 
 ;; A prefix is a normalized combination of the declarative statements
@@ -206,7 +206,7 @@
 
 (define (triples:->triples o)
   (define (triple o)
-    (let ((path (ast:path o (lambda (p) (is-a? (.parent p) <behaviour>)))))
+    (let ((path (ast:path o (lambda (p) (is-a? (.parent p) <behavior>)))))
       (make-triple (find (is? <on>) path)
                    (combine (filter (is? <guard>) path))
                    (find (is? <blocking>) path)
@@ -226,7 +226,7 @@
 
 (define (normalize:state o)
   (match o
-    (($ <behaviour>) (clone o #:statement
+    (($ <behavior>) (clone o #:statement
                             ((compose
                               triples:->compound-guard-on
                               (triples:fix-empty-interface (parent o <model>))
@@ -273,7 +273,7 @@
 
 (define (normalize:event o)
   (match o
-    (($ <behaviour>) (clone o #:statement
+    (($ <behavior>) (clone o #:statement
                             ((compose
                               (cut make <compound> #:elements <>)
                               triples:->on-guard*
@@ -383,7 +383,7 @@ We follow the following renaming strategy:
             #:types (purge-data (.types o))
             #:events (purge-data (.events o))))
     (($ <component>)
-     (clone o #:behaviour (purge-data (.behaviour o))))
+     (clone o #:behavior (purge-data (.behavior o))))
     (($ <system>)
      o)
     ((? (is? <ast-list>))
@@ -464,10 +464,10 @@ We follow the following renaming strategy:
       ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
   (match o
     (($ <interface>)
-     (clone o #:behaviour (add-function-return (.behaviour o))))
+     (clone o #:behavior (add-function-return (.behavior o))))
     (($ <component>)
-     (clone o #:behaviour (add-function-return (.behaviour o))))
-    (($ <behaviour>)
+     (clone o #:behavior (add-function-return (.behavior o))))
+    (($ <behavior>)
      (clone o #:functions (add-function-return (.functions o))))
     (($ <functions>)
      (clone o #:elements (map add-function-return (ast:function* o))))
@@ -494,9 +494,9 @@ We follow the following renaming strategy:
                                           (eq? 'provides ((compose .direction .port car ast:trigger*) o)))))
     (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
     (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (ast:statement* o))))
-    (($ <behaviour>) (clone o #:statement (add-reply-port (.statement o) port block?)
+    (($ <behavior>) (clone o #:statement (add-reply-port (.statement o) port block?)
                             #:functions (add-reply-port (.functions o) port block?)))
-    (($ <component>) (clone o #:behaviour (add-reply-port (.behaviour o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
+    (($ <component>) (clone o #:behavior (add-reply-port (.behavior o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
     (($ <system>) o)
     (($ <foreign>) o)
     (($ <interface>) o)
@@ -532,9 +532,9 @@ We follow the following renaming strategy:
                   #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))))
 
     (($ <component>)
-     (clone o #:behaviour ((binding-into-blocking) (.behaviour o))))
+     (clone o #:behavior ((binding-into-blocking) (.behavior o))))
 
-    (($ <behaviour>)
+    (($ <behavior>)
      (clone o #:statement ((binding-into-blocking '()) (.statement o))))
 
     (($ <interface>) o)
@@ -558,10 +558,10 @@ We follow the following renaming strategy:
      (clone o #:elements (map (remove-otherwise keep-annotated? statements) statements)))
     (($ <skip>) o)
     (($ <functions>) o)
-    ((and (? (is? <component>) (= .behaviour behaviour)))
-     (clone o #:behaviour ((remove-otherwise keep-annotated? statements) behaviour)))
-    ((and (? (is? <interface>) (= .behaviour behaviour)))
-     (clone o #:behaviour ((remove-otherwise keep-annotated? statements) behaviour)))
+    ((and (? (is? <component>) (= .behavior behavior)))
+     (clone o #:behavior ((remove-otherwise keep-annotated? statements) behavior)))
+    ((and (? (is? <interface>) (= .behavior behavior)))
+     (clone o #:behavior ((remove-otherwise keep-annotated? statements) behavior)))
     ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (tree-map (remove-otherwise keep-annotated? statements) o))
     (_ o)))
@@ -616,15 +616,15 @@ We follow the following renaming strategy:
      (tree-map remove-location o))
     (_ o)))
 
-(define (remove-behaviour o)
-  "Remove behaviour from models."
+(define (remove-behavior o)
+  "Remove behavior from models."
   (match o
     (($ <interface>)
-     (clone o #:behaviour #f))
+     (clone o #:behavior #f))
     (($ <component>)
-     (clone o #:behaviour #f))
+     (clone o #:behavior #f))
     ((? (is? <namespace>))
-     (tree-map remove-behaviour o))
+     (tree-map remove-behavior o))
     (_
      o)))
 
@@ -704,14 +704,14 @@ We follow the following renaming strategy:
 
     (($ <function>)
      (clone o #:statement (add-explicit-temporaries (.statement o))))
-    (($ <behaviour>)
+    (($ <behavior>)
      (clone o
             #:functions (add-explicit-temporaries (.functions o))
             #:statement (add-explicit-temporaries (.statement o))))
     (($ <interface>)
-     (clone o #:behaviour (add-explicit-temporaries (.behaviour o))))
+     (clone o #:behavior (add-explicit-temporaries (.behavior o))))
     (($ <component>)
-     (clone o #:behaviour (add-explicit-temporaries (.behaviour o))))
+     (clone o #:behavior (add-explicit-temporaries (.behavior o))))
     (($ <foreign>) o)
     (($ <system>) o)
     ((? (is? <ast>)) (tree-map add-explicit-temporaries o))

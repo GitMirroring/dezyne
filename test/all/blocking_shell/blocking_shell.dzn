@@ -36,7 +36,7 @@ interface I
   in Enum return_enum(int i, out int j);
   out void foo(int i);
 
-  behaviour
+  behavior
   {
     on return_void: {foo;}
     on return_int: {foo; reply(0);}
@@ -54,7 +54,7 @@ interface II
   in Enum return_enum(int i, out int j);
   out void foo(int i);
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] {
@@ -79,7 +79,7 @@ component C
   provides I p_inner;
   requires II r_inner;
 
-  behaviour
+  behavior
   {
     enum TYPE {VOID, BOOL, INT, ENUM};
     TYPE type = TYPE.VOID;
@@ -103,7 +103,7 @@ component B
   provides I p_proxy_inner;
   requires I r_proxy_inner;
 
-  behaviour
+  behavior
   {
     on p_proxy_inner.return_void(): {r_proxy_inner.return_void();}
     on p_proxy_inner.return_bool(): {bool b = r_proxy_inner.return_bool(); reply(b);}

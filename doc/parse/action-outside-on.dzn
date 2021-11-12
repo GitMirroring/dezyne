@@ -1,7 +1,7 @@
 interface action_outside_on
 {
   out void world();
-  behaviour
+  behavior
   {
     [true] world;
   }

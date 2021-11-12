@@ -25,7 +25,7 @@ interface Iterate
 {
   in void map();
 
-  behaviour
+  behavior
   {
     on map: {}
   }
@@ -35,7 +35,7 @@ interface List
 {
   in bool next();
 
-  behaviour
+  behavior
   {
     on next: reply(false);
     on next: reply(true);
@@ -47,7 +47,7 @@ component livelock_iterator
   provides Iterate iter;
   requires List list;
 
-  behaviour
+  behavior
   {
     void next()
     {

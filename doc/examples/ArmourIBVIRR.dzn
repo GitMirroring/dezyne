@@ -11,7 +11,7 @@ interface IStrict
 {
   in bool ia();
 
-  behaviour
+  behavior
   {
     on ia: reply (true);
   }
@@ -21,7 +21,7 @@ interface IRobust
 {
   in bool ia();
 
-  behaviour
+  behavior
   {
     on ia: reply (true);
     on ia: reply (false);
@@ -34,7 +34,7 @@ component ArmourIBVIRR // IStrict to IRobust
   requires IRobust rRobust;
   requires injected ILogger iLog;
 
-  behaviour {
+  behavior {
     on pStrict.ia(): {
     	if (!rRobust.ia ()) iLog.Log($"Reply value false from ia not allowed by port"$);
     	reply(true);
@@ -47,7 +47,7 @@ component Dezyne
   provides IA pp;
   requires IStrict rStrict;
 
-  behaviour
+  behavior
   {
     on pp.ia(): reply (rStrict.ia());
   }
@@ -61,7 +61,7 @@ interface IA
 {
   in bool ia();
 
-  behaviour
+  behavior
   {
     on ia: reply (true);
   }

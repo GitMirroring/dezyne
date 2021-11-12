@@ -33,7 +33,7 @@ interface IFeed
   out void consumeNextBall();
   out void consumeLastBall();
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     State s = State.Lost;

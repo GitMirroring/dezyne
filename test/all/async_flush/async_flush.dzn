@@ -27,7 +27,7 @@ interface ihello {
   out void cruel();
   out void world();
 
-  behaviour {
+  behavior {
     on inevitable: { cruel;world; }
   }
 }
@@ -36,7 +36,7 @@ component async_flush {
   provides ihello p;
   requires ihello r;
 
-  behaviour {
+  behavior {
     requires dzn.async async;
 
     on r.cruel(): {

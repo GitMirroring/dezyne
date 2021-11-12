@@ -45,7 +45,7 @@ interface IHandle
   in void operate(); // start next batch
   out void finished(); // batch finished
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Idle, Operating};
     State s = State.Lost;
@@ -132,7 +132,7 @@ component Handle
   requires IConvey rejectPort;
 
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Idle, Operating};
     subint usedCount {0..4};
@@ -320,7 +320,7 @@ interface ITransfer
   out void picked();
   out void placed();
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Ready, Moving, Transferring};
     State s = State.Lost;
@@ -410,7 +410,7 @@ component Transfer
   requires IConstrainedMove trolley;
   requires IConstrainedMove truck;
 
-  behaviour
+  behavior
   {
     enum State {Idle, Calibrating, Moving, Transferring};
     subint Count {0..5};
@@ -556,7 +556,7 @@ interface IRetain
   in void release(); // lower, open
   out void ready();
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
@@ -622,7 +622,7 @@ component Lift
   provides IRetain ctrl;
   requires IConstrainedMove winch;
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;
@@ -687,7 +687,7 @@ component Grip
   provides IRetain ctrl;
   requires IConstrainedMove gripper;
 
-  behaviour
+  behavior
   {
     enum State {Lost, Calibrating, Ready, Moving};
     State s = State.Lost;

@@ -115,8 +115,8 @@ actions."
   (define (events-trigger/action o)
     (map (cute string-append (makreel:.name (.port o)) "." <>)
          (event-alphabet (.event o))))
-  (let* ((behaviour (.behaviour model))
-         (compound (.statement behaviour))
+  (let* ((behavior (.behavior model))
+         (compound (.statement behavior))
          (trigger-lists (tree-collect-filter
                          (disjoin (is? <declarative>)
                                   (is? <triggers>))
@@ -127,7 +127,7 @@ actions."
          (in-actions (filter ast:in?
                              (tree-collect-filter
                               (negate (is? <location>)) (is? <action>)
-                              behaviour)))
+                              behavior)))
          (taus (delete-duplicates
                 (append-map events-trigger/action
                             (append out-triggers in-actions)))))
@@ -635,7 +635,7 @@ init for MODEL unless INIT."
 (define* (verification:verify options root #:key all? model-name)
   (define (model-names-for-verification root)
     (let* ((models (ast:model* root))
-           (components (filter (conjoin (is? <component>) (negate ast:imported?) .behaviour) models))
+           (components (filter (conjoin (is? <component>) (negate ast:imported?) .behavior) models))
            (component-names (map makreel:unticked-dotted-name components))
            (interfaces (filter (conjoin (is? <interface>) (negate ast:dzn-scope?)) models))
            (interface-names (map makreel:unticked-dotted-name interfaces))

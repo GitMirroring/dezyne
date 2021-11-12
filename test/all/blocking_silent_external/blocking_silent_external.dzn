@@ -25,7 +25,7 @@ interface ihello {
   in void hello();
   in void cancel();
   out void world();
-  behaviour {
+  behavior {
     bool triggered = false;
 
     [!triggered] on hello: triggered = true;
@@ -43,7 +43,7 @@ interface iworld {
   in void cancel();
   out void world();
   out void canceled();
-  behaviour {
+  behavior {
     bool triggered = false;
     [!triggered] on hello: triggered = true;
     [triggered] on hello: illegal;
@@ -58,7 +58,7 @@ component blocking_silent_external {
   provides ihello h;
   requires external iworld w;
 
-  behaviour {
+  behavior {
     bool triggered = false;
     [!triggered] on h.hello(): {
       w.hello();

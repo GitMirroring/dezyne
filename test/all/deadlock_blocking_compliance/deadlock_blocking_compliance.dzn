@@ -28,7 +28,7 @@ interface ihello
 
   out void world();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 
@@ -41,7 +41,7 @@ component deadlock_blocking_compliance
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     blocking on h.hello(): h.world();
 

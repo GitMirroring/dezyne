@@ -28,7 +28,7 @@ interface ihello
 {
   in void hello(xint port);
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -38,7 +38,7 @@ component alpha_shadow_port
 {
   provides ihello port;
 
-  behaviour
+  behavior
   {
     on port.hello(p): {}
   }

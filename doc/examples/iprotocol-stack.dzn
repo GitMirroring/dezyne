@@ -10,7 +10,7 @@ interface iprotocol_stack
   in void disable();                        // in event to disable the protocol_stack
   in void connect();
   out void connected();
-  behaviour                                 // the specification of the externally visible behaviour
+  behavior                                 // the specification of the externally visible behavior
   {
     enum status {OFF, ON, CONNECTING, CONNECTED};
     status state = status.OFF;

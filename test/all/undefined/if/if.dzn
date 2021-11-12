@@ -21,7 +21,7 @@ interface If
 {
   in void e();
 
-  behaviour
+  behavior
   {
     on e: if(p) {}
   }

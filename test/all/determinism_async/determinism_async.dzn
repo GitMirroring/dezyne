@@ -28,7 +28,7 @@ interface ihello
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on hello: idle = !idle;
@@ -43,7 +43,7 @@ component determinism_async
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     requires dzn.async i;
 

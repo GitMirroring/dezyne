@@ -27,7 +27,7 @@ interface ihello
 {
   in void hello(int i);
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -38,7 +38,7 @@ component hellofundata
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     void func(int i, int j, bool b) {
       int k = i;
@@ -56,7 +56,7 @@ interface iworld
 {
   in bool world(int i);
 
-  behaviour
+  behavior
   {
     on world: reply(true);
   }

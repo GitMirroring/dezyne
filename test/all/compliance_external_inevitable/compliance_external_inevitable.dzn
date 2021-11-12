@@ -30,7 +30,7 @@ interface ihello
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     enum State {Idle, Ready, Busy};
     State state = State.Idle;
@@ -58,7 +58,7 @@ component compliance_external_inevitable
   provides ihello h;
   requires external ihello w;
 
-  behaviour
+  behavior
   {
     enum State {Idle, Ready, Busy};
     State state = State.Idle;

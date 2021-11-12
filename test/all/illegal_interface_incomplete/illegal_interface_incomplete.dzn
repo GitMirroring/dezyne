@@ -28,7 +28,7 @@ interface ihello
   in void bye();
   out void world();
 
-  behaviour
+  behavior
   {
     bool seen = false;
     on hello: {seen=true;world;}
@@ -41,7 +41,7 @@ interface iworld
   in void hello();
   in void bye();
 
-  behaviour
+  behavior
   {
     bool idle = false;
     on hello: {}
@@ -54,7 +54,7 @@ component illegal_interface_incomplete
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     bool seen = false;
     on h.hello(): {seen=true;w.hello(); h.world();}

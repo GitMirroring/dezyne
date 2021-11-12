@@ -25,7 +25,7 @@ component hello
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     on h.hello(): h.world();
   }
@@ -36,7 +36,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }

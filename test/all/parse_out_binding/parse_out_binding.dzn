@@ -22,7 +22,7 @@ interface ihello
 {
   in void hello (int i);
   in void cruel (int i);
-  behaviour
+  behavior
   {
     on hello:;
     on cruel:;
@@ -32,7 +32,7 @@ interface ihello
 component parse_out_binding
 {
   provides ihello p;
-  behaviour
+  behavior
   {
     int data;
     blocking on p.hello (i <- data): {}

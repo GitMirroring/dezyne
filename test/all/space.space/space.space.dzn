@@ -28,7 +28,7 @@ namespace space
   component space
   {
     provides ihello h;
-    behaviour
+    behavior
     {
       on h.hello(): {}
     }

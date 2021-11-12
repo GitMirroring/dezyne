@@ -29,7 +29,7 @@ interface IAsync {
   out void cb1();
   out void cb2();
 
-  behaviour {
+  behavior {
     bool idle = true;
     bool first = true;
     [idle] {
@@ -52,7 +52,7 @@ extern foo $int$;
 
 component async_order {
   provides IAsync p;
-  behaviour {
+  behavior {
     requires dzn.async i1;
     requires dzn.async i2;
     int num = 0;
@@ -72,7 +72,7 @@ component async_order {
 component cb1_cancel {
   provides IAsync p;
   requires IAsync r;
-  behaviour {
+  behavior {
     on r.cb1 (): r.c ();
     on r.cb2 (): p.cb2 ();
     on p.e (): r.e ();

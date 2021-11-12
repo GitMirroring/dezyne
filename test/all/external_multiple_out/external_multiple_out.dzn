@@ -22,7 +22,7 @@ interface I
   in void e();
   out void a();
   out void b();
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on e: idle = false;
@@ -35,7 +35,7 @@ component external_multiple_out
 {
   provides I p;
   requires external I r;
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on p.e(): {idle = false; r.e();}

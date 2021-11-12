@@ -50,7 +50,7 @@ EXTRA_DIST +=					\
  %D%/component11a.dzn				\
  %D%/component12.dzn				\
  %D%/component12a.dzn				\
- %D%/component-behaviour.dzn			\
+ %D%/component-behavior.dzn			\
  %D%/component-bool.dzn				\
  %D%/component-data.dzn				\
  %D%/component-empty.dzn			\
@@ -68,7 +68,7 @@ EXTRA_DIST +=					\
  %D%/import-nonexistent.dzn			\
  %D%/import/import.dzn				\
  %D%/import/lib/lib.dzn				\
- %D%/interface-behaviour.dzn			\
+ %D%/interface-behavior.dzn			\
  %D%/interface0.dzn				\
  %D%/interface1.dzn				\
  %D%/interface1b.dzn				\

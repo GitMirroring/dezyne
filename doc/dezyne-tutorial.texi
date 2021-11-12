@@ -185,7 +185,7 @@ How to use ‘external'?
 
 * Responsibilities and using ‘external' components::
 * How to start solving the problem you face with ‘external'::
-* Implementing the solution as component behaviour::
+* Implementing the solution as component behavior::
 * ‘The' solution handshake protocol::
 
 Finishing the Alarm System
@@ -204,16 +204,16 @@ Dezyne @code{blocking}
 
 * What can ‘blocking' be used for?::
 * Simplifying an ‘external' implementation using ‘blocking'::
-* ‘blocking' behaviour in runtime context::
+* ‘blocking' behavior in runtime context::
 * Summary of Dezyne @code{blocking}::
 
 Simplifying an ‘external' implementation using ‘blocking'
 
 * Changing RobustTimer to provide a synchronous Timer interface::
 
-‘blocking' behaviour in runtime context
+‘blocking' behavior in runtime context
 
-* Blocking Runtime behaviour::
+* Blocking Runtime behavior::
 * Implications of ‘blocking' for Dezyne applications::
 
 Summary of Dezyne @code{blocking}
@@ -227,7 +227,7 @@ Dezyne @code{async}
 
 * What is the Bare Function of ‘async'?::
 * Applications of ‘async'::
-* ‘async' Behaviour in Runtime Context::
+* ‘async' Behavior in Runtime Context::
 * Summary of Dezyne @code{async}::
 
 Applications of ‘async'
@@ -236,9 +236,9 @@ Applications of ‘async'
 * Fork a required event across two provided ports::
 * Armour for a missing synchronous out-event::
 
-‘async' Behaviour in Runtime Context
+‘async' Behavior in Runtime Context
 
-* Async Runtime behaviour::
+* Async Runtime behavior::
 
 Summary of Dezyne @code{async}
 
@@ -255,7 +255,7 @@ Armouring
 
 Definition and usage of armouring
 
-* Pattern of error handling behaviour::
+* Pattern of error handling behavior::
 * Foreign component below required interface::
 * Foreign component above required interface::
 * Combinations of armours::
@@ -335,7 +335,7 @@ tutorial from beginning to end: later sections depend on earlier ones.
 
 We will build the system from the bottom up, first as the simplest
 possible useful system, ultimately as a realistic system with complex
-behaviours.  Along the way, we will always ensure our work-in-progress
+behaviors.  Along the way, we will always ensure our work-in-progress
 components and subsystems have no inherent logical errors in their
 states and communications.
 
@@ -358,7 +358,7 @@ obstacles that could arise when we need to extend or refactor the system
 @node Dezyne Hello World Turning an LED On and Off
 @section Dezyne Hello World: Turning an LED On and Off
 
-Language keywords: @kwd{behaviour} @kwd{component} @kwd{import}
+Language keywords: @kwd{behavior} @kwd{component} @kwd{import}
 @kwd{in} @kwd{interface} @kwd{on} @kwd{provides} @kwd{void}
 
 In this section we build a near-minimal Dezyne model in which one
@@ -390,16 +390,16 @@ toolbar icon @image{images/verify_icon.75,,,,.png}).
 @end quotation
 
 Dezyne will respond that no component in the model has
-@kwd{behaviour}, therefore there's nothing yet to verify.
+@kwd{behavior}, therefore there's nothing yet to verify.
 
 @quotation
-@strong{Step 3.} Add a mininum behaviour block as below.  In each code
+@strong{Step 3.} Add a mininum behavior block as below.  In each code
 sample, added or changed lines of code from the previous sample will be
 highlighted like this.
 
 @example
 @kwd{component} LED @{
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
   @}
 @}
 @end example
@@ -416,7 +416,7 @@ its presented/provided interfaces has to define one or more trigger
 events accessible from outside as callable functions.
 
 @quotation
-@strong{Step 4.} Remove the behaviour @{@} block from the component for
+@strong{Step 4.} Remove the behavior @{@} block from the component for
 now.  We will add it back later.
 
 @strong{Step 5.} Enter or copy-paste the new code in the below model
@@ -431,14 +431,14 @@ Dezyne works exactly as in C/C++/C#/Java.
   @kwd{in} @kwd{void} turnOn();
   @kwd{in} @kwd{void} turnOff();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} turnOn: @{@}
     @kwd{on} turnOff: @{@}
   @}
 @}
 
 @kwd{component} LED @{
-  @kwd{provides} ILED iLed; // removed the component's behaviour block for now
+  @kwd{provides} ILED iLed; // removed the component's behavior block for now
 @}
 @end example
 
@@ -463,37 +463,37 @@ requires that user-defined names contain only letters, digits and the
 underscore character ‘_', and that the leading character in a name is
 not a digit.
 
-In the above, by not defining any behaviour inside the component, we are
+In the above, by not defining any behavior inside the component, we are
 asserting that the outside world needs to know only that the component
 supports void functions named “turnOn” and “turnOff”, and that the
 component will quietly and correctly do its work whenever triggered by
 an input event, i.e., whenever one of the functions is called.  This
-behaviourless feature turns out to be important in practice: you can use
+behaviorless feature turns out to be important in practice: you can use
 it for placeholder model components for which you will write all C/C++
 source code manually, and for which you will not use
 automatically-generated C/C++ source coming out of the Dezyne model.  For
 example, you might write hardware or communications abstraction
-components manually.  In Dezyne, a component with no defined behaviour is
+components manually.  In Dezyne, a component with no defined behavior is
 sometimes called “hand-written”.
 
 To “verify” in Dezyne means to trace every possible execution sequence
 through a component model, and to stop and report the first occurrence
 of a problem -- either a mismatch between a providing component's actual
-functional behaviour versus its contracted functional behaviour, or a
-non-deterministic behaviour such as an overlapping guard or unmanaged
+functional behavior versus its contracted functional behavior, or a
+non-deterministic behavior such as an overlapping guard or unmanaged
 race condition, or an unhandled event, or some other issue.  If no
 problem is found, then the model has been verified.  In the Dezyne-IDE
 editor, if a verification problem was found, then it is reported as the
 entire sequence of trace steps that led to it.
 
 Note that, by definition, a @emph{verified} interface's externally
-visible functional behaviour exactly matches a @emph{verified} providing
-component's externally visible functional behaviour for that interface.
+visible functional behavior exactly matches a @emph{verified} providing
+component's externally visible functional behavior for that interface.
 Verification proceeds through exhaustive stimulus-response of a
 component's provided functions, using the applicable interface
 definition to decide if the providing component's responses are complete
 and correct.  A providing component, however, can also optionally contain
-additional non-visible internal behaviour that extends and refines its
+additional non-visible internal behavior that extends and refines its
 responses to events.  And a given interface can have any number of
 providing components in a Dezyne project.  We will revisit these matters
 later.
@@ -507,7 +507,7 @@ model.  Add a new @kwd{import} line to your original file as follows:
 @kwd{import} ILED.dzn;
 
 @kwd{component} LED @{
-  @kwd{provides} ILED iLed; // removed the component's behaviour block for now
+  @kwd{provides} ILED iLed; // removed the component's behavior block for now
 @}
 @end example
 @end quotation
@@ -516,13 +516,13 @@ imports must precede other non-comment/non-whitespace contents in the
 file.
 
 @quotation
-@strong{Step 8.} Enter or copy-paste the component behaviour as shown in
+@strong{Step 8.} Enter or copy-paste the component behavior as shown in
 the code sample below.  Observe the parentheses () in the component's
 added code, which differ from the parallel declarations in the interface
-definition, and remember that if a component defines behaviour for a
-called function, that behaviour must exactly match the interface's
-defined behaviour @emph{as seen through function calls and only in that
-sense}.  In practice, you would replicate the exact interface behaviour
+definition, and remember that if a component defines behavior for a
+called function, that behavior must exactly match the interface's
+defined behavior @emph{as seen through function calls and only in that
+sense}.  In practice, you would replicate the exact interface behavior
 in the component only if you plan to refine and extend the component's
 own internal management in response to events.  Notice also that the
 component's function names are qualified with the port name, i.e.  the
@@ -534,7 +534,7 @@ interface instance's name.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed; /* "provides" means implements ILED functions */
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} iLed.turnOn(): @{@} // qualify funcs w/interface *instance* (port) name
     @kwd{on} iLed.turnOff(): @{@}
   @}
@@ -611,15 +611,15 @@ sections we'll return to these and other related matters.
 In Dezyne, you define components and their interfaces through a familiar
 and compact C/Java-like language, then automatically verify the
 completeness and syntactical correctness of your logic, and then
-exercise sequence diagrams to check that the coded behaviour is what you
+exercise sequence diagrams to check that the coded behavior is what you
 intended.
 
 Contrast this with going in the opposite direction: you’d whiteboard a
 sequence diagram or draw it in a graphics editor, converge on the
-behaviour you seek, write the code, compile and link it, and then try to
+behavior you seek, write the code, compile and link it, and then try to
 test the code to ensure it’s working properly.  With Dezyne, you direct
 the machine to test your logic and generate interactive visualizations
-of the behaviour.
+of the behavior.
 
 @emph{The Dezyne approach, once mastered, is dramatically more efficient, and
 that efficiency translates to dramatic savings across entire projects -
@@ -656,7 +656,7 @@ precede all other statements.
   @kwd{in} @kwd{void} turnOn();
   @kwd{in} @kwd{void} turnOff();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} turnOn: @{@}
     @kwd{on} turnOff: @{@}
   @}
@@ -665,7 +665,7 @@ precede all other statements.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed; /* "provides" means implements ILED functions */
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} iLed.turnOn(): @{@}
     @kwd{on} iLed.turnOff(): @{@}
   @}
@@ -680,7 +680,7 @@ definition.
 @quotation
 @strong{Step 2.} Verify the above code.  Notice that the Switch component
 does not show up in the list of verifiable items -- because it defines
-no behaviour.  Nothing has really changed in this Dezyne model; we've
+no behavior.  Nothing has really changed in this Dezyne model; we've
 only added a hand-written Switch component that we intend to connect to
 the LED.
 @end quotation
@@ -713,7 +713,7 @@ via the Dezyne @kwd{<=>} operator.
   @kwd{in} @kwd{void} turnOn();
   @kwd{in} @kwd{void} turnOff();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} turnOn: @{@}
     @kwd{on} turnOff: @{@}
   @}
@@ -722,7 +722,7 @@ via the Dezyne @kwd{<=>} operator.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed; /* "provides" means implements ILED functions */
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} iLed.turnOn(): @{@}
     @kwd{on} iLed.turnOff(): @{@}
   @}
@@ -764,7 +764,7 @@ When you verify, the choices of what can be verified have not changed
 from having added the Switch component or the SwitchLEDSystem component.
 Only the LED component and its ILED interface can be verified.  Also,
 systems-level components cannot be verified or simulated, only
-interfaces and components that have explicit behaviour can be.  Future
+interfaces and components that have explicit behavior can be.  Future
 versions of Dezyne will support system verification and simulation.
 @end itemize
 @end quotation
@@ -793,7 +793,7 @@ Ultimately every chain of arrows terminates in a leaf component that
 @quotation
 @strong{Step 6.} View the component's State Chart, shown below (Window /
 Show View / State Chart View).  Though you have not yet defined any state
-behaviour, Dezyne still tracks state as it perceives it.  This component
+behavior, Dezyne still tracks state as it perceives it.  This component
 never leaves its initial state.  The next section discusses state
 management.
 
@@ -832,8 +832,8 @@ Operators and constructs: @kwd{=} @kwd{==} @kwd{[]}.
 @subsection Handling States Event-by-Event: “Event-Leading”
 
 In this section we start tracking the LED component's on/off state.  This
-anticipates extending or refining state behaviour inside the component,
-while keeping the component's externally visible behaviour
+anticipates extending or refining state behavior inside the component,
+while keeping the component's externally visible behavior
 @emph{exactly} the same as its provided interface or interfaces.
 
 @quotation
@@ -847,7 +847,7 @@ the previous section, or restart with only the below code.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, On @};
     State state = State.Off;
     @kwd{on} iLed.turnOn(): @{ state = State.On; @}
@@ -878,7 +878,7 @@ special initialization operator, not a generic assignment (try it).
 
 @end itemize
 
-Each handler line (@kwd{on event}) in the component's behaviour block
+Each handler line (@kwd{on event}) in the component's behavior block
 is followed either by one statement that ends in a semicolon, or by
 curly braces @{@} that contain zero (no-op) or one or more statements.
 
@@ -907,7 +907,7 @@ instead in the interface:
   @kwd{in} @kwd{void} turnOn();
   @kwd{in} @kwd{void} turnOff();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, On @};
     State state = State.Off;
     @kwd{on} turnOn: @{ state = State.On; @}
@@ -923,8 +923,8 @@ interface:
 @itemize
 @item
 When the providing component or components are hand-written, i.e., have
-no behaviour blocks and therefore no declared state behaviour, yet
-enumerated state behaviour is of interest to requiring (calling)
+no behavior blocks and therefore no declared state behavior, yet
+enumerated state behavior is of interest to requiring (calling)
 components.
 
 @item
@@ -940,8 +940,8 @@ declared states and only compare the component's function return values
 with the interface's specified function return values.
 
 @emph{There is no direct connection between states defined in an
-interface's behavioural specification and states defined in a providing
-component's implemented} @emph{behaviour.  All that matters is that every
+interface's behavioral specification and states defined in a providing
+component's implemented} @emph{behavior.  All that matters is that every
 stimulus applied to a component-implemented interface function returns a
 response type that matches the interface's declared response type, i.e.
 that every trace through the interface matches every trace through the
@@ -968,15 +968,15 @@ source code is generated or written}.
 @node Handling Events State-by-State “State-Leading”
 @subsection Handling Events State-by-State: “State-Leading”
 
-The component behaviour as written so far handles state changes
+The component behavior as written so far handles state changes
 event-by-event.  It unconditionally turns the light off when directed,
 whether the light was on or not, and turns it on when directed.
 
-You can invert behavioural logic to handle events state-by-state.  The
+You can invert behavioral logic to handle events state-by-state.  The
 Dezyne language supports if-then-else but not at the first logical level
-within a state's behaviour block -- we'll see this in a later section.
+within a state's behavior block -- we'll see this in a later section.
 
-Top-level logic inside a @kwd{behaviour} block can only be one of
+Top-level logic inside a @kwd{behavior} block can only be one of
 these three different kinds:
 
 @itemize
@@ -1001,7 +1001,7 @@ design and verify it.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, On @};
     State state = State.Off;
     [state == State.Off] @{
@@ -1017,7 +1017,7 @@ design and verify it.
 @end example
 @end quotation
 Important rule: The Dezyne verification “compliance” check tests that a
-component's behaviour with respect to a given interface handles all
+component's behavior with respect to a given interface handles all
 possible events associated with that interface.  If you handle events
 purely state-by-state as in the above example, then for
 @kwd{component} compliance and for zero ambiguity @emph{you must
@@ -1029,7 +1029,7 @@ which is explained later.).
 @strong{Step 2.} Comment out line “@kwd{on iLed.turnOff(): @{@}}” in
 the above code and re-verify.  You will get a compliance error even
 though you've seemingly changed nothing in the component's visible
-behaviour.  This error can be reported fully only via the Trace and
+behavior.  This error can be reported fully only via the Trace and
 Sequence Views:
 @end quotation
 
@@ -1077,7 +1077,7 @@ statements and event handler logic as shown below.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, On @};
     State state = State.Off;
     [state.Off] @{
@@ -1107,12 +1107,12 @@ through a “getter” function.
 In order to support and verify the getState reply below, we have to
 declare the state enumeration publicly in the interface definition,
 @emph{reference} the interface enumeration in the component (not declare
-it), and replicate at least some of the component's state behaviour in
-the interface behaviour.
+it), and replicate at least some of the component's state behavior in
+the interface behavior.
 
 The interface code below uses the event-first pattern to define its
-internal behaviour.  The rule is, as before, that all states or guards
-must be handled by the defined behaviour.  The getState handler below
+internal behavior.  The rule is, as before, that all states or guards
+must be handled by the defined behavior.  The getState handler below
 does the same thing in every state, thus it does not use @code{[]}
 boolean checks.
 
@@ -1127,7 +1127,7 @@ the same thing in all states.  Answers are at the end of this section.
   @kwd{in} @kwd{void} turnOff();
   @kwd{in} State getState();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     State state = State.Off;
     @kwd{on} turnOn: @{
       [state.Off] state = State.On;
@@ -1144,7 +1144,7 @@ the same thing in all states.  Answers are at the end of this section.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     ILED.State state = ILED.State.Off;
     [state.Off] @{
       @kwd{on} iLed.turnOn(): state = ILED.State.On;
@@ -1172,7 +1172,7 @@ logic:
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     ILED.State state = ILED.State.Off;
     // mix event-leading and state-leading
     @kwd{on} iLed.getState(): @kwd{reply}(state);
@@ -1194,7 +1194,7 @@ Exercise second answer, with minimal logic:
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     ILED.State state = ILED.State.Off;
     // minimal model of equivalent logic
     @kwd{on} iLed.turnOn(): state = ILED.State.On;
@@ -1214,7 +1214,7 @@ life-critical medical device could be devastating.  Dezyne's
 @kwd{illegal} keyword expresses the concept of, “if execution reaches
 this line then there is a crucial defect somewhere in your logic”.  An
 interface and its providing component must express exactly the same
-legal and illegal behaviour @emph{as seen by a caller}.  Dezyne-generated
+legal and illegal behavior @emph{as seen by a caller}.  Dezyne-generated
 source code resolves each @kwd{illegal} as an assert() statement or
 equivalent.
 
@@ -1223,7 +1223,7 @@ equivalent.
   @kwd{in} @kwd{void} turnOn();
   @kwd{in} @kwd{void} turnOff();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, On @};
     State state = State.Off;
     @kwd{on} turnOn: @{
@@ -1240,7 +1240,7 @@ equivalent.
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, On @};
     State state = State.Off;
     [state.Off] @{
@@ -1267,10 +1267,10 @@ will not be “eligible” in Dezyne's terminology.
 
 As mentioned earlier, when using state-leading logic, there is one
 exception to the rule that each event must be declared and handled
-explicitly in each state in a providing component's behaviour
+explicitly in each state in a providing component's behavior
 implementation.  If a particular event is illegal in a particular state,
 you are allowed to omit that declaration in the @emph{component's}
-behaviour; Dezyne will assume that this is an @kwd{illegal} and
+behavior; Dezyne will assume that this is an @kwd{illegal} and
 will check the interface specification for confirmation.  The generated
 code will have an assert in the same spot where the explicit declaration
 would have placed it.  To see this exception in action, comment out one
@@ -1280,7 +1280,7 @@ of the component's illegals as shown below and re-verify:
 @kwd{component} LED @{
   @kwd{provides} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, On @};
     State state = State.Off;
     [state.Off] @{
@@ -1317,13 +1317,13 @@ verification trace stops immediately upon finding an error, thus running
 to completion signals that no logic-related errors were found in the
 model.
 
-Dezyne can model and verify repeating behaviour.  We'll build a timer
+Dezyne can model and verify repeating behavior.  We'll build a timer
 interface that makes our LED blink on and off at constant time
 intervals, and that works as-is in auto-generated C++ source code.  The
 entirely new -- but nearly all familiar -- code below defines a simple
 timer interface and a hand-written component that will implement the
 interface.  An @kwd{out} function names an event that a requiring
-(calling) component has to handle in its behaviour.
+(calling) component has to handle in its behavior.
 
 @example
 @kwd{interface} ITimer @{
@@ -1332,7 +1332,7 @@ interface.  An @kwd{out} function names an event that a requiring
   @kwd{in} @kwd{void} cancel();
   @kwd{out} @kwd{void} timeout();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     State state = State.Idle;
     [state.Idle] @{
       @kwd{on} start: state = State.Running;
@@ -1378,7 +1378,7 @@ particular type to a model method.
   @kwd{in} @kwd{void} cancel();
   @kwd{out} @kwd{void} timeout();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Idle, Running @};
     State state = State.Idle;
     [state.Idle] @{
@@ -1418,7 +1418,7 @@ definition below is complete; it uses the events-leading pattern.
   @kwd{in} @kwd{void} darken();
   @kwd{in} @kwd{void} blink();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Dark, Shining, Blinking @};
     State state = State.Dark;
     @kwd{on} shine: @{ state = State.Shining; @}
@@ -1443,7 +1443,7 @@ variables we have to initialize any boolean variable in its declaration.
   @kwd{provides} ILED iLed;
   @kwd{requires} ITimer iTimer;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Dark, Shining, Blinking @};
     State state = State.Dark;
     @kwd{bool} lit = @kwd{false};
@@ -1517,7 +1517,7 @@ the light switches between off and on and restarts the timer.
 
 You can use @kwd{if} @kwd{else} instead of the negation operator
 when handling the timeout, as below.  In Dezyne, the if-else construct
-can appear only within on-event behaviour.
+can appear only within on-event behavior.
 
 @example
   [state.Blinking] @{
@@ -1601,8 +1601,8 @@ at some point in the future it might trigger an event, or it might never
 trigger an event.  The interface expects a caller to be aware of the
 sensor state and not call wrongly (@kwd{illegal}).  The new keyword
 @kwd{optional} is highlighted.  Note that keywords @kwd{inevitable}
-and @kwd{optional} occur @emph{only} in interface behaviour, never in
-component behaviour, and that the @kwd{illegal} declarations are all
+and @kwd{optional} occur @emph{only} in interface behavior, never in
+component behavior, and that the @kwd{illegal} declarations are all
 necessary, this being an interface and not a component.
 
 @example
@@ -1611,7 +1611,7 @@ necessary, this being an interface and not a component.
   @kwd{in} @kwd{void} turnOff();
   @kwd{out} @kwd{void} triggered();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, Sensing, Triggered @};
     State state = State.Off;
     [state.Off] @{
@@ -1667,7 +1667,7 @@ eventually wiped out by a meteor or asteroid strike.  Thus “optional”
 perhaps more often models the real situation than does “inevitable”.  So
 when and why would we ever use “inevitable” in a model?
 
-In sum, if you care about the system's behaviour when an event goes
+In sum, if you care about the system's behavior when an event goes
 unheeded essentially forever, or when an awaited event still hasn't
 occurred long after you expected it, then use “optional”, for example
 for a half-entered passcode.  Otherwise, “inevitable” is simpler and will
@@ -1675,7 +1675,7 @@ usually test the system's logical completeness and correctness well
 enough.
 
 When you use “optional”, a rule of thumb might be to push down optional
-behaviour as low as possible in the system, or equivalently as close as
+behavior as low as possible in the system, or equivalently as close as
 possible to the hardware on which the system runs or depends.
 
 @node The Multiplexer Component
@@ -1713,9 +1713,9 @@ sensors have been turned off and turned back on.
 @end enumerate
 
 The below component with zero sensors establishes the framework for
-multiplexing.  Its behaviour is just a replica of the interface behaviour
+multiplexing.  Its behavior is just a replica of the interface behavior
 minus the optional trigger; hence, you can copy the interface's whole
-behaviour block, remove the optional sub-block, reset State references
+behavior block, remove the optional sub-block, reset State references
 to the local declaration of State, reset event (function) names to
 iSensor.<name>, and add parentheses to event (function) names.  The
 Triggered state will remain dead code until the multiplexer is hooked up
@@ -1726,7 +1726,7 @@ verification does NOT notify you about dead code).
 @kwd{component} SensorMultiplexer @{
   @kwd{provides} ISensor iSensor;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, Sensing, Triggered @};
     State state = State.Off;
     [state.Off] @{
@@ -1756,7 +1756,7 @@ Dezyne.  The answer is below the code sample.
   @kwd{provides} ISensor iSensor;
   @kwd{requires} ISensor iSensor1;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, Sensing, Triggered @};
     State state = State.Off;
     [state.Off] @{
@@ -1794,8 +1794,8 @@ declared in the interface.
 
 The below screen shot shows the simulated SensorMultiplexer's Trace,
 Sequence and State Chart views.  Notice that its State Chart is exactly
-the same as a plain sensor.  Aggregated sensor behaviour and single
-sensor behaviour are identical from the caller's point of view, provided
+the same as a plain sensor.  Aggregated sensor behavior and single
+sensor behavior are identical from the caller's point of view, provided
 that it doesn't matter what kind of alarm happened -- motion, vibration,
 magnetic effect, or other.
 
@@ -1815,7 +1815,7 @@ answer is below the code sample.
   @kwd{requires} ISensor iSensor1;
   @kwd{requires} ISensor iSensor2;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Off, Sensing, Triggered @};
     State state = State.Off;
     [state.Off] @{
@@ -1940,7 +1940,7 @@ controller has to initiate them.
   @kwd{in} @kwd{void} validPincode();
   @kwd{in} @kwd{void} sensorTriggered();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} validPincode: @{@}
     @kwd{on} sensorTriggered: @{@}
   @}
@@ -1964,7 +1964,7 @@ code.
 @kwd{component} Controller @{
   @kwd{provides} IController iController;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Unarmed, Armed, Alarming @};
     State state = State.Unarmed;
     [state.Unarmed] @{
@@ -1997,7 +1997,7 @@ Next we add simple control for an LED.
   @kwd{in} @kwd{void} setGreen();
   @kwd{in} @kwd{void} setYellow();
   @kwd{in} @kwd{void} setRed();
-  @kwd{behaviour} @{ @kwd{on} setGreen, setYellow, setRed: @{@} @}
+  @kwd{behavior} @{ @kwd{on} setGreen, setYellow, setRed: @{@} @}
 @}
 
 @kwd{component} LED @{ @kwd{provides} ILED iLed; @}
@@ -2015,7 +2015,7 @@ opposed to declaring it.
   @kwd{in} @kwd{void} validPincode();
   @kwd{in} @kwd{void} sensorTriggered();
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{on} validPincode: @{@}
     @kwd{on} sensorTriggered: @{@}
   @}
@@ -2025,7 +2025,7 @@ opposed to declaring it.
   @kwd{provides} IController iController;
   @kwd{requires} ILED iLed;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Unarmed, Armed, Alarming @};
     State state = State.Unarmed;
     [state.Unarmed] @{
@@ -2068,7 +2068,7 @@ Controller and importing the sensor we constructed earlier.
 
 @kwd{interface} IController @{
   @kwd{in} @kwd{void} validPincode();
-  @kwd{behaviour} @{ @kwd{on} validPincode: @{@} @}
+  @kwd{behavior} @{ @kwd{on} validPincode: @{@} @}
 @}
 
 @kwd{component} Controller @{
@@ -2076,7 +2076,7 @@ Controller and importing the sensor we constructed earlier.
   @kwd{requires} ILED iLed;
   @kwd{requires} ISensor iSensor;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Unarmed, Armed, Alarming @};
     State state = State.Unarmed;
     [state.Unarmed] @{
@@ -2122,7 +2122,7 @@ interface and component are simple:
 @kwd{interface} ISiren @{
   @kwd{in} @kwd{void} turnOn();
   @kwd{in} @kwd{void} turnOff();
-  @kwd{behaviour} @{ @kwd{on} turnOn, turnOff: @{@}
+  @kwd{behavior} @{ @kwd{on} turnOn, turnOff: @{@}
   @}
 @}
 
@@ -2140,7 +2140,7 @@ and turn it off whenever returning to the Armed state.
 
 @kwd{interface} IController @{
   @kwd{in} @kwd{void} validPincode();
-  @kwd{behaviour} @{ @kwd{on} validPincode: @{@} @}
+  @kwd{behavior} @{ @kwd{on} validPincode: @{@} @}
 @}
 
 @kwd{component} Controller @{
@@ -2149,7 +2149,7 @@ and turn it off whenever returning to the Armed state.
   @kwd{requires} ISensor iSensor;
   @kwd{requires} ISiren iSiren;
 
-  @kwd{behaviour} @{
+  @kwd{behavior} @{
     @kwd{enum} State @{ Unarmed, Armed, Alarming @};
     State state = State.Unarmed;
     [state.Unarmed] @{
@@ -2260,7 +2260,7 @@ shown below the code.
 @quotation
 @center @strong{Refactoring and Extending Dezyne Models}
 
-Dezyne models capture fundamental logical behaviour in perhaps a quarter
+Dezyne models capture fundamental logical behavior in perhaps a quarter
 of the lines it takes to write the same logic in compatible and usable
 C++.  The five Dezyne models in the alarm system all have tens of lines
 of code each.  Because Dezyne model representations are compact, easily
@@ -3376,7 +3376,7 @@ As you can see, @code{check_bindings()} discovered that iTimer's start
 function has not been bound.  Previously we could not see the effects of
 the @code{check_bindings()} statement as we did not run the application
 yet.  Now you can clearly see the difference between the integration of a
-component without behaviour and the integration of an unbound port; try
+component without behavior and the integration of an unbound port; try
 leaving out the declaration and implementation of iSiren_turnOn in your
 foreign Siren implementation.  You will discover that you can't even
 compile the application, whereas the fact that the iTimer port on the
@@ -3389,7 +3389,7 @@ are few implications for running the application and hitting the
 complex, expensive system that is partly through its initialisation
 process when hitting the assert- sure, you can implement measures to
 have the application shut down gracefully but it is a situation you
-would like to avoid.  By using components without behaviour for your
+would like to avoid.  By using components without behavior for your
 foreign implementations these issues can be found while compiling before
 the application is ever run.  This does not mean you should skip calling
 @code{check_bindings()} before initiating events on the System, however.
@@ -3588,7 +3588,7 @@ interface IController @{
   in void passwordEntered(String pw);
   in void sensorTriggered();
 
-  behaviour @{
+  behavior @{
     on passwordEntered: @{@}
     on sensorTriggered: @{@}
   @}
@@ -3603,7 +3603,7 @@ extern String $std::string$;
 interface IPWManager @{
 	in bool verifyPassword(String pw);
 
-	behaviour @{
+	behavior @{
 		on verifyPassword: reply(true);
 		on verifyPassword: reply(false);
 	@}
@@ -3671,7 +3671,7 @@ example but it should give you an idea of how data gathered from one
 component can be handled in another component.
 
 The last thing that needs to be done is the foreign implementation of the
-PWManager component's behaviour.  As an exercise, define and implement
+PWManager component's behavior.  As an exercise, define and implement
 the PWManager.  The correct password should be “Dezyne” and should only
 be accessible to the PWManager class itself.
 
@@ -3751,7 +3751,7 @@ how to connect your event loop to the various System ports.  In
 @code{*.hh} and @code{*.cc} files from a System component and in
 @ref{Implementation of events on interfaces} and @ref{Implementing
 generated ‘skeleton' components} you encountered generated code for
-behaviour components and ports.
+behavior components and ports.
 
 @node Create a environment for the generated code to run in
 @subsection Create a environment for the generated code to run in
@@ -3946,7 +3946,7 @@ An alternative to using the illegal-handler to establish a safe
 pre-condition to terminating the application would be to write armour
 components to ensure that foreign code can never trigger an illegal.
 Armouring is a technique in Dezyne that can be used to guard control
-logic from spurious behaviour in foreign components; see <reference to
+logic from spurious behavior in foreign components; see <reference to
 Armouring documentation> for more information on this subject.
 
 @node Alternative logging methods
@@ -4660,7 +4660,7 @@ component contained in the same system, the scheduling of said
 out-events will be done on the private Dezyne thread during runtime.  The
 semantics enforced by the included Dezyne runtime simply prevent the
 component from scheduling any out-events while another component is
-executing its behaviour.  Therefore, no race conditions between state and
+executing its behavior.  Therefore, no race conditions between state and
 asynchronous events @strong{within} the generated Dezyne framework can
 exist.
 
@@ -4669,18 +4669,18 @@ For more information on the Dezyne runtime semantics, please refer to
 
 With proper inclusion of ‘external' for components implemented outside
 of Dezyne, verification and simulation will once again consider the full
-scope of the possible behaviours of your application.  As you saw in the
+scope of the possible behaviors of your application.  As you saw in the
 previous sequence view, though, you have some work to do in the
 Controller component so that it can function correctly with an
 ‘external' ITimer port.  In the next section, we will explore some
 changes you can make to the implementation of a component to allow for
-‘external' behaviour.
+‘external' behavior.
 
 @node How to use ‘external'?
 @section How to use ‘external'?
 
 In this section, we will explore some possible changes you can make in
-component behaviour to support the usage of ‘external' for required
+component behavior to support the usage of ‘external' for required
 interfaces.  In a few steps, you will discover:
 
 @itemize
@@ -4691,21 +4691,21 @@ Where to build your solution
 How to start solving the problem you face with ‘external'
 
 @item
-Implementing the solution as component behaviour
+Implementing the solution as component behavior
 
 @end itemize
 
 @menu
 * Responsibilities and using ‘external' components::
 * How to start solving the problem you face with ‘external'::
-* Implementing the solution as component behaviour::
+* Implementing the solution as component behavior::
 * ‘The' solution handshake protocol::
 @end menu
 
 @node Responsibilities and using ‘external' components
 @subsection Responsibilities and using ‘external' components
 
-To make it easier to accommodate for concurrent behaviours found in
+To make it easier to accommodate for concurrent behaviors found in
 ‘external' ports, it is recommended to define @strong{another component}
 that @strong{provides} the ITimer interface and @strong{requires} an
 external ITimer interface.  Then, in the System component, bind the
@@ -4723,7 +4723,7 @@ component RobustTimer @{
   provides ITimer iTimer;
   requires external ITimer ext_iTimer;
 
-  behaviour @{
+  behavior @{
 
   @}
 @}
@@ -4743,17 +4743,17 @@ Note that the required ITimer port in Controller is no longer marked
 
 The RobustTimer component will be responsible for the mapping of an
 ‘external' ITimer port to a regular ITimer port.  The intent is to define
-the behaviour of the component in such a way that even if ‘external'
+the behavior of the component in such a way that even if ‘external'
 delays occur, communication over the provided ITimer port does not
 suffer from this.
 
-The most straight-forward behaviour specification would be to map
+The most straight-forward behavior specification would be to map
 in-events on the provided ITimer port to in-events on the required
 ITimer port and to do the same for out-events of the required port.  As a
-first exercise, implement the behaviour of RobustTimer this way.
+first exercise, implement the behavior of RobustTimer this way.
 
 Hint: make sure the states defined in the ITimer interface are followed
-in the RobustTimer component behaviour as well.
+in the RobustTimer component behavior as well.
 
 Solution:
 
@@ -4762,7 +4762,7 @@ component RobustTimer @{
   provides ITimer iTimer;
   requires external ITimer ext_iTimer;
 
-  behaviour @{
+  behavior @{
     enum State @{ Idle, Running @};
     State state = State.Idle;
 
@@ -4796,7 +4796,7 @@ solution.  If you verify the RobustTimer component, you will see the
 exact same illegal assertion as we found earlier in the previous
 section.  However, this time it is extracted from all interleaving with
 other required and provided ports of the Controller component and you
-can focus solely on the behaviour of the required ‘external' ITimer
+can focus solely on the behavior of the required ‘external' ITimer
 port.  Let's reconsider the timeline described in @ref{How does this translate
 to runtime execution?}:
 
@@ -4806,15 +4806,15 @@ Recall that @emph{x} is the time it takes for the cancel event from
 iTimer to be processed.  During @emph{x}, the timeout occurs on
 ext_iTimer and is queued accordingly.  After @emph{x}, RobustTimer is in
 the Idle state but still has to handle the queued timeout.  This scenario
-is not described in the behaviour of RobustTimer and as such, it is
+is not described in the behavior of RobustTimer and as such, it is
 implicitly illegal.
 
-In the next section, we will have a look at how to implement behaviour
+In the next section, we will have a look at how to implement behavior
 such that these possible concurrencies discovered by ‘external' can be
 handled.
 
-@node Implementing the solution as component behaviour
-@subsection Implementing the solution as component behaviour
+@node Implementing the solution as component behavior
+@subsection Implementing the solution as component behavior
 
 Now that the RobustTimer component has been created and the rudimentary
 communication between the provided ITimer and required ‘external' ITimer
@@ -4825,7 +4825,7 @@ A logical first step could be to specify that when ext_iTimer sends a
 timeout event to the RobustTimer while RobustTimer is not in a Running
 state, the timeout event is ignored (so no operation occurs).  This
 ensures that within the RobustTimer component, possibly delayed timeouts
-do not trigger illegal behaviour if the cancel event had already
+do not trigger illegal behavior if the cancel event had already
 occurred.
 
 As an exercise, make the aforementioned change to the handling of
@@ -4839,7 +4839,7 @@ component RobustTimer @{
   provides ITimer iTimer;
   requires external ITimer ext_iTimer;
 
-  behaviour @{
+  behavior @{
     enum State @{ Idle, Running @};
     State state = State.Idle;
 
@@ -4924,7 +4924,7 @@ interface ITimer @{
   out void timeout();
   out void cancelled();
 
-  behaviour @{
+  behavior @{
     State state = State.Idle;
 
     [state.Idle] @{
@@ -4967,10 +4967,10 @@ has been placed into the queue.
 
 So, the modified ITimer interface complies with the handshake we want to
 implement to solve the ‘external' delay problem.  What remains to be done
-is update the RobustTimer component behaviour to make use of the newly
+is update the RobustTimer component behavior to make use of the newly
 added handshake.
 
-The behaviour we want to add to the RobustTimer is the addition of the
+The behavior we want to add to the RobustTimer is the addition of the
 Stopping state.  When a cancel event is sent to its provided ITimer port,
 this is propagated to the ‘external' ITimer port and the RobustTimer
 transitions to the Stopping state.  Until the ‘external' ITimer port has
@@ -4979,7 +4979,7 @@ while Stopping should be silently discarded.  When the cancelled event is
 handled, the RobustTimer transitions back to the Idle state and the
 cancelled event is propagated to the provided ITimer.
 
-As an exercise, add the changes listed above to the behaviour of the
+As an exercise, add the changes listed above to the behavior of the
 RobustTimer component.
 
 Solution:
@@ -4989,7 +4989,7 @@ component RobustTimer @{
   provides ITimer iTimer;
   requires external ITimer ext_iTimer;
 
-  behaviour @{
+  behavior @{
     enum State @{ Idle, Running, Stopping @};
     State state = State.Idle;
 
@@ -5026,7 +5026,7 @@ component RobustTimer @{
 @}
 @end example
 
-If you verify the behaviour in the above solution, you will still
+If you verify the behavior in the above solution, you will still
 encounter one last verification error.  While we were focussing on making
 sure possibly delayed timeouts are properly handled, we didn't implement
 the handshake we designed for that purpose in the scenario where an Idle
@@ -5036,12 +5036,12 @@ simple one:
 @example
 interface ITimer @{
   // variable and event declarations
-  behaviour @{
+  behavior @{
     [state.Idle] @{
       on start: state = State.Running;
       on cancel: @{ cancelled; @}
     @}
-    // rest of the behaviour specification
+    // rest of the behavior specification
 @end example
 
 @example
@@ -5049,7 +5049,7 @@ component RobustTimer @{
   provides ITimer iTimer;
   requires external ITimer ext_iTimer;
 
-  behaviour @{
+  behavior @{
     // variable declarations
     on iTimer.cancel(): @{
       [state.Running] @{
@@ -5067,7 +5067,7 @@ robust against possibly delayed asynchronous events from a foreign
 component.  By doing this in a Dezyne component, any other component that
 is connected to the ITimer port provided by RobustTimer can use it as if
 it were not ‘external'.  Only the RobustTimer component is responsible
-for handling the ‘external' behaviour.
+for handling the ‘external' behavior.
 
 In the next and final section, we will have a look at what needs to be
 updated in the rest of the Alarm System and afterwards we will take a
@@ -5076,7 +5076,7 @@ step back and summarise what we've discovered throughout this tutorial.
 @node Finishing the Alarm System
 @section Finishing the Alarm System
 
-In the previous section, you successfully implemented the behaviour of a
+In the previous section, you successfully implemented the behavior of a
 component such that it still behaves correctly if communication over a
 port is potentially delayed.  In this section, we will have a look at
 what needs to be done to make the rest of the Alarm System up to date
@@ -5101,18 +5101,18 @@ that it requires has changed.  If you verify the Controller, you will
 find that the iTimer.cancelled event is (implicitly) illegal:
 
 What has happened is that an out-event was added to the ITimer interface
-that is not handled in the Controller behaviour.  Therefore, it is
-implicitly illegal.  To avoid this, the behaviour of the Controller
+that is not handled in the Controller behavior.  Therefore, it is
+implicitly illegal.  To avoid this, the behavior of the Controller
 component should be modified such that it can handle the cancelled event
 from its required ITimer port.
 
-Just like we added an extra state to the behaviour of the RobustTimer to
+Just like we added an extra state to the behavior of the RobustTimer to
 indicate that it was in between the Running and Idle states, it makes
 sense to add a state to the Controller that indicates it is “waiting”
 for its Timer port to be fully cancelled.  As the cancellation of an
 active Timer occurs during the transition from Alarming to Armed, the
 suggested state to be added is Rearming.  As an exercise, add this
-Rearming state to the behaviour of the Controller component.
+Rearming state to the behavior of the Controller component.
 
 Solution:
 
@@ -5125,7 +5125,7 @@ component Controller @{
   requires IPWManager iPWManager;
   requires ISensor iSensor;
 
-  behaviour @{
+  behavior @{
     enum State @{ Unarmed, Armed, Alarming, Rearming @};
     State state = State.Unarmed;
 
@@ -5186,7 +5186,7 @@ handle events if the Controller is in the Rearming state.  If a cancelled
 event comes in from the ITimer port, the Controller should transition to
 the Armed state.  While the Controller is Rearming, incoming passwords
 and Sensor triggers are silently discarded.  As an exercise, implement
-the described behaviour in the Rearming state.
+the described behavior in the Rearming state.
 
 Solution:
 
@@ -5215,16 +5215,16 @@ the purpose of this document)
 component Controller @{
   /* provides/requires interfaces */
 
-  behaviour @{
+  behavior @{
     enum State @{ Unarmed, Armed, Alarming, Rearming @};
     State state = State.Unarmed;
     bool correctPasswordQueued = false;
 
     [state.Unarmed] @{
-      /* behaviour unchanged */
+      /* behavior unchanged */
     @}
     [state.Armed] @{
-      /* behaviour unchanged */
+      /* behavior unchanged */
     @}
     [state.Rearming] @{
       on iController.passwordEntered(pw): correctPasswordQueued = iPWManager.verifyPassword(pw);
@@ -5359,16 +5359,16 @@ goals and where they were discussed in the tutorial.
 that is delegated to the boundary of a system.} This was discussed at
 length in @ref{What does ‘external' do and when should you use it?} after an
 analysis of the Alarm System implementation we made in earlier tutorials
-showed that illegal behaviour could occur.
+showed that illegal behavior could occur.
 
 @node Understand the impact of using the ‘external' keyword in your Dezyne models
 @subsection Understand the impact of using the ‘external' keyword in your Dezyne models
 
 Coincidentally, this was discussed before the answer to the previous
 learning goal was given.  An analysis of why Dezyne did not warn you
-about this illegal behaviour in @ref{Why does verification not catch this?}
+about this illegal behavior in @ref{Why does verification not catch this?}
 can also be used to explain the impact of using ‘external': @strong{an
-extra set of behaviours is considered during verification so that
+extra set of behaviors is considered during verification so that
 possible delays due to external communications are included.}
 
 @node Identify where to implement additional logic in your models to support the usage of ‘external'
@@ -5380,7 +5380,7 @@ in @ref{Responsibilities and using ‘external' components} it is recommended to
 create a new component that maps an @strong{external requires} port to a
 @strong{provided} port of the same type.  This is so that you don't
 pollute other components with logic only concerning ‘external'
-behaviour.  Then, in @ref{‘The' solution handshake protocol} a handshake was
+behavior.  Then, in @ref{‘The' solution handshake protocol} a handshake was
 added to the interface so that the state of the two ports can be
 synchronized.
 
@@ -5418,7 +5418,7 @@ Reason about design decisions when using the ‘blocking' keyword
 We will reconsider an implementation that handles possibly delayed
 communication over an ‘external' port from the previous chapter.
 
-The behaviour described with the ‘blocking' keyword requires you to be
+The behavior described with the ‘blocking' keyword requires you to be
 able to reason about your application in terms of active threads and
 their calling context.  In the tutorial, various examples will be
 discussed but it helps if you are familiar with the concepts.
@@ -5432,7 +5432,7 @@ and @url{https://www.verum.com/supportitem/thread-safe-shell/}.
 @menu
 * What can ‘blocking' be used for?::
 * Simplifying an ‘external' implementation using ‘blocking'::
-* ‘blocking' behaviour in runtime context::
+* ‘blocking' behavior in runtime context::
 * Summary of Dezyne @code{blocking}::
 @end menu
 
@@ -5446,7 +5446,7 @@ and C++ source code is available on
 In the chapter on the usage of the ‘external' keyword, we successfully
 implemented a RobustTimer component that maps an ‘external' requires
 ITimer port to a regular provides ITimer port.  In order to fully capture
-the possible behaviours that occur when considering the port to be
+the possible behaviors that occur when considering the port to be
 ‘external', an extra out-event was added to mark the end of the
 cancellation transaction:
 
@@ -5462,7 +5462,7 @@ interface ITimer @{
   in void start(long_integer milliseconds);
   in void cancel();
   out void timeout();
-  behaviour @{
+  behavior @{
     State state = State.Idle;
     [state.Idle] @{
       on start: state = State.Running;
@@ -5497,7 +5497,7 @@ interface ITimer @{
   in void cancel();
   out void timeout();
   out void cancelled();
-  behaviour @{
+  behavior @{
     State state = State.Idle;
     [state.Idle] @{
       on start: state = State.Running;
@@ -5532,27 +5532,27 @@ cancelling an older one.
 However, this change also had implications for other components that
 require ITimer ports.  Originally, one of the reasons to create the
 RobustTimer component was to hide the complexity paired with ‘external'
-behaviours from the Controller component.  Ultimately, due to the changes
-made to the ITimer interface to accommodate for extra behaviours, we
+behaviors from the Controller component.  Ultimately, due to the changes
+made to the ITimer interface to accommodate for extra behaviors, we
 still had to make changes to the Controller component.  Handling the
-asynchronous cancelled event had to be added to the behaviour of the
+asynchronous cancelled event had to be added to the behavior of the
 Controller.
 
 This phenomenon where changes lower down in the chain of command
 influence top-level components is what we will refer to as
-@strong{contagious asynchronicity}.  Because of asynchronous behaviour
+@strong{contagious asynchronicity}.  Because of asynchronous behavior
 that was added to one of the lower components in the System, components
 higher up in the System are forced to accommodate for this asynchronous
-behaviour as well.
+behavior as well.
 
 This is not always a bad thing- sometimes it is actually desired to
 propagate such events upwards so that perceived state of a subcomponent
 is updated.  However, there are also cases where this additional
 information on the state of a subcomponent is irrelevant and as such,
-you do not want to deal with the added asynchronous behaviour of
+you do not want to deal with the added asynchronous behavior of
 components.  @strong{This is where ‘blocking' comes into play}; using
 ‘blocking', it becomes possible to convert certain asynchronous
-behaviour patterns to synchronous versions.
+behavior patterns to synchronous versions.
 
 In the case of the RobustTimer, ‘blocking' will allow you to implement
 the cancellation process in such a way that it appears synchronous over
@@ -5580,7 +5580,7 @@ available on
 
 The goal is to make RobustTimer easier to use with respect to its
 provided port.  We will still want the newer version of the ITimer
-interface to fully describe the behaviour of the ‘external' requires
+interface to fully describe the behavior of the ‘external' requires
 port, but we want to translate this to a simplified version of ITimer.
 The original ITimer interface will suffice.  As an exercise, perform the
 following tasks:
@@ -5630,7 +5630,7 @@ component RobustTimer @{
   provides ITimer iTimer;
   requires external AsyncITimer ext_iTimer;
 
-  behaviour @{
+  behavior @{
     enum State @{ Idle, Running, Stopping @};
     State state = State.Idle;
 
@@ -5672,7 +5672,7 @@ events.  An important thing to keep in mind is that with ‘blocking', you
 block the calling thread of the event until the blockage is lifted-
 which is done with the port.reply() event.  The modified RobustTimer
 posted above is verifiably correct and will display the following
-behaviour:
+behavior:
 
 On iTimer.cancel, the iTimer port is blocked.  If the RobustTimer is
 Running, the cancel event will be sent to ext_iTimer and RobustTimer
@@ -5691,7 +5691,7 @@ component RobustTimer @{
   provides ITimer iTimer;
   requires external AsyncITimer ext_iTimer;
 
-  behaviour @{
+  behavior @{
     enum State @{ Idle, Running, Stopping @};
     State state = State.Idle;
 
@@ -5729,8 +5729,8 @@ component RobustTimer @{
 @end example
 
 With the changes highlighted above, the ‘blocking' keyword is nested
-deeper and affects fewer behaviour traces; the net behaviour is the
-same.  Note that when on-event behaviour is @strong{not} marked as
+deeper and affects fewer behavior traces; the net behavior is the
+same.  Note that when on-event behavior is @strong{not} marked as
 blocking, a void port.reply() event is not allowed; hence, [state.Idle]
 now shows as no-op instead of port.reply().  The continuation is implicit
 when the on-event is not ‘blocking'.
@@ -5739,7 +5739,7 @@ From the perspective of the iTimer port, the cancellation process is now
 synchronous; a cancel event sent through the iTimer port will not return
 until the cancellation process has been completed.  RobustTimer can still
 make use of the asynchronous specification of AsyncITimer to facilitate
-the cancellation handshake.  Therefore, the asynchronous behaviour has
+the cancellation handshake.  Therefore, the asynchronous behavior has
 successfully been made synchronous by using the ‘blocking' keyword.
 
 With the changes made to the provides interface of RobustTimer, you
@@ -5764,31 +5764,31 @@ again.
 
 Now that we have implemented a simplification of the asynchronous ITimer
 interface, let's consider some implications this will have for the
-runtime behaviour of the AlarmSystem application in the next section.
+runtime behavior of the AlarmSystem application in the next section.
 
-@node ‘blocking' behaviour in runtime context
-@section ‘blocking' behaviour in runtime context
+@node ‘blocking' behavior in runtime context
+@section ‘blocking' behavior in runtime context
 
 Although ‘blocking' has allowed you to make the Controller model much
 simpler, ‘blocking' may not always be as useful or runtime semantics
 might prevent you from using ‘blocking' at all in an application.  In
-this section, we will consider the runtime behaviour of the changes we
+this section, we will consider the runtime behavior of the changes we
 made to RobustTimer and consider some limitations to the usage of
 ‘blocking'.
 
 @menu
-* Blocking Runtime behaviour::
+* Blocking Runtime behavior::
 * Implications of ‘blocking' for Dezyne applications::
 @end menu
 
-@node Blocking Runtime behaviour
-@subsection Blocking Runtime behaviour
+@node Blocking Runtime behavior
+@subsection Blocking Runtime behavior
 
 @emph{For simplicity's sake, we will consider two active threads in this
 analysis: the @strong{main thread}, running the event loop, and the
 @strong{Dezyne private thread}, consuming events from dzn::pump.}
 
-The behaviour we described as ‘blocking' is the cancellation process of
+The behavior we described as ‘blocking' is the cancellation process of
 the Timer.  This process is started when in the Alarming state, a valid
 password is entered.  Password entry is done through the passwordEntered
 event on the IController port of the AlarmSystem.  This is where the call
@@ -5799,7 +5799,7 @@ passwordEntered event is done with the dzn::shell functionality from the
 Dezyne runtime libraries.  This means the main thread will be blocked
 until the Dezyne private thread has completed processing the event.
 @strong{Important:} this is @emph{not} because of ‘blocking'! This
-behaviour is fully because of the thread-safe-shell.
+behavior is fully because of the thread-safe-shell.
 
 Once the event is scheduled in dzn::pump, at some point in time it will
 be picked up by the Dezyne private thread.  Part of the processing of the
@@ -5910,7 +5910,7 @@ goals and where they were discussed in the chapter.
 @subsection Understand what ‘blocking' allows you to do in Dezyne
 
 Using ‘blocking', it becomes possible to describe certain asynchronous
-behaviour patterns as if they were synchronous.  By hiding the
+behavior patterns as if they were synchronous.  By hiding the
 asynchronicity of a process, components higher up in a system are
 simplified.  This was discussed in @ref{What can ‘blocking' be used
 for?}
@@ -5926,7 +5926,7 @@ where the end of the process signals the return of the ‘blocking' event.
 @node Identify when ‘blocking' may be used and when it may not be used
 @subsection Identify when ‘blocking' may be used and when it may @strong{not} be used
 
-Following an analysis of a ‘blocking' process in @ref{Blocking Runtime behaviour}, some
+Following an analysis of a ‘blocking' process in @ref{Blocking Runtime behavior}, some
 hard constraints were identified in @ref{Implications of ‘blocking' for
 Dezyne applications}: the main thread must not suffer from being blocked
 and the target platform must support some way to provide activity when
@@ -5959,7 +5959,7 @@ Identify when ‘async' may be used and when it may @strong{not} be used
 Reason about design decisions when using the ‘async' keyword
 @end itemize
 
-The behaviour described with the ‘async' keyword requires you to be able
+The behavior described with the ‘async' keyword requires you to be able
 to reason about your application in terms of active threads and their
 calling context and synchronous / asynchronous calling concepts.  In the
 tutorial, various examples will be discussed but it helps if you are
@@ -5977,7 +5977,7 @@ shell}.
 @menu
 * What is the Bare Function of ‘async'?::
 * Applications of ‘async'::
-* ‘async' Behaviour in Runtime Context::
+* ‘async' Behavior in Runtime Context::
 * Summary of Dezyne @code{async}::
 @end menu
 
@@ -6009,7 +6009,7 @@ req -- this function queues an event in the Dezyne context that will be
 called after all processing of the current context has been completed.
 From an outside perspective it will be called after the current external
 event has been handled and before a next external event will be picked
-up.  More on this in @ref{‘async' Behaviour in Runtime Context}.
+up.  More on this in @ref{‘async' Behavior in Runtime Context}.
 
 @item
 ack -- this is the event that will eventually be called as the
@@ -6027,7 +6027,7 @@ interface i
 @{
   in void e(T t);
   out void a(T t);
-  behaviour @{
+  behavior @{
     bool idle = true;
     [idle] on e: idle=false;
     [!idle] @{
@@ -6040,7 +6040,7 @@ interface i
 component async_hello
 @{
   provides i p;
-  behaviour @{
+  behavior @{
     requires dzn.async(T t) defer;
     bool idle = true;
     [idle] on p.e (t): @{idle=false; defer.req (t);@}
@@ -6088,7 +6088,7 @@ interface i
   in void c(T t);
   out void a(T t);
   out void b();
-  behaviour @{
+  behavior @{
     bool idle = true;
     [idle] @{
       on e: idle=false;
@@ -6104,7 +6104,7 @@ interface i
 component async_cancel
 @{
   provides i p;
-  behaviour @{
+  behavior @{
     requires dzn.async(T t) defer;
     bool idle = true;
     [idle] on p.e (t): @{idle=false; defer.req (t);@}
@@ -6157,7 +6157,7 @@ component Async_ForkProvidedIn
   provides IA ppa;
   provides IA ppb;
 
-  behaviour
+  behavior
   @{
     bool outstanding_a = false;
     bool outstanding_b = false;
@@ -6181,7 +6181,7 @@ interface IA
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
     on optional: oa;
@@ -6214,7 +6214,7 @@ component Async_ForkRequiredOut
   provides IA ppb;
   requires IB rp;
 
-  behaviour
+  behavior
   @{
     requires dzn.async() reflector;
 
@@ -6230,7 +6230,7 @@ interface IA
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
     on optional: oa;
@@ -6241,7 +6241,7 @@ interface IB
   in void ib();
   out void ob();
 
-  behaviour
+  behavior
   @{
     bool is_active = false;
     on ib: is_active = true;
@@ -6281,7 +6281,7 @@ interface IStrict
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: oa;
   @}
@@ -6292,7 +6292,7 @@ interface IRobust
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: oa;
     on ia: @{@}
@@ -6304,7 +6304,7 @@ interface ILogger
 @{
   in void Log(str msg);
 
-  behaviour @{
+  behavior @{
     on Log: @{@}
   @}
 @}
@@ -6314,7 +6314,7 @@ component ArmourMSOE @{
   requires IRobust rRobust;
   requires injected ILogger iLog;
 
-  behaviour @{
+  behavior @{
     requires dzn.async p;
 
     on pStrict.ia(): blocking @{rRobust.ia(); p.req();@}
@@ -6327,7 +6327,7 @@ component Dezyne @{
   provides IA pp;
   requires IStrict rStrict;
 
-  behaviour @{
+  behavior @{
     on pp.ia(): blocking @{rStrict.ia();@}
     on rStrict.oa(): @{pp.reply(); pp.oa();@}
   @}
@@ -6338,7 +6338,7 @@ interface IA
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: oa;
   @}
@@ -6390,8 +6390,8 @@ caller.
 
 
 
-@node ‘async' Behaviour in Runtime Context
-@section ‘async' Behaviour in Runtime Context
+@node ‘async' Behavior in Runtime Context
+@section ‘async' Behavior in Runtime Context
 
 Although the async feature makes use of an event-pump it does not have
 any specific effect on the interaction with foreign code.  The only
@@ -6407,11 +6407,11 @@ pump} and one about the
 shell}.
 
 @menu
-* Async Runtime behaviour::
+* Async Runtime behavior::
 @end menu
 
-@node Async Runtime behaviour
-@subsection Async Runtime behaviour
+@node Async Runtime behavior
+@subsection Async Runtime behavior
 
 In the execution semantics of Dezyne events are handled in a fixed
 order.  For an in-event all action statements are executed depth-first.
@@ -6493,13 +6493,13 @@ goals and where they were discussed in the tutorial.
 @subsection Understand what ‘async' allows you to do in Dezyne
 
 Using ‘async', it becomes possible to support asynchronous communication
-behaviour patterns in a synchronous process.  This was discussed in
+behavior patterns in a synchronous process.  This was discussed in
 @ref{What is the Bare Function of ‘async'?}
 
 @node Identify when ‘async' may be used and when it may not be used
 @subsection Identify when ‘async' may be used and when it may @strong{not} be used
 
-The analysis of a ‘async' process in @ref{‘async' Behaviour in Runtime
+The analysis of a ‘async' process in @ref{‘async' Behavior in Runtime
 Context}, completes the picture of what is happening behind the scenes
 in the example cases presented in @ref{Applications of ‘async'}.
 
@@ -6549,16 +6549,16 @@ not fully understood it may be suspected of not being fully interface
 compliant.
 
 An Armour component shields the Dezyne system by capturing misbehavior
-and ensuring that the Dezyne components only perceive good behaviour.  We
+and ensuring that the Dezyne components only perceive good behavior.  We
 call the interface between the Armour and the Dezyne component the
 Strict interface.  We call the interface between the armour and the
 Foreign code the Robust interface.  The Robust interface does not enforce
 the restrictions of the Strict interface and so, in a sense, allows
-misbehaviour.  Depending on the situation the Armour could simply correct
+misbehavior.  Depending on the situation the Armour could simply correct
 the violations such that the Dezyne components never notice anything.
 
 The Armour could also raise an error condition which must be handled by
-the Dezyne components first before normal behaviour is continued.
+the Dezyne components first before normal behavior is continued.
 The Armour examples provided in this chapter all come in two flavours
 representing the situation with and without error handling.  In all cases
 the error is logged for diagnostics purposes.  The list is exhaustive in
@@ -6581,7 +6581,7 @@ an Armour would need to log the error situation but probably the system
 could simply continue to execute.
 
 In more complex situations an Armour cannot solve a violation
-independently.  Since the behaviour is unexpected by the Dezyne
+independently.  Since the behavior is unexpected by the Dezyne
 components appropriate handling is not available and a general error
 status would need to be raised in the Dezyne components.  Also the foreign
 component generating the erroneous event must be reset to a known
@@ -6598,14 +6598,14 @@ in this tutorial and the given examples we consistently apply the
 pattern described below.
 
 @menu
-* Pattern of error handling behaviour::
+* Pattern of error handling behavior::
 * Foreign component below required interface::
 * Foreign component above required interface::
 * Combinations of armours::
 @end menu
 
-@node Pattern of error handling behaviour
-@subsection Pattern of error handling behaviour
+@node Pattern of error handling behavior
+@subsection Pattern of error handling behavior
 
 If the Armour detects a violation it sends an event RaiseError to the
 Dezyne component.  The Dezyne component must go to a controlled state and
@@ -6617,13 +6617,13 @@ will move to normal mode of operation again.
 
 @image{images/sequence1,,,image,png}
 
-The overall state behaviour related to this pattern is a state machine
+The overall state behavior related to this pattern is a state machine
 with 3 states: @{noError, raisedError, resetError@}.  Often it will be
 possible to reduce this to 2 error states only.  The Robust interface
 supports the same events as the Strict interface without its
 limitations.  The Armour maps the Robust interface to the Strict
 interface.  It passes on all events in normal operation.  It triggers on
-deviations of the allowed behaviour and then enters an error state.  It
+deviations of the allowed behavior and then enters an error state.  It
 logs the error using a Log interface via an injected port.  Also it
 raises the error with the Dezyne component and prevents any further
 regular interaction with the Foreign component until the error is handled
@@ -6636,7 +6636,7 @@ This is the ‘natural' way Foreign components are connected.  A logging
 component connected through an injected port logs the error information.
 The variant with error handling is an extension of the variant without
 error handling and extends the Armour and Strict interface with the
-error handling state behaviour described above.  The Dezyne component and
+error handling state behavior described above.  The Dezyne component and
 Robust interface error handling does only deal with 2 states, in error
 or not.
 
@@ -6796,7 +6796,7 @@ interface IStrict
 @{
   in bool ia();
 
-  behaviour
+  behavior
   @{
     on ia: reply (true);
   @}
@@ -6811,7 +6811,7 @@ interface IRobust
 @{
   in bool ia();
 
-  behaviour
+  behavior
   @{
     on ia: reply (true);
     on ia: reply (false);
@@ -6830,7 +6830,7 @@ component ArmourIBVIRR // IStrict to IRobust
   requires IRobust rRobust;
   requires injected ILogger iLog;
 
-  behaviour @{
+  behavior @{
     on pStrict.ia (): @{
         if (!rRobust.ia ()) iLog.Log($"Reply value false from ia not allowed by port"$);
         reply (true);
@@ -6864,7 +6864,7 @@ interface IStrict
   in bool ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: illegal;
     on inevitable: oa;
@@ -6881,7 +6881,7 @@ interface IRobust
   in bool ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{reply(false);@}
     on inevitable: oa;
@@ -6900,7 +6900,7 @@ component ArmourIIPRB // IStrict to IRobust
   requires IStrict rStrict;
   requires injected ILogger iLog;
 
-  behaviour @{
+  behavior @{
     on pRobust.ia(): @{reply(false); iLog.Log($"In-event ia is illegal in port"$);@} // armour illegal ia
     on rStrict.oa(): pRobust.oa();
   @}
@@ -6932,7 +6932,7 @@ interface IStrict
   in myEnum ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: illegal;
     on inevitable: oa;
@@ -6949,7 +6949,7 @@ interface IRobust
   in myEnum ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{reply(myEnum.No);@}
     on inevitable: oa;
@@ -6968,7 +6968,7 @@ component ArmourIIPRE // IStrict to IRobust
   requires IStrict rStrict;
   requires injected ILogger iLog;
 
-  behaviour @{
+  behavior @{
     on pRobust.ia(): @{reply(myEnum.No); iLog.Log($"In-event ia is illegal in port"$);@} // armour illegal ia
     on rStrict.oa(): pRobust.oa();
   @}
@@ -7000,7 +7000,7 @@ interface IStrict
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: illegal;
     on inevitable: oa;
@@ -7017,7 +7017,7 @@ interface IRobust
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
     on inevitable: oa;
@@ -7035,7 +7035,7 @@ component ArmourIIPRV // IStrict to IRobust
   requires IStrict rStrict;
   requires injected ILogger iLog;
 
-  behaviour @{
+  behavior @{
     on pRobust.ia(): @{iLog.Log($"Input event ia is illegal in port"$);@} // armour illegal ia
     on rStrict.oa(): pRobust.oa();
   @}
@@ -7068,7 +7068,7 @@ interface IStrict
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
     on inevitable: oa;
@@ -7085,7 +7085,7 @@ interface IRobust
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
     on ia: oa;
@@ -7099,11 +7099,11 @@ out-events that are triggered by an out-event from a requires port from
 a synchronous out-event.  On the receival of an in-event we set a bool
 and put a request in the async queue.  If the async acknowledge triggers
 and we have not had an out-event from the requires port in between we
-know the behaviour is according to the strict interface.  If we receive
+know the behavior is according to the strict interface.  If we receive
 an out-event from the requires port in the context of the provides
 in-event (we know by inspecting the boolean value) then we know it is an
 error and we deal with it.  Otherwise we pass the out-event as normal
-allowed behaviour.
+allowed behavior.
 
 @example
 component ArmourISOE @{
@@ -7111,7 +7111,7 @@ component ArmourISOE @{
     requires IRobust rRobust;
     requires injected ILogger iLog;
 
-    behaviour @{
+    behavior @{
         requires dzn.async p;
 
         bool requested = false;
@@ -7157,7 +7157,7 @@ interface IStrict
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     bool ia_called = false;
 
@@ -7181,7 +7181,7 @@ interface IRobust
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
     on optional: oa;
@@ -7204,7 +7204,7 @@ component ArmourMAOE @{
     requires ITimer it;
     requires injected ILogger iLog;
 
-    behaviour @{
+    behavior @{
         bool waiting_for_oa = false;
 
         on it.timeout(): @{
@@ -7246,7 +7246,7 @@ interface IStrict
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: oa;
   @}
@@ -7262,7 +7262,7 @@ interface IRobust
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: oa;
     on ia: @{@}
@@ -7288,7 +7288,7 @@ component ArmourMSOE @{
     requires IRobust rRobust;
     requires injected ILogger iLog;
 
-    behaviour @{
+    behavior @{
         requires dzn.async p;
         bool xxxx = false;
 
@@ -7323,7 +7323,7 @@ interface IStrict
   in void ia();
   out void oa(); // nb not part of completeness check
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
   @}
@@ -7338,7 +7338,7 @@ interface IRobust
   in void ia();
   out void oa();
 
-  behaviour
+  behavior
   @{
     on ia: @{@}
     on optional: oa;
@@ -7357,7 +7357,7 @@ component ArmourOENABP // IStrict to IRobust
   requires IRobust rRobust;
   requires injected ILogger iLog;
 
-  behaviour @{
+  behavior @{
     on pStrict.ia(): rRobust.ia();
     on rRobust.oa(): @{iLog.Log($"Out-event oa is not allowed by port"$);@} // armour potential oa
   @}
@@ -7389,7 +7389,7 @@ interface IStrict
 @{
   in SubCount ia();
 
-  behaviour
+  behavior
   @{
     SubCount c=0;
     on ia: reply(0);
@@ -7409,10 +7409,10 @@ interface IRobust
 @{
   in AllCount ia();
 
-  behaviour
+  behavior
   @{
     on ia: reply (-1);  // -1 triggers an error
-    on ia: reply (0);   // 0 is ok behaviour
+    on ia: reply (0);   // 0 is ok behavior
   @}
 @}
 @end example
@@ -7429,7 +7429,7 @@ component ArmourREIR // IStrict to IRobust
   requires IRobust rRobust;
   requires injected ILogger iLog;
 
-  behaviour @{
+  behavior @{
     AllCount c = 0;
 
     on pStrict.ia(): @{

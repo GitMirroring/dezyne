@@ -38,7 +38,7 @@ component EndConstrainedAxis
   requires IMove motor; // required by motor
   requires ITouchSense endSensor; // required by sensor
 
-  behaviour
+  behavior
   {
     enum State {lost, idle, moving, calibratingEnd};
     State s = State.lost;

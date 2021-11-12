@@ -26,7 +26,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (false);
   }
@@ -37,7 +37,7 @@ component hello_local
   provides ihello h;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     bool b = false;
     [!b] on h.hello():
@@ -54,7 +54,7 @@ interface iworld
 {
   in bool world();
 
-  behaviour
+  behavior
   {
     on world: reply (true);
   }

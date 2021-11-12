@@ -3,7 +3,7 @@ interface nested_on
   in void hello();
   in void cruel();
   out void world();
-  behaviour
+  behavior
   {
     on hello: on cruel: world;
   }

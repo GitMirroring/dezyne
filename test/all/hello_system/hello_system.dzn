@@ -26,7 +26,7 @@ interface ihello
   in void hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = true;
     on hello: b=!b;
@@ -39,7 +39,7 @@ component hello_enum
   provides ihello p1;
   requires ihello r1;
 
-  behaviour
+  behavior
   {
     enum E {W,T,F};
     E e = E.W;
@@ -56,7 +56,7 @@ component hello_bool
   provides ihello p2;
   requires ihello_nondet r2;
 
-  behaviour
+  behavior
   {
     bool b = true;
     on p2.hello(): {b = r2.hello();}
@@ -69,7 +69,7 @@ interface ihello_nondet
   in bool hello();
   out void world();
 
-  behaviour
+  behavior
   {
     bool b = true;
     on hello: {b = true; reply(true);}

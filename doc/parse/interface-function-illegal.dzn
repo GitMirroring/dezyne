@@ -1,7 +1,7 @@
 interface interface_function_illegal
 {
   in void hello();
-  behaviour
+  behavior
   {
     void f()
     {

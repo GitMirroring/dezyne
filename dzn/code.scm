@@ -264,15 +264,15 @@
   (ast:function* o))
 
 (define-method (code:ons (o <component>))
-  (let ((behaviour (.behaviour o)))
-    (if (not behaviour) '()
-        (ast:statement* behaviour))))
+  (let ((behavior (.behavior o)))
+    (if (not behavior) '()
+        (ast:statement* behavior))))
 
 (define-method (code:ons (o <port>))
   (let* ((component (parent o <component>))
-         (behaviour (.behaviour component))
-         (ons (if (not behaviour) '()
-                  (ast:statement* behaviour))))
+         (behavior (.behavior component))
+         (ons (if (not behavior) '()
+                  (ast:statement* behavior))))
     (define (this-port? p)
       (equal? (.name o) (.port.name (car (ast:trigger* p)))))
     (filter this-port? ons)))
@@ -442,10 +442,10 @@
   ((compose code:enum-name .variable) o))
 
 (define-method (code:enum-definer (o <interface>))
-  (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behaviour o)))))
+  (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behavior o)))))
 
 (define-method (code:enum-definer (o <component>))
-  (filter (is? <enum>) (ast:type* (.behaviour o))))
+  (filter (is? <enum>) (ast:type* (.behavior o))))
 
 (define-method (code:global-enum-definer (o <root>))
   (filter (is? <enum>) (ast:type* o)))
@@ -661,7 +661,7 @@
 (define-method (code:class-member? (o <variable>))
   (let ((p (.parent o)))
     (and (is-a? p <variables>)
-         (is-a? (.parent p) <behaviour>))))
+         (is-a? (.parent p) <behavior>))))
 
 (define-method (code:used-foreigns (o <root>))
   (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))

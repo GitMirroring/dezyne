@@ -27,7 +27,7 @@ interface ihello
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: {cruel; world;}
     on hello: {world; world;}
@@ -38,7 +38,7 @@ component hello_function_local_nest
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     bool b = false;
 

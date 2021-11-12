@@ -1,7 +1,7 @@
 interface interface_if_illegal
 {
   in void hello();
-  behaviour
+  behavior
   {
     bool b = false;
     on hello:

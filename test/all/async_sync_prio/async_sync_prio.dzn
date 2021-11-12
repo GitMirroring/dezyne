@@ -29,7 +29,7 @@ interface I
   out void cruel();
   out void world();
 
-  behaviour
+  behavior
   {
     bool idle = true;
 
@@ -44,7 +44,7 @@ interface J
 
   out void world();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -55,7 +55,7 @@ component async_sync_prio
   provides I i;
   requires J j;
 
-  behaviour
+  behavior
   {
     requires dzn.async k;
 

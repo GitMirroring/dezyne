@@ -2,7 +2,7 @@ interface I
 {
   in void a();
   out void b();
-  behaviour
+  behavior
   {
     on a: b;
   }

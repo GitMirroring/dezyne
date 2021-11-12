@@ -38,7 +38,7 @@ component ConstrainedAxis
   requires ITouchSense homeSensor;
   requires ITouchSense endSensor;
 
-  behaviour
+  behavior
   {
     enum State {lost, idle, moving, calibratingHome, calibratingLength};
     State s = State.lost;

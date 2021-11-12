@@ -26,7 +26,7 @@ interface ihello {
   in void hello();
   out void world();
 
-  behaviour {
+  behavior {
     bool i = true;
     [i] on hello: i = false;
     [!i] on inevitable: { world; i = true;}
@@ -37,7 +37,7 @@ interface iworld {
   in void hello();
   out void world();
 
-  behaviour {
+  behavior {
     on hello: world;
   }
 }
@@ -46,7 +46,7 @@ component compliance_nonsynchronous_sync {
   provides ihello h;
   requires iworld w;
 
-  behaviour {
+  behavior {
     on h.hello(): w.hello();
     on w.world(): h.world();
   }

@@ -27,7 +27,7 @@ interface three
 {
   in void e(in foobar fb);
 
-  behaviour
+  behavior
   {
     on e: {}
   }
@@ -38,7 +38,7 @@ component one
   provides idollars p;
   requires three r;
 
-  behaviour
+  behavior
   {
     on p.e(fb): r.e(fb);
   }
@@ -48,7 +48,7 @@ component two
 {
   provides three p;
 
-  behaviour
+  behavior
   {
     on p.e(fb): {}
   }

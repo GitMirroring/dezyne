@@ -26,7 +26,7 @@ interface ihello
 {
   in bool hello();
 
-  behaviour
+  behavior
   {
     on hello: reply (false);
     on hello: reply (true);
@@ -38,7 +38,7 @@ component hello_local_bool
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     on h.hello(): {bool b = w.hello(); reply(b);}
   }

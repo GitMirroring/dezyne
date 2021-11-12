@@ -5,7 +5,7 @@ interface ihello
   in Bool hello();
   out void world();
 
-  behaviour
+  behavior
   {
     Bool m = Bool.True;
 
@@ -22,7 +22,7 @@ component hello
   provides ihello p;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     Bool m = Bool.True;
 

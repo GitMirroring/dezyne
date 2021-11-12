@@ -29,7 +29,7 @@ component importPath {
   provides I i;
   requires I2 i2;
 
-  behaviour {
+  behavior {
     on i.esub(): { reply(E.E1); }
     on i2.e(): {}
   }

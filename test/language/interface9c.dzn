@@ -3,7 +3,7 @@ interface I
  in void foo();
  out void bar();
 
- behaviour
+ behavior
  {
    on foo: bar;
    on

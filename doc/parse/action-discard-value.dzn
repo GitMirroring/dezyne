@@ -1,7 +1,7 @@
 interface ihello
 {
   in bool hello ();
-  behaviour
+  behavior
   {
     on hello: reply (true);
   }
@@ -11,7 +11,7 @@ component action_discard_value
 {
   provides ihello p;
   requires ihello r;
-  behaviour
+  behavior
   {
     on p.hello (): r.hello ();
   }

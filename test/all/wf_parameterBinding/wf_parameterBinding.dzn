@@ -26,7 +26,7 @@ extern xint $int$;
 
 interface IOutParam {
   in void e_out(out xint number);
-  behaviour {
+  behavior {
     on e_out: {}
   }
 }
@@ -34,7 +34,7 @@ interface IOutParam {
 component OutParam {
   provides IOutParam outParam;
 
-  behaviour
+  behavior
   {
     xint nr;
 

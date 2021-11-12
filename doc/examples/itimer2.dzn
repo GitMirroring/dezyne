@@ -4,7 +4,7 @@ interface itimer
   in void create_timer();
   in void cancel_timer();
   out void timeout();
-  behaviour
+  behavior
   {
     enum status {IDLE, BUSY};
     status state = status.IDLE;

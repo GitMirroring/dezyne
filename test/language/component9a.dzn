@@ -3,7 +3,7 @@ interface I
   in void e0();
   in void e1();
 
-  behaviour
+  behavior
   {
     on e0, e1: {}
   }
@@ -13,7 +13,7 @@ component C
 {
   provides I i;
 
-  behaviour
+  behavior
   {
     on i.e
   }

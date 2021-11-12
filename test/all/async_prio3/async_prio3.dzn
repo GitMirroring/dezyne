@@ -28,7 +28,7 @@ interface IAsync {
   in void c();
   out void cb();
 
-  behaviour {
+  behavior {
     bool idle = true;
     [idle] {
       on e: idle = false;
@@ -45,7 +45,7 @@ interface IAsync {
 component async_prio3 {
   provides IAsync p;
   requires IAsync r;
-  behaviour {
+  behavior {
     enum State { S0, S1, S2 };
     requires dzn.async i;
     State s = State.S0;
