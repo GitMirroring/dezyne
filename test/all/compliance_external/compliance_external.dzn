@@ -30,7 +30,8 @@
 interface ihello
 {
   in void hello();
-  behaviour {
+  behaviour
+  {
     on hello: {}
   }
 }
@@ -40,7 +41,8 @@ component compliance_external
   provides ihello h;
   requires external iworld w;
 
-  behaviour {
+  behaviour
+  {
     bool b = false;
     [!b] on h.hello (): {b=true;w.hello ();}
     [b] on w.world (): b=false;
@@ -51,7 +53,8 @@ interface iworld
 {
   in void hello();
   out void world();
-  behaviour {
+  behaviour
+  {
     on hello: world;
   }
 }

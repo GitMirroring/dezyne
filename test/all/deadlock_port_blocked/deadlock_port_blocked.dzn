@@ -22,32 +22,40 @@
 //
 // Code:
 
-interface ihello {
+interface ihello
+{
   in void hello();
   in void cruel();
-  behaviour {
+  behaviour
+  {
     on hello: {}
     on cruel: {}
   }
 }
 
-interface iworld {
+interface iworld
+{
   out void world();
-  behaviour {
+  behaviour
+  {
     on inevitable: world;
   }
 }
 
-component deadlock_port_blocked {
+component deadlock_port_blocked
+{
   provides ihello h;
   requires iworld w;
-  behaviour {
+  behaviour
+  {
     bool blocked=false;
-    [!blocked] {
+    [!blocked]
+    {
       on h.hello(): blocking blocked=true;
       on w.world(): {}
     }
-    [blocked] {
+    [blocked]
+    {
       on w.world(): {h.reply (); blocked=false;}
       on h.hello (): {}
     }

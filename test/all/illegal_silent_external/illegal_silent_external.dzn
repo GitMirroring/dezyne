@@ -21,39 +21,47 @@
 //
 // Code:
 
-interface ihello {
+interface ihello
+{
   in void hello();
   in void cancel();
   out void world();
-  behaviour {
+  behaviour
+  {
     bool triggered = false;
 
     [!triggered] on hello: triggered = true;
     [triggered] on hello: illegal;
 
     on cancel: triggered = false;
-    [triggered] on inevitable: {
+    [triggered] on inevitable:
+    {
       world;
       triggered = false;
     }
   }
 }
 
-component illegal_silent_external {
+component illegal_silent_external
+{
   provides ihello h;
   requires external ihello w;
 
-  behaviour {
+  behaviour
+  {
     bool triggered = false;
-    [!triggered] on h.hello(): {
+    [!triggered] on h.hello():
+    {
       w.hello();
       triggered = true;
     }
-    on h.cancel(): {
+    on h.cancel():
+    {
       w.cancel();
       triggered = false;
     }
-    [triggered] on w.world(): {
+    [triggered] on w.world():
+    {
       h.world();
       triggered = false;
     }

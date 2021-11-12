@@ -22,17 +22,21 @@
 // Code:
 
 // This interface enters a live-lock after one step
-interface deadlock_interface1 {
+interface deadlock_interface1
+{
   in void e();
 
-  behaviour {
+  behaviour
+  {
     enum States {S0, S1};
     States s = States.S0;
 
-    [s.S0] {
+    [s.S0]
+    {
        on e: { s= States.S1; }
     }
-    [s.S1] {
+    [s.S1]
+    {
        on e: illegal;
     }
   }

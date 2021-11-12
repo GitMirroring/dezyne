@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,23 +21,29 @@
 //
 // Code:
 
-interface I {
+interface I
+{
   in void e();
 
-  behaviour {
-    [true] {
-       on e: {}
+  behaviour
+  {
+    [true]
+    {
+      on e: {}
     }
   }
 }
 
 // This component has an deadlock problem after one step
-component deadlock_component1 {
+component deadlock_component1
+{
   provides I i;
-  behaviour {
+  behaviour
+  {
     enum States { S0, S1};
     States s = States.S0;
-    [s.S0] on i.e(): {
+    [s.S0] on i.e():
+    {
       s=States.S1;
     }
     [s.S1] on i.e(): illegal;

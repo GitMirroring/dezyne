@@ -21,38 +21,43 @@
 //
 // Code:
 
-interface I {
+interface I
+{
   in void e();
-  behaviour {
+  behaviour
+  {
     on e: {}
   }
 }
 
-interface II {
+interface II
+{
   in void e();
   in void f();
   out void cb();
-  behaviour {
+  behaviour
+  {
     bool busy = false;
-    [!busy]
-       on e: busy = true;
-    [busy] {
-       on optional: { cb; busy = false; }
-    }
+    [!busy] on e: busy = true;
+    [busy] on optional: { cb; busy = false; }
     on f: {}
   }
 }
 
-component deadlock_blocking_optional {
+component deadlock_blocking_optional
+{
   provides I p;
   requires II r;
-  behaviour {
+  behaviour
+  {
     bool busy = false;
-    [!busy] {
+    [!busy]
+    {
        on p.e(): blocking { r.e(); busy = true; }
        on r.cb(): illegal;
     }
-    [busy] {
+    [busy]
+    {
        on p.e(): illegal;
        on r.cb(): { p.reply(); busy = false; }
     }

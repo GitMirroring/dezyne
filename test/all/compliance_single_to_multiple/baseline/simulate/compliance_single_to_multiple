@@ -1,5 +1,5 @@
 (header ((h) ihello provides) ((sut) compliance_single_to_multiple component) ((w) ihello requires))
-test/all/compliance_single_to_multiple/compliance_single_to_multiple.dzn:36:32: error: non-compliance
+test/all/compliance_single_to_multiple/compliance_single_to_multiple.dzn:40:32: error: non-compliance
 ... <- <external>.w.world
 sut.<q> <- ...
 ... <- sut.<q>
@@ -9,7 +9,7 @@ sut.w.world <- ...
 ... <- sut.h.world
 <external>.h.world <- ...
 <non-compliance>
-test/all/compliance_single_to_multiple/compliance_single_to_multiple.dzn:36:32: error: non-compliance
+test/all/compliance_single_to_multiple/compliance_single_to_multiple.dzn:40:32: error: non-compliance
 (trail "w.world" "h.world" "h.world" "<non-compliance>")
 (labels "w.world")
 (eligible)

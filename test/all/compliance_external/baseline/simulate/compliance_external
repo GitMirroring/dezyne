@@ -8,11 +8,11 @@ sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 (trail "h.hello" "w.hello" "w.return" "h.return")
-test/all/compliance_external/compliance_external.dzn:43:13: error: illegal
+test/all/compliance_external/compliance_external.dzn:45:3: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <illegal>
-test/all/compliance_external/compliance_external.dzn:43:13: error: illegal
+test/all/compliance_external/compliance_external.dzn:45:3: error: illegal
 (trail "h.hello" "<illegal>")
 (labels "h.hello" "w.world")
 (eligible)

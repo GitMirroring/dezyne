@@ -17,11 +17,11 @@ sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 (trail "h.cancel" "w.cancel" "w.return" "h.return")
-test/all/illegal_silent_external/illegal_silent_external.dzn:46:13: error: illegal
+test/all/illegal_silent_external/illegal_silent_external.dzn:51:3: error: illegal
 ... <- sut.<q>
 sut.w.world <- ...
 <illegal>
-test/all/illegal_silent_external/illegal_silent_external.dzn:46:13: error: illegal
+test/all/illegal_silent_external/illegal_silent_external.dzn:51:3: error: illegal
 (trail "w.world" "<illegal>")
 (labels "h.hello" "h.cancel" "w.world")
 (eligible)

@@ -1,7 +1,7 @@
 (header ((client) deadlock_interface0 provides) ((sut) deadlock_interface0 interface))
-test/all/deadlock_interface0/deadlock_interface0.dzn:28:3: error: deadlock
+test/all/deadlock_interface0/deadlock_interface0.dzn:29:3: error: deadlock
 <deadlock>
-test/all/deadlock_interface0/deadlock_interface0.dzn:28:3: error: deadlock
+test/all/deadlock_interface0/deadlock_interface0.dzn:29:3: error: deadlock
 (trail "<deadlock>")
 (labels "e")
 (eligible)

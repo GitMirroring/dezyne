@@ -22,11 +22,14 @@
 // Code:
 
 // This interface enters a dead-lock immediately
-interface deadlock_interface0 {
+interface deadlock_interface0
+{
   in void e();
 
-  behaviour {
-    [true] {
+  behaviour
+  {
+    [true]
+    {
        on e: illegal;
     }
   }
