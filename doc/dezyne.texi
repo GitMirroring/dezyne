@@ -103,6 +103,7 @@ Getting Started
 
 * Hello World!::                First contact with Dezyne.
 * A Simple State Machine::      Stateful behavior and protocol.
+* A Camera Example::            A System of Components and Systems.
 
 Code Integration
 
@@ -697,6 +698,7 @@ doc/examples/ in git}.
 @menu
 * Hello World!::                First contact with Dezyne.
 * A Simple State Machine::      Stateful behavior and protocol.
+* A Camera Example::            A System of Components and Systems.
 @end menu
 
 @node Hello World!
@@ -1015,6 +1017,85 @@ verify: simple_state_machine: check: compliance: ok
 you may want to see what happens to verification or the state diagram
 when you comment-out a statement of your choosing in the component's
 behavior.
+
+@node A Camera Example
+@section A Camera Example
+
+The @code{Camera} example introduces the system component
+(@xref{Systems}).  The system diagram (@xref{Invoking dzn graph}) looks
+like this:
+
+@image{images/Camera-system,,,,.png}
+
+This is what the Camera system looks like in Dezyne:
+@example
+component Camera
+@{
+  provides IControl control;
+
+  system
+  @{
+    Driver driver;
+    Acquisition acquisition;
+    Optics optics;
+
+    control <=> driver.control;
+    driver.acquisition <=> acquisition.port;
+    driver.optics <=> optics.port;
+  @}
+@}
+@end example
+
+It introduces the following concepts:
+@table @code
+@item provides IControl control;
+Similar to a regular component, it defines ports,
+@item system
+The @code{system} specification defines @emph{instances} of components
+and their @emph{bindings},
+@item Driver driver;
+A component instance named @code{driver} of type @code{Driver},
+@item Acquisition acquisition;
+A component instance named @code{acquisition} of type @code{Acquisition},
+which is a @code{system} component itself,
+@item Optics optics;
+An instance of another @code{system} component,
+@item control <=> driver.control;
+A binding of the @code{Camera}'s port @code{control} to the port named
+@code{control} of the @code{driver} instance.
+@item driver.acquisition <=> acquisition.port;
+A binding between pairs of ports on component instances.
+@end table
+
+The light blue components in the system view, such as @code{lens} are
+@emph{foreign} components (@xref{Components}); their definition
+looks like this:
+
+@example
+component Lens
+@{
+  provides ILens port;
+@}
+@end example
+
+A foreign component does not specify any implementation: neither a
+@code{behavior} nor a @code{system}; its behavior is said to be
+implementation elsewhere, and in a foreign language (in this case
+@code{C++}).
+
+The full example is contained in the source tree at
+@file{test/all/Camera/Camera.dzn} or
+@url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/test/all/Camera/Camera.dzn,
+Camera.dzn}.
+
+The simplified@footnote{A simplified state diagram shows only triggers
+on state transitions and hides any actions or reply values.  Also, the
+state of the ports or even all extended state can be removed.  For this
+diagram, the command @code{dzn graph --backend=state --hide=actions
+--remove=extended test/all/Camera/Camera.dzn} was used.} state diagram:
+
+@image{images/Camera-state,,,,.png}
+
 
 @c *********************************************************************
 @node Execution Semantics

@@ -24,6 +24,8 @@
 EXTRA_DIST += %D%/README
 
 dist_info_images_DATA =					\
+ %D%/Camera-state.png					\
+ %D%/Camera-system.png					\
  %D%/direct_in.png					\
  %D%/direct_multiple_out1.png				\
  %D%/direct_multiple_out2.png				\
