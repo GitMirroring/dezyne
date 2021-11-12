@@ -25,7 +25,7 @@
 #
 # Code:
 
-EXTRA_DIST += README
+EXTRA_DIST += %D%/README
 
 SMOKE_TESTS =					\
  %D%/parse_syntax				\
