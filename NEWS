@@ -13,6 +13,8 @@
     and the '||' operators allow them as their left-hand operand only
     ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/26][#26]]).
   - The need for explicit illegals in interfaces has been removed.
+  - The `behaviour' keyword has been deprecated and is renamed to
+    `behavior', as software commonly uses US English.
 ** Parser
   - The well-formedness check now reports incorrect usage of blocking
     out-bindings.
@@ -20,7 +22,7 @@
     messages that follow an error.
 ** Verification
   - The interface completeness check has been removed; just like
-    components, unspecified events in an interface behaviour are now
+    components, unspecified events in an interface behavior are now
     marked implicitly illegal.
   - The beginning of a livelock loop is now marked in the trace with
     "<loop>" ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/44][#44]]).
@@ -85,7 +87,7 @@
   - The default model selection for a command no longer considers
     imported models ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/46][#46]]).
   - Verification and simulation now have a new check that dissallows
-    non-deterministic behavior in interfaces which is not directly but
+    non-deterministic behaviour in interfaces which is not directly but
     indirectly observable by the client.
   - The new option `--no-interface-determinism' can be used to disable
     this check on `dzn verify' and `dzn simulate'.

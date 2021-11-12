@@ -586,6 +586,8 @@
          (? (is? 'ports)))
      ;;%completion-component
      (complete:component context offset))
+    ('behavior
+     %completion-interface)
     ('behaviour
      %completion-interface)
     ((? (is? 'behaviour-statements))

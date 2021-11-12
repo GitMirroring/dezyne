@@ -302,7 +302,7 @@ NOT                 <   '!'
 EOF                 <   !.
 COMPARE             <-  EQUAL / NOT-EQUAL / LESS-EQUAL / LESS / GREATER-EQUAL / GREATER
 
-BEHAVIOUR           <  'behaviour' ![a-zA-Z_0-9]
+BEHAVIOUR           <  'behavior' ![a-zA-Z_0-9] / 'behaviour' ![a-zA-Z_0-9]
 BLOCKING            <  'blocking' ![a-zA-Z_0-9]
 BOOL                <- 'bool' ![a-zA-Z_0-9]
 COMPONENT           <  'component' ![a-zA-Z_0-9]
@@ -335,7 +335,8 @@ VOID                <- 'void' ![a-zA-Z_0-9]
 NEWLINE             <- '\n'
 
 KEYWORD <
-    'behaviour' ![a-zA-Z_0-9]
+    'behavior' ![a-zA-Z_0-9]
+  / 'behaviour' ![a-zA-Z_0-9]
   / 'blocking' ![a-zA-Z_0-9]
   / 'component' ![a-zA-Z_0-9]
   / 'else' ![a-zA-Z_0-9]
