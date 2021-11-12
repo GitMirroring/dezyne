@@ -104,6 +104,7 @@ Getting Started
 * Hello World!::                First contact with Dezyne.
 * A Simple State Machine::      Stateful behavior and protocol.
 * A Camera Example::            A System of Components and Systems.
+* The Lego Ball Sorter::        A Machine Operating System.
 
 Code Integration
 
@@ -699,6 +700,7 @@ doc/examples/ in git}.
 * Hello World!::                First contact with Dezyne.
 * A Simple State Machine::      Stateful behavior and protocol.
 * A Camera Example::            A System of Components and Systems.
+* The Lego Ball Sorter::        A Machine Operating System.
 @end menu
 
 @node Hello World!
@@ -1096,6 +1098,24 @@ diagram, the command @code{dzn graph --backend=state --hide=actions
 
 @image{images/Camera-state,,,,.png}
 
+@node The Lego Ball Sorter
+@section The Lego Ball Sorter
+
+The Lego Ball Sorter example demonstrates how Dezyne can be used to
+write the operating system for a machine.  The system view is already
+somewhat overwhelming:
+
+@image{images/LegoBallSorter-system,,,,.png}
+
+so it makes more sense to look at smaller parts of the system, such as
+the @code{MaterialHandler}:
+
+@image{images/MaterialHandler-system,,,,.png}
+
+The full example is contained in the source tree at
+@file{test/all/LegoBallSorter/LegoBallSorter.dzn} or
+@url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/test/all/LegoBallSorter/LegoBallSorter.dzn,
+LegoBallSorter.dzn}.
 
 @c *********************************************************************
 @node Execution Semantics
