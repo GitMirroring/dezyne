@@ -240,6 +240,9 @@
 (define-method (trigger->string (o <illegal>))
   "illegal")
 
+(define-method (trigger->string (o <initial-compound>))
+  "illegal")
+
 (define-method (string->value (type <bool>) (o <string>))
   (let ((value (string-split o #\.)))
     (match value
