@@ -4,7 +4,7 @@ public partial class #x:model-name : dzn.Component
   #x:port-declaration
   public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
   : base(locator, name, parent) {
-    this.dzn_runtime.infos[this].flushes = false;
+    this.dzn_runtime.states[this].flushes = false;
     #x:provided-port-init
     #x:required-port-init
 

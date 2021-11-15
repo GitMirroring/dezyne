@@ -51,7 +51,7 @@ namespace dzn
     public static void port_block(Locator loc, Object c, Object p)
     {
       Runtime rt = loc.get<Runtime>();
-      rt.infos[c].handling = 0;
+      rt.states[c].handling = 0;
       rt.flush(c);
       loc.get<pump>().block(p);
     }

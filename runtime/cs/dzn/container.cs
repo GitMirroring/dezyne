@@ -1,8 +1,8 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019 Rob Wieringa <rob@dezyne.org>
-// Copyright © 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -49,7 +49,7 @@ namespace dzn
       trail = new Queue<String>();
       system = new_system(locator.set(this.pump),"sut");
       single_threaded = system.dzn_locator.get<pump>() == this.pump;
-      system.dzn_runtime.infos[this].flushes = flush;
+      system.dzn_runtime.states[this].flushes = flush;
     }
     public container(Func<Locator,String,TSystem> new_system, bool flush)
     : this (new_system, flush, new Locator().set(new dzn.Runtime(() => {

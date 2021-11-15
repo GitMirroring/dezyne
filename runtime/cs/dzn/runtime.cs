@@ -67,7 +67,7 @@ namespace dzn
         public Component(Locator locator, String name = "", Meta parent = null)
             : base(locator, name, parent)
             {
-                this.dzn_runtime.infos.Add(this, new Runtime.info());
+                this.dzn_runtime.states.Add(this, new Runtime.State());
             }
     }
 
@@ -95,16 +95,16 @@ namespace dzn
     public class Runtime
     {
 
-        public class info
+        public class State
         {
             public int handling;
             public Component deferred;
             public Queue<Action> q;
             public bool flushes;
-            public info() { this.q = new Queue<Action>(); }
+            public State() { this.q = new Queue<Action>(); }
         }
 
-        public Dictionary<Object, info> infos;
+        public Dictionary<Object, State> states;
         public Action illegal;
         public Runtime(Action illegal = null)
         {
@@ -113,25 +113,25 @@ namespace dzn
                     illegal = () => { throw new RuntimeException("illegal"); };
                 }
             this.illegal = illegal;
-            this.infos = new Dictionary<Object, info>();
+            this.states = new Dictionary<Object, State>();
         }
         public bool external(Object c)
         {
-            return !infos.ContainsKey(c);
+            return !states.ContainsKey(c);
         }
         public void flush(Object c)
         {
             if (!external(c))
                 {
-                    while (infos[c].q.Count > 0)
+                    while (states[c].q.Count > 0)
                         {
-                            handle(c, infos[c].q.Dequeue());
+                            handle(c, states[c].q.Dequeue());
                         }
-                    if (infos[c].deferred != null)
+                    if (states[c].deferred != null)
                         {
-                            Component t = infos[c].deferred;
-                            infos[c].deferred = null;
-                            if (infos[t].handling == 0)
+                            Component t = states[c].deferred;
+                            states[c].deferred = null;
+                            if (states[t].handling == 0)
                                 {
                                     flush(t);
                                 }
@@ -140,46 +140,46 @@ namespace dzn
         }
         public Queue<Action> queue(Object o)
         {
-            if(!infos.ContainsKey(o)) infos.Add(o, new Runtime.info());
-            return infos[o].q;
+            if(!states.ContainsKey(o)) states.Add(o, new Runtime.State());
+            return states[o].q;
         }
         public void defer(Component i, Component o, Action f)
         {
-            if (!(i != null && infos[i].flushes) && infos[o].handling == 0)
+            if (!(i != null && states[i].flushes) && states[o].handling == 0)
                 {
                     handle(o, f);
                 }
             else
                 {
-                    infos[o].q.Enqueue(f);
+                    states[o].q.Enqueue(f);
                     if (i != null)
                         {
-                            infos[i].deferred = o;
+                            states[i].deferred = o;
                         }
                 }
         }
         public R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible
         {
-            if (infos[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
-            int initial = infos[c].handling;
-            infos[c].handling = coroutine.get_id();
+            if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
+            int initial = states[c].handling;
+            states[c].handling = coroutine.get_id();
             R r = f();
-            infos[c].handling = initial;
+            states[c].handling = initial;
             flush(c);
             return r;
         }
         public void handle(Object c, Action f)
         {
-            if (infos[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
-            int initial = infos[c].handling;
-            infos[c].handling = coroutine.get_id();
+            if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
+            int initial = states[c].handling;
+            states[c].handling = coroutine.get_id();
             f();
-            infos[c].handling = initial;
+            states[c].handling = initial;
             flush(c);
         }
         public void call_in(Component c, Action f, Port p, String e)
         {
-            if(infos[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
+            if(states[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
                 dzn.pump.collateral_block(c.dzn_locator);
             }
@@ -190,7 +190,7 @@ namespace dzn
         }
         public R call_in<R>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
         {
-            if(infos[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
+            if(states[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
                 dzn.pump.collateral_block(c.dzn_locator);
             }
@@ -210,7 +210,7 @@ namespace dzn
         public void call_out(Component c, Action f, Port p, String e)
         {
             Port other_port = p.other();
-            if(infos[c].handling != 0 && infos[c].handling != coroutine.get_id()
+            if(states[c].handling != 0 && states[c].handling != coroutine.get_id()
                && (other_port == null || !pump.port_blocked_p(c.dzn_locator, other_port)))
             {
               pump.collateral_block(c.dzn_locator);
