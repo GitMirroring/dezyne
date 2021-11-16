@@ -1,0 +1,20 @@
+interface ihello
+{
+  in void hello ();
+  in void world ();
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+component illegal_requires
+{
+  provides ihello h;
+  requires ihello w;
+
+  behavior
+  {
+    on h.hello (): w.world ();
+  }
+}

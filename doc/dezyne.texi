@@ -73,7 +73,7 @@ This document describes Dezyne version @value{VERSION}.
 * Installation::                Installing Dezyne.
 * Getting Started::             Writing a program in Dezyne.
 * Execution Semantics::         How does it work?
-* Verifying Models::            A guide to model verification.
+* Formal Verification::         A guide to verification errors.
 * Code Integration::            Creating an executable.
 * The Dezyne command-line tools::  Running the tools.
 * Dezyne Language Reference::   All the language details.
@@ -102,6 +102,12 @@ Getting Started
 * A Simple State Machine::      Stateful behavior and protocol.
 * A Camera Example::            A System of Components and Systems.
 * The Lego Ball Sorter::        A Machine Operating System.
+
+Formal Verification
+
+* Verification Checks and Errors::  Which properties are verified?
+* Verification Counter Examples::  What if verification fails?
+* Interpreting Verification Errors::  How to fix verification errors.
 
 Code Integration
 
@@ -1064,117 +1070,281 @@ cases.
 
 @image{images/indirect_blocking_multiple_external_out,,,,.png}
 
-@node Verifying Models
-@chapter Verifying Models
+@node Formal Verification
+@chapter Formal Verification
 
-@section Introduction
-Verification in Dezyne focuses on verifying properties that are hard for
-humans to verify.  These properties mainly concern ordering of events,
-asynchronous behavior, deadlock and/or livelock.  Verifying a component
-together with its provided and required interfaces ensures that the
-component behaves correctly in its environment according to the
-specified behavior.
+Dezyne provides automated, formal verification of a number of properties
+of interfaces, of components, and of components in relation to their
+interfaces@footnote{Verification of systems and of functional properties
+are under development}.
 
-@section What is verified
-Components developed in Dezyne can be verified, after proven to be valid for verification
+By running @command{dzn verify}, Dezyne code is translated to
+@url{https://mcrl2.org,mCRL2} code and fed to a ``verification
+pipeline'', i.e., a series of @code{mcrl2} and @code{dzn} commands
+(@xref{Invoking dzn verify}).
 
-These are the checks that can be performed:
+The checks that Dezyne offers are of properties that are notoriously
+hard for humans to get right in all their detail, and which are
+relatively easily translatable to process algebra.
 
-@itemize
+These properties concern the ordering of events, synchronous versus
+asynchronous calls and transactions, deadlock, livelock, and strict
+adherence to contract.  Verifying a component together with its provides
+and requires interfaces ensures that the component behaves correctly in
+its environment according to the specified behavior.  It also ensures
+that all possible error paths are fully and correctly handled.
 
-@item @i{deterministic}:
-	in Dezyne all components are required to be deterministic.
-	The most common cause of non-determinism in a component is overlapping guards, i.e.
-	two different set of actions for the same might occur in a specific situation.  @*
-	Upon violation, The following error is reported : @*
-@i{Component M is non-deterministic due to overlapping guards}
+All properties that Dezyne verifies on interface and component level
+are @emph{compositional}, which implies, e.g., that as system consisting
+of verified components that do not deadlock, is also free of deadlock.
 
-@item @i{illegal}: it checks that there are no protocol violations between a component and
-	its required interfaces.  @*
-	Upon violation, The following error is reported : @*
-@i{illegal}
-@item @i{range error}: it checks that each subint variable is always within its defined range.@*
-	Upon violation, The following error is reported : @*
-@i{integer range error in model M}
-@item @i{type error}:
-	when a non-void event is triggered, a value has to be replied.  The type of that value has
-	to match the return type of the event.@*
-	Upon violation, The following error is reported : @*
-@i{type error in model M}
-@item @i{queue full}:
-	a Dezyne model with provides ports has a queue where notification events are stored before they are processed.
-	During verification it is checked that that this queue does not overflow, i.e.  that it remains non-blocking.
-	The queue size can be specified for verification with the "-q" option.  The default size is 4.@*
-	Upon violation, The following error is reported : @*
-@i{queue full}
-@item @i{deadlock}:
-	a deadlock is a situation where none of the components in a system can make progress;
-	nothing can happen and the system simply does not respond.  This commonly occurs when
-	two components each require an action from the other before they can perform any
-	further action themselves.  Another common cause is when a component is waiting for
-	some external event which fails to occur.@*
-	In general, deadlocks can be hard to find, because the entire system needs to be
-	reviewed to discover them and freedom from deadlocks is a property of the system
-	as a whole.  For example, component A might be waiting for B which is waiting for
-	C while C is waiting for A.  Dezyne ensures that this never happens in the following way:@*
-	Each component by itself can be verified as being deadlock free;
-	Components can only be composed in ways that have been proven not to cause deadlock.
-	Note: Dezyne can only verify what it knows; therefore, e.g.  handwritten code can still
-	cause deadlocks.  @*
-	Upon violation, The following error is reported : @*
-@i{deadlock in model M}
-@item @i{compliance}: it checks that the component together with the required interfaces implements the
-	behavior: it checks that the component together with the required interfaces implements the behavior
-	specified in the provided interface(s).@*
-	Upon violation, The following error is reported : @*
-@i{Component M is non-compliant with interface of provided port}
-@item @i{livelock}:
-	a component is said to be livelocked when it is permanently busy with internal behavior
-	but ceases to serve its clients.  For example, due to a design error such that the design
-	is constantly interacting with its used components and starving the client;
-	or due to the arrival rate of unconstrained external events such that processing them
-	starves the client.  As seen from the outside of a component, this appears very similar
-	to deadlock.  The difference is that a deadlocked component does nothing at all whereas
-	a livelocked component might be performing lots of actions, but none of them are visible
-	to the component's clients.@*
-	Upon violation, The following error is reported : @*
-@i{livelock in model M}
-@end itemize
-The checks that are executed differ for interfaces and components:
+@menu
+* Verification Checks and Errors::  Which properties are verified?
+* Verification Counter Examples::  What if verification fails?
+* Interpreting Verification Errors::  How to fix verification errors.
+@end menu
 
-@itemize
+@node Verification Checks and Errors
+@section Verification Checks and Errors
 
-@item For interfaces:
+A prerequisite for running the verification checks is for Dezyne code to
+be syntactically correct: any parse error prohibits the verification from
+running and must be fixed first.  Apart from syntactic parse errors, the
+parser also checks for a number of so-called ``well-formedness'' errors.
+A ``well-formedness'' error is a static check, i.e. a check that the
+parser can perform without considering runtime behavior (see
+@xref{Invoking dzn parse} and @xref{Well-formedness}).
 
-@itemize
+Dezyne verifies for interfaces and for components:
+
+@table @code
 
 @item deadlock
+A deadlock in an interface occurs when the interface reaches a state in
+which no @code{in}-events are specified.
+
+A deadlock is a situation where none of the components in a system can
+make progress; nothing can happen and the system simply does not
+respond.  This commonly occurs when two components each require an
+action from the other before they can perform any further action
+themselves.  Another common cause is when a component is waiting for
+some external event which fails to occur.
+
+In general, deadlocks can be hard to find because the entire system
+needs to be reviewed to discover them and freedom from deadlocks is a
+property of the system as a whole.  For example, component A might be
+waiting for B which is waiting for C while C is waiting for A.  Dezyne
+ensures that this never happens.  Each component by itself can be
+verified as being deadlock free and within Dezyne this deadlock property
+is compositional, which means that components can only be composed in
+ways that have been proven not to cause deadlock.
+
+@quotation Note
+Dezyne can only verify what it knows; therefore, e.g., handwritten code
+can still cause deadlocks.
+@end quotation
+
+Upon violation, the following error is reported:
+@example
+error: deadlock in model <name>
+@end example
+
 @item illegal
-@item range error
-@item type error
+A trigger that is not handled in a certain state, results in an
+@code{illegal}.  For components this is also verified for the use of the
+interfaces of its requires ports.
+
+Upon violation, the following error is reported:
+@example
+error: illegal action performed in model <name>
+@end example
+
 @item livelock
-@end itemize
+A livelock in an interface occurs when in a certain state an
+@code{inevitable} event can occur without any restriction, i.e., its
+state does not change.  This could starve the client that is interacting
+with this interface.
 
-@item For components:
+A livelock in a component occurs when it is permanently busy with
+internal behavior and fails to serve a provides port.  For example, due
+to a design error such that the design is constantly interacting with
+its requires ports and starving a provides port; or due to the arrival
+rate of unconstrained external events such that processing them starves
+a provides port.  As seen from the outside of a component, this appears
+very similar to deadlock.  The difference is that a deadlocked component
+does nothing at all whereas a livelocked component might be performing
+lots of actions, but none of them are visible to a component's provides
+port.
 
-@itemize
+Upon violation, the following error is reported:
+@code{livelock in model <name>}
 
-@item deterministic
-@item illegal
 @item range error
+Every possible assignment to a @code{subint} variable must be within its
+defined range.
+
+Upon violation, the following error is reported:
+@example
+error: integer range error in model <name>
+@end example
+
 @item type error
-@item queue full
-@item deadlock
+A trigger of a valued (i.e., non-@code{void}) event must reply a value
+of the type of the event.
+
+Upon violation, the following error is reported
+@example
+error: type error in model <name>
+@end example
+
+Note that trivial cases that can be checked statically, may be reported
+by the parser (@xref{Well-formedness}).
+
+@end table
+
+In addition, Dezyne verifies for interfaces:
+
+@table @code
+
+@item observable non-determinism
+Interfaces may specify non-deterministic behavior, as long as this
+non-determinism is observable by the client of that interface: after
+getting the response from the interface, a client must be able to
+determine what state the interface is in.
+
+The snippet below shows observable non-determinism, i.e., an example of
+allowed non-determinism:
+
+@example
+@dots{}
+[idle] on hello: @{world; idle=false;@}
+[idle] on hello: cruel;
+@dots{}
+@end example
+
+in the @code{idle} state, upon sending @code{hello} either @code{world}
+or @code{cruel} may happen.  This non-deterministic choice cannot be
+predicted.  However, when the client sees @code{world}, the state of the
+interface is @code{not idle}, after seeing @code{cruel}, the state is
+@code{idle}.
+
+This is an example of non-observable non-determinism, which is not
+allowed:
+
+@example
+@dots{}
+[idle] on hello: @{world;idle=false;@}
+[idle] on hello: world;
+@dots{}
+@end example
+
+as for a client it is impossible to tell if the interface is in state
+@code{idle} or in state @code{not idle}.
+
+Upon violation, the following error is reported:
+
+@example
+error: interface <name> is unobservably non-deterministic
+@end example
+@end table
+
+In addition, Dezyne verifies for components:
+
+@table @code
+
 @item compliance
-@item livelock
-@end itemize
+The component together with its required interfaces implements the
+component behavior.  The compliance check verifies that the component
+together with the required interfaces implements the behavior specified
+in the provided interface(s), i.e., whether the component honors its
+contracts.
 
-@end itemize
+Upon violation, the following error is reported:
+@example
+error: component <name> is non-compliant with interface(s) of provides port(s)
+@end example
+
+@item determinism
+Components in Dezyne are required to be deterministic.  The most common
+cause of non-determinism in a component is overlapping guards, i.e., in
+one state, for an event two different imperative statements are
+specified.  Upon violation the following error is reported:
+
+@code{error: component <name> is non-deterministic due to overlapping guards}
+@item queue full
+a Dezyne component has a queue where notification events are stored
+before they are processed.  During verification it is checked that that
+this queue does not overflow, i.e., that it remains non-blocking.  The
+queue size can be specified for verification with the
+@option{--queue-size} option.  The default queue size is @code{3}.
+
+Upon violation, the following error is reported
+@example
+error: queue full in model <name>
+@end example
+@end table
 
 For interfaces, the illegal check, range error check, and type error
 check are reported as part of the deadlock check.  For components, the
 range error check, the type error check, and queue full check are
 reported as part of the illegal check.
+
+@node Verification Counter Examples
+@section  Verification Counter Examples
+
+@cindex counter example
+@cindex event trace
+A verification error does not only show the error it has detected, it
+also shows @emph{where} it occurs.  Where an error occurs is specified
+by means of a @code{counter example}, or an event trace.
+
+Verifying
+
+@example
+@verbatiminclude examples/illegal-requires.dzn
+@end example
+
+gives:
+
+@example
+$ dzn verify doc/examples/illegal-requires.dzn
+model: hello
+h.hello
+w.hello
+<illegal>
+@end example
+
+at the end of running this trace, an @code{illegal} action occurs.
+
+@node Interpreting Verification Errors
+@section Interpreting Verification Errors
+
+Understanding why a certain verification error occurs, or how to fix it,
+is not always easy.  The simulator can help to interpret the error and
+identify what is going on (@xref{Invoking dzn simulate}): It can show
+the source locations where the error occurs and the state the interface(s)
+and/or the component(s) are in.
+
+@cindex event trace
+The simulator can interpret the counter example from the verifier:
+@example
+$ dzn verify doc/examples/illegal-requires.dzn \
+  | dzn simulate doc/examples/illegal-requires.dzn
+error: illegal action performed in model illegal_requires
+(header ((h) ihello provides) ((sut) illegal_requires component) ((w) ihello requires))
+(state ((h)) ((sut)) ((w)))
+doc/examples/illegal-requires.dzn:6:3: error: illegal
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.world -> ...
+... -> <external>.w.world
+<illegal>
+(state ((h)) ((sut)) ((w)))
+doc/examples/illegal-requires.dzn:6:3: error: illegal
+(trail "h.hello" "w.world" "<illegal>")
+(labels "h.hello" "h.world")
+(eligible)
+@end example
 
 @node Code Integration
 @chapter Code Integration
@@ -2269,7 +2439,7 @@ generate trace files even when @option{--lts} is used.
 @section Invoking @command{dzn verify}
 
 The @command{dzn verify} command checks a Dezyne file for verification
-errors in Dezyne models.  @xref{Verifying Models}.
+errors in Dezyne models.  @xref{Formal Verification}.
 
 @example
 dzn @var{dzn-option}@dots{} verify @var{option}@dots{} @file{FILE}
