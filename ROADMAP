@@ -25,8 +25,9 @@ for a Dezyne-IDE.  Version "2.12" included a Dezyne-IDE on par with
 remaining copy of the archaic object model parser, finally allowing for
 future language changes and extensions.
 
-Dezyne "3.0" should mark the long transition of Dezyne to a free
-software project: https://dezyne.org.
+Dezyne "3.0" has long been the milestone to mark mark the transition of
+Dezyne to a free software project: https://dezyne.org.  This has been
+prioritized to the "2.14" release.
 
 Below is a list of items we want for version "3.0" of Dezyne.
 
@@ -51,11 +52,30 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       How to test a <queue-full> without trace?
     + livelock_interface0: Simulator does not see the livelock
       How to find a livelock without a trace?
+  - Documentation
+    + Finish and merge wip-doc
+    + Review/rewrite doc/dezyne.texi
+      - Rewrite "Introduction"
+      - Rewrite "Verifying Models" => "Formal Verification
+      - Language Reference
+        + Merge: "The Dezyne Modeling Language" and "Dezyne Syntax"
+      - Well-formedness-tests: rewrite and generate from snippets
+  - dezyne.org
+    + remove binary downloads
+    + blog post about free software
+  - Release on savannah.nongnu.org
+   + Update all READMEs.
+   + create bug-dezyne@nongnu.org, dezyne-devel@nongnu.org
+   + register #dezyne
+  - Debian package
+    + Source build on Bullseye
 
 ** Release 2.15
   - collateral blocking
     + Finish and merge wip-blocking
       - async traces / async_blocking_ranking_disorder
+  - Finish and merge wip-stitch
+    + Cleanup dzn/lts.scm!
   - Documentation
     + Blocking, thread-safe-shell, external, collateral-block.
 
@@ -119,13 +139,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + vm: <modeling-reply-error> reply on modeling event
   - Documentation
     + Finish and merge wip-doc
-    + Review/rewrite doc/dezyne.texi
-      - Introduction
-      - The Dezyne Modeling Language
-      - Dezyne Syntax
       - Execution Semantics: generate!
-      - Well-formedness-tests: generate!
-    + Review/rewrite doc/dezyne-tutorial.texi
   - Code cleanups
     + parse options => parse #:imports #:model ...
     + cleanup and upstream PEG
@@ -138,7 +152,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 
 ** Release 3.0
   - Language extensions:
-    + full blocking support
     + hierarchical behaviors (sub machines)
     + data behavior (data interfaces, data shims)
     + structured state types
@@ -147,12 +160,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Simplify grammar through syntax
     + reconsider '.' as infix operator for scoping, field test (Pauls
       sugar), port event separator, ...
-  - Release on savannah.nongnu.org
-   + Update all READMEs.
-   + create dezyne-devel@nongnu.org, bug-dezyne@nongnu.org
-   + register #dezyne
-  - Debian package
-    + Source build on Buster
+    + Disallow UK English spelling of 'behaviour'
   - Documentation
     + Finish and merge wip-doc-snippets branch.
       - Merge snippets/tests with doc/dezyne.texi.
@@ -169,7 +177,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + i18n of doc/dezyne.texi.
     + Get translationproject.org involved.
   - Review dzn verify
-    + --format=STAGE: output intermediate stages (mcrl2, lts, asserts)
     + add hash to (cached) asserts output
   - dzn code
     + Finish C99 support (what about MISRA-C?)
