@@ -1,0 +1,99 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Rutger (regtur) van Beusekom <rutger@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// This is a Dezyne model of E.W. Dijkstra's dining philosophers. The
+// starvingphilosophers system will deadlock when the two philosophers
+// start eating together and both pickup their left fork before either
+// picking up their right fork.
+//
+// The dining_philosophers system will indefinitely serve the
+// philosophers as long as they are both are willing to continue to
+// alternate eating and thinking indefinitely, i.e. in C++ (code
+// generated with --shell=dining_philosophers):
+//
+// int
+// main ()
+// {
+//   dzn::locator locator;
+//   dzn::runtime runtime;
+//   dining_philosophers sut (locator.set (runtime));
+//
+//   std::thread t0([&]
+//   {
+//     while(true)
+//       {
+//         sut.p0.in.eat ();
+//         sut.p0.in.think ();
+//       }
+//   });
+//   std::thread t1([&]
+//   {
+//     while (true)
+//      {
+//         sut.p1.in.eat();
+//         sut.p1.in.think();
+//       }
+//   });
+//   t0.join ();
+//   t1.join ();
+// }
+//
+// Code:
+
+import philosopher.dzn;
+import fork.dzn;
+
+component Test
+{
+  provides blocking IMind m;
+  requires blocking IMind m0;
+  requires blocking IMind m1;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on m.start (): {idle = false; m0.start (); m1.start ();}
+    [!idle] on m.stop (): {idle = true; m0.stop (); m1.stop ();}
+  }
+}
+
+component dining_philosophers
+{
+  provides blocking IMind m;
+
+  system
+  {
+    philosopher P0;
+    vork F0;
+    philosopher P1;
+    vork F1;
+    Test T;
+
+    m <=> T.m;
+    T.m0 <=> P0.m;
+    T.m1 <=> P1.m;
+
+    P0.l <=> F0.l;
+    F0.r <=> P1.l;
+    P1.r <=> F1.l;
+    F1.r <=> P0.r;
+  }
+}

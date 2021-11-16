@@ -1,0 +1,103 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import timer.dzn;
+
+interface IFork
+{
+  in bool pickup ();
+  in void putdown ();
+
+  out void available ();
+
+  behavior
+  {
+    bool waiting = false;
+    bool idle = true;
+    [idle]
+    {
+      on pickup: {waiting = true; reply (false);}
+      on pickup: {waiting = false; idle = false; reply (true);}
+      [waiting] on inevitable: {waiting = false; available;}
+    }
+    [!idle]
+    {
+      on pickup: illegal;
+      on putdown: idle = true;
+    }
+  }
+}
+
+component ForkBehavior
+{
+  provides IFork l;
+  provides IFork r;
+
+  requires ITimer t;
+
+  behavior
+  {
+    bool pending = false;
+    enum Who {None, Left, Right};
+
+    Who taken = Who.None;
+    Who waiting = Who.None;
+
+    [taken.None]
+    {
+      on l.pickup (): {taken = Who.Left;  reply (true);}
+      on r.pickup (): {taken = Who.Right; reply (true);}
+    }
+    [taken.Left]
+    {
+      on l.putdown (): {taken = Who.None; if (waiting.Right && !pending) {pending = true; t.deferred ();}}
+      on r.pickup (): {waiting = Who.Right; reply (false);}
+    }
+    [taken.Right]
+    {
+      on r.putdown (): {taken = Who.None; if (waiting.Left && !pending) {pending = true; t.deferred ();}}
+      on l.pickup (): {waiting = Who.Left;  reply (false);}
+    }
+    on t.timeout ():
+    {
+      [waiting.Left] {pending = false; waiting = Who.None; l.available ();}
+      [waiting.Right]{pending = false; waiting = Who.None; r.available ();}
+    }
+  }
+}
+
+component vork
+{
+  provides IFork l;
+  provides IFork r;
+
+  system
+  {
+    ForkBehavior Fork;
+    Timer timer;
+
+    l <=> Fork.l;
+    r <=> Fork.r;
+    Fork.t <=> timer.t;
+  }
+}

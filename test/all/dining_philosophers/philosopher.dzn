@@ -1,0 +1,164 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Rutger (regtur) van Beusekom <rutger@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import timer.dzn;
+import fork.dzn;
+
+interface IPhilosopher
+{
+  in void think ();
+  in void eat ();
+
+  behavior
+  {
+    enum S {Thinking, Eating};
+    S s = S.Thinking;
+
+    [s.Thinking] on eat: s = S.Eating;
+    [s.Eating] on think: s = S.Thinking;
+  }
+}
+
+interface IMind
+{
+  in void start ();
+  in void stop ();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on start: idle = false;
+    [!idle] on stop: idle = true;
+  }
+}
+
+component PhilosopherMind
+{
+  provides blocking IMind m;
+  requires ITimer t;
+  requires blocking IPhilosopher p;
+
+  behavior
+  {
+    bool idle = true;
+    enum State {Eating, Thinking};
+    State s = State.Thinking;
+    [idle] on m.start (): {idle = false; t.deferred ();}
+    [!idle] on m.stop (): blocking {idle = true;}
+    [s.Thinking] on t.timeout ():
+    {
+      if (!idle)
+      {
+        p.eat ();
+        t.set ();
+        s = State.Eating;
+      }
+      else
+        m.reply ();
+    }
+    [s.Eating] on t.timeout (): {p.think (); t.set (); s = State.Thinking;}
+  }
+}
+
+component PhilosopherBehavior
+{
+  provides blocking IPhilosopher p;
+  requires IFork l;
+  requires IFork r;
+  requires ITimer t;
+
+  behavior
+  {
+    enum S {Thinking, AwaitingLeft, AwaitingRight, Eating};
+    S s = S.Thinking;
+
+    void pickup_left ()
+    {
+      if (l.pickup ())
+      {
+        t.set ();
+        s = S.AwaitingRight;
+      }
+      else
+        s = S.AwaitingLeft;
+    }
+    void pickup_right ()
+    {
+      if (r.pickup ())
+      {
+        p.reply ();
+        s = S.Eating;
+      }
+      else
+        s = S.AwaitingRight;
+    }
+
+    [s.Thinking]
+    {
+      blocking on p.eat ():
+      {
+        t.set ();
+        s = S.AwaitingLeft;
+      }
+    }
+    [s.AwaitingLeft]
+    {
+      on t.timeout (): pickup_left ();
+      on l.available (): t.set ();
+    }
+    [s.AwaitingRight]
+    {
+      on t.timeout (): pickup_right ();
+      on r.available (): t.set ();
+    }
+    [s.Eating]
+    {
+      on p.think (): {s = S.Thinking; l.putdown (); r.putdown ();}
+    }
+    [!s.AwaitingLeft] on l.available (): {}
+    [!s.AwaitingRight] on r.available (): {}
+  }
+}
+
+
+component philosopher
+{
+  provides blocking IMind m;
+  requires IFork l;
+  requires IFork r;
+
+  system
+  {
+    PhilosopherMind mind;
+    Timer fork_timer;
+    PhilosopherBehavior behave;
+    Timer behave_timer;
+
+    m <=> mind.m;
+    mind.p <=> behave.p;
+    mind.t <=> fork_timer.t;
+    behave.l <=> l;
+    behave.r <=> r;
+    behave.t <=> behave_timer.t;
+  }
+}

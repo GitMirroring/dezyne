@@ -389,6 +389,7 @@ REGRESSION_TESTS =				\
  %D%/determinism_shared2			\
  %D%/determinism_modeling			\
  %D%/determinism_silent				\
+ %D%/dining_philosophers			\
  %D%/dollars					\
  %D%/dollar_import				\
  %D%/double_collateral_blocking_shell		\
