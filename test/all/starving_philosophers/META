@@ -1,0 +1,3 @@
+;;; -*- scheme -*-
+((skip ("c" "javascript" "scheme" "execute" "simulate"))
+ (tss #t))

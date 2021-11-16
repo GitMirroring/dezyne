@@ -606,6 +606,7 @@ REGRESSION_TESTS =				\
  %D%/space.interface_shadow			\
  %D%/space.space				\
  %D%/space.wostream				\
+ %D%/starving_philosophers			\
  %D%/stateful_injected				\
  %D%/step_state					\
  %D%/stress_comment				\
