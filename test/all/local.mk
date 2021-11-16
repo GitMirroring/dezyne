@@ -312,6 +312,7 @@ REGRESSION_TESTS =				\
  %D%/determinism_modeling			\
  %D%/determinism_optional			\
  %D%/determinism_silent				\
+ %D%/dining_philosophers			\
  %D%/dollars					\
  %D%/double_collateral_blocking_shell		\
  %D%/double_hello_block				\
