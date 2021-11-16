@@ -515,6 +515,7 @@ REGRESSION_TESTS =				\
  %D%/space.interface_shadow			\
  %D%/space.space				\
  %D%/space.wostream				\
+ %D%/starving_philosophers			\
  %D%/state_deadlock				\
  %D%/stateful_injected				\
  %D%/step_state					\

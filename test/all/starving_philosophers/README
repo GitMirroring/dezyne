@@ -1,0 +1,26 @@
+# The trace was generated from the trace captured from running code from
+# the diningphilosophers example using the commented out port bindings.
+
+grep -E 'P0.P.p.|P0.P.t.|P1.P.p.|P1.P.t.|F0.F.t.|F1.F.t' ../diningphilosophers/deadlock | \
+sed -e 's,<external>.p0.eat -> sut.table.P0.P.p.eat,p0.eat,' \
+    -e 's,<external>.p0.return <- sut.table.P0.P.p.return,p0.return,' \
+    -e 's,<external>.p1.eat -> sut.table.P1.P.p.eat,p1.eat,' \
+    -e 's,<external>.p1.return <- sut.table.P1.P.p.return,p1.return,' \
+    -e 's,<external>.p0.think -> sut.table.P0.P.p.think,p0.think,' \
+    -e 's,<external>.p1.think -> sut.table.P1.P.p.think,p1.think,' \
+    -e 's,sut.table.P0.P.t.set -> sut.table.P0.T.t.set,pt0.set,' \
+    -e 's,sut.table.P0.P.t.return <- sut.table.P0.T.t.return,pt0.return,' \
+    -e 's,sut.table.P0.T.t.<q> <- sut.table.P0.P.t.timeout,pt0.timeout,' \
+    -e 's,sut.table.P0.P.t.timeout <- sut.table.P0.P.<q>,,' \
+    -e 's,sut.table.P1.P.t.set -> sut.table.P1.T.t.set,pt1.set,' \
+    -e 's,sut.table.P1.P.t.return <- sut.table.P1.T.t.return,pt1.return,' \
+    -e 's,sut.table.P1.T.t.<q> <- sut.table.P1.P.t.timeout,pt1.timeout,' \
+    -e 's,sut.table.P1.P.t.timeout <- sut.table.P1.P.<q>,,' \
+    -e 's,sut.table.F0.F.t.set -> sut.table.F0.T.t.set,ft0.set,' \
+    -e 's,sut.table.F0.F.t.return <- sut.table.F0.T.t.return,ft0.return,' \
+    -e 's,sut.table.F0.T.t.<q> <- sut.table.F0.F.t.timeout,ft0.timeout,' \
+    -e 's,sut.table.F0.F.t.timeout <- sut.table.F0.F.<q>,,'\
+    -e 's,sut.table.F1.F.t.set -> sut.table.F1.T.t.set,ft1.set,' \
+    -e 's,sut.table.F1.F.t.return <- sut.table.F1.T.t.return,ft1.return,' \
+    -e 's,sut.table.F1.T.t.<q> <- sut.table.F1.F.t.timeout,ft1.timeout,' \
+    -e 's,sut.table.F1.F.t.timeout <- sut.table.F1.F.<q>,,'

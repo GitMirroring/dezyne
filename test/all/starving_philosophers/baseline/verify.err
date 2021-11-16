@@ -1,0 +1,9 @@
+verify: IMind: check: deadlock: ok
+verify: IMind: check: livelock: ok
+verify: IMind: check: deterministic: ok
+verify: starving_philosophers: check: deterministic: ok
+verify: starving_philosophers: check: illegal: ok
+verify: starving_philosophers: check: deadlock: ok
+verify: starving_philosophers: check: livelock: fail
+error: livelock in model starving_philosophers
+verify: starving_philosophers: check: compliance: ok

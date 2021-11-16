@@ -1,0 +1,3 @@
+;;; -*- scheme -*-
+((skip ("execute" "simulate"))
+ (tss #t))

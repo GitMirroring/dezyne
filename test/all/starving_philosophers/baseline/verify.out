@@ -1,0 +1,25 @@
+model: starving_philosophers
+m0.start
+sut(.P0.fork_timer.t.defer
+sut(.P0.fork_timer.t.return
+m0.return
+sut(.P0.fork_timer.t.timeout
+sut(.P0.behave_timer.t.set
+sut(.P0.behave_timer.t.return
+m1.start
+sut(.P1.fork_timer.t.defer
+sut(.P1.fork_timer.t.return
+m1.return
+sut(.P1.fork_timer.t.timeout
+sut(.P1.behave_timer.t.set
+sut(.P1.behave_timer.t.return
+sut(.P0.behave_timer.t.timeout
+sut(.P0.behave_timer.t.set
+sut(.P0.behave_timer.t.return
+sut(.P1.behave_timer.t.timeout
+sut(.P1.behave_timer.t.set
+sut(.P1.behave_timer.t.return
+sut(.P0.behave_timer.t.timeout
+sut(.P1.behave_timer.t.timeout
+<loop>
+<livelock>
