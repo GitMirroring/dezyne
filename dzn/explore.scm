@@ -177,11 +177,12 @@ transitions."
                #:variables variables)))))
 
   (define (remove-state pc)
-    (if (and (not ports?) (not extended?)) pc
-        (let* ((state-list (.state-list (.state pc)))
-               (state-list (filter-map remove-extended state-list))
-               (state (make <system-state> #:state-list state-list)))
-          (clone pc #:state state))))
+    (let ((pc (clone pc #:blocked '())))
+      (if (and (not ports?) (not extended?)) pc
+          (let* ((state-list (.state-list (.state pc)))
+                 (state-list (filter-map remove-extended state-list))
+                 (state (make <system-state> #:state-list state-list)))
+            (clone pc #:state state)))))
 
   (define (hide-return-value pc)
     (let ((statement (.statement pc)))
@@ -477,16 +478,14 @@ RTC-LTS->LTS."
     (parameterize ((%instances (runtime:create-instances (%sut))))
       (let* ((pc (make-pc))
              (lts pc->state-number state-count (pc->rtc-lts pc))
-             (remove? (or ports? extended? actions? labels?))
              (size (1- (car state-count)))
              (lts pc->state-number state-count
-                  (if remove? (lts-remove lts size
-                                          #:ports? (or ports? extended?)
-                                          #:extended? extended?
-                                          #:actions? actions?
-                                          #:labels? labels?
-                                          #:self? #t)
-                      (values lts pc->state-number state-count)))
+                  (lts-remove lts size
+                              #:ports? (or ports? extended?)
+                              #:extended? extended?
+                              #:actions? actions?
+                              #:labels? labels?
+                              #:self? (or extended? ports?)))
              (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
         (if (equal? format "json") (display
                                     (state-diagram->json

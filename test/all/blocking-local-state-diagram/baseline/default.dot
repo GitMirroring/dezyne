@@ -8,6 +8,6 @@ begin -> 1
 1 -> 2 [label="p.cruel"]
 1 [label="[blocked=false]"]
 1 -> 2 [label="p.hello"]
-2 [label="[blocked=true]\nsut.p"]
+2 [label="[blocked=true]"]
 2 -> 1 [label="r.world\n-------\np.false"]
 }
