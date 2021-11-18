@@ -149,7 +149,7 @@ All rights reserved.
 (define (author-unique author)
   (cond
    ((string-prefix? "Henk Katerberg" author)
-    "Henk Katerberg <henk.katerberg@yahoo.com>")
+    "Henk Katerberg <hank@mudball.nl>")
    ((string-prefix? "Jan Nieuwenhuizen" author)
     "Jan (janneke) Nieuwenhuizen <janneke@gnu.org>")
    ((string-prefix? "Johri van Eerd" author)

@@ -5,7 +5,7 @@
 ;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2017 Henk Katerberg <henk.katerberg@yahoo.com>
+;;; Copyright © 2017 Henk Katerberg <hank@mudball.nl>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019 Henk Katerberg <henk.katerberg@yahoo.com>
+;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;

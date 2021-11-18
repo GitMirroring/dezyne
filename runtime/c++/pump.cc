@@ -2,7 +2,7 @@
 //
 // Copyright © 2015, 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rob@dezyne.org>
-// Copyright © 2016 Henk Katerberg <henk.katerberg@yahoo.com>
+// Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2015, 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
