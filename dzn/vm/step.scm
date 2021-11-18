@@ -366,21 +366,23 @@
                             (list (flush pc)))
       (let ((pc (continuation pc o))
             (trigger (.trigger pc)))
-        (cond ((ast:requires? trigger)
-               (list pc))
-              ((.released pc)
-               (let ((pc (clone pc #:released #f)))
-                 (list pc)))
-              (else
-               (let* ((instance (.instance pc))
-                      (r:port (runtime:port instance (.port trigger)))
-                      (pc (make <program-counter>
-                            #:async (.async pc)
-                            #:blocked (acons r:port pc (.blocked pc))
-                            #:external-q (.external-q pc)
-                            #:state (.state pc)
-                            #:trail (.trail pc))))
-                 (list pc)))))))
+        (if (ast:requires? trigger) (list pc)
+            (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
+                   (pc (pop-locals pc locals)))
+              (cond
+               ((.released pc)
+                (let ((pc (clone pc #:released #f)))
+                  (list pc)))
+               (else
+                (let* ((instance (.instance pc))
+                       (r:port (runtime:port instance (.port trigger)))
+                       (pc (make <program-counter>
+                             #:async (.async pc)
+                             #:blocked (acons r:port pc (.blocked pc))
+                             #:external-q (.external-q pc)
+                             #:state (.state pc)
+                             #:trail (.trail pc))))
+                  (list pc)))))))))
 
 (define-method (step (pc <program-counter>) (o <unblock>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
@@ -418,20 +420,28 @@
            (not (and (is-a? (and=> (.previous pc) .statement) <flush-return>)
                      (eq? (.instance pc) (.instance (.previous pc)))))
            (list (flush pc)))
-      (and (.released pc) (pair? (.blocked pc)) (step pc (make <unblock>)))
-      (let ((pc (set-handling? pc #f)))
-        (if (and (ast:out? (.trigger pc)) )
-            (let ((pc (if (.status pc) pc
-                          (pop-locals pc (filter (is? <variable>) (ast:statement* (.parent o)))))))
-              (list (pop-pc pc)))
-            (let* ((value (->sexp (get-reply pc)))
-                   (value (or (and (not (equal? value "void")) value) "return"))
-                   (return (make <trigger-return>
-                             #:location (.location o)
-                             #:port.name (.port.name (.trigger pc))
-                             #:event.name value))
-                   (pc (clone pc #:statement (clone return #:parent (.parent o)))))
-              (list pc))))))
+      (and (.released pc) (pair? (.blocked pc))
+           (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
+                  (pc (pop-locals pc locals)))
+             (step pc (make <unblock>))))
+      (let* ((pc (set-handling? pc #f))
+             (trigger (.trigger pc)))
+        (cond
+         ((.status pc)
+          (list (pop-pc pc)))
+         ((ast:out? trigger)
+          (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
+                 (pc (pop-locals pc locals)))
+            (list (pop-pc pc))))
+         (else
+          (let* ((value (->sexp (get-reply pc)))
+                 (value (or (and (not (equal? value "void")) value) "return"))
+                 (return (make <trigger-return>
+                           #:location (.location o)
+                           #:port.name (.port.name (.trigger pc))
+                           #:event.name value))
+                 (pc (clone pc #:statement (clone return #:parent (.parent o)))))
+            (list pc)))))))
 
 (define-method (step (pc <program-counter>) (o <trigger-return>))
   (define (valued-reply? pc o)
@@ -464,9 +474,13 @@
       (%debug "missing reply\n")
       (list (clone pc #:status error))))
    (else
-    (let* ((parent (.parent o))
-           (pc (if (.status pc) pc
-                   (pop-locals pc (filter (is? <variable>) (ast:statement* parent))))))
+    (let* ((trigger (.trigger pc))
+           (blocking? (and (ast:provides? trigger)
+                           (parent o <blocking>)))
+           (pc (if (or blocking? (.status pc)) pc
+                   (let ((locals (filter (is? <variable>)
+                                         (ast:statement* (.parent o)))))
+                     (pop-locals pc locals)))))
       (list (pop-pc pc))))))
 
 (define-method (step (pc <program-counter>) (o <flush-async>))
