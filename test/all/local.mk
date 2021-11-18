@@ -152,6 +152,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\
  %D%/blocking_local				\
+ %D%/blocking-local-state-diagram		\
  %D%/blocking_normalize				\
  %D%/blocking_provides_state			\
  %D%/blocking_requires				\

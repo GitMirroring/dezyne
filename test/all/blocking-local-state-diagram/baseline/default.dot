@@ -1,0 +1,13 @@
+digraph G {
+label="blocking_local_state_diagram" begin[shape="circle" width=0.3 fillcolor="black" style="filled" label=""]
+node[shape="rectangle" style="rounded"]
+begin -> 1
+1 [label="[blocked=false]"]
+1 -> 1 [label="r.world"]
+1 [label="[blocked=false]"]
+1 -> 2 [label="p.cruel"]
+1 [label="[blocked=false]"]
+1 -> 2 [label="p.hello"]
+2 [label="[blocked=true]\nsut.p"]
+2 -> 1 [label="r.world\n-------\np.false"]
+}
