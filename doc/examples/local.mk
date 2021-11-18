@@ -27,6 +27,7 @@ DEZYNE_EXAMPLES =				\
  %D%/ca.dzn					\
  %D%/compliance-multiple-provides-fork.dzn	\
  %D%/component-if-illegal.dzn			\
+ %D%/dzn.async.dzn				\
  %D%/inner-space.dzn				\
  %D%/inevitable-optional			\
  %D%/remote-timer-proxy.dzn			\
