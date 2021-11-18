@@ -33,7 +33,7 @@ DEZYNE_EXAMPLES =				\
  %D%/ihello-world.dzn				\
  %D%/illegal-requires.dzn			\
  %D%/inner-space.dzn				\
- %D%/inevitable-optional			\
+ %D%/inevitable-optional.dzn			\
  %D%/remote-timer-proxy.dzn			\
  %D%/simple-state-machine.dzn			\
  %D%/top-middle-bottom.dzn

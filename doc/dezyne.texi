@@ -1206,6 +1206,8 @@ In addition, Dezyne verifies for interfaces:
 
 @table @code
 
+@cindex non-determinism
+@cindex unobservable non-determinism
 @item observable non-determinism
 Interfaces may specify non-deterministic behavior, as long as this
 non-determinism is observable by the client of that interface: after
@@ -3262,6 +3264,30 @@ on hello: @{@}
 on inevitable: @{world; idle = true;@}
 @end example
 
+When two or more observably distinct imperative statements are specified
+for a certain trigger, the interface is said to behave
+@emph{non-deterministic} with respect to the trigger.  For example:
+
+@example
+on hello: world;
+on hello: cruel;
+@end example
+
+when the trigger @code{hello} is sent, the response can either be
+@code{world} or @code{cruel} but which one it will be cannot be
+predicted.  Non-determinism in interfaces is allowed as long as it is
+@emph{observable non-determinism}, i.e., after the trigger has returned
+the client should be able to know which state the interface is in.  For
+example, this is not allowed:
+
+@example
+on hello: @{@}
+on hello: idle = true;
+@end example
+
+and will lead to a verification error (@xref{Verification Checks and
+Errors}).
+
 @quotation Note
 
 @itemize
@@ -3944,9 +3970,21 @@ Formal parameters may introduce another name than specified in the
 For example:
 
 @example
-on p.hello (greeting): @{ w.hello (greeting); @}
-on p.cruel, r.hello: illegal;
+on p.hello (greeting): w.hello (greeting);
+on p.cruel, r.hello: illegal; // Note this is optional since 2.14.0.
 @end example
+
+When two or more imperative statements are specified for a certain
+trigger, the component is said to be @emph{non-deterministic}.  For
+example:
+
+@example
+on p.hello (): w.hello ();
+on p.hello (): ;
+@end example
+
+non-determinism in components is not allowed and will lead to a
+verification error (@xref{Verification Checks and Errors}).
 
 @node Blocking
 @subsubsection @code{blocking}
