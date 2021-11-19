@@ -392,7 +392,7 @@
              `(,(wfc-error o "nested blocking used")
                ,(wfc-info (parent (.parent o) <blocking>) "within blocking here")))
             ((> (length (ast:provides-port* model)) 1)
-             `(,(wfc-error o "blocking with multiple provide ports not supported")))
+             `(,(wfc-error o "cannot use blocking with multiple provide ports")))
             (else '()))))
   (append (blocking o) (wfc (.statement o))))
 
@@ -728,7 +728,7 @@
                                       (not (ast:eq? continuation (.statement (parent o <function>))))
                                       continuation)))
               (cond ((is-a? continuation <return>)
-                     `(,(wfc-error o "valued recursive functions not supported yet")
+                     `(,(wfc-error o "cannot use valued function in recursion")
                        ,(wfc-error continuation "statement after call")))
                     (continuation `(,(wfc-error o "no statement allowed after recursive function call")
                                     ,(wfc-error continuation "statement after call")))
