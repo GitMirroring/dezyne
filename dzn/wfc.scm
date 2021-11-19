@@ -499,21 +499,22 @@
   (define (trigger->string o)
     (format #f "~a.~a" (.port.name o) (.event.name o)))
   (let ((model (parent o <model>))
-         (on (parent o <on>)))
+        (on (parent o <on>)))
     (cond ((or (not (is-a? model <component>))
                (<= (length (ast:provides-port* model)) 1))
            (if on (reply-in-on o) (wfc-reply-expression o #f)))
           ((not on)
            `(,(wfc-error o "must specify a provides-port with reply")))
           ((let ((out-triggers (filter (compose ast:requires? .port) (ast:trigger* on))))
-             (and (pair? out-triggers)
-                  `(,(wfc-error
-                      o
-                      (format #f "must specify a provides-port with out-event: ~a"
-                              (string-join
-                               (map (compose single-quote trigger->string)
-                                    out-triggers)
-                               ", ")))))))
+             (and
+              (pair? out-triggers)
+              `(,(wfc-error
+                  o
+                  (format #f "must specify a provides-port with reply on requires out-trigger: ~a"
+                          (string-join
+                           (map (compose single-quote trigger->string)
+                                out-triggers)
+                           ", ")))))))
           (else (reply-in-on o)))))
 
 (define-method (wfc-reply-expression (o <reply>) port)
@@ -854,7 +855,7 @@
                  ,(wfc-info event "event defined here"))
                '()))
           ((not (%model-blocking?))     ; also covers interfaces
-           `(,(wfc-error o (format #f "cannot use reply on out-event `~a'" (.name event)))
+           `(,(wfc-error o (format #f "cannot use reply on requires out-trigger `~a'" (.name event)))
              ,(wfc-info event (format #f "event `~a' defined here" (.name event)))))
           (else (wfc-reply-expression o port)))))
 
