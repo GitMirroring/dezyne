@@ -1,6 +1,6 @@
 interface assign_outside_on
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     bool b = true;

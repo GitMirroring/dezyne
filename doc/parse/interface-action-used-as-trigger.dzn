@@ -1,6 +1,6 @@
 interface interface_action_used_as_trigger
 {
-  out void world();
+  out void world ();
   behavior
   {
     on world: {}

@@ -1,2 +1,2 @@
-component-requires-without-trigger.dzn:7:1: error: component with behavior must have a provides port
+component-requires-without-trigger.dzn:7:1: error: component with behavior must define a provides port
 component-requires-without-trigger.dzn:7:1: error: component with behavior must have a trigger

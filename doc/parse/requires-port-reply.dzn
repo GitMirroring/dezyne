@@ -1,7 +1,7 @@
 interface ihello
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
   behavior
   {
     on hello:;
@@ -17,8 +17,8 @@ component requires_port_repyl
   {
     blocking
     {
-      on p.hello(): p.reply();
-      on r.world(): r.reply();
+      on p.hello (): p.reply ();
+      on r.world (): r.reply ();
     }
   }
 }

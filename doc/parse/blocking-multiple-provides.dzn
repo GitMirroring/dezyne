@@ -1,6 +1,6 @@
 interface ihello
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     on hello:;
@@ -13,6 +13,6 @@ component blocking_multiple_provides
   provides ihello right;
   behavior
   {
-    blocking on left.hello(): left.reply ();
+    blocking on left.hello (): left.reply ();
   }
 }

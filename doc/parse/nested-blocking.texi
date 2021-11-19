@@ -1,2 +1,2 @@
-nested-blocking.dzn:15:35: error: nested blocking used
+nested-blocking.dzn:15:36: error: nested blocking used
 nested-blocking.dzn:15:5: info: within blocking here

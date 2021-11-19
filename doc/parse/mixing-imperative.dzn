@@ -1,6 +1,6 @@
 interface mixing_imperative
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     bool b = true;

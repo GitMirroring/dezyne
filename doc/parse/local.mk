@@ -39,6 +39,7 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/blocking-multiple-provides.dzn		\
  %D%/call-discard-value.dzn			\
  %D%/call-in-complex-expression.dzn		\
+ %D%/call-in-member-definition.dzn		\
  %D%/component-action-used-as-trigger.dzn	\
  %D%/component-provides-without-trigger.dzn	\
  %D%/component-requires-without-trigger.dzn	\

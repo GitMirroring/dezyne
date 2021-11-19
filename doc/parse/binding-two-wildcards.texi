@@ -1,3 +1,3 @@
 binding-two-wildcards.dzn:29:5: error: cannot bind two wildcards
 binding-two-wildcards.dzn:16:3: error: port `p' not bound
-binding-two-wildcards.dzn:26:5: error: of instance: `log'
+binding-two-wildcards.dzn:26:5: info: of instance: `log'

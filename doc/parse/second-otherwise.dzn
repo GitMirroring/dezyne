@@ -1,8 +1,8 @@
 interface second_otherwise
 {
-  in void hello();
-  in void cruel();
-  in void world();
+  in void hello ();
+  in void cruel ();
+  in void world ();
   behavior
   {
     bool b = true;

@@ -1,2 +1,2 @@
-otherwise-without-guard.dzn:8:5: error: cannot use otherwise with non-guard statements
+otherwise-without-guard.dzn:8:5: error: cannot use otherwise guard with non-guard statements
 otherwise-without-guard.dzn:7:5: info: non-guard statement here

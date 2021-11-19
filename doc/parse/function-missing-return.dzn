@@ -14,7 +14,7 @@ component function_missing_return
     bool a = true;
     bool b = false;
     bool c = true;
-    bool func()
+    bool func ()
     {
       if (a && b)
         return true;

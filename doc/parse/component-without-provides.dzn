@@ -1,6 +1,6 @@
 interface iworld
 {
-  in void hello();
+  in void hello ();
   behavior {}
 }
 

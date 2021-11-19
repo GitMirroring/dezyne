@@ -1,7 +1,7 @@
 interface ihello
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
   behavior {}
 }
 
@@ -11,10 +11,10 @@ component component_trigger_used_as_action
   requires ihello r;
   behavior
   {
-    on p.hello():
+    on p.hello ():
     {
-      p.hello();
-      r.world();
+      p.hello ();
+      r.world ();
     }
   }
 }

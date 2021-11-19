@@ -8,6 +8,6 @@ interface call_discard_value
       return true;
     }
 
-    on hello: f();
+    on hello: f ();
   }
 }

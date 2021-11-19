@@ -1,8 +1,8 @@
 interface nested_on
 {
-  in void hello();
-  in void cruel();
-  out void world();
+  in void hello ();
+  in void cruel ();
+  out void world ();
   behavior
   {
     on hello: on cruel: world;

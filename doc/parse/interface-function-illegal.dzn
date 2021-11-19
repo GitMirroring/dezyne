@@ -1,9 +1,9 @@
 interface interface_function_illegal
 {
-  in void hello();
+  in void hello ();
   behavior
   {
-    void f()
+    void f ()
     {
       illegal;
     }

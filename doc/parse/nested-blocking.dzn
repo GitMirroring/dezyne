@@ -1,6 +1,6 @@
 interface ihello
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     on hello:;
@@ -12,6 +12,6 @@ component nested_blocking
   provides ihello p;
   behavior
   {
-    blocking on p.hello(): [true] blocking p.reply ();
+    blocking on p.hello (): [true] blocking p.reply ();
   }
 }

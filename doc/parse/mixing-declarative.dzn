@@ -1,6 +1,6 @@
 interface mixing_declarative
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     [true]

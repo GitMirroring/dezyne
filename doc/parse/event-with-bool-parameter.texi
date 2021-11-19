@@ -1,1 +1,1 @@
-event-with-bool-parameter.dzn:4:18: error: type mismatch: parameter `b'; expected extern, found `bool'
+event-with-bool-parameter.dzn:4:18: error: type mismatch: parameter `b'; expected extern, found: `bool'

@@ -1,6 +1,6 @@
 interface ihello
 {
-  in void hello();
+  in void hello ();
   behavior {}
 }
 

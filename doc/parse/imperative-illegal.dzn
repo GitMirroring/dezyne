@@ -1,6 +1,6 @@
 interface imperative_illegal
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     bool b = false;

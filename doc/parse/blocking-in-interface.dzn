@@ -1,6 +1,6 @@
 interface blocking_in_interface
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     blocking on hello:;

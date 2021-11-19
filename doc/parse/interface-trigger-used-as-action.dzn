@@ -1,6 +1,6 @@
 interface interface_trigger_used_as_action
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     on hello: hello;

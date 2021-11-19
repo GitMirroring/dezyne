@@ -15,8 +15,10 @@ component parse_out_binding
   provides ihello p;
   behavior
   {
+    bool b = false;
     int data;
     blocking on p.hello (i <- data): {}
+    blocking on p.cruel (b <- data): {}
     blocking on p.cruel (data <- i): {}
     blocking on p.cruel (k <- b): {}
   }
