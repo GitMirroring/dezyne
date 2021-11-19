@@ -1,0 +1,88 @@
+interface ihello {
+    in void hello();
+    out void world();
+
+    behavior {
+        bool idle = true;
+        [idle] on hello: idle = false;
+        [!idle] {
+            on hello: illegal;
+            on inevitable: { world; idle= true;}
+        }
+   }
+}
+
+component dispatcher {
+    provides ihello p;
+    requires ihello r0;
+    requires ihello r1;
+
+    behavior {
+        bool idle = true;
+        bool use0 = false;
+
+        [idle] {
+            on p.hello(): {
+                if (use0) {
+                    r0.hello();
+                    idle = false;
+                }
+                else {
+                    r1.hello();
+                    idle = false;
+                }
+            }
+        }
+        [!idle] {
+            on r0.world(),
+               r1.world(): {
+                p.world();
+                idle = true;
+                use0=!use0;
+            }
+        }
+    }
+}
+
+component task {
+    provides ihello p;
+    requires ihello r;
+
+    behavior {
+        on p.hello(): r.hello();
+        on r.world(): p.world();
+    }
+}
+
+component shared {
+    provides ihello p0;
+    provides ihello p1;
+    requires ihello r;
+
+    behavior {
+        bool req0 = false;
+        on p0.hello(): {r.hello(); req0 = true; }
+        on p1.hello(): {r.hello(); req0 = false; }
+        [req0] on r.world(): p0.world();
+        [!req0] on r.world(): p1.world();
+    }
+}
+
+component hello_diamond {
+    provides ihello p;
+    requires ihello r;
+
+    system {
+        dispatcher d;
+        task t0;
+        task t1;
+        shared s;
+        
+        p <=> d.p;
+        d.r0 <=> t0.p;
+        d.r1 <=> t1.p;
+        t0.r <=> s.p0;
+        t1.r <=> s.p1;
+        s.r <=> r;
+    }
+}
