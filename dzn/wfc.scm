@@ -1070,7 +1070,7 @@
              (missing (filter (negate (is? <return>)) statements))
              (missing (delete-duplicates missing ast:eq?))
              (missing (collapse-if missing)))
-        (map (cute wfc-error <> "error: missing return") missing))))
+        (map (cute wfc-error <> "missing return") missing))))
 
 (define-method (call-context (o <ast>))
   (let* ((p (.parent o))
