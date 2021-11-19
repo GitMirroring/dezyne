@@ -1,7 +1,7 @@
 interface I
 {
-  in void a();
-  out void b();
+  in void a ();
+  out void b ();
   behavior
   {
     on a: b;
@@ -16,8 +16,8 @@ component indirect_blocking_multiple_external_out
   behavior
   {
     bool ready = true;
-    on p.a(): blocking {ready = false; r1.a(); r2.a();}
-    [!ready] on r1.b(), r2.b(): {ready = true; p.b();}
-    [ready] on r1.b(), r2.b(): p.reply();
+    on p.a (): blocking {ready = false; r1.a (); r2.a ();}
+    [!ready] on r1.b (), r2.b (): {ready = true; p.b ();}
+    [ready] on r1.b (), r2.b (): p.reply ();
   }
 }

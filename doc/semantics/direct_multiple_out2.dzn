@@ -6,7 +6,7 @@ component direct_multiple_out2
   requires I r;
   behavior
   {
-    on r.a(): {}
-    on r.b(): {p.a(); p.b();}
+    on r.a (): {}
+    on r.b (): {p.a (); p.b ();}
   }
 }

@@ -1,8 +1,8 @@
 interface I
 {
-  in void e();
-  out void a();
-  out void b();
+  in void e ();
+  out void a ();
+  out void b ();
   behavior
   {
     bool idle = true;
@@ -19,9 +19,9 @@ component external_multiple_out
   behavior
   {
     bool idle = true;
-    [idle] on p.e(): {idle = false; r.e();}
+    [idle] on p.e (): {idle = false; r.e ();}
     [!idle] on p.e: illegal;
-    on r.a(): {}
-    on r.b(): {idle = true; p.a(); p.b();}
+    on r.a (): {}
+    on r.b (): {idle = true; p.a (); p.b ();}
   }
 }

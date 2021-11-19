@@ -1,7 +1,7 @@
 interface I
 {
-  in void a();
-  out void b();
+  in void a ();
+  out void b ();
   behavior
   {
     on a: b;
@@ -15,8 +15,8 @@ component indirect_multiple_out1
   requires I r2;
   behavior
   {
-    on p.a(): {r1.a(); r2.a();}
-    on r1.b(): {}
-    on r2.b(): p.b();
+    on p.a (): {r1.a (); r2.a ();}
+    on r1.b (): {}
+    on r2.b (): p.b ();
   }
 }

@@ -5173,17 +5173,20 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 @tab -
 @item behavior
 @tab Keyword
-@tab Start of the behavior section within an interface or component definition; this keyword must be followed by @{@}.
+@tab Start of the behavior section within an interface or component definition;
+this keyword must be followed by @{@}.
 @tab @xref{Behavior} and @xref{Component Behavior}
 
 @item Bind
 @tab Concept
-@tab To associate two ports within a system section using the Dezyne language's &lt;=&gt; operator.
+@tab To associate two ports within a system section using the Dezyne
+language's &lt;=&gt; operator.
 @tab -
 
 @item blocking
 @tab Keyword
-@tab Qualifier to indicate that the executing of the trigger is blocked till a corresponding reply is given on the port of the trigger
+@tab Qualifier to indicate that the executing of the trigger is blocked till a
+corresponding reply is given on the port of the trigger
 @tab @xref{Blocking}
 
 @item bool
@@ -5193,17 +5196,20 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item Compliance
 @tab Concept
-@tab Whether or not, the behavior of a component complies to the behavior specification of the interface of each provided port.
+@tab Whether or not, the behavior of a component complies to the behavior
+specification of the interface of each provided port.
 @tab -
 
 @item Component
 @tab Concept
-@tab Unit of definition and instantiation.  A component has zero or more ports.  A component has a behavior section, system section, or none.
+@tab Unit of definition and instantiation.  A component has zero or more ports.
+A component has a behavior section, sysinstantiationtem section, or none.
 @tab -
 
 @item component
 @tab Keyword
-@tab Begins the definition of a component; this keyword must be followed by an identifier and @{@}.
+@tab Begins the definition of a component; this keyword must be followed by an
+identifier and @{@}.
 @tab @xref{Components}
 
 @item condition
@@ -5223,20 +5229,23 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item Event
 @tab Concept
-@tab An event is declared as part of an interface and represents the type of the messages communicated between components.  An event is implemented as a
- function call.
+@tab An event is declared as part of an interface and represents the type
+of the messages communicated between components.  An event is
+implemented as a function call.
 @tab -
 
 @item extern
 @tab Keyword
-@tab Type definition which can be used for data variables and data parameters.  Followed by an identifier and $$'s.  The part between $$'s is used in the
- generated code as the type definition for these data variables and
- parameters.
+@tab Type definition which can be used for data variables and data parameters.
+Followed by an identifier and $$'s.  The part between $$'s is used in
+the generated code as the type definition for these data variables and
+parameters.
 @tab @xref{Types and Expressions}
 
 @item external
 @tab Keyword
-@tab Qualifier of a provided port definition indicating that the out events can be possibly delayed which is taken into account during verification.
+@tab Qualifier of a provides port definition indicating that the out events
+can be possibly delayed which is taken into account during verification.
 @tab @xref{External}
 
 @item false
@@ -5251,29 +5260,37 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item Hand-written
 @tab Concept
-@tab A hand-written component is defined as a component without a behavior or system section in the component definition.  The implementation should be
- provided in the target source language.
+@tab A hand-written component is defined as a component without a behavior or
+system section in the component definition.  The implementation should
+be provided in the target source language.
 @tab -
 
 @item if
 @tab Keyword
-@tab The @code{if} keyword is followed by a boolean expression and a statement and optionally the keyword @code{else}; followed by a second
- statement
+@tab The @code{if} keyword is followed by a boolean expression and a statement
+and optionally the keyword @code{else}; followed by a second statement
 @tab @xref{Identifiers}
 
 @item illegal
 @tab Keyword
-@tab @code{illegal}.  As a direct response indicates that the given event in the given state is not allowed to be communicated.  Within a component, the @code{illegal} is also allowed within a function or @code{if}, indicating that the @code{illegal} should never be executed, i.e.  comparable with @code{assert(FALSE)}; of the C-language.
+@tab @code{illegal}.  As a direct response indicates that the given event
+in the given state is not allowed to be communicated.  Within a
+component, the @code{illegal} is also allowed within a function or
+@code{if}, indicating that the @code{illegal} should never be executed,
+i.e.  comparable with @code{assert(FALSE)}; of the C-language.
 @tab @xref{Illegal} and @xref{Component Illegal}
 
 @item import
 @tab Keyword
-@tab The file following the import keyword is loaded and expanded at the location of the @code{import}
+@tab The file following the import keyword is loaded and expanded at the
+location of the @code{import}
 @tab @xref{Identifiers}
 
 @item in
 @tab Keyword
-@tab Indicates for an event of an interface that the event is an incoming event '''or''' indicates for a data parameter of an event or function that the value of the parameter is incoming
+@tab Indicates for an event of an interface that the event is an incoming event
+'''or''' indicates for a data parameter of an event or function that the
+value of the parameter is incoming
 @tab @xref{Interfaces}
 
 @item inevitable
@@ -5283,23 +5300,27 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item injected
 @tab Keyword
-@tab Qualifier of a required port to indicate that the binding of the port occurs at a higher level in the system hierarchy.
+@tab Qualifier of a required port to indicate that the binding of the port
+occurs at a higher level in the system hierarchy.
 @tab @xref{Components}
 
 @item inout
 @tab Keyword
-@tab Indicates for a data parameter of an event or function that the value of the parameter is incoming at the begin of the event or function call, and
- outgoing at the end.
+@tab Indicates for a data parameter of an event or function that the value
+of the parameter is incoming at the begin of the event or function call,
+and outgoing at the end.
 @tab -
 
 @item Interface
 @tab Concept
-@tab An interface defines a set of events and the underlying protocol how components communicate between each other via their ports.
+@tab An interface defines a set of events and the underlying protocol how
+components communicate between each other via their ports.
 @tab -
 
 @item interface
 @tab Keyword
-@tab Begins the definition of an interface; this keyword must be followed by an identifier and @{@}.
+@tab Begins the definition of an interface; this keyword must be followed by
+an identifier and @{@}.
 @tab @xref{Interfaces}
 
 @item namespace
@@ -5309,7 +5330,8 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item on
 @tab Keyword
-@tab Identifies an @code{on} which for one or more trigger events defines the corresponding response.
+@tab Identifies an @code{on} which for one or more trigger events defines the
+corresponding response.
 @tab @xref{Imperative Statements}
 
 @item optional
@@ -5319,12 +5341,15 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item otherwise
 @tab Keyword
-@tab Defines a catch-all guard which is true only if all the other guard expressions in a list of @code{guard}s evaluate to false.
+@tab Defines a catch-all guard which is true only if all the other guard
+expressions in a list of @code{guard}s evaluate to false.
 @tab @xref{Declarative Statements}
 
 @item out
 @tab Keyword
-@tab Indicates for an event of an interface that the event is an outgoing event '''or''' indicates for a data parameter of an event of function that the value of the parameter is outgoing
+@tab Indicates for an event of an interface that the event is an outgoing event
+'''or''' indicates for a data parameter of an event of function that the
+value of the parameter is outgoing
 @tab @xref{Interfaces}
 
 @item Port
@@ -5334,22 +5359,26 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item provides
 @tab Keyword
-@tab Used in a component to define a port and its type which the component will provide.
+@tab Used in a component to define a port and its type which the component will
+provide.
 @tab @xref{Ports}
 
 @item reply
 @tab Keyword
-@tab Statement that defines the value that will be returned as result of the triggering event.
+@tab Statement that defines the value that will be returned as result of the
+triggering event.
 @tab @xref{Imperative Statements}
 
 @item requires
 @tab Keyword
-@tab Used in a component to define a port and its type which the component will use.
+@tab Used in a component to define a port and its type which the component
+will use.
 @tab @xref{Ports}
 
 @item return
 @tab Keyword
-@tab @code{return}; specifies the return value of a function (if any) and exits the function.
+@tab @code{return}; specifies the return value of a function (if any) and
+exits the function.
 @tab @xref{Functions}
 
 @item Sequence view
@@ -5364,7 +5393,8 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item subint
 @tab Keyword
-@tab A type representing a finite sequence of integers, expressed as @{m..n@} where m and n are integers and m &lt;= n, for example @{-2..1@}.
+@tab A type representing a finite sequence of integers, expressed as @{m..n@}
+where m and n are integers and m &lt;= n, for example @{-2..1@}.
 @tab @xref{Types and Expressions}
 
 @item System
@@ -5374,13 +5404,15 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item system
 @tab Keyword
-@tab Starts the system section of a component.  A system section consists of two parts: instantiations of subcomponents, followed by all the bindings
- among the sub-components and ports of the component.
+@tab Starts the system section of a component.  A system section consists
+of two parts: instantiations of subcomponents, followed by all the
+bindings among the sub-components and ports of the component.
 @tab @xref{Systems}
 
 @item Trace
 @tab Concept
-@tab An execution trace is a sequence of events representing a possible execution scenario.
+@tab An execution trace is a sequence of events representing a possible
+execution scenario.
 @tab -
 
 @item true
@@ -5395,16 +5427,19 @@ To edit @file{.DZN} files, use @file{emacs/dzn-mode.el}.
 
 @item Variable
 @tab Concept
-@tab Declared within a behavior section.  A member variable can be either a state variable which can be used a part of a guard of condition or a data variable
- which can be used as a parameter of events or functions
+@tab Declared within a behavior section.  A member variable can be either
+a state variable which can be used a part of a guard of condition or a
+data variable which can be used as a parameter of events or functions
 @tab -
 
 @item Verification
 @tab Concept
-@tab The execution of the verification
- engine which verifies for interfaces and components whether they are free of livelock, deadlock, and illegal behavior.  Also, for a component it is
- verified whether a component adheres to all the protocols (behavior) of the interfaces of the ports of the component.  During verification, all possible
- execution scenarios are considered guaranteeing a 100% coverage.
+@tab The execution of the verification engine which verifies for interfaces
+and components whether they are free of livelock, deadlock, and illegal
+behavior.  Also, for a component it is verified whether a component
+adheres to all the protocols (behavior) of the interfaces of the ports
+of the component.  During verification, all possible execution scenarios
+are considered guaranteeing a 100% coverage.
 @tab -
 @end multitable
 

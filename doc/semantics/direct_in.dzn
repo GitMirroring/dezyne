@@ -1,6 +1,6 @@
 interface I
 {
- in void a();
+ in void a ();
  behavior
  {
    on a: {}
@@ -13,6 +13,6 @@ component direct_in
   requires I r;
   behavior
   {
-    on p.a(): r.a();
+    on p.a (): r.a ();
   }
 }

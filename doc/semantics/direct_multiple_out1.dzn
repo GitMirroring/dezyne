@@ -1,7 +1,7 @@
 interface I
 {
-  out void a();
-  out void b();
+  out void a ();
+  out void b ();
   behavior
   {
     on inevitable: {a; b;}
@@ -14,7 +14,7 @@ component direct_multiple_out1
   requires I r;
   behavior
   {
-    on r.a(): p.a();
-    on r.b(): p.b();
+    on r.a (): p.a ();
+    on r.b (): p.b ();
   }
 }

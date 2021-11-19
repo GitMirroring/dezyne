@@ -7,8 +7,8 @@ component indirect_multiple_out2
   requires I r2;
   behavior
   {
-    on p.a(): {r1.a(); r2.a();}
-    on r1.b(): p.b();
-    on r2.b(): {}
+    on p.a (): {r1.a (); r2.a ();}
+    on r1.b (): p.b ();
+    on r2.b (): {}
   }
 }

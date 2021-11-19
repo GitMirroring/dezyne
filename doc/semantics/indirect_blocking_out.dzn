@@ -1,7 +1,7 @@
 interface I
 {
-  in void a();
-  out void b();
+  in void a ();
+  out void b ();
   behavior
   {
     on a: b;
@@ -10,8 +10,8 @@ interface I
 
 interface I2
 {
-   in void a();
-   out void b();
+   in void a ();
+   out void b ();
    behavior
    {
      bool idle = true;
@@ -27,7 +27,7 @@ component indirect_blocking_out
   requires I2 r;
   behavior
   {
-    blocking on p.a(): r.a();
-    on r.b(): {p.b(); p.reply();}
+    blocking on p.a (): r.a ();
+    on r.b (): {p.b (); p.reply ();}
   }
 }

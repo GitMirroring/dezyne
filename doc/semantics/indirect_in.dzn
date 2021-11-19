@@ -1,6 +1,6 @@
 interface U
 {
-  out void unused();
+  out void unused ();
   behavior
   {
     on inevitable: unused;
@@ -10,8 +10,8 @@ interface U
 
 interface I
 {
-  in void b();
-  out void a();
+  in void b ();
+  out void a ();
   behavior
   {
     on inevitable: a;
@@ -26,6 +26,6 @@ component indirect_in
   requires I r;
   behavior
   {
-    on r.a(): r.b();
+    on r.a (): r.b ();
   }
 }

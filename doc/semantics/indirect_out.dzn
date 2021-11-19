@@ -1,7 +1,7 @@
 interface I
 {
-  in void a();
-  out void b();
+  in void a ();
+  out void b ();
   behavior
   {
     on a: b;
@@ -14,7 +14,7 @@ component indirect_out
   requires I r;
   behavior
   {
-    on p.a(): r.a();
-    on r.b(): p.b();
+    on p.a (): r.a ();
+    on r.b (): p.b ();
   }
 }

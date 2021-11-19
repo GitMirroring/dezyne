@@ -1,6 +1,6 @@
 interface I
 {
-  out void a();
+  out void a ();
   behavior
   {
     on inevitable: a;
@@ -13,6 +13,6 @@ component direct_out
   requires I r;
   behavior
   {
-    on r.a(): p.a();
+    on r.a (): p.a ();
   }
 }
