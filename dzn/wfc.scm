@@ -77,7 +77,7 @@
 
 (define-method (wfc (o <interface>)) ;; is-a <model>
   (append
-   (re-declaration o)
+   (re-definition o)
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))
    (if (pair? (ast:event* o)) '()
@@ -90,7 +90,7 @@
 
 (define-method (wfc (o <component>)) ;; is-a <component-model>
   (append
-   (re-declaration o)
+   (re-definition o)
    (if (> (length (ast:provides-port* o)) 0) '()
        `(,(wfc-error o "component with behavior must define a provides port")))
    (let ((port-errors (append-map wfc (ast:port* o))))
@@ -100,7 +100,7 @@
 
 (define-method (wfc (o <system>)) ;; is-a <component-model>
   (append
-   (re-declaration o)
+   (re-definition o)
    (append-map wfc (ast:port* o))
    (append-map wfc (ast:instance* o))
    (recursive o)
@@ -116,7 +116,7 @@
 
 (define-method (wfc (o <instance>))
   (append
-   (re-declaration o)
+   (re-definition o)
    (let ((component (.type o)))
      (cond ((not component)
             `(,(wfc-error o (format #f "undefined component `~a'" (type-name (.type.name o))))))
@@ -126,11 +126,11 @@
   )
 
 (define-method (wfc (o <type>))
-  (re-declaration o))
+  (re-definition o))
 
 (define-method (wfc (o <enum>)) ;; is-a <type>
   (append
-   (re-declaration o)
+   (re-definition o)
    (let loop ((fields (ast:field* o)) (result '()))
      (if (null? fields) result
          (let* ((field (car fields))
@@ -144,14 +144,14 @@
    '()))
 
 (define-method (wfc (o <int>)) ;; is-a <type>
-  (append (re-declaration o)
+  (append (re-definition o)
           (let ((range (.range o)))
             (if (<= (.from range) (.to range)) '()
                 `(,(wfc-error o (format #f "subint `~a' has empty range" (type-name (.name o)))))))))
 
 (define-method (wfc (o <port>))
   (append
-   (re-declaration o)
+   (re-definition o)
    (if (ast:name-equal? (.name (parent o <model>)) (.name o))
        `(,(wfc-error o (format #f "port `~a' must not have the same name as the model it is defined in" (.name o))))
        '())
@@ -173,7 +173,7 @@
 
 (define-method (wfc (o <event>))
   (append
-   (re-declaration o)
+   (re-definition o)
    (cond ((and (ast:out? o) (ast:type o) (not (is-a? (ast:type o) <void>)))
           `(,(wfc-error o (format #f "out-event `~a' must be void, found `~a'" (.name o) (type-name (ast:type o))))))
          (else '()))
@@ -269,7 +269,7 @@
 
 (define-method (wfc (o <formal>))
   (append
-   (re-declaration o)
+   (re-definition o)
    (let ((type (ast:type o))
          (event (parent o <event>)))
      (append
@@ -311,7 +311,7 @@
 
 (define-method (wfc (o <variable>))
   (append
-   (re-declaration o)
+   (re-definition o)
    (assign o)))
 
 (define-method (wfc (model <model>) (o <variable>))
@@ -324,7 +324,7 @@
 
 (define-method (wfc (o <function>))
   (append
-   (re-declaration o)
+   (re-definition o)
    (wfc (.signature o))
    (wfc (.statement o))
    (missing-return o)))
@@ -417,7 +417,7 @@
 (define-method (wfc (o <variable>)) ;; is-a <imperative>
   (append
    (imperative-context o)
-   (re-declaration o)
+   (re-definition o)
    (assign o)))
 
 (define-method (wfc (o <action>)) ;; is-a <imperative>
@@ -755,7 +755,7 @@
               '()))
       '()))
 
-(define-method (re-declaration (o <declaration>))
+(define-method (re-definition (o <declaration>))
   (let* ((name (ast:name o))
          (scope (decl-scope o))
          (previous (and scope (ast:lookup scope name)))
@@ -765,8 +765,8 @@
              (ast:eq? scope previous-scope)
              (not (ast:eq? previous o))
              (not (is-a? previous <namespace>)))
-        `(,(wfc-error o (format #f "identifier `~a' declared before" (ast:name o)))
-          ,(wfc-info previous (format #f "previous `~a' declared here" (ast:name previous))))
+        `(,(wfc-error o (format #f "identifier `~a' defined before" (ast:name o)))
+          ,(wfc-info previous (format #f "previous `~a' definition here" (ast:name previous))))
         '())))
 
 
