@@ -185,7 +185,7 @@
      (cond ((not type)
             `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
            ((is-a? type <extern>)
-            `(,(wfc-error o (format #f "extern type `~a' is not allowed as return type" (type-name (.type.name o))))))
+            `(,(wfc-error o (format #f "cannot use extern type `~a' as return type" (type-name (.type.name o))))))
            (else '())))
    (append-map wfc (ast:formal* o))))
 
@@ -280,7 +280,7 @@
             (else '()))
       (cond
        ((and event (ast:out? event) (or (ast:out? o) (ast:inout? o)))
-        `(,(wfc-error o (format #f "~a-parameter not allowed on out-event `~a'" (.direction o) (.name event)))))
+        `(,(wfc-error o (format #f "cannot use ~a-parameter on out-event `~a'" (.direction o) (.name event)))))
        (else '()))))))
 
 (define-method (wfc (o <formal-binding>))
@@ -488,7 +488,7 @@
            `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
           ((not (is-a? (.type port) <interface>)) '()) ; reported before
           ((ast:requires? port)
-           `(,(wfc-error o (format #f "requires port `~a' not allowed in reply"
+           `(,(wfc-error o (format #f "cannot use requires port `~a' in reply"
                                    (.name port)))
              ,(wfc-info port "port defined here")))
           (on (reply-in-on o))
@@ -729,9 +729,9 @@
                                       continuation)))
               (cond ((is-a? continuation <return>)
                      `(,(wfc-error o "cannot use valued function in recursion")
-                       ,(wfc-error continuation "statement after call")))
-                    (continuation `(,(wfc-error o "no statement allowed after recursive function call")
-                                    ,(wfc-error continuation "statement after call")))
+                       ,(wfc-info continuation "statement after call")))
+                    (continuation `(,(wfc-error o "cannot use statement after recursive call")
+                                    ,(wfc-info continuation "statement after call")))
                     (else '()))))))
 
 (define-method (mixing-declarative-imperative (o <compound>))
@@ -854,7 +854,7 @@
                  ,(wfc-info event "event defined here"))
                '()))
           ((not (%model-blocking?))     ; also covers interfaces
-           `(,(wfc-error o (format #f "reply not allowed on out event `~a'" (.name event)))
+           `(,(wfc-error o (format #f "cannot use reply on out-event `~a'" (.name event)))
              ,(wfc-info event (format #f "event `~a' defined here" (.name event)))))
           (else (wfc-reply-expression o port)))))
 
