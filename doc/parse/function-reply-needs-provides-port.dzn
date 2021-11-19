@@ -1,0 +1,28 @@
+interface ihello
+{
+  in bool hello ();
+  behavior
+  {
+    on hello: reply (true);
+    on hello: reply (false);
+  }
+}
+
+component function_reply_needs_provides_port
+{
+  provides ihello left;
+  provides ihello right;
+  behavior
+  {
+    void f (bool b)
+    {
+      left.reply (b);
+    }
+    void g (bool b)
+    {
+      reply (b);
+    }
+    on left.hello (): f (true);
+    on right.hello (): g (false);
+  }
+}

@@ -48,6 +48,7 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/event-with-bool-parameter.dzn		\
  %D%/function-missing-return.dzn		\
  %D%/function-not-tail-recursive.dzn		\
+ %D%/function-reply-needs-provides-port.dzn	\
  %D%/imperative-illegal.dzn			\
  %D%/injected-with-out-event.dzn		\
  %D%/inout-parameter-on-out-event.dzn		\

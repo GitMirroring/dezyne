@@ -4653,6 +4653,7 @@ The well-formedness checks in alphabetical order:
 @xref{Interface must define a behavior},@*
 @xref{Interface must define an event},@*
 @xref{Missing return},@*
+@xref{Must specify provides-port with reply},@*
 @xref{Nested blocking used},@*
 @xref{Nested on used},@*
 @xref{Out-event must be void},@*
@@ -5152,6 +5153,24 @@ This results in the following error message:
 
 @example
 @verbatiminclude parse/requires-port-reply.texi
+@end example
+
+@anchor{Must specify provides-port with reply}
+@subsection Must specify @code{provides}-port with @code{reply}
+
+When a @code{reply} is used in the body of a function, and the component
+has multiple provides ports, the @code{reply} must specify which port it
+belongs to:
+
+@example
+@verbatiminclude parse/function-reply-needs-provides-port.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/function-reply-needs-provides-port.texi
 @end example
 
 @section Well-formedness Checks -- Valued Actions and Function Calls
