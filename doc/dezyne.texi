@@ -230,6 +230,97 @@ Binding
 
 * Using Injection::             Binding injected ports.
 
+Well-formedness
+
+* Well-formedness Checks Categories::  Types of checks.
+* List of Well-formedness Checks::  An alphabetical lookup list.
+* Well-formedness -- Top level::  Interfaces, events and components.
+* Well-formedness -- Directional::  Direction of trigger and action.
+* Well-formedness -- Nesting::  The right place for declarative and imperative.
+* Well-formedness -- Mixing::   Mixing of declarative and imperative.
+* Well-formedness -- Reply::    Reply and ports.
+* Well-formedness -- Valued Actions and Calls::  Careful use of values.
+* Well-formedness -- Injection::  Restrictions on injection.
+* Well-formedness -- System::   Correctly binding all ports.
+* Well-formedness -- Functions::  Returning and recursing.
+* Well-formedness -- Data Parameters::  Data type errors.
+
+Well-formedness -- Top level
+
+* Interface must define an event::
+* Interface must define a behavior::
+* Out-event must be void::
+* Component with behavior must have a trigger::
+* Component with behavior must define a provides port::
+
+Well-formedness -- Directional
+
+* Cannot use event as action::
+* Cannot use event as trigger::
+
+Well-formedness -- Nesting
+
+* Assign outside on::
+* Action outside on::
+* Nested on used::
+* Nested blocking used::
+* Cannot use blocking in an interface::
+* Cannot use blocking with multiple provides ports::
+
+Well-formedness -- Mixing
+
+* Declarative statement expected::
+* Imperative statement expected::
+* Cannot use otherwise guard more than once::
+* Cannot use otherwise guard with non-guard statements::
+* Cannot use illegal with imperative statements::
+* Cannot use illegal in if-statement::
+* Cannot use illegal in function::
+
+Well-formedness -- Reply
+
+* Cannot use requires port in reply::
+* Must specify provides-port with reply on out-trigger::
+* Must specify provides-port with reply::
+
+Well-formedness -- Valued Actions and Calls
+
+* Action in member variable initializer::
+* Action used in a complex expression::
+* Call in member variable initializer::
+* Call used in a complex expression::
+* Action value discarded::
+* Call value discarded::
+
+Well-formedness -- Injection
+
+* Injected port has out-events::
+
+Well-formedness -- System
+
+* Port not bound::
+* Port not bound -- of instance::
+* Port is bound more than once::
+* Cannot bind port to port::
+* Cannot bind two wildcards::
+* Instance is in a cyclic binding::
+* Cannot bind wildcard to requires port::
+* System composition is recursive::
+* Cannot bind external port to non-external port::
+
+Well-formedness -- Functions
+
+* Missing return::
+* Cannot use return outside of function::
+* Cannot use statement after recursive call::
+
+Well-formedness -- Data Parameters
+
+* Type mismatch -- parameter expected extern::
+* Cannot use out-parameter on out-event::
+* Cannot use inout-parameter on out-event::
+* Formal binding is not a data member variable::
+
 Contributing
 
 * Building from Git::           The latest and greatest.
@@ -4605,16 +4696,101 @@ expansion.
 
 @node Well-formedness
 @chapter Well-formedness
-The syntax as defined in @ref{Dezyne Language Reference} defines an asd
-language which is not restrictive enough for practical use.  This page
-describes a collection of well-formedness checks that are defined on top
-of the syntax.  Some of these checks are "common sense", other ones are
-needed to define appropriate semantics.
 
-@section Summary
+The syntax as defined in @ref{Dezyne Language Reference} leaves room for
+certain combinations and variations that would lead to Dezyne code that
+cannot be translated to an mCRL2 process algebra specification.  This
+chapter describes a collection of well-formedness checks that are
+defined on top of the syntax.
+
+Apart from the syntax checks performed by the parser, five additional
+categories of checks can be identified:
+
+@table @emph
+@item definition checks
+Upon failure, these produce a @code{undefined identifier} error,
+@item parameter checks
+Upon failure, these produce a @code{count mismatch} error,
+@item type checks
+Upon failure, these produce a @code{type-mismatch} error,
+@item shadowing checks
+Upon failure, these produce a @code{shadowing} error,
+@item well-formedness checks
+Semantic checks, a.k.a. ``well-formedness'' checks.  Upon failure, these
+produce a @code{well-formedness} error.
+@end table
+
+The first four categories are common programming errors and should not
+need additional explanation.  The last category---the well-formedness
+checks---are unique to Dezyne and are described in this chapter.
+
+@menu
+* Well-formedness Checks Categories::  Types of checks.
+* List of Well-formedness Checks::  An alphabetical lookup list.
+* Well-formedness -- Top level::  Interfaces, events and components.
+* Well-formedness -- Directional::  Direction of trigger and action.
+* Well-formedness -- Nesting::  The right place for declarative and imperative.
+* Well-formedness -- Mixing::   Mixing of declarative and imperative.
+* Well-formedness -- Reply::    Reply and ports.
+* Well-formedness -- Valued Actions and Calls::  Careful use of values.
+* Well-formedness -- Injection::  Restrictions on injection.
+* Well-formedness -- System::   Correctly binding all ports.
+* Well-formedness -- Functions::  Returning and recursing.
+* Well-formedness -- Data Parameters::  Data type errors.
+@end menu
+
+@node Well-formedness Checks Categories
+@section Well-formedness Checks Categories
+
+Well-formedness checks on the @code{behavior} part of a model come in a
+number of categories:
+
+@table @emph
+
+@item Top level
+Interface, event and component definitions.
+
+@item Directional
+@code{trigger}s and @code{action}s are expected at different places
+depending on the direction of their @code{event}.
+
+@item Nesting
+The imperative part of the language (@code{assign}s, @code{action}s,
+function @code{call}s) are only allowed in an imperative statement or in
+a function body,
+
+@item Mixing
+The use of statements within @code{compound}s is restricted,
+
+@item Reply
+The usage of @code{reply},
+
+@item Valued Actions and Calls
+The use of non-@code{void} @code{action}s and @code{call}s,
+
+@item Injection
+The use of @code{injected} ports,
+
+@item System
+All ports should be bound correctly.
+
+@item Functions
+A function body should be imperative, and have a well-defined return.
+
+@item Data Parameters
+The use of data parameters,
+
+@end table
+
+@quotation Note
+A trigger is an event that occurs and is prefixed by @code{on} in the
+behavior, an action is an event that is emitted inside the imperative
+body of a trigger.
+@end quotation
+
+@node List of Well-formedness Checks
+@section List of Well-formedness Checks
 The well-formedness checks in alphabetical order:
-
-@c XXX TODO; rewrite in a PDF'able format
 
 @*
 @xref{Action in member variable initializer},@*
@@ -4664,50 +4840,18 @@ The well-formedness checks in alphabetical order:
 @xref{System composition is recursive},@*
 @xref{Type mismatch -- parameter expected extern}.@*
 
-@section Checks
-Well-formedness checks on the Behavior part of a model come in a number
-of categories:
+@node Well-formedness -- Top level
+@section Well-formedness -- Top level
 
-@itemize
+@menu
+* Interface must define an event::
+* Interface must define a behavior::
+* Out-event must be void::
+* Component with behavior must have a trigger::
+* Component with behavior must define a provides port::
+@end menu
 
-@item
-Directional: @code{trigger}s and @code{action}s are expected at
-different places.
-
-@item
-Nesting: the imperative part of the language (@code{assign}s,
-@code{action}s, function @code{call}s) are only allowed in
-an imperative statement or in a function body.
-
-@item
-Mixing: The use of statements within @code{compound}s is restricted.
-
-@item
-Guards: There are some restrictions on what is allowed in a
-@code{guard}.
-
-@item
-Functions: a function body should be imperative, and have a well-defined
-return.
-
-@end itemize
-@quotation Note
-A trigger is an event that occurs and is prefixed by @code{on} in the
-behavior, an action is an event that is emitted inside the imperative
-body of a trigger.
-@end quotation
-
-Well-formedness checks for a system are:
-
-@itemize
-
-@item Binding: all ports should be bound correctly.
-
-@end itemize
-
-@section Well-formedness Checks -- Top level
-
-@anchor{Interface must define an event}
+@node Interface must define an event
 @subsection Interface must define an @code{event}
 
 Completely ``passive'' interfaces are not allowed; at least one
@@ -4724,7 +4868,7 @@ This results in the following error message:
 @verbatiminclude parse/interface-without-event.texi
 @end example
 
-@anchor{Interface must define a behavior}
+@node Interface must define a behavior
 @subsection Interface must define a @code{behavior}
 
 Interfaces without behavior are not allowed.  No adequate default
@@ -4741,7 +4885,7 @@ This results in the following error message:
 @verbatiminclude parse/interface-without-behavior.texi
 @end example
 
-@anchor{Out-event must be void}
+@node Out-event must be void
 @subsection @code{out}-event must be @code{void}
 
 Only @code{in}-events can have a non-@code{void} type.
@@ -4757,7 +4901,7 @@ This results in the following error message:
 @verbatiminclude parse/valued-out-event.texi
 @end example
 
-@anchor{Component with behavior must have a trigger}
+@node Component with behavior must have a trigger
 @subsection Component with behavior must have a trigger
 
 Any component with a @code{behavior} specification is supposed to be
@@ -4795,7 +4939,7 @@ This results in the following error messages:
 @verbatiminclude parse/component-requires-without-trigger.texi
 @end example
 
-@anchor{Component with behavior must define a provides port}
+@node Component with behavior must define a provides port
 @subsection Component with behavior must define a provides port
 
 Any component with a @code{behavior} specification must have a
@@ -4815,9 +4959,18 @@ The examples results in the following error messages:
 @verbatiminclude parse/component-without-provides.texi
 @end example
 
-@section Well-formedness Checks -- Directional
+@node Well-formedness -- Directional
+@section Well-formedness -- Directional
 
-@anchor{Cannot use event as action}
+@code{trigger}s and @code{action}s are expected at different places,
+depending on the direction of their @code{event}.
+
+@menu
+* Cannot use event as action::
+* Cannot use event as trigger::
+@end menu
+
+@node Cannot use event as action
 @subsection Cannot use event as action
 
 In an interface this indicates the an @code{in-}event--that can only be
@@ -4851,7 +5004,7 @@ This results in the following error messages:
 @verbatiminclude parse/component-trigger-used-as-action.texi
 @end example
 
-@anchor{Cannot use event as trigger}
+@node Cannot use event as trigger
 @subsection Cannot use event as trigger
 
 In an interface this indicates an @code{out}-event is used as a
@@ -4883,7 +5036,8 @@ This results in the following error messages:
 @verbatiminclude parse/component-action-used-as-trigger.texi
 @end example
 
-@section Well-formedness Checks -- Nesting
+@node Well-formedness -- Nesting
+@section Well-formedness -- Nesting
 
 Dezyne statements are either @emph{declarative} or @emph{imperative}.
 One or more declarative statements must be used as a prefix to the
@@ -4891,8 +5045,17 @@ imperative statement (@xref{Declarative Statements}).  Imperative
 statements cannot be used without a ``declarative prefix'', and
 declarative statements cannot be used inside an imperative statement
 
-@anchor{Assign outside on}
-@subsection @code{assign} outsie @code{on}
+@menu
+* Assign outside on::
+* Action outside on::
+* Nested on used::
+* Nested blocking used::
+* Cannot use blocking in an interface::
+* Cannot use blocking with multiple provides ports::
+@end menu
+
+@node Assign outside on
+@subsection @code{assign} outside @code{on}
 
 An @code{assign} occurred outside the scope of a declarative
 context:
@@ -4908,7 +5071,7 @@ This results in the following error message:
 @verbatiminclude parse/assign-outside-on.texi
 @end example
 
-@anchor{Action outside on}
+@node Action outside on
 @subsection @code{action} outside @code{on}
 
 An @code{action} occurred outside the scope of a declarative context:
@@ -4924,7 +5087,7 @@ This results in the following error message:
 @verbatiminclude parse/action-outside-on.texi
 @end example
 
-@anchor{Nested on used}
+@node Nested on used
 @subsection Nested @code{on} used
 
 @example
@@ -4938,7 +5101,7 @@ This results in the following error message:
 @verbatiminclude parse/nested-on.texi
 @end example
 
-@anchor{Nested blocking used}
+@node Nested blocking used
 @subsection Nested @code{blocking} used
 
 @example
@@ -4952,7 +5115,7 @@ This results in the following error message:
 @verbatiminclude parse/nested-blocking.texi
 @end example
 
-@anchor{Cannot use blocking in an interface}
+@node Cannot use blocking in an interface
 @subsection Cannot use @code{blocking} in an interface
 
 Event handling can be 'blocking' in component behavior only.  It is not
@@ -4969,7 +5132,7 @@ This results in the following error message:
 @verbatiminclude parse/blocking-in-interface.texi
 @end example
 
-@anchor{Cannot use blocking with multiple provides ports}
+@node Cannot use blocking with multiple provides ports
 @subsection Cannot use @code{blocking} with multiple @code{provides} ports
 
 A component with more than one provides port is not allowed to block
@@ -4986,7 +5149,8 @@ This results in the following error message:
 @verbatiminclude parse/blocking-multiple-provides.texi
 @end example
 
-@section Well-formedness Checks -- Mixing
+@node Well-formedness -- Mixing
+@section Well-formedness -- Mixing
 
 A behavior description introduces a sequence of statements.  A statement
 itself can be a @code{compound}, which is a sequence of statements
@@ -4995,7 +5159,17 @@ between curly braces.
 In order to be able to define clear semantics, there are some
 restrictions on the mix of statements in such a sequence.
 
-@anchor{Declarative statement expected}
+@menu
+* Declarative statement expected::
+* Imperative statement expected::
+* Cannot use otherwise guard more than once::
+* Cannot use otherwise guard with non-guard statements::
+* Cannot use illegal with imperative statements::
+* Cannot use illegal in if-statement::
+* Cannot use illegal in function::
+@end menu
+
+@node Declarative statement expected
 @subsection Declarative statement expected
 
 If a @code{compound} statement starts with a declarative statement, all
@@ -5012,7 +5186,7 @@ This results in the following error messages:
 @verbatiminclude parse/mixing-declarative.texi
 @end example
 
-@anchor{Imperative statement expected}
+@node Imperative statement expected
 @subsection Imperative statement expected
 
 If a @code{compound} statement starts with an imperative statement, all
@@ -5030,7 +5204,7 @@ This results in the following error message:
 @end example
 
 
-@anchor{Cannot use otherwise guard more than once}
+@node Cannot use otherwise guard more than once
 @subsection Cannot use @code{otherwise} guard more than once
 
 An @code{otherwise} guard catches the remaining cases for a list of
@@ -5048,7 +5222,7 @@ This results in the following error message:
 @verbatiminclude parse/second-otherwise.texi
 @end example
 
-@anchor{Cannot use otherwise guard with non-guard statements}
+@node Cannot use otherwise guard with non-guard statements
 @subsection Cannot use @code{otherwise} guard with non-guard statements
 
 An @code{otherwise} guard catches the remaining cases for a list of
@@ -5066,7 +5240,7 @@ This results in the following error message:
 @verbatiminclude parse/otherwise-without-guard.texi
 @end example
 
-@anchor{Cannot use illegal with imperative statements}
+@node Cannot use illegal with imperative statements
 @subsection Cannot use @code{illegal} with imperative statements
 
 An @code{illegal} statement must occur on its own; no other
@@ -5092,7 +5266,7 @@ In a component, using an @code{illegal} within a conditional statement
 @verbatiminclude examples/component-if-illegal.dzn
 @end example
 
-@anchor{Cannot use illegal in if-statement}
+@node Cannot use illegal in if-statement
 @subsection Cannot use @code{illegal} in @code{if}-statement
 
 In an interface, a @code{trigger} can only be declared @code{illegal} in
@@ -5110,7 +5284,7 @@ This results in the following error message:
 @verbatiminclude parse/interface-if-illegal.texi
 @end example
 
-@anchor{Cannot use illegal in function}
+@node Cannot use illegal in function
 @subsection Cannot use @code{illegal} in function
 
 In an interface, a @code{trigger} can only be declared @code{illegal} in
@@ -5128,7 +5302,8 @@ This results in the following error message:
 @verbatiminclude parse/interface-function-illegal.texi
 @end example
 
-@section Well-formedness Checks -- Reply
+@node Well-formedness -- Reply
+@section Well-formedness -- Reply
 
 A @code{reply} is required in the handling of a valued (i.e.
 non-@code{void}) trigger.  It is also required in case a @code{trigger}
@@ -5137,7 +5312,13 @@ mode; in that case the occurrence of the reply might be postponed.  In
 general this is hard to check statically.  What can be checked is
 described below.
 
-@anchor{Cannot use requires port in reply}
+@menu
+* Cannot use requires port in reply::
+* Must specify provides-port with reply on out-trigger::
+* Must specify provides-port with reply::
+@end menu
+
+@node Cannot use requires port in reply
 @subsection Cannot use @code{requires} port in @code{reply}
 
 A @code{reply} which is issued to release a blocking @code{trigger}
@@ -5156,7 +5337,7 @@ This results in the following error message:
 @verbatiminclude parse/requires-port-reply.texi
 @end example
 
-@anchor{Must specify provides-port with reply on out-trigger}
+@node Must specify provides-port with reply on out-trigger
 @subsection Must specify @code{provides}-port with @code{reply} on out-trigger
 
 When a @code{reply} is used in the body of a @code{requires-out}
@@ -5174,7 +5355,7 @@ This results in the following error message:
 @verbatiminclude parse/requires-reply-needs-provides-port.texi
 @end example
 
-@anchor{Must specify provides-port with reply}
+@node Must specify provides-port with reply
 @subsection Must specify @code{provides}-port with @code{reply}
 
 When a @code{reply} is used in the body of a function, and the component
@@ -5192,7 +5373,8 @@ This results in the following error message:
 @verbatiminclude parse/function-reply-needs-provides-port.texi
 @end example
 
-@section Well-formedness Checks -- Valued Actions and Function Calls
+@node Well-formedness -- Valued Actions and Calls
+@section Well-formedness -- Valued Actions and Calls
 
 Both @code{action}s and function @code{call}s can be valued, and as such
 are considered to be expressions.  The places where they can be called
@@ -5210,7 +5392,16 @@ global variable in a behavior.  Such an expression can not contain
 @code{action}s or function @code{call}s at all, since @code{action}s are
 only allowed within an @code{on}.
 
-@anchor{Action in member variable initializer}
+@menu
+* Action in member variable initializer::
+* Action used in a complex expression::
+* Call in member variable initializer::
+* Call used in a complex expression::
+* Action value discarded::
+* Call value discarded::
+@end menu
+
+@node Action in member variable initializer
 @subsection @code{action} in member variable initializer
 
 An @code{action} is used in the initial value of a member variable.
@@ -5226,7 +5417,7 @@ This results in the following error message:
 @verbatiminclude parse/action-in-member-definition.texi
 @end example
 
-@anchor{Action used in a complex expression}
+@node Action used in a complex expression
 @subsection @code{action} used in a complex expression
 
 An @code{action} is used in a complex expression.
@@ -5242,7 +5433,7 @@ This results in the following error messages:
 @verbatiminclude parse/action-in-complex-expression.texi
 @end example
 
-@anchor{Call in member variable initializer}
+@node Call in member variable initializer
 @subsection @code{call} in member variable initializer
 
 A function @code{call} is used in the initial value of a member
@@ -5259,7 +5450,7 @@ This results in the following error message:
 @verbatiminclude parse/call-in-member-definition.texi
 @end example
 
-@anchor{Call used in a complex expression}
+@node Call used in a complex expression
 @subsection @code{call} used in a complex expression
 
 A function @code{call} is used in a complex expression.
@@ -5275,7 +5466,7 @@ This results in the following error messages:
 @verbatiminclude parse/call-in-complex-expression.texi
 @end example
 
-@anchor{Action value discarded}
+@node Action value discarded
 @subsection @code{action} value discarded
 
 A valued Action is called without using its return value.
@@ -5291,7 +5482,7 @@ This results in the following error message:
 @verbatiminclude parse/action-discard-value.texi
 @end example
 
-@anchor{Call value discarded}
+@node Call value discarded
 @subsection @code{call} value discarded
 
 A valued function is called without using its return value.
@@ -5307,9 +5498,16 @@ This results in the following error message:
 @verbatiminclude parse/call-discard-value.texi
 @end example
 
-@section Well-formedness Checks -- Injection
+@node Well-formedness -- Injection
+@section Well-formedness -- Injection
 
-@anchor{Injected port has out-events}
+Not every port can be injected.
+
+@menu
+* Injected port has out-events::
+@end menu
+
+@node Injected port has out-events
 @subsection @code{injected} port has @code{out}-events
 
 When a Component has a @code{requires injected} port, its interface must
@@ -5326,7 +5524,8 @@ This results in the following error message:
 @verbatiminclude parse/injected-with-out-event.texi
 @end example
 
-@section Well-formedness Checks -- Binding
+@node Well-formedness -- System
+@section Well-formedness -- System
 
 In a system, the component's ports and all sub component's ports must be
 bound correctly.
@@ -5334,7 +5533,19 @@ bound correctly.
 Bindings in which `'wildcards'' are involved will be described at the
 end of this section.
 
-@anchor{Port not bound}
+@menu
+* Port not bound::
+* Port not bound -- of instance::
+* Port is bound more than once::
+* Cannot bind port to port::
+* Cannot bind two wildcards::
+* Instance is in a cyclic binding::
+* Cannot bind wildcard to requires port::
+* System composition is recursive::
+* Cannot bind external port to non-external port::
+@end menu
+
+@node Port not bound
 @subsection @code{port} not bound
 
 No binding is specified for a port of a system.
@@ -5350,7 +5561,7 @@ This results in the following error message:
 @verbatiminclude parse/port-not-bound.texi
 @end example
 
-@anchor{Port not bound -- of instance}
+@node Port not bound -- of instance
 @subsection @code{port} not bound -- of @code{instance}
 
 No binding is specified for a port of a component @code{instance}.
@@ -5366,7 +5577,7 @@ This results in the following error message:
 @verbatiminclude parse/instance-port-not-bound.texi
 @end example
 
-@anchor{Port is bound more than once}
+@node Port is bound more than once
 @subsection @code{port} is bound more than once
 
 More than one binding is specified for a port of a system or one of its
@@ -5383,7 +5594,7 @@ This results in the following error messages:
 @verbatiminclude parse/port-bound-twice.texi
 @end example
 
-@anchor{Cannot bind port to port}
+@node Cannot bind port to port
 @subsection Cannot bind port to port
 
 The directions of the left and right port mentioned in the binding do
@@ -5434,7 +5645,7 @@ This results in the following error messages:
 @verbatiminclude parse/binding-mismatch-direction.texi
 @end example
 
-@anchor{Cannot bind two wildcards}
+@node Cannot bind two wildcards
 @subsection Cannot bind two wildcards
 
 @example
@@ -5448,7 +5659,7 @@ This results in the following error messages:
 @verbatiminclude parse/binding-two-wildcards.texi
 @end example
 
-@anchor{Instance is in a cyclic binding}
+@node Instance is in a cyclic binding
 @subsection @code{instance} in in a cyclic binding
 
 We can define communication ``direction'' for bindings as follows:
@@ -5497,7 +5708,7 @@ This results in the following error message:
 @verbatiminclude parse/binding-cycle-elaborate.texi
 @end example
 
-@anchor{Cannot bind wildcard to requires port}
+@node Cannot bind wildcard to requires port
 @subsection Cannot bind wildcard to @code{requires} port
 
 Since @code{injected} ports are always @code{requires} ports and a
@@ -5515,7 +5726,7 @@ This results in the following error message:
 @verbatiminclude parse/binding-wildcard-requires.texi
 @end example
 
-@anchor{System composition is recursive}
+@node System composition is recursive
 @subsection System composition is recursive
 
 A system may instantiate an arbitrary set of components, which in turn
@@ -5538,7 +5749,7 @@ This results in the following error messages:
 @verbatiminclude parse/recursive-system.texi
 @end example
 
-@anchor{Cannot bind external port to non-external port}
+@node Cannot bind external port to non-external port
 @subsection Cannot bind @code{external} port to non-@code{external} port
 
 There is a restriction in the binding of external ports: when an
@@ -5558,7 +5769,8 @@ This results in the following error message:
 @verbatiminclude parse/binding-mismatch-external.texi
 @end example
 
-@section Well-formedness Checks -- Functions
+@node Well-formedness -- Functions
+@section Well-formedness -- Functions
 
 @itemize
 
@@ -5573,11 +5785,17 @@ A valued function is required to have an explicit return,
 A return is only allowed in a function body,
 
 @item
-A recursive function is required to be tail recursive,
+A recursive function is required to be tail recursive.
 
 @end itemize
 
-@anchor{Missing return}
+@menu
+* Missing return::
+* Cannot use return outside of function::
+* Cannot use statement after recursive call::
+@end menu
+
+@node Missing return
 @subsection Missing @code{return}
 
 A valued function should return a value using the @code{return}
@@ -5595,7 +5813,7 @@ This results in the following error message:
 @verbatiminclude parse/function-missing-return.texi
 @end example
 
-@anchor{Cannot use return outside of function}
+@node Cannot use return outside of function
 @subsection Cannot use @code{return} outside of function
 
 A @code{return} statement is restricted to function body.  So:
@@ -5611,7 +5829,7 @@ This results in the following error message:
 @verbatiminclude parse/return-outside-function.texi
 @end example
 
-@anchor{Cannot use statement after recursive call}
+@node Cannot use statement after recursive call
 @subsection Cannot use statement after recursive @code{call}
 
 A function that is recursive must be tail recursive, i.e., in its body
@@ -5634,11 +5852,19 @@ Two functions @code{f} and @code{g} that are defined in terms of each
 other are mutual recursive and are thus also considered to be recursive.
 @end quotation
 
-@section Well-formedness Checks -- Data Parameters
+@node Well-formedness -- Data Parameters
+@section Well-formedness -- Data Parameters
 
 The restrictions on data parameters are summarised here.
 
-@anchor{Type mismatch -- parameter expected extern}
+@menu
+* Type mismatch -- parameter expected extern::
+* Cannot use out-parameter on out-event::
+* Cannot use inout-parameter on out-event::
+* Formal binding is not a data member variable::
+@end menu
+
+@node Type mismatch -- parameter expected extern
 @subsection Type mismatch: parameter expected @code{extern}
 
 All event parameters specified in an event definition must be data
@@ -5655,7 +5881,7 @@ This results in the following error message:
 @verbatiminclude parse/event-with-bool-parameter.texi
 @end example
 
-@anchor{Cannot use out-parameter on out-event}
+@node Cannot use out-parameter on out-event
 @subsection Cannot use @code{out}-parameter on @code{out}-event
 
 An @code{out}-event must not have an @code{out}-parameter.
@@ -5671,7 +5897,7 @@ This results in the following error message:
 @verbatiminclude parse/out-parameter-on-out-event.texi
 @end example
 
-@anchor{Cannot use inout-parameter on out-event}
+@node Cannot use inout-parameter on out-event
 @subsection Cannot use @code{inout}-parameter on @code{out}-event
 
 An @code{out}-event must not have an @code{inout}-parameter.  An
@@ -5688,7 +5914,7 @@ This results in the following error message:
 @verbatiminclude parse/inout-parameter-on-out-event.texi
 @end example
 
-@anchor{Formal binding is not a data member variable}
+@node Formal binding is not a data member variable
 @subsection Formal binding is not a data member variable
 
 Formal binding, which is the binding of a data member variable
