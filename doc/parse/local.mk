@@ -70,6 +70,7 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/port-bound-twice.dzn			\
  %D%/recursive-system.dzn			\
  %D%/requires-port-reply.dzn			\
+ %D%/requires-reply-needs-provides-port.dzn	\
  %D%/return-outside-function.dzn		\
  %D%/second-otherwise.dzn			\
  %D%/valued-out-event.dzn

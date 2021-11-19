@@ -1,0 +1,1 @@
+requires-reply-needs-provides-port.dzn:30:20: error: must specify a provides-port with reply on requires out-trigger: `r.world'
