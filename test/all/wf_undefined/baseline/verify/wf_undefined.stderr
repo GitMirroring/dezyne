@@ -3,12 +3,12 @@ test/all/wf_undefined/wf_undefined.dzn:26:18: error: unknown type name `xxxint'
 test/all/wf_undefined/wf_undefined.dzn:28:5: error: unknown type name `yint'
 test/all/wf_undefined/wf_undefined.dzn:30:7: error: unknown type name `zint'
 test/all/wf_undefined/wf_undefined.dzn:38:6: error: unknown type name `EE'
-test/all/wf_undefined/wf_undefined.dzn:41:13: error: no field `EN4' in enum `I1`; expected EN1, EN2, EN3
+test/all/wf_undefined/wf_undefined.dzn:41:13: error: no field `EN4' in enum `I1'; expected: `EN1', `EN2', `EN3'
 test/all/wf_undefined/wf_undefined.dzn:37:3: info: enum defined here
 test/all/wf_undefined/wf_undefined.dzn:42:5: error: unknown type name `ENN'
-test/all/wf_undefined/wf_undefined.dzn:44:12: error: no field `EN5' in enum `I1`; expected EN1, EN2, EN3
+test/all/wf_undefined/wf_undefined.dzn:44:12: error: no field `EN5' in enum `I1'; expected: `EN1', `EN2', `EN3'
 test/all/wf_undefined/wf_undefined.dzn:37:3: info: enum defined here
-test/all/wf_undefined/wf_undefined.dzn:47:13: error: no field `EN0' in enum `I1`; expected EN1, EN2, EN3
+test/all/wf_undefined/wf_undefined.dzn:47:13: error: no field `EN0' in enum `I1'; expected: `EN1', `EN2', `EN3'
 test/all/wf_undefined/wf_undefined.dzn:37:3: info: enum defined here
 test/all/wf_undefined/wf_undefined.dzn:68:3: error: undefined interface `I3'
 test/all/wf_undefined/wf_undefined.dzn:70:3: error: undefined interface `I4'
@@ -40,6 +40,6 @@ test/all/wf_undefined/wf_undefined.dzn:101:15: error: undefined port `p3' for `w
 test/all/wf_undefined/wf_undefined.dzn:91:1: info: `wf_undefined' defined here
 test/all/wf_undefined/wf_undefined.dzn:102:5: error: undefined port `p3' for `C1'
 test/all/wf_undefined/wf_undefined.dzn:66:1: info: `C1' defined here
-test/all/wf_undefined/wf_undefined.dzn:103:5: error: instance expected, found `c2'
+test/all/wf_undefined/wf_undefined.dzn:103:5: error: instance expected, found: `c2'
 test/all/wf_undefined/wf_undefined.dzn:98:5: info: defined here
 test/all/wf_undefined/wf_undefined.dzn:103:14: error: undefined identifier `c3'

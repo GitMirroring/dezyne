@@ -121,7 +121,7 @@
      (cond ((not component)
             `(,(wfc-error o (format #f "undefined component `~a'" (type-name (.type.name o))))))
            ((not (is-a? component <component-model>))
-            `(,(wfc-error o (format #f "component expected, found `~a ~a'" (ast-name component) (type-name component)))))
+            `(,(wfc-error o (format #f "component expected, found: `~a ~a'" (ast-name component) (type-name component)))))
            (else '()))))
   )
 
@@ -147,7 +147,7 @@
   (append (re-declaration o)
           (let ((range (.range o)))
             (if (<= (.from range) (.to range)) '()
-                `(,(wfc-error o (format #f "subint ~a has empty range" (type-name (.name o)))))))))
+                `(,(wfc-error o (format #f "subint `~a' has empty range" (type-name (.name o)))))))))
 
 (define-method (wfc (o <port>))
   (append
@@ -159,7 +159,7 @@
      (cond ((not interface)
             `(,(wfc-error o (format #f "undefined interface `~a'" (type-name (.type.name o))))))
            ((not (is-a? interface <interface>))
-            `(,(wfc-error o (format #f "interface expected, found `~a ~a'" (ast-name interface) (type-name interface)))))
+            `(,(wfc-error o (format #f "interface expected, found: `~a ~a'" (ast-name interface) (type-name interface)))))
            ((and (.injected o)
                  (let ((out-events (filter ast:out? (ast:event* o))))
                    (and (pair? out-events)
@@ -197,7 +197,7 @@
           ((equal-type? argument-type formal-type)
            '())
           (else
-           `(,(wfc-error argument (format #f "type mismatch: expected `~a', found `~a'"
+           `(,(wfc-error argument (format #f "type mismatch: expected `~a', found: `~a'"
                                           (type-name formal-type)
                                           (type-name argument-type)))
              ,(wfc-info formal (format #f "for formal `~a' defined here" (.name formal))))))))
@@ -276,7 +276,7 @@
       (cond ((not type)
              `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
             ((and event (not (is-a? type <extern>)))
-             `(,(wfc-error o (format #f "type mismatch: parameter `~a'; expected extern, found `~a'" (.name o) (type-name type)))))
+             `(,(wfc-error o (format #f "type mismatch: parameter `~a'; expected extern, found: `~a'" (.name o) (type-name type)))))
             (else '()))
       (cond
        ((and event (ast:out? event) (or (ast:out? o) (ast:inout? o)))
@@ -506,8 +506,13 @@
            `(,(wfc-error o "must specify a provides-port with reply")))
           ((let ((out-triggers (filter (compose ast:requires? .port) (ast:trigger* on))))
              (and (pair? out-triggers)
-                  `(,(wfc-error o (format #f "must specify a provides-port with out-event: ~a"
-                                          (string-join (map trigger->string out-triggers) ", ")))))))
+                  `(,(wfc-error
+                      o
+                      (format #f "must specify a provides-port with out-event: ~a"
+                              (string-join
+                               (map (compose single-quote trigger->string)
+                                    out-triggers)
+                               ", ")))))))
           (else (reply-in-on o)))))
 
 (define-method (wfc-reply-expression (o <reply>) port)
@@ -539,7 +544,7 @@
                    `(,(wfc-error o "cannot use return outside of function")))
                   ((pair? wfce) '())
                   ((not (equal-type? function-type return-type))
-                   `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+                   `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
                                            (type-name function-type)
                                            (type-name return-type)))))
                   (else '())))))
@@ -591,14 +596,14 @@
     (cond ((not type)
            `(,(wfc-error o (format #f "undefined identifier `~a'" (type-name (.type.name o))))))
           ((not (is-a? type <enum>))
-           `(,(wfc-error o (format #f "enum type expected, found ~a" (type-name (.name type))))))
+           `(,(wfc-error o (format #f "enum type expected, found: `~a'" (type-name (.name type))))))
           (else (let ((field (.field o))
                       (fields (ast:field* type)))
                   (if (not (member field fields))
-                      `(,(wfc-error o (format #f "no field `~a' in enum `~a`; expected ~a"
+                      `(,(wfc-error o (format #f "no field `~a' in enum `~a'; expected: ~a"
                                               field
                                               (type-name o)
-                                              (string-join fields ", ")))
+                                              (string-join (map single-quote fields) ", ")))
                         ,(wfc-info type "enum defined here"))
                       '()))))))
 
@@ -669,13 +674,13 @@
           ((not type)
            '()) ;; already covered (?)
           ((not (is-a? type <enum>))
-           `(,(wfc-error o (format #f "type mismatch: expected enum, found `~a'"
+           `(,(wfc-error o (format #f "type mismatch: expected enum, found: `~a'"
                                    (type-name type)))))
           ((not (member field fields))
-           `(,(wfc-error o (format #f "no field `~a' in enum `~a'; expected ~a"
+           `(,(wfc-error o (format #f "no field `~a' in enum `~a'; expected: `~a'"
                                    field
                                    (type-name type)
-                                   (string-join fields ", ")))
+                                   (string-join (map single-quote fields) ", ")))
              ,(wfc-info type "enum defined here")))
           (else '()))))
 
@@ -708,7 +713,10 @@
 (define-method (defined-function (o <call>))
   (if (find (compose (cute ast:equal? (.function.name o) <>) .name)
             (ast:function* (parent o <behavior>))) '()
-      `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
+            `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
+
+(define (single-quote string)
+  (format #f "`~a'" string))
 
 (define-method (tail-recursion (o <call>))
   (let ((function (parent o <function>)))
@@ -797,7 +805,7 @@
                `(,(wfc-error o (format #f "uninitialized variable `~a'" (.name o))))))
           ((not assign-type) '()) ;; reported before
           ((not (equal-type? expression-type assign-type))
-           `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+           `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
                                    (type-name assign-type)
                                    (type-name expression-type)))))
           (else '()))))
@@ -839,7 +847,7 @@
           ((and (not unblock?) (not event-type)) '()) ; reported before
           ((and (not unblock?) (ast:in? event)) ; also covers interfaces
            (if (and reply-type (not (equal-type? event-type reply-type)))
-               `(,(wfc-error o (format #f "type mismatch: expected `~a', found `~a'"
+               `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
                                        (type-name event-type)
                                        (type-name reply-type)))
                  ,(wfc-info event "event defined here"))
@@ -885,9 +893,9 @@
                                (cond ((not instance)
                                       `(,(wfc-error o (format #f "undefined identifier `~a'" (.instance.name o)))))
                                      ((not (is-a? instance <instance>))
-                                      `(,(wfc-error o (format #f "instance expected, found ~a" (type-name (.name instance))))))
+                                      `(,(wfc-error o (format #f "instance expected, found: `~a'" (type-name (.name instance))))))
                                      ((not (is-a? (.type instance) <component-model>))
-                                      `(,(wfc-error o (format #f "instance expected, found `~a'" (.instance.name o)))
+                                      `(,(wfc-error o (format #f "instance expected, found: `~a'" (.instance.name o)))
                                         ,(wfc-info instance (format #f "defined here"))))
                                      (else '())))))
          (port-error (if (or (pair? instance-error) (ast:wildcard? (.port.name o))) '()
@@ -974,7 +982,7 @@
          (.type (.port left))
          (.type (.port right))
          (not (equal-type? (.type (.port left)) (.type (.port right)))))
-        `(,(wfc-error o (format #f "type mismatch: cannot bind port ~a of type `~a' to port ~a of type `~a'"
+        `(,(wfc-error o (format #f "type mismatch: cannot bind port `~a' of type `~a' to port ~a of type `~a'"
                                 (.port.name left) (type-name (.type (.port left)))
                                 (.port.name right) (type-name (.type (.port right)))))
           ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
