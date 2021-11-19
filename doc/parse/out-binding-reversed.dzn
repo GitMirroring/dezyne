@@ -18,5 +18,6 @@ component parse_out_binding
     int data;
     blocking on p.hello (i <- data): {}
     blocking on p.cruel (data <- i): {}
+    blocking on p.cruel (k <- b): {}
   }
 }

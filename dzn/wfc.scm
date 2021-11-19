@@ -284,8 +284,9 @@
        (else '()))))))
 
 (define-method (wfc (o <formal-binding>))
-  (if (.variable o) '()
-      `(,(wfc-error o (format #f "~a is not a member variable" (.variable.name o))))))
+  (let ((variable (.variable o)))
+    (if (is-a? (ast:type variable) <extern>) '()
+        `(,(wfc-error o (format #f "formal binding `~a' is not a data member variable" (.variable.name o)))))))
 
 (define-method (model-blocking? (o <model>))
   (and (is-a? o <component>)
