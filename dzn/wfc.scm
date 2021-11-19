@@ -362,7 +362,7 @@
                                     (member o (ast:statement* compound) ast:eq?))))
             (append
              (if (pair? non-guards)
-                 `(,(wfc-error o "cannot use otherwise with non-guard statements")
+                 `(,(wfc-error o "cannot use otherwise guard with non-guard statements")
                    ,(wfc-info (car non-guards) "non-guard statement here"))
                  '())
              (if (pair? otherwises)
