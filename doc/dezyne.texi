@@ -241,9 +241,9 @@ Well-formedness
 * Well-formedness -- Reply::    Reply and ports.
 * Well-formedness -- Valued Actions and Calls::  Careful use of values.
 * Well-formedness -- Injection::  Restrictions on injection.
-* Well-formedness -- System::   Correctly binding all ports.
 * Well-formedness -- Functions::  Returning and recursing.
 * Well-formedness -- Data Parameters::  Data type errors.
+* Well-formedness -- System::   Correctly binding all ports.
 
 Well-formedness -- Top level
 
@@ -296,18 +296,6 @@ Well-formedness -- Injection
 
 * Injected port has out-events::
 
-Well-formedness -- System
-
-* Port not bound::
-* Port not bound -- of instance::
-* Port is bound more than once::
-* Cannot bind port to port::
-* Cannot bind two wildcards::
-* Instance is in a cyclic binding::
-* Cannot bind wildcard to requires port::
-* System composition is recursive::
-* Cannot bind external port to non-external port::
-
 Well-formedness -- Functions
 
 * Missing return::
@@ -320,6 +308,18 @@ Well-formedness -- Data Parameters
 * Cannot use out-parameter on out-event::
 * Cannot use inout-parameter on out-event::
 * Formal binding is not a data member variable::
+
+Well-formedness -- System
+
+* Port not bound::
+* Port not bound -- of instance::
+* Port is bound more than once::
+* Cannot bind port to port::
+* Cannot bind two wildcards::
+* Instance is in a cyclic binding::
+* Cannot bind wildcard to requires port::
+* System composition is recursive::
+* Cannot bind external port to non-external port::
 
 Contributing
 
@@ -4734,9 +4734,9 @@ checks---are unique to Dezyne and are described in this chapter.
 * Well-formedness -- Reply::    Reply and ports.
 * Well-formedness -- Valued Actions and Calls::  Careful use of values.
 * Well-formedness -- Injection::  Restrictions on injection.
-* Well-formedness -- System::   Correctly binding all ports.
 * Well-formedness -- Functions::  Returning and recursing.
 * Well-formedness -- Data Parameters::  Data type errors.
+* Well-formedness -- System::   Correctly binding all ports.
 @end menu
 
 @node Well-formedness Checks Categories
@@ -4771,14 +4771,17 @@ The use of non-@code{void} @code{action}s and @code{call}s,
 @item Injection
 The use of @code{injected} ports,
 
-@item System
-All ports should be bound correctly.
-
 @item Functions
 A function body should be imperative, and have a well-defined return.
 
 @item Data Parameters
 The use of data parameters,
+
+@item Injection
+The use of @code{injected} ports,
+
+@item System
+All ports should be bound correctly.
 
 @end table
 
@@ -4842,6 +4845,9 @@ The well-formedness checks in alphabetical order:
 
 @node Well-formedness -- Top level
 @section Well-formedness -- Top level
+
+These checks are concerned about interface, event and component
+definitions.
 
 @menu
 * Interface must define an event::
@@ -5524,6 +5530,170 @@ This results in the following error message:
 @verbatiminclude parse/injected-with-out-event.texi
 @end example
 
+@node Well-formedness -- Functions
+@section Well-formedness -- Functions
+
+@itemize
+
+@item
+A function body can only contain imperative statements, including
+@code{action}s.  See the sections on 'Mixing' and 'Direction' above,
+
+@item
+A valued function is required to have an explicit return,
+
+@item
+A return is only allowed in a function body,
+
+@item
+A recursive function is required to be tail recursive.
+
+@end itemize
+
+@menu
+* Missing return::
+* Cannot use return outside of function::
+* Cannot use statement after recursive call::
+@end menu
+
+@node Missing return
+@subsection Missing @code{return}
+
+A valued function should return a value using the @code{return}
+statement.  An error is issued when a return is not guaranteed.  An
+example:
+
+@example
+@verbatiminclude parse/function-missing-return.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/function-missing-return.texi
+@end example
+
+@node Cannot use return outside of function
+@subsection Cannot use @code{return} outside of function
+
+A @code{return} statement is restricted to function body.  So:
+
+@example
+@verbatiminclude parse/return-outside-function.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/return-outside-function.texi
+@end example
+
+@node Cannot use statement after recursive call
+@subsection Cannot use statement after recursive @code{call}
+
+A function that is recursive must be tail recursive, i.e., in its body
+any recursive function call shall not be followed by other statements.
+So:
+
+@example
+@verbatiminclude parse/function-not-tail-recursive.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/function-not-tail-recursive.texi
+@end example
+
+@quotation Note
+Two functions @code{f} and @code{g} that are defined in terms of each
+other are mutual recursive and are thus also considered to be recursive.
+@end quotation
+
+@node Well-formedness -- Data Parameters
+@section Well-formedness -- Data Parameters
+
+The restrictions on data parameters are summarised here.
+
+@menu
+* Type mismatch -- parameter expected extern::
+* Cannot use out-parameter on out-event::
+* Cannot use inout-parameter on out-event::
+* Formal binding is not a data member variable::
+@end menu
+
+@node Type mismatch -- parameter expected extern
+@subsection Type mismatch: parameter expected @code{extern}
+
+All event parameters specified in an event definition must be data
+parameters; in other words, they must have a data type.  An example:
+
+@example
+@verbatiminclude parse/event-with-bool-parameter.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/event-with-bool-parameter.texi
+@end example
+
+@node Cannot use out-parameter on out-event
+@subsection Cannot use @code{out}-parameter on @code{out}-event
+
+An @code{out}-event must not have an @code{out}-parameter.
+
+@example
+@verbatiminclude parse/out-parameter-on-out-event.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/out-parameter-on-out-event.texi
+@end example
+
+@node Cannot use inout-parameter on out-event
+@subsection Cannot use @code{inout}-parameter on @code{out}-event
+
+An @code{out}-event must not have an @code{inout}-parameter.  An
+example:
+
+@example
+@verbatiminclude parse/inout-parameter-on-out-event.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/inout-parameter-on-out-event.texi
+@end example
+
+@node Formal binding is not a data member variable
+@subsection Formal binding is not a data member variable
+
+Formal binding, which is the binding of a data member variable
+@code{data} to an event parameter @code{p} using the @code{p <- data}
+construct, is only allowed in a component, in an @code{on} context.
+Using @code{<-} in any other context is reported as a parse error.
+
+@example
+@verbatiminclude parse/out-binding-reversed.dzn
+@end example
+
+@noindent
+This results in the following error messages:
+
+@example
+@verbatiminclude parse/out-binding-reversed.texi
+@end example
+
 @node Well-formedness -- System
 @section Well-formedness -- System
 
@@ -5767,170 +5937,6 @@ This results in the following error message:
 
 @example
 @verbatiminclude parse/binding-mismatch-external.texi
-@end example
-
-@node Well-formedness -- Functions
-@section Well-formedness -- Functions
-
-@itemize
-
-@item
-A function body can only contain imperative statements, including
-@code{action}s.  See the sections on 'Mixing' and 'Direction' above,
-
-@item
-A valued function is required to have an explicit return,
-
-@item
-A return is only allowed in a function body,
-
-@item
-A recursive function is required to be tail recursive.
-
-@end itemize
-
-@menu
-* Missing return::
-* Cannot use return outside of function::
-* Cannot use statement after recursive call::
-@end menu
-
-@node Missing return
-@subsection Missing @code{return}
-
-A valued function should return a value using the @code{return}
-statement.  An error is issued when a return is not guaranteed.  An
-example:
-
-@example
-@verbatiminclude parse/function-missing-return.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/function-missing-return.texi
-@end example
-
-@node Cannot use return outside of function
-@subsection Cannot use @code{return} outside of function
-
-A @code{return} statement is restricted to function body.  So:
-
-@example
-@verbatiminclude parse/return-outside-function.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/return-outside-function.texi
-@end example
-
-@node Cannot use statement after recursive call
-@subsection Cannot use statement after recursive @code{call}
-
-A function that is recursive must be tail recursive, i.e., in its body
-any recursive function call shall not be followed by other statements.
-So:
-
-@example
-@verbatiminclude parse/function-not-tail-recursive.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/function-not-tail-recursive.texi
-@end example
-
-@quotation Note
-Two functions @code{f} and @code{g} that are defined in terms of each
-other are mutual recursive and are thus also considered to be recursive.
-@end quotation
-
-@node Well-formedness -- Data Parameters
-@section Well-formedness -- Data Parameters
-
-The restrictions on data parameters are summarised here.
-
-@menu
-* Type mismatch -- parameter expected extern::
-* Cannot use out-parameter on out-event::
-* Cannot use inout-parameter on out-event::
-* Formal binding is not a data member variable::
-@end menu
-
-@node Type mismatch -- parameter expected extern
-@subsection Type mismatch: parameter expected @code{extern}
-
-All event parameters specified in an event definition must be data
-parameters; in other words, they must have a data type.  An example:
-
-@example
-@verbatiminclude parse/event-with-bool-parameter.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/event-with-bool-parameter.texi
-@end example
-
-@node Cannot use out-parameter on out-event
-@subsection Cannot use @code{out}-parameter on @code{out}-event
-
-An @code{out}-event must not have an @code{out}-parameter.
-
-@example
-@verbatiminclude parse/out-parameter-on-out-event.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/out-parameter-on-out-event.texi
-@end example
-
-@node Cannot use inout-parameter on out-event
-@subsection Cannot use @code{inout}-parameter on @code{out}-event
-
-An @code{out}-event must not have an @code{inout}-parameter.  An
-example:
-
-@example
-@verbatiminclude parse/inout-parameter-on-out-event.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/inout-parameter-on-out-event.texi
-@end example
-
-@node Formal binding is not a data member variable
-@subsection Formal binding is not a data member variable
-
-Formal binding, which is the binding of a data member variable
-@code{data} to an event parameter @code{p} using the @code{p <- data}
-construct, is only allowed in a component, in an @code{on} context.
-Using @code{<-} in any other context is reported as a parse error.
-
-@example
-@verbatiminclude parse/out-binding-reversed.dzn
-@end example
-
-@noindent
-This results in the following error messages:
-
-@example
-@verbatiminclude parse/out-binding-reversed.texi
 @end example
 
 @c *********************************************************************
