@@ -1,1 +1,1 @@
-test/all/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:24:1: error: interface must have an event
+test/all/wf_interfaceMustDefineEvent/wf_interfaceMustDefineEvent.dzn:24:1: error: interface must define an event

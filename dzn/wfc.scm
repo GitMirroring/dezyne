@@ -81,9 +81,9 @@
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))
    (if (pair? (ast:event* o)) '()
-       `(,(wfc-error o "interface must have an event")))
+       `(,(wfc-error o "interface must define an event")))
    (if (.behavior o) (wfc (.behavior o))
-       `(,(wfc-error o "interface must have a behavior")))))
+       `(,(wfc-error o "interface must define a behavior")))))
 
 (define-method (wfc (o <component-model>)) ;; is-a <model>
   (append-map wfc (ast:port* o)))
@@ -92,7 +92,7 @@
   (append
    (re-declaration o)
    (if (> (length (ast:provides-port* o)) 0) '()
-       `(,(wfc-error o "component with behavior must have a provides port")))
+       `(,(wfc-error o "component with behavior must define a provides port")))
    (let ((port-errors (append-map wfc (ast:port* o))))
      (if (or (pair? port-errors) (pair? (ast:in-triggers o))) port-errors
          `(,(wfc-error o "component with behavior must have a trigger"))))

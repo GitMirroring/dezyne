@@ -1,3 +1,3 @@
-test/all/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:33:1: error: component with behavior must have a provides port
+test/all/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:33:1: error: component with behavior must define a provides port
 test/all/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:33:1: error: component with behavior must have a trigger
 test/all/wf_componentNeedsTrigger/wf_componentNeedsTrigger.dzn:49:1: error: component with behavior must have a trigger
