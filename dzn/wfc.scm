@@ -1101,7 +1101,7 @@
      ((and (not (is-a? (ast:type o) <void>))
            (or (is-a? p <return>)
                (is-a? grand-parent <return>)))
-      `(,(wfc-error o (format #f "valued ~a used in a return expression" class))))
+      `(,(wfc-error o (format #f "~a used in a return expression" class))))
      ((and (not (is-a? (ast:type o) <void>))
            (not
             (or (is-a? p <assign>)
@@ -1141,7 +1141,7 @@
                    (or (is-a? great-grand-parent <if>)
                        (is-a? great-grand-parent <reply>)))
                  (ast:eq? (.left grand-parent) p))))
-      `(,(wfc-error o (format #f "valued ~a used in a complex expression" class))))
+      `(,(wfc-error o (format #f "~a used in a complex expression" class))))
      (else '()))))
 
 (define-method (imperative-context (o <ast>))
