@@ -53,7 +53,6 @@
 (define tau-loop (@@ (dzn lts) tau-loop))
 (define test-lts-livelock-2 (@@ (dzn lts) test-lts-livelock-2))
 (define step (@@ (dzn lts) step))
-(define aut-file-format-error (@@ (dzn lts) aut-file-format-error))
 (define main (@@ (dzn commands lts) main))
 
 
@@ -460,51 +459,7 @@
          (equal? lts-e lts-f1 lts-f2))))
 (test-assert (test:run))
 
-(define (test:aut-file-format-error)
-  (define correct-aut
-    (list "des (0,1,2)"
-          "(0,\"aap\",1)"
-          "(1,\"return\",0)"))
-  (define wrong-aut-header
-    (list "des(0,1,2)"
-          "(0,\"aap\",1)"
-          "(1,\"return\",0)"))
-  (define wrong-edge
-    (list "des (0,1,2)"
-          "(0,aap,1)"
-          "(1,\"return\",0)"))
-  (and (not (aut-file-format-error correct-aut))
-       (aut-file-format-error wrong-aut-header)
-       (aut-file-format-error wrong-edge)
-       #t))
-(test-assert (test:aut-file-format-error))
-
 (define (test:main)
-  ;; (main (list "command" "test/lts/verify-component.aut")) ;; display lts
-  (main (list "command" "--list-events" "test/lts/verify-provides.aut"))
-  (main (list "command" "--list-events" "--tau" "tau;pp'flush" "test/lts/verify-provides.aut"))
-  ;; (main (list "command" "--list-events" "test/lts/verify-component.aut"))
-  ;; (main (list "command" "--list-accepts" "test/lts/verify-provides.aut"))
-  (main (list "command" "--list-accepts" "test/lts/verify-component.aut"))
-  (main (list "command" "--list-accepts"
-              "--tau" "tau;pp'flush"
-              "--prefix" "pp'event(II'Actions'ic);pp'return(II'Actions'ic,reply_II'Void(void))"
-              "test/lts/verify-component.aut")) ;; list acceptances in initial state
-  (main (list "command" "--list-accepts"
-              "--prefix" "pp'event(II'Actions'ic);pp'return(II'Actions'ic,reply_II'Void(void))"
-              "test/lts/verify-component.aut")) ;; list acceptances in initial state
-  (main (list "command" "--list-accepts"
-              "--prefix" "pp'event(II'Actions'ia);pp'return(II'Actions'ia,reply_II'Void(void))"
-              "test/lts/verify-provides.aut")) ;; list acceptances in unstable state (1)
-  (main (list "command" "--list-accepts"
-              "--prefix" "pp'event(II'Actions'ia);pp'return(II'Actions'ia,reply_II'Void(void))"
-              "--tau" "tau;pp'flush"
-              "test/lts/verify-provides.aut"))
-  (main (list "command" "--list-accepts"
-              "--prefix" "create;hw.enable;hw.return;return;hw.interrupt"
-              "--tau" "tau;hw.interrupt;hw.return;hw.disable;hw.enable"
-              "test/lts/timer.aut")) ;; expect: ((timeout))
-
   (main (list "command" "--livelock"
               "test/lts/livelock.aut")) ;; expect: exit value: #f, stderr output: "tau loop found:\nblaat\nblaat\n"
   (main (list "command" "--livelock"
@@ -517,9 +472,6 @@
               "--tau" "tau"
               "test/lts/no-loop.aut")) ;; expect: exit value: ?? stderr output: "No tau loop found"
 
-  (main (list "command" "--deterministic"
-              "--tau" "tau"
-              "test/lts/deterministic-fail1.aut"))
   ;; expect: exit value: #f
   ;;         stderr output: "LTS is non-deterministic"
   ;;         stdout: "i.e\ni.return\ni.e"

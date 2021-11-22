@@ -2260,9 +2260,6 @@ The @var{option}s can be among the following:
 @itemx -d
 Detect deadlock in @var{lts} (after failures introduction).
 
-@item --deterministic
-Detect non-determinism in @var{lts} with respect to all labels.
-
 @item --exclude-illegal
 Remove edges leading to illegal (in combination with --failures).
 
@@ -2276,23 +2273,11 @@ Display help on invoking @code{dzn lts}, and then exit.
 
 @item --illegal
 @itemx -i
-Detect whether lts contains @code{<illegal>} labels.
-
-@item --list-accepts
-@itemx -a
-List acceptance sets for state reachable by @var{trace}.
-
-@item --list-events
-@itemx -e
-List event alphabet (edge labels) for each @var{file}.
+Detect whether @file{lts} contains @code{<illegal>} labels.
 
 @item --livelock
 @itemx -l
 Detect tau-loops in @var{lts}.
-
-@item --metrics
-@itemx -m
-Number of states and number of transitions.
 
 @item --deterministic-labels=@var{label}[,@var{label}@dots{}]
 @itemx -n @var{label}[,@var{label}@dots{}]
@@ -2311,10 +2296,6 @@ Hide all @var{event}s.
 @item --single-line
 @itemx -s
 Report an error including trace on a single line.
-
-@item --validate
-@itemx -v
-Validate Aldebaran (@var{aut}) files.
 
 @end table
 

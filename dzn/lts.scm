@@ -22,6 +22,11 @@
 ;;;
 ;;; Commentary:
 ;;;
+;;; XXX TODO: see wip-stitch
+;;;   * Remove duplicate <lts> data structure.
+;;;   * Reduce use of set! and general imperative style; use functional
+;;;     setters and map instead of for-each.
+;;;
 ;;; Code:
 
 (define-module (dzn lts)
@@ -55,6 +60,7 @@
             cleanup-aut
             cleanup-error
             cleanup-label
+            display-lts
             lts->alphabet
             lts->nodes
             lts->traces
@@ -66,7 +72,6 @@
             lts-edges
             lts-state
             lts-states
-            print-metrics
             remove-illegal
             rm-tau-loops
             run
@@ -74,10 +79,7 @@
             text->aut-header
             text->edge
             text-file->aut-header
-            validate-aut-file
-            write-lts))
-
-(define %version "git")
+             write-lts))
 
 (define (assert-file-exists file)
   (if (not (access? file R_OK))
@@ -627,49 +629,13 @@ required to be non-deterministic."
       (for-each (lambda (n) (set-node-succ! n (map replace-model-with-tau (node-succ n)))) lts-list)
       (list->vector lts-list))))
 
-
-;; - - - - -   w r i t e   a u t   f i l e - - - - -
-(define (write-lts  key single-line start-state lts)
-  (let* ((edges (append-map node-succ (vector->list lts)))
-         (header (string-join (list "des (" (number->string start-state) "," (number->string (length edges)) "," (number->string (vector-length lts))  ")") ""))
-         (lines (map
-                 (lambda (e)
-                   (string-join (list "(" (number->string (edge-start-state e)) ",\""
-                                      (edge-label e) "\","
-                                      (number->string (edge-end-state e)) ")") ""))
-                 edges)))
-    (if single-line (display (string-append key ":" (string-join (cons header lines) ";") "\n"))
-        (display (string-join (cons header lines) "\n")))))
-
-;; - - - - -   v a l i d a t e   a u t   f i l e   - - - - -
 (define aut-header-regex (make-regexp "^des [(]([0-9]+),([0-9]+),([0-9]+)[)]"))
 (define edge-regex (make-regexp "[(]([0-9]+),[\"](.*)[\"],([0-9]+)[)]"))
-(define (aut-file-format-error aut-lines)
-  "Error text string or #f"
-  (if (null? aut-lines)
-      "File empty"
-      (let* ((aut-lines (map (cut string-delete #\cr <>) aut-lines)) ;strip off 'carriage return' char (MS-DOS compatibility)
-             (aut-header (car aut-lines))
-             (valid-header? (regexp-exec aut-header-regex aut-header))
-             (valid-edges? (not (member #f (map (lambda (line)
-                                                  (regexp-exec edge-regex line))
-                                                (cdr aut-lines))))))
-        (cond ((not valid-header?) "Invalid aut header")
-              ((not valid-edges?) "Invalid aut edge")
-              (else #f)))))
 
-(define (validate-aut-file text)
-  (let* ((rm-empty-lines (lambda (lines) (filter (lambda (l) (not (equal? "" l))) lines)))
-         (error (aut-file-format-error (rm-empty-lines (text-file->line-list text)))))
-    error))
-
-(define (print-metrics aut-file)
-  ;; aut_header ::=  'des (' first_state ',' nr_of_transitions ',' nr_of_states ')'
-  (let* ((header-text (with-input-from-file aut-file read-line))
-         (header (text->aut-header header-text)))
-    (format #t "~a: Number of states: ~a, Number of transitions: ~a\n" aut-file (aut-header-nr-states header) (aut-header-nr-transitions header))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;
+;;; Generate traces.
+;;;
 
 (define %fout-inc 0)
 
@@ -913,6 +879,11 @@ required to be non-deterministic."
                                            #:illegal? illegal?
                                            #:internal? internal?)))))))
 
+
+;;;
+;;; Entry points.
+;;;
+
 (define* (cleanup-aut #:key file-name (illegal? #t) (internal? #t) prefix)
   (let ((input-port (if file-name (open-input-file file-name) (current-input-port)))
         (label-re (make-regexp "\"([^\"]*)\"")))
@@ -930,3 +901,24 @@ required to be non-deterministic."
                          'post)))
           (display out-line))
         (loop (read-line input-port 'concat))))))
+
+(define* (display-lts lts #:key (separator "\n"))
+  (let* ((edges (append-map node-succ (vector->list lts)))
+         (header (format #f "des (~a,~a,~a)"
+                         (root lts)
+                         (length edges)
+                         (vector-length lts)))
+         (lines (map
+                 (lambda (e)
+                   ;; format has a significant performance impact on
+                   ;; large LTSs.
+                   (string-append
+                    "("
+                    (number->string (edge-start-state e)) ","
+                    "\"" (edge-label e) "\","
+                    (number->string (edge-end-state e))
+                    ")"))
+                 edges))
+         (lines (cons header lines))
+         (text (string-join lines separator)))
+    (display text)))
