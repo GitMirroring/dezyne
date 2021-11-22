@@ -22,10 +22,20 @@
 ;;;
 ;;; Commentary:
 ;;;
-;;; XXX TODO: see wip-stitch
-;;;   * Remove duplicate <lts> data structure.
-;;;   * Reduce use of set! and general imperative style; use functional
-;;;     setters and map instead of for-each.
+;;; TODO:
+;;; * functional style
+;;;   + reduce use of set! and imperative style;
+;;;   + use functional setters and map instead of for-each.
+;;;   + make <edge> immutable
+;;;     - use set-field instead of set-edge-*!
+;;;   + make <node> immutable
+;;;     - use set-field instead of set-node-*!
+;;;   + remove set! (add-failures, lts-tau-loops, ... etc.)
+;;;   + use vector-map instead of vector-set! !
+;;; * remove edge-from
+;;; * remove node-state
+;;; * node-succ => node-edges
+;;; * move node-pred, node-color, node-parent etc into <node-info> record(s)
 ;;;
 ;;; Code:
 
@@ -46,42 +56,46 @@
   #:use-module (srfi srfi-43)
   #:use-module (dzn misc)
   #:use-module (dzn peg)
-  #:export (add-failures
+  #:export (%<declarative-illegal>
+            %<illegal>
+            add-failures
             assert-deadlock
-            assert-deterministic
             assert-file-exists
             assert-illegal
             assert-livelock
-            assert-partially-deterministic
+            assert-nondeterministic
             assert-unreachable
-            edge-label
-            aut-file->lts
             aut-text->lts
-            aut-header-regex
             cleanup-aut
             cleanup-error
-            cleanup-label
             display-lts
-            lts->alphabet
-            lts->nodes
+            edge-label
             lts->traces
             lts-hide
-            lts-stable-accepts
-            <lts>
-            make-edge
-            make-lts
-            lts-edges
-            lts-state
-            lts-states
+            make-shared-string
             remove-illegal
-            remove-tag-edges
-            rm-tau-loops
-            run
-            step-tau
-            text->aut-header
-            text->edge
-            text-file->aut-header
-             write-lts))
+            remove-tag-edges))
+
+(define %version "git")
+
+(define make-shared-string
+  (let ((table (make-hash-table)))
+    (lambda (string)
+      (or (hash-ref table string)
+          (begin
+            (hash-set! table string string)
+            string)))))
+
+(define %<ack> (make-shared-string "<ack>"))
+(define %<declarative-illegal> (make-shared-string "<declarative-illegal>"))
+(define %<defer> (make-shared-string "<defer>"))
+(define %<flush> (make-shared-string "<flush>"))
+(define %<illegal> (make-shared-string "<illegal>"))
+(define %<state> (make-shared-string "<state>"))
+(define %inevitable (make-shared-string "inevitable"))
+(define %optional (make-shared-string "optional"))
+(define %rtc (make-shared-string "rtc"))
+(define %tau (make-shared-string "tau"))
 
 (define (assert-file-exists file)
   (if (not (access? file R_OK))
@@ -96,32 +110,6 @@
 (define (text-file->line-list file-name)
   (text->line-list (with-input-from-file file-name read-string)))
 
-;; The Aldebaran file format is a simple format for storing labelled transition systems (LTS’s) explicitly.
-;; The syntax of an Aldebaran file consists of a number of lines, where the first line is aut_header and the remaining lines are aut_edge.
-
-;; aut_header is defined as follows:
-;;     aut_header        ::=  'des (' first_state ',' nr_of_transitions ',' nr_of_states ')'
-;;     first_state       ::=  number
-;;     nr_of_transitions ::=  number
-;;     nr_of_states      ::=  number
-
-;; Here:
-;;     first_state is a number representing the first state, which should always be 0
-;;     nr_of_transitions is a number representing the number of transitions
-;;     nr_of_states is a number representing the number of states
-
-;; An aut_edge is defined as follows:
-;;     aut_edge    ::=  '(' start_state ',' label ',' end_state ')'
-;;     start_state ::=  number
-;;     label       ::=  '"' string '"'
-;;     end_state   ::=  number
-
-;; Here:
-;;     start_state is a number representing the start state of the edge;
-;;     label is a string enclosed in double quotes representing the label of the edge;
-;;     end_state is a number representing the end state of the edge.
-
-
 (define-record-type <aut-header>
   (make-aut-header first-state nr-transitions nr-states)
   aut-header?
@@ -129,329 +117,241 @@
   (nr-transitions aut-header-nr-transitions)
   (nr-states aut-header-nr-states))
 
+(define aut-header-regex (make-regexp "^des [(]([0-9]+),([0-9]+),([0-9]+)[)]"))
 (define (text->aut-header text)
   (let* ((rem (regexp-exec aut-header-regex text))
          (first-state (and rem (string->number (match:substring rem 1))))
          (nr-transitions (and rem (string->number (match:substring rem 2))))
          (nr-states (and rem (string->number (match:substring rem 3)))))
-    (and first-state nr-transitions nr-states (make-aut-header first-state nr-transitions nr-states))))
+    (and initial nr-transitions nr-states (make-aut-header first-state nr-transitions nr-states))))
 
 (define-record-type <edge>
-  (make-edge_ start-state label tau? end-state)
+  (make-edge- from label to tau?)
   edge?
-  (start-state edge-start-state set-edge-start-state!)
+  (from edge-from set-edge-from!)
   (label edge-label set-edge-label!)
-  (tau? edge-tau?)
-  (end-state edge-end-state set-edge-end-state!))
+  (to edge-to set-edge-to!)
 
-;; (define edge-regex (make-regexp "[(]([0-9]+),[\"](.*)[\"],([0-9]+)[)]"))
-;; (define (text->edge text)
-;;   (let* ((rem (regexp-exec edge-regex text))
-;;          (start-state (and rem (string->number (match:substring rem 1))))
-;;          (label (and rem (match:substring rem 2)))
-;;          (end-state (and rem (string->number (match:substring rem 3)))))
-;;     (and start-state label end-state (make-edge start-state label end-state))))
-;; (define (test:text->edge)
-;;   (and (text->edge "(0,\"aap\",1)")
-;;        (not (text->edge "des (0,1,2)"))))
+  (tau? edge-tau? set-edge-tau?!))
+
 (define (text->edge text)
   (let* ((first-paren 0)
          (last-paren (string-length text))
          (first-comma (string-index text #\,))
          (last-comma (string-rindex text #\,))
-         (start-state (string->number (string-copy text (1+ first-paren) first-comma)))
+         (from (string->number (string-copy text (1+ first-paren) first-comma)))
          (label (string-copy text (+ 2 first-comma) (1- last-comma)))
-         (end-state (string->number (string-copy text (1+ last-comma) (1- last-paren)))))
-    (make-edge start-state label end-state)))
+         (to (string->number (string-copy text (1+ last-comma) (1- last-paren)))))
+    (make-edge from label to)))
 
-(define (make-edge start-state label end-state)
-  (make-edge_ start-state
-                  label
-                  (or (and (symbol? label) (equal? 'tau label))
-                      (and (string? label) (string= label "tau")))
-                  end-state))
+(define* (make-edge from label to #:key tau?)
+  (let ((label (make-shared-string label)))
+    (make-edge- from label to (or tau? (eq? %tau label)))))
 
 (define (clone-edge e)
-  (make-edge_ (edge-start-state e) (edge-label e) (edge-tau? e) (edge-end-state e)))
+  (make-edge- (edge-from e) (edge-label e) (edge-to e) (edge-tau? e)))
 
 (define (make-edge-loop)
-  (make-edge_ -1 "<loop>" #t -1))
+  (make-edge -1 "<loop>" -1 #:tau? #t))
 
-(define (states edges)
-  "List of states referenced in edges."
-  (sort (delete-duplicates (append (map edge-start-state edges) (map edge-end-state edges))) <))
+(define (edge-canonical-label edge)
+  (let ((label (edge-label edge)))
+    (if (string-prefix? "<state>" label) %<state> label)))
 
-(define (edges->successor-edge-vector states edges)
-  "Vector with successor edges per node"
+(define-record-type <node>
+  (make-node state succ pred initial? color parent distance cycle)
+  node?
+  (state node-state set-node-state!)
+  (succ node-succ set-node-succ!)             ; (<edge>)
+  (initial? node-initial? set-node-initial?!)
+  ;;
+  (pred node-pred set-node-pred!)
+  (color node-color set-node-color!)          ; integer
+  (parent node-parent set-node-parent!)       ; edge from parent
+  (distance node-distance set-node-distance!) ; -1 signifies infinite distance (unreachable)
+  (cycle node-cycle set-node-cycle!))         ; edge to previous node in tau-loop
 
-  (define (bin result state-nrs edges)
-    (if (null? state-nrs) result
-        (let* ((state (car state-nrs))
-               (parts (receive (state-edges other-edges)
-                          (span (lambda (e) (= state (edge-start-state e))) edges)
-                        (cons state-edges other-edges)))
-               (head (car parts))
-               (tail (cdr parts)))
-          (bin (cons head result) (cdr state-nrs) tail))))
+(define node-exclude? node-color)
+(define set-node-exclude?! set-node-color!)
+(define node-type node-color)
+(define set-node-type! set-node-color!)
+(define node-nondet-witness node-color)
+(define set-node-nondet-witness! set-node-color!)
 
-  (list->vector (bin '()
-                     (reverse (iota states))
-                     (sort edges (lambda (a b) (> (edge-start-state a) (edge-start-state b)))))))
+(define (clone-node n)
+  (make-node (node-state n) (node-succ n) (node-pred n) (node-initial? n) (node-color n) (node-parent n) (node-distance n) (node-cycle n)))
 
-(define (edges->predecessor-edge-vector states edges)
-  "Vector with predecessor edges per node"
+(define (initial lts)
+  "Index (state) of initial node in LTS vector."
+  (let it ((state 0))
+    (cond ((= (vector-length lts) state) 0)
+          ((node-initial? (vector-ref lts state)) state)
+          (else (it (1+ state))))))
 
-  (define (bin result state-nrs edges)
-    (if (null? state-nrs) result
-        (let* ((state (car state-nrs))
-               (parts (receive (state-edges other-edges)
-                          (span (lambda (e) (= state (edge-end-state e))) edges)
-                        (cons state-edges other-edges)))
-               (head (car parts))
-               (tail (cdr parts)))
-          (bin (cons head result) (cdr state-nrs) tail))))
 
-  (list->vector (bin '()
-                     (reverse (iota states))
-                     (sort edges (lambda (a b) (> (edge-end-state a) (edge-end-state b)))))))
+(define* (construct-lts header edges #:key traces?)
+  (let ((lts (make-vector (aut-header-nr-states header))))
+    (for-each
+     (lambda (state)
+       (vector-set!
+        lts
+        state
+        (make-node state '() '() #f WHITE #f -1 #f)))
+     (iota (aut-header-nr-states header)))
+    (for-each
+     (lambda (edge)
+       (let* ((from (edge-from edge))
+              (node (vector-ref lts from)))
+         (set-node-succ! node (cons edge (node-succ node))))
+       (when traces?
+         (let* ((to (edge-to edge))
+                (node (vector-ref lts to)))
+           (set-node-pred! node (cons edge (node-pred node))))))
+     edges)
+    (vector-for-each
+     (lambda (i node)
+       (set-node-succ! node
+                       (sort (node-succ node)
+                             (lambda (e0 e1)
+                               (string<? (edge-canonical-label e0)
+                                         (edge-canonical-label e1))))))
+     lts)
+    (set-node-initial?! (vector-ref lts (aut-header-first-state header)) #t)
+    (if traces? lts (annotate-parent lts))))
 
-;; - - - - -   l t s   - - - - -
-(define-record-type <lts>
-  (make-lts state states edges)
-  lts?
-  (state lts-state) ;; list of numbers (state identifiers)
-  (states lts-states set-lts-states!) ;; number of states in lts
-  (edges lts-edges set-lts-edges!) ;; list of <edge>
-  )
-
-(define (lts-succ lts state)
-  "Edges transitioning from STATE"
-  (filter (lambda (e) (= state (edge-start-state e))) (lts-edges lts)))
-
-(define (lts-pred lts state)
-  "Edges transitioning into STATE"
-  (filter (lambda (e) (= state (edge-end-state e))) (lts-edges lts)))
-
-(define (aut-text->lts text)
-  "List starting with one <aut-header> followed by multiple <edge>"
-  (define (remove-empty-lines lines)
-    (filter (lambda (l) (not (equal? "" l))) lines))
+(define* (aut-text->lts text #:key traces?)
+  "Vector of <node> representing LTS"
   (let* ((lines (text->line-list text))
          (lines (filter (negate string-null?) lines))
-         (header (car lines))
-         (edges (cdr lines)))
-    (make-lts (list (aut-header-first-state (text->aut-header header)))
-              (aut-header-nr-states (text->aut-header header))
-              (map text->edge edges))))
+         (header (text->aut-header (car lines)))
+         (edges (map text->edge (cdr lines))))
+    (construct-lts header edges #:traces? traces?)))
 
 (define (aut-file->lts file-name)
   (aut-text->lts (with-input-from-file file-name read-string)))
 
+;;;;;;;;;;;;;;;
+
 (define (lts-hide lts tau exclude-tau)
   "Mark edges labeled with name occurring in TAU as tau-edge."
-  (make-lts (lts-state lts)
-            (lts-states lts)
-            (map (lambda (edge) (if (and
-                                      (or (member (edge-label edge) tau)
-                                          (find (cut string-prefix? <> (edge-label edge))
-                                                  (append (map (cut string-append <> ".") tau)
-                                                          (map (cut string-append <> "(") tau))))
-                                      (not (member (edge-label edge) exclude-tau)))
-                                    (make-edge_ (edge-start-state edge)
-                                                    (edge-label edge)
-                                                    #t
-                                                    (edge-end-state edge))
-                                    edge))
-                 (lts-edges lts))))
-
-(define (lts->alphabet lts)
-  "List of non-tau edge labels found in lts"
-  (delete-duplicates (map edge-label (filter (negate edge-tau?) (lts-edges lts)))))
-
-(define (lts-accept-edge-sets lts)
-  "List outgoing edge sets for current LTS state."
-  (let* ((current-states (lts-state lts))
-         (acceptance-sets (map (cut lts-succ lts <>) current-states)))
-    (delete-duplicates acceptance-sets)))
-
-(define (lts-stable-accepts lts)
-  "List stable acceptance sets. (Acceptance sets of stable
-states. Stable state has no outgoing tau edges.)"
-  ;; pre-condition: LTS shall be in a stable state
-  (and (lts? lts)
-       (let* ((acceptance-sets (lts-accept-edge-sets lts))
-              (stable-acceptance-sets (map (lambda (edge-set) (delete-duplicates (map edge-label edge-set)))
-                                           acceptance-sets)))
-         (delete-duplicates stable-acceptance-sets))))
+  (let ((tau (map make-shared-string tau))
+        (exclude-tau (map make-shared-string exclude-tau)))
+    (vector-for-each
+     (lambda (i n)
+       (for-each
+        (lambda (edge)
+          (set-edge-tau?!
+           edge
+           (and (or (memq (edge-label edge) tau)
+                    (find (cut string-prefix? <> (edge-label edge))
+                          (append (map (cute string-append <> ".") tau)
+                                  (map (cute string-append <> "(") tau))))
+                (not (memq (edge-label edge) exclude-tau))
+                #t)))
+        (node-succ n)))
+     lts))
+  lts)
 
 ;; v v v v v   l i v e l o c k   c h e c k   v v v v v
 
-(define-record-type <node>
-  (make-node state succ pred root? color parent distance cycle)
-  node?
-  (state node-state set-node-state!)
-  (succ node-succ set-node-succ!) ;; (<edge>)
-  (pred node-pred set-node-pred!)
-  (root? node-root?)
-  (color node-color set-node-color!) ;; integer
-  (parent node-parent set-node-parent!) ;; edge from parent
-  (distance node-distance set-node-distance!) ;; -1 signifies infinite distance (unreachable)
-  (cycle node-cycle set-node-cycle!) ;; edge to previous node in tau-loop
-  )
-
-(define (clone-node n)
-  (make-node (node-state n) (node-succ n) (node-pred n) (node-root? n) (node-color n) (node-parent n) (node-distance n) (node-cycle n)))
-
-(define test-lts-livelock
-  (make-lts '(0)
-            5
-            (list (make-edge_ 0 "aap" #f 1)
-                  (make-edge_ 1 "return" #f 0)
-                  (make-edge_ 0 "blaat" #t 2)
-                  (make-edge_ 2 "noot" #f 3)
-                  (make-edge_ 2 "blaat" #t 3)
-                  (make-edge_ 3 "tau" #t 3)
-                  (make-edge_ 3 "live" #t 4)
-                  (make-edge_ 4 "lock" #t 3)
-                  (make-edge_ 3 "mies" #f 0))))
-(define test-lts-livelock-2
-  (make-lts '(1)
-            3
-            (list (make-edge_ 0 "tau" #t 0)
-                  (make-edge_ 2 "BlindLoop'return(BlindLoop'in'start, reply_BlindLoop'Void(void))" #f 0)
-                  (make-edge_ 1 "BlindLoop'event(BlindLoop'in'start)" #f 2))))
-
-(define (annotate-parent nodes)
-  "Set 'parent' and 'distance' from root-state in each node in NODES"
-  (define (annotate-parent-it nodes curr-frontier next-frontier)
-    (cond ((and (null? curr-frontier) (null? next-frontier)) nodes)
+(define (annotate-parent lts)
+  "Set 'parent' and 'distance' from initial-state in each node in LTS"
+  (define (annotate-parent-it lts curr-frontier next-frontier)
+    (cond ((and (null? curr-frontier) (null? next-frontier)) lts)
           ((and (null? curr-frontier) (not (null? next-frontier)))
-           (annotate-parent-it nodes next-frontier curr-frontier))
+           (annotate-parent-it lts next-frontier curr-frontier))
           ((not (null? curr-frontier))
            (let* ((state (car curr-frontier))
-                  (node (vector-ref nodes state))
+                  (node (vector-ref lts state))
                   (distance (node-distance node))
                   (succ (node-succ node))
-                  (succ (filter (lambda (edge) (= -1 (node-distance (vector-ref nodes (edge-end-state edge))))) succ))
+                  (succ (filter (lambda (edge) (= -1 (node-distance (vector-ref lts (edge-to edge))))) succ))
                   (next-frontier (fold (lambda (edge next-frontier)
-                                         (let ((node (vector-ref nodes (edge-end-state edge))))
+                                         (let ((node (vector-ref lts (edge-to edge))))
                                            (set-node-distance! node (1+ distance))
                                            (set-node-parent! node edge)
-                                           (cons (edge-end-state edge) next-frontier)))
+                                           (cons (edge-to edge) next-frontier)))
                                        next-frontier
                                        succ)))
-             (annotate-parent-it nodes (cdr curr-frontier) next-frontier)))))
-  (let* ((root-state (root nodes))
-         (root-node (vector-ref nodes root-state)))
-    (set-node-distance! root-node 0)
-    (set-node-parent! root-node #f)
-    (annotate-parent-it nodes (list root-state) '())))
+             (annotate-parent-it lts (cdr curr-frontier) next-frontier)))))
+  (let* ((initial-state (initial lts))
+         (initial-node (vector-ref lts initial-state)))
+    (set-node-distance! initial-node 0)
+    (set-node-parent! initial-node #f)
+    (annotate-parent-it lts (list initial-state) '())))
 
 (define WHITE 0)
 (define GREY 1)
 (define BLACK 2)
 
-(define* (lts->nodes lts #:optional traces?)
-  "Vector of <node> representing LTS"
-  (let* ((states (iota (lts-states lts)))
-         (roots (lts-state lts))
-         (succ (edges->successor-edge-vector (lts-states lts) (lts-edges lts)))
-         (pred (if traces? (edges->predecessor-edge-vector (lts-states lts) (lts-edges lts)) (vector)))
-         (nodes (map (lambda (state) (make-node state
-                                                (vector-ref succ state)
-                                                (if traces? (vector-ref pred state) (vector))
-                                                (if (memv state roots) #t #f)
-                                                WHITE
-                                                #f
-                                                -1
-                                                #f))
-                     states))
-         (nodes (list->vector nodes)))
-    (if traces? nodes (annotate-parent nodes))))
 
-(define (root nodes)
-  "Index (state) of root node in NODES vector."
-  (let it ((state 0))
-    (cond ((node-root? (vector-ref nodes state)) state)
-          ((= (vector-length nodes) state) 0)
-          (else (it (1+ state))))))
+;;;;;;;;;;;;;;;;;;
 
-(define (lts-tau-loops nodes)
+(define (lts-tau-loops lts)
   "States that are part of a tau-loop"
   (let ((livelocks '()))
     (define (loop-detect state entry-edge)
       (define (report-cycle state)
         (set! livelocks (cons state livelocks)))
-      (let ((node (vector-ref nodes state)))
+      (let ((node (vector-ref lts state)))
         (if (= (node-color node) GREY) (begin (set-node-cycle! node entry-edge)
-                                               (report-cycle state))
+                                              (report-cycle state))
             (if (= (node-color node) WHITE) (let* ((tau-edges (filter edge-tau? (node-succ node))))
                                               (set-node-color! node GREY)
                                               (set-node-cycle! node entry-edge)
-                                              (for-each (lambda (e) (loop-detect (edge-end-state e) e)) tau-edges)
+                                              (for-each (lambda (e) (loop-detect (edge-to e) e)) tau-edges)
                                               (set-node-color! node BLACK))))))
     (for-each (lambda (s) (loop-detect s #f))
-              (sort (iota (vector-length nodes))
-                    (lambda (a b) (< (node-distance (vector-ref nodes a))
-                                     (node-distance (vector-ref nodes b))))))
+              (sort (iota (vector-length lts))
+                    (lambda (a b) (< (node-distance (vector-ref lts a))
+                                     (node-distance (vector-ref lts b))))))
     (delete-duplicates livelocks)))
 
-(define (trace nodes state)
-  "Trace from ROOT to STATE"
-  (let ((nodes nodes))
+(define (trace lts state)
+  "Trace from INITIAL to STATE"
+  (let ((lts lts))
     (define (trace-it state edges)
-      (let ((parent (node-parent (vector-ref nodes state))))
+      (let ((parent (node-parent (vector-ref lts state))))
         (if (not parent) edges
-            (trace-it (edge-start-state parent) (cons parent edges)))))
+            (trace-it (edge-from parent) (cons parent edges)))))
     (trace-it state '())))
 
-(define (tau-loop loop-entry-state nodes)
+(define (tau-loop loop-entry-state lts)
   "Loop of events leading from LOOP-ENTRY-STATE back to LOOP-ENTRY-STATE"
   (define (loop-edges trace state)
-    (let* ((predecessor-edge (node-cycle (vector-ref nodes state)))
-           (predecessor-state (edge-start-state predecessor-edge))
-           (predecessor-node (vector-ref nodes predecessor-state)))
-     (if (equal? predecessor-state loop-entry-state) (cons predecessor-edge trace)
-         (loop-edges (cons predecessor-edge trace) predecessor-state))))
+    (let* ((predecessor-edge (node-cycle (vector-ref lts state)))
+           (predecessor-state (edge-from predecessor-edge))
+           (predecessor-node (vector-ref lts predecessor-state)))
+      (if (equal? predecessor-state loop-entry-state) (cons predecessor-edge trace)
+          (loop-edges (cons predecessor-edge trace) predecessor-state))))
   (loop-edges '()  loop-entry-state))
 
-(define (assert-livelock nodes)
+(define (assert-livelock lts)
   "Trace to entry point of first livelock or #f if no tau loops found"
-  (let* ((livelock-nodes (lts-tau-loops nodes))
-         (loop-entry-trace (and (not (null? livelock-nodes)) (trace nodes (car livelock-nodes))))
+  (let* ((livelock-nodes (lts-tau-loops lts))
+         (loop-entry-trace (and (pair? livelock-nodes) (trace lts (car livelock-nodes))))
          (loop-entry-node (and loop-entry-trace (car livelock-nodes)))
-         (loop-trace (and loop-entry-node (tau-loop loop-entry-node nodes))))
+         (loop-trace (and loop-entry-node (tau-loop loop-entry-node lts))))
     (if (null? livelock-nodes) #f
         (append (or loop-entry-trace '())
                 (list (make-edge-loop))
                 (or loop-trace '())))))
 
-(define (rm-tau-loops lts)
-  "Remove all edges starting in a tau-loop entry state. (Promotes
-livelock to deadlock.)"
-  (let* ((livelock-states (lts-tau-loops (lts->nodes lts)))
-         (lts (make-lts (lts-state lts)
-                        (lts-states lts)
-                        (filter (lambda (e) (not (memv (edge-start-state e) livelock-states)))
-                                (lts-edges lts)))))
-    lts))
-
 ;; ^ ^ ^ ^ ^   l i v e l o c k   c h e c k   ^ ^ ^ ^ ^
 
-(define (annotate-exclude nodes excludes)
-  (vector-for-each (lambda (i n) (set-node-color! n (pair? (filter (cut member <> excludes) (map edge-label (node-succ n)))))) nodes))
+(define (annotate-exclude lts excludes)
+  (vector-for-each (lambda (i n) (set-node-exclude?! n (pair? (filter (cut memq <> excludes) (map edge-label (node-succ n)))))) lts))
 
-(define (remove-illegal nodes)
+(define (remove-illegal lts)
   (define (to-exclude? edge)
-    (node-color (vector-ref nodes (edge-end-state edge))))
-  (begin
-   (annotate-exclude nodes (list "<declarative-illegal>"))
-   (list->vector (map (lambda (n) (let ((new-node (clone-node n)))
-                                    (set-node-succ! new-node (filter (negate to-exclude?) (node-succ n)))
-                                    new-node))
-                      (vector->list nodes)))))
+    (node-exclude? (vector-ref lts (edge-to edge))))
+  (annotate-exclude lts (list %<declarative-illegal> %<illegal>))
+  (vector-map (lambda (i n) (let ((new-node (clone-node n)))
+                              (set-node-succ! new-node (filter (negate to-exclude?) (node-succ n)))
+                              new-node))
+              lts))
 
-(define (remove-info-edges nodes)
+(define (remove-info-edges lts)
   (define (info-edge? edge)
     (or (string-prefix? "<state>" (edge-label edge))
         (string-prefix? "tag(" (edge-label edge))))
@@ -459,42 +359,41 @@ livelock to deadlock.)"
     (let ((new-node (clone-node node)))
       (set-node-succ! new-node (filter (negate info-edge?) (node-succ node)))
       new-node))
-  (list->vector (map remove-info (vector->list nodes))))
+  (list->vector (map remove-info (vector->list lts))))
 
-(define (remove-tag-edges nodes)
+(define (remove-tag-edges lts)
   (define (tag-edge? edge)
     (string-prefix? "tag(" (edge-label edge)))
   (define (remove-tag node)
     (let ((new-node (clone-node node)))
       (set-node-succ! new-node (filter (negate tag-edge?) (node-succ node)))
       new-node))
-  (list->vector (map remove-tag (vector->list nodes))))
+  (list->vector (map remove-tag (vector->list lts))))
 
-(define (deadlock-nodes nodes)
+(define (deadlock-nodes lts)
   "States without outgoing edges"
-  (let* ((nodes (remove-info-edges nodes)))
+  (let* ((lts (remove-info-edges lts)))
     (define (has-deadlock? state)
       (null? (filter
-              (lambda (e) ((negate node-color) (vector-ref nodes (edge-end-state e))))
-              (node-succ (vector-ref nodes state)))))
-    (annotate-exclude nodes (list "<declarative-illegal>"))
+              (lambda (e) ((negate node-exclude?) (vector-ref lts (edge-to e))))
+              (node-succ (vector-ref lts state)))))
+    (annotate-exclude lts (list %<declarative-illegal>))
     (filter has-deadlock?
-            (filter (compose not node-color (cut vector-ref nodes <>))
-                    (sort (iota (vector-length nodes))
-                          (lambda (a b) (< (node-distance (vector-ref nodes a))
-                                           (node-distance (vector-ref nodes b)))))))))
+            (filter (compose not node-exclude? (cute vector-ref lts <>))
+                    (sort (iota (vector-length lts))
+                          (lambda (a b) (< (node-distance (vector-ref lts a))
+                                           (node-distance (vector-ref lts b)))))))))
 
-(define (assert-deadlock nodes)
+(define (assert-deadlock lts)
   "Trace to node without outgoing edges or #f if no deadlock found"
-  (let* ((deadlock-nodes (deadlock-nodes nodes))
-         (deadlock-trace (and (not (null? deadlock-nodes)) (trace nodes (car deadlock-nodes)))))
-    (if (null? deadlock-nodes) #f
-        deadlock-trace)))
+  (let* ((deadlock-nodes (deadlock-nodes lts))
+         (deadlock-trace (and (pair? deadlock-nodes) (trace lts (car deadlock-nodes)))))
+    deadlock-trace))
 
 (define (assert-unreachable lts tags)
   "Return any TAGS that are not present in LTS."
-  (let* ((edges (lts-edges lts))
-         (labels (map edge-label edges))
+  (let* ((succs (append-map node-succ (vector->list lts)))
+         (labels (map edge-label succs))
          (lts-tages (filter (cut string-prefix? "tag(" <>) labels))
          (lts-tages (delete-duplicates lts-tages))
          (missing-tags (filter (negate (cut member <> lts-tages)) tags))
@@ -502,140 +401,75 @@ livelock to deadlock.)"
     (if (null? missing-tags) #f
         missing-tags)))
 
-(define (illegal-nodes nodes)
+(define (illegal-nodes lts)
   "States with labels of illegal outgoing edges."
   (define (has-illegal? state)
-    (find (cute equal? <> "<illegal>") (map edge-label (node-succ (vector-ref nodes state)))))
+    (find (cute eq? <> %<illegal>) (map edge-label (node-succ (vector-ref lts state)))))
   (filter has-illegal?
-   (sort (iota (vector-length nodes))
-         (lambda (a b) (< (node-distance (vector-ref nodes a))
-                          (node-distance (vector-ref nodes b)))))))
+          (sort (iota (vector-length lts))
+                (lambda (a b) (< (node-distance (vector-ref lts a))
+                                 (node-distance (vector-ref lts b)))))))
 
-(define (assert-illegal nodes)
+(define (assert-illegal lts)
   "Trace to nodes without outgoing edges or #f if no deadlock found"
-  (let* ((illegal-nodes (illegal-nodes nodes))
-         (illegal-trace (and (not (null? illegal-nodes)) (trace nodes (car illegal-nodes)))))
+  (let* ((illegal-nodes (illegal-nodes lts))
+         (illegal-trace (and (not (null? illegal-nodes)) (trace lts (car illegal-nodes)))))
     (if (null? illegal-nodes) #f
         illegal-trace)))
 
-(define (assert-partially-deterministic lts labels)
-  "Trace to non-deterministic state extended with non-det edge or #f
-if no non-deterministic states found. Only transitions with LABELS are
-required to be non-deterministic."
-  (define (edge-canonical-label edge)
-    (let ((label (edge-label edge)))
-      (if (string-prefix? "<state>" label) "<state>" label)))
-  (define (nondet-edge-sets lts)
-    "Sets of edges with identical start-state and label"
-    (let* ((edges (lts-edges lts))
-           (edges (sort edges (lambda (a b) (or (< (edge-start-state a) (edge-start-state b))
-                                                (and (= (edge-start-state a) (edge-start-state b))
-                                                     (string<? (edge-canonical-label a) (edge-canonical-label b)))))))
-           (equivalent-edge (lambda (a b) (and (= (edge-start-state a) (edge-start-state b))
-                                               (equal? (edge-canonical-label a) (edge-canonical-label b)))))
-           (nondet-edges (if (null? edges) '()
-                             (fold (lambda (elem prev)
-                                     (if (and (equivalent-edge (car (car prev)) elem))
-                                         (cons (cons elem (car prev)) (cdr prev))
-                                         (cons (list elem) prev)))
-                                   (list (list (car edges)))
-                                   (cdr edges)))))
-      (filter (lambda (es) (> (length es) 1)) nondet-edges)))
-  (let* ((witness-edge-sets (nondet-edge-sets lts))
-         (witness-edge-sets (map (lambda (wes) (filter (lambda (e) (member (edge-canonical-label e) labels)) wes)) witness-edge-sets))
-         (witness-edge-sets (filter (negate null?) witness-edge-sets))
-         (nondet-states (map (compose edge-start-state car) witness-edge-sets)))
-    (if (null? nondet-states) #f
-        (let* ((nodes (lts->nodes lts))
-               (nondet-traces (map (cut trace nodes <>) nondet-states))
-               (witness-traces
-                 (map (lambda (trc wes)
-                   (append trc
-                     (if (equal? (edge-canonical-label (car wes)) "<state>") '()
-                         (list (car wes)))))
-                   nondet-traces witness-edge-sets)))
-          (car witness-traces)))))
+(define (nondeterministic-nodes lts labels)
+  "States with multiple outgoing edges with same label of set of 'labels'"
+  (let ((labels (map make-shared-string labels)))
+    (define (is-nondeterministic? state)
+      (let* ((node (vector-ref lts state))
+             (succ (filter (lambda (e) (memq (edge-canonical-label e) labels)) (node-succ node)))
+             (res (let loop ((last #f) (succ succ))
+                    (cond
+                     ((null? succ) #f)
+                     ((and last (eq? (edge-canonical-label last) (edge-canonical-label (car succ)))) last)
+                     (else (loop (car succ) (cdr succ)))))))
+        (when res
+          (set-node-nondet-witness! node res))
+        res))
+    (filter is-nondeterministic?
+            (sort (iota (vector-length lts))
+                  (lambda (a b) (< (node-distance (vector-ref lts a))
+                                   (node-distance (vector-ref lts b))))))))
 
-(define (assert-deterministic lts)
-  "Trace to non-deterministic state extended with non-det edge or #f if no non-deterministic states found"
-  ;; ASSUMPTION: valid only for Dezyne-specific lts generated from lps2lts before ltsconvert
-  (define (nondet-edge-sets lts)
-    "Sets of edges with identical start-state and label"
-    (let* ((edges (lts-edges lts))
-           (edges (sort edges (lambda (a b) (or (< (edge-start-state a) (edge-start-state b))
-                                                (and (= (edge-start-state a) (edge-start-state b))
-                                                     (string<? (edge-label a) (edge-label b)))))))
-           (equivalent-edge (lambda (a b) (and (= (edge-start-state a) (edge-start-state b))
-                                               (equal? (edge-label a) (edge-label b)))))
-           (nondet-edges (if (null? edges) '()
-                             (fold (lambda (elem prev)
-                                     (if (and (equivalent-edge (car (car prev)) elem))
-                                         (cons (cons elem (car prev)) (cdr prev))
-                                         (cons (list elem) prev)))
-                                   (list (list (car edges)))
-                                   (cdr edges)))))
-      (filter (lambda (es) (> (length es) 1)) nondet-edges)))
-  (let* ((witness-edge-sets (nondet-edge-sets lts))
-         (nondet-states (map (compose edge-start-state car) witness-edge-sets)))
-    (if (null? nondet-states) #f
-        (let* ((nodes (lts->nodes lts))
-               (nondet-traces (map (cut trace nodes <>) nondet-states))
-               (witness-traces (map (lambda (trc wes) (append trc (list (car wes)))) nondet-traces witness-edge-sets)))
-          (car witness-traces)))))
-
-(define (step-tau lts)
-  "LTS which has progressed by following tau edges until stable state reached"
-  ;; pre-condition: LTS shall not contain tau-loops
-  (let* ((succ (edges->successor-edge-vector (lts-states lts) (lts-edges lts)))
-         (tau-edges (lambda (state) (filter edge-tau? (vector-ref succ state))))
-         (stable? (lambda (state) (null? (tau-edges state)))))
-    (let it ((states (lts-state lts)))
-      (let* ((stable-states (filter stable? states))
-             (unstable-states (filter (negate stable?) states))
-             (tau-edges (append-map tau-edges unstable-states))
-             (tau-targets (map edge-end-state tau-edges)))
-        (if (null? unstable-states) (make-lts stable-states (lts-states lts) (lts-edges lts))
-            (it (append stable-states tau-targets)))))))
-
-(define (step lts event)
-  "LTS which has progressed by following edges labelled with EVENT"
-  ;; pre-condition: LTS shall be in a stable state
-  ;; pre-condition: LTS shall not contain tau loops
-  ;; post-condition: LTS is in a stable state
-  (let* ((acceptance-sets (lts-accept-edge-sets lts))
-         (edges (append-map (lambda (as) (filter (lambda (e) (equal? (edge-label e) event)) as)) acceptance-sets))
-         (states (delete-duplicates (map edge-end-state edges)))
-         (lts (make-lts states (lts-states lts) (lts-edges lts))))
-    (step-tau lts)))
-
-(define (run lts trace) ;; public
-  "LTS in state reached by performing TRACE"
-  ;; pre-condition: LTS shall be in stable state (call (step-tau lts) establishes this condition)
-  ;; post-condition: LTS is in a stable state
-  (if (or (null? (lts-state lts)) (null? trace)) lts
-      (run (step lts (car trace)) (cdr trace))))
+(define (assert-nondeterministic lts labels)
+  "Trace to nondetermistic node of #f is none found"
+  (let* ((nondeterministic-nodes (nondeterministic-nodes lts labels))
+         (nondeterministic-node (and (pair? nondeterministic-nodes) (car nondeterministic-nodes)))
+         (nondeterministic-witness (and nondeterministic-node (node-nondet-witness (vector-ref lts nondeterministic-node))))
+         (nondeterministic-trace (and nondeterministic-node
+                                      (append (trace lts nondeterministic-node)
+                                              (if (equal? (edge-canonical-label nondeterministic-witness) %<state>) '()
+                                                  (list nondeterministic-witness))))))
+    nondeterministic-trace))
 
 ;; - - - - -   i n t r o d u c e   f a i l u r e s - - - - -
 ;;
 
 (define (optional? e)
-  (or (equal? (edge-label e) "optional")
+  (or (eq? (edge-label e) %optional)
       (string-suffix? ".optional" (edge-label e))
       (string-suffix? "'optional" (edge-label e))
       (string-suffix? "'optional)" (edge-label e))))
 
 (define (inevitable? e)
-  (or (equal? (edge-label e) "inevitable")
+  (or (eq? (edge-label e) %inevitable)
       (string-suffix? ".inevitable" (edge-label e))
       (string-suffix? "'inevitable" (edge-label e))
       (string-suffix? "'inevitable)" (edge-label e))))
 
-(define (replace-model-with-tau e)
-  (if (or (optional? e) (inevitable? e))
-      (make-edge_ (edge-start-state e) "tau" #t (edge-end-state e))
-      e))
+(define modeling? (disjoin optional? inevitable?))
 
 (define (add-failures lts)
+
+  (define (modeling->tau e)
+    (if (modeling? e) (make-edge (edge-from e) %tau (edge-to e))
+        e))
+
   (let* ((nr-states (vector-length lts))
          (lts-list (vector->list lts))
          (add (filter (lambda (n) (not (null? (filter optional? (node-succ n))))) lts-list))
@@ -645,20 +479,19 @@ required to be non-deterministic."
                    add)))
     (fold (lambda (node state)
             (let* ((org-node (vector-ref lts (node-state node))))
-              (set-node-succ! org-node (cons (make-edge (node-state org-node) "tau" state) (map clone-edge (node-succ org-node))))
+              (set-node-succ! org-node
+                              (cons (make-edge (node-state org-node) %tau state)
+                                    (map clone-edge (node-succ org-node))))
               (set-node-state! node state)
-              (for-each (lambda (e) (set-edge-start-state! e state)) (node-succ node))
+              (for-each (lambda (e) (set-edge-from! e state)) (node-succ node))
               (1+ state))) nr-states add)
     (let ((lts-list (append lts-list add)))
-      (for-each (lambda (n) (set-node-succ! n (map replace-model-with-tau (node-succ n)))) lts-list)
+      (for-each (lambda (n) (set-node-succ! n (map modeling->tau (node-succ n)))) lts-list)
       (list->vector lts-list))))
-
-(define aut-header-regex (make-regexp "^des [(]([0-9]+),([0-9]+),([0-9]+)[)]"))
-(define edge-regex (make-regexp "[(]([0-9]+),[\"](.*)[\"],([0-9]+)[)]"))
 
 
 ;;;
-;;; Generate traces.
+;;; Trace generation.
 ;;;
 
 (define %fout-inc 0)
@@ -668,19 +501,12 @@ required to be non-deterministic."
 (define node-close node-parent)
 (define set-node-close! set-node-parent!)
 
-(define-record-type <transition>
-  (make-transition from label to)
-  transition?
-  (from transition-from set-transition-from!)
-  (label transition-label)
-  (to transition-to set-transition-to!))
-
-(define* (generate-trace root nodes provides-ports provides-in fout out #:key verbose?)
+(define* (generate-trace initial lts provides-ports provides-in fout out #:key verbose?)
 
   (define (allowed-end? node)
     (define (label-provides-in? label)
       (and (pair? provides-in)
-           (member label provides-in)))
+           (memq label provides-in)))
     (define (get-port label)
       (car (string-split label #\.)))
     (define (idle-node? node)
@@ -690,24 +516,23 @@ required to be non-deterministic."
              (ports (delete-duplicates ports string=?)))
        (= (length ports)
           (length provides-ports))))
-    (or (equal? (node-state node) (1- (vector-length nodes)))
-        (and (idle-node? node)
-             (not (find (lambda (e) (or (equal? "<ack>" (edge-label e))
-                                        (equal? "<defer>" (edge-label e))))
-                        (node-succ node))))))
+    (and (idle-node? node)
+         (not (find (lambda (e) (or (eq? %<ack> (edge-label e))
+                                    (eq? %<defer> (edge-label e))))
+                    (node-succ node)))))
 
   (define (annotate)
     (let* ((frontier (map node-state
                           (filter (lambda (node)
                                     (set-node-allowed-end?! node (allowed-end? node))
                                     (node-allowed-end? node))
-                                  (vector->list nodes)))))
+                                  (vector->list lts)))))
       (define (extend-frontier index)
-        (let loop ((edges (node-pred (vector-ref nodes index))))
+        (let loop ((edges (node-pred (vector-ref lts index))))
           (if (null? edges) '()
               (let* ((edge (car edges))
-                     (node-index (edge-start-state edge))
-                     (node (vector-ref nodes node-index)))
+                     (node-index (edge-from edge))
+                     (node (vector-ref lts node-index)))
                 (if (node-close node) (loop (cdr edges))
                     (begin
                       (set-node-close! node edge)
@@ -722,17 +547,17 @@ required to be non-deterministic."
                  (format #f "~a/" out))))
 
     (define (trace-extend trace label)
-      (if (member label (list "tau" "<ack>")) trace
+      (if (memq label (list %tau %<ack>)) trace
           (append trace (list label))))
 
     (define (trace-close trace index)
-      (let* ((node (vector-ref nodes index))
+      (let* ((node (vector-ref lts index))
              (close-edge (node-close node)))
         (if (or (node-allowed-end? node)
                 (not close-edge))
             trace
             (let ((ext-trace (trace-extend trace (edge-label close-edge))))
-              (trace-close ext-trace (edge-end-state close-edge))))))
+              (trace-close ext-trace (edge-to close-edge))))))
 
     (define (trace-log trace)
       (let ((file-name (format #f "~a~a.~a" dir fout %fout-inc)))
@@ -746,12 +571,12 @@ required to be non-deterministic."
     (define (step index trace)
       (let ((generated-trace? #f))
         (and (not (hashq-ref done index #f))
-             (let ((node (vector-ref nodes index)))
+             (let ((node (vector-ref lts index)))
                (hashq-set! done index #t)
                (let loop ((edges (node-succ node)) (generated-trace? #f))
                  (if (null? edges) generated-trace?
                      (let* ((edge (car edges))
-                            (edge-index (edge-end-state edge)))
+                            (edge-index (edge-to edge)))
                        (if (= edge-index index) (loop (cdr edges) generated-trace?)
                            (let ((ext-trace (trace-extend trace (edge-label edge))))
                              (when (not (step edge-index ext-trace))
@@ -759,52 +584,46 @@ required to be non-deterministic."
                              (loop (cdr edges) #t))))))))))
 
     (annotate)
-    (step root '())))
+    (step initial '())))
 
 (define* (lts->traces data illegal? flush? interface out model provides-ports
                       provides-in
                       #:key verbose?)
   (let* ((provides-ports (if (not interface) provides-ports
                              (list model)))
-         (interface (and interface model)))
+         (interface (and=> (and interface model) make-shared-string))
+         (provides-ports (map make-shared-string provides-ports))
+         (provides-in (map make-shared-string provides-in)))
 
-    (define (label-convert label)
-      (let ((label (if (or flush? (not (string-contains label "<flush>")))
-                       label
-                       "tau"))
-            (interface-port (and interface (last (string-split interface #\.)))))
-        (match (string-split label #\.)
-          (((? (cut equal? <> interface-port)) label) label)
-          (((? (cut member <> provides-ports)) "<flush>") "tau")
+    (define (convert-label label)
+      (let* ((label (if (or flush? (not (string-contains label %<flush>)))
+                        label
+                        %tau))
+             (interface-port (and interface (last (string-split interface #\.))))
+             (interface-port (make-shared-string interface-port)))
+        (match (map make-shared-string (string-split label #\.))
+          (((? (cute eq? <> interface-port)) label) label)
+          (((? (cute memq <> provides-ports)) %<flush>) %tau)
           (_ label))))
 
-    (define (illegal-edge edge)
-      (equal? (edge-label edge) "<illegal>"))
+    (define (convert-edge edge)
+      (set-edge-label! edge (convert-label (edge-label edge)))
+      edge)
 
-    (define (add-illegal-state lts)
-      (let ((illegal-state (lts-states lts)))
-        (define ((convert-edge illegal-state) edge)
-          (when (and illegal? (illegal-edge edge))
-            (set-edge-end-state! edge illegal-state))
-          (set-edge-label! edge (label-convert (edge-label edge))))
-        (for-each (convert-edge illegal-state) (lts-edges lts))
-        (set-lts-states! lts (1+ illegal-state))
-        lts))
+    (define (convert-node i node)
+      (let ((pred (map convert-edge (node-pred node)))
+            (succ (map convert-edge (node-succ node))))
+        (set-node-pred! node pred)
+        (set-node-succ! node succ)
+        node))
 
-    (define (remove-edges-to-illegal lts)
-      (if illegal?
-          lts
-          (let ((illegal-nodes (map edge-end-state (delete-duplicates (filter illegal-edge (lts-edges lts))))))
-            (set-lts-edges! lts
-                            (filter (lambda (edge) (not (member (edge-end-state edge) illegal-nodes))) (lts-edges lts)))))
-      lts)
-
-    (let* ((lts (aut-text->lts (string-join data "\n")))
-           (lts (remove-edges-to-illegal (add-illegal-state lts)))
-           (nodes (lts->nodes lts #t))
-           (nodes (remove-info-edges nodes))
-           (root (car (lts-state lts))))
-      (generate-trace root nodes provides-ports provides-in
+    (let* ((text (string-join data "\n"))
+           (lts (aut-text->lts text #:traces? #t))
+           (lts (vector-map convert-node lts))
+           (lts (if illegal? lts (remove-illegal lts)))
+           (lts (remove-info-edges lts))
+           (initial (initial lts)))
+      (generate-trace initial lts provides-ports provides-in
                       (string-append model ".trace") out #:verbose? verbose?))))
 
 
@@ -953,7 +772,7 @@ required to be non-deterministic."
 (define* (display-lts lts #:key (separator "\n"))
   (let* ((edges (append-map node-succ (vector->list lts)))
          (header (format #f "des (~a,~a,~a)"
-                         (root lts)
+                         (initial lts)
                          (length edges)
                          (vector-length lts)))
          (lines (map
@@ -962,9 +781,9 @@ required to be non-deterministic."
                    ;; large LTSs.
                    (string-append
                     "("
-                    (number->string (edge-start-state e)) ","
+                    (number->string (edge-from e)) ","
                     "\"" (edge-label e) "\","
-                    (number->string (edge-end-state e))
+                    (number->string (edge-to e))
                     ")"))
                  edges))
          (lines (cons header lines))

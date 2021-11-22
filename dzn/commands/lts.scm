@@ -159,24 +159,23 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                        (with-input-from-port (current-input-port) read-string)
                        (with-input-from-file file-name read-string)))
              (lts (aut-text->lts text))
-             (lts-hide (lts-hide lts tau exclude-tau))
-             (nodes-hide (lts->nodes lts-hide)))
+             (lts-hide (lts-hide lts tau exclude-tau)))
         (when illegal?
           (report-result "illegal"
                          "LTS contains illegal events"
                          "LTS contains no illegal events"
-                         (assert-illegal nodes-hide)))
+                         (assert-illegal lts-hide)))
         (when livelock?
           (report-result "livelock"
                          "tau loop found:"
                          "No tau loop found."
-                         (assert-livelock nodes-hide)))
+                         (assert-livelock lts-hide)))
         (when deterministic-labels
           (report-result "deterministic"
                          "LTS is non-deterministic"
                          "LTS is deterministic"
-                         (assert-partially-deterministic lts-hide deterministic-labels)))
-        (let ((lts-failures (add-failures nodes-hide)))
+                         (assert-nondeterministic lts-hide deterministic-labels)))
+        (let ((lts-failures (add-failures lts-hide)))
           (when deadlock?
             (report-result "deadlock"
                            "deadlock found:"
