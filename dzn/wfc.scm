@@ -93,8 +93,9 @@
    (re-definition o)
    (if (> (length (ast:provides-port* o)) 0) '()
        `(,(wfc-error o "component with behavior must define a provides port")))
-   (let ((port-errors (append-map wfc (ast:port* o))))
-     (if (or (pair? port-errors) (pair? (ast:in-triggers o))) port-errors
+   (let ((port-errors (append-map wfc (ast:port* o)))
+         (trigger-events (wfc:trigger-event* o)))
+     (if (or (pair? port-errors) (pair? trigger-events)) port-errors
          `(,(wfc-error o "component with behavior must have a trigger"))))
    (or (and=> (.behavior o) wfc) '())))
 
@@ -1207,6 +1208,28 @@
                                 `(,(wfc-error i (format #f "instance `~a' is in a cyclic binding" (.name i))))
                                 '()))
                 instances)))
+
+(define-method (wfc:provides-in-event* (o <component>))
+  (let* ((ports (ast:provides-port* o))
+         (interfaces (map .type ports))
+         (interfaces (filter (is? <interface>) interfaces))
+         (interfaces (delete-duplicates interfaces ast:eq?))
+         (events (append-map ast:event* interfaces))
+         (events (filter (is? <event>) events)))
+    (filter ast:in? events)))
+
+(define-method (wfc:requires-out-event* (o <component>))
+  (let* ((ports (ast:requires-port* o))
+         (interfaces (map .type ports))
+         (interfaces (filter (is? <interface>) interfaces))
+         (interfaces (delete-duplicates interfaces ast:eq?))
+         (events (append-map ast:event* interfaces))
+         (events (filter (is? <event>) events)))
+    (filter ast:out? events)))
+
+(define-method (wfc:trigger-event* (o <component>))
+  (append (wfc:provides-in-event* o)
+          (wfc:requires-out-event* o)))
 
 
 ;;;
