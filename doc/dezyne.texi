@@ -38,13 +38,15 @@ Documentation License''.
 @direntry
 * Dezyne: (dezyne).                     Dezyne Reference Manual.
 * dzn: (dezyne)Invoking dzn.            Running Dezyne commands.
-* dzn: (dezyne)Invoking dzn code.       Generating code from a Dezyne file.
-* dzn: (dezyne)Invoking dzn explore.    Exploring Dezyne models.
-* dzn: (dezyne)Invoking dzn graph.      Generating graphs of Dezyne models.
-* dzn: (dezyne)Invoking dzn parse.      Checking the syntax of Dezyne file.
-* dzn: (dezyne)Invoking dzn simulate.   Simulating Dezyne models.
-* dzn: (dezyne)Invoking dzn verify.     Verifying Dezyne models.
-* dzn: (dezyne)Invoking dzn.            Running Dzn.
+* dzn code: (dezyne)Invoking dzn code.       Generating code from a Dezyne file.
+* dzn graph: (dezyne)Invoking dzn graph.      Generating graphs of Dezyne models.
+* dzn language: (dezyne)Invoking dzn language.   Lookup and completion.
+* dzn lts: (dezyne)Invoking dzn lts.        Manipulate and query an LTS.
+* dzn parse: (dezyne)Invoking dzn parse.      Checking the syntax of Dezyne file.
+* dzn simulate: (dezyne)Invoking dzn simulate.   Simulating Dezyne models.
+* dzn trace: (dezyne)Invoking dzn trace.      Transform verify, code, and simulate traces.
+* dzn traces: (dezyne)Invoking dzn traces.     Generate a set of traces.
+* dzn verify: (dezyne)Invoking dzn verify.     Verifying Dezyne models.
 @end direntry
 
 @titlepage
@@ -142,18 +144,19 @@ Integrating Scheme Code
 
 The Dezyne command-line tools
 
-* Invoking dzn::
-* Invoking dzn code::
-* Invoking dzn explore::
-* Invoking dzn graph::
-* Invoking dzn hello::
-* Invoking dzn language::
-* Invoking dzn lts::
-* Invoking dzn parse::
-* Invoking dzn simulate::
-* Invoking dzn trace::
-* Invoking dzn traces::
-* Invoking dzn verify::
+* Invoking dzn::                Running Dezyne commands.
+* Invoking dzn code::           Generating code from a Dezyne file.
+* Invoking dzn explore::        Exploring Dezyne models (deprecated).
+* Invoking dzn graph::          Generating graphs of Dezyne models.
+* Invoking dzn hello::          A simple sanity check.
+* Invoking dzn language::       Lookup and completion.
+* Invoking dzn lts::            Manipulate and query an LTS.
+* Invoking dzn parse::          Checking the syntax of Dezyne file.
+* Invoking dzn simulate::       Simulating Dezyne models.
+* Invoking dzn trace::          Transform verify, code, and simulate traces.
+* Invoking dzn traces::         Generate a set of traces.
+* Invoking dzn verify::         Verifying Dezyne models.
+
 
 Dezyne Language Reference
 
@@ -2057,43 +2060,49 @@ foreigns that use the same interfaces need to form a chain of
 
 @end itemize
 
+
+@c *********************************************************************
 @node The Dezyne command-line tools
 @chapter The Dezyne command-line tools
 
 @menu
-* Invoking dzn::
-* Invoking dzn code::
-* Invoking dzn explore::
-* Invoking dzn graph::
-* Invoking dzn hello::
-* Invoking dzn language::
-* Invoking dzn lts::
-* Invoking dzn parse::
-* Invoking dzn simulate::
-* Invoking dzn trace::
-* Invoking dzn traces::
-* Invoking dzn verify::
+* Invoking dzn::                Running Dezyne commands.
+* Invoking dzn code::           Generating code from a Dezyne file.
+* Invoking dzn explore::        Exploring Dezyne models (deprecated).
+* Invoking dzn graph::          Generating graphs of Dezyne models.
+* Invoking dzn hello::          A simple sanity check.
+* Invoking dzn language::       Lookup and completion.
+* Invoking dzn lts::            Manipulate and query an LTS.
+* Invoking dzn parse::          Checking the syntax of Dezyne file.
+* Invoking dzn simulate::       Simulating Dezyne models.
+* Invoking dzn trace::          Transform verify, code, and simulate traces.
+* Invoking dzn traces::         Generate a set of traces.
+* Invoking dzn verify::         Verifying Dezyne models.
+
 @end menu
 
 @node Invoking dzn
 @section Invoking @command{dzn}
 
-The @command{dzn} command is a front-end to Dezyne functions.
+The @command{dzn} command is a front-end to Dezyne functions, such as
+verification, code generation, simulation, etc.  Those functions all
+have their own sub @code{command}:
 
 @example
 dzn @var{dzn-option}@dots{} @code{command} @var{command-option}@dots{} @file{FILE}...
 @end example
 
-Invoking @code{dzn} without @code{command} shows a list of available
-commands.
+Running @code{dzn} without a sub @var{command} shows a brief help text
+and the list of available @command{dzn} commands.
 
-The @var{dzn-option}s can be among the following:
+The @var{dzn-option}s can be used with every @command{dzn} command and
+can be among the following:
 
 @table @code
 
 @item --debug
 @itemx -d
-Enable debug ouput.
+Enable debug output.
 
 @item --help
 @itemx -h
@@ -2106,8 +2115,12 @@ For internal use: output data as JSON.
 
 @item --skip-wfc
 @itemx -p
-Use plain @var{peg} parser, skip Well-formedness
-(@xref{Well-formedness}) checking.
+Skip well-formedness checking.
+
+The well-formedness checking of a large program can take a significant
+amount of time.  As the well-formedness check does not change a correct
+@code{AST} in any way, it can be safely skipped when parsing a
+previously checked and unmodified program (@xref{Invoking dzn parse}).
 
 @item --verbose
 @itemx -v
@@ -2119,38 +2132,28 @@ Display the current version of @code{dzn}, and then exit.
 
 @end table
 
-Running @code{dzn} without @var{command} shows a list of available dzn
-commands:
-
+@quotation Note
+The @var{dzn-option}s are placed between @command{dzn} and the sub command,
+e.g. to increase verbosity when using @command{dzn verify}, use
 @example
-Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
-  -d, --debug            enable debug ouput
-  -h, --help             display this help
-  -j, --json             output json
-  -p, --skip-wfc         use plain PEG, skip well-formedness checking
-  -v, --verbose          be more verbose, show progress
-  -V, --version          display version
-
-Commands:
-  code
-  explore
-  hello
-  language
-  lts
-  parse
-  simulate
-  trace
-  traces
-  verify
-
-Use "dzn COMMAND --help" for command-specific information.
+dzn -v verify file.dzn
 @end example
+@end quotation
 
 @node Invoking dzn code
 @section Invoking @command{dzn code}
 
-The @command{dzn code} command generates C++ code for a Dezyne model
-file.  @xref{Code Integration}.
+@cindex code generation
+@cindex executable program
+While the simulator (@xref{Invoking dzn simulate}) can interpret Dezyne
+code directly, to create an executable program Dezyne uses a code
+generator.
+
+This code generator, the command @command{dzn code}, generates compilable
+or runnable code for a Dezyne file, such as @code{C++}.  Usually---i.e.,
+except for trivial cases---this generated Dezyne code is combined with
+``handwritten'' code in the target language to create a Dezyne
+application, @xref{Code Integration}.
 
 @example
 dzn @var{dzn-option}@dots{} code @var{option}@dots{} @file{FILE}
@@ -2162,38 +2165,39 @@ The @var{option}s can be among the following:
 
 @item --calling-context=@var{type}
 @itemx -c @var{type}
-Generate extra parameter of @var{type} for every event.
-
-@item --glue=@var{type}
-@itemx -g @var{type}
-Generate glue for @var{type} var.
+Generate an extra parameter of @var{type} for every event.
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn code}, and then exit.
+Display help on invoking @command{dzn code}, and then exit.
 
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
 
 @item --init=@var{PROCESS}
-When generating @code{mCRL2} code, use init @var{PROCESS}.
+When generating @code{mCRL2} code, use init @var{PROCESS}.  For other
+language backends, this options is ignored.
 
 @item --language=@var{language}
 @itemx -l @var{language}
-Generate code for language @var{language} var.
+Generate code for language @var{language}.
 
 @item --model=@var{model}
 @itemx -m @var{model}
-Generate main for @var{model}.
+Generate a trivial main for @var{model}.  This ``generated main'' can
+execute an event trace read from stdin, and writes a code trace to
+stderr.  @xref{Getting Started}.
 
 @item --output=@var{dir}
 @itemx -o @var{dir}
-Write output to directory @var{dir} (use @code{-} for stadard output).
+Write output to directory @var{dir} (use @code{-} for standard output).
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
-Use queue size @var{size} for verification, the default is @code{3}.
+When generating @code{mCRL2} code, use queue size @var{size} for
+verification, the default is @code{3}.  For other language backends,
+this options is ignored.
 
 @item --shell=@var{model}
 @itemx -s @var{model}
@@ -2228,7 +2232,7 @@ The @var{option}s can be among the following:
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn explore}, and then exit.
+Display help on invoking @command{dzn explore}, and then exit.
 
 @item --import=@var{dir}
 @itemx -I @var{dir}
@@ -2251,11 +2255,11 @@ Generate a state-diagram it @code{dot} format.  This is the default.
 
 @end table
 
-
 @node Invoking dzn graph
 @section Invoking @command{dzn graph}
 
-The @command{dzn graph} command generates a graph from a Dezyne model.
+The @command{dzn graph} command can be used to generate different
+graphs from a Dezyne model.
 
 @example
 dzn @var{dzn-option}@dots{} graph @var{option}@dots{} @file{FILE}
@@ -2271,23 +2275,36 @@ Generate a diagram using backend @var{type}; one of @code{dependency},
 @code{lts}, @code{state}, or @code{system} and write it to standard
 output.  The default is @code{system}.
 
-The @code{state} diagram can simplified using options @option{--hide}
-and @option{remove}.
+The @code{state} diagram can simplified using options @code{--hide} and
+@code{--remove}.
 
 @cindex Aldebaran
 @cindex @code{lts}
-Under the hood, @code{lts} and @code{state} use the Dezyne VM.  See also
-@ref{Invoking dzn lts}, and @ref{Invoking dzn traces}).
+Under the hood, @code{lts} and @code{state} use the Dezyne VM.  LTSs can
+be queried and manipulated using @command{dzn lts} (@ref{Invoking dzn
+lts}) and the @url{https://mcrl2.org,mCRL2} tooling.
+
+@quotation Note
+Generating an LTS for a large component or system using the VM can be
+very time-consuming.  For generating an LTS using the verification
+engine, see (@ref{Invoking dzn verify}) and (@ref{Invoking dzn traces}).
+@end quotation
 
 @item --format=@var{format}
 @itemx -f @var{format}
 Print trace in format @var{format}; one of @code{aut}, @code{dot}, or
-n@code{json}.  For @option{--lts} the default is @code{aut}, for other
+@code{json}.  For @code{--lts} the default is @code{aut}, for other
 formats the default is @code{dot}.
+
+@quotation Note
+The @code{json} can be processed by
+@url{https://gitlab.com/rma.wieringa/dezyne-p5,Dezyne-P5} to draw state
+and system diagrams in a browser.
+@end quotation
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn graph}, and then exit.
+Display help on invoking @command{dzn graph}, and then exit.
 
 @item --hide=@var{hide}
 @itemx -H @var{hide}
@@ -2318,7 +2335,6 @@ i.e., all but the main (first) state variable and implies @code{ports}.
 
 @end table
 
-
 @node Invoking dzn hello
 @section Invoking @command{dzn hello}
 
@@ -2343,7 +2359,8 @@ Display help on invoking @code{ide hello}, and then exit.
 @section Invoking @command{dzn language}
 
 The @command{dzn language} command produces Dezyne language completion
-results and location information.
+results and location information.  It can be used by an editor or IDE to
+create a rich editing experience.
 
 @example
 dzn @var{dzn-option}@dots{} language @var{option}@dots{} @file{FILE}
@@ -2359,13 +2376,13 @@ Show completion result; this is the default action.
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn language}, and then exit.
+Display help on invoking @command{dzn language}, and then exit.
 
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
 
-@item --import=@var{offset}
+@item --offset=@var{offset}
 Use offset @var{offset} to determine context.
 
 @item --line=@var{line},@var{column}
@@ -2377,7 +2394,7 @@ Calculate offset from line @var{line} and column @var{column}.
 @itemx -l
 Show lookup result.
 
-@c XXX TODO: is dzn lang --verbose really dzn --debug language?
+@c XXX TODO: is dzn language --verbose really dzn --debug language?
 @item --verbose
 @itemx -v
 Display input, parse tree, offset, context and completions.
@@ -2389,10 +2406,11 @@ Display input, parse tree, offset, context and completions.
 
 @cindex Aldebaran
 @cindex @code{lts}
-
-The @command{dzn lts} command can be used t navigate and query an
-@var{lts} in Aldebaran (@code{aut}) format (@xref{Invoking dzn graph},
-@xref{Invoking dzn traces}).
+@cindex labeled transition system
+The @command{dzn lts} command can be used to manipulate and query a
+labeled transition system (@var{lts}) in Aldebaran (@code{aut}) format
+(@xref{Invoking dzn graph}, @xref{Invoking dzn verify}, @xref{Invoking
+dzn traces}).
 
 @example
 dzn @var{dzn-option}@dots{} lts @var{option}@dots{} [@file{FILE}]@dots{}
@@ -2402,20 +2420,27 @@ The @var{option}s can be among the following:
 
 @table @code
 
+@item --cleanup
+@itemx -c
+Rewrite mCRL2 labels to Dezyne, optionally remove @var{prefix} as
+specified with @option{--prefix}.
+
 @item --deadlock
 @itemx -d
-Detect deadlock in @var{lts} (after failures introduction).
+Detect deadlock in @var{lts} (after introduction of failures) and
+produce a witness.
 
 @item --exclude-illegal
-Remove edges leading to illegal (in combination with --failures).
+Remove edges leading to illegal (in combination with
+@option{--failures}).
 
 @item --failures
 @itemx -f
-Introduce a failure for each 'optional' event.
+Introduce a failure for each 'optional' event into the @file{lts}.
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn lts}, and then exit.
+Display help on invoking @command{dzn lts}, and then exit.
 
 @item --illegal
 @itemx -i
@@ -2423,25 +2448,26 @@ Detect whether @file{lts} contains @code{<illegal>} labels.
 
 @item --livelock
 @itemx -l
-Detect tau-loops in @var{lts}.
+Detect tau-loops in @file{lts} and produce a witness.
 
 @item --deterministic-labels=@var{label}[,@var{label}@dots{}]
 @itemx -n @var{label}[,@var{label}@dots{}]
-Assert determinism by detecting multiple edges of @var{label} from a
-single state.
+Detect whether @file{lts} is deterministic by detecting multiple edges
+of @var{label} from a single state, and produce a witness.
 
-@item --prefix=@var{event}[,@var{event}@dots{}]
-@itemx -p @var{event}[,@var{event}@dots{}]
-Find states reachable by @var{event}s.  The default is: empty trace =>
-initial state.
+@item --prefix=@var{prefix}
+Optional @var{prefix} for @option{--cleanup}
 
 @item --tau=@var{event}[,@var{event}@dots{}]
 @itemx -t @var{event}[,@var{event}@dots{}]
-Hide all @var{event}s.
+Hide all @var{event}s from @file{lts}.
+@item --exclude-tau=@var{event}[,@var{event}@dots{}]
+Exclude given @var{event}s from '@option{--tau}' list.
+
 
 @item --single-line
 @itemx -s
-Report an error including trace on a single line.
+Report each error including its trace (witness) on a single line.
 
 @end table
 
@@ -2449,8 +2475,34 @@ Report an error including trace on a single line.
 @section Invoking @command{dzn parse}
 
 The @command{dzn parse} command parses a Dezyne file and reports any
-errors, both syntax errors as Well-formedness (@xref{Well-formedness})
-errors.
+errors, both syntax errors as well as ``well-formedness'' errors.  The
+Dezyne parser consists of three stages:
+
+@enumerate
+@item
+The PEG parser creates a raw @code{parse-tree}@footnote{The @command{dzn
+language} command (@xref{Invoking dzn language}) works on this raw
+@code{parse-tree}.},
+@item
+The @code{parse-tree} is converted into the abstract syntax tree
+(@code{AST}),
+@item
+A number of so-called ``well-formedness'' checks are performed on the
+@code{AST} that ascertain type correctness and detect semantic errors
+(@xref{Well-formedness}),
+@item
+After parsing, some commands perform a normalization on the @code{AST}.
+@end enumerate
+
+The well-formedness checking of a large program can take a significant
+amount of time.  As the well-formedness check does not change a correct
+@code{AST} in any way, it can be safely skipped when parsing a
+previously checked and unmodified program (@xref{Invoking dzn}).
+
+Usually, the parser is invoked implicitly by commands like @command{dzn
+verify} and @command{dzn code}.  It can be useful to do an explicit
+check for errors, for example after saving a Dezyne file (@xref{The
+Perfect Setup}).  Its syntax is:
 
 @example
 dzn @var{dzn-option}@dots{} parse @var{option}@dots{} @file{FILE}
@@ -2462,11 +2514,13 @@ The @var{option}s can be among the following:
 
 @item --preprocess
 @itemx -E
-Resolve imports imports and produce content stream.
+Resolve imports and produce a content stream.  This pre-processed
+content can also be processed later by the parser and it has the
+advantage of being independent of the file-system.
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn parse}, and then exit.
+Display help on invoking @command{dzn parse}, and then exit.
 
 @item --import=@var{dir}
 @itemx -I @var{dir}
@@ -2485,7 +2539,7 @@ Only output @var{ast} for model @var{model}.
 
 @item --parse-tree
 @itemx -t
-Instead of writing a full @var{ast}, write the @var{peg} parse tree.
+Write the raw @var{peg} parse tree, skip generating a full @var{ast},
 
 @item --output=@var{file}
 @itemx -o @var{file}
@@ -2498,7 +2552,16 @@ Write @var{ast} to @var{file}, use ``-'' for standard output.
 
 The @command{dzn simulate} command starts a simulation run.
 
-Under the hood, @command{dzn simulate} uses the Dezyne VM.
+Under the hood, @command{dzn simulate} uses the Dezyne VM.  The
+simulator can be used to explore Dezyne models (interfaces, components,
+and systems), and to interpret error traces (witnesses) from the
+verification engine (@xref{Getting Started}).  It shows code locations,
+state, and state transitions and produces friendly error messages.  The
+simulator and verification both report the same errors (@xref{Formal
+Verification}).  The simulator, however, only reports errors that it
+encounters while interpreting a specific event trace.  The verifier
+performs an exhaustive search for errors but only produces a witness
+and does not report any context information.  Its syntax is:
 
 @example
 dzn @var{dzn-option}@dots{} simulate @var{option}@dots{} @file{FILE}
@@ -2526,7 +2589,7 @@ or @code{trace}.  The default is @code{trace}.
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn simulate}, and then exit.
+Display help on invoking @command{dzn simulate}, and then exit.
 
 @item --import=@var{dir}
 @itemx -I @var{dir}
@@ -2568,8 +2631,64 @@ Display non-communication steps in the trace, this implies
 @node Invoking dzn trace
 @section Invoking @command{dzn trace}
 
-The @command{dzn trace} command is a pseudo-filter to translate between
-different trace formats.
+The @command{dzn trace} command is a pseudo-filter to convert between
+different trace formats:
+
+@c This is kind-of define by example; should we create a more formal
+@c definition?  Where?
+
+@table @code
+@item event trace (trail)
+An event trace or @emph{trail} is a list of event names observable by
+interacting with a Dezyne model, for example, for
+@file{doc/examples/hello-world.dzn}:
+
+@example
+p.hello
+p.world
+p.return
+@end example
+
+@item event trace (character separated)
+Some tools, such as the simulator also read an event trace separated by
+a comma or a space:
+
+@example
+ p.hello,p.world,p.return
+"p.hello p.world p.return"
+@end example
+
+@item code trace (arrow trace)
+The Dezyne executable code can produce a trace showing the sender and
+the receiver of an event on the same line:
+
+@example
+<external>.p.hello -> sut.p.hello
+<external>.p.world <- sut.p.world
+<external>.p.return <- sut.p.return
+@end example
+
+@item simulator trace (split-arrow trace)
+The simulator produces a trace showing the sender and the receiver of an
+event both on their own line:
+
+@example
+<external>.p.hello -> ...
+... -> sut.p.hello
+... <- sut.p.world
+<external>.p.world <- ...
+... <- sut.p.return
+<external>.p.return <- ...
+@end example
+
+which is especially useful when the lines are prefixed with location
+information.
+
+@end table
+
+The @command{dzn trace} command reads arrow traces and converts them to
+a code trace (the default) or an event trace.  A split-arrow trace can
+also be converted to an ASCII sequence diagram.  Its syntax is:
 
 @example
 dzn @var{dzn-option}@dots{} trace @var{option}@dots{} [@file{FILE}]
@@ -2584,9 +2703,15 @@ The @var{option}s can be among the following:
 Display trace in format @var{format}, one of @code{diagram},
 @code{event}, @code{json}, or @code{sexp}.  The default is @code{code}.
 
+@quotation Note
+The @code{json} can be processed by
+@url{https://gitlab.com/rma.wieringa/dezyne-p5,Dezyne-P5} to draw
+a trace diagram in a browser.
+@end quotation
+
 @item --help
 @itemx -h
-Display help on invoking @code{dzn trace}, and then exit.
+Display help on invoking @command{dzn trace}, and then exit.
 
 @item --internal
 Show communication between components in the system.  When using the
@@ -2609,10 +2734,10 @@ Use trail @var{trail}.  The default is to read from standard input.
 @cindex Aldebaran
 @cindex @code{lts}
 
-The @command{dzn traces} command generates an exhaustive set of traces
-for a behavioral Dezyne model.  It can also be used to generate an
-@var{lts} in Aldebaran format (@xref{Invoking dzn lts}, @xref{Invoking
-dzn explore}).
+The @command{dzn traces} command generates an exhaustive set of event
+traces or trails for a behavioral Dezyne model.  It can also be used to
+generate an @var{lts} in Aldebaran format (@xref{Invoking dzn lts},
+@xref{Invoking dzn graph}, @xref{Invoking dzn verify}).
 
 Under the hood, @command{dzn traces} uses @command{dzn code} and mCRL2.
 
@@ -2630,7 +2755,7 @@ Include @code{<flush>} events in trace.
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn traces}, and then exit.
+Display help on invoking @command{dzn traces}, and then exit.
 
 @item --illegal
 @itemx -i
@@ -2667,8 +2792,8 @@ generate trace files even when @option{--lts} is used.
 @node Invoking dzn verify
 @section Invoking @command{dzn verify}
 
-The @command{dzn verify} command checks a Dezyne file for verification
-errors in Dezyne models.  @xref{Formal Verification}.
+The @command{dzn verify} command exhaustively checks a Dezyne file for
+verification errors in Dezyne models.  @xref{Formal Verification}.
 
 @example
 dzn @var{dzn-option}@dots{} verify @var{option}@dots{} @file{FILE}
@@ -2685,7 +2810,7 @@ verification stops after finding a verification error.
 
 @item --help
 @itemx -h
-Display help on invoking @code{dzn verify}, and then exit.
+Display help on invoking @command{dzn verify}, and then exit.
 
 @item --import=@var{dir}
 @itemx -I @var{dir}
@@ -2710,10 +2835,17 @@ verification of all its @code{interface} models and behavioral
 Do not run the observable non-determinism check on interfaces.
 
 @item --out=@var{format}
+@cindex Aldebaran
+@cindex @code{lts}
 Run a partial verification pipeline to produce @var{format}.
+
 Interesting formats are @code{mcrl2}, @code{aut},
 @code{aut-dpweak-bisim}, @code{aut-weak-trace}, and
 @code{aut+provides-aut}.  Use @option{--out=help} for a full list.
+
+The verification pipeline starts by generating @code{mCRL2} code, which
+is converted into an @var{lps} and then into an @var{lts}
+(@xref{Invoking dzn lts}).  The @var{lts} is then manipulated further.
 
 Using the @option{--debug} on @command{dzn} (@xref{Invoking dzn}) shows
 the pipelines with all their commands that are being used, ready for
@@ -6286,7 +6418,7 @@ corresponding reply is given on the port of the trigger
 @item Compliance
 @tab Concept
 @tab Whether or not, the behavior of a component complies to the behavior
-specification of the interface of each provided port.
+specification of the interface of each provides port.
 @tab -
 
 @item Component
