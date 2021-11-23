@@ -6,6 +6,13 @@
 #+OPTIONS: ^:nil
 
 * Changes in 2.14.0 since 2.13.3
+** Release
+  - Dezyne is now released as free software, under the terms of the GNU
+    Affero General Public Licence, version 3 or later (AGPL3+).  The
+    Dezyne runtime is released under the GNU Lesser General Public
+    License, version 3 or later (LGPL3+).
+  - Dezyne now mostly conforms to the [[https://reuse.software][reuse 3.0]] specification (except
+    where it conflicts with the GNU standard names of license files).
 ** Language
   - The need for temporary variables has been removed for the most
     common cases; the expression of the `if' and `reply' statement now
@@ -20,6 +27,9 @@
     out-bindings.
   - The well-formedness check now uses `info' for any informational
     messages that follow an error.
+  - Using a formal binding (<-) with non-data member variable is now
+    reported as an error.
+  - Well-formedness errors are made more consistent.
 ** Verification
   - The interface completeness check has been removed; just like
     components, unspecified events in an interface behavior are now
@@ -53,6 +63,11 @@
   - The `dzn explore' command has been deprecated and users are
     requested to use `dzn graph' instead.  `dzn explore' is planned to
     be removed in the next release.
+** Documentation
+  - The Dezyne Reference Manual has been largely rewritten and the
+    outdated Dezyne Tutorial has been removed.
+  - The "Well-formedness" chapter has been updated to use the
+    well-formed errors that are actually generated.
 ** Noteworthy bug fixes
   - The use of an undefined variable now produces a parse error.  This
     regression was introduced in 2.13.3.
