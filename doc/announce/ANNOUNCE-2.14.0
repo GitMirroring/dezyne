@@ -1,0 +1,147 @@
+
+Subject: dezyne-2.14.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are thrilled to announce Dezyne 2.14: Dezyne is now being released as
+free software (FLOSS); thank you [[https://verum.com][verum.com]]!  Of
+course, Verum will continue to sponsor development of Dezyne, as well as
+offer the commercial [[https://doc.verum.com][Dezyne-IDE]] integration.
+
+This release introduces implicit interface illegals: Specifying
+`illegal' in an interface is now optional, similar to components.
+
+Dezyne now also has implicit temporary variables: a single valued action
+or call can now be used in `if' and `reply' expressions.
+
+A new command `dzn graph' can be used to generate simplified (filtered)
+state diagrams using `--hide' and `--remove' options.
+
+In the verification and simulation traces, the beginning of a livelock
+error is now marked with `<loop>'.
+
+The documentation has seen a major rewrite and is available here:
+<https://dezyne.org/documentation.html>.
+
+We will evaluate your reports and track them via the
+[[https://gitlab.com/groups/dezyne/-/issues][Gitlab dezyne-issues
+project]], see our [[https://dezyne.org/bugreport][guide to writing
+helpful bug reports]].
+
+What's next?
+
+Full blocking support and verification with system scope.  Introducing a
+new keyword `defer' for asynchronous behavior and deprecation of
+`async'.
+
+Future
+
+Looking beyond the next releases we will introduce implicit interface
+constraints.  Hierarchical behaviors, module-specifications and
+data-interfaces.  Support for Model Based Testing.
+
+Enjoy!
+The Dezyne developers.
+
+Here are the compressed sources and a GPG detached signature[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.14.0.tar.gz
+  https://dezyne.org/download/dezyne/dezyne-2.14.0.tar.gz.sig
+
+Here are the MD5 and SHA1 checksums:
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.14.0.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.14.0.tar.gz
+
+[*] Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify dezyne-2.14.0.tar.gz.sig
+
+If that command fails because you don't have the required public key,
+then run this command to import it:
+
+  gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+and rerun the 'gpg --verify' command.
+
+NEWS
+
+* Changes in 2.14.0 since 2.13.3
+** Release
+  - Dezyne is now released as free software, under the terms of the GNU
+    Affero General Public Licence, version 3 or later (AGPL3+).  The
+    Dezyne runtime is released under the GNU Lesser General Public
+    License, version 3 or later (LGPL3+).
+  - Dezyne now mostly conforms to the [[https://reuse.software][reuse 3.0]] specification (except
+    where it conflicts with the GNU standard names of license files).
+** Language
+  - The need for temporary variables has been removed for the most
+    common cases; the expression of the `if' and `reply' statement now
+    allows the use of a single valued action or function call.  The '&&'
+    and the '||' operators allow them as their left-hand operand only
+    ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/26][#26]]).
+  - The need for explicit illegals in interfaces has been removed.
+  - The `behaviour' keyword has been deprecated and is renamed to
+    `behavior', as software commonly uses US English.
+** Parser
+  - The well-formedness check now reports incorrect usage of blocking
+    out-bindings.
+  - The well-formedness check now uses `info' for any informational
+    messages that follow an error.
+  - Using a formal binding (<-) with non-data member variable is now
+    reported as an error.
+  - Well-formedness errors are made more consistent.
+** Verification
+  - The interface completeness check has been removed; just like
+    components, unspecified events in an interface behavior are now
+    marked implicitly illegal.
+  - The beginning of a livelock loop is now marked in the trace with
+    "<loop>" ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/44][#44]]).
+  - The dependency on the `m4-cw' tool has been removed from the
+    verification pipeline.
+** Simulation
+  - The beginning of a livelock loop is now marked in the trace with
+    "<loop>" ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/44][#44]]).
+  - In case of a non-compliance error related to mixing inevitable and
+    optional the simulator now reports which events are expected to be
+    inevitable and which are optional in the interface ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/61][#61]]).
+** Code
+  - In the generated C++, the initialization of the meta object in the
+    member initialization list of a component or system uses the address
+    of the meta objects of its ports.  An instance of the Clang compiler
+    reports a false positive when using the -Wuninitialized
+    option. Although the ports have not been initialized at this point
+    the address of a member is valid and can be safely captured. This is
+    now side stepped by deferring the initalization of this field to the
+    body of the constructor.
+** Views
+  - A new command `dzn graph' can be used to generate graphs using
+    different backends: "dependency", "lts", "state", and "system".  The
+    "state" backend now supports hiding of unwanted detail.  The new
+    options `-R,--remove=...' and `-H,--hide=...' can be used to
+    filter-out port state or extended state from the nodes, action
+    transition labels or even all transition labels ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/29][#29]]).
+  - The `dzn explore' command has been deprecated and users are
+    requested to use `dzn graph' instead.  `dzn explore' is planned to
+    be removed in the next release.
+** Documentation
+  - The Dezyne Reference Manual has been largely rewritten and the
+    outdated Dezyne Tutorial has been removed.
+  - The "Well-formedness" chapter has been updated to use the
+    well-formed errors that are actually generated.
+** Noteworthy bug fixes
+  - The use of an undefined variable now produces a parse error.  This
+    regression was introduced in 2.13.3.
+  - The use of an interface enum as event now produces a parse error.
+  - The simulator now also reports a Y-fork: forking a requires-out
+    event to more than one provides ports.
+  - The simulator no longer reports false positives for the interface
+    unobservably non-deterministic check.
+  - The simulator no longer lists events on a blocked port as eligible.
+  - The simulator no longer reports false potitives for the compliance
+    check in the case of a blocking trace with a stateful provides port.
+  - A quadratic performance problem when parsing pre-processed dezyne
+    input has been fixed.
+  - The parser now avoids repeating `stat' calls, improving the
+    performance of parsing large projects on Windows.
