@@ -42,6 +42,7 @@
 (define-module (dzn lts)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
 
@@ -95,19 +96,12 @@
 (define %optional (make-shared-string "optional"))
 (define %tau (make-shared-string "tau"))
 
-;; ===== text-file =====
-(define (text->line-list text)
-  (map (cute string-trim-right <> #\cr) (string-split text #\newline)))
-
-(define (text-file->line-list file-name)
-  (text->line-list (with-input-from-file file-name read-string)))
-
 (define-record-type <aut-header>
-  (make-aut-header first-state nr-transitions nr-states)
+  (make-aut-header first-state nr-transitions state-count)
   aut-header?
   (first-state aut-header-first-state)
   (nr-transitions aut-header-nr-transitions)
-  (nr-states aut-header-nr-states))
+  (state-count aut-header-state-count))
 
 (define aut-header-regex (make-regexp "^des [(]([0-9]+),([0-9]+),([0-9]+)[)]"))
 (define (text->aut-header text)
@@ -183,14 +177,10 @@
 
 
 (define* (construct-lts header edges #:key traces?)
-  (let ((lts (make-vector (aut-header-nr-states header))))
-    (for-each
-     (lambda (state)
-       (vector-set!
-        lts
-        state
-        (make-node state '() '() #f WHITE #f -1 #f)))
-     (iota (aut-header-nr-states header)))
+  (define (state->node state)
+    (make-node state '() '() #f WHITE #f -1 #f))
+  (let* ((state-count (aut-header-state-count header))
+         (lts (list->vector (map state->node (iota state-count)))))
     (for-each
      (lambda (edge)
        (let* ((from (edge-from edge))
@@ -214,7 +204,8 @@
 
 (define* (aut-text->lts text #:key traces?)
   "Vector of <node> representing LTS"
-  (let* ((lines (text->line-list text))
+  (let* ((lines (string-split text #\newline))
+         (lines (map (cute string-trim-right <> #\cr) lines))
          (lines (filter (negate string-null?) lines))
          (header (text->aut-header (car lines)))
          (edges (map text->edge (cdr lines))))
@@ -492,7 +483,7 @@
     (if (modeling? e) (make-edge (edge-from e) %tau (edge-to e))
         e))
 
-  (let* ((nr-states (vector-length lts))
+  (let* ((state-count (vector-length lts))
          (lts-list (vector->list lts))
          (add (filter (lambda (n) (not (null? (filter optional? (node-succ n))))) lts-list))
          (add (map (lambda (n) (let ((new-node (clone-node n)))
@@ -506,9 +497,12 @@
                                     (map clone-edge (node-succ org-node))))
               (set-node-state! node state)
               (for-each (lambda (e) (set-edge-from! e state)) (node-succ node))
-              (1+ state))) nr-states add)
-    (let ((lts-list (append lts-list add)))
-      (for-each (lambda (n) (set-node-succ! n (map modeling->tau (node-succ n)))) lts-list)
+              (1+ state))) state-count add)
+    (let* ((lts-list (append lts-list add))
+           (lts-list (map (lambda (node)
+                            (let ((succ (map modeling->tau (node-succ node))))
+                              (set-field node (node-succ) succ)))
+                          lts-list)))
       (list->vector lts-list))))
 
 
