@@ -245,13 +245,19 @@ override $(srcdir)/doc/version.texi:
 #     make sign-dist
 #  3. Update Guix package description
 #     make release
-#  4. test guix package build, binary packs (see pack.git)
-#     GUIX_PACKAGE_PATH=guix build dezyne
-#     make linux
-#     make mingw
-#  5. Create blog post
+#  4. test guix package build, binary packs (see pack.git README)
+#     git --git-dir ~/src/dezyne/release/.git format-patch -1
+#     git am 0001-guix-dezyne-Update-to-2.10.0.patch
+#     make tag PACKAGE_VERSION=2.10.0
+#     ./autogen.sh
+#     make dezyne
+#  5. Update announcement with actual URLs and hashes
+#     - Re-generate announcement
+#       make gen-announce PACKAGE_VERSION=2.10.0
+#     - Use git to keep relevant bits of doc/announce/ANNOUNCE-2.10.0
+#  6. Create blog post
 #     cp doc/announce/ANNOUNCE-2.10.0 ~/src/web/dezyne.org/posts/announce-2.10.0.md
-#  6. Send mail to
+#  7. Send mail to
 #     guile-user@gnu.org
 #     mcrl2-users@listserver.tue.nl
 #     guix formal verification interest group (guix-devel@gnu.org?)
@@ -288,7 +294,13 @@ GPG_KEY_ID=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
 GNULIB=$(HOME)/src/gnulib
 gen-announce:
-	$(GEN_ANNOUNCE)						\
+# Allow generating DRAFT announcement without release tarballs.
+	sed -e 's,or die "[$$]ME: none,or print STDERR "$$ME: none,'	\
+	    -e 's,or exit 1;,;,'					\
+	    $(GEN_ANNOUNCE)						\
+	    > build-aux/announce-gen
+	chmod +x build-aux/announce-gen
+	build-aux/announce-gen					\
 	    --release-type=stable				\
 	    --package-name=$(PACKAGE)				\
 	    --previous-version='2.13.3'				\
