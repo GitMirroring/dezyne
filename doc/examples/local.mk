@@ -24,7 +24,6 @@
 EXTRA_DIST += %D%/README
 
 DEZYNE_EXAMPLES =				\
- %D%/ca.dzn					\
  %D%/compliance-multiple-provides-fork.dzn	\
  %D%/component-if-illegal.dzn			\
  %D%/dzn.async.dzn				\
@@ -34,6 +33,7 @@ DEZYNE_EXAMPLES =				\
  %D%/illegal-requires.dzn			\
  %D%/inner-space.dzn				\
  %D%/inevitable-optional.dzn			\
+ %D%/join.dzn					\
  %D%/remote-timer-proxy.dzn			\
  %D%/simple-state-machine.dzn			\
  %D%/top-middle-bottom.dzn

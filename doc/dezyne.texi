@@ -212,6 +212,7 @@ Component Declarative Statements
 * Component On::                Defining what happens on a trigger.
 * Blocking::                    Implementing a synchronous call on decoupled events.
 * Formal Binding::              Parameter assignment in blocking context.
+* Joining Activities::          A full blocking example.
 
 Component Imperative Statements
 
@@ -3933,6 +3934,7 @@ prefix      ::= <blocking?> <guards> <on>
 * Component On::                Defining what happens on a trigger.
 * Blocking::                    Implementing a synchronous call on decoupled events.
 * Formal Binding::              Parameter assignment in blocking context.
+* Joining Activities::          A full blocking example.
 @end menu
 
 @node Component On
@@ -4119,14 +4121,16 @@ parameter @code{n}.
 The intent is to simplify this specific behavior in the future when data
 flow verification is added.
 @end quotation
-The action statement in @code{on pp.request_value} is marked as
-@code{blocking} and does not contain a @code{reply}.  A thread calling
-@code{pp.request_reply} blocks after the @code{rp.request} action.  The
-blocked thread returns when the action statement for @code{on rp.accept}
-or @code{on rp.reject} have been performed.
+
+@node Joining Activities
+@subsubsection Joining Activities
+
+Component @code{join} illustrates the use of @code{blocking} in
+synchronizing a @code{starter} with the activities of two
+@code{runner}s.
 
 @example
-@verbatiminclude examples/ca.dzn
+@verbatiminclude examples/join.dzn
 @end example
 
 @node Component Imperative Statements

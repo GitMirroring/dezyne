@@ -1,0 +1,40 @@
+interface starter
+{
+  in void start_and_wait ();
+  behavior
+  {
+    on start_and_wait: {}
+  }
+}
+
+interface runner
+{
+  in void start ();
+  out void finished ();
+  behavior
+  {
+    bool running = false;
+    on start: running = true;
+    [running] on inevitable: {running = false; finished;}
+  }
+}
+
+component join
+{
+  provides starter ref;
+  requires runner one;
+  requires runner two;
+
+  behavior
+  {
+    subint Runners {0..2};
+    Runners running = 0;
+
+    blocking on ref.start_and_wait ():
+      {running = 2; one.start(); two.start ();}
+    [running != 1] on one.finished (), two.finished ():
+      running = running - 1;
+    [running == 1] on one.finished (), two.finished ():
+      {running = 0; ref.reply ();}
+  }
+}
