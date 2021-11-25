@@ -453,19 +453,21 @@ Installing goes along these lines:
 @cindex binary installation
 @cindex downloading Dezyne binary
 @cindex GNU/Linux
-Download the binary tarball from
-@indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz},
+Download the binary tarball from@*
+@url{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz},
 e.g.:
 
 @example
-$ wget @value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz
+$ wget @value{BASE-URL}/\
+dezyne-@value{VERSION}-x86_64-linux.tar.gz
 @end example
 
 Make sure to download the associated @file{.sig} file and to verify the
 authenticity of the tarball against it; do something like:
 
 @example
-$ wget @value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig
+$ wget @url{@value{BASE-URL}/\
+dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig}
 $ gpg --verify dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig
 @end example
 
@@ -486,7 +488,8 @@ signature!'' is normal.
 Now, you can unpack the tarball; do something like:
 
 @example
-$ tar --warning=no-timestamp -xf /path/to/dezyne-@value{VERSION}-x86-64.tar.gz
+$ tar --warning=no-timestamp -xf /path/to/\
+dezyne-@value{VERSION}-x86-64.tar.gz
 @end example
 
 Then try:
@@ -546,8 +549,8 @@ Installing goes along these lines:
 @cindex downloading Dezyne binary, Windows
 @cindex binary installation, Windows
 @cindex Windows
-Download the binary zip archive from
-@indicateurl{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-windows.zip},
+Download the binary zip archive from@*
+@url{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-windows.zip},
 @end enumerate
 
 after which you can extract the archive by using 7zip
@@ -728,7 +731,8 @@ code})
 @example
 $ dzn code doc/examples/ihello-world.dzn
 $ dzn code --model=hello_world doc/examples/hello-world.dzn
-$ g++ -I runtime/c++ hello-world.cc main.cc runtime/c++/runtime.cc runtime/c++/pump.cc -lpthread
+$ g++ -I runtime/c++ hello-world.cc main.cc \
+  runtime/c++/runtime.cc runtime/c++/pump.cc -lpthread
 @end example
 
 When running this executable and feeding it the trail, we get
@@ -783,7 +787,7 @@ has become @emph{decoupled} from the caller.
 The state diagram (@xref{Invoking dzn graph}) depicts this protocol
 graphically:
 
-@image{images/ihello-bool,,,,.png}
+@image{images/ihello-bool,2in,,,.png}
 
 This model is already interesting enough to have the mCRL2 model-checker
 verify if all is well (@xref{Invoking dzn verify} and @xref{Verification
@@ -906,7 +910,7 @@ component does ``nothing'' and is ready for the next event.  Omitting
 this line would make the occurrence of @code{r2.world} @emph{illegal}.
 @end table
 
-@image{images/simple-state-machine,,,,.png}
+@image{images/simple-state-machine,5in,,,.png}
 
 Verification suceeds
 
@@ -936,7 +940,7 @@ The @code{Camera} example introduces the system component
 (@xref{Systems}).  The system diagram (@xref{Invoking dzn graph}) looks
 like this:
 
-@image{images/Camera-system,,,,.png}
+@image{images/Camera-system,6in,,,.png}
 
 This is what the Camera system looks like in Dezyne:
 @example
@@ -1005,7 +1009,7 @@ state of the ports or even all extended state can be removed.  For this
 diagram, the command @code{dzn graph --backend=state --hide=actions
 --remove=extended test/all/Camera/Camera.dzn} was used.} state diagram:
 
-@image{images/Camera-state,,,,.png}
+@image{images/Camera-state,6in,,,.png}
 
 @node The Lego Ball Sorter
 @section The Lego Ball Sorter
@@ -1014,15 +1018,15 @@ The Lego Ball Sorter example demonstrates how Dezyne can be used to
 write the operating system for a machine.  The system view is already
 somewhat overwhelming:
 
-@image{images/LegoBallSorter-system,,,,.png}
+@image{images/LegoBallSorter-system,6in,,,.png}
 
 so it makes more sense to look at smaller parts of the system, such as
 the @code{MaterialHandler}:
 
-@image{images/MaterialHandler-system,,,,.png}
+@image{images/MaterialHandler-system,6in,,,.png}
 
-The full example is contained in the source tree at
-@file{test/all/LegoBallSorter/LegoBallSorter.dzn} or
+The full example is contained in the source tree at@*
+@file{test/all/LegoBallSorter/LegoBallSorter.dzn} or@*
 @url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/test/all/LegoBallSorter/LegoBallSorter.dzn,
 LegoBallSorter.dzn}.
 
@@ -1495,7 +1499,8 @@ contracts.
 
 Upon violation, the following error is reported:
 @example
-error: component <name> is non-compliant with interface(s) of provides port(s)
+error: component <name> is non-compliant with interface(s)\
+    of provides port(s)
 @end example
 
 @item determinism
@@ -1684,12 +1689,14 @@ struct some_component
 @{
   some_interface provided_port;
   some_interface required_port;
-  some_component()
-  : provided_port()
-  , required_port()
+  some_component ()
+  : provided_port ()
+  , required_port ()
   @{
-    provided_port.in.in_event = dezyne::ref(required_port.in.in_event);
-    required_port.out.out_event = dezyne::ref(provided_port.out.out_event);
+    provided_port.in.in_event
+      = dezyne::ref (required_port.in.in_event);
+    required_port.out.out_event
+      = dezyne::ref (provided_port.out.out_event);
   @}
 @};
 @end example
@@ -3391,8 +3398,9 @@ interface.  The protocol prescribes the causal relation between events
 and state.  The behavior is akin to a state machine.
 
 @example
-behavior           ::= "behavior" "@{" behavior-statement* "@}"
-behavior-statement ::= type | variable | function | declarative-statement
+behavior ::= "behavior" "@{" behavior-statement* "@}"
+behavior-statement
+         ::= type | variable | function | declarative-statement
 @end example
 
 @menu
@@ -4032,10 +4040,12 @@ An async port is a @code{requires} of builtin type @code{dzn.async}
 which is defined in the behavior of a component.
 
 @example
-async-port      ::= "requires" "dzn.async" async-parameter-list? identifier ";"
+async-port
+  ::= "requires" "dzn.async" async-parameter-list? identifier ";"
 async-parameter-list
-                ::= "(" async-parameter ("," async-parameter)* ")"
-async-parameter ::= data-type identifier
+  ::= "(" async-parameter ("," async-parameter)* ")"
+async-parameter
+  ::= data-type identifier
 @end example
 
 For example:
