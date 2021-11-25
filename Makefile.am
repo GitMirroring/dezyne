@@ -36,6 +36,7 @@ EXTRA_DIST =					\
  autogen.sh					\
  build-aux/git-version-gen			\
  build-aux/gitlog-to-changelog			\
+ build-aux/update-semantics.sh			\
  guix.scm					\
  guix/gnu/packages/dezyne.scm
 
