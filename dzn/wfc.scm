@@ -1030,7 +1030,7 @@
   (if (member o ports ast:eq?) '()
       `(,(wfc-error o (format #f "port `~a' not bound" (.name o)))
         ,@(if (not instance) '()
-              `(,(wfc-error instance (format #f "of instance: `~a'" (.name instance))))))))
+              `(,(wfc-info instance (format #f "of instance: `~a'" (.name instance))))))))
 
 (define-method (missing-bindings (o <instance>) (system <system>) ports)
   (append-map
