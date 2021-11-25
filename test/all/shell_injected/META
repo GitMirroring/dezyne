@@ -1,1 +1,1 @@
-{"known":["c","javascript"],"skip":["run"],"tss":true}
+{"skip":["c","javascript"],"tss":true}

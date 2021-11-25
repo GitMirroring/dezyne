@@ -1,1 +1,1 @@
-{"known":["c","javascript"],"skip":["lts","execute","run"],"comment":"livelock model; javascript: async not supported"}
+{"skip":["c","javascript","lts","execute"],"comment":"livelock model; javascript: async not supported"}

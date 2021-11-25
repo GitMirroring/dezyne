@@ -1,1 +1,1 @@
-{"known":["c","javascript"],"skip":["execute"],"comment":"exec:nondeterministic model cannot run; javascript,c: async not supported"}
+{"known":["c","javascript"],"skip":["execute"],"comment":"exec:nondeterministic model cannot execute; javascript,c: async not supported"}

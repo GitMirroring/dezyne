@@ -1,1 +1,1 @@
-{"known":["lts","execute","run"],"comment":"error model:cannot execute, run"}
+{"skip":["lts","execute"],"comment":"error model:cannot execute"}
