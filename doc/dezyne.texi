@@ -211,6 +211,7 @@ Component Declarative Statements
 
 * Component On::                Defining what happens on a trigger.
 * Blocking::                    Implementing a synchronous call on decoupled events.
+* Formal Binding::              Parameter assignment in blocking context.
 
 Component Imperative Statements
 
@@ -3931,6 +3932,7 @@ prefix      ::= <blocking?> <guards> <on>
 @menu
 * Component On::                Defining what happens on a trigger.
 * Blocking::                    Implementing a synchronous call on decoupled events.
+* Formal Binding::              Parameter assignment in blocking context.
 @end menu
 
 @node Component On
@@ -3945,7 +3947,8 @@ on          ::= ("on" triggers ":" statement)
                   | ("on" illegal-triggers ":" illegal)
 triggers    ::= trigger ("," trigger)*
 trigger     ::= port-name "." event-name "(" formal-list? ")"
-formal-list ::= identifier ("," identifier)*
+formal-list ::= formal ("," formal)*
+formal      ::= identifier | (identifier formal-binding)
 statement   ::= declarative-statement | imperative-statement | illegal
 imperative-statement
             ::= action | assign | call | if | reply | return | variable
@@ -3985,6 +3988,9 @@ on p.hello (): ;
 
 non-determinism in components is not allowed and will lead to a
 verification error (@xref{Verification Checks and Errors}).
+
+The @code{formal-binding} is a feature for @code{blocking},
+@xref{Formal Binding}.
 
 @node Blocking
 @subsubsection @code{blocking}
@@ -4066,12 +4072,53 @@ following @code{[guard]}.  This form is semantically equivalent to
 4) The @code{blocking} keyword applies to @code{imperative-statement1}.
 It does @emph{not} apply to @code{imperative-statement2}.
 
-@subsubsection Thread signalling
+@node Formal Binding
+@subsubsection Formal Binding
 
-component @code{ca} illustrates the use of @code{blocking} to postpone
-thread return.  An 'on event' on a different port performs the
-@code{reply} statement for the blocked port.
+A formal binding @emph{binds} a member variable to an @code{out} or
+@code{inout} formal parameter.  At the moment of the @code{reply}, the
+value of the bound member variable is assigned to the formal parameter.
 
+@example
+trigger        ::= port-name "." event-name "(" formal-list? ")"
+formal-list    ::= formal ("," formal)*
+formal         ::= identifier | (identifier formal-binding)
+formal-binding ::= "<-" identifier
+@end example
+
+The @code{identifier} in @code{formal-binding} must be a member variable
+of the component.
+
+For example:
+
+@example
+extern int $int$;
+component blocking_binding
+@{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  @{
+    int g = $123$;
+    bool busy = false;
+    [!busy] on h.hello (n <- g): blocking @{w.hello (); busy = true;@}
+    [busy] on w.world (): @{g = $456$; h.reply (); busy = false;@}
+    [busy] on w.cruel (): @{h.reply (); g = $456$; busy = false;@}
+  @}
+@}
+@end example
+
+in the case of @code{w.world} the assignment of @code{g = $456$} before
+the release of the blocked thread by @code{h.reply ()} ensures that
+parameter @code{n} returns with value @code{456}.  However in the case
+of @code{w.cruel} the caller of @code{h.hello} receives @code{123} via
+parameter @code{n}.
+
+@quotation Note
+The intent is to simplify this specific behavior in the future when data
+flow verification is added.
+@end quotation
 The action statement in @code{on pp.request_value} is marked as
 @code{blocking} and does not contain a @code{reply}.  A thread calling
 @code{pp.request_reply} blocks after the @code{rp.request} action.  The
