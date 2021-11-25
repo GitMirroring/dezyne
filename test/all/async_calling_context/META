@@ -1,1 +1,4 @@
-{"known":["c","javascript"],"code_options":"-c calling_context","comment":{"c":"async-refine: not supported"}}
+;;; -*- scheme -*-
+((skip ("c" "javascript"))
+ (comment (("c" "async-refine: not supported")))
+ (code-options ("-c calling_context")))

@@ -1,1 +1,3 @@
-{"skip":["traces","c","javascript","scheme","simulate"],"tss":true}
+;;; -*- scheme -*-
+((skip ("traces" "c" "javascript" "scheme" "simulate"))
+ (tss #t))

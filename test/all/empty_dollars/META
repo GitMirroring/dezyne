@@ -1,1 +1,6 @@
-{"known":["c:build","c++:build","cs:build","javascript:execute","scheme:execute"]}
+;;; -*- scheme -*-
+((skip ("c:build"
+        "c++:build"
+        "cs:build"
+        "javascript:execute"
+        "scheme:execute")))

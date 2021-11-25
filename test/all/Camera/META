@@ -1,1 +1,3 @@
-{"skip":["c++:execute","cs:execute"],"comment":"set-state not supported"}
+;;; -*- scheme -*-
+((skip ("c++:execute" "cs:execute"))
+ (comment "set-state not supported"))

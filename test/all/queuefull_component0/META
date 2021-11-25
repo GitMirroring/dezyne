@@ -1,1 +1,2 @@
-{"skip":["lts","execute"]}
+;;; -*- scheme -*-
+((skip ("lts" "execute")))

@@ -1,1 +1,4 @@
-{"known":["javascript","c"],"skip":["execute"],"comment":"requires more system context to execute all traces ;async not supported for c and javascript"}
+;;; -*- scheme -*-
+((skip ("javascript" "c" "execute"))
+ (comment
+   "requires more system context to execute all traces ;async not supported for c and javascript"))

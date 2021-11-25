@@ -1,1 +1,2 @@
-{"skip":["build"], "comment":"interface only"}
+;;; -*- scheme -*-
+((skip ("build")) (comment "interface only"))

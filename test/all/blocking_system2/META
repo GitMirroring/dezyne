@@ -1,1 +1,5 @@
-{"skip":["c","javascript"],"model":"Blocked","trace-format":"trace","comment":{"c":"blocking: not supported"}}
+;;; -*- scheme -*-
+((skip ("c" "javascript"))
+ (comment (("c" "blocking: not supported")))
+ (trace-format "trace")
+ (model "Blocked"))

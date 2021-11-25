@@ -1,1 +1,2 @@
-{"model":"helloworld"}
+;;; -*- scheme -*-
+((model "helloworld"))

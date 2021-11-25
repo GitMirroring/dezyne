@@ -1,1 +1,3 @@
-{"known":["c","javascript"],"comment":"async not supported"}
+;;; -*- scheme -*-
+((skip ("c" "javascript"))
+ (comment "async not supported"))

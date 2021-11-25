@@ -1,1 +1,5 @@
-{"code_options":"-c int","known":["c","javascript"],"comment":{"c":"calling-context: not supported"}}
+;;; -*- scheme -*-
+((skip ("c" "javascript"))
+ (comment
+   (("c" "calling-context: not supported")))
+ (code-options ("-c int")))

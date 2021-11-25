@@ -1,1 +1,4 @@
-{"skip":["scheme:execute","c","javascript"],"model":"Blocked","comment":{"c":"blocking: not supported"}}
+;;; -*- scheme -*-
+((skip ("scheme:execute" "c" "javascript"))
+ (comment (("c" "blocking: not supported")))
+ (model "Blocked"))

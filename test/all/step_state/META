@@ -1,1 +1,3 @@
-{"skip":["c","c++","cs","javascript","scheme"],"comment":"setting initial state not supported"}
+;;; -*- scheme -*-
+((skip ("c" "c++" "cs" "javascript" "scheme"))
+ (comment "setting initial state not supported"))

@@ -1,1 +1,3 @@
-{"known":["c"],"skip":["execute"],"comment":"blocking: not supported, error model"}
+;;; -*- scheme -*-
+((skip ("c" "execute"))
+ (comment "blocking: not supported, error model"))

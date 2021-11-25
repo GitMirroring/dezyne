@@ -1,1 +1,4 @@
-{"flush":true,"known":["javascript:execute"],"comment":"flush not suported"}
+;;; -*- scheme -*-
+((skip ("javascript:execute"))
+ (comment "flush not suported")
+ (flush #t))

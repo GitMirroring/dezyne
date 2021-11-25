@@ -1,1 +1,3 @@
-{"skip":["c++:build","javascript:build","scheme:build"],"comment":"partial namespace"}
+;;; -*- scheme -*-
+((skip ("c++:build" "javascript:build" "scheme:build"))
+ (comment "partial namespace"))

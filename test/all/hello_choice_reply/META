@@ -1,1 +1,2 @@
-{"non-strict?":true}
+;;; -*- scheme -*-
+((non-strict? #t))

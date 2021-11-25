@@ -1,1 +1,3 @@
-{"known":["c","javascript"],"comment":{"true":"async-refine: not supported"}}
+;;; -*- scheme -*-
+((skip ("c" "javascript"))
+ (comment ((#t "async-refine: not supported"))))

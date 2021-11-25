@@ -1,1 +1,2 @@
-{"trace-format":"trace","non-strict?":true}
+;;; -*- scheme -*-
+((non-strict? #t) (trace-format "trace"))

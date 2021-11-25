@@ -1,1 +1,4 @@
-{"skip":["c","execute","javascript"],"comment":"compliance error; c, javascript: async not supported"}
+;;; -*- scheme -*-
+((skip ("c" "execute" "javascript"))
+ (comment
+   "compliance error; c, javascript: async not supported"))

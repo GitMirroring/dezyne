@@ -30,7 +30,6 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
   #:use-module (ice-9 regex)
-  #:use-module (json)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn trace)
@@ -137,67 +136,64 @@ output, and standard error as three values."
 (define (get-meta file-name)
   (let ((META (string-append file-name "/META")))
     (and (file-exists? META)
-         (let ((text (with-input-from-file META read-string)))
-           (json-string->alist-scm text)))))
+         (with-input-from-file META read))))
 
 (define (skip? file-name . stages)
-  (let ((json (get-meta file-name)))
-    (and json
+  (let ((alist (get-meta file-name)))
+    (and alist
          (or-map (lambda (stage)
-                   (or (and=> (assoc-ref json "skip")
-                              (cut member stage <>))
-                       (and=> (assoc-ref json "known")
-                              (cut member stage <>))))
+                   (let ((stages (and=> (assq-ref alist 'skip)
+                                        car)))
+                     (and=> stages (cute member stage <>))))
                  stages)
          (format #t "skip\n"))))
 
 (define (get-meta-flag file-name flag)
-  (let ((json (get-meta file-name)))
-    (and json
-         (and=> (assoc-ref json flag)
-                (cut equal? <> #t)))))
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist flag)
+                (cute equal? <> '(#t))))))
 
 (define (flush? file-name)
-  (get-meta-flag file-name "flush"))
+  (get-meta-flag file-name 'flush))
 
 (define (thread-pool? file-name)
-  (get-meta-flag file-name "thead-pool"))
+  (get-meta-flag file-name 'thead-pool))
 
 (define (thread-safe-shell? file-name)
-  (get-meta-flag file-name "tss"))
+  (get-meta-flag file-name 'tss))
 
 (define (code-options file-name)
-  (let ((json (get-meta file-name)))
-    (or (and json
-             (and=> (assoc-ref json "code_options")
-                    list))
+  (let ((alist (get-meta file-name)))
+    (or (and alist
+             (and=> (assq-ref alist 'code-options) car))
         '())))
 
 (define (model? file-name)
-  (let ((json (get-meta file-name)))
-    (and json
-         (assoc-ref json "model"))))
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'model) car))))
 
 (define (model-unset? file-name)
-  (let ((json (get-meta file-name)))
-    (and json
-         (and=> (assoc "model" json)
-                (cut equal? <> '("model" . #f))))))
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq 'model alist)
+                (cute equal? <> '(model #f))))))
 
 (define (trace-format file-name)
-  (let ((json (get-meta file-name)))
-    (and json
-         (assoc-ref json "trace-format"))))
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'trace-format) car))))
 
 (define (non-strict? file-name)
-  (let ((json (get-meta file-name)))
-    (and json
-         (assoc-ref json "non-strict?"))))
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'non-strict?) car))))
 
 (define (no-interface-determinism? file-name)
-  (let ((json (get-meta file-name)))
-    (and json
-         (assoc-ref json "no-interface-determinism?"))))
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'no-interface-determinism?) car))))
 
 (define (error-model? file-name)
   (or (directory-exists? (string-append file-name "/baseline/verify"))

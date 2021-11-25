@@ -1,1 +1,4 @@
-{"non-strict?":true,"skip":["build"],"comment":"interface model: cannot build"}
+;;; -*- scheme -*-
+((skip ("build"))
+ (comment "interface model: cannot build")
+ (non-strict? #t))

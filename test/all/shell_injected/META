@@ -1,1 +1,2 @@
-{"skip":["c","javascript"],"tss":true}
+;;; -*- scheme -*-
+((skip ("c" "javascript")) (tss #t))

@@ -1,1 +1,2 @@
-{"flush":true}
+;;; -*- scheme -*-
+((flush #t))

@@ -1,1 +1,3 @@
-{"skip":["scheme:build"],"comment":"partial namespace"}
+;;; -*- scheme -*-
+((skip ("scheme:build"))
+ (comment "partial namespace"))

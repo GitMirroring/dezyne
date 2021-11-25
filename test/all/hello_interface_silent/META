@@ -1,1 +1,4 @@
-{"skip":["build"],"no-interface-determinism?":true,"comment":"interface model: cannot build"}
+;;; -*- scheme -*-
+((skip ("build"))
+ (comment "interface model: cannot build")
+ (no-interface-determinism? #t))

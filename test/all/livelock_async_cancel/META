@@ -1,1 +1,4 @@
-{"skip":["c","javascript","lts","execute"],"comment":"livelock model; javascript: async not supported"}
+;;; -*- scheme -*-
+((skip ("c" "javascript" "lts" "execute"))
+ (comment
+   "livelock model; javascript: async not supported"))

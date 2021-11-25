@@ -1,1 +1,5 @@
-{"trace_illegals":true,"known":["cs:execute"],"comment":"stacktrace: CLR finalization is a mystery"}
+;;; -*- scheme -*-
+((skip ("cs:execute"))
+ (comment
+   "stacktrace: CLR finalization is a mystery")
+ (trace_illegals #t))

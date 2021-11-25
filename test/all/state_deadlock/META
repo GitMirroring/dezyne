@@ -1,1 +1,2 @@
-{"skip":["verify","traces"],"comment":"system"}
+;;; -*- scheme -*-
+((skip ("verify" "traces")) (comment "system"))
