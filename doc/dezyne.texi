@@ -114,15 +114,15 @@ Ideas and Concepts
 
 Execution Semantics
 
-* Direct in event::
-* Direct out event::
-* Direct multiple out events::
-* Indirect in event::
-* Indirect out event::
-* Indirect multiple out events::
-* Indirect blocking out event::
-* External multiple out events::
-* Indirect blocking multiple external out events::
+* Direct in event::             A provides trigger forwarded
+* Direct out event::            A requires trigger forwarded.
+* Direct multiple out events::  Multiple requires triggers forwarded.
+* Indirect in event::           A requires trigger => requires action.
+* Indirect out event::          A provides trigger => provides trigger via requires action.
+* Indirect multiple out events::  Provides trigger => provides trigger via requires actions and triggers.
+* Indirect blocking out event::  Synchronize two triggers via block and release.
+* External multiple out events::  Delay caused by parallelism
+* Indirect blocking multiple external out events::  Block, delay, release.
 
 Formal Verification
 
@@ -1140,6 +1140,19 @@ the completion of all action statements, just before control is passed
 back to the caller, a component will flush its own queue of pending out
 events.  Recursively all out-events are handled this way.
 
+@menu
+* Direct in event::             A provides trigger forwarded
+* Direct out event::            A requires trigger forwarded.
+* Direct multiple out events::  Multiple requires triggers forwarded.
+* Indirect in event::           A requires trigger => requires action.
+* Indirect out event::          A provides trigger => provides trigger via requires action.
+* Indirect multiple out events::  Provides trigger => provides trigger via requires actions and triggers.
+* Indirect blocking out event::  Synchronize two triggers via block and release.
+* External multiple out events::  Delay caused by parallelism
+* Indirect blocking multiple external out events::  Block, delay, release.
+@end menu
+
+@node Direct in event
 @section Direct in event
 
 A provides port in-event (p.a) call resulting in a requires port
@@ -1151,6 +1164,7 @@ in-event (r.a) is implemented as a function calling another function.
 
 @image{images/direct_in,,,,.png}
 
+@node Direct out event
 @section Direct out event
 
 A requires port out-event (r.a) resulting in a provides port out-event
@@ -1163,6 +1177,7 @@ queue followed by a call to flush the queue.
 
 @image{images/direct_out,,,,.png}
 
+@node Direct multiple out events
 @section Direct multiple out events
 
 A requires port inevitably triggering multiple out-events (r.a, r.b)
@@ -1185,6 +1200,7 @@ component are indistinguisable looking from the outside.
 
 The third variant is left as an exercise to the reader.
 
+@node Indirect in event
 @section Indirect in event
 
 A requires port in-event (r.a) call resulting in a requires port
@@ -1196,6 +1212,7 @@ out-event (r.b).
 
 @image{images/indirect_in,,,,.png}
 
+@node Indirect out event
 @section Indirect out event
 
 A requires port out-event (r.b) posted in the context of a provides port
@@ -1208,6 +1225,7 @@ returns.
 
 @image{images/indirect_out,,,,.png}
 
+@node Indirect multiple out events
 @section Indirect multiple out events
 
 Since the provided interface is the same in the 3 cases below the
@@ -1234,6 +1252,7 @@ subtle differences in the internal handling of messages.
 
 @image{images/indirect_multiple_out3,,,,.png}
 
+@node Indirect blocking out event
 @section Indirect blocking out event
 
 Also @pxref{Blocking}.
@@ -1252,6 +1271,7 @@ If the keyword @code{blocking} in above example would be omitted it would lead
 to an erroneous situation since the provided in-event (p.a) would return
 before the provided out-event (p.b) would have been generated.
 
+@node External multiple out events
 @section External multiple out events
 
 Also @pxref{External}.
@@ -1268,6 +1288,7 @@ occurrence of the inevitable event in combination with external.
 
 @image{images/external_multiple_out,,,,.png}
 
+@node Indirect blocking multiple external out events
 @section Indirect blocking multiple external out events
 
 The 2 required out-events (r1.b, r2.b) can come in any order.  The
