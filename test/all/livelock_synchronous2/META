@@ -1,1 +1,1 @@
-{"skip":["execute","lts"],"comment":"error model: cannot execute; livelock"}
+{"skip":["lts"]}
