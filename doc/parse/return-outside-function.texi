@@ -1,1 +1,2 @@
-return-outside-function.dzn:6:15: error: cannot use return outside of function
+return-outside-function.dzn:6:15: error: cannot use return outside of
+    function

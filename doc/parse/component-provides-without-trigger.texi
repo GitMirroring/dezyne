@@ -1,1 +1,2 @@
-component-provides-without-trigger.dzn:7:1: error: component with behavior must have a trigger
+component-provides-without-trigger.dzn:7:1: error: component with
+    behavior must have a trigger

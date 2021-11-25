@@ -1,3 +1,6 @@
-binding-cycle-elaborate.dzn:32:5: error: instance `h2' is in a cyclic binding
-binding-cycle-elaborate.dzn:33:5: error: instance `w1' is in a cyclic binding
-binding-cycle-elaborate.dzn:34:5: error: instance `w2' is in a cyclic binding
+binding-cycle-elaborate.dzn:32:5: error: instance `h2' is in a cyclic
+    binding
+binding-cycle-elaborate.dzn:33:5: error: instance `w1' is in a cyclic
+    binding
+binding-cycle-elaborate.dzn:34:5: error: instance `w2' is in a cyclic
+    binding

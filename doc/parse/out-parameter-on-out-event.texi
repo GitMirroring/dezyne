@@ -1,1 +1,2 @@
-out-parameter-on-out-event.dzn:4:19: error: cannot use out-parameter on out-event `world'
+out-parameter-on-out-event.dzn:4:19: error: cannot use out-parameter on
+    out-event `world'

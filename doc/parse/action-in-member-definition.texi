@@ -1,1 +1,2 @@
-action-in-member-definition.dzn:16:14: error: action in member variable initializer
+action-in-member-definition.dzn:16:14: error: action in member variable
+    initializer

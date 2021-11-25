@@ -1,2 +1,4 @@
-out-binding-reversed.dzn:22:26: error: formal binding `i' is not a data member variable
-out-binding-reversed.dzn:23:26: error: formal binding `b' is not a data member variable
+out-binding-reversed.dzn:22:26: error: formal binding `i' is not a data
+    member variable
+out-binding-reversed.dzn:23:26: error: formal binding `b' is not a data
+    member variable

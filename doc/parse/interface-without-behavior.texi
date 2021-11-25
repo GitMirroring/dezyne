@@ -1,1 +1,2 @@
-interface-without-behavior.dzn:1:1: error: interface must define a behavior
+interface-without-behavior.dzn:1:1: error: interface must define a
+    behavior

@@ -1,3 +1,5 @@
 recursive-system.dzn:1:1: error: system composition of `c1' is recursive
-recursive-system.dzn:14:1: error: system composition of `c3' is recursive
-recursive-system.dzn:21:1: error: system composition of `c4' is recursive
+recursive-system.dzn:14:1: error: system composition of `c3' is
+    recursive
+recursive-system.dzn:21:1: error: system composition of `c4' is
+    recursive

@@ -1,1 +1,2 @@
-inout-parameter-on-out-event.dzn:4:19: error: cannot use inout-parameter on out-event `world'
+inout-parameter-on-out-event.dzn:4:19: error: cannot use inout-parameter
+    on out-event `world'

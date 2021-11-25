@@ -1,2 +1,3 @@
-second-otherwise.dzn:11:5: error: cannot use otherwise guard more than once
+second-otherwise.dzn:11:5: error: cannot use otherwise guard more than
+    once
 second-otherwise.dzn:10:5: info: first otherwise here

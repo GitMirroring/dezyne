@@ -1,3 +1,6 @@
-call-in-complex-expression.dzn:20:16: error: call used in a complex expression
-call-in-complex-expression.dzn:21:21: error: call used in a complex expression
-call-in-complex-expression.dzn:22:19: error: call used in a complex expression
+call-in-complex-expression.dzn:20:16: error: call used in a complex
+    expression
+call-in-complex-expression.dzn:21:21: error: call used in a complex
+    expression
+call-in-complex-expression.dzn:22:19: error: call used in a complex
+    expression

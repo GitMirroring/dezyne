@@ -1,2 +1,3 @@
-injected-with-out-event.dzn:14:3: error: injected port `r' has out events: world
+injected-with-out-event.dzn:14:3: error: injected port `r' has out
+    events: world
 injected-with-out-event.dzn:4:3: info: port defined here

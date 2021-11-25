@@ -1,1 +1,2 @@
-call-in-member-definition.dzn:17:14: error: call in member variable initializer
+call-in-member-definition.dzn:17:14: error: call in member variable
+    initializer

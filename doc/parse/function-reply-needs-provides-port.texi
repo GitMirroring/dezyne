@@ -1,1 +1,2 @@
-function-reply-needs-provides-port.dzn:23:7: error: must specify a provides-port with reply
+function-reply-needs-provides-port.dzn:23:7: error: must specify a
+    provides-port with reply

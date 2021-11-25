@@ -1,2 +1,3 @@
-imperative-illegal.dzn:10:7: error: cannot use illegal with imperative statements
+imperative-illegal.dzn:10:7: error: cannot use illegal with imperative
+    statements
 imperative-illegal.dzn:9:7: info: imperative statement here

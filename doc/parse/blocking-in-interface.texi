@@ -1,1 +1,2 @@
-blocking-in-interface.dzn:6:5: error: cannot use blocking in an interface
+blocking-in-interface.dzn:6:5: error: cannot use blocking in an
+    interface

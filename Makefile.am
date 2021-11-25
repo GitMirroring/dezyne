@@ -152,7 +152,11 @@ include doc/semantics/local.mk
 update-doc: $(dezyne_TEXINFOS)
 
 doc/parse/%.texi: doc/parse/%.dzn $(ALL_GO)
-	$(AM_V_GEN)(cd $(<D) && ../../pre-inst-env dzn parse $(<F);:) > $@ 2>&1
+	$(AM_V_GEN)(cd $(<D)					\
+	    && ../../pre-inst-env dzn parse $(<F);:) 2>&1	\
+	    | fmt --split-only --width=73 --goal=73		\
+	    | sed '/^.*[.]dzn:/! s,^,    ,'			\
+	    > $@
 
 info_imagesdir = $(infodir)/images
 EXTRA_DIST += $(info_image_DATA)

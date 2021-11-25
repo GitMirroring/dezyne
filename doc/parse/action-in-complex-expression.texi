@@ -1,3 +1,6 @@
-action-in-complex-expression.dzn:24:25: error: action used in a complex expression
-action-in-complex-expression.dzn:25:25: error: action used in a complex expression
-action-in-complex-expression.dzn:30:23: error: action used in a complex expression
+action-in-complex-expression.dzn:24:25: error: action used in a complex
+    expression
+action-in-complex-expression.dzn:25:25: error: action used in a complex
+    expression
+action-in-complex-expression.dzn:30:23: error: action used in a complex
+    expression
