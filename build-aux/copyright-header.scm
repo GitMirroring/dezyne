@@ -273,7 +273,6 @@ All rights reserved.
                           "build-aux/ltmain.sh"))
       (string-prefix? "doc/" file-name)
       (string-prefix? "dzn/peg" file-name)
-      (string-prefix? "emacs/" file-name)
       (string-prefix? "test/language" file-name)
       ;; ide
       (string-prefix? "dzn/js/p5/" file-name)
