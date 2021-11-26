@@ -65,3 +65,10 @@ dzn/shell-util.scm
 
 Test intergration from Gash
 test/dzn/automake.scm
+
+* Legalese
+Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
