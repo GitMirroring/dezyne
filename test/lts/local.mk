@@ -22,6 +22,7 @@
 # Code:
 
 EXTRA_DIST +=					\
+ %D%/README					\
  %D%/aap.aut					\
  %D%/deterministic-fail0.aut			\
  %D%/deterministic-fail1.aut			\
