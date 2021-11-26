@@ -2108,11 +2108,6 @@ Enable debug output.
 @itemx -h
 Display help on invoking @code{dzn}, and then exit.
 
-@c XXX move to structured output, recutils?
-@item --json
-@itemx -j
-For internal use: output data as JSON.
-
 @item --skip-wfc
 @itemx -p
 Skip well-formedness checking.

@@ -651,7 +651,7 @@ required to be non-deterministic."
   (label transition-label)
   (to transition-to set-transition-to!))
 
-(define (generate-trace root nodes provides-in fout out)
+(define* (generate-trace root nodes provides-in fout out #:key verbose?)
 
   (define (allowed-end? node)
     (define (label-provides-in? label)
@@ -700,7 +700,8 @@ required to be non-deterministic."
 
     (define (trace-log trace)
       (let ((file-name (format #f "~a/~a.~a" out fout %fout-inc)))
-        (format #t "~a\n" file-name)
+        (when verbose?
+          (format (current-error-port) "~a\n" file-name))
         (with-output-to-file file-name
           (lambda _ (display (string-join trace "\n" 'suffix)))))
       (set! %fout-inc (1+ %fout-inc)))
@@ -723,7 +724,9 @@ required to be non-deterministic."
     (annotate)
     (step root '())))
 
-(define (lts->traces data illegal? flush? interface out model provides-ports provides-in)
+(define* (lts->traces data illegal? flush? interface out model provides-ports
+                      provides-in
+                      #:key verbose?)
   (let* ((provides-ports (if (not interface) provides-ports
                              (list model)))
          (interface (and interface model)))
@@ -753,18 +756,19 @@ required to be non-deterministic."
 
     (define (remove-edges-to-illegal lts)
       (if illegal?
-        lts
-        (let ((illegal-nodes (map edge-end-state (delete-duplicates (filter illegal-edge (lts-edges lts))))))
-          (set-lts-edges! lts
-            (filter (lambda (edge) (not (member (edge-end-state edge) illegal-nodes))) (lts-edges lts)))))
-          lts)
+          lts
+          (let ((illegal-nodes (map edge-end-state (delete-duplicates (filter illegal-edge (lts-edges lts))))))
+            (set-lts-edges! lts
+                            (filter (lambda (edge) (not (member (edge-end-state edge) illegal-nodes))) (lts-edges lts)))))
+      lts)
 
     (let* ((lts (aut-text->lts (string-join data "\n")))
            (lts (remove-edges-to-illegal (add-illegal-state lts)))
            (nodes (lts->nodes lts #t))
            (nodes (remove-state-edges nodes))
            (root (car (lts-state lts))))
-      (generate-trace root nodes provides-in (string-append model ".trace") out))))
+      (generate-trace root nodes provides-in (string-append model ".trace") out
+                      #:verbose? verbose?))))
 
 
 ;;;

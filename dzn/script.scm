@@ -39,7 +39,6 @@
   (let* ((option-spec
 	  '((debug (single-char #\d))
             (help (single-char #\h))
-            (json (single-char #\j))
 	    (skip-wfc (single-char #\p))
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
@@ -72,7 +71,6 @@
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
   -h, --help             display this help
-  -j, --json             output json
   -p, --skip-wfc         use plain PEG, skip well-formedness checking
   -v, --verbose          be more verbose, show progress
   -V, --version          display version

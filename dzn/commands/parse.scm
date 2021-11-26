@@ -33,7 +33,6 @@
   #:use-module (ice-9 regex)
 
   #:use-module (dzn serialize)
-  #:use-module (json)
 
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -143,13 +142,11 @@ Parse a Dezyne file and produce an AST
            (let ((ast (parse options file-name)))
              (if (option-ref options 'output #f)
                  (let* ((file-name (option-ref options 'output "-"))
-                        (json? (dzn:command-line:get 'json))
                         (locations? (command-line:get 'locations))
                         (sexp (parameterize ((%locations? locations?))
                                 (ast:serialize ast)))
-                        (output (if json? (scm->json-string sexp)
-                                    (with-output-to-string
-                                      (cute pretty-print sexp)))))
+                        (output (with-output-to-string
+                                      (cute pretty-print sexp))))
                    (if (equal? file-name "-") (display output)
                        (with-output-to-file file-name (cut display output))))
                  (when (dzn:command-line:get 'verbose)

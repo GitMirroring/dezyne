@@ -108,7 +108,7 @@ Generate exhaustive set of traces for Dezyne model
     lts))
 
 (define (model->traces options root model file-name)
-  (let* ((dzn-debug? (dzn:command-line:get 'debug))
+  (let* ((verbose? (dzn:command-line:get 'verbose))
          (lts (model->lts root model file-name))
          (provided-ports (if (is-a? model <interface>) '()
                              (ast:provides-port* model)))
@@ -116,7 +116,6 @@ Generate exhaustive set of traces for Dezyne model
                           (map (lambda (t) (string-append (string-drop-right (.port.name t) 1) "." (.event.name t)))
                                (ast:provided-in-triggers model))
                           (map .name (filter ast:in? (ast:event* model)))))
-         (foo (if dzn-debug? (format (current-error-port) "provides: ~a\n" provided-ports)))
          (provided (map .name provided-ports))
          (model-name (makreel:unticked-dotted-name model))
          (bin ((compose dirname car) (command-line)))
@@ -128,24 +127,17 @@ Generate exhaustive set of traces for Dezyne model
     (when (and output (not (equal? output "-")))
       (mkdir-p output))
     (when (or (not lts?) traces?)
-      (let* ((traces (with-output-to-string
-                       (lambda _
-                         (let* ((text (string-trim-right lts))
-                                (lines (string-split text #\newline)))
-                           (lts->traces lines
-                                        illegal-opt
-                                        flush-opt
-                                        (is-a? model <interface>)
-                                        (or output ".")
-                                        model-name
-                                        '()
-                                        provides-in)))))
-             (json? (dzn:command-line:get 'json #f))
-             (traces (string-trim-right traces)))
-        (when json? (display traces))
-        (when dzn-debug?
-          (format (current-error-port) "provides-in=~s\n" provides-in)
-          (format (current-error-port) "traces=~s\n" traces))))
+      (let* ((text (string-trim-right lts))
+             (lines (string-split text #\newline)))
+        (lts->traces lines
+                     illegal-opt
+                     flush-opt
+                     (is-a? model <interface>)
+                     (or output ".")
+                     model-name
+                     '()
+                     provides-in
+                     #:verbose? verbose?)))
     (when lts?
       (if (and output (not (equal? output "-")))
           (with-output-to-file (string-append output "/" model-name ".aut")
