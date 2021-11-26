@@ -136,8 +136,7 @@ EXTRA_DIST += $(TESTS)
 ###############
 
 info_TEXINFOS =					\
- doc/dezyne.texi				\
- doc/dezyne-tutorial.texi
+ doc/dezyne.texi
 
 dezyne_TEXINFOS = doc/fdl-1.3.texi
 
@@ -186,19 +185,13 @@ MAKEINFO_HTML_OPTIONS =									\
 EXTRA_DIST += .texinfo/htmlxref.cnf
 AM_MAKEINFOHTMLFLAGS = --set-customization-variable CHECK_HTMLXREF=true
 
-html: html-manual html-tutorial
+html: html-manual
 html-manual: doc/html/dezyne/index.html
-html-tutorial: doc/html/dezyne-tutorial/index.html
 
 doc/html/dezyne/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMAGES)
 	mkdir -p $(@D)/html_node
 	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
 	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
-
-doc/html/dezyne-tutorial/index.html: ${srcdest}doc/dezyne-tutorial.texi doc/version-tutorial.texi $(WEB_IMAGES)
-	mkdir -p $(@D)/html_node
-	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
-	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne-tutorial.html -I ${srcdest}doc -I doc $<
 
 SITE = /srv/dezyne.org
 publish: html pdf
@@ -207,10 +200,7 @@ publish: html pdf
 	rsync -P -rvz --delete doc/html/ $(SITE)/manual/
 	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne/
 	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne/html_node/
-	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne-tutorial/
-	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne-tutorial/html_node/
 	rsync -P -rvz doc/dezyne.pdf $(SITE)/manual/
-	rsync -P -rvz doc/dezyne-tutorial.pdf $(SITE)/manual/
 
 LOCAL_SITE = $(HOME)/src/web/dezyne.org/site/dezyne
 publish-local: html pdf
@@ -232,9 +222,6 @@ override $(srcdir)/doc/version.texi:
 	  echo "@set EDITION $(VERSION)";				\
 	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
 	mv $@-t $@
-
-doc/version-tutorial.texi: doc/version.texi
-	ln -f $< $@
 
 # Distribution
 ##############

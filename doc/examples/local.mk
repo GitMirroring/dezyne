@@ -54,26 +54,3 @@ DEZYNE_EXAMPLES =				\
  %D%/message-handler.dzn
 
 EXTRA_DIST += $(DEZYNE_EXAMPLES)
-
-TUTORIAL_EXAMPLES =				\
- %D%/ArmourIBVIRR.dzn				\
- %D%/ArmourIBVIRRError.dzn			\
- %D%/ArmourIIPRB.dzn				\
- %D%/ArmourIIPRBError.dzn			\
- %D%/ArmourIIPRE.dzn				\
- %D%/ArmourIIPREError.dzn			\
- %D%/ArmourIIPRV.dzn				\
- %D%/ArmourIIPRVError.dzn			\
- %D%/ArmourISOE.dzn				\
- %D%/ArmourISOEError.dzn			\
- %D%/ArmourMAOE.dzn				\
- %D%/ArmourMAOEError.dzn			\
- %D%/ArmourMSOE.dzn				\
- %D%/ArmourMSOEError.dzn			\
- %D%/ArmourOENABP.dzn				\
- %D%/ArmourOENABPError.dzn			\
- %D%/ArmourREIR.dzn				\
- %D%/ArmourREIRError.dzn			\
- %D%/Logger.dzn
-
-EXTRA_DIST += $(TUTORIAL_EXAMPLES)

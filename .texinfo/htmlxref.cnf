@@ -45,9 +45,6 @@ D = https://dezyne.org
 dezyne		mono	${D}/dezyne/manual/dezyne/dezyne.html
 dezyne		node	${D}/dezyne/manual/dezyne/html_node/
 
-dezyne-tutorial	mono	${D}/dezyne/manual/dezyne-tutorial.html
-dezyne-tutorial	node	${D}/dezyne/manual/dezyne-tutorial/html_node/
-
 dezyne-ide	mono	${D}/dezyne-ide/manual/dezyne-ide/dezyne-ide.html
 dezyne-ide	node	${D}/dezyne-ide/manual/dezyne-ide/html_node/
 
