@@ -21,6 +21,8 @@
 #
 # Code:
 
+EXTRA_DIST += %D%/README
+
 dist_info_images_DATA =					\
  %D%/direct_in.png					\
  %D%/direct_multiple_out1.png				\
