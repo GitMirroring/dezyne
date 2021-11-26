@@ -21,7 +21,9 @@
 #
 # Code:
 
-TUTORIAL_SEMANTICS =					\
+EXTRA_DIST += %D%/README
+
+DOCUMENTATION_SEMANTICS =				\
  %D%/direct_in.dzn					\
  %D%/direct_multiple_out1.dzn				\
  %D%/direct_multiple_out2.dzn				\
@@ -35,4 +37,4 @@ TUTORIAL_SEMANTICS =					\
  %D%/indirect_multiple_out3.dzn				\
  %D%/indirect_out.dzn
 
-EXTRA_DIST += $(TUTORIAL_SEMANTICS)
+EXTRA_DIST += $(DOCUMENTATION_SEMANTICS)
