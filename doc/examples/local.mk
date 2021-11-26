@@ -21,6 +21,8 @@
 #
 # Code:
 
+EXTRA_DIST += %D%/README
+
 DEZYNE_EXAMPLES =				\
  %D%/ca.dzn					\
  %D%/compliance-multiple-provides-fork.dzn	\
