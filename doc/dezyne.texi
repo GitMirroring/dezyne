@@ -1774,16 +1774,17 @@ the bottom. Both protecting the inside component called @code{middle}.
 @node Code Integration
 @chapter Code Integration
 
-Although Dezyne models can be simulated, the code is not suited for
-direct execution or compilation into machine executable code, instead,
-the a code generator is used to translate (transpile) Dezyne into an
-intermediate language, such as @code{C++} (@xref{Invoking dzn code}).
+Dezyne code cannot be directly run or compiled into an executable, instead,
+the Dezyne code generator is used to translate Dezyne into an
+intermediate target language, such as @code{C++} (@xref{Invoking dzn
+code}).
 
 The Dezyne code generator will produce human readable code that strongly
 resembles the Dezyne code without adding any unnecessary deviations.
 
 @menu
 * Integrating C++ Code::
+* Foreign Component::
 * Thread-safe Shell::
 * Integrating Scheme Code::
 @end menu
@@ -1798,10 +1799,11 @@ and the integration thereof.
 @subsection Introduction
 
 Every wellformed Dezyne model can be automatically converted into a
-corresponding wellformed C++ representation.  A verified Dezyne model
-can be automatically converted into a corresponding C++ representation
-which when executed exhibits the same behavior as one can observe in
-the Dezyne simulation and verification of said model.
+corresponding wellformed C++ representation.  This means that the
+generated code will compile without compilation errors.  A verified
+Dezyne model, once converted into a corresponding C++ representation,
+exhibits the same behavior when executed as can observed in the
+Dezyne simulation and verification of the model.
 
 In Dezyne there are three model types: interface, component and system.
 
@@ -1816,18 +1818,19 @@ Dezyne turns an interface such as:
 @verbatiminclude examples/some_interface.dzn
 @end example
 
-into the following C++ class representation:
+into a C++ class representation similar to this:
 
 @example
 @verbatiminclude examples/some_interface.hh
 @end example
 
-Each event in an interface is a slot to which a value of something
-with the appropriate callable signature can be assigned.  A callable
-value in C++ is either: a function pointer or a functor.  For example:
+Each event in an interface is a slot to which a value of something with
+the appropriate callable signature can be assigned.  A callable value in
+C++ is either: A function pointer or a functor (an object implementing
+the function @code{::operator ())}, like a C++11 lambda.  For example:
 
 @example
-void foo()@{@}
+void foo () @{@}
 some_interface port;
 port.out.out_event = foo;
 port.in.in_event = port.out.out_event;
@@ -1845,7 +1848,7 @@ between all of its ports.  For example:
 @verbatiminclude examples/some_component.dzn
 @end example
 
-in which case a simplified C++ representation might look like this:
+in which case a simplistic C++ representation could look like this:
 
 @example
 @verbatiminclude examples/some_component.hh
@@ -1854,8 +1857,12 @@ in which case a simplified C++ representation might look like this:
 Note that dezyne::ref allows short circuiting events which will be
 initialized at a later stage.
 
-Of course for all practical purposes one would expect a component to be
-more complicated to be able to meet all of its interface contracts.
+However, this representation does not implement the semantics of Dezyne
+(see @xref{Execution Semantics}).  In order to achieve this, the Dezyne
+runtime manages the event exchange between components.  And of course
+for all practical purpose and intent one expects a component behavior to
+be more complicated to be able to comply with all of its interface
+behaviors.
 
 @subsection Systems
 
@@ -1946,21 +1953,95 @@ int main()
 @}
 @end example
 
+@node Foreign Component
+@section Foreign Component
+
+We already saw how to connect code directly to event slots in the
+interface.  If we desire to encapsulate this code, we can use a
+component without a behavior@footnote{A foreign component is a component
+without behaviour in Dezyne.} to achieve this.  The code generator will
+generate a similar C++ representation for components with and without
+behavior.  The only difference is that a component without behavior
+declares pure virtual functions which must be implemented by a struct of
+class which inherits from the generated C++ representation.  Note that
+this approach is not suitable to wrap a Dezyne component or system,
+since it would add the Dezyne semantic constraints via the runtime
+library a second time.  The derived struct or class must have the same
+name as the component in Dezyne.  To avoid a naming conflict, the
+generated representation with the same name as the Dezyne component is
+placed into the @code{skel}@footnote{@code{skel} is short for skeleton.}
+namespace.
+
+It may not be obvious that we may run into a conflict when we put our
+foreign component in a file with the same name as the component.  The
+reasons for this are as follows.  Names introduced in Dezyne are also
+used by the generated code to refer to component representations.  If a
+component is not defined locally Dezyne import is mapped to a
+@code{#include}.  This means that the actual implementation of a foreign
+component must be in a file with the name derived from the component
+name.  Therefore the component representation in the @code{skel}
+namespace is not written to the same file, the code generator simply
+refuses this.  The solution is to put foreign component definitions into
+another file, for instance in the file of the system instantiating the
+component.
+
+When implementing the foreign component the compiler must also be able
+to see the representation in the @code{skel} namespace.  The code
+generator makes sure that the actual implementation inheriting the
+@code{skel} representation is included directly after it.  Therefore we
+do not have to include anything into the header file of our foreign
+implementation.  However, if we put the actual definition into a
+separate source file, we must include both the header file of the actual
+foreign component as well as the header file declaring the @code{skel}
+representation.
+
+An example will help clarifying:
+
+@example
+@verbatiminclude examples/hello_foreign.dzn
+@end example
+
+Here we see an interface @code{ihello}, a @code{foreign} component, a
+regular component @code{hello} and a system @code{hello_foreign} being
+defined.
+
+For C++ the code generator produces a @file{hello_foreign.hh} and a
+@file{hello_foreign.cc} file.  Since @code{hello_foreign} instantiates
+the component @code{foreign}, it will @code{#include} a file called
+@file{foreign.hh}.  The contents of this file might look something like
+this:
+
+@example
+@verbatiminclude examples/foreign.hh
+@end example
+
+Note the absence of an @code{#include} statement.
+
+If we want to move all member function definitions from the header file
+to a source file, we might write @file{foreign.cc} like this.
+
+@example
+@verbatiminclude examples/foreign.cc
+@end example
+
+Note the presence of @code{#include "hello_foreign.hh"} and remember
+this already includes @file{foreign.hh}.
+
+
 @node Thread-safe Shell
 @section Thread-safe Shell
 
-Note: this feature was introduced in Dezyne release 2.0.0.
-
 A Dezyne Thread-safe Shell guarantees safe use of a Dezyne system
-component in a multi-threaded environment.  It also enables the use of
-the @code{blocking} keyword.
+component in a multi-threaded environment.  It also implements the use
+of the @code{blocking} keyword and the @code{defer}@footnote{To be
+released in 2.16.}.
 
 @subsection Shell Syntax
 
 Use the dzn command-line client to generate code and a thread-safe shell:
 
 @example
-  dzn code -l c++ -s SYSTEM FILE    (1)(Since 2.0.0)
+  dzn code -l c++ -s SYSTEM FILE    (1)
 @end example
 
 Explanation:
