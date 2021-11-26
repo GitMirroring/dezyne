@@ -1,0 +1,144 @@
+interface istrict
+{
+  in void request();
+  in void cancel();
+  out void notify();
+
+  behavior
+  {
+    bool idle = true;
+    [idle]
+    {
+      on request: idle = false;
+    }
+    [!idle]
+    {
+      on cancel: idle = true;
+      on inevitable: {idle = true; notify;}
+    }
+  }
+}
+
+interface ipermissive // derives from istrict
+{
+  in void request();
+  in void cancel();
+  out void notify();
+
+  behavior
+  {
+    on request: {}
+    on cancel: {}
+    on optional: notify;
+  }
+}
+
+component armored_system // is permissive, but armored
+{
+  provides ipermissive p;
+  requires ipermissive r;
+
+  system
+  {
+    p <=> ta.p;
+    top_armor ta;
+
+    ta.r <=> m.p;
+    middle m; // the soft but strict middle
+    m.r <=> ba.p;
+
+    bottom_armor ba;
+    watchdog w;
+    ba.w <=> w.w;
+    ba.r <=> r;
+  }
+}
+
+component top_armor
+{
+  provides ipermissive p;
+  requires istrict r;
+
+  behavior
+  {
+    bool idle = true;
+    [idle]
+    {
+      on p.request(): {idle = false; r.request();}
+      on p.cancel(): {}
+    }
+    [!idle]
+    {
+      on p.request(): {}
+      on p.cancel(): {idle = true; r.cancel();}
+      on r.notify(): {idle = true; p.notify();}
+    }
+  }
+}
+
+component middle // a trivial proxy, see what happens with 2.17.0
+{
+  provides istrict p;
+  requires istrict r;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] {
+      on p.request(): {r.request(); idle = false;}
+    }
+    [!idle] {
+      on p.cancel(): {r.cancel(); idle = true;}
+      on r.notify(): {p.notify(); idle = true;}
+    }
+  }
+}
+
+component bottom_armor
+{
+  provides istrict p;
+  requires ipermissive r;
+  requires iwatchdog w;
+
+  behavior
+  {
+    bool idle = true;
+    [idle]
+    {
+      on p.request(): {idle = false; w.set(); r.request();}
+      on r.notify(): {}
+    }
+    [!idle]
+    {
+      on p.cancel(): {idle = true; w.cancel(); r.cancel();}
+      on r.notify(),
+         w.timeout(): {idle = true; w.cancel(); p.notify();}
+    }
+  }
+}
+
+interface iwatchdog
+{
+  in void set();
+  in void cancel();
+  out void timeout();
+
+  behavior
+  {
+    bool idle = true;
+    [idle]
+    {
+      on set: idle = false;
+    }
+    [!idle]
+    {
+      on cancel: idle = true;
+      on inevitable: timeout;
+    }
+  }
+}
+
+component watchdog
+{
+  provides iwatchdog w;
+}

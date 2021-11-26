@@ -77,6 +77,7 @@ This document describes Dezyne version @value{VERSION}.
 * Ideas and Concepts::          Explaining the underlying thinking.
 * Execution Semantics::         How does it work?
 * Formal Verification::         A guide to verification errors.
+* Defensive Design::            A protective armor.
 * Code Integration::            Creating an executable.
 * The Dezyne command-line tools::  Running the tools.
 * Dezyne Language Reference::   All the language details.
@@ -131,6 +132,12 @@ Formal Verification
 * Verification Checks and Errors::  Which properties are verified?
 * Verification Counter Examples::  What if verification fails?
 * Interpreting Verification Errors::  How to fix verification errors.
+
+Defensive Design
+
+* Interface Contracts::         Consequences of a breach of contract.
+* Error Handling and Recovery::  Specifying Exceptional behavior.
+* Armoring::                    Making a program robust.
 
 Code Integration
 
@@ -1309,6 +1316,7 @@ cases.
 
 @image{images/indirect_blocking_multiple_external_out,,,,.png}
 
+@c *********************************************************************
 @node Formal Verification
 @chapter Formal Verification
 
@@ -1586,6 +1594,116 @@ doc/examples/illegal-requires.dzn:6:3: error: illegal
 (trail "h.hello" "w.world" "<illegal>")
 (labels "h.hello" "h.world")
 (eligible)
+@end example
+
+
+@c *********************************************************************
+@node Defensive Design
+@chapter Defensive Design
+
+As Dezyne is intended for operating system like applications,
+qualifications like trustworthy, secure, safe, robust, and resilient come
+to mind. Here we discuss how these might be achieved.
+
+If you are dealing with untrustworthy partners, you had better check
+that they behave as agreed or otherwise stop the transaction.
+Practically this means that one must not rely blindly on external
+behavior and external input.
+
+Dezyne interfaces allow you to specify what the implementation can
+expect from their client and what they must do in return.  This is not
+unlike a contract in terms of a pre-condition and a post-condition.
+Moreover, verification can be used to exhaustively show that for each
+Dezyne component these pre- and post-conditions hold.  This is what we
+call @xref{Design by Contract} or @xref{Interface Contracts}.
+
+Of course any interface contract can be written at the discretion of the
+designer/programmer.  It can either be permissive or restrictive.  An
+astute reader/thinker may realize that pre- and post-conditions are
+transitive and eventually there will not be a Dezyne implementation
+behind an interface. This means that verification cannot be used to
+assert upholding the pre- and post-conditions of the boundary interface.
+For this boundary we might define a permissive interface (anything goes)
+to guard the restricted interface and design an adapter component to
+deal with every request outside of the restricted protocol.  This type
+of component is referred to as an armor (see @xref{Armoring}).
+
+@menu
+* Interface Contracts::         Consequences of a breach of contract.
+* Error Handling and Recovery::  Specifying Exceptional behavior.
+* Armoring::                    Making a program robust.
+@end menu
+
+@node Interface Contracts
+@section Interface Contracts
+
+Dezyne does not have an exception mechanism like other languages.  An
+exception mechanism is designed to prevent accidentally ignoring missed
+pre- or post-conditions.  Instead, in Dezyne the interfaces establish
+these restrictions by means of verification (@xref{Formal
+Verification}).  So where traditional programming languages must handle
+protocol violations using an exception mechanism at runtime, Dezyne
+prevents them using the static verification checks@footnote{This is not
+unlike languages that use static type analysis and checking (such as
+@code{C++} and @code{Haskell}) versus languages that check types at
+runtime}.  Interfaces in Dezyne are inherently complete with respect to
+their event alphabet.  The generated code will accept every
+@code{trigger} but give an @code{illegal} response.
+
+The illegal response is mapped to @code{std::abort ()} in @code{C++}.
+Note that for a fully verified Dezyne system, operated by clients that
+adhere to the interface specifications, it is impossible for an
+@code{illegal} response to be triggered.  In other words, when an
+@code{illegal} is triggered, it means that some non-Dezyne code is
+violating a protocol (interface specification).
+
+@node Error Handling and Recovery
+@section Error Handling and Recovery
+
+The errors of concern here are not programming or design errors, but
+behavior that may occur and must be handled appropriately.  Like a file
+open request because of a non existing file.  Therefore these errors are
+at least runtime errors.
+
+For a system, which behavior emerges as a result of its function and its
+interaction with an unpredictable environment, the Pareto principle
+holds for the distribution of its main functions and its error handling
+across its behavior.  Typically about 10%-20% of the events that signal
+an error, result in 90%-80% of the behavior associated with error
+handling. While 90%-80% of the events that relate to the main functions
+of the system typically result in 10%-20% percent of the overall behavior
+which is unrelated to error handling.
+
+Error handling is most often a matter of redirecting the handling to the
+party in charge to allow them to attempt recovery by retrying, continue
+with reduced or gracefully degraded function, by failing safely
+altogether, or continue as normal treating the error as a warning.
+
+Dezyne is very effective in allowing engineers to discover the emergent
+error behaviors--i.e., without having to resolve to devising test
+scenarios, writing test code and running tests---as well as designing
+the handling of the respective error conditions.
+
+@node Armoring
+@section Armoring
+
+An armor is a defensive layer of components that protects the armored
+components who rely on their interface contracts from any behavior which
+would violate those contracts.  An armoring component can be developed
+in Dezyne itself by creating a permissive interface from the strict
+interface behavior and letting the armor component map one behavior onto
+the other making sure the permissive behavior never violates the strict
+behavior.
+
+The example below shows a simple but strict interface @code{istrict} and
+a permissive interface @code{ipermissive} that share the same event
+alphabet. The permissive interface is used on both sides of the
+@code{armored_system}.  The system connects each permissive interface to
+a dedicated armor component, one for the top of the system and one for
+the bottom. Both protecting the inside component called @code{middle}.
+
+@example
+@verbatiminclude examples/armor.dzn
 @end example
 
 @node Code Integration

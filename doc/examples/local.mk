@@ -24,6 +24,7 @@
 EXTRA_DIST += %D%/README
 
 DEZYNE_EXAMPLES =				\
+ %D%/armor.dzn					\
  %D%/compliance-multiple-provides-fork.dzn	\
  %D%/component-if-illegal.dzn			\
  %D%/dzn.async.dzn				\
