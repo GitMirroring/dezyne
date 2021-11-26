@@ -22,7 +22,6 @@ stamp-h[0-9]
 stamp-vti
 /m4
 /bin/dzn
-/bin/scm2json
 /config.log
 /config.status
 /configure

@@ -41,7 +41,6 @@ dist_%C%_scm_DATA =				\
  %D%/pipe.scm					\
  %D%/serialize.scm				\
  %D%/script.scm					\
- %D%/scm2json.scm				\
  %D%/shell-util.scm				\
  %D%/simulate.scm				\
  %D%/templates.scm				\

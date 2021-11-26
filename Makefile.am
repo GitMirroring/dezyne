@@ -76,12 +76,10 @@ dzn/%: dzn/%.in Makefile
 BUILT_SOURCES =
 
 bin_SCRIPTS =					\
-  bin/dzn					\
-  bin/scm2json
+  bin/dzn
 
 EXTRA_DIST +=					\
  bin/dzn.in					\
- bin/scm2json.in				\
  test/bin/semantics.sh
 
 dist_noinst_DATA =
