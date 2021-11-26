@@ -270,7 +270,9 @@ dist-hook: gen-ChangeLog
 	echo $(VERSION) > $(distdir)/.tarball-version
 	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
 	git show HEAD --format=%ct --no-patch > $(distdir)/.tarball-timestamp
-	rm -rf $(distdir)/test/all/*/out
+	@touch $(distdir)/.git
+	@echo Removing any test output
+	@rm -rf $(distdir)/test/all/*/out
 
 release: update-hash
 	git commit -m 'guix: dezyne: Update to $(PACKAGE_VERSION).'					\
