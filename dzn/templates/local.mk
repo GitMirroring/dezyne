@@ -69,6 +69,7 @@ endif
 nocompile_%C%_scmdir = $(%C%_scmdir)
 
 EXTRA_DIST +=					\
+ %D%/README					\
  %D%/c						\
  %D%/c++					\
  %D%/c++-exception-wrappers			\
