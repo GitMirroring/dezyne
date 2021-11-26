@@ -21,6 +21,8 @@
 #
 # Code:
 
+EXTRA_DIST += %D%/README
+
 DEZYNE_PARSE_EXAMPLES =				\
  %D%/action-discard-value.dzn			\
  %D%/action-in-complex-expression.dzn		\
