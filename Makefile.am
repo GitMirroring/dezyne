@@ -145,6 +145,7 @@ dezyne_TEXINFOS = doc/fdl-1.3.texi
 EXTRA_DIST +=					\
   $(dezyne_TEXINFOS)
 
+include doc/examples/local.mk
 include doc/images/local.mk
 include doc/parse/local.mk
 include doc/semantics/local.mk
