@@ -1,0 +1,44 @@
+// hello_foreign.dzn
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+
+  behavior
+  {
+    on hello: world;
+  }
+}
+
+component foreign
+{
+  provides ihello p;
+}
+
+component hello
+{
+  provides ihello p;
+  requires ihello r;
+
+  behavior
+  {
+    on p.hello (): r.hello ();
+    on r.world (): p.world ();
+  }
+}
+
+component hello_foreign
+{
+  provides ihello p;
+
+  system
+  {
+    p <=> h.p;
+    hello h;
+    h.r <=> f.p;
+    foreign f;
+  }
+}
+
+// end of hello_foreign.dzn
