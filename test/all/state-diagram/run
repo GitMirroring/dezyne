@@ -29,20 +29,25 @@ mkdir -p test/all/state-diagram/out
 
 dzn graph -b state test/all/state-diagram/state-diagram.dzn \
     | tee test/all/state-diagram/out/default.dot
-diff -u test/all/state-diagram/default.dot test/all/state-diagram/out/default.dot
+diff -u test/all/state-diagram/baseline/default.dot\
+    test/all/state-diagram/out/default.dot
 
 dzn graph -b state --remove=ports test/all/state-diagram/state-diagram.dzn \
     | tee test/all/state-diagram/out/remove-ports.dot
-diff -u test/all/state-diagram/remove-ports.dot test/all/state-diagram/out/remove-ports.dot
+diff -u test/all/state-diagram/baseline/remove-ports.dot\
+    test/all/state-diagram/out/remove-ports.dot
 
 dzn graph -b state --remove=extended test/all/state-diagram/state-diagram.dzn \
     | tee test/all/state-diagram/out/remove-extended.dot
-diff -u test/all/state-diagram/remove-extended.dot test/all/state-diagram/out/remove-extended.dot
+diff -u test/all/state-diagram/baseline/remove-extended.dot\
+    test/all/state-diagram/out/remove-extended.dot
 
 dzn graph -b state --remove=extended --hide=actions test/all/state-diagram/state-diagram.dzn \
     | tee test/all/state-diagram/out/hide-actions.dot
-diff -u test/all/state-diagram/hide-actions.dot test/all/state-diagram/out/hide-actions.dot
+diff -u test/all/state-diagram/baseline/hide-actions.dot\
+    test/all/state-diagram/out/hide-actions.dot
 
 dzn graph -b state --remove=extended --hide=labels test/all/state-diagram/state-diagram.dzn \
     | tee test/all/state-diagram/out/hide-labels.dot
-diff -u test/all/state-diagram/hide-labels.dot test/all/state-diagram/out/hide-labels.dot
+diff -u test/all/state-diagram/baseline/hide-labels.dot\
+    test/all/state-diagram/out/hide-labels.dot
