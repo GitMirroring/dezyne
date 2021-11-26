@@ -2,19 +2,30 @@
 #+TITLE: Dezyne code generation templates
 
 Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
-Dezyne code generation templates are distributed under the GNU Affero
-General Public License versio 3.0 or later.
+Dezyne code generation templates are used by the respective Dezyne code
+generators to produce generated code in the target language.  These
+snippets live in the directories:
 
-Directories:
+    c
+    c++
+    c++-exception-wrappers
+    cs
+    dot
+    dzn
+    javascript
+    json
+    makreel
+    scheme
 
-c++-exception-wrappers
-cs
-javascript
-json
-makreel
-scheme
+To the extent possible under law, the author(s) have waived all
+copyright and related or neighboring rights to these files:
+they are distributed under the CC0-1.0.
+
+You should have received a copy of the CC0 legalcode along with this
+work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
