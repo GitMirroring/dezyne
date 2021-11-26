@@ -95,6 +95,7 @@ include dzn/commands/local.mk
 include runtime/local.mk
 include dzn/verify/local.mk
 include dzn/templates/local.mk
+include emacs/local.mk
 
 GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
 
