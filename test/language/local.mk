@@ -22,6 +22,7 @@
 # Code:
 
 EXTRA_DIST +=					\
+ %D%/README					\
  %D%/component0.dzn				\
  %D%/component1.dzn				\
  %D%/component1a.dzn				\
