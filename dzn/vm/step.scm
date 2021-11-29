@@ -380,6 +380,7 @@
                (else
                 (let* ((instance (.instance pc))
                        (r:port (runtime:port instance (.port trigger)))
+                       (pc (set-handling? pc #f))
                        (pc (make <program-counter>
                              #:async (.async pc)
                              #:blocked (acons r:port pc (.blocked pc))
