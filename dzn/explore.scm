@@ -126,7 +126,12 @@ recursion.  Return a run-to-completion LTS
                     (if (null? labels) traces
                         (let* ((new (run-to-completion** pc (car labels)))
                                (new (if (eq? (car labels) 'external) new
-                                        (filter-implicit-illegal-only new))))
+                                        (filter-implicit-illegal-only new)))
+                               (new (filter
+                                     (compose not
+                                              (is-status? <blocked-error>)
+                                              car)
+                                     new)))
                           (cond ((find (compose (is-status? <livelock-error>) car) new)
                                  (format (current-error-port) "warning: livelock, bailing out\n")
                                  '())
