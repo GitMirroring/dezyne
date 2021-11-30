@@ -1,0 +1,17 @@
+import some_component.dzn;
+
+component some_system
+{
+  provides some_interface provided_port;
+  requires some_interface required_port;
+  system
+  {
+    some_component top;
+    some_component middle;
+    some_component bottom;
+    provided_port <=> top.provided_port;
+    top.required_port <=> middle.provided_port;
+    middle.required_port <=> bottom.provided_port;
+    bottom.required_port <=> required_port;
+  }
+}

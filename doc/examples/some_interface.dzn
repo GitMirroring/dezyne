@@ -1,0 +1,10 @@
+interface some_interface
+{
+  in void in_event();
+  out void out_event();
+
+  behavior
+  {
+    on in_event: out_event;
+  }
+}

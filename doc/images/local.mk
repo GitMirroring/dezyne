@@ -41,4 +41,5 @@ dist_info_images_DATA =					\
  %D%/indirect_multiple_out2.png				\
  %D%/indirect_multiple_out3.png				\
  %D%/indirect_out.png					\
- %D%/simple-state-machine.png
+ %D%/simple-state-machine.png				\
+ %D%/some_system.png

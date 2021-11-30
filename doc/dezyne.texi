@@ -1591,14 +1591,13 @@ doc/examples/illegal-requires.dzn:6:3: error: illegal
 @node Code Integration
 @chapter Code Integration
 
-Dezyne code cannot be run or compiled into executabel form directly,
-instead, the Dezyne code generator is used to translate Dezyne into an
-intermediate target language, such as @code{C++} (@xref{Invoking dzn
-code}).
+Although Dezyne models can be simulated, the code is not suited for
+direct execution or compilation into machine executable code, instead,
+the a code generator is used to translate (transpile) Dezyne into an
+intermediate language, such as @code{C++} (@xref{Invoking dzn code}).
 
-The Dezyne code generator should produce human readable target code that
-strongly resembles the Dezyne code without adding unnecessary
-deviations.
+The Dezyne code generator will produce human readable code that strongly
+resembles the Dezyne code without adding any unnecessary deviations.
 
 @menu
 * Integrating C++ Code::
@@ -1631,31 +1630,13 @@ as well as the way the generated code might be integrated.
 Dezyne turns an interface such as:
 
 @example
-interface some_interface
-@{
-  in void in_event();
-  out void out_event();
-  behavior
-  @{
-    on in_event: out_event;
-  @}
-@}
+@verbatiminclude examples/some_interface.dzn
 @end example
 
 into the following C++ class representation:
 
 @example
-struct some_interface
-@{
-  struct
-  @{
-    dezyne::function<void()> in_event;
-  @} in;
-  struct
-  @{
-    dezyne::function<void()> out_event;
-  @} out;
-@};
+@verbatiminclude examples/some_interface.hh
 @end example
 
 Each event in an interface is a slot to which a value of something
@@ -1678,34 +1659,17 @@ One could consider a component to be no more than the connecting part
 between all of its ports.  For example:
 
 @example
-component some_component
-@{
-  provides some_interface provided_port;
-  requires some_interface required_port;
-@}
+@verbatiminclude examples/some_component.dzn
 @end example
 
 in which case a simplified C++ representation might look like this:
 
 @example
-struct some_component
-@{
-  some_interface provided_port;
-  some_interface required_port;
-  some_component ()
-  : provided_port ()
-  , required_port ()
-  @{
-    provided_port.in.in_event
-      = dezyne::ref (required_port.in.in_event);
-    required_port.out.out_event
-      = dezyne::ref (provided_port.out.out_event);
-  @}
-@};
+@verbatiminclude examples/some_component.hh
 @end example
 
-Note that dezyne::ref allows shot circuiting events which will be
-initialised at a later stage.
+Note that dezyne::ref allows short circuiting events which will be
+initialized at a later stage.
 
 Of course for all practical purposes one would expect a component to be
 more complicated to be able to meet all of its interface contracts.
@@ -1716,54 +1680,12 @@ Along the same lines a Dezyne system may aggregate other components
 and systems and bind them together by their ports.  For example:
 
 @example
-component some_system
-@{
-  provides some_interface provided_port;
-  requires some_interface required_port;
-  system
-  @{
-    some_component top;
-    some_component middle;
-    some_component bottom;
-    provided_port <=> top.provided_port;
-    top.required_port <=> middle.provided_port;
-    middle.required_port <=> bottom.provided_port;
-    bottom.required_port <=> required_port;
-  @}
-@}
+@verbatiminclude examples/some_system.dzn
 @end example
 
 or depicted in a diagram:
 
-@example
-             O
-            -|-
-            / \
- +-----------+-----------+
- |  system   |           |
- |   +-------+-------+   |
- |   |               |   |
- |   |      top      |   |
- |   |               |   |
- |   +-------+-------+   |
- |           |           |
- |   +-------+-------+   |
- |   |               |   |
- |   |    middle     |   |
- |   |               |   |
- |   +-------+-------+   |
- |           |           |
- |   +-------+-------+   |
- |   |               |   |
- |   |     bottom    |   |
- |   |               |   |
- |   +-------+-------+   |
- |           |           |
- +-----------+-----------+
-             O
-            -|-
-            / \
-@end example
+@image{images/some_system,2in,,,.png}
 
 @subsection Integration
 
@@ -1874,29 +1796,31 @@ in the event queue.  A thread private to the thread-safe shell takes
 deferred functions from the queue and executes them one by one.  Thus,
 external calls are serviced in the order of arrival.
 
-An external call of a provided port in event blocks until the
+An external call of a provides port in event blocks until the
 thread-safe shell private thread has completed the deferred function
 call.  The external call blocks until a @code{reply} has been executed
 for the input event port.  A subsequent call on a blocked port will block
 until the prior call returns.
 
-An external call of a required port out event returns a soon as the
+An external call of a requires port out event returns a soon as the
 event call is scheduled.  The external call return is not synchronized
 with the actual execution of the event by a thread-safe shell private
 thread.
 
 @subsection Shell Example
 
-Generating c++ code with a thread-safe shell for component SYS results
-in files: SYS.hh, SYS.cc, BHV.hh and IA.hh.
+Generating C++ code with a thread-safe shell for component @code{SYS}
+results in files: @code{SYS.hh}, @code{SYS.cc}, @code{BHV.hh} and
+@code{IA.hh}.
 
-A call of SYS::pp.in.iv() captures input parameters by value to prevent
-data races.  The call schedules a call to SYS::bhv.pp.in.iv() and blocks
-the calling thread until the scheduled call returns.
+A call of @code{SYS::pp.in.iv()} captures input parameters by value to
+prevent data races.  The call schedules a call to
+@code{SYS::bhv.pp.in.iv()} and blocks the calling thread until the
+scheduled call returns.
 
-A call of SYS::rp.out.o() captures input parameters by value to prevent
-data races.  The call schedules a call to SYS::bhv.rp.out.o() and returns
-immediately.
+A call of @code{SYS::rp.out.o()} captures input parameters by value to
+prevent data races.  The call schedules a call to
+@code{SYS::bhv.rp.out.o()} and returns immediately.
 
 @example
 component SYS @{
@@ -1993,7 +1917,7 @@ void SYS::dump_tree(std::ostream& os) const
 @section Integrating Scheme Code
 
 @quotation Note
-The Scheme code generator is still considered experimental, use with
+The Scheme code generator is still considered experimental; use with
 caution.
 @end quotation
 

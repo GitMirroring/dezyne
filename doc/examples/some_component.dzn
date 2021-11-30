@@ -1,0 +1,8 @@
+import some_interface.dzn;
+
+component some_component
+{
+  provides some_interface provided_port;
+  requires some_interface required_port;
+  behavior{}
+}

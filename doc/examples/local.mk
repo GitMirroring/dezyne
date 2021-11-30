@@ -36,6 +36,11 @@ DEZYNE_EXAMPLES =				\
  %D%/join.dzn					\
  %D%/remote-timer-proxy.dzn			\
  %D%/simple-state-machine.dzn			\
+ %D%/some_component.dzn				\
+ %D%/some_component.hh				\
+ %D%/some_interface.dzn				\
+ %D%/some_interface.hh				\
+ %D%/some_system.dzn				\
  %D%/top-middle-bottom.dzn
 
 EXTRA_DIST += $(DEZYNE_EXAMPLES)
