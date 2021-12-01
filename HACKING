@@ -41,6 +41,22 @@ Run all blocking tests
 
 * Documentation
 
+** Adding dezyne to the toplevel info menu.
+
+When working on the documentation, it is handy to have a toplevel dezyne
+entry that points to the development tree.  You may generate it like so
+
+#+BEGIN_SRC bash
+install-info doc/dezyne.info doc/dir
+#+END_SRC
+
+and add `$abs_top_builddir/doc` to your INFOPATH; in Emacs, something
+like:
+
+#+BEGIN_SRC bash
+(push "~/src/dezyne/doc" Info-directory-list)
+#+END_SRC
+
 ** For the Dezyne manual, do something like:
 
 #+BEGIN_SRC bash
@@ -63,11 +79,8 @@ make serve # => check localhost:8080
 make publish
 #+END_SRC
 
-** Emacs
-(push "/home/janneke/src/verum/ide/wip-doc/doc" Info-directory-list)
-
 * Legalese
-Copyright © 2019,2020,2021 Jan Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
