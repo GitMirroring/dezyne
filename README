@@ -1,13 +1,20 @@
 #+COMMENT:                                                            -*- org -*-
 #+TITLE: About Dezyne command line tools
 
-#+SUBTITLE:
+#+SUBTITLE: Component based, formally verified.
 
-Dezyne is a programming language and set of tools that aim to eliminate
-the need for testing by applying formal verification methods.
+Dezyne is a programming language and a set of tools to specify,
+validate, verify, simulate, document, and implement concurrent control
+software for embedded and cyber-physical systems.
 
-The Dezyne language uses a component model that implements event based
-coroutines.
+The Dezyne language has formal semantics expressed in [[https://mcrl2.org][mCRL2]] developed at
+the department of Mathematics and Computer Science of the Eindhoven
+University of Technology ([[https://tue.nl][TUE]]).  Dezyne requires that every model is
+finite, deterministic and free of deadlocks, livelocks, and contract
+violations.  This achieved by means of the language itself as well as
+builtin verification through model checking.  This allows the
+construction of complex systems by assembling independently verified
+components.
 
 Dezyne is free software, it is distributed under the terms of the GNU
 Affero General Public Licence version 3 or later.  See the file [[file:COPYING][COPYING]].
@@ -30,6 +37,14 @@ To run the regression test, these additional packages are needed:
 
   - for C++11: [[https://gcc.gnu.org][GCC's g++]], version 5.4 or later
 
+When building from a Git checkout, these additional packages are needed:
+
+  - [[https://gnu.org/software/autoconf/][GNU Autoconf]]
+  - [[https://gnu.org/software/automake/][GNU Automake]]
+  - [[https://gnu.org/software/gettext/][GNU Gettext]]
+  - [[https://gnu.org/software/texinfo/][GNU Texinfo]]
+  - [[https://gnu.org/software/help2man/][GNU Help2man]] (optional).
+
 #+BEGIN_EXAMPLE
     guix environment -l guix.scm
     ./autogen.sh
@@ -42,13 +57,14 @@ See [[file:guix.scm][guix.scm]] for other options and [[file:INSTALL][INSTALL]] 
 
 * Contact
 
-Please email [[mailto:dezyne-devel@nongnu.org][dezyne-devel@nongnu.org]] for help or questions; email bug
-reports to [[bug-dezyne@nongnu.org][bug-dezyne@nongnu.org]]
-
 Join #dezyne on irc.libera.chat
 
+Please email [[mailto:dezyne-devel@nongnu.org][dezyne-devel@nongnu.org]] for help or questions; email bug
+reports to [[bug-dezyne@nongnu.org][bug-dezyne@nongnu.org]].  Please check the
+[[bug database][https://gitlab.com/dezyne/dezyne-issues/-/issues]] first!
+
 * Legalese
-Copyright © 2019,2021 Jan Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
