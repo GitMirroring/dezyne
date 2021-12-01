@@ -52,23 +52,13 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       How to test a <queue-full> without trace?
     + livelock_interface0: Simulator does not see the livelock
       How to find a livelock without a trace?
-  - Documentation
-    + Finish and merge wip-doc
-    + Review/rewrite doc/dezyne.texi
-      - Rewrite "Introduction"
-      - Rewrite "Verifying Models" => "Formal Verification
-      - Language Reference
-        + Merge: "The Dezyne Modeling Language" and "Dezyne Syntax"
-      - Well-formedness-tests: rewrite and generate from snippets
   - dezyne.org
-    + remove binary downloads
-    + blog post about free software
+    + blog post about free software?
   - Release on savannah.nongnu.org
    + Update all READMEs.
+   + In progress: https://savannah.nongnu.org/task/?16067
    + create bug-dezyne@nongnu.org, dezyne-devel@nongnu.org
    + register #dezyne
-  - Debian package
-    + Source build on Bullseye
 
 ** Release 2.15
   - collateral blocking
@@ -184,6 +174,22 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - Debian package
+    + Source build on Bullseye
+  - Documentation
+    + Finish and merge wip-doc
+    + Review/rewrite doc/dezyne.texi
+      - Rewrite "Introduction"
+      - Rewrite "Verifying Models" => "Formal Verification
+      - Language Reference
+        + Merge: "The Dezyne Modeling Language" and "Dezyne Syntax"
+      - Well-formedness-tests: rewrite and generate from snippets
+  - dezyne.org
+    + crreate download.verum.com
+      - move binary ide downloads here
+      - move propietary announcements here
+  - Debian package
+    + Source build on Bullseye
   - component behavior diagram
   - livelock: show loop: <loop>...<livelock>
     + Finish and merge wip-loop
