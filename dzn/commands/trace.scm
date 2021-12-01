@@ -35,7 +35,7 @@
             (help (single-char #\h))
             (internal (single-char #\i))
             (locations (single-char #\L))
-            (trail (single-char #\t) (value #t))))
+            (trace (single-char #\t) (value #t))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f)))
     (when help?
@@ -47,7 +47,7 @@ Convert between different trace formats
   -h, --help             display this help and exit
   -i, --internal         display system-internal events
   -L, --locations        prepend locations to output trace
-  -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
+  -t, --trace=TRACE      use trace TRACE [read from stdin]
 ")
       (exit EXIT_SUCCESS))
     options))
@@ -56,8 +56,8 @@ Convert between different trace formats
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (if (pair? files) (car files) "-"))
-         (trail (command-line:get 'trail))
-         (trace (or trail
+         (trace (command-line:get 'trace))
+         (trace (or trace
                     (if (equal? file-name "-") (read-string)
                         (with-input-from-file (car files) read-string))))
          (format (option-ref options 'format "event"))

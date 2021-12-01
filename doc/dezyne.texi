@@ -2722,9 +2722,9 @@ between components in the system is hidden by default.
 @itemx -L
 Show locations in output.
 
-@item --trail=@var{trail}
-@itemx -t @var{trail}
-Use trail @var{trail}.  The default is to read from standard input.
+@item --trace=@var{trace}
+@itemx -t @var{trace}
+Use trace @var{trace}.  The default is to read from standard input.
 
 @end table
 
