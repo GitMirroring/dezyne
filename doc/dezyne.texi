@@ -23,7 +23,7 @@ Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
 Copyright @copyright{} 2014, 2016, 2019, 2020, 2021 Jan Nieuwenhuizen@*
 Copyright @copyright{} 2014, 2015, 2016 Rob Wieringa@*
-Copyright @copyright{} 2014 Paul Hoogendijk@*
+Copyright @copyright{} 2014, 2021 Paul Hoogendijk@*
 Copyright @copyright{} 2021 Ludovic Courtès@*
 
 Permission is granted to copy, distribute and/or modify this document
@@ -507,7 +507,7 @@ to reason about each facet separately.
 
 @cindex installing Dezyne
 
-There are two ways te get started with Dezyne: use a binary installation
+There are two ways to get started with Dezyne: use a binary installation
 that we prepared especially for you, or you can build Dezyne from source
 yourself.  When you plan on contributing to Dezyne (@pxref{Contributing}),
 you may want to skip the sections on binary installation.
@@ -545,7 +545,7 @@ $ wget @value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz
 @end example
 
 Make sure to download the associated @file{.sig} file and to verify the
-authenticity of the tarball against it, do something like:
+authenticity of the tarball against it; do something like:
 
 @example
 $ wget @value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig
