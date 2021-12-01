@@ -1,0 +1,37 @@
+interface I2
+{
+  in void e ();
+  out void a ();
+  out void b ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on e: idle = false;
+    [!idle] on inevitable: {idle = true; a; b;}
+  }
+}
+
+interface J2
+{
+  in void e ();
+  out void a ();
+  out void b ();
+  behavior
+  {
+    on e: {a; b;}
+  }
+}
+
+component external_multiple_out2
+{
+  provides I2 p;
+  requires external J2 r;
+  behavior
+  {
+    bool idle = true;
+    [idle] on p.e (): {idle = false; r.e ();}
+    [!idle] on p.e: illegal;
+    on r.a (): {}
+    on r.b (): {idle = true; p.a (); p.b ();}
+  }
+}

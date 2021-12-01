@@ -1141,6 +1141,15 @@ manage complexity.
 @node Execution Semantics
 @chapter Execution Semantics
 
+The semantics of Dezyne derives from implementing message passing as
+component based ineraction by means of non-reentrant recursive function
+invocations. In Dezyne, the occurrence of an event is mapped onto a
+(member) function call. Every event function implements the recursive
+procedural execution of all of the side effects, e.g. actions, i.e.,
+event function invocations, state updates, i.e., assignments, runtime
+library interaction: tracing, queueing and dequeueing and context
+switching, i.e., blocking and unblocking.
+
 The execution semantics of Dezyne are illustrated using different model
 examples and the corresponding sequence diagrams.
 
@@ -1149,10 +1158,10 @@ in mind that the body of an event is executed atomically in the context
 of its behavior.
 
 For an in-event all action statements are executed depth-first.  All
-out-events are stored in event queues at the receiving components.  After
-the completion of all action statements, just before control is passed
-back to the caller, a component will flush its own queue of pending out
-events.  Recursively all out-events are handled this way.
+out-events are stored in event queues of the recipient.  After the
+completion of all action statements, just before control is passed back
+to the caller, a component will flush its queue of pending out events.
+All out-events are handled this way recursively.
 
 @menu
 * Direct in event::             A provides trigger forwarded
@@ -1169,8 +1178,9 @@ events.  Recursively all out-events are handled this way.
 @node Direct in event
 @section Direct in event
 
-A provides port in-event (p.a) call resulting in a requires port
-in-event (r.a) is implemented as a function calling another function.
+A provides port in-event (@code{p.a}) call resulting in a requires port
+in-event (@code{r.a}) is implemented as a function calling another
+function.
 
 @example
 @verbatiminclude semantics/direct_in.dzn
@@ -1181,9 +1191,9 @@ in-event (r.a) is implemented as a function calling another function.
 @node Direct out event
 @section Direct out event
 
-A requires port out-event (r.a) resulting in a provides port out-event
-(p.a) is implemented as a function posting an event in the component
-queue followed by a call to flush the queue.
+A requires port out-event (@code{r.a}) resulting in a provides port
+out-event (@code{p.a}) is implemented as a function posting an event in
+the component queue followed by a call to flush the queue.
 
 @example
 @verbatiminclude semantics/direct_out.dzn
@@ -1194,11 +1204,11 @@ queue followed by a call to flush the queue.
 @node Direct multiple out events
 @section Direct multiple out events
 
-A requires port inevitably triggering multiple out-events (r.a, r.b)
-is implemented as one function call for each out-event posting in
-the component queue, followed by a single flush call to trigger
-component processing of the events.  The below 2 versions of the
-component are indistinguisable looking from the outside.
+A requires port inevitably triggering multiple out-events (@code{r.a},
+@code{r.b}) is implemented as one function call for each out-event
+posting in the component queue, followed by a single flush call to
+trigger component processing of the events.  The below 2 versions of the
+component are indistinguishable looking from the outside.
 
 @example
 @verbatiminclude semantics/direct_multiple_out1.dzn
@@ -1217,8 +1227,8 @@ The third variant is left as an exercise to the reader.
 @node Indirect in event
 @section Indirect in event
 
-A requires port in-event (r.a) call resulting in a requires port
-out-event (r.b).
+A requires port in-event (@code{r.a}) call resulting in a requires port
+out-event (@code{r.b}).
 
 @example
 @verbatiminclude semantics/indirect_in.dzn
@@ -1229,9 +1239,9 @@ out-event (r.b).
 @node Indirect out event
 @section Indirect out event
 
-A requires port out-event (r.b) posted in the context of a provides port
-in-event (p.a) call is processed before the provides port in-event (p.a)
-returns.
+A requires port out-event (@code{r.b}) posted in the context of a
+provides port in-event (@code{p.a}) call is processed before the
+provides port in-event (@code{p.a}) returns.
 
 @example
 @verbatiminclude semantics/indirect_out.dzn
@@ -1242,10 +1252,10 @@ returns.
 @node Indirect multiple out events
 @section Indirect multiple out events
 
-Since the provided interface is the same in the 3 cases below the
+Since the provided interface is the same in the three cases below the
 externally visible behavior is identical.
 
-The 3 different behavior implementations of the component show the
+The three different behavior implementations of the component show the
 subtle differences in the internal handling of messages.
 
 @example
@@ -1269,11 +1279,10 @@ subtle differences in the internal handling of messages.
 @node Indirect blocking out event
 @section Indirect blocking out event
 
-Also @pxref{Blocking}.
-
-The in-event on the provides port (p.a) blocks (does not return) until a
-reply is handled.  This happens in the handling of the requires port
-out-event (r.b).
+@cindex blocking semantics
+The in-event on the provides port (@code{p.a}) blocks (does not return)
+until a reply is handled.  This happens in the handling of the requires
+port out-event (@code{r.b}).  Also @pxref{Blocking}.
 
 @example
 @verbatiminclude semantics/indirect_blocking_out.dzn
@@ -1281,34 +1290,64 @@ out-event (r.b).
 
 @image{images/indirect_blocking_out,,,,.png}
 
-If the keyword @code{blocking} in above example would be omitted it would lead
-to an erroneous situation since the provided in-event (p.a) would return
-before the provided out-event (p.b) would have been generated.
+If the keyword @code{blocking} in above example would be omitted it
+would lead to an erroneous situation since the provides in-event
+(@code{p.a}) would return before the provides out-event (@code{p.b})
+would have been generated.
 
 @node External multiple out events
 @section External multiple out events
 
-Also @pxref{External}.
+@cindex external semantics
+The addition of @code{external} on a @code{requires} interface removes
+the atomicity of an action list, i.e: @code{@{a; b;@}}.  Also
+@pxref{External}.
 
-The addition of external on a required interface removes the atomicity
-of an action list, i.e: @{a; b;@}.
-
-Note: the addition of the in-event e is required to constrain the
-occurrence of the inevitable event in combination with external.
+The first example shows how the behavior of @code{external} @code{J1}
+interface transforms into the interface behavior of @code{I1} by
+forwarding the events in the @code{external_multiple_out1} component
+behavior.
 
 @example
-@verbatiminclude semantics/external_multiple_out.dzn
+@verbatiminclude semantics/external_multiple_out1.dzn
 @end example
 
-@image{images/external_multiple_out,,,,.png}
+@image{images/external_multiple_out1,,,,.png}
+
+Two variations of the model above can be considered.  Both variants
+provide the same interface behavior (@code{I2} and @code{I3} are
+identical), but differ in their requires interface behavior and as a
+result in their component behavior.
+
+The first variant uses the requires behavior (@code{J1} and @code{J2}
+are identical) as the first example.  The component takes care of
+joining the independently received events @code{a} and @code{b} as
+required by its provides interface.
+
+@example
+@verbatiminclude semantics/external_multiple_out2.dzn
+@end example
+
+@image{images/external_multiple_out2,,,,.png}
+
+This variation provides the same interface as it requires.  The
+component however, must make sure to join @code{a} and @code{b} again to
+implement its provides interface behavior.
+
+@example
+@verbatiminclude semantics/external_multiple_out3.dzn
+@end example
+
+@image{images/external_multiple_out3,,,,.png}
+
 
 @node Indirect blocking multiple external out events
 @section Indirect blocking multiple external out events
 
-The 2 required out-events (r1.b, r2.b) can come in any order.  The
-message sequence chart shows only one scenario.  The implementation of
-the component is such that the provided behavior is the same in both
-cases.
+The two requires out-events (@code{r1.b}, @code{r2.b}) can come in any
+order.  The message sequence chart shows only one scenario.  The
+implementation of the component is such that the provided behavior is
+the same in both cases.
 
 @example
 @verbatiminclude semantics/indirect_blocking_multiple_external_out.dzn

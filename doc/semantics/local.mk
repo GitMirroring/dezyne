@@ -28,7 +28,9 @@ DOCUMENTATION_SEMANTICS =				\
  %D%/direct_multiple_out1.dzn				\
  %D%/direct_multiple_out2.dzn				\
  %D%/direct_out.dzn					\
- %D%/external_multiple_out.dzn				\
+ %D%/external_multiple_out1.dzn				\
+ %D%/external_multiple_out2.dzn				\
+ %D%/external_multiple_out3.dzn				\
  %D%/indirect_blocking_multiple_external_out.dzn	\
  %D%/indirect_blocking_out.dzn				\
  %D%/indirect_in.dzn					\

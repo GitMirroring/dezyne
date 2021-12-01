@@ -1,4 +1,4 @@
-interface I
+interface I3
 {
   in void e ();
   out void a ();
@@ -12,10 +12,10 @@ interface I
   }
 }
 
-component external_multiple_out
+component external_multiple_out3
 {
-  provides I p;
-  requires external I r;
+  provides I3 p;
+  requires external I3 r;
   behavior
   {
     bool idle = true;

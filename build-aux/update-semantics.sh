@@ -144,13 +144,35 @@ inkscape -o doc/images/indirect_blocking_out.png indirect_blocking_out.svg
 echo 'let Data = ' > ~/src/dezyne-p5/SequenceDiagram/data.js
 
 echo
-echo "** external_multiple_out"
-./pre-inst-env dzn simulate test/all/external_multiple_out/external_multiple_out.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
+echo "** external_multiple_out1"
+./pre-inst-env dzn simulate test/all/external_multiple_out1/external_multiple_out1.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
 echo save
 read
-mv ~/Downloads/sequence.svg external_multiple_out.svg
-#convert external_multiple_out.svg external_multiple_out.png
-inkscape -o doc/images/external_multiple_out.png external_multiple_out.svg
+mv ~/Downloads/sequence.svg external_multiple_out1.svg
+#convert external_multiple_out1.svg external_multiple_out1.png
+inkscape -o doc/images/external_multiple_out1.png external_multiple_out1.svg
+
+echo 'let Data = ' > ~/src/dezyne-p5/SequenceDiagram/data.js
+
+echo
+echo "** external_multiple_out2"
+./pre-inst-env dzn simulate test/all/external_multiple_out2/external_multiple_out2.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
+echo save
+read
+mv ~/Downloads/sequence.svg external_multiple_out2.svg
+#convert external_multiple_out2.svg external_multiple_out2.png
+inkscape -o doc/images/external_multiple_out2.png external_multiple_out2.svg
+
+echo 'let Data = ' > ~/src/dezyne-p5/SequenceDiagram/data.js
+
+echo
+echo "** external_multiple_out3"
+./pre-inst-env dzn simulate test/all/external_multiple_out3/external_multiple_out3.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
+echo save
+read
+mv ~/Downloads/sequence.svg external_multiple_out3.svg
+#convert external_multiple_out3.svg external_multiple_out3.png
+inkscape -o doc/images/external_multiple_out3.png external_multiple_out3.svg
 
 echo 'let Data = ' > ~/src/dezyne-p5/SequenceDiagram/data.js
 
