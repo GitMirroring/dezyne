@@ -28,6 +28,7 @@
   #:use-module (ice-9 readline)
   #:use-module (ice-9 regex)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (dzn config)
   #:use-module (dzn goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
@@ -41,6 +42,7 @@
             %debug?
             %next-input
             %queue-size
+            %startup-info
 
             append-port-trace
             action->trigger
@@ -187,26 +189,127 @@
                                  (reverse (take (car statement-traces) index-common-prefix))))))
       (when statement
         (format (current-error-port) "action: ~a\n"
-               (statement->string statement)))))
+                (statement->string statement)))))
 
   (format (current-error-port) "eligible: ~a\n" (string-join eligible))
 
-  (%next-input (lambda (pc)
-                 (with-readline-completion-function
-                  (make-completion-function eligible)
-                  (cute read-input pc)))))
+  (let* ((commands (map car %commands))
+         (complete (append commands eligible)))
+    (%next-input (lambda (pc)
+                   (with-readline-completion-function
+                    (make-completion-function complete)
+                    (cute read-input pc))))))
+
+(define %commands `((",help" . ,(lambda _ (display %help-info)))
+                    (",show" . ,(lambda (command)
+                                  (cond
+                                   ((string-prefix? command ",show c")
+                                    (display %copying-info))
+                                   ((string-prefix? command ",show v")
+                                    (display %startup-info))
+                                   ((string-prefix? command ",show w")
+                                    (display %warranty-info)))))))
+(define %help-info
+"Help Commands:
+
+ ,help                    This help.
+ ,show w[arranty]         Show details on the lack of warranty.
+ ,show c[opying]          Show license details.
+ ,show v[ersion]          Show version information.
+")
+
+(define %copying-info
+  (format #f "~a is free software; you can redistribute it and/or
+modify it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation; either version 3 of the
+License, or (at your option) any later version.
+
+~a is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public
+License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with ~a.  If not, see <https://www.gnu.org/licenses/>.
+" %package-name %package-name %package-name))
+
+(define %startup-info
+  (format #f "dzn simulate (~a) ~a
+~a
+~a comes with ABSOLUTELY NO WARRANTY; for details type `,show w'.
+This program is free software, and you are welcome to redistribute it
+under certain conditions; type `,show c' for details.
+"
+          %package-name
+          %package-version
+          %copyright-info
+          %package-name))
+
+(define %warranty-info
+  (format #f  "~a is distributed WITHOUT ANY WARRANTY.  The following sections
+from the GNU General Public License, version 3, should make that clear.
+
+  15. Disclaimer of Warranty.
+
+  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY
+OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+  16. Limitation of Liability.
+
+  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+  17. Interpretation of Sections 15 and 16.
+
+  If the disclaimer of warranty and limitation of liability provided
+above cannot be given local legal effect according to their terms,
+reviewing courts shall apply local law that most closely approximates
+an absolute waiver of all civil liability in connection with the
+Program, unless a warranty or assumption of liability accompanies a
+copy of the Program in return for a fee.
+
+See <https://www.gnu.org/licenses/agpl.html>, for more details.
+"
+          %package-name))
 
 (define-method (read-input pc)
   (let* ((input (if (isatty? (current-input-port))
                     (readline "> ")
                     (read)))
-         (input (match input
-                  ((? string?) (let ((input (string-trim-both input)))
-                                 (add-history input)
-                                 input))
-                  ((? symbol?) (symbol->string input))
-                  ((? eof-object?) #f)
-                  (#f #f))))
+         (input (cond
+                 ((and (string? input)
+                       (let ((command (any (conjoin
+                                            (cute string-prefix? <> input)
+                                            identity)
+                                           (map car %commands))))
+                         (assoc-ref %commands command)))
+                  =>
+                  (lambda (command)
+                    (command input)
+                    (read-input pc)))
+                 ((string? input)
+                  (let ((input (string-trim-both input)))
+                    (add-history input)
+                    input))
+                 ((symbol? input)
+                  (symbol->string input))
+                 ((eof-object? input)
+                  #f)
+                 (else
+                  #f))))
     (values input pc)))
 
 (define-method (labels)
