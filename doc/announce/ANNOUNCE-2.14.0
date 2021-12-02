@@ -49,8 +49,8 @@ Here are the compressed sources and a GPG detached signature[*]:
 
 Here are the MD5 and SHA1 checksums:
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.14.0.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.14.0.tar.gz
+05ec3d262ff142e957a0b2d1eafed1d4  dezyne-2.14.0.tar.gz
+56de95b39815e1605f0789661d97bf22f288796a  dezyne-2.14.0.tar.gz
 
 [*] Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
