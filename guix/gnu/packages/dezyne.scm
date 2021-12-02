@@ -25,25 +25,14 @@
 
 (define-module (gnu packages dezyne)
   #:use-module (guix build-system gnu)
-  #:use-module (guix gexp)
   #:use-module (guix download)
-  #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
-  #:use-module (guix utils)
-  #:use-module (gnu packages)
-  #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
-  #:use-module (gnu packages compression)
-  #:use-module (gnu packages gettext)
   #:use-module (gnu packages guile)
-  #:use-module (gnu packages man)
   #:use-module (gnu packages maths)
-  #:use-module (gnu packages pkg-config)
-  #:use-module (gnu packages perl)
-  #:use-module (gnu packages xml)
-  #:use-module (gnu packages texinfo))
+  #:use-module (gnu packages pkg-config))
 
 (define %source-dir (getcwd))
 
@@ -66,19 +55,12 @@
         (base32 #!dezyne!# "0pyp4bci7jgmrd4b0dkz8wsd16gc0p2bavdqz05wf88iacs6wcdh"))))
     (inputs `(("bash" ,bash-minimal)
               ("guile" ,guile-3.0-latest)
+              ("guile-json" ,guile-json-4)
+              ("guile-readline" ,guile-readline)
               ("mcrl2" ,mcrl2-minimal)
               ("sed" ,sed)))
-    (native-inputs `(("autoconf" ,autoconf)
-                     ("automake" ,automake)
-                     ("gettext" ,gnu-gettext)
-                     ("guile-for-build" ,guile-3.0-latest)
-                     ("help2man" ,help2man)
-                     ("perl" ,perl)
-                     ("pkg-config" ,pkg-config)
-                     ("texinfo" ,texinfo)
-                     ("zip" ,zip))) ; for guix environment -l guix.scm
-    (propagated-inputs `(("guile-json" ,guile-json-4)
-                         ("guile-readline" ,guile-readline)))
+    (native-inputs `(("guile-for-build" ,guile-3.0-latest)
+                     ("pkg-config" ,pkg-config)))
     (build-system gnu-build-system)
     (arguments
      `(#:modules ((ice-9 popen)
@@ -108,28 +90,31 @@
                                 (open-pipe* OPEN_READ
                                             "guile" "-c"
                                             "(write (effective-version))")))
-                    (data-dir (string-append out "/share/dezyne"))
                     (path (list (string-append bash "/bin")
                                 (string-append guile "/bin")
                                 (string-append mcrl2 "/bin")
                                 (string-append sed "/bin")))
-                    (scm-dir (string-append out "/share/guile/site/" effective))
-                    (scm-path (list (string-append out "/share/guile/site/" effective)
-                                    (string-append json "/share/guile/site/" effective)
-                                    (string-append readline "/share/guile/site/" effective)))
-                    (go-path (list (string-append out "/lib/guile/" effective
-                                                  "/site-ccache/")
-                                   (string-append json "/lib/guile/" effective
-                                                  "/site-ccache/")
-                                   (string-append readline "/lib/guile/" effective
-                                                  "/site-ccache/"))))
+                    (scm-dir (string-append "/share/guile/site/" effective))
+                    (scm-path
+                     (list (string-append out scm-dir)
+                           (string-append json scm-dir)
+                           (string-append readline scm-dir)))
+                    (go-dir (string-append "/lib/guile/" effective
+                                           "/site-ccache/"))
+                    (go-path (list (string-append out go-dir)
+                                   (string-append json go-dir)
+                                   (string-append readline go-dir))))
                (wrap-program (string-append out "/bin/dzn")
                  `("PATH" ":" prefix ,path)
                  `("GUILE_AUTO_COMPILE" ":" = ("0"))
                  `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
-                 `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path))
-               #t))))))
-    (synopsis "Dezyne command line tools")
-    (description "Dezyne command line tools")
-    (home-page "https://verum.com")
-    (license license:gpl3+)))
+                 `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path))))))))
+    (synopsis "A programming language with verifyable formal semantics")
+    (description "Dezyne is a programming language and a set of tools to
+specify, validate, verify, simulate, document, and implement concurrent
+control software for embedded and cyber-physical systems.  The Dezyne language
+has formal semantics expressed in @url{https://mcrl2.org,mCRL2}.")
+    (home-page "https://dezyne.org")
+    (license (list license:agpl3+  ;Dezyne itself
+                   license:lgpl3+  ;Dezyne runtime library
+                   license:cc0)))) ;Code snippets, images, test data

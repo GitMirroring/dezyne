@@ -19,10 +19,6 @@
 ;;;
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-;;;
-;;; Commentary:
-;;;
-;;; Code:
 
 ;;; Commentary:
 ;;
@@ -47,7 +43,12 @@
 (use-modules (guix gexp)
              (guix git-download)
              (guix packages)
-             (gnu packages))
+             (gnu packages)
+             (gnu packages autotools)
+             (gnu packages gettext)
+             (gnu packages man)
+             (gnu packages perl)
+             (gnu packages texinfo))
 
 (define %source-dir (dirname (current-filename)))
 (add-to-load-path (string-append %source-dir "/guix"))
@@ -60,6 +61,13 @@
     (version "git")
     (source (local-file %source-dir
                         #:recursive? #t
-                        #:select? (git-predicate %source-dir)))))
+                        #:select? (git-predicate %source-dir)))
+    (native-inputs `(("autoconf" ,autoconf)
+                     ("automake" ,automake)
+                     ("gettext" ,gnu-gettext)
+                     ("help2man" ,help2man)
+                     ("perl" ,perl)
+                     ("texinfo" ,texinfo)
+                     ,@(package-native-inputs dezyne)))))
 
 dezyne.git
