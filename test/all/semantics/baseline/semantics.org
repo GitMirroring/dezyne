@@ -300,8 +300,82 @@ p     indirect_blocking_out      r
 (labels p.a r.b)
 (eligible p.a)
 
-** external_multiple_out
-p     external_multiple_out      r
+** external_multiple_out1
+p     external_multiple_out1     r
+.               :                .
+.               :                .
+.e              :                .
+.-------------->:                .
+.               :                .
+.               :e               .
+.               :--------------->.
+.               :                .
+.               :          return.
+.               :<---------------.
+.               :                .
+.         return:                .
+.<--------------:                .
+(state ((p) (state . status:A)) ((sut) (idle . false)) ((r)))
+.               :                .
+.               :a               .
+.               :<-              .
+.               :                .
+.              a:                .
+.<--------------:                .
+(state ((p) (state . status:B)) ((sut) (idle . false)) ((r)))
+.               :                .
+.               :b               .
+.               :<-              .
+.               :                .
+.              b:                .
+.<--------------:                .
+(state ((p) (state . status:IDLE)) ((sut) (idle . true)) ((r)))
+(trail r.b p.b)
+.               :                . error: p.a
+.               :                . <match>
+(state ((p) (state . status:IDLE)) ((sut) (idle . true)) ((r)))
+.               :                . error: p.a
+(trail <match>)
+(labels p.e r.a r.b)
+(eligible)
+
+** external_multiple_out2
+p     external_multiple_out2     r
+.               :                .
+.               :                .
+.e              :                .
+.-------------->:                .
+.               :                .
+.               :e               .
+.               :--------------->.
+.               :                .
+.               :          return.
+.               :<---------------.
+.               :                .
+.         return:                .
+.<--------------:                .
+(state ((p) (idle . false)) ((sut) (idle . false)) ((r)))
+.               :                .
+.               :a               .
+.               :<-              .
+(state ((p) (idle . false)) ((sut) (idle . false)) ((r)))
+.               :                .
+.               :b               .
+.               :<-              .
+.               :                .
+.              a:                .
+.<--------------:                .
+.               :                .
+.              b:                .
+.<--------------:                .
+(state ((p) (idle . true)) ((sut) (idle . true)) ((r)))
+(trail r.b p.a p.b)
+(state ((p) (idle . true)) ((sut) (idle . true)) ((r)))
+(labels p.e r.a r.b)
+(eligible p.e)
+
+** external_multiple_out3
+p     external_multiple_out3     r
 .               :                .
 .               :                .
 .e              :                .

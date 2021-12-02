@@ -103,7 +103,9 @@ SEMANTICS_TESTS =				\
  %D%/indirect_multiple_out2			\
  %D%/indirect_multiple_out3			\
  %D%/indirect_blocking_out			\
- %D%/external_multiple_out			\
+ %D%/external_multiple_out1			\
+ %D%/external_multiple_out2			\
+ %D%/external_multiple_out3			\
  %D%/indirect_blocking_multiple_external_out
 
 REGRESSION_TESTS =				\

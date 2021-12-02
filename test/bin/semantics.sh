@@ -61,8 +61,16 @@ echo "** indirect_blocking_out"
 ./pre-inst-env dzn simulate test/all/indirect_blocking_out/indirect_blocking_out.dzn -t p.a,r.a,r.return,r.b,p.b,p.return | ./pre-inst-env dzn trace --format=diagram
 
 echo
-echo "** external_multiple_out"
-./pre-inst-env dzn simulate test/all/external_multiple_out/external_multiple_out.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
+echo "** external_multiple_out1"
+./pre-inst-env dzn simulate test/all/external_multiple_out1/external_multiple_out1.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
+
+echo
+echo "** external_multiple_out2"
+./pre-inst-env dzn simulate test/all/external_multiple_out2/external_multiple_out2.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
+
+echo
+echo "** external_multiple_out3"
+./pre-inst-env dzn simulate test/all/external_multiple_out3/external_multiple_out3.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
 
 echo
 echo "** indirect_blocking_multiple_external_out"
