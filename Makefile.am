@@ -176,11 +176,11 @@ dist_man_MANS =					\
  doc/dzn-trace.1				\
  doc/dzn-verify.1
 
-doc/dzn.1: bin/dzn Makefile $(ALL_GO)
-	./pre-inst-env help2man --output=$@ $<
+doc/dzn.1:
+	./pre-inst-env help2man --output=$@ bin/dzn
 
-doc/dzn-%.1: bin/dzn Makefile $(ALL_GO)
-	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "$< $*"
+doc/dzn-%.1:
+	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "bin/dzn $*"
 
 MAKEINFO_HTML_OPTIONS =									\
  --css-ref=https://www.gnu.org/software/gnulib/manual.css				\
