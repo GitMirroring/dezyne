@@ -26,6 +26,7 @@
 (define-module (dzn command-line)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 getopt-long)
+  #:use-module (dzn config)
   #:use-module (dzn script)
   #:export (command-line:get
             command:command-line
@@ -35,6 +36,7 @@
             dzn:verbosity
             %locations?
             multi-opt
+            show-version-and-exit
             EXIT_OTHER_FAILURE))
 
 (define EXIT_OTHER_FAILURE 2)
@@ -86,3 +88,12 @@
 
 (define* (command:command-line #:optional (options (dzn:options)))
   (option-ref options '() '()))
+
+(define* (show-version-and-exit
+          #:optional (command (basename (car (command-line)))))
+  "Display version information for COMMAND and exit EXIT_SUCCESS."
+  (format #t "~a (~a) ~a~%" command %package-name %package-version)
+  (display %copyright-info)
+  (newline)
+  (display %license-info)
+  (exit EXIT_SUCCESS))

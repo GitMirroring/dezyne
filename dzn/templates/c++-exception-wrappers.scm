@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-templates version (const %version))
+(define-templates version (const %package-version))
 (define-templates header)
 
 (define-templates calling-context-type-name c++ew:calling-context-type-name)

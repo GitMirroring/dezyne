@@ -28,17 +28,20 @@
 (define-module (dzn config)
   #:use-module (dzn shell-util)
   #:export (%bindir
+            %copyright-info
             %datadir
             %datarootdir
             %dzn
             %guilemoduledir
             %guileobjectdir
             %default-languages
+            %license-info
             %package
+            %package-name
+            %package-version
             %prefix
             %template-dir
             %test-dir
-            %version
             %version-major
             %version-minor
             %version-patch))
@@ -80,7 +83,10 @@
 (define %guileobjectdir
   "@guileobjectdir@")
 
-(define %version
+(define %package-name
+  "@PACKAGE_NAME@")
+
+(define %package-version
   "@PACKAGE_VERSION@")
 
 (define %version-major
@@ -98,3 +104,13 @@
 
 (define %default-languages
   (string-split (string-trim-both "@languages@") #\space))
+
+(define %copyright-info
+  "Copyright (C) 2014-2021 the Dezyne authors
+")
+
+(define %license-info
+  "License AGPLv3+: GNU AGPL version 3 or later <https://gnu.org/licenses/agpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+")

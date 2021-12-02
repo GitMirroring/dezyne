@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU Affero General Public
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([Dezyne command-line],
+AC_INIT([Dezyne],
         [m4_esyscmd([build-aux/git-version-gen .tarball-version])],
         [bug-dezyne@nongnu.org],
         [dezyne])

@@ -61,8 +61,7 @@
                           %load-compiled-path))))))
 
     (when version?
-      (format (current-output-port) "dzn ~a\n" %version)
-      (exit EXIT_SUCCESS))
+      (show-version-and-exit))
     (when (or help? usage?)
       (let* ((port (if usage? (current-error-port) (current-output-port)))
              (commands (list-commands "/dzn/commands/"))

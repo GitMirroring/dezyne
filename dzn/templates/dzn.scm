@@ -132,7 +132,7 @@
 ;;;
 ;;; Misc
 ;;;
-(define-templates version (const %version))
+(define-templates version (const %package-version))
 (define-templates version-major (const %version-major))
 (define-templates version-minor (const %version-minor))
 (define-templates version-patch (const %version-patch))
