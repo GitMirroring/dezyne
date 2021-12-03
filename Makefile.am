@@ -28,6 +28,7 @@ ACLOCAL_AMFLAGS = -I build-aux
 
 EXTRA_DIST =					\
  .dir-locals.el					\
+ .reuse/dep5					\
  COPYING.AGPL					\
  COPYING.CC0					\
  COPYING.LESSER					\
