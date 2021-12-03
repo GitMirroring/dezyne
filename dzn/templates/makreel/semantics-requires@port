@@ -1,1 +1,1 @@
-sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name end . (queue_empty . semantics + semantics_async(port=no_port, pending=false))
+sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name end . (queue_empty . semantics + semantics_async(blocked={},released={},reply=replies(#x:semantics-provides-reply-init),port=no_port,pending=false))

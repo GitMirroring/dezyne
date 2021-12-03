@@ -1,0 +1,2 @@
+ #.name end . provides_r2c()
+ + sum x: #x:type-constructor actions . #.name out (#x:type-constructor action (x)) . provides_out()

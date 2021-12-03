@@ -3,6 +3,7 @@
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -492,7 +493,10 @@ output, and standard error as three values."
                             (flushes (list-matches "\"([^\"]*<flush>)\"" makreel-lts))
                             (flushes (map (cute match:substring <> 1) flushes))
                             (flushes (delete-duplicates flushes))
-                            (taus (append '("<deadlock>" "<livelock>" "optional" "inevitable" "<state>") flushes)))
+                            (blocking (list-matches "\"([^\"]*<blocking>)\"" makreel-lts))
+                            (blocking (map (cute match:substring <> 1) blocking))
+                            (blocking (delete-duplicates blocking))
+                            (taus (append '("<deadlock>" "<livelock>" "optional" "inevitable" "<state>") flushes blocking)))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
                        (mkdir-p out-lang)

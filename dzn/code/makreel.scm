@@ -67,6 +67,14 @@
 (define %id-alist (make-parameter #f))
 (define %next-alist (make-parameter #f))
 
+(define-ast <port-pair> (<ast>)
+  (port)
+  (other))
+
+(define-method (.port.name (o <port-pair>)) (.name (.port o)))
+(define-method (.other.name (o <port-pair>)) (.name (.other o)))
+
+
 ;;;
 ;;; Ticked root.
 ;;;
@@ -305,6 +313,14 @@
 (define-method (makreel:scope-name (o <ast>))
   (and=> (parent o <model>) makreel:model-name))
 
+(define-method (makreel:multiple-provides? (o <port>))
+  (if (< 1 (length (ast:provides-port* o))) o
+      '()))
+
+(define-method (makreel:negate-multiple-provides? (o <port>))
+  (if (not (< 1 (length (ast:provides-port* o)))) o
+      '()))
+
 (define-method (ast:provides-interfaces (o <component>))
   (delete-duplicates (map .type (filter ast:provides? (ast:port* o)))))
 
@@ -314,8 +330,14 @@
 (define-method (ast:provides-ports (o <component>))
   (filter ast:provides? (ast:port* o)))
 
+(define-method (ast:provides-ports (o <port>))
+  (ast:provides-ports (parent o <component>)))
+
 (define-method (ast:requires-ports (o <component>))
   (filter ast:requires? (ast:port* o)))
+
+(define-method (ast:requires-ports (o <port>))
+  (ast:requires-ports (parent o <component>)))
 
 (define-method (ast:requires+async-ports (o <component>))
   (append (ast:requires-ports o) (ast:async-ports o)))
@@ -385,6 +407,9 @@
       (($ <int>) o)
       (($ <void>) o)
       (_ type))))
+
+(define-method (makreel:type-constructor (o <port-pair>))
+  (makreel:type-constructor (.port o)))
 
 (define-method (makreel:modeling-sort (o <component>))
   (ast:interface* o))
@@ -793,6 +818,23 @@
 
 (define-method (makreel:provides-proc (o <component>))
   (ast:provides-ports o))
+
+(define-method (makreel:provides-pair* (o <port>))
+  (map (cute make <port-pair> #:port o #:other <>) (ast:provides-ports o)))
+
+(define-method (makreel:provides-reply (o <port-pair>))
+  (let ((other (.other o)))
+    (if (ast:eq? other (.port o)) "r"
+        other)))
+
+(define-method (makreel:provides-reply (o <port>))
+  (ast:provides-ports o))
+
+(define-method (makreel:provides-reset-reply (o <port-pair>))
+  (let ((port (.port o))
+        (other (.other o)))
+    (if (ast:eq? other port) (format #f "~anil" (makreel:interface-name port))
+        other)))
 
 (define-method (makreel:rename-flush-provides (o <port>))
   (if (ast:provides? o) o

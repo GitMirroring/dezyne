@@ -1,0 +1,2 @@
+(!(#.name port in blocked)) -> sum r :  #x:makreel:interface-name replies. #.name reply (r) . semantics_provides_blocked(reply=replies(#x:semantics-provides-reply-pair))
++ #.name blocking . semantics_provides_blocked()

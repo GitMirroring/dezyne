@@ -1,0 +1,5 @@
+sum r : #x:makreel:interface-name replies. #.name reply (r) . semantics_provides_skip_blocked(released=released + {#.name port}, reply=replies(#x:semantics-provides-reply-pair))
++ sum a : #x:makreel:interface-name actions. #.name out ( #x:makreel:interface-name action (a)) . semantics_provides_skip_blocked()
++ (#.name port in released) -> #x:makreel:model-name end
+  . (queue_empty . #.name reply'reordered (#.name port(reply)) . async_not_pending . semantics
+  #x:semantics-provides-skip-blocked-requires)

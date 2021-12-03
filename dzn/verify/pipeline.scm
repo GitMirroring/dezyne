@@ -151,6 +151,7 @@ actions."
                (and (not (member event '("inevitable" "optional" "tau" ;;"<illegal>" "<declarative-illegal>"
                                          )))
                     (not (string-contains event ".qout."))
+                    (not (string-contains event ".<blocking>"))
                     (not (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
              (string-split trace #\;))
      "\n")))

@@ -777,7 +777,7 @@ required to be non-deterministic."
 
 (define (parse-label label)
   (define-peg-string-patterns
-    "tree               <-- event / modeling / reply / state / return / queue / tau-literal / illegal / error / end / flush / parse-error
+    "tree               <-- event / modeling / reply / state / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
@@ -785,14 +785,15 @@ required to be non-deterministic."
      end                <   scope* ('end' / 'silent_end')
      return             <-- 'return'
      flush              <-- port-scope* identifier tick 'flush'
+     blocking           <-- port-scope* identifier tick 'blocking'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      state              <-- port-name tick state-literal state-arguments
      state-literal      <   'state'
      state-arguments    <-  (lpar state-argument (comma state-argument)* rpar)?
      state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
-     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / state-literal / 'queue_full' / 'flush')
      port-name          <-  port-scope* identifier
+     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / state-literal / 'queue_full' / 'flush' / 'blocking')
      event-name         <-  identifier
      reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
      bool-literal       <   'Bool'
@@ -851,6 +852,7 @@ required to be non-deterministic."
       (('error ('identifier port) error) (cleanup-error error))
       (('event ('identifier port) ('identifier event)) (string-append port "." event))
       (('flush ('identifier port) "flush") (string-append port ".<flush>"))
+      (('blocking ('identifier port) "blocking") (string-append port ".<blocking>"))
       (('illegal illegal) (and illegal? (cleanup-error illegal)))
       (('modeling ('identifier port) event) (and internal? (string-append port "." event)))
       (('queue ('identifier port) ('queue-direction direction) ('identifier event)) (and internal? (string-append port "." direction "." event)))
