@@ -379,3 +379,14 @@ endif
 if have_scheme
 	echo "$(LISP_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/scheme -type f)
 endif
+
+check-reuse:
+	rm -rf LICENSES
+	mkdir -p LICENSES LICENCES
+	ln COPYING LICENSES/GPL-3.0-or-later.text
+	ln COPYING.AGPL LICENSES/AGPL-3.0-or-later.text
+	ln COPYING.CC0 LICENSES/CC0-1.0.text
+	ln COPYING.LESSER LICENSES/LGPL-3.0-or-later.text
+	ln doc/fdl-1.3.texi LICENSES/GFDL-1.3-no-invariants-or-later.text
+	reuse lint
+	rm -rf LICENSES
