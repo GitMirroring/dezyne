@@ -94,6 +94,7 @@ This document describes Dezyne version @value{VERSION}.
 Introduction
 
 * Purpose::                     Why are we creating Dezyne?
+* Conditions for Using Dezyne::  There are (almost) no limits to using Dezyne.
 
 Installation
 
@@ -416,6 +417,7 @@ you may have, (@xref{Contributing}).
 
 @menu
 * Purpose::                     Why are we creating Dezyne?
+* Conditions for Using Dezyne::  There are (almost) no limits to using Dezyne.
 @end menu
 
 @node Purpose
@@ -427,6 +429,32 @@ detailed behavior under operational conditions (E-type programs
 @footnote{@url{https://cs.uwaterloo.ca/~a78khan/cs446/additional-material/scribe/27-refactoring/Lehman-LawsOfSoftwareEvolution.pdf,Lehman
 Laws of Software Evolution}}).  These are also the type of program which
 change the most and are most negatively affected by that change.
+
+@node Conditions for Using Dezyne
+@section Conditions for Using Dezyne
+
+@cindex non-free software
+@cindex license of generated code
+The distribution terms for Dezyne-generated code permit using the code
+in free software programs as well as in non-free or proprietary
+programs: The Dezyne code generator @emph{transpiles} the user's Dezyne
+program into a program in the target language, e.g., @code{C++}, making
+the resulting @code{C++} program a derivative work, inheriting its
+copyright and--if applicable, licensing terms.
+
+@cindex Dezyne runtime library
+@cindex modifying the Dezyne runtime
+The Dezyne runtime is distributed under the GNU Lesser General Public
+License (see @url{https://gnu.org/licenses#LGPL, LGPL3+}), which means
+that it can be freely and unconditionally used in unmodified form, also
+if you are creating a non-free or proprietary software.  If you
+@emph{modify} the Dezyne runtime code that you distribute with your
+program, one condition applies: The modifications must be made
+available.
+
+@quotation Note
+Dezyne comes with NO WARRANTY, to the extent permitted by law.
+@end quotation
 
 @c *********************************************************************
 @node Installation
