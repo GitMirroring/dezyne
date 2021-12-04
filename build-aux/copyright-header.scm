@@ -139,7 +139,7 @@ All rights reserved.
     (and=> m match:string)))
 
 (define (script-file? o)
-  (let ((m (string-match "(configure.ac|pre-inst-env.in|test/bin/rename|\\.mk|\\.make|Makefile.*|\\.sh|/run)$" o)))
+  (let ((m (string-match "(.gitignore|configure.ac|pre-inst-env.in|test/bin/rename|\\.mk|\\.make|Makefile.*|\\.sh|/run)$" o)))
     (and=> m match:string)))
 
 (define (code-file? o)
@@ -154,8 +154,12 @@ All rights reserved.
     "Jan (janneke) Nieuwenhuizen <janneke@gnu.org>")
    ((string-prefix? "Johri van Eerd" author)
     "Johri van Eerd <vaneerd.johri@gmail.com>")
+   ((string-prefix? "Paul Hoogendijk" author)
+    "Paul Hoogendijk <paul@dezyne.org>")
    ((string-prefix? "Rob Wieringa" author)
     "Rob Wieringa <rma.wieringa@gmail.com>")
+   ((string-prefix? "Rutger van Beusekom" author)
+    "Rutger van Beusekom <rutger@dezyne.org>")
    (else
     author)))
 
