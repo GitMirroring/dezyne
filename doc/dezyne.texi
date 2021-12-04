@@ -6492,29 +6492,32 @@ examples.
 
 @multitable @columnfractions .15 .15 .5 .2
 @headitem Term @tab Context @tab Definition @tab Chapter
+
 @item Action
 @tab Concept
-@tab Statement as part of the response to a trigger event.
-@tab -
-@item behavior
+@tab Imperative statement to send a message as part of the response to a
+trigger event.
+@tab @xref{Action}
+
+@item @code{behavior}
 @tab Keyword
 @tab Start of the behavior section within an interface or component definition;
-this keyword must be followed by @{@}.
+this keyword must be followed by @{@dots{}@}.
 @tab @xref{Behavior} and @xref{Component Behavior}
 
-@item Bind
+@item Binding
 @tab Concept
-@tab To associate two ports within a system section using the Dezyne
-language's &lt;=&gt; operator.
-@tab -
+@tab To associate two ports within a system section using the @code{<=>}
+operator.
+@tab @xref{Binding}
 
-@item blocking
+@item @code{blocking}
 @tab Keyword
 @tab Qualifier to indicate that the executing of the trigger is blocked till a
-corresponding reply is given on the port of the trigger
+corresponding reply is given on the port of the trigger.
 @tab @xref{Blocking}
 
-@item bool
+@item @code{bool}
 @tab Keyword
 @tab Boolean type identifier.
 @tab @xref{Types and Expressions}
@@ -6523,13 +6526,13 @@ corresponding reply is given on the port of the trigger
 @tab Concept
 @tab Whether or not, the behavior of a component complies to the behavior
 specification of the interface of each provides port.
-@tab -
+@tab @xref{Verification Checks and Errors}
 
 @item Component
 @tab Concept
 @tab Unit of definition and instantiation.  A component has zero or more ports.
 A component has a behavior section, sysinstantiationtem section, or none.
-@tab -
+@tab @xref{Components}
 
 @item component
 @tab Keyword
@@ -6537,197 +6540,193 @@ A component has a behavior section, sysinstantiationtem section, or none.
 identifier and @{@}.
 @tab @xref{Components}
 
-@item condition
+@item Condition
 @tab Concept
-@tab @code{if}.
-@tab -
+@tab Traditional @code{if} statement.
+@tab @xref{If}
 
-@item else
+@item @code{else}
 @tab Keyword
 @tab Else part of condition statement.
-@tab @xref{Identifiers}
+@tab @xref{If}
 
-@item enum
+@item @code{enum}
 @tab Keyword
 @tab Enumeration type definition.
-@tab @xref{Types and Expressions}
+@tab @xref{Enum}
 
 @item Event
 @tab Concept
 @tab An event is declared as part of an interface and represents the type
 of the messages communicated between components.  An event is
 implemented as a function call.
-@tab -
+@tab @xref{Events}
 
-@item extern
+@item @code{extern}
 @tab Keyword
 @tab Type definition which can be used for data variables and data parameters.
 Followed by an identifier and $$'s.  The part between $$'s is used in
 the generated code as the type definition for these data variables and
 parameters.
-@tab @xref{Types and Expressions}
+@tab @xref{Extern Data Type}
 
-@item external
+@item @code{external}
 @tab Keyword
 @tab Qualifier of a provides port definition indicating that the out events
 can be possibly delayed which is taken into account during verification.
 @tab @xref{External}
 
-@item false
+@item @code{false}
 @tab Keyword
 @tab Boolean value false.
-@tab @xref{Identifiers}
+@tab @xref{Bool}
 
 @item Guard
 @tab Concept
-@tab A boolean expression between [ ] as prefix of a statement
-@tab -
+@tab A boolean expression between @code{[ ]} as declarative prefix of a an
+imperative statement.
+@tab @xref{Guard}
 
 @item Hand-written
 @tab Concept
 @tab A hand-written component is defined as a component without a behavior or
 system section in the component definition.  The implementation should
 be provided in the target source language.
-@tab -
+@tab @xref{Code Integration}
 
-@item if
+@item @code{if}
 @tab Keyword
 @tab The @code{if} keyword is followed by a boolean expression and a statement
 and optionally the keyword @code{else}; followed by a second statement
 @tab @xref{Identifiers}
 
-@item illegal
+@item @code{illegal}
 @tab Keyword
 @tab @code{illegal}.  As a direct response indicates that the given event
 in the given state is not allowed to be communicated.  Within a
 component, the @code{illegal} is also allowed within a function or
 @code{if}, indicating that the @code{illegal} should never be executed,
-i.e.  comparable with @code{assert(FALSE)}; of the C-language.
+i.e., comparable with @code{assert(FALSE)}; of the C-language.
 @tab @xref{Illegal} and @xref{Component Illegal}
 
-@item import
+@item @code{import}
 @tab Keyword
 @tab The file following the import keyword is loaded and expanded at the
 location of the @code{import}
-@tab @xref{Identifiers}
+@tab @xref{Dezyne Files}
 
-@item in
+@item @code{in}
 @tab Keyword
 @tab Indicates for an event of an interface that the event is an incoming event
 '''or''' indicates for a data parameter of an event or function that the
 value of the parameter is incoming
-@tab @xref{Interfaces}
+@tab @xref{Events}
 
-@item inevitable
+@item @code{inevitable}
 @tab Keyword
 @tab A trigger event that will inevitably occur provided no other events occur.
 @tab @xref{Using inevitable and optional}
 
-@item injected
+@item @code{injected}
 @tab Keyword
 @tab Qualifier of a required port to indicate that the binding of the port
 occurs at a higher level in the system hierarchy.
-@tab @xref{Components}
+@tab @xref{Injection}
 
-@item inout
+@item @code{inout}
 @tab Keyword
 @tab Indicates for a data parameter of an event or function that the value
 of the parameter is incoming at the begin of the event or function call,
 and outgoing at the end.
-@tab -
+@tab @xref{Events} and @xref{Functions}
 
 @item Interface
 @tab Concept
 @tab An interface defines a set of events and the underlying protocol how
 components communicate between each other via their ports.
-@tab -
+@tab @xref{Interfaces}
 
-@item interface
+@item @code{interface}
 @tab Keyword
 @tab Begins the definition of an interface; this keyword must be followed by
 an identifier and @{@}.
 @tab @xref{Interfaces}
 
-@item namespace
+@item @code{namespace}
 @tab Keyword
-@tab -
+@tab Avoiding name collision by adding additional scoping.
 @tab @xref{Namespaces}
 
-@item on
+@item @code{on}
 @tab Keyword
 @tab Identifies an @code{on} which for one or more trigger events defines the
 corresponding response.
 @tab @xref{Imperative Statements}
 
-@item optional
+@item @code{optional}
 @tab Keyword
 @tab A trigger that optionally can happen.
 @tab @xref{Using inevitable and optional}
 
-@item otherwise
+@item @code{otherwise}
 @tab Keyword
 @tab Defines a catch-all guard which is true only if all the other guard
 expressions in a list of @code{guard}s evaluate to false.
-@tab @xref{Declarative Statements}
+@tab @xref{Guard}
 
-@item out
+@item @code{out}
 @tab Keyword
 @tab Indicates for an event of an interface that the event is an outgoing event
-'''or''' indicates for a data parameter of an event of function that the
+@emph{or} indicates for a data parameter of an event of function that the
 value of the parameter is outgoing
-@tab @xref{Interfaces}
+@tab @xref{Events}
 
 @item Port
 @tab Concept
 @tab Within a component definition, a named instance of an interface.
 @tab -
 
-@item provides
+@item @code{provides}
 @tab Keyword
 @tab Used in a component to define a port and its type which the component will
 provide.
 @tab @xref{Ports}
 
-@item reply
+@item @code{reply}
 @tab Keyword
 @tab Statement that defines the value that will be returned as result of the
 triggering event.
-@tab @xref{Imperative Statements}
+@tab @xref{Reply}
 
-@item requires
+@item @code{requires}
 @tab Keyword
 @tab Used in a component to define a port and its type which the component
 will use.
 @tab @xref{Ports}
 
-@item return
+@item @code{return}
 @tab Keyword
 @tab @code{return}; specifies the return value of a function (if any) and
 exits the function.
 @tab @xref{Functions}
-
-@item Sequence view
-@tab Window
-@tab Message sequence chart (result of simulation or verification).
-@tab -
 
 @item State
 @tab Concept
 @tab A state consists of all values of a model's member variables.
 @tab -
 
-@item subint
+@item @code{subint}
 @tab Keyword
 @tab A type representing a finite sequence of integers, expressed as @{m..n@}
 where m and n are integers and m &lt;= n, for example @{-2..1@}.
-@tab @xref{Types and Expressions}
+@tab @xref{Subint}
 
 @item System
 @tab Concept
 @tab A component containing a system section.
-@tab -
+@tab @xref{Systems}
 
-@item system
+@item @code{system}
 @tab Keyword
 @tab Starts the system section of a component.  A system section consists
 of two parts: instantiations of subcomponents, followed by all the
@@ -6736,26 +6735,32 @@ bindings among the sub-components and ports of the component.
 
 @item Trace
 @tab Concept
-@tab An execution trace is a sequence of events representing a possible
-execution scenario.
-@tab -
+@tab An execution trace is the detailed communication of events between
+an interface or a component and their clients.
+@tab @xref{Invoking dzn trace}
 
-@item true
+@item Trail
+@tab Concept
+@tab A trail or event trace is a list of events representing a possible
+execution scenario.
+@tab @xref{Invoking dzn trace}
+
+@item @code{true}
 @tab Keyword
 @tab Boolean value true.
-@tab @xref{Identifiers}
+@tab @xref{Bool}
 
 @item Type
 @tab Concept
-@tab An enum, subint, bool, or extern.
-@tab -
+@tab An @code{enum}, @code{subint}, @code{bool}, or @code{extern}
+@tab @xref{Types and Expressions}
 
 @item Variable
 @tab Concept
-@tab Declared within a behavior section.  A member variable can be either
+@tab Defined within a behavior section.  A member variable can be either
 a state variable which can be used a part of a guard of condition or a
 data variable which can be used as a parameter of events or functions
-@tab -
+@tab @xref{Variable}
 
 @item Verification
 @tab Concept
@@ -6765,7 +6770,8 @@ behavior.  Also, for a component it is verified whether a component
 adheres to all the protocols (behavior) of the interfaces of the ports
 of the component.  During verification, all possible execution scenarios
 are considered guaranteeing a 100% coverage.
-@tab -
+@tab @xref{Formal Verification}
+
 @end multitable
 
 @c *********************************************************************
