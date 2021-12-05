@@ -84,7 +84,6 @@ This document describes Dezyne version @value{VERSION}.
 * Well-formedness::             Interpreting parse errors.
 * Contributing::                Your help needed!
 * Concept Index::               Concepts.
-* Programming Index::           Data types, functions, and variables.
 * GNU Free Documentation License::  The license of this manual.
 
 @detailmenu
@@ -6489,12 +6488,6 @@ examples.
 @node Concept Index
 @unnumbered Concept Index
 @printindex cp
-
-@node Programming Index
-@unnumbered Programming Index
-@syncodeindex tp fn
-@syncodeindex vr fn
-@printindex fn
 
 @c *********************************************************************
 @node GNU Free Documentation License
