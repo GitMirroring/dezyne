@@ -268,64 +268,24 @@ override $(srcdir)/doc/version.texi:
 # Reproducible tarball
 # Be friendly to Debian; avoid using EPOCH
 GZIP_ENV = --no-name
-TAR_FLAGS =					\
---sort=name					\
- --mode=go=rX,u+rw,a-s				\
- --mtime=@$$(cat "$$tardir"/.tarball-timestamp)	\
- --owner=0 --group=0 --numeric-owner
-am__tar = $${TAR-tar}				\
- $(TAR_FLAGS)					\
- -cf -						\
+am__tar = $${TAR-tar} \
+ --sort=name \
+ --mode=go=rX,u+rw,a-s \
+ --mtime=@$$(cat "$$tardir"/.tarball-timestamp) \
+ --owner=0 --group=0 --numeric-owner \
+ -cf - \
  "$$tardir"
 
 tag:
 	git tag -s v$(PACKAGE_VERSION) -m "$(PACKAGE_NAME) $(PACKAGE_VERSION)."
 
-# As per https://savannah.nongnu.org/task/?16067, test baseline data
-# cannot be distributed in ASCCI files.
-#
-# 1. All test data in listed in TEST_BASELINE
-# 2. gen-test-data packages TEST_BASELINE in
-#      $(distdir)?test/data/test/all/test-data.tar.gz
-# 3. TEST_BASELINE is removed from the distribution
-# 4. Before running make check, test/all/test-data.tar.gz is unpacked
-#    and removed
-
-TEST_BASELINE = $(shell git ls-files --		\
- test/all/*/trace*				\
- test/all/*/META				\
- test/all/*/baseline				\
- test/all/*/*/baseline				\
- test/all/*/*/*/baseline			\
-)
-
-noinst_check_DATA = test/all/semantics/baseline/semantics.org
-noinst_checkdir = $(srcdir)
-
-test/all/test-data.tar.gz:
-	@tardir=$(distdir) && $${TAR-tar} -cf- $(TAR_FLAGS) $(TEST_BASELINE) | gzip > $@
-
-test/all/semantics/baseline/semantics.org:
-	tar -xf test/all/test-data.tar.gz
-	rm -f test/all/test-data.tar.gz
-	touch $@
-
-gen-test-data:
-	rm -f test/all/test-data.tar.gz
-	git show HEAD --format=%ct --no-patch > $(distdir)/.tarball-timestamp
-	$(MAKE) test/all/test-data.tar.gz
-	mv  test/all/test-data.tar.gz $(distdir)/test/all
-
-dist-hook: gen-ChangeLog gen-test-data
+dist-hook: gen-ChangeLog
 	echo $(VERSION) > $(distdir)/.tarball-version
 	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
 	git show HEAD --format=%ct --no-patch > $(distdir)/.tarball-timestamp
 	@touch $(distdir)/.git
 	@echo Removing any test output
 	@rm -rf $(distdir)/test/all/*/out
-	@echo Removing test baseline
-	@cd $(distdir) && rm -rf $(TEST_BASELINE)
-	@find $(distdir) -depth -name baseline -exec rm -rf '{}' ';'
 
 release: update-hash
 	git commit -m 'guix: dezyne: Update to $(PACKAGE_VERSION).'					\
