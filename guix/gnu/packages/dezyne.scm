@@ -109,7 +109,7 @@
                  `("GUILE_AUTO_COMPILE" ":" = ("0"))
                  `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
                  `("GUILE_LOAD_COMPILED_PATH" ":" prefix ,go-path))))))))
-    (synopsis "A programming language with verifyable formal semantics")
+    (synopsis "Programming language with verifyable formal semantics")
     (description "Dezyne is a programming language and a set of tools to
 specify, validate, verify, simulate, document, and implement concurrent
 control software for embedded and cyber-physical systems.  The Dezyne language
