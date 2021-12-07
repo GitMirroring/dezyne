@@ -1,1 +1,1 @@
-test/all/undefined/guard/guard.dzn:26:6: error: undefined identifier `foo'
+test/all/undefined/guard/guard.dzn:27:6: error: undefined identifier `foo'

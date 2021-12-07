@@ -1,3 +1,3 @@
-test/all/undefined/component/action/action.dzn:36:15: error: event `a' not defined for port `p'
-test/all/undefined/component/action/action.dzn:32:3: info: port `p' defined here
-test/all/undefined/component/action/action.dzn:36:15: error: undefined identifier `a'
+test/all/undefined/component/action/action.dzn:37:15: error: event `a' not defined for port `p'
+test/all/undefined/component/action/action.dzn:33:3: info: port `p' defined here
+test/all/undefined/component/action/action.dzn:37:15: error: undefined identifier `a'

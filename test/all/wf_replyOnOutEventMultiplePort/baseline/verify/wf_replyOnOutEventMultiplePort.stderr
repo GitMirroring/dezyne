@@ -1,1 +1,1 @@
-test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:47:30: error: must specify a provides-port with reply on requires out-trigger: `sensor.activated'
+test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:48:30: error: must specify a provides-port with reply on requires out-trigger: `sensor.activated'

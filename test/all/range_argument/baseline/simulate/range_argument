@@ -1,9 +1,9 @@
 (header ((client) range_argument provides) ((sut) range_argument interface))
-test/all/range_argument/range_argument.dzn:37:7: error: range-error: invalid value `4' for variable `s'
+test/all/range_argument/range_argument.dzn:38:7: error: range-error: invalid value `4' for variable `s'
 <external>.e -> ...
 ... -> sut.e
 <range-error>
-test/all/range_argument/range_argument.dzn:37:7: error: range-error: invalid value `4' for variable `s'
+test/all/range_argument/range_argument.dzn:38:7: error: range-error: invalid value `4' for variable `s'
 (trail "e" "<range-error>")
 (labels "e")
 (eligible)

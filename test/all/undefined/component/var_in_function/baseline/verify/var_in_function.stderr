@@ -1,4 +1,4 @@
-test/all/undefined/component/var_in_function/var_in_function.dzn:19:15: error
-    void f() {
-              ^
-              `unknown identifier; imperative-statement' expected
+test/all/undefined/component/var_in_function/var_in_function.dzn:40:7: error
+      a = true;
+      ^
+      `unknown identifier; declarative-statement, imperative-statement' expected

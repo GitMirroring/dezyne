@@ -3,7 +3,7 @@
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>;;;
+;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;

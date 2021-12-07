@@ -1,2 +1,2 @@
-test/all/wf_replyOnOutEvent/wf_replyOnOutEvent.dzn:45:28: error: cannot use reply on requires out-trigger `activated'
-test/all/wf_replyOnOutEvent/wf_replyOnOutEvent.dzn:26:3: info: event `activated' defined here
+test/all/wf_replyOnOutEvent/wf_replyOnOutEvent.dzn:46:28: error: cannot use reply on requires out-trigger `activated'
+test/all/wf_replyOnOutEvent/wf_replyOnOutEvent.dzn:27:3: info: event `activated' defined here

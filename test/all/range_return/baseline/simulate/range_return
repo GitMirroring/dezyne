@@ -1,9 +1,9 @@
 (header ((client) range_return provides) ((sut) range_return interface))
-test/all/range_return/range_return.dzn:40:7: error: range-error: invalid value `5' for variable `state'
+test/all/range_return/range_return.dzn:41:7: error: range-error: invalid value `5' for variable `state'
 <external>.e -> ...
 ... -> sut.e
 <range-error>
-test/all/range_return/range_return.dzn:40:7: error: range-error: invalid value `5' for variable `state'
+test/all/range_return/range_return.dzn:41:7: error: range-error: invalid value `5' for variable `state'
 (trail "e" "<range-error>")
 (labels "e")
 (eligible)

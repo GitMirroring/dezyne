@@ -1,9 +1,9 @@
 (header ((client) range_local provides) ((sut) range_local interface))
-test/all/range_local/range_local.dzn:34:7: error: range-error: invalid value `6' for variable `x'
+test/all/range_local/range_local.dzn:35:7: error: range-error: invalid value `6' for variable `x'
 <external>.e -> ...
 ... -> sut.e
 <range-error>
-test/all/range_local/range_local.dzn:34:7: error: range-error: invalid value `6' for variable `x'
+test/all/range_local/range_local.dzn:35:7: error: range-error: invalid value `6' for variable `x'
 (trail "e" "<range-error>")
 (labels "e")
 (eligible)

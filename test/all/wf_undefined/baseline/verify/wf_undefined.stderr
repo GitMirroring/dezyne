@@ -1,45 +1,45 @@
-test/all/wf_undefined/wf_undefined.dzn:25:17: error: unknown type name `xxint'
-test/all/wf_undefined/wf_undefined.dzn:26:18: error: unknown type name `xxxint'
-test/all/wf_undefined/wf_undefined.dzn:28:5: error: unknown type name `yint'
-test/all/wf_undefined/wf_undefined.dzn:30:7: error: unknown type name `zint'
-test/all/wf_undefined/wf_undefined.dzn:38:6: error: unknown type name `EE'
-test/all/wf_undefined/wf_undefined.dzn:41:13: error: no field `EN4' in enum `I1'; expected: `EN1', `EN2', `EN3'
-test/all/wf_undefined/wf_undefined.dzn:37:3: info: enum defined here
-test/all/wf_undefined/wf_undefined.dzn:42:5: error: unknown type name `ENN'
-test/all/wf_undefined/wf_undefined.dzn:44:12: error: no field `EN5' in enum `I1'; expected: `EN1', `EN2', `EN3'
-test/all/wf_undefined/wf_undefined.dzn:37:3: info: enum defined here
-test/all/wf_undefined/wf_undefined.dzn:47:13: error: no field `EN0' in enum `I1'; expected: `EN1', `EN2', `EN3'
-test/all/wf_undefined/wf_undefined.dzn:37:3: info: enum defined here
-test/all/wf_undefined/wf_undefined.dzn:68:3: error: undefined interface `I3'
-test/all/wf_undefined/wf_undefined.dzn:70:3: error: undefined interface `I4'
-test/all/wf_undefined/wf_undefined.dzn:72:8: error: parameter count mismatch, expected 0, found: 1
-test/all/wf_undefined/wf_undefined.dzn:38:3: info: for formals of event `hello' defined here
-test/all/wf_undefined/wf_undefined.dzn:75:7: error: event `hello' not defined for port `r2'
-test/all/wf_undefined/wf_undefined.dzn:70:3: info: port `r2' defined here
-test/all/wf_undefined/wf_undefined.dzn:75:7: error: undefined identifier `hello'
-test/all/wf_undefined/wf_undefined.dzn:77:8: error: event `hola' not defined for port `p1'
-test/all/wf_undefined/wf_undefined.dzn:67:3: info: port `p1' defined here
-test/all/wf_undefined/wf_undefined.dzn:80:8: error: parameter count mismatch, expected 0, found: 1
-test/all/wf_undefined/wf_undefined.dzn:39:3: info: for formals of event `world' defined here
-test/all/wf_undefined/wf_undefined.dzn:82:7: error: event `world' not defined for port `r2'
-test/all/wf_undefined/wf_undefined.dzn:70:3: info: port `r2' defined here
-test/all/wf_undefined/wf_undefined.dzn:82:7: error: undefined identifier `world'
-test/all/wf_undefined/wf_undefined.dzn:83:7: error: event `mundo' not defined for port `r1'
-test/all/wf_undefined/wf_undefined.dzn:69:3: info: port `r1' defined here
-test/all/wf_undefined/wf_undefined.dzn:83:7: error: undefined identifier `mundo'
-test/all/wf_undefined/wf_undefined.dzn:85:8: error: event `mundo' not defined for port `r1'
-test/all/wf_undefined/wf_undefined.dzn:69:3: info: port `r1' defined here
-test/all/wf_undefined/wf_undefined.dzn:86:8: error: event `world' not defined for port `r2'
-test/all/wf_undefined/wf_undefined.dzn:70:3: info: port `r2' defined here
-test/all/wf_undefined/wf_undefined.dzn:93:3: error: undefined interface `I3'
-test/all/wf_undefined/wf_undefined.dzn:95:3: error: undefined interface `I4'
-test/all/wf_undefined/wf_undefined.dzn:98:5: error: undefined component `C2'
-test/all/wf_undefined/wf_undefined.dzn:99:5: error: undefined port `I1' for `C1'
-test/all/wf_undefined/wf_undefined.dzn:66:1: info: `C1' defined here
-test/all/wf_undefined/wf_undefined.dzn:101:15: error: undefined port `p3' for `wf_undefined'
-test/all/wf_undefined/wf_undefined.dzn:91:1: info: `wf_undefined' defined here
-test/all/wf_undefined/wf_undefined.dzn:102:5: error: undefined port `p3' for `C1'
-test/all/wf_undefined/wf_undefined.dzn:66:1: info: `C1' defined here
-test/all/wf_undefined/wf_undefined.dzn:103:5: error: instance expected, found: `c2'
-test/all/wf_undefined/wf_undefined.dzn:98:5: info: defined here
-test/all/wf_undefined/wf_undefined.dzn:103:14: error: undefined identifier `c3'
+test/all/wf_undefined/wf_undefined.dzn:26:17: error: unknown type name `xxint'
+test/all/wf_undefined/wf_undefined.dzn:27:18: error: unknown type name `xxxint'
+test/all/wf_undefined/wf_undefined.dzn:29:5: error: unknown type name `yint'
+test/all/wf_undefined/wf_undefined.dzn:31:7: error: unknown type name `zint'
+test/all/wf_undefined/wf_undefined.dzn:39:6: error: unknown type name `EE'
+test/all/wf_undefined/wf_undefined.dzn:42:13: error: no field `EN4' in enum `I1'; expected: `EN1', `EN2', `EN3'
+test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
+test/all/wf_undefined/wf_undefined.dzn:43:5: error: unknown type name `ENN'
+test/all/wf_undefined/wf_undefined.dzn:45:12: error: no field `EN5' in enum `I1'; expected: `EN1', `EN2', `EN3'
+test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
+test/all/wf_undefined/wf_undefined.dzn:48:13: error: no field `EN0' in enum `I1'; expected: `EN1', `EN2', `EN3'
+test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
+test/all/wf_undefined/wf_undefined.dzn:69:3: error: undefined interface `I3'
+test/all/wf_undefined/wf_undefined.dzn:71:3: error: undefined interface `I4'
+test/all/wf_undefined/wf_undefined.dzn:73:8: error: parameter count mismatch, expected 0, found: 1
+test/all/wf_undefined/wf_undefined.dzn:39:3: info: for formals of event `hello' defined here
+test/all/wf_undefined/wf_undefined.dzn:76:7: error: event `hello' not defined for port `r2'
+test/all/wf_undefined/wf_undefined.dzn:71:3: info: port `r2' defined here
+test/all/wf_undefined/wf_undefined.dzn:76:7: error: undefined identifier `hello'
+test/all/wf_undefined/wf_undefined.dzn:78:8: error: event `hola' not defined for port `p1'
+test/all/wf_undefined/wf_undefined.dzn:68:3: info: port `p1' defined here
+test/all/wf_undefined/wf_undefined.dzn:81:8: error: parameter count mismatch, expected 0, found: 1
+test/all/wf_undefined/wf_undefined.dzn:40:3: info: for formals of event `world' defined here
+test/all/wf_undefined/wf_undefined.dzn:83:7: error: event `world' not defined for port `r2'
+test/all/wf_undefined/wf_undefined.dzn:71:3: info: port `r2' defined here
+test/all/wf_undefined/wf_undefined.dzn:83:7: error: undefined identifier `world'
+test/all/wf_undefined/wf_undefined.dzn:84:7: error: event `mundo' not defined for port `r1'
+test/all/wf_undefined/wf_undefined.dzn:70:3: info: port `r1' defined here
+test/all/wf_undefined/wf_undefined.dzn:84:7: error: undefined identifier `mundo'
+test/all/wf_undefined/wf_undefined.dzn:86:8: error: event `mundo' not defined for port `r1'
+test/all/wf_undefined/wf_undefined.dzn:70:3: info: port `r1' defined here
+test/all/wf_undefined/wf_undefined.dzn:87:8: error: event `world' not defined for port `r2'
+test/all/wf_undefined/wf_undefined.dzn:71:3: info: port `r2' defined here
+test/all/wf_undefined/wf_undefined.dzn:94:3: error: undefined interface `I3'
+test/all/wf_undefined/wf_undefined.dzn:96:3: error: undefined interface `I4'
+test/all/wf_undefined/wf_undefined.dzn:99:5: error: undefined component `C2'
+test/all/wf_undefined/wf_undefined.dzn:100:5: error: undefined port `I1' for `C1'
+test/all/wf_undefined/wf_undefined.dzn:67:1: info: `C1' defined here
+test/all/wf_undefined/wf_undefined.dzn:102:15: error: undefined port `p3' for `wf_undefined'
+test/all/wf_undefined/wf_undefined.dzn:92:1: info: `wf_undefined' defined here
+test/all/wf_undefined/wf_undefined.dzn:103:5: error: undefined port `p3' for `C1'
+test/all/wf_undefined/wf_undefined.dzn:67:1: info: `C1' defined here
+test/all/wf_undefined/wf_undefined.dzn:104:5: error: instance expected, found: `c2'
+test/all/wf_undefined/wf_undefined.dzn:99:5: info: defined here
+test/all/wf_undefined/wf_undefined.dzn:104:14: error: undefined identifier `c3'

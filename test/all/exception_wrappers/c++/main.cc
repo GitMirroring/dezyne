@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 //
 // This file is part of Dezyne.
 //

@@ -1,1 +1,1 @@
-test/all/missing_reply/missing_reply.dzn:40:5: error: missing-reply: bool reply expected
+test/all/missing_reply/missing_reply.dzn:41:5: error: missing-reply: bool reply expected

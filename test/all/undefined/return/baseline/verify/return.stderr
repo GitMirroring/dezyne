@@ -1,1 +1,1 @@
-test/all/undefined/return/return.dzn:27:14: error: undefined identifier `b'
+test/all/undefined/return/return.dzn:28:14: error: undefined identifier `b'

@@ -1,5 +1,5 @@
 (header ((h) ihello provides) ((sut) livelock_synchronous2 component) ((w) iworld requires))
-test/all/livelock_synchronous2/livelock_synchronous2.dzn:37:24: error: queue-full in component "livelock_synchronous2"
+test/all/livelock_synchronous2/livelock_synchronous2.dzn:38:24: error: queue-full in component "livelock_synchronous2"
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -29,7 +29,7 @@ sut.<q> <- ...
 ... <- <external>.w.world
 sut.<q> <- ...
 <queue-full>
-test/all/livelock_synchronous2/livelock_synchronous2.dzn:37:24: error: queue-full in component "livelock_synchronous2"
+test/all/livelock_synchronous2/livelock_synchronous2.dzn:38:24: error: queue-full in component "livelock_synchronous2"
 (trail "h.hello" "w.hello" "w.cruel" "w.world" "w.return" "w.hello" "w.cruel" "w.world" "w.return" "w.hello" "w.cruel" "w.world" "<queue-full>")
 (labels "h.hello" "w.cruel" "w.world")
 (eligible)

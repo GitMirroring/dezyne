@@ -1,4 +1,4 @@
-test/all/undefined/var/var.dzn:26:11: error
+test/all/undefined/var/var.dzn:27:11: error
     on e: a = true;
           ^
           `unknown identifier; declarative-statement, imperative-statement' expected
