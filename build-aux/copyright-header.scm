@@ -3,7 +3,7 @@
 !#
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -170,11 +170,9 @@ All rights reserved.
          (years (gulp-pipe
                  ;; Get all commit years, filter-out copyright updates
                  (format #f
-                         "git log -i --author='~a' --author='~a' --line-prefix=+ '~a' \\
-| sed '-e s,^\\+commit ,\\nCommit: ,' \\
-  -e 's,^+Author,Author,' \\
-  -e 's,^+\\(Date:.*\\),\\1\\nMessage:,' \\
-| recsel -i -e '! (Message ~~ \"copyright\")' \\
+                         "git log -i --author='~a' --author='~a' \\
+  --pretty=format:'Commit:  %H%nAuthor:  %aN <%aE>%nDate:    %ad%nMessage: %s%n' '~a' \\
+| recsel -i -e '!(Message ~~ \"copyright\") && !(Message ~~ \"dezyne.org\") && !(Message ~~ \"email\")' \\
 | grep ^Date: \\
 | sed -r 's,.*(20[0-9][0-9]).*,\\1,'"
                          name email file-name)))
@@ -202,14 +200,15 @@ All rights reserved.
                                     file-name)))
          (original-authors (string-split original-authors #\newline))
          (original-authors (filter-map filter-author original-authors))
-         (authors (gulp-pipe (format #f "git log --line-prefix=+ '~a' \\
-| sed '-e s,^\\+commit ,\\nCommit: ,' \\
-  -e 's,^+Author,Author,' \\
-  -e 's,^+\\(Date:.*\\),\\1\\nMessage:,' \\
-| recsel -i -e '! (Message ~~ \"copyright\")' \\
+         (authors (gulp-pipe
+                   ;; Get all commit years, filter-out copyright updates
+                   (format #f
+                           "git log -i \\
+  --pretty=format:'Commit:  %H%nAuthor:  %aN <%aE>%nDate:    %ad%nMessage: %s%n' '~a' \\
+| recsel -i -e '!(Message ~~ \"copyright\") && !(Message ~~ \"dezyne.org\") && !(Message ~~ \"email\")' \\
 | grep ^Author: \\
 | sed 's/^Author: *//'"
-                                     file-name)))
+                           file-name)))
          (authors (string-split authors #\newline))
          (authors (append original-authors authors))
          (authors (map author-unique authors))
@@ -271,8 +270,7 @@ All rights reserved.
 
 (define (skip? file-name)
   (or (symbolic-link? file-name)
-      (member file-name '(".gitignore"
-                          "ide/json.scm"
+      (member file-name '("ide/json.scm"
                           "build-aux/copyright-header.scm"
                           "build-aux/ltmain.sh"))
       (string-prefix? "doc/" file-name)
@@ -294,4 +292,5 @@ All rights reserved.
               (files (filter (negate skip?) files)))
          (for-each fix-header files)))
       ((copyright-header files ...)
-       (for-each fix-header files))))
+       (let ((files (filter (negate skip?) files)))
+         (for-each fix-header files)))))

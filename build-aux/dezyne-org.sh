@@ -1,5 +1,4 @@
 #! /bin/sh
-
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
@@ -28,7 +27,7 @@ sed -i                                                          \
     -e s,henk.katerberg[@]yahoo.com,hank@mudball.nl,gi          \
     -e s,johri.van.eerd[@]verum.com,vaneerd.johri@gmail.com,gi  \
     -e s,paul.hoogendijk[@]verum.com,paul@dezyne.org,gi         \
-    -e s,rob.wieringa[@]verum.com,rob@dezyne.org,gi             \
+    -e s,rob.wieringa[@]verum.com,rob@rma.wieringa@gmail.com,gi \
     -e s,rutger.van.beusekom[@]gmail.com,rutger@dezyne.org,gi   \
     -e s,rutger.van.beusekom[@]verum.com,rutger@dezyne.org,gi   \
     $(git grep -El '@verum.com|@yahoo.com')

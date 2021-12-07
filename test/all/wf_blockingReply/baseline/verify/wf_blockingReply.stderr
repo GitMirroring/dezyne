@@ -1,2 +1,2 @@
-test/all/wf_blockingReply/wf_blockingReply.dzn:45:30: error: type mismatch: no event with reply type `void' for port `start'
-test/all/wf_blockingReply/wf_blockingReply.dzn:41:3: info: port defined here
+test/all/wf_blockingReply/wf_blockingReply.dzn:46:30: error: type mismatch: no event with reply type `void' for port `start'
+test/all/wf_blockingReply/wf_blockingReply.dzn:42:3: info: port defined here

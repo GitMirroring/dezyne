@@ -8,9 +8,9 @@ sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 (trail "h.hello" "w.hello" "w.return" "h.return")
-test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:50:3: error: non-compliance
+test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:51:3: error: non-compliance
 <non-compliance>
-test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:50:3: error: non-compliance
+test/all/compliance_failures_inevitable_optional/compliance_failures_inevitable_optional.dzn:51:3: error: non-compliance
 (trail "<non-compliance>")
 (labels "h.hello" "w.world" "w.cruel")
 (eligible)

@@ -8,9 +8,9 @@ sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 (trail "h.hello" "w.hello" "w.return" "h.return")
-test/all/compliance_failures_choice/compliance_failures_choice.dzn:62:3: error: non-compliance
+test/all/compliance_failures_choice/compliance_failures_choice.dzn:63:3: error: non-compliance
 <non-compliance>
-test/all/compliance_failures_choice/compliance_failures_choice.dzn:62:3: error: non-compliance
+test/all/compliance_failures_choice/compliance_failures_choice.dzn:63:3: error: non-compliance
 (trail "<non-compliance>")
 (labels "h.hello")
 (eligible)

@@ -1,1 +1,1 @@
-test/all/undefined/interface/function/function.dzn:26:22: error: undefined function call: "f"
+test/all/undefined/interface/function/function.dzn:27:22: error: undefined function call: "f"

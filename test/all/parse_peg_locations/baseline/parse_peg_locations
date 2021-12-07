@@ -3,39 +3,39 @@
   (file-name
     "test/all/parse_peg_locations/parse_peg_locations.dzn"
     (location 0 0))
-  (import "ihello.dzn" (location 833 851))
+  (import "ihello.dzn" (location 839 857))
   (component
     (compound-name
-      (name "hello" (location 863 868))
-      (location 863 868))
-    (ports (port (provides (location 873 881))
-                 (port-qualifiers (location 882 882))
+      (name "hello" (location 869 874))
+      (location 869 874))
+    (ports (port (provides (location 879 887))
+                 (port-qualifiers (location 888 888))
                  (compound-name
-                   (name "ihello" (location 882 888))
-                   (location 882 888))
-                 (name "h" (location 889 890))
-                 (location 873 891))
-           (location 873 891))
+                   (name "ihello" (location 888 894))
+                   (location 888 894))
+                 (name "h" (location 895 896))
+                 (location 879 897))
+           (location 879 897))
     (behavior
       (behavior-compound
         (behavior-statements
           (on (triggers
                 (trigger
-                  (name "h" (location 914 915))
-                  (name "hello" (location 916 921))
-                  (trigger-formals (location 921 923))
-                  (location 914 923))
-                (location 914 923))
-              (compound (location 925 927))
-              (location 911 927))
-          (location 911 927))
-        (location 905 931))
-      (location 894 931))
-    (location 853 933))
+                  (name "h" (location 920 921))
+                  (name "hello" (location 922 927))
+                  (trigger-formals (location 927 929))
+                  (location 920 929))
+                (location 920 929))
+              (compound (location 931 933))
+              (location 917 933))
+          (location 917 933))
+        (location 911 937))
+      (location 900 937))
+    (location 859 939))
   (comment
-    "// Dezyne --- Dezyne command line tools//// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>//// This file is part of Dezyne.//// Dezyne is free software: you can redistribute it and/or modify it// under the terms of the GNU Affero General Public License as// published by the Free Software Foundation, either version 3 of the// License, or (at your option) any later version.//// Dezyne is distributed in the hope that it will be useful, but// WITHOUT ANY WARRANTY; without even the implied warranty of// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU// Affero General Public License for more details.//// You should have received a copy of the GNU Affero General Public// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.//// Commentary://// Code:"
-    (location 0 833))
-  (location 833 934))
+    "// Dezyne --- Dezyne command line tools//// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>//// This file is part of Dezyne.//// Dezyne is free software: you can redistribute it and/or modify it// under the terms of the GNU Affero General Public License as// published by the Free Software Foundation, either version 3 of the// License, or (at your option) any later version.//// Dezyne is distributed in the hope that it will be useful, but// WITHOUT ANY WARRANTY; without even the implied warranty of// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU// Affero General Public License for more details.//// You should have received a copy of the GNU Affero General Public// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.//// Commentary://// Code:"
+    (location 0 839))
+  (location 839 940))
  ("test/all/parse_peg_locations/ihello.dzn"
   root
   (file-name
@@ -43,36 +43,36 @@
     (location 0 0))
   (interface
     (compound-name
-      (name "ihello" (location 843 849))
-      (location 843 849))
+      (name "ihello" (location 849 855))
+      (location 849 855))
     (types-and-events
-      (event (direction "in" (location 854 856))
+      (event (direction "in" (location 860 862))
              (type-name
                (compound-name
-                 (name "void" (location 857 861))
-                 (location 857 861))
-               (location 857 861))
+                 (name "void" (location 863 867))
+                 (location 863 867))
+               (location 863 867))
              (event-name
-               (name "hello" (location 862 867))
-               (location 862 867))
-             (formals (location 867 869))
-             (location 854 870))
-      (location 854 870))
+               (name "hello" (location 868 873))
+               (location 868 873))
+             (formals (location 873 875))
+             (location 860 876))
+      (location 860 876))
     (behavior
       (behavior-compound
         (behavior-statements
           (on (triggers
                 (trigger
-                  (name "hello" (location 894 899))
-                  (location 894 899))
-                (location 894 899))
-              (compound (location 901 903))
-              (location 891 903))
-          (location 891 903))
-        (location 885 907))
-      (location 874 907))
-    (location 833 909))
+                  (name "hello" (location 900 905))
+                  (location 900 905))
+                (location 900 905))
+              (compound (location 907 909))
+              (location 897 909))
+          (location 897 909))
+        (location 891 913))
+      (location 880 913))
+    (location 839 915))
   (comment
-    "// Dezyne --- Dezyne command line tools//// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>//// This file is part of Dezyne.//// Dezyne is free software: you can redistribute it and/or modify it// under the terms of the GNU Affero General Public License as// published by the Free Software Foundation, either version 3 of the// License, or (at your option) any later version.//// Dezyne is distributed in the hope that it will be useful, but// WITHOUT ANY WARRANTY; without even the implied warranty of// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU// Affero General Public License for more details.//// You should have received a copy of the GNU Affero General Public// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.//// Commentary://// Code:"
-    (location 0 833))
-  (location 833 910)))
+    "// Dezyne --- Dezyne command line tools//// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>//// This file is part of Dezyne.//// Dezyne is free software: you can redistribute it and/or modify it// under the terms of the GNU Affero General Public License as// published by the Free Software Foundation, either version 3 of the// License, or (at your option) any later version.//// Dezyne is distributed in the hope that it will be useful, but// WITHOUT ANY WARRANTY; without even the implied warranty of// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU// Affero General Public License for more details.//// You should have received a copy of the GNU Affero General Public// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.//// Commentary://// Code:"
+    (location 0 839))
+  (location 839 916)))

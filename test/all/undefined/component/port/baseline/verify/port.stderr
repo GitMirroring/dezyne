@@ -1,4 +1,4 @@
-test/all/undefined/component/port/port.dzn:34:8: error
+test/all/undefined/component/port/port.dzn:35:8: error
     on p.e(): {}
        ^
        `unknown identifier; trigger :, comma' expected

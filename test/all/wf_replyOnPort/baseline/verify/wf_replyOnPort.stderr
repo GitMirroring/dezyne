@@ -1,1 +1,1 @@
-test/all/wf_replyOnPort/wf_replyOnPort.dzn:36:24: error: port `start2' does not match with trigger port `start1'
+test/all/wf_replyOnPort/wf_replyOnPort.dzn:37:24: error: port `start2' does not match with trigger port `start1'

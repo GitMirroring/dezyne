@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2018 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
+//
+// Copyright © 2016, 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //

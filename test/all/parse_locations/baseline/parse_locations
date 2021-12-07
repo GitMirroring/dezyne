@@ -8,7 +8,7 @@
       (column . 1)
       (end-line . 34)
       (end-column . 1)
-      (offset . 833)
+      (offset . 839)
       (length . 101))))
   (("bool" (name . bool)))
   (("void" (name . void)))
@@ -24,7 +24,7 @@
         (column . 1)
         (end-line . 32)
         (end-column . 2)
-        (offset . 833)
+        (offset . 839)
         (length . 76))))
     (name . ihello)
     (types ("types"))
@@ -40,7 +40,7 @@
              (column . 3)
              (end-line . 26)
              (end-column . 19)
-             (offset . 854)
+             (offset . 860)
              (length . 16))))
          (name . "hello")
          (signature
@@ -54,7 +54,7 @@
                 (column . 6)
                 (end-line . 26)
                 (end-column . 10)
-                (offset . 857)
+                (offset . 863)
                 (length . 4))))
             (type.name . void)
             (formals ("formals"))))
@@ -70,7 +70,7 @@
            (column . 3)
            (end-line . 31)
            (end-column . 4)
-           (offset . 874)
+           (offset . 880)
            (length . 33))))
        (types ("types"))
        (ports ("ports"))
@@ -87,7 +87,7 @@
               (column . 3)
               (end-line . 31)
               (end-column . 4)
-              (offset . 885)
+              (offset . 891)
               (length . 22))))
           (("on"
             (location
@@ -99,7 +99,7 @@
                 (column . 5)
                 (end-line . 30)
                 (end-column . 17)
-                (offset . 891)
+                (offset . 897)
                 (length . 12))))
             (triggers
               ("triggers"
@@ -113,7 +113,7 @@
                      (column . 8)
                      (end-line . 30)
                      (end-column . 13)
-                     (offset . 894)
+                     (offset . 900)
                      (length . 5))))
                  (event.name . "hello")
                  (formals ("formals"))))))
@@ -128,7 +128,7 @@
                    (column . 15)
                    (end-line . 30)
                    (end-column . 17)
-                   (offset . 901)
+                   (offset . 907)
                    (length . 2))))))))))))))
   (("file-name"
     (name .
@@ -143,7 +143,7 @@
         (column . 1)
         (end-line . 33)
         (end-column . 2)
-        (offset . 853)
+        (offset . 859)
         (length . 80))))
     (name . hello)
     (ports ("ports"
@@ -157,7 +157,7 @@
                   (column . 3)
                   (end-line . 28)
                   (end-column . 21)
-                  (offset . 873)
+                  (offset . 879)
                   (length . 18))))
               (name . "h")
               (type.name . ihello)
@@ -174,7 +174,7 @@
            (column . 3)
            (end-line . 32)
            (end-column . 4)
-           (offset . 894)
+           (offset . 900)
            (length . 37))))
        (types ("types"))
        (ports ("ports"))
@@ -191,7 +191,7 @@
               (column . 3)
               (end-line . 32)
               (end-column . 4)
-              (offset . 905)
+              (offset . 911)
               (length . 26))))
           (("on"
             (location
@@ -203,7 +203,7 @@
                 (column . 5)
                 (end-line . 31)
                 (end-column . 21)
-                (offset . 911)
+                (offset . 917)
                 (length . 16))))
             (triggers
               ("triggers"
@@ -217,7 +217,7 @@
                      (column . 8)
                      (end-line . 31)
                      (end-column . 17)
-                     (offset . 914)
+                     (offset . 920)
                      (length . 9))))
                  (port.name . "h")
                  (event.name . "hello")
@@ -233,6 +233,6 @@
                    (column . 19)
                    (end-line . 31)
                    (end-column . 21)
-                   (offset . 925)
+                   (offset . 931)
                    (length . 2))))))))))))))
   (working-directory . ".")))

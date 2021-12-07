@@ -1,2 +1,2 @@
-test/all/wf_replyOnType/wf_replyOnType.dzn:35:23: error: type mismatch: expected `bool', found: `int'
-test/all/wf_replyOnType/wf_replyOnType.dzn:25:3: info: event defined here
+test/all/wf_replyOnType/wf_replyOnType.dzn:36:23: error: type mismatch: expected `bool', found: `int'
+test/all/wf_replyOnType/wf_replyOnType.dzn:26:3: info: event defined here

@@ -2,6 +2,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #

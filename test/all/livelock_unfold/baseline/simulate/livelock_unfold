@@ -1,5 +1,5 @@
 (header ((h) ihello provides) ((sut) livelock_unfold component) ((w) ihello requires))
-test/all/livelock_unfold/livelock_unfold.dzn:45:5: error: livelock
+test/all/livelock_unfold/livelock_unfold.dzn:46:5: error: livelock
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -100,7 +100,7 @@ sut.w.return <- ...
 ... <- sut.<q>
 sut.w.world <- ...
 <livelock>
-test/all/livelock_unfold/livelock_unfold.dzn:45:5: error: livelock
+test/all/livelock_unfold/livelock_unfold.dzn:46:5: error: livelock
 (trail "h.hello" "w.hello" "w.world" "w.return" "<loop>" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "w.hello" "w.world" "w.return" "<livelock>")
 (labels "h.hello" "w.world")
 (eligible)

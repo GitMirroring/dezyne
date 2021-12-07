@@ -1,1 +1,2 @@
-test/all/undefined/component/function/function.dzn:17:15: error: undefined identifier `a'
+test/all/undefined/component/function/function.dzn:37:15: error: undefined function call: "a"
+test/all/undefined/component/function/function.dzn:37:15: error: call value discarded
