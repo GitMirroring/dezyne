@@ -1,9 +1,9 @@
-(header ((p) iworld provides) ((h) ihello provides) ((sut) compliance_failures_multiple_provides component) ((w) iworld requires))
-(state ((p)) ((h)) ((sut)) ((w)))
-test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:58:3: error: non-compliance
+(header ((p) iworld provides) ((h) ihello provides) ((sut) compliance_failures_multiple_provides component) ((w1) iworld requires) ((w2) iworld requires))
+(state ((p)) ((h)) ((sut)) ((w1)) ((w2)))
+test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:59:3: error: non-compliance
 <non-compliance>
-(state ((p)) ((h)) ((sut)) ((w)))
-test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:58:3: error: non-compliance
+(state ((p)) ((h)) ((sut)) ((w1)) ((w2)))
+test/all/compliance_failures_multiple_provides/compliance_failures_multiple_provides.dzn:59:3: error: non-compliance
 (trail "<non-compliance>")
-(labels "p.hello" "h.hello" "w.world")
+(labels "p.hello" "h.hello" "w1.world" "w2.world")
 (eligible)
