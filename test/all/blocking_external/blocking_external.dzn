@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,15 +26,14 @@ interface ihello {
   in void cancel();
   out void world();
   behavior {
-    bool triggered = false;
+    bool idle = true;
 
-    [!triggered] on hello: triggered = true;
-    [triggered]  on hello: illegal;
-
-    [triggered] on cancel: triggered = false;
-    [!triggered] on cancel: illegal;
-
-    [triggered] on inevitable: {triggered = false; world;}
+    [idle] on hello: idle = false;
+    [!idle]
+    {
+      on cancel: idle = true;
+      on inevitable: {idle = true; world;}
+    }
   }
 }
 
@@ -44,38 +43,29 @@ interface iworld {
   out void world();
   out void canceled();
   behavior {
-    bool triggered = false;
-    [!triggered] on hello: triggered = true;
-    [triggered] on hello: illegal;
+    bool idle = true;
 
-    on cancel: {triggered = false; canceled;}
-
-    [triggered] on inevitable: {triggered = false; world;}
+    on cancel: {idle = true; canceled;}
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
   }
 }
 
-component blocking_silent_external {
+component blocking_external {
   provides ihello h;
   requires external iworld w;
 
   behavior {
-    bool triggered = false;
-    [!triggered] on h.hello(): {
-      w.hello();
-      triggered = true;
+    bool idle = true;
+    [idle]
+    {  on h.hello():    {idle = false; w.hello();}
+       on w.world():    {}
+       on w.canceled(): h.reply();
     }
-    [triggered] on h.cancel(): blocking {
-      triggered = false;
-      w.cancel();
-    }
-    on w.canceled(): {
-      h.reply();
-    }
-    [triggered] on w.world(): {
-      triggered = false;
-      h.world();
-    }
-    [!triggered] on w.world(): {
+    [!idle]
+    {
+      blocking on h.cancel(): {idle = true; w.cancel();}
+      on w.world():           {idle = true; h.world();}
     }
   }
 }
