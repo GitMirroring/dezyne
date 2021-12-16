@@ -35,7 +35,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.14
+** Release 2.15
   - Pass regression test
     + XFAIL: alpha_local2
     + XFAIL: external_blocking_livelock
@@ -55,12 +55,21 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - dezyne.org
     + blog post about free software?
   - Release on savannah.nongnu.org
-   + Update all READMEs.
-   + In progress: https://savannah.nongnu.org/task/?16067
-   + create bug-dezyne@nongnu.org, dezyne-devel@nongnu.org
-   + register #dezyne
-
-** Release 2.15
+    + In progress: https://savannah.nongnu.org/task/?16067
+    + create bug-dezyne@nongnu.org, dezyne-devel@nongnu.org
+    + register #dezyne
+  - Remove silent
+    + finish and merge wip-remove-silent
+    + goops: .silent?
+    + ast: mark-silence
+    + wfc: modeling-silent
+    + verify: remove --no-interface-determinism flag
+    + simulator
+    + tests: remove no-interface-determinism
+      - remove test/all/*silent*
+      - ? test/all/hello_nondet
+      - ? test/all/compliance_failures_inevitable
+      - ? test/all/failures_nondet_optional
   - collateral blocking
     + Finish and merge wip-blocking
       - async traces / async_blocking_ranking_disorder
@@ -116,9 +125,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + memoize or remove oeverloos redundant interface verification
 
   - Simulate
-     + Remove silent
      + show trace in all diagrams consistently and interactively
-     + give user more insight/control w.r.t. silent and async
 
   - Lazy import in lookup
     + Rewrite ast lookup/lookdown modeled after tree/lookup library.
@@ -174,6 +181,8 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - Release on savannah.nongnu.org
+   + Update all READMEs.
   - Debian package
     + Source build on Bullseye
   - Documentation
