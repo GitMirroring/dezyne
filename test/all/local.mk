@@ -67,7 +67,6 @@ HELLO_TESTS =					\
  %D%/hello_inevitable				\
  %D%/hello_injected				\
  %D%/hello_interface				\
- %D%/hello_interface_silent			\
  %D%/hello_local				\
  %D%/hello_local_bool				\
  %D%/hello_multiple_provides			\
@@ -143,7 +142,6 @@ REGRESSION_TESTS =				\
  %D%/async_shell				\
  %D%/async_types				\
  %D%/illegal_async_req				\
- %D%/illegal_async_silent			\
  %D%/async_simple				\
  %D%/async_synccb				\
  %D%/async_synccb2				\
@@ -222,8 +220,6 @@ REGRESSION_TESTS =				\
  %D%/failures_nondet_inevitable			\
  %D%/failures_nondet_optional			\
  %D%/failures_second_inevitable			\
- %D%/illegal_optional				\
- %D%/illegal_silent_external			\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
  %D%/illegal_pessimism_external			\
@@ -289,7 +285,6 @@ REGRESSION_TESTS =				\
  %D%/helloparams				\
  %D%/hello_provides				\
  %D%/hello_recursive				\
- %D%/hello_silent				\
  %D%/hello_shadow				\
  %D%/hello_systems				\
  %D%/hello_tail_recursive_function		\
@@ -303,7 +298,6 @@ REGRESSION_TESTS =				\
  %D%/illegal_requires				\
  %D%/illegal_requires2				\
  %D%/illegal_requires_out			\
- %D%/illegal_silent				\
  %D%/illegal_system_requires			\
  %D%/importPath					\
  %D%/import_strip_component			\
@@ -341,12 +335,6 @@ REGRESSION_TESTS =				\
  %D%/second_reply				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
- %D%/silent_nondet				\
- %D%/silent_provides				\
- %D%/silent_optional				\
- %D%/silent_optional_broken			\
- %D%/silent_optional_function			\
- %D%/silent_unused_out				\
  %D%/simple.space				\
  %D%/space.space				\
  %D%/state_deadlock				\
@@ -442,7 +430,6 @@ PARSER_TESTS =					\
  %D%/wf_injectionOutEvent			\
  %D%/wf_interfaceMustDefineBehavior		\
  %D%/wf_interfaceMustDefineEvent		\
- %D%/wf_modelingSilent				\
  %D%/wf_NameClash				\
  %D%/wf_notPort					\
  %D%/wf_onEventInOnEvent			\

@@ -217,14 +217,17 @@
          (trigger (action->trigger other-port o))
          (pc (continuation pc o)))
     (cond
-     ((is-a? other-instance <runtime:component>)
-      (list (begin-step pc other-instance trigger)))
-     ((runtime:boundary-port? other-port)
-      (let* ((silent-traces ((@ (dzn vm run) run-silent) pc other-instance))
+     ((and (runtime:boundary-port? other-port)
+           (ast:external? other-port))
+      (let* ((run-external-modeling (@ (dzn vm run) run-external-modeling))
+             (silent-traces (run-external-modeling pc other-instance))
              (silent-pcs (map car silent-traces))
              (pcs (cons pc silent-pcs)))
         (map (cute begin-step <> other-instance trigger) pcs)))
-     (ast:injected? port
+     ((or (is-a? other-instance <runtime:component>)
+          (runtime:boundary-port? other-port))
+      (list (begin-step pc other-instance trigger)))
+     (else
       (list pc)))))
 
 (define (step-async-action-down pc o)

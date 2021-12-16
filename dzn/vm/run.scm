@@ -57,6 +57,7 @@
             run-async-event
             run-external
             run-external-q
+            run-external-modeling
             run-requires
             run-silent
             run-to-completion
@@ -451,21 +452,17 @@ until RTC?."
 
 (define-method (run-silent (pc <program-counter>) (port <runtime:port>))
   (define (update-state pc port-pc)
-    (let ((pc (set-state pc (get-state port-pc port))))
-      (clone pc #:external-q (.external-q port-pc))))
+    (set-state pc (get-state port-pc port)))
   (%debug "run-silent... ~s\n" (name port))
   (let ((modeling-names (modeling-names port)))
     (if (null? modeling-names) '()
         (let* ((previous (.previous pc))
                (ipc (clone pc #:trigger #f #:previous #f #:instance #f #:trail '() #:statement #f))
-               (r:other-port (runtime:other-port port))
-               (external? (ast:external? (.ast r:other-port)))
                (traces (parameterize ((%sut port)
                                       (%exploring? #t)
-                                      (%strict? (not external?)))
+                                      (%strict? #t))
                          (append-map (cut run-to-completion ipc <>) modeling-names)))
-               (traces (filter (conjoin (disjoin (const external?)
-                                                 (compose null? trace->trail))
+               (traces (filter (conjoin (compose null? trace->trail)
                                         (compose (negate .status) car))
                                traces)))
           (map (cute rewrite-trace-head (cute update-state pc <>) <>) traces)))))
@@ -476,6 +473,34 @@ until RTC?."
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
          (traces (run-silent pc port-instance)))
+    (map car traces)))
+
+(define-method (run-external-modeling (pc <program-counter>) (port <runtime:port>))
+  (define (update-state pc port-pc)
+    (let ((pc (set-state pc (get-state port-pc port))))
+      (clone pc #:external-q (.external-q port-pc))))
+  (%debug "run-external-modeling... ~s\n" (name port))
+  (let* ((r:other-port (runtime:other-port port))
+         (external? (ast:external? (.ast r:other-port))))
+    (if (not external?) '()
+        (let ((modeling-names (modeling-names port)))
+          (if (null? modeling-names) '()
+              (let* ((previous (.previous pc))
+                     (ipc (clone pc #:trigger #f #:previous #f #:instance #f
+                                 #:trail '() #:statement #f))
+                     (traces (parameterize ((%sut port)
+                                            (%exploring? #t)
+                                            (%strict? #f))
+                               (append-map (cut run-to-completion ipc <>) modeling-names)))
+                     (traces (filter (compose (negate .status) car) traces)))
+                (map (cute rewrite-trace-head (cute update-state pc <>) <>) traces)))))))
+
+(define-method (run-external-modeling (pc <program-counter>) event)
+  (let* ((component ((compose .type .ast) (%sut)))
+         (trigger (clone (string->trigger event) #:parent component))
+         (port-name (.port.name trigger))
+         (port-instance (runtime:port-name->instance port-name))
+         (traces (run-external-modeling pc port-instance)))
     (map car traces)))
 
 (define-method (run-interface (pc <program-counter>) (event <string>))
@@ -622,13 +647,13 @@ until RTC?."
      ((external-trigger-in-q? pc event)
       (run-external pc event))
      ((external-trigger? event)
-      (let ((pcs (cons pc (run-silent pc event))))
+      (let ((pcs (cons pc (run-external-modeling pc event))))
         (append-map (cute run-external <> event) pcs)))
      ((requires-trigger? event)
       (let ((async-traces (if (null? (.async pc)) '()
                               (flush-async-event pc event))))
         (if (pair? async-traces) async-traces
-            (let ((pcs (cons pc (run-silent pc event))))
+            (let ((pcs (cons pc (run-external-modeling pc event))))
               (append-map (cute run-requires <> event) pcs)))))
      ((provides-trigger? event)
       (run-to-completion pc event))

@@ -3019,9 +3019,6 @@ verification of all its @code{interface} models and behavioral
 @c XXX TODO: reference to compositional quality/property
 @end quotation
 
-@item --no-interface-determinism
-Do not run the observable non-determinism check on interfaces.
-
 @item --out=@var{format}
 @cindex Aldebaran
 @cindex @code{lts}

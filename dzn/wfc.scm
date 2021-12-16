@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2014, 2017, 2020 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2017, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -403,9 +403,7 @@
      (let ((parent (parent (.parent o) <on>)))
        (if parent `(,(wfc-error o "nested on used")
                     ,(wfc-info parent "within on here"))
-           '()))
-     (if (is-a? (parent o <model>) <interface>) (modeling-silent o)
-         '())))
+           '()))))
   (append
    (on o)
    (append-map wfc (ast:trigger* o))
@@ -748,14 +746,6 @@
             (and ast
                  (list (wfc-error ast "imperative statement expected"))))
           '())))
-
-(define-method (modeling-silent (o <on>))
-  (if (and (or (eq? (.silent? o) *unspecified*)
-               (is-a? (.silent? o) <ast>)) ((@@ (dzn parse silence) any-modeling?) o))
-      `(,(wfc-error o (format #f "cannot determine silence"))
-        ,@(if (is-a? (.silent? o) <ast>) `(,(wfc-error (.silent? o) (format #f "may communicate or be silent")))
-              '()))
-      '()))
 
 (define-method (re-definition (o <declaration>))
   (let* ((name (ast:name o))

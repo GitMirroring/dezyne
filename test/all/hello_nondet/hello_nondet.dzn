@@ -26,12 +26,12 @@
 interface hello_nondet
 {
   in void hello();
+  out void cruel();
   out void world();
 
   behavior
   {
-    bool b = false;
-    on hello: {b = !b;if (b) world;}
+    on hello: cruel;
     on hello: world;
   }
 }

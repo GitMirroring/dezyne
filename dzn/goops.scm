@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -108,7 +108,6 @@
            .root
            .scope
            .signature
-           .silent?
            .statement
            .string
            .then
@@ -578,8 +577,7 @@
 
 (define-ast <on> (<declarative>)
   (triggers #:init-form (make <triggers-node>))
-  (statement)
-  (silent?))
+  (statement))
 
 (define-ast <reply> (<imperative>)
   (expression #:init-form (make <literal-node>))

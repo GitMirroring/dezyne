@@ -209,9 +209,8 @@ provides port, mark the trace as <fork-error>, otherwise return false."
     (#f
      '())))
 
-(define* ((rtc-lts->traces pc->state-number #:key prefix-set? continue-on-silent?) lts)
-  "Create a (prefix) set of traces from LTS.  When CONTINUE-ON-SILENT?,
-never extend a trace, but do continue as long as the trail is silent."
+(define ((rtc-lts->traces pc->state-number) lts)
+  "Create a (prefix) set of traces from LTS."
 
   (define (extend todo trace)
     (map (cute append trace <>) todo))
@@ -223,25 +222,20 @@ never extend a trace, but do continue as long as the trail is silent."
     (if (null? tos) '()
         (let* ((traces (append-map (cute rtc-lts-node->traces lts <>) tos))
                (seen (append seen tos))
-               ;;done = seen or observable? when continue-on-silent?
-               ;;todo = not seen and not observable?
                (done todo (partition
-                           (disjoin
-                            (compose (cute member <> seen) pc->state-number car)
-                            (if (not continue-on-silent?) (const #f)
-                                observable?))
+                           (compose (cute member <> seen) pc->state-number car)
                            traces))
                (tos (map (compose pc->state-number car) todo))
                (tos (delete-duplicates tos =)))
           (let* ((continuations (loop seen tos))
-                 (traces (append (if prefix-set? traces done)
+                 (traces (append done
                                  (if (null? continuations) todo
-                                     (if continue-on-silent? continuations
-                                         (append-map (cute extend todo <>) continuations)))))
+                                     (append-map (cute extend todo <>)
+                                                 continuations))))
                  (traces (delete-duplicates traces trace-equal?)))
             traces)))))
 
-(define* (check-provides-compliance pc event port-traces-alist trace)
+(define (check-provides-compliance pc event trace)
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
 Update the state of the provides port in TRACE for EVENT.  For a blocked
 trace, the check is done in an incremental way: only the part that the
@@ -279,23 +273,28 @@ Return a list of traces, possibly marked with <compliance-error>."
                  ((port event) (and (equal? port port-name) event))
                  (_ #f))))
 
-        (define (run-provides-port trace event)
+        (define (run-provides-modeling ipc port-instance)
+          (%debug "run-provides-modeling... ~a\n" event)
+          (let* ((ipc (clone pc #:instance port-instance))
+                 (interface ((compose .type .ast) port-instance))
+                 (modeling-names (modeling-names interface)))
+            (parameterize ((%sut port-instance)
+                           (%exploring? #t)
+                           (%strict? #f))
+              (append-map (cute run-to-completion ipc <>) modeling-names))))
+
+        (define (run-provides-port pc event)
           (%debug "run-provides-port... ~a\n" event)
           (parameterize ((%sut port-instance)
                          (%exploring? #t))
-            (run-to-completion trace event)))
+            (run-to-completion pc event)))
 
         (%debug "check-provides-compliance... ~s: ~a [~a]\n" port-name event port-event)
         (let* ((interface ((compose .type .ast) port-instance))
                (ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
                (ipc (set-reply pc port-instance #f))
-               (modeling-traces (assoc-ref port-traces-alist port-instance))
-               (traces (cons (list ipc) modeling-traces))
-               ;; provides trace
-               (port-traces (if (not port-event) '()
-                                (append-map (cut run-provides-port <> port-event)
-                                            traces)))
-               (port-traces (append port-traces modeling-traces)))
+               (port-traces (if port-event (run-provides-port ipc port-event)
+                                (run-provides-modeling ipc port-instance))))
 
           (let* ((port-prefix (format #f "~a." port-name))
                  (sut-trail (filter (compose (disjoin (cut equal? <> "illegal")
@@ -419,13 +418,13 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (check-requires-provides-fork trace))
               (fold check-compliance (list trace) ports))))))
 
-(define* (check-provides-compliance+ pc event port-traces-alist trace)
+(define* (check-provides-compliance+ pc event trace)
   "Run check-provides-compliance.  For a blocking trace that has been
 released by a requires event, also rerun check-provides-compliance for
 the full trace, i.e., starting from the initial blocking provides
 event.  This ensures proper of zipping the port trace, including the
 port return."
-  (let ((traces (check-provides-compliance pc event port-traces-alist trace))
+  (let ((traces (check-provides-compliance pc event trace))
         (blocking? (find (compose pair? .blocked) trace)))
     (cond
      ((and blocking?
@@ -448,40 +447,21 @@ port return."
                (cpc (reset-replies cpc))
                (cpc (clone cpc #:instance #f)))
           (append-map
-           (cute check-provides-compliance cpc event port-traces-alist <>)
+           (cute check-provides-compliance cpc event <>)
            traces))))
      (else
       traces))))
 
-(define (pc->provides-traces r:provides pc)
-  (let* ((interface (.type (.ast r:provides)))
-         (pc (clone pc #:async '() #:external-q '()))
-         (modeling-names (modeling-names interface))
-         (provides-lts pc->state-number count
-                       (parameterize ((%sut r:provides)
-                                      (%exploring? #t))
-                         (pc->rtc-lts pc #:labels (const modeling-names)))))
-    (parameterize ((%sut r:provides))
-      ((rtc-lts->traces pc->state-number #:prefix-set? #t) provides-lts))))
-
-(define (provides-instance-traces-alist pc)
-  (let* ((component ((compose .type .ast) (%sut)))
-         (ports (ast:provides-port* component))
-         (r:ports (map (compose runtime:port-name->instance .name) ports))
-         (port-traces-list (map (cute pc->provides-traces <> pc) r:ports)))
-    (map cons r:ports port-traces-list)))
-
 ;;TODO split check from determine provides trace(s) from pc and event
 ;;to avoid doing the determination work for every trace in traces
 (define-method (check-provides-compliance* (pc <program-counter>) event traces)
-  (let ((port-traces-alist (provides-instance-traces-alist pc)))
-    (cond
-     ((null? traces)
-      (check-provides-compliance pc event port-traces-alist '()))
-     (else
-      (append-map
-       (cute check-provides-compliance+ pc event port-traces-alist <>)
-       traces)))))
+  (cond
+   ((null? traces)
+    (check-provides-compliance pc event '()))
+   (else
+    (append-map
+     (cute check-provides-compliance+ pc event <>)
+     traces))))
 
 (define-method (event-traces-alist (pc <program-counter>))
 
@@ -643,10 +623,10 @@ TRACES."
        (and (null? valid-pcs)
             (let* ((traces (assoc-ref event-traces-alist event))
                    (traces (if (pair? traces) traces (list (list pc))))
-                   (traces (map (cute rewrite-trace-head mark-deadlock <>) traces)))
+                   (traces (map (cute rewrite-trace-head mark-deadlock <>)
+                                traces)))
               (if (is-a? (%sut) <runtime:port>) traces
-                  (append-map (cute check-provides-compliance pc #f
-                                    (provides-instance-traces-alist pc) <>)
+                  (append-map (cute check-provides-compliance pc #f <>)
                               traces))))))))
 
 (define (check-interface-determinism traces)
@@ -751,10 +731,7 @@ possibly after running RUN-SILENT and return them, or false."
        (let* ((pc (clone pc #:status (make <end-of-trail>)))
               (trace (cons pc (cdr pc+blocked-trace))))
          (if (is-a? (%sut) <runtime:port>) (list trace)
-             (let* ((port-traces-alist (provides-instance-traces-alist pc))
-                    (traces (check-provides-compliance
-                             pc event port-traces-alist trace)))
-               traces)))))))
+             (check-provides-compliance pc event trace)))))))
 
 (define-method (pc->modeling-lts (pc <program-counter>))
   "Create a partial modeling-LTS at PC, i.e., use inevitable and

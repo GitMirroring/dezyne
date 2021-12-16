@@ -97,7 +97,6 @@
 (define-templates members-name members members-name-grammar)
 
 ;; statement process
-(define-templates silent makreel:silent)
 (define-templates proc makreel:proc)
 (define-templates proc-assign makreel:proc-assign)
 (define-templates proc-variable makreel:proc-variable)

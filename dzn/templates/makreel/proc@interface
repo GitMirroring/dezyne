@@ -3,7 +3,6 @@ proc
  = sum i : #x:makreel:model-name events. #x:makreel:model-name in(i) . (sum r : #x:makreel:model-name replies. #x:makreel:model-name reply(r) . #x:makreel:model-name reorder_replied(r)
                                                                        +#x:makreel:model-name reorder_end . missing_reply . delta)
  + sum m : #x:makreel:model-name modeling. #x:makreel:model-name internal (m) . #x:makreel:model-name end .  #x:makreel:model-name reorder
- + sum m : #x:makreel:model-name silent. #x:makreel:model-name silent (m) . #x:makreel:model-name silent_end . #x:makreel:model-name reorder
  + #x:state-sum #x:makreel:model-name state #x:members-name  . #x:makreel:model-name reorder
  ;
 
@@ -19,8 +18,6 @@ proc
  , #x:makreel:model-name reply | #x:makreel:model-name reply -> #x:makreel:model-name reply'
  , #x:makreel:model-name internal | #x:makreel:model-name internal -> #x:makreel:model-name internal'
  , #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
- , #x:makreel:model-name silent | #x:makreel:model-name silent -> #x:makreel:model-name silent'
- , #x:makreel:model-name silent_end | #x:makreel:model-name silent_end -> #x:makreel:model-name silent_end'
  , #x:makreel:model-name reorder_end | #x:makreel:model-name reorder_end -> #x:makreel:model-name reorder_end'
  , #x:makreel:model-name state | #x:makreel:model-name state -> #x:makreel:model-name state'
  }, #x:makreel:model-name reordered_parallel);
@@ -33,8 +30,6 @@ proc
  , #x:makreel:model-name in'
  , #x:makreel:model-name internal'
  , #x:makreel:model-name end'
- , #x:makreel:model-name silent'
- , #x:makreel:model-name silent_end'
  , #x:makreel:model-name out
  , #x:makreel:model-name reply'
  , #x:makreel:model-name reply'reordered
@@ -53,8 +48,6 @@ proc
  , #x:makreel:model-name reply'reordered -> #x:makreel:model-name reply
  , #x:makreel:model-name internal' -> #x:makreel:model-name internal
  , #x:makreel:model-name end' -> #x:makreel:model-name end
- , #x:makreel:model-name silent' -> #x:makreel:model-name silent
- , #x:makreel:model-name silent_end' -> #x:makreel:model-name silent_end
  , #x:makreel:model-name state' -> #x:makreel:model-name state
  , #x:makreel:model-name reorder_end' -> tau_void
  }, #x:makreel:model-name reordered_allow);
@@ -91,8 +84,6 @@ proc
   , #x:makreel:model-name internal'
   , #x:makreel:model-name end'
   , #x:makreel:model-name end'reordered
-  , #x:makreel:model-name silent
-  , #x:makreel:model-name silent_end
   , #x:makreel:model-name out'
   , #x:makreel:model-name flush
   , #x:makreel:model-name state
@@ -114,7 +105,6 @@ proc
   , #x:makreel:model-name end'reordered -> #x:makreel:model-name end
   , #x:makreel:model-name state' -> #x:makreel:model-name state
   , #x:makreel:model-name end' -> tau_void
-  , #x:makreel:model-name silent_end -> tau_void
   }, #x:makreel:model-name allow);
 
 #x:makreel:model-name interface = hide({

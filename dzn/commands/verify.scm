@@ -51,7 +51,6 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
-            (no-interface-determinism)
             (out (value #t))
             (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec))
@@ -73,8 +72,6 @@ Check DZN-FILE for verification errors in Dezyne models
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL
       --out=FORMAT            produce output FORMAT (use \"help\" for a list)
-      --no-interface-determinism
-                              skip interface RTC determinism check
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
 	(exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))

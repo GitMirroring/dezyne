@@ -42,7 +42,6 @@
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn parse)
-  #:use-module (dzn parse silence)
   #:export (parse-tree->ast
             annotate-ast))
 
@@ -169,10 +168,7 @@
              #:events (make <events-node> #:elements events))))
 
         (('interface name (and ('behavior x ...) behavior))
-         (let* ((behavior (set-recursive (helper behavior)))
-                (behavior (and behavior
-                                (.node ((mark-silent)
-                                        (make <behavior> #:node behavior))))))
+         (let ((behavior (set-recursive (helper behavior))))
            (make <interface-node>
              #:name (helper name)
              #:behavior behavior)))
@@ -180,10 +176,7 @@
         (('interface name types-and-events behavior)
          (let* ((types-and-events (helper types-and-events))
                 (types events (partition (is? <type-node>) types-and-events))
-                (behavior (set-recursive (helper behavior)))
-                (behavior (and behavior
-                                (.node ((mark-silent)
-                                        (make <behavior> #:node behavior))))))
+                (behavior (set-recursive (helper behavior))))
            (make <interface-node>
              #:name (helper name)
              #:types (make <types-node> #:elements types)

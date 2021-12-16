@@ -3,7 +3,5 @@
  , #.name reply'
  , #.name internal'
  , #.name end'
- , #.name silent
- , #.name silent_end
  , #.name flush
  , #x:makreel:interface-name tau_reply

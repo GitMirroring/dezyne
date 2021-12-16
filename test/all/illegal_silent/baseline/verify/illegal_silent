@@ -1,8 +1,0 @@
-model: illegal_silent
-h.hello
-w.hello
-w.return
-h.return
-h.hello
-w.cruel
-<illegal>

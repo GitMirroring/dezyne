@@ -191,11 +191,6 @@ output, and standard error as three values."
     (and alist
          (and=> (assq-ref alist 'non-strict?) car))))
 
-(define (no-interface-determinism? file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'no-interface-determinism?) car))))
-
 (define (error-model? file-name)
   (or (directory-exists? (string-append file-name "/baseline/verify"))
       ;; no verify baseline for system error models
@@ -248,13 +243,11 @@ output, and standard error as three values."
          (includes (filter directory-exists? includes))
          (includes (append-map (cut list "-I" <>) includes))
          (model (or (model? file-name) base-name))
-         (no-determinism? (no-interface-determinism? file-name))
          (command
           `("dzn" "--verbose" "verify"
             ,@includes
             "--all"
             ,@(if (model-unset? file-name) '() `("-m" ,model))
-            ,@(if no-determinism? '("--no-interface-determinism") `())
             ,dzn-name)))
     (or (skip? file-name "verify")
         (run-baseline file-name command
@@ -415,14 +408,12 @@ output, and standard error as three values."
          (baseline? (file-exists? (string-append baseline "/" base-name)))
          (trace-format (cond ((trace-format file-name))
                              (baseline? "trace")
-                             (else "event")))
-         (no-determinism? (no-interface-determinism? file-name)))
+                             (else "event"))))
     (receive (status stdout stderr)
         (observe `("dzn" "simulate"
                    ,@includes
                    "--format" ,trace-format
                    ,@(if (non-strict? file-name) '() '("--strict"))
-                   ,@(if no-determinism? '("--no-interface-determinism") `())
                    "-m" ,model
                    ,dzn-name)
                  input)

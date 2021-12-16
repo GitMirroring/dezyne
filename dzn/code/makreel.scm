@@ -556,15 +556,8 @@
   (makreel:event-prefix (parent o <on>)))
 
 (define-method (makreel:trigger-name (o <on>))
-  (let* ((trigger ((compose car ast:trigger*) o))
-         (event (.event trigger)))
-    (if (and (is-a? event <modeling-event>) (.silent? o))
-        (clone (make <silent-trigger>
-                 #:port.name (.port.name trigger)
-                 #:event.name (.event.name trigger)
-                 #:formals (.formals trigger))
-               #:parent (.parent trigger))
-       event)))
+  (let ((trigger ((compose car ast:trigger*) o)))
+    (.event trigger)))
 
 (define-method (makreel:interface-proc (o <interface>))
   o)
@@ -580,10 +573,6 @@
 
 (define-method (is-optional? (o <trigger>))
   (equal? "optional" (.event.name o)))
-
-(define-method (makreel:silent (o <the-end>))
-  (if (.silent? (parent o <on>)) o
-      '()))
 
 (define-method (makreel:proc (o <model>))
   (makreel:proc-list o))
