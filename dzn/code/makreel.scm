@@ -961,4 +961,5 @@
 
 (define* (ast-> ast #:key dir model)
   (let ((root (makreel:om ast)))
-    (root-> root)))
+    (if model (makreel:model->makreel root (makreel:get-model root model))
+        (root-> root))))
