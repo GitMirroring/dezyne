@@ -137,7 +137,8 @@ actions."
   (define (trigger->event trigger)
     (let ((port (.port trigger)))
       (string-append (makreel:.name (.port trigger))
-                     (if (ast:async? trigger) ".qout." ".")
+                     (if (or (ast:async? trigger) (ast:out? trigger)) ".qout."
+                         ".")
                      (.event.name trigger))))
   (let* ((triggers (ast:in-triggers component))
          (alphabet (map trigger->event triggers)))
