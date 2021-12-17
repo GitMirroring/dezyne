@@ -1,0 +1,3 @@
+model: determinism_out
+w.world
+<non-deterministic>

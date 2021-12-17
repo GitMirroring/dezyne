@@ -41,6 +41,7 @@ HELLO_TESTS =					\
  %D%/deadlock_interface0			\
  %D%/determinism0				\
  %D%/determinism1				\
+ %D%/determinism_out			\
  %D%/determinism_interface			\
  %D%/hello_alpha				\
  %D%/hello_async				\
