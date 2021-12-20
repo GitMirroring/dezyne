@@ -96,7 +96,7 @@ Introduction
 
 Installation
 
-* Binary Installation::         Getting Dezyne running in no time!
+@c * Binary Installation::         Getting Dezyne running in no time!
 * Requirements::                Software needed to build and run Dezyne.
 
 Getting Started
@@ -460,148 +460,153 @@ Dezyne comes with NO WARRANTY, to the extent permitted by law.
 
 @cindex installing Dezyne
 
-There are two ways to get started with Dezyne: use a binary installation
-that we prepared especially for you, or you can build Dezyne from source
-yourself.  When you plan on contributing to Dezyne (@pxref{Contributing}),
-you may want to skip the sections on binary installation.
+To build the Dezyne command line tools from the source tarball, you need
+to install some dependencies, see the section below.  When you plan on
+contributing to Dezyne you will probably want to build from Git which
+has additional requirerments (@pxref{Contributing}).
+
+@c There are two ways to get started with Dezyne: use a binary installation
+@c that we prepared especially for you, or you can build Dezyne from source
+@c yourself.  When you plan on contributing to Dezyne (@pxref{Contributing}),
+@c you may want to skip the sections on binary installation.
 
 @menu
-* Binary Installation::         Getting Dezyne running in no time!
+@c * Binary Installation::         Getting Dezyne running in no time!
 * Requirements::                Software needed to build and run Dezyne.
 @end menu
 
-@node Binary Installation
-@section Binary Installation
+@c @node Binary Installation
+@c @section Binary Installation
 
-@cindex installing Dezyne, binary
-This section describes how to install Dezyne on an arbitrary system from a
-self-contained tarball providing binaries for Dezyne and for all its
-dependencies.  This is often quicker than installing from source, which
-is described in the next sections.  The only requirement is to have
-GNU@tie{}tar and gzip.
+@c @cindex installing Dezyne, binary
+@c This section describes how to install Dezyne on an arbitrary system from a
+@c self-contained tarball providing binaries for Dezyne and for all its
+@c dependencies.  This is often quicker than installing from source, which
+@c is described in the next sections.  The only requirement is to have
+@c GNU@tie{}tar and gzip.
 
-@subsection Generic GNU/Linux Binary
+@c @subsection Generic GNU/Linux Binary
 
-Installing goes along these lines:
+@c Installing goes along these lines:
 
-@enumerate
-@item
-@cindex binary installation
-@cindex downloading Dezyne binary
-@cindex GNU/Linux
-Download the binary tarball from@*
-@url{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz},
-e.g.:
+@c @enumerate
+@c @item
+@c @cindex binary installation
+@c @cindex downloading Dezyne binary
+@c @cindex GNU/Linux
+@c Download the binary tarball from@*
+@c @url{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-linux.tar.gz},
+@c e.g.:
 
-@example
-$ wget @value{BASE-URL}/\
-dezyne-@value{VERSION}-x86_64-linux.tar.gz
-@end example
+@c @example
+@c $ wget @value{BASE-URL}/\
+@c dezyne-@value{VERSION}-x86_64-linux.tar.gz
+@c @end example
 
-Make sure to download the associated @file{.sig} file and to verify the
-authenticity of the tarball against it; do something like:
+@c Make sure to download the associated @file{.sig} file and to verify the
+@c authenticity of the tarball against it; do something like:
 
-@example
-$ wget @url{@value{BASE-URL}/\
-dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig}
-$ gpg --verify dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig
-@end example
+@c @example
+@c $ wget @url{@value{BASE-URL}/\
+@c dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig}
+@c $ gpg --verify dezyne-@value{VERSION}-x86_64-linux.tar.gz.sig
+@c @end example
 
-If that command fails because you do not have the required public key,
-then run this command to import it:
+@c If that command fails because you do not have the required public key,
+@c then run this command to import it:
 
-@example
-$ wget @value{OPENPGP-SIGNING-KEY-URL} \
-      -qO - | gpg --import -
-@end example
+@c @example
+@c $ wget @value{OPENPGP-SIGNING-KEY-URL} \
+@c       -qO - | gpg --import -
+@c @end example
 
-@noindent
-and rerun the @code{gpg --verify} command.
+@c @noindent
+@c and rerun the @code{gpg --verify} command.
 
-Take note that a warning like ``This key is not certified with a trusted
-signature!'' is normal.
+@c Take note that a warning like ``This key is not certified with a trusted
+@c signature!'' is normal.
 
-Now, you can unpack the tarball; do something like:
+@c Now, you can unpack the tarball; do something like:
 
-@example
-$ tar --warning=no-timestamp -xf /path/to/\
-dezyne-@value{VERSION}-x86-64.tar.gz
-@end example
+@c @example
+@c $ tar --warning=no-timestamp -xf /path/to/\
+@c dezyne-@value{VERSION}-x86-64.tar.gz
+@c @end example
 
-Then try:
-@example
-$ cd dezyne-@value{VERSION}
-$ ./dzn --help
-@end example
+@c Then try:
+@c @example
+@c $ cd dezyne-@value{VERSION}
+@c $ ./dzn --help
+@c @end example
 
-@item
-Make the @command{dzn} command available from other locations or to
-other users on the machine, for instance with:
+@c @item
+@c Make the @command{dzn} command available from other locations or to
+@c other users on the machine, for instance with:
 
-@example
-$ ln -s $PWD/dzn ~/bin/dzn
-or
-# ln -s $PWD/dzn /usr/local/bin/dzn
-@end example
+@c @example
+@c $ ln -s $PWD/dzn ~/bin/dzn
+@c or
+@c # ln -s $PWD/dzn /usr/local/bin/dzn
+@c @end example
 
-@item
-And optionally, make the @command{dzn-env}
-prefix-command@footnote{@command{dzn-env} can be used as a prefix for
-using programs from your operating system, such as @command{info},
-@command{man}, or @command{emacs}; so that they may find and use the
-documentation and extensions that are provided in the binary release.}
-available:
+@c @item
+@c And optionally, make the @command{dzn-env}
+@c prefix-command@footnote{@command{dzn-env} can be used as a prefix for
+@c using programs from your operating system, such as @command{info},
+@c @command{man}, or @command{emacs}; so that they may find and use the
+@c documentation and extensions that are provided in the binary release.}
+@c available:
 
-@example
-$ ln -s $PWD/dzn-env ~/bin/dzn-env
-or
-# ln -s $PWD/dzn-env /usr/local/bin/dzn-env
-@end example
+@c @example
+@c $ ln -s $PWD/dzn-env ~/bin/dzn-env
+@c or
+@c # ln -s $PWD/dzn-env /usr/local/bin/dzn-env
+@c @end example
 
-@c TODO: an installer script, either taking care of system-wide
-@c installation (/usr/local, -- /opt?) or for an ordinary user: ~/bin/
-@c or ~/.local/bin and environment settings?
+@c @c TODO: an installer script, either taking care of system-wide
+@c @c installation (/usr/local, -- /opt?) or for an ordinary user: ~/bin/
+@c @c or ~/.local/bin and environment settings?
 
-@item
-Test your installation
+@c @item
+@c Test your installation
 
-@example
-$ dzn hello
-$ dzn-env info dezyne
-@end example
+@c @example
+@c $ dzn hello
+@c $ dzn-env info dezyne
+@c @end example
 
-@end enumerate
+@c @end enumerate
 
-@noindent
-and get busy Dezyne'ing, @pxref{Getting Started}!  You can skip the
-following sections about building from source.
+@c @noindent
+@c and get busy Dezyne'ing, @pxref{Getting Started}!  You can skip the
+@c following sections about building from source.
 
-@subsection Generic Microsoft Windows Binary
+@c @subsection Generic Microsoft Windows Binary
 
-Installing goes along these lines:
+@c Installing goes along these lines:
 
-@enumerate
-@item
-@cindex downloading Dezyne binary, Windows
-@cindex binary installation, Windows
-@cindex Windows
-Download the binary zip archive from@*
-@url{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-windows.zip},
-@end enumerate
+@c @enumerate
+@c @item
+@c @cindex downloading Dezyne binary, Windows
+@c @cindex binary installation, Windows
+@c @cindex Windows
+@c Download the binary zip archive from@*
+@c @url{@value{BASE-URL}/dezyne-@value{VERSION}-x86_64-windows.zip},
+@c @end enumerate
 
-after which you can extract the archive by using 7zip
-@url{https://www.7-zip.org/}.  Please do not use the built-in Windows
-archive extraction tool: It does not honor the time stamps of the files
-in the archive and thus produces a faulty installation.
+@c after which you can extract the archive by using 7zip
+@c @url{https://www.7-zip.org/}.  Please do not use the built-in Windows
+@c archive extraction tool: It does not honor the time stamps of the files
+@c in the archive and thus produces a faulty installation.
 
-If your system comes with a virus scanner, consider creating an
-exception for dezyne-@value{VERSION}.
+@c If your system comes with a virus scanner, consider creating an
+@c exception for dezyne-@value{VERSION}.
 
-@dots{}
+@c @dots{}
 
-@noindent
-and get busy Dezyne'ing, @pxref{Getting Started}!  You can skip the
-following sections about building from source.
+@c @noindent
+@c and get busy Dezyne'ing, @pxref{Getting Started}!  You can skip the
+@c following sections about building from source.
 
 @node Requirements
 @section Requirements
