@@ -158,6 +158,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_local				\
  %D%/blocking-local-state-diagram		\
  %D%/blocking_multiple_provides			\
+ %D%/blocking_multiple_provides2		\
  %D%/blocking_normalize				\
  %D%/blocking_provides_state			\
  %D%/blocking_requires				\
