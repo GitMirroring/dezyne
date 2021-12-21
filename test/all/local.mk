@@ -296,6 +296,7 @@ REGRESSION_TESTS =				\
  %D%/hello_tail_recursive_function		\
  %D%/hello_tick					\
  %D%/hello_true_guard				\
+ %D%/hello_unused_assign			\
  %D%/helloworld					\
  %D%/illegal_external_nonsynchronous		\
  %D%/illegal_garbage				\
