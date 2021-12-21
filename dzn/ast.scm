@@ -321,6 +321,9 @@
 (define-method (ast:injected-port* (o <component-model>))
   (filter ast:injected? (ast:port* o)))
 
+(define-method (ast:injected-port* (o <trigger>))
+  (ast:injected-port* (parent o <component-model>)))
+
 (define-method (ast:provides-port* (o <port>))
   (ast:provides-port* (parent o <component-model>)))
 

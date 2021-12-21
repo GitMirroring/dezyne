@@ -11,6 +11,7 @@
  #x:async-member-initializer
 {
   dzn_meta.require = {#x:ports-meta-list };
+  #x:injected-require-initializer
   dzn_rt.performs_flush(this) = true;
   #x:pump
   #x:event-slot
