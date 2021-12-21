@@ -156,6 +156,20 @@
 			    (mcrl2:process-continuation parent))))
       (_ (mcrl2:process-continuation parent)))))
 
+(define (last-statement? o)
+  (let* ((p (parent o <scope>))
+         (statements (ast:statement* p)))
+    (ast:eq? (last statements) o)))
+
+(define-method (makreel:assign-call-parameter (o <variable>))
+  (if (last-statement? o) '()
+      o))
+
+(define-method (makreel:assign-call-parameter (o <assign>))
+  (if (and (last-statement? o)
+           (ast:eq? (parent (.variable o) <scope>) (parent o <scope>))) '()
+           o))
+
 ;; FIXME: non-compatible copy from mcrl2 scope vs model ticking:
 ;;  <scope-name (IConsole) State'> vs <interface IConsole'>
 ;; implications for trace format mcrl2, templates

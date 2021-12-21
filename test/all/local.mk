@@ -487,7 +487,6 @@ XFAIL_TESTS =					\
  %D%/async_ranking_disorder			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
- %D%/compound_local_assign_call			\
  %D%/external_blocking_livelock                 \
  %D%/foreign_conflict				\
  %D%/import_strip_component

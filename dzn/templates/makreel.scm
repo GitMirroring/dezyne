@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -125,6 +125,7 @@
 ;; statement helpers
 (define-templates assign)
 (define-templates assign-call .parent)
+(define-templates assign-call-parameter makreel:assign-call-parameter)
 (define-templates return-value makreel:return-value)
 (define-templates reply-expression .expression)
 (define-templates reply-constructor makreel:type-constructor)
