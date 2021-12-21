@@ -403,6 +403,10 @@
 ;;;
 ;;; Plumbing
 ;;;
+;; end point: ep => one half of a binding, when a <=> b, either a or b.
+;; other end point: oep
+
+;; previous end point: pep
 
 ;;OEP (ep, pep)
 ;;  if (ep on system)
@@ -461,7 +465,9 @@
                           (if (not (is-a? model <system>)) (loop (.container container))
                               (let* ((other (ast:other-end-point-injected model (.ast o)))
                                      (runtime-component (and other (runtime:find-instance (.instance.name other) #:container container))))
-                                (if other (runtime:find-instance (.port.name other) #:container runtime-component)
+                                (if other (runtime:find-instance (.port.name other)
+                                                                 #:container runtime-component
+                                                                 #:boundary? (is-a? runtime-component <runtime:foreign>))
                                     (loop (.container container))))))))))
             (or other-port
                 (runtime:find-instance (.name (.ast o))
@@ -490,7 +496,8 @@
                (let* ((inner (inner-runtime-port o))
                       (outer (outer-runtime-port o))
                       (next (if (eq? inner previous) outer inner)))
-                 (cond ((runtime:boundary-port? next) next)
+                 (cond ((not next) #f)
+                       ((runtime:boundary-port? next) next)
                        ((runtime:system-or-foreign-instance? (.container next)) (loop next o))
                        (else next))))
               ((runtime:component-instance? container)

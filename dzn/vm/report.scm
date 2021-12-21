@@ -633,11 +633,11 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
                                (runtime:port pc-instance port)))
                    (r:other-port (runtime:other-port r:port))
-                   (interface (and port (.type port)))
+                   (interface (if port (.type port) (parent statement <interface>)))
                    (component (.type (.ast next-instance)))
-                   (port-name (if (eq? r:port r:other-port) (injected-port-name component interface)
+                   (port-name (if (or (not r:other-port) (eq? r:port r:other-port)) (injected-port-name component interface)
                                   (.name (.ast r:other-port))))
-                   (action (any (cute action-matches? (.container r:other-port) <>) trace))
+                   (action (and r:other-port (any (cute action-matches? (.container r:other-port) <>) trace)))
                    (return (clone statement
                                   #:port.name port-name
                                   #:location (.location (or action statement))))
