@@ -1,0 +1,318 @@
+%%%%%%%%%%%%%%%%%%% REQUIRES %%%%%%%%%%%%%%%%%%%%
+
+sort
+requires_events
+ = struct no_event
+#x:requires-sort-construct
+ ;
+
+%%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
+
+act
+
+defer_end;
+defer_end';
+defer_qin: DeferContext;
+defer_qin': DeferContext;
+defer_qout: Locals;
+defer_qout': Locals;
+defer_skip: State;
+defer_skip': State;
+
+map
+
+QueueLength : Nat;
+
+list2set : List(provides_ports) -> Set(provides_ports);
+
+remove_port : provides_ports # List (provides_ports) -> List(provides_ports);
+
+var p, car: provides_ports;
+    l, cdr: List(provides_ports);
+    e, h: requires_events;
+    t: List(requires_events);
+
+eqn
+
+QueueLength = #x:makreel:queue-length;
+
+l == [] -> list2set(l) = {};
+l != [] -> list2set(l) = {head(l)} + list2set(tail(l));
+
+remove_port(p, []) = [];
+p == car -> remove_port(p, car |> cdr) = cdr;
+p != car -> remove_port(p, car |> cdr) = car |> remove_port(p,cdr);
+
+map
+
+prune_deferred : State # List (DeferContext) -> List(DeferContext);
+state_current : State # DeferContext -> Bool;
+
+var current : State;
+    context : DeferContext;
+    defer_state: State;
+    defer_head: DeferContext;
+    defer_tail: List(DeferContext);
+
+eqn
+
+state_current(current, context) = (#x:defer-predicate-true #x:defer-predicate);
+
+prune_deferred(defer_state, []) = [];
+(!state_current(defer_state, defer_head))
+  -> prune_deferred(defer_state, defer_head |> defer_tail) = prune_deferred(defer_state, defer_tail);
+(state_current(defer_state, defer_head))
+  -> prune_deferred(defer_state, defer_head |> defer_tail) = defer_head |> prune_deferred(defer_state, defer_tail);
+
+proc
+
+defer_queue (l: List (DeferContext))
+ = (##l == QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . queue_full . delta)
+ + (##l < QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . defer_queue(l = l <| dc))
+ + (l != []) -> defer_qout(locals(head(l))) . defer_queue(l = tail(l))
+ + sum s : State . defer_skip(s) . defer_queue (prune_deferred (s,l))
+ ;
+
+#x:proc
+
+%% defer continuation identifiers are determined by x:proc above,
+%% therefore this defer related sort must be here
+
+sort
+
+State = struct state_vector #x:state-vector;
+Selection = struct selection_empty #x:defer-select-member;
+Locals = struct empty #x:defer-locals-sort;
+DeferContext = struct defer_context(state: State, select: Set(Selection), locals: Locals);
+
+proc
+
+component_defer_comm = comm ({
+   defer_qin | defer_qin -> defer_qin'
+ , defer_qout | defer_qout -> defer_qout'
+ , defer_skip | defer_skip -> defer_skip'
+}, #x:type-check  #x:makreel:model-name behavior #x:member-init || defer_queue([]));
+
+component_defer_allow = allow({
+   constrained_legal
+ , constrained_illegal
+ , declarative_illegal
+ , defer_end
+ , defer_qin'
+ , defer_qout'
+ , defer_skip'
+ , illegal
+ , queue_full
+ , range_error
+ , recurse
+ , return
+ , tag
+   #x:component-defer-allow-provides
+   #x:component-defer-allow-requires
+ , #x:makreel:model-name end }, component_defer_comm);
+
+component_defer_rename = rename({
+  defer_qout' -> defer_qout
+, defer_skip' -> defer_skip
+  #x:component-defer-rename-requires
+}, component_defer_allow);
+
+component_defer = hide({
+defer_qin'
+}, component_defer_rename);
+
+component_behavior = component_defer;
+
+%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
+
+#x:function
+
+#x:function-return-proc
+
+#x:return-type-sort
+
+#x:call-continuation-sort
+
+%%%%%%%%%%%%%%%%%%%% Q %%%%%%%%%%%%%%%%%%%%%%
+
+proc
+#x:queue-proc
+#x:no-queue-proc
+
+%%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+semantics_main
+ = semantics_provides
+#x:semantics-requires
+ ;
+
+semantics_provides
+ = #x:semantics-provides
+ ;
+
+semantics_provides_unblocked(reply: reply_values)
+ = #x:semantics-provides-unblocked
+ + #x:makreel:model-name end
+ . (queue_empty
+   . ((#x:semantics-provides-unblocked-missing-replies) -> missing_reply . delta #x:semantics-provides-unblocked-replies)
+ #x:semantics-provides-flush)
+ #x:semantics-provides-unblocked-switch-context
+ ;
+
+semantics_provides_unblocked_switch_context(reply: reply_values, switch: requires_ports)
+ = delta #x:semantics-provides-unblocked-modeling
+ ;
+
+semantics_provides_blocking(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
+= (blocking - list2set(released) != {}) -> #x:makreel:model-name end . (semantics_blocked_rtc() + semantics_provides_skip_blocked())
++ (blocking - list2set(released) == {}) -> #x:makreel:model-name end . (queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . #x:semantics-provides-blocking-defer) + queue_not_empty . semantics_provides_skip_blocked())
+ #x:semantics-provides-blocking-provides
+ #x:semantics-provides-blocking-requires
+ ;
+
+semantics_provides_skip_blocked(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
+= #x:semantics-provides-skip-blocked-replies
+ + !(#x:semantics-port-in-released-or) -> #x:makreel:model-name end
+ . (semantics_blocked_rtc ()
+  #x:semantics-provides-skip-blocked-requires)
+ #x:semantics-provides-skip-blocked-requires
+ + sum l : Locals . defer_qout(l) . semantics_provides_skip_blocked ()
+ + defer_end . semantics_provides_skip_blocked ()
+ ;
+
+semantics_provides_blocked(rtc: provides_ports, blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
+= (blocking == {} && released == [])
+ -> (#x:semantics-provides-blocked-defer)
+ + #x:makreel:model-name end
+ . ((released == []) -> queue_empty . semantics_blocked_rtc() <> queue_empty . semantics_reply()
+  #x:semantics-provides-blocked-requires)
+ #x:semantics-provides-blocked-provides
+ #x:semantics-provides-blocked-replies
+ #x:semantics-provides-blocked-ports
+ #x:semantics-provides-blocked-requires
+ ;
+
+semantics_reply(rtc: provides_ports, blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
+= (blocking == {} && released == []) -> semantics_provides_blocked ()
++ (blocking - list2set(released) != {} && rtc == no_port) -> semantics_blocked_rtc ()
++ #x:semantics-reply
+;
+
+semantics_blocked_rtc(blocking: Set(provides_ports),released: List(provides_ports), reply: reply_values)
+= (blocking == {}) -> #x:semantics-blocked-rtc-defer
++ (blocking != {}) ->
+ (#x:semantics-blocked-rtc-provides
+  #x:semantics-blocked-rtc-requires)
+ ;
+
+semantics_async(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports)
+ = #x:makreel:model-name end . (queue_empty . ((no_port_is(port) -> #x:semantics-async-defer #x:semantics-async-requires-flush))
+                               +queue_not_empty . semantics_async ())
+
+#x:semantics-async
+#x:semantics-async-requires
++ defer_end . semantics_async ()
+;
+
+semantics_async_switch_context (blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports, switch: requires_ports)
+ = delta #x:semantics-async-modeling
+ ;
+
+component_semantics_parallel = component_behavior || semantics_main;
+
+component_semantics_comm = comm({
+   defer_end | defer_end -> defer_end'
+ , defer_qout | defer_qout -> defer_qout'
+ , defer_skip | defer_skip -> defer_skip'
+ , #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
+   #x:semantics-comm-provides
+   #x:semantics-comm-requires
+ }, component_semantics_parallel);
+
+component_semantics_allow = allow({
+   #x:makreel:model-name end'
+ , #x:allow-tau
+   #x:semantics-allow-provides
+   #x:semantics-allow-requires
+ , constrained_legal
+ , constrained_illegal
+ , declarative_illegal
+ , defer_end'
+ , defer_qout'
+ , defer_skip
+ , illegal
+ , missing_reply
+ , queue_empty
+ , queue_full
+ , queue_not_empty
+ , range_error
+ , recurse
+ , return
+ , second_reply
+ , tag
+ , tau_void
+ }, component_semantics_comm);
+
+component_semantics = rename({
+   defer_qout' -> defer_qout
+ , defer_end' -> defer_end
+ , #x:makreel:model-name end' -> #x:makreel:model-name end
+   #x:semantics-rename-provides
+   #x:semantics-rename-requires
+ }, component_semantics_allow);
+
+#x:component-no-constraint
+#x:component-constraint
+
+%%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
+
+component_parallel = component_constrained || req_and_queue;
+
+component_comm = comm({
+   queue_empty | queue_empty -> queue_empty'
+ , queue_not_empty | queue_not_empty -> queue_not_empty'
+   #x:component-comm-requires
+ }, component_parallel);
+
+component_allow = allow({
+   #x:makreel:model-name end
+ , #x:allow-tau
+   #x:component-allow-provides
+   #x:component-allow-requires
+ , constrained_legal
+ , declarative_illegal
+ , defer_end
+ , defer_qout
+ , defer_skip
+ , illegal
+ , missing_reply
+ , queue_empty'
+ , queue_not_empty'
+ , queue_full
+ , range_error
+ , recurse
+ , return
+ , second_reply
+ , tag
+ , tau_void
+ }, component_comm);
+
+component_rename = rename({
+   queue_empty' -> queue_empty
+ , queue_not_empty' -> queue_not_empty
+   #x:component-rename-requires
+ }, component_allow);
+
+component = hide({
+   #x:makreel:model-name end
+ , #x:allow-tau
+   #x:component-hide-requires
+ , constrained_legal
+ , defer_end
+ , defer_skip
+ , queue_empty
+ , queue_not_empty
+ , recurse
+ , return
+ , tau_void
+ }, component_rename);

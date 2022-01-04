@@ -247,6 +247,7 @@
 (define-templates semantics-provides-action ast:provides-port* newline-union-prefix)
 
 ;; component
+(define-templates component (lambda (o) (if (is-a? o <component>) o '())))
 (define-templates component-comm-requires ast:requires-port* newline-comma-prefix)
 (define-templates component-allow-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-allow-requires ast:requires-port* newline-comma-prefix)
