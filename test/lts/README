@@ -1,12 +1,17 @@
                                                               -*- org -*-
 #+TITLE: Dezyne test baseline
 
-Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
-All .aut files are test data baseline LTSs in the Aldebaran format and
-are distributed under the GNU Affero General Public License version 3 or
-later.
+All .aut files are test data baseline LTSs in the Aldebaran format.
+
+To the extent possible under law, the author(s) have waived all
+copyright and related or neighboring rights to these files:
+they are distributed under the CC0-1.0.
+
+You should have received a copy of the CC0 legalcode along with this
+work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
