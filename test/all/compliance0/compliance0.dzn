@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,25 +21,24 @@
 //
 // Code:
 
-interface I {
-  in void e();
-  in void f();
+interface ihello
+{
+  in void hello ();
+  in void cruel ();
 
-  behavior {
-    [true] {
-       on e: {}
-       on f: {}
-    }
+  behavior
+  {
+    on hello: {}
+    on cruel: {}
   }
 }
 
-// This component has an compliance problem
-component compliance0 {
-  provides I i;
-  behavior {
-    [true] {
-      on i.e(): {}
-      on i.f(): illegal;
-    }
+component compliance0
+{
+  provides ihello p;
+  behavior
+  {
+    on p.hello (): {}
+    on p.cruel (): illegal;
   }
 }

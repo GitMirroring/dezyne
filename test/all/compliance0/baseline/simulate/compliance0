@@ -1,9 +1,9 @@
-(header ((i) I provides) ((sut) compliance0 component))
-test/all/compliance0/compliance0.dzn:42:17: error: illegal
-<external>.i.f -> ...
-... -> sut.i.f
+(header ((p) ihello provides) ((sut) compliance0 component))
+test/all/compliance0/compliance0.dzn:42:20: error: illegal
+<external>.p.cruel -> ...
+... -> sut.p.cruel
 <illegal>
-test/all/compliance0/compliance0.dzn:42:17: error: illegal
-(trail "i.f" "<illegal>")
-(labels "i.e" "i.f")
+test/all/compliance0/compliance0.dzn:42:20: error: illegal
+(trail "p.cruel" "<illegal>")
+(labels "p.hello" "p.cruel")
 (eligible)
