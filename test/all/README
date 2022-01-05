@@ -1,7 +1,7 @@
                                                               -*- org -*-
 #+TITLE: Dezyne test baseline
 
-Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -19,3 +19,33 @@ they are distributed under the CC0-1.0.
 
 You should have received a copy of the CC0 legalcode along with this
 work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+META is an optional configuration file to override the default test
+parameters or specify test stages to be skipped.
+
+The baseline is the expected standard output and standard error for
+running "dzn verify" and "dzn simulate" on the Dezyne file.
+
+The baseline for "compliance0" can be created like this:
+
+    ./pre-inst-env dzn -v verify -a test/all/compliance0/compliance0.dzn \
+       > test/all/compliance0/baseline/verify/compliance0 \
+       2> test/all/compliance0/baseline/verify/compliance0.stderr
+
+    ./pre-inst-env dzn simulate test/all/compliance0/compliance0.dzn \
+       < test/all/compliance0/trace \
+       > test/all/compliance0/baseline/simulate/compliance0
+       2> test/all/compliance0/baseline/simulate/compliance0.stderr
+
+The trace can be created like this:
+
+    ./pre-inst-env dzn verify test/all/compliance0/compliance0.dzn \
+       > test/all/compliance0/trace
+
+or by using the "test/bin/update.sh" script:
+
+    test/bin/update.sh verify test/all/compliance0
+    test/bin/update.sh simulate test/all/compliance0
+
+for details, see test/dzn/dzn.scm.  See also `HACKING' for tips on
+running the test suite.
