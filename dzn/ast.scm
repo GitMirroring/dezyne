@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -1213,33 +1213,64 @@
 (define-method (.function (o <call>))
   (and (.function.name o) (ast:lookup o (.function.name o))))
 
-(define-method (ast:lookup-var (o <ast>) name)
+(define-method (ast:lookup-variable (o <ast>) name statements)
   (define (name? o) (and (equal? (.name o) name) o))
   (match o
-    (($ <behavior>) (find name? (ast:variable* o)))
-    ((? (is? <compound>)) (or (find name? (filter (is? <variable>) (ast:statement* o))) (ast:lookup-var (.parent o) name)))
-    (($ <function>) (or (find name? ((compose ast:formal* .signature) o)) (ast:lookup-var (.parent o) name)))
-    (($ <formal>) (and (equal? (.name o) name) o))
-    (($ <formal-binding>) (and (equal? (.name o) name) o))
-    (($ <on>) (or (find (cut ast:lookup-var <> name) (append-map ast:formal* (ast:trigger* o))) (ast:lookup-var (.parent o) name)))
-    (($ <variable>) (name? o))
-    ((? (lambda (o) (is-a? (.parent o) <variable>))) (ast:lookup-var ((compose .parent .parent) o) name))
-    (_ (ast:lookup-var (.parent o) name))))
+    (($ <behavior>)
+     (find name? (ast:variable* o)))
+    ((? (is? <compound>))
+     (or
+      (find name? (filter (is? <variable>) statements))
+      (and (is-a? (.parent o) <compound>)
+           (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
+      (ast:lookup-variable (.parent o) name statements)))
+    ((? (is? <if>))
+     (or
+      (and (is-a? (.parent o) <compound>)
+              (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
+      (ast:lookup-variable (.parent o) name statements)))
+    (($ <function>)
+     (or (find name? ((compose ast:formal* .signature) o))
+         (ast:lookup-variable (.parent o) name statements)))
+    (($ <formal>)
+     (name? o))
+    (($ <formal-binding>)
+     (name? o))
+    (($ <on>)
+     (or (find (cute ast:lookup-variable <> name statements)
+               (append-map ast:formal* (ast:trigger* o)))
+         (ast:lookup-variable (.parent o) name statements)))
+    (($ <variable>)
+     (name? o))
+    ((? (lambda (o) (is-a? (.parent o) <variable>)))
+     (ast:lookup-variable ((compose .parent .parent) o) name statements))
+    (_
+     (ast:lookup-variable (.parent o) name statements))))
 
-(define-method (ast:lookup-var (o <boolean>) name)
+(define-method (ast:lookup-variable (o <ast>) name)
+  (ast:lookup-variable o name (ast:statement-prefix o)))
+
+(define-method (ast:statement-prefix (o <ast>))
+  (let ((compound (parent (if (is-a? o <compound>) (.parent o) o) <compound>)))
+    (if (not compound) '()
+        (let* ((statements (ast:statement* compound))
+               (path (ast:path o)))
+          (take-while (negate (cute member <> path ast:eq?)) statements)))))
+
+(define-method (ast:lookup-variable (o <boolean>) name)
   #f)
 
 (define-method (.variable (o <assign>))
-  (and=> (.variable.name o) (cut ast:lookup-var o <>)))
+  (and=> (.variable.name o) (cut ast:lookup-variable o <>)))
 
 (define-method (.variable (o <field-test>))
-  (and=> (.variable.name o) (cut ast:lookup-var o <>)))
+  (and=> (.variable.name o) (cut ast:lookup-variable o <>)))
 
 (define-method (.variable (o <formal-binding>))
-  (and=> (.variable.name o) (cut ast:lookup-var (.parent o) <>)))
+  (and=> (.variable.name o) (cut ast:lookup-variable (.parent o) <>)))
 
 (define-method (.variable (o <var>))
-  (and=> (.name o) (cut ast:lookup-var o <>)))
+  (and=> (.name o) (cut ast:lookup-variable o <>)))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))

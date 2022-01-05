@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -299,9 +299,16 @@ specific parameter names have to be unified.
 We follow the following renaming strategy:
 
 @itemize
-@item formals are rewnitten to their name as declared in the interface
-@item as long that name clashes with a member variable, append an 'x'
-@item if the new formal name clashes with a local, append an 'x' to the local
+@item
+formals are rewritten to their name as declared in the interface
+
+@item
+when the formal name clashes with a member variable, append as many
+'x's to the formal name to avoid clashes
+
+@item
+if the new formal name clashes with a local, append an 'x' to the local
+to prevent unintended shadowing
 @end itemize"
 
   (define (pair-equal? p) (equal? (car p) (cdr p)))
@@ -317,8 +324,9 @@ We follow the following renaming strategy:
        (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) (ast:formal* o)))))
       (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
       (($ <arguments>) (clone o #:elements (map (rename mapping) (ast:argument* o))))
-      (($ <var>) (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.name o)))
-                     o))
+      (($ <var>)
+       (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.name o)))
+           o))
       (($ <assign>)
        (let ((expression ((rename mapping) (.expression o)))
              (name (if (formal-or-local? (.variable o)) (rename-string (.variable.name o))

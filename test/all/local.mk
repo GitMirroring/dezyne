@@ -1,7 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+# Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -488,8 +488,7 @@ XFAIL_TESTS =					\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock                 \
  %D%/foreign_conflict				\
- %D%/import_strip_component			\
- %D%/resolve_member
+ %D%/import_strip_component
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
