@@ -1,4 +1,5 @@
 (header ((p) I provides) ((sut) range_expression component) ((r) II requires))
+(state ((p)) ((sut) (n . 3)) ((r)))
 <external>.p.e -> ...
 ... -> sut.p.e
 sut.r.e -> ...
@@ -7,11 +8,13 @@ sut.r.e -> ...
 sut.r.return <- ...
 ... <- sut.p.return
 <external>.p.return <- ...
+(state ((p)) ((sut) (n . 4)) ((r)))
 (trail "p.e" "r.e" "r.return" "p.return")
 test/all/range_expression/range_expression.dzn:54:18: error: range-error: invalid value `5' for variable `n'
 <external>.p.e -> ...
 ... -> sut.p.e
 <range-error>
+(state ((p)) ((sut) (n . 5)) ((r)))
 test/all/range_expression/range_expression.dzn:54:18: error: range-error: invalid value `5' for variable `n'
 (trail "p.e" "<range-error>")
 (labels "p.e" "r.add")

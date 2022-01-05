@@ -1,14 +1,18 @@
 (header ((pp) Ideadlock_blocking_guard provides) ((sut) deadlock_blocking_guard component))
+(state ((pp)) ((sut) (deadlock . false)))
 <external>.pp.ia -> ...
 ... -> sut.pp.ia
 ... <- sut.pp.return
 <external>.pp.return <- ...
+(state ((pp)) ((sut) (deadlock . true)))
 (trail "pp.ia" "pp.return")
 <external>.pp.ia -> ...
 ... -> sut.pp.ia
+(state ((pp)) ((sut) (deadlock . true)))
 (trail "pp.ia")
 test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:38:3: error: deadlock
 <deadlock>
+(state ((pp)) ((sut) (deadlock . true)))
 test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:38:3: error: deadlock
 (trail "<deadlock>")
 (labels "pp.ia")

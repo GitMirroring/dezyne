@@ -1,4 +1,5 @@
 (header ((h) ihello provides) ((sut) compliance_failures_choice component) ((w) iworld requires))
+(state ((h) (b . false)) ((sut) (b . true)) ((w) (b . false)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -7,9 +8,11 @@ sut.w.hello -> ...
 sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
+(state ((h) (b . true)) ((sut) (b . false)) ((w) (b . true)))
 (trail "h.hello" "w.hello" "w.return" "h.return")
 test/all/compliance_failures_choice/compliance_failures_choice.dzn:63:3: error: non-compliance
 <non-compliance>
+(state ((h) (b . true)) ((sut) (b . false)) ((w) (b . true)))
 test/all/compliance_failures_choice/compliance_failures_choice.dzn:63:3: error: non-compliance
 (trail "<non-compliance>")
 (labels "h.hello")

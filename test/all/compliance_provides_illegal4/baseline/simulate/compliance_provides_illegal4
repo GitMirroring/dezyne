@@ -1,4 +1,5 @@
 (header ((h) ihello provides) ((sut) compliance_provides_illegal4 component) ((w) ihello requires))
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_provides_illegal4/compliance_provides_illegal4.dzn:46:20: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
@@ -11,6 +12,7 @@ sut.w.return <- ...
 ... <- sut.<q>
 sut.w.world <- ...
 <illegal>
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_provides_illegal4/compliance_provides_illegal4.dzn:46:20: error: illegal
 (trail "h.hello" "w.cruel" "w.world" "w.return" "<illegal>")
 (labels "h.cruel" "h.hello" "w.world")

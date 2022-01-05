@@ -1,13 +1,16 @@
 (header ((h) ihello provides) ((sut) illegal_async_req component))
+(state ((h)) ((sut) (b . true)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.return
 <external>.h.return <- ...
+(state ((h)) ((sut) (b . true)))
 (trail "h.hello" "h.return")
 test/all/illegal_async_req/illegal_async_req.dzn:43:20: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <illegal>
+(state ((h)) ((sut) (b . true)))
 test/all/illegal_async_req/illegal_async_req.dzn:43:20: error: illegal
 (trail "h.hello" "<illegal>")
 (labels "h.hello")

@@ -1,4 +1,5 @@
 (header ((p) I provides) ((sut) illegal_external_requires_twice component) ((q) J requires) ((r) J requires))
+(state ((p) (idle . true)) ((sut) (s . S:A)) ((q)) ((r)))
 <external>.p.e -> ...
 ... -> sut.p.e
 sut.q.e -> ...
@@ -11,11 +12,13 @@ sut.r.e -> ...
 sut.r.return <- ...
 ... <- sut.p.return
 <external>.p.return <- ...
+(state ((p) (idle . false)) ((sut) (s . S:B)) ((q)) ((r)))
 (trail "p.e" "q.e" "q.return" "r.e" "r.return" "p.return")
 test/all/illegal_external_requires_twice/illegal_external_requires_twice.dzn:51:3: error: illegal
 ... <- sut.<q>
 sut.q.a <- ...
 <illegal>
+(state ((p) (idle . false)) ((sut) (s . S:B)) ((q)) ((r)))
 test/all/illegal_external_requires_twice/illegal_external_requires_twice.dzn:51:3: error: illegal
 (trail "q.a" "<illegal>")
 (labels "p.e" "q.a" "r.a")

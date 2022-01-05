@@ -1,11 +1,14 @@
 (header ((client) illegal_interface.space provides) ((sut) illegal_interface.space interface))
+(state ((client)) ((sut) (idle . true)))
 <external>.hello -> ...
 ... -> sut.hello
 ... <- sut.return
 <external>.return <- ...
+(state ((client)) ((sut) (idle . false)))
 (trail "hello" "return")
 test/all/illegal_interface.space/illegal_interface.space.dzn:29:3: error: deadlock
 <deadlock>
+(state ((client)) ((sut) (idle . false)))
 test/all/illegal_interface.space/illegal_interface.space.dzn:29:3: error: deadlock
 (trail "<deadlock>")
 (labels "hello" "world")

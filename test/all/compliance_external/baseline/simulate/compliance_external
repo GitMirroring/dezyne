@@ -1,4 +1,5 @@
 (header ((h) ihello provides) ((sut) compliance_external component) ((w) iworld requires))
+(state ((h)) ((sut) (b . false)) ((w)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -7,11 +8,13 @@ sut.w.hello -> ...
 sut.w.return <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
+(state ((h)) ((sut) (b . true)) ((w)))
 (trail "h.hello" "w.hello" "w.return" "h.return")
 test/all/compliance_external/compliance_external.dzn:45:3: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <illegal>
+(state ((h)) ((sut) (b . true)) ((w)))
 test/all/compliance_external/compliance_external.dzn:45:3: error: illegal
 (trail "h.hello" "<illegal>")
 (labels "h.hello" "w.world")

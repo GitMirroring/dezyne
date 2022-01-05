@@ -1,6 +1,8 @@
 (header ((client) deadlock_interface0 provides) ((sut) deadlock_interface0 interface))
+(state ((client)) ((sut)))
 test/all/deadlock_interface0/deadlock_interface0.dzn:29:3: error: deadlock
 <deadlock>
+(state ((client)) ((sut)))
 test/all/deadlock_interface0/deadlock_interface0.dzn:29:3: error: deadlock
 (trail "<deadlock>")
 (labels "e")

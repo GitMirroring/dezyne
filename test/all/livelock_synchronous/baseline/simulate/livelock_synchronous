@@ -1,4 +1,5 @@
 (header ((h) ihello provides) ((sut) livelock_synchronous component) ((w) iworld requires))
+(state ((h)) ((sut)) ((w)))
 test/all/livelock_synchronous/livelock_synchronous.dzn:46:5: error: livelock
 <external>.h.hello -> ...
 ... -> sut.h.hello
@@ -20,6 +21,7 @@ sut.w.return <- ...
 ... <- sut.<q>
 sut.w.world <- ...
 <livelock>
+(state ((h)) ((sut)) ((w)))
 test/all/livelock_synchronous/livelock_synchronous.dzn:46:5: error: livelock
 (trail "h.hello" "w.hello" "w.world" "w.return" "<loop>" "w.hello" "w.world" "w.return" "<livelock>")
 (labels "h.hello" "w.world")

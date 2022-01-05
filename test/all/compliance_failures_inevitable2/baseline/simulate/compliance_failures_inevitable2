@@ -1,6 +1,8 @@
 (header ((h) ihello provides) ((sut) compliance_failures_inevitable2 component))
+(state ((h)) ((sut)))
 test/all/compliance_failures_inevitable2/compliance_failures_inevitable2.dzn:43:3: error: non-compliance
 <non-compliance>
+(state ((h)) ((sut)))
 test/all/compliance_failures_inevitable2/compliance_failures_inevitable2.dzn:43:3: error: non-compliance
 (trail "<non-compliance>")
 (labels "h.hello")

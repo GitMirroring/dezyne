@@ -1,14 +1,17 @@
 (header ((i) I provides) ((sut) determinism1 component) ((ii) I requires))
+(state ((i)) ((sut) (s . States:S0)) ((ii)))
 <external>.i.e -> ...
 ... -> sut.i.e
 ... <- sut.i.return
 <external>.i.return <- ...
+(state ((i)) ((sut) (s . States:S1)) ((ii)))
 (trail "i.e" "i.return")
 test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
 test/all/determinism1/determinism1.dzn:46:14: error: component is non-deterministic due to overlapping guards
 <external>.i.e -> ...
 ... -> sut.i.e
 <non-deterministic>
+(state ((i)) ((sut) (s . States:S1)) ((ii)))
 test/all/determinism1/determinism1.dzn:45:14: error: component is non-deterministic due to overlapping guards
 test/all/determinism1/determinism1.dzn:46:14: error: component is non-deterministic due to overlapping guards
 (trail "i.e" "<non-deterministic>")

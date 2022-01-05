@@ -1,8 +1,10 @@
 (header ((h) ihello provides) ((sut) compliance_invalid_action component) ((w) ihello requires))
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: error: non-compliance
 ... <- <external>.h.inevitable
 <external>.h.world <- ...
 <non-compliance>
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: error: non-compliance
 (trail "<non-compliance>")
 (labels "h.hello" "w.cruel" "w.world")

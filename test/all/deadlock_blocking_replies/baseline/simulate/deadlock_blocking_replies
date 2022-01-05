@@ -1,14 +1,18 @@
 (header ((h) ihello provides) ((sut) deadlock_blocking_replies component) ((w) iworld requires))
+(state ((h)) ((sut) (s . S:A)) ((w) (idle . true)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.true
 <external>.h.true <- ...
+(state ((h)) ((sut) (s . S:B)) ((w) (idle . true)))
 (trail "h.hello" "h.true")
 <external>.h.bye -> ...
 ... -> sut.h.bye
+(state ((h)) ((sut) (s . S:C)) ((w) (idle . true)))
 (trail "h.bye")
 test/all/deadlock_blocking_replies/deadlock_blocking_replies.dzn:42:3: error: deadlock
 <deadlock>
+(state ((h)) ((sut) (s . S:C)) ((w) (idle . true)))
 test/all/deadlock_blocking_replies/deadlock_blocking_replies.dzn:42:3: error: deadlock
 (trail "<deadlock>")
 (labels "h.hello" "h.bye" "w.world" "w.cruel")

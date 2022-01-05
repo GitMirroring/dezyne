@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -445,11 +445,10 @@ output, and standard error as three values."
                          #f)))))
             (else
              (let ((out-file (string-append out-lang "/out"))
-                   (err-file (string-append out-lang "/err"))
-                   (trail (filter-state stdout)))
+                   (err-file (string-append out-lang "/err")))
                (mkdir-p out-lang)
                (with-output-to-file out-file
-                 (cut display trail))
+                 (cut display stdout))
                (with-output-to-file err-file
                  (cut display stderr))
                (let ((baseline-out (string-append baseline "/" base-name))

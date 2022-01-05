@@ -1,8 +1,10 @@
 (header ((p_left) ihello provides) ((p_right) ihello provides) ((sut) compliance_fork_provides component))
+(state ((p_left)) ((p_right)) ((sut)))
 test/all/compliance_fork_provides/compliance_fork_provides.dzn:43:25: error: non-compliance
 ... -> sut.p_left.hello
 ... <- sut.p_right.world
 <non-compliance>
+(state ((p_left)) ((p_right)) ((sut)))
 test/all/compliance_fork_provides/compliance_fork_provides.dzn:43:25: error: non-compliance
 (trail "p_left.hello" "p_right.world" "<non-compliance>")
 (labels "p_left.hello" "p_right.hello")

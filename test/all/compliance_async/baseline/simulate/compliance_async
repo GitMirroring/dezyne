@@ -1,16 +1,20 @@
 (header ((p) IAsync provides) ((sut) compliance_async component))
+(state ((p) (idle . true)) ((sut) (s . State:S0)))
 <external>.p.e -> ...
 ... -> sut.p.e
 ... <- sut.p.return
 <external>.p.return <- ...
+(state ((p) (idle . false)) ((sut) (s . State:S1)))
 (trail "p.e" "p.return")
 ... <- sut.p.cb
 <external>.p.cb <- ...
+(state ((p) (idle . true)) ((sut) (s . State:S2)))
 (trail "p.cb")
 test/all/compliance_async/compliance_async.dzn:62:17: error: illegal
 <external>.p.e -> ...
 ... -> sut.p.e
 <illegal>
+(state ((p) (idle . true)) ((sut) (s . State:S2)))
 test/all/compliance_async/compliance_async.dzn:62:17: error: illegal
 (trail "p.e" "<illegal>")
 (labels "p.e" "p.c")

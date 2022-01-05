@@ -1,17 +1,21 @@
 (header ((h) ihello provides) ((sut) livelock_async component))
+(state ((h)) ((sut) (b . false)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.return
 <external>.h.return <- ...
+(state ((h)) ((sut) (b . true)))
 (trail "h.hello" "h.return")
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.return
 <external>.h.return <- ...
+(state ((h)) ((sut) (b . true)))
 (trail "h.hello" "h.return")
 test/all/livelock_async/livelock_async.dzn:44:5: error: livelock
 <loop>
 <livelock>
+(state ((h)) ((sut) (b . true)))
 test/all/livelock_async/livelock_async.dzn:44:5: error: livelock
 (trail "<loop>" "<livelock>")
 (labels "h.hello")

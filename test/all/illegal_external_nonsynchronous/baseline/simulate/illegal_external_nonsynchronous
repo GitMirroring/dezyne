@@ -1,4 +1,5 @@
 (header ((p) I provides) ((sut) illegal_external_nonsynchronous component) ((r) I requires))
+(state ((p) (s . State:idle)) ((sut) (s . State:idle)) ((r) (s . State:idle)))
 <external>.p.e -> ...
 ... -> sut.p.e
 sut.r.e -> ...
@@ -7,11 +8,13 @@ sut.r.e -> ...
 sut.r.return <- ...
 ... <- sut.p.return
 <external>.p.return <- ...
+(state ((p) (s . State:busy)) ((sut) (s . State:busy)) ((r) (s . State:busy)))
 (trail "p.e" "r.e" "r.return" "p.return")
 test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:63:18: error: illegal
 ... <- sut.<q>
 sut.r.ec <- ...
 <illegal>
+(state ((p) (s . State:busy)) ((sut) (s . State:busy)) ((r) (s . State:idle)))
 test/all/illegal_external_nonsynchronous/illegal_external_nonsynchronous.dzn:63:18: error: illegal
 (trail "r.ec" "<illegal>")
 (labels "p.e" "p.a" "r.ec" "r.ac")

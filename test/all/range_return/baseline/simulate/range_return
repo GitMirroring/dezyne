@@ -1,8 +1,10 @@
 (header ((client) range_return provides) ((sut) range_return interface))
+(state ((client)) ((sut) (state . 3)))
 test/all/range_return/range_return.dzn:41:7: error: range-error: invalid value `5' for variable `state'
 <external>.e -> ...
 ... -> sut.e
 <range-error>
+(state ((client)) ((sut) (state . 5)))
 test/all/range_return/range_return.dzn:41:7: error: range-error: invalid value `5' for variable `state'
 (trail "e" "<range-error>")
 (labels "e")

@@ -1,4 +1,5 @@
 (header ((h) ihello provides) ((sut) livelock_synchronous_illegal component) ((w) iworld requires) ((d) isilly requires))
+(state ((h)) ((sut) (m1 . E1:A) (m2 . E2:A)) ((w)) ((d)))
 test/all/livelock_synchronous_illegal/livelock_synchronous_illegal.dzn:87:5: error: livelock
 <external>.h.hello -> ...
 ... -> sut.h.hello
@@ -44,6 +45,7 @@ sut.d.E2:D <- ...
 ... <- sut.<q>
 sut.w.world <- ...
 <livelock>
+(state ((h)) ((sut) (m1 . E1:D) (m2 . E2:D)) ((w)) ((d)))
 test/all/livelock_synchronous_illegal/livelock_synchronous_illegal.dzn:87:5: error: livelock
 (trail "h.hello" "w.hello" "w.world" "w.return" "d.hello" "d.E1:D" "w.hello" "w.world" "w.return" "d.world" "d.E2:D" "<loop>" "d.hello" "d.E1:D" "w.hello" "w.world" "w.return" "d.world" "d.E2:D" "<livelock>")
 (labels "h.hello" "h.cruel" "w.world")

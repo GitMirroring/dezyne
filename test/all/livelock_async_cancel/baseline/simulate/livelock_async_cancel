@@ -1,12 +1,15 @@
 (header ((p) IAsync provides) ((sut) livelock_async_cancel component))
+(state ((p) (idle . true)) ((sut) (s . State:S0)))
 <external>.p.e -> ...
 ... -> sut.p.e
 ... <- sut.p.return
 <external>.p.return <- ...
+(state ((p) (idle . false)) ((sut) (s . State:S1)))
 (trail "p.e" "p.return")
 test/all/livelock_async_cancel/livelock_async_cancel.dzn:55:5: error: livelock
 <loop>
 <livelock>
+(state ((p) (idle . false)) ((sut) (s . State:S1)))
 test/all/livelock_async_cancel/livelock_async_cancel.dzn:55:5: error: livelock
 (trail "<loop>" "<livelock>")
 (labels "p.e" "p.c")

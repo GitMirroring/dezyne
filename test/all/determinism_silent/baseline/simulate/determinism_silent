@@ -1,7 +1,9 @@
 (header ((client) determinism_silent provides) ((sut) determinism_silent interface))
+(state ((client)) ((sut) (b . true)))
 test/all/determinism_silent/determinism_silent.dzn:29:3: error: interface is unobservably non-deterministic
 test/all/determinism_silent/determinism_silent.dzn:33:12: error: interface is unobservably non-deterministic
 <non-deterministic>
+(state ((client)) ((sut) (b . true)))
 test/all/determinism_silent/determinism_silent.dzn:29:3: error: interface is unobservably non-deterministic
 test/all/determinism_silent/determinism_silent.dzn:33:12: error: interface is unobservably non-deterministic
 (trail "<non-deterministic>")

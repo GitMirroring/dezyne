@@ -1,4 +1,5 @@
 (header ((h) ihello provides) ((sut) deadlock_blocking_inevitable component) ((w) iworld requires))
+(state ((h)) ((sut)) ((w) (idle . true)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -9,9 +10,11 @@ sut.w.return <- ...
 sut.<q> <- ...
 ... <- sut.<q>
 sut.w.world <- ...
+(state ((h)) ((sut)) ((w) (idle . true)))
 (trail "h.hello" "w.hello" "w.return" "w.world")
 test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:40:3: error: deadlock
 <deadlock>
+(state ((h)) ((sut)) ((w) (idle . true)))
 test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:40:3: error: deadlock
 (trail "<deadlock>")
 (labels "h.hello" "w.world")

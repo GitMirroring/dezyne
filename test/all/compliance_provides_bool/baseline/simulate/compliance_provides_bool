@@ -1,10 +1,12 @@
 (header ((p) ibool provides) ((sut) compliance_provides_bool component))
+(state ((p)) ((sut)))
 test/all/compliance_provides_bool/compliance_provides_bool.dzn:43:5: error: non-compliance
 <external>.p.hello -> ...
 ... -> sut.p.hello
 ... <- sut.p.false
 <external>.p.true <- ...
 <non-compliance>
+(state ((p)) ((sut)))
 test/all/compliance_provides_bool/compliance_provides_bool.dzn:43:5: error: non-compliance
 (trail "p.hello" "p.false" "<non-compliance>")
 (labels "p.hello")

@@ -1,8 +1,10 @@
 (header ((h) ihello provides) ((sut) livelock_async_choice component) ((w) iworld requires))
+(state ((h) (idle . true)) ((sut) (idle . true)) ((w)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.return
 <external>.h.return <- ...
+(state ((h) (idle . false)) ((sut) (idle . false)) ((w)))
 (trail "h.hello" "h.return")
 test/all/livelock_async_choice/livelock_async_choice.dzn:59:5: error: livelock
 sut.w.hello -> ...
@@ -15,6 +17,7 @@ sut.w.hello -> ...
 ... <- <external>.w.false
 sut.w.false <- ...
 <livelock>
+(state ((h) (idle . false)) ((sut) (idle . false)) ((w)))
 test/all/livelock_async_choice/livelock_async_choice.dzn:59:5: error: livelock
 (trail "w.hello" "w.false" "<loop>" "w.hello" "w.false" "<livelock>")
 (labels "h.hello")

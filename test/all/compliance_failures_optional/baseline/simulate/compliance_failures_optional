@@ -1,6 +1,8 @@
 (header ((h) ihello provides) ((sut) compliance_failures_optional component) ((w) iworld requires))
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_failures_optional/compliance_failures_optional.dzn:57:3: error: non-compliance
 <non-compliance>
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_failures_optional/compliance_failures_optional.dzn:57:3: error: non-compliance
 (trail "<non-compliance>")
 (labels "h.hello" "w.world")

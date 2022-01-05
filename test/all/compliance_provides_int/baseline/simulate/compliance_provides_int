@@ -1,10 +1,12 @@
 (header ((p) iint provides) ((sut) compliance_provides_int component))
+(state ((p)) ((sut)))
 test/all/compliance_provides_int/compliance_provides_int.dzn:41:5: error: non-compliance
 <external>.p.hello -> ...
 ... -> sut.p.hello
 ... <- sut.p.0
 <external>.p.1 <- ...
 <non-compliance>
+(state ((p)) ((sut)))
 test/all/compliance_provides_int/compliance_provides_int.dzn:41:5: error: non-compliance
 (trail "p.hello" "p.0" "<non-compliance>")
 (labels "p.hello")

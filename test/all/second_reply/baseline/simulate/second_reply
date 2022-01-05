@@ -1,8 +1,10 @@
 (header ((h) ihello provides) ((sut) second_reply component))
+(state ((h)) ((sut)))
 test/all/second_reply/second_reply.dzn:44:9: error: second-reply
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <second-reply>
+(state ((h)) ((sut)))
 test/all/second_reply/second_reply.dzn:44:9: error: second-reply
 (trail "h.hello" "<second-reply>")
 (labels "h.hello")

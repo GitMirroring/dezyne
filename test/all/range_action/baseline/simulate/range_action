@@ -1,4 +1,5 @@
 (header ((p) I provides) ((sut) range_action component) ((r) II requires))
+(state ((p)) ((sut)) ((r)))
 test/all/range_action/range_action.dzn:56:8: error: range-error: invalid value `12' for variable `n'
 <external>.p.e -> ...
 ... -> sut.p.e
@@ -7,6 +8,7 @@ sut.r.e -> ...
 ... <- <external>.r.12
 sut.r.12 <- ...
 <range-error>
+(state ((p)) ((sut) (n . 12)) ((r)))
 test/all/range_action/range_action.dzn:56:8: error: range-error: invalid value `12' for variable `n'
 (trail "p.e" "r.e" "r.12" "<range-error>")
 (labels "p.e")

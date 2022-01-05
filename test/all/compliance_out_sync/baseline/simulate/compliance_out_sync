@@ -1,4 +1,5 @@
 (header ((h) ihello provides) ((sut) compliance_out_sync component) ((w) ihello requires))
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_out_sync/compliance_out_sync.dzn:43:5: error: non-compliance
 <external>.h.hello -> ...
 ... -> sut.h.hello
@@ -13,6 +14,7 @@ sut.w.world <- ...
 ... <- sut.h.return
 <external>.h.return <- ...
 <non-compliance>
+(state ((h)) ((sut)) ((w)))
 test/all/compliance_out_sync/compliance_out_sync.dzn:43:5: error: non-compliance
 (trail "h.hello" "w.hello" "w.world" "w.return" "h.return" "<non-compliance>")
 (labels "h.hello" "w.world")
