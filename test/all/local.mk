@@ -223,6 +223,7 @@ REGRESSION_TESTS =				\
  %D%/failures_nondet_inevitable			\
  %D%/failures_nondet_optional			\
  %D%/failures_second_inevitable			\
+ %D%/illegal_optional				\
  %D%/illegal_silent_external			\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\

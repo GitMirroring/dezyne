@@ -1,0 +1,8 @@
+model: illegal_optional
+h.hello
+w.hello
+w.return
+h.return
+w.cruel
+w.hello
+<illegal>
