@@ -112,7 +112,6 @@ REGRESSION_TESTS =				\
  %D%/alpha_event				\
  %D%/alpha_field_test				\
  %D%/alpha_local				\
- %D%/alpha_local2				\
  %D%/alpha_shadow_port				\
  %D%/alpha_variable				\
  %D%/async_async_prio				\
@@ -335,6 +334,7 @@ REGRESSION_TESTS =				\
  %D%/range_member				\
  %D%/range_return				\
  %D%/reply_expression				\
+ %D%/resolve_member				\
  %D%/deadlock_reply_modeling			\
  %D%/second_reply				\
  %D%/second_reply_blocking			\
@@ -483,13 +483,13 @@ PARSER_TESTS =					\
  %D%/undefined/var
 
 XFAIL_TESTS =					\
- %D%/alpha_local2				\
  %D%/async_ranking_disorder			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock                 \
  %D%/foreign_conflict				\
- %D%/import_strip_component
+ %D%/import_strip_component			\
+ %D%/resolve_member
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
