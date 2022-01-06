@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -194,7 +194,6 @@ REGRESSION_TESTS =				\
  %D%/compliance_single_to_multiple		\
  %D%/compliance_system_provides_bool		\
  %D%/component_modeling_loop			\
- %D%/compound_local_assign_call			\
  %D%/data_full					\
  %D%/deadlock_optional_out_only			\
  %D%/deadlock_blocking_compliance		\
