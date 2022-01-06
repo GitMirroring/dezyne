@@ -213,6 +213,7 @@ REGRESSION_TESTS =				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
  %D%/external_blocking_livelock                 \
+ %D%/foreign_conflict				\
  %D%/foreign_injected				\
  %D%/illegal_external_inevitable		\
  %D%/external_requires_twice			\
