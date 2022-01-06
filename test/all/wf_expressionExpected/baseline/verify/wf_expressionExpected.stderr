@@ -4,4 +4,4 @@ test/all/wf_expressionExpected/wf_expressionExpected.dzn:32:11: error: <bool> ex
 test/all/wf_expressionExpected/wf_expressionExpected.dzn:33:14: error: <bool> expression expected
 test/all/wf_expressionExpected/wf_expressionExpected.dzn:34:18: error: <bool> expression expected
 test/all/wf_expressionExpected/wf_expressionExpected.dzn:35:19: error: <int> expression expected
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:36:14: error: type mismatch in binary operator: `bool' versus `int'
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:36:14: error: type mismatch in binary operator: `bool' versus `wf_expressionExpected.SI'

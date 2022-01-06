@@ -906,7 +906,8 @@
   '("data"))
 
 (define-method (ast:full-name (o <int>))
-  '("int"))
+  (if (ast:name o) (next-method)
+      '("int")))
 
 (define-method (ast:full-name (o <void>))
   '("void"))

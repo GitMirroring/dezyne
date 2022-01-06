@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -202,10 +202,16 @@
   (ast:full-name (.type o)))
 
 (define-method (code:reply-type (o <ast>))
-  ((compose ast:full-name ast:type) o))
+  (ast:full-name o))
+
+(define-method (code:reply-type (o <int>))
+  "int")
+
+(define-method (code:reply-type (o <trigger>))
+  (code:reply-type (ast:type o)))
 
 (define-method (code:reply-type (o <reply>))
-  ((compose code:reply-type .expression) o))
+  ((compose code:reply-type ast:type .expression) o))
 
 (define-method (code:type-name (o <variable>))
   (code:type-name (.type o)))
