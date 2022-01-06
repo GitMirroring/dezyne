@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -125,7 +125,8 @@ recursion.  Return a run-to-completion LTS
                   (let loop ((labels labels) (traces '()))
                     (if (null? labels) traces
                         (let* ((new (run-to-completion** pc (car labels)))
-                               (new (filter-implicit-illegal-only new)))
+                               (new (if (eq? (car labels) 'external) new
+                                        (filter-implicit-illegal-only new))))
                           (cond ((find (compose (is-status? <livelock-error>) car) new)
                                  (format (current-error-port) "warning: livelock, bailing out\n")
                                  '())

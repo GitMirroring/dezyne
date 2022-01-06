@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -109,10 +109,14 @@
         illegal)))
 
 (define (filter-implicit-illegal-only traces)
-  (let ((illegal rest (partition
-                       (conjoin (compose (is-status? <implicit-illegal-error>) car)
-                                (compose (cute equal? <> 2) length))
-                       traces)))
+  (let ((illegal
+         rest (partition
+               (conjoin (compose (is-status? <implicit-illegal-error>) car)
+                        (compose (match-lambda
+                                   ((trigger "<illegal>") #t)
+                                   (_ #f))
+                                 trace->string-trail))
+               traces)))
     (if (pair? rest) rest
         illegal)))
 
