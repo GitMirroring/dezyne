@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -226,16 +226,19 @@ prefix."
   "Return a list of traces, produced by appending TRACE to each of the
 program-counters produced by taking a step."
 
-  (define* ((mark-pc input o) pc)
-    (%debug "match fail, ast ~s ~a, input ~s\n" (name o)
-            (and (is-a? o <action>) (trigger->string o))
-            input)
-    (cond ((.status pc)
-           pc)
-          ((and (%strict?) input)
-           (clone pc #:status (make <match-error> #:ast o #:input input #:message "match")))
-          (else
-           (clone pc #:status (make <postponed-match> #:ast o #:input input)))))
+  (define* ((mark-pc input o-pc) pc)
+    (let ((o (.statement o-pc)))
+      (%debug "match fail, ast ~s ~a, input ~s\n" (name o)
+              (and (is-a? o <action>)
+                   (and=> (trace->trail o-pc) cdr))
+              input)
+     (cond ((.status pc)
+            pc)
+           ((and (%strict?) input)
+            (clone pc #:status (make <match-error> #:ast o #:input input
+                                     #:message "match")))
+           (else
+            (clone pc #:status (make <postponed-match> #:ast o #:input input))))))
 
   (let loop ((trace trace))
     (let ((pc (car trace)))
@@ -252,7 +255,9 @@ program-counters produced by taking a step."
                                      (is-a? o <trigger-return>)))
                     (observable (and observable? (and=> (trace->trail pc) cdr)))
                     (pcs (step pc o))
-                    (input pc (if (and observable (not (interactive?))) ((%next-input) pc) (values #f pc)))
+                    (input pc (if (and observable (not (interactive?)))
+                                  ((%next-input) pc)
+                                  (values #f pc)))
                     (pcs (cond ((%exploring?)
                                 pcs)
                                ((not observable)
@@ -260,13 +265,14 @@ program-counters produced by taking a step."
                                ((equal? input observable)
                                 (map (cute clone <> #:trail (.trail pc)) pcs))
                                (else
-                                (map (mark-pc input o) pcs))))
+                                (map (mark-pc input pc) pcs))))
                     (traces (map (cut cons <> trace) pcs)))
                (cond
                 ((ast:declarative? o)
-                 (let ((declarative imperative
-                                    (partition (compose ast:declarative? .statement car)
-                                               traces)))
+                 (let ((declarative
+                        imperative (partition
+                                    (compose ast:declarative? .statement car)
+                                    traces)))
                    (cond
                     ((pair? declarative)
                      (append imperative (append-map loop declarative)))

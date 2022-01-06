@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -214,7 +214,10 @@
 (define-method (pc->event (o <runtime:port>) (action <action>))
   (cons action
         (if (ast:out? action)
-            (format #f "~a~a" (or (and=> (trace-name o) (cut format #f "~a." <>)) "") (trigger->string action))
+            (format #f "~a~a" (or (and=> (trace-name o)
+                                         (cute format #f "~a." <>))
+                                  "")
+                    (trigger->string action))
             (format #f "~a" (trigger->string action)))))
 
 (define-method (pc->event (o <runtime:component>) (action <action>))
@@ -222,10 +225,13 @@
         (let* ((port (.port action))
                (r:port (runtime:port o port))
                (r:other-port (runtime:other-port r:port)))
-          (if (ast:injected? port)
-              (format #f "~a.~a" (.name (.ast r:other-port)) (.event.name action))
-              (let ((trigger (action->trigger r:other-port action)))
-                (format #f "~a.~a" (trace-name r:other-port) (trigger->string trigger)))))))
+          (cond
+           ((ast:injected? port)
+            (format #f "~a.~a" (trace-name r:other-port) (.event.name action)))
+           (else
+            (let* ((trigger (action->trigger r:other-port action))
+                   (trigger (trigger->string trigger)))
+              (format #f "~a.~a" (trace-name r:other-port) trigger)))))))
 
 (define-method (pc->event (o <runtime:component>) (q-out <q-out>))
   (let ((trigger (.trigger q-out)))
@@ -248,7 +254,7 @@
             (if (eq? r:port r:other-port) ;The other port is injected,
                                           ;no chance to find our way back
                                           ;and use ast:injected?
-                (format #f "~a.~a" (.name port) (.event.name return))
+                (format #f "~a.~a" (trace-name r:port) (.event.name return))
                 (let ((value (.event.name return)))
                   (format #f "~a.~a" (trace-name r:other-port) value)))))))
 
