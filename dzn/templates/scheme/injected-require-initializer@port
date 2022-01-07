@@ -1,0 +1,2 @@
+(slot-set! (.#ast:direction  (.#.name  o)) 'name "#.name")
+(slot-set! (.#ast:direction  (.#.name  o)) 'self o)

@@ -14,7 +14,8 @@
   #x:provided-port-instance-declare
   #x:required-port-instance-declare
   #x:async-port-instance-declare
-  #x:injected-member-initializer)
+  #x:injected-member-initializer
+  #x:injected-require-initializer)
 
  #x:methods
  #x:functions
