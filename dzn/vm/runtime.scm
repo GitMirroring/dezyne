@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -393,8 +393,9 @@
                (cute runtime:rank! <> (1+ (.rank o)))))))
   (when (> r (.rank o))
     (set! (.rank o) r))
-  (for-each set-rank! (filter (compose not ast:injected? .ast)
-                              (runtime:runtime-requires-port* o))))
+  (when (not (is-a? o <runtime:foreign>))
+    (for-each set-rank! (filter (compose not ast:injected? .ast)
+                                (runtime:runtime-requires-port* o)))))
 
 (define-method (runtime:rank! (o <boolean>) r)
   *unspecified*)
