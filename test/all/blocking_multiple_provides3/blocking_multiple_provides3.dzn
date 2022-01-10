@@ -1,0 +1,85 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+
+interface ihello
+{
+  in void hello();
+
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+interface iworld
+{
+  in void hello();
+  out void world();
+
+  behavior
+  {
+    on hello: world;
+  }
+}
+
+component hello_skip_block
+{
+  provides ihello h_left;
+  provides ihello h_right;
+  requires iworld r;
+
+  behavior
+  {
+    enum Side {Left, Right};
+    Side side = Side.Left;
+
+    blocking on h_left.hello(): {r.hello(); side = Side.Left;}
+    blocking on h_right.hello(): {r.hello(); side = Side.Right;}
+
+    [side.Left]
+    {
+      on r.world(): h_left.reply();
+    }
+    [side.Right]
+    {
+      on r.world(): h_right.reply();
+    }
+  }
+}
+
+component blocking_multiple_provides3
+{
+  provides ihello h_left;
+  provides ihello h_right;
+  requires iworld r;
+  system
+  {
+    h_left  <=> hsb.h_left;
+    h_right <=> hsb.h_right;
+    hello_skip_block hsb;
+    hsb.r <=> r;
+  }
+}

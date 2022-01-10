@@ -2,7 +2,7 @@
 #
 # Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-# Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
+# Copyright © 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 #
@@ -159,6 +159,7 @@ REGRESSION_TESTS =				\
  %D%/blocking-local-state-diagram		\
  %D%/blocking_multiple_provides			\
  %D%/blocking_multiple_provides2		\
+ %D%/blocking_multiple_provides3		\
  %D%/blocking_normalize				\
  %D%/blocking_provides_state			\
  %D%/blocking_requires				\
