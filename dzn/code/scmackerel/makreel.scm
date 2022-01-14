@@ -2287,7 +2287,7 @@
                                           (to (%flush-action o))))))))))
       (list rename))))
 
-(define-method (provides-processes (o <component>))
+(define-method (provides-processes (o <component-model>))
   (let* ((ports (ast:port* o))
          (provides (ast:provides-port* o))
 ;;; XXX TODO: when/how to print a type's entities in a formal?
@@ -4273,13 +4273,48 @@
                             queue-size-external-equation))
                 (processes processes)))))
 
+(define-method (model->scmackerel (o <system>))
+  (parameterize ((%model-name (makreel:full-name o)))
+    (let* ((ports (ast:port* o))
+           (requires (ast:requires-port* o))
+           (port-processes (append-map port-processes ports))
+           (provides (ast:provides-port* o))
+           (provides-interfaces (map .type provides))
+           (provides-interfaces (delete-duplicates provides-interfaces eq?))
+           (provides-processes (provides-processes o))
+           (interface-constraint-processes
+            (if (%no-constraint?) '()
+                (append-map interface-constraint-processes provides-interfaces)))
+           (provides-constraint-processes
+            (if (%no-constraint?) '()
+                (append-map provides-constraint-processes provides)))
+           (component-process (sm:process (name "component") (statement "delta")))
+           (processes `(,(makreel:caption "PORT PROCESSES")
+                        ,@port-processes
+                        ,(makreel:caption "PROVIDES")
+                        ,@provides-processes
+                        ,(makreel:caption "COMPONENT")
+                        ,@interface-constraint-processes
+                        ,(makreel:caption "PROVIDES CONSTRAINT")
+                        ,@provides-constraint-processes
+                        ,(makreel:caption "COMPONENT ASSEMBLY")
+                        ,component-process))
+           (provides-ports-type
+            (sm:type (name "provides_ports")
+                     (entities (cons* %no-port-predicate
+                                      (map (lambda (p)
+                                             (%port-predicate p))
+                                           provides))))))
+      (sm:mcrl2 (types `(,provides-ports-type))
+                (processes processes)))))
+
 
 ;;;
 ;;; Entry point.
 ;;;
 (define (root->scmackerel root)
   (let* ((models (ast:model** root))
-         (component (find (is? <component>) models))
+         (component (find (disjoin (is? <system>) (is? <component>)) models))
          (model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
          (act-processes (list (dummy-tag-process)))
          (interfaces (if component (filter (is? <interface>) models)
@@ -4313,7 +4348,7 @@
          (illegal-processes (illegal-processes))
          (static-equations
           `(,(makreel:generated-comment root)
-            ,@(if (not component) '()
+            ,@(if (not (is-a? component <component>)) '()
                   (file-comments "component.mcrl2")))))
     (sm:mcrl2
       (inherit mcrl2)

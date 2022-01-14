@@ -121,7 +121,9 @@
 
 (define (makreel:model->makreel root model)
   (let* ((model-name (ast:dotted-name (or model (ast:get-model root))))
-         (root' (tree:shallow-filter (disjoin (negate (is? <component>))
+         (root' (tree:shallow-filter (disjoin (conjoin
+                                               (negate (is? <system>))
+                                               (negate (is? <component>)))
                                               (cute eq? <> model))
                                      root)))
     (parameterize ((%language "makreel")
@@ -144,6 +146,7 @@
   (let ((model (and (%model-name)
                     (find named? (ast:model** o)))))
     (or model
+        (find (is? <system>) (ast:model** o))
         (find (is? <component>) (ast:model** o))
         (filter (is? <interface>) (ast:model** o)))))
 

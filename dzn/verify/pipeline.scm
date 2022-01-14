@@ -42,6 +42,8 @@
   #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:use-module (dzn pipe)
+  #:use-module (dzn shell-util)
+  #:use-module (dzn stitch)
 
   #:export (verification:formats
             verification:partial
@@ -110,30 +112,23 @@ EVENT."
   "Return the list of events to hide, i.e. map to tau, for the provides
 compliance check of MODEL: the requires-out triggers and requires-in
 actions."
-  (define (events-trigger/action o)
-    (map (cute string-append (makreel:name (.port o)) "." <>)
-         (event-alphabet (.event o))))
-  (let* ((behavior (.behavior model))
-         (compound (.statement behavior))
-         (trigger-lists (tree:collect
-                         compound
-                         (is? <triggers>)
-                         #:stop? (disjoin (is? <declarative>)
-                                          (is? <triggers>))))
-         (out-triggers (filter ast:out?
-                               (append-map ast:trigger* trigger-lists)))
-         (in-actions (filter ast:in?
-                             (tree:collect
-                              behavior
-                              (is? <action>)
-                              #:stop? (negate (is? <location>)))))
-         (taus (delete-duplicates
-                (append-map events-trigger/action
-                            (append out-triggers in-actions))))
+  (define (provides-taus port)
+    (let ((port-name (makreel:name port)))
+      (map (cute string-append port-name "." <>) '("inevitable" "optional"))))
+  (define (requires-taus port)
+    (let* ((interface (.type port))
+           (port-name (makreel:name port))
+           (alphabet (append-map event-alphabet (ast:event* interface)))
+           (alphabet (cons* "<flush>" "inevitable" "optional" "qout.ack" alphabet)))
+      (map (cute string-append port-name "." <>) alphabet)))
+  (let* ((provides-ports (ast:provides-port* model))
+         (requires-ports (ast:requires-port* model))
+         (taus (append (append-map provides-taus provides-ports)
+                       (append-map requires-taus requires-ports)))
          (state-taus (map (compose (cute string-append <> ".<state>")
                                    makreel:name)
                           (ast:port* model)))
-         (taus `("tag" "<defer>" ,@state-taus ,@taus)))
+         (taus `("sut" "tag" "<blocked>" "<defer>" ,@state-taus ,@taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)
@@ -151,9 +146,10 @@ actions."
   (let ((trace (string-map (lambda (c) (if (eq? c #\newline) #\; c)) trace)))
     (string-join
      (filter (lambda (event)
-               (not (or (member event '("inevitable" "optional" "tau"))
-                        (find (cute string-contains event <>) '(".qout." ".<blocking>" "tag(" "<state>"))
-                        (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
+               (and (not (member event '("inevitable" "optional" "tau")))
+                    (not (string-contains event ".qout."))
+                    (not (string-contains event "tag("))
+                    (not (find (cute string-suffix? <> event) '(".optional" ".inevitable" ".<blocking>" "<blocked>")))))
              (string-split trace #\;))
      "\n")))
 
@@ -224,20 +220,27 @@ actions."
       (newline)
       (display (makreel:init-process (options-init options))))))
 
-(define (component-stage)
-  "verify-component")
+(define (mcrl2:verify-target model)
+  (if (is-a? model <component>) "verify-component"
+      "verify-system"))
+
+(define (component-stage model)
+  (let ((stage (mcrl2:verify-target model)))
+    (if (not (command-line:get 'jitty)) stage
+        (string-append stage "-jitty"))))
 
 (define (in-out:dzn->aut+provides-aut options)
   (let* ((model (options-model options))
          (root (options-root options))
-         (provides-init (get-init model #:provides? #t)))
+         (provides-init (get-init model #:provides? #t))
+         (stage (component-stage model)))
     (cute display
           (string-append
            ;; The first LTS can be produced by running the
            ;; "aut-failures" pipeline.  Running the already memoized
            ;; "verify-component" gives us the same result, and has
            ;; already been memoized.
-           (get-lts (result-split (verify-pipeline (component-stage) root model)))
+           (get-lts (result-split (verify-pipeline stage root model)))
            "\n\x04\n"
            (verify-pipeline "aut-failures" root model #:init provides-init)))))
 
@@ -347,6 +350,12 @@ actions."
             "--failures"
             "-")))
 
+(define (in-out:dzn->aut-system options)
+  (let* ((root (options-root options))
+         (model (options-model options))
+         (lts (rename (model->lts root model #f) #:from "sut" #:to "sut(")))
+  (cute display-lts lts)))
+
 (define (in-out:aut+provides-aut->verify-compliance options)
   (let* ((model (options-model options))
          (taus (compliance-taus model))
@@ -377,6 +386,8 @@ actions."
     (("aut-cached"              "aut-weak-trace-cached")   . ,in-out:aut->aut-weak-trace)
     (("aut-weak-trace-cached"   "verify-interface-nondet") . ,in-out:aut->verify-interface-nondet)
     (("aut-dpweak-bisim"        "verify-component")        . ,in-out:aut->verify-component)
+    (("dzn"                     "aut-system")              . ,in-out:dzn->aut-system)
+    (("aut-system"              "verify-system")           . ,in-out:aut->verify-component)
     (("dzn"                     "aut+provides-aut")        . ,in-out:dzn->aut+provides-aut)
     (("aut+provides-aut"        "verify-compliance")       . ,in-out:aut+provides-aut->verify-compliance)))
 
@@ -710,7 +721,8 @@ init for MODEL unless INIT."
 
 (define* (mcrl2:verify-component-asserts model root #:key keep-going?)
   (let* ((model-name (makreel:unticked-dotted-name model))
-         (result status (verify-pipeline (component-stage) root model))
+         (target (component-stage model))
+         (result status (verify-pipeline target root model))
          (result (result-split result))
          (lts-tags (get-tags result))
          (unreachable (assert-unreachable lts-tags (model-tags model)))
@@ -752,6 +764,8 @@ init for MODEL unless INIT."
            (mcrl2:verify-interface root model #:keep-going? keep-going?))
           ((is-a? model <component>)
            (mcrl2:verify-component root model #:keep-going? keep-going?))
+          ((is-a? model <system>)
+           (mcrl2:verify-component root model #:keep-going? keep-going?))
           (else
            #f))))
 
@@ -768,8 +782,11 @@ init for MODEL unless INIT."
                               no-interfaces?)
   (define (model-names-for-verification root)
     (let* ((models (ast:model** root))
-           (components (filter (conjoin (is? <component>) (negate ast:imported?)
-                                        .behavior) models))
+           (components (filter (conjoin
+                                (disjoin (conjoin (is? <component>) .behavior)
+                                         (is? <system>))
+                                (negate ast:imported?))
+                               models))
            (component-names (map makreel:unticked-dotted-name components))
            (interfaces (filter (is? <interface>) models))
            (interface-names (map makreel:unticked-dotted-name interfaces))
