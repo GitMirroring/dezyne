@@ -1,0 +1,82 @@
+// Dezyne --- Dezyne command line tools
+
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+component mux
+{
+  provides blocking ihello left;
+  provides blocking ihello middle;
+  provides blocking ihello right;
+
+  behavior
+  {
+    enum Which {None, Left, Middle, Right};
+    Which first = Which.None;
+    Which second = Which.None;
+
+    [first.None && second.None]
+    {
+      blocking on left.hello(): first = Which.Left;
+      blocking on middle.hello(): first = Which.Middle;
+      blocking on right.hello(): first = Which.Right;
+    }
+    [second.None]
+    {
+      [first.Middle || first.Right] blocking on left.hello(): second = Which.Left;
+      [first.Left || first.Right] blocking on middle.hello(): second = Which.Middle;
+      [first.Left || first.Middle] blocking on right.hello(): second = Which.Right;
+    }
+    [otherwise]
+    {
+      on left.hello(): {first = Which.None; second = Which.None; middle.reply(); right.reply();}
+      on middle.hello(): {first = Which.None; second = Which.None; left.reply(); right.reply();}
+      on right.hello(): {first = Which.None; second = Which.None; middle.reply(); left.reply();}
+    }
+  }
+}
+
+component compliance_blocking_multiple_provides3
+{
+  provides blocking ihello left;
+  provides blocking ihello middle;
+  provides blocking ihello right;
+
+  system
+  {
+    mux m;
+
+    left <=> m.left;
+    middle <=> m.middle;
+    right <=> m.right;
+  }
+}
