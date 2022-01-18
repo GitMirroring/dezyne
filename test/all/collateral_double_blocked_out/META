@@ -1,0 +1,2 @@
+;;; -*- scheme -*-
+((skip ("execute" "lts" "simulate")))

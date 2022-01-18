@@ -178,6 +178,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_reorder		\
  %D%/collateral_blocking_multiple_provides	\
  %D%/collateral_double_blocked			\
+ %D%/collateral_double_blocked_out		\
  %D%/compliance_blocking_out			\
  %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_implicit_illegal		\
