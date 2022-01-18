@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2017, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,6 +23,8 @@
 // Code:
 
 #include "calling_context.hh"
+
+#include <limits>
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>

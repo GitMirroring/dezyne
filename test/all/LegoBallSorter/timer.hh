@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +25,7 @@
 #ifndef TIMER_HH
 #define TIMER_HH
 
-#include "lego.hh"
+#include "foreign_timer.hh"
 
 namespace dzn {
   struct locator;

@@ -1,5 +1,6 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2016, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,10 +21,7 @@
 //
 // Code:
 
-#include "imotor.hh"
-#include "ilight.hh"
-#include "itouch.hh"
-#include "itimer_impl.hh"
+#include "lego.hh"
 #include "timer.hh"
 
 #include "LegoBallSorter.hh"
@@ -39,6 +37,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>

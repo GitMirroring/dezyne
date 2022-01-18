@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
-
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -24,6 +24,8 @@
 // Code:
 
 #include "collateral_blocking_shell.hh"
+
+#include <limits>
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>

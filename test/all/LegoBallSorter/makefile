@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2016, 2017 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -23,9 +23,10 @@
 # Code:
 
 CXX=g++ -pthread -std=c++11
-CXXFLAGS=-g -Wall
+CXXFLAGS=-g -Wall -I ../../../runtime/c++ -I c++ -I out/c++
 CPPFLAGS=-MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -I. -include MachineConstants.hh
-CCACHE=$(basename $(shell which ccache))
+CCACHE:=$(shell type -p ccache)
+DZN=../../../pre-inst-env dzn
 
 %.o: %.cc
 	$(CCACHE) $(COMPILE.cc) $(OUTPUT_OPTION) $<
@@ -34,11 +35,12 @@ all: runtime code
 	make lego
 
 runtime:
-	cp -r ../../../dzn/runtime/c++/* .
+	cp ../../../runtime/c++/*.cc .
+	cp -r ../../../runtime/c++/dzn/* dzn
 	touch runtime
 
 code: $(wildcard *.dzn)
-	for f in $^; do ../../../dzn/bin/dzn -v code -l c++ $$f; done
+	for f in $^; do $(DZN) -v code -I c++ -l c++ $$f; done
 	touch code
 
 lego: $(patsubst %.cc, %.o, $(filter-out gui.cc main.cc, $(wildcard *.cc)))
