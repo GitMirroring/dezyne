@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -627,7 +627,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                 (make <range-error> #:ast o #:variable o #:value value
                       #:message "range-error"))))))
 
-(define-method (assign (pc <program-counter>) (variable <variable>) expression)
+(define-method (assign (pc <program-counter>) variable expression)
   (let* ((name (.name variable))
          (state (get-state pc))
          (value (eval-expression state expression))
@@ -638,13 +638,25 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <expression>))
   (next-method))
 
+(define-method (assign (pc <program-counter>) (variable <formal>) (e <expression>))
+  (next-method))
+
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <action>))
   (let* ((instance (.instance pc))
          (r:port (runtime:port instance (.port e)))
          (other-instance other-port (runtime:other-instance+port instance r:port)))
     (assign (set-reply pc other-instance #f) variable (get-reply pc other-instance))))
 
+(define-method (assign (pc <program-counter>) (variable <formal>) (e <action>))
+  (let* ((instance (.instance pc))
+         (r:port (runtime:port instance (.port e)))
+         (other-instance other-port (runtime:other-instance+port instance r:port)))
+    (assign (set-reply pc other-instance #f) variable (get-reply pc other-instance))))
+
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <call>))
+  (assign pc variable (.return pc)))
+
+(define-method (assign (pc <program-counter>) (variable <formal>) (e <call>))
   (assign pc variable (.return pc)))
 
 (define (rewrite-trace-head rewriter trace)
