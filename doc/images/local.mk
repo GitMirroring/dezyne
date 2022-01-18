@@ -28,6 +28,13 @@ dist_info_images_DATA =					\
  %D%/Camera-system.png					\
  %D%/LegoBallSorter-system.png				\
  %D%/MaterialHandler-system.png				\
+ %D%/armor.png						\
+ %D%/async_multiple_provides.png			\
+ %D%/block.png						\
+ %D%/blocking_multiple_provides.png			\
+ %D%/collateral0.png					\
+ %D%/collateral1.png					\
+ %D%/collateral_multiple_provides.png			\
  %D%/direct_in.png					\
  %D%/direct_multiple_out1.png				\
  %D%/direct_multiple_out2.png				\
@@ -43,5 +50,6 @@ dist_info_images_DATA =					\
  %D%/indirect_multiple_out2.png				\
  %D%/indirect_multiple_out3.png				\
  %D%/indirect_out.png					\
+ %D%/multiple_provides.png				\
  %D%/simple-state-machine.png				\
  %D%/some_system.png

@@ -1,17 +1,19 @@
 import iblock.dzn;
-import ihello.dzn;
+import iworld.dzn;
 
 component block
 {
   provides blocking iblock b;
-  requires ihello r;
+  requires iworld w;
   behavior
   {
     blocking on b.block():
     {
-      r.hello();
-    } //execution waits here for b.reply() to occur
+      w.hello();
+      //execution waits here for b.reply()
+      //to occur as a result of w.world()
+    }
 
-    on r.world(): b.reply();
+    on w.world(): b.reply();
   }
 }

@@ -72,9 +72,9 @@ This document describes Dezyne version @value{VERSION}.
 
 @menu
 * Introduction::                What is Dezyne about?
+* Ideas and Concepts::          Explaining the underlying thinking.
 * Installation::                Installing Dezyne.
 * Getting Started::             Writing a program in Dezyne.
-* Ideas and Concepts::          Explaining the underlying thinking.
 * Execution Semantics::         How does it work?
 * Formal Verification::         A guide to verification errors.
 * Defensive Design::            A protective armor.
@@ -94,9 +94,16 @@ Introduction
 * Purpose::                     Why are we creating Dezyne?
 * Conditions for Using Dezyne::  There are (almost) no limits to using Dezyne.
 
+Ideas and Concepts
+
+* Concurrency::                 A message passing programming model.
+* Component Based::             Recursive decompositioning.
+* Model Based::                 Modeling the real world.
+* Design by Contract::          Contracts for message interaction.
+* Managing Complexity::         Abstraction and encapsulation.
+
 Installation
 
-@c * Binary Installation::         Getting Dezyne running in no time!
 * Requirements::                Software needed to build and run Dezyne.
 
 Getting Started
@@ -105,14 +112,6 @@ Getting Started
 * A Simple State Machine::      Stateful behavior and protocol.
 * A Camera Example::            A System of Components and Systems.
 * The Lego Ball Sorter::        A Machine Operating System.
-
-Ideas and Concepts
-
-* Concurrency::                 A message passing programming model.
-* Component Based::             Recursive decompositioning.
-* Model Based::                 Modeling the real world.
-* Design by Contract::          Contracts for message interaction.
-* Managing Complexity::         Abstraction and encapsulation.
 
 Execution Semantics
 
@@ -125,7 +124,9 @@ Execution Semantics
 * Indirect blocking out event::  Synchronize two triggers via block and release.
 * External multiple out events::  Delay caused by parallelism
 * Indirect blocking multiple external out events::  Block, delay, release.
-* Blocking in system context::  Collateral blocking
+* Multiple provides::           Multiple provides ports
+* Blocking multiple provides::  Blocking and multiple provides ports
+* Blocking in system context::  Blocking by one level of indirection: collateral blocking
 
 Formal Verification
 
@@ -454,6 +455,115 @@ Dezyne comes with NO WARRANTY, to the extent permitted by law.
 @end quotation
 
 @c *********************************************************************
+@node Ideas and Concepts
+@chapter Ideas and Concepts
+
+Dezyne aspires to evolve into a general-purpose operating-system
+language.  The operating-system qualification refers to programs that
+are stateful, highly concurrent, long-lived, resilient, and
+exceptionally reliable.  In contrast, short lived programs or programs
+that can be completely written in a pure functional way are not the
+primary target of Dezyne.  By bringing mathematics and computer
+engineering together we hope to foster the creation and evolution of
+verified ``operating system''@footnote{preferably microkernel based or
+at least distributed, the @url{https://hurd.gnu.org/hurd,GNU Hurd}
+anyone?} like applications.
+
+The syntax of Dezyne may feel pretty familiar.  The semantics is quite
+distinct from most other languages.  Simply put Dezyne is the super
+position of a process calculus onto a general purpose language.  As a
+result it adds new levels of organizational structure to the concept of
+a general purpose programming language.
+
+@menu
+* Concurrency::                 A message passing programming model.
+* Component Based::             Recursive decompositioning.
+* Model Based::                 Modeling the real world.
+* Design by Contract::          Contracts for message interaction.
+* Managing Complexity::         Abstraction and encapsulation.
+@end menu
+
+@node Concurrency
+@section Concurrency
+
+Dezyne is based on a message passing programming model.  Messages are
+explicitly represented in the language and expressed in the underlying
+process algebra.  The approach allows reasoning about equivalences which
+in turn is used in verification and allows compositions to retain their
+individually verified properties.
+
+Message passing is a natural way of describing concurrency, from
+cooperative multitasking to multi threading and multi processing.  It
+abstracts away from cumbersome primitives like semaphores, mutexes,
+condition variables, critical sections, etc.  It also removes the
+passing of time completely and focuses our reasoning on the ordering of
+messages.  Which allows combining synchronous and asynchronous activity
+in a single formalism.
+
+Multi tasking vs parallelism.
+
+@node Component Based
+@section Component Based
+
+In Dezyne programs are divided into components by means of formal
+interfaces isolating the components from their surroundings.  Components
+are composed into systems by connecting their ports.  Communication
+across port must follow the behavior as defined by their respective
+interfaces.  An interface behavior describes the message exchange
+between the components on either side of the interface that separates
+them.  A component behavior defines the interactions in terms of the
+messages exchanged across all of the component ports.
+
+Message or event maps onto a function call.
+
+@node Model Based
+@section Model Based
+
+Dezyne is for applications where one encounters the problems that the
+operating system does not solve.
+
+As Dezyne is typically used to operate an abstract machine, usually real
+world identities are represented.  They are identified by name and their
+interaction with their environment is captured as a behavior.  A
+behavior is the observable interaction in terms of message exchange.
+Interface models and component models both define behaviors.
+
+@node Design by Contract
+@section Design by Contract
+
+Regular lanuages have more or less support for design by contract.  In C
+one can assert pre and post conditions. In design there is more support
+for this...
+
+As interface behaviors prescribe an interaction protocol, they provide a
+convenient and compact way to define contracts.  A contract lists both
+expectations and obligations.  Components in turn are a convenient and
+compact way to implement such contracts using other sub contractors.
+Components distinguish two levels of hierarchy in their interface
+contracts: The interfaces they provide and the interfaces they require.
+The essential difference between the two is that an interface which is
+provided must be completely implemented.  While an interface that is
+required may or may not be used completely.
+
+@node Managing Complexity
+@section Managing Complexity
+
+The single biggest challenge, when programming at scale, is managing
+complexity.  What do we mean by complexity?  The literal meaning is
+derived from weaving together.  In programming it refers to the
+resulting behavior that emerges from combined interaction.  As the
+number of parts and their dependencies increase, the resulting behavior
+increases exponentially and very soon it reaches the point where it is
+no longer humanly possible to know and understand it.  As a result
+making changes will inadvertently lead to unknowingly interfering with
+those interactions and defects are introduced.  With increasing
+complexity existing techniques, methods and paradigms no longer suffice
+to enable the programmer to adequately manage it.  Dezyne offers both
+encapsulation as well as abstraction of interaction. Interaction which
+is unencapsulated in other paradigms. By encapsulating and abstract
+Dezyne manages complexity.
+
+@c *********************************************************************
 @node Installation
 @chapter Installation
 
@@ -470,7 +580,6 @@ has additional requirerments (@pxref{Contributing}).
 @c you may want to skip the sections on binary installation.
 
 @menu
-@c * Binary Installation::         Getting Dezyne running in no time!
 * Requirements::                Software needed to build and run Dezyne.
 @end menu
 
@@ -1071,127 +1180,52 @@ The full example is contained in the source tree at@*
 LegoBallSorter.dzn}.
 
 @c *********************************************************************
-@node Ideas and Concepts
-@chapter Ideas and Concepts
-
-Dezyne aspires to evolve into a general-purpose operating-system
-language.  The operating-system qualification refers to programs that
-are stateful, highly concurrent, long-lived, resilient, and
-exceptionally reliable.  In contrast, short lived programs or programs
-that can be completely written in a pure functional way are not the
-primary target of Dezyne.  By bringing mathematics and computer
-engineering together we hope to foster the creation and evolution of
-verified ``operating system''@footnote{preferably microkernel based or
-at least distributed, the @url{https://hurd.gnu.org/hurd,GNU Hurd}
-anyone?} like applications.
-
-The syntax of Dezyne may feel pretty familiar.  The semantics is quite
-distinct from most other languages.  Simply put Dezyne is the super
-position of a process calculus onto a general purpose language.  As a
-result it adds new levels of organizational structure to the general
-purpose programming language.
-
-@menu
-* Concurrency::                 A message passing programming model.
-* Component Based::             Recursive decompositioning.
-* Model Based::                 Modeling the real world.
-* Design by Contract::          Contracts for message interaction.
-* Managing Complexity::         Abstraction and encapsulation.
-@end menu
-
-@node Concurrency
-@section Concurrency
-
-Dezyne is based on a message passing programming model.  Messages are
-explicitly represented in the language and expressed in the underlying
-process algebra.  The approach allows reasoning about equivalences which
-in turn is used in verification and allows compositions to retain their
-individually verified properties.
-
-Message passing is a natural way of describing concurrency, from
-cooperative multitasking to multi threading and multi processing.  It
-abstracts away from cumbersome primitives like semaphores, mutexes,
-condition variables, critical sections, etc.  It also removes the
-passing of time completely and focuses our reasoning on the ordering of
-messages.  Which allows combining synchronous and asynchronous activity
-in a single formalism.
-
-@node Component Based
-@section Component Based
-
-In Dezyne programs are divided into components by means of formal
-interfaces isolating the components from their surroundings.  Components
-are composed into systems by connecting their ports.  Communication
-across port must follow the behavior as defined by their respective
-interfaces.  An interface behavior describes the message exchange
-between the components on either side of the interface that separates
-them.  A component behavior defines the interactions in terms of the
-messages exchanged across all of the component ports.
-
-@node Model Based
-@section Model Based
-
-As Dezyne is typically used to operate a machine, usually real world
-identities are represented.  They are identified by name and their
-interaction with their environment is captured as a behavior.  A
-behavior is the observable interaction in terms of message exchange.
-Interface models and component models both define behaviors.
-
-@node Design by Contract
-@section Design by Contract
-
-As interface behaviors prescribe an interaction protocol, they provide a
-convenient and compact way to define contracts.  A contract lists both
-expectations and obligations.  Components in turn are a convenient and
-compact way to implement such contracts using other sub contractors.
-Components distinguish two levels of hierarchy in their interface
-contracts: The interfaces they provide and the interfaces they require.
-The essential difference between the two is that an interface which is
-provided must be completely implemented.  While an interface that is
-required may or may not be used completely.
-
-@node Managing Complexity
-@section Managing Complexity
-
-The single biggest challenge, when programming at scale, is managing
-complexity.  What do we mean by complexity?  The literal meaning is
-derived from weaving together.  In programming it refers to the
-resulting behavior that emerges from combined interaction.  As the
-number of parts and their dependencies increase, the resulting behavior
-increases exponentially and very soon it reaches the point where it is no
-longer humanly possible to know and understand it.  As a result making
-changes will inadvertently lead to unknowingly interfering with those
-interactions and defects are introduced.  With increasing complexity
-existing techniques, methods and paradigms no longer suffice to enable
-the programmer to adequately manage it.  Dezyne offers both
-encapsulation as well as abstraction of unencapsulated interaction to
-manage complexity.
-
-@c *********************************************************************
 @node Execution Semantics
 @chapter Execution Semantics
 
 The semantics of Dezyne derives from implementing message passing as
 component based ineraction by means of non-reentrant recursive function
-invocations. In Dezyne, the occurrence of an event is mapped onto a
-(member) function call. Every event function implements the recursive
-procedural execution of all of the side effects, e.g. actions, i.e.,
-event function invocations, state updates, i.e., assignments, runtime
-library interaction: tracing, queueing and dequeueing and context
-switching, i.e., blocking and unblocking.
+invocation.  The occurrence of an event is mapped onto a (class-member)
+function call.  Every event function implements the recursive procedural
+execution of all of the side effects, e.g.: actions (event function
+invocations(, state updates (assignments), and runtime library
+interactions: tracing, queueing, flushing and context switching
+(blocking and unblocking).
+
+For each in-event all action statements are executed depth-first.  Each
+out-event is stored in the event queue of the recipient.  After the
+completion of all @code{on} imperative statements, just before control
+is passed back to the caller, a component will flush its own queue of
+pending out events.  If a component was the recipient of an out-event
+while it was not executing any events, it will also be requested to
+flush its queue by the sender of the event.
 
 The execution semantics of Dezyne are illustrated using different model
-examples and the corresponding sequence diagrams.
+examples and their corresponding sequence diagrams.  When interpreting
+the models and their corresponding event sequence traces, keep in mind
+that the statements of an event are executed atomically in the context
+of the behavior that implements the event.
 
-When interpreting the models and corresponding sequence diagrams, keep
-in mind that the body of an event is executed atomically in the context
-of its behavior.
+When interpreting the event sequence traces remember the following:
 
-For an in-event all action statements are executed depth-first.  All
-out-events are stored in event queues of the recipient.  After the
-completion of all action statements, just before control is passed back
-to the caller, a component will flush its queue of pending out events.
-All out-events are handled this way recursively.
+@enumerate
+@item in-events
+are executed from left to right and return right to left.
+
+@item out-events
+are executed from right to left; each event is queued before it is
+flushed and executed.
+@end enumerate
+
+In the naming of the different examples the terms @emph{direct} and
+@emph{indirect} are used to indicate that execution respectively
+continues in the same direction of the initial event, or changes
+direction at least once.
+
+@quotation Note
+The behavior of every component example in this chapter has been
+verified to comply with the behavior of all of its interfaces.
+@end quotation
 
 @menu
 * Direct in event::             A provides trigger forwarded
@@ -1203,7 +1237,9 @@ All out-events are handled this way recursively.
 * Indirect blocking out event::  Synchronize two triggers via block and release.
 * External multiple out events::  Delay caused by parallelism
 * Indirect blocking multiple external out events::  Block, delay, release.
-* Blocking in system context::  Collateral blocking
+* Multiple provides::           Multiple provides ports
+* Blocking multiple provides::  Blocking and multiple provides ports
+* Blocking in system context::  Blocking by one level of indirection: collateral blocking
 @end menu
 
 @node Direct in event
@@ -1240,6 +1276,12 @@ A requires port inevitably triggering multiple out-events (@code{r.a},
 posting in the component queue, followed by a single flush call to
 trigger component processing of the events.  The below 2 versions of the
 component are indistinguishable looking from the outside.
+
+Notice that the interface declares that @code{a} and @code{b} are
+executed atomically.  While in the behavior of the component each event
+is handled or forwarded independently.  However to an observer of the
+provides interface of the component @code{a} and @code{b} are again
+executed atomically.
 
 @example
 @verbatiminclude semantics/direct_multiple_out1.dzn
@@ -1386,221 +1428,182 @@ the same in both cases.
 
 @image{images/indirect_blocking_multiple_external_out,,,,.png}
 
-@node Blocking in system context
-@section Blocking in system context
+@node Multiple provides
+@section Multiple provides
 
-To describe the blocking keyword in system context, we use the
-interfaces @code{ihello} and @code{iblock} below.
+For the remainder of this chapter in our explanations we will be using
+the following two interfaces:
 
+@enumerate
+@item
+@code{ihello}
 @example
 @verbatiminclude semantics/ihello.dzn
 @end example
 
+@item
+@code{iworld}
 @example
-@verbatiminclude semantics/iblock.dzn
+@verbatiminclude semantics/iworld.dzn
+@end example
+@end enumerate
+
+So far we have seen examples with more than one requires port.  This
+topology leads to a tree like hierarchy which is a common structure to
+organize or coordinate in a top down fashion.  In the case of sharing a
+single resource between multiple parties we need the opposite.  The
+example below demonstrates to use of two provides ports.
+
+@example
+@verbatiminclude semantics/multiple_provides.dzn
 @end example
 
-We have already seen some examples of the usage of the blocking keyword
-and its corresponding semantics.  Given the @code{block} component
-example below,
+This component simply multiplexes the @code{hello} events from its
+@code{provides} ports to its @code{requires} port, resulting in the
+following event sequence trace:
+
+@image{images/multiple_provides,,,,.png}
+
+If we replace the @code{ihello} interface in our previous example with
+the @code{iworld} interface and correct for the behavioral changes, we
+get the following component:
+
+@example
+@verbatiminclude semantics/async_multiple_provides.dzn
+@end example
+
+As we can see from the behavior and the event sequence trace below,
+asynchonous behavior leads to event interleaving, which requires state
+to manage the behavior.
+
+@image{images/async_multiple_provides,,,,.png}
+
+@node Blocking multiple provides
+@section Blocking multiple provides
+
+The @code{blocking} keyword can (since 2.15) also be used in combination
+with multiple @code{provides} ports.  In our explanation we will
+introduce a component that does two things.  First it multiplexes the
+@code{provides} ports events over a single @code{requires} port.
+Secondly it maps the @emph{synchronous} behavior of the @code{provides}
+@code{ihello} interfaces onto the @emph{asynchronous} behavior of the
+@code{requires} @code{iworld} interface (see the interface declarations
+at the end of this section).
+
+@example
+@verbatiminclude semantics/blocking_multiple_provides.dzn
+@end example
+
+In the event sequence trace below we can see that for each
+@code{provides} port that @emph{asynchronous} @code{hello} @code{world}
+transaction is encapsulated.
+
+@image{images/blocking_multiple_provides,,,,.png}
+
+@node Blocking in system context
+@section Blocking in system context
+
+Blocking has a direct effect on a single event, but it also influences
+the rest of the system behavior.  To investigate the effects of the
+@code{blocking} keyword in system context, we will describe two
+examples.  In the first example we concentrate our attention on the
+event interleaving at the provides ports.  The second example focusses
+on the interleaving of events that originate from the requires ports.
+
+The indirect effect of the use of the @code{blocking} keyword is
+referred to as @emph{collateral blocking}.  Blocking an event means
+making the caller wait by withholding its return until some state has
+been reached which is indicated by another event.  To achieve this, the
+other processes outside the component that is applying the
+@code{blocking} keyword must be able to make progress.  Furthermore the
+component must be exposed to this progress to be able to resolve the
+@emph{blocking} situation by returning to its caller.
+
+Let us recapitulate @emph{blocking} with a small example component that
+will be used by each of the examples in this section.
 
 @example
 @verbatiminclude semantics/block.dzn
 @end example
 
-we know that @code{b.block} performs everything it must for its run to
-completion up to but not including the @code{reply}.  The execution will
-pause after reaching the end of the imperative statement.  In order to
-continue to make progress we must allow @code{r.world} to perform
-@code{b.reply}.  This is depicted by the event sequence trace below.
+@image{images/block,,,,.png}
 
-@example
-b      block      r
-.        :        .
-.        :        .
-.block   :        .
-.------->:        .
-.        :        .
-.        :hello   .
-.        :------->.
-.        :        .
-.        :  return.
-.        :<-------.
-.        :        .
-.        :   world.
-.        :<-------.
-.        :        .
-.        :world   .
-.        :<-      .
-.        :        .
-.  return:        .
-.<-------:        .
-.        :        .
-@end example
-
-Now also remember that in Dezyne each event may change the corresponding
-model state atomically.  In other words it must not matter to the
-observer of the event behavior in what order assignments to state
-variables are performed within the imperative statement.  Consider the
-following imperative statement examples:
-
-@example
-@{idle = false; r.hello(); b.block();@}
-@end example
-
-@example
-@{r.hello(); idle = false; b.block();@}
-@end example
-
-@example
-@{r.hello(); b.block(); idle = false;@}
-@end example
-
-All three are indistinguishable from an event sequence point of view,
-i.e. each performs an @code{r.hello} followed by a @code{b.block}.  The
-same must hold for the behavior of the component as a whole.  Even when
-the actions might block for a certain amount of time whereby other
-events must occur to either resolve the blocking situation or perform
-other actions.
-
-@subsection Collateral blocking
-A less obvious implication of blocking occurs when
-considering a blocking component @code{block} in its larger context.  We
-can demonstrate this implication by defining a client of component
-@code{block}.  For this we introduce component @code{collateral}.  This
-component implements one of the previous imperative statements.
+Here we see component @code{block} that withholds its return on port
+@code{b} until it has received event @code{r.world}.  Remember that a
+significant amount of time may pass between @code{r.hello} and
+@code{r.world}.  During this time the rest system that contains our
+@code{block} component could make progress, without the component
+becoming aware.  If we add more system context to our @code{block}
+component we can see how @emph{collateral blocking} manifests itself.
+We will add component @code{collateral} as a client to @code{block}.
 
 @example
 @verbatiminclude semantics/collateral.dzn
 @end example
 
-Here @code{b.block()} could block for a certain amount of time.  During
-the time that the @code{block} component awaits the occurrence of
-@code{r.world()} to perform the postponed @code{reply}, another event
-may also occur.  We can see this in more detail in the corresponding
-event sequence trace of the system below.
+Besides being a client to component @code{block} this component is also
+a client to another regular non-blocking component.  The event sequence
+trace below shows the first of the two possible scenarios implemented by
+the @code{collateral} component.
+
+@image{images/collateral0,,,,.png}
+
+In this first scenario nothing is out of the ordinary, but now take a
+look at the second event sequence trace below.
+
+@image{images/collateral1,,,,.png}
+
+Here we can see that during the time between @code{b.block} and
+@code{b.return} the @code{world} event on port @code{w} is allowed to
+occur.  This is the result of the fact that although the
+@code{collateral} component is blocked on its call to @code{b.block}, it
+will find @code{w.world} in its queue before returning to its caller.
+And as a result, forwarding @code{w.world} as @code{h.world} will occur
+before returning to its caller, which differs from the previous
+scenario.  Verification of component @code{collateral} will check for
+both scenarios and ensure that the component behavior complies with all
+of the inteface behavior or otherwise report the non-compliant scenario.
+Verification relies on the @code{blocking} annotation on port @code{b}
+in order to infer the @emph{collateral blocking} scenario and check for
+it.
+
+@subsection Collateral blocking and multiple provides.
+
+We can now revisit the blocking multiple provides example.  Instead of
+making the multiplexing component responsible for the synchronization,
+we can also add a level of indirection by splitting up
+@code{blocking_multiple_provides} into a separate component that takes
+care of synchronizing the @emph{asynchronous} behavior and a separate
+multiple @code{provides} component.  The latter can be expressed as
+component @code{mux} below:
 
 @example
- s.top         s.left          s.right             pr br
-   :              :                :               .  .
-   :block         :                :               .  .
-   :------------->:                :               .  .
-   :              :                :               .  .
-   :              :hello           :               .  .
-   :              :---------------------------------->.
-   :              :                :               .  .
-   :              :                :            return.
-   :              :<----------------------------------.
-   :              :                :               .  .
-   :              :                :          world.  .
-   :              :                :<--------------.  .
-   :              :                :               .  .
-   :              :                :world          .  .
-   :              :                :<-             .  .
-   :              :                :               .  .
-   :              :                :             world.
-   :              :<----------------------------------.
-   :              :                :               .  .
-   :              :world           :               .  .
-   :              :<-              :               .  .
-   :              :                :               .  .
-   :        return:                :               .  .
-   :<-------------:                :               .  .
-   :              :                :               .  .
-   :              :           world:               .  .
-   :<------------------------------:               .  .
-   :              :                :               .  .
+@verbatiminclude semantics/mux.dzn
 @end example
 
-Here we can see that @code{top.block} only returns after having received
-a @code{br.world} which performs the postponed @code{reply}. In the
-meantime @code{pr.world} has also occurred and is not allowed to finish
-its execution until the blocking condition in component @code{s.left}
-has been lifted.  An event not being allowed to finish its run to
-completion due to re-entering an already blocked component is called
-collateral blocking.  The diagram above is a cut out of the larger event
-sequence trace created by executing @code{h.hello,pr.world,br.world} on
-system component @code{s}.
+This component, notwithstanding the @code{blocking} annotations on its
+ports, behaves exactly like component @code{multiple_provides}.
+However, when we bring its clients into scope we get the @code{system}
+model below.
 
 @example
-@verbatiminclude semantics/blocking.dzn
+@verbatiminclude semantics/collateral_multiple_provides.dzn
 @end example
 
-Next to component @code{collateral} and @code{block} the system @code{s}
-is comprised of component @code{proxy}.
+In its event sequence trace we can see another impact of
+@emph{collateral blocking}.
 
-@example
-@verbatiminclude semantics/proxy.dzn
-@end example
+@image{images/collateral_multiple_provides,6in,,,.png}
 
-In Dezyne blocking and collateral blocking are implemented using
-coroutines.  Therefore the interleaving of event sequences is a form of
-cooperative multi-tasking.  As a result the behavior is deterministic as
-opposed to multi-threaded interleaving.
+Although the behavior across the @code{mux} component is non-overlapping
+the behavior of the client components is interleaved.
 
-Collateral blocking affects another aspect of the Dezyne semantics, the
-single threaded cancel guarantee.  In Dezyne each event atomically
-changes the corresponding model state.  In an interface with a guarded
-modeling event which is toggled from being enabled to not being enabled
-is referred to as the single threaded cancel guarantee.  We can see an
-example in the interface @code{ibye} below.
-
-@example
-@verbatiminclude semantics/ibye.dzn
-@end example
-
-The event sequence @code{hello;bye} prevents world from occurring. Given
-enough time between @code{hello} and @code{bye}, the @code{world} event
-will inevitably occur.
-
-A similar same thing will happen when a component like @code{embrace}
-enables a modeling event only then to block for an indeterminate amount
-of time after which it attempts to disable the modeling event once
-again.
-
-@example
-@verbatiminclude semantics/embrace.dzn
-@end example
-
-In this case, when the @code{r.world} event collaterally blocks as a
-result of @code{b.block} being blocked, the @code{r.bye} event will also
-collaterally block.  The deadly embrace between @code{r.world} and
-@code{r.bye} may be avoided if @code{r.world} does not occur during the
-time that @code{b.block} blocks.  Since we cannot be sure, we must
-assume this may happen and verification must report a deadlock as a
-result.
-
-@subsection Event sequence in execution context
-
-Another implication of blocking is demonstrated by this second version
-@code{embrace2} of a deadly embrace.
-
-@example
-@verbatiminclude semantics/embrace2.dzn
-@end example
-
-Here we have an example of the semicolon that separates @code{b.block}
-and @code{r.bye} being moved up one level in the component hierarchy.
-Even though the @code{b.block} and the @code{r.bye} are no longer part
-of the atomic event sequence of @code{h.hello}, we can imagine a client
-of @code{embrace2} performing the sequence @code{h.hello; h.bye}.  This
-event sequence would lead to the same deadly embrace between
-@code{r.world} and @code{r.bye} in component @code{embrace2} as in
-component @code{embrace}.
-
-Producing the corresponding event sequence trace is left as an exercise
-to the reader.
-
-@subsection Resolving a deadly embrace
-
-Now that we understand how a deadly embrace may result from the use of
-the @code{blocking} keyword, we might also like to know how to resolve
-the situation when does occur.  In the case of our @code{collateral} and
-@code{embrace} we can simply reorder the two actions in the sequence
-@code{r.hello; b.block} to @code{b.block; r.hello}, this will side step
-the entire problem.  This will not work in every situation, upcoming
-releases will introduce language constructs to deal with those
-situations.
+@quotation Note
+In Dezyne blocking is implemented by means of coroutines.  Therefore the
+interleaving of event sequences is a form of cooperative multi-tasking.
+As a result its behavior is deterministic as opposed to
+non-deterministic as in multi-threaded interleaving.
+@end quotation
 
 @c *********************************************************************
 @node Formal Verification
@@ -1850,7 +1853,11 @@ w.hello
 <illegal>
 @end example
 
-at the end of running this trace, an @code{illegal} action occurs.
+at the end of running this trace, an @code{illegal} action occurs.  This
+implies there is an inconsistency in the behavior of the component and
+its interface, the contract is violated. This can either be fixed by a
+change to the interface behavior contract or by changing the component
+behavior.
 
 @node Interpreting Verification Errors
 @section Interpreting Verification Errors
@@ -1973,13 +1980,18 @@ the handling of the respective error conditions.
 @node Armoring
 @section Armoring
 
-An armor is a defensive layer of components that protects the armored
-components who rely on their interface contracts from any behavior which
-would violate those contracts.  An armoring component can be developed
-in Dezyne itself by creating a permissive interface from the strict
-interface behavior and letting the armor component map one behavior onto
-the other making sure the permissive behavior never violates the strict
-behavior.
+A common programming adagium is to be liberal what you accept and strict
+in what you deliver.  Verification clearly depends on the accuracy with
+which the behavior of the environment is described by its interface
+specifications.  Any inconsistency with reality may lead the execution
+of the code into unverified territory.  To avoid this we can apply an
+approach called @emph{armoring}.  An armor is a defensive layer of
+components that protects the armored components who rely on their
+interface contracts from any behavior which would violate those
+contracts.  An armoring component can be developed in Dezyne itself by
+creating a permissive interface from the strict interface behavior and
+letting the armor component map one behavior onto the other making sure
+the permissive behavior never violates the strict behavior.
 
 Consider this simple strict interface
 
@@ -2028,6 +2040,8 @@ the bottom.  Both protecting the inside component called @code{proxy}.
 @example
 @verbatiminclude examples/armor.dzn
 @end example
+
+@image{images/armor,,,,.png}
 
 @node Code Integration
 @chapter Code Integration

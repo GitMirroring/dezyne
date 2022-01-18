@@ -1,0 +1,24 @@
+import mux.dzn;
+import proxy.dzn;
+
+component collateral_multiple_provides
+{
+  provides blocking ihello left;
+  provides blocking ihello right;
+
+  requires blocking iblock block;
+
+  system
+  {
+    proxy l;
+    proxy r;
+    mux m;
+
+    left <=> l.h;
+    l.r <=> m.left;
+    right <=> r.h;
+    r.r <=> m.right;
+
+    m.b <=> block;
+  }
+}

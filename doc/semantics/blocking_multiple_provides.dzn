@@ -1,0 +1,34 @@
+import ihello.dzn;
+import iworld.dzn;
+
+component blocking_multiple_provides
+{
+  provides blocking ihello left;
+  provides blocking ihello right;
+  requires iworld r;
+
+  behavior
+  {
+    enum Side {None, Left, Right};
+    Side side = Side.None;
+    Side pending = Side.None;
+
+    [side.None]
+    {
+      blocking on left.hello(): {r.hello(); side = Side.Left;}
+      blocking on right.hello(): {r.hello(); side = Side.Right;}
+    }
+
+    [side.Left] blocking on right.hello(): pending = Side.Right;
+    [side.Right] blocking on left.hello(): pending = Side.Left;
+
+    on r.world():
+    {
+      if(side.Left) left.reply();
+      if(side.Right) right.reply();
+      if(!pending.None) r.hello();
+      side = pending;
+      pending = Side.None;
+    }
+  }
+}

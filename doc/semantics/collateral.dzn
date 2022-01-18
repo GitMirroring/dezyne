@@ -1,16 +1,17 @@
-import ihello.dzn;
+import ihelloworld.dzn;
+import iworld.dzn;
 import iblock.dzn;
 
 component collateral
 {
-  provides blocking ihello h;
-  requires ihello r;
+  provides blocking ihelloworld h;
   requires blocking iblock b;
+  requires iworld w;
 
   behavior
   {
     bool idle = true;
-    [idle] on h.hello(): {r.hello(); b.block(); idle = false;}
-    [!idle] on r.world(): {h.world(); idle = true;}
+    [idle] on h.hello(): {w.hello(); b.block(); idle = false;}
+    [!idle] on w.world(): {h.world(); idle = true;}
   }
 }

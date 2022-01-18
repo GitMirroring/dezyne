@@ -1,0 +1,16 @@
+import ihello.dzn;
+import iblock.dzn;
+
+component mux
+{
+  provides blocking ihello left;
+  provides blocking ihello right;
+
+  requires blocking iblock b;
+
+  behavior
+  {
+    on left.hello(): b.block();
+    on right.hello(): b.block();
+  }
+}

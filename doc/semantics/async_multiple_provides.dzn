@@ -1,0 +1,47 @@
+import iworld.dzn;
+
+component async_multiple_provides
+{
+  provides iworld left;
+  provides iworld right;
+  requires iworld world;
+
+  behavior
+  {
+    enum Side {None, Left, Right};
+    Side side = Side.None;
+    Side pending = Side.None;
+
+    [side.None]
+    {
+      on left.hello(): {side = Side.Left; world.hello();}
+      on right.hello(): {side = Side.Right; world.hello();}
+    }
+    [side.Left]
+    {
+      [pending.None]
+      {
+        on right.hello(): pending = Side.Right;
+        on world.world(): {side = Side.None; left.world();}
+      }
+      [pending.Right] on world.world():
+      {
+        side = pending; pending = Side.None;
+        left.world(); world.hello();
+      }
+    }
+    [side.Right]
+    {
+      [pending.None]
+      {
+        on left.hello(): pending = Side.Left;
+        on world.world(): {side = Side.None; right.world();}
+      }
+      [pending.Left] on world.world():
+      {
+        side = pending; pending = Side.None;
+        right.world(); world.hello();
+      }
+    }
+  }
+}

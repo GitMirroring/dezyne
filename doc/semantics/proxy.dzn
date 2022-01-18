@@ -2,12 +2,10 @@ import ihello.dzn;
 
 component proxy
 {
-  provides ihello h;
-  requires ihello r;
+  provides blocking ihello h;
+  requires blocking ihello r;
   behavior
   {
-    bool idle = true;
-    [idle] on h.hello(): {idle = false; r.hello();}
-    [!idle] on r.world(): {idle = true; h.world();}
+    on h.hello(): r.hello();
   }
 }

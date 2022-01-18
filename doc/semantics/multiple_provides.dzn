@@ -1,0 +1,13 @@
+import ihello.dzn;
+
+component multiple_provides
+{
+  provides ihello left;
+  provides ihello right;
+  requires ihello hello;
+  behavior
+  {
+    on left.hello(): hello.hello();
+    on right.hello(): hello.hello();
+  }
+}

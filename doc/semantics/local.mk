@@ -25,6 +25,11 @@
 EXTRA_DIST += %D%/README
 
 DOCUMENTATION_SEMANTICS =				\
+ %D%/async_multiple_provides.dzn			\
+ %D%/block.dzn						\
+ %D%/blocking_multiple_provides.dzn			\
+ %D%/collateral.dzn					\
+ %D%/collateral_multiple_provides.dzn			\
  %D%/direct_in.dzn					\
  %D%/direct_multiple_out1.dzn				\
  %D%/direct_multiple_out2.dzn				\
@@ -32,6 +37,7 @@ DOCUMENTATION_SEMANTICS =				\
  %D%/external_multiple_out1.dzn				\
  %D%/external_multiple_out2.dzn				\
  %D%/external_multiple_out3.dzn				\
+ %D%/ihello.dzn						\
  %D%/indirect_blocking_multiple_external_out.dzn	\
  %D%/indirect_blocking_out.dzn				\
  %D%/indirect_in.dzn					\
@@ -39,14 +45,9 @@ DOCUMENTATION_SEMANTICS =				\
  %D%/indirect_multiple_out2.dzn				\
  %D%/indirect_multiple_out3.dzn				\
  %D%/indirect_out.dzn					\
- %D%/block.dzn						\
- %D%/blocking.dzn					\
- %D%/collateral.dzn					\
- %D%/embrace.dzn					\
- %D%/embrace2.dzn					\
- %D%/iblock.dzn						\
- %D%/ibye.dzn						\
- %D%/ihello.dzn						\
+ %D%/iworld.dzn						\
+ %D%/multiple_provides.dzn				\
+ %D%/mux.dzn						\
  %D%/proxy.dzn
 
 EXTRA_DIST += $(DOCUMENTATION_SEMANTICS)

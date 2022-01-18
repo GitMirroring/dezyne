@@ -1,0 +1,21 @@
+import collateral.dzn;
+import block.dzn;
+
+component s
+{
+  provides blocking ihelloworld h;
+  requires iworld b;
+  requires iworld w;
+
+  system
+  {
+    h <=> top.h;
+    collateral top;
+
+    top.b <=> left.b;
+    block left;
+    left.w <=> b;
+
+    top.w <=> w;
+  }
+}
