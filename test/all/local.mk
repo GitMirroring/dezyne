@@ -113,6 +113,7 @@ REGRESSION_TESTS =				\
  %D%/alpha_local				\
  %D%/alpha_shadow_port				\
  %D%/alpha_variable				\
+ %D%/assign_formal				\
  %D%/async_async_prio				\
  %D%/async_blocking				\
  %D%/async_cancel				\
