@@ -1,9 +1,0 @@
-(header ((h) ihello provides) ((sut) compliance_failures_inevitable component) ((w) iworld requires))
-(state ((h)) ((sut)) ((w) (b . false)))
-test/all/compliance_failures_inevitable/compliance_failures_inevitable.dzn:60:3: error: non-compliance
-<non-compliance>
-(state ((h)) ((sut)) ((w) (b . false)))
-test/all/compliance_failures_inevitable/compliance_failures_inevitable.dzn:60:3: error: non-compliance
-(trail "<non-compliance>")
-(labels "h.hello" "w.world")
-(eligible)
