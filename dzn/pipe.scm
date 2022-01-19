@@ -1,8 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2016, 2017, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2016, 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -33,6 +32,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+
+  #:use-module (dzn misc)
 
   #:export (pipeline pipeline* pipeline->port pipeline->string pipeline*->string))
 
@@ -106,7 +107,10 @@ the pipeline COMMANDS."
       (close output-port)
       (let ((stdout (read-string input-port)))
         (false-if-exception (close input-port))
-        (values stdout (apply + (map (compose status:exit-val cdr waitpid) pids))))))
+        (values stdout (apply + (map (compose (disjoin status:exit-val
+                                                       status:term-sig)
+                                              cdr waitpid)
+                                     pids))))))
   (match commands
     (((? procedure? procedure) commands ...)
      (unless (string-null? input)
@@ -128,7 +132,9 @@ of the output stati of the pipeline COMMANDS."
       (display input output-port)
       (close output-port)
       (false-if-exception (close input-port))
-      (values #f (apply + (map (compose status:exit-val cdr waitpid) pids)))))
+      (values #f (apply + (map (compose (disjoin status:exit-val
+                                                 status:term-sig)
+                                        cdr waitpid) pids)))))
   (match commands
     (((? procedure? procedure))
      (parameterize ((current-output-port output-port))
