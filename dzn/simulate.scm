@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -912,11 +912,39 @@ status."
                            #:trace trace
                            #:verbose? verbose?))))
 
+       ;; When a trace is blocked, and the component is stable (the
+       ;; requires ports are stable), the refusal is the return of the
+       ;; blocked provides port.
+       (and (= (length from-pcs) 1)
+            (find (compose pair? .blocked car) traces)
+            (null? (.external-q (car from-pcs)))
+            (requires-ports-stable? component pc)
+            (let* ((trace-format trace)
+                   (trace (find (compose pair? .blocked car) traces))
+                   (trace (reverse (set-trigger-locations (reverse trace))))
+                   (pc (find (conjoin .trigger
+                                      (compose (is? <runtime:component>)
+                                               .instance))
+                             (reverse trace)))
+                   (trigger (.trigger pc))
+                   (pc (clone pc #:status (make <refusals-error>
+                                            #:ast (.behavior component)
+                                            #:message "non-compliance"
+                                            #:refusals trigger)))
+                   (trace (cons pc trace)))
+              (report (list trace)
+                      #:eligible '()
+                      #:internal? internal?
+                      #:locations? locations?
+                      #:state? state?
+                      #:trace trace-format
+                      #:verbose? verbose?)))
+
        ;; In the failures model, refusals can only occur when the
        ;; component LTS is stable.  When the component LTS is not
        ;; stable, that means outgoing tau events: no refusals.  A
        ;; component LTS is stable when all requires port LTSs are
-       ;; stable.  When the a provides port's modeling-LTS in not
+       ;; stable.  When the a provides port's modeling-LTS is not
        ;; stable, the refusals set consists of all its observable
        ;; events.
        (and (= (length from-pcs) 1)
@@ -980,8 +1008,8 @@ status."
         (and refusals-check? (pair? traces)
              (any (cute refusals-report from-pcs <> <>) from-pcs list-of-traces))
         (let* ((eligible
-               (and deadlock-check?
-                    (eligible-labels (event-traces-alist pcs))))
+                (and deadlock-check?
+                     (eligible-labels (event-traces-alist pcs))))
                (eligible (and eligible
                               (labels-filter-blocked-ports traces eligible))))
           (report traces

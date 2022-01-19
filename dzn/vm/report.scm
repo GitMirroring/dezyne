@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -862,25 +862,32 @@ intermediate steps such as assignments, function calls, replies,
                  (format #f "~afor trigger on port ~a\n" trigger-location trigger-port-name))))
           "")))
       (($ <refusals-error>)
-       (let* ((refusals (sort (.refusals status) equal?))
-              (refusals (apply append refusals))
-              (location (or (and=> (.ast status) step->location)
-                            "<unknown-file>:"))
-              (inevitables optionals
-                           (partition
-                            (compose (cute equal? "inevitable" <>) car)
-                            refusals)))
-         (string-append
-          (format #f "~acomponent can omit all of: ~a\n"
-                  location
-                  (string-join (map cadr refusals) ", "))
-          (format #f "~athe interface promises inevitably: ~a \n"
-                  location
-                  (string-join (map cadr inevitables) ","))
-          (if (null? optionals) ""
-              (format #f "~aor optionally: ~a\n"
-                      location
-                      (string-join (map cadr optionals) ","))))))
+       (match (.refusals status)
+         ((and ($ <trigger>) trigger)
+          (let ((location (or (step->location trigger) "<unknown-file>:"))
+                (trigger (trigger->string trigger)))
+            (format #f "~acomponent can omit return of trigger: ~a\n"
+                    location trigger)))
+         (_
+          (let* ((refusals (sort (.refusals status) equal?))
+                 (refusals (apply append refusals))
+                 (location (or (and=> (.ast status) step->location)
+                               "<unknown-file>:"))
+                 (inevitables optionals
+                              (partition
+                               (compose (cute equal? "inevitable" <>) car)
+                               refusals)))
+            (string-append
+             (format #f "~acomponent can omit all of: ~a\n"
+                     location
+                     (string-join (map cadr refusals) ", "))
+             (format #f "~athe interface promises inevitably: ~a \n"
+                     location
+                     (string-join (map cadr inevitables) ","))
+             (if (null? optionals) ""
+                 (format #f "~aor optionally: ~a\n"
+                         location
+                         (string-join (map cadr optionals) ","))))))))
       (($ <range-error>)
        (let* ((variable (.variable status))
               (name (.name variable))
