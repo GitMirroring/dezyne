@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -52,7 +52,7 @@ component hello
   }
 }
 
-component foreign_conflict
+component wf_foreign_conflict
 {
   provides iworld w;
 }
@@ -64,7 +64,7 @@ component hello_foreign
   system
     {
       hello c;
-      foreign_conflict f;
+      wf_foreign_conflict f;
       h <=> c.h;
       c.w <=> f.w;
     }

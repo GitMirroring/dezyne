@@ -211,7 +211,6 @@ REGRESSION_TESTS =				\
  %D%/equal_binary				\
  %D%/external_asynchronous_sync			\
  %D%/external_blocking_livelock                 \
- %D%/foreign_conflict				\
  %D%/foreign_injected				\
  %D%/illegal_external_inevitable		\
  %D%/external_requires_twice			\
@@ -400,7 +399,7 @@ PARSER_TESTS =					\
  %D%/wf_bindingPortDirection			\
  %D%/wf_bindingPortNotBound			\
  %D%/wf_bindingRequiredWildcard			\
- %D%/wf_bindingSameType			\
+ %D%/wf_bindingSameType				\
  %D%/wf_blockingInblocking			\
  %D%/wf_blockingInInterface			\
  %D%/wf_blockingMultipleProvides		\
@@ -417,6 +416,7 @@ PARSER_TESTS =					\
  %D%/wf_eventNotTrigger				\
  %D%/wf_eventNotValuedAction			\
  %D%/wf_expressionExpected			\
+ %D%/wf_foreign_conflict			\
  %D%/wf_functionInExpression			\
  %D%/wf_functionReturnNotExpected		\
  %D%/wf_functionReturnValue			\
@@ -477,7 +477,6 @@ XFAIL_TESTS =					\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock                 \
- %D%/foreign_conflict				\
  %D%/import_strip_component
 
 FULL_TESTS =					\

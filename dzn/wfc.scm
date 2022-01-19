@@ -88,6 +88,17 @@
 (define-method (wfc (o <component-model>)) ;; is-a <model>
   (append-map wfc (ast:port* o)))
 
+(define-method (wfc (o <foreign>))
+  (let* ((root (parent o <root>))
+         (basename (ast:base-name root)))
+    (if (not (equal? (string-join (ast:full-name o) "_") basename)) '()
+        `(,(wfc-error
+            o
+            (format
+             #f
+             "foreign component cannot have the same name as its file: `~a'"
+             basename))))))
+
 (define-method (wfc (o <component>)) ;; is-a <component-model>
   (append
    (re-definition o)

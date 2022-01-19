@@ -1,4 +1,0 @@
-;;; -*- scheme -*-
-((skip ("build" "traces"))
- (comment
-   "error model: should flag limitation w.r.t. foreign component names and file2file"))

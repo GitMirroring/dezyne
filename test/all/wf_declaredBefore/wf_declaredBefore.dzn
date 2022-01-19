@@ -1,6 +1,8 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -53,4 +55,5 @@ component wf_declaredBefore {
   requires I r; // 'r' declared before
   provides I s;
   requires I s; // 's' declared before
+  behavior {}
 }
