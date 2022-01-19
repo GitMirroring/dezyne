@@ -1,7 +1,7 @@
 #! /bin/sh
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -25,11 +25,12 @@
 sed -i                                                          \
     -e s,henk.katerberg[@]verum.com,hank@mudball.nl,gi          \
     -e s,henk.katerberg[@]yahoo.com,hank@mudball.nl,gi          \
+    -e s,joran.jessurun[@]gmail.com,joran.jessurun@ajmail.nl,gi \
     -e s,johri.van.eerd[@]verum.com,vaneerd.johri@gmail.com,gi  \
     -e s,paul.hoogendijk[@]verum.com,paul@dezyne.org,gi         \
     -e s,rob.wieringa[@]verum.com,rob@rma.wieringa@gmail.com,gi \
     -e s,rutger.van.beusekom[@]gmail.com,rutger@dezyne.org,gi   \
     -e s,rutger.van.beusekom[@]verum.com,rutger@dezyne.org,gi   \
-    $(git grep -El '@verum.com|@yahoo.com')
+    $(git grep -El '@verum.com|@yahoo.com|@gmail.com')
 
 git grep @verum.com
