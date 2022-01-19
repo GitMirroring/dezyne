@@ -1,0 +1,4 @@
+test/all/wf_missing_bindings/wf_missing_bindings.dzn:42:3: error: port `r' of type `ihello' not bound
+test/all/wf_missing_bindings/wf_missing_bindings.dzn:46:5: error: port `r' of type `ihello' not bound
+test/all/wf_missing_bindings/wf_missing_bindings.dzn:47:5: error: port `p' of type `ihello' not bound
+test/all/wf_missing_bindings/wf_missing_bindings.dzn:47:5: error: port `r' of type `ihello' not bound

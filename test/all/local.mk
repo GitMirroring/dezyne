@@ -430,6 +430,7 @@ PARSER_TESTS =					\
  %D%/wf_injectionOutEvent			\
  %D%/wf_interfaceMustDefineBehavior		\
  %D%/wf_interfaceMustDefineEvent		\
+ %D%/wf_missing_bindings			\
  %D%/wf_NameClash				\
  %D%/wf_notPort					\
  %D%/wf_onEventInOnEvent			\
