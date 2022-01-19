@@ -1,1 +1,1 @@
-port-not-bound.dzn:9:3: error: port `p' not bound
+port-not-bound.dzn:9:3: error: port `p' of type `ihello' not bound

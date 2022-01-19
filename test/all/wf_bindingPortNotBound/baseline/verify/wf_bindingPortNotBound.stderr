@@ -1,3 +1,2 @@
-test/all/wf_bindingPortNotBound/wf_bindingPortNotBound.dzn:39:3: error: port `i' not bound
-test/all/wf_bindingPortNotBound/wf_bindingPortNotBound.dzn:32:3: error: port `i' not bound
-test/all/wf_bindingPortNotBound/wf_bindingPortNotBound.dzn:42:5: info: of instance: `comp'
+test/all/wf_bindingPortNotBound/wf_bindingPortNotBound.dzn:39:3: error: port `i' of type `Intf' not bound
+test/all/wf_bindingPortNotBound/wf_bindingPortNotBound.dzn:42:5: error: port `i' of type `Intf' not bound

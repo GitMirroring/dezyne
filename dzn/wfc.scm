@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2014, 2017, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2017, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -1011,23 +1011,32 @@
         (else '())))
 
 (define-method (missing-bindings (o <system>))
-  (let* ((bindings (ast:binding* o))
-         (ports (append (filter-map (compose .port .left) bindings)
-                        (filter-map (compose .port .right) bindings)))
-         (ports (delete-duplicates ports ast:eq?)))
-    (append (append-map (cut missing-bindings <> o ports #f) (ast:port* o))
-            (append-map (cut missing-bindings <> o ports) (ast:instance* o)))))
-
-(define-method (missing-bindings (o <port>) (system <system>) ports instance)
-  (if (member o ports ast:eq?) '()
-      `(,(wfc-error o (format #f "port `~a' not bound" (.name o)))
-        ,@(if (not instance) '()
-              `(,(wfc-info instance (format #f "of instance: `~a'" (.name instance))))))))
-
-(define-method (missing-bindings (o <instance>) (system <system>) ports)
-  (append-map
-   (cute missing-bindings <> system ports o)
-   (filter (negate .injected) (if (not (.type o)) '() (ast:port* (.type o))))))
+  (define (binding->end-points binding)
+    `(,(.left binding) ,(.right binding)))
+  (define (port->end-point port)
+    (make <end-point> #:location (.location port) #:port.name (.name port)))
+  (define (instance->end-point instance)
+    (map (compose (cute make <end-point>
+                        #:location (.location instance)
+                        #:instance.name (.name instance)
+                        #:port.name <>)
+                  .name)
+         (filter (negate .injected) (ast:port* (ast:type instance)))))
+  (define (end-point=? a b)
+    (and (equal? (.instance.name a) (.instance.name b))
+         (equal? (.port.name a) (.port.name b))))
+  (define (missing-end-point->wfc-error end-point)
+    (wfc-error (or (.instance end-point) (.port end-point))
+               (format #f "port `~a' of type `~a' not bound"
+                       (.port.name end-point)
+                       (type-name (.type.name (.port end-point))))))
+  (let* ((bound-end-points (append-map binding->end-points
+                                       (ast:binding* o)))
+         (end-points
+          (append (map port->end-point (ast:port* o))
+                  (append-map instance->end-point (ast:instance* o))))
+         (missing (lset-difference end-point=? end-points bound-end-points)))
+    (map missing-end-point->wfc-error missing)))
 
 (define-method (missing-return (o <function>))
   (define (function-body? s)
