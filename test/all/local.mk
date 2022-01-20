@@ -248,6 +248,7 @@ REGRESSION_TESTS =				\
  %D%/guard_expressions				\
  %D%/hello_blocking_sync			\
  %D%/hello_blocking_multiple_out		\
+ %D%/hello_blocking_asynchronous_sync_out	\
  %D%/hellocheckcompbindings			\
  %D%/hellochecksystembindings			\
  %D%/hello_clash_port_variable			\
