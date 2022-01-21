@@ -317,7 +317,6 @@ REGRESSION_TESTS =				\
  %D%/illegal_requires_out			\
  %D%/illegal_system_requires			\
  %D%/importPath					\
- %D%/import_strip_component			\
  %D%/imported.space				\
  %D%/inevitable_performance			\
  %D%/injected_dangling				\
@@ -498,8 +497,7 @@ XFAIL_TESTS =					\
  %D%/collateral_blocking_async			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
- %D%/external_blocking_livelock                 \
- %D%/import_strip_component
+ %D%/external_blocking_livelock
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
