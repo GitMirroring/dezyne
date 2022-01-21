@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -951,9 +952,11 @@ ws               <   [ \t]
                 activities
                 (append events (list event)))))
        ((null? communications)
-        (let ((lifelines (map (cute instance->lifeline <> activities labels eligible) instances)))
+        (let ((lifelines (map (cute instance->lifeline <> activities labels eligible) instances))
+              (trail (steps->trail steps)))
           (scm->json-string
            `((working-directory . ,(getcwd))
+             (trail     . ,(list->vector trail))
              (lifelines . ,(list->vector (map lifeline->scm lifelines)))
              (events    . ,(list->vector (map lifeline-event->scm events)))
              (states    . ,(list->vector (map (cute lifeline-state->json-scm sut-name <>) states)))))))
@@ -1026,6 +1029,10 @@ ws               <   [ \t]
                 activities
                 (append events (list event)))))))))
 
+(define (steps->trail steps)
+  (let ((steps (filter (conjoin (negate q-out?) external?) steps)))
+    (map step->event steps)))
+
 (define* (trace:format-trace trace #:key debug? file-name format internal? locations?)
   (let* ((structured (trace:trace->structured trace #:file-name file-name #:debug? debug?))
          (merged (merge-communications structured)))
@@ -1033,9 +1040,8 @@ ws               <   [ \t]
      ((equal? format "sexp")
       (map serialize structured))
      ((equal? format "event")
-      (let* ((communications (filter (conjoin (negate q-out?) external?) merged))
-             (communications (map step->event communications)))
-        (string-join communications "\n" 'suffix)))
+      (let ((steps (steps->trail merged)))
+        (string-join steps "\n" 'suffix)))
      ((equal? format "diagram")
       (let* ((header (find header? structured))
              (system? (find (match-lambda ((('sut x) rest ...) #t)
