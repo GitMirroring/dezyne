@@ -5,6 +5,71 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.15.0 since 2.14.0
+** Language
+  - Blocking is now fully supported, it may be used:
+    + In non-toplevel components,
+    + In a component with multiple provides ports, but see the
+      `Blocking' section in the manual for caveats.
+  - Using unobservably non-determinism in interfaces is no longer
+    supported.
+  - An action or function call can now also be used in a return
+    expression ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/67][#67]]).  Note that recursive functions still cannot be
+    valued.
+** Commands
+  - The `dzn explore' command has been removed.
+** Verification
+  - The verifier now supports blocking for components with multiple
+    provides ports.
+  - The verifier now detects possible deadlock errors due to a requires
+    action blocking collaterally, which could happen when a component
+    deeper in the system hierarchy uses blocking.  This behavior can be
+    disabled by using the new `-B,--no-blocking' option.
+  - The option `--no-interface-determinism' has been removed for `dzn
+    verify'.
+** Simulation
+  - The simulator now supports collateral blocking.
+  - In interactive mode:
+    + The new ,state command show the state ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/66][#66]]),
+    + The new ,quit command exits the session,
+    + The simulator does not exit when supplying empty input.
+  - The simulator now detects possible deadlock errors due to a requires
+    action blocking collaterally, which could happen when a component
+    deeper in the system hierarchy uses blocking.  This behavior can be
+    disabled by using the new `-B,--no-blocking' option.
+  - The simultor now supports the new `-C,--no-compliance' option to
+    disable the compliance check.
+** Code
+  - The C++ and C# code generators and runtime now fully support
+    collaterally blocking components.
+** Documentation
+  - A new section on foreign components was added.
+** Noteworthy bug fixes
+  - Using the construct `provides external' (which has no semantics) no
+    longer confuses the simulator.
+  - A bug has been fixed that would cause the well-welformness check for
+    system bindings to ignore certain missing bindings.
+  - A bug has been fixed when assigning a value to a formal parameter of
+    a function.
+  - A bug has been fixed in the vm that would cause graph or simulate to
+    hang when using a foreign component that has both provides and
+    requires ports (note: don't do that!).
+  - The test framework can be built using gcc-11.
+  - A bug has been fixed in the code generator when assiging to a local
+    variable that shadows a formal parameter or member variable.
+  - A bug has been fixed in the verifier when creating a new local
+    variable or assigning a variable that remains otherwise unused.
+  - The simulation function now supports injection of foreign
+    components.
+  - The trace produced by running dezyne code is now correct when using
+    injected foreign components.
+  - A bug has been fixed that would cause the verifier to overlook
+    non-determinism in a component.
+  - Using external data in binary expressions is now reported as an
+    error ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/64][#64]]).
+  - The parser no longer reports "<unknown-type>" expected when an
+    external type definition is missing.
+
 * Changes in 2.14.0 since 2.13.3
 ** Release
   - Dezyne is now released as free software, under the terms of the GNU
