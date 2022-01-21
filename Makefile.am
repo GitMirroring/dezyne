@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -166,7 +166,6 @@ EXTRA_DIST += $(info_image_DATA)
 dist_man_MANS =					\
  doc/dzn.1					\
  doc/dzn-code.1					\
- doc/dzn-explore.1				\
  doc/dzn-graph.1				\
  doc/dzn-hello.1				\
  doc/dzn-language.1				\

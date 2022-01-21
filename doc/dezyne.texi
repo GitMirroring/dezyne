@@ -21,7 +21,7 @@ Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
 Copyright @copyright{} 2014, 2020, 2021 Rutger van Beusekom@*
 Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
-Copyright @copyright{} 2014, 2016, 2019, 2020, 2021 Jan Nieuwenhuizen@*
+Copyright @copyright{} 2014, 2016, 2019, 2020, 2021, 2022 Jan Nieuwenhuizen@*
 Copyright @copyright{} 2014, 2015, 2016 Rob Wieringa@*
 Copyright @copyright{} 2014, 2021 Paul Hoogendijk@*
 Copyright @copyright{} 2021 Ludovic Courtès@*
@@ -152,7 +152,6 @@ The Dezyne command-line tools
 
 * Invoking dzn::                Running Dezyne commands.
 * Invoking dzn code::           Generating code from a Dezyne file.
-* Invoking dzn explore::        Exploring Dezyne models (deprecated).
 * Invoking dzn graph::          Generating graphs of Dezyne models.
 * Invoking dzn hello::          A simple sanity check.
 * Invoking dzn language::       Lookup and completion.
@@ -2261,7 +2260,6 @@ foreigns that use the same interfaces need to form a chain of
 @menu
 * Invoking dzn::                Running Dezyne commands.
 * Invoking dzn code::           Generating code from a Dezyne file.
-* Invoking dzn explore::        Exploring Dezyne models (deprecated).
 * Invoking dzn graph::          Generating graphs of Dezyne models.
 * Invoking dzn hello::          A simple sanity check.
 * Invoking dzn language::       Lookup and completion.
@@ -2391,55 +2389,6 @@ this options is ignored.
 @itemx -s @var{model}
 Generate thread-safe system shell for model @var{model}.
 @xref{Thread-safe Shell}.
-
-@end table
-
-@node Invoking dzn explore
-@section Invoking @command{dzn explore}
-
-@quotation Note
-explore is deprecated, please use graph @xref{Invoking dzn graph}.
-@end quotation
-
-@cindex Aldebaran
-@cindex @code{lts}
-
-The @command{dzn explore} command generates a state diagram or an
-@code{lts} for a Dezyne model (@xref{Invoking dzn lts}, @xref{Invoking
-dzn traces}).
-
-Under the hood, @command{dzn explore} uses the Dezyne VM.
-
-@example
-dzn @var{dzn-option}@dots{} explore @var{option}@dots{} @file{FILE}
-@end example
-
-The @var{option}s can be among the following:
-
-@table @code
-
-@item --help
-@itemx -h
-Display help on invoking @command{dzn explore}, and then exit.
-
-@item --import=@var{dir}
-@itemx -I @var{dir}
-Add directory @var{dir} to the import path.
-
-@item --lts
-Generate an @code{lts} in Aldebaren format.
-
-@item --model=@var{model}
-@itemx -m @var{model}
-Explore model @var{model}.  The default is to use the most
-``interesting'' model.
-
-@item --queue-size=@var{size}
-@itemx -q @var{size}
-Use queue size @var{size} for exploration, the default is @code{3}.
-
-@item --state-diagram
-Generate a state-diagram it @code{dot} format.  This is the default.
 
 @end table
 
