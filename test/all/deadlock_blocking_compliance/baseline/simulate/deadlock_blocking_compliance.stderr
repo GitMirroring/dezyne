@@ -1,3 +1,3 @@
 test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: error: non-compliance
-test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: component accept: h.world
-test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:35:5: port accept: return
+test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: component performs: h.world
+test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:35:5: port expects: return

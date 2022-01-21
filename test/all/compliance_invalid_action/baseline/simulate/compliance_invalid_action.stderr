@@ -1,4 +1,4 @@
 test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: error: non-compliance
 test/all/compliance_invalid_action/compliance_invalid_action.dzn:28:3: trigger: w.cruel
-test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: component accept: -
-test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: port accept: world
+test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: component performs: -
+test/all/compliance_invalid_action/compliance_invalid_action.dzn:34:20: port expects: world
