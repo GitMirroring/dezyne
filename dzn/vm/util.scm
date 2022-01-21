@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -24,6 +24,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+  #:use-module (ice-9 rdelim)
   #:use-module (ice-9 match)
   #:use-module (ice-9 readline)
   #:use-module (ice-9 regex)
@@ -201,7 +202,10 @@
                     (cute read-input pc))))))
 
 (define %commands `((",help" . ,(lambda _ (display %help-info)))
-                    (",show" . ,(lambda (command)
+                    (",quit" . ,(lambda _ (exit EXIT_SUCCESS)))
+                    (",state" . ,(lambda (pc command)
+                                   (write-line (pc->string pc))))
+                    (",show" . ,(lambda (pc command)
                                   (cond
                                    ((string-prefix? command ",show c")
                                     (display %copying-info))
@@ -213,6 +217,8 @@
 "Help Commands:
 
  ,help                    This help.
+ ,quit                    Quit this session
+ ,state                   Show current state
  ,show w[arranty]         Show details on the lack of warranty.
  ,show c[opying]          Show license details.
  ,show v[ersion]          Show version information.
@@ -298,16 +304,18 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                          (assoc-ref %commands command)))
                   =>
                   (lambda (command)
-                    (command input)
+                    (command pc input)
                     (read-input pc)))
                  ((string? input)
-                  (let ((input (string-trim-both input)))
+                  (let* ((input (string-trim-both input))
+                         (input (if (string-null? input) (read-input pc)
+                                    input)))
                     (add-history input)
                     input))
                  ((symbol? input)
                   (symbol->string input))
                  ((eof-object? input)
-                  #f)
+                  (exit EXIT_SUCCESS))
                  (else
                   #f))))
     (values input pc)))
