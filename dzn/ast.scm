@@ -5,7 +5,7 @@
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
-;;; Copyright © 2019, 2020 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2019, 2020, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -68,7 +68,6 @@
            ast:full-scope
            ast:get-model
            ast:graph-cyclic?
-           ast:id-path
            ast:imperative?
            ast:import*
            ast:imported?
@@ -564,11 +563,10 @@
 (define-method (ast:path (o <ast>) stop?)
   (unfold stop? identity .parent o))
 
-(define-method (ast:id-path (o <ast>))
-  (map .id (ast:path o (negate identity))))
-
 (define-method (ast:eq? (a <ast>) (b <ast>))
-  (equal? (ast:id-path a) (ast:id-path b)))
+  (or (eq? a b)
+      (and (eq? (.node a) (.node b))
+           (ast:eq? (.parent a) (.parent b)))))
 
 (define-method (ast:eq? (a <ast>) b)
   #f)
