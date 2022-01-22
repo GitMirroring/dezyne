@@ -1245,8 +1245,11 @@
     (_
      (ast:lookup-variable (.parent o) name statements))))
 
-(define-method (ast:lookup-variable (o <ast>) name)
+(define (ast:lookup-variable- root o name)
   (ast:lookup-variable o name (ast:statement-prefix o)))
+
+(define-method (ast:lookup-variable (o <ast>) name)
+  ((ast:pure-funcq ast:lookup-variable-) (parent o <root>) o name))
 
 (define-method (ast:statement-prefix (o <ast>))
   (let ((compound (parent (if (is-a? o <compound>) (.parent o) o) <compound>)))
