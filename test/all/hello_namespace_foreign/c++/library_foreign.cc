@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -28,7 +28,7 @@ namespace library {
   , dzn_locator(dzn_locator)
 
 
-  , w({{"w",this,&dzn_meta},{"",0,0}})
+  , w({{"w",&w,this,&dzn_meta},{"",0,0,0}})
 
 
 

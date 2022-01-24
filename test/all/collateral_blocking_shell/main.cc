@@ -43,7 +43,9 @@ main ()
   collateral_blocking_shell sut (loc);
   sut.dzn_meta.name = "sut";
   sut.w0.meta.require.name = "w0";
+  sut.w0.meta.require.port = &sut.w0;
   sut.w1.meta.require.name = "w1";
+  sut.w1.meta.require.port = &sut.w1;
 
   bool cruel = false;
   sut.w0.in.hello = [&]

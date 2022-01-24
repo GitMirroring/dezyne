@@ -52,6 +52,7 @@ int const version_patch = @VERSION_PATCH@;
       struct
       {
         std::string name;
+        void* port;
         void* component;
         const dzn::meta* meta;
       } provide;
@@ -59,6 +60,7 @@ int const version_patch = @VERSION_PATCH@;
       struct
       {
         std::string name;
+        void* port;
         void* component;
         const dzn::meta* meta;
       } require;

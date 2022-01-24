@@ -43,6 +43,7 @@ main ()
   collateral_blocking_shell2 sut (loc);
   sut.dzn_meta.name = "sut";
   sut.w.meta.require.name = "w";
+  sut.w.meta.require.port = &sut.w;
 
   std::future<void> f1, f2;
   sut.w.in.hello = [&]
