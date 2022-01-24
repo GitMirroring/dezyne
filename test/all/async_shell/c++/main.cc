@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -45,9 +45,9 @@ connect_ports (dzn::container< async_shell, std::function<void()>>& c)
 std::map<std::string,std::function<void()> >
 event_map (dzn::container< async_shell, std::function<void()>>& c)
 {
-  c.system.h.meta.require.address = &c;
+  c.system.h.meta.require.component = &c;
   c.system.h.meta.require.meta = &c.meta;
-  c.system.h.meta.require.port = "h";
+  c.system.h.meta.require.name = "h";
 
   return {{"illegal", []{std::clog << "illegal" << std::endl;}}
     ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}

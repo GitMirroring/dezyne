@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -48,8 +48,8 @@ int main()
     , pump()
     {
       sut.dzn_meta.name = "sut";
-      sut.p.meta.require.port = "p";
-      sut.r.meta.provide.port = "r";
+      sut.p.meta.require.name = "p";
+      sut.r.meta.provide.name = "r";
     }
   };
   C c;

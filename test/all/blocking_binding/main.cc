@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2019, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2019, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -45,11 +45,11 @@ connect_ports (dzn::container<blocking_binding, std::function<void()> >& c)
 std::map<std::string, std::function<void()> >
 event_map (dzn::container<blocking_binding, std::function<void()> >& c)
 {
-  c.system.h.meta.require.port = "h";
+  c.system.h.meta.require.name = "h";
 
-  c.system.w.meta.provide.address = &c;
+  c.system.w.meta.provide.component = &c;
   c.system.w.meta.provide.meta = &c.meta;
-  c.system.w.meta.provide.port = "w";
+  c.system.w.meta.provide.name = "w";
 
 
   return {

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2017, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -74,7 +74,7 @@ int main()
   data_full sut(l);
 
   sut.dzn_meta.name = "sut";
-  sut.port.meta.require.port = "port";
+  sut.port.meta.require.name = "port";
 
   sut.port.out.a0 = a0;
   sut.port.out.a = a;

@@ -51,15 +51,15 @@ int const version_patch = @VERSION_PATCH@;
     {
       struct
       {
-        std::string port;
-        void* address;
+        std::string name;
+        void* component;
         const dzn::meta* meta;
       } provide;
 
       struct
       {
-        std::string port;
-        void* address;
+        std::string name;
+        void* component;
         const dzn::meta* meta;
       } require;
     };
@@ -95,8 +95,8 @@ int const version_patch = @VERSION_PATCH@;
   struct binding_error: public std::runtime_error
   {
     binding_error(const port::meta& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(m.provide.address ? m.provide.meta : m.require.meta,
-                                                  m.provide.address ? m.provide.port : m.require.port) + "." + msg)
+    : std::runtime_error("not connected: " + path(m.provide.component ? m.provide.meta : m.require.meta,
+                                                  m.provide.component ? m.provide.name : m.require.name) + "." + msg)
     {}
   };
 

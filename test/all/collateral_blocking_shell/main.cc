@@ -2,7 +2,7 @@
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,8 +42,8 @@ main ()
   loc.set (rt);
   collateral_blocking_shell sut (loc);
   sut.dzn_meta.name = "sut";
-  sut.w0.meta.require.port = "w0";
-  sut.w1.meta.require.port = "w1";
+  sut.w0.meta.require.name = "w0";
+  sut.w1.meta.require.name = "w1";
 
   bool cruel = false;
   sut.w0.in.hello = [&]

@@ -2,6 +2,7 @@
 //
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -45,8 +46,8 @@ int main()
 
   hello_injected sut(l);
   sut.dzn_meta.name = "sut";
-  sut.t.meta.require.port = "t";
-  sut.t.meta.require.address = 0;
+  sut.t.meta.require.name = "t";
+  sut.t.meta.require.component = 0;
   sut.t.out.f = f;
 
   sut.check_bindings();

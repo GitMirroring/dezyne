@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -74,12 +74,12 @@ connect_ports (dzn::container< blocking_shell, std::function<void()>>& c)
 std::map<std::string,std::function<void()> >
 event_map (dzn::container< blocking_shell, std::function<void()>>& c)
 {
-  c.system.p_outer.meta.require.address = &c;
+  c.system.p_outer.meta.require.component = &c;
   c.system.p_outer.meta.require.meta = &c.meta;
-  c.system.p_outer.meta.require.port = "p_outer";
-  c.system.r_outer.meta.provide.address = &c;
+  c.system.p_outer.meta.require.name = "p_outer";
+  c.system.r_outer.meta.provide.component = &c;
   c.system.r_outer.meta.provide.meta = &c.meta;
-  c.system.r_outer.meta.provide.port = "r_outer";
+  c.system.r_outer.meta.provide.name = "r_outer";
 
   return {{"illegal", []{std::clog << "illegal" << std::endl;}}
     ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -62,7 +62,7 @@ int main()
     , pump()
     {
       sut.dzn_meta.name = "sut";
-      sut.p.meta.require.port = "p";
+      sut.p.meta.require.name = "p";
     }
   };
   C c;
@@ -95,8 +95,8 @@ int main()
       // Disabled this trickery for now.
       connect(c.sut.p, c.c.r);
       c.sut.dzn_meta.name = "p";
-      c.c.r.meta.require.port = "p";
-      c.sut.p.meta.require.port = "p";
+      c.c.r.meta.require.name = "p";
+      c.sut.p.meta.require.name = "p";
       c.c.p.out.cb1 = [t] {std::clog << "c.p.cb1 -> <external>.p.cb1 [" <<  t << "]" << std::endl;};
       c.c.p.out.cb2 = [t] {std::clog << "c.p.cb2 -> <external>.p.cb2 [" <<  t << "]" << std::endl;};
       dzn::shell (c.pump, [&] {c.c.p.in.e ();});

@@ -1,1 +1,1 @@
-#x:instance-name .#x:instance-port-name .meta.provide.port = "#.name";
+#x:instance-name .#x:instance-port-name .meta.provide.name = "#.name";

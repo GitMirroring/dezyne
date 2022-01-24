@@ -2,7 +2,7 @@
 //
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -54,7 +54,7 @@ int main()
   dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){std::cout << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;});
 
   c.sut.dzn_meta.name = "sut";
-  c.sut.p.meta.require.port = "p";
+  c.sut.p.meta.require.name = "p";
 
   c.sut.p.out.done = [] {std::clog << "sut.p.done -> <external>.p.done" << std::endl;};
 

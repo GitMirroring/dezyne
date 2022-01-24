@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -38,8 +38,8 @@ int main(int argc, char* argv[])
 
   calling_context sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
-  sut.h.meta.require.port = "h";
-  sut.w.meta.provide.port = "w";
+  sut.h.meta.require.name = "h";
+  sut.w.meta.provide.name = "w";
 
   sut.w.in.world = [&](int& cc, int i){
     //std::clog << "cc=" << cc << ", i=" << i << std::endl;
