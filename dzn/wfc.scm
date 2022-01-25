@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -733,11 +733,16 @@
 (define-method (tail-recursion (o <call>))
   (let ((function (parent o <function>)))
     (if (or (not function) (not (.recursive function))) '()
-            (let* ((continuation ((compose car wfc:continuation) o))
-                   (continuation (if (or (parent o <assign>) (parent o <variable>)) ((compose car (@@ (dzn code makreel) makreel:continuation)) continuation) continuation))
-                   (continuation (and continuation
-                                      (not (ast:eq? continuation (.statement (parent o <function>))))
-                                      continuation)))
+        (let* ((continuation ((compose car wfc:continuation) o))
+               (continuation (if (or (parent o <assign>)
+                                     (parent o <reply>)
+                                     (parent o <return>)
+                                     (parent o <variable>))
+                                 ((compose car (@@ (dzn code makreel) makreel:continuation)) continuation)
+                                 continuation))
+               (continuation (and continuation
+                                  (not (ast:eq? continuation (.statement (parent o <function>))))
+                                  continuation)))
               (cond ((is-a? continuation <return>)
                      `(,(wfc-error o "cannot use valued function in recursion")
                        ,(wfc-info continuation "statement after call")))
@@ -1111,31 +1116,31 @@
                (is-a? p <on>)))
       `(,(wfc-error o (format #f "~a value discarded" class))))
      ((and (not (is-a? (ast:type o) <void>))
-           (or (is-a? p <return>)
-               (is-a? grand-parent <return>)))
-      `(,(wfc-error o (format #f "~a used in a return expression" class))))
-     ((and (not (is-a? (ast:type o) <void>))
            (not
             (or (is-a? p <assign>)
                 (is-a? p <variable>)
                 (is-a? p <reply>)
+                (is-a? p <return>)
                 (is-a? p <if>)))
            (not
             (and (or (is-a? p <equal>)
                      (is-a? p <not-equal>))
                  (or (is-a? grand-parent <if>)
-                     (is-a? grand-parent <reply>))
+                     (is-a? grand-parent <reply>)
+                     (is-a? grand-parent <return>))
                  (ast:eq? (.left p) o)))
            (not
             (and (or (is-a? p <and>)
                      (is-a? p <or>))
                  (or (is-a? grand-parent <if>)
-                     (is-a? grand-parent <reply>))
+                     (is-a? grand-parent <reply>)
+                     (is-a? grand-parent <return>))
                  (ast:eq? (.left p) o)))
            (not
             (and (is-a? p <not>)
                  (or (is-a? grand-parent <if>)
-                     (is-a? grand-parent <reply>))
+                     (is-a? grand-parent <reply>)
+                     (is-a? grand-parent <return>))
                  (ast:eq? (.expression p) o)))
            (not
             (and (or (is-a? p <equal>)
@@ -1143,7 +1148,8 @@
                  (or (is-a? grand-parent <and>)
                      (is-a? grand-parent <or>))
                  (or (is-a? great-grand-parent <if>)
-                     (is-a? great-grand-parent <reply>))
+                     (is-a? great-grand-parent <reply>)
+                     (is-a? great-grand-parent <return>))
                  (ast:eq? (.left grand-parent) p)))
            (not
             (and (is-a? p <not>)
@@ -1151,7 +1157,8 @@
                      (is-a? grand-parent <or>))
                  (let ((great-grand-parent (.parent grand-parent)))
                    (or (is-a? great-grand-parent <if>)
-                       (is-a? great-grand-parent <reply>)))
+                       (is-a? great-grand-parent <reply>)
+                       (is-a? great-grand-parent <return>)))
                  (ast:eq? (.left grand-parent) p))))
       `(,(wfc-error o (format #f "~a used in a complex expression" class))))
      (else '()))))

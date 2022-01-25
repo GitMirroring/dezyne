@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -691,6 +691,10 @@ to prevent unintended shadowing
              ((is-a? (.parent o) <compound>) (list o))
              (else o))))
     (($ <reply>)
+     (cond ((add-temporary? o) (add-temporary o))
+           ((is-a? (.parent o) <compound>) (list o))
+           (else o)))
+    (($ <return>)
      (cond ((add-temporary? o) (add-temporary o))
            ((is-a? (.parent o) <compound>) (list o))
            (else o)))

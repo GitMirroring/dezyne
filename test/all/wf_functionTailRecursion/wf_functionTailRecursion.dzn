@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -80,5 +80,63 @@ interface Intf4 {
     }
 
     on evt: {}
+  }
+}
+
+interface Intf5
+{
+  in bool hello ();
+  behavior
+  {
+    bool f ()
+    {
+      return true;
+    }
+    bool g ()
+    {
+      return f ();
+    }
+
+    on hello: reply (g());
+  }
+}
+
+interface Intf6
+{
+  in bool hello ();
+  behavior
+  {
+    bool f ()
+    {
+      return g ();
+    }
+    bool g ()
+    {
+      return f ();
+    }
+
+    on hello: reply (g());
+  }
+}
+
+interface Intf7
+{
+  in bool hello ();
+  behavior
+  {
+    bool e ()
+    {
+      return f ();
+    }
+    bool f ()
+    {
+      return e ();
+    }
+    void g ()
+    {
+      reply (f ());
+    }
+
+    on hello: g ();
   }
 }

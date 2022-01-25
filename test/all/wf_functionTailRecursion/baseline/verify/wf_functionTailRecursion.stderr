@@ -8,3 +8,11 @@ test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:63:7: error: cann
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:64:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:78:7: error: cannot use statement after recursive call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:79:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:111:14: error: cannot use valued function in recursion
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:111:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:115:14: error: cannot use valued function in recursion
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:115:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:129:14: error: cannot use valued function in recursion
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:129:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:133:14: error: cannot use valued function in recursion
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:133:7: info: statement after call
