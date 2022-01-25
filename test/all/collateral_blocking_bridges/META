@@ -1,0 +1,9 @@
+;;; -*- scheme -*-
+((skip ("simulate"
+        "lts"
+        "c"
+        "cs"
+        "javascript"
+        "scheme"))
+ (model #f)
+ (tss #t))

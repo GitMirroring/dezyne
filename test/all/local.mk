@@ -166,6 +166,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system4				\
  %D%/blocking_shell				\
  %D%/calling_context				\
+ %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_shell			\
  %D%/collateral_blocking_shell2			\
  %D%/collateral_blocking_reorder		\

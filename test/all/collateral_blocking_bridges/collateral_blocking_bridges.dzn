@@ -1,0 +1,107 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+interface ihello
+{
+  in void hello();
+
+  behavior
+  {
+    on hello:{}
+  }
+}
+
+component blocking_top
+{
+  provides ihello h;
+  requires iworld w;
+
+  requires ihello p;
+
+  behavior
+  {
+    blocking on h.hello(): {w.hello(); p.hello(); p.hello();}
+    on w.world(): h.reply();
+  }
+}
+
+component blocking_middle
+{
+  provides ihello h;
+  requires iworld w;
+
+  requires ihello p;
+
+  behavior
+  {
+    bool first = true;
+    [first] blocking on h.hello(): {w.hello(); first = false;}
+    on w.world(): h.reply();
+
+    [!first] on h.hello(): {p.hello(); first = true;}
+  }
+}
+
+component collateral_blocking_bridges
+{
+  provides ihello h;
+  requires iworld top_w;
+  requires iworld middle_w;
+  requires iworld bottom_w;
+  system
+  {
+    h <=> top.h;
+    blocking_top top;
+    top.w <=> top_w;
+
+    top.p <=> middle.h;
+    blocking_middle middle;
+    middle.w <=> middle_w;
+
+    middle.p <=> bottom.h;
+    blocking_bottom bottom;
+    bottom.w <=> bottom_w;
+  }
+}
+
+interface iworld
+{
+  in void hello();
+  out void world();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+
+component blocking_bottom
+{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  {
+    blocking on h.hello(): w.hello();
+    on w.world(): h.reply();
+  }
+}
