@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 // Copyright © 2017, 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -55,6 +55,7 @@ namespace dzn
       public class Provides
       {
         public String name = null;
+        public Port port;
         public Component component;
         public dzn.Meta meta = new dzn.Meta();
       }
@@ -62,6 +63,7 @@ namespace dzn
       public class Requires
       {
         public String name = null;
+        public Port port;
         public Component component;
         public dzn.Meta meta = new dzn.Meta();
       }
@@ -97,7 +99,7 @@ namespace dzn
     {}
   }
 
-  public class async<Signature>
+  public class async<Signature> : dzn.Port
   {
     public class In
     {
@@ -109,12 +111,10 @@ namespace dzn
     {
       public Signature ack;
     }
-    public dzn.port.Meta dzn_meta;
     public In inport;
     public Out outport;
     public async ()
     {
-      dzn_meta = new dzn.port.Meta ();
       inport = new In ();
       outport = new Out ();
     }

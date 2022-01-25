@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 // Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
@@ -33,6 +33,15 @@ namespace dzn
     public class RuntimeException : SystemException
     {
         public RuntimeException(String msg) : base(msg) { }
+    }
+
+    abstract public class Port
+    {
+        public dzn.port.Meta dzn_meta;
+        public Port()
+        {
+            dzn_meta = new dzn.port.Meta ();
+        }
     }
 
     abstract public class ComponentBase
@@ -162,7 +171,7 @@ namespace dzn
             infos[c].handling = initial;
             flush(c);
         }
-        public void call_in<Port>(Component c, Action f, Port p, String e)
+        public void call_in(Component c, Action f, Port p, String e)
         {
             if(infos[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
@@ -173,7 +182,7 @@ namespace dzn
             handle(c, f);
             traceOut(m, "return");
         }
-        public R call_in<R,Port>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
+        public R call_in<R>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
         {
             if(infos[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
@@ -192,7 +201,7 @@ namespace dzn
             traceOut(m, s);
             return r;
         }
-        public void call_out<Port>(Component c, Action f, Port p, String e)
+        public void call_out(Component c, Action f, Port p, String e)
         {
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceQin(m, e);

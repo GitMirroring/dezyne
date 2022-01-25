@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
-
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -39,6 +39,7 @@ class main
     {
       sut.dzn_meta.name = "sut";
       sut.w.dzn_meta.requires.name = "w";
+      sut.w.dzn_meta.requires.port = sut.w;
 
       sut.w.inport.hello = () =>
       {

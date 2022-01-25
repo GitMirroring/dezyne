@@ -1,5 +1,5 @@
 #x:open-namespace
-public class #x:model-name  {
+public class #x:model-name  : dzn.Port {
   public static string to_string(bool b) {return b ? "true" : "false";}
   #x:enum-definer
   public class In {
@@ -10,11 +10,9 @@ public class #x:model-name  {
     #x:out-event-signature
     #x:out-event-definer
   }
-  public dzn.port.Meta dzn_meta;
   public In inport;
   public Out outport;
   public #x:model-name () {
-    dzn_meta = new dzn.port.Meta ();
     inport = new In();
     outport = new Out();
   }
