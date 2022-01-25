@@ -1,0 +1,7 @@
+;;; -*- scheme -*-
+((skip ("traces"
+        "lts"
+        "c"
+        "javascript"
+        "scheme"))
+ (tss #t))

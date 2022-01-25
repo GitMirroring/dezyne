@@ -152,6 +152,7 @@ REGRESSION_TESTS =				\
  %D%/async_sync_prio				\
  %D%/blocking_binding				\
  %D%/blocking_bottom_system			\
+ %D%/blocking_double_release			\
  %D%/blocking_function_reply			\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\

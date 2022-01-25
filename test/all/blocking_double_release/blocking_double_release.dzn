@@ -1,0 +1,90 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+component mux_left
+{
+  provides ihello left_block;
+  provides ihello left_release;
+
+  behavior
+  {
+    bool blocked = false;
+    blocking on left_block.hello(): blocked = true;
+    [blocked] on left_release.hello(): {blocked = false; left_block.reply();}
+    [!blocked] on left_release.hello(): {}
+  }
+}
+
+component mux_right
+{
+  provides ihello right_block;
+  provides ihello right_release;
+
+  behavior
+  {
+    bool blocked = false;
+    blocking on right_block.hello(): blocked = true;
+    [blocked] on right_release.hello(): {blocked = false; right_block.reply();}
+    [!blocked] on right_release.hello(): {}
+  }
+}
+
+component arbiter
+{
+  provides ihello h;
+  requires ihello left;
+  requires ihello right;
+  behavior
+  {
+    on h.hello(): {left.hello(); right.hello();}
+  }
+}
+
+component blocking_double_release
+{
+  provides ihello block0;
+  provides ihello block1;
+  provides ihello release;
+
+  system
+  {
+    release <=> middle.h;
+    arbiter middle;
+    middle.left <=> left.left_release;
+    middle.right <=> right.right_release;
+
+    block0 <=> left.left_block;
+    block1 <=> right.right_block;
+    mux_left left;
+    mux_right right;
+  }
+}
