@@ -252,7 +252,8 @@ program-counters produced by taking a step."
             ((livelock? trace)
              =>
              (compose list (cute mark-livelock-error trace <>)))
-            ((rtc? pc) (list trace))
+            ((rtc? pc)
+             (list trace))
             (else
              (let* ((o (.statement pc))
                     (observable? (or (is-a? o <action>)
@@ -368,7 +369,10 @@ PC until RTC?."
        ((every (conjoin (negate (is-status? <postponed-match>))
                         (disjoin rtc? (is-status? <match-error>)))
                pcs)
-        traces)
+        (let* ((traces (map switch-context traces))
+               (done todo (partition rtc? traces)))
+          (append done
+                  (loop (append-map extend-trace todo)))))
        ((postponed-match? traces)
         =>
         (lambda (traces)

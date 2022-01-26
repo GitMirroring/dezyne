@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -35,7 +35,6 @@
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm runtime)
   #:export (<block>
-            <unblock>
             <end-of-on>
             <flush-async>
             <flush-return>
@@ -107,7 +106,6 @@
                write))
 
 (define-ast <block> (<imperative>))
-(define-ast <unblock> (<imperative>))
 
 (define-ast <end-of-on> (<imperative>))
 
@@ -251,6 +249,11 @@
 (define-method (rtc? (pc <program-counter>))
   (or (.status pc)
       (not (.statement pc))))
+
+(define-method (rtc? (trace <list>))
+  (let ((pc (car trace)))
+    (or (.status pc)
+        (not (.statement pc)))))
 
 (define (external-q->string external-q)
   (define q->string

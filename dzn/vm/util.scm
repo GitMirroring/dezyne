@@ -95,6 +95,7 @@
             set-state
             set-variables
             show-eligible
+            switch-context
             string->q-trigger
             string->trail
             string->trail+model
@@ -482,6 +483,28 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (rtc-port (pc <program-counter>))
   (and=> (rtc-trigger pc) .port))
+
+(define-method (switch-context (pc <program-counter>))
+  (let* ((r:port (.released pc))
+         (blocked (.blocked pc))
+         (released-pc (assoc-ref blocked r:port)))
+    (if (or (.status pc) (not released-pc)) pc
+        (let ((instance (.instance released-pc))
+              (trigger (.trigger released-pc)))
+          (%debug "  ~s ~s <switch-context>\n" (name instance) (and=> trigger trigger->string))
+          (clone pc
+                 #:blocked (alist-delete r:port blocked)
+                 #:instance instance
+                 #:released #f
+                 #:previous (.previous released-pc)
+                 #:statement (.statement released-pc)
+                 #:trigger trigger)))))
+
+(define-method (switch-context (trace <list>))
+  (let* ((pc (car trace))
+         (new-pc (switch-context pc)))
+    (if (eq? new-pc pc) trace
+        (cons new-pc trace))))
 
 
 ;;;

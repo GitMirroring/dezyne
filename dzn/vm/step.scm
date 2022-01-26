@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -389,21 +389,6 @@
                              #:trail (.trail pc))))
                   (list pc)))))))))
 
-(define-method (step (pc <program-counter>) (o <unblock>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (let* ((blocked (.blocked pc))
-         (r:port (.released pc))
-         (released (assoc-ref blocked r:port))
-         (instance (.instance pc))
-         (pc (clone pc
-                    #:blocked (alist-delete r:port blocked)
-                    #:instance (.instance released)
-                    #:released #f
-                    #:previous (.previous released)
-                    #:statement (.statement released)
-                    #:trigger (.trigger released))))
-    (list pc)))
-
 (define-method (step (pc <program-counter>) (o <end-of-on>))
   ;; XXX FIXME: programmatical flush (vs: others are normalize+ast based).
   (define (flush-other pc)
@@ -425,11 +410,6 @@
            (not (and (is-a? (and=> (.previous pc) .statement) <flush-return>)
                      (eq? (.instance pc) (.instance (.previous pc)))))
            (list (flush pc)))
-      (and (.released pc) (pair? (.blocked pc))
-           (ast:requires? (.trigger pc))
-           (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
-                  (pc (pop-locals pc locals)))
-             (step pc (make <unblock>))))
       (let* ((pc (set-handling? pc #f))
              (trigger (.trigger pc)))
         (cond
@@ -447,10 +427,7 @@
                            #:port.name (.port.name (.trigger pc))
                            #:event.name value))
                  (return (clone return #:parent (.parent o)))
-                 (pc (if (and (.released pc) (pair? (.blocked pc)))
-                         (let ((pc (clone pc #:statement (make <unblock>))))
-                           (push-pc pc return))
-                         (clone pc #:statement return))))
+                 (pc (clone pc #:statement return)))
             (list pc)))))))
 
 (define-method (step (pc <program-counter>) (o <trigger-return>))
