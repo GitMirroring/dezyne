@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -639,6 +639,19 @@
            `(,(wfc-error o (format #f "~a expression expected" (class-name type)))))
           (else '()))))
 
+(define-method (no-extern-expression (o <expression>))
+  (let* ((expr-wfc (wfc o))
+         (expr-type (ast:type o)))
+    (cond ((pair? expr-wfc) expr-wfc)
+          ((not expr-type)
+           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
+          ((is-a? expr-type <extern>)
+           `(,(wfc-error
+               o
+               (format #f "extern data-type `~a' expression in binary operator"
+                       (type-name expr-type)))))
+          (else '()))))
+
 (define-method (wfc (o <not>))
   (typed-expression (.expression o) <bool>))
 
@@ -649,12 +662,12 @@
          (expr2-wfc (typed-expression expr2 type)))
     (append expr1-wfc expr2-wfc)))
 
-(define-method (binary-equal-type (o <binary>))
+(define-method (binary-equal-no-extern-type (o <binary>))
   (let* ((expr1 (.left o))
-         (expr1-wfc (wfc  expr1))
+         (expr1-wfc (no-extern-expression expr1))
          (expr1-type (ast:type expr1))
          (expr2 (.right o))
-         (expr2-wfc (wfc expr2))
+         (expr2-wfc (no-extern-expression expr2))
          (expr2-type (ast:type expr2)))
     (cond ((or (pair? expr1-wfc) (pair? expr2-wfc)) (append expr1-wfc expr2-wfc))
           ((not (equal-type? expr1-type expr2-type))
@@ -666,8 +679,8 @@
 (define-method (wfc (o <and>)) (typed-binary o <bool>))
 (define-method (wfc (o <or>)) (typed-binary o <bool>))
 
-(define-method (wfc (o <equal>)) (binary-equal-type o))
-(define-method (wfc (o <not-equal>)) (binary-equal-type o))
+(define-method (wfc (o <equal>)) (binary-equal-no-extern-type o))
+(define-method (wfc (o <not-equal>)) (binary-equal-no-extern-type o))
 
 (define-method (wfc (o <greater-equal>)) (typed-binary o <int>))
 (define-method (wfc (o <greater>)) (typed-binary o <int>))

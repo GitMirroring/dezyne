@@ -2,6 +2,7 @@
 //
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -18,6 +19,7 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
+extern Int $int$;
 interface wf_expressionExpected {
   in void e();
   behavior {
@@ -26,6 +28,8 @@ interface wf_expressionExpected {
     bool b = false;
     subint SI {0..10};
     SI i = 5;
+    Int j;
+    Int k;
     [en] on e: {}
     [i] on e: {}
     [b] on e: {
@@ -34,6 +38,7 @@ interface wf_expressionExpected {
         b = b && en;
         b = (i >= en);
         b = (b != i);
+        b = (k == j);
       }
     }
   }

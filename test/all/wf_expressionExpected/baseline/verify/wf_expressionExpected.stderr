@@ -1,7 +1,9 @@
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:29:6: error: <bool> expression expected
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:30:6: error: <bool> expression expected
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:32:11: error: <bool> expression expected
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:33:14: error: <bool> expression expected
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:34:18: error: <bool> expression expected
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:35:19: error: <int> expression expected
-test/all/wf_expressionExpected/wf_expressionExpected.dzn:36:14: error: type mismatch in binary operator: `bool' versus `wf_expressionExpected.SI'
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:33:6: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:34:6: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:36:11: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:37:14: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:38:18: error: <bool> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:39:19: error: <int> expression expected
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:40:14: error: type mismatch in binary operator: `bool' versus `wf_expressionExpected.SI'
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:41:14: error: extern data-type `Int' expression in binary operator
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:41:19: error: extern data-type `Int' expression in binary operator
