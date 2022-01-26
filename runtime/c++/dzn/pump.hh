@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -45,7 +45,7 @@ namespace dzn
 
   struct pump
   {
-    void* unblocked;
+    std::vector<void*> unblocked;
     bool running;
     std::function<void()> worker;
     std::list<coroutine> coroutines;
@@ -70,7 +70,7 @@ namespace dzn
     };
 
     std::map<deadline, std::function<void()>> timers;
-    std::function<void()> switch_context;
+    std::vector<std::function<void()>> switch_context;
     std::function<void()> exit;
     std::thread::id thread_id;
     std::condition_variable condition;
