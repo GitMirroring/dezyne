@@ -87,6 +87,7 @@ namespace dzn
     bool blocked_p(void*);
     void block(void*);
     void create_context();
+    void context_switch();
     void release(void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);

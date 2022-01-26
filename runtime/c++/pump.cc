@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2015, 2016, 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2015, 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
@@ -62,7 +62,12 @@ namespace dzn
 
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
   {
-    assert(1 == std::count_if(coroutines.begin(), coroutines.end(), [](const coroutine& c){return c.port == nullptr && !c.finished;}));
+    size_t count = std::count_if(coroutines.begin(), coroutines.end(), [](const coroutine& c){return c.port == nullptr && !c.finished;});
+    debug << "#runnable coroutines: " << count << std::endl;
+    assert(count != 0);
+    assert(count != 2);
+    assert(count < 3);
+    assert(count == 1);
     auto self = std::find_if(coroutines.begin(), coroutines.end(), [](dzn::coroutine& c){return c.port == nullptr && !c.finished;});
     return self;
   }
@@ -85,6 +90,7 @@ namespace dzn
   pump::pump()
   : unblocked(nullptr)
   , running(true)
+  , switch_context([]{})
   , task(std::async(std::launch::async, std::ref(*this)))
   {}
   pump::~pump()
@@ -160,13 +166,9 @@ namespace dzn
       while(running || queue.size() || collateral_blocked.size())
       {
         lock.unlock();
-
         assert(coroutines.size());
-
         coroutines.back().call(zero);
-
         lock.lock();
-
         remove_finished_coroutines(coroutines);
       }
       debug << "finish pump" << std::endl;
@@ -189,19 +191,13 @@ namespace dzn
         {
           auto self = find_self(coroutines);
           debug << "[" << self->id << "] create context" << std::endl;
-          while(!self->released && (running ||
-                                    queue.size() ||
-                                    timers_expired()))
+          context_switch();
+          while(running || queue.size() || timers_expired())
           {
             worker();
-            if(unblocked) collateral_release(self);
+            collateral_release(self);
+            context_switch();
           }
-          if(self->released) self->finished = true;
-
-          if(switch_context) decltype(switch_context)(std::move(switch_context))();
-
-          if(!self->released) collateral_release(self);
-
           exit();
         }
         catch(const forced_unwind&) { debug << "ignoring forced_unwind" << std::endl; }
@@ -211,6 +207,12 @@ namespace dzn
           std::terminate();
         }
       });
+  }
+  void pump::context_switch()
+  {
+    auto context = std::move(switch_context);
+    switch_context = []{};
+    context();
   }
   void pump::collateral_block()
   {
@@ -271,8 +273,8 @@ namespace dzn
     }
 
     debug << "[" << blocked->id << "] unblock" << std::endl;
-    debug << "[" << self->id << "] released" << std::endl;
-    self->released = true;
+
+    self->finished = true;
 
     switch_context = [blocked,self,this] {
       debug << "setting unblocked to port " << blocked->port << std::endl;

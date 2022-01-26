@@ -51,7 +51,6 @@ namespace dzn
     dzn::yield yield;
     void* port;
     bool finished;
-    bool released;
     bool skip_block;
     template <typename Worker>
     coroutine(Worker&& worker)
@@ -67,7 +66,6 @@ namespace dzn
       })
     , port()
     , finished()
-    , released()
     , skip_block()
     {}
     coroutine()
@@ -79,7 +77,6 @@ namespace dzn
     , context()
     , port()
     , finished()
-    , released()
     , skip_block()
     {}
     void yield_to(dzn::coroutine& c)
