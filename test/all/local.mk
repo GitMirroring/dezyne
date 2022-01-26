@@ -157,6 +157,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_imperative			\
  %D%/blocking_local				\
  %D%/blocking-local-state-diagram		\
+ %D%/blocking_multiple_provides0		\
  %D%/blocking_multiple_provides			\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
