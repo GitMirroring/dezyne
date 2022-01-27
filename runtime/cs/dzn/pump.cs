@@ -123,21 +123,19 @@ namespace dzn
     };
     public Action worker;
     public Dictionary<Deadline, Action> timers = new Dictionary<Deadline, Action>();
-    public Action switch_context;
+    public List<Action> switch_context = new List <Action>();
     public Action exit;
     public list<coroutine> coroutines = new list<coroutine>();
     public list<coroutine> collateral_blocked = new list<coroutine>();
     public List<Object> skip_block = new List<Object>();
     public Queue<Action> queue = new Queue<Action>();
     public bool running;
-    public Object unblocked;
+    public List<Object> unblocked = new List<Object>();
     public Thread task;
 
     public pump()
     {
-      this.switch_context = () => {};
       this.running = true;
-      this.unblocked = null;
       this.task = new Thread(this.run);
       this.task.Start();
     }
@@ -265,9 +263,12 @@ namespace dzn
     }
     public void context_switch()
     {
-      var context = this.switch_context;
-      this.switch_context = () => {};
-      context();
+    if (switch_context.Count () != 0)
+      {
+        var context = this.switch_context[0];
+        this.switch_context.RemoveAt(0);
+        context();
+      }
     }
     public static void collateral_block(Object c, dzn.Locator l)
     {
@@ -316,29 +317,32 @@ namespace dzn
     {
       Debug.WriteLine("[" + self.id + "] collateral_release");
 
-      if(this.collateral_blocked.FindIndex(c => c.port == unblocked) != -1)
-        self.finished = true;
+      Predicate<coroutine> predicate = (c) => {
+        return this.unblocked.FindIndex(i => i == c.port) != -1;
+      };
 
       int it = -1;
       do
       {
-        it = this.collateral_blocked.FindIndex(c => c.port == unblocked);
+        it = this.collateral_blocked.FindIndex(predicate);
         if(it != -1)
         {
+          Debug.WriteLine("collateral_unblocking: " + this.coroutines.Last().id
+                          + " for port: " + unblocked.GetHashCode());
           //splice
           this.coroutines.Add(this.collateral_blocked[it]);
           this.collateral_blocked.RemoveAt(it);
-          Debug.WriteLine("collateral_unblocking: " + this.coroutines.Last().id +
-                          " for port: " + unblocked.GetHashCode());
           this.coroutines.Last().port = null;
+          self.finished = true;
           self.yield_to(this.coroutines.Last());
         }
       }
       while(it != -1);
 
-      if(unblocked != null && collateral_blocked.FindIndex(c => c.port == unblocked) == -1) {
-        Debug.WriteLine("resetting unblocked to null");
-        unblocked = null;
+      if (collateral_blocked.FindIndex(predicate) == -1)
+      {
+        Debug.WriteLine("everything unblocked!!!");
+        unblocked.Clear ();
       }
     }
     public bool blocked_p(Object p)
@@ -354,7 +358,7 @@ namespace dzn
       bool collateral_skip = collateral_release_skip_block(rt, c);
       if(!collateral_skip)
       {
-        int it = this.collateral_blocked.FindIndex(i => i.port == this.unblocked);
+        int it = this.collateral_blocked.FindIndex(i => this.unblocked.FindIndex(j => j == i.port) != -1);
         if(it != -1)
         {
           Debug.WriteLine("[" + this.collateral_blocked[it].id + "]"
@@ -381,7 +385,8 @@ namespace dzn
       while(it < this.collateral_blocked.Count())
       {
         coroutine zelf = this.collateral_blocked[it++];
-        if(zelf.port == this.unblocked && zelf.component == c)
+        if (this.unblocked.FindIndex(i => i == zelf.port) != -1
+            && zelf.component == c)
         {
           Debug.WriteLine("[" + zelf.id + "]" + "relay skip "
                           + zelf.port.GetHashCode());
@@ -403,6 +408,8 @@ namespace dzn
     void release(Runtime rt, Object p)
     {
       coroutine self = find_self(this.coroutines);
+      Debug.WriteLine("[" + self.id + "] release of " + p.GetHashCode());
+
       coroutine blocked = this.coroutines.Find(c => c.port == p);
       if(blocked == null)
       {
@@ -412,16 +419,15 @@ namespace dzn
       }
 
       Debug.WriteLine("[" + blocked.id + "] unblock");
-      Debug.WriteLine("[" + self.id + "] released");
-      self.finished = true;
 
-      this.switch_context = () => {
+      this.switch_context.Add (() => {
+        var zelf = find_self(this.coroutines);
         Debug.WriteLine("setting unblocked to port " + blocked.port.GetHashCode());
-        unblocked = blocked.port;
+        this.unblocked.Add(blocked.port);
         blocked.component = null;
         blocked.port = null;
 
-        Debug.WriteLine("[" + self.id + "] switch from");
+        Debug.WriteLine("[" + zelf.id + "] switch from");
         Debug.WriteLine("[" + blocked.id + "] to");
 
         Debug.Assert(rt.component_stack.Count == 0);
@@ -435,9 +441,10 @@ namespace dzn
         rt.blocked_port_component_stack[blocked.id] = rt.component_stack;
         rt.component_stack = v;
 
-        self.yield_to(blocked);
+        zelf.finished = true;
+        zelf.yield_to(blocked);
         Debug.Assert(false, "we must never return here!!!");
-      };
+        });
     }
     public void execute(Action e)
     {
