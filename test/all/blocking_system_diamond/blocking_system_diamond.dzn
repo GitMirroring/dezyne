@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,78 +22,89 @@
 //
 // Code:
 
-interface I {
-    in void e();
+interface ihello
+{
+  in void hello ();
 
-    behavior {
-        on e: {}
-    }
+  behavior
+  {
+    on hello: {}
+  }
 }
 
-interface II {
-    in void e();
-    out void cb();
+interface iworld
+{
+  in void hello ();
+  out void world ();
 
-    behavior {
-        bool idle = false;
+  behavior
+  {
+    bool idle = false;
 
-        on e: idle = true;
-        [idle] on inevitable: { cb; idle=false;}
-    }
+    on hello: idle = true;
+    [idle] on inevitable: {world; idle=false;}
+  }
 }
 
-component fork {
-    provides I p;
-    requires I r0;
-    requires I r1;
+component fork
+{
+  provides ihello p;
+  requires ihello r_left;
+  requires ihello r_right;
 
-    behavior {
-        on p.e(): {r1.e();r0.e();}
-    }
+  behavior
+  {
+    on p.hello (): {r_left.hello ();r_right.hello ();}
+  }
 }
 
+component block
+{
+  provides ihello p;
+  requires iworld r;
 
-component block {
-    provides I p;
-    requires II rr;
-
-    behavior {
-        on p.e(): blocking rr.e();
-        on rr.cb(): p.reply();
-    }
+  behavior
+  {
+    on p.hello (): blocking r.hello ();
+    on r.world (): p.reply ();
+  }
 }
 
-component resource {
-    provides II p0;
-    provides II p1;
-    requires II rrr0;
-    requires II rrr1;
+component resource
+{
+  provides iworld p_left;
+  provides iworld p_right;
+  requires iworld r_left;
+  requires iworld r_right;
 
-    behavior {
-        on p0.e(): rrr0.e();
-        on p1.e(): rrr1.e();
-        on rrr0.cb(): p0.cb();
-        on rrr1.cb(): p1.cb();
-    }
+  behavior
+  {
+    on p_left.hello (): r_left.hello ();
+    on p_right.hello (): r_right.hello ();
+    on r_left.world (): p_left.world ();
+    on r_right.world (): p_right.world ();
+  }
 }
 
-component blocking_system_diamond {
-    provides I p;
-    requires II rrrr0;
-    requires II rrrr1;
+component blocking_system_diamond
+{
+  provides ihello p;
+  requires iworld r_left;
+  requires iworld r_right;
 
-    system {
-        fork f;
-        block b0;
-        block b1;
-        resource r;
+  system
+  {
+    fork top;
+    block left;
+    block right;
+    resource bottom;
 
-        p <=> f.p;
-        f.r0 <=> b0.p;
-        f.r1 <=> b1.p;
-        b0.rr <=> r.p0;
-        b1.rr <=> r.p1;
-        r.rrr0 <=> rrrr0;
-        r.rrr1 <=> rrrr1;
-    }
+    p <=> top.p;
+    top.r_left <=> left.p;
+    top.r_right <=> right.p;
+    left.r <=> bottom.p_left;
+    right.r <=> bottom.p_right;
+    bottom.r_left <=> r_left;
+    bottom.r_right <=> r_right;
+  }
 }
