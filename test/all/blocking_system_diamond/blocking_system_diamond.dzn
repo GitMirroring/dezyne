@@ -1,0 +1,98 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface I {
+    in void e();
+
+    behavior {
+        on e: {}
+    }
+}
+
+interface II {
+    in void e();
+    out void cb();
+
+    behavior {
+        bool idle = false;
+
+        on e: idle = true;
+        [idle] on inevitable: { cb; idle=false;}
+    }
+}
+
+component fork {
+    provides I p;
+    requires I r0;
+    requires I r1;
+
+    behavior {
+        on p.e(): {r1.e();r0.e();}
+    }
+}
+
+
+component block {
+    provides I p;
+    requires II rr;
+
+    behavior {
+        on p.e(): blocking rr.e();
+        on rr.cb(): p.reply();
+    }
+}
+
+component resource {
+    provides II p0;
+    provides II p1;
+    requires II rrr0;
+    requires II rrr1;
+
+    behavior {
+        on p0.e(): rrr0.e();
+        on p1.e(): rrr1.e();
+        on rrr0.cb(): p0.cb();
+        on rrr1.cb(): p1.cb();
+    }
+}
+
+component blocking_system_diamond {
+    provides I p;
+    requires II rrrr0;
+    requires II rrrr1;
+
+    system {
+        fork f;
+        block b0;
+        block b1;
+        resource r;
+
+        p <=> f.p;
+        f.r0 <=> b0.p;
+        f.r1 <=> b1.p;
+        b0.rr <=> r.p0;
+        b1.rr <=> r.p1;
+        r.rrr0 <=> rrrr0;
+        r.rrr1 <=> rrrr1;
+    }
+}

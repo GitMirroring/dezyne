@@ -171,6 +171,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system2				\
  %D%/blocking_system3				\
  %D%/blocking_system4				\
+ %D%/blocking_system_diamond			\
  %D%/blocking_shell				\
  %D%/calling_context				\
  %D%/collateral_blocking_async			\
