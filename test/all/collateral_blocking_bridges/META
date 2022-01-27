@@ -1,6 +1,5 @@
 ;;; -*- scheme -*-
-((skip ("simulate"
-        "lts"
+((skip ("lts"
         "c"
         "cs"
         "javascript"
