@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -262,7 +262,7 @@ Return a list of traces, possibly marked with <compliance-error>."
          (port (and provides-trigger? (.port trigger))))
 
     (define (check-compliance port traces)
-      (let* ((trace (car traces))
+      (let* ((trace (if (null? traces) '() (car traces)))
              (port-name (.name port))
              (port-instance (runtime:port-name->instance port-name)))
 
