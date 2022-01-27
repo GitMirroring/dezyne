@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
@@ -69,7 +69,7 @@ namespace dzn
         {
           try
           {
-            Debug.WriteLine("[" + context.get_id() + "] create");
+            //Debug.WriteLine("[" + context.get_id() + "] create");
             context.lck(this, () => {
               while(this.state != State.FINAL)
               {
@@ -151,7 +151,7 @@ namespace dzn
     }
     public void call(context c)
     {
-      Debug.WriteLine("[" + context.get_id() + "] call");
+      //Debug.WriteLine("[" + context.get_id() + "] call");
       context.lck(this, () => {
           do_release(this);
 
@@ -174,9 +174,9 @@ namespace dzn
     {
       state = State.BLOCKED;
       Monitor.Pulse(mutex);
-      Debug.WriteLine("[" + context.get_id() + "] do_block0");
+      //Debug.WriteLine("[" + context.get_id() + "] do_block0");
       do { Monitor.Wait(mutex); } while(state == State.BLOCKED);
-      Debug.WriteLine("[" + context.get_id() + "] do_block1");
+      //Debug.WriteLine("[" + context.get_id() + "] do_block1");
       if(state == State.FINAL) throw new forced_unwind();
     }
     private void do_release(Object mutex)
@@ -185,13 +185,13 @@ namespace dzn
         throw new runtime_error("[" + context.get_id() + "] not allowed to release a call which is "
                                 + to_string(state));
       state = State.RELEASED;
-      Debug.WriteLine("[" + context.get_id() + "] do_release0");
+      //Debug.WriteLine("[" + context.get_id() + "] do_release0");
       Monitor.Pulse(mutex);
-      Debug.WriteLine("[" + context.get_id() + "] do_release1");
+      //Debug.WriteLine("[" + context.get_id() + "] do_release1");
     }
     private void do_finish(Object mutex)
     {
-      Debug.WriteLine("[" + context.get_id() + "] finish0");
+      //Debug.WriteLine("[" + context.get_id() + "] finish0");
       state = State.FINAL;
       Monitor.PulseAll(mutex);
       Monitor.Exit(mutex);
