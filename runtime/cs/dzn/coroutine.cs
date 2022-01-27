@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
@@ -51,7 +51,6 @@ namespace dzn
 
     public Object port;
     public bool finished;
-    public bool released;
     public bool skip_block;
     public coroutine(Action worker)
     {
@@ -59,7 +58,6 @@ namespace dzn
       this.yield = null;
       this.port = null;
       this.finished = false;
-      this.released = false;
       this.skip_block = false;
 
       this.context = new context ((yield) => {

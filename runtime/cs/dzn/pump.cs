@@ -65,6 +65,12 @@ namespace dzn
 
     public static coroutine find_self(list<coroutine> coroutines)
     {
+      var count = coroutines.FindAll(c => c.port == null && !c.finished).Count;
+      Debug.WriteLine("#runnable coroutines: " + count);
+      Debug.Assert(count != 0);
+      Debug.Assert(count != 2);
+      Debug.Assert(count < 3);
+      Debug.Assert(count == 1);
       return coroutines.Find(c => c.port == null && !c.finished);
     }
 
@@ -117,6 +123,7 @@ namespace dzn
 
     public pump()
     {
+      this.switch_context = () => {};
       this.running = true;
       this.unblocked = null;
       this.task = new Thread(this.run);
@@ -204,13 +211,9 @@ namespace dzn
             while(this.running || this.queue.Count!=0 || this.collateral_blocked.Count!=0)
             {
               Monitor.Exit(this);
-
               Debug.Assert(this.coroutines.Count!=0);
-
               this.coroutines.Last().call(zero);
-
               Monitor.Enter(this);
-
               remove_finished_coroutines(this.coroutines);
             }
             Debug.WriteLine("finish pump");
@@ -230,21 +233,13 @@ namespace dzn
           {
             coroutine self = find_self(this.coroutines);
             Debug.WriteLine("[" + self.id + "] create context");
-            while((this.running || this.queue.Count != 0) && !self.released)
+            context_switch();
+            while(this.running || this.queue.Count != 0)
             {
               worker();
-              if(unblocked != null) collateral_release(self);
+              collateral_release(self);
+              context_switch();
             }
-            if(self.released) self.finished = true;
-
-            if(this.switch_context != null) {
-              Action switch_context = this.switch_context;
-              this.switch_context = null;
-              switch_context();
-            }
-
-            if(!self.released) collateral_release(self);
-
             this.exit();
           }
           catch (forced_unwind) {
@@ -255,6 +250,12 @@ namespace dzn
             System.Environment.Exit(1);
           }
         }));
+    }
+    public void context_switch()
+    {
+      var context = this.switch_context;
+      this.switch_context = () => {};
+      context();
     }
     public static void collateral_block(dzn.Locator l)
     {
@@ -322,7 +323,7 @@ namespace dzn
 
       Debug.WriteLine("[" + blocked.id + "] unblock");
       Debug.WriteLine("[" + self.id + "] released");
-      self.released = true;
+      self.finished = true;
 
       this.switch_context = () => {
         Debug.WriteLine("setting unblocked to port " + blocked.port.GetHashCode());
