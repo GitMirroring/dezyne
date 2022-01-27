@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -66,6 +66,16 @@ namespace dzn
     public static coroutine find_self(list<coroutine> coroutines)
     {
       return coroutines.Find(c => c.port == null && !c.finished);
+    }
+
+    public static void remove_finished_coroutines(list<coroutine> coroutines)
+    {
+       coroutines.RemoveAll((c) => {
+         if(!c.finished) return false;
+         Debug.WriteLine("[" + c.id + "] removing");
+         c.Dispose();
+         return true;
+         });
     }
 
     public struct Deadline: IComparable
@@ -201,12 +211,7 @@ namespace dzn
 
               Monitor.Enter(this);
 
-              this.coroutines.RemoveAll((c) => {
-                  if(!c.finished) return false;
-                  Debug.WriteLine("[" + c.id + "] removing");
-                  c.Dispose();
-                  return true;
-                });
+              remove_finished_coroutines(this.coroutines);
             }
             Debug.WriteLine("finish pump");
             Debug.Assert(this.queue.Count==0);
@@ -302,12 +307,7 @@ namespace dzn
       foreach (coroutine c in this.coroutines){ Debug.Write(c.id + " ");}
       Debug.WriteLine("");
 
-      this.coroutines.RemoveAll((c) => {
-          if(!c.finished) return false;
-          Debug.WriteLine("[" + c.id + "] removing");
-          c.Dispose();
-          return true;
-        });
+      remove_finished_coroutines(this.coroutines);
     }
     void release(Object p)
     {
