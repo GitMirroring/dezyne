@@ -46,6 +46,10 @@ if [ $to/$from_base.dzn != $to/$to_base.dzn ]; then
     git add $to/$to_base.dzn
 fi
 
+for i in $(cd $to && git ls-files 'main.*'); do
+    sed -i -e "s,$from_base,$to_base,g" $to/$i;
+done
+
 all_from=$(echo $from | sed s,^all/,,)
 all_to=$(echo $to | sed s,^all/,,)
 sed -i -re "s,/$all_from([ \t]),/$all_to\1,g" all/local.mk
