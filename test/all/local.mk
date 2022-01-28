@@ -174,6 +174,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_shell				\
  %D%/calling_context				\
  %D%/collateral_blocking_async			\
+ %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_shell			\
  %D%/collateral_blocking_shell2			\

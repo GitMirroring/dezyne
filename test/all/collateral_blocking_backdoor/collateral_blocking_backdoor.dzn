@@ -1,0 +1,110 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Show the need for implementing collateral blocking in the simulator.
+// After blocking the mux, e.g. by running left.hello, the collateraly
+// blocking event right.hello first passes freely through the top_right
+// proxy; already leaving a trail.
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+
+  behavior {
+    on hello: {}
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+
+  behavior {
+    bool idle = true;
+    on hello: idle = !idle;
+    [!idle] on inevitable: {world; idle = true;}
+  }
+}
+
+component proxy
+{
+  provides ihello h;
+  requires ihello w;
+
+  behavior
+  {
+    on h.hello (): w.hello ();
+  }
+}
+
+component mux
+{
+  provides ihello left;
+  provides ihello right;
+  requires ihello w;
+
+  behavior
+  {
+    on left.hello (): w.hello ();
+    on right.hello (): w.hello ();
+  }
+}
+
+component blocked
+{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] blocking on h.hello (): {w.hello (); idle = false;}
+    on w.world (): {idle = true; h.reply ();}
+  }
+}
+
+component collateral_blocking_backdoor
+{
+  provides ihello left;
+  provides ihello right;
+  requires iworld w;
+
+  system
+  {
+    proxy left_top;
+    proxy right_top;
+    mux middle;
+    blocked bottom;
+
+    left <=> left_top.h;
+    left_top.w <=> middle.left;
+
+    right <=> right_top.h;
+    right_top.w <=> middle.right;
+
+    middle.w <=> bottom.h;
+    bottom.w <=> w;
+  }
+}
