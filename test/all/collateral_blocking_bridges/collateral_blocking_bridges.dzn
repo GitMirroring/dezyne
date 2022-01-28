@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,6 +25,32 @@ interface ihello
   behavior
   {
     on hello:{}
+  }
+}
+
+interface iworld
+{
+  in void hello();
+  out void world();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+component top_proxy
+{
+  provides iworld h;
+  requires iworld w;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on h.hello (): {w.hello (); idle = false;}
+    [!idle] on w.world (): {h.world (); idle = true;}
   }
 }
 
@@ -66,33 +93,22 @@ component collateral_blocking_bridges
   requires iworld bottom_w;
   system
   {
-    h <=> top.h;
     blocking_top top;
-    top.w <=> top_w;
+    top_proxy proxy;
+    blocking_middle middle;
+    blocking_bottom bottom;
+
+    h <=> top.h;
+    top.w <=> proxy.h;
+    proxy.w <=> top_w;
 
     top.p <=> middle.h;
-    blocking_middle middle;
     middle.w <=> middle_w;
 
     middle.p <=> bottom.h;
-    blocking_bottom bottom;
     bottom.w <=> bottom_w;
   }
 }
-
-interface iworld
-{
-  in void hello();
-  out void world();
-
-  behavior
-  {
-    bool idle = true;
-    [idle] on hello: idle = false;
-    [!idle] on inevitable: {idle = true; world;}
-  }
-}
-
 
 component blocking_bottom
 {
