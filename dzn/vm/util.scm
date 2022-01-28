@@ -485,7 +485,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (and=> (rtc-trigger pc) .port))
 
 (define-method (switch-context (pc <program-counter>))
-  (let* ((r:port (.released pc))
+  (let* ((released (.released pc))
+         (r:port (match released ((p t ...) p) (() #f)))
          (blocked (.blocked pc))
          (released-pc (assoc-ref blocked r:port)))
     (if (or (.status pc) (not released-pc)) pc
@@ -495,7 +496,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
           (clone pc
                  #:blocked (alist-delete r:port blocked)
                  #:instance instance
-                 #:released #f
+                 #:released (delete r:port released)
                  #:previous (.previous released-pc)
                  #:statement (.statement released-pc)
                  #:trigger trigger)))))

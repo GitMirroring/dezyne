@@ -201,7 +201,7 @@
   (async #:getter .async #:init-form (list) #:init-keyword #:async)
 
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
-  (released #:getter .released #:init-form #f #:init-keyword #:released)
+  (released #:getter .released #:init-form (list) #:init-keyword #:released)
   (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
 
 (define-class <state> ()
@@ -282,7 +282,7 @@
   (when (pair? (.async o))
     (display " async: " port)
     (display (map (compose runtime:dotted-name cadr) (.async o)) port))
-  (when (.released o) (display " *released*" port))
+  (when (pair? (.released o)) (display " *released*" port))
   (when (pair? (.blocked o)) (display " *blocked*" port))
   (and=> (.return o) (cut format port " return: ~a" <>))
   (when (pair? (.external-q o))

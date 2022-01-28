@@ -82,6 +82,10 @@ format."
       (and (is-a? a <trigger-return>) (is-a? b <trigger-return>)
            (eq? instance r:port))))
 
+  (define (statement-equal? a b)
+    (and (eq? (.instance a) (.instance a))
+         (ast:equal? (.statement a) (.statement b))))
+
   (let* ((trigger (and=> trigger trigger->component-trigger))
          (port-on-index (or (list-index (compose (is? <on>) .statement)
                                         port-trace)
@@ -150,7 +154,7 @@ format."
                    (let* ((port-state (get-state return-pc))
                           (return-pc (clone return-pc #:state (.state pc)))
                           (return-pc (set-state return-pc port-state)))
-                     (if (find (cute ast:equal? <> return-pc) full-trace)
+                     (if (find (cute statement-equal? <> return-pc) full-trace)
                          (cons pc (loop (cdr trace) port-trace))
                          (cons* return-pc pc (loop (cdr trace) tail)))))
                   (_
@@ -430,26 +434,28 @@ port return."
         (blocking? (find (compose pair? .blocked) trace)))
     (cond
      ((and blocking?
-           (let* ((return (find (compose (is? <trigger-return>)
-                                         .statement)
-                                trace))
-                  (instance (and=> return .instance)))
-             (find
-              (conjoin
-               (compose (cute eq? <> instance) .instance)
-               (compose (is? <initial-compound>) .statement)
-               (compose ast:provides? .trigger))
-              (reverse trace))))
+           (find (compose (is? <trigger-return>)
+                          .statement)
+                 trace))
       =>
-      (lambda (tpc)
-        (let* ((trail (trace->trail tpc))
-               (event (match trail ((ast . event) event) (_ event)))
-               (cpc (last trace))
-               (cpc (reset-replies cpc))
-               (cpc (clone cpc #:instance #f)))
-          (append-map
-           (cute check-provides-compliance cpc event <>)
-           traces))))
+      (lambda (rpc)
+        (let ((pcs (filter
+                    (conjoin
+                     (compose (is? <initial-compound>) .statement)
+                     (compose ast:provides? .trigger))
+                    (reverse trace))))
+          (let loop ((traces traces) (pcs pcs))
+            (if (null? pcs) traces
+                (let* ((trail (trace->trail (car pcs)))
+                       (event (match trail ((ast . event) event) (_ event)))
+                       (cpc (last trace))
+                       (cpc (reset-replies cpc))
+                       (cpc (clone cpc #:instance #f)))
+                  (loop
+                   (append-map
+                    (cute check-provides-compliance cpc event <>)
+                    traces)
+                   (cdr pcs))))))))
      (else
       traces))))
 

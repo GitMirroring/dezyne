@@ -326,7 +326,7 @@
                       (and ports-eq? blocking?)
                       (and (not ports-eq?) (not blocking?)))))
            (let* ((r:port (runtime:port (.instance pc) reply-port))
-                  (pc (clone pc #:released r:port)))
+                  (pc (clone pc #:released (append (.released pc) (list r:port)))))
              (list pc)))
           (else
            (list pc)))))
@@ -374,8 +374,8 @@
             (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
                    (pc (pop-locals pc locals)))
               (cond
-               ((.released pc)
-                (let ((pc (clone pc #:released #f)))
+               ((pair? (.released pc))
+                (let ((pc (clone pc #:released '())))
                   (list pc)))
                (else
                 (let* ((instance (.instance pc))
