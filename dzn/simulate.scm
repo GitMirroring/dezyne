@@ -256,11 +256,11 @@ Return a list of traces, possibly marked with <compliance-error>."
           (drop-right trace at))))
 
   (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (and event
+         (trigger (and (string? event)
                        (clone (string->trigger event) #:parent component)))
          (component-trigger (and trigger (trigger->component-trigger trigger)))
          (blocking? (find (compose pair? .blocked) trace))
-         (sut-trace (if (not blocking?) trace
+         (sut-trace (if (or (not component-trigger) (not blocking?)) trace
                         (drop-prefix pc component-trigger trace)))
          (sut-trail (trace->trail sut-trace))
          (provides-trigger? (provides-trigger? event))
@@ -430,10 +430,18 @@ released by a requires event, also rerun check-provides-compliance for
 the full trace, i.e., starting from the initial blocking provides
 event.  This ensures proper of zipping the port trace, including the
 port return."
-  (let ((traces (check-provides-compliance pc event trace))
-        (blocking? (find (compose pair? .blocked) trace)))
+  (let* ((traces (check-provides-compliance pc event trace))
+         (pc (car trace))
+         (blocked (.blocked pc))
+         (collateral (.collateral pc))
+         (compliance-for-blocking?
+          (and (not (find .status trace))
+               (find (compose pair? .blocked) trace)
+               (not (and (pair? collateral)
+                         (and=> (rtc-block-trigger (cdar collateral))
+                                ast:provides?))))))
     (cond
-     ((and blocking?
+     ((and compliance-for-blocking?
            (find (compose (is? <trigger-return>)
                           .statement)
                  trace))

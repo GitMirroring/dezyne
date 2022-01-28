@@ -215,6 +215,7 @@
          (r:port (runtime:port instance port))
          (other-instance other-port (runtime:other-instance+port instance r:port))
          (trigger (action->trigger other-port o))
+         (orig-pc pc)
          (pc (continuation pc o)))
     (cond
      ((and (runtime:boundary-port? other-port)
@@ -225,8 +226,16 @@
              (silent-pcs (map car silent-traces))
              (pcs (cons pc silent-pcs)))
         (map (cute begin-step <> other-instance trigger) pcs)))
-     ((or (is-a? other-instance <runtime:component>)
-          (runtime:boundary-port? other-port))
+     ((runtime:boundary-port? other-port)
+      (list (begin-step pc other-instance trigger)))
+     ((and (is-a? other-instance <runtime:component>)
+           (or (get-handling pc other-instance)
+               (or (assoc-ref (.blocked pc) other-port)
+                   (assoc-ref (.blocked pc) r:port)))
+           (blocked-port pc other-instance))
+      (let ((pc (collateral-block orig-pc other-instance)))
+        (list pc)))
+     ((is-a? other-instance <runtime:component>)
       (list (begin-step pc other-instance trigger)))
      (else
       (list pc)))))
@@ -261,14 +270,15 @@
          (port (.port o))
          (r:port (runtime:port instance (.port o)))
          (other-instance other-port (runtime:other-instance+port instance r:port))
+         (orig-pc pc)
          (pc (continuation pc o)))
 
     (define (q-trigger)
       (let* ((port-name (.name (.ast other-port)))
              (q-trigger (make <q-trigger>
-                         #:event.name (.event.name o)
-                         #:port.name port-name
-                         #:location (.location o))))
+                          #:event.name (.event.name o)
+                          #:port.name port-name
+                          #:location (.location o))))
         (clone q-trigger #:parent (.type (.ast other-instance)))))
 
     (cond
@@ -284,6 +294,14 @@
      ((and (is-a? instance <runtime:port>)
            (ast:requires? (.ast instance)))
       (list (enqueue pc o other-instance (q-trigger))))
+     ((and (is-a? other-instance <runtime:component>)
+           (and (get-handling pc other-instance)
+                (not (= (.id pc) (get-handling pc other-instance))))
+           (not (or (assoc-ref (.blocked pc) other-port)
+                    (assoc-ref (.blocked pc) r:port)))
+           (blocked-port pc other-instance))
+      (let ((pc (collateral-block orig-pc other-instance)))
+        (list pc)))
      ((is-a? other-instance <runtime:component>)
       (list (enqueue pc o  other-instance (q-trigger))))
      ((runtime:boundary-port? other-port)
@@ -372,21 +390,23 @@
             (trigger (.trigger pc)))
         (if (ast:requires? trigger) (list pc)
             (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
-                   (pc (pop-locals pc locals)))
+                   (pc (pop-locals pc locals))
+                   (instance (.instance pc))
+                   (r:port (runtime:port instance (.port trigger))))
               (cond
-               ((pair? (.released pc))
-                (let ((pc (clone pc #:released '())))
+               ((memq r:port (.released pc))
+                (let ((pc (clone pc #:released (delete r:port (.released pc)))))
                   (list pc)))
                (else
-                (let* ((instance (.instance pc))
-                       (r:port (runtime:port instance (.port trigger)))
+                (let* ((id (.id pc))
                        (pc (reset-handling! pc))
-                       (id (.id pc))
                        (pc (make <program-counter>
                              #:async (.async pc)
                              #:id (pc:next-id)
                              #:blocked (acons r:port pc (.blocked pc))
+                             #:collateral (.collateral pc)
                              #:external-q (.external-q pc)
+                             #:released (.released pc)
                              #:state (.state pc)
                              #:trail (.trail pc))))
                   (%debug "  ~s ~s <block> ~a [~a] => [~a]\n"
@@ -475,7 +495,24 @@
            (pc (if (or blocking? (.status pc)) pc
                    (let ((locals (filter (is? <variable>)
                                          (ast:statement* (.parent o)))))
-                     (pop-locals pc locals)))))
+                     (pop-locals pc locals))))
+           (pc (if (not blocking?) pc
+                   (let* ((port (.port o))
+                          (instance (.instance pc))
+                          (r:port (runtime:port instance port))
+                          (blocked (.blocked pc))
+                          (blocked? (assoc-ref blocked r:port))
+                          (blocked (if (not blocked?) blocked
+                                       (alist-delete r:port blocked)))
+                          (collateral (.collateral pc))
+                          (block? (or (assoc-ref blocked r:port)
+                                      (assoc-ref collateral r:port)))
+                          (released (.released pc))
+                          (released (if block? released
+                                        (delete r:port released))))
+                     (clone pc
+                            #:blocked blocked
+                            #:released released)))))
       (list (pop-pc pc))))))
 
 (define-method (step (pc <program-counter>) (o <flush-async>))

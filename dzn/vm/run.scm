@@ -248,6 +248,12 @@ program-counters produced by taking a step."
            (else
             (clone pc #:status (make <postponed-match> #:ast o #:input input))))))
 
+  (define (blocked-collaterally? orig-pc pc)
+    (match (.collateral pc)
+      (((port . pc) t ...)
+       (eq? pc orig-pc))
+      (_ #f)))
+
   (let loop ((trace trace))
     (let ((pc (car trace)))
       (cond ((.status pc)
@@ -264,6 +270,10 @@ program-counters produced by taking a step."
                                      (is-a? o <trigger-return>)))
                     (observable (and observable? (and=> (trace->trail pc) cdr)))
                     (pcs (step pc o))
+                    (new-pc (and (pair? pcs) (car pcs)))
+                    (trace (if (any (cute blocked-collaterally? pc <>) pcs)
+                               (cdr trace)
+                               trace))
                     (input pc (if (and observable (not (interactive?)))
                                   ((%next-input) pc)
                                   (values #f pc)))

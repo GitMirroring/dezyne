@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -108,11 +108,47 @@ recursion.  Return a run-to-completion LTS
 
   (LTS PC->STATE-NUMBER AND STATE-NUMBER-COUNT)
 "
+  (define (collateral? pc previous-pc)
+    "Return #true if the only difference between PC and PREVIOUS-PC is
+that PC has one more collaterally blocked coroutine on the same port."
+    (define (drop-collateral pc)
+      (match (.collateral pc)
+        (((port . p) t ...)
+         (clone pc
+                #:collateral t
+                #:previous (and=> (.previous pc) drop-collateral)))
+        (_
+         pc)))
+    (match (.collateral pc)
+      (((port . pc0) (port . pc1) t ...)
+       (and (eq? (.instance pc0) (.instance pc1))
+        (let ((pc (drop-collateral pc)))
+          (pc-equal? pc previous-pc))))
+      (_
+       #f)))
+
+  (define (run-labels pc labels)
+    (let loop ((labels labels) (traces '()))
+      (if (null? labels) traces
+          (let* ((new (run-to-completion** pc (car labels)))
+                 (new (if (eq? (car labels) 'external) new
+                          (filter-implicit-illegal-only new)))
+                 (new (filter (compose not (is-status? <blocked-error>) car)
+                              new))
+                 (new (filter (compose not (cute collateral? <> pc) car) new)))
+            (cond
+             ((find (compose (is-status? <livelock-error>) car) new)
+              (format (current-error-port) "warning: livelock, bailing out\n")
+              '())
+             (else
+              (loop (cdr labels) (append new traces))))))))
+
   (let* ((labels (cons* 'async 'external (labels)))
          (lts (make-hash-table))
          (state-number-table (make-hash-table))
          (state-number-count (list 1))
-         (pc->state-number (pc->state-number state-number-table state-number-count)))
+         (pc->state-number (pc->state-number state-number-table
+                                             state-number-count)))
     (hash-set! state-number-table "<illegal>" 0)
     (when (.status pc)
       (let ((pc0 (clone pc #:status #f)))
@@ -121,22 +157,7 @@ recursion.  Return a run-to-completion LTS
       (let ((from (pc->state-number pc)))
         (unless (or (.status pc) (hash-ref lts from))
           (let* ((pc (clone pc #:instance #f #:trail '()))
-                 (traces
-                  (let loop ((labels labels) (traces '()))
-                    (if (null? labels) traces
-                        (let* ((new (run-to-completion** pc (car labels)))
-                               (new (if (eq? (car labels) 'external) new
-                                        (filter-implicit-illegal-only new)))
-                               (new (filter
-                                     (compose not
-                                              (is-status? <blocked-error>)
-                                              car)
-                                     new)))
-                          (cond ((find (compose (is-status? <livelock-error>) car) new)
-                                 (format (current-error-port) "warning: livelock, bailing out\n")
-                                 '())
-                                (else
-                                 (loop (cdr labels) (append new traces))))))))
+                 (traces (run-labels pc labels))
                  (pcs (map car traces)))
             (hash-set! lts from (cons pc traces))
             (let* ((traces (filter (negate trace-done?) traces))
@@ -177,7 +198,7 @@ transitions."
                #:variables variables)))))
 
   (define (remove-state pc)
-    (let ((pc (clone pc #:blocked '())))
+    (let ((pc (clone pc #:blocked '() #:collateral '() #:released '())))
       (if (and (not ports?) (not extended?)) pc
           (let* ((state-list (.state-list (.state pc)))
                  (state-list (filter-map remove-extended state-list))

@@ -49,6 +49,8 @@
             action->trigger
             assign
             async-event?
+            blocked-port
+            collateral-block
             dequeue
             dequeue-external
             enqueue
@@ -85,6 +87,7 @@
             reset-handling!
             reset-replies
             rewrite-trace-head
+            rtc-block-trigger
             rtc-program-counter-equal?
             rtc-port
             rtc-trigger
@@ -478,32 +481,88 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (push-pc (pc <program-counter>) (instance <runtime:instance>) (statement <statement>))
   (clone pc #:previous pc #:instance instance #:statement statement))
 
+(define-method (rtc-block-pc (pc <program-counter>))
+  (let loop ((pc pc))
+    (let ((trigger (.trigger pc))
+          (previous (.previous pc)))
+      (if (or (not previous)
+              (not (.trigger previous))
+              (is-a? (.trigger previous) <q-trigger>)) pc
+              (loop previous)))))
+
+(define-method (rtc-block-trigger (pc <program-counter>))
+  (.trigger (rtc-block-pc pc)))
+
 (define-method (rtc-trigger (pc <program-counter>))
   (let ((triggers (unfold (negate (cute .previous <>)) .trigger .previous pc)))
-    (last triggers)))
+    (and (pair? triggers)
+         (last triggers))))
 
 (define-method (rtc-port (pc <program-counter>))
   (and=> (rtc-trigger pc) .port))
+
+
+;;;
+;;; Blocking
+;;;
+
+(define-method (blocked-port (pc <program-counter>) (instance <runtime:component>))
+  (let ((id (get-handling pc instance)))
+    (or (any (match-lambda
+               ((port . pc) (and (eq? (.id pc) id) port)))
+             (.blocked pc))
+        (any (match-lambda
+               ((port . pc) (and (eq? (.id pc) id) port)))
+             (.collateral pc)))))
+
+(define-method (collateral-block (pc <program-counter>) (instance <runtime:component>))
+  (let* ((orig-pc pc)
+         (blocked-port (blocked-port pc instance))
+         (pc (make <program-counter>
+               #:async (.async pc)
+               #:id (pc:next-id)
+               #:blocked (.blocked pc)
+               #:collateral (acons blocked-port pc (.collateral pc))
+               #:external-q (.external-q pc)
+               #:released (.released pc)
+               #:state (.state pc)
+               #:trail (.trail pc))))
+    (%debug "  ~s ~s <collateral-block> ~a [~a] => [~a]\n"
+            ((compose name .instance) pc)
+            (and=> (.trigger pc) trigger->string)
+            (runtime:instance->string blocked-port)
+            (.id orig-pc)
+            (.id pc))
+    pc))
 
 (define-method (switch-context (pc <program-counter>))
   (let* ((released (.released pc))
          (r:port (match released ((p t ...) p) (() #f)))
          (blocked (.blocked pc))
-         (released-pc (assoc-ref blocked r:port)))
+         (collateral (.collateral pc))
+         (blocked? (assoc-ref blocked r:port))
+         (released-pc (if blocked? (assoc-ref blocked r:port)
+                          (assoc-ref collateral r:port))))
     (if (or (.status pc) (not released-pc)) pc
-        (let ((instance (.instance released-pc))
-              (trigger (.trigger released-pc)))
-          (%debug "  ~s ~s <collateral-block> ~a [~a] => [~a]\n"
+        (let* ((collateral (if blocked? collateral
+                               (alist-delete r:port collateral)))
+               (instance (.instance released-pc))
+               (block? (assoc-ref collateral r:port))
+               (released (if block? released
+                             (delete r:port released)))
+               (trigger (.trigger released-pc)))
+          (%debug "  ~s ~s <switch-context ~a> ~a [~a] => [~a]\n"
                   (name instance)
-                  (and=> (.trigger pc) trigger->string)
+                  (and=> trigger trigger->string)
+                  (if blocked? "block" "collateral")
                   (runtime:instance->string r:port)
                   (.id pc)
                   (.id released-pc))
           (clone pc
                  #:id (.id released-pc)
-                 #:blocked (alist-delete r:port blocked)
+                 #:collateral collateral
                  #:instance instance
-                 #:released (delete r:port released)
+                 #:released released
                  #:previous (.previous released-pc)
                  #:statement (.statement released-pc)
                  #:trigger trigger)))))
@@ -564,7 +623,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
           (values pc trigger)))))
 
 (define-method (get-handling (pc <program-counter>) (instance <runtime:instance>))
-  (.handling (get-state pc instance)))
+  (and=> (get-state pc instance) .handling))
 
 (define-method (set-handling! (pc <program-counter>))
   (set-state pc (clone (get-state pc) #:handling (.id pc))))
@@ -855,6 +914,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
      (string-join
       (cons (state->string (.state o))
             (append (map (compose runtime:dotted-name car) (.blocked o))
+                    (map (compose runtime:dotted-name car) (.collateral o))
                     (if (null? (.external-q o)) '()
                         (list (external-q->string (.external-q o))))
                     (async-ports o)))
@@ -870,6 +930,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
      (string-join
       (cons (state->string (.state o))
             (append (map (compose runtime:dotted-name car) (.blocked o))
+                    (map (compose runtime:dotted-name car) (.collateral o))
                     (async-ports o)))
       "\n"))))
 
@@ -960,6 +1021,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (equal? (.trail a) (.trail b))
        (equal? (async-ports a) (async-ports b))
        (ast:equal? (.blocked a) (.blocked b))
+       (ast:equal? (.collateral a) (.collateral b))
+       (equal? (.released a) (.released b))
        (ast:equal? (.external-q a) (.external-q b))))
 
 (define-method (pc:ast:equal? (a <flush-return>) (b <flush-return>))
@@ -978,8 +1041,13 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (equal? (serialize (.state a)) (serialize (.state b)))
        (equal? (async-ports a) (async-ports b))
        (ast:equal? (.blocked a) (.blocked b))
+       (ast:equal? (.collateral a) (.collateral b))
+       (equal? (.released a) (.released b))
        (ast:equal? (.external-q a) (.external-q b))
        (pc-equal? (.previous a) (.previous b))))
+
+(define-method (ast:equal? (a <program-counter>) (b <program-counter>))
+  (pc-equal? a b))
 
 (define-method (pc-equal? (a <top>) (b <top>))
   (eq? a b))
