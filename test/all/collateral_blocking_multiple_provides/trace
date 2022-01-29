@@ -6,9 +6,9 @@ left.return
 right.hello
 world.hello
 world.return
+left.hello
 world.world
 right.return
-left.hello
 world.hello
 world.return
 world.world
