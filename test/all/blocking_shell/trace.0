@@ -1,6 +1,6 @@
-p_outer.return_int
-r_outer.return_int
-r_outer.0
-r_outer.foo
-p_outer.foo
-p_outer.0
+p.hello_bool
+r.hello_bool
+r.true
+r.world
+p.world
+p.true
