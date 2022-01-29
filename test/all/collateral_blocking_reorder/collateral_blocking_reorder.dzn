@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -60,7 +61,7 @@ interface iworld
     }
   }
 }
-component Proxy
+component proxy_block
 {
   provides ihello p;
   requires icruel r;
@@ -77,7 +78,20 @@ component Proxy
   }
 }
 
-component Block
+component proxy_release
+{
+  provides iworld p;
+  requires iworld e;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on p.hello(): {e.hello(); idle = false;}
+    [!idle] on e.world(): {p.world(); idle = true;}
+  }
+}
+
+component blocked
 {
   provides icruel p;
   requires iworld r;
@@ -98,12 +112,15 @@ component collateral_blocking_reorder
 
   system
   {
-    Proxy proxy;
-    p <=> proxy.p;
-    proxy.e <=> e;
+    proxy_block top;
+    p <=> top.p;
 
-    Block block;
-    proxy.r <=> block.p;
-    block.r <=> r;
+    proxy_release release;
+    top.e <=> release.p;
+    release.e <=> e;
+
+    blocked bottom;
+    top.r <=> bottom.p;
+    bottom.r <=> r;
   }
 }
