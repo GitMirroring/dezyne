@@ -56,7 +56,7 @@
             external-trigger?
             external-trigger-in-q?
             flush
-            get-handling?
+            get-handling
             get-reply
             get-state
             get-variables
@@ -82,6 +82,7 @@
             push-pc
             read-input
             requires-trigger?
+            reset-handling!
             reset-replies
             rewrite-trace-head
             rtc-program-counter-equal?
@@ -90,7 +91,7 @@
             serialize
             serialize-header
             set-deferred
-            set-handling?
+            set-handling!
             set-reply
             set-state
             set-variables
@@ -562,11 +563,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
           (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<dequeue-external>" (trigger->string trigger))
           (values pc trigger)))))
 
-(define-method (get-handling? (pc <program-counter>) (instance <runtime:instance>))
-  (.handling? (get-state pc instance)))
+(define-method (get-handling (pc <program-counter>) (instance <runtime:instance>))
+  (.handling (get-state pc instance)))
 
-(define-method (set-handling? (pc <program-counter>) handling?)
-  (set-state pc (clone (get-state pc) #:handling? handling?)))
+(define-method (set-handling! (pc <program-counter>))
+  (set-state pc (clone (get-state pc) #:handling (.id pc))))
+
+(define-method (reset-handling! (pc <program-counter>))
+  (set-state pc (clone (get-state pc) #:handling #f)))
 
 (define-method (pop-deferred (pc <program-counter>))
   (values (set-deferred pc #f) (.deferred (get-state pc))))
@@ -581,7 +585,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (if (null? (.q (get-state pc))) (let ((pc deferred (pop-deferred pc)))
                                       (%debug "  flush deferred: ~s\n" deferred)
                                       (if (not deferred) pc
-                                          (if (get-handling? pc deferred) (throw 'handling "already handling event" pc)
+                                          (if (get-handling pc deferred) (throw 'handling "already handling event" pc)
                                               (flush pc deferred))))
         (let ((pc trigger (dequeue pc)))
           (let* ((q-out (make <q-out> #:trigger trigger))

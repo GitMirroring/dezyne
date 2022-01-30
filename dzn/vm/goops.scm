@@ -72,7 +72,7 @@
             .component-acceptance
             .deferred
             .external-q
-            .handling?
+            .handling
             .input
             .labels
             .port-acceptance
@@ -210,7 +210,7 @@
 (define-class <state> ()
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
   (deferred #:getter .deferred #:init-form #f #:init-keyword #:deferred)
-  (handling? #:getter .handling? #:init-form #f #:init-keyword #:handling?)
+  (handling #:getter .handling #:init-form #f #:init-keyword #:handling)
   (q #:getter .q #:init-form (list) #:init-keyword #:q)
   (reply #:getter .reply #:init-form #f #:init-keyword #:reply)
   (variables #:getter .variables #:init-form (list) #:init-keyword #:variables))

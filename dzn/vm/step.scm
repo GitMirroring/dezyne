@@ -88,7 +88,7 @@
 (define-method (begin-step (pc <program-counter>) (instance <runtime:instance>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
-         (pc (set-handling? pc #t))
+         (pc (set-handling! pc))
          (port (.port trigger))
          (pc (if (and port (ast:provides? port)) (set-reply pc #f)
                  pc))
@@ -366,7 +366,7 @@
 
 (define-method (step (pc <program-counter>) (o <block>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (if (not (q-empty? pc)) (let ((pc (set-handling? pc #f)))
+  (if (not (q-empty? pc)) (let ((pc (set-handling! pc)))
                             (list (flush pc)))
       (let ((pc (continuation pc o))
             (trigger (.trigger pc)))
@@ -380,7 +380,7 @@
                (else
                 (let* ((instance (.instance pc))
                        (r:port (runtime:port instance (.port trigger)))
-                       (pc (set-handling? pc #f))
+                       (pc (reset-handling! pc))
                        (id (.id pc))
                        (pc (make <program-counter>
                              #:async (.async pc)
@@ -409,7 +409,7 @@
                         (other-instances (map (cut runtime:other-instance+port instance <>) other-port-instances)))
                    (find (compose pair? .q (cut get-state pc <>)) other-instances)))))
       (and other-instance
-           (not (get-handling? pc other-instance))
+           (not (get-handling pc other-instance))
            (list (flush pc other-instance)))))
 
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
@@ -418,7 +418,7 @@
            (not (and (is-a? (and=> (.previous pc) .statement) <flush-return>)
                      (eq? (.instance pc) (.instance (.previous pc)))))
            (list (flush pc)))
-      (let* ((pc (set-handling? pc #f))
+      (let* ((pc (reset-handling! pc))
              (trigger (.trigger pc)))
         (cond
          ((.status pc)
