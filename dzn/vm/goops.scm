@@ -89,9 +89,11 @@
             ->sexp
             external-q->string
             name
+            pc:next-id
             rtc?)
   #:re-export (.ast
                .event.name
+               .id
                .instance
                .port
                .port.name
@@ -200,6 +202,7 @@
 
   (async #:getter .async #:init-form (list) #:init-keyword #:async)
 
+  (id #:getter .id #:init-value 1 #:init-keyword #:id)
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
   (released #:getter .released #:init-form (list) #:init-keyword #:released)
   (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
@@ -211,6 +214,12 @@
   (q #:getter .q #:init-form (list) #:init-keyword #:q)
   (reply #:getter .reply #:init-form #f #:init-keyword #:reply)
   (variables #:getter .variables #:init-form (list) #:init-keyword #:variables))
+
+(define pc:next-id
+  (let ((id 0))
+    (lambda ()
+      (set! id (1+ id))
+      id)))
 
 (define-method (clone (o <state>) . setters)
   (apply clone-base (cons o setters)))

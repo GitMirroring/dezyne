@@ -492,8 +492,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (if (or (.status pc) (not released-pc)) pc
         (let ((instance (.instance released-pc))
               (trigger (.trigger released-pc)))
-          (%debug "  ~s ~s <switch-context>\n" (name instance) (and=> trigger trigger->string))
+          (%debug "  ~s ~s <collateral-block> ~a [~a] => [~a]\n"
+                  (name instance)
+                  (and=> (.trigger pc) trigger->string)
+                  (runtime:instance->string r:port)
+                  (.id pc)
+                  (.id released-pc))
           (clone pc
+                 #:id (.id released-pc)
                  #:blocked (alist-delete r:port blocked)
                  #:instance instance
                  #:released (delete r:port released)
@@ -1003,6 +1009,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((system-state (make-system-state instances))
          (errors (apply append (filter list? (.state-list system-state))))
          (system-state (if (null? errors) system-state (make-system-state '())))
-         (pc (make <program-counter> #:state system-state #:trail trail))
+         (id (pc:next-id))
+         (pc (make <program-counter> #:id id #:state system-state #:trail trail))
          (pc (if (null? errors) pc (clone pc #:status (car errors)))))
   pc))

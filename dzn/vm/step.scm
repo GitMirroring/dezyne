@@ -381,12 +381,20 @@
                 (let* ((instance (.instance pc))
                        (r:port (runtime:port instance (.port trigger)))
                        (pc (set-handling? pc #f))
+                       (id (.id pc))
                        (pc (make <program-counter>
                              #:async (.async pc)
+                             #:id (pc:next-id)
                              #:blocked (acons r:port pc (.blocked pc))
                              #:external-q (.external-q pc)
                              #:state (.state pc)
                              #:trail (.trail pc))))
+                  (%debug "  ~s ~s <block> ~a [~a] => [~a]\n"
+                          (name instance)
+                          (and=> (.trigger pc) trigger->string)
+                          (runtime:instance->string r:port)
+                          id
+                          (.id pc))
                   (list pc)))))))))
 
 (define-method (step (pc <program-counter>) (o <end-of-on>))
