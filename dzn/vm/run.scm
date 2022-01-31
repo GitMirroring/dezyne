@@ -219,6 +219,9 @@ prefix."
             (%livelock-threshold (* 2 (%livelock-threshold)))
             #f)
            ((pc tail ...)
+            (%debug "  ~s ~s <livelock>\n"
+                    ((compose name .instance) pc)
+                    (and=> (.trigger pc) trigger->string))
             (let ((index (and=> (list-index (cute pc-equal? <> pc)
                                             (reverse trace))
                                 (cute - (length trace) <> 1))))
