@@ -1,16 +1,16 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Source: git://git.savannah.nongnu.org/deyne.git
+Source: git://git.savannah.nongnu.org/dezyne.git
 Upstream-Name: dezyne
 Upstream-Contact: dezyne-devel@nongnu.org
 
 Files: *
 Copyright: 2018 Filip Toman <filip.toman@verum.com>
            2016--2018 Henk Katerberg <hank@mudball.nl>
-           2014--2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+           2014--2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
            2017--2019 Johri van Eerd <vaneerd.johri@gmail.com>
            2014--2019 Paul Hoogendijk <paul@dezyne.org>
            2014--2019 Rob Wieringa <rob@dezyne.org>
-           2014--2019 Rutger van Beusekom <rutger@dezyne.org>
+           2014--2022 Rutger van Beusekom <rutger@dezyne.org>
  Dezyne --- Dezyne command line tools
  .
  Dezyne is free software: you can redistribute it and/or modify it
