@@ -3,7 +3,7 @@
 !#
 
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -34,11 +34,13 @@
 (define (main args)
   (match args
     ((_ file-name)
-     (let ((run (string-append file-name "/run"))
-           (file-name (if (string-prefix? "./test" file-name)
-                          (string-drop file-name 2)
-                          file-name))
-           (languages (string-split (string-trim-both "@languages@") #\space)))
+     (let* ((run (string-append file-name "/run"))
+            (file-name (if (string-prefix? "./test" file-name)
+                           (string-drop file-name 2)
+                           file-name))
+            (languages (string-trim-both "@languages@"))
+            (languages (if (string-null? languages) '()
+                           (string-split languages #\space))))
        (if (and (file-exists? run)
                 (not (getenv "run_seen")))
            (begin (setenv "run_seen" "1")
