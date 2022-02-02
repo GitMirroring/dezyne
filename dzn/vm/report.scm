@@ -825,7 +825,9 @@ intermediate steps such as assignments, function calls, replies,
           (append
            (if (not trigger) '()
                (let ((location (step->location (.event trigger))))
-                 (list (format #f "~atrigger: ~a\n" location (trigger->string trigger)))))
+                 (if (not location) '()
+                     (list (format #f "~atrigger: ~a\n" location
+                                   (trigger->string trigger))))))
            (list (format #f "~acomponent performs: ~a\n" location acceptance))
            (if (not port-acceptances)
                (let* ((interface (.type (.ast r:port)))
