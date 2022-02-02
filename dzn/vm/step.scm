@@ -88,15 +88,30 @@
 (define-method (begin-step (pc <program-counter>) (instance <runtime:instance>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
-         (pc (set-handling! pc))
          (port (.port trigger))
          (pc (if (and port (ast:provides? port)) (set-reply pc #f)
                  pc))
          (r:port (and port (runtime:port instance port))))
-    (if (not (assoc r:port (.blocked pc))) pc
+    (cond
+     ((and (is-a? instance <runtime:component>)
+           (or (get-handling pc instance)
+               (assq r:port (.blocked pc)))
+           (blocked-port pc instance))
+      (%debug "<blocked-error> collateral ~a ~a\n" (name instance) (trigger->string trigger))
+      (let ((message (format #f "port `~a' is collaterally blocked"
+                             (.name port))))
         (clone pc #:status (make <blocked-error>
                              #:ast (.statement pc)
-                             #:message (format #f "port `~a' is blocked" (.name port)))))))
+                             #:message message))))
+     ((assq r:port (.blocked pc))
+      (%debug "<blocked-error> blocked ~a ~a\n" (name instance) (trigger->string trigger))
+      (let ((message (format #f "port `~a' is blocked" (.name port))))
+        (clone pc #:status (make <blocked-error>
+                             #:ast (.statement pc)
+                             #:message message))))
+     (else
+      (let ((pc (set-handling! pc)))
+        pc)))))
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
