@@ -1,7 +1,5 @@
 ;;; -*- scheme -*-
-((skip ("traces"
-        "lts"
-        "c"
+((skip ("c"
         "javascript"
         "scheme"))
  (model #f)
