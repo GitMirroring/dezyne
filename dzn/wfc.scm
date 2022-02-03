@@ -204,8 +204,8 @@
 (define ((argument-type-check o) argument formal)
   (let ((argument-type (ast:type argument))
         (formal-type (ast:type formal)))
-    (cond ((not argument-type)
-           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name argument)))))
+    (cond ((or (not formal-type) (not argument-type))
+           '())
           ((equal-type? argument-type formal-type)
            '())
           (else

@@ -1,2 +1,1 @@
 test/all/undefined/component/argument_seen/argument_seen.dzn:50:30: error: undefined identifier `j'
-test/all/undefined/component/argument_seen/argument_seen.dzn:50:29: error: undefined identifier `j'
