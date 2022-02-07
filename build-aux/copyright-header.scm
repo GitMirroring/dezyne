@@ -143,7 +143,7 @@ All rights reserved.
     (and=> m match:string)))
 
 (define (code-file? o)
-  (let ((m (string-match "\\.(cc|cs|dzn|js)(|.in)$" o)))
+  (let ((m (string-match "\\.(cc|cs|dzn|h|hh|js)(|.in)$" o)))
     (and=> m match:string)))
 
 (define (author-unique author)
