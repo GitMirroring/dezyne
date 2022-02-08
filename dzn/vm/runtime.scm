@@ -38,6 +38,7 @@
             runtime:%sut-port?
             runtime:ast-model
             runtime:get-sut
+            runtime:boundary-port
             runtime:boundary-port?
             runtime:component-instance?
             runtime:container-eq?
@@ -239,6 +240,9 @@
 
 (define-method (runtime:port (o <runtime:port>) x)
   o)
+
+(define-method (runtime:boundary-port (port <port>))
+  (runtime:find-instance (.name port) #:boundary? #t))
 
 (define-method (runtime:port* (o <runtime:port>))
   '())

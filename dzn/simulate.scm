@@ -513,8 +513,7 @@ final REPORT and return exit status."
 status."
 
     (define ((port-lts-stable? pc) port)
-      (let* ((instance (runtime:port (%sut) port))
-             (instance (runtime:other-port instance))
+      (let* ((instance (runtime:boundary-port port))
              (lts (parameterize ((%sut instance))
                     (pc->modeling-lts pc))))
         (parameterize ((%sut instance))
@@ -525,8 +524,7 @@ status."
         (every (port-lts-stable? pc) requires)))
 
     (define (port-refusals pc port)
-      (let* ((instance (runtime:port (%sut) port))
-             (instance (runtime:other-port instance))
+      (let* ((instance (runtime:boundary-port port))
              (lts (parameterize ((%sut instance))
                     (pc->modeling-lts pc)))
              (port-name (.name port))
@@ -563,8 +561,10 @@ status."
                                                .instance))
                              (reverse trace)))
                    (trigger (.trigger pc))
+                   (ast (if (is-a? component <system>) component
+                            (.behavior component)))
                    (pc (clone pc #:status (make <refusals-error>
-                                            #:ast (.behavior component)
+                                            #:ast ast
                                             #:message "non-compliance"
                                             #:refusals trigger)))
                    (trace (cons pc trace)))
@@ -595,10 +595,12 @@ status."
                      (refusals (and instable (port-refusals pc instable))))
 
                 (define (mark-refusals pc)
-                  (clone pc #:status (make <refusals-error>
-                                       #:ast (.behavior component)
-                                       #:message "non-compliance"
-                                       #:refusals refusals)))
+                  (let ((ast (if (is-a? component <system>) component
+                                 (.behavior component))))
+                    (clone pc #:status (make <refusals-error>
+                                         #:ast ast
+                                         #:message "non-compliance"
+                                         #:refusals refusals))))
 
                 (and (pair? refusals)
                      (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
@@ -625,7 +627,7 @@ status."
          (refusals-check? (and (%compliance-check?)
                                refusals-check?
                                (not status)
-                               (is-a? (%sut) <runtime:component>))))
+                               (not (is-a? (%sut) <runtime:port>)))))
     (or (and deadlock-check?
              (is-a? (%sut) <runtime:port>)
              (interface-deadlock-report from-pcs traces))
