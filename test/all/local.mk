@@ -211,7 +211,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_cancel_race_bool			\
  %D%/blocking_choice				\
  %D%/blocking_defer				\
- %D%/blocking_double_release			\
  %D%/blocking_external				\
  %D%/blocking_external2				\
  %D%/blocking_function_reply			\
@@ -299,6 +298,7 @@ REGRESSION_TESTS =				\
  %D%/complex_not5				\
  %D%/complex_or					\
  %D%/compliance_blocking_double_release		\
+ %D%/compliance_blocking_double_release2	\
  %D%/compliance_blocking_function		\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_out			\

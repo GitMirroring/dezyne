@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 //
 // Code:
 
-#include "blocking_double_release.hh"
+#include "compliance_blocking_double_release2.hh"
 
 #include <thread>
 
@@ -32,10 +33,10 @@
 int
 main ()
 {
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set (rt);
-  blocking_double_release sut (loc);
+  dzn::locator locator;
+  dzn::runtime runtime;
+  locator.set (runtime);
+  compliance_blocking_double_release2 sut (locator);
 
   dzn::check_bindings (sut);
 
