@@ -142,7 +142,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_bottom_system			\
  %D%/blocking_cancel_race			\
  %D%/blocking_cancel_race_bool			\
- %D%/blocking_double_release			\
  %D%/blocking_external				\
  %D%/blocking_function_reply			\
  %D%/blocking_function_reply2			\
@@ -178,7 +177,6 @@ REGRESSION_TESTS =				\
  %D%/closed_system_foreigns			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
- %D%/collateral_blocking_double_release		\
  %D%/collateral_blocking_multiple_provides	\
  %D%/collateral_blocking_multiple_provides0	\
  %D%/collateral_blocking_multiple_provides2	\

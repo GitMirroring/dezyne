@@ -33,8 +33,8 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
-    using (blocking_double_release sut
-      = new blocking_double_release (locator, "sut"))
+    using(compliance_blocking_double_release2 sut
+      = new compliance_blocking_double_release2 (locator, "sut"))
     {
       System.Threading.Thread f0 = new System.Threading.Thread (() =>
       {

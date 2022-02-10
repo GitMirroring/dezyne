@@ -69,7 +69,7 @@ component arbiter
   }
 }
 
-component blocking_double_release
+component compliance_blocking_double_release2
 {
   provides blocking ihello block0;
   provides blocking ihello block1;
