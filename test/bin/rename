@@ -23,12 +23,18 @@ set -e
 from=$1
 to=$2
 
+if [ -d test ]; then
+    from=$(echo $from | sed s,^test/,,)
+    to=$(echo $to | sed s,^test/,,)
+    cd test
+fi
+
 if [ ! -d "$from" -o -z "$to" -o ! -d all/ -o -e "$to" ]; then
     cat <<EOF
 Usage: rename FROM TO
 
 Example:
-    bin/rename all/hello all/bye
+    test/bin/rename test/all/hello test/all/bye
 EOF
     exit 2
 fi
@@ -92,6 +98,6 @@ if [ -d $to/baseline ]; then
     cat <<EOF
 check baseline, run
 
-    bin/run $to
+    ./pre-inst-env run test/$to
 EOF
 fi
