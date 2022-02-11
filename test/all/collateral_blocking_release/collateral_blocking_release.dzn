@@ -1,0 +1,68 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import blocking_release.dzn;
+
+component proxy_left
+{
+  provides ihello left;
+  requires ihello hello;
+
+  behavior
+  {
+    on left.hello (): hello.hello ();
+  }
+}
+
+component proxy_right
+{
+  provides ihello right;
+  requires ihello hello;
+
+  behavior
+  {
+    on right.hello (): {hello.hello ();hello.hello ();}
+  }
+}
+
+component collateral_blocking_release
+{
+  provides ihello block;
+  provides ihello release;
+  requires iworld w;
+
+  system
+  {
+    proxy_left top_left;
+    proxy_right top_right;
+    blocking_release bottom;
+
+    block <=> top_left.left;
+    top_left.hello <=> bottom.block;
+    release <=> top_right.right;
+    top_right.hello <=> bottom.release;
+    w <=> bottom.w;
+  }
+}
