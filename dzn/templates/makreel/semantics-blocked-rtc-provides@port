@@ -1,1 +1,1 @@
-(!(#.name port in blocked)) -> sum e : #x:makreel:interface-name actions. #.name in (#x:makreel:interface-name action(e)) . semantics_provides_blocked(blocked=blocked + {#.name port})
+(!(#.name port in blocking)) -> sum e : #x:makreel:interface-name actions. #.name in (#x:makreel:interface-name action(e)) . semantics_provides_blocked(rtc=#.name port)
