@@ -65,6 +65,7 @@ for i in $(ls -1 $to/baseline 2>/dev/null); do
             git mv $to/baseline/$i/$from_base $to/baseline/$i/$to_base
         fi
         sed -i -e s,$from,$to,g $to/baseline/$i/$to_base
+        sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base
         git add $to/baseline/$i/$to_base
     fi
 
@@ -73,6 +74,7 @@ for i in $(ls -1 $to/baseline 2>/dev/null); do
             git mv $to/baseline/$i/$from_base.stderr $to/baseline/$i/$to_base.stderr
         fi
         sed -i -e s,$from,$to,g $to/baseline/$i/$to_base.stderr
+        sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base.stderr
         git add $to/baseline/$i/$to_base.stderr
     fi
 done
