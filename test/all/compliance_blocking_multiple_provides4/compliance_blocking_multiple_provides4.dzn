@@ -54,7 +54,7 @@ component mux
   }
 }
 
-component blocking_multiple_provides0
+component compliance_blocking_multiple_provides4
 {
   provides blocking ihello left;
   provides blocking ihello right;

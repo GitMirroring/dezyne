@@ -149,6 +149,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_if_skip				\
  %D%/blocking_imperative			\
  %D%/blocking_multiple_provides0		\
+ %D%/blocking_local				\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
  %D%/blocking_mux				\
@@ -224,6 +225,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_multiple_provides2	\
  %D%/compliance_blocking_multiple_provides3	\
+ %D%/compliance_blocking_multiple_provides4	\
  %D%/compliance_blocking_out			\
  %D%/compliance_defer				\
  %D%/compliance_external_inevitable		\
