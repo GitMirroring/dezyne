@@ -1,3 +1,3 @@
-#.name blocking . semantics_provides_blocking(blocking={#.name port},released={})
+#.name blocking . semantics_provides_blocking(blocking={#.name port},released=[])
  + (#x:makreel:interface-name nil_is (#.name port (reply))) -> sum r : #x:makreel:interface-name replies. #.name reply (r) . semantics_provides_unblocked(replies(#x:semantics-provides-reply-pair)) <> sum r : #x:makreel:interface-name replies. #.name reply (r) . second_reply . delta
  + sum a : #x:makreel:interface-name actions. #.name out (#x:makreel:interface-name action (a)) . semantics_provides_unblocked()

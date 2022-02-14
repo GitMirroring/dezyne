@@ -18,15 +18,28 @@ map
 
 QueueLength : Nat;
 
+list2set : List(provides_ports) -> Set(provides_ports);
+
+remove_port : provides_ports # List (provides_ports) -> List(provides_ports);
+
 remove_async : requires_events # List (requires_events) -> List(requires_events);
 find_async : requires_events # List (requires_events) -> Bool;
 
-var e, h: requires_events;
+var p, car: provides_ports;
+    l, cdr: List(provides_ports);
+    e, h: requires_events;
     t: List(requires_events);
 
 eqn
 
 QueueLength = #x:makreel:queue-length;
+
+l == [] -> list2set(l) = {};
+l != [] -> list2set(l) = {head(l)} + list2set(tail(l));
+
+remove_port(p, []) = [];
+p == car -> remove_port(p, car |> cdr) = cdr;
+p != car -> remove_port(p, car |> cdr) = car |> remove_port(p,cdr);
 
 remove_async(e, []) = [];
 e == h -> remove_async(e, h |> t) = t;
@@ -147,13 +160,13 @@ semantics_provides_unblocked(reply: reply_values)
       #x:semantics-provides-flush)
  ;
 
-semantics_provides_blocking(blocking: Set(provides_ports), released: Set(provides_ports), reply: reply_values)
-= (blocking - released != {}) -> #x:makreel:model-name end . (semantics_blocked_rtc() + semantics_provides_skip_blocked())
-+ (blocking - released == {}) -> #x:makreel:model-name end . queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . async_not_pending . semantics)
+semantics_provides_blocking(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
+= (blocking - list2set(released) != {}) -> #x:makreel:model-name end . (queue_empty . semantics_blocked_rtc() + semantics_provides_skip_blocked())
++ (blocking - list2set(released) == {}) -> #x:makreel:model-name end . queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . async_not_pending . semantics)
  #x:semantics-provides-blocking-provides
  ;
 
-semantics_provides_skip_blocked(released: Set(provides_ports), reply: reply_values)
+semantics_provides_skip_blocked(released: List(provides_ports), reply: reply_values)
 = #x:semantics-provides-skip-blocked-replies
  + !(#x:semantics-port-in-released-or) -> #x:makreel:model-name end
  . (delta
@@ -162,12 +175,12 @@ semantics_provides_skip_blocked(released: Set(provides_ports), reply: reply_valu
  #x:semantics-provides-skip-blocked-requires
  ;
 
-semantics_provides_blocked(rtc: provides_ports, blocking: Set(provides_ports), released: Set(provides_ports), reply: reply_values)
-= (blocking == {} && released == {}) -> (async_not_pending . semantics
+semantics_provides_blocked(rtc: provides_ports, blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
+= (blocking == {} && released == []) -> (async_not_pending . semantics
                                        +async_pending . (semantics_async_allow_ack(port=no_port, pending=true)
                                                         +semantics_provides))
  + #x:makreel:model-name end
- . ((released == {}) -> semantics_blocked_rtc() <> queue_empty . semantics_reply()
+ . ((released == []) -> queue_empty . semantics_blocked_rtc() <> queue_empty . semantics_reply()
   #x:semantics-provides-blocked-requires)
  #x:semantics-provides-blocked-provides
  #x:semantics-provides-blocked-replies
@@ -176,21 +189,21 @@ semantics_provides_blocked(rtc: provides_ports, blocking: Set(provides_ports), r
  #x:semantics-provides-blocked-requires
  ;
 
-semantics_reply(rtc: provides_ports, blocking: Set(provides_ports), released: Set(provides_ports), reply: reply_values)
-= (blocking == {} && released == {}) -> semantics_provides_blocked ()
-+ (blocking != {} && released == {}) -> semantics_blocked_rtc ()
+semantics_reply(rtc: provides_ports, blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
+= (blocking == {} && released == []) -> semantics_provides_blocked ()
++ (blocking - list2set(released) != {} && rtc == no_port) -> semantics_blocked_rtc ()
 + #x:semantics-reply
 ;
 
-semantics_blocked_rtc(blocking: Set(provides_ports),released: Set(provides_ports), reply: reply_values)
+semantics_blocked_rtc(blocking: Set(provides_ports),released: List(provides_ports), reply: reply_values)
 = (blocking == {}) -> async_not_pending . semantics
-+ (blocking != {}) -> queue_empty .
++ (blocking != {}) ->
  (#x:semantics-blocked-rtc-provides
   #x:semantics-blocked-rtc-requires
   + async_pending . semantics_async_allow_ack(port=no_port, pending=true))
  ;
 
-semantics_async(blocking: Set(provides_ports), released: Set(provides_ports), reply: reply_values, port: provides_ports, pending : Bool)
+semantics_async(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports, pending : Bool)
  = #x:makreel:model-name end . (queue_empty . (async_not_pending . (no_port_is(port) -> semantics #x:semantics-requires-flush)
                                               +async_pending . (no_port_is(port) -> semantics_async_allow_ack(pending=true) #x:semantics-async-flush))
                                +queue_not_empty . (async_not_pending . semantics_async (pending=false)
@@ -200,7 +213,7 @@ semantics_async(blocking: Set(provides_ports), released: Set(provides_ports), re
 #x:semantics-async-requires
  ;
 
-semantics_async_allow_ack(blocking: Set(provides_ports), released: Set(provides_ports), reply: reply_values, port: provides_ports, pending : Bool)
+semantics_async_allow_ack(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports, pending : Bool)
 = #x:semantics-async-allow-ack #x:semantics-no-async
  ;
 

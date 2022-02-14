@@ -1,1 +1,1 @@
-#.name port in released
+released != [] && #.name port == head (released)
