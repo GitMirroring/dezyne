@@ -367,6 +367,15 @@ PC until RTC?."
       (map (cute rewrite-trace-head (cute set-end-of-trail labels <>) <>)
            traces)))
 
+  (define (previous-provides? trace)
+    (let ((previous (any .trigger trace)))
+      (and previous
+           (and=> (.port previous) ast:provides?))))
+
+  (define (must-switch? trace)
+    (or (not (%exploring?)) ;TODO: move switch-context up for simulate too
+        (not (previous-provides? trace))))
+
   (define (loop traces)
     (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
            (traces (filter-match-error traces))
@@ -382,7 +391,8 @@ PC until RTC?."
        ((every (conjoin (negate (is-status? <postponed-match>))
                         (disjoin rtc? (is-status? <match-error>)))
                pcs)
-        (let* ((traces (map switch-context traces))
+        (let* ((to-switch traces (partition must-switch? traces))
+               (traces (append traces (map switch-context to-switch)))
                (done todo (partition rtc? traces)))
           (append done
                   (loop (append-map extend-trace todo)))))
@@ -412,7 +422,8 @@ PC until RTC?."
 (define-method (run-to-completion-unmemoized (pc <program-counter>) event)
   "Return a list of traces produced by taking steps, starting from PC
 with EVENT as first step, until RTC?."
-  (let ((pc (begin-step pc event)))
+  (let ((pc (if (eq? event 'rtc) pc
+                (begin-step pc event))))
     (run-to-completion-unmemoized pc)))
 
 (define run-to-completion
@@ -421,7 +432,9 @@ with EVENT as first step, until RTC?."
     (lambda (pc event)
       "Memoizing version of RUN-TO-COMPLETION-UNMEMOIZED."
       (if (not (%exploring?)) (run-to-completion-unmemoized pc event)
-          (let* ((event-string (if (string? event) event (trigger->string event)))
+          (let* ((event-string (cond ((string? event) event)
+                                     ((eq? event 'rtc) "*rtc*")
+                                     (else (trigger->string event))))
                  (sut (%sut))
                  (root (parent (.ast sut) <root>))
                  (key (string-append

@@ -127,11 +127,20 @@ that PC has one more collaterally blocked coroutine on the same port."
       (_
        #f)))
 
+  (define (run-label orig-pc label)
+    (let ((pc (switch-context orig-pc)))
+      (if (eq? pc orig-pc) (run-to-completion** pc label)
+          (if (not (provides-trigger? label))
+              (run-to-completion pc 'rtc)
+              (append (run-to-completion pc 'rtc)
+                      (run-to-completion** orig-pc label))))))
+
   (define (run-labels pc labels)
     (let loop ((labels labels) (traces '()))
       (if (null? labels) traces
-          (let* ((new (run-to-completion** pc (car labels)))
-                 (new (if (eq? (car labels) 'external) new
+          (let* ((label (car labels))
+                 (new (run-label pc label))
+                 (new (if (eq? label 'external) new
                           (filter-implicit-illegal-only new)))
                  (new (filter (compose not (is-status? <blocked-error>) car)
                               new))
@@ -156,8 +165,7 @@ that PC has one more collaterally blocked coroutine on the same port."
     (let loop ((pc pc))
       (let ((from (pc->state-number pc)))
         (unless (or (.status pc) (hash-ref lts from))
-          (let* ((pc (clone pc #:instance #f #:trail '()))
-                 (traces (run-labels pc labels))
+          (let* ((traces (run-labels pc labels))
                  (pcs (map car traces)))
             (hash-set! lts from (cons pc traces))
             (let* ((traces (filter (negate trace-done?) traces))
