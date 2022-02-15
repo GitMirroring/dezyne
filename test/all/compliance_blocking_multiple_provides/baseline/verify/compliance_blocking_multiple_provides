@@ -1,0 +1,3 @@
+model: compliance_blocking_multiple_provides
+block.hello
+<non-compliance>
