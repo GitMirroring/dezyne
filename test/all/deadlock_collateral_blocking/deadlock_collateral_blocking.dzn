@@ -1,0 +1,105 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    on hello: idle = false;
+    [!idle] on optional: {idle = true; world;}
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+
+  behavior
+  {
+    bool idle = true;
+    on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+component fork
+{
+  provides blocking ihello p;
+  requires blocking ihello r_left;
+  requires iworld r_right;
+
+  behavior
+  {
+    on p.hello (): {r_right.hello (); r_left.hello ();}
+    on r_right.world (): p.world ();
+    on r_left.world (): {}
+  }
+}
+
+component block
+{
+  provides blocking ihello p;
+  requires iworld r;
+
+  behavior
+  {
+    blocking on p.hello (): r.hello ();
+    on r.world (): p.reply ();
+  }
+}
+
+component proxy
+{
+  provides iworld p;
+  requires iworld r;
+
+  behavior
+  {
+    on p.hello (): r.hello ();
+    on r.world (): p.world ();
+  }
+}
+
+component deadlock_collateral_blocking
+{
+  provides blocking ihello p;
+  requires iworld r_left;
+  requires iworld r_right;
+
+  system
+  {
+    fork top;
+    block left;
+    proxy right;
+
+    p <=> top.p;
+    top.r_left <=> left.p;
+    top.r_right <=> right.p;
+    left.r <=> r_left;
+    right.r <=> r_right;
+  }
+}

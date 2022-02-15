@@ -1,0 +1,12 @@
+model: deadlock_collateral_blocking
+p.hello
+r_right.hello
+r_right.return
+r_left.hello
+r_left.return
+r_right.world
+r_left.world
+p.return
+p.hello
+<loop>
+<livelock>

@@ -280,6 +280,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_component1			\
  %D%/deadlock_interface1			\
  %D%/deadlock_optional_out_only			\
+ %D%/deadlock_collateral_blocking		\
  %D%/deadlock_port_blocked			\
  %D%/deadlock_reply				\
  %D%/deadlock_reply_modeling			\
