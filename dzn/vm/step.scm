@@ -89,7 +89,10 @@
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
          (port (.port trigger))
-         (pc (if (and port (ast:provides? port)) (set-reply pc #f)
+         (instance (.instance pc))
+         (port-name (or (.port.name trigger)
+                        (.name (.ast instance))))
+         (pc (if (and port (ast:provides? port)) (reset-reply pc port-name)
                  pc))
          (r:port (and port (runtime:port instance port))))
     (cond
@@ -116,7 +119,8 @@
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
-         (pc (set-reply pc #f)))
+         (port-name (.name (.ast instance)))
+         (pc (reset-reply pc port-name)))
     pc))
 
 
@@ -339,13 +343,17 @@
 
 (define-method (step (pc <program-counter>) (o <reply>))
   (%debug "  ~s ~s ~a => ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (.expression o))
-  (let* ((value (get-reply pc))
+  (let* ((instance (.instance pc))
+         (port-name (or (.port.name o)
+                        (.port.name (.trigger pc))
+                        (.name (.ast instance))))
+         (value (get-reply pc port-name))
          (pc (if value
                  (let ((error (make <second-reply-error> #:ast o #:previous (.parent value) #:message "second-reply")))
                    (%debug "second reply, previous=~a\n" ((@@ (dzn vm report) step->location) value))
                    (clone pc #:status error))
                  (let ((value (eval-expression pc (.expression o))))
-                   (continuation (set-reply pc value) o))))
+                   (continuation (set-reply pc port-name value) o))))
          (reply-port (.port o)))
     (cond ((ast:modeling? (.trigger pc))
            (let ((pc (clone pc #:status (make <deadlock-error> #:ast o #:message "deadlock"))))
@@ -358,8 +366,7 @@
                   (or (ast:requires? trigger)
                       (not ports-eq?)
                       (and ports-eq? blocking?))))
-           (let* ((instance (.instance pc))
-                  (r:port (runtime:port instance reply-port))
+           (let* ((r:port (runtime:port instance reply-port))
                   (pc (clone pc #:released (append (.released pc) (list r:port)))))
              (list pc)))
           (else
@@ -465,7 +472,10 @@
                  (pc (pop-locals pc locals)))
             (list (pop-pc pc))))
          (else
-          (let* ((value (->sexp (get-reply pc)))
+          (let* ((instance (.instance pc))
+                 (port-name (or (.port.name (.trigger pc))
+                                (.name (.ast instance))))
+                 (value (->sexp (get-reply pc port-name)))
                  (value (or (and (not (equal? value "void")) value) "return"))
                  (return (make <trigger-return>
                            #:location (.location o)
@@ -493,7 +503,10 @@
            (let* ((trigger (.trigger pc))
                   (type (ast:type trigger))
                   (typed? (ast:typed? type))
-                  (value (get-reply pc)))
+                  (port-name (or (.port.name o)
+                                 (.port.name (.trigger pc))
+                                 (.name (.ast instance))))
+                  (value (get-reply pc port-name)))
              (and typed? (not value))))))
 
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))

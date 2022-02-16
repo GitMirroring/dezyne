@@ -216,7 +216,7 @@
   (deferred #:getter .deferred #:init-form #f #:init-keyword #:deferred)
   (handling #:getter .handling #:init-form #f #:init-keyword #:handling)
   (q #:getter .q #:init-form (list) #:init-keyword #:q)
-  (reply #:getter .reply #:init-form #f #:init-keyword #:reply)
+  (reply #:getter .reply #:init-form (list) #:init-keyword #:reply)
   (variables #:getter .variables #:init-form (list) #:init-keyword #:variables))
 
 (define pc:next-id
@@ -320,7 +320,8 @@
   (display " " port)
   (when (pair? (.variables o)) (display (map (match-lambda ((x . y) (cons x (->sexp y)))) (.variables o)) port))
   (when (pair? (.q o)) (format port " q: ~s" (map trigger->string (.q o))))
-  (and=> (.reply o) (cut format port " reply: ~a" <>))
+  (when (pair? (.reply o)) (format port " reply: ~a" (.reply o) ;;(map cdr (.reply o))
+                                   ))
   (display ">" port))
 
 (define-method (write (o <system-state>) port)

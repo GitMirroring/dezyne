@@ -85,6 +85,7 @@
             read-input
             requires-trigger?
             reset-handling!
+            reset-reply
             reset-replies
             rewrite-trace-head
             rtc-block-trigger
@@ -677,20 +678,31 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (set-state (pc <program-counter>) (state <list>))
   (fold (cut update-state state <> <>) pc ((compose .state-list .state) pc)))
 
-(define-method (get-reply (pc <program-counter>) (instance <runtime:instance>))
-  (.reply (get-state pc instance)))
+(define-method (get-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
+  (assoc-ref (.reply (get-state pc instance)) port))
 
-(define-method (get-reply (pc <program-counter>))
-  (get-reply pc (.instance pc)))
+(define-method (get-reply (pc <program-counter>) (port <string>))
+  (get-reply pc (.instance pc) port))
 
-(define-method (set-reply (pc <program-counter>) (instance <runtime:instance>) value)
-  (set-state pc (clone (get-state pc instance) #:reply value)))
+(define-method (reset-reply (pc <program-counter>) (instance <runtime:instance>))
+  (set-state pc (clone (get-state pc instance) #:reply '())))
 
-(define-method (set-reply (pc <program-counter>) value)
-  (set-reply pc (.instance pc) value))
+(define-method (reset-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
+(let ((reply (.reply (get-state pc instance))))
+  (set-state pc (clone (get-state pc instance) #:reply (alist-delete port reply)))))
+
+(define-method (reset-reply (pc <program-counter>) (port <string>))
+  (reset-reply pc (.instance pc) port))
+
+(define-method (set-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>) value)
+  (let ((reply (.reply (get-state pc instance))))
+    (set-state pc (clone (get-state pc instance) #:reply (acons port value reply)))))
+
+(define-method (set-reply (pc <program-counter>) (port <string>) value)
+  (set-reply pc (.instance pc) port value))
 
 (define-method (reset-replies (pc <program-counter>))
-  (fold (lambda (instance pc) (set-reply pc instance #f))
+  (fold (lambda (instance pc) (reset-reply pc instance))
         pc
         (filter (disjoin (is? <runtime:component>)
                          runtime:boundary-port?)
@@ -747,14 +759,18 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <action>))
   (let* ((instance (.instance pc))
          (r:port (runtime:port instance (.port e)))
-         (other-instance other-port (runtime:other-instance+port instance r:port)))
-    (assign (set-reply pc other-instance #f) variable (get-reply pc other-instance))))
+         (other-instance other-port (runtime:other-instance+port instance r:port))
+         (port-name (.name (.ast other-port)))
+         (reply (get-reply pc other-instance port-name)))
+    (assign (reset-reply pc other-instance port-name) variable reply)))
 
 (define-method (assign (pc <program-counter>) (variable <formal>) (e <action>))
   (let* ((instance (.instance pc))
          (r:port (runtime:port instance (.port e)))
-         (other-instance other-port (runtime:other-instance+port instance r:port)))
-    (assign (set-reply pc other-instance #f) variable (get-reply pc other-instance))))
+         (other-instance other-port (runtime:other-instance+port instance r:port))
+         (port-name (.name (.ast other-port)))
+         (reply (get-reply pc other-instance port-name)))
+    (assign (reset-reply pc other-instance port-name) variable reply)))
 
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <call>))
   (assign pc variable (.return pc)))
