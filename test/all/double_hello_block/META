@@ -1,0 +1,7 @@
+;;; -*- scheme -*-
+((skip ("c++"
+        "cs"
+        "c"
+        "javascript"
+        "scheme"))
+ (tss #t))
