@@ -498,7 +498,7 @@ port return."
 
   (define (event-traces-alist pc)
     (define (event->label-traces pc event)
-      (let* ((pc (clone pc #:trail '()))
+      (let* ((pc (clone pc #:instance #f #:trail '()))
              (pc (reset-replies pc))
              (traces (parameterize ((%exploring? #t)
                                     (%liveness? #t))
@@ -517,7 +517,7 @@ port return."
       (merge-alist2 alist async-alist)))
 
   (define (provides-event->label-traces pc event)
-    (let* ((pc (clone pc #:trail '()))
+    (let* ((pc (clone pc #:instance #f #:trail '()))
            (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t)
                                   (%liveness? #t))
@@ -525,7 +525,7 @@ port return."
       (cons event traces)))
 
   (define (requires-event->label-traces pc event)
-    (let* ((pc (clone pc #:trail '()))
+    (let* ((pc (clone pc #:instance #f #:trail '()))
            (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t)
                                   (%liveness? #t))
@@ -741,8 +741,7 @@ possibly after running RUN-SILENT and return them, or false."
       (('state state ...)
        (run-state pc state))
       ((? string?)
-       (let* ((pc (clone pc #:instance #f))
-              (traces (run-to-completion* pc event))
+       (let* ((traces (run-to-completion*-context-switch pc event))
               (traces (map (cute append <> pc+blocked-trace) traces))
               (cpc (if (requires-trigger? event) pc
                        (last pc+blocked-trace)))
@@ -759,6 +758,15 @@ possibly after running RUN-SILENT and return them, or false."
       ((? (const (pair? (.async pc))))
        (let ((traces (flush-async pc)))
          (check-provides-compliance* pc #f traces)))
+      ((? (const (not (eq? (switch-context pc) pc))))
+       (let* ((traces (run-to-completion (switch-context pc) 'rtc))
+              (traces (map (cute append <> pc+blocked-trace) traces))
+              (cpc (if (requires-trigger? event) pc
+                       (last pc+blocked-trace)))
+              (cpc (reset-replies cpc))
+              (cpc (clone cpc #:instance #f)))
+         (if (is-a? (%sut) <runtime:port>) traces
+             (check-provides-compliance* cpc #f traces))))
       (_
        (let* ((pc (clone pc #:status (make <end-of-trail>)))
               (trace (cons pc (cdr pc+blocked-trace))))

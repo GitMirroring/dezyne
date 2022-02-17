@@ -77,16 +77,17 @@
             port-event?
             provides-trigger?
             push-local
-            q-empty?
             pc-equal?
             pop-deferred
             pop-pc
             push-pc
+            q-empty?
             read-input
             requires-trigger?
             reset-handling!
             reset-reply
             reset-replies
+            return-trigger?
             rewrite-trace-head
             rtc-block-trigger
             rtc-program-counter-equal?
@@ -495,7 +496,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (.trigger (rtc-block-pc pc)))
 
 (define-method (rtc-trigger (pc <program-counter>))
-  (let ((triggers (unfold (negate (cute .previous <>)) .trigger .previous pc)))
+  (let ((triggers (unfold (negate .previous) .trigger .previous pc)))
     (and (pair? triggers)
          (last triggers))))
 
@@ -1024,6 +1025,16 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                ((port trigger tail ...)
                 (equal? (trigger->string trigger) event)))
              (.external-q pc))))
+
+(define-method (return-trigger? event)
+  (and (string? event)
+       (let ((event (match (string-split event #\.)
+                      ((event) event)
+                      ((port event) event)
+                      ((path ... port event) event))))
+         (or (member event '("return" "false" "true"))
+             (string->number event)
+             (string-index event #\:)))))
 
 (define-method (in-event? (o <interface>) (event <string>))
   (let* ((events (ast:in-event* o))

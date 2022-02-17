@@ -61,7 +61,8 @@
             run-requires
             run-silent
             run-to-completion
-            run-to-completion*))
+            run-to-completion*
+            run-to-completion*-context-switch))
 
 ;;; Commentary:
 ;;;
@@ -373,8 +374,8 @@ PC until RTC?."
            (and=> (.port previous) ast:provides?))))
 
   (define (must-switch? trace)
-    (or (not (%exploring?)) ;TODO: move switch-context up for simulate too
-        (not (previous-provides? trace))))
+    (and (not (is-a? (%sut) <runtime:port>))
+         (not (previous-provides? trace))))
 
   (define (loop traces)
     (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
@@ -674,26 +675,50 @@ until RTC?."
                  (list (list pc) )))))))
 
 (define-method (run-to-completion* (pc <program-counter>) event)
-  (let ((pc (clone pc #:instance #f)))
-    (cond
-     ((is-a? (%sut) <runtime:port>)
-      (run-interface pc event))
-     ((external-trigger-in-q? pc event)
-      (run-external pc event))
-     ((external-trigger? event)
-      (let ((pcs (cons pc (run-external-modeling pc event))))
-        (append-map (cute run-external <> event) pcs)))
-     ((requires-trigger? event)
-      (let ((async-traces (if (null? (.async pc)) '()
-                              (flush-async-event pc event))))
-        (if (pair? async-traces) async-traces
-            (let ((pcs (cons pc (run-external-modeling pc event))))
-              (append-map (cute run-requires <> event) pcs)))))
-     ((provides-trigger? event)
-      (run-to-completion pc event))
-     ((async-event? pc event)
-      (flush-async-event pc event))
-     ((and (eq? event #f) (pair? (.async pc)))
-      (flush-async pc))
-     (else
-      '()))))
+  (%debug "run-to-completion*: ~a\n" event)
+  (cond
+   ((is-a? (%sut) <runtime:port>)
+    (run-interface pc event))
+   ((external-trigger-in-q? pc event)
+    (run-external pc event))
+   ((external-trigger? event)
+    (let ((pcs (cons pc (run-external-modeling pc event))))
+      (append-map (cute run-external <> event) pcs)))
+   ((requires-trigger? event)
+    (let ((async-traces (if (null? (.async pc)) '()
+                            (flush-async-event pc event))))
+      (if (pair? async-traces) async-traces
+          (let ((pcs (cons pc (run-external-modeling pc event))))
+            (append-map (cute run-requires <> event) pcs)))))
+   ((provides-trigger? event)
+    (run-to-completion pc event))
+   ((async-event? pc event)
+    (flush-async-event pc event))
+   ((and (eq? event #f) (pair? (.async pc)))
+    (flush-async pc))
+   (else
+    '())))
+
+(define-method (run-to-completion* trace event)
+  (extend-trace trace (cute run-to-completion* <> event)))
+
+(define-method (run-to-completion*-context-switch (pc <program-counter>) event)
+  (%debug "run-to-completion*-switch-context: ~a\n" event)
+  (let* ((orig-pc pc)
+         (pc (if (provides-trigger? event) pc
+                 (switch-context pc)))
+         (switched? (not (eq? pc orig-pc)))
+         (pc (if switched? pc
+                 (clone pc #:instance #f)))
+         (skip-rtc? (or (not switched?)
+                        (provides-trigger? event)))
+         (trigger? (or (is-a? (%sut) <runtime:port>)
+                       (provides-trigger? event)
+                       (requires-trigger? event)
+                       (async-event? pc event)))
+         (pc (if (or trigger? (not switched?)) pc
+                 (clone pc #:trail (cons event (.trail pc)))))
+         (traces (if skip-rtc? (run-to-completion* pc event)
+                     (run-to-completion pc 'rtc))))
+    (if (or skip-rtc? (not trigger?)) traces
+        (append-map (cute run-to-completion* <> event) traces))))
