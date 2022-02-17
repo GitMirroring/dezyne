@@ -761,7 +761,7 @@ optional labels only and stop when observable event seen."
                (pc->rtc-lts pc
                             #:trace-done? observable?
                             #:labels (const '("inevitable" "optional"))))))
-    (when %debug?
+    (when (%debug?)
       (parameterize ((%modeling? #t))
         ((@ (ice-9 pretty-print) pretty-print)
          (debug:lts->alist pc->state-number lts) (current-error-port))))
@@ -1255,23 +1255,22 @@ events.  When DEADLOCK-CHECK?, run check-deadlock at the end, when
 REFUSALS-CHECK?, run refusals-check at the end."
   (let* ((root (filter-root root #:model-name model-name))
          (root (vm:normalize root)))
-    (when (> (dzn:debugity) 0)
-      (set! %debug? #t))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     (let* ((sut (runtime:get-sut root (ast:get-model root model-name)))
            (instances (runtime:create-instances sut)))
-      (simulate** sut instances trail
-                  #:deadlock-check? deadlock-check?
-                  #:interface-determinism-check? interface-determinism-check?
-                  #:refusals-check? refusals-check?
-                  #:queue-size queue-size
-                  #:strict? strict?
-                  #:trace trace
-                  #:internal? internal?
-                  #:locations? locations?
-                  #:state? state?
-                  #:verbose? verbose?))))
+      (parameterize ((%debug? (> (dzn:debugity) 0)))
+        (simulate** sut instances trail
+                    #:deadlock-check? deadlock-check?
+                    #:interface-determinism-check? interface-determinism-check?
+                    #:refusals-check? refusals-check?
+                    #:queue-size queue-size
+                    #:strict? strict?
+                    #:trace trace
+                    #:internal? internal?
+                    #:locations? locations?
+                    #:state? state?
+                    #:verbose? verbose?)))))
 
 (define* (simulate** sut instances trail #:key deadlock-check?
                      interface-determinism-check? refusals-check?

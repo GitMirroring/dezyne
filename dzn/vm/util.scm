@@ -127,10 +127,10 @@
 ;;; Code:
 
 ;;; Debug facility
-(define %debug? #f)
+(define %debug? (make-parameter #f))
 
 (define-syntax-rule (%debug fmt arg ...)
-  (when %debug?
+  (when (%debug?)
     (format (current-error-port) fmt arg ...)))
 
 ;;; The size of the component queues and external queues.

@@ -491,9 +491,8 @@ RTC-LTS->LTS."
 (define* (state-diagram root #:key format model queue-size
                         ports? extended? actions? labels?)
   "Entry-point for dzn explore --state-diagram."
-  (when (> (dzn:debugity) 0)
-    (set! %debug? #t))
-  (parameterize ((%exploring? #t)
+  (parameterize ((%debug? (> (dzn:debugity) 0))
+                 (%exploring? #t)
                  (%queue-size queue-size)
                  (%sut (runtime:get-sut root model)))
     (parameterize ((%instances (runtime:create-instances (%sut))))
@@ -515,9 +514,8 @@ RTC-LTS->LTS."
 
 (define* (lts root #:key model queue-size)
   "Entry-point for dzn explore --lts."
-  (when (> (dzn:debugity) 0)
-    (set! %debug? #t))
-  (parameterize ((%exploring? #t)
+  (parameterize ((%debug? (> (dzn:debugity) 0))
+                 (%exploring? #t)
                  (%queue-size queue-size)
                  (%sut (runtime:get-sut root model)))
     (parameterize ((%instances (runtime:create-instances (%sut))))
