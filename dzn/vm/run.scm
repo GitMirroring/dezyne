@@ -357,6 +357,7 @@ PC until RTC?."
     (let* ((traces (if (%exploring?) traces (filter-illegal traces)))
            (traces (filter-match-error traces))
            (traces (filter-postponed-match traces))
+           (traces (filter-implicit-illegal traces))
            (pcs (map car traces)))
       (cond
        ((null? traces)
@@ -367,7 +368,7 @@ PC until RTC?."
        ((every (conjoin (negate (is-status? <postponed-match>))
                         (disjoin rtc? (is-status? <match-error>)))
                pcs)
-        (filter-implicit-illegal traces))
+        traces)
        ((postponed-match? traces)
         =>
         (lambda (traces)
