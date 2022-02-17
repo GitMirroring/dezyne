@@ -250,18 +250,34 @@ component has executed is considered.
 Return a list of traces, possibly marked with <compliance-error>."
 
   (define (drop-prefix pc trigger trace)
-    (let* ((at (list-index (compose (cute ast:equal? <> trigger) .trigger)
-                           (reverse trace))))
-      (if (not at) trace
-          (drop-right trace at))))
+    (let* ((r:port (runtime:port-name->instance (.port.name trigger)))
+           (r:component-port (runtime:other-port r:port))
+           (instance (.container r:component-port))
+           (component-trigger (trigger->component-trigger trigger))
+           (at (list-index
+                (if (ast:provides? trigger)
+                    (conjoin
+                     (compose (cute eq? <> instance) .instance)
+                     (compose (is? <initial-compound>) .statement)
+                     (compose (cute ast:equal? <> component-trigger) .trigger))
+                    (conjoin
+                     .trigger
+                     (compose ast:modeling? .trigger)
+                     (compose (is? <runtime:port>) .instance)
+                     (compose (is? <initial-compound>) .statement)))
+                trace))
+           (trace (if (not at) trace
+                      (list-head trace (1+ at))))
+           (trace (if (ast:provides? trigger) trace
+                      (filter (compose (negate (is? <trigger-return>)) .statement) trace))))
+      trace))
 
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (and (string? event)
                        (clone (string->trigger event) #:parent component)))
-         (component-trigger (and trigger (trigger->component-trigger trigger)))
          (blocking? (find (compose pair? .blocked) trace))
-         (sut-trace (if (or (not component-trigger) (not blocking?)) trace
-                        (drop-prefix pc component-trigger trace)))
+         (sut-trace (if (or (not trigger) (not blocking?)) trace
+                        (drop-prefix pc trigger trace)))
          (sut-trail (trace->trail sut-trace))
          (provides-trigger? (provides-trigger? event))
          (port-event (and provides-trigger? (.event.name trigger)))
