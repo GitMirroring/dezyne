@@ -943,7 +943,23 @@ intermediate steps such as assignments, function calls, replies,
 (define* (report traces #:key eligible (trace "event") internal? locations? state? verbose?)
   "Print any error messages and the trail of (car TRACES) in
 trace-format TRACE, given that the trail is the same for all TRACES."
-  (let* ((trace-format trace)
+
+  (define (trace< a b)
+    "Compare traces A and B on trail length, trace length or string
+value of the trail."
+    (define (length< a b)
+      (< (length a) (length b)))
+    (let* ((trail-a (trace->string-trail a))
+           (trail-b (trace->string-trail b))
+           (result (length< trail-a trail-b)))
+      (if (or result (length< trail-b trail-a)) result
+          (let ((result (length< trail-a trail-b)))
+            (if (or result (length< trail-b trail-a)) result
+                (string< (string-join trail-a)
+                         (string-join trail-b)))))))
+
+  (let* ((traces (sort traces trace<))
+         (trace-format trace)
          (trace (and (pair? traces) (car traces)))
          (pc (and trace (car trace)))
          (status (and pc (.status pc)))
