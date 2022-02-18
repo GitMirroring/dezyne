@@ -502,7 +502,7 @@ port return."
              (pc (reset-replies pc))
              (traces (parameterize ((%exploring? #t)
                                     (%liveness? #t))
-                       (run-to-completion* pc event))))
+                       (run-to-completion*-context-switch pc event))))
         (cons event traces)))
     (define (async-trace->alist trace)
       (match (trace->string-trail trace)
@@ -510,7 +510,8 @@ port return."
          (cons event (list trace)))
         (()
          (list trace))))
-    (let* ((alist (map (cute event->label-traces pc <>) (labels)))
+    (let* ((labels (labels pc))
+           (alist (map (cute event->label-traces pc <>) labels))
            (traces (append-map cdr alist))
            (async-traces (flush-async pc))
            (async-alist (map async-trace->alist async-traces)))
@@ -562,8 +563,12 @@ port return."
       (map (cute add-port port <>) alist)))
 
   (define (system-event-traces-alist pc)
-    (let ((boundary (filter runtime:boundary-port? (%instances))))
-      (append-map (cute port->label-traces pc <>) boundary)))
+    (let* ((boundary (filter runtime:boundary-port? (%instances)))
+           (traces (append-map (cute port->label-traces pc <>) boundary))
+           (fake-traces (list (list pc)))
+           (return-traces (map (cute cons <> fake-traces) (return-labels pc)))
+           (rtc-traces (map (cute cons <> fake-traces) (rtc-labels pc))))
+      (append traces return-traces rtc-traces)))
 
   (if (is-a? (%sut) <runtime:system>) (system-event-traces-alist pc)
       (event-traces-alist pc)))
@@ -589,21 +594,27 @@ port return."
 (define (labels-filter-blocked-ports traces labels)
   "Remove from LABELS every label for all ports that are blocked in
 TRACES."
-  (define (blocked-port trace)
-    (match trace
-      (() #f)
-      ((pc trace ...)
-       (match (.blocked pc)
-         (() #f)
-         ((port . pc)
-          (any .instance (reverse trace)))))))
 
-  (let* ((blocked-ports (filter-map blocked-port traces))
-         (blocked-port-names (map (compose .name .ast) blocked-ports)))
-    (filter (compose
-             (negate (cute member <> blocked-port-names))
-             .port.name
-             string->trigger)
+  (define (blocked+collateral-ports pc)
+    (let* ((blocked-ports (blocked-ports pc))
+           (collateral-instances (filter (cute get-handling pc <>)
+                                         (%instances)))
+           (collateral-ports (append-map runtime:runtime-port*
+                                         collateral-instances))
+           (collateral-ports (map runtime:other-port collateral-ports))
+           (blocked-ports (append blocked-ports collateral-ports))
+           (blocked-ports (filter runtime:boundary-port? blocked-ports)))
+      (map (compose .name .ast) blocked-ports)))
+
+  (let* ((pcs (map car traces))
+         (blocked-sets (map blocked+collateral-ports pcs))
+         (blocked-port-names (apply lset-intersection equal? blocked-sets)))
+    (filter (disjoin
+             return-trigger?
+             (compose
+              (negate (cute member <> blocked-port-names))
+              .port.name
+              string->trigger))
             labels)))
 
 (define (optional-trace? trace)
@@ -758,16 +769,9 @@ possibly after running RUN-SILENT and return them, or false."
       ((? (const (pair? (.async pc))))
        (let ((traces (flush-async pc)))
          (check-provides-compliance* pc #f traces)))
-      ((? (const (not (eq? (switch-context pc) pc))))
-       (let* ((traces (run-to-completion (switch-context pc) 'rtc))
-              (traces (map (cute append <> pc+blocked-trace) traces))
-              (cpc (if (requires-trigger? event) pc
-                       (last pc+blocked-trace)))
-              (cpc (reset-replies cpc))
-              (cpc (clone cpc #:instance #f)))
-         (if (is-a? (%sut) <runtime:port>) traces
-             (check-provides-compliance* cpc #f traces))))
       (_
+       (when (not (eq? (switch-context pc) pc))
+         (%debug "<eot> with switchable, non-rtc pc\n"))
        (let* ((pc (clone pc #:status (make <end-of-trail>)))
               (trace (cons pc (cdr pc+blocked-trace))))
          (if (is-a? (%sut) <runtime:port>) (list trace)
@@ -957,6 +961,7 @@ status."
             (find (compose pair? .blocked car) traces)
             (null? (.external-q (car from-pcs)))
             (requires-ports-stable? component pc)
+            (eq? (switch-context pc) pc)
             (let* ((trace-format trace)
                    (trace (find (compose pair? .blocked car) traces))
                    (trace (reverse (set-trigger-locations (reverse trace))))

@@ -746,12 +746,18 @@
   "Return all event types used in COMPONENT."
   (delete-duplicates (append-map ast:return-types (filter-map ast:type (ast:provides-port* component))) ast:eq?))
 
-(define-method (ast:return-values (o <event>))
+(define-method (ast:return-values (o <event>) void)
   (let ((type ((compose .type .signature) o)))
-    (cond ((as type <void>) '())
+    (cond ((as type <void>) void)
           ((as type <enum>) (map (cut make <enum-literal> #:type.name (.name type) #:field <>) (ast:field* type)))
           ((as type <bool>) (map (cut make <literal> #:value <>) '("true" "false")))
           ((as type <int>) (map (cut make <literal> #:value <>) (iota (1+ (- (.to (.range type)) (.from (.range type)))) (.from (.range type))))))))
+
+(define-method (ast:return-values (o <event>))
+  (ast:return-values o '()))
+
+(define-method (ast:return-values (o <port>))
+  (append-map (cute ast:return-values <> '("return")) (ast:in-event* o)))
 
 (define-method (ast:return-values (o <action>))
   (ast:return-values (.event o)))

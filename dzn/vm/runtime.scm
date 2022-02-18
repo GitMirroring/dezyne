@@ -51,6 +51,7 @@
             runtime:port-instance?
             runtime:port-name->instance
             runtime:provides-instance?
+            runtime:runtime-port*
             runtime:runtime-provides-port*
             runtime:requires-instance?
             runtime:system-instance?
@@ -260,6 +261,10 @@
   (let* ((sut (make <instance> #:name "sut" #:type.name (.name model)))
          (root (clone root #:elements (cons sut (ast:top* root)))))
     (ast->runtime:instance (clone sut #:parent (.parent model)) #f)))
+
+(define-method (runtime:runtime-port* (o <runtime:component-model>))
+  (map (cut runtime:find-instance <> #:container o)
+       (map .name ((compose ast:port* .type .ast) o))))
 
 (define-method (runtime:runtime-provides-port* (o <runtime:component-model>))
   (map (cut runtime:find-instance <> #:container o)

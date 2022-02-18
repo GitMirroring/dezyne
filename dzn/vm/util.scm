@@ -44,12 +44,14 @@
             %next-input
             %queue-size
             %startup-info
+            %strict?
 
             append-port-trace
             action->trigger
             assign
             async-event?
             blocked-port
+            blocked-ports
             collateral-block
             dequeue
             dequeue-external
@@ -87,6 +89,8 @@
             reset-handling!
             reset-reply
             reset-replies
+            rtc-labels
+            return-labels
             return-trigger?
             rewrite-trace-head
             rtc-block-trigger
@@ -136,6 +140,9 @@
 
 ;;; The size of the component queues and external queues.
 (define %queue-size (make-parameter 3))
+
+;; Is the input trail to be matched exactly?
+(define %strict? (make-parameter #f))
 
 
 ;;;
@@ -340,11 +347,40 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                       (ast:event* (.ast p)))))
        (filter runtime:boundary-port? (%instances)))))
 
+(define-method (labels (pc <program-counter>))
+  (append (labels) (rtc-labels pc) (return-labels pc)))
+
 (define-method (label? (o <string>))
   (and (member o (labels)) o))
 
 (define-method (label? (o <boolean>))
   #f)
+
+(define-method (return-labels (o <port>))
+  (let* ((port (.name o))
+         (values (if (not (%strict?)) '("return")
+                     (ast:return-values o))))
+    (map (compose (cute format #f "~a.~a" port <>) ->sexp) values)))
+
+(define-method (return-labels (o <runtime:port>))
+  (return-labels (.ast o)))
+
+(define-method (rtc-labels (pc <program-counter>))
+  (if (eq? (switch-context pc) pc) '()
+      (let* ((ports (filter (conjoin runtime:boundary-port? ast:provides?)
+                            (%instances)))
+             (port-names (map (compose .name .ast) ports)))
+        (map (cute format #f "~a.<rtc>" <>) port-names))))
+
+(define-method (return-labels (pc <program-counter>))
+  (let* ((blocked (.blocked pc))
+         (released (.released pc))
+         (blocked-released (filter (compose (cute memq <> released) car)
+                                   blocked))
+         (release-pcs (map cdr blocked-released))
+         (release-ports (map blocked-port release-pcs))
+         (release-ports (map .ast release-ports)))
+    (append-map return-labels release-ports)))
 
 (define-method (trigger->string o)
   (let* ((event (.event.name o))
@@ -483,6 +519,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (push-pc (pc <program-counter>) (instance <runtime:instance>) (statement <statement>))
   (clone pc #:previous pc #:instance instance #:statement statement))
 
+(define-method (rtc-pc (pc <program-counter>))
+  (let ((pcs (unfold (negate (cute .previous <>)) identity .previous pc)))
+    (last pcs)))
+
 (define-method (rtc-block-pc (pc <program-counter>))
   (let loop ((pc pc))
     (let ((trigger (.trigger pc))
@@ -507,6 +547,17 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 ;;;
 ;;; Blocking
 ;;;
+
+(define-method (blocked-port (pc <program-counter>))
+  (let* ((pc (rtc-block-pc pc))
+         (instance (.instance pc))
+         (trigger (.trigger pc))
+         (r:port (runtime:port instance (.port trigger))))
+    (runtime:other-port r:port)))
+
+(define-method (blocked-ports (pc <program-counter>))
+  (let ((pcs (map cdr (.blocked pc))))
+    (map blocked-port pcs)))
 
 (define-method (blocked-port (pc <program-counter>) (instance <runtime:component>))
   (let ((id (get-handling pc instance)))

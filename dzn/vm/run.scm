@@ -41,7 +41,6 @@
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
   #:export (%exploring?
-            %strict?
             did-provides-out?
             filter-error
             filter-illegal+implicit-illegal
@@ -70,9 +69,6 @@
 ;;; above 'step'.
 ;;;
 ;;; Code:
-
-;; Is the input trail to be matched exactly?
-(define %strict? (make-parameter #f))
 
 ;; Are we running "explore"?
 (define %exploring? (make-parameter #f))
@@ -716,7 +712,7 @@ until RTC?."
                        (provides-trigger? event)
                        (requires-trigger? event)
                        (async-event? pc event)))
-         (pc (if (or trigger? (not switched?)) pc
+         (pc (if (or trigger? (not switched?) (not (%strict?))) pc
                  (clone pc #:trail (cons event (.trail pc)))))
          (traces (if skip-rtc? (run-to-completion* pc event)
                      (run-to-completion pc 'rtc))))
