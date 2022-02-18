@@ -331,13 +331,9 @@ p     external_multiple_out1     r
 .<--------------:                .
 (state ((p) (state . status:IDLE)) ((sut) (idle . true)) ((r)))
 (trail r.b p.b)
-.               :                . error: p.a
-.               :                . <match>
 (state ((p) (state . status:IDLE)) ((sut) (idle . true)) ((r)))
-.               :                . error: p.a
-(trail <match>)
 (labels p.e r.a r.b)
-(eligible)
+(eligible p.e)
 
 ** external_multiple_out2
 p     external_multiple_out2     r
