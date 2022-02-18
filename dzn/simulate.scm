@@ -723,6 +723,7 @@ possibly after running RUN-SILENT and return them, or false."
              (let* ((model (runtime:%sut-model))
                     (error (make <match-error>
                              #:message "match" #:ast model #:input event)))
+               (%debug "<match-error>: ~a\n" event)
                (list (list (clone pc #:status error)))))))
       ((? (const (pair? (.async pc))))
        (let ((traces (flush-async pc)))
