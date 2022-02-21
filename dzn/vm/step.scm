@@ -406,6 +406,7 @@
                              #:id (pc:next-id)
                              #:blocked (acons r:port pc (.blocked pc))
                              #:collateral (.collateral pc)
+                             #:collateral-released (.collateral-released pc)
                              #:external-q (.external-q pc)
                              #:released (.released pc)
                              #:state (.state pc)
@@ -502,18 +503,20 @@
                           (instance (.instance pc))
                           (r:port (runtime:port instance port))
                           (blocked (.blocked pc))
-                          (blocked? (assoc-ref blocked r:port))
+                          (blocked? (assq-ref blocked r:port))
                           (blocked (if (not blocked?) blocked
                                        (alist-delete r:port blocked)))
                           (collateral (.collateral pc))
-                          (block? (or (assoc-ref blocked r:port)
-                                      (assoc-ref collateral r:port)))
+                          (collateral-released (.collateral-released pc))
+                          (collateral-released
+                           (if (not (assq-ref collateral r:port)) collateral-released
+                               (append collateral-released (list r:port))))
                           (released (.released pc))
-                          (released (if block? released
-                                        (delete r:port released))))
+                          (released (delete r:port released)))
                      (clone pc
                             #:blocked blocked
-                            #:released released)))))
+                            #:released released
+                            #:collateral-released collateral-released)))))
       (list (pop-pc pc))))))
 
 (define-method (step (pc <program-counter>) (o <flush-async>))

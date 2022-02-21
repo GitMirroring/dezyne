@@ -70,6 +70,7 @@
             .async
             .blocked
             .collateral
+            .collateral-released
             .component-acceptance
             .deferred
             .external-q
@@ -205,8 +206,9 @@
 
   (id #:getter .id #:init-value 1 #:init-keyword #:id)
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
-  (collateral #:getter .collateral #:init-form (list) #:init-keyword #:collateral)
   (released #:getter .released #:init-form (list) #:init-keyword #:released)
+  (collateral #:getter .collateral #:init-form (list) #:init-keyword #:collateral)
+  (collateral-released #:getter .collateral-released #:init-form (list) #:init-keyword #:collateral-released)
   (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
 
 (define-class <state> ()
@@ -293,6 +295,7 @@
   (when (pair? (.async o))
     (display " async: " port)
     (display (map (compose runtime:dotted-name cadr) (.async o)) port))
+  (when (pair? (.collateral-released o)) (display " *collateral-released*" port))
   (when (pair? (.released o)) (display " *released*" port))
   (when (pair? (.collateral o)) (display " *collateral*" port))
   (when (pair? (.blocked o)) (display " *blocked*" port))

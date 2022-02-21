@@ -541,28 +541,30 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (blocked (.blocked pc))
          (collateral (.collateral pc))
          (blocked? (assoc-ref blocked r:port))
+         (collateral-released (.collateral-released pc))
+         (r:port-collateral (match collateral-released ((p t ...) p) (() #f)))
          (released-pc (if blocked? (assoc-ref blocked r:port)
-                          (assoc-ref collateral r:port))))
+                          (assoc-ref collateral r:port-collateral))))
     (if (or (.status pc) (not released-pc)) pc
         (let* ((collateral (if blocked? collateral
-                               (alist-delete r:port collateral)))
+                               (alist-delete r:port-collateral collateral)))
                (instance (.instance released-pc))
-               (block? (assoc-ref collateral r:port))
-               (released (if block? released
-                             (delete r:port released)))
+               (collateral-released (if blocked? collateral-released
+                                        (delete r:port-collateral collateral-released)))
                (trigger (.trigger released-pc)))
           (%debug "  ~s ~s <switch-context ~a> ~a [~a] => [~a]\n"
                   (name instance)
                   (and=> trigger trigger->string)
                   (if blocked? "block" "collateral")
-                  (runtime:instance->string r:port)
+                  (runtime:instance->string
+                   (if blocked? r:port r:port-collateral))
                   (.id pc)
                   (.id released-pc))
           (clone pc
                  #:id (.id released-pc)
                  #:collateral collateral
+                 #:collateral-released collateral-released
                  #:instance instance
-                 #:released released
                  #:previous (.previous released-pc)
                  #:statement (.statement released-pc)
                  #:trigger trigger)))))
