@@ -550,6 +550,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
         (let* ((collateral (if blocked? collateral
                                (alist-delete r:port-collateral collateral)))
                (instance (.instance released-pc))
+               (collateral-instance (if blocked? (.collateral-instance pc)
+                                        (.instance released-pc)))
                (collateral-released (if blocked? collateral-released
                                         (delete r:port-collateral collateral-released)))
                (trigger (.trigger released-pc)))
@@ -564,6 +566,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
           (clone pc
                  #:id (.id released-pc)
                  #:collateral collateral
+                 #:collateral-instance collateral-instance
                  #:collateral-released collateral-released
                  #:instance instance
                  #:previous (.previous released-pc)
@@ -946,6 +949,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
              (if (null? (.collateral o)) '()
                  '("collateral-instances:"))
              (map (compose runtime:dotted-name .instance cdr) (.collateral o))
+             (let ((collateral-instance (.collateral-instance o)))
+               (if (not collateral-instance) '()
+                   `("collateral-instance:"
+                     ,(runtime:instance->string collateral-instance))))
              (if (null? (.released o)) '()
                  '("released:"))
              (map runtime:dotted-name (.released o))

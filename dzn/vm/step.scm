@@ -428,6 +428,7 @@
                              #:id (pc:next-id)
                              #:blocked (acons r:port pc (.blocked pc))
                              #:collateral (.collateral pc)
+                             #:collateral-instance (.collateral-instance pc)
                              #:collateral-released (.collateral-released pc)
                              #:external-q (.external-q pc)
                              #:released (.released pc)

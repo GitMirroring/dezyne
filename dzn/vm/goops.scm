@@ -70,6 +70,7 @@
             .async
             .blocked
             .collateral
+            .collateral-instance
             .collateral-released
             .component-acceptance
             .deferred
@@ -208,6 +209,7 @@
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
   (released #:getter .released #:init-form (list) #:init-keyword #:released)
   (collateral #:getter .collateral #:init-form (list) #:init-keyword #:collateral)
+  (collateral-instance #:getter .collateral-instance #:init-value #f #:init-keyword #:collateral-instance)
   (collateral-released #:getter .collateral-released #:init-form (list) #:init-keyword #:collateral-released)
   (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
 
