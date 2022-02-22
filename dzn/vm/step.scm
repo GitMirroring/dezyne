@@ -350,7 +350,7 @@
          (value (get-reply pc port-name))
          (pc (if value
                  (let ((error (make <second-reply-error> #:ast o #:previous (.parent value) #:message "second-reply")))
-                   (%debug "second reply, previous=~a\n" ((@@ (dzn vm report) step->location) value))
+                   (%debug "second reply, previous=~a\n" (ast:location->string value))
                    (clone pc #:status error))
                  (let ((value (eval-expression pc (.expression o))))
                    (continuation (set-reply pc port-name value) o))))

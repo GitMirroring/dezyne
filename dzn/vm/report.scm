@@ -47,7 +47,6 @@
             display-trails
             label->string
             set-trigger-locations
-            step->location
             trace-equal?
             trace->trail
             trace->string-trail
@@ -675,13 +674,8 @@ the location of the executed <on>-statement."
                (pc (if (not trigger) pc (clone pc #:trigger trigger))))
           (cons pc (loop (cdr trace)))))))
 
-(define (step->location o)
-  (let ((location (ast:location o)))
-    (and location
-         (format #f "~a:~a:~a: "
-                 (.file-name location)
-                 (.line location)
-                 (.column location)))))
+(define (location-prefix o)
+  (format #f "~a: " (ast:location->string o)))
 
 (define* (display-trace trace #:key locations? state? verbose?)
   "Write TRACE as split-arrows trace to stdout.  When LOCATIONS?,
@@ -696,7 +690,7 @@ intermediate steps such as assignments, function calls, replies,
       (match-lambda*
         (((pc ast . string) i)
          (when (and ast locations?)
-           (let ((location (step->location ast)))
+           (let ((location (location-prefix ast)))
              (when location
                (display location))))
          (write-line string)
@@ -739,18 +733,18 @@ intermediate steps such as assignments, function calls, replies,
               (port-acceptances (and port-acceptances
                                      (ast:acceptance* port-acceptances)))
               (port-acceptance (and (pair? port-acceptances) (car port-acceptances)))
-              (location (or (step->location (or component-acceptance
-                                                port-acceptance))
+              (location (or (location-prefix (or component-acceptance
+                                                 port-acceptance))
                             "<unknown-file>:"))
               (message (.message status)))
          (format #f "~aerror: ~a\n" location message)))
       (($ <fork-error>)
-       (let ((location (or (and=> (.ast status) step->location)
+       (let ((location (or (and=> (.ast status) location-prefix)
                            "<unknown-file>:"))
              (message (.message status)))
          (format #f "~aerror: ~a\n" location message)))
       (($ <refusals-error>)
-       (let ((location (or (and=> (.ast status) step->location)
+       (let ((location (or (and=> (.ast status) location-prefix)
                            "<unknown-file>:"))
              (message (.message status)))
          (format #f "~aerror: ~a\n" location message)))
@@ -758,8 +752,8 @@ intermediate steps such as assignments, function calls, replies,
        (let* ((ast (or (.ast status)
                        (.behavior (runtime:%sut-model))))
               (locations (map (lambda (pc)
-                                (or (and=> (.ast (.status pc)) step->location)
-                                    (step->location ast)
+                                (or (and=> (.ast (.status pc)) location-prefix)
+                                    (location-prefix ast)
                                     "<unknown-file>:"))
                               pcs))
               (message (if (is-a? (parent ast <model>) <component>)
@@ -769,7 +763,7 @@ intermediate steps such as assignments, function calls, replies,
           (map (cut format #f "~aerror: ~a\n" <> message) locations) "")))
       (($ <queue-full-error>)
        (let* ((model ((compose  ast:dotted-name .type .ast .instance) status))
-              (location (or (step->location (.ast status))
+              (location (or (location-prefix (.ast status))
                             "<unknown-file>:")))
          (format #f "~aerror: queue-full in component ~s\n" location model)))
       (($ <range-error>)
@@ -777,25 +771,25 @@ intermediate steps such as assignments, function calls, replies,
               (name (.name variable))
               (type (.type variable))
               (value (.value status))
-              (location (or (step->location (.ast status))
+              (location (or (location-prefix (.ast status))
                             "<unknown-file>:")))
          (format #f "~aerror: range-error: invalid value `~a' for variable `~a'\n" location value name)))
       ((and (? (is? <missing-reply-error>)))
        (let* ((type (.type status))
-              (location (or (step->location (.ast status))
+              (location (or (location-prefix (.ast status))
                             "<unknown-file>:")))
          (format #f "~aerror: missing-reply: ~a reply expected\n" location (type-name type))))
       (($ <second-reply-error>)
        (let* ((previous (.previous status))
-              (location (or (step->location (.ast status))
+              (location (or (location-prefix (.ast status))
                             "<unknown-file>:")))
          (format #f "~aerror: second-reply\n" location)))
       ((and (? (is? <match-error>)) (= .ast ast))
-       (let ((location (or (step->location ast)
+       (let ((location (or (location-prefix ast)
                            "<unknown-file>:")))
          (format #f "~aerror: ~a\n" location (.input status))))
       ((and (? (is? <error>)) (= .ast ast) (= .message message))
-       (let ((location (or (step->location ast)
+       (let ((location (or (location-prefix ast)
                            "<unknown-file>:")))
          (format #f "~aerror: ~a\n" location message)))
       (($ <end-of-trail>) #f)
@@ -812,8 +806,8 @@ intermediate steps such as assignments, function calls, replies,
               (port-acceptances (and port-acceptances
                                      (ast:acceptance* port-acceptances)))
               (port-acceptance (and (pair? port-acceptances) (car port-acceptances)))
-              (location (or (step->location (or component-acceptance
-                                                port-acceptance))
+              (location (or (location-prefix (or component-acceptance
+                                                 port-acceptance))
                             "<unknown-file>:"))
               (acceptance (if component-acceptance (trigger->string component-acceptance)
                               "-"))
@@ -824,7 +818,7 @@ intermediate steps such as assignments, function calls, replies,
          (string-join
           (append
            (if (not trigger) '()
-               (let ((location (step->location (.event trigger))))
+               (let ((location (location-prefix (.event trigger))))
                  (if (not location) '()
                      (list (format #f "~atrigger: ~a\n" location
                                    (trigger->string trigger))))))
@@ -832,19 +826,19 @@ intermediate steps such as assignments, function calls, replies,
            (if (not port-acceptances)
                (let* ((interface (.type (.ast r:port)))
                       (ast (.behavior interface)))
-                 (list (format #f "~aport expects: -\n" (step->location ast))))
+                 (list (format #f "~aport expects: -\n" (location-prefix ast))))
                (map
                 (lambda (ast)
                   (if ast
-                      (format #f "~aport expects: ~a\n" (step->location ast) (trigger->string ast))
+                      (format #f "~aport expects: ~a\n" (location-prefix ast) (trigger->string ast))
                       (let* ((ast ((compose .statement .behavior .type .ast .port) status))
-                             (location (step->location ast)))
+                             (location (location-prefix ast)))
                         (format #f "~aport expects: ~a\n"  location "-"))))
                 port-acceptances)))
           "")))
       (($ <fork-error>)
        (let* ((action (.ast status))
-              (location (step->location action))
+              (location (location-prefix action))
               (action-port (.port action))
               (action-port-name (.name action-port))
               (first (.action status)))
@@ -852,11 +846,11 @@ intermediate steps such as assignments, function calls, replies,
           (list
            (format #f "~aforking not allowed, action on port: ~a\n" location action-port-name)
            (if first
-               (let* ((first-location (step->location first))
+               (let* ((first-location (location-prefix first))
                       (first-port-name (.name (.port first))))
                  (format #f "~aafter action on port: ~a\n" first-location first-port-name))
                (let* ((trigger (.trigger pc))
-                      (trigger-location (step->location (parent action <on>)))
+                      (trigger-location (location-prefix (parent action <on>)))
                       (trigger-port (.port trigger))
                       (trigger-port-name (.name trigger-port)))
                  (format #f "~afor trigger on port ~a\n" trigger-location trigger-port-name))))
@@ -864,14 +858,14 @@ intermediate steps such as assignments, function calls, replies,
       (($ <refusals-error>)
        (match (.refusals status)
          ((and ($ <trigger>) trigger)
-          (let ((location (or (step->location trigger) "<unknown-file>:"))
+          (let ((location (or (location-prefix trigger) "<unknown-file>:"))
                 (trigger (trigger->string trigger)))
             (format #f "~acomponent can omit return of trigger: ~a\n"
                     location trigger)))
          (_
           (let* ((refusals (sort (.refusals status) equal?))
                  (refusals (apply append refusals))
-                 (location (or (and=> (.ast status) step->location)
+                 (location (or (and=> (.ast status) location-prefix)
                                "<unknown-file>:"))
                  (inevitables optionals
                               (partition
@@ -893,23 +887,23 @@ intermediate steps such as assignments, function calls, replies,
               (name (.name variable))
               (type (.type variable))
               (value (.value status))
-              (location (or (step->location (.ast status))
+              (location (or (location-prefix (.ast status))
                             "<unknown-file>:")))
          (string-join
           (list
-           (format #f "~ainfo: ~a `~a' defined here\n" (step->location variable) (ast-name variable) name)
-           (format #f "~ainfo: of type `~a' defined here\n" (step->location type) (ast:name type)))
+           (format #f "~ainfo: ~a `~a' defined here\n" (location-prefix variable) (ast-name variable) name)
+           (format #f "~ainfo: of type `~a' defined here\n" (location-prefix type) (ast:name type)))
           "")))
       (($ <second-reply-error>)
        (let* ((previous (.previous status))
-              (location (or (step->location (.ast status))
+              (location (or (location-prefix (.ast status))
                             "<unknown-file>:")))
-         (format #f "~ainfo: reply previously set here\n" (step->location previous))))
+         (format #f "~ainfo: reply previously set here\n" (location-prefix previous))))
       ((and (? (is? <match-error>)) (= .ast #f))
        (let ((location "<unknown-file>:"))
          (format #f "~aerror: no match; got input `~s'\n" location (.input status))))
       ((and (? (is? <match-error>)) (= .ast ast))
-       (let ((location (or (step->location ast)
+       (let ((location (or (location-prefix ast)
                            "<unknown-file>:"))
              (label (label->string ast)))
          (if (not label)
@@ -924,7 +918,7 @@ intermediate steps such as assignments, function calls, replies,
                                   (.port.name ast)))
                    (instance (if instance (runtime:instance->string instance)
                                  port-name))
-                   (location (or (step->location (.ast status))
+                   (location (or (location-prefix (.ast status))
                                  "<unknown-file>:"))
                    (prefix (if (is-a? (%sut) <runtime:port>) ""
                                (string-append instance ".")))
@@ -938,7 +932,7 @@ intermediate steps such as assignments, function calls, replies,
          (ast (.ast status))
          (port-name (if instance (string-join (runtime:instance->path instance) ".")
                         (.port.name ast)))
-         (location (or (step->location (.ast status))
+         (location (or (location-prefix (.ast status))
                        "<unknown-file>:"))
          (ast (trigger->string (clone ast #:port.name #f)))
          (labels (ast:label* status))

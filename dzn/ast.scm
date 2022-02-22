@@ -81,6 +81,7 @@
            ast:literal-false?
            ast:literal-true?
            ast:location
+           ast:location->string
            ast:name
            ast:optional?
            ast:other-direction
@@ -775,6 +776,14 @@
             (ast:location (car elements))))))
 
 (define-method (ast:location o) #f)
+
+(define (ast:location->string o)
+  (let ((location (ast:location o)))
+    (and location
+         (format #f "~a:~a:~a"
+                 (.file-name location)
+                 (.line location)
+                 (.column location)))))
 
 (define-method (ast:base-name (o <ast>))
   (basename (ast:source-file o) ".dzn"))
