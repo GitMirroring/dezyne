@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
@@ -79,8 +79,11 @@ component blocked
   behavior
   {
     bool idle = true;
-    [idle] blocking on h.hello (): {w.hello (); idle = false;}
-    on w.world (): {idle = true; h.reply ();}
+    bool blocked = false;
+    [idle] blocking on h.hello (): {w.hello (); idle = false; blocked = true;}
+    [!idle] blocking on h.hello (): blocked = true;
+    [blocked] on w.world (): {h.reply (); blocked = false; w.hello ();}
+    [!blocked] on w.world (): idle = true;
   }
 }
 
