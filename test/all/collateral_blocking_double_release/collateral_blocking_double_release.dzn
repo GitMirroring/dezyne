@@ -1,0 +1,78 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  in void cruel ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    on hello: idle = false;
+    on cruel: idle = true;
+    [!idle] on inevitable: {idle=true;world;}
+  }
+}
+
+component collateral_blocking_double_release
+{
+  provides ihello block0;
+  provides ihello block1;
+  provides ihello release;
+  requires iworld w;
+
+  behaviour
+  {
+    bool blocked0 = false;
+    bool blocked1 = false;
+
+    blocking on block0.hello (): {w.hello (); blocked0 = true;}
+    blocking on block1.hello (): {w.hello (); blocked1 = true;}
+
+    on release.hello (), w.world ():
+    {
+      w.cruel ();
+      if (blocked0)
+      {
+        block0.reply ();
+        blocked0 = false;
+      }
+      if (blocked1)
+      {
+        block1.reply ();
+        blocked1 = false;
+      }
+    }
+  }
+}

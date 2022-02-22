@@ -1,0 +1,11 @@
+block0.hello
+w.hello
+w.return
+block1.hello
+w.hello
+w.return
+w.world
+w.cruel
+w.return
+block0.return
+block1.return

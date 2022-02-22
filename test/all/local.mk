@@ -178,6 +178,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_async			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
+ %D%/collateral_blocking_double_release		\
  %D%/collateral_blocking_shell			\
  %D%/collateral_blocking_shell2			\
  %D%/collateral_blocking_reorder		\
