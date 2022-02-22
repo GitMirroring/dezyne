@@ -46,11 +46,15 @@
            (cond
             ((is-a? (.parent o) <behavior>)
              (let* ((elements (map normalize-compound (.elements o)))
-                    (compound (make <initial-compound> #:elements elements #:location o)))
+                    (location (.location o))
+                    (compound (make <initial-compound> #:elements elements
+                                    #:location location)))
                (clone compound #:location (.location o))))
             ((ast:declarative? o)
              (let* ((elements (map normalize-compound (.elements o)))
-                    (compound (make <declarative-compound> #:elements elements #:location o)))
+                    (location (.location o))
+                    (compound (make <declarative-compound> #:elements elements
+                                    #:location location)))
                (clone compound #:location (.location o))))
             ((null? (.elements o))
              (let ((skip (make <skip>)))
@@ -118,9 +122,17 @@
   (define (add-end-of-on o r)
     (match o
       ((and ($ <compound>) (? ast:imperative?))
-       (clone o #:elements (append (ast:statement* o) (if (parent o <blocking>) (cons (make <block> #:location o) r) r))))
+       (let* ((location (.location o))
+             (block (make <block> #:location location)))
+         (clone o
+                #:elements (append (ast:statement* o)
+                                   (if (parent o <blocking>) (cons block r) r)))))
       ((? ast:imperative?)
-       (make <compound> #:elements (cons o (if (parent o <blocking>) (cons (make <block> #:location o) r) r)) #:location (.location o)))
+       (let* ((location (.location o))
+              (block (make <block> #:location location)))
+         (make <compound>
+           #:elements (cons o (if (parent o <blocking>) (cons block r) r))
+           #:location location)))
       (($ <compound>)
        (clone o #:elements (map (cut add-end-of-on <> r) (ast:statement* o))))
       (($ <guard>)
