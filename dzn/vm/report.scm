@@ -114,9 +114,11 @@
   (pc-event? (.instance pc) (.trigger pc)))
 
 (define-method (pc-event? (o <runtime:port>) (trigger <trigger>))
-  (and (eq? o (%sut))
-       (or (%modeling?)
-           (not (ast:modeling? trigger)))))
+  (let ((modeling? (ast:modeling? trigger)))
+    (or (and (eq? o (%sut))
+             (not modeling?))
+        (and (%modeling?)
+             modeling?))))
 
 (define-method (pc-event? (o <runtime:component>) (trigger <trigger>))
   (let ((port (.port trigger)))
@@ -202,7 +204,10 @@
   (pc->event (.instance pc) o (.trigger pc)))
 
 (define-method (pc->event (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))
-  (cons trigger (format #f "~a" (.event.name trigger))))
+  (cons trigger
+        (if (is-a? (%sut) <runtime:port>)
+            (format #f "~a" (.event.name trigger))
+            (format #f "~a.~a" (.name (.ast o)) (.event.name trigger)))))
 
 (define-method (pc->event (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
   (cons trigger

@@ -464,7 +464,8 @@ numbers"
     "From a run-to-completion transition PC,TRACE, generate one LTS
 triple per label in the trail of the transition."
     (let* ((trace (fix-missing-reply-trace trace))
-           (labels (map cdr (trace->trail trace)))
+           (labels (parameterize ((%modeling? #t))
+                     (map cdr (trace->trail trace))))
            (labels (if (null? labels) '("tau") labels))
            (to (pc->state-number (car trace)))
            (inner-state-numbers (trail->state-numbers pc labels to)))

@@ -485,7 +485,17 @@ output, and standard error as three values."
                ,dzn-name)
              input)
           (and (zero? status)
-               (let ((makreel-lts-file (string-append out "/traces/" base-name ".aut")))
+               (let* ((makreel-lts-file (string-append out "/traces/" base-name ".aut"))
+                      (lts-file (string-append out-lang "/" base-name ".aut"))
+                      (taus '("<deadlock>" "<livelock>" "<state>"))
+                      (modeling (list-matches
+                                 "\"([^\"]*[.](inevitable|optional))\""
+                                 stdout))
+                      (modeling (map (cute match:substring <> 1) modeling))
+                      (modeling (delete-duplicates modeling))
+                      (taus+modeling (append taus modeling)))
+                 (mkdir-p out-lang)
+                 (with-output-to-file lts-file (cute display stdout))
                  (or (and (not (file-exists? makreel-lts-file))
                           ;; XXX skip: "probably a system"
                           (format (current-error-port) "skip compare: ~s\n" makreel-lts-file))
@@ -496,19 +506,18 @@ output, and standard error as three values."
                             (blocking (list-matches "\"([^\"]*<blocking>)\"" makreel-lts))
                             (blocking (map (cute match:substring <> 1) blocking))
                             (blocking (delete-duplicates blocking))
-                            (taus (append '("<deadlock>" "<livelock>" "optional" "inevitable" "<state>") flushes blocking)))
+                            (modeling (append modeling '("inevitable" "optional")))
+                            (taus (append taus flushes blocking))
+                            (taus+modeling (append taus modeling)))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
-                       (mkdir-p out-lang)
-                       (with-output-to-file (string-append out-lang "/" base-name ".aut")
-                         (cute display stdout))
                        ;; FIXME: --structured-output with -eweak-trace still writes to disk
                        (with-directory-excursion out-lang
                          (receive (status stdout stderr)
                              (observe
                               `("ltscompare" "--counter-example" "--structured-output"
                                 "-eweak-trace"
-                                ,(string-append "--tau=" (string-join taus ","))
+                                ,(string-append "--tau=" (string-join taus+modeling ","))
                                 ,(string-append "../traces/" base-name ".aut")
                                 ,(string-append base-name ".aut"))
                               "")
