@@ -1034,9 +1034,21 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (_
      (string-join
       (cons (state->string (.state o))
-            (append (map (compose runtime:dotted-name car) (.blocked o))
-                    (map (compose runtime:dotted-name car) (.collateral o))
-                    (async-ports o)))
+            (append
+             (if (null? (.blocked o)) '()
+                 `(,(string-append
+                     "blocked:"
+                     (string-join
+                      (map (compose runtime:dotted-name car) (.blocked o))
+                      ","))))
+             (if (null? (.collateral o)) '()
+                 `(,(string-append
+                     "collateral:"
+                     (string-join
+                      (map (compose runtime:dotted-name car) (.collateral o))
+                      ","))))
+             (map (compose runtime:dotted-name car) (.collateral o))
+             (async-ports o)))
       "\n"))))
 
 (define-method (pc->hash (o <program-counter>))
