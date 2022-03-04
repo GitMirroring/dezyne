@@ -229,6 +229,7 @@ REGRESSION_TESTS =				\
  %D%/foreign_optional				\
  %D%/foreign_reply				\
  %D%/function_early_return			\
+ %D%/function_out_state				\
  %D%/function_reply_early_return		\
  %D%/guard_expressions				\
  %D%/hello_blocking_sync			\

@@ -192,6 +192,16 @@
    (wfc (.signature o))))
 
 (define-method (wfc (o <signature>))
+  (define (check-formal function formal)
+    (let ((message
+           (format
+            #f
+            "type `~a' cannot be used for `~a' parameter `~a' in function `~a'"
+            (ast:name (.type.name formal))
+            (.direction formal)
+            (.name formal)
+            (.name function))))
+      (wfc-error formal message)))
   (append
    (let ((type (ast:type o)))
      (cond ((not type)
@@ -199,7 +209,13 @@
            ((is-a? type <extern>)
             `(,(wfc-error o (format #f "cannot use extern type `~a' as return type" (type-name (.type.name o))))))
            (else '())))
-   (append-map wfc (ast:formal* o))))
+   (append-map wfc (ast:formal* o))
+   (let ((function (parent o <function>)))
+     (if (not function) '()
+         (let ((formals (filter (conjoin (disjoin ast:out? ast:inout?)
+                                         (negate (compose (is? <extern>) .type)))
+                                (ast:formal* o))))
+           (map (cute check-formal function <>) formals))))))
 
 (define ((argument-type-check o) argument formal)
   (let ((argument-type (ast:type argument))

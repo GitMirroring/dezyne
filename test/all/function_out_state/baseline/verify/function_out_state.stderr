@@ -1,0 +1,1 @@
+test/all/function_out_state/function_out_state.dzn:54:12: error: type `bool' cannot be used for `out' parameter `b' in function `f'
