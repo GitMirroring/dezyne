@@ -171,6 +171,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system3				\
  %D%/blocking_system4				\
  %D%/blocking_system_diamond			\
+ %D%/broken_cancel_guarantee			\
  %D%/calling_context				\
  %D%/clash_event_name				\
  %D%/clash_port_variable			\

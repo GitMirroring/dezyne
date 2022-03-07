@@ -1,0 +1,81 @@
+interface iblock
+{
+  in void block();
+  behavior
+  {
+    on block: {} // this event blocks
+  }
+}
+
+interface itransaction
+{
+  in void cancel();
+  in void request();
+  out void complete();
+  behavior
+  {
+    bool active = false;
+    [!active] on request: active = true;
+    [active] on cancel: active = false;
+    [active] on inevitable: {active = false; complete;}
+  }
+}
+
+component transaction_proxy
+{
+  provides itransaction pt;
+  requires itransaction rt;
+  behavior
+  {
+    bool active = false;
+    [!active] on pt.request(): {active = true; rt.request();}
+    [active] on pt.cancel(): {active = false; rt.cancel();}
+    on rt.complete(): {active = false; pt.complete();}
+  }
+}
+
+component cancel_guarantee
+{
+  provides blocking itransaction pt;
+  requires blocking iblock rb;
+  requires itransaction rt;
+  behavior
+  {
+    bool active = false;
+    [!active] on pt.request(): {active = true; rt.request(); rb.block();}
+    [active] on pt.cancel(): {active = false; rt.cancel();}
+    [active] on rt.complete(): {active = false; pt.complete();}
+  }
+}
+
+component block
+{
+  provides blocking iblock pb;
+  requires itransaction rt;
+  behavior
+  {
+    blocking on pb.block(): rt.request();
+    on rt.complete(): pb.reply();
+  }
+}
+
+component broken_cancel_guarantee
+{
+  provides blocking itransaction pt;
+  requires itransaction rt;
+  requires itransaction rr;
+  system
+  {
+    pt <=> cg.pt;
+    cancel_guarantee cg;
+    cg.rt <=> transaction.pt;
+    transaction_proxy transaction;
+    transaction.rt <=> rt;
+
+    cg.rb <=> b.pb;
+    block b;
+    b.rt <=> release.pt;
+    transaction_proxy release;
+    release.rt <=> rr;
+  }
+}
