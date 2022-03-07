@@ -1,0 +1,2 @@
+;;; -*- scheme -*-
+((features ("block")))

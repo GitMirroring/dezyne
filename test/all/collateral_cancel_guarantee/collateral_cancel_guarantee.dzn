@@ -1,0 +1,105 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface iblock
+{
+  in void block ();
+  behavior
+  {
+    on block: {} // this event blocks
+  }
+}
+
+interface ihelloworld
+{
+  in void hello ();
+  out void world ();
+  in void cruel ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+    on cruel: idle = true;
+  }
+}
+
+component proxy
+{
+  provides ihelloworld h;
+  requires ihelloworld w;
+  behavior
+  {
+    bool idle = true;
+    [idle] on h.hello (): {idle = false; w.hello ();}
+    on w.world (): {idle = true; h.world ();}
+    on h.cruel (): {idle = true; w.cruel ();}
+  }
+}
+
+component cancel_guarantee
+{
+  provides blocking ihelloworld h;
+  requires blocking iblock b;
+  requires ihelloworld w;
+  behavior
+  {
+    bool idle = true;
+    on h.cruel (): {idle = true; w.cruel ();}
+    [idle] on h.hello (): {idle = false; w.hello (); b.block ();}
+    [!idle] on w.world (): defer {idle = true; h.world ();}
+  }
+}
+
+component block
+{
+  provides blocking iblock b;
+  requires ihelloworld w;
+  behavior
+  {
+    blocking on b.block (): w.hello ();
+    on w.world (): b.reply ();
+  }
+}
+
+component collateral_cancel_guarantee
+{
+  provides blocking ihelloworld h;
+  requires ihelloworld l;
+  requires ihelloworld r;
+  system
+  {
+    cancel_guarantee top;
+    proxy left;
+    proxy right;
+
+    h <=> top.h;
+    top.w <=> left.h;
+    left.w <=> l;
+
+    top.b <=> b.b;
+    block b;
+    b.w <=> right.h;
+    right.w <=> r;
+  }
+}
