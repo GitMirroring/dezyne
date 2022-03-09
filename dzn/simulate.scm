@@ -207,40 +207,6 @@ provides port, mark the trace as <fork-error>, otherwise return false."
                                              #:message "non-compliance"))))
                   (list (cons pc trace))))))))
 
-(define (rtc-lts-node->traces lts from)
-  "Return traces for FROM node of LTS."
-  (match (hash-ref lts from)
-    ((pc traces ...)
-     traces)
-    (#f
-     '())))
-
-(define ((rtc-lts->traces pc->state-number) lts)
-  "Create a (prefix) set of traces from LTS."
-
-  (define (extend todo trace)
-    (map (cute append trace <>) todo))
-
-  (define observable?
-    (compose pair? trace->string-trail))
-
-  (let loop ((seen '()) (tos '(1)))
-    (if (null? tos) '()
-        (let* ((traces (append-map (cute rtc-lts-node->traces lts <>) tos))
-               (seen (append seen tos))
-               (done todo (partition
-                           (compose (cute member <> seen) pc->state-number car)
-                           traces))
-               (tos (map (compose pc->state-number car) todo))
-               (tos (delete-duplicates tos =)))
-          (let* ((continuations (loop seen tos))
-                 (traces (append done
-                                 (if (null? continuations) todo
-                                     (append-map (cute extend todo <>)
-                                                 continuations))))
-                 (traces (delete-duplicates traces trace-equal?)))
-            traces)))))
-
 (define (check-provides-compliance pc event trace)
   "Check TRACE for traces-compliance with the provides ports, for EVENT.
 Update the state of the provides port in TRACE for EVENT.  For a blocked
@@ -893,23 +859,6 @@ refusals-check.  Run final REPORT and return exit status."
     "Run check-provides-fork and check-refusals and report.  Return exit
 status."
 
-    (define (trace-check-provides-fork trace)
-      (let ((trigger (and=> (find .trigger trace) .trigger)))
-        (and trigger
-             (let ((port (.port trigger)))
-               (and port
-                    (ast:provides? port)
-                    (check-provides-fork port trace))))))
-
-    (define (component-check-provides-fork component)
-      (let* ((component-lts pc->state-number count
-                            (parameterize ((%exploring? #t))
-                              (pc->rtc-lts pc
-                                           #:trace-done? (conjoin did-provides-out? (negate blocked?)))))
-             (component-traces ((rtc-lts->traces pc->state-number) component-lts))
-             (component-traces (filter (negate optional-trace?) component-traces)))
-        (any trace-check-provides-fork component-traces)))
-
     (define ((port-lts-stable? pc) port)
       (let* ((instance (runtime:port (%sut) port))
              (instance (runtime:other-port instance))
@@ -942,18 +891,6 @@ status."
 
     (let ((component (runtime:%sut-model)))
       (or
-       ;; Forking from one to another provides port is a compliance
-       ;; error.
-       (and (> (length (ast:provides-port* component)) 1)
-            (let ((fork (component-check-provides-fork component)))
-              (and fork
-                   (report fork
-                           #:eligible '()
-                           #:internal? internal?
-                           #:locations? locations?
-                           #:trace trace
-                           #:verbose? verbose?))))
-
        ;; When a trace is blocked, and the component is stable (the
        ;; requires ports are stable), the refusal is the return of the
        ;; blocked provides port.
