@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,8 +28,8 @@ interface ihello
 
   behavior
   {
-      on hello: {}
-      on inevitable: world;
+    on hello: {}
+    on inevitable: world;
   }
 }
 
@@ -37,10 +37,11 @@ component compliance_fork_provides
 {
   provides ihello p_left;
   provides ihello p_right;
-
+  requires ihello r;
   behavior
   {
     on p_left.hello (): p_right.world();
-    on p_right.hello (): p_left.world();
+    on p_right.hello (): {}
+    on r.world (): p_right.world();
   }
 }

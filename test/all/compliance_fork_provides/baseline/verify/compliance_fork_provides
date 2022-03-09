@@ -1,2 +1,4 @@
 model: compliance_fork_provides
+p_left.hello
+p_right.world
 <non-compliance>
