@@ -234,9 +234,11 @@ provides port, mark the trace as <fork-error>, otherwise return false."
                (tos (map (compose pc->state-number car) todo))
                (tos (delete-duplicates tos =)))
           (let* ((continuations (loop seen tos))
-                 (extended (append-map (cute extend todo <>)
-                                       continuations))
-                 (traces (apply lset-adjoin trace-equal? done extended)))
+                 (traces (append done
+                                 (if (null? continuations) todo
+                                     (append-map (cute extend todo <>)
+                                                 continuations))))
+                 (traces (delete-duplicates traces trace-equal?)))
             traces)))))
 
 (define (check-provides-compliance pc event trace)
