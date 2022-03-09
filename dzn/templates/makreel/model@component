@@ -7,6 +7,8 @@ sort
 
 provides_ports = struct no_port?no_port_is#x:provides-port-construct;
 
+requires_ports = struct no_requires #x:requires-port-construct;
+
 reply_values = struct replies (#x:reply-values);
 
 requires_events
@@ -107,6 +109,7 @@ provides_rename = rename ({
 provides = hide ({
    tau_void
  , #x:allow-tau
+ #x:provides-hide
  }, provides_rename);
 
 %%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
@@ -151,19 +154,22 @@ semantics_provides
  = #x:semantics-provides
  ;
 
-semantics_provides_unblocked(reply: reply_values)
+semantics_provides_unblocked(reply: reply_values, pending: Int, switch: requires_ports)
  = #x:semantics-provides-unblocked
  + #x:makreel:model-name end
  . (queue_empty
    . ((#x:semantics-provides-unblocked-missing-replies) -> missing_reply . delta
       #x:semantics-provides-unblocked-replies)
       #x:semantics-provides-flush)
+ #x:semantics-provides-unblocked-switch-context
+ + (pending == 2) -> (delta#x:semantics-provides-unblocked-modeling)
  ;
 
 semantics_provides_blocking(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
 = (blocking - list2set(released) != {}) -> #x:makreel:model-name end . (queue_empty . semantics_blocked_rtc() + semantics_provides_skip_blocked())
 + (blocking - list2set(released) == {}) -> #x:makreel:model-name end . queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . async_not_pending . semantics)
  #x:semantics-provides-blocking-provides
+ #x:semantics-provides-blocking-requires
  ;
 
 semantics_provides_skip_blocked(released: List(provides_ports), reply: reply_values)

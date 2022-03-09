@@ -2411,6 +2411,12 @@ Generate a trivial main for @var{model}.  This ``generated main'' can
 execute an event trace read from stdin, and writes a code trace to
 stderr.  @xref{Getting Started}.
 
+@item --no-blocking
+@itemx -B
+When generating @code{mCRL2} code, assume a system without collateral
+blocking, i.e., @code{blocking} is not used or only at the top of the
+system.
+
 @item --output=@var{dir}
 @itemx -o @var{dir}
 Write output to directory @var{dir} (use @code{-} for standard output).
@@ -3003,6 +3009,12 @@ verification of all its @code{interface} models and behavioral
 @code{component} models.}.
 @c XXX TODO: reference to compositional quality/property
 @end quotation
+
+@item --no-blocking
+@itemx -B
+When generating @code{mCRL2} code, assume a system without collateral
+blocking, i.e., @code{blocking} is not used or only at the top of the
+system.
 
 @item --out=@var{format}
 @cindex Aldebaran

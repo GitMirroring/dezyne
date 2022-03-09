@@ -5,4 +5,5 @@
  , #.name end'
  , #.name flush
  , #.name blocking
+ , #.name collateral_block
  , #x:makreel:interface-name tau_reply

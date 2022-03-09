@@ -295,6 +295,9 @@
 (define-method (ast:requires? (o <trigger>))
   (and (.port.name o) ((compose ast:requires? .port) o)))
 
+(define-method (ast:requires? (o <action>))
+  (and (.port.name o) ((compose ast:requires? .port) o)))
+
 (define-method (ast:empty-namespace? (o <string>))
   (equal? o "/"))
 

@@ -6,3 +6,5 @@
  , #.name qin
  , #.name qout'
  , #.name queue_full
+ , #.name switch_context
+ , #.name collateral_block'

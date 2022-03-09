@@ -34,6 +34,7 @@ proc
  , #x:makreel:model-name reply'
  , #x:makreel:model-name reply'reordered
  , #x:makreel:model-name state'
+ , #x:makreel:model-name collateral_block
  , declarative_illegal
  , missing_reply
  , range_error
@@ -87,6 +88,7 @@ proc
   , #x:makreel:model-name out'
   , #x:makreel:model-name flush
   , #x:makreel:model-name state
+  , #x:makreel:model-name collateral_block
   , declarative_illegal
   , missing_reply
   , range_error
@@ -110,6 +112,7 @@ proc
 #x:makreel:model-name interface = hide({
    tau_void
  , #x:makreel:model-name end
+ , #x:makreel:model-name collateral_block
  , #x:makreel:model-name tau_reply}, #x:makreel:model-name interface_internal);
 
 #x:makreel:model-name behavior #x:process-parameters

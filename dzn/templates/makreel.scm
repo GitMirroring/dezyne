@@ -60,6 +60,7 @@
 
 (define-templates requires-sort-construct ast:requires+async-ports newline-pipe-prefix)
 (define-templates provides-port-construct ast:provides-ports newline-pipe-prefix)
+(define-templates requires-port-construct ast:requires-ports newline-pipe-prefix)
 
 (define-templates makreel:queue-length makreel:queue-length)
 
@@ -129,6 +130,7 @@
 (define-templates return-value makreel:return-value)
 (define-templates reply-expression .expression)
 (define-templates reply-constructor makreel:type-constructor)
+(define-templates switch-context makreel:switch-context)
 (define-templates type-bound makreel:type-bound)
 (define-templates type-check makreel:type-check)
 
@@ -172,6 +174,8 @@
 (define-templates semantics-provides-unblocked ast:provides-ports newline-union-infix)
 (define-templates semantics-provides-unblocked-missing-replies ast:provides-ports and-infix)
 (define-templates semantics-provides-unblocked-replies ast:provides-ports newline-union-prefix)
+(define-templates semantics-provides-unblocked-modeling ast:requires-ports newline-union-prefix)
+(define-templates semantics-provides-unblocked-switch-context ast:requires-ports newline-union-prefix)
 (define-templates semantics-async ast:provides-ports newline-union-prefix)
 (define-templates semantics-async-requires ast:requires-ports newline-union-prefix)
 (define-templates semantics-async-flush ast:provides-ports newline-union-prefix)
@@ -180,6 +184,7 @@
 (define-templates semantics-async-allow-ack (lambda (o) (let ((a (ast:async-ports o))) (if (pair? a) o '()))))
 (define-templates semantics-no-async (lambda (o) (let ((a (ast:async-ports o))) (if (pair? a) '() o))))
 (define-templates semantics-provides-blocking-provides ast:provides-ports newline-union-prefix)
+(define-templates semantics-provides-blocking-requires ast:requires-ports newline-union-prefix)
 (define-templates semantics-provides-skip-blocked-replies ast:provides-ports newline-union-infix)
 (define-templates semantics-provides-skip-blocked-requires ast:requires-ports newline-union-prefix)
 (define-templates semantics-port-in-released-or ast:provides-ports or-infix)
@@ -223,3 +228,4 @@
 (define-templates provides-comm ast:provides-ports newline-comma-infix)
 (define-templates provides-allow ast:provides-ports newline-comma-prefix)
 (define-templates provides-rename ast:provides-ports newline-comma-infix)
+(define-templates provides-hide ast:provides-ports newline-comma-prefix)

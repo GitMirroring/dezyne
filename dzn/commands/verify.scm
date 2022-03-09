@@ -51,6 +51,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
+            (no-blocking (single-char #\B))
             (out (value #t))
             (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec))
@@ -71,6 +72,7 @@ Check DZN-FILE for verification errors in Dezyne models
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL
+  -B, --no-blocking           assume system without collateral blocking
       --out=FORMAT            produce output FORMAT (use \"help\" for a list)
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
