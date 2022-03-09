@@ -341,9 +341,10 @@
                   (ports-eq? (ast:eq? reply-port trigger-port)))
              (and reply-port
                   (or (ast:requires? trigger)
-                      (and ports-eq? blocking?)
-                      (and (not ports-eq?) (not blocking?)))))
-           (let* ((r:port (runtime:port (.instance pc) reply-port))
+                      (not ports-eq?)
+                      (and ports-eq? blocking?))))
+           (let* ((instance (.instance pc))
+                  (r:port (runtime:port instance reply-port))
                   (pc (clone pc #:released (append (.released pc) (list r:port)))))
              (list pc)))
           (else
