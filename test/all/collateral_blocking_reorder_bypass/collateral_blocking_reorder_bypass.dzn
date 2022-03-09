@@ -1,0 +1,60 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Code:
+
+import collateral_blocking_reorder.dzn;
+
+component proxy
+{
+  provides iworld p;
+  requires iworld r;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on p.hello (): {r.hello(); idle = false;}
+    on r.world (): {p.world(); idle = true;}
+  }
+}
+
+component collateral_blocking_reorder_bypass
+{
+  provides ihello pleft;
+
+  requires iworld rleft;
+  requires iworld eleft;
+
+  provides iworld pright;
+  requires iworld rright;
+
+  system
+  {
+    collateral_blocking_reorder left;
+    pleft <=> left.p;
+    left.e <=> eleft;
+    left.r <=> rleft;
+
+    proxy right;
+    pright <=> right.p;
+    right.r <=> rright;
+  }
+}

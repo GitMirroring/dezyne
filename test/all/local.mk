@@ -182,6 +182,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_shell			\
  %D%/collateral_blocking_shell2			\
  %D%/collateral_blocking_reorder		\
+ %D%/collateral_blocking_reorder_bypass		\
  %D%/collateral_blocking_multiple_provides	\
  %D%/collateral_blocking_release		\
  %D%/collateral_blocking_top			\
