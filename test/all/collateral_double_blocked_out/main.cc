@@ -22,7 +22,7 @@
 //
 // Code:
 
-#include "collateral_double_blocked.hh"
+#include "collateral_double_blocked_out.hh"
 
 #include <thread>
 
@@ -50,7 +50,7 @@ main ()
   dzn::locator locator;
   dzn::runtime runtime;
   locator.set (runtime);
-  collateral_double_blocked sut (locator);
+  collateral_double_blocked_out sut (locator);
   dzn::pump pump;
   locator.set(pump);
 
@@ -68,6 +68,16 @@ main ()
   sut.r.meta.provide.name = "r";
   sut.r.meta.provide.port = &sut.r;
 
+  sut.left.out.world = [&]
+  {
+    dzn::trace (std::clog, sut.left.meta, "world");
+  };
+
+  sut.middle.out.world = [&]
+  {
+    dzn::trace (std::clog, sut.middle.meta, "world");
+  };
+
   sut.r.in.hello = [&]
   {
     dzn::trace (std::clog, sut.r.meta, "hello");
@@ -78,25 +88,22 @@ main ()
   std::string trace = read ();
   if (0);
   // trace
-  else if (trace == "left.hello\nr.hello\nr.return\nmiddle.hello\nleft.return\nr.world\nmiddle.return")
+  else if (trace == "left.hello\nr.hello\nr.return\nmiddle.hello\nleft.return\nr.world\nmiddle.world\nmiddle.return")
   {
     pump (sut.left.in.hello);
     pump (sut.middle.in.hello);
     pump (sut.r.out.world);
   }
-  else if (trace == "middle.hello\nr.hello\nr.return\nleft.hello\nmiddle.return\nr.world\nleft.return")
+  else if (trace == "middle.hello\nr.hello\nr.return\nleft.hello\nmiddle.return\nr.world\nleft.world\nleft.return")
   {
     pump (sut.middle.in.hello);
     pump (sut.left.in.hello);
     pump (sut.r.out.world);
   }
   else
-  {
-    std::clog << "missing trace" << std::endl;
-    return 1;
-  }
+    throw ("missing trace");
 
-  pump.wait ();
+  std::this_thread::sleep_for (std::chrono::milliseconds (100));
 
   return 0;
 }
