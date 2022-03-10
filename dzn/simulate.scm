@@ -184,7 +184,8 @@ actions to a provides port other than PORT, mark the trace as
                            #:status (make <fork-error>
                                       #:ast (.statement pc)
                                       #:message "non-compliance"))))
-           (list (cons pc trace))))))
+           (and (ast:provides? (.trigger pc))
+                (list (cons pc trace)))))))
 
 (define (check-requires-provides-fork trace)
   "Check TRACE for a Y-fork.  If TRACE contains actions to more than one
