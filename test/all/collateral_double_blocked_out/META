@@ -1,2 +1,6 @@
 ;;; -*- scheme -*-
-((skip ("c" "cs" "javascript" "scheme" "lts" "execute")))
+((skip ("c"
+        "javascript"
+        "scheme"
+        "lts"
+        "simulate")))

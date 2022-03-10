@@ -101,9 +101,12 @@ main ()
     pump (sut.r.out.world);
   }
   else
-    throw ("missing trace");
+  {
+    std::clog << "missing trace" << std::endl;
+    return 1;
+  }
 
-  std::this_thread::sleep_for (std::chrono::milliseconds (100));
+  pump.wait ();
 
   return 0;
 }
