@@ -218,6 +218,7 @@
          (pc (continuation pc o)))
     (cond
      ((and (runtime:boundary-port? other-port)
+           (ast:requires? other-port)
            (ast:external? other-port))
       (let* ((run-external-modeling (@ (dzn vm run) run-external-modeling))
              (silent-traces (run-external-modeling pc other-instance))

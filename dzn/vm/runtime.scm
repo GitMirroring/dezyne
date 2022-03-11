@@ -306,7 +306,8 @@
     (make <runtime:port> #:ast p #:container c #:boundary? b))
 
   (define (invert-direction p)
-    (clone p #:direction (if (eq? (.direction p) 'requires) 'provides 'requires)))
+    (let ((direction (if (eq? (.direction p) 'requires) 'provides 'requires)))
+      (clone p #:direction direction #:external #f)))
 
   (define (model-instances o)
     (let ((t (.type (.ast o))))

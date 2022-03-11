@@ -877,7 +877,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (external-trigger? event)
   (and (requires-trigger? event)
        (let ((port (and=> (string->trigger event) .port)))
-         (and port (ast:external? port)))))
+         (and port (ast:requires? port) (ast:external? port)))))
 
 (define-method (external-trigger-in-q? (pc <program-counter>) event)
   (and (requires-trigger? event)
