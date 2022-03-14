@@ -75,6 +75,7 @@ component proxy_block
     [!idle] on p.hello(): {}
     on r.world(): idle = false;
     [!idle] on e.world(): {r.hello(); idle = true;}
+    [idle] on e.world(): {}
   }
 }
 
