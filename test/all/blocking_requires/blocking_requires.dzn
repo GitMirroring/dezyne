@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,30 +22,35 @@
 //
 // Code:
 
-interface I {
-  in void e();
-  behavior {
-    on e: {}
+interface ihello
+{
+  in void hello();
+  behavior
+  {
+    on hello: {}
   }
 }
 
-interface II {
-  in void e();
-  out void cb();
-  behavior {
+interface iworld
+{
+  in void hello();
+  out void world();
+  behavior
+  {
     bool busy = false;
-    [!busy]
-       on e: busy = true;
-    [busy] on inevitable: { cb; busy = false; }
+    [!busy] on hello: busy = true;
+    [busy] on inevitable: { world; busy = false; }
   }
 }
 
-component blocking_requires {
-  provides I p;
-  requires II r;
-  behavior {
+component blocking_requires
+{
+  provides ihello p;
+  requires iworld r;
+  behavior
+  {
     bool busy = false;
-    [!busy] blocking on p.e(): { r.e(); busy = true; }
-    [busy] blocking on r.cb(): { p.reply(); busy = false; }
+    [!busy] blocking on p.hello(): { r.hello(); busy = true; }
+    [busy] blocking on r.world(): { p.reply(); busy = false; }
   }
 }
