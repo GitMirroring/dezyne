@@ -602,10 +602,10 @@ triple per label in the trail of the transition."
 (define (lts->aut lts state-count)
   "Return an LTS in Aldebaran (aut) format from LTS produced by
 RTC-LTS->LTS."
-  (format #t "des (1, ~s, ~s)\n" (length lts) state-count)
+  (format #t "des (1,~s,~s)\n" (length lts) state-count)
   (for-each (match-lambda
               ((from step to)
-               (format #t "(~s, ~s, ~s)\n" from step to)))
+               (format #t "(~s,~s,~s)\n" from step to)))
             lts))
 
 
