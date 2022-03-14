@@ -359,6 +359,7 @@ REGRESSION_TESTS =				\
  %D%/range_member				\
  %D%/range_return				\
  %D%/reply_expression				\
+ %D%/requires_twice				\
  %D%/resolve_formal				\
  %D%/resolve_member				\
  %D%/deadlock_reply_modeling			\
