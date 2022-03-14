@@ -49,6 +49,7 @@
                         (livelock (single-char #\l))
                         (deterministic-labels (single-char #\n) (value #t))
                         (prefix (single-char #\p) (value #t))
+                        (run (single-char #\r))
                         (single-line (single-char #\s))
                         (tau (single-char #\t) (value #t))
                         (tags)))
@@ -75,6 +76,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
   -t, --tau=EVENT[,EVENT...]      hide all EVENTs
       --exclude-tau=EVENT[,EVENT...]
                                   exclude given EVENTs from '--tau' list
+  -r, --run=EVENT[,EVENT...]      run given EVENTS through LTS reporting states visited.
   -s, --single-line               report an error including trace on a single line
       --tags                      report all tags found in lts
 ")
@@ -103,6 +105,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (single-line? (option-ref options 'single-line #f))
          (output-separator (if single-line? output-separator "\n"))
          (tags? (option-ref options 'tags #f))
+         (run? (option-ref options 'run #f))
          (tau (option-ref options 'tau #f))
          (tau (if tau (string-split tau sep) '()))
          (tau (cons "tau" tau)))
@@ -153,6 +156,13 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                          "LTS is non-deterministic"
                          "LTS is deterministic"
                          (assert-nondeterministic lts-hide deterministic-labels)))
+        (when run?
+          (let* ((trace (or (and (not (isatty? (current-input-port)))
+                                 (input-port? (current-input-port))
+                                 (read-string (current-input-port)))
+                        ""))
+                 (trace (string-split (string-trim-both trace) #\newline)))
+            (run-trace lts trace)))
         (let ((lts-failures (add-failures lts-hide-state)))
           (when deadlock?
             (report-result "deadlock"
