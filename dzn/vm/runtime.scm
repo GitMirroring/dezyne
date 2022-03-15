@@ -53,6 +53,7 @@
             runtime:provides-instance?
             runtime:runtime-port*
             runtime:runtime-provides-port*
+            runtime:runtime-requires-port*
             runtime:requires-instance?
             runtime:system-instance?
             runtime:create-instances

@@ -36,7 +36,8 @@
   #:use-module (dzn vm normalize)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
-  #:export (%liveness?
+  #:export (%cancel-guarantee?
+            %liveness?
             begin-step
             step))
 
@@ -45,6 +46,9 @@
 ;;; ’step’ implements single stepping the Dezyne vm.
 ;;;
 ;;; Code:
+
+;; Should we check for collateral block cancel guarantee?
+(define %cancel-guarantee? (make-parameter #t))
 
 ;; Are we running the "liveness" check?
 (define %liveness? (make-parameter #f))
@@ -120,7 +124,15 @@
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
          (port-name (.name (.ast instance)))
-         (pc (reset-reply pc port-name)))
+         (pc (reset-reply pc port-name))
+         (collateral-blocked? (and (not (ast:modeling? trigger))
+                                   (get-collateral-blocked? pc)))
+         (pc (if (not collateral-blocked?) (reset-collateral-blocked? pc)
+                 (let* ((port (.name (.ast instance)))
+                        (message (format #f "port `~a' is blocked" port)))
+                   (clone pc #:status (make <blocked-error>
+                                        #:ast (.statement pc)
+                                        #:message message))))))
     pc))
 
 

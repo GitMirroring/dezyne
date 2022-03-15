@@ -70,6 +70,7 @@
             .async
             .blocked
             .collateral
+            .collateral-blocked?
             .collateral-instance
             .collateral-released
             .component-acceptance
@@ -215,6 +216,7 @@
 
 (define-class <state> ()
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
+  (collateral-blocked? #:getter .collateral-blocked? #:init-form #f #:init-keyword #:collateral-blocked?)
   (deferred #:getter .deferred #:init-form #f #:init-keyword #:deferred)
   (handling #:getter .handling #:init-form #f #:init-keyword #:handling)
   (q #:getter .q #:init-form (list) #:init-keyword #:q)

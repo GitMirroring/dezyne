@@ -61,6 +61,7 @@
             external-trigger?
             external-trigger-in-q?
             flush
+            get-collateral-blocked?
             get-handling
             get-reply
             get-state
@@ -71,6 +72,7 @@
             labels
             make-pc
             make-system-state
+            mark-collateral-block
             modeling-names
             out-event?
             pc->hash
@@ -87,6 +89,7 @@
             q-empty?
             read-input
             requires-trigger?
+            reset-collateral-blocked?
             reset-handling!
             reset-reply
             reset-replies
@@ -100,6 +103,7 @@
             rtc-trigger
             serialize
             serialize-header
+            set-collateral-blocked?
             set-deferred
             set-handling!
             set-reply
@@ -635,6 +639,36 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (if (eq? new-pc pc) trace
         (cons new-pc trace))))
 
+(define-method (mark-collateral-block trace)
+  "Mark ports of all requires actions in TRACE that may fire a modeling
+event with COLLATERAL-BLOCK?."
+  (define (requires-action? pc)
+    (let ((statement (.statement pc)))
+      (and (is-a? statement <action>)
+           (not (ast:async? statement))
+           (ast:requires? statement))))
+
+  (let* ((rtc-trace (take-while
+                     (negate
+                      (conjoin
+                       (compose (cute eq? <> (%sut)) .instance)
+                       (compose (is? <initial-compound>) .statement)))
+                     trace))
+         (requires-ports (filter-map requires-action? rtc-trace))
+         (last-port (and (pair? requires-ports) (car requires-ports)))
+         (requires-ports (filter (negate (cute ast:eq? <> last-port)) requires-ports))
+         (requires-ports (delete-duplicates requires-ports ast:eq?))
+         (requires-ports (filter (compose pair? modeling-names .type) requires-ports))
+         (ports (map (cute runtime:port (%sut) <>) requires-ports))
+         (instances (map runtime:other-port ports)))
+    (if (null? instances) trace
+        (fold (lambda (instance trace)
+                (rewrite-trace-head
+                 (cute set-collateral-blocked? <> instance)
+                 trace))
+              trace
+              instances))))
+
 
 ;;;
 ;;; Q and flush
@@ -736,6 +770,27 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (set-state (pc <program-counter>) (state <list>))
   (fold (cut update-state state <> <>) pc ((compose .state-list .state) pc)))
+
+(define-method (get-collateral-blocked? (pc <program-counter>) (instance <runtime:instance>))
+  (and=> (get-state pc instance) .collateral-blocked?))
+
+(define-method (get-collateral-blocked? (pc <program-counter>))
+  (get-collateral-blocked? pc (.instance pc)))
+
+(define-method (reset-collateral-blocked? (pc <program-counter>) (instance <runtime:instance>))
+  (set-state pc (clone (get-state pc instance) #:collateral-blocked? #f)))
+
+(define-method (reset-collateral-blocked? (pc <program-counter>))
+  (fold (lambda (instance pc)
+          (reset-collateral-blocked? pc instance))
+        pc
+        (filter runtime:boundary-port? (%instances))))
+
+(define-method (set-collateral-blocked? (pc <program-counter>) (instance <runtime:instance>))
+  (set-state pc (clone (get-state pc instance) #:collateral-blocked? #t)))
+
+(define-method (set-collateral-blocked? (pc <program-counter>))
+  (set-collateral-blocked? pc (.instance pc)))
 
 (define-method (get-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
   (assoc-ref (.reply (get-state pc instance)) port))
@@ -859,16 +914,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (serialize (o <state>))
   (with-output-to-string
     (lambda _
-      ;; TODO c&p serialize <state>
-      (let ((port (current-output-port))
-            (path ((compose runtime:instance->path .instance) o)))
-        (display "(" port)
-        (display path port)
-        (for-each (match-lambda ((x . y)
-                                 (display " " port)
-                                 (display (cons x (->sexp y)) port)))
-                  (.variables o))
-        (display ")" port)))))
+      (serialize o (current-output-port)))))
 
 (define-method (serialize (o <system-state>) port)
   (display "(state " port)
@@ -887,6 +933,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                                (display " " port)
                                (display (cons x (->sexp y)) port)))
                 (.variables o)))
+    (when (.collateral-blocked? o)
+      (display " " port)
+      (display '("collateral-blocked?" . "true") port))
     (display ")" port)))
 
 (define-method (serialize-header (o <system-state>))
