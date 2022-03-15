@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2015 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016, 2018 Paul Hoogendijk <paul@dezyne.org>
@@ -83,7 +83,7 @@ component Driver
 
     [state.Idle]
     {
-      on control.setup(): {optics.prepare(); acquisition.prepare(); state = State.Setup;}
+      on control.setup(): {acquisition.prepare(); optics.prepare(); state = State.Setup;}
       on optics.ready(): {}
     }
     [state.Setup]
