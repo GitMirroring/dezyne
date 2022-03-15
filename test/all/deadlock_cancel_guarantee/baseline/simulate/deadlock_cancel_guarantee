@@ -1,0 +1,26 @@
+(header ((pt) itransaction provides) ((sut) deadlock_cancel_guarantee component) ((rb) iblock requires) ((rt) itransaction requires))
+(state ((pt) (active . false)) ((sut) (active . false)) ((rb)) ((rt) (active . false)))
+<external>.pt.request -> ...
+... -> sut.pt.request
+sut.rt.request -> ...
+... -> <external>.rt.request
+... <- <external>.rt.return
+sut.rt.return <- ...
+sut.rb.block -> ...
+... -> <external>.rb.block
+... <- <external>.rb.return
+sut.rb.return <- ...
+... <- sut.pt.return
+<external>.pt.return <- ...
+(state ((pt) (active . true)) ((sut) (active . true)) ((rb)) ((rt) (active . true) (collateral-blocked? . true)))
+(trail "pt.request" "rt.request" "rt.return" "rb.block" "rb.return" "pt.return")
+test/all/deadlock_cancel_guarantee/deadlock_cancel_guarantee.dzn:38:3: error: port `rt' is blocked
+<external>.pt.cancel -> ...
+... -> sut.pt.cancel
+sut.rt.cancel -> ...
+<deadlock>
+(state ((pt) (active . true)) ((sut) (active . false)) ((rb)) ((rt) (active . true) (collateral-blocked? . true)))
+test/all/deadlock_cancel_guarantee/deadlock_cancel_guarantee.dzn:38:3: error: port `rt' is blocked
+(trail "pt.cancel" "rt.cancel" "<deadlock>")
+(labels "pt.cancel" "pt.request" "rt.complete")
+(eligible)

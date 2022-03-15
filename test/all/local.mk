@@ -130,6 +130,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
+ %D%/deadlock_cancel_guarantee			\
  %D%/deadlock_component1			\
  %D%/deadlock_interface1			\
  %D%/determinism_async				\
