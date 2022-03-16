@@ -22,7 +22,7 @@ component simple_state_machine
     status s = status.A;
     [s.A]
     {
-      on p.hello (): {s=status.B; r1.hello (); r2.hello ();}
+      on p.hello (): {s=status.B; r2.hello (); r1.hello ();}
     }
     [s.B]
     {
