@@ -349,6 +349,7 @@ REGRESSION_TESTS =				\
  %D%/name.space					\
  %D%/queuefull_external				\
  %D%/queuefull_external_sync			\
+ %D%/queue_size_four				\
  %D%/range_action				\
  %D%/range_argument				\
  %D%/range_assign				\
