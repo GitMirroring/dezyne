@@ -1764,12 +1764,49 @@ interface behavior and letting the armor component map one behavior onto
 the other making sure the permissive behavior never violates the strict
 behavior.
 
-The example below shows a simple but strict interface @code{istrict} and
-a permissive interface @code{ipermissive} that share the same event
-alphabet. The permissive interface is used on both sides of the
+Consider this simple strict interface
+
+@example
+@verbatiminclude examples/istrict.dzn
+@end example
+
+used by this simple proxy component
+
+@example
+@verbatiminclude examples/proxy.dzn
+@end example
+
+Because the @code{istrict} interface is stateful, a problem occurs when
+the enviroment would erroneously issue a second @code{p.request} event
+before receiving an @code{r.notify}.
+
+Now consider this permissive interface
+
+@example
+@verbatiminclude examples/ipermissive.dzn
+@end example
+
+that shares its event alphabet with @code{istrict}.  Being permissive
+means that it will accept any of the events, regardless of the history.
+
+Using the @code{ipermissive} interface we can derive a simple top armor
+component
+
+@example
+@verbatiminclude examples/top_armor.dzn
+@end example
+
+and likewise, a bottom_armor component
+
+@c What about iwatchdog?
+@example
+@verbatiminclude examples/bottom_armor.dzn
+@end example
+
+The permissive interface is to be used on both sides of the
 @code{armored_system}.  The system connects each permissive interface to
 a dedicated armor component, one for the top of the system and one for
-the bottom. Both protecting the inside component called @code{middle}.
+the bottom.  Both protecting the inside component called @code{proxy}.
 
 @example
 @verbatiminclude examples/armor.dzn

@@ -1,0 +1,18 @@
+import istrict.dzn;
+
+component proxy // a trivial proxy, see what happens with 2.17.0
+{
+  provides istrict p;
+  requires istrict r;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on p.request (): {r.request (); idle = false;}
+    [!idle]
+    {
+      on p.cancel (): {r.cancel (); idle = true;}
+      on r.notify (): {p.notify (); idle = true;}
+    }
+  }
+}

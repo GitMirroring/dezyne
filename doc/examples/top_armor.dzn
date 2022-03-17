@@ -1,0 +1,24 @@
+import istrict.dzn;
+import ipermissive.dzn;
+
+component top_armor
+{
+  provides ipermissive p;
+  requires istrict r;
+
+  behavior
+  {
+    bool idle = true;
+    [idle]
+    {
+      on p.request (): {idle = false; r.request ();}
+      on p.cancel (): {}
+    }
+    [!idle]
+    {
+      on p.request (): {}
+      on p.cancel (): {idle = true; r.cancel ();}
+      on r.notify (): {idle = true; p.notify ();}
+    }
+  }
+}

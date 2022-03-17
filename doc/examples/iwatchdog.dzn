@@ -1,0 +1,17 @@
+interface iwatchdog
+{
+  in void set ();
+  in void cancel ();
+  out void timeout ();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on set: idle = false;
+    [!idle]
+    {
+      on cancel: idle = true;
+      on inevitable: timeout;
+    }
+  }
+}

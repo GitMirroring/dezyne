@@ -1,0 +1,17 @@
+interface istrict
+{
+  in void request ();
+  in void cancel ();
+  out void notify ();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on request: idle = false;
+    [!idle]
+    {
+      on cancel: idle = true;
+      on inevitable: {idle = true; notify;}
+    }
+  }
+}

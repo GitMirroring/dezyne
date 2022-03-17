@@ -26,6 +26,7 @@ EXTRA_DIST += %D%/README
 
 DEZYNE_EXAMPLES =				\
  %D%/armor.dzn					\
+ %D%/bottom_armor.dzn				\
  %D%/compliance-multiple-provides-fork.dzn	\
  %D%/component-if-illegal.dzn			\
  %D%/dzn.async.dzn				\
@@ -35,9 +36,13 @@ DEZYNE_EXAMPLES =				\
  %D%/ihello-bool.dzn				\
  %D%/ihello-world.dzn				\
  %D%/illegal-requires.dzn			\
- %D%/inner-space.dzn				\
  %D%/inevitable-optional.dzn			\
+ %D%/inner-space.dzn				\
+ %D%/ipermissive.dzn				\
+ %D%/istrict.dzn				\
+ %D%/iwatchdog.dzn				\
  %D%/join.dzn					\
+ %D%/proxy.dzn					\
  %D%/remote-timer-proxy.dzn			\
  %D%/simple-state-machine.dzn			\
  %D%/some_component.dzn				\
@@ -45,6 +50,7 @@ DEZYNE_EXAMPLES =				\
  %D%/some_interface.dzn				\
  %D%/some_interface.hh				\
  %D%/some_system.dzn				\
+ %D%/top_armor.dzn				\
  %D%/top-middle-bottom.dzn
 
 EXTRA_DIST += $(DEZYNE_EXAMPLES)

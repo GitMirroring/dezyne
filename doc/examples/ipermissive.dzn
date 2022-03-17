@@ -1,0 +1,13 @@
+interface ipermissive // derives from istrict
+{
+  in void request ();
+  in void cancel ();
+  out void notify ();
+
+  behavior
+  {
+    on request: {}
+    on cancel: {}
+    on optional: notify;
+  }
+}

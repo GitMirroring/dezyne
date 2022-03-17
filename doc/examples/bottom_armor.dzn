@@ -1,0 +1,26 @@
+import istrict.dzn;
+import ipermissive.dzn;
+import iwatchdog.dzn;
+
+component bottom_armor
+{
+  provides istrict p;
+  requires ipermissive r;
+  requires iwatchdog w;
+
+  behavior
+  {
+    bool idle = true;
+    [idle]
+    {
+      on p.request (): {idle = false; w.set (); r.request ();}
+      on r.notify (): {}
+    }
+    [!idle]
+    {
+      on p.cancel (): {idle = true; w.cancel (); r.cancel ();}
+      on r.notify (),
+         w.timeout (): {idle = true; w.cancel (); p.notify ();}
+    }
+  }
+}
