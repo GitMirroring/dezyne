@@ -3,7 +3,7 @@
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -156,6 +156,11 @@ output, and standard error as three values."
          (and=> (assq-ref alist flag)
                 (cute equal? <> '(#t))))))
 
+(define (queue-size file-name)
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'queue-size) car))))
+
 (define (flush? file-name)
   (get-meta-flag file-name 'flush))
 
@@ -244,10 +249,12 @@ output, and standard error as three values."
          (includes (filter directory-exists? includes))
          (includes (append-map (cut list "-I" <>) includes))
          (model (or (model? file-name) base-name))
+         (queue-size (queue-size file-name))
          (command
           `("dzn" "--verbose" "verify"
             ,@includes
             "--all"
+            ,@(if queue-size `("-q" ,(number->string queue-size)) '())
             ,@(if (model-unset? file-name) '() `("-m" ,model))
             ,dzn-name)))
     (or (skip? file-name "verify")
@@ -404,6 +411,7 @@ output, and standard error as three values."
          (out-lang (string-append file-name "/out/" language))
          (input (filter-<flush> input))
          (model (or (model? file-name) base-name))
+         (queue-size (queue-size file-name))
          ;; FIXME: METAs `model' is used for component/system tricksery
          (model base-name)
          (baseline? (file-exists? (string-append baseline "/" base-name)))
@@ -413,6 +421,7 @@ output, and standard error as three values."
     (receive (status stdout stderr)
         (observe `("dzn" "simulate"
                    ,@includes
+                   ,@(if queue-size `("-q" ,(number->string queue-size)) '())
                    "--format" ,trace-format
                    ,@(if (non-strict? file-name) '() '("--strict"))
                    "-m" ,model
@@ -468,6 +477,7 @@ output, and standard error as three values."
                              '())))
          (includes (append-map (cut list "-I" <>) includes))
          (model (or (model? file-name) base-name))
+         (queue-size (queue-size file-name))
          (out (string-append file-name "/out"))
          (language "lts")
          (out-lang (string-append file-name "/out/" language))
@@ -481,6 +491,7 @@ output, and standard error as three values."
             (observe
              `("dzn" "graph" "--backend=lts"
                ,@includes
+               ,@(if queue-size `("-q" ,(number->string queue-size)) '())
                "-m" ,model
                ,dzn-name)
              input)
