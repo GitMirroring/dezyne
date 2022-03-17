@@ -177,6 +177,7 @@ REGRESSION_TESTS =				\
  %D%/clash_port_variable			\
  %D%/closed_system_foreigns			\
  %D%/collateral_blocking_backdoor		\
+ %D%/collateral_blocking_backdoor_bypass	\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_multiple_provides	\
  %D%/collateral_blocking_multiple_provides0	\
