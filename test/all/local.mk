@@ -242,6 +242,7 @@ REGRESSION_TESTS =				\
  %D%/closed_system_foreigns			\
  %D%/collateral_blocking			\
  %D%/collateral_blocking_backdoor		\
+ %D%/collateral_blocking_backdoor_bypass	\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_double_release		\
  %D%/collateral_blocking_multiple_provides	\

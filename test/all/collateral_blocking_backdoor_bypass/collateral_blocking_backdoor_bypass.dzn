@@ -1,0 +1,81 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Show the need for implementing collateral blocking in the simulator.
+// After blocking the mux, e.g. by running left.hello, the collateraly
+// blocking event right.hello first passes freely through the top_right
+// proxy; already leaving a trail.
+//
+// Code:
+
+import collateral_blocking_backdoor.dzn;
+
+interface ibypass {
+  in void hello();
+  out void world();
+
+  behavior {
+    on hello: {}
+    on inevitable: world;
+  }
+
+}
+component proxy_bypass
+{
+    provides ibypass p;
+    requires ibypass r;
+
+    behavior {
+      on p.hello(): r.hello();
+      on r.world(): p.world();
+    }
+}
+
+component collateral_blocking_backdoor_bypass
+{
+  provides blocking ihello left;
+  provides blocking ihello right;
+  requires blocking iworld w;
+
+  provides ibypass pbypass;
+  requires ibypass rbypass;
+
+  system
+  {
+    proxy left_top;
+    proxy right_top;
+    mux middle;
+    blocked bottom;
+
+    left <=> left_top.h;
+    left_top.w <=> middle.left;
+
+    right <=> right_top.h;
+    right_top.w <=> middle.right;
+
+    middle.w <=> bottom.h;
+    bottom.w <=> w;
+
+    proxy_bypass bypass;
+    pbypass <=> bypass.p;
+    bypass.r <=> rbypass;
+  }
+}
