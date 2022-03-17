@@ -70,7 +70,7 @@
     (string-join alphabet ",")))
 
 (define (component-taus model)
-  (let ((ports (ast:required+async model)))
+  (let ((ports (ast:requires+async-port* model)))
     (string-join (map makreel:.name ports) ",")))
 
 (define (component-exclude-taus model)

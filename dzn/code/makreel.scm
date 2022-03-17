@@ -303,7 +303,7 @@
    (or (.port o) (parent o <on>)
        (let ((model (parent o <model>)))
          (if (is-a? model <interface>) model
-             ((compose .type car ast:provides-ports) o))))))
+             ((compose .type car ast:provides-port*) o))))))
 
 (define-method (makreel:model-name (o <model>))
   (string-join (ast:full-name o) ""))
@@ -326,34 +326,16 @@
   (delete-duplicates (map .type (filter ast:provides? (ast:port* o)))))
 
 (define-method (makreel:flush-provides-ports (o <port>))
-  (ast:provides-ports (parent o <component>)))
+  (ast:provides-port* (parent o <component>)))
 
-(define-method (ast:provides-ports (o <component>))
-  (filter ast:provides? (ast:port* o)))
-
-(define-method (ast:provides-ports (o <port>))
-  (ast:provides-ports (parent o <component>)))
-
-(define-method (ast:requires-ports (o <component>))
-  (filter ast:requires? (ast:port* o)))
-
-(define-method (ast:requires-ports (o <port>))
-  (ast:requires-ports (parent o <component>)))
-
-(define-method (ast:requires+async-ports (o <component>))
-  (append (ast:requires-ports o) (ast:async-ports o)))
-
-(define-method (ast:async-ports (o <component>))
-  ((compose ast:port* .behavior) o))
-
-(define-method (ast:async-ports? (o <component>))
-  (if (pair? (ast:async-ports o)) o
+(define-method (ast:async-port*? (o <component>))
+  (if (pair? (ast:async-port* o)) o
       '()))
 
-(define-method (ast:non-external-ports (o <component>))
+(define-method (ast:non-external-port* (o <component>))
   (filter (negate ast:external?) (filter ast:requires? (ast:port* o))))
 
-(define-method (ast:external-ports (o <component>))
+(define-method (ast:external-port* (o <component>))
   (filter ast:external? (ast:port* o)))
 
 (define-method (makreel:action-sort (o <component>))
@@ -520,10 +502,10 @@
   (or (and (not (find ast:requires? (ast:port* o))) o) '()))
 
 (define-method (ast:have-requires+async? (o <component>))
-  (if (pair? (ast:requires+async-ports o)) o '()))
+  (if (pair? (ast:requires+async-port* o)) o '()))
 
 (define-method (ast:have-no-requires+async? (o <component>))
-  (if (pair? (ast:requires+async-ports o)) '() o))
+  (if (pair? (ast:requires+async-port* o)) '() o))
 
 (define-method (makreel:queue-length (o <component>))
   (%queue-size))
@@ -566,7 +548,7 @@
         (if (is-a? model <interface>) model
             (let ((trigger (and=> (parent o <on>) (compose car ast:trigger*))))
               (if (and trigger (ast:provides? trigger)) ((compose .port) trigger)
-                  ((compose car ast:provides-ports) model)))))))
+                  ((compose car ast:provides-port*) model)))))))
 
 (define-method (makreel:event-prefix (o <port>))
   o)
@@ -817,10 +799,10 @@
   (ast:variable* (.type o)))
 
 (define-method (makreel:provides-proc (o <component>))
-  (ast:provides-ports o))
+  (ast:provides-port* o))
 
 (define-method (makreel:provides-pair* (o <port>))
-  (map (cute make <port-pair> #:port o #:other <>) (ast:provides-ports o)))
+  (map (cute make <port-pair> #:port o #:other <>) (ast:provides-port* o)))
 
 (define-method (makreel:provides-reply (o <port-pair>))
   (let ((other (.other o)))
@@ -828,7 +810,7 @@
         other)))
 
 (define-method (makreel:provides-reply (o <port>))
-  (ast:provides-ports o))
+  (ast:provides-port* o))
 
 (define-method (makreel:provides-reset-reply (o <port-pair>))
   (let ((port (.port o))
@@ -873,12 +855,12 @@
       '()))
 
 (define-method (ast:provides-blocking? (o <component>))
-  (if (and (pair? (ast:requires-ports o))
-           (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) o))) (ast:provides-ports o)
+  (if (and (pair? (ast:requires-port* o))
+           (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) o))) (ast:provides-port* o)
       '()))
 
 (define-method (ast:requires-blocking? (o <port>))
-  (ast:requires-ports (parent o <model>)))
+  (ast:requires-port* (parent o <model>)))
 
 (define-method (ast:port-type-name (o <reply>)) ;; FIXME: return AST (interface/port) rather than string
   (let ((interface
@@ -887,7 +869,7 @@
                   (if (is-a? model <interface>) model
                       (let ((trigger (and=> (parent o <on>) (compose car ast:trigger*))))
                         (if (and trigger (ast:provides? trigger)) ((compose .type .port) trigger)
-                            ((compose .type car ast:provides-ports) model))))))))
+                            ((compose .type car ast:provides-port*) model))))))))
     (makreel:model-name interface)))
 
 (define-method (ast:port-type-name (o <assign>))

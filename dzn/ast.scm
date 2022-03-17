@@ -100,7 +100,7 @@
            ast:rescope
            ast:req-events
            ast:requires-port*
-           ast:required+async
+           ast:requires+async-port*
            ast:required-in-triggers
            ast:required-out-triggers
            ast:rescope
@@ -327,16 +327,19 @@
 (define-method (ast:injected-port* (o <trigger>))
   (ast:injected-port* (parent o <component-model>)))
 
-(define-method (ast:provides-port* (o <port>))
-  (ast:provides-port* (parent o <component-model>)))
-
 (define-method (ast:provides-port* (o <component-model>))
   (filter ast:provides? (ast:port* o)))
+
+(define-method (ast:provides-port* (o <port>))
+  (ast:provides-port* (parent o <component-model>)))
 
 (define-method (ast:requires-port* (o <component-model>))
   (filter ast:requires? (ast:port* o)))
 
-(define-method (ast:required+async (o <component-model>))
+(define-method (ast:requires-port* (o <port>))
+  (ast:requires-port* (parent o <component-model>)))
+
+(define-method (ast:requires+async-port* (o <component-model>))
   (append (ast:requires-port* o) (ast:async-port* o)))
 
 (define-method (ast:direction (o <port>))
