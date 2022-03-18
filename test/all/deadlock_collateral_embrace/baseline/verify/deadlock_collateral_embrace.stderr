@@ -1,0 +1,12 @@
+verify: itransaction: check: deadlock: ok
+verify: itransaction: check: livelock: ok
+verify: itransaction: check: deterministic: ok
+verify: iblock: check: deadlock: ok
+verify: iblock: check: livelock: ok
+verify: iblock: check: deterministic: ok
+verify: deadlock_collateral_embrace: check: deterministic: ok
+verify: deadlock_collateral_embrace: check: illegal: ok
+verify: deadlock_collateral_embrace: check: deadlock: fail
+error: deadlock in model deadlock_collateral_embrace
+verify: deadlock_collateral_embrace: check: livelock: ok
+verify: deadlock_collateral_embrace: check: compliance: skip

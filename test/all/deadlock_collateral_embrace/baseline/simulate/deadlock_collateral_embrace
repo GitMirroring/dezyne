@@ -1,0 +1,27 @@
+(header ((pt) itransaction provides) ((sut) deadlock_collateral_embrace component) ((rb) iblock requires) ((rt) itransaction requires))
+(state ((pt) (active . false)) ((sut)) ((rb)) ((rt) (active . false)))
+<external>.pt.request -> ...
+... -> sut.pt.request
+sut.rt.request -> ...
+... -> <external>.rt.request
+... <- <external>.rt.return
+sut.rt.return <- ...
+sut.rb.block -> ...
+... -> <external>.rb.block
+... <- <external>.rb.return
+sut.rb.return <- ...
+sut.rt.cancel -> ...
+... -> <external>.rt.cancel
+... <- <external>.rt.return
+sut.rt.return <- ...
+... <- sut.pt.return
+<external>.pt.return <- ...
+(state ((pt) (active . true)) ((sut)) ((rb)) ((rt) (active . false)))
+(trail "pt.request" "rt.request" "rt.return" "rb.block" "rb.return" "rt.cancel" "rt.return" "pt.return")
+test/all/deadlock_collateral_embrace/deadlock_collateral_embrace.dzn:52:3: error: non-compliance
+<non-compliance>
+(state ((pt) (active . true)) ((sut)) ((rb)) ((rt) (active . false)))
+test/all/deadlock_collateral_embrace/deadlock_collateral_embrace.dzn:52:3: error: non-compliance
+(trail "<non-compliance>")
+(labels "pt.cancel" "pt.request" "rt.complete")
+(eligible)

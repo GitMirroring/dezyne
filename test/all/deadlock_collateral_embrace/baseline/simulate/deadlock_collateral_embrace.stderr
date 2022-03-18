@@ -1,0 +1,3 @@
+test/all/deadlock_collateral_embrace/deadlock_collateral_embrace.dzn:52:3: error: non-compliance
+test/all/deadlock_collateral_embrace/deadlock_collateral_embrace.dzn:52:3: component can omit all of: pt.complete
+test/all/deadlock_collateral_embrace/deadlock_collateral_embrace.dzn:52:3: the interface promises inevitably: pt.complete 
