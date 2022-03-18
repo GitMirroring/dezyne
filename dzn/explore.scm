@@ -209,8 +209,7 @@ that PC has one more collaterally blocked coroutine on the same port."
       (and pc (and=> (.statement pc) ast:location))))
 
   (define (trace->string-trail trace)
-    (let* ((trail (map cdr (trace->trail trace)))
-           (trail (filter (negate (cute string-suffix? ".return" <>)) trail)))
+    (let ((trail (map cdr (trace->trail trace))))
       (define (strip-sut-prefix o)
         (if (string-prefix? "sut." o) (substring o 4) o))
       (map strip-sut-prefix trail)))
@@ -238,7 +237,7 @@ that PC has one more collaterally blocked coroutine on the same port."
 
   (apply append (hash-map->list (transition->dot pc->state-number) lts)))
 
-(define* (lts-remove lts size #:key ports? extended? actions? labels?
+(define* (lts-remove lts size #:key ports? extended? actions? labels? returns?
                      (self? #t))
   "Remove from the LTS transitions which only differ in terms of
 EXTENDED?, PORTS?, LABELS? or ACTIONS?  When SELF?, remove all self
@@ -275,11 +274,20 @@ transitions."
                (state (make <system-state> #:state-list state-list)))
           (clone pc #:state state))))
 
-  (define (hide-return-value pc)
+  (define (action-return? pc)
     (let ((statement (.statement pc)))
-      (if (is-a? statement <trigger-return>)
-          (clone pc #:statement (clone statement #:event.name "return"))
-          pc)))
+      (and (is-a? statement <trigger-return>)
+           (not (.port statement))
+           (ast:requires? (.instance pc)))))
+
+  (define (hide-return pc)
+    (let ((statement (.statement pc)))
+      (and (not (and (action-return? pc)
+                     (equal? (.event.name statement) "return")))
+           pc)))
+
+  (define (hide-returns trace)
+    (filter-map hide-return trace))
 
   (define hide-actions
     (match-lambda
@@ -287,8 +295,10 @@ transitions."
        (let* ((reversed (reverse trace))
               (trigger (any .trigger reversed))
               (action (find (compose (is? <action>) .statement) reversed))
-              (trace (filter (compose not (is? <action>) .statement) trace))
-              (trace (map hide-return-value trace))
+              (trace (filter (negate (disjoin
+                                      (compose (is? <action>) .statement)
+                                      action-return?))
+                             trace))
               (trace (if (ast:modeling? trigger)
                          (reverse (cons action (reverse trace)))
                          trace)))
@@ -322,6 +332,9 @@ transitions."
                    (traces
                     (if (or labels? (not actions?)) traces
                         (map hide-actions traces)))
+                   (traces
+                    (if (or labels? (not returns?)) traces
+                        (map hide-returns traces)))
                    (traces (if (not labels?) traces
                                (map (compose list car) traces))))
               (hash-set! result from (cons pc traces))
@@ -513,7 +526,7 @@ RTC-LTS->LTS."
 ;;;
 
 (define* (state-diagram root #:key format model queue-size
-                        ports? extended? actions? labels?)
+                        ports? extended? actions? labels? returns?)
   "Entry-point for dzn explore --state-diagram."
   (parameterize ((%debug? (> (dzn:debugity) 0))
                  (%exploring? #t)
@@ -529,6 +542,7 @@ RTC-LTS->LTS."
                               #:extended? extended?
                               #:actions? actions?
                               #:labels? labels?
+                              #:returns? returns?
                               #:self? (or extended? ports?)))
              (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
         (if (equal? format "json") (display

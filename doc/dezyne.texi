@@ -2714,7 +2714,7 @@ Display help on invoking @command{dzn graph}, and then exit.
 @item --hide=@var{hide}
 @itemx -H @var{hide}
 Generate a state diagram and hide @var{hide} from the transitions; one
-of @code{labels} (hide everything) or @code{actions}.
+of @code{labels} (hide everything), @code{actions} or @code{returns}.
 
 @item --import=@var{dir}
 @itemx -I @var{dir}

@@ -2,7 +2,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+# Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -32,12 +32,12 @@ dzn graph -b state test/all/state-diagram/state-diagram.dzn \
 diff -u test/all/state-diagram/baseline/default.dot\
     test/all/state-diagram/out/default.dot
 
-dzn graph -b state --remove=ports test/all/state-diagram/state-diagram.dzn \
+dzn graph -b state --remove=ports --hide=returns test/all/state-diagram/state-diagram.dzn \
     | tee test/all/state-diagram/out/remove-ports.dot
 diff -u test/all/state-diagram/baseline/remove-ports.dot\
     test/all/state-diagram/out/remove-ports.dot
 
-dzn graph -b state --remove=extended test/all/state-diagram/state-diagram.dzn \
+dzn graph -b state --remove=extended --hide=returns test/all/state-diagram/state-diagram.dzn \
     | tee test/all/state-diagram/out/remove-extended.dot
 diff -u test/all/state-diagram/baseline/remove-extended.dot\
     test/all/state-diagram/out/remove-extended.dot

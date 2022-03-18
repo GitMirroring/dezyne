@@ -64,7 +64,7 @@ Generate graph from a Dezyne model
                            {dependency,lts,state,system}
   -f, --format=FORMAT    produce graph in format FORMAT [dot] {aut,dot,json}
   -h, --help             display this help and exit
-  -H, --hide=HIDE        hide from transitions HIDE {labels,actions}
+  -H, --hide=HIDE        hide from transitions HIDE {labels,actions,returns}
                            implies --backend=state
   -I, --import=DIR+      add DIR to import path
   -L, --locations        include locations in graph
@@ -88,6 +88,7 @@ Generate graph from a Dezyne model
          (hide (command-line:get 'hide #f))
          (actions? (equal? hide "actions"))
          (labels? (equal? hide "labels"))
+         (returns? (equal? hide "returns"))
          (backend (option-ref options 'backend
                               (if (or hide remove) "state"
                                   "system")))
@@ -108,7 +109,7 @@ Generate graph from a Dezyne model
          (language (option-ref options 'format "dot"))
          (queue-size (string->number (command-line:get 'queue-size "3"))))
     (when (and hide
-               (not (member hide '("actions" "labels"))))
+               (not (member hide '("actions" "labels" "returns"))))
       (format (current-error-port) "graph: hide ~a ignored\n" hide))
     (when (and remove
                (not (member remove '("ports" "extended"))))
@@ -128,7 +129,8 @@ Generate graph from a Dezyne model
                                  #:ports? ports?
                                  #:extended? extended?
                                  #:actions? actions?
-                                 #:labels? labels?))
+                                 #:labels? labels?
+                                 #:returns? returns?))
           (else (code root
                       #:ast-> 'system-diagram
                       #:model model
