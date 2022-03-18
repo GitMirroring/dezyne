@@ -1,0 +1,18 @@
+import ibye.dzn;
+import ibye.dzn;
+import iblock.dzn;
+
+component embrace2
+{
+  provides ihello h;
+  requires ibye r;
+  requires iblock b;
+
+  behavior
+  {
+    bool idle = true;
+    on h.bye(): {idle = true; r.bye();}
+    [idle] on h.hello(): {r.hello(); b.block(); idle = false;}
+    [!idle] on r.world(): {idle = true; h.world();}
+  }
+}

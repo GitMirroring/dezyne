@@ -1,0 +1,13 @@
+import ihello.dzn;
+
+component proxy
+{
+  provides ihello h;
+  requires ihello r;
+  behavior
+  {
+    bool idle = true;
+    [idle] on h.hello(): {idle = false; r.hello();}
+    [!idle] on r.world(): {idle = true; h.world();}
+  }
+}

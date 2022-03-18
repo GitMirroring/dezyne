@@ -1,0 +1,15 @@
+import ihello.dzn;
+import ibye.dzn;
+import iblock.dzn;
+
+component embrace
+{
+  provides ihello h;
+  requires ibye r;
+  requires iblock b;
+
+  behavior
+  {
+    on h.hello(): {r.hello(); b.block(); r.bye();}
+  }
+}

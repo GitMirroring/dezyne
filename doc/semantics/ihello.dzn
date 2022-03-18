@@ -1,0 +1,11 @@
+interface ihello
+{
+  in void hello();
+  out void world();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}

@@ -1,0 +1,24 @@
+import collateral.dzn;
+import block.dzn;
+import proxy.dzn;
+
+component s
+{
+  provides ihello h;
+  requires ihello r;
+  requires ihello b;
+
+  system
+  {
+    h <=> top.h;
+    collateral top;
+
+    top.b <=> left.b;
+    block left;
+    left.r <=> b;
+
+    top.r <=> right.h;
+    proxy right;
+    right.r <=> r;
+  }
+}

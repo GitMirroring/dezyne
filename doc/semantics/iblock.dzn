@@ -1,0 +1,8 @@
+interface iblock
+{
+  in void block();
+  behavior
+  {
+    on block: {}
+  }
+}

@@ -1,0 +1,23 @@
+import embrace.dzn;
+import bye.dzn;
+import block.dzn;
+
+component s
+{
+  provides ihello h;
+  requires ibye pr;
+  requires ihello br;
+
+  system
+  {
+    h <=> top.h;
+    embrace top;
+    top.r <=> right.h;
+    bye right;
+    right.r <=> pr;
+
+    top.b <=> left.b;
+    block left;
+    left.r <=> br;
+  }
+}

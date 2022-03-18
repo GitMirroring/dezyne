@@ -1,0 +1,14 @@
+import ibye.dzn;
+
+component bye
+{
+  provides ibye h;
+  requires ibye r;
+  behavior
+  {
+    bool idle = true;
+    on h.bye(): {idle = true; r.bye();}
+    [idle] on h.hello(): {idle = false; r.hello();}
+    [!idle] on r.world(): {idle = true; h.world();}
+  }
+}

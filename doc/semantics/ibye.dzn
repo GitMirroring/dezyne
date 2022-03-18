@@ -1,0 +1,13 @@
+interface ibye
+{
+  in void bye();
+  in void hello();
+  out void world();
+  behavior
+  {
+    bool idle = true;
+    on bye: idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}

@@ -18,7 +18,7 @@
 
 @copying
 Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
-Copyright @copyright{} 2014, 2020, 2021 Rutger van Beusekom@*
+Copyright @copyright{} 2014, 2020, 2021, 2022 Rutger van Beusekom@*
 Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
 Copyright @copyright{} 2014, 2016, 2019, 2020, 2021, 2022 Jan Nieuwenhuizen@*
@@ -125,6 +125,7 @@ Execution Semantics
 * Indirect blocking out event::  Synchronize two triggers via block and release.
 * External multiple out events::  Delay caused by parallelism
 * Indirect blocking multiple external out events::  Block, delay, release.
+* Blocking in system context::  Collateral blocking
 
 Formal Verification
 
@@ -1202,6 +1203,7 @@ All out-events are handled this way recursively.
 * Indirect blocking out event::  Synchronize two triggers via block and release.
 * External multiple out events::  Delay caused by parallelism
 * Indirect blocking multiple external out events::  Block, delay, release.
+* Blocking in system context::  Collateral blocking
 @end menu
 
 @node Direct in event
@@ -1383,6 +1385,231 @@ the same in both cases.
 @end example
 
 @image{images/indirect_blocking_multiple_external_out,,,,.png}
+
+@node Blocking in system context
+@section Blocking in system context
+
+To describe the blockign keyword in system context, we use the
+interfaces @code{ihello} and @code{iblock} below.
+
+@example
+@verbatiminclude semantics/ihello.dzn
+@end example
+
+@example
+@verbatiminclude semantics/iblock.dzn
+@end example
+
+We have already seen some examples of the usage of the blocking keyword
+and its corresponding semantics.  Given the @code{block} component
+example below,
+
+@example
+@verbatiminclude semantics/block.dzn
+@end example
+
+we know that @code{b.block} performs everything it must for its run to
+completion up to but not including the @code{reply}.  The execution will
+pause after reaching the end of the imperative statement.  In order to
+continue to make progress we must allow @code{r.world} to perform
+@code{b.reply}.  This is depicted by the event sequence trace below.
+
+@example
+b      block      r
+.        :        .
+.        :        .
+.block   :        .
+.------->:        .
+.        :        .
+.        :hello   .
+.        :------->.
+.        :        .
+.        :  return.
+.        :<-------.
+.        :        .
+.        :   world.
+.        :<-------.
+.        :        .
+.        :world   .
+.        :<-      .
+.        :        .
+.  return:        .
+.<-------:        .
+.        :        .
+@end example
+
+Now also remember that in Dezyne each event may change the corresponding
+model state atomically.  In other words it must not matter to the
+observer of the event behavior in what order assignments to state
+variables are performed within the imperative statement.  Consider the
+following imperative statement examples:
+
+@example
+@{idle = false; r.hello(); b.block();@}
+@end example
+
+@example
+@{r.hello(); idle = false; b.block();@}
+@end example
+
+@example
+@{r.hello(); b.block(); idle = false;@}
+@end example
+
+All three are indistinguishable from an event sequence point of view,
+i.e. each performs an @code{r.hello} followed by a @code{b.block}.  The
+same must hold for the behavior of the component as a whole.  Even when
+the actions might block for a certain amount of time whereby other
+events must occur to either resolve the blocking situation or perform
+other actions.
+
+@subsection Collateral blocking
+A less obvious implication of blocking occurs when
+considering a blocking component @code{block} in its larger context.  We
+can demonstrate this implication by defining a client of component
+@code{block}.  For this we introduce component @code{collateral}.  This
+component implements one of the previous imperative statements.
+
+@example
+@verbatiminclude semantics/collateral.dzn
+@end example
+
+Here @code{b.block()} could block for a certain amount of time.  During
+the time that the @code{block} component awaits the occurrence of
+@code{r.world()} to perform the postponed @code{reply}, another event
+may also occur.  We can see this in more detail in the corresponding
+event sequence trace of the system below.
+
+@example
+ s.top         s.left          s.right             pr br
+   :              :                :               .  .
+   :block         :                :               .  .
+   :------------->:                :               .  .
+   :              :                :               .  .
+   :              :hello           :               .  .
+   :              :---------------------------------->.
+   :              :                :               .  .
+   :              :                :            return.
+   :              :<----------------------------------.
+   :              :                :               .  .
+   :              :                :          world.  .
+   :              :                :<--------------.  .
+   :              :                :               .  .
+   :              :                :world          .  .
+   :              :                :<-             .  .
+   :              :                :               .  .
+   :              :                :             world.
+   :              :<----------------------------------.
+   :              :                :               .  .
+   :              :world           :               .  .
+   :              :<-              :               .  .
+   :              :                :               .  .
+   :        return:                :               .  .
+   :<-------------:                :               .  .
+   :              :                :               .  .
+   :              :           world:               .  .
+   :<------------------------------:               .  .
+   :              :                :               .  .
+@end example
+
+Here we can see that @code{top.block} only returns after having received
+a @code{br.world} which performs the postponed @code{reply}. In the
+meantime @code{pr.world} has also occurred and is not allowed to finish
+its execution until the blocking condition in component @code{s.left}
+has been lifted.  An event not being allowed to finish its run to
+completion due to re-entering an already blocked component is called
+collateral blocking.  The diagram above is a cut out of the larger event
+sequence trace created by executing @code{h.hello,pr.world,br.world} on
+system component @code{s}.
+
+@example
+@verbatiminclude semantics/blocking.dzn
+@end example
+
+Next to component @code{collateral} and @code{block} the system @code{s}
+is comprised of component @code{proxy}.
+
+@example
+@verbatiminclude semantics/proxy.dzn
+@end example
+
+In Dezyne blocking and collateral blocking are implemented using
+coroutines.  Therefore the interleaving of event sequences is a form of
+cooperative multi-tasking.  As a result the behavior is deterministic as
+opposed to multi-threaded interleaving.
+
+Collateral blocking affects another aspect of the Dezyne semantics, the
+single threaded cancel guarantee.  In Dezyne each event atomically
+changes the corresponding model state.  In an interface with a guarded
+modeling event which is toggled from being enabled to not being enabled
+is referred to as the single threaded cancel guarantee.  We can see an
+example in the interface @code{ibye} below.
+
+@example
+@verbatiminclude semantics/ibye.dzn
+@end example
+
+The event sequence @code{hello;bye} prevents world from occurring. Given
+enough time between @code{hello} and @code{bye}, the @code{world} event
+will inevitably occur.
+
+A similar same thing will happen when a component like @code{embrace}
+enables a modeling event only then to block for an indeterminate amount
+of time after which it attempts to disable the modeling event once
+again.
+
+@example
+@verbatiminclude semantics/embrace.dzn
+@end example
+
+In this case, when the @code{r.world} event collaterally blocks as a
+result of @code{b.block} being blocked, the @code{r.bye} event will also
+collaterally block.  The deadly embrace between @code{r.world} and
+@code{r.bye} may be avoided if @code{r.world} does not occur during the
+time that @code{b.block} blocks.  Since we cannot be sure, we must
+assume this may happen and verification must report a deadlock as a
+result.  We can know it will never occur if @code{b.block} is not a
+@code{blocking} event itself, nor never performs any other
+@code{blocking} event.  In that case the the option
+@option{--no-blocking} on @code{dzn verify}, @code{simulate} and
+@code{graph} will disable this behavior.
+
+@subsection Event sequence in execution context
+
+Another implication of blocking is demonstrated by this second version
+@code{embrace2} of a deadly embrace.
+
+@example
+@verbatiminclude semantics/embrace2.dzn
+@end example
+
+Here we have an example of the semicolon that separates @code{b.block}
+and @code{r.bye} being moved up one level in the component hierarchy.
+Even though the @code{b.block} and the @code{r.bye} are no longer part
+of the atomic event sequence of @code{h.hello}, we can imagine a client
+of @code{embrace2} performing the sequence @code{h.hello; h.bye}.  This
+event sequence would lead to the same deadly embrace between
+@code{r.world} and @code{r.bye} in component @code{embrace2} as in
+component @code{embrace}.
+
+Producing the corresponding event sequence trace is left as an exercise
+to the reader.
+
+@subsection Resolving a deadly embrace
+
+Now that we understand how a deadly embrace may result from the use of
+the @code{blocking} keyword, we might also like to know how to resolve
+the situation when does occur.  In the case of our @code{collateral} and
+@code{embrace} we can simply reorder the two actions in the sequence
+@code{r.hello; b.block} to @code{b.block; r.hello}, this will side step
+the entire problem.  This will not work in every situation, upcoming
+releases will introduce language constructs to deal with those
+situations.
+
+Of course when the @code{blocking} keyword is not used anywhere within
+the system, the option @option{--no-blocking} is an effective solution,
+because it simply removes the blocking assumption from the semantic
+interpretation.
 
 @c *********************************************************************
 @node Formal Verification

@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -37,6 +38,17 @@ DOCUMENTATION_SEMANTICS =				\
  %D%/indirect_multiple_out1.dzn				\
  %D%/indirect_multiple_out2.dzn				\
  %D%/indirect_multiple_out3.dzn				\
- %D%/indirect_out.dzn
+ %D%/indirect_out.dzn					\
+ %D%/block.dzn						\
+ %D%/blocking.dzn					\
+ %D%/bye.dzn						\
+ %D%/cancel.dzn						\
+ %D%/collateral.dzn					\
+ %D%/embrace.dzn					\
+ %D%/embrace2.dzn					\
+ %D%/iblock.dzn						\
+ %D%/ibye.dzn						\
+ %D%/ihello.dzn						\
+ %D%/proxy.dzn
 
 EXTRA_DIST += $(DOCUMENTATION_SEMANTICS)
