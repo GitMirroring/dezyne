@@ -742,8 +742,7 @@ possibly after running RUN-SILENT and return them, or false."
       (_
        (when (not (eq? (switch-context pc) pc))
          (%debug "<eot> with switchable, non-rtc pc\n"))
-       (let* ((pc (clone pc #:status (make <end-of-trail>)))
-              (trace (cons pc (cdr pc+blocked-trace))))
+       (let ((trace (cons pc (cdr pc+blocked-trace))))
          (if (is-a? (%sut) <runtime:port>) (list trace)
              (check-provides-compliance pc event trace)))))))
 
@@ -1068,7 +1067,9 @@ status."
                      (blocked non-blocked (partition (compose pair? .blocked car)
                                                      valid-traces)))
                 (cond ((or (null? valid-traces)
-                           error-trace?)
+                           error-trace?
+                           (and (not event)
+                                (null? (.async pc))))
                        (end-report from-pcs list-of-traces
                                    #:deadlock-check? deadlock-check?
                                    #:interface-determinism-check?
