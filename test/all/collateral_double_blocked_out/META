@@ -1,6 +1,4 @@
 ;;; -*- scheme -*-
 ((skip ("c"
         "javascript"
-        "scheme"
-        "lts"
-        "simulate")))
+        "scheme")))
