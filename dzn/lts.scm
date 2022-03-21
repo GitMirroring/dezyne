@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2019, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -651,16 +651,25 @@ required to be non-deterministic."
   (label transition-label)
   (to transition-to set-transition-to!))
 
-(define* (generate-trace root nodes provides-in fout out #:key verbose?)
+(define* (generate-trace root nodes provides-ports provides-in fout out #:key verbose?)
 
   (define (allowed-end? node)
     (define (label-provides-in? label)
       (and (pair? provides-in)
            (member label provides-in)))
-    (let ((edges (node-succ node)))
-      (or (equal? (node-state node) (1- (vector-length nodes)))
-          (and (find (lambda (e) (label-provides-in? (edge-label e))) edges)
-               (not (find (lambda (e) (equal? "<ack>" (edge-label e))) edges))))))
+    (define (get-port label)
+      (car (string-split label #\.)))
+    (define (idle-node? node)
+      (let* ((labels (map edge-label (node-succ node)))
+             (labels (filter label-provides-in? labels))
+             (ports (map get-port labels))
+             (ports (delete-duplicates ports string=?)))
+       (= (length ports)
+          (length provides-ports))))
+    (or (equal? (node-state node) (1- (vector-length nodes)))
+        (and (idle-node? node)
+             (not (find (lambda (e) (equal? "<ack>" (edge-label e)))
+                        (node-succ node))))))
 
   (define (annotate)
     (let* ((frontier (map node-state
@@ -767,8 +776,8 @@ required to be non-deterministic."
            (nodes (lts->nodes lts #t))
            (nodes (remove-state-edges nodes))
            (root (car (lts-state lts))))
-      (generate-trace root nodes provides-in (string-append model ".trace") out
-                      #:verbose? verbose?))))
+      (generate-trace root nodes provides-ports provides-in
+                      (string-append model ".trace") out #:verbose? verbose?))))
 
 
 ;;;

@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
@@ -136,7 +136,7 @@ Generate exhaustive set of traces for Dezyne model
                      (is-a? model <interface>)
                      (or output ".")
                      model-name
-                     '()
+                     provided
                      provides-in
                      #:verbose? verbose?)))
     (when lts?
