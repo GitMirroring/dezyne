@@ -46,6 +46,7 @@
             (locations (single-char #\l))
             (model (single-char #\m) (value #t))
             (no-blocking (single-char #\B))
+            (no-compliance (single-char #\C))
             (no-deadlock (single-char #\D))
             (no-interface-determinism)
             (no-refusals (single-char #\R))
@@ -65,6 +66,7 @@ Usage: dzn simulate [OPTION]... [FILE]...
 Simulate a Dezyne model
 
   -B, --no-blocking      assume system without collateral blocking
+  -C, --no-compliance    skip the compliance check
   -D, --no-deadlock      skip the deadlock check
   -R, --no-refusals      skip the refusals check
   -f, --format=FORMAT    display trace in format FORMAT [event] {diagram,event,trace}
@@ -95,6 +97,7 @@ Simulate a Dezyne model
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
          (no-blocking? (option-ref options 'no-blocking #f))
+         (no-compliance? (option-ref options 'no-compliance #f))
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (no-interface-determinism?
           (option-ref options 'no-interface-determinism #f))
@@ -111,6 +114,7 @@ Simulate a Dezyne model
          (status (simulate ast
                            #:model-name model-name
                            #:cancel-guarantee? (not no-blocking?)
+                           #:compliance-check? (not no-compliance?)
                            #:deadlock-check? (not no-deadlock?)
                            #:interface-determinism-check?
                            (not no-interface-determinism?)

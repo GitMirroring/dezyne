@@ -2782,6 +2782,10 @@ When generating @code{mCRL2} code, assume a system without collateral
 blocking, i.e., @code{blocking} is not used or only at the top of the
 system.
 
+@item --no-compliance
+@itemx -C
+Do not run the compliance check.
+
 @item --no-deadlock
 @itemx -D
 Do not run the deadlock check.

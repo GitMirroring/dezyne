@@ -60,6 +60,9 @@
 ;;;
 ;;; Code:
 
+;; Should we report compliance errors?
+(define %compliance-check? (make-parameter #t))
+
 (define (zip trigger trace port-trace)
   "Merge PORT-TRACE into TRACE, the first part starting just before the
 component TRIGGER, the last part at the end.  Also synthesize
@@ -331,8 +334,10 @@ Return a list of traces, possibly marked with <compliance-error>."
               (parameterize ((%sut port-instance))
                 (display-trails port-traces)))
 
-            (let ((port-traces non-compliances
-                               (partition (negate first-non-match) port-traces)))
+            (let ((port-traces
+                   non-compliances
+                   (partition (if (not (%compliance-check?)) identity
+                                  (negate first-non-match)) port-traces)))
               (cond
                ((and (pair? trace)
                      (.status (car trace))
@@ -1179,15 +1184,16 @@ status."
     (%next-input read-input)
     (%pc)))
 
-(define* (simulate root #:key cancel-guarantee? deadlock-check?
-                   interface-determinism-check? refusals-check? model-name
-                   queue-size strict? trace trail internal? locations? state?
-                   verbose?)
+(define* (simulate root #:key cancel-guarantee? compliance-check?
+                   deadlock-check? interface-determinism-check? refusals-check?
+                   model-name queue-size strict? trace trail
+                   internal? locations? state? verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  When STRICT?, the trail must
 include all observable events.  When CANCEL-GUARANTEE?, check for
-collateral block.  When DEADLOCK-CHECK?, run check-deadlock at the end.
-When REFUSALS-CHECK?, run refusals-check at the end."
+collateral block.  When COMPLIANCE-CHECK?, report compliance errors.
+When DEADLOCK-CHECK?, run check-deadlock at the end.  When
+REFUSALS-CHECK?, run refusals-check at the end."
   (let* ((trail? trail)
          (trail (or trail
                     (and (not (isatty? (current-input-port)))
@@ -1201,6 +1207,7 @@ When REFUSALS-CHECK?, run refusals-check at the end."
       (close-port (current-input-port)))
     (simulate* root trail
                #:cancel-guarantee? cancel-guarantee?
+               #:compliance-check? compliance-check?
                #:deadlock-check? deadlock-check?
                #:interface-determinism-check? interface-determinism-check?
                #:refusals-check? refusals-check?
@@ -1213,15 +1220,16 @@ When REFUSALS-CHECK?, run refusals-check at the end."
                #:state? state?
                #:verbose? verbose?)))
 
-(define* (simulate* root trail #:key cancel-guarantee? deadlock-check?
-                    interface-determinism-check? refusals-check? model-name
-                    queue-size strict? trace internal? locations? state?
-                    verbose?)
+(define* (simulate* root trail #:key cancel-guarantee? compliance-check?
+                    deadlock-check? interface-determinism-check? refusals-check?
+                    model-name queue-size strict? trace
+                    internal? locations? state? verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  When STRICT?, the trail must include all observable
 events.When CANCEL-GUARANTEE?, check for collateral block.  When
-DEADLOCK-CHECK?, run check-deadlock at the end, when REFUSALS-CHECK?,
-run refusals-check at the end."
+COMPLIANCE-CHECK?, report compliance errors.  When DEADLOCK-CHECK?, run
+check-deadlock at the end, when REFUSALS-CHECK?, run refusals-check at
+the end."
   (let* ((root (filter-root root #:model-name model-name))
          (root (vm:normalize root)))
     (when (> (dzn:debugity) 1)
@@ -1231,6 +1239,7 @@ run refusals-check at the end."
       (parameterize ((%debug? (> (dzn:debugity) 0)))
         (simulate** sut instances trail
                     #:cancel-guarantee? cancel-guarantee?
+                    #:compliance-check? compliance-check?
                     #:deadlock-check? deadlock-check?
                     #:interface-determinism-check? interface-determinism-check?
                     #:refusals-check? refusals-check?
@@ -1243,13 +1252,15 @@ run refusals-check at the end."
                     #:verbose? verbose?)))))
 
 (define* (simulate** sut instances trail #:key cancel-guarantee?
-                     deadlock-check? interface-determinism-check?
-                     refusals-check? queue-size strict? trace internal?
-                     locations? state? verbose?)
+                     compliance-check? deadlock-check? interface-determinism-check?
+                     refusals-check?
+                     queue-size strict? trace
+                     internal? locations? state? verbose?)
   "Entry point for simulate library, much like simulate*.  This
 procedure allows reuse with the same root, SUT and INSTANCES, allowing
 memoizations to work."
   (parameterize ((%cancel-guarantee? cancel-guarantee?)
+                 (%compliance-check? compliance-check?)
                  (%instances instances)
                  (%queue-size (or queue-size 3))
                  (%strict? strict?)
