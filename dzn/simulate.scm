@@ -822,26 +822,21 @@ refusals-check.  Run final REPORT and return exit status."
            (event-traces-alist (event-traces-alist pcs))
            (eligible (eligible-labels event-traces-alist))
            (eligible (labels-filter-blocked-ports traces eligible))
-           (deadlock-traces (check-deadlock pc event-traces-alist event))
-           (status (and deadlock-traces (pair? (.blocked pc))
-                        (report traces
-                                #:internal? internal?
-                                #:locations? locations?
-                                #:trace trace
-                                #:verbose? verbose?)))
-           (status (cond ((is-a? status <error>)
-                          status)
-                         (deadlock-traces
-                          (report deadlock-traces
-                                  #:eligible eligible
-                                  #:internal? internal?
-                                  #:locations? locations?
-                                  #:trace trace
-                                  #:verbose? verbose?))
-                         (else
-                          #f))))
-      (and (is-a? status <error>)
-           status)))
+           (deadlock-traces (check-deadlock pc event-traces-alist event)))
+      (or (and deadlock-traces
+               (pair? (.blocked pc))
+               (report traces
+                       #:internal? internal?
+                       #:locations? locations?
+                       #:trace trace
+                       #:verbose? verbose?))
+          (and deadlock-traces
+               (report deadlock-traces
+                       #:eligible eligible
+                       #:internal? internal?
+                       #:locations? locations?
+                       #:trace trace
+                       #:verbose? verbose?)))))
 
   (define (interface-deadlock-report pcs traces)
     "Run deadlock check for all PCs per state."
