@@ -47,6 +47,7 @@
 
   #:export (normalize:state
             normalize:event
+            add-defer-end
             add-function-return
             add-explicit-temporaries
             add-reply-port
@@ -584,6 +585,48 @@ to prevent unintended shadowing
     ((? (is? <ast>)) (tree-map add-function-return o))
     (_ o)))
 
+(define* (add-defer-end o)
+  (define* (add-end o #:key (loc o))
+    (match o
+      (($ <compound>)
+       (clone o #:elements (add-end (ast:statement* o) #:loc o)))
+      ((statement ... t)
+       (append o (list (make <defer-end> #:location (.location (.parent t))))))
+      ((statement ...)
+       (append o (list (make <defer-end> #:location (.location loc)))))
+      (_ (let* ((location (.location o))
+                (end (make <defer-end>)))
+           (make <compound>
+             #:elements (cons o (list end))
+             #:location location))
+         )))
+  (match o
+    (($ <defer>)
+     (clone o #:statement (add-end (.statement o))))
+    (($ <blocking>)
+     (clone o #:statement (add-defer-end (.statement o))))
+    (($ <on>)
+     (clone o #:statement (add-defer-end (.statement o))))
+    (($ <guard>)
+     (clone o #:statement (add-defer-end (.statement o))))
+    (($ <compound>)
+     (let ((elements (map add-defer-end (ast:statement* o))))
+       (clone o #:elements elements)))
+    (($ <behavior>)
+     (clone o #:statement (add-defer-end (.statement o))
+            #:functions (add-defer-end (.functions o))))
+    (($ <component>)
+     (clone o #:behavior (add-defer-end (.behavior o))))
+    (($ <system>)
+     o)
+    (($ <foreign>)
+     o)
+    (($ <interface>)
+     o)
+    ((? (is? <ast>))
+     (tree-map add-defer-end o))
+    (_ o)))
+
 (define* (add-reply-port o #:optional (port #f) (block? #f)) ;; requires (= 1 (length (.triggers on)))
   (match o
     (($ <reply>) (let ((port? (.port o))) (if (and port? (not (string? port?))) o (clone o #:port.name (.name port)))))
@@ -793,6 +836,10 @@ to prevent unintended shadowing
      (clone o #:statement (add-explicit-temporaries (.statement o))))
     (($ <on>)
      (clone o #:statement (add-explicit-temporaries (.statement o))))
+    (($ <defer>)
+     (let ((deferred (clone o #:statement (add-explicit-temporaries (.statement o)))))
+       (if (is-a? (.parent o) <compound>) (list deferred)
+           deferred)))
     (($ <compound>)
      (if (ast:declarative? o)
          (clone o #:elements (map add-explicit-temporaries (ast:statement* o)))

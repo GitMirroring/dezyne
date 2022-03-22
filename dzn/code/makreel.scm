@@ -112,6 +112,9 @@
 ;;; Accessors.
 ;;;
 
+(define-method (makreel:behavior->defer-qout (o <behavior>))
+  (tree-collect (is? <defer>) o))
+
 (define-method (makreel:interface-reorder (o <behavior>))
   (if (parent o <interface>) o
       '()))
@@ -584,6 +587,9 @@
 (define-method (makreel:proc (o <function>))
   (makreel:proc-list o))
 
+(define-method (makreel:proc (o <defer>))
+  (makreel:proc-list (.statement o)))
+
 (define-method (makreel:proc-assign (o <assign>))
   (let ((expression (.expression o)))
     (if (or (is-a? expression <action>)
@@ -617,6 +623,9 @@
 (define-method (makreel:process-index (o <statement>))
   (mcrl2:process-identifier o))
 
+;; (define-method (makreel:process-index (o <defer>))
+;;   (mcrl2:process-identifier (.statement o)))
+
 (define-method (makreel:process-index (o <action>))
   (let ((parent (.parent o)))
     (mcrl2:process-identifier
@@ -633,12 +642,13 @@
     (ast:variable* behavior)))
 
 (define-method (makreel:locals- (o <ast>))
-  (if ((is? <behavior>) o) '()
+  (if (is-a? o <behavior>) '()
       (let* ((parent (.parent o)))
         (cond ((is-a? parent <compound>)
                (let ((pre (cdr (member o (reverse (ast:statement* parent)) ast:eq?))))
                  (append (filter (is? <variable>) pre) (makreel:locals parent))))
               ((is-a? o <function>) ((compose ast:formal* .signature) o))
+              ((is-a? parent <defer>) '())
               (else (makreel:locals parent))))))
 
 (define (makreel:locals o)
@@ -648,7 +658,9 @@
 
 (define-method (variables-in-scope (o <model>)) (members o))
 (define-method (variables-in-scope (o <ast>))
-  (let ((stack (and (parent o <function>) (clone (make <stack>) #:parent o))))
+  (let ((stack (and (parent o <function>)
+                    (not (parent (.parent o) <defer>))
+                    (clone (make <stack>) #:parent o))))
     (append (members o) (makreel:locals o) (if stack (list stack) '()))))
 
 (define-method (makreel:stack-parameters (o <ast>))
@@ -710,11 +722,11 @@
   (define (statement-continuation o)
     (let* ((p (.parent o))
            (cont (cdr (member o (ast:statement* p) (lambda (a b) (eq? (.node a) (.node b)))))))
-      (if (pair? cont)
-          (list (car cont))
+      (if (pair? cont) (list (car cont))
           (let ((grandp (.parent p)))
             (match grandp
               (($ <compound>) (statement-continuation p))
+              (($ <defer>) (list (parent o <behavior>)))
               ((? (is? <declarative>)) (list (parent o <behavior>)))
               (_  (makreel:continuation grandp)))))))
 
@@ -915,18 +927,20 @@
   (map .expression (filter (compose (is? <int>) .type) (ast:member* o))))
 
 (define-method (makreel:stack? (o <call>))
-  (or (and (parent o <function>) o) '()))
+  (or (and (not (parent o <defer>)) (parent o <function>) o) '()))
 
 (define-method (makreel:stack-empty? (o <call>))
-  (or (and (not (parent o <function>)) o) '()))
+  (or (and (or (parent o <defer>) (not (parent o <function>))) o) '()))
 
 (define-method (makreel:stack-destructor (o <ast>))
-  (let ((f (parent o <function>))
+  (let ((f (and (not (parent o <defer>))
+                (parent o <function>)))
         (locals (makreel:locals o))
         (return-value (if (and (or (is-a? o <assign>) (is-a? o <variable>))
                                (is-a? (.expression o) <call>)) (list (ast:type o))
                           '())))
-    (if f (append locals (list f) return-value)
+    (if f (append locals (list f)
+                  return-value)
         (append locals return-value))))
 
 (define-method (makreel:process-argument-stack? (o <call>))
@@ -952,6 +966,7 @@
                 (remove-otherwise)
                 makreel:tick-names
                 add-explicit-temporaries
+                add-defer-end
                 purge-data
                 ) ast)))
     (when (> (dzn:debugity) 1)

@@ -548,6 +548,8 @@
 (define-ast <defer> (<scope> <imperative>)
   (statement))
 
+(define-ast <defer-end> (<imperative>))
+
 (define-ast <action-or-call> (<named> <imperative> <unary>)
   (arguments #:init-form (make <arguments-node>)))
 

@@ -316,6 +316,9 @@
 (define-method (ast:provides? (o <trigger>))
   (and (.port.name o) ((compose ast:provides? .port) o)))
 
+(define-method (ast:provides? (o <action>))
+  (and (.port.name o) ((compose ast:provides? .port) o)))
+
 (define-method (ast:requires? (o <port>))
   (and (eq? (.direction o) 'requires) o))
 
