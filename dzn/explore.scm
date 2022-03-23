@@ -214,6 +214,7 @@ that PC has one more collaterally blocked coroutine on the same port."
                              (((a-to a-transition ...) (b-to b-transition ...))
                               (and (= a-to b-to)
                                    (equal? a-transition b-transition))))))
+           (to (map car to+transition))
            (transition (map cdr to+transition))
            (trigger-location (map trigger-location traces)))
       (if (null? to) (list (list from pc #f #f #f))
