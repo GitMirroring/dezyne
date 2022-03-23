@@ -165,16 +165,64 @@ that PC has one more collaterally blocked coroutine on the same port."
     (let loop ((pc pc))
       (let ((from (pc->state-number pc)))
         (unless (or (.status pc) (hash-ref lts from))
-          (let* ((pc (clone pc #:collateral-instance #f))
+          (let* ((from-pc pc)
+                 (pc (clone pc #:collateral-instance #f))
                  (traces (run-labels pc labels))
+                 (traces (map (cute append <> (list from-pc)) traces))
                  (pcs (map car traces)))
-            (hash-set! lts from (cons pc traces))
+            (hash-set! lts from (cons from-pc traces))
             (let* ((traces (filter (negate trace-done?) traces))
                    (pcs (map car traces)))
               (for-each loop pcs))))))
     (when (= (car state-number-count) 1)
       (hash-set! lts 1 (cons pc (list (list pc)))))
     (values lts pc->state-number state-number-count)))
+
+
+;;;
+;;; State diagram
+;;;
+(define (rtc-lts->state-diagram lts pc->state-number)
+  "Create a state-diagram from run-to-completion LTS, return
+
+   ((from from-label transition to trigger-location)
+    ...)
+"
+  (define (trigger-location trace)
+    (let ((pc (find (conjoin (compose (is? <on>) .statement)
+                             (disjoin (const (is-a? (%sut) <runtime:port>))
+                                      (compose (is? <runtime:component>) .instance)))
+                    (reverse trace))))
+      (and pc (and=> (.statement pc) ast:location))))
+
+  (define (trace->string-trail trace)
+    (let* ((trail (map cdr (trace->trail trace)))
+           (trail (filter (negate (cute string-suffix? ".return" <>)) trail)))
+      (define (strip-sut-prefix o)
+        (if (string-prefix? "sut." o) (substring o 4) o))
+      (map strip-sut-prefix trail)))
+
+  (define ((transition->dot pc->state-number) from pc+traces)
+    (let* ((pc traces (match pc+traces ((pc . traces) (values pc traces))))
+           (traces (filter (compose not .status car) traces))
+           (pcs (map car traces))
+           (transition (map trace->string-trail traces))
+           (to (map pc->state-number pcs))
+           (to+transition (delete-duplicates
+                           (map cons to transition)
+                           (match-lambda*
+                             (((a-to a-transition ...) (b-to b-transition ...))
+                              (and (= a-to b-to)
+                                   (equal? a-transition b-transition))))))
+           (transition (map cdr to+transition))
+           (trigger-location (map trigger-location traces)))
+      (if (null? to) (list (list from pc #f #f #f))
+          (map (cut list from pc <> <> <>)
+               transition
+               to
+               trigger-location))))
+
+  (apply append (hash-map->list (transition->dot pc->state-number) lts)))
 
 (define* (lts-remove lts size #:key ports? extended? actions? labels?
                      (self? #t))
@@ -207,12 +255,11 @@ transitions."
                #:variables variables)))))
 
   (define (remove-state pc)
-    (let ((pc (clone pc #:blocked '() #:collateral '() #:released '())))
-      (if (and (not ports?) (not extended?)) pc
-          (let* ((state-list (.state-list (.state pc)))
-                 (state-list (filter-map remove-extended state-list))
-                 (state (make <system-state> #:state-list state-list)))
-            (clone pc #:state state)))))
+    (if (and (not ports?) (not extended?)) pc
+        (let* ((state-list (.state-list (.state pc)))
+               (state-list (filter-map remove-extended state-list))
+               (state (make <system-state> #:state-list state-list)))
+          (clone pc #:state state))))
 
   (define (hide-return-value pc)
     (let ((statement (.statement pc)))
@@ -269,53 +316,6 @@ transitions."
     (values (fold merge (make-hash-table) (iota size 1))
             pc->state-number
             state-number-count)))
-
-
-;;;
-;;; State diagram
-;;;
-(define (rtc-lts->state-diagram lts pc->state-number)
-  "Create a state-diagram from run-to-completion LTS, return
-
-   ((from from-label transition to trigger-location)
-    ...)
-"
-  (define (trigger-location trace)
-    (let ((pc (find (conjoin (compose (is? <on>) .statement)
-                             (disjoin (const (is-a? (%sut) <runtime:port>))
-                                      (compose (is? <runtime:component>) .instance)))
-                    (reverse trace))))
-      (and pc (and=> (.statement pc) ast:location))))
-
-  (define (trace->string-trail trace)
-    (let* ((trail (map cdr (trace->trail trace)))
-           (trail (filter (negate (cute string-suffix? ".return" <>)) trail)))
-      (define (strip-sut-prefix o)
-        (if (string-prefix? "sut." o) (substring o 4) o))
-      (map strip-sut-prefix trail)))
-
-  (define ((transition->dot pc->state-number) from pc+traces)
-    (let* ((pc traces (match pc+traces ((pc . traces) (values pc traces))))
-           (traces (filter (compose not .status car) traces))
-           (pcs (map car traces))
-           (transition (map trace->string-trail traces))
-           (to (map pc->state-number pcs))
-           (to+transition (delete-duplicates
-                           (map cons to transition)
-                           (match-lambda*
-                             (((a-to a-transition ...) (b-to b-transition ...))
-                              (and (= a-to b-to)
-                                   (equal? a-transition b-transition))))))
-           (to (map car to+transition))
-           (transition (map cdr to+transition))
-           (trigger-location (map trigger-location traces)))
-      (if (null? to) (list (list from pc #f #f #f))
-          (map (cut list from pc <> <> <>)
-               transition
-               to
-               trigger-location))))
-
-  (apply append (hash-map->list (transition->dot pc->state-number) lts)))
 
 (define (state-diagram->dot graph start)
   "Return a diagram in DOT format from GRAPH produced by
