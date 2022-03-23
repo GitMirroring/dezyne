@@ -1,0 +1,67 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Assuming the scenario where pt.request(); pt.cancel(); is executed in
+// the same context.
+//
+// When rb.block() blocks in the deadlock_cancel_guarantee component,
+// and the modeling event behind the rt.complete() occurs, rt.complete()
+// will block collaterally.  The pt.cancel() must deadlock on port rt,
+// since it has not run to completion yet.
+//
+// Code:
+
+interface itransaction
+{
+  in void cancel();
+  in void request();
+  out void complete();
+  behavior
+  {
+    bool active = false;
+    [!active] on request: active = true;
+    [active] on cancel: active = false;
+    [active] on inevitable: {active = false; complete;}
+  }
+}
+
+interface iblock
+{
+  in void block();
+  behavior
+  {
+    on block: {} // this event blocks
+  }
+}
+
+component defer_collateral_blocking
+{
+  provides blocking itransaction pt;
+  requires blocking iblock rb;
+  requires itransaction rt;
+  behavior
+  {
+    bool active = false;
+    [!active] on pt.request(): {active = true; rt.request(); defer rb.block();}
+    [active] on pt.cancel(): {active = false; rt.cancel();}
+    [active] on rt.complete(): {active = false; pt.complete();}
+  }
+}
