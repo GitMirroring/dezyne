@@ -51,6 +51,7 @@
             flush-async-trace
             interactive?
             livelock?
+            mark-collateral-block
             mark-livelock-error
             run-async
             run-async-event
@@ -154,6 +155,80 @@ valid PCs that are executing an imperative statement."
                         (partition (compose ast:declarative? .statement)
                                    pcs)))
        (> (length imperative) 1)))))
+
+(define-method (mark-collateral-block trace)
+  "Mark ports of all requires actions in TRACE that may fire a modeling
+event with COLLATERAL-BLOCK?.  Mark TRACE as <blocked-error> when an
+action is performed on a collateral-blocked port."
+  (define (requires-action? pc)
+    (let ((statement (.statement pc)))
+      (and (is-a? statement <action>)
+           (not (ast:async? statement))
+           (ast:requires? statement))))
+
+  (define (modeling-traces pc port)
+    (let* ((r:port (runtime:port (%sut) port))
+           (instance (runtime:other-port r:port))
+           (ipc (clone pc #:trigger #f #:previous #f #:instance
+                       #f #:trail '() #:statement #f))
+           (modeling (modeling-names (.type port)))
+           (traces (parameterize ((%sut instance)
+                                  (%liveness? #t)
+                                  (%exploring? #f)
+                                  (%strict? #f))
+                     (append-map (cut run-to-completion ipc <>) modeling)))
+           (traces (filter (compose (negate (is-status? <error>)) car) traces)))
+      traces))
+
+  (define (mark-collateral blocked trace)
+    (let* ((pc (car trace))
+           (blocked (delete-duplicates blocked ast:eq?))
+           (ports (filter (compose pair?
+                                   (cute modeling-traces pc <>))
+                          blocked))
+           (r:ports (map (cute runtime:port (%sut) <>) ports))
+           (instances (map runtime:other-port r:ports)))
+      (if (null? instances) trace
+          (fold (lambda (instance trace)
+                  (rewrite-trace-head
+                   (cute set-collateral-blocked? <> instance)
+                   trace))
+                trace
+                instances))))
+
+  (let* ((rtc-trace (take-while
+                     (negate
+                      (conjoin
+                       (compose (cute eq? <> (%sut)) .instance)
+                       (compose (is? <initial-compound>) .statement)))
+                     trace))
+         (requires-ports (filter-map requires-action? rtc-trace)))
+
+    (let loop ((pcs (reverse rtc-trace)) (seen '()) (modeling '()) (blocked '()))
+      (if (null? pcs) (mark-collateral blocked trace)
+          (let* ((pc (car pcs))
+                 (port (requires-action? pc)))
+            (if (not port) (loop (cdr pcs) seen modeling blocked)
+                (let* ((modeling-names (modeling-names (.type port)))
+                       (modeling? (pair? modeling-names)))
+                  (cond
+                   ((and (find (cute ast:eq? port <>) blocked)
+                         (find (negate (cute ast:eq? port <>)) seen)
+                         (pair? (modeling-traces pc port)))
+                    (let* ((index (list-index (cute eq? <> pc) trace))
+                           (prefix (drop trace index))
+                           (port (.name port))
+                           (message (format #f "port `~a' is blocked" port))
+                           (pc (clone pc #:status (make <blocked-error>
+                                                    #:ast (.statement pc)
+                                                    #:message message))))
+                      (cons pc prefix)))
+                   (else
+                    (let ((block (filter (negate (cute ast:eq? <> port))
+                                         modeling)))
+                      (loop (cdr pcs) (cons port seen)
+                            (if modeling? (cons port modeling) modeling)
+                            (append block blocked))))))))))))
 
 (define (mark-determinism-error trace)
   "Truncate TRACE up to including the component <initial-compound> and
@@ -484,8 +559,7 @@ until RTC?."
   (%debug "run-silent... ~s\n" (name port))
   (let ((modeling-names (modeling-names port)))
     (if (null? modeling-names) '()
-        (let* ((previous (.previous pc))
-               (ipc (clone pc #:trigger #f #:previous #f #:instance #f #:trail '() #:statement #f))
+        (let* ((ipc (clone pc #:trigger #f #:previous #f #:instance #f #:trail '() #:statement #f))
                (traces (parameterize ((%sut port)
                                       (%exploring? #t)
                                       (%strict? #t))
@@ -518,6 +592,7 @@ until RTC?."
                      (ipc (clone pc #:trigger #f #:previous #f #:instance #f
                                  #:trail '() #:statement #f))
                      (traces (parameterize ((%sut port)
+                                            (%liveness? #f)
                                             (%exploring? #t)
                                             (%strict? #f))
                                (append-map (cut run-to-completion ipc <>) modeling-names)))

@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -164,11 +164,12 @@
 
 (define (mark-liveness? pc statement)
   (and (%liveness?)
-       (is-a? (.instance pc) <runtime:component>)
+       (or (is-a? (%sut) <runtime:port>)
+           (is-a? (.instance pc) <runtime:component>))
        (not (is-a? statement <compound>))
        (not (is-a? statement <illegal>))
        (ast:imperative? statement)
-       (let* ((pc (clone pc #:status (make <end-of-trail>))))
+       (let ((pc (clone pc #:status (make <end-of-trail>))))
          (list pc))))
 
 (define-method (step (pc <program-counter>) (o <guard>))

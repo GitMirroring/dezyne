@@ -72,7 +72,6 @@
             labels
             make-pc
             make-system-state
-            mark-collateral-block
             modeling-names
             out-event?
             pc->hash
@@ -638,36 +637,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (new-pc (switch-context pc)))
     (if (eq? new-pc pc) trace
         (cons new-pc trace))))
-
-(define-method (mark-collateral-block trace)
-  "Mark ports of all requires actions in TRACE that may fire a modeling
-event with COLLATERAL-BLOCK?."
-  (define (requires-action? pc)
-    (let ((statement (.statement pc)))
-      (and (is-a? statement <action>)
-           (not (ast:async? statement))
-           (ast:requires? statement))))
-
-  (let* ((rtc-trace (take-while
-                     (negate
-                      (conjoin
-                       (compose (cute eq? <> (%sut)) .instance)
-                       (compose (is? <initial-compound>) .statement)))
-                     trace))
-         (requires-ports (filter-map requires-action? rtc-trace))
-         (last-port (and (pair? requires-ports) (car requires-ports)))
-         (requires-ports (filter (negate (cute ast:eq? <> last-port)) requires-ports))
-         (requires-ports (delete-duplicates requires-ports ast:eq?))
-         (requires-ports (filter (compose pair? modeling-names .type) requires-ports))
-         (ports (map (cute runtime:port (%sut) <>) requires-ports))
-         (instances (map runtime:other-port ports)))
-    (if (null? instances) trace
-        (fold (lambda (instance trace)
-                (rewrite-trace-head
-                 (cute set-collateral-blocked? <> instance)
-                 trace))
-              trace
-              instances))))
 
 
 ;;;

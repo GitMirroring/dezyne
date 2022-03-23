@@ -484,4 +484,4 @@ p         hello_system.e                 hello_system.b         r
 (trail p.hello r.hello r.false p.return)
 (state ((p) (b . false)) ((sut e) (e . E:T)) ((sut b) (b . false)) ((r) (b . false)))
 (labels p.hello r.world)
-(eligible p.hello r.world)
+(eligible p.hello)
