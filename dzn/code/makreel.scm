@@ -1,10 +1,10 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -845,22 +845,6 @@
   (delete-duplicates (tree-collect-filter (is? <declarative>) (is? <trigger>) o)
                      (lambda (a b) (and (equal? (.port.name a) (.port.name b))
                                         (equal? (.event.name a) (.event.name b))))))
-
-(define-method (ast:blocking? (o <port>))
-  (if (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) (parent o <model>))) o ;; FIXME: specify per port
-      '()))
-
-(define-method (ast:blocking? (o <component>))
-  (if (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) (is? <blocking>) o)) o
-      '()))
-
-(define-method (ast:provides-blocking? (o <component>))
-  (if (and (pair? (ast:requires-port* o))
-           (pair? (tree-collect-filter (negate (disjoin (is? <imperative>) (is? <expression>) (is? <location>))) (is? <blocking>) o))) (ast:provides-port* o)
-      '()))
-
-(define-method (ast:requires-blocking? (o <port>))
-  (ast:requires-port* (parent o <model>)))
 
 (define-method (ast:port-type-name (o <reply>)) ;; FIXME: return AST (interface/port) rather than string
   (let ((interface
