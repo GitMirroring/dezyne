@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -185,7 +185,7 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
   ports <-- (port / &BEHAVIOR / &SYSTEM / &BRACE-CLOSE)#*
     port <-- port-direction port-qualifiers? compound-name# formals? port-name# SEMICOLON#
       port-direction <- provides / requires
-      port-qualifiers <-- (external / injected / &compound-name)*
+      port-qualifiers <-- (blocking-q / external / injected / &compound-name)*
       formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
         formal <-- (INOUT / IN / OUT)? type-name add-var#
 
@@ -268,6 +268,7 @@ unknown-identifier <-- identifier
 otherwise <-- OTHERWISE
 provides <-- PROVIDES
 requires <-- REQUIRES
+blocking-q <-- BLOCKING
 external <-- EXTERNAL
 injected <-- INJECTED
 

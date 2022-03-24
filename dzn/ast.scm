@@ -122,6 +122,7 @@
            ast:provides?
            ast:requires?
            ast:wildcard?
+           ast:blocking?
            ast:external?
            ast:injected?
            ast:type
@@ -306,6 +307,9 @@
 
 (define-method (ast:wildcard? (o <boolean>))
   #f)
+
+(define-method (ast:blocking? (o <port>))
+  (and (.blocking? o) o))
 
 (define-method (ast:external? (o <port>))
   (and (.external? o) o))

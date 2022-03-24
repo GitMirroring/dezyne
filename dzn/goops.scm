@@ -72,6 +72,7 @@
            .ast
            .behavior
            .bindings
+           .blocking?
            .column
            .direction
            .elements
@@ -428,6 +429,7 @@
 
 (define-ast <port> (<instance>)
   (direction)                           ; symbol 'provides / 'requires
+  (blocking?)
   (external?)
   (formals #:init-form (make <formals-node>))
   (injected?))

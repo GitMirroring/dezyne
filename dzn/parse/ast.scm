@@ -275,6 +275,7 @@
              #:name (helper name)
              #:type.name type
              #:direction direction
+             #:blocking? (and=> (assq 'blocking-q qualifiers) helper)
              #:external? (and=> (assq 'external qualifiers) helper)
              #:injected? (and=> (assq 'injected qualifiers) helper))))
 
@@ -289,11 +290,13 @@
              #:type.name type
              #:formals formals
              #:direction direction
+             #:blocking? (and=> (assq 'blocking-q qualifiers) helper)
              #:external? (and=> (assq 'external qualifiers) helper)
              #:injected? (and=> (assq 'injected qualifiers) helper))))
 
         (('provides) 'provides)
         (('requires) 'requires)
+        (('blocking-q) 'blocking)
         (('external) 'external)
         (('injected) 'injected)
 
