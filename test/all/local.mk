@@ -437,6 +437,7 @@ PARSER_TESTS =					\
  %D%/wf_blockingInblocking			\
  %D%/wf_blockingInInterface			\
  %D%/wf_blockingReply				\
+ %D%/wf_blocking_port				\
  %D%/wf_componentNeedsProvides			\
  %D%/wf_componentNeedsTrigger			\
  %D%/wf_coverageDuplicate			\
