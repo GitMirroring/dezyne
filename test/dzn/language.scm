@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -362,23 +362,23 @@
   (test-complete #:file-name "component-requires.dzn" #:line 13 #:column 11))
 
 (test-equal "component-requires requires"
-  '("external" "injected" "ihello")
+  '("blocking" "external" "injected" "ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 14 #:column 11))
 
 (test-equal "component-requires external"
-  '("injected" "ihello")
+  '("blocking" "injected" "ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 15 #:column 20))
 
 (test-equal "component-requires injected"
-  '("external" "ihello")
+  '("blocking" "external" "ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 16 #:column 20))
 
 (test-equal "component-requires external injected"
-  '("ihello")
+  '("blocking" "ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 17 #:column 29))
 
 (test-equal "component-requires injected external"
-  '("ihello")
+  '("blocking" "ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 18 #:column 29))
 
 (test-equal "component-empty"
@@ -510,7 +510,7 @@
   (test-complete #:file-name "enum.dzn" #:line 10 #:column 17))
 
 (test-equal "import requires"
-  '("external" "injected" "ihello" "ihello_enum" "ihello_int")
+  '("blocking" "external" "injected" "ihello" "ihello_enum" "ihello_int")
   (test-complete #:file-name "import.dzn" #:line 8 #:column 10
                  #:file-name->parse-tree file-name->parse-tree))
 

@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -550,9 +550,11 @@
             (complete:interface-names (context:parent context 'component)))
            (else
             (let* ((qualifiers (tree:port-qualifier* o))
+                   (blocking? (find (is? 'blocking-q) qualifiers))
                    (external? (find (is? 'external) qualifiers))
                    (injected? (find (is? 'injected) qualifiers)))
-              (append (if external? '() '("external"))
+              (append (if blocking? '() '("blocking"))
+                      (if external? '() '("external"))
                       (if injected? '() '("injected"))
                       (complete:interface-names (context:parent context 'component)))))))
     ((? (is? 'types-and-events))
