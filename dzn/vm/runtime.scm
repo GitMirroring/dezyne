@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -318,7 +318,7 @@
 
   (define (invert-direction p)
     (let ((direction (if (eq? (.direction p) 'requires) 'provides 'requires)))
-      (clone p #:direction direction #:external #f)))
+      (clone p #:direction direction #:external? #f)))
 
   (define (model-instances o)
     (let ((t (.type (.ast o))))

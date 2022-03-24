@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -81,7 +81,7 @@
            .event.name
            .events
            .expression
-           .external
+           .external?
            .field
            .fields
            .file-name
@@ -90,7 +90,7 @@
            .function.name
            .functions
            .ids
-           .injected
+           .injected?
            .instances
            .last?
            .left
@@ -428,9 +428,9 @@
 
 (define-ast <port> (<instance>)
   (direction)                           ; symbol 'provides / 'requires
-  (external)
+  (external?)
   (formals #:init-form (make <formals-node>))
-  (injected))
+  (injected?))
 
 (define-ast <trigger> (<scope> <locationed>)
   (port.name)

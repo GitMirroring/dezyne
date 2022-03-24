@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -275,8 +275,8 @@
              #:name (helper name)
              #:type.name type
              #:direction direction
-             #:external (and=> (assq 'external qualifiers) helper)
-             #:injected (and=> (assq 'injected qualifiers) helper))))
+             #:external? (and=> (assq 'external qualifiers) helper)
+             #:injected? (and=> (assq 'injected qualifiers) helper))))
 
         (('port direction ('port-qualifiers qualifiers ...) type formals name)
          (let* ((direction (helper direction))
@@ -289,8 +289,8 @@
              #:type.name type
              #:formals formals
              #:direction direction
-             #:external (and=> (assq 'external qualifiers) helper)
-             #:injected (and=> (assq 'injected qualifiers) helper))))
+             #:external? (and=> (assq 'external qualifiers) helper)
+             #:injected? (and=> (assq 'injected qualifiers) helper))))
 
         (('provides) 'provides)
         (('requires) 'requires)

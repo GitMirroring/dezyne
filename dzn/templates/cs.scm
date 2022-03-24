@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -61,7 +61,7 @@
 
 (define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
 (define-templates provided-port-init ast:provides-port*)
-(define-templates required-port-init (compose (cut filter (negate .injected) <>) ast:requires-port*))
+(define-templates required-port-init (compose (cut filter (negate .injected?) <>) ast:requires-port*))
 (define-templates required-port-meta ast:requires-port* newline-comma-infix)
 
 (define-templates method code:ons)

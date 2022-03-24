@@ -308,10 +308,10 @@
   #f)
 
 (define-method (ast:external? (o <port>))
-  (and (.external o) o))
+  (and (.external? o) o))
 
 (define-method (ast:injected? (o <port>))
-  (and (.injected o) o))
+  (and (.injected? o) o))
 
 (define-method (ast:other-direction (o <event>))
   (assoc-ref `((in . out)
@@ -859,7 +859,7 @@
                    (else (loop (cdr bindings)))))))))
 
 (define-method (ast:other-end-point-injected (system <system>) (o <port>))
-  ;; pre: (and (.injected o) (not "o is directly bound"))
+  ;; pre: (and (.injected? o) (not "o is directly bound"))
   (let loop ((bindings (ast:binding* system)))
     (and (pair? bindings)
          (let* ((binding (car bindings))
