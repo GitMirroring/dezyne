@@ -63,7 +63,6 @@
             makreel:unticked-dotted-name
             root->))
 
-(define %cancel-guarantee? (make-parameter #t))
 (define %id-alist (make-parameter #f))
 (define %model-name (make-parameter #f))
 (define %next-alist (make-parameter #f))
@@ -836,10 +835,12 @@
   o)
 
 (define-method (makreel:switch-context (o <action>))
-  (if (and (%cancel-guarantee?)
-           (parent o <component>)
-           (ast:requires? o) (not (ast:async? o))) o
-      '()))
+  (let* ((component (parent o <component>))
+         (blocking? (and component
+                         (ast:requires? o)
+                         (find ast:blocking? (ast:requires-port* component)))))
+    (if (or (not blocking?) (not (ast:blocking? o))) '()
+        o)))
 
 (define-method (ast:trigger* (o <model>)) ;; FIXME: maybe use ast:in-triggers
   (delete-duplicates (tree-collect-filter (is? <declarative>) (is? <trigger>) o)
@@ -965,12 +966,10 @@
 ;;; Entry points.
 ;;;
 (define (root-> o)
-  (let ((cancel-guarantee? (not (command-line:get 'no-blocking)))
-        (queue-size (or (%queue-size)
+  (let ((queue-size (or (%queue-size)
                         (command-line:get 'queue-size 3)))
         (init (command-line:get 'init)))
-    (parameterize ((%cancel-guarantee? cancel-guarantee?)
-                   (%queue-size queue-size)
+    (parameterize ((%queue-size queue-size)
                    (%id-alist '())
                    (%next-alist '()))
       (x:source o)

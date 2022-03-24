@@ -1,1 +1,1 @@
-(pending < 2) -> #.name switch_context . semantics_provides_unblocked (pending=pending+1,switch=#.name port) <> #.name switch_context . semantics_provides_unblocked (pending=2,switch=#.name port)
+#.name switch_context . semantics_provides_unblocked_switch_context (switch=#.name port)

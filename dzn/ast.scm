@@ -311,6 +311,9 @@
 (define-method (ast:blocking? (o <port>))
   (and (.blocking? o) o))
 
+(define-method (ast:blocking? (o <action>))
+  (and=> (.port o) ast:blocking?))
+
 (define-method (ast:external? (o <port>))
   (and (.external? o) o))
 

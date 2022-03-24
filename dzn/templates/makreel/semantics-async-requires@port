@@ -1,2 +1,3 @@
 #.name switch_context . semantics_async ()
 + sum a : #x:makreel:interface-name actions. #.name qout (#x:makreel:interface-name action (a)) . semantics_async ()
++ (!busy && pending != [] && head(pending) == #.name port) -> queue_empty . #.name collateral_block . #.name end . semantics_async (pending=tail(pending), busy=true)

@@ -1568,11 +1568,7 @@ collaterally block.  The deadly embrace between @code{r.world} and
 @code{r.bye} may be avoided if @code{r.world} does not occur during the
 time that @code{b.block} blocks.  Since we cannot be sure, we must
 assume this may happen and verification must report a deadlock as a
-result.  We can know it will never occur if @code{b.block} is not a
-@code{blocking} event itself, nor never performs any other
-@code{blocking} event.  In that case the the option
-@option{--no-blocking} on @code{dzn verify}, @code{simulate} and
-@code{graph} will disable this behavior.
+result.
 
 @subsection Event sequence in execution context
 
@@ -1605,11 +1601,6 @@ the situation when does occur.  In the case of our @code{collateral} and
 the entire problem.  This will not work in every situation, upcoming
 releases will introduce language constructs to deal with those
 situations.
-
-Of course when the @code{blocking} keyword is not used anywhere within
-the system, the option @option{--no-blocking} is an effective solution,
-because it simply removes the blocking assumption from the semantic
-interpretation.
 
 @c *********************************************************************
 @node Formal Verification
@@ -2638,12 +2629,6 @@ Generate a trivial main for @var{model}.  This ``generated main'' can
 execute an event trace read from stdin, and writes a code trace to
 stderr.  @xref{Getting Started}.
 
-@item --no-blocking
-@itemx -B
-When generating @code{mCRL2} code, assume a system without collateral
-blocking, i.e., @code{blocking} is not used or only at the top of the
-system.
-
 @item --output=@var{dir}
 @itemx -o @var{dir}
 Write output to directory @var{dir} (use @code{-} for standard output).
@@ -3246,12 +3231,6 @@ verification of all its @code{interface} models and behavioral
 @code{component} models.}.
 @c XXX TODO: reference to compositional quality/property
 @end quotation
-
-@item --no-blocking
-@itemx -B
-When generating @code{mCRL2} code, assume a system without collateral
-blocking, i.e., @code{blocking} is not used or only at the top of the
-system.
 
 @item --out=@var{format}
 @cindex Aldebaran

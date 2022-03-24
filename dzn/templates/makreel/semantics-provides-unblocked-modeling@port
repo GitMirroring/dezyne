@@ -1,1 +1,2 @@
-(#.name port != switch && switch != no_requires) -> sum e : #x:makreel:interface-name modeling. #.name internal (e) . semantics_provides_unblocked ()
+(#.name port != switch) -> sum e : #x:makreel:interface-name modeling. #.name internal (e) . semantics_provides_unblocked_switch_context (pending=pending <| #.name port)
++ (#.name port == switch) -> #.name switch_context . semantics_provides_unblocked ()
