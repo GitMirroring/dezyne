@@ -36,8 +36,7 @@
   #:use-module (dzn vm normalize)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
-  #:export (%cancel-guarantee?
-            %liveness?
+  #:export (%liveness?
             begin-step
             step))
 
@@ -46,9 +45,6 @@
 ;;; ’step’ implements single stepping the Dezyne vm.
 ;;;
 ;;; Code:
-
-;; Should we check for collateral block cancel guarantee?
-(define %cancel-guarantee? (make-parameter #t))
 
 ;; Are we running the "liveness" check?
 (define %liveness? (make-parameter #f))

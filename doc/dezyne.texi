@@ -2988,12 +2988,6 @@ Display locations in the trace, this implies @option{--format=@code{trace}}.
 Start simulating @var{model}.  The default is the most ``interesting''
 model.
 
-@item --no-blocking
-@itemx -B
-When generating @code{mCRL2} code, assume a system without collateral
-blocking, i.e., @code{blocking} is not used or only at the top of the
-system.
-
 @item --no-compliance
 @itemx -C
 Do not run the compliance check.

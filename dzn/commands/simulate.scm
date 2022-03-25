@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -45,7 +45,6 @@
             (internal (single-char #\i))
             (locations (single-char #\l))
             (model (single-char #\m) (value #t))
-            (no-blocking (single-char #\B))
             (no-compliance (single-char #\C))
             (no-deadlock (single-char #\D))
             (no-interface-determinism)
@@ -65,7 +64,6 @@
 Usage: dzn simulate [OPTION]... [FILE]...
 Simulate a Dezyne model
 
-  -B, --no-blocking      assume system without collateral blocking
   -C, --no-compliance    skip the compliance check
   -D, --no-deadlock      skip the deadlock check
   -R, --no-refusals      skip the refusals check
@@ -96,7 +94,6 @@ Simulate a Dezyne model
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name))
-         (no-blocking? (option-ref options 'no-blocking #f))
          (no-compliance? (option-ref options 'no-compliance #f))
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (no-interface-determinism?
@@ -113,7 +110,6 @@ Simulate a Dezyne model
          (trail (option-ref options 'trail #f))
          (status (simulate ast
                            #:model-name model-name
-                           #:cancel-guarantee? (not no-blocking?)
                            #:compliance-check? (not no-compliance?)
                            #:deadlock-check? (not no-deadlock?)
                            #:interface-determinism-check?
