@@ -224,7 +224,9 @@ action is performed on a collateral-blocked port."
                                                     #:message message))))
                       (cons pc prefix)))
                    (else
-                    (let ((block (filter (negate (cute ast:eq? <> port))
+                    (let ((block (filter (conjoin
+                                          (const (ast:blocking? port))
+                                          (negate (cute ast:eq? <> port)))
                                          modeling)))
                       (loop (cdr pcs) (cons port seen)
                             (if modeling? (cons port modeling) modeling)
