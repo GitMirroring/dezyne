@@ -85,9 +85,6 @@
    (if (.behavior o) (wfc (.behavior o))
        `(,(wfc-error o "interface must define a behavior")))))
 
-(define-method (wfc (o <component-model>)) ;; is-a <model>
-  (append-map wfc (ast:port* o)))
-
 (define-method (wfc (o <foreign>))
   (let* ((root (parent o <root>))
          (basename (ast:base-name root)))
