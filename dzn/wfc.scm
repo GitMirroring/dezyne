@@ -949,8 +949,9 @@
   (append-map binding-direction (ast:binding* o)))
 
 (define-method (binding-direction (o <binding>))
-  (let ((left (.left o))
-        (right (.right o)))
+  (let* ((o (ast:normalize o))
+         (left (.left o))
+         (right (.right o)))
     (cond ((and (ast:wildcard? (.port.name left))
                 (ast:wildcard? (.port.name right)))
            `(,(wfc-error o "cannot bind two wildcards")))
@@ -983,19 +984,11 @@
              ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right)))))
           ((and
             (.port left)
-            (ast:requires? (.port left))
             (.port right)
+            (ast:requires? (.port left))
             (ast:requires? (.port right))
-            (or (and
-                 (.instance.name left)
-                 (not (.instance.name right))
-                 (not (.external? (.port left)))
-                 (.external? (.port right)))
-                (and
-                 (not (.instance.name left))
-                 (.instance.name right)
-                 (.external? (.port left))
-                 (not (.external? (.port right))))))
+            (not (.external? (.port left)))
+            (.external? (.port right)))
            `(,(wfc-error o (format #f "cannot bind ~a port `~a' to ~a port `~a'"
                                    (or (.external? (.port left)) 'non-external) (.port.name left)
                                    (or (.external? (.port right)) 'non-external) (.port.name right)))
