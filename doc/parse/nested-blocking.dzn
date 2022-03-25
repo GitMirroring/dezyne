@@ -9,7 +9,7 @@ interface ihello
 
 component nested_blocking
 {
-  provides ihello p;
+  provides blocking ihello p;
   behavior
   {
     blocking on p.hello (): [true] blocking p.reply ();

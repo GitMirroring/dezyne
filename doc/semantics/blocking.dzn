@@ -4,7 +4,7 @@ import proxy.dzn;
 
 component s
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires ihello r;
   requires ihello b;
 

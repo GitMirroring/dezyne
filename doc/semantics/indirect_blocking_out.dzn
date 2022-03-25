@@ -23,7 +23,7 @@ interface I2
 
 component indirect_blocking_out
 {
-  provides I p;
+  provides blocking I p;
   requires I2 r;
   behavior
   {

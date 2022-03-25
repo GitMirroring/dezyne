@@ -12,7 +12,7 @@ interface ihello
 
 component parse_out_binding
 {
-  provides ihello p;
+  provides blocking ihello p;
   behavior
   {
     bool b = false;

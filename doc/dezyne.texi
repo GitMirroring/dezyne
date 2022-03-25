@@ -4460,7 +4460,7 @@ two end-points connecting two components.
 @example
 port      ::= ("provides" interface-type identifier ";")
               | ("requires" qualifier? interface-type identifier ";")
-qualifier ::= "external" | "injected";
+qualifier ::= "blocking" | "external" | "injected";
 @end example
 
 The keyword @code{provides} indicates that a component implements all
@@ -4473,15 +4473,26 @@ For example:
 
 @example
 @b{provides} ihello p;
+@b{provides} blocking ihello p;      // (1)
 @b{requires} ihello r;
-@b{requires} @b{external} itimer t;  // (1)
-@b{requires} @b{injected} ilogger l; // (2)
+@b{requires} blocking ihello r;      // (2)
+@b{requires} @b{external} itimer t;  // (3)
+@b{requires} @b{injected} ilogger l; // (4)
 @end example
 
-1) port to a component with a potential delay in its communication
+1) provides port which may potentially block.  The @code{blocking}
+qualifier must be used on a provides port when @code{blocking} is used
+in the component's behavior, or when the @code{blocking} qualifier is
+used on a @code{requires} port.
+
+2) requires port which may potentially block.  The @code{blocking}
+qualifier must be used on a requires port when the port it is bound to
+has a @code{blocking} qualifier.
+
+3) port to a component with a potential delay in its communication
 (@pxref{External})
 
-2) port to a shared resource (@pxref{Systems})
+4) port to a shared resource (@pxref{Systems})
 
 Furthermore a component receives its @code{trigger}s from its
 surroundings through its ports.  Note that a component @code{trigger} is

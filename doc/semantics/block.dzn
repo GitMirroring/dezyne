@@ -3,7 +3,7 @@ import ihello.dzn;
 
 component block
 {
-  provides iblock b;
+  provides blocking iblock b;
   requires ihello r;
   behavior
   {

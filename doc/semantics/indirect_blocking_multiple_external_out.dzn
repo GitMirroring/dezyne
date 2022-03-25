@@ -10,7 +10,7 @@ interface I
 
 component indirect_blocking_multiple_external_out
 {
-  provides I p;
+  provides blocking I p;
   requires external I r1;
   requires external I r2;
   behavior

@@ -21,7 +21,7 @@ interface runner
 
 component join
 {
-  provides starter ref;
+  provides blocking starter ref;
   requires runner one;
   requires runner two;
 

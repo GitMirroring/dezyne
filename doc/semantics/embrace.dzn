@@ -4,9 +4,9 @@ import iblock.dzn;
 
 component embrace
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires ibye r;
-  requires iblock b;
+  requires blocking iblock b;
 
   behavior
   {

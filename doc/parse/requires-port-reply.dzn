@@ -11,8 +11,8 @@ interface ihello
 
 component requires_port_repyl
 {
-  provides ihello p;
-  requires ihello r;
+  provides blocking ihello p;
+  requires blocking ihello r;
   behavior
   {
     blocking
