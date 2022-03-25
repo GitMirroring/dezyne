@@ -86,19 +86,22 @@
        `(,(wfc-error o "interface must define a behavior")))))
 
 (define-method (wfc (o <foreign>))
-  (let* ((root (parent o <root>))
-         (basename (ast:base-name root)))
-    (if (not (equal? (string-join (ast:full-name o) "_") basename)) '()
-        `(,(wfc-error
-            o
-            (format
-             #f
-             "foreign component cannot have the same name as its file: `~a'"
-             basename))))))
+  (append
+    (let* ((root (parent o <root>))
+           (basename (ast:base-name root)))
+      (if (not (equal? (string-join (ast:full-name o) "_") basename)) '()
+          `(,(wfc-error
+              o
+              (format
+              #f
+              "foreign component cannot have the same name as its file: `~a'"
+              basename)))))
+    (blocking-ports o)))
 
 (define-method (wfc (o <component>)) ;; is-a <component-model>
   (append
    (re-definition o)
+   (blocking-ports o)
    (if (> (length (ast:provides-port* o)) 0) '()
        `(,(wfc-error o "component with behavior must define a provides port")))
    (let ((port-errors (append-map wfc (ast:port* o)))
@@ -994,6 +997,15 @@
                                    (or (.external? (.port right)) 'non-external) (.port.name right)))
              ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
              ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right)))))
+          ((and
+            (.port left)
+            (.port right)
+            (not (.blocking? (.port left)))
+            (.blocking? (.port right)))
+           `(,(wfc-error o (format #f "cannot bind non-blocking port `~a' to blocking port `~a'"
+                                   (.port.name left) (.port.name right)))
+             ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
+             ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right)))))
           (else '()))))
 
 (define-method (binding-type (o <system>))
@@ -1014,6 +1026,18 @@
           ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
           ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right))))
         '())))
+
+(define-method (blocking-ports (o <component-model>))
+  (let ((non-blocking-provides? (find (negate .blocking?)
+                                      (ast:provides-port* o))))
+    (if (and (or (model-blocking? o)
+                 (any .blocking? (ast:requires-port* o)))
+             non-blocking-provides?)
+      `(,(wfc-error o "all provides ports should be defined as blocking")
+        ,(wfc-info non-blocking-provides?
+                   (format #f "non-blocking provides port `~a' define here"
+                           (.name non-blocking-provides?))))
+      '())))
 
 (define-method (double-bindings (o <system>))
   (append-map double-bindings (ast:binding* o)))
