@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,7 +32,7 @@ interface itransaction
     bool active = false;
     [!active] on request: active = true;
     [active] on cancel: active = false;
-    [active] on inevitable: {active = false; complete;}
+    [active] on optional: {active = false; complete;}
   }
 }
 

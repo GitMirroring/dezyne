@@ -1,1 +1,1 @@
-test/all/deadlock_collateral_embrace/deadlock_collateral_embrace.dzn:54:49: error: port `rt' is blocked
+test/all/deadlock_collateral_embrace/deadlock_collateral_embrace.dzn:55:49: error: port `rt' is blocked
