@@ -2,6 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -53,7 +54,7 @@ interface iworld
 
 component blocking_provides_state
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires iworld w;
 
   behavior

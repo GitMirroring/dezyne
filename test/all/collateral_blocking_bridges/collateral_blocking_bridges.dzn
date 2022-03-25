@@ -43,8 +43,8 @@ interface iworld
 
 component top_proxy
 {
-  provides iworld h;
-  requires iworld w;
+  provides blocking iworld h;
+  requires blocking iworld w;
 
   behavior
   {
@@ -56,10 +56,10 @@ component top_proxy
 
 component blocking_top
 {
-  provides ihello h;
-  requires iworld w;
+  provides blocking ihello h;
+  requires blocking iworld w;
 
-  requires ihello p;
+  requires blocking ihello p;
 
   behavior
   {
@@ -70,10 +70,10 @@ component blocking_top
 
 component blocking_middle
 {
-  provides ihello h;
-  requires iworld w;
+  provides blocking ihello h;
+  requires blocking iworld w;
 
-  requires ihello p;
+  requires blocking ihello p;
 
   behavior
   {
@@ -87,10 +87,10 @@ component blocking_middle
 
 component collateral_blocking_bridges
 {
-  provides ihello h;
-  requires iworld top_w;
-  requires iworld middle_w;
-  requires iworld bottom_w;
+  provides blocking ihello h;
+  requires blocking iworld top_w;
+  requires blocking iworld middle_w;
+  requires blocking iworld bottom_w;
   system
   {
     blocking_top top;
@@ -112,8 +112,8 @@ component collateral_blocking_bridges
 
 component blocking_bottom
 {
-  provides ihello h;
-  requires iworld w;
+  provides blocking ihello h;
+  requires blocking iworld w;
 
   behavior
   {

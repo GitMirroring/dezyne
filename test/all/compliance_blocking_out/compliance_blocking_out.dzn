@@ -2,6 +2,7 @@
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 // Commentary:
 //
 // When compliance is checked in the simulator, the return (and possibly
-// other provides out events) are missing: they follow on the releasing
+// other provides blocking out events) are missing: they follow on the releasing
 // event.  The simulator disables the compliance check for a blocking
 // context, which leads to failure to detect even the most basic
 // compliance problems.
@@ -42,7 +43,7 @@ interface ihello
 
 component compliance_blocking_out
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires iworld w;
   behavior
   {

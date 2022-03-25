@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,7 +32,7 @@ interface ihello
 
 component parse_out_binding
 {
-  provides ihello p;
+  provides blocking ihello p;
   behavior
   {
     bool b = true;

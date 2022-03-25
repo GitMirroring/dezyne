@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -48,7 +48,7 @@ interface iworld
 
 component blocking_local_state_diagram
 {
-  provides ihello p;
+  provides blocking ihello p;
   requires iworld r;
 
   behavior

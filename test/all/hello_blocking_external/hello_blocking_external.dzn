@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -43,7 +43,7 @@ interface iworld
 
 component hello_blocking_external
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires external iworld w;
   behavior
   {

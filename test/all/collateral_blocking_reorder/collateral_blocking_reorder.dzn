@@ -63,9 +63,9 @@ interface iworld
 }
 component proxy_block
 {
-  provides ihello p;
-  requires icruel r;
-  requires iworld e;
+  provides blocking ihello p;
+  requires blocking icruel r;
+  requires blocking iworld e;
 
   behavior
   {
@@ -81,8 +81,8 @@ component proxy_block
 
 component proxy_release
 {
-  provides iworld p;
-  requires iworld e;
+  provides blocking iworld p;
+  requires blocking iworld e;
 
   behavior
   {
@@ -94,8 +94,8 @@ component proxy_release
 
 component blocked
 {
-  provides icruel p;
-  requires iworld r;
+  provides blocking icruel p;
+  requires blocking iworld r;
 
   behavior
   {
@@ -107,9 +107,9 @@ component blocked
 
 component collateral_blocking_reorder
 {
-  provides ihello p;
-  requires iworld r;
-  requires iworld e;
+  provides blocking ihello p;
+  requires blocking iworld r;
+  requires blocking iworld e;
 
   system
   {

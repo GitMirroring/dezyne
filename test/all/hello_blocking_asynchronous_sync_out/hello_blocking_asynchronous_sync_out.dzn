@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -57,7 +58,7 @@ interface iworlda
 
 component hello_blocking_asynchronous_sync_out
 {
-  provides ihello p;
+  provides blocking ihello p;
   requires iworlda ra;
   requires iworlds rs;
 

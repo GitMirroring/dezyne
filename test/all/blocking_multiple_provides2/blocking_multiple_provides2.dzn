@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -49,8 +50,8 @@ interface iworld
 
 component double_hello_block
 {
-  provides ihello h_left;
-  provides ihello h_right;
+  provides blocking ihello h_left;
+  provides blocking ihello h_right;
   requires iworld w_left;
   requires iworld w_right;
 
@@ -66,8 +67,8 @@ component double_hello_block
 
 component blocking_multiple_provides2
 {
-  provides ihello h_left;
-  provides ihello h_right;
+  provides blocking ihello h_left;
+  provides blocking ihello h_right;
   requires iworld w_left;
   requires iworld w_right;
 

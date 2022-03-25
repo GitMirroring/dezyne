@@ -1,6 +1,6 @@
 (header ((p) I provides) ((sut) second_reply_blocking component) ((r) II requires))
 (state ((p)) ((sut) (busy . false)) ((r) (busy . false)))
-test/all/second_reply_blocking/second_reply_blocking.dzn:55:32: error: second-reply
+test/all/second_reply_blocking/second_reply_blocking.dzn:56:32: error: second-reply
 <external>.p.e -> ...
 ... -> sut.p.e
 sut.r.e -> ...
@@ -13,7 +13,7 @@ sut.<q> <- ...
 sut.r.cb <- ...
 <second-reply>
 (state ((p)) ((sut) (busy . true)) ((r) (busy . false)))
-test/all/second_reply_blocking/second_reply_blocking.dzn:55:32: error: second-reply
+test/all/second_reply_blocking/second_reply_blocking.dzn:56:32: error: second-reply
 (trail "p.e" "r.e" "r.return" "r.cb" "<second-reply>")
 (labels "p.e" "r.cb" "p.return")
 (eligible)

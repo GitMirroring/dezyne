@@ -34,8 +34,8 @@ interface ihello
 
 component compliance_blocking_multiple_provides
 {
-  provides ihello block;
-  provides ihello release;
+  provides blocking ihello block;
+  provides blocking ihello release;
 
   behavior
   {

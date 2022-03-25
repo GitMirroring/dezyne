@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -47,9 +48,9 @@ interface iworld
 
 component collateral_blocking_double_release
 {
-  provides ihello block0;
-  provides ihello block1;
-  provides ihello release;
+  provides blocking ihello block0;
+  provides blocking ihello block1;
+  provides blocking ihello release;
   requires iworld w;
 
   behaviour

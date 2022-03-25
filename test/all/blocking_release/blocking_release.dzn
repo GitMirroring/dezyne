@@ -46,8 +46,8 @@ interface iworld
 
 component blocking_release
 {
-  provides ihello block;
-  provides ihello release;
+  provides blocking ihello block;
+  provides blocking ihello release;
   requires iworld w;
 
   behavior

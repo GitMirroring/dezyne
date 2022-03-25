@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,10 +33,10 @@ interface ihello
 
 component compliance_blocking_double_release
 {
-  provides ihello block0;
-  provides ihello block1;
-  provides ihello release;
-  provides ihello dummy;
+  provides blocking ihello block0;
+  provides blocking ihello block1;
+  provides blocking ihello release;
+  provides blocking ihello dummy;
 
   behaviour
   {

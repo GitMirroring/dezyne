@@ -2,6 +2,7 @@
 //
 // Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -41,7 +42,7 @@ interface R
 
 component blocking_function_reply
 {
-  provides I p;
+  provides blocking I p;
   requires R r;
 
   behavior

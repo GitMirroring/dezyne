@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -62,9 +62,9 @@ interface iworlda
 
 component multiple_provides
 {
-  provides ihello left;
-  provides ihello right;
-  requires iworlds r;
+  provides blocking ihello left;
+  provides blocking ihello right;
+  requires blocking iworlds r;
 
   behavior
   {
@@ -90,7 +90,7 @@ component multiple_provides
 
 component block
 {
-  provides iworlds p;
+  provides blocking iworlds p;
   requires iworlda r;
 
   behavior
@@ -102,8 +102,8 @@ component block
 
 component blocking_multiple_provides
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
   requires iworlda r;
 
   system

@@ -48,7 +48,7 @@ interface iworld
 
 component hello_blocking_sync
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires iworld w;
 
   behavior

@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -48,9 +49,9 @@ interface iworld
 
 component fork
 {
-  provides ihello p;
-  requires ihello r_left;
-  requires ihello r_right;
+  provides blocking ihello p;
+  requires blocking ihello r_left;
+  requires blocking ihello r_right;
 
   behavior
   {
@@ -60,7 +61,7 @@ component fork
 
 component block
 {
-  provides ihello p;
+  provides blocking ihello p;
   requires iworld r;
 
   behavior
@@ -88,7 +89,7 @@ component resource
 
 component blocking_system_diamond
 {
-  provides ihello p;
+  provides blocking ihello p;
   requires iworld r_left;
   requires iworld r_right;
 

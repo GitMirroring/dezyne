@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -51,8 +51,8 @@ interface iworld
 
 component proxy_left
 {
-  provides ihello left;
-  requires ihello hello;
+  provides blocking ihello left;
+  requires blocking ihello hello;
 
   behavior
   {
@@ -62,8 +62,8 @@ component proxy_left
 
 component proxy_right
 {
-  provides ihello right;
-  requires ihello hello;
+  provides blocking ihello right;
+  requires blocking ihello hello;
 
   behavior
   {
@@ -73,10 +73,10 @@ component proxy_right
 
 component mux
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
 
-  requires ihello hello;
+  requires blocking ihello hello;
 
   behavior
   {
@@ -87,7 +87,7 @@ component mux
 
 component block
 {
-  provides ihello hello;
+  provides blocking ihello hello;
   requires iworld world;
 
   behavior
@@ -99,8 +99,8 @@ component block
 
 component collateral_blocking_multiple_provides
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
 
   requires iworld world;
 

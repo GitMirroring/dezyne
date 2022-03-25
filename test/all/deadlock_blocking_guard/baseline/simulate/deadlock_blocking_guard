@@ -10,10 +10,10 @@
 ... -> sut.pp.ia
 (state ((pp)) ((sut) (deadlock . true)))
 (trail "pp.ia")
-test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:38:3: error: deadlock
+test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:39:3: error: deadlock
 <deadlock>
 (state ((pp)) ((sut) (deadlock . true)))
-test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:38:3: error: deadlock
+test/all/deadlock_blocking_guard/deadlock_blocking_guard.dzn:39:3: error: deadlock
 (trail "<deadlock>")
 (labels "pp.ia")
 (eligible)

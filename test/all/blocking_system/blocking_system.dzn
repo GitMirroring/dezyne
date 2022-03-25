@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,9 +44,9 @@ interface I2
 
 component A
 {
-  provides I1 p;
-  requires I1 r1;
-  requires I2 r2;
+  provides blocking I1 p;
+  requires blocking I1 r1;
+  requires blocking I2 r2;
 
   behavior
   {
@@ -75,8 +76,8 @@ interface I3
 
 component Blocked
 {
-  provides I1 p;
-  requires I3 r;
+  provides blocking I1 p;
+  requires blocking I3 r;
 
   behavior
   {
@@ -87,9 +88,9 @@ component Blocked
 
 component blocking_system
 {
-  provides I1 p;
-  requires I2 r2;
-  requires I3 r3;
+  provides blocking I1 p;
+  requires blocking I2 r2;
+  requires blocking I3 r3;
 
   system
   {

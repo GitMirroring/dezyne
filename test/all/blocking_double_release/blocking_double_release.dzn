@@ -32,8 +32,8 @@ interface ihello
 
 component mux_left
 {
-  provides ihello left_block;
-  provides ihello left_release;
+  provides blocking ihello left_block;
+  provides blocking ihello left_release;
 
   behavior
   {
@@ -46,8 +46,8 @@ component mux_left
 
 component mux_right
 {
-  provides ihello right_block;
-  provides ihello right_release;
+  provides blocking ihello right_block;
+  provides blocking ihello right_release;
 
   behavior
   {
@@ -60,9 +60,9 @@ component mux_right
 
 component arbiter
 {
-  provides ihello h;
-  requires ihello left;
-  requires ihello right;
+  provides blocking ihello h;
+  requires blocking ihello left;
+  requires blocking ihello right;
   behavior
   {
     on h.hello(): {left.hello(); right.hello();}
@@ -71,9 +71,9 @@ component arbiter
 
 component blocking_double_release
 {
-  provides ihello block0;
-  provides ihello block1;
-  provides ihello release;
+  provides blocking ihello block0;
+  provides blocking ihello block1;
+  provides blocking ihello release;
 
   system
   {

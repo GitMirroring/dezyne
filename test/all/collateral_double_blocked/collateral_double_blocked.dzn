@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -47,9 +48,9 @@ interface iworld
 
 component collateral_double_blocked
 {
-  provides ihello left;
-  provides ihello middle;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello middle;
+  provides blocking ihello right;
   requires iworld r;
 
   behavior

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -29,14 +29,14 @@ import collateral_blocking_reorder.dzn;
 
 component multiple_parallel_blocking
 {
-  provides ihello pleft;
-  provides ihello pright;
+  provides blocking ihello pleft;
+  provides blocking ihello pright;
 
-  requires iworld rleft;
-  requires iworld eleft;
+  requires blocking iworld rleft;
+  requires blocking iworld eleft;
 
-  requires iworld rright;
-  requires iworld eright;
+  requires blocking iworld rright;
+  requires blocking iworld eright;
 
   system
   {

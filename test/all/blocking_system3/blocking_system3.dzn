@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -53,7 +54,7 @@ interface IAsync
 
 component Blocked
 {
-  provides IBlocked provided;
+  provides blocking IBlocked provided;
 
   requires IAsync required;
 
@@ -67,9 +68,9 @@ component Blocked
 
 component blocking_system3
 {
-  provides IBlocked port1;
-  provides IBlocked port2;
-  provides IBlocked port3;
+  provides blocking IBlocked port1;
+  provides blocking IBlocked port2;
+  provides blocking IBlocked port3;
 
   requires IAsync async1;
   requires IAsync async2;

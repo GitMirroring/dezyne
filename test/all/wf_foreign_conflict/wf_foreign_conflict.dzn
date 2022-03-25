@@ -43,8 +43,8 @@ interface iworld
 
 component hello
 {
-  provides ihello h;
-  requires iworld w;
+  provides blocking ihello h;
+  requires blocking iworld w;
 
   behavior
   {
@@ -54,12 +54,12 @@ component hello
 
 component wf_foreign_conflict
 {
-  provides iworld w;
+  provides blocking iworld w;
 }
 
 component hello_foreign
 {
-  provides ihello h;
+  provides blocking ihello h;
 
   system
     {

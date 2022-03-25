@@ -32,8 +32,8 @@ interface ihello
 
 component proxy
 {
-  provides ihello p;
-  requires ihello r;
+  provides blocking ihello p;
+  requires blocking ihello r;
   behavior
   {
     on p.hello(): r.hello();
@@ -42,8 +42,8 @@ component proxy
 
 component mux
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
 
   behavior
   {
@@ -56,8 +56,8 @@ component mux
 
 component blocking_multiple_provides0
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
   system
   {
     left <=> m.left;

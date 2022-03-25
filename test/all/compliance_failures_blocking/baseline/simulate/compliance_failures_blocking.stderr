@@ -1,2 +1,2 @@
-test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:39:3: error: non-compliance
-test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:41:17: component can omit return of trigger: left.hello
+test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:40:3: error: non-compliance
+test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:42:17: component can omit return of trigger: left.hello

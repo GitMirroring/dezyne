@@ -1,11 +1,11 @@
 (header ((left) ihello provides) ((right) ihello provides) ((sut) compliance_failures_blocking component))
 (state ((left)) ((right)) ((sut)))
-test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:39:3: error: non-compliance
+test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:40:3: error: non-compliance
 <external>.left.hello -> ...
 ... -> sut.left.hello
 <non-compliance>
 (state ((left)) ((right)) ((sut)))
-test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:39:3: error: non-compliance
+test/all/compliance_failures_blocking/compliance_failures_blocking.dzn:40:3: error: non-compliance
 (trail "left.hello" "<non-compliance>")
 (labels "left.hello" "right.hello")
 (eligible)

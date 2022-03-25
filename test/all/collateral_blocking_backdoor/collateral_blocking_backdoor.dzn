@@ -2,6 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -50,8 +51,8 @@ interface iworld
 
 component proxy
 {
-  provides ihello h;
-  requires ihello w;
+  provides blocking ihello h;
+  requires blocking ihello w;
 
   behavior
   {
@@ -61,9 +62,9 @@ component proxy
 
 component mux
 {
-  provides ihello left;
-  provides ihello right;
-  requires ihello w;
+  provides blocking ihello left;
+  provides blocking ihello right;
+  requires blocking ihello w;
 
   behavior
   {
@@ -74,8 +75,8 @@ component mux
 
 component blocked
 {
-  provides ihello h;
-  requires iworld w;
+  provides blocking ihello h;
+  requires blocking iworld w;
 
   behavior
   {
@@ -87,9 +88,9 @@ component blocked
 
 component collateral_blocking_backdoor
 {
-  provides ihello left;
-  provides ihello right;
-  requires iworld w;
+  provides blocking ihello left;
+  provides blocking ihello right;
+  requires blocking iworld w;
 
   system
   {

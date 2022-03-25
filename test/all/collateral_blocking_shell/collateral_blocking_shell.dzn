@@ -2,6 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -47,8 +48,8 @@ interface iworld
 
 component Top
 {
-  provides ihello h;
-  requires ihello w;
+  provides blocking ihello h;
+  requires blocking ihello w;
 
   behavior
   {
@@ -59,9 +60,9 @@ component Top
 
 component Blocked
 {
-  provides ihello h;
-  requires iworld w0;
-  requires iworld w1;
+  provides blocking ihello h;
+  requires blocking iworld w0;
+  requires blocking iworld w1;
 
   behavior
   {
@@ -77,9 +78,9 @@ component Blocked
 
 component collateral_blocking_shell
 {
-  provides ihello h;
-  requires iworld w0;
-  requires iworld w1;
+  provides blocking ihello h;
+  requires blocking iworld w0;
+  requires blocking iworld w1;
 
   system
   {

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -51,8 +51,8 @@ interface iasync
 
 component proxy
 {
-  provides ihello h;
-  requires ihello w;
+  provides blocking ihello h;
+  requires blocking ihello w;
 
   behavior
   {
@@ -62,9 +62,9 @@ component proxy
 
 component left_blocking_proxy
 {
-  provides ihello h;
-  requires iasync async;
-  requires ihello w;
+  provides blocking ihello h;
+  requires blocking iasync async;
+  requires blocking ihello w;
 
   behavior
   {
@@ -75,8 +75,8 @@ component left_blocking_proxy
 
 component right_blocking_proxy
 {
-  provides ihello h;
-  requires iasync async;
+  provides blocking ihello h;
+  requires blocking iasync async;
 
   behavior
   {
@@ -87,10 +87,10 @@ component right_blocking_proxy
 
 component mux
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
 
-  requires ihello hello;
+  requires blocking ihello hello;
   behavior
   {
     on left.hello(): hello.hello();
@@ -106,11 +106,11 @@ component mux
 
 component double_collateral_blocking_shell
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
 
-  requires iasync la;
-  requires iasync ra;
+  requires blocking iasync la;
+  requires blocking iasync ra;
 
   system
   {

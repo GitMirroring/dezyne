@@ -45,7 +45,7 @@ interface iworld
 
 component blocking_requires
 {
-  provides ihello p;
+  provides blocking ihello p;
   requires iworld r;
   behavior
   {

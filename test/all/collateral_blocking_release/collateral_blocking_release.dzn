@@ -27,8 +27,8 @@ import blocking_release.dzn;
 
 component proxy_left
 {
-  provides ihello left;
-  requires ihello hello;
+  provides blocking ihello left;
+  requires blocking ihello hello;
 
   behavior
   {
@@ -38,8 +38,8 @@ component proxy_left
 
 component proxy_right
 {
-  provides ihello right;
-  requires ihello hello;
+  provides blocking ihello right;
+  requires blocking ihello hello;
 
   behavior
   {
@@ -49,8 +49,8 @@ component proxy_right
 
 component collateral_blocking_release
 {
-  provides ihello block;
-  provides ihello release;
+  provides blocking ihello block;
+  provides blocking ihello release;
   requires iworld w;
 
   system

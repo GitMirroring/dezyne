@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -44,7 +45,7 @@ interface iworld
 
 component hello_blocking_multiple_out
 {
-  provides ihello p;
+  provides blocking ihello p;
   requires iworld r0;
   requires iworld r1;
 

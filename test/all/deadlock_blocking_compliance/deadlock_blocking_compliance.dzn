@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,7 +38,7 @@ interface ihello
 
 component deadlock_blocking_compliance
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires ihello w;
 
   behavior

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -46,7 +47,7 @@ interface II
 
 component deadlock_blocking_optional
 {
-  provides I p;
+  provides blocking I p;
   requires II r;
   behavior
   {

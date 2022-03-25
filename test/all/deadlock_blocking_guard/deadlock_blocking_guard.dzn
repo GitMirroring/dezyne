@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,7 +34,7 @@ interface Ideadlock_blocking_guard
 
 component deadlock_blocking_guard
 {
-  provides Ideadlock_blocking_guard pp;
+  provides blocking Ideadlock_blocking_guard pp;
 
   behavior
   {

@@ -1,12 +1,12 @@
 (header ((h) ihello provides) ((sut) compliance_blocking_out component) ((w) iworld requires))
 (state ((h)) ((sut) (blocked . false)) ((w)))
-test/all/compliance_blocking_out/compliance_blocking_out.dzn:50:43: error: non-compliance
+test/all/compliance_blocking_out/compliance_blocking_out.dzn:51:43: error: non-compliance
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.planet
 <non-compliance>
 (state ((h)) ((sut) (blocked . false)) ((w)))
-test/all/compliance_blocking_out/compliance_blocking_out.dzn:50:43: error: non-compliance
+test/all/compliance_blocking_out/compliance_blocking_out.dzn:51:43: error: non-compliance
 (trail "h.hello" "h.planet" "<non-compliance>")
 (labels "h.hello" "w.world")
 (eligible)

@@ -54,8 +54,8 @@ interface iblock
 
 component deadlock_cancel_guarantee
 {
-  provides itransaction pt;
-  requires iblock rb;
+  provides blocking itransaction pt;
+  requires blocking iblock rb;
   requires itransaction rt;
   behavior
   {

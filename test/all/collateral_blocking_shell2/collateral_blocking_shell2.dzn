@@ -2,7 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -57,8 +57,8 @@ extern Exception $int$;
 
 component Blocked
 {
-  provides ihello h;
-  requires iworld w;
+  provides blocking ihello h;
+  requires blocking iworld w;
 
   behavior
   {
@@ -81,8 +81,8 @@ component Blocked
 
 component Bottom
 {
-  provides iworld p;
-  requires iworld r;
+  provides blocking iworld p;
+  requires blocking iworld r;
 
   behavior
   {
@@ -96,8 +96,8 @@ component Bottom
 
 component collateral_blocking_shell2
 {
-  provides ihello h;
-  requires iworld w;
+  provides blocking ihello h;
+  requires blocking iworld w;
 
   system
   {

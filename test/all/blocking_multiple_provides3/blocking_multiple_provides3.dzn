@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -47,8 +47,8 @@ interface iworld
 
 component hello_skip_block
 {
-  provides ihello h_left;
-  provides ihello h_right;
+  provides blocking ihello h_left;
+  provides blocking ihello h_right;
   requires iworld r;
 
   behavior
@@ -72,8 +72,8 @@ component hello_skip_block
 
 component blocking_multiple_provides3
 {
-  provides ihello h_left;
-  provides ihello h_right;
+  provides blocking ihello h_left;
+  provides blocking ihello h_right;
   requires iworld r;
   system
   {

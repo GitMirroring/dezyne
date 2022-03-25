@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,8 +34,8 @@ interface ihello
 
 component compliance_failures_blocking
 {
-  provides ihello left;
-  provides ihello right;
+  provides blocking ihello left;
+  provides blocking ihello right;
 
   behavior
   {

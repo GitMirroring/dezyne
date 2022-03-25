@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -25,8 +25,8 @@ import collateral_blocking_reorder.dzn;
 
 component proxy
 {
-  provides iworld p;
-  requires iworld r;
+  provides blocking iworld p;
+  requires blocking iworld r;
 
   behavior
   {
@@ -38,13 +38,13 @@ component proxy
 
 component collateral_blocking_reorder_bypass
 {
-  provides ihello pleft;
+  provides blocking ihello pleft;
 
-  requires iworld rleft;
-  requires iworld eleft;
+  requires blocking iworld rleft;
+  requires blocking iworld eleft;
 
-  provides iworld pright;
-  requires iworld rright;
+  provides blocking iworld pright;
+  requires blocking iworld rright;
 
   system
   {

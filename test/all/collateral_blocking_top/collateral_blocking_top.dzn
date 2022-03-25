@@ -46,9 +46,9 @@ interface iworld
 
 component collateral
 {
-  provides ihello block;
-  provides ihello hello;
-  requires ihello w;
+  provides blocking ihello block;
+  provides blocking ihello hello;
+  requires blocking ihello w;
 
   behavior
   {
@@ -59,8 +59,8 @@ component collateral
 
 component hello_block
 {
-  provides ihello block;
-  requires iworld w;
+  provides blocking ihello block;
+  requires blocking iworld w;
 
   behavior
   {
@@ -72,9 +72,9 @@ component hello_block
 
 component collateral_blocking_top
 {
-  provides ihello block;
-  provides ihello hello;
-  requires iworld w;
+  provides blocking ihello block;
+  provides blocking ihello hello;
+  requires blocking iworld w;
 
   system
   {

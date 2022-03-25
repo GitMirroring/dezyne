@@ -1,2 +1,2 @@
-test/all/second_reply_blocking/second_reply_blocking.dzn:55:32: error: second-reply
-test/all/second_reply_blocking/second_reply_blocking.dzn:55:21: info: reply previously set here
+test/all/second_reply_blocking/second_reply_blocking.dzn:56:32: error: second-reply
+test/all/second_reply_blocking/second_reply_blocking.dzn:56:21: info: reply previously set here
