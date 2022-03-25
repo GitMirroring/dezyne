@@ -62,7 +62,9 @@ NEWS
     + In non-toplevel components,
     + In a component with multiple provides ports, but see the
       `Blocking' section in the manual for caveats.
-  - Using unobservably non-determinism in interfaces is no longer
+    + A new `blocking' qualifier for ports must be used if a port can
+      block, or block collateraly.
+  - Using unobservable non-determinism in interfaces is no longer
     supported.
   - An action or function call can now also be used in a return
     expression ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/67][#67]]).  Note that recursive functions still cannot be
@@ -74,8 +76,7 @@ NEWS
     provides ports.
   - The verifier now detects possible deadlock errors due to a requires
     action blocking collaterally, which could happen when a component
-    deeper in the system hierarchy uses blocking.  This behavior can be
-    disabled by using the new `-B,--no-blocking' option.
+    deeper in the system hierarchy uses blocking.
   - The option `--no-interface-determinism' has been removed for `dzn
     verify'.
 ** Simulation
@@ -86,14 +87,16 @@ NEWS
     + The simulator does not exit when supplying empty input.
   - The simulator now detects possible deadlock errors due to a requires
     action blocking collaterally, which could happen when a component
-    deeper in the system hierarchy uses blocking.  This behavior can be
-    disabled by using the new `-B,--no-blocking' option.
-  - The simultor now supports the new `-C,--no-compliance' option to
-    disable the compliance check.
+    deeper in the system hierarchy uses blocking.
 ** Code
   - The C++ and C# code generators and runtime now fully support
     collaterally blocking components.
+** Views
+  - Returns are no longer removed from the state-diagram.  Using the new
+    `--hide=returns' (or `--hide=actions') now removes void action
+    returns.
 ** Documentation
+  - Blocking has been updated and extended.
   - A new section on foreign components was added.
 ** Noteworthy bug fixes
   - Using the construct `provides external' (which has no semantics) no
