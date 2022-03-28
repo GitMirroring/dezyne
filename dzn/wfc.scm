@@ -876,7 +876,8 @@
          (event (and (not unblock?) (.event trigger)))
          (event-type (and event (ast:type event)))
          (reply-type (ast:type o)))
-    (cond ((and (not (%model-blocking?)) port (not (equal? (.port.name o) (.port.name trigger))))
+    (cond ((and (not (%model-blocking?)) port (ast:provides? trigger)
+                (not (equal? (.port.name o) (.port.name trigger))))
            `(,(wfc-error o (format #f "port `~a' does not match with trigger port `~a'"
                                    (.port.name o) (.port.name trigger)))))
           ((and (not unblock?) (not event)) '()) ; already covered in trigger check
@@ -888,9 +889,6 @@
                                        (type-name reply-type)))
                  ,(wfc-info event "event defined here"))
                '()))
-          ((not (%model-blocking?))     ; also covers interfaces
-           `(,(wfc-error o (format #f "cannot use reply on requires out-trigger `~a'" (.name event)))
-             ,(wfc-info event (format #f "event `~a' defined here" (.name event)))))
           (else (wfc-reply-expression o port)))))
 
 (define-method (action (o <action>))

@@ -477,7 +477,6 @@ PARSER_TESTS =					\
  %D%/wf_parameterDataType			\
  %D%/wf_replyFunctionExpression			\
  %D%/wf_replyFunctionMultiplePort		\
- %D%/wf_replyOnOutEvent				\
  %D%/wf_replyOnOutEventMultiplePort		\
  %D%/wf_replyOnPort				\
  %D%/wf_replyOnType				\
