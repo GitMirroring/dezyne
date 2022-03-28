@@ -1,2 +1,2 @@
-sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name collateral_block . #.name end . (queue_empty . semantics + semantics_async(blocking={},released=[],reply=replies(#x:semantics-provides-reply-init),port=no_port,pending=false))
-+ #.name collateral_block . #.name end . (queue_empty . semantics + semantics_async(blocking={},released=[],reply=replies(#x:semantics-provides-reply-init),port=no_port,pending=false))
+sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name collateral_block . #.name end . (queue_empty . semantics + semantics_async(blocking={},released=[],reply=replies(#x:semantics-provides-reply-init),port=no_port))
++ #.name collateral_block . #.name end . (queue_empty . semantics + semantics_async(blocking={},released=[],reply=replies(#x:semantics-provides-reply-init),port=no_port))

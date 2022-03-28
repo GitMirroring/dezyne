@@ -183,7 +183,7 @@ semantics_provides_skip_blocked(released: List(provides_ports), reply: reply_val
 
 semantics_provides_blocked(rtc: provides_ports, blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
 = (blocking == {} && released == []) -> (async_not_pending . semantics
-                                       +async_pending . (semantics_async_allow_ack(port=no_port, pending=true)
+                                       +async_pending . (semantics_async_allow_ack(port=no_port)
                                                         +semantics_provides))
  + #x:makreel:model-name end
  . ((released == []) -> queue_empty . semantics_blocked_rtc() <> queue_empty . semantics_reply()
@@ -206,20 +206,20 @@ semantics_blocked_rtc(blocking: Set(provides_ports),released: List(provides_port
 + (blocking != {}) ->
  (#x:semantics-blocked-rtc-provides
   #x:semantics-blocked-rtc-requires
-  + async_pending . semantics_async_allow_ack(port=no_port, pending=true))
+  + async_pending . semantics_async_allow_ack(port=no_port))
  ;
 
-semantics_async(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports, pending : Bool)
+semantics_async(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports)
  = #x:makreel:model-name end . (queue_empty . (async_not_pending . (no_port_is(port) -> semantics #x:semantics-requires-flush)
-                                              +async_pending . (no_port_is(port) -> semantics_async_allow_ack(pending=true) #x:semantics-async-flush))
-                               +queue_not_empty . (async_not_pending . semantics_async (pending=false)
-                                                  +async_pending . semantics_async(pending=true)))
+                                              +async_pending . (no_port_is(port) -> semantics_async_allow_ack() #x:semantics-async-flush))
+                               +queue_not_empty . (async_not_pending . semantics_async ()
+                                                  +async_pending . semantics_async()))
 #x:semantics-async
 #x:semantics-async-qout
 #x:semantics-async-requires
  ;
 
-semantics_async_allow_ack(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports, pending : Bool)
+semantics_async_allow_ack(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports)
 = #x:semantics-async-allow-ack #x:semantics-no-async
  ;
 
