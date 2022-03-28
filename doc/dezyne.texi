@@ -390,8 +390,8 @@ The Dezyne language has formal semantics expressed in
 Mathematics and Computer Science of the Eindhoven University of
 Technology (@url{https://tue.nl,TUE}).  Dezyne requires that every model
 is finite, deterministic and free of deadlocks, livelocks, and contract
-violations.  This achieved by means of the language itself as well as
-builtin verification through model checking.  This allows the
+violations.  This is achieved by means of the language itself as well as
+by builtin verification through model checking.  This allows the
 construction of complex systems by assembling independently verified
 components.
 
