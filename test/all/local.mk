@@ -177,6 +177,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system_diamond			\
  %D%/blocking_shell				\
  %D%/calling_context				\
+ %D%/cancel_guarantee				\
  %D%/collateral_blocking_async			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
