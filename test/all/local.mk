@@ -263,7 +263,7 @@ REGRESSION_TESTS =				\
  %D%/function_out_state				\
  %D%/function_reply_early_return		\
  %D%/guard_expressions				\
- %D%/hello_blocking_sync			\
+ %D%/hello_sync_out_reply			\
  %D%/hello_blocking_multiple_out		\
  %D%/hello_blocking_asynchronous_sync_out	\
  %D%/hellocheckcompbindings			\
