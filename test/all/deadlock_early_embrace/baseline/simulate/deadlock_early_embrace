@@ -1,0 +1,16 @@
+(header ((h) ihello provides) ((sut) deadlock_early_embrace component) ((b) iblock requires) ((r) ihello requires))
+(state ((h)) ((sut)) ((b)) ((r)))
+test/all/deadlock_early_embrace/deadlock_early_embrace.dzn:54:31: error: port `r' is blocked
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.b.hello -> ...
+... -> <external>.b.hello
+... <- <external>.b.return
+sut.b.return <- ...
+sut.r.hello -> ...
+<deadlock>
+(state ((h)) ((sut)) ((b)) ((r)))
+test/all/deadlock_early_embrace/deadlock_early_embrace.dzn:54:31: error: port `r' is blocked
+(trail "h.hello" "b.hello" "b.return" "r.hello" "<deadlock>")
+(labels "h.hello" "r.world")
+(eligible)

@@ -1,0 +1,5 @@
+model: deadlock_early_embrace
+h.hello
+b.hello
+b.return
+<deadlock>

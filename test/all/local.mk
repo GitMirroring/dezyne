@@ -133,6 +133,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_cancel_guarantee			\
  %D%/deadlock_collateral_embrace		\
  %D%/deadlock_component1			\
+ %D%/deadlock_early_embrace			\
  %D%/deadlock_interface1			\
  %D%/determinism_async				\
  %D%/determinism_deadlock			\

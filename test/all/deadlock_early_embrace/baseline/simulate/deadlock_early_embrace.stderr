@@ -1,0 +1,1 @@
+test/all/deadlock_early_embrace/deadlock_early_embrace.dzn:54:31: error: port `r' is blocked
