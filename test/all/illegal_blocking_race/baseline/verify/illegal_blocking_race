@@ -1,0 +1,10 @@
+model: illegal_blocking_race
+pt.request
+rt.request
+rt.return
+rb.block
+rt.complete
+rb.return
+rt.cancel
+rt.return
+<illegal>

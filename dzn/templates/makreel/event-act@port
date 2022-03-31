@@ -12,5 +12,3 @@
 #x:event-act-provides #x:event-act-requires
 #x:event-prefix switch_context;
 #x:event-prefix switch_context';
-#x:event-prefix collateral_block;
-#x:event-prefix collateral_block';

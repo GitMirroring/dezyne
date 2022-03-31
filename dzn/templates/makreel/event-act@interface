@@ -18,4 +18,3 @@
 #x:makreel:model-name state #x:global-state-type;
 #x:makreel:model-name state' #x:global-state-type;
 #x:makreel:model-name flush;
-#x:makreel:model-name collateral_block;

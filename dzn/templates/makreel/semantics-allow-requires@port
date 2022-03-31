@@ -4,4 +4,3 @@
  , #.name end
  , #.name qout'
  , #.name switch_context'
- , #.name collateral_block

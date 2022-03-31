@@ -1,0 +1,1 @@
+test/all/blocking_queuefull/blocking_queuefull.dzn:33:20: error: queue-full in component "blocking_queuefull"

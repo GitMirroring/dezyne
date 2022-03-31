@@ -6,4 +6,3 @@
  , #.name end
  , #.name flush
  , #.name queue_full
- , #.name collateral_block

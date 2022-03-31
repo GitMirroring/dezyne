@@ -1,8 +1,8 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -228,4 +228,3 @@
 (define-templates provides-comm ast:provides-port* newline-comma-infix)
 (define-templates provides-allow ast:provides-port* newline-comma-prefix)
 (define-templates provides-rename ast:provides-port* newline-comma-infix)
-(define-templates provides-hide ast:provides-port* newline-comma-prefix)

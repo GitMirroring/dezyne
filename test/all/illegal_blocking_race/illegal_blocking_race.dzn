@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -19,14 +20,6 @@
 //
 // Commentary:
 //
-// Assuming the scenario where pt.request(); pt.cancel(); is executed in
-// the same context.
-//
-// When rb.block() blocks in the deadlock_cancel_guarantee component,
-// and the modeling event behind the rt.complete() occurs, rt.complete()
-// will block collaterally.  The pt.cancel() must deadlock on port rt,
-// since it has not run to completion yet.
-//
 // Code:
 
 interface itransaction
@@ -38,8 +31,8 @@ interface itransaction
   {
     bool active = false;
     [!active] on request: active = true;
-    [active] on cancel: active = false;
-    [active] on inevitable: {active = false; complete;}
+    on cancel: active = false;
+    [active] on optional: {active = false; complete;}
   }
 }
 
@@ -52,16 +45,13 @@ interface iblock
   }
 }
 
-component deadlock_cancel_guarantee
+component illegal_blocking_race
 {
   provides blocking itransaction pt;
   requires blocking iblock rb;
   requires itransaction rt;
   behavior
   {
-    bool active = false;
-    [!active] on pt.request(): {active = true; rt.request(); rb.block();}
-    [active] on pt.cancel(): {active = false; rt.cancel();}
-    [active] on rt.complete(): {active = false; pt.complete();}
+    on pt.request(): {rt.request(); rb.block(); rt.cancel();}
   }
 }

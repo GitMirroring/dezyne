@@ -130,10 +130,9 @@ REGRESSION_TESTS =				\
  %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
- %D%/deadlock_cancel_guarantee			\
- %D%/deadlock_collateral_embrace		\
+ %D%/illegal_blocking_race		\
  %D%/deadlock_component1			\
- %D%/deadlock_early_embrace			\
+ %D%/blocking_queuefull				\
  %D%/deadlock_interface1			\
  %D%/determinism_async				\
  %D%/determinism_deadlock			\
@@ -178,8 +177,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_system_diamond			\
  %D%/blocking_shell				\
  %D%/calling_context				\
- %D%/cancel_guarantee				\
- %D%/cancel_guarantee2				\
  %D%/collateral_blocking_async			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\

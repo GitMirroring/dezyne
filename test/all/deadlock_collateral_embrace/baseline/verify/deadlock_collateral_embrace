@@ -1,7 +1,0 @@
-model: deadlock_collateral_embrace
-pt.request
-rt.request
-rt.return
-rb.block
-rb.return
-<deadlock>

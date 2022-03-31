@@ -1,0 +1,8 @@
+model: blocking_queuefull
+h.hello
+b.hello
+r.world
+r.world
+r.world
+r.world
+<queue-full>

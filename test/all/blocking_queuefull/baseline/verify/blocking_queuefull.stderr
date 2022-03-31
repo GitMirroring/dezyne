@@ -1,0 +1,12 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: iblock: check: deadlock: ok
+verify: iblock: check: livelock: ok
+verify: iblock: check: deterministic: ok
+verify: blocking_queuefull: check: deterministic: ok
+verify: blocking_queuefull: check: illegal: ok
+verify: blocking_queuefull: check: deadlock: fail
+error: queue full in model blocking_queuefull
+verify: blocking_queuefull: check: livelock: ok
+verify: blocking_queuefull: check: compliance: skip

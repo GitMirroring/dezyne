@@ -1,4 +1,4 @@
 (!#x:makreel:interface-name nil_is(#.name port (reply))) -> #.name reply'reordered (#.name port(reply))
-  . (async_not_pending . (((pending == []) -> semantics <> semantics_provides(pending)) + semantics_async(blocking={},released=[],reply=replies(#x:semantics-provides-reply-init),port=no_port,pending=pending,busy=false))
+  . (async_not_pending . semantics
     +async_pending . (semantics_async_allow_ack(blocking={},released=[],reply=replies(#x:semantics-provides-reply-init),port=no_port)
-                     +semantics_provides(pending)))
+                     +semantics_provides))

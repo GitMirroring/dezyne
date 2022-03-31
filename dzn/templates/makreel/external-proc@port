@@ -1,15 +1,13 @@
 #.name _portexternal_queue (l : List (requires_events)) =
   (##l < QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name flush . #.name _portexternal_queue (l = l <| #.name events (e)))
-  + (l != [] && #.name is (head (l))) -> #.name internal(#x:makreel:interface-name inevitable) . #.name collateral_block . #.name qout (#.name projection (head (l))) . #.name end . #.name _portexternal_queue(l = tail(l))
+  + (l != [] && #.name is (head (l))) -> #.name internal(#x:makreel:interface-name inevitable) . #.name qout (#.name projection (head (l))) . #.name end . #.name _portexternal_queue(l = tail(l))
   + (##l == QueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name queue_full . delta)
 ;
-
-#.name _portinternal_hide = hide({#.name collateral_block}, #.name _port);
 
 #.name _portinternal = rename({
   #.name internal -> #x:basic-type tau_modeling
   , #.name end -> tau_void
-  , #.name flush -> tau_void}, #.name _portinternal_hide);
+  , #.name flush -> tau_void}, #.name _port);
 
 #.name _portexternal_parallel = #.name _portexternal_queue([]) || #.name _portinternal;
 
@@ -28,7 +26,6 @@
   , #.name end
   , #.name flush
   , #.name queue_full
-  , #.name collateral_block
   , declarative_illegal
   , illegal
   , tau_void

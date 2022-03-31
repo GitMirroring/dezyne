@@ -1,0 +1,21 @@
+(header ((h) ihello provides) ((sut) blocking_queuefull component) ((b) iblock requires) ((r) ihello requires))
+(state ((h)) ((sut)) ((b)) ((r)))
+test/all/blocking_queuefull/blocking_queuefull.dzn:33:20: error: queue-full in component "blocking_queuefull"
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.b.hello -> ...
+... -> <external>.b.hello
+... <- <external>.r.world
+sut.<q> <- ...
+... <- <external>.r.world
+sut.<q> <- ...
+... <- <external>.r.world
+sut.<q> <- ...
+... <- <external>.r.world
+sut.<q> <- ...
+<queue-full>
+(state ((h)) ((sut) (*q* r.world r.world r.world)) ((b)) ((r)))
+test/all/blocking_queuefull/blocking_queuefull.dzn:33:20: error: queue-full in component "blocking_queuefull"
+(trail "h.hello" "b.hello" "r.world" "r.world" "r.world" "r.world" "<queue-full>")
+(labels "h.hello" "r.world")
+(eligible)

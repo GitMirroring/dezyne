@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,36 +22,37 @@
 //
 // Code:
 
-interface itransaction
+interface ihello
 {
-  in void cancel();
-  in void request();
-  out void complete();
-  behavior
+  in void hello();
+  out void world();
+
+  behaviour
   {
-    bool active = false;
-    [!active] on request: active = true;
-    [active] on cancel: active = false;
-    [active] on optional: {active = false; complete;}
+    on hello: {}
+    on inevitable: world;
   }
 }
 
 interface iblock
 {
-  in void block();
-  behavior
+  in void hello();
+
+  behaviour
   {
-    on block: {} // this event blocks
+    on hello: {}
   }
 }
 
-component deadlock_collateral_embrace
+component blocking_queuefull
 {
-  provides blocking itransaction pt;
-  requires blocking iblock rb;
-  requires itransaction rt;
-  behavior
+  provides blocking ihello h;
+  requires blocking iblock b;
+  requires ihello r;
+
+  behaviour
   {
-    on pt.request(): {rt.request(); rb.block(); rt.cancel();}
+    on h.hello(): {b.hello(); r.hello();}
+    on r.world(): {}
   }
 }
