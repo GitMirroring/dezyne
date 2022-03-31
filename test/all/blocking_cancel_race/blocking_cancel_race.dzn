@@ -1,0 +1,64 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface itransaction
+{
+  in void cancel();
+  in void request();
+  out void complete();
+  behavior
+  {
+    bool active = false;
+    [!active] on request: active = true;
+    on cancel: active = false;
+    [active] on optional: {active = false; complete;}
+  }
+}
+
+interface iblock
+{
+  in void block();
+  behavior
+  {
+    on block: {} // this event blocks
+  }
+}
+
+component blocking_cancel_race
+{
+  provides blocking itransaction pt;
+  requires blocking iblock rb;
+  requires itransaction rt;
+  behavior
+  {
+    bool active = false;
+    bool race = false;
+    [!active] on pt.request(): {active = true; rt.request(); rb.block(); race = true; rt.cancel();}
+    on pt.cancel(): {active = false; rt.cancel();}
+    [active]
+    {
+      [race] on rt.complete(): race = false;
+      [!race] on rt.complete(): {active = false; pt.complete();}
+    }
+  }
+}
