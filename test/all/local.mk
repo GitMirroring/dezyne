@@ -41,7 +41,7 @@ HELLO_TESTS =					\
  %D%/deadlock_interface0			\
  %D%/determinism0				\
  %D%/determinism1				\
- %D%/determinism_out			\
+ %D%/determinism_out				\
  %D%/determinism_interface			\
  %D%/hello_alpha				\
  %D%/hello_async				\
@@ -130,7 +130,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
- %D%/illegal_blocking_race		\
+ %D%/illegal_blocking_race			\
  %D%/deadlock_component1			\
  %D%/blocking_queuefull				\
  %D%/deadlock_interface1			\
@@ -170,7 +170,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_release				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
- %D%/blocking_external			\
+ %D%/blocking_external				\
  %D%/blocking_system				\
  %D%/blocking_system2				\
  %D%/blocking_system3				\
