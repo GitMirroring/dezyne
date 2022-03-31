@@ -168,6 +168,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_normalize				\
  %D%/blocking_provides_state			\
  %D%/blocking_race				\
+ %D%/blocking_race_async			\
  %D%/blocking_release				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
