@@ -474,7 +474,7 @@ port return."
       (let* ((pc (clone pc #:instance #f #:trail '()))
              (pc (reset-replies pc))
              (traces (parameterize ((%exploring? #t)
-                                    (%liveness? #t))
+                                    (%liveness? 'component))
                        (run-to-completion*-context-switch pc event))))
         (cons event traces)))
     (define (async-trace->alist trace)
@@ -494,7 +494,7 @@ port return."
     (let* ((pc (clone pc #:instance #f #:trail '()))
            (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t)
-                                  (%liveness? #t))
+                                  (%liveness? 'component))
                      (run-to-completion* pc event))))
       (cons event traces)))
 
@@ -502,7 +502,7 @@ port return."
     (let* ((pc (clone pc #:instance #f #:trail '()))
            (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t)
-                                  (%liveness? #t))
+                                  (%liveness? 'component))
                      (run-to-completion* pc event)))
            (trails (map trace->string-trail traces)))
       (fold

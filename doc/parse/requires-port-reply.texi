@@ -1,3 +1,0 @@
-requires-port-reply.dzn:21:22: error: cannot use requires port `r'
-    in reply
-requires-port-reply.dzn:15:3: info: port defined here

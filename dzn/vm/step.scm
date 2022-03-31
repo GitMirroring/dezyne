@@ -160,8 +160,10 @@
 
 (define (mark-liveness? pc statement)
   (and (%liveness?)
-       (or (is-a? (%sut) <runtime:port>)
-           (is-a? (.instance pc) <runtime:component>))
+       (or (and (eq? (%liveness?) 'component)
+                (is-a? (.instance pc) <runtime:component>))
+           (and (eq? (%liveness?) 'port)
+                (is-a? (.instance pc) <runtime:port>)))
        (not (is-a? statement <compound>))
        (not (is-a? statement <illegal>))
        (ast:imperative? statement)

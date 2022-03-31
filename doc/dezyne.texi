@@ -142,6 +142,7 @@ Defensive Design
 Code Integration
 
 * Integrating C++ Code::
+* Foreign Component::
 * Thread-safe Shell::
 * Integrating Scheme Code::
 
@@ -308,7 +309,6 @@ Well-formedness -- Mixing
 
 Well-formedness -- Reply
 
-* Cannot use requires port in reply::
 * Must specify provides-port with reply on out-trigger::
 * Must specify provides-port with reply::
 
@@ -5487,7 +5487,6 @@ The well-formedness checks in alphabetical order:
 @xref{Cannot use otherwise guard more than once},@*
 @xref{Cannot use otherwise guard with non-guard statements},@*
 @xref{Cannot use out-parameter on out-event},@*
-@xref{Cannot use requires port in reply},@*
 @xref{Cannot use return outside of function},@*
 @xref{Cannot use statement after recursive call},@*
 @xref{Component with behavior must define a provides port},@*
@@ -5969,29 +5968,9 @@ general this is hard to check statically.  What can be checked is
 described below.
 
 @menu
-* Cannot use requires port in reply::
 * Must specify provides-port with reply on out-trigger::
 * Must specify provides-port with reply::
 @end menu
-
-@node Cannot use requires port in reply
-@subsection Cannot use @code{requires} port in @code{reply}
-
-A @code{reply} which is issued to release a blocking @code{trigger}
-refers to the @code{trigger}'s port.  Since blocking is effective on
-@code{provides} ports only, a well-formedness error is issued when a
-@code{requires} port is used.  An example:
-
-@example
-@verbatiminclude parse/requires-port-reply.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/requires-port-reply.texi
-@end example
 
 @node Must specify provides-port with reply on out-trigger
 @subsection Must specify @code{provides}-port with @code{reply} on out-trigger

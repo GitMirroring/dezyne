@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -68,7 +69,6 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/port-not-bound.dzn				\
  %D%/port-bound-twice.dzn			\
  %D%/recursive-system.dzn			\
- %D%/requires-port-reply.dzn			\
  %D%/requires-reply-needs-provides-port.dzn	\
  %D%/return-outside-function.dzn		\
  %D%/second-otherwise.dzn			\
