@@ -359,7 +359,8 @@ Return a list of traces, possibly marked with <compliance-error>."
                                     port-pcs)))
                   (if (not provides-trigger?) traces
                       (map (cute zip trigger <> <>) traces port-traces))))
-               ((and (null? non-compliances)
+               ((and (%compliance-check?)
+                     (null? non-compliances)
                      (not blocking?)
                      (null? port-traces)
                      (pair? sut-trail))
