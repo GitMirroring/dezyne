@@ -1,6 +1,5 @@
 ;;; -*- scheme -*-
 ((skip ("c"
-        "cs"
         "javascript"
         "scheme"))
  (model #f)

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -54,40 +54,26 @@ class main
       sut.r.dzn_meta.requires.name = "r";
       sut.e.dzn_meta.requires.name = "e";
 
-      Object condition = new Object();
-      int count = 0;
       sut.r.inport.hello = () =>
       {
         System.Console.Error.WriteLine("sut.block.r.hello -> <external>.r.hello");
         new System.Threading.Thread (() =>
         {
-          System.Threading.Thread.Sleep(200);
+          sut.e.outport.world ();
           sut.r.outport.world ();
-          lock(condition)
-          {
-            ++count;
-            if(count == 2) Monitor.Pulse(condition);
-          }
         }).Start();
         System.Console.Error.WriteLine("sut.block.r.return <- <external>.r.return");
       };
       sut.e.inport.hello = () =>
       {
         System.Console.Error.WriteLine("sut.proxy.e.hello -> <external>.e.hello");
-        new System.Threading.Thread (() =>
-        {
-          System.Threading.Thread.Sleep(100);
-          sut.e.outport.world ();
-        }).Start();
         System.Console.Error.WriteLine("sut.proxy.e.return <- <external>.e.return");
       };
 
       sut.p.inport.hello ();
 
-      lock(condition)
-      {
-        while(count != 2) Monitor.Wait(condition);
-      }
+      dzn.pump pump = sut.dzn_locator.get<dzn.pump>();
+      pump.wait ();
     }
   }
 }

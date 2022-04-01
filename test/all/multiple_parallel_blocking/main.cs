@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -53,70 +54,36 @@ class main
       sut.rleft.dzn_meta.requires.name = "rleft";
       sut.rright.dzn_meta.requires.name = "rright";
 
-      Object condition = new Object();
-      int count = 0;
+      bool once_left = true;
+      bool once_right = true;
+
       sut.eleft.inport.hello = () =>
       {
         Console.Error.WriteLine("sut.left.e.hello -> <external>.eleft.hello");
-        new Thread (() =>
-        {
-          Thread.Sleep(50);
-          sut.eleft.outport.world();
-
-          lock(condition)
-          {
-            ++count;
-            if(count == 6) Monitor.Pulse(condition);
-          }
-        }).Start();
         Console.Error.WriteLine("sut.left.e.return -> <external>.eleft.return");
       };
       sut.eright.inport.hello = () =>
       {
         Console.Error.WriteLine("sut.right.e.hello -> <external>.eright.hello");
-        new Thread (() =>
-        {
-          Thread.Sleep(100);
-          sut.eright.outport.world();
-
-          lock(condition)
-          {
-            ++count;
-            if(count == 6) Monitor.Pulse(condition);
-          }
-        }).Start();
         Console.Error.WriteLine("sut.right.e.return -> <external>.eright.return");
       };
       sut.rleft.inport.hello = () =>
       {
         Console.Error.WriteLine("sut.left.r.hello -> <external>.rleft.hello");
-        new Thread (() =>
-        {
-          Thread.Sleep(200);
-          sut.rleft.outport.world();
-
-          lock(condition)
-          {
-            ++count;
-            if(count == 6) Monitor.Pulse(condition);
-          }
-        }).Start();
+        Thread.Sleep(100);
+        if(once_left) {once_left = false; sut.eleft.outport.world();}
+        Thread.Sleep(100);
+        sut.rleft.outport.world();
+        Thread.Sleep(100);
         Console.Error.WriteLine("sut.left.r.return -> <external>.rleft.return");
       };
       sut.rright.inport.hello = () =>
       {
         Console.Error.WriteLine("sut.right.r.hello -> <external>.rright.hello");
-        new Thread (() =>
-        {
-          Thread.Sleep(400);
-          sut.rright.outport.world();
-
-          lock(condition)
-          {
-            ++count;
-            if(count == 6) Monitor.Pulse(condition);
-          }
-        }).Start();
+        Thread.Sleep(200);
+        if(once_right) {once_right = false; sut.eright.outport.world();}
+        sut.rright.outport.world();
+        Thread.Sleep(100);
         Console.Error.WriteLine("sut.right.r.return -> <external>.rright.return");
       };
       var t = new Thread (() =>
@@ -128,10 +95,8 @@ class main
       sut.pleft.inport.hello();
       t.Join();
 
-      lock(condition)
-      {
-        while(count != 6) Monitor.Wait(condition);
-      }
+      dzn.pump pump = sut.dzn_locator.get<dzn.pump>();
+      pump.wait ();
     }
   }
 }

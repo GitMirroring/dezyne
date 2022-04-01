@@ -223,13 +223,6 @@ namespace dzn
         }
         public void call_out(Component c, Action f, Port p, String e)
         {
-            Port other_port = p.other();
-            if(states[c].handling != 0 && states[c].handling != coroutine.get_id()
-               && (other_port == null || !pump.port_blocked_p(c.dzn_locator, other_port)))
-            {
-              System.Console.Error.WriteLine("collateral_block");
-              pump.collateral_block(c, c.dzn_locator);
-            }
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             if(!(p is async_base))
               traceQin(m, e);
