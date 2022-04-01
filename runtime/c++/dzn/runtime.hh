@@ -1,9 +1,9 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019, 2020, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2016 Rob Wieringa <rob@dezyne.org>
+// Copyright © 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -208,12 +208,6 @@ namespace dzn
   void call_out(C* c, L&& l, P& p, const char* event)
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
-    size_t handle = c->dzn_rt.handling(c);
-    void* other_port = dzn::port::other(p);
-    debug << "port: " << &p << " other port: " << other_port << "\n";
-    if(handle && handle != coroutine::get_id()
-       && (!other_port || !port_blocked_p(c->dzn_locator, other_port)))
-      collateral_block(c, c->dzn_locator);
 #if !DZN_ASYNC_TRACING
     if (!dynamic_cast<async_base*> (&p))
       trace_qin(os, p.meta, event);

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -43,37 +43,23 @@ main ()
   sut.r.meta.require.name = "r";
   sut.e.meta.require.name = "e";
 
-  size_t count = 0;
-  auto predicate = [&]{return count == 2;};
-  std::mutex mutex;
-  std::condition_variable condition_variable;
-
   sut.r.in.hello = [&]
   {
     std::clog << "sut.block.r.hello -> <external>.r.hello" << std::endl;
     std::thread([&]{
-      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      sut.e.out.world();
       sut.r.out.world();
-
-      std::unique_lock<std::mutex> lock(mutex);
-      ++count;
-      if(predicate()) condition_variable.notify_one();
-
     }).detach();
     std::clog << "sut.block.r.return <- <external>.r.return" << std::endl;
   };
   sut.e.in.hello = [&]
   {
     std::clog << "sut.proxy.e.hello -> <external>.e.hello" << std::endl;
-    std::thread([&]{
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      sut.e.out.world();
-    }).detach();
     std::clog << "sut.proxy.e.return <- <external>.e.return" << std::endl;
   };
 
   sut.p.in.hello ();
 
-  std::unique_lock<std::mutex> lock(mutex);
-  condition_variable.wait(lock, predicate);
+  dzn::pump& pump = sut.dzn_locator.get<dzn::pump>();
+  pump.wait ();
 }

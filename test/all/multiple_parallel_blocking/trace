@@ -11,9 +11,6 @@ rright.return
 eleft.world
 rleft.world
 pleft.return
+eright.world
 rright.world
 pright.return
-eright.world
-rright.hello
-rright.return
-rright.world

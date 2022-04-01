@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,64 +42,37 @@ main ()
   sut.rleft.meta.require.name = "rleft";
   sut.rright.meta.require.name = "rright";
 
-  size_t count = 0;
-  auto predicate = [&]{return count == 6;};
-  std::mutex mutex;
-  std::condition_variable condition_variable;
+  bool once_left = true;
+  bool once_right = true;
 
   sut.eleft.in.hello = [&]
   {
     std::clog << "sut.left.e.hello -> <external>.eleft.hello\n";
-    std::thread([&]{
-      std::this_thread::sleep_for(std::chrono::milliseconds(50));
-      sut.eleft.out.world();
-
-      std::unique_lock<std::mutex> lock(mutex);
-      ++count;
-      if(predicate()) condition_variable.notify_one();
-    }).detach();
     std::clog << "sut.left.e.return <- <external>.eleft.return\n";
   };
   sut.eright.in.hello = [&]
   {
     std::clog << "sut.right.e.hello -> <external>.eright.hello\n";
-    std::thread([&]{
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      sut.eright.out.world();
-
-      std::unique_lock<std::mutex> lock(mutex);
-      ++count;
-      if(predicate()) condition_variable.notify_one();
-    }).detach();
     std::clog << "sut.right.e.return <- <external>.eright.return\n";
   };
 
   sut.rleft.in.hello = [&]
   {
     std::clog << "sut.left.r.hello -> <external>.rleft.hello\n";
-
-    std::thread([&]{
-      std::this_thread::sleep_for(std::chrono::milliseconds(200));
-      sut.rleft.out.world();
-
-      std::unique_lock<std::mutex> lock(mutex);
-      ++count;
-      if(predicate()) condition_variable.notify_one();
-    }).detach();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    if(once_left) {once_left = false; sut.eleft.out.world();}
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    sut.rleft.out.world();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     std::clog << "sut.left.r.return <- <external>.rleft.return\n";
   };
   sut.rright.in.hello = [&]
   {
     std::clog << "sut.right.r.hello -> <external>.rright.hello\n";
-
-    std::thread([&]{
-      std::this_thread::sleep_for(std::chrono::milliseconds(400));
-      sut.rright.out.world();
-
-      std::unique_lock<std::mutex> lock(mutex);
-      ++count;
-      if(predicate()) condition_variable.notify_one();
-    }).detach();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    if(once_right) {once_right = false; sut.eright.out.world();}
+    sut.rright.out.world();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     std::clog << "sut.right.r.return <- <external>.rright.return\n";
   };
 
@@ -111,8 +84,7 @@ main ()
 
   t.join();
 
-  std::unique_lock<std::mutex> lock(mutex);
-  condition_variable.wait(lock, predicate);
+  sut.dzn_pump.wait();
 
   return 0;
 }
