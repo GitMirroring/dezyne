@@ -321,6 +321,7 @@ output, and standard error as three values."
          (includes (filter directory-exists? includes))
          (includes (append-map (cut list "-I" <>) includes))
          (model (or (model? file-name) base-name))
+         (queue-size (queue-size file-name))
          (out (string-append file-name "/out"))
          (out-lang (string-append file-name "/out/traces"))
          (handwritten-traces (list-files file-name ".*trace.*$")))
@@ -335,6 +336,7 @@ output, and standard error as three values."
                "-o" ,out-lang
                ,@(if (null? handwritten-traces) '("--traces") '())
                ,@(if (flush? file-name) '("--flush") '())
+               ,@(if queue-size `("-q" ,(number->string queue-size)) '())
                "--lts"
                ,dzn-name)
              input)
