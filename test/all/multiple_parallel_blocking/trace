@@ -9,14 +9,11 @@ eright.return
 rright.hello
 rright.return
 eleft.world
-eright.world
 rleft.world
 pleft.return
-rleft.hello
-rleft.return
-rleft.world
 rright.world
 pright.return
+eright.world
 rright.hello
 rright.return
 rright.world
