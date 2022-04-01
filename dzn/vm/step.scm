@@ -362,7 +362,10 @@
                       (not ports-eq?)
                       (and ports-eq? blocking?))))
            (let* ((r:port (runtime:port instance reply-port))
-                  (pc (clone pc #:released (append (.released pc) (list r:port)))))
+                  (released (.released pc))
+                  (released (if (memq r:port released) released
+                                (append released (list r:port))))
+                  (pc (clone pc #:released released)))
              (list pc)))
           (else
            (list pc)))))
