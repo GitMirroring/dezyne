@@ -61,7 +61,6 @@
             external-trigger?
             external-trigger-in-q?
             flush
-            get-collateral-blocked?
             get-handling
             get-reply
             get-state
@@ -82,13 +81,13 @@
             provides-trigger?
             push-local
             pc-equal?
+            pop-collateral-blocked-pc
             pop-deferred
             pop-pc
             push-pc
             q-empty?
             read-input
             requires-trigger?
-            reset-collateral-blocked?
             reset-handling!
             reset-reply
             reset-replies
@@ -102,7 +101,6 @@
             rtc-trigger
             serialize
             serialize-header
-            set-collateral-blocked?
             set-deferred
             set-handling!
             set-reply
@@ -383,6 +381,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                                    blocked))
          (release-pcs (map cdr blocked-released))
          (release-ports (map blocked-port release-pcs))
+         (cb-instance (and (.collateral-blocked? pc)
+                           (and=> (.previous pc) .instance)))
+         (release-ports (if (not cb-instance) release-ports
+                            (cons cb-instance release-ports)))
          (release-ports (map .ast release-ports)))
     (append-map return-labels release-ports)))
 
@@ -506,7 +508,15 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
            #:trigger (.trigger previous)
            #:instance (.instance previous)
            #:previous (.previous previous)
-           #:statement (.statement previous))))
+           #:statement (.statement previous)
+           #:collateral-blocked? (.collateral-blocked? previous))))
+
+(define-method (pop-collateral-blocked-pc (pc <program-counter>))
+  "To continue the run of a COLLATERAL-BLOCKED? trace, popping the PC
+brings us back to the <trigger-return> statement.  To skip
+MARK-COLLATERAL-BLOCKED this time, the COLLATERAL-BLOCKED? boolean needs
+to remain set."
+  (clone (pop-pc pc) #:collateral-blocked? #t))
 
 (define-method (push-pc (pc <program-counter>))
   (clone pc #:previous pc #:statement #f))
@@ -740,27 +750,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (set-state (pc <program-counter>) (state <list>))
   (fold (cut update-state state <> <>) pc ((compose .state-list .state) pc)))
 
-(define-method (get-collateral-blocked? (pc <program-counter>) (instance <runtime:instance>))
-  (and=> (get-state pc instance) .collateral-blocked?))
-
-(define-method (get-collateral-blocked? (pc <program-counter>))
-  (get-collateral-blocked? pc (.instance pc)))
-
-(define-method (reset-collateral-blocked? (pc <program-counter>) (instance <runtime:instance>))
-  (set-state pc (clone (get-state pc instance) #:collateral-blocked? #f)))
-
-(define-method (reset-collateral-blocked? (pc <program-counter>))
-  (fold (lambda (instance pc)
-          (reset-collateral-blocked? pc instance))
-        pc
-        (filter runtime:boundary-port? (%instances))))
-
-(define-method (set-collateral-blocked? (pc <program-counter>) (instance <runtime:instance>))
-  (set-state pc (clone (get-state pc instance) #:collateral-blocked? #t)))
-
-(define-method (set-collateral-blocked? (pc <program-counter>))
-  (set-collateral-blocked? pc (.instance pc)))
-
 (define-method (get-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
   (assoc-ref (.reply (get-state pc instance)) port))
 
@@ -905,9 +894,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (when (pair? (.q o))
       (display " " port)
       (display `("*q*" . ,(map trigger->string (.q o))) port))
-    (when (.collateral-blocked? o)
-      (display " " port)
-      (display '("collateral-blocked?" . "true") port))
     (display ")" port)))
 
 (define-method (serialize-header (o <system-state>))
@@ -1041,6 +1027,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
              (if (null? (.collateral-released o)) '()
                  '("collateral-released:"))
              (map runtime:dotted-name (.collateral-released o))
+             (if (not (.collateral-blocked? o)) '()
+                 '("collateral-blocked?"))
              (if (null? (.external-q o)) '()
                  (list (external-q->string (.external-q o))))
              (async-ports o)))
@@ -1171,6 +1159,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (ast:equal? (.blocked a) (.blocked b))
        (ast:equal? (.collateral a) (.collateral b))
        (equal? (.released a) (.released b))
+       (eq? (.collateral-blocked? a) (.collateral-blocked? b))
        (ast:equal? (.external-q a) (.external-q b))))
 
 (define-method (pc:ast:equal? (a <flush-return>) (b <flush-return>))
@@ -1192,6 +1181,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (ast:equal? (.collateral a) (.collateral b))
        (equal? (.released a) (.released b))
        (ast:equal? (.external-q a) (.external-q b))
+       (eq? (.collateral-blocked? a) (.collateral-blocked? b))
        (pc-equal? (.previous a) (.previous b))))
 
 (define-method (ast:equal? (a <program-counter>) (b <program-counter>))
@@ -1204,7 +1194,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (pc-equal? (car a) (car b)))
 
 (define-method (async-event? (pc <program-counter>) event)
-  (and (string? event) (not (member event (labels))) (pair? (.async pc))))
+  (and (string? event)
+       (not (member event (labels)))
+       (not (return-trigger? event))
+       (pair? (.async pc))))
 
 
 ;;;

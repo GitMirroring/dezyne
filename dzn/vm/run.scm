@@ -51,7 +51,6 @@
             flush-async-trace
             interactive?
             livelock?
-            mark-collateral-block
             mark-livelock-error
             run-async
             run-async-event
@@ -156,19 +155,19 @@ valid PCs that are executing an imperative statement."
                                    pcs)))
        (> (length imperative) 1)))))
 
-(define-method (mark-collateral-block trace)
-  "Mark ports of all requires actions in TRACE that may fire a modeling
-event with COLLATERAL-BLOCK?.  Mark TRACE as <blocked-error> when an
-action is performed on a collateral-blocked port."
-  (define (requires-action? pc)
-    (let ((statement (.statement pc)))
-      (and (is-a? statement <action>)
-           (not (ast:async? statement))
-           (ast:requires? statement))))
+(define-method (mark-collateral-blocked trace)
+  "Return TRACE with new trace head marked as COLLATERAL-BLOCK? and with
+its statement reset when trace head is a <trigger-return> on a blocking
+requires port, unless previously marked as COLLATERAL-BLOCK?.
+Otherwise, return #f.
 
-  (define (modeling-traces pc port)
-    (let* ((r:port (runtime:port (%sut) port))
-           (instance (runtime:other-port r:port))
+The resetting of the statement on the COLLATERAL-BLOCK?'ed trace makes
+RTC?  true, which creates an opening to accept new modeling events.
+Continuation of the <trigger-return> happens when revisiting this method
+with a trace where COLLATERAL-BLOCK? is still set."
+
+  (define (modeling-traces pc instance)
+    (let* ((port (.ast instance))
            (ipc (clone pc #:trigger #f #:previous #f #:instance
                        #f #:trail '() #:statement #f))
            (modeling (modeling-names (.type port)))
@@ -180,60 +179,34 @@ action is performed on a collateral-blocked port."
            (traces (filter (compose (negate (is-status? <error>)) car) traces)))
       traces))
 
-  (define (mark-collateral blocked trace)
-    (let* ((pc (car trace))
-           (blocked (delete-duplicates blocked ast:eq?))
+  (define (requires-modeling-armed? pc)
+    (let* ((instance (.instance pc))
+           (requires-ports (filter
+                            (conjoin runtime:boundary-port?
+                                     ast:requires?
+                                     (negate (cute eq? <> instance)))
+                            (%instances)))
+           (modeling (filter (compose pair? modeling-names .type .ast)
+                             requires-ports))
            (ports (filter (compose pair?
                                    (cute modeling-traces pc <>))
-                          blocked))
-           (r:ports (map (cute runtime:port (%sut) <>) ports))
-           (instances (map runtime:other-port r:ports)))
-      (if (null? instances) trace
-          (fold (lambda (instance trace)
-                  (rewrite-trace-head
-                   (cute set-collateral-blocked? <> instance)
-                   trace))
-                trace
-                instances))))
+                          modeling)))
+      (pair? ports)))
 
-  (let* ((rtc-trace (take-while
-                     (negate
-                      (conjoin
-                       (compose (cute eq? <> (%sut)) .instance)
-                       (compose (is? <initial-compound>) .statement)))
-                     trace))
-         (requires-ports (ast:requires-port* (runtime:%sut-model)))
-         (modeling(filter (compose pair? modeling-names .type)
-                          requires-ports)))
-
-    (let loop ((pcs (reverse rtc-trace)) (seen '()) (modeling modeling)
-               (blocked '()))
-      (if (null? pcs) (mark-collateral blocked trace)
-          (let* ((pc (car pcs))
-                 (port (requires-action? pc)))
-            (if (not port) (loop (cdr pcs) seen modeling blocked)
-                (let* ((modeling-names (modeling-names (.type port)))
-                       (modeling? (pair? modeling-names)))
-                  (cond
-                   ((and (find (cute ast:eq? port <>) blocked)
-                         (find (negate (cute ast:eq? port <>)) seen)
-                         (pair? (modeling-traces pc port)))
-                    (let* ((index (list-index (cute eq? <> pc) trace))
-                           (prefix (drop trace index))
-                           (port (.name port))
-                           (message (format #f "port `~a' is blocked" port))
-                           (pc (clone pc #:status (make <blocked-error>
-                                                    #:ast (.statement pc)
-                                                    #:message message))))
-                      (cons pc prefix)))
-                   (else
-                    (let ((block (filter (conjoin
-                                          (const (ast:blocking? port))
-                                          (negate (cute ast:eq? <> port)))
-                                         modeling)))
-                      (loop (cdr pcs) (cons port seen)
-                            (if modeling? (cons port modeling) modeling)
-                            (append block blocked))))))))))))
+  (let* ((pc (car trace))
+         (statement (.statement pc)))
+    (and (not (.collateral-blocked? pc))
+         (is-a? (%sut) <runtime:component>)
+         (is-a? statement <trigger-return>)
+         (let ((instance (.instance pc)))
+           (and (is-a? instance <runtime:port>)
+                (ast:requires? instance)
+                (not (ast:modeling? (.trigger pc)))
+                (ast:blocking? instance)))
+         (requires-modeling-armed? pc)
+         (let* ((trace (cdr trace))
+                (trace (cons (push-pc pc) trace)))
+           (rewrite-trace-head (cute clone <> #:collateral-blocked? #t) trace)))))
 
 (define (mark-determinism-error trace)
   "Truncate TRACE up to including the component <initial-compound> and
@@ -340,6 +313,8 @@ program-counters produced by taking a step."
              (compose list (cute mark-livelock-error trace <>)))
             ((rtc? pc)
              (list trace))
+            ((mark-collateral-blocked trace)
+             => list)
             (else
              (let* ((o (.statement pc))
                     (observable? (or (is-a? o <action>)
@@ -666,8 +641,14 @@ until RTC?."
         (let* ((component-port (runtime:other-port port-instance))
                (component-trigger (trigger->component-trigger component-port trigger))
                (instance (.container component-port))
-               (traces (map (cut rewrite-trace-head (cut clone <> #:instance instance) <>) traces))
-               (traces (append-map run-flush traces)))
+               (traces (map (cut rewrite-trace-head
+                                 (cut clone <> #:instance instance) <>)
+                            traces))
+               (collateral-blocked? (or (.collateral-blocked? pc)
+                                        (and (get-handling pc instance)
+                                             (blocked-port pc instance))))
+               (traces (if collateral-blocked? traces
+                           (append-map run-flush traces))))
           traces))))
 
 (define-method (run-async-event (pc <program-counter>))
@@ -751,6 +732,9 @@ until RTC?."
                  (list (list pc) )))))))
 
 (define-method (run-to-completion* (pc <program-counter>) event)
+  (define (illegal-trace pc)
+    (let ((illegal (make <illegal-error> #:ast (.trigger pc) #:message "illegal")))
+       (list (list (clone pc #:status illegal)))))
   (%debug "run-to-completion*: ~a\n" event)
   (cond
    ((is-a? (%sut) <runtime:port>)
@@ -765,9 +749,14 @@ until RTC?."
                             (flush-async-event pc event))))
       (if (pair? async-traces) async-traces
           (let ((pcs (cons pc (run-external-modeling pc event))))
-            (append-map (cute run-requires <> event) pcs)))))
+            (if (and (.collateral-blocked? pc)
+                     (ast:eq? (.port (string->trigger event))
+                              (.ast (.instance (.previous pc)))))
+                (illegal-trace pc)
+                (append-map (cute run-requires <> event) pcs))))))
    ((provides-trigger? event)
-    (run-to-completion pc event))
+    (if (.collateral-blocked? pc) (illegal-trace pc)
+        (run-to-completion pc event)))
    ((async-event? pc event)
     (flush-async-event pc event))
    ((and (eq? event #f) (pair? (.async pc)))
@@ -783,6 +772,8 @@ until RTC?."
   (let* ((orig-pc pc)
          (pc (if (provides-trigger? event) pc
                  (switch-context pc)))
+         (pc (if (not (and (.collateral-blocked? pc) (return-trigger? event))) pc
+                 (pop-collateral-blocked-pc pc)))
          (switched? (not (eq? pc orig-pc)))
          (pc (if switched? pc
                  (clone pc #:instance #f)))

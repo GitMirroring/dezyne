@@ -120,15 +120,7 @@
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
          (port-name (.name (.ast instance)))
-         (pc (reset-reply pc port-name))
-         (collateral-blocked? (and (not (ast:modeling? trigger))
-                                   (get-collateral-blocked? pc)))
-         (pc (if (not collateral-blocked?) (reset-collateral-blocked? pc)
-                 (let* ((port (.name (.ast instance)))
-                        (message (format #f "port `~a' is blocked" port)))
-                   (clone pc #:status (make <blocked-error>
-                                        #:ast (.statement pc)
-                                        #:message message))))))
+         (pc (reset-reply pc port-name)))
     pc))
 
 
@@ -530,9 +522,9 @@
                    (let ((locals (filter (is? <variable>)
                                          (ast:statement* (.parent o)))))
                      (pop-locals pc locals))))
+           (instance (.instance pc))
            (pc (if (not blocking?) pc
                    (let* ((port (.port o))
-                          (instance (.instance pc))
                           (r:port (runtime:port instance port))
                           (blocked (.blocked pc))
                           (blocked? (assq-ref blocked r:port))
@@ -548,7 +540,12 @@
                      (clone pc
                             #:blocked blocked
                             #:released released
-                            #:collateral-released collateral-released)))))
+                            #:collateral-released collateral-released))))
+           (reset-collateral-blocked? (and (.collateral-blocked? pc)
+                                           (eq? instance
+                                                (.instance (.previous pc)))))
+           (pc (if reset-collateral-blocked? (clone pc #:collateral-blocked? #f)
+                   pc)))
       (list (pop-pc pc))))))
 
 (define-method (step (pc <program-counter>) (o <flush-async>))

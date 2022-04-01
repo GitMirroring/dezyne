@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -210,13 +210,13 @@
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
   (released #:getter .released #:init-form (list) #:init-keyword #:released)
   (collateral #:getter .collateral #:init-form (list) #:init-keyword #:collateral)
+  (collateral-blocked? #:getter .collateral-blocked? #:init-form #f #:init-keyword #:collateral-blocked?)
   (collateral-instance #:getter .collateral-instance #:init-value #f #:init-keyword #:collateral-instance)
   (collateral-released #:getter .collateral-released #:init-form (list) #:init-keyword #:collateral-released)
   (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
 
 (define-class <state> ()
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
-  (collateral-blocked? #:getter .collateral-blocked? #:init-form #f #:init-keyword #:collateral-blocked?)
   (deferred #:getter .deferred #:init-form #f #:init-keyword #:deferred)
   (handling #:getter .handling #:init-form #f #:init-keyword #:handling)
   (q #:getter .q #:init-form (list) #:init-keyword #:q)
@@ -301,6 +301,7 @@
     (display (map (compose runtime:dotted-name cadr) (.async o)) port))
   (when (pair? (.collateral-released o)) (display " *collateral-released*" port))
   (when (pair? (.released o)) (display " *released*" port))
+  (when (.collateral-blocked? o) (display " *collateral-blocked*" port))
   (when (pair? (.collateral o)) (display " *collateral*" port))
   (when (pair? (.blocked o)) (display " *blocked*" port))
   (and=> (.return o) (cut format port " return: ~a" <>))

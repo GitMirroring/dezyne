@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -80,6 +80,9 @@
 
 (define-method (ast:async? (o <runtime:port>))
   (ast:async? (.ast o)))
+
+(define-method (ast:blocking? (o <runtime:port>))
+  (ast:blocking? (.ast o)))
 
 (define-method (ast:provides? (o <instance>))
   #f)

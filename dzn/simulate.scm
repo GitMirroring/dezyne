@@ -245,7 +245,8 @@ Return a list of traces, possibly marked with <compliance-error>."
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (and (string? event)
                        (clone (string->trigger event) #:parent component)))
-         (blocking? (find (compose pair? .blocked) trace))
+         (blocking? (or (find (compose pair? .blocked) trace)
+                        (.collateral-blocked? pc)))
          (sut-trace (if (or (not trigger) (not blocking?)) trace
                         (drop-prefix pc trigger trace)))
          (sut-trail (trace->trail sut-trace))
@@ -293,7 +294,9 @@ Return a list of traces, possibly marked with <compliance-error>."
                                                       (cut string-prefix? port-prefix <>))
                                              cdr)
                                     sut-trail))
-                 (blocked? (and (pair? trace) (pair? (.blocked (car trace))))))
+                 (blocked? (and (pair? trace)
+                                (or (pair? (.blocked (car trace)))
+                                    (.collateral-blocked? (car trace))))))
 
             (define (port-trace->trail trace)
               (parameterize ((%sut port-instance)) (trace->trail trace)))
@@ -419,16 +422,18 @@ released by a requires event, also rerun check-provides-compliance for
 the full trace, i.e., starting from the initial blocking provides
 event.  This ensures proper of zipping the port trace, including the
 port return."
-  (let* ((traces (check-provides-compliance pc event trace))
+  (let* ((traces (if (return-trigger? event) (list trace)
+                     (check-provides-compliance pc event trace)))
          (pc (car trace))
          (blocked (.blocked pc))
          (collateral (.collateral pc))
          (compliance-for-blocking?
-          (and (not (find .status trace))
-               (find (compose pair? .blocked) trace)
-               (not (and (pair? collateral)
-                         (and=> (rtc-block-trigger (cdar collateral))
-                                ast:provides?))))))
+          (or (find .collateral-blocked? trace)
+              (and (not (find .status trace))
+                   (find (compose pair? .blocked) trace)
+                   (not (and (pair? collateral)
+                             (and=> (rtc-block-trigger (cdar collateral))
+                                    ast:provides?)))))))
     (cond
      ((and compliance-for-blocking?
            (find (compose (is? <trigger-return>)
@@ -576,7 +581,8 @@ TRACES."
                                          collateral-instances))
            (collateral-ports (map runtime:other-port collateral-ports))
            (blocked-ports (append blocked-ports collateral-ports))
-           (blocked-ports (filter runtime:boundary-port? blocked-ports)))
+           (blocked-ports (filter runtime:boundary-port? blocked-ports))
+           (blocked-ports (filter ast:provides? blocked-ports)))
       (map (compose .name .ast) blocked-ports)))
 
   (let* ((pcs (map car traces))
@@ -727,13 +733,18 @@ possibly after running RUN-SILENT and return them, or false."
       ((? string?)
        (let* ((traces (run-to-completion*-context-switch pc event))
               (traces (map (cute append <> pc+blocked-trace) traces))
-              (traces (if (not (is-a? (%sut) <runtime:component>)) traces
-                          (map mark-collateral-block traces)))
               (cpc (if (requires-trigger? event) pc
                        (last pc+blocked-trace)))
               (cpc (reset-replies cpc))
               (cpc (clone cpc #:instance #f))
-              (traces (if (is-a? (%sut) <runtime:port>) traces
+              (blocked-on-boundary?
+               (any (compose .collateral-blocked? car) traces))
+              (status?
+               (any (compose (is-status? <error>) car) traces))
+              (traces (if (or (is-a? (%sut) <runtime:port>)
+                              (and blocked-on-boundary?
+                                   (not status?)))
+                          traces
                           (check-provides-compliance* cpc event traces))))
          (if (pair? traces) traces
              (let* ((model (runtime:%sut-model))
@@ -741,6 +752,8 @@ possibly after running RUN-SILENT and return them, or false."
                              #:message "match" #:ast model #:input event)))
                (%debug "<match-error>: ~a\n" event)
                (list (list (clone pc #:status error)))))))
+      ((? (const (and (pair? (.async pc)) (.collateral-blocked? pc))))
+       (list (cons (clone pc #:async '()) pc+blocked-trace)))
       ((? (const (pair? (.async pc))))
        (let ((traces (flush-async pc)))
          (check-provides-compliance* pc #f traces)))
@@ -749,7 +762,8 @@ possibly after running RUN-SILENT and return them, or false."
          (%debug "<eot> with switchable, non-rtc pc\n"))
        (let ((trace (cons pc (cdr pc+blocked-trace))))
          (if (or (is-a? (%sut) <runtime:port>)
-                 (pair? (.blocked pc))) (list trace)
+                 (pair? (.blocked pc))
+                 (.collateral-blocked? pc)) (list trace)
              (check-provides-compliance pc event trace)))))))
 
 (define-method (pc->modeling-lts (pc <program-counter>))
@@ -903,6 +917,7 @@ status."
             (null? (.external-q (car from-pcs)))
             (requires-ports-stable? component pc)
             (eq? (switch-context pc) pc)
+            (not (any (compose .collateral-blocked? car) traces))
             (let* ((trace-format trace)
                    (trace (find (compose pair? .blocked car) traces))
                    (trace (reverse (set-trigger-locations (reverse trace))))
@@ -1065,7 +1080,9 @@ status."
                                       (check-interface-determinism traces))
                                  traces))
                      (valid-traces (filter (compose (negate .status) car) traces))
-                     (blocked non-blocked (partition (compose pair? .blocked car)
+                     (blocked non-blocked (partition (disjoin
+                                                      (compose pair? .blocked car)
+                                                      (compose .collateral-blocked? car))
                                                      valid-traces)))
                 (cond ((or (null? valid-traces)
                            error-trace?
