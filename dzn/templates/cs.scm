@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -47,6 +47,13 @@
 ;;;
 (define-templates in-event-signature (lambda (o) (filter ast:in? (ast:event* o))))
 (define-templates out-event-signature (lambda (o) (filter ast:out? (ast:event* o))))
+
+
+;;;
+;;; Foreign
+;;;
+(define-templates foreign-event-slot ast:void-in-triggers)
+(define-templates foreign-valued-event-slot ast:valued-in-triggers)
 
 
 ;;;

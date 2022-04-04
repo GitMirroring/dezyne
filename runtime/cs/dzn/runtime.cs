@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
-// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 //
 // This file is part of dzn-runtime.
@@ -131,11 +131,13 @@ namespace dzn
         }
         public void flush(Object c)
         {
+            states[c].handling = 0;
             if (!external(c))
                 {
                     while (states[c].q.Count > 0)
                         {
                             handle(c, states[c].q.Dequeue());
+                            states[c].handling = 0;
                         }
                     if (states[c].deferred != null)
                         {
@@ -153,39 +155,33 @@ namespace dzn
             if(!states.ContainsKey(o)) states.Add(o, new Runtime.State());
             return states[o].q;
         }
-        public void defer(Component i, Component o, Action f)
+        public void defer(Component src, Component tgt, Action f)
         {
-            if (!(i != null && states[i].flushes) && states[o].handling == 0)
+            if (!(src != null && states[src].flushes) && states[tgt].handling == 0)
                 {
-                    handle(o, f);
+                    handle(tgt, f);
+                    flush(tgt);
                 }
             else
                 {
-                    states[o].q.Enqueue(f);
-                    if (i != null)
+                    states[tgt].q.Enqueue(f);
+                    if (src != null)
                         {
-                            states[i].deferred = o;
+                            states[src].deferred = tgt;
                         }
                 }
         }
         public R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible
         {
             if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
-            int initial = states[c].handling;
             states[c].handling = coroutine.get_id();
-            R r = f();
-            states[c].handling = initial;
-            flush(c);
-            return r;
+            return f();
         }
         public void handle(Object c, Action f)
         {
             if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
-            int initial = states[c].handling;
             states[c].handling = coroutine.get_id();
             f();
-            states[c].handling = initial;
-            flush(c);
         }
         public void call_in(Component c, Action f, Port p, String e)
         {
@@ -228,6 +224,8 @@ namespace dzn
               traceQin(m, e);
             defer(m.provides.component, c, () => {
               component_stack.Push(c);
+              if(!(p is async_base))
+                traceQout(m, e);
               f();
               component_stack.Pop();
             });

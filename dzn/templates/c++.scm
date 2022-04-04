@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -90,6 +90,7 @@
 ;;; Foreign
 ;;;
 (define-templates declare-pure-virtual-method ast:in-triggers)
+(define-templates foreign-event-slot ast:in-triggers)
 
 
 ;;;

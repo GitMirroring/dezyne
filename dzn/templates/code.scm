@@ -76,7 +76,6 @@
 (define-templates injected-port-require-override ast:injected-port*)
 
 (define-templates event-slot (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
-(define-templates foreign-event-slot ast:in-triggers)
 (define-templates flush (lambda (o) (if (ast:in? o) o '())))
 (define-templates valued-event-slot ast:valued-in-triggers)
 (define-templates async-event-slot ast:async-out-triggers)
