@@ -634,12 +634,12 @@ until RTC?."
          (modeling-events (map (cut string-append port-name "." <>) modeling-names))
          (traces (append-map (cut run-to-completion pc <>) modeling-events))
          (traces (filter (cute event-executed? port-instance <>) traces))
-         (illegals (filter (compose (is-status? <illegal-error>) car) traces))
-         (traces (filter (compose (negate .status) car) traces)))
+         (errors (filter (compose .status car) traces)))
 
-    (if (pair? illegals) illegals
+    (if (pair? errors) errors
         (let* ((component-port (runtime:other-port port-instance))
-               (component-trigger (trigger->component-trigger component-port trigger))
+               (component-trigger (trigger->component-trigger component-port
+                                                              trigger))
                (instance (.container component-port))
                (traces (map (cut rewrite-trace-head
                                  (cut clone <> #:instance instance) <>)
