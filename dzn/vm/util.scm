@@ -3,7 +3,7 @@
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -933,6 +933,9 @@ event with COLLATERAL-BLOCK?."
                                (display " " port)
                                (display (cons x (->sexp y)) port)))
                 (.variables o)))
+    (when (pair? (.q o))
+      (display " " port)
+      (display `("*q*" . ,(map trigger->string (.q o))) port))
     (when (.collateral-blocked? o)
       (display " " port)
       (display '("collateral-blocked?" . "true") port))

@@ -30,7 +30,7 @@ sut.<q> <- ...
 ... <- <external>.w.world
 sut.<q> <- ...
 <queue-full>
-(state ((h)) ((sut)) ((w)))
+(state ((h)) ((sut) (*q* w.cruel w.world w.cruel)) ((w)))
 test/all/livelock_synchronous2/livelock_synchronous2.dzn:38:24: error: queue-full in component "livelock_synchronous2"
 (trail "h.hello" "w.hello" "w.cruel" "w.world" "w.return" "w.hello" "w.cruel" "w.world" "w.return" "w.hello" "w.cruel" "w.world" "<queue-full>")
 (labels "h.hello" "w.cruel" "w.world")

@@ -14,7 +14,7 @@ sut.<q> <- ...
 ... <- <external>.w.world
 sut.<q> <- ...
 <queue-full>
-(state ((h)) ((sut)) ((w)))
+(state ((h)) ((sut) (*q* w.world w.world w.world)) ((w)))
 test/all/queuefull_component0/queuefull_component0.dzn:33:34: error: queue-full in component "queuefull_component0"
 (trail "h.hello" "w.hello" "w.world" "w.world" "w.world" "w.world" "<queue-full>")
 (labels "h.hello" "w.world")
