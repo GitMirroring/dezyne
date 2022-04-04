@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -76,6 +76,8 @@
 (define-templates injected-port-require-override ast:injected-port*)
 
 (define-templates event-slot (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
+(define-templates foreign-event-slot ast:in-triggers)
+(define-templates flush (lambda (o) (if (ast:in? o) o '())))
 (define-templates valued-event-slot ast:valued-in-triggers)
 (define-templates async-event-slot ast:async-out-triggers)
 (define-templates async-req-event-slot ast:req-events)
@@ -90,6 +92,8 @@
 ;;;
 (define-templates assign-reply code:assign-reply)
 (define-templates block)
+(define-templates foreign-reply (compose code:reply ast:type))
+(define-templates foreign-return (compose code:reply ast:type))
 (define-templates port-release code:port-release)
 (define-templates reply code:reply)
 (define-templates return code:return)

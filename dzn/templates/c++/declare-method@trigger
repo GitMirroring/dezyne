@@ -1,1 +1,1 @@
-#x:function-type  #.port.name _#.event.name(#x:formals)
+void  #.port.name _#.event.name(#x:formals)

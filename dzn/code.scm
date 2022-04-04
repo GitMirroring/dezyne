@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -319,8 +319,11 @@
     (if (is-a? (ast:type expression) <void>) '()
         o)))
 
+(define-method (code:return (o <trigger>))
+  (ast:type o))
+
 (define-method (code:return (o <on>))
-  ((compose ast:type code:trigger) o))
+  (code:return (code:trigger o)))
 
 (define-method (code:port-release o)
   (if (null? (tree-collect-filter

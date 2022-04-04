@@ -106,39 +106,21 @@ namespace dzn
     bool& performs_flush(void* scope);
     void flush(void*);
     void defer(void*, void*, const std::function<void()>&);
-    template <typename T>
-    struct scoped_value
-    {
-      T& current;
-      T initial;
-      scoped_value(T& current, T value)
-      : current(current)
-      , initial(current)
-      { current = value; }
-      ~scoped_value()
-      {
-        current = initial;
-      }
-    };
     template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
     void handle(void* scope, L&& l)
     {
       size_t& handle = handling(scope);
       if(handle) throw std::logic_error("component already handling an event");
-      {scoped_value<size_t> sv(handle, coroutine::get_id());
-        l();}
-      flush(scope);
+      handle = coroutine::get_id();
+      l();
     }
     template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
     inline auto handle(void* scope, L&& l) -> decltype(l())
     {
       size_t& handle = handling(scope);
       if(handle) throw std::logic_error("component already handling an event");
-      decltype(l()) r;
-      {scoped_value<size_t> sv(handle, coroutine::get_id());
-        r = l();}
-      flush(scope);
-      return r;
+      handle = coroutine::get_id();
+      return l();
     }
     runtime();
   private:
@@ -205,20 +187,26 @@ namespace dzn
   }
 
   template <typename C, typename P, typename L>
-  void call_out(C* c, L&& l, P& p, const char* event)
+  void call_out(C* c, L&& l, P& p, const char* e)
   {
     auto& os = c->dzn_locator.template get<typename std::ostream>();
 #if !DZN_ASYNC_TRACING
     if (!dynamic_cast<async_base*> (&p))
-      trace_qin(os, p.meta, event);
+      trace_qin(os, p.meta, e);
 #else // DZN_ASYNC_TRACING
-    trace_qin(os, p.meta, event);
+    trace_qin(os, p.meta, e);
 #endif // DZN_ASYNC_TRACING
 #if DZN_STATE_TRACING
     os << *c << std::endl;
 #endif
-    c->dzn_rt.defer(p.meta.provide.component, c, [c,l]{
+    c->dzn_rt.defer(p.meta.provide.component, c, [&os,c,l,&p,e]{
       c->dzn_rt.component_stack.push_back(c);
+#if !DZN_ASYNC_TRACING
+      if (!dynamic_cast<async_base*> (&p))
+        trace_qout(os, p.meta, e);
+#else
+      trace_qout(os, p.meta, e);
+#endif
       l();
       assert(c->dzn_rt.component_stack.back() == c);
       c->dzn_rt.component_stack.pop_back();

@@ -95,9 +95,7 @@ namespace dzn
 
   void runtime::flush(void* scope)
   {
-#ifdef DEBUG_RUNTIME
-    std::cout << path(reinterpret_cast<dzn::meta*>(scope)) << " flush" << std::endl;
-#endif
+    handling(scope) = 0;
     if(!external(scope))
     {
       std::queue<std::function<void()> >& q = queue(scope);
@@ -106,6 +104,7 @@ namespace dzn
         std::function<void()> event = q.front();
         q.pop();
         handle(scope, event);
+        handling(scope) = 0;
       }
       if (deferred(scope)) {
         void* tgt = deferred(scope);
@@ -119,13 +118,10 @@ namespace dzn
 
   void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
   {
-#ifdef DEBUG_RUNTIME
-    std::cout << path(reinterpret_cast<dzn::meta*>(tgt)) << " defer" << std::endl;
-#endif
-
     if(!(src && performs_flush(src)) && !handling(tgt))
     {
       handle(tgt, event);
+      flush(tgt);
     }
     else
     {
