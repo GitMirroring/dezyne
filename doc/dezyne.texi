@@ -1389,7 +1389,7 @@ the same in both cases.
 @node Blocking in system context
 @section Blocking in system context
 
-To describe the blockign keyword in system context, we use the
+To describe the blocking keyword in system context, we use the
 interfaces @code{ihello} and @code{iblock} below.
 
 @example
