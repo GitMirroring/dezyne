@@ -749,7 +749,8 @@ possibly after running RUN-SILENT and return them, or false."
        (when (not (eq? (switch-context pc) pc))
          (%debug "<eot> with switchable, non-rtc pc\n"))
        (let ((trace (cons pc (cdr pc+blocked-trace))))
-         (if (is-a? (%sut) <runtime:port>) (list trace)
+         (if (or (is-a? (%sut) <runtime:port>)
+                 (pair? (.blocked pc))) (list trace)
              (check-provides-compliance pc event trace)))))))
 
 (define-method (pc->modeling-lts (pc <program-counter>))
