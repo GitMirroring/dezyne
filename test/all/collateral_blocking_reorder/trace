@@ -5,4 +5,7 @@ r.hello
 r.return
 e.world
 r.world
+r.hello
+r.return
+r.world
 p.return

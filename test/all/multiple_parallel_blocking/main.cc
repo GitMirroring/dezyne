@@ -43,7 +43,6 @@ main ()
   sut.rright.meta.require.name = "rright";
 
   bool once_left = true;
-  bool once_right = true;
 
   sut.eleft.in.hello = [&]
   {
@@ -70,7 +69,6 @@ main ()
   {
     std::clog << "sut.right.r.hello -> <external>.rright.hello\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    if(once_right) {once_right = false; sut.eright.out.world();}
     sut.rright.out.world();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     std::clog << "sut.right.r.return <- <external>.rright.return\n";

@@ -43,11 +43,13 @@ main ()
   sut.r.meta.require.name = "r";
   sut.e.meta.require.name = "e";
 
+  bool once = true;
+
   sut.r.in.hello = [&]
   {
     std::clog << "sut.block.r.hello -> <external>.r.hello" << std::endl;
     std::thread([&]{
-      sut.e.out.world();
+      if(once) {once = false; sut.e.out.world();}
       sut.r.out.world();
     }).detach();
     std::clog << "sut.block.r.return <- <external>.r.return" << std::endl;

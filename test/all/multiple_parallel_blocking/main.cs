@@ -55,7 +55,6 @@ class main
       sut.rright.dzn_meta.requires.name = "rright";
 
       bool once_left = true;
-      bool once_right = true;
 
       sut.eleft.inport.hello = () =>
       {
@@ -81,7 +80,6 @@ class main
       {
         Console.Error.WriteLine("sut.right.r.hello -> <external>.rright.hello");
         Thread.Sleep(200);
-        if(once_right) {once_right = false; sut.eright.outport.world();}
         sut.rright.outport.world();
         Thread.Sleep(100);
         Console.Error.WriteLine("sut.right.r.return -> <external>.rright.return");

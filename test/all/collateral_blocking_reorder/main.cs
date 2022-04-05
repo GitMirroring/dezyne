@@ -48,6 +48,8 @@ class main
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
 
+    bool once = true;
+
     using(collateral_blocking_reorder sut = new collateral_blocking_reorder (locator))
     {
       sut.dzn_meta.name = "sut";
@@ -59,7 +61,7 @@ class main
         System.Console.Error.WriteLine("sut.block.r.hello -> <external>.r.hello");
         new System.Threading.Thread (() =>
         {
-          sut.e.outport.world ();
+          if(once) {once = false; sut.e.outport.world ();}
           sut.r.outport.world ();
         }).Start();
         System.Console.Error.WriteLine("sut.block.r.return <- <external>.r.return");

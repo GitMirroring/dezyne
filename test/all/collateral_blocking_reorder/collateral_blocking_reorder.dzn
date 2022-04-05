@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -73,9 +73,12 @@ component proxy_block
                         //async      sync
     [idle] on p.hello(): {e.hello(); r.hello();}
     [!idle] on p.hello(): {}
-    on r.world(): idle = false;
+
     [!idle] on e.world(): {r.hello(); idle = true;}
-    [idle] on e.world(): {}
+    [idle] on e.world(): idle = false;
+
+    [!idle] on r.world(): {r.hello(); idle = true;}
+    [idle] on r.world(): idle = false;
   }
 }
 
