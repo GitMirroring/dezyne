@@ -774,11 +774,12 @@ to remain set."
   (set-reply pc (.instance pc) port value))
 
 (define-method (reset-replies (pc <program-counter>))
-  (fold (lambda (instance pc) (reset-reply pc instance))
-        pc
-        (filter (disjoin (is? <runtime:component>)
-                         runtime:boundary-port?)
-                (%instances))))
+  (if (.collateral-blocked? pc) pc
+      (fold (lambda (instance pc) (reset-reply pc instance))
+            pc
+            (filter (disjoin (is? <runtime:component>)
+                             runtime:boundary-port?)
+                    (%instances)))))
 
 (define-method (get-variables (pc <program-counter>))
   ((compose .variables get-state) pc))
