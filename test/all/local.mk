@@ -133,6 +133,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_blocking_race			\
  %D%/deadlock_component1			\
  %D%/blocking_queuefull				\
+ %D%/collateral_blocking_reply			\
  %D%/deadlock_interface1			\
  %D%/determinism_async				\
  %D%/determinism_deadlock			\
