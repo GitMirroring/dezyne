@@ -1,0 +1,10 @@
+model: blocking_queuefull_reply
+h.hello
+r.hello
+r.return
+b.hello
+r.world
+r.world
+r.world
+r.world
+<queue-full>
