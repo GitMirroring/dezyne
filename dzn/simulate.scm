@@ -1080,10 +1080,12 @@ status."
                                       (check-interface-determinism traces))
                                  traces))
                      (valid-traces (filter (compose (negate .status) car) traces))
-                     (blocked non-blocked (partition (disjoin
-                                                      (compose pair? .blocked car)
-                                                      (compose .collateral-blocked? car))
-                                                     valid-traces)))
+                     (valid-traces (delete-duplicates valid-traces trace-equal?))
+                     (blocked non-blocked
+                              (partition (disjoin
+                                          (compose pair? .blocked car)
+                                          (compose .collateral-blocked? car))
+                                         valid-traces)))
                 (cond ((or (null? valid-traces)
                            error-trace?
                            (and (not event)
@@ -1107,8 +1109,7 @@ status."
                                    #:state? state?
                                    #:trace trace
                                    #:verbose? verbose?)
-                           (let* ((pcs (map car valid-traces))
-                                  (pcs (delete-duplicates pcs rtc-program-counter-equal?)))
+                           (let ((pcs (map car valid-traces)))
                              (loop (map list pcs)))))))))))))
 
 
