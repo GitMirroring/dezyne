@@ -38,9 +38,11 @@ interface itransaction
 interface iblock
 {
   in void block();
+  out void notify();
   behavior
   {
     on block: {} // this event blocks
+    on block: notify;
   }
 }
 
@@ -54,6 +56,7 @@ component blocking_cancel_race
     bool active = false;
     bool race = false;
     [!active] on pt.request(): {active = true; rt.request(); rb.block(); race = true; rt.cancel();}
+    on rb.notify():{}
     on pt.cancel(): {active = false; rt.cancel();}
     [active]
     {
