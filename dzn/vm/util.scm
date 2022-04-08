@@ -1041,7 +1041,8 @@ to remain set."
                  '("collateral-released:"))
              (map runtime:dotted-name (.collateral-released o))
              (if (not (.collateral-blocked? o)) '()
-                 '("collateral-blocked?"))
+                 `("collateral-blocked:"
+                   ,(trigger->string (.collateral-blocked? o))))
              (if (null? (.external-q o)) '()
                  (list (external-q->string (.external-q o))))
              (async-ports o)))

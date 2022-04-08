@@ -138,7 +138,8 @@ that PC has one more collaterally blocked coroutine on the same port."
            (pc (if (not (.collateral-blocked? pc)) pc
                    (pop-collateral-blocked-pc pc))))
       (if (eq? pc orig-pc) (run-to-completion** pc label)
-          (if (or (and (not (.collateral-blocked? orig-pc))
+          (if (or (blocked-action? orig-pc label)
+                  (and (not (.collateral-blocked? orig-pc))
                        (not (provides-trigger? label)))
                   (and (not (requires-trigger? label))
                        (.collateral-blocked? orig-pc)))
