@@ -79,6 +79,26 @@ component block_nok2 {
   }
 }
 
+component block_nok3 {
+  provides blocking ihello p0;
+  provides ihello p1;
+
+  requires ihello r;
+
+  behavior {}
+}
+
+component block_nok4 {
+  provides blocking ihello pp;
+  requires ihello rr;
+
+  system {
+      nonblock inst0;
+      pp <=> inst0.p;
+      inst0.r <=> rr;
+  }
+}
+
 component block_ok0 {
   provides ihello p0;
   provides ihello p1;
@@ -86,21 +106,15 @@ component block_ok0 {
   requires ihello r;
 }
 
+
 component block_ok1 {
-  provides blocking ihello p0;
-  provides ihello p1;
-
-  requires ihello r;
-}
-
-component block_ok2 {
   provides blocking ihello p0;
   provides blocking ihello p1;
 
   requires blocking ihello r;
 }
 
-component block_ok3 {
+component block_ok2 {
   provides blocking ihello p0;
   provides blocking ihello p1;
 

@@ -1002,8 +1002,16 @@
             (.blocking? (.port right)))
            `(,(wfc-error o (format #f "cannot bind non-blocking port `~a' to blocking port `~a'"
                                    (.port.name left) (.port.name right)))
-             ,(wfc-info (.port left) (format #f "port `~a' defined here" (.port.name left)))
-             ,(wfc-info (.port right) (format #f "port `~a' defined here" (.port.name right)))))
+             ,(wfc-info (.port left) (format #f "non-blocking port `~a' defined here" (.port.name left)))
+             ,(wfc-info (.port right) (format #f "blocking port `~a' defined here" (.port.name right)))))
+          ((and
+            (.port left)
+            (.port right)
+            (ast:provides? (.port left))
+            (.blocking? (.port left))
+            (not (.blocking? (.port right))))
+           `(,(wfc-error (.port left) (format #f "superfluous blocking annotation on provides port `~a'"
+                                              (.port.name left)))))
           (else '()))))
 
 (define-method (binding-type (o <system>))
@@ -1026,16 +1034,20 @@
         '())))
 
 (define-method (blocking-ports (o <component-model>))
-  (let ((non-blocking-provides? (find (negate .blocking?)
-                                      (ast:provides-port* o))))
-    (if (and (or (model-blocking? o)
-                 (any .blocking? (ast:requires-port* o)))
-             non-blocking-provides?)
-      `(,(wfc-error o "all provides ports should be defined as blocking")
-        ,(wfc-info non-blocking-provides?
-                   (format #f "non-blocking provides port `~a' define here"
-                           (.name non-blocking-provides?))))
-      '())))
+  (let ((blocking-provides? (find .blocking? (ast:provides-port* o)))
+        (non-blocking-provides? (find (negate .blocking?) (ast:provides-port* o)))
+        (blocking-implementation? (or (model-blocking? o)
+                                      (find .blocking? (ast:requires-port* o)))))
+    (cond
+      ((and blocking-implementation? non-blocking-provides?)
+        `(,(wfc-error o "all provides ports should be defined as blocking")
+          ,(wfc-info non-blocking-provides?
+                    (format #f "non-blocking provides port `~a' define here"
+                            (.name non-blocking-provides?)))))
+      ((and (is-a? o <component>) (not blocking-implementation?) blocking-provides?)
+        `(,(wfc-error blocking-provides? (format #f "superfluous blocking annotation on provides port `~a'"
+                                                 (.name blocking-provides?)))))
+      (else '()))))
 
 (define-method (double-bindings (o <system>))
   (append-map double-bindings (ast:binding* o)))
