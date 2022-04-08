@@ -42,6 +42,7 @@
   #:use-module (dzn vm util)
   #:export (%exploring?
             did-provides-out?
+            filter-compliance-error
             filter-error
             filter-illegal+implicit-illegal
             filter-implicit-illegal
@@ -83,6 +84,15 @@
 
 (define (trace-valid? trace)
   ((compose not .status car) trace))
+
+(define (filter-compliance-error traces)
+  (let ((non-compliance rest
+                        (partition
+                         (disjoin (compose (is-status? <compliance-error>) car)
+                                  (compose (is-status? <match-error>) car))
+                         traces)))
+    (if (pair? rest) rest
+        non-compliance)))
 
 (define (filter-error traces)
   (let ((error rest (partition
@@ -194,10 +204,12 @@ with a trace where COLLATERAL-BLOCK? is still set."
       (pair? ports)))
 
   (let* ((pc (car trace))
-         (statement (.statement pc)))
-    (and (not (.collateral-blocked? pc))
+         (statement (.statement pc))
+         (collateral-blocked? (.collateral-blocked? pc)))
+    (and (not (ast:eq? collateral-blocked? statement))
          (is-a? (%sut) <runtime:component>)
-         (is-a? statement <trigger-return>)
+         (or (is-a? statement <action>)
+             (is-a? statement <trigger-return>))
          (let ((instance (.instance pc)))
            (and (is-a? instance <runtime:port>)
                 (ast:requires? instance)
@@ -206,7 +218,9 @@ with a trace where COLLATERAL-BLOCK? is still set."
          (requires-modeling-armed? pc)
          (let* ((trace (cdr trace))
                 (trace (cons (push-pc pc) trace)))
-           (rewrite-trace-head (cute clone <> #:collateral-blocked? #t) trace)))))
+           (rewrite-trace-head
+            (cute clone <> #:collateral-blocked? statement)
+            trace)))))
 
 (define (mark-determinism-error trace)
   "Truncate TRACE up to including the component <initial-compound> and
@@ -733,7 +747,8 @@ until RTC?."
 
 (define-method (run-to-completion* (pc <program-counter>) event)
   (define (illegal-trace pc)
-    (let ((illegal (make <illegal-error> #:ast (.trigger pc) #:message "illegal")))
+    (let ((illegal (make <implicit-illegal-error> #:ast (.trigger pc)
+                         #:message "illegal")))
        (list (list (clone pc #:status illegal)))))
   (%debug "run-to-completion*: ~a\n" event)
   (cond
@@ -772,8 +787,11 @@ until RTC?."
   (let* ((orig-pc pc)
          (pc (if (provides-trigger? event) pc
                  (switch-context pc)))
-         (pc (if (not (and (.collateral-blocked? pc) (return-trigger? event))) pc
-                 (pop-collateral-blocked-pc pc)))
+         (blocked-action? (blocked-action? pc event))
+         (pc (if (and (.collateral-blocked? pc)
+                      (or blocked-action? (return-trigger? event)))
+                 (pop-collateral-blocked-pc pc)
+                 pc))
          (switched? (not (eq? pc orig-pc)))
          (pc (if switched? pc
                  (clone pc #:instance #f)))
@@ -781,9 +799,10 @@ until RTC?."
                         (provides-trigger? event)))
          (trigger? (or (is-a? (%sut) <runtime:port>)
                        (provides-trigger? event)
-                       (requires-trigger? event)
+                       (and (not blocked-action?)
+                            (requires-trigger? event))
                        (async-event? pc event)))
-         (pc (if (or trigger? (not switched?) (not (%strict?))) pc
+         (pc (if (or trigger? (not switched?) (rtc-event? event)) pc
                  (clone pc #:trail (cons event (.trail pc)))))
          (traces (if skip-rtc? (run-to-completion* pc event)
                      (run-to-completion pc 'rtc))))

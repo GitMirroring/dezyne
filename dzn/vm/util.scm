@@ -51,6 +51,7 @@
             action->trigger
             assign
             async-event?
+            blocked-action?
             blocked-port
             blocked-ports
             collateral-block
@@ -96,6 +97,7 @@
             return-trigger?
             rewrite-trace-head
             rtc-block-trigger
+            rtc-event?
             rtc-program-counter-equal?
             rtc-port
             rtc-trigger
@@ -513,10 +515,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (pop-collateral-blocked-pc (pc <program-counter>))
   "To continue the run of a COLLATERAL-BLOCKED? trace, popping the PC
-brings us back to the <trigger-return> statement.  To skip
+brings us back to the <action> or <trigger-return> statement.  To skip
 MARK-COLLATERAL-BLOCKED this time, the COLLATERAL-BLOCKED? boolean needs
 to remain set."
-  (clone (pop-pc pc) #:collateral-blocked? #t))
+  (clone (pop-pc pc) #:collateral-blocked? (.collateral-blocked? pc)))
 
 (define-method (push-pc (pc <program-counter>))
   (clone pc #:previous pc #:statement #f))
@@ -564,6 +566,16 @@ to remain set."
 ;;;
 ;;; Blocking
 ;;;
+
+(define (blocked-action? pc event)
+  (let* ((previous (.previous pc))
+         (instance (and=> previous .instance))
+         (statement (and=> previous .statement)))
+    (and instance
+         (is-a? statement <action>)
+         (let* ((port (.name (.ast instance)))
+                (action (format #f "~a.~a" port (trigger->string statement))))
+           (equal? action event)))))
 
 (define-method (blocked-port (pc <program-counter>))
   (let* ((pc (rtc-block-pc pc))
@@ -1117,6 +1129,10 @@ to remain set."
          (or (member event '("return" "false" "true"))
              (string->number event)
              (string-index event #\:)))))
+
+(define-method (rtc-event? event)
+  (and (string? event)
+       (string-suffix? ".<rtc>" event)))
 
 (define-method (in-event? (o <interface>) (event <string>))
   (let* ((events (ast:in-event* o))

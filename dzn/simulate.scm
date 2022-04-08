@@ -589,6 +589,7 @@ TRACES."
          (blocked-sets (map blocked+collateral-ports pcs))
          (blocked-port-names (apply lset-intersection equal? blocked-sets)))
     (filter (disjoin
+             rtc-event?
              return-trigger?
              (compose
               (negate (cute member <> blocked-port-names))
@@ -1067,6 +1068,7 @@ status."
                      (list-of-traces (map (cute run-sut <> event) traces))
                      (traces (apply append list-of-traces))
                      (traces (filter-implicit-illegal traces))
+                     (traces (filter-compliance-error traces))
                      (error-trace? (find (compose
                                           (conjoin .status
                                                    (negate (is-status? <end-of-trail>))

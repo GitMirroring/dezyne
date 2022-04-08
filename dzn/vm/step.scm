@@ -460,7 +460,7 @@
       (and (not (q-empty? pc))
            (not (and (is-a? (and=> (.previous pc) .statement) <flush-return>)
                      (eq? (.instance pc) (.instance (.previous pc)))))
-           (list (flush pc)))
+           (list (flush (reset-handling! pc))))
       (let* ((pc (reset-handling! pc))
              (trigger (.trigger pc)))
         (cond

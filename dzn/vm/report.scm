@@ -84,9 +84,13 @@
     (map strip-sut-prefix trail)))
 
 (define (trace-equal? a b)
-  (and (rtc-program-counter-equal? (car a) (car b))
-       (equal? (trace->string-trail a)
-               (trace->string-trail b))))
+  (let ((pc-a (car a))
+        (pc-b (car b)))
+   (and (rtc-program-counter-equal? pc-a pc-b)
+        (ast:eq? (and=> (.previous pc-a) .statement)
+                 (and=> (.previous pc-b) .statement))
+        (equal? (trace->string-trail a)
+                (trace->string-trail b)))))
 
 (define (debug:lts->alist pc->state-number lts)
   (define (entry->pair from pc+traces)
