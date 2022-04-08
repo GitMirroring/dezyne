@@ -298,19 +298,23 @@ prefix."
   "Return a list of traces, produced by appending TRACE to each of the
 program-counters produced by taking a step."
 
-  (define* ((mark-pc input o-pc) pc)
-    (let ((o (.statement o-pc)))
-      (%debug "match fail, ast ~s ~a, input ~s\n" (name o)
-              (and (is-a? o <action>)
-                   (and=> (trace->trail o-pc) cdr))
+  (define* ((mark-pc input orig-pc) pc)
+    (let ((statement (.statement orig-pc)))
+      (%debug "match fail, ast ~s ~a, input ~s\n" (name statement)
+              (and (is-a? statement  <action>)
+                   (and=> (trace->trail orig-pc) cdr))
               input)
      (cond ((.status pc)
             pc)
-           ((and (%strict?) input)
-            (clone pc #:status (make <match-error> #:ast o #:input input
+           ((or (and (%strict?) input)
+                (and input
+                     (is-a? statement <trigger-return>)
+                     (.collateral-blocked? orig-pc)))
+            (clone pc #:status (make <match-error> #:ast statement #:input input
                                      #:message "match")))
            (else
-            (clone pc #:status (make <postponed-match> #:ast o #:input input))))))
+            (clone pc #:status (make <postponed-match> #:ast statement
+                                     #:input input))))))
 
   (define (blocked-collaterally? orig-pc pc)
     (match (.collateral pc)

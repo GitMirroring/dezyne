@@ -362,8 +362,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (return-labels (o <port>))
   (let* ((port (.name o))
-         (values (if (not (%strict?)) '("return")
-                     (ast:return-values o))))
+         (values (ast:return-values o)))
     (map (compose (cute format #f "~a.~a" port <>) ->sexp) values)))
 
 (define-method (return-labels (o <runtime:port>))
