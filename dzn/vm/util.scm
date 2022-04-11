@@ -96,6 +96,7 @@
             return-labels
             return-trigger?
             rewrite-trace-head
+            rtc-block-pc
             rtc-block-trigger
             rtc-event?
             rtc-program-counter-equal?
@@ -117,6 +118,7 @@
             string->value
             trace-head:eq?
             trigger->component-trigger
+            trigger->system-trigger
             trigger->port-trigger
             trigger->string
             update-state)
@@ -468,6 +470,17 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (r:component-port (and r:port (runtime:other-port r:port))))
     (and r:component-port
          (trigger->component-trigger r:component-port trigger))))
+
+(define-method (trigger->system-trigger (o <runtime:port>) trigger)
+  (trigger->component-trigger o trigger))
+
+(define-method (trigger->system-trigger (component <runtime:component>) trigger)
+  (let* ((port-name (.port.name trigger))
+         (ports (runtime:runtime-port* component))
+         (port (find (compose (cute equal? <> port-name) .name .ast) ports))
+         (system-port (runtime:other-port port)))
+    (and system-port
+         (trigger->system-trigger system-port trigger))))
 
 (define-method (trigger->port-trigger (o <runtime:port>) (trigger <trigger>))
   (let* ((interface ((compose .type .ast) o))

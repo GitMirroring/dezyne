@@ -387,6 +387,12 @@ Return a list of traces, possibly marked with <compliance-error>."
                                                            (cadar port-acceptances))
                                                       (and=> (.status pc) .ast)
                                                       (trigger->component-trigger trigger))))
+                       (other-port-instances (runtime:other-port port-instance))
+                       (instance (.container other-port-instances))
+                       (component-acceptance
+                        (if (and component-acceptance (is-a? (%sut) <runtime:system>))
+                            (trigger->system-trigger instance component-acceptance)
+                            component-acceptance))
                        (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
                        (trigger (and (null? sut-trail)
                                      (not (any (cute event-on-trail? (.event.name trigger) <>)
