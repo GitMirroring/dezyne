@@ -105,6 +105,7 @@ format."
          (trace-index (- (length trace)
                          (or (list-index
                               (conjoin
+                               (compose (is? <initial-compound>) .statement)
                                (compose (cute ast:equal? <> trigger) .trigger)
                                (compose (cute eq? <> instance) .instance))
                               (reverse trace))
