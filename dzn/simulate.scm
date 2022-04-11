@@ -436,10 +436,14 @@ port return."
          (compliance-for-blocking?
           (or (find .collateral-blocked? trace)
               (and (not (find .status trace))
-                   (find (compose pair? .blocked) trace)
-                   (not (and (pair? collateral)
-                             (and=> (rtc-block-trigger (cdar collateral))
-                                    ast:provides?)))))))
+                   (find (compose pair? .blocked) trace))))
+         (rtc-block-pc (and (pair? collateral)
+                            (rtc-block-pc (cdar collateral))))
+         (rtc-block-trigger (and=> rtc-block-pc .trigger))
+         (rtc-block-trigger (if (and rtc-block-trigger
+                                     (is-a? (%sut) <runtime:system>))
+                                (trigger->system-trigger (.instance rtc-block-pc) rtc-block-trigger)
+                                rtc-block-trigger)))
     (cond
      ((and compliance-for-blocking?
            (find (compose (is? <trigger-return>)
@@ -458,12 +462,16 @@ port return."
                        (event (match trail ((ast . event) event) (_ event)))
                        (cpc (last trace))
                        (cpc (reset-replies cpc))
-                       (cpc (clone cpc #:instance #f)))
-                  (loop
-                   (append-map
-                    (cute check-provides-compliance cpc event <>)
-                    traces)
-                   (cdr pcs))))))))
+                       (cpc (clone cpc #:instance #f))
+                       (skip? (and (and=> rtc-block-trigger
+                                          ast:provides?)
+                                   (equal? (trigger->string rtc-block-trigger) event))))
+                  (if skip? (loop traces (cdr pcs))
+                   (loop
+                    (append-map
+                     (cute check-provides-compliance cpc event <>)
+                     traces)
+                    (cdr pcs)))))))))
      (else
       traces))))
 
