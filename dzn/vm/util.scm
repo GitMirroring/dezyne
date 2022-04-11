@@ -453,7 +453,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          #:parent (.type (.ast (if (runtime:boundary-port? o) o
                                    (.container o))))))
 
-(define-method (trigger->component-trigger (o <runtime:port>) (trigger <trigger>))
+(define-method (trigger->component-trigger (o <runtime:port>) trigger)
   (let* ((port (.ast o))
          (trigger (clone trigger #:port.name (.name port))))
     (let* ((instance (or (.container o) (%sut))) ;injected
@@ -462,7 +462,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
            (trigger (clone trigger #:location location)))
       (clone trigger #:parent model))))
 
-(define-method (trigger->component-trigger (trigger <trigger>))
+(define-method (trigger->component-trigger trigger)
   (let* ((port-name (.port.name trigger))
          (r:port (and port-name (runtime:port-name->instance port-name)))
          (r:component-port (and r:port (runtime:other-port r:port))))
