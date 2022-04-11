@@ -463,15 +463,18 @@ port return."
                        (cpc (last trace))
                        (cpc (reset-replies cpc))
                        (cpc (clone cpc #:instance #f))
-                       (skip? (and (and=> rtc-block-trigger
-                                          ast:provides?)
-                                   (equal? (trigger->string rtc-block-trigger) event))))
+                       (skip? (or
+                               (and (and=> rtc-block-trigger
+                                           ast:provides?)
+                                    (equal? (trigger->string rtc-block-trigger)
+                                            event))
+                               (not (.port (string->trigger event))))))
                   (if skip? (loop traces (cdr pcs))
-                   (loop
-                    (append-map
-                     (cute check-provides-compliance cpc event <>)
-                     traces)
-                    (cdr pcs)))))))))
+                      (loop
+                       (append-map
+                        (cute check-provides-compliance cpc event <>)
+                        traces)
+                       (cdr pcs)))))))))
      (else
       traces))))
 
@@ -1055,6 +1058,32 @@ status."
          (pair? traces)
          (not ((%next-input) (caar traces)))))
 
+  (define (split-collateral-trace trace)
+    (if (null? trace) (values '() '())
+        (let* ((pc (car trace))
+               (collateral (.collateral pc))
+               (pc (rtc-block-pc (cdar collateral)))
+               (instance (.instance pc))
+               (trigger (.trigger pc))
+               (index (list-index
+                       (conjoin
+                        (compose (cute eq? <> instance) .instance)
+                        (compose (is? <initial-compound>) .statement)
+                        (compose (cute ast:eq? <> trigger) .trigger))
+                       trace))
+               (port-index
+                (list-index
+                       (conjoin
+                        (compose (is? <runtime:port>) .instance)
+                        (compose (is? <initial-compound>) .statement))
+                       trace)))
+          (if (not port-index) (values trace '())
+               ;; PORT-INDEX: port <initial-compound>
+               ;; PORT-INDEX+1: port rtc
+               ;; PORT-INDEX+2: EOT or start of continuation
+              (let ((port-index (min (+ port-index 2) (length trace))))
+                (split-at trace port-index))))))
+
   (let* ((trail (if (and (null? trail)
                          (not (isatty? (current-input-port))))
                     '(#f) trail))
@@ -1101,7 +1130,12 @@ status."
                               (partition (disjoin
                                           (compose pair? .blocked car)
                                           (compose .collateral-blocked? car))
-                                         valid-traces)))
+                                         valid-traces))
+                     (collateral non-blocked
+                                 (partition (disjoin
+                                             (compose pair? .collateral car)
+                                             (compose .collateral-blocked? car))
+                                            non-blocked)))
                 (cond ((or (null? valid-traces)
                            error-trace?
                            (and (not event)
@@ -1116,6 +1150,18 @@ status."
                                    #:internal? internal?
                                    #:locations? locations?
                                    #:verbose? verbose?))
+                      ((and (pair? collateral) (null? blocked))
+                       (let ((todo
+                              done
+                              (split-lists split-collateral-trace collateral)))
+                         (or (and (pair? done)
+                                  (report done
+                                          #:internal? internal?
+                                          #:locations? locations?
+                                          #:state? state?
+                                          #:trace trace
+                                          #:verbose? verbose?))
+                             (loop todo))))
                       ((pair? blocked)
                        (loop blocked))
                       ((pair? non-blocked)

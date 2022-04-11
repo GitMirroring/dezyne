@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2017, 2020 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
@@ -24,6 +24,7 @@
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (json)
 
@@ -34,7 +35,8 @@
             json-string->alist-scm
             merge-alist2
             merge-alist-list
-            pke))
+            pke
+            split-lists))
 
 (define (disjoin . predicates)
   (lambda arguments
@@ -97,3 +99,12 @@ guile-json-4 (which produces vectors)."
   (match alist-list
     ((h t ...)
      (fold merge-alist2 h t))))
+
+(define (split-lists split lists)
+  (let loop ((lists lists) (heads '()) (tails '()))
+    (if (null? lists) (values heads tails)
+        (let* ((list (car lists))
+               (head tail (split list)))
+          (loop (cdr lists)
+                (if (null? head) heads (cons head heads))
+                (if (null? tail) tails (cons tail tails)))))))
