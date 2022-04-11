@@ -42,7 +42,7 @@
                ast:type))
 
 (define-method (.port (o <trigger-return>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
+  (and (.port.name o) (ast:lookup (.parent o) (.port.name o))))
 
 (define-method (ast:acceptance* (o <acceptances>)) (.elements o))
 (define-method (ast:acceptance* (o <compliance-error>)) ((compose ast:acceptance* .port-acceptance) o))
