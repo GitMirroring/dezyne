@@ -167,6 +167,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_multiple_provides			\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
+ %D%/blocking_mux				\
  %D%/blocking_normalize				\
  %D%/blocking_provides_state			\
  %D%/blocking_race				\
