@@ -102,16 +102,22 @@ format."
          (port-instance (and=> (find .instance port-trace) .instance))
          (other-port (runtime:other-port port-instance))
          (instance (.container other-port))
-         (trace-index (- (length trace)
-                         (or (list-index
-                              (conjoin
-                               (compose (is? <initial-compound>) .statement)
-                               (compose (cute ast:equal? <> trigger) .trigger)
-                               (compose (cute eq? <> instance) .instance))
-                              (reverse trace))
-                             0)))
+         (trace-index (or (and=> (list-index
+                                  (conjoin
+                                   (compose (is? <initial-compound>) .statement)
+                                   (compose (cute ast:equal? <> trigger) .trigger)
+                                   (compose (cute eq? <> instance) .instance))
+                                  trace)
+                                 1+)
+                          (length trace)))
          (trace-suffix trace-prefix (split-at trace trace-index))
-         (trace (if (find (cute port-pc-equal? <> port-start) trace) trace
+         (merged? (or
+                   (and (pair? trace-prefix)
+                        (eq? (.instance (car trace-prefix)) port-instance))
+                   (and (pair? trace-suffix)
+                        (find (compose (cute eq? <> port-instance) .instance)
+                              trace-suffix))))
+         (trace (if merged? trace
                     (append trace-suffix port-trace-prefix trace-prefix)))
          (full-trace trace))
 
