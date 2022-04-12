@@ -113,3 +113,7 @@
 
 (define-method (ast:equal? (a <end-of-trail>) (b <end-of-trail>))
   (ast:equal? (.labels a) (.labels b)))
+
+(define-method (ast:equal? (a <trigger-return>) (b <trigger-return>))
+  (and (equal? (.port.name a) (.port.name b))
+       (equal? (.event.name a) (.event.name b))))

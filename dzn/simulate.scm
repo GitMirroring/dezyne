@@ -115,7 +115,7 @@ format."
                     (append trace-suffix port-trace-prefix trace-prefix)))
          (full-trace trace))
 
-    (let loop ((trace trace) (port-trace port-trace))
+    (let loop ((trace trace) (port-trace port-trace) (previous #f))
       (if (null? trace) '()
           (let* ((pc (car trace))
                  (pc-instance (.instance pc))
@@ -139,10 +139,10 @@ format."
                 (match port-action+trace
                   ((action-pc tail ...)
                    (if (find (cute ast:equal? <> action-pc) full-trace)
-                       (cons pc (loop (cdr trace) port-trace))
-                       (cons* action-pc pc (loop (cdr trace) tail))))
+                       (cons pc (loop (cdr trace) port-trace pc))
+                       (cons* action-pc pc (loop (cdr trace) tail action-pc))))
                   (_
-                   (cons pc (loop (cdr trace) port-trace))))))
+                   (cons pc (loop (cdr trace) port-trace pc))))))
              ((and (not (is-a? (%sut) <runtime:port>))
                    (eq? pc-instance instance)
                    (is-a? statement <trigger-return>)
@@ -158,13 +158,13 @@ format."
                    (let* ((port-state (get-state return-pc))
                           (return-pc (clone return-pc #:state (.state pc)))
                           (return-pc (set-state return-pc port-state)))
-                     (if (find (cute statement-equal? <> return-pc) full-trace)
-                         (cons pc (loop (cdr trace) port-trace))
-                         (cons* return-pc pc (loop (cdr trace) tail)))))
+                     (if (statement-equal? return-pc previous)
+                         (cons pc (loop (cdr trace) port-trace pc))
+                         (cons* return-pc pc (loop (cdr trace) tail return-pc)))))
                   (_
-                   (cons pc (loop (cdr trace) port-trace))))))
+                   (cons pc (loop (cdr trace) port-trace pc))))))
              (else
-              (cons pc (loop (cdr trace) port-trace)))))))))
+              (cons pc (loop (cdr trace) port-trace pc)))))))))
 
 (define (action-other-provides-port? port pc)
   (let ((statement (.statement pc)))
