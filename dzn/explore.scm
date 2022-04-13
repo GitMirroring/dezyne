@@ -79,13 +79,14 @@
                         (disjoin (compose null? .async car)
                                  did-provides-out?
                                  (compose .status car))
-                        traces)))
-            (if (ast:eq? (.port (string->trigger event))
-                         (and=> (blocked-on-boundary? pc) .ast)) '()
+                        traces))
+                 (port (.port (string->trigger event)))
+                 (blocked-port (and=> (blocked-on-boundary? pc) .ast)))
+            (if (and port (ast:eq? port blocked-port)) '()
                 (append stop (append-map (cute flush-async-trace <> '())
                                          flush))))))
      ((provides-trigger? event)
-      (if (blocked-on-boundary? pc) '()
+      (if (blocked-on-boundary-provides? pc event) '()
           (run-to-completion pc event))))))
 
 ;; table is initially (<"<illegal>") . 0>)
@@ -124,8 +125,8 @@ that PC has one more collaterally blocked coroutine on the same port."
         (_
          pc)))
     (match (.collateral pc)
-      (((port . pc0) (port . pc1) t ...)
-       (and (eq? (.instance pc0) (.instance pc1))
+      (((port . pc0) t ...)
+       (and (find (compose (cute eq? <> (.instance pc0)) .instance cdr) t)
         (let ((pc (drop-collateral pc)))
           (pc-equal? pc previous-pc))))
       (_
@@ -133,14 +134,16 @@ that PC has one more collaterally blocked coroutine on the same port."
 
   (define (run-label orig-pc label)
     (let* ((pc (switch-context orig-pc))
-           (pc (if (not (blocked-on-boundary? pc)) pc
-                   (blocked-on-boundary-switch-context pc label))))
+           (switched? (not (eq? pc orig-pc)))
+           (pc (if switched? pc
+                   (blocked-on-boundary-switch-context pc)))
+           (bop-switched? (and (not switched?)
+                               (not (eq? pc orig-pc))))
+           (pc (if (or switched? bop-switched?) pc
+                   (blocked-on-boundary-collateral-release pc))))
       (if (eq? pc orig-pc) (run-to-completion** pc label)
-          (if (or (blocked-on-action? orig-pc label)
-                  (and (not (blocked-on-boundary? orig-pc))
-                       (not (provides-trigger? label)))
-                  (and (not (requires-trigger? label))
-                       (blocked-on-boundary? orig-pc)))
+          (if (and switched?
+                   (not (provides-trigger? label)))
               (run-to-completion pc 'rtc)
               (append (run-to-completion pc 'rtc)
                       (run-to-completion** orig-pc label))))))
