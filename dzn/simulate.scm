@@ -936,6 +936,7 @@ status."
             (requires-ports-stable? component pc)
             (eq? (switch-context pc) pc)
             (eq? (blocked-on-boundary-switch-context pc) pc)
+            (eq? (blocked-on-boundary-collateral-release pc))
             (not (any (compose blocked-on-boundary? car) traces))
             (let* ((trace-format trace)
                    (trace (find (compose pair? .blocked car) traces))
@@ -1129,6 +1130,7 @@ status."
                      (valid-traces (delete-duplicates valid-traces trace-equal?))
                      (blocked non-blocked
                               (partition (disjoin
+                                          (compose blocked-on-boundary? car)
                                           (compose pair? .blocked car))
                                          valid-traces))
                      (collateral non-blocked

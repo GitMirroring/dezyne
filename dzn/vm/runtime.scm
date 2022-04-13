@@ -233,7 +233,7 @@
 ;;; Accessors, lookup.
 ;;;
 
-(define-method (runtime:port (o <runtime:component>) (port <port>))
+(define-method (runtime:port (o <runtime:instance>) (port <port>))
   (runtime:find-instance (.name port) #:container o))
 
 (define-method (runtime:port (o <runtime:port>) x)

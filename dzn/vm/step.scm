@@ -87,6 +87,8 @@
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:instance>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
+  (define (trigger-runtime-port pc)
+    (runtime:port (.instance pc) (.port (.trigger pc))))
   (let* ((pc (push-pc pc trigger instance))
          (port (.port trigger))
          (instance (.instance pc))
@@ -107,7 +109,15 @@
         (clone pc #:status (make <blocked-error>
                              #:ast (.statement pc)
                              #:message message))))
-     ((assq r:port (.blocked pc))
+     ((let* ((r:other-port (runtime:other-port r:port))
+             (blocked (append (.blocked pc) (.collateral pc)))
+             (ports (map (compose runtime:other-port
+                                  trigger-runtime-port
+                                  rtc-block-pc cdr)
+                         blocked)))
+        (or (assq r:port (.blocked pc))
+            (and (ast:provides? trigger)
+                 (member r:other-port ports ast:equal?))))
       (%debug "<blocked-error> blocked ~a ~a\n" (name instance) (trigger->string trigger))
       (let ((message (format #f "port `~a' is blocked" (.name port))))
         (clone pc #:status (make <blocked-error>
@@ -255,7 +265,8 @@
            (or (get-handling pc other-instance)
                (or (assoc-ref (.blocked pc) other-port)
                    (assoc-ref (.blocked pc) r:port)))
-           (blocked-port pc other-instance))
+           (or (blocked-port pc other-instance)
+               (and=> (.previous pc) blocked-on-boundary?)))
       (let ((pc (collateral-block orig-pc other-instance)))
         (list pc)))
      ((is-a? other-instance <runtime:component>)

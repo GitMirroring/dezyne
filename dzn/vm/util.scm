@@ -53,6 +53,8 @@
             async-event?
             block
             blocked-on-action?
+            blocked-on-boundary-collateral-release
+            blocked-on-boundary-provides?
             blocked-on-boundary-reset
             blocked-on-boundary-switch-context
             blocked-on-boundary?
@@ -374,11 +376,13 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (return-labels (.ast o)))
 
 (define-method (rtc-labels (pc <program-counter>))
-  (if (eq? (switch-context pc) pc) '()
-      (let* ((ports (filter (conjoin runtime:boundary-port? ast:provides?)
-                            (%instances)))
-             (port-names (map (compose .name .ast) ports)))
-        (map (cute format #f "~a.<rtc>" <>) port-names))))
+  (let* ((released-pc (blocked-on-boundary-collateral-release pc))
+         (switched-pc (switch-context released-pc)))
+    (if (eq? switched-pc pc) '()
+        (let* ((ports (filter (conjoin runtime:boundary-port? ast:provides?)
+                              (%instances)))
+               (port-names (map (compose .name .ast) ports)))
+          (map (cute format #f "~a.<rtc>" <>) port-names)))))
 
 (define-method (return-labels (pc <program-counter>))
   (let* ((blocked (.blocked pc))
@@ -629,12 +633,45 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (port (and=> trigger .port))
          (port (and=> port .name)))
     (find (conjoin (compose (is? <runtime:port>) .instance cdr)
-                   (compose (cute equal? <> port) .name .ast car))
+                   (disjoin (const (not event))
+                            (compose (cute equal? <> port) .name .ast car)))
           (.blocked pc))))
 
 (define-method (blocked-on-boundary-statements (pc <program-counter>))
   (map (compose .statement cdr)
        (blocked-on-boundary-entries pc)))
+
+(define-method (blocked-on-boundary-collateral-release (pc <program-counter>) event)
+  (let ((collateral (.collateral pc))
+        (trail (.trail pc))
+        (state (.state pc)))
+    (match (find
+            (compose
+             (cute and=> <> (cute blocked-on-boundary? <> event))
+             .previous cdr)
+            collateral)
+      ((port . blocked-pc)
+       (or (and (and=> (.previous blocked-pc) blocked-on-boundary?)
+                (clone blocked-pc #:state state #:trail trail))
+           pc))
+      (#f
+       pc))))
+
+(define-method (blocked-on-boundary-collateral-release (pc <program-counter>))
+  (blocked-on-boundary-collateral-release pc #f))
+
+(define-method (blocked-on-boundary-provides? (pc <program-counter>) event)
+  (let ((port (blocked-on-boundary? pc)))
+    (and port
+         (or (is-a? (%sut) <runtime:component>)
+             (let* ((blocked-other-port (runtime:other-port port))
+                    (blocked-component (.container blocked-other-port))
+                    (trigger (string->trigger event))
+                    (port (.port trigger))
+                    (r:port (runtime:port (%sut) port))
+                    (r:other-port (runtime:other-port r:port))
+                    (component (.container r:other-port)))
+               (eq? component blocked-component))))))
 
 (define-method (blocked-on-boundary-reset (pc <program-counter>))
   (let* ((blocked (.blocked pc))
@@ -690,7 +727,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (collateral-block (pc <program-counter>) (instance <runtime:component>))
   (let* ((orig-pc pc)
-         (blocked-port (blocked-port pc instance))
+         (blocked-port (or (blocked-port pc instance)
+                           (blocked-on-boundary? (.previous pc))))
          (pc (make <program-counter>
                #:async (.async pc)
                #:id (pc:next-id)
