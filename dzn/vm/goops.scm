@@ -70,7 +70,6 @@
             .async
             .blocked
             .collateral
-            .collateral-blocked?
             .collateral-instance
             .collateral-released
             .component-acceptance
@@ -210,7 +209,6 @@
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
   (released #:getter .released #:init-form (list) #:init-keyword #:released)
   (collateral #:getter .collateral #:init-form (list) #:init-keyword #:collateral)
-  (collateral-blocked? #:getter .collateral-blocked? #:init-form #f #:init-keyword #:collateral-blocked?)
   (collateral-instance #:getter .collateral-instance #:init-value #f #:init-keyword #:collateral-instance)
   (collateral-released #:getter .collateral-released #:init-form (list) #:init-keyword #:collateral-released)
   (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
@@ -301,7 +299,6 @@
     (display (map (compose runtime:dotted-name cadr) (.async o)) port))
   (when (pair? (.collateral-released o)) (display " *collateral-released*" port))
   (when (pair? (.released o)) (display " *released*" port))
-  (when (.collateral-blocked? o) (display " *collateral-blocked*" port))
   (when (pair? (.collateral o)) (display " *collateral*" port))
   (when (pair? (.blocked o)) (display " *blocked*" port))
   (and=> (.return o) (cut format port " return: ~a" <>))

@@ -51,7 +51,11 @@
             action->trigger
             assign
             async-event?
-            blocked-action?
+            block
+            blocked-on-action?
+            blocked-on-boundary-reset
+            blocked-on-boundary-switch-context
+            blocked-on-boundary?
             blocked-port
             blocked-ports
             collateral-block
@@ -82,7 +86,6 @@
             provides-trigger?
             push-local
             pc-equal?
-            pop-collateral-blocked-pc
             pop-deferred
             pop-pc
             push-pc
@@ -384,10 +387,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                                    blocked))
          (release-pcs (map cdr blocked-released))
          (release-ports (map blocked-port release-pcs))
-         (cb-instance (and (.collateral-blocked? pc)
-                           (and=> (.previous pc) .instance)))
-         (release-ports (if (not cb-instance) release-ports
-                            (cons cb-instance release-ports)))
+         (blocked-on-boundary (blocked-on-boundary? pc))
+         (release-ports (if (not blocked-on-boundary) release-ports
+                            (cons blocked-on-boundary release-ports)))
          (release-ports (map .ast release-ports)))
     (append-map return-labels release-ports)))
 
@@ -522,15 +524,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
            #:trigger (.trigger previous)
            #:instance (.instance previous)
            #:previous (.previous previous)
-           #:statement (.statement previous)
-           #:collateral-blocked? (.collateral-blocked? previous))))
-
-(define-method (pop-collateral-blocked-pc (pc <program-counter>))
-  "To continue the run of a COLLATERAL-BLOCKED? trace, popping the PC
-brings us back to the <action> or <trigger-return> statement.  To skip
-MARK-COLLATERAL-BLOCKED this time, the COLLATERAL-BLOCKED? boolean needs
-to remain set."
-  (clone (pop-pc pc) #:collateral-blocked? (.collateral-blocked? pc)))
+           #:statement (.statement previous))))
 
 (define-method (push-pc (pc <program-counter>))
   (clone pc #:previous pc #:statement #f))
@@ -579,15 +573,100 @@ to remain set."
 ;;; Blocking
 ;;;
 
-(define (blocked-action? pc event)
-  (let* ((previous (.previous pc))
-         (instance (and=> previous .instance))
-         (statement (and=> previous .statement)))
-    (and instance
-         (is-a? statement <action>)
-         (let* ((port (.name (.ast instance)))
-                (action (format #f "~a.~a" port (trigger->string statement))))
-           (equal? action event)))))
+(define-method (block (pc <program-counter>) (port <runtime:port>))
+  (let* ((id (.id pc))
+         (instance (.instance pc))
+         (pc (reset-handling! pc))
+         (pc (make <program-counter>
+               #:async (.async pc)
+               #:id (pc:next-id)
+               #:blocked (acons port pc (.blocked pc))
+               #:collateral (.collateral pc)
+               #:collateral-instance (.collateral-instance pc)
+               #:collateral-released (.collateral-released pc)
+               #:external-q (.external-q pc)
+               #:released (.released pc)
+               #:state (.state pc)
+               #:trail (.trail pc))))
+    (%debug "  ~s ~s <block> ~a [~a] => [~a]\n"
+            (name instance)
+            (and=> (.trigger pc) trigger->string)
+            (runtime:instance->string port)
+            id
+            (.id pc))
+    pc))
+
+(define (blocked-on-action? pc event)
+  (match (blocked-on-boundary-entry? pc event)
+    ((port . pc)
+     (let ((instance (.instance pc))
+           (statement (.statement pc)))
+       (and instance
+            (is-a? statement <action>)
+            (let* ((port (.name (.ast instance)))
+                   (action (trigger->string statement))
+                   (action (format #f "~a.~a" port action)))
+              (equal? action event)))))
+    (#f
+     #f)))
+
+(define-method (blocked-on-boundary? (pc <program-counter>))
+  (and=> (blocked-on-boundary-entry? pc) car))
+
+(define-method (blocked-on-boundary? (pc <program-counter>) event)
+  (and=> (blocked-on-boundary-entry? pc event) car))
+
+(define-method (blocked-on-boundary-entries (pc <program-counter>))
+  (filter (compose (is? <runtime:port>) .instance cdr)
+          (.blocked pc)))
+
+(define-method (blocked-on-boundary-entry? (pc <program-counter>))
+  (find (compose (is? <runtime:port>) .instance cdr)
+        (.blocked pc)))
+
+(define-method (blocked-on-boundary-entry? (pc <program-counter>) event)
+  (let* ((trigger (and=> (as event <string>) string->trigger))
+         (port (and=> trigger .port))
+         (port (and=> port .name)))
+    (find (conjoin (compose (is? <runtime:port>) .instance cdr)
+                   (compose (cute equal? <> port) .name .ast car))
+          (.blocked pc))))
+
+(define-method (blocked-on-boundary-statements (pc <program-counter>))
+  (map (compose .statement cdr)
+       (blocked-on-boundary-entries pc)))
+
+(define-method (blocked-on-boundary-reset (pc <program-counter>))
+  (let* ((blocked (.blocked pc))
+         (instance (.instance pc))
+         (entry (assq-ref blocked instance)))
+    (if (not entry) pc
+        (clone pc #:blocked (alist-delete instance blocked)))))
+
+(define-method (blocked-on-boundary-switch-context (pc <program-counter>) event)
+  (match (blocked-on-boundary-entry? pc event)
+    ((port . blocked-pc)
+     (let ((instance (.instance blocked-pc)))
+       (if (is-a? instance <runtime:component>) pc
+           (begin
+             (%debug
+              "  ~s ~s <switch-context blocked-on-boundary> ~a [~a] => [~a]\n"
+              (name instance)
+              (and=> (.trigger blocked-pc) trigger->string)
+              (runtime:instance->string port)
+              (.id pc)
+              (.id blocked-pc))
+             (clone pc
+                    #:id (.id blocked-pc)
+                    #:instance (.instance blocked-pc)
+                    #:previous (.previous blocked-pc)
+                    #:statement (.statement blocked-pc)
+                    #:trigger (.trigger blocked-pc))))))
+    (#f
+     pc)))
+
+(define-method (blocked-on-boundary-switch-context (pc <program-counter>))
+  (blocked-on-boundary-switch-context pc #f))
 
 (define-method (blocked-port (pc <program-counter>))
   (let* ((pc (rtc-block-pc pc))
@@ -798,7 +877,7 @@ to remain set."
   (set-reply pc (.instance pc) port value))
 
 (define-method (reset-replies (pc <program-counter>))
-  (if (.collateral-blocked? pc) pc
+  (if (blocked-on-boundary? pc) pc
       (fold (lambda (instance pc) (reset-reply pc instance))
             pc
             (filter (disjoin (is? <runtime:component>)
@@ -1052,9 +1131,9 @@ to remain set."
              (if (null? (.collateral-released o)) '()
                  '("collateral-released:"))
              (map runtime:dotted-name (.collateral-released o))
-             (if (not (.collateral-blocked? o)) '()
-                 `("collateral-blocked:"
-                   ,(trigger->string (.collateral-blocked? o))))
+             (if (not (blocked-on-boundary? o)) '()
+                 `("blocked-on-boundary:"
+                   ,@(map trigger->string (blocked-on-boundary-statements o))))
              (if (null? (.external-q o)) '()
                  (list (external-q->string (.external-q o))))
              (async-ports o)))
@@ -1189,7 +1268,8 @@ to remain set."
        (ast:equal? (.blocked a) (.blocked b))
        (ast:equal? (.collateral a) (.collateral b))
        (equal? (.released a) (.released b))
-       (eq? (.collateral-blocked? a) (.collateral-blocked? b))
+       (ast:equal? (blocked-on-boundary-statements a)
+                   (blocked-on-boundary-statements b))
        (ast:equal? (.external-q a) (.external-q b))))
 
 (define-method (pc:ast:equal? (a <flush-return>) (b <flush-return>))
@@ -1211,7 +1291,8 @@ to remain set."
        (ast:equal? (.collateral a) (.collateral b))
        (equal? (.released a) (.released b))
        (ast:equal? (.external-q a) (.external-q b))
-       (eq? (.collateral-blocked? a) (.collateral-blocked? b))
+       (ast:equal? (blocked-on-boundary-statements a)
+                   (blocked-on-boundary-statements b))
        (pc-equal? (.previous a) (.previous b))))
 
 (define-method (ast:equal? (a <program-counter>) (b <program-counter>))

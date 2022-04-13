@@ -252,8 +252,7 @@ Return a list of traces, possibly marked with <compliance-error>."
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (and (string? event)
                        (clone (string->trigger event) #:parent component)))
-         (blocking? (or (find (compose pair? .blocked) trace)
-                        (.collateral-blocked? pc)))
+         (blocking? (find (compose pair? .blocked) trace))
          (sut-trace (if (or (not trigger) (not blocking?)) trace
                         (drop-prefix pc trigger trace)))
          (sut-trail (trace->trail sut-trace))
@@ -303,7 +302,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                                     sut-trail))
                  (blocked? (and (pair? trace)
                                 (or (pair? (.blocked (car trace)))
-                                    (.collateral-blocked? (car trace))))))
+                                    (find blocked-on-boundary? trace)))))
 
             (define (port-trace->trail trace)
               (parameterize ((%sut port-instance)) (trace->trail trace)))
@@ -435,13 +434,15 @@ released by a requires event, also rerun check-provides-compliance for
 the full trace, i.e., starting from the initial blocking provides
 event.  This ensures proper of zipping the port trace, including the
 port return."
-  (let* ((traces (if (return-trigger? event) (list trace)
+  (let* ((skip? (or (return-trigger? event)
+                    (blocked-on-boundary? (car trace) event)))
+         (traces (if skip? (list trace)
                      (check-provides-compliance pc event trace)))
          (pc (car trace))
          (blocked (.blocked pc))
          (collateral (.collateral pc))
          (compliance-for-blocking?
-          (or (find .collateral-blocked? trace)
+          (or (find blocked-on-boundary? trace)
               (and (not (find .status trace))
                    (find (compose pair? .blocked) trace))))
          (rtc-block-pc (and (pair? collateral)
@@ -762,14 +763,7 @@ possibly after running RUN-SILENT and return them, or false."
                        (last pc+blocked-trace)))
               (cpc (reset-replies cpc))
               (cpc (clone cpc #:instance #f))
-              (blocked-on-boundary?
-               (any (compose .collateral-blocked? car) traces))
-              (status?
-               (any (compose (is-status? <error>) car) traces))
-              (traces (if (or (is-a? (%sut) <runtime:port>)
-                              (and blocked-on-boundary?
-                                   (not status?)))
-                          traces
+              (traces (if (is-a? (%sut) <runtime:port>) traces
                           (check-provides-compliance* cpc event traces))))
          (if (pair? traces) traces
              (let* ((model (runtime:%sut-model))
@@ -777,7 +771,7 @@ possibly after running RUN-SILENT and return them, or false."
                              #:message "match" #:ast model #:input event)))
                (%debug "<match-error>: ~a\n" event)
                (list (list (clone pc #:status error)))))))
-      ((? (const (and (pair? (.async pc)) (.collateral-blocked? pc))))
+      ((? (const (and (pair? (.async pc)) (blocked-on-boundary? pc))))
        (list (cons (clone pc #:async '()) pc+blocked-trace)))
       ((? (const (pair? (.async pc))))
        (let ((traces (flush-async pc)))
@@ -787,9 +781,8 @@ possibly after running RUN-SILENT and return them, or false."
          (%debug "<eot> with switchable, non-rtc pc\n"))
        (let ((trace (cons pc (cdr pc+blocked-trace))))
          (if (or (is-a? (%sut) <runtime:port>)
-                 (pair? (.blocked pc))
-                 (.collateral-blocked? pc)) (list trace)
-             (check-provides-compliance pc event trace)))))))
+                 (pair? (.blocked pc))) (list trace)
+                 (check-provides-compliance pc event trace)))))))
 
 (define-method (pc->modeling-lts (pc <program-counter>))
   "Create a partial modeling-LTS at PC, i.e., use inevitable and
@@ -942,7 +935,8 @@ status."
             (null? (.external-q (car from-pcs)))
             (requires-ports-stable? component pc)
             (eq? (switch-context pc) pc)
-            (not (any (compose .collateral-blocked? car) traces))
+            (eq? (blocked-on-boundary-switch-context pc) pc)
+            (not (any (compose blocked-on-boundary? car) traces))
             (let* ((trace-format trace)
                    (trace (find (compose pair? .blocked car) traces))
                    (trace (reverse (set-trigger-locations (reverse trace))))
@@ -1135,13 +1129,12 @@ status."
                      (valid-traces (delete-duplicates valid-traces trace-equal?))
                      (blocked non-blocked
                               (partition (disjoin
-                                          (compose pair? .blocked car)
-                                          (compose .collateral-blocked? car))
+                                          (compose pair? .blocked car))
                                          valid-traces))
                      (collateral non-blocked
                                  (partition (disjoin
-                                             (compose pair? .collateral car)
-                                             (compose .collateral-blocked? car))
+                                             (compose blocked-on-boundary? car)
+                                             (compose pair? .collateral car))
                                             non-blocked)))
                 (cond ((or (null? valid-traces)
                            error-trace?

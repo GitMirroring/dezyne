@@ -99,7 +99,8 @@
      ((and (is-a? instance <runtime:component>)
            (or (get-handling pc instance)
                (assq r:port (.blocked pc)))
-           (blocked-port pc instance))
+           (blocked-port pc instance)
+           (not (blocked-on-boundary? pc)))
       (%debug "<blocked-error> collateral ~a ~a\n" (name instance) (trigger->string trigger))
       (let ((message (format #f "port `~a' is collaterally blocked"
                              (.name port))))
@@ -419,25 +420,7 @@
                 (let ((pc (clone pc #:released (delete r:port (.released pc)))))
                   (list pc)))
                (else
-                (let* ((id (.id pc))
-                       (pc (reset-handling! pc))
-                       (pc (make <program-counter>
-                             #:async (.async pc)
-                             #:id (pc:next-id)
-                             #:blocked (acons r:port pc (.blocked pc))
-                             #:collateral (.collateral pc)
-                             #:collateral-instance (.collateral-instance pc)
-                             #:collateral-released (.collateral-released pc)
-                             #:external-q (.external-q pc)
-                             #:released (.released pc)
-                             #:state (.state pc)
-                             #:trail (.trail pc))))
-                  (%debug "  ~s ~s <block> ~a [~a] => [~a]\n"
-                          (name instance)
-                          (and=> (.trigger pc) trigger->string)
-                          (runtime:instance->string r:port)
-                          id
-                          (.id pc))
+                (let ((pc (block pc r:port)))
                   (list pc)))))))))
 
 (define-method (step (pc <program-counter>) (o <end-of-on>))
@@ -544,10 +527,10 @@
                             #:blocked blocked
                             #:released released
                             #:collateral-released collateral-released))))
-           (reset-collateral-blocked? (and (.collateral-blocked? pc)
-                                           (eq? instance
-                                                (.instance (.previous pc)))))
-           (pc (if reset-collateral-blocked? (clone pc #:collateral-blocked? #f)
+           (reset-blocked-on-boundary?
+            (and (blocked-on-boundary? pc)
+                 (eq? instance (blocked-on-boundary? pc))))
+           (pc (if reset-blocked-on-boundary? (blocked-on-boundary-reset pc)
                    pc)))
       (list (pop-pc pc))))))
 

@@ -80,14 +80,12 @@
                                  did-provides-out?
                                  (compose .status car))
                         traces)))
-            (if (and (.collateral-blocked? pc)
-                     (ast:eq? (.port (string->trigger event))
-                              (.ast (.instance (.previous pc)))))
-                '()
+            (if (ast:eq? (.port (string->trigger event))
+                         (and=> (blocked-on-boundary? pc) .ast)) '()
                 (append stop (append-map (cute flush-async-trace <> '())
                                          flush))))))
      ((provides-trigger? event)
-      (if (.collateral-blocked? pc) '()
+      (if (blocked-on-boundary? pc) '()
           (run-to-completion pc event))))))
 
 ;; table is initially (<"<illegal>") . 0>)
@@ -135,14 +133,14 @@ that PC has one more collaterally blocked coroutine on the same port."
 
   (define (run-label orig-pc label)
     (let* ((pc (switch-context orig-pc))
-           (pc (if (not (.collateral-blocked? pc)) pc
-                   (pop-collateral-blocked-pc pc))))
+           (pc (if (not (blocked-on-boundary? pc)) pc
+                   (blocked-on-boundary-switch-context pc label))))
       (if (eq? pc orig-pc) (run-to-completion** pc label)
-          (if (or (blocked-action? orig-pc label)
-                  (and (not (.collateral-blocked? orig-pc))
+          (if (or (blocked-on-action? orig-pc label)
+                  (and (not (blocked-on-boundary? orig-pc))
                        (not (provides-trigger? label)))
                   (and (not (requires-trigger? label))
-                       (.collateral-blocked? orig-pc)))
+                       (blocked-on-boundary? orig-pc)))
               (run-to-completion pc 'rtc)
               (append (run-to-completion pc 'rtc)
                       (run-to-completion** orig-pc label))))))

@@ -165,16 +165,15 @@ valid PCs that are executing an imperative statement."
                                    pcs)))
        (> (length imperative) 1)))))
 
-(define-method (mark-collateral-blocked trace)
-  "Return TRACE with new trace head marked as COLLATERAL-BLOCK? and with
-its statement reset when trace head is a <trigger-return> on a blocking
-requires port, unless previously marked as COLLATERAL-BLOCK?.
-Otherwise, return #f.
+(define-method (block-on-port trace)
+  "Return TRACE blocked on port when trace head is an <action> or a
+<trigger-return> on a blocking requires port, unless already blocked on
+this statement.  Otherwise, return #f.
 
-The resetting of the statement on the COLLATERAL-BLOCK?'ed trace makes
-RTC?  true, which creates an opening to accept new modeling events.
-Continuation of the <trigger-return> happens when revisiting this method
-with a trace where COLLATERAL-BLOCK? is still set."
+Blocking and resettiing the STATEMENT on the TRACE makes RTC?  true,
+which creates an opening to accept new modeling events.  Continuation of
+the <action> or <trigger-return> happens when revisiting this method
+with a TRACE that has BLOCKED still set to this port."
 
   (define (modeling-traces pc instance)
     (let* ((port (.ast instance))
@@ -204,23 +203,26 @@ with a trace where COLLATERAL-BLOCK? is still set."
       (pair? ports)))
 
   (let* ((pc (car trace))
+         (instance (.instance pc))
          (statement (.statement pc))
-         (collateral-blocked? (.collateral-blocked? pc)))
-    (and (not (ast:eq? collateral-blocked? statement))
-         (is-a? (%sut) <runtime:component>)
-         (or (is-a? statement <action>)
-             (is-a? statement <trigger-return>))
-         (let ((instance (.instance pc)))
-           (and (is-a? instance <runtime:port>)
-                (ast:requires? instance)
-                (not (ast:modeling? (.trigger pc)))
-                (ast:blocking? instance)))
-         (requires-modeling-armed? pc)
-         (let* ((trace (cdr trace))
-                (trace (cons (push-pc pc) trace)))
-           (rewrite-trace-head
-            (cute clone <> #:collateral-blocked? statement)
-            trace)))))
+         (blocked (.blocked pc)))
+    (and
+     (is-a? (%sut) <runtime:component>)
+     (is-a? instance <runtime:port>)
+     (ast:requires? instance)
+     (ast:blocking? instance)
+     (not (ast:modeling? (.trigger pc)))
+     (or (is-a? statement <action>)
+         (is-a? statement <trigger-return>))
+     (let ((blocked-port (and (pair? blocked) (caar blocked)))
+           (blocked-pc (and (pair? blocked) (cdar blocked))))
+       (and (not (ast:eq? statement (and=>  blocked-pc .statement)))
+            (requires-modeling-armed? pc)
+            (let* ((trace (cdr trace))
+                   (pc (blocked-on-boundary-reset pc))
+                   (pc (block pc instance))
+                   (trace (cons pc trace)))
+              trace))))))
 
 (define (mark-determinism-error trace)
   "Truncate TRACE up to including the component <initial-compound> and
@@ -309,7 +311,7 @@ program-counters produced by taking a step."
            ((or (and (%strict?) input)
                 (and input
                      (is-a? statement <trigger-return>)
-                     (.collateral-blocked? orig-pc)))
+                     (blocked-on-boundary? pc)))
             (clone pc #:status (make <match-error> #:ast statement #:input input
                                      #:message "match")))
            (else
@@ -331,7 +333,7 @@ program-counters produced by taking a step."
              (compose list (cute mark-livelock-error trace <>)))
             ((rtc? pc)
              (list trace))
-            ((mark-collateral-blocked trace)
+            ((block-on-port trace)
              => list)
             (else
              (let* ((o (.statement pc))
@@ -662,7 +664,7 @@ until RTC?."
                (traces (map (cut rewrite-trace-head
                                  (cut clone <> #:instance instance) <>)
                             traces))
-               (collateral-blocked? (or (.collateral-blocked? pc)
+               (collateral-blocked? (or (blocked-on-boundary? pc)
                                         (and (get-handling pc instance)
                                              (blocked-port pc instance))))
                (traces (if collateral-blocked? traces
@@ -767,14 +769,13 @@ until RTC?."
     (let ((async-traces (if (null? (.async pc)) '()
                             (flush-async-event pc event))))
       (if (pair? async-traces) async-traces
-          (let ((pcs (cons pc (run-external-modeling pc event))))
-            (if (and (.collateral-blocked? pc)
-                     (ast:eq? (.port (string->trigger event))
-                              (.ast (.instance (.previous pc)))))
-                (illegal-trace pc)
+          (let ((pcs (cons pc (run-external-modeling pc event)))
+                (port (.port (string->trigger event)))
+                (blocked-port (and=> (blocked-on-boundary? pc event) .ast)))
+            (if (and port (ast:eq? port blocked-port)) (illegal-trace pc)
                 (append-map (cute run-requires <> event) pcs))))))
    ((provides-trigger? event)
-    (if (.collateral-blocked? pc) (illegal-trace pc)
+    (if (blocked-on-boundary? pc event) (illegal-trace pc)
         (run-to-completion pc event)))
    ((async-event? pc event)
     (flush-async-event pc event))
@@ -791,10 +792,10 @@ until RTC?."
   (let* ((orig-pc pc)
          (pc (if (provides-trigger? event) pc
                  (switch-context pc)))
-         (blocked-action? (blocked-action? pc event))
-         (pc (if (and (.collateral-blocked? pc)
-                      (or blocked-action? (return-trigger? event)))
-                 (pop-collateral-blocked-pc pc)
+         (blocked-on-action? (blocked-on-action? pc event))
+         (pc (if (and (blocked-on-boundary? pc event)
+                      (or blocked-on-action? (return-trigger? event)))
+                 (blocked-on-boundary-switch-context pc event)
                  pc))
          (switched? (not (eq? pc orig-pc)))
          (pc (if switched? pc
@@ -803,7 +804,7 @@ until RTC?."
                         (provides-trigger? event)))
          (trigger? (or (is-a? (%sut) <runtime:port>)
                        (provides-trigger? event)
-                       (and (not blocked-action?)
+                       (and (not blocked-on-action?)
                             (requires-trigger? event))
                        (async-event? pc event)))
          (pc (if (or trigger? (not switched?) (rtc-event? event)) pc
