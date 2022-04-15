@@ -1,0 +1,3 @@
+test/all/compliance_failures_blocking_race/compliance_failures_blocking_race.dzn:59:33: error: non-compliance
+test/all/compliance_failures_blocking_race/compliance_failures_blocking_race.dzn:59:33: component performs: h.world
+test/all/compliance_failures_blocking_race/compliance_failures_blocking_race.dzn:44:12: port expects: return

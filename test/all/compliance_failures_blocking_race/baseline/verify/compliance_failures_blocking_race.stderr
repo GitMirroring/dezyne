@@ -1,0 +1,12 @@
+verify: iasynchronous: check: deadlock: ok
+verify: iasynchronous: check: livelock: ok
+verify: iasynchronous: check: deterministic: ok
+verify: isynchronous: check: deadlock: ok
+verify: isynchronous: check: livelock: ok
+verify: isynchronous: check: deterministic: ok
+verify: compliance_failures_blocking_race: check: deterministic: ok
+verify: compliance_failures_blocking_race: check: illegal: ok
+verify: compliance_failures_blocking_race: check: deadlock: ok
+verify: compliance_failures_blocking_race: check: livelock: ok
+verify: compliance_failures_blocking_race: check: compliance: fail
+error: component compliance_failures_blocking_race is non-compliant with interface(s) of provides port(s)
