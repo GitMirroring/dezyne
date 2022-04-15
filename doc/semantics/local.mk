@@ -41,8 +41,6 @@ DOCUMENTATION_SEMANTICS =				\
  %D%/indirect_out.dzn					\
  %D%/block.dzn						\
  %D%/blocking.dzn					\
- %D%/bye.dzn						\
- %D%/cancel.dzn						\
  %D%/collateral.dzn					\
  %D%/embrace.dzn					\
  %D%/embrace2.dzn					\
