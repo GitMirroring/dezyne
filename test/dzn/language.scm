@@ -437,69 +437,70 @@
   '("provides" "requires")
   (test-complete #:file-name "typo.dzn" #:line 22 #:column 6))
 
+;;; component-{bool,data,enum,int}.dzn: Keep in sync.
 (test-equal "bool literal"
   '("false" "true")
-  (test-complete #:file-name "component-bool.dzn" #:line 10 #:column 13))
+  (test-complete #:file-name "component-bool.dzn" #:line 50 #:column 13))
 
 (test-equal "bool local"
   '("false" "fun(_)" "m" "true" "w.hello()")
-  (test-complete #:file-name "component-bool.dzn" #:line 36 #:column 15))
+  (test-complete #:file-name "component-bool.dzn" #:line 76 #:column 15))
 
 (test-equal "bool reply"
   '("b" "false" "fun(_)" "m" "true")
-  (test-complete #:file-name "component-bool.dzn" #:line 37 #:column 13))
+  (test-complete #:file-name "component-bool.dzn" #:line 77 #:column 13))
 
 (test-equal "bool formal"
   '("b" "false" "fun(_)" "m" "true")
-  (test-complete #:file-name "component-bool.dzn" #:line 31 #:column 13))
+  (test-complete #:file-name "component-bool.dzn" #:line 71 #:column 13))
 
 (test-equal "enum literal"
   '("Bool.False" "Bool.True")
-  (test-complete #:file-name "component-enum.dzn" #:line 10 #:column 13))
+  (test-complete #:file-name "component-enum.dzn" #:line 50 #:column 13))
 
 (test-equal "enum field"
   '("Bool.False" "Bool.True")
-  (test-complete #:file-name "component-enum.dzn" #:line 10 #:column 19))
+  (test-complete #:file-name "component-enum.dzn" #:line 50 #:column 19))
 
 (test-equal "enum local"
   '("Bool.False" "Bool.True" "fun(_)" "m" "w.hello()")
-  (test-complete #:file-name "component-enum.dzn" #:line 36 #:column 15))
+  (test-complete #:file-name "component-enum.dzn" #:line 76 #:column 15))
 
 (test-equal "enum reply"
   '("Bool.False" "Bool.True" "b" "fun(_)" "m")
-  (test-complete #:file-name "component-enum.dzn" #:line 37 #:column 13))
+  (test-complete #:file-name "component-enum.dzn" #:line 77 #:column 13))
 
 (test-equal "enum formal"
   '("Bool.False" "Bool.True" "b" "fun(_)" "m")
-  (test-complete #:file-name "component-enum.dzn" #:line 31 #:column 13))
+  (test-complete #:file-name "component-enum.dzn" #:line 71 #:column 13))
 
 (test-equal "int literal"
   '()
-  (test-complete #:file-name "component-int.dzn" #:line 10 #:column 13))
+  (test-complete #:file-name "component-int.dzn" #:line 50 #:column 13))
 
 (test-equal "int local"
   '("fun(_)" "m" "w.hello()")
-  (test-complete #:file-name "component-int.dzn" #:line 36 #:column 15))
+  (test-complete #:file-name "component-int.dzn" #:line 76 #:column 15))
 
 (test-equal "int reply"
   '("b" "fun(_)" "m")
-  (test-complete #:file-name "component-int.dzn" #:line 37 #:column 13))
+  (test-complete #:file-name "component-int.dzn" #:line 77 #:column 13))
 
 (test-equal "int formal"
   '("b" "fun(_)" "m")
-  (test-complete #:file-name "component-int.dzn" #:line 31 #:column 13))
+  (test-complete #:file-name "component-int.dzn" #:line 71 #:column 13))
 
 (test-equal "data literal"
   '()
-  (test-complete #:file-name "component-data.dzn" #:line 10 #:column 13))
+  (test-complete #:file-name "component-data.dzn" #:line 50 #:column 13))
 
 (test-equal "data local"
   '("m")
-  (test-complete #:file-name "component-data.dzn" #:line 36 #:column 15))
+  (test-complete #:file-name "component-data.dzn" #:line 76 #:column 15))
 
 (test-equal "data formal"
   '("b" "m")
-  (test-complete #:file-name "component-data.dzn" #:line 31 #:column 13))
+  (test-complete #:file-name "component-data.dzn" #:line 71 #:column 13))
 
 (test-equal "field-test field"
   '("e.False" "e.True")
@@ -842,29 +843,30 @@
   "int.dzn:8:8"
   (test-lookup #:file-name "int.dzn" #:line 9 #:column 5))
 
+;;; component-{bool,data,enum,int}.dzn: Keep in sync.
 (test-equal "bool var->formal"
-  "component-bool.dzn:29:19"
-  (test-lookup #:file-name "component-bool.dzn" #:line 31 #:column 13))
+  "component-bool.dzn:69:19"
+  (test-lookup #:file-name "component-bool.dzn" #:line 71 #:column 13))
 
 (test-equal "enum var->formal"
-  "component-enum.dzn:29:19"
-  (test-lookup #:file-name "component-enum.dzn" #:line 31 #:column 13))
+  "component-enum.dzn:69:19"
+  (test-lookup #:file-name "component-enum.dzn" #:line 71 #:column 13))
 
 (test-equal "int var->formal"
-  "component-int.dzn:29:19"
-  (test-lookup #:file-name "component-int.dzn" #:line 31 #:column 13))
+  "component-int.dzn:69:19"
+  (test-lookup #:file-name "component-int.dzn" #:line 71 #:column 13))
 
 (test-equal "data var->formal"
-  "component-data.dzn:29:19"
-  (test-lookup #:file-name "component-data.dzn" #:line 31 #:column 13))
+  "component-data.dzn:69:19"
+  (test-lookup #:file-name "component-data.dzn" #:line 71 #:column 13))
 
 (test-equal "data var->formal"
-  "component-data.dzn:34:16"
-  (test-lookup #:file-name "component-data.dzn" #:line 37 #:column 13))
+  "component-data.dzn:74:16"
+  (test-lookup #:file-name "component-data.dzn" #:line 77 #:column 13))
 
 (test-equal "data arg->formal"
-  "component-data.dzn:34:16"
-  (test-lookup #:file-name "component-data.dzn" #:line 38 #:column 14))
+  "component-data.dzn:74:16"
+  (test-lookup #:file-name "component-data.dzn" #:line 78 #:column 14))
 
 (test-equal "variable->enum-type"
   "lookup.dzn:33:9"
