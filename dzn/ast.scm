@@ -1354,18 +1354,21 @@
 (define-method (.type (o <variable>))
   (ast:lookup o (.type.name o)))
 
- (define-method (ast:normalize (o <binding>))
+(define-method (ast:normalize (o <binding>))
+  "Bring binding O in canonical form, i.e., ordering from a system's top
+to bottom."
   (let* ((left (.left o))
          (right (.right o))
-         (left-inst (.instance left))
-         (right-inst (.instance right))
+         (left-instance (.instance left))
+         (right-instance (.instance right))
          (left-provides? (and=> (.port left) ast:provides?))
-         (right-provides? (and=> (.port right) ast:provides?)))
-    (if (or (and left-inst right-inst left-provides?)
-            (and (not left-inst) right-inst (not left-provides?))
-            (and left-inst (not right-inst) left-provides?))
-     (clone o #:left right #:right left)
-     o)))
+         (right-provides? (and=> (.port right) ast:provides?))
+         (canonical?
+          (or (and (not left-instance) right-instance left-provides?)
+              (and left-instance right-instance (not left-provides?))
+              (and left-instance (not right-instance) (not left-provides?)))))
+    (if canonical? o
+        (clone o #:left right #:right left))))
 
 (define-method (topological-sort (dag <list>) key)
 "Sort DAG topologically using function KEY, where DAG looks like
