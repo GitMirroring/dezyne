@@ -87,6 +87,7 @@ format."
 
   (define (statement-equal? a b)
     (and (eq? (.instance a) (.instance a))
+         (ast:equal? (.trigger a) (.trigger b))
          (ast:equal? (.statement a) (.statement b))))
 
   (let* ((trigger (and=> trigger trigger->component-trigger))
@@ -366,8 +367,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                                       (cons (set-state (car trace) (get-state port-pc port-instance))
                                             (cdr trace)))
                                     port-pcs)))
-                  (if (not provides-trigger?) traces
-                      (map (cute zip trigger <> <>) traces port-traces))))
+                  (map (cute zip trigger <> <>) traces port-traces)))
                ((and (%compliance-check?)
                      (null? non-compliances)
                      (not blocking?)
@@ -415,8 +415,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                   (if (null? trace) (list (cons pc (car non-compliances)))
                       (let* ((tail (cdr trace))
                              (trace (cons pc tail)))
-                        (if (not provides-trigger?) (list trace)
-                            (list (zip trigger trace (car non-compliances))))))))))))))
+                        (list (zip trigger trace (car non-compliances)))))))))))))
 
     (if port (or (and (> (length (ast:provides-port* component)) 1)
                       (is-a? (%sut) <runtime:component>)
