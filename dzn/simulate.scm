@@ -91,8 +91,10 @@ format."
          (ast:equal? (.statement a) (.statement b))))
 
   (let* ((trigger (and=> trigger trigger->component-trigger))
-         (port-on-index (or (list-index (compose (is? <on>) .statement)
-                                        port-trace)
+         (port-on-index (or (and=>
+                             (list-index (compose (is? <on>) .statement)
+                                         port-trace)
+                             1-)
                             0))
          (port-trace-suffix
           port-trace-prefix (split-at port-trace port-on-index))
