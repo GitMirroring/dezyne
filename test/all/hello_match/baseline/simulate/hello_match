@@ -1,0 +1,9 @@
+(header ((h) ihello provides) ((sut) hello_match component))
+(state ((h)) ((sut)))
+test/all/hello_match/hello_match.dzn:34:1: error: h.cruel
+<match>
+(state ((h)) ((sut)))
+test/all/hello_match/hello_match.dzn:34:1: error: h.cruel
+(trail "<match>")
+(labels "h.hello")
+(eligible)

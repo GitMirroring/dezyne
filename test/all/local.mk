@@ -306,6 +306,7 @@ REGRESSION_TESTS =				\
  %D%/hello_interface_optional			\
  %D%/hello_local_assign				\
  %D%/hello_local_enum				\
+ %D%/hello_match				\
  %D%/hello_multiple_out				\
  %D%/hello_multiple_provides_requires		\
  %D%/hello_namespace_enum			\

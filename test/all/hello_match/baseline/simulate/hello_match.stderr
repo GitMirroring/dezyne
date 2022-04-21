@@ -1,0 +1,2 @@
+test/all/hello_match/hello_match.dzn:34:1: error: h.cruel
+test/all/hello_match/hello_match.dzn:34:1: error: no match; got input `"h.cruel"'
