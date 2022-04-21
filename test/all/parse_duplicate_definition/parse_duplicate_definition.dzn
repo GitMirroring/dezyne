@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -44,5 +44,19 @@ component hello
   behavior
   {
     on h.hello(i): reply (0);
+  }
+}
+
+component float
+{
+  provides float float;
+}
+
+component ihello
+{
+  provides ihello ihello;
+  behavior
+  {
+    on ihello.hello(i): reply (0);
   }
 }

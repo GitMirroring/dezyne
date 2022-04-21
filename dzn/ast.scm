@@ -1346,7 +1346,9 @@
         (ast:lookup o name))))
 
 (define-method (.type (o <port>))
-  (ast:lookup o (.type.name o)))
+  (let ((component (parent o <component-model>)))
+    (and component
+         (ast:lookup (.parent component) (.type.name o)))))
 
 (define-method (.type (o <signature>))
   (ast:lookup o (.type.name o)))

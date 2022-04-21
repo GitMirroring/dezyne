@@ -87,16 +87,17 @@
 
 (define-method (wfc (o <foreign>))
   (append
-    (let* ((root (parent o <root>))
-           (basename (ast:base-name root)))
-      (if (not (equal? (string-join (ast:full-name o) "_") basename)) '()
-          `(,(wfc-error
-              o
-              (format
+   (re-definition o)
+   (let* ((root (parent o <root>))
+          (basename (ast:base-name root)))
+     (if (not (equal? (string-join (ast:full-name o) "_") basename)) '()
+         `(,(wfc-error
+             o
+             (format
               #f
               "foreign component cannot have the same name as its file: `~a'"
               basename)))))
-    (blocking-ports o)))
+   (blocking-ports o)))
 
 (define-method (wfc (o <component>)) ;; is-a <component-model>
   (append

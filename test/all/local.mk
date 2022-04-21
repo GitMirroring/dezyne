@@ -412,7 +412,7 @@ PARSER_TESTS =					\
  %D%/parse_assign_void				\
  %D%/parse_block_comment_import			\
  %D%/parse_component_without_trigger		\
- %D%/parse_duplicate_declaration		\
+ %D%/parse_duplicate_definition			\
  %D%/parse_duplicate_import_prefix		\
  %D%/parse_import_both				\
  %D%/parse_import_end				\
@@ -456,7 +456,7 @@ PARSER_TESTS =					\
  %D%/wf_dataInoutInOutEvent			\
  %D%/wf_dataOutInOutEvent			\
  %D%/wf_declarativeImperative			\
- %D%/wf_declaredBefore				\
+ %D%/wf_definedBefore				\
  %D%/wf_eventNotAction				\
  %D%/wf_eventNotTrigger				\
  %D%/wf_eventNotValuedAction			\

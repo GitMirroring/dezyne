@@ -48,7 +48,7 @@ interface I { // 'I' declared before
   }
 }
 
-component wf_declaredBefore {
+component wf_definedBefore {
   provides I p;
   provides I p; // 'p' declared before
   requires I r;

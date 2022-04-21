@@ -1,0 +1,23 @@
+test/all/wf_definedBefore/wf_definedBefore.dzn:27:21: error: identifier `x' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:27:13: info: previous `x' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:28:3: error: identifier `e' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:27:3: info: previous `e' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:35:1: error: identifier `I' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:26:1: info: previous `I' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:37:3: error: identifier `E' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:36:3: info: previous `E' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:38:3: error: duplicate enum field `F1' in enum `F'
+test/all/wf_definedBefore/wf_definedBefore.dzn:43:5: error: identifier `G' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:42:5: info: previous `G' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:44:19: error: identifier `f' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:44:14: info: previous `f' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:46:5: error: identifier `fn2' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:45:5: info: previous `fn2' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:53:3: error: identifier `p' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:52:3: info: previous `p' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:55:3: error: identifier `r' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:54:3: info: previous `r' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:57:3: error: identifier `s' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:56:3: info: previous `s' definition here
+test/all/wf_definedBefore/wf_definedBefore.dzn:23:1: error: identifier `foo' defined before
+test/all/wf_definedBefore/wf_definedBefore.dzn:22:1: info: previous `foo' definition here
