@@ -37,6 +37,11 @@
   - The simulator now detects possible deadlock errors due to a requires
     action blocking collaterally, which could happen when a component
     deeper in the system hierarchy uses blocking.
+  - The simulator now detects livelocks in interfaces at end of trail.
+  - The simulator now detects queue-full errors caused by external at
+    end of trail.
+  - The `dzn simulate' command now supports the `-C,--no-compliance',
+    `--no-interface-livelock' and `-Q,--no-queue-full' options,
 ** Code
   - The C++ and C# code generators and runtime now fully support
     collaterally blocking components.
@@ -72,6 +77,9 @@
     error ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/64][#64]]).
   - The parser no longer reports "<unknown-type>" expected when an
     external type definition is missing.
+  - The well-formedness check of the parser no longer hangs when a
+    component has the same name as one of its interfaces.
+  - An interface can now have the same name as its namespace.
 
 * Changes in 2.14.0 since 2.13.3
 ** Release
