@@ -617,7 +617,10 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (r:port (runtime:port pc-instance port))
                    (r:other-port (and r:port (runtime:other-port r:port)))
                    (q-trigger (clone trigger #:port.name #f))
-                   (on (find (compose (is? <on>) .statement) result))
+                   (on (find (conjoin
+                              (compose (is? <on>) .statement)
+                              (compose (cute eq? <> pc-instance) .instance))
+                             result))
                    (on (and on (.statement on)))
                    (location (if on (.location on) (.location statement)))
                    (pc (clone pc #:statement (clone statement #:location location)))

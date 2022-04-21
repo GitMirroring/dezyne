@@ -96,9 +96,9 @@ format."
                             0))
          (port-trace-suffix
           port-trace-prefix (split-at port-trace port-on-index))
-         (port-trace-prefix (rewrite-trace-head
-                             (cut clone <> #:status #f #:statement #f)
-                             port-trace-prefix))
+         (port-trace-prefix
+          (if (not (.status (car port-trace-prefix))) port-trace-prefix
+              (cdr port-trace-prefix)))
          (port-start (car port-trace-prefix))
          (port-instance (and=> (find .instance port-trace) .instance))
          (other-port (runtime:other-port port-instance))
