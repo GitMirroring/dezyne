@@ -757,19 +757,21 @@ possibly after running RUN-SILENT and return them, or false."
        (run-state pc state))
       ((? string?)
        (let* ((traces (run-to-completion*-context-switch pc event))
-              (traces (map (cute append <> pc+blocked-trace) traces))
-              (cpc (if (requires-trigger? event) pc
-                       (last pc+blocked-trace)))
-              (cpc (reset-replies cpc))
-              (cpc (clone cpc #:instance #f))
-              (traces (if (is-a? (%sut) <runtime:port>) traces
-                          (check-provides-compliance* cpc event traces))))
-         (if (pair? traces) traces
-             (let* ((model (runtime:%sut-model))
-                    (error (make <match-error>
-                             #:message "match" #:ast model #:input event)))
-               (%debug "<match-error>: ~a\n" event)
-               (list (list (clone pc #:status error)))))))
+              (traces (if (pair? traces) traces
+                          (let* ((model (runtime:%sut-model))
+                                 (error (make <match-error>
+                                          #:message "match"
+                                          #:ast model
+                                          #:input event)))
+                            (%debug "<match-error>: ~a\n" event)
+                            (list (list (clone pc #:status error))))))
+              (traces (map (cute append <> pc+blocked-trace) traces)))
+         (if (is-a? (%sut) <runtime:port>) traces
+             (let* ((cpc (if (requires-trigger? event) pc
+                             (last pc+blocked-trace)))
+                    (cpc (reset-replies cpc))
+                    (cpc (clone cpc #:instance #f)))
+               (check-provides-compliance* cpc event traces)))))
       ((? (const (and (pair? (.async pc)) (blocked-on-boundary? pc))))
        (list (cons (clone pc #:async '()) pc+blocked-trace)))
       ((? (const (pair? (.async pc))))
