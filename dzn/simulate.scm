@@ -356,8 +356,8 @@ Return a list of traces, possibly marked with <compliance-error>."
                 (let* ((pc (car trace))
                        (status (.status pc))
                        (trace (rewrite-trace-head (cut clone <> #:status #f #:statement #f) trace))
-                       (trace (if (not provides-trigger?) trace
-                                  (zip trigger trace (car (append port-traces non-compliances)))))
+                       (trace (zip trigger trace (car (append port-traces non-compliances))))
+                       (trace (cons (car trace) trace))
                        (trace (rewrite-trace-head (cut clone <> #:status status) trace)))
                   (list trace)))
                ((and (pair? port-traces)
