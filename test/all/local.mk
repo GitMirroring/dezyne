@@ -70,6 +70,7 @@ HELLO_TESTS =					\
  %D%/hello_interface				\
  %D%/hello_local				\
  %D%/hello_local_bool				\
+ %D%/hello_locations				\
  %D%/hello_multiple_provides			\
  %D%/hello_nondet				\
  %D%/hello_nondet_reply				\

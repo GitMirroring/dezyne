@@ -1,0 +1,29 @@
+(header ((h) ihello provides) ((sut) hello_inevitable component) ((w) ihello requires))
+(state ((h)) ((sut)) ((w)))
+test/all/hello_locations/hello_locations.dzn:32:8: <external>.h.hello -> ...
+test/all/hello_locations/hello_locations.dzn:45:8: ... -> sut.h.hello
+test/all/hello_locations/hello_locations.dzn:45:20: sut.w.hello -> ...
+test/all/hello_locations/hello_locations.dzn:32:8: ... -> <external>.w.hello
+test/all/hello_locations/hello_locations.dzn:32:5: ... <- <external>.w.return
+test/all/hello_locations/hello_locations.dzn:45:20: sut.w.return <- ...
+test/all/hello_locations/hello_locations.dzn:45:5: ... <- sut.h.return
+test/all/hello_locations/hello_locations.dzn:32:5: <external>.h.return <- ...
+(state ((h)) ((sut)) ((w)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+test/all/hello_locations/hello_locations.dzn:33:20: ... <- <external>.w.world
+test/all/hello_locations/hello_locations.dzn:33:20: sut.<q> <- ...
+test/all/hello_locations/hello_locations.dzn:46:5: ... <- sut.<q>
+test/all/hello_locations/hello_locations.dzn:46:5: sut.w.world <- ...
+test/all/hello_locations/hello_locations.dzn:46:20: ... <- sut.h.world
+test/all/hello_locations/hello_locations.dzn:33:20: <external>.h.world <- ...
+(state ((h)) ((sut)) ((w)))
+(trail "w.world" "h.world")
+test/all/hello_locations/hello_locations.dzn:34:8: <external>.h.bye -> ...
+test/all/hello_locations/hello_locations.dzn:47:8: ... -> sut.h.bye
+test/all/hello_locations/hello_locations.dzn:47:5: ... <- sut.h.return
+test/all/hello_locations/hello_locations.dzn:34:5: <external>.h.return <- ...
+(state ((h)) ((sut)) ((w)))
+(trail "h.bye" "h.return")
+(state ((h)) ((sut)) ((w)))
+(labels "h.hello" "h.bye" "w.world")
+(eligible "h.bye" "h.hello" "w.world")
