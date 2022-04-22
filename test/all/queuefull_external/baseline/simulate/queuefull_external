@@ -1,0 +1,9 @@
+(header ((p) i provides) ((sut) queuefull_external component) ((r) ii requires))
+(state ((p)) ((sut)) ((r)))
+test/all/queuefull_external/queuefull_external.dzn:40:20: error: queue-full in component "ii"
+<queue-full>
+(state ((p)) ((sut)) ((r)))
+test/all/queuefull_external/queuefull_external.dzn:40:20: error: queue-full in component "ii"
+(trail "<queue-full>")
+(labels "r.cb")
+(eligible)
