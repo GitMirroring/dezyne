@@ -1,4 +1,4 @@
-model: livelock_synchronous2
+model: queuefull_component1
 h.hello
 w.hello
 w.cruel

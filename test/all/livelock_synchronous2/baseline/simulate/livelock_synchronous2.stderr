@@ -1,1 +1,0 @@
-test/all/livelock_synchronous2/livelock_synchronous2.dzn:38:24: error: queue-full in component "livelock_synchronous2"

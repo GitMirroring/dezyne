@@ -351,7 +351,7 @@ REGRESSION_TESTS =				\
  %D%/livelock_iterator				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
- %D%/livelock_synchronous2			\
+ %D%/queuefull_component1			\
  %D%/livelock_synchronous_illegal		\
  %D%/livelock_unfold				\
  %D%/missing_reply				\
