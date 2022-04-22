@@ -1,4 +1,4 @@
 model: livelock_recurse
-h.hello
+hello
 <loop>
 <livelock>

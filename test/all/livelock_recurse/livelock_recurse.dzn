@@ -2,6 +2,7 @@
 //
 // Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,25 +23,16 @@
 //
 // Code:
 
-interface ihello
+interface livelock_recurse
 {
   in void hello();
 
   behavior
   {
-    on hello: {}
-  }
-}
-
-component livelock_recurse
-{
-  provides ihello h;
-
-  behavior
-  {
-    void infinite_recursive() {
-      infinite_recursive();
+    void infinite_recursion ()
+    {
+      infinite_recursion ();
     }
-    on h.hello(): infinite_recursive();
+    on hello: infinite_recursion ();
   }
 }
