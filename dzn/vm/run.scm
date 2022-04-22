@@ -254,7 +254,8 @@ mark it with <determinism-error>."
                                 (cute pc-equal? <> pc-loop)
                                 (reverse trace-prefix))
                                (cute - (length trace-prefix) <> 1)))
-         (rest shorter-prefix (split-at trace-prefix shorter-index))
+         (shorter-prefix (if (not shorter-index) trace-suffix
+                             (drop trace-prefix shorter-index)))
          (pc (car shorter-prefix))
          (ast (or (.statement pc) ast-model))
          (error (make <livelock-error> #:ast ast #:message "livelock"))
