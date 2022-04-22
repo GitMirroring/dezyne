@@ -272,10 +272,11 @@ mark it with <determinism-error>."
 prefix."
   (define* (trace-head-recurrence? trace)
     (let ((trace (filter
-                  (conjoin (compose (is? <runtime:component>) .instance)
-                           (negate (compose (is? <initial-compound>) .statement))
-                           (negate (compose (is? <end-of-on>) .statement))
-                           )
+                  (conjoin
+                   (disjoin (compose (cute eq? <> (%sut)) .instance)
+                            (compose (is? <runtime:component>) .instance))
+                   (negate (compose (is? <initial-compound>) .statement))
+                   (negate (compose (is? <end-of-on>) .statement)))
                   trace)))
       (and (pair? trace)
            (find (cute pc-equal?
@@ -580,6 +581,11 @@ until RTC?."
          (port-instance (runtime:port-name->instance port-name))
          (traces (run-silent pc port-instance)))
     (map car traces)))
+
+(define-method (run-silent traces)
+  (let* ((pcs (map last traces))
+         (pcs (map (cute clone <> #:status #f) pcs)))
+    (append-map (cute run-silent <> (%sut)) pcs)))
 
 (define-method (run-external-modeling (pc <program-counter>) (port <runtime:port>))
   (define (update-state pc port-pc)

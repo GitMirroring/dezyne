@@ -728,34 +728,32 @@ possibly after running RUN-SILENT and return them, or false."
            (trail-alist (map extend-silent-traces trail-alist))
            (traces (append-map check-determisistic trail-alist)))
       (and (pair? traces) traces)))
-  (define (get-silent-traces traces)
-    (let* ((pcs (map last traces))
-           (pcs (map (cute clone <> #:status #f) pcs)))
-      (append-map (cute run-silent <> (%sut)) pcs)))
-  (define (livelock? trace)
-    (let ((trail (parameterize ((%modeling? #t)) (trace->string-trail trace))))
-      (and (> (length trace) 1)
-           (pc-equal? (car trace) (last trace))
-           (list-index (compose (is? <on>) .statement) trace))))
-  (define (check-livelock traces)
-    (let* ((traces (get-silent-traces traces))
-           (traces (get-silent-traces traces))
-           (livelock traces (partition livelock? traces))
-           (livelock (map (cute mark-livelock-error <> <>)
-                          livelock
-                          (map livelock? livelock))))
-      (as livelock <pair>)))
   (define (check-silence traces)
     (let* ((pcs (map last traces))
            (start-traces (map list pcs))
-           (traces (get-silent-traces traces))
+           (traces (run-silent traces))
            (traces (append start-traces traces))
            (alist (cons '() traces))
            (traces (check-determisistic alist)))
       (and (pair? traces) traces)))
   (or (check-traces traces)
-      (check-livelock traces)
       (check-silence traces)))
+
+(define (check-interface-livelock traces)
+  "Determine wether TRACES contain a livelock after running RUN-SILENT and return them,
+or false."
+  (define (livelock? trace)
+    (let ((trail (parameterize ((%modeling? #t)) (trace->string-trail trace))))
+      (and (> (length trace) 1)
+           (pc-equal? (car trace) (last trace))
+           (list-index (compose (is? <on>) .statement) trace))))
+  (let* ((traces (run-silent traces))
+         (traces (run-silent traces))
+         (livelock traces (partition livelock? traces))
+         (livelock (map (cute mark-livelock-error <> <>)
+                        livelock
+                        (map livelock? livelock))))
+    (as livelock <pair>)))
 
 (define-method (run-state (pc <program-counter>) (state <list>))
   (let ((pc (set-state pc state)))
@@ -1032,6 +1030,16 @@ status."
              (not status)
              (is-a? (%sut) <runtime:port>)
              (and=> (check-interface-determinism traces)
+                    (cute report <>
+                          #:eligible '()
+                          #:internal? internal?
+                          #:locations? locations?
+                          #:state? state?
+                          #:trace trace
+                          #:verbose? verbose?)))
+        (and (not status)
+             (is-a? (%sut) <runtime:port>)
+             (and=> (check-interface-livelock traces)
                     (cute report <>
                           #:eligible '()
                           #:internal? internal?
