@@ -891,6 +891,19 @@ refusals-check.  Run final REPORT and return exit status."
                        #:trace trace
                        #:verbose? verbose?)))))
 
+  (define (check-external-queue-full traces)
+    (let ((pcs (map car traces)))
+      (let loop ((pcs pcs) (q 0))
+        (let* ((traces (append-map run-external-modeling pcs))
+               (error (find (compose .status car) traces)))
+          (if error (list error)
+              (let* ((pcs (map car traces))
+                     (external-queues (append-map .external-q pcs))
+                     (queue (append-map cdr external-queues))
+                     (q-size (length queue)))
+                (and (> q-size q)
+                     (loop pcs q-size))))))))
+
   (define (interface-deadlock-report pcs traces)
     "Run deadlock check for all PCs per state."
     (let ((pcs (if (pair? traces) (map car traces) pcs)))
@@ -1026,6 +1039,15 @@ status."
         (and deadlock-check?
              (not (is-a? (%sut) <runtime:port>))
              (deadlock-report from-pcs traces))
+        (and (not (is-a? (%sut) <runtime:port>))
+             (and=> (check-external-queue-full traces)
+                    (cute report <>
+                          #:eligible '()
+                          #:internal? internal?
+                          #:locations? locations?
+                          #:state? state?
+                          #:trace trace
+                          #:verbose? verbose?)))
         (and interface-determinism-check?
              (not status)
              (is-a? (%sut) <runtime:port>)

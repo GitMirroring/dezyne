@@ -612,6 +612,12 @@ until RTC?."
                                      traces)))
                 (map (cute rewrite-trace-head (cute update-state pc <>) <>) traces)))))))
 
+(define-method (run-external-modeling (pc <program-counter>))
+  (let* ((ports (filter (conjoin runtime:boundary-port?
+                                 ast:external? ast:requires?)
+                        (%instances))))
+    (append-map (cute run-external-modeling pc <>) ports)))
+
 (define-method (run-external-modeling (pc <program-counter>) event)
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (clone (string->trigger event) #:parent component))
