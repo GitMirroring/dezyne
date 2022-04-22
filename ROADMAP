@@ -38,30 +38,22 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 * TODO
 ** Release 2.15
   - Pass regression test
-    + XFAIL: external_blocking_livelock
-    + XFAIL: compliance_livelock
-    + livelock_synchronous2: NOT a livelock, rename to queuefull_synchronous2?
     + data_full: split into smaller tests, preferrably trace-based,
       and without handwritten main's
     + Bring multiple events on a single modeling event properly under test
       + Require flush on provides port: h.<flush>
       + Make test fail if without flush
       + Test in combination with foreign
-    + queuefull_external: Skipped for simulator: no trace
-      How to test a <queue-full> without trace?
-    + livelock_interface0: Simulator does not see the livelock
-      How to find a livelock without a trace?
   - dezyne.org
     + blog post about free software?
-  - Release on savannah.nongnu.org
-    + In progress: https://savannah.nongnu.org/task/?16067
-    + create bug-dezyne@nongnu.org, dezyne-devel@nongnu.org
-    + register #dezyne
-  - Documentation
-    + Blocking, thread-safe-shell, external, collateral-block.
+  - register #dezyne
 
 ** Release 2.16
   - async -> defer; deprecate async
+  - remove interleaving (ladders) of requires in/reply and other events in makreel
+    + enable lts for queuefull_component0, queuefull_component1,
+      queuefull_external_sync, blocking_queuefull,
+      blocking_queuefull_reply
 
 ** Release 2.17
   - Finish and merge wip-stitch
@@ -136,11 +128,15 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 
 ** Release 2.19
   - Language extensions:
+    + active system (thread-safe-shell) abstraction: external & blocking
     + module specifications (aka aggregate interfaces)
     + functional verification
     + model based testing
 
 ** Release 3.0
+  - Pass regression test
+    + XFAIL: external_blocking_livelock
+    + XFAIL: compliance_livelock
   - Language extensions:
     + hierarchical behaviors (sub machines)
     + data behavior (data interfaces, data shims)
@@ -172,6 +168,15 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - Documentation
+    + Blocking, collateral-block.
+  - Release on savannah.nongnu.org
+    + In progress: https://savannah.nongnu.org/task/?16067
+    + create bug-dezyne@nongnu.org, dezyne-devel@nongnu.org
+  - Pass regression test:
+    +  queuefull_external: Skipped for simulator: no trace
+    + livelock_interface0: Simulator does not see the livelock: fixed
+    +  livelock_synchronous2: NOT a livelock, renamed to queuefull_component1
   - Collateral blocking / full blocking support
     + Finish and merge wip-blocking
       - async traces / async_blocking_ranking_disorder
