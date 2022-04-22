@@ -590,7 +590,7 @@ until RTC?."
 (define-method (run-external-modeling (pc <program-counter>) (port <runtime:port>))
   (define (update-state pc port-pc)
     (let ((pc (set-state pc (get-state port-pc port))))
-      (clone pc #:external-q (.external-q port-pc))))
+      (clone pc #:external-q (.external-q port-pc) #:status (.status port-pc))))
   (%debug "run-external-modeling... ~s\n" (name port))
   (let* ((r:other-port (runtime:other-port port))
          (external? (and (ast:requires? r:other-port)
@@ -606,7 +606,10 @@ until RTC?."
                                             (%exploring? #t)
                                             (%strict? #f))
                                (append-map (cut run-to-completion ipc <>) modeling-names)))
-                     (traces (filter (compose (negate .status) car) traces)))
+                     (traces (filter (compose
+                                      (disjoin not (is? <queue-full-error>))
+                                      .status car)
+                                     traces)))
                 (map (cute rewrite-trace-head (cute update-state pc <>) <>) traces)))))))
 
 (define-method (run-external-modeling (pc <program-counter>) event)
@@ -644,8 +647,10 @@ until RTC?."
 
 (define-method (run-requires (pc <program-counter>) event)
   (define (event-executed? port-instance trace)
-    (let ((trail (map cdr (trace->trail trace))))
-      (or (and (pair? trail)
+    (let ((status (.status (car trace)))
+          (trail (map cdr (trace->trail trace))))
+      (or (is-a? status <queue-full-error>)
+          (and (pair? trail)
                (equal? event (car trail)))
           (and (null? trail)
                (let* ((pc (car trace))
@@ -672,7 +677,7 @@ until RTC?."
                                                               trigger))
                (instance (.container component-port))
                (traces (map (cut rewrite-trace-head
-                                 (cut clone <> #:instance instance) <>)
+                              (cut clone <> #:instance instance) <>)
                             traces))
                (collateral-blocked? (or (blocked-on-boundary? pc)
                                         (and (get-handling pc instance)

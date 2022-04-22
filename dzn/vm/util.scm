@@ -819,7 +819,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (instance (.instance pc))
          (q (or (assoc-ref external-q instance) '())))
     (if (= (length q) (%queue-size))
-        (clone pc #:status (make <queue-full-error> #:ast ast #:message "queue-full" #:instance instance))
+        (let ((error (make <queue-full-error> #:ast ast #:instance instance
+                           #:message "queue-full")))
+          (clone pc #:status error))
         (let* ((external-q (alist-delete instance external-q))
                (external-q (acons instance (append q (list trigger)) external-q))
                (external-q (sort external-q
@@ -1137,6 +1139,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (match (.status o)
     ((or ($ <illegal-error>) ($ <implicit-illegal-error>))
      "<illegal>")
+    (($ <queue-full-error>)
+     "<queue-full>")
     ((? identity)
      "<deadlock>")
     (_
