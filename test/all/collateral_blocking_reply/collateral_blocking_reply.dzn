@@ -43,6 +43,7 @@ interface iblock
   behaviour
   {
     on hello: reply (true);
+    on hello: reply (false);
   }
 }
 

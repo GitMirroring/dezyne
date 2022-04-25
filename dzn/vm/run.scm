@@ -316,9 +316,10 @@ program-counters produced by taking a step."
            ((or (and (%strict?) input)
                 (and input
                      (is-a? statement <trigger-return>)
-                     (blocked-on-boundary? pc)))
-            (clone pc #:status (make <match-error> #:ast statement #:input input
-                                     #:message "match")))
+                     (blocked-on-boundary? orig-pc)))
+            (let ((error (make <match-error> #:ast statement #:input input
+                               #:message "match")))
+              (clone pc #:status error)))
            (else
             (clone pc #:status (make <postponed-match> #:ast statement
                                      #:input input))))))
