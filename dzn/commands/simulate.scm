@@ -49,6 +49,7 @@
             (no-deadlock (single-char #\D))
             (no-interface-determinism)
             (no-interface-livelock)
+            (no-queue-full (single-char #\Q))
             (no-refusals (single-char #\R))
             (queue-size (single-char #\q) (value #t))
             (state (single-char #\s))
@@ -67,6 +68,7 @@ Simulate a Dezyne model
 
   -C, --no-compliance    skip the compliance check
   -D, --no-deadlock      skip the deadlock check
+  -Q, --no-queue-full    skip the external queue-full check
   -R, --no-refusals      skip the refusals check
   -f, --format=FORMAT    display trace in format FORMAT [event] {diagram,event,trace}
   -h, --help             display this help and exit
@@ -103,6 +105,7 @@ Simulate a Dezyne model
           (option-ref options 'no-interface-determinism #f))
          (no-interface-livelock?
           (option-ref options 'no-interface-livelock #f))
+         (no-queue-full? (option-ref options 'no-queue-full #f))
          (no-refusals? (option-ref options 'no-refusals #f))
          (queue-size (command-line:get 'queue-size "3"))
          (queue-size (string->number queue-size))
@@ -121,6 +124,7 @@ Simulate a Dezyne model
                            (not no-interface-determinism?)
                            #:interface-livelock-check?
                            (not no-interface-livelock?)
+                           #:queue-full-check? (not no-queue-full?)
                            #:refusals-check? (not no-refusals?)
                            #:internal? internal?
                            #:locations? locations?

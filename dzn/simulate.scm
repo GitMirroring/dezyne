@@ -864,10 +864,11 @@ optional labels only and stop when observable event seen."
 
 (define* (end-report from-pcs list-of-traces #:key deadlock-check?
                      interface-determinism-check? interface-livelock-check?
-                     refusals-check?
+                     queue-full-check? refusals-check?
                      state? trace internal? locations? verbose?)
-  "If DEADLOCK-CHECK?, run check-deadlock.  If REFUSALS-CHECK?, run
-refusals-check.  Run final REPORT and return exit status."
+  "If DEADLOCK-CHECK?, run check-deadlock.  If QUEUE-FULL-CHECK?, run
+check-external queue-full.  If REFUSALS-CHECK?, run refusals-check.  Run
+final REPORT and return exit status."
 
   (define (deadlock-report pcs traces)
     "Run check-deadlock and report.  Return exit status."
@@ -1040,7 +1041,8 @@ status."
         (and deadlock-check?
              (not (is-a? (%sut) <runtime:port>))
              (deadlock-report from-pcs traces))
-        (and (not (is-a? (%sut) <runtime:port>))
+        (and queue-full-check?
+             (not (is-a? (%sut) <runtime:port>))
              (and=> (check-external-queue-full traces)
                     (cute report <>
                           #:eligible '()
@@ -1089,7 +1091,7 @@ status."
                   #:verbose? verbose?)))))
 
 (define* (run-trail trail #:key deadlock-check? interface-determinism-check?
-                    interface-livelock-check? refusals-check?
+                    interface-livelock-check? queue-full-check? refusals-check?
                     internal?
                     locations? state? trace verbose?)
   "Run TRAIL on (%SUT) and produce a trace on STDOUT."
@@ -1198,6 +1200,7 @@ status."
                                    interface-determinism-check?
                                    #:interface-livelock-check?
                                    interface-livelock-check?
+                                   #:queue-full-check? queue-full-check?
                                    #:refusals-check? refusals-check?
                                    #:state? state?
                                    #:trace trace
@@ -1322,14 +1325,15 @@ status."
 (define* (simulate root
                    #:key compliance-check? deadlock-check?
                    interface-determinism-check? interface-livelock-check?
-                   refusals-check?
+                   queue-full-check? refusals-check?
                    model-name queue-size strict? trace trail
                    internal? locations? state? verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
-session for MODEL, following TRAIL.  When STRICT?, the trail must
-include all observable events.  When COMPLIANCE-CHECK?, report
-compliance errors.  When DEADLOCK-CHECK?, run check-deadlock at the end.
-When REFUSALS-CHECK?, run refusals-check at the end."
+session for MODEL, following TRAIL.  If STRICT?, the trail must include
+all observable events.  If COMPLIANCE-CHECK?, report compliance errors.
+If DEADLOCK-CHECK?, run check-deadlock at EOT.  If QUEUE-FULL-CHECK?,
+run external queue-full-check at EOT.  If REFUSALS-CHECK?, run
+refusals-check at EOT."
   (let* ((trail? trail)
          (trail (or trail
                     (and (not (isatty? (current-input-port)))
@@ -1346,6 +1350,7 @@ When REFUSALS-CHECK?, run refusals-check at the end."
                #:deadlock-check? deadlock-check?
                #:interface-determinism-check? interface-determinism-check?
                #:interface-livelock-check? interface-livelock-check?
+               #:queue-full-check? queue-full-check?
                #:refusals-check? refusals-check?
                #:model-name model-name
                #:queue-size queue-size
@@ -1359,14 +1364,15 @@ When REFUSALS-CHECK?, run refusals-check at the end."
 (define* (simulate* root trail
                     #:key compliance-check? deadlock-check?
                     interface-determinism-check? interface-livelock-check?
-                    refusals-check?
+                    queue-full-check? refusals-check?
                     model-name queue-size strict? trace
                     internal? locations? state? verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
-following TRAIL.  When STRICT?, the trail must include all observable
-events.  When COMPLIANCE-CHECK?, report compliance errors.  When
-DEADLOCK-CHECK?, run check-deadlock at the end, when REFUSALS-CHECK?,
-run refusals-check at the end."
+following TRAIL.  If STRICT?, the trail must include all observable
+events.  If COMPLIANCE-CHECK?, report compliance errors.  If
+DEADLOCK-CHECK?, run check-deadlock at EOT.  If QUEUE-FULL-CHECK?, run
+external queue-full-check at EOT.  If REFUSALS-CHECK?, run
+refusals-check at EOT."
   (let* ((root (filter-root root #:model-name model-name))
          (root (vm:normalize root)))
     (when (> (dzn:debugity) 1)
@@ -1379,6 +1385,7 @@ run refusals-check at the end."
                     #:deadlock-check? deadlock-check?
                     #:interface-determinism-check? interface-determinism-check?
                     #:interface-livelock-check? interface-livelock-check?
+                    #:queue-full-check? queue-full-check?
                     #:refusals-check? refusals-check?
                     #:queue-size queue-size
                     #:strict? strict?
@@ -1391,7 +1398,7 @@ run refusals-check at the end."
 (define* (simulate** sut instances trail
                      #:key compliance-check? deadlock-check?
                      interface-determinism-check? interface-livelock-check?
-                     refusals-check?
+                     queue-full-check? refusals-check?
                      queue-size strict? trace
                      internal? locations? state? verbose?)
   "Entry point for simulate library, much like simulate*.  This
@@ -1406,6 +1413,7 @@ memoizations to work."
                #:deadlock-check? deadlock-check?
                #:interface-determinism-check? interface-determinism-check?
                #:interface-livelock-check? interface-livelock-check?
+               #:queue-full-check? queue-full-check?
                #:refusals-check? refusals-check?
                #:trace trace
                #:internal? internal?

@@ -3008,7 +3008,7 @@ Do not run the compliance check.
 
 @item --no-deadlock
 @itemx -D
-Do not run the deadlock check.
+Do not run the deadlock check at the end of the trail (EOT).
 
 @item --no-interface-determinism
 Do not run the observable non-determinism check on interfaces.
@@ -3016,9 +3016,14 @@ Do not run the observable non-determinism check on interfaces.
 @item --no-interface-livelock
 Do not run the interface livelock check at the end of the trail (EOT).
 
+@item --no-queue-full
+@itemx -Q
+Do not run the external queue-full check at the end of the trail (EOT).
+
 @item --no-refusals
 @itemx -R
-Do not run the compliance check for the failures model refusals check.
+Do not run the compliance check for the failures model refusals check at
+the end of the trail (EOT).
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
