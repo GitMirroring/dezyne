@@ -3013,6 +3013,9 @@ Do not run the deadlock check.
 @item --no-interface-determinism
 Do not run the observable non-determinism check on interfaces.
 
+@item --no-interface-livelock
+Do not run the interface livelock check at the end of the trail (EOT).
+
 @item --no-refusals
 @itemx -R
 Do not run the compliance check for the failures model refusals check.

@@ -48,6 +48,7 @@
             (no-compliance (single-char #\C))
             (no-deadlock (single-char #\D))
             (no-interface-determinism)
+            (no-interface-livelock)
             (no-refusals (single-char #\R))
             (queue-size (single-char #\q) (value #t))
             (state (single-char #\s))
@@ -76,6 +77,8 @@ Simulate a Dezyne model
   -m, --model=MODEL      generate main for MODEL
       --no-interface-determinism
                          skip interface RTC determinism check
+      --no-interface-livelock
+                         skip interface livelock check at EOT
   -q, --queue-size=SIZE  use queue size=SIZE for simulation [3]
       --state            show state after every action, trigger
   -s, --strict           use strict matching of trail
@@ -98,6 +101,8 @@ Simulate a Dezyne model
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (no-interface-determinism?
           (option-ref options 'no-interface-determinism #f))
+         (no-interface-livelock?
+          (option-ref options 'no-interface-livelock #f))
          (no-refusals? (option-ref options 'no-refusals #f))
          (queue-size (command-line:get 'queue-size "3"))
          (queue-size (string->number queue-size))
@@ -114,6 +119,8 @@ Simulate a Dezyne model
                            #:deadlock-check? (not no-deadlock?)
                            #:interface-determinism-check?
                            (not no-interface-determinism?)
+                           #:interface-livelock-check?
+                           (not no-interface-livelock?)
                            #:refusals-check? (not no-refusals?)
                            #:internal? internal?
                            #:locations? locations?
