@@ -3,7 +3,7 @@
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -63,14 +63,26 @@
             (tree      (and file-name ((%file-name->parse-tree) file-name))))
        (and tree (search-or-widen-context scope name (tree->context tree)))))))
 
+(use-modules (dzn misc))
 (define search
   (pure-funcq
    (lambda (scope name context)
      (let* ((target (if (null? scope) name (car scope)))
             (found (filter (compose (cute tree:name-equal? <> target) .name)
                            (tree:declaration* (.tree context)))))
+       (define (search-in-scope)
+         (and (pair? found)
+              (let ((found
+                     (or
+                      (find (compose (cute tree:name-equal? <> target) .name)
+                            (append-map tree:declaration* found))
+                      (any (compose (cute widen-to-imports <> name context)
+                                    tree:id* .name)
+                           found)
+                      (car found))))
+                (cons found context))))
        (and (pair? found)
-            (let* ((found (if (null? scope) (and (pair? found) (cons (car found) context))
+            (let* ((found (if (null? scope) (search-in-scope)
                               (let ((tail (cdr scope)))
                                 (any (compose (cute search tail name <>)
                                               (cute tree->context <> context))
