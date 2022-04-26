@@ -1086,8 +1086,11 @@
 
 (define-method (ast:lookup-n (o <scope>) (name <scope.name>))
   (let ((ids (.ids name)))
-    (if (null? (cdr ids)) (if (ast:has-equal-name (car ids) o) (list o)
-                              (ast:lookup-n o (car ids)))
+    (if (null? (cdr ids))
+        (let ((down (ast:lookdown o name)))
+          (if (pair? down) down
+              (if (ast:has-equal-name (car ids) o) (list o)
+                  (ast:lookup-n o (car ids)))))
         (let* ((first (car ids))
                (first-scopes (ast:lookup-n o first)))
           (if (null? first-scopes) '()
