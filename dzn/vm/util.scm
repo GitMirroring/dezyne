@@ -802,7 +802,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((state (get-state pc instance))
          (q (.q state)))
     (if (= (length q) (%queue-size))
-        (clone pc #:status (make <queue-full-error> #:ast ast #:message "queue-full" #:instance instance))
+        (let ((error (make <queue-full-error> #:ast ast  #:instance instance
+                           #:message "queue-full")))
+          (clone pc #:status error))
      (set-deferred (set-state pc (clone state #:q (append q (list trigger)))) instance))))
 
 (define-method (dequeue (pc <program-counter>))
@@ -966,8 +968,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (state (get-state pc))
          (value (eval-expression state expression))
          (state (clone state #:variables (assoc-set! (copy-tree (.variables state)) name value)))
-         (pc (set-state pc state)))
-    (clone pc #:status (range-error variable value))))
+         (pc (set-state pc state))
+         (error (range-error variable value)))
+    (if (not error) pc
+     (clone pc #:status error))))
 
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <expression>))
   (next-method))
@@ -1404,5 +1408,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (system-state (if (null? errors) system-state (make-system-state '())))
          (id (pc:next-id))
          (pc (make <program-counter> #:id id #:state system-state #:trail trail))
-         (pc (if (null? errors) pc (clone pc #:status (car errors)))))
+         (pc (if (null? errors) pc
+                 (clone pc #:status (car errors)))))
   pc))

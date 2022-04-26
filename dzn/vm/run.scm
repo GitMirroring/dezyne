@@ -768,7 +768,8 @@ until RTC?."
                (let* ((model (runtime:%sut-model))
                       (ast (if (is-a? model <system>) model
                                (.behavior model)))
-                      (error (make <match-error> #:ast ast #:input event #:message "match"))
+                      (error (make <match-error> #:ast ast #:input event
+                                   #:message "match"))
                       (pc (clone pc #:status error)))
                  (%debug "<match> ~a pc: ~s\n" event pc)
                  (list (list pc) )))))))

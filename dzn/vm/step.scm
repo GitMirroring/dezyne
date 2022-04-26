@@ -195,7 +195,8 @@
 
 (define-method (step (pc <program-counter>) (o <illegal>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (list (clone pc #:previous #f #:status (make <illegal-error> #:message "illegal" #:ast o))))
+  (let ((error (make <illegal-error> #:message "illegal" #:ast o)))
+    (list (clone pc #:status error))))
 
 (define-method (step (pc <program-counter>) (o <compound>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
@@ -285,7 +286,8 @@
             (r:port (runtime:port instance (.port o)))
             (req-pending? (find (compose (cute ast:eq? r:port <>) cadr) (.async pc))))
        (if req-pending?
-           (list (clone pc #:status (make <illegal-error> #:message "illegal" #:ast o)))
+           (let ((error (make <illegal-error> #:message "illegal" #:ast o)))
+             (list (clone pc #:status error)))
            (let ((pc (clone pc #:async (acons rank (cons r:port ack) (.async pc)))))
              (list (continuation pc o))))))
     ("clr"
@@ -356,14 +358,18 @@
                         (.name (.ast instance))))
          (value (get-reply pc port-name))
          (pc (if value
-                 (let ((error (make <second-reply-error> #:ast o #:previous (.parent value) #:message "second-reply")))
+                 (let ((error (make <second-reply-error>
+                                #:ast o
+                                #:previous (.parent value)
+                                #:message "second-reply")))
                    (%debug "second reply, previous=~a\n" (ast:location->string value))
                    (clone pc #:status error))
                  (let ((value (eval-expression pc (.expression o))))
                    (continuation (set-reply pc port-name value) o))))
          (reply-port (.port o)))
     (cond ((ast:modeling? (.trigger pc))
-           (let ((pc (clone pc #:status (make <deadlock-error> #:ast o #:message "deadlock"))))
+           (let* ((error (make <deadlock-error> #:ast o #:message "deadlock"))
+                  (pc (clone pc #:status error)))
              (list pc)))
           ((let* ((trigger (.trigger pc))
                   (trigger-port (.port trigger))
@@ -508,7 +514,8 @@
     (let* ((trigger (.trigger pc))
            (type (ast:type trigger))
            (typed? (ast:typed? type))
-           (error (make <missing-reply-error> #:ast o #:type type #:message "missing-reply")))
+           (error (make <missing-reply-error> #:ast o #:type type
+                        #:message "missing-reply")))
       (%debug "missing reply\n")
       (list (clone pc #:status error))))
    (else
