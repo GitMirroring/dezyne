@@ -380,6 +380,7 @@ REGRESSION_TESTS =				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
  %D%/simple.space				\
+ %D%/space.interface_shadow			\
  %D%/space.space				\
  %D%/state_deadlock				\
  %D%/step_state					\
