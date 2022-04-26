@@ -381,6 +381,7 @@ REGRESSION_TESTS =				\
  %D%/shell_injected				\
  %D%/simple.space				\
  %D%/space.interface_shadow			\
+ %D%/space.import_interface_shadow		\
  %D%/space.space				\
  %D%/state_deadlock				\
  %D%/step_state					\
