@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,10 +43,10 @@ component async_cancel
   provides i p;
   behavior
   {
-    requires dzn.async(T t) defer;
+    requires dzn.async(T t) async;
     bool idle = true;
-    [idle] on p.e (t): {idle=false; defer.req (t);}
-    on p.c (t): {idle=true; defer.clr ();}
-    [!idle] on defer.ack (t): {idle=true;p.a (t);}
+    [idle] on p.e (t): {idle=false; async.req (t);}
+    on p.c (t): {idle=true; async.clr ();}
+    [!idle] on async.ack (t): {idle=true;p.a (t);}
   }
 }

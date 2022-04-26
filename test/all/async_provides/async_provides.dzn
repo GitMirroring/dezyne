@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,9 +37,9 @@ component async_provides
 {
   provides ihello h;
   behavior {
-    requires dzn.async defer;
+    requires dzn.async async;
     bool idle = true;
-    [idle] on h.hello (): {idle=false; defer.req ();}
-    [!idle] on defer.ack (): {idle=true;h.world ();}
+    [idle] on h.hello (): {idle=false; async.req ();}
+    [!idle] on async.ack (): {idle=true;h.world ();}
   }
 }

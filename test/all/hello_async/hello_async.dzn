@@ -39,9 +39,9 @@ component hello_async
 {
   provides ihello h;
   behavior {
-    requires dzn.async(T t) defer;
+    requires dzn.async(T t) async;
     bool idle = true;
-    [idle] on h.hello (t): {idle=false; defer.req (t);}
-    [!idle] on defer.ack (t): {idle=true; h.world (t);}
+    [idle] on h.hello (t): {idle=false; async.req (t);}
+    [!idle] on async.ack (t): {idle=true; h.world (t);}
   }
 }
