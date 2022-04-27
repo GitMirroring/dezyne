@@ -223,7 +223,8 @@
 (define-templates reordered ast:provides-port* union-infix)
 
 ;; provides
-(define-templates provides-r2c-proc makreel:provides-proc newline-union-infix)
+(define-templates provides-r2c-blocking-proc (lambda (o) (if (any ast:blocking? (ast:provides-port* o)) (makreel:provides-proc o) '())) newline-union-infix)
+(define-templates provides-r2c-proc (lambda (o) (if (not (any ast:blocking? (ast:provides-port* o))) (makreel:provides-proc o) '())) newline-union-infix)
 (define-templates provides-out makreel:provides-proc newline-union-infix)
 (define-templates provides-comm ast:provides-port* newline-comma-infix)
 (define-templates provides-allow ast:provides-port* newline-comma-prefix)

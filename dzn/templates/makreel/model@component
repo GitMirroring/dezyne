@@ -79,7 +79,7 @@ queue_not_empty';
 
 proc
 provides_r2c(ports: Set(provides_ports))
- = #x:provides-r2c-proc
+ = #x:provides-r2c-proc #x:provides-r2c-blocking-proc
  ;
 
 provides_out(ports: Set(provides_ports))
