@@ -287,8 +287,8 @@ dist-hook: gen-ChangeLog
 	@rm -rf $(distdir)/test/all/*/out
 
 release: update-hash
-	git commit -m 'guix: dezyne: Update to $(PACKAGE_VERSION).'					\
-	    -m '* guix/gnu/packages/dezyne.scm (dezyne)[source]: : Update to $(PACKAGE_VERSION).'	\
+	git commit -m 'guix: dezyne: Update to $(PACKAGE_VERSION).'				\
+	    -m '* guix/gnu/packages/dezyne.scm (dezyne)[source]: Update to $(PACKAGE_VERSION).'	\
 	    guix/gnu/packages/dezyne.scm
 
 GPG_KEY_ID=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
