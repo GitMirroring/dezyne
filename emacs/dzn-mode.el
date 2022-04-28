@@ -40,14 +40,18 @@
 (defun PATH-search-path (file-name)
   (locate-file file-name (split-string (getenv "PATH") ":") nil 'executable))
 
-(defcustom dzn-program (if (or (PATH-search-path "dzn")
-                               (not load-file-name) dzn-windows-p) "dzn"
-                         (let* ((dir (file-name-directory load-file-name))
-                                (pre-inst-env (concat dir "../pre-inst-env")))
-                           (if (file-exists-p pre-inst-env) (concat pre-inst-env " dzn")
-                             (concat dir "../bin/dzn"))))
+(defcustom dzn-program
+  (if (or (PATH-search-path "dzn")
+          (not load-file-name) dzn-windows-p) "dzn"
+    (let* ((dir (file-name-directory load-file-name))
+           (pre-inst-env (concat dir "../pre-inst-env")))
+      (if (file-exists-p pre-inst-env) (concat pre-inst-env " dzn")
+        (concat dir "../bin/dzn"))))
   "dzn command.")
 ;;(setq dzn-program "~/src/verum/ide/daemon/pre-inst-env dzn")
+
+(defcustom dzn-dot-program "dot"
+  "The name of the dot executable.")
 
 (defvar dzn-ticket nil
   "The session.")
@@ -155,6 +159,19 @@ Toggle on/off: M-x dzn-save RET."
     (push 'dzn-handle-parse compilation-finish-functions))
   (dzn-command "parse" '() (get-buffer-create "*dzn-compile-parse*")))
 
+(defun dzn-system ()
+  (interactive)
+  (let* ((name (concat (file-name-base (buffer-file-name)) ".png"))
+         (buffer (get-buffer-create name))
+         (graph (dzn-command-string "graph" '("--backend=system")))
+         (dot (concat dzn-dot-program " -T png"))
+         (commands (list graph dot))
+         (command (mapconcat 'identity commands " | ")))
+    (switch-to-buffer-other-window buffer)
+    (call-process-shell-command command nil buffer t)
+    (goto-char 0)
+    (image-mode)))
+
 (defun dzn-verify (model)
   (setq dzn-indexes nil)
   (setq dzn-eligible nil)
@@ -180,6 +197,7 @@ Toggle on/off: M-x dzn-save RET."
   (setq dzn-mode-map (make-sparse-keymap))
   (define-key dzn-mode-map "\C-c\C-c" 'compile)
   (define-key dzn-mode-map "\C-c\C-p" 'dzn-parse)
+  (define-key dzn-mode-map "\C-c\C-s" 'dzn-system)
   (define-key dzn-mode-map "\C-c\C-v" 'dzn-verify))
 
 (easy-menu-define dzn-command-menu
@@ -188,6 +206,7 @@ Toggle on/off: M-x dzn-save RET."
   (append '("Dezyne")
           '([ "Compile" compile t])
           '([ "Parse" dzn-parse t])
+          '([ "system" dzn-system t])
           '([ "Verify" dzn-verify t])))
 
 (when (require 'cc-mode nil t)
