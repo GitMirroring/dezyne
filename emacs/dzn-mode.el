@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -49,9 +49,6 @@
   "dzn command.")
 ;;(setq dzn-program "~/src/verum/ide/daemon/pre-inst-env dzn")
 
-(defcustom dzn-daemon-url "http://localhost:4000" "the daemon url")
-(setq dzn-daemon-url "htttp://localhost:0")
-
 (defvar dzn-ticket nil
   "The session.")
 (setq dzn-ticket nil)
@@ -70,8 +67,6 @@
   "Current model.")
 
 (defun dzn-command-p (command)
-  ;; XXX dzn-program can be a shell command: "~/src/verum/ide/pre-inst-env dzn"
-  ;;(zerop (call-process (PATH-search-path dzn-program) nil nil nil "check" "--help"))
   (zerop (call-process-shell-command command nil nil nil)))
 
 (defun dzn-hello-p ()
@@ -123,12 +118,16 @@ Toggle on/off: M-x dzn-save RET."
 (defun dzn-command (name options &optional buffer input)
   (dzn-compile (dzn-command-string name options) buffer input))
 
+(defun dzn-pipe (commands &optional buffer input)
+  (let ((command (mapconcat 'identity commands " | ")))
+    (dzn-compile command buffer input)))
+
 (defun dzn-add-include (dir)
   (interactive "D")
   (push dir dzn-include-dirs))
 
 (defun dzn-command-list (name &optional options)
-  (let* ((simple-p (member name '("browse" "cat" "hello" "ls" "query")))
+  (let* ((simple-p (member name '("hello")))
          (file (if simple-p ""
                  (buffer-file-name)))
          (includes (if simple-p nil
@@ -167,12 +166,11 @@ Toggle on/off: M-x dzn-save RET."
                                         dzn-guess-model))))
   (let* ((model-option (if (and (stringp model)
                                 (not (string= model "")))
-                           (concat " --model=" model) "")))
-    (dzn-command "--verbose verify" (list model-option))
-    (setq compilation-finish-functions '())
-    (if (and dzn-daemon-p
-             (not (member 'dzn-handle-trace compilation-finish-functions)))
-        (push 'dzn-handle-trace compilation-finish-functions))))
+                           (concat " --model=" model) ""))
+         (verify (dzn-command-string "verify" (list model-option)))
+         (simulate (dzn-command-string "simulate" '("--locations"))))
+    (dzn-pipe (list verify simulate))
+    (setq compilation-finish-functions '())))
 
 (setq dzn-mode-map nil)
 (defvar dzn-mode-map ()
@@ -223,12 +221,13 @@ dzn-command-alist\t\talist from name to command"
   (setq major-mode 'dzn-mode)
   (setq mode-name "Dezyne")
   (use-local-map dzn-mode-map)
-  (unless (require 'dzn-ls nil t)
+  (unless (ignore-errors (require 'dzn-ls nil t))
     (dzn-save t))
   (dzn-hello)
   (run-hooks 'dzn-mode-hook))
 
 (require 'dzn-ide nil t)
-(require 'dzn-ls nil t)
+(ignore-errors
+  (require 'dzn-ls nil t))
 (provide 'dzn-mode)
 ;;; dzn-mode.el ends here

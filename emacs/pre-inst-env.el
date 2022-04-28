@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,7 +22,7 @@
 ;;; To put Emacs in pre-inst-env environment:
 ;;; echo $GUIX_ENVIRONMENT => /gnu/store/...-profile
 ;;; M-x guix-set-emacs-environment RET /gnu/store/...-profile RET
-;;; M-X ide:pre-inst-env
+;;; M-x load-file RET
 ;;;
 ;;; Code:
 
@@ -35,7 +35,7 @@
       (setq exec-path (split-string new-path ":")))
     new-path))
 
-(defun ide:pre-inst-env ()
+(defun pre-inst-env ()
     (let* ((top (locate-dominating-file buffer-file-name ".dir-locals.el"))
            (top (expand-file-name top)))
       (mapcar
@@ -50,4 +50,4 @@
       (setenv "DZN_PREFIX" top)
       (setenv "DZN_UNINSTALLED" "1")))
 
-(ide:pre-inst-env)
+(pre-inst-env)
