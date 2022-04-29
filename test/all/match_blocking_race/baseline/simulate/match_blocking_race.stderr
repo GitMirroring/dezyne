@@ -1,0 +1,2 @@
+test/all/match_blocking_race/match_blocking_race.dzn:51:1: error: b.cruel
+test/all/match_blocking_race/match_blocking_race.dzn:51:1: error: no match; got input `"b.cruel"'

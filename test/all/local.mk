@@ -354,6 +354,7 @@ REGRESSION_TESTS =				\
  %D%/queuefull_component1			\
  %D%/livelock_synchronous_illegal		\
  %D%/livelock_unfold				\
+ %D%/match_blocking_race			\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/multiple_parallel_blocking			\

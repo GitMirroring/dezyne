@@ -1,0 +1,19 @@
+(header ((h) iasynchronous provides) ((sut) match_blocking_race component) ((w) iasynchronous requires) ((b) isynchronous requires))
+(state ((h) (idle . true)) ((sut) (idle . true)) ((w) (idle . true)) ((b)))
+test/all/match_blocking_race/match_blocking_race.dzn:51:1: error: b.cruel
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+sut.b.hello -> ...
+... -> <external>.b.hello
+... <- <external>.w.world
+sut.<q> <- ...
+<match>
+(state ((h) (idle . false)) ((sut) (idle . false) (*q* w.world)) ((w) (idle . true)) ((b)))
+test/all/match_blocking_race/match_blocking_race.dzn:51:1: error: b.cruel
+(trail "h.hello" "w.hello" "w.return" "b.hello" "w.world" "<match>")
+(labels "h.hello" "w.world" "b.world" "b.cruel" "b.return")
+(eligible)

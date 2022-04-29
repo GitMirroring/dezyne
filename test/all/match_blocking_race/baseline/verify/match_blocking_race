@@ -1,0 +1,9 @@
+model: match_blocking_race
+h.hello
+w.hello
+w.return
+b.hello
+w.world
+b.world
+b.return
+<non-compliance>
