@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -107,7 +107,7 @@ Generate graph from a Dezyne model
                  #:backtrace? debug?
                  #:file-name file-name))
          (language (option-ref options 'format "dot"))
-         (queue-size (string->number (command-line:get 'queue-size "3"))))
+         (queue-size (command-line:get-number 'queue-size 3)))
     (when (and hide
                (not (member hide '("actions" "labels" "returns"))))
       (format (current-error-port) "graph: hide ~a ignored\n" hide))

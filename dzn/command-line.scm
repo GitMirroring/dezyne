@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -26,9 +26,11 @@
 (define-module (dzn command-line)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
   #:use-module (dzn config)
   #:use-module (dzn script)
   #:export (command-line:get
+            command-line:get-number
             command:command-line
             dzn:command-line:get
             dzn:debugity
@@ -47,11 +49,16 @@
 (define multi-options
   '(import))
 
+(define (command)
+  (let ((files (option-ref (parse-opts (command-line)) '() '(#f))))
+    (match files
+      ((command t ...) command)
+      (_ "dzn"))))
+
 (define* (command-line:get option #:optional default)
   (and (> (length (command-line)) 1)
        (let* ((files (option-ref (parse-opts (command-line)) '() '(#f)))
-              (file (car files))
-              (command (string->symbol file))
+              (command (string->symbol (command)))
               (parse-opts (let ((module (resolve-module `(dzn commands ,command))))
                             (module-ref module 'parse-opts)))
               (options (if command (parse-opts files)
@@ -59,6 +66,16 @@
               (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o))))))
          (if (not (member option multi-options)) (option-ref options option default)
              (filter-map (multi-opt option) options)))))
+
+(define* (command-line:get-number option #:optional (default 0))
+  (let* ((value (command-line:get option (number->string default)))
+         (number (string->number value)))
+    (unless number
+      (format (current-error-port)
+              "~a: number expected for option --~a, got: `~a'\n"
+              (command) option value)
+      (exit EXIT_OTHER_FAILURE))
+    number))
 
 (define (dzn:options)
   (parse-opts (command-line)))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -100,7 +100,7 @@ Languages: ~a
          (language (option-ref options 'language %default-language))
          (locations? (option-ref options 'locations #f))
          (model (option-ref options 'model #f))
-         (queue-size (option-ref options 'queue-size 3))
+         (queue-size (command-line:get-number 'queue-size 3))
          (shell (option-ref options 'shell #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))

@@ -967,7 +967,7 @@
 ;;;
 (define (root-> o)
   (let ((queue-size (or (%queue-size)
-                        (command-line:get 'queue-size 3)))
+                        (command-line:get-number 'queue-size 3)))
         (init (command-line:get 'init)))
     (parameterize ((%queue-size queue-size)
                    (%id-alist '())
