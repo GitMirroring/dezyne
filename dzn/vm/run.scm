@@ -778,7 +778,9 @@ until RTC?."
   (define (illegal-trace pc)
     (let ((illegal (make <implicit-illegal-error> #:ast (.trigger pc)
                          #:message "illegal")))
-       (list (list (clone pc #:status illegal)))))
+      (list (list (clone pc #:status illegal)))))
+  (define (modeling? trace)
+    (and=> (any .trigger (reverse trace)) ast:modeling?))
   (%debug "run-to-completion*: ~a\n" event)
   (cond
    ((is-a? (%sut) <runtime:port>)
@@ -792,11 +794,12 @@ until RTC?."
     (let ((async-traces (if (null? (.async pc)) '()
                             (flush-async-event pc event))))
       (if (pair? async-traces) async-traces
-          (let ((pcs (cons pc (run-external-modeling pc event)))
-                (port (.port (string->trigger event)))
-                (blocked-port (and=> (blocked-on-boundary? pc event) .ast)))
-            (if (and port (ast:eq? port blocked-port)) (illegal-trace pc)
-                (append-map (cute run-requires <> event) pcs))))))
+          (let* ((pcs (cons pc (run-external-modeling pc event)))
+                 (port (.port (string->trigger event)))
+                 (blocked-port (and=> (blocked-on-boundary? pc event) .ast))
+                 (traces (append-map (cute run-requires <> event) pcs)))
+            (if (or (not port) (not (ast:eq? port blocked-port))) traces
+                (filter (negate modeling?) traces))))))
    ((provides-trigger? event)
     (if (blocked-on-boundary-provides? pc event) (illegal-trace pc)
         (run-to-completion pc event)))
