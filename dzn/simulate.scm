@@ -313,7 +313,8 @@ Return a list of traces, possibly marked with <compliance-error>."
                 (and (not (equal? (cdr a) ((compose last (cut string-split <> #\.) cdr) b))) (cons a b)))
 
               (let* ((port-trail (port-trace->trail port-trace))
-                     (port-trail (if (not blocked?) port-trail
+                     (truncate? (and provides-trigger? blocked?))
+                     (port-trail (if (not truncate?) port-trail
                                      ;; Check prefix only as long as trace is blocked
                                      (list-head port-trail (min (length port-trail)
                                                                 (length sut-trail)))))
