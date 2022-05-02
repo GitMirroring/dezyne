@@ -1,0 +1,10 @@
+model: compliance_blocking_async_race
+h.hello
+h.return
+r.cruel
+r.return
+w.cruel
+r.world
+w.return
+w.world
+<non-compliance>
