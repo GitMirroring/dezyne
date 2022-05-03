@@ -1,0 +1,25 @@
+(header ((h) ihello provides) ((sut) deadlock_reply component) ((l) iworld requires) ((r) ihello requires))
+(state ((h) (idle . true)) ((sut) (s . S:A)) ((l)) ((r) (idle . true)))
+<external>.h.cruel -> ...
+... -> sut.h.cruel
+sut.r.cruel -> ...
+... -> <external>.r.cruel
+... <- <external>.r.true
+sut.r.true <- ...
+... <- sut.h.true
+<external>.h.true <- ...
+(state ((h) (idle . false)) ((sut) (s . S:B)) ((l)) ((r) (idle . false)))
+(trail "h.cruel" "r.cruel" "r.true" "h.true")
+test/all/deadlock_reply/deadlock_reply.dzn:69:42: error: deadlock
+... <- <external>.r.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.r.world <- ...
+... <- sut.h.world
+<external>.h.world <- ...
+<deadlock>
+(state ((h) (idle . false)) ((sut) (s . S:A)) ((l)) ((r) (idle . true)))
+test/all/deadlock_reply/deadlock_reply.dzn:69:42: error: deadlock
+(trail "r.world" "h.world" "<deadlock>")
+(labels "h.hello" "h.cruel" "l.world" "r.world")
+(eligible)

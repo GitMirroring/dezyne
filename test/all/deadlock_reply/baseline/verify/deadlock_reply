@@ -1,0 +1,8 @@
+model: deadlock_reply
+h.cruel
+r.cruel
+r.true
+h.true
+r.world
+h.world
+<deadlock>
