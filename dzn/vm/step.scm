@@ -279,9 +279,11 @@
   (match (.event.name o)
     ("req"
      (let* ((instance (.instance pc))
-            (trigger (clone (make <q-trigger> #:port.name (.port.name o) #:event.name "ack")
-                            #:parent ((compose .behavior .type .ast) instance)))
-            (ack (lambda (pc) (list (begin-step pc instance trigger))))
+            (q-trigger (make <q-trigger> #:port.name (.port.name o) #:event.name "ack"
+                             #:modeling? (ast:modeling? (.trigger pc))))
+            (q-trigger (clone q-trigger
+                              #:parent ((compose .behavior .type .ast) instance)))
+            (ack (lambda (pc) (list (begin-step pc instance q-trigger))))
             (rank (.rank instance))
             (r:port (runtime:port instance (.port o)))
             (req-pending? (find (compose (cute ast:eq? r:port <>) cadr) (.async pc))))
@@ -311,9 +313,13 @@
 
     (define (q-trigger)
       (let* ((port-name (.name (.ast other-port)))
+             (trigger (.trigger pc))
              (q-trigger (make <q-trigger>
                           #:event.name (.event.name o)
                           #:port.name port-name
+                          #:modeling? (or (ast:modeling? trigger)
+                                          (and=> (as trigger <q-trigger>)
+                                                 .modeling?))
                           #:location (.location o))))
         (clone q-trigger #:parent (.type (.ast other-instance)))))
 
@@ -366,16 +372,16 @@
                    (clone pc #:status error))
                  (let ((value (eval-expression pc (.expression o))))
                    (continuation (set-reply pc port-name value) o))))
-         (reply-port (.port o)))
-    (cond ((ast:modeling? (.trigger pc))
-           (let* ((error (make <deadlock-error> #:ast o #:message "deadlock"))
-                  (pc (clone pc #:status error)))
-             (list pc)))
-          ((let* ((trigger (.trigger pc))
+         (reply-port (.port o))
+         (trigger (.trigger pc)))
+    (cond ((let* ((trigger (.trigger pc))
                   (trigger-port (.port trigger))
                   (blocking? (parent o <blocking>))
                   (ports-eq? (ast:eq? reply-port trigger-port)))
              (and reply-port
+                  (or (ast:eq? (.port (rtc-trigger pc)) reply-port)
+                      (pair? (.blocked pc))
+                      (not (and=> (as trigger <q-trigger>) .modeling?)))
                   (or (ast:requires? trigger)
                       (not ports-eq?)
                       (and ports-eq? blocking?))))
@@ -384,6 +390,11 @@
                   (released (if (memq r:port released) released
                                 (append released (list r:port))))
                   (pc (clone pc #:released released)))
+             (list pc)))
+          ((or (ast:modeling? trigger)
+               (and=> (as trigger <q-trigger>) .modeling?))
+           (let* ((error (make <deadlock-error> #:ast o #:message "deadlock"))
+                  (pc (clone pc #:status error)))
              (list pc)))
           (else
            (list pc)))))

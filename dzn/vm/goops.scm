@@ -78,6 +78,7 @@
             .handling
             .input
             .labels
+            .modeling?
             .port-acceptance
             .previous
             .q
@@ -126,7 +127,8 @@
 (define-ast <q-out> (<imperative>)
   (trigger))
 
-(define-ast <q-trigger> (<trigger>))
+(define-ast <q-trigger> (<trigger>)
+  (modeling?))
 
 (define-ast <silent-step> (<imperative>)
   (trigger))
