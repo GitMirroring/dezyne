@@ -360,6 +360,7 @@ REGRESSION_TESTS =				\
  %D%/multiple_provides				\
  %D%/multiple_parallel_blocking			\
  %D%/name.space					\
+ %D%/pump_twice					\
  %D%/queuefull_external				\
  %D%/queuefull_external_sync			\
  %D%/queue_size_four				\
