@@ -32,8 +32,9 @@
 namespace dzn
 {
   std::ostream debug(nullptr);
+#if HAVE_BOOST_COROUTINE
   size_t dzn::coroutine::s_current;
-
+#endif
   runtime::runtime(){}
 
   void trace(std::ostream& os, port::meta const& m, const char* e)
@@ -93,7 +94,7 @@ namespace dzn
     return skip_port[port];
   }
 
-  void runtime::flush(void* scope)
+  void runtime::flush(void* scope, size_t coroutine_id)
   {
     handling(scope) = 0;
     if(!external(scope))
@@ -103,25 +104,25 @@ namespace dzn
       {
         std::function<void()> event = q.front();
         q.pop();
-        handle(scope, event);
+        handle(scope, event, coroutine_id);
         handling(scope) = 0;
       }
       if (deferred(scope)) {
         void* tgt = deferred(scope);
         deferred(scope) = nullptr;
         if (!handling(tgt)) {
-          runtime::flush(tgt);
+          runtime::flush(tgt, coroutine_id);
         }
       }
     }
   }
 
-  void runtime::defer(void* src, void* tgt, const std::function<void()>& event)
+  void runtime::defer(void* src, void* tgt, const std::function<void()>& event, size_t coroutine_id)
   {
     if(!(src && performs_flush(src)) && !handling(tgt))
     {
-      handle(tgt, event);
-      flush(tgt);
+      handle(tgt, event, coroutine_id);
+      flush(tgt, coroutine_id);
     }
     else
     {

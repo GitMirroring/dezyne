@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -92,7 +92,6 @@ public:
   , condition()
   , future(dzn::thread::defer([this] {
       try {
-        //debug << "[" << get_id () << "] create" << std::endl;
         std::unique_lock<std::mutex> lock(mutex);
         while(state != FINAL)
         {
@@ -108,7 +107,9 @@ public:
           if(this->rel) this->rel();
         }
       }
-      catch(const forced_unwind&) { debug << "ignoring forced_unwind" << std::endl; }
+      catch(const forced_unwind&) {
+        debug << "ignoring forced_unwind" << std::endl;
+      }
   }))
   {
     std::unique_lock<std::mutex> lock(mutex);
@@ -130,16 +131,6 @@ public:
   {
     std::unique_lock<std::mutex> lock(mutex);
     do_finish(lock);
-  }
-  static size_t get_id()
-  {
-    static std::mutex mutex;
-    static std::map<std::thread::id, size_t> m;
-    std::unique_lock<std::mutex> lock(mutex);
-    std::thread::id i = std::this_thread::get_id();
-    auto it = m.find(i);
-    if (it == m.end()) it = m.emplace(i, m.size()).first;
-    return it->second;
   }
   void finish()
   {

@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2015, 2016, 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2016, 2017, 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -45,7 +45,9 @@ namespace dzn
 
   struct coroutine
   {
+#if HAVE_BOOST_COROUTINE
     static size_t s_current;
+#endif
     size_t id;
     dzn::context context;
     dzn::yield yield;
@@ -54,14 +56,9 @@ namespace dzn
     bool finished;
     bool skip_block;
     template <typename Worker>
-    coroutine(Worker&& worker)
-    : id()
+    coroutine(size_t id, Worker&& worker)
+    : id(id)
     , context([this, worker](dzn::yield& yield){
-#if HAVE_BOOST_COROUTINE
-        s_current = this->id = reinterpret_cast<size_t>(this);
-#else
-        this->id = context::get_id();
-#endif
         this->yield = std::move(yield);
         worker();
       })
@@ -71,9 +68,9 @@ namespace dzn
     {}
     coroutine()
 #if HAVE_BOOST_COROUTINE
-    : id((size_t)this)
+    : id(0)
 #else
-    : id(context::get_id())
+    : id(0)
 #endif
     , context()
     , port()
@@ -103,14 +100,6 @@ namespace dzn
       this->context.release();
     }
 #endif // !HAVE_BOOST_COROUTINE
-    static size_t get_id()
-    {
-#if HAVE_BOOST_COROUTINE
-      return s_current;
-#else
-      return context::get_id();
-#endif
-    }
   };
 }
 #endif //DZN_COROUTINE_HH

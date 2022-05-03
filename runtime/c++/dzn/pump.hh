@@ -50,6 +50,7 @@ namespace dzn
     std::function<void()> worker;
     std::list<coroutine> coroutines;
     std::list<coroutine> collateral_blocked;
+    size_t id;
     std::queue<std::function<void()>> queue;
 
     struct deadline
@@ -79,6 +80,7 @@ namespace dzn
     std::future<void> task;
     pump();
     ~pump();
+    size_t coroutine_id();
     void stop();
     void wait();
     void operator()();

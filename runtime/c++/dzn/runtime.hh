@@ -83,6 +83,13 @@ namespace dzn
       });
   }
 
+  // implemented conditionally in pump.cc
+  void collateral_block(void*, const locator&);
+  bool port_blocked_p(const locator&, void* port);
+  void port_block(const locator&, void* component, void* port);
+  void port_release(const locator&, void*, std::function<void()>&);
+  size_t coroutine_id(const locator&);
+
   struct runtime
   {
     struct state
@@ -104,34 +111,35 @@ namespace dzn
     void*& deferred(void*);
     std::queue<std::function<void()> >& queue(void*);
     bool& performs_flush(void* scope);
-    void flush(void*);
-    void defer(void*, void*, const std::function<void()>&);
-    template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-    void handle(void* scope, L&& l)
+    template <typename T>
+    void flush(T* t)
     {
-      size_t& handle = handling(scope);
-      if(handle) throw std::logic_error("component already handling an event");
-      handle = coroutine::get_id();
-      l();
+      flush(t, coroutine_id(t->dzn_locator));
     }
-    template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-    inline auto handle(void* scope, L&& l) -> decltype(l())
+    void flush(void*, size_t);
+    void defer(void*, void*, const std::function<void()>&, size_t);
+    template <typename F, typename = typename std::enable_if<std::is_void<typename std::result_of<F()>::type>::value>::type>
+    void handle(void* scope, F&& f, size_t coroutine_id)
     {
       size_t& handle = handling(scope);
       if(handle) throw std::logic_error("component already handling an event");
-      handle = coroutine::get_id();
-      return l();
+      handle = coroutine_id;
+      assert(handle != 0);
+      f();
+    }
+    template <typename F, typename = typename std::enable_if<!std::is_void<typename std::result_of<F()>::type>::value>::type>
+    inline auto handle(void* scope, F&& f, size_t coroutine_id) -> decltype(f())
+    {
+      size_t& handle = handling(scope);
+      if(handle) throw std::logic_error("component already handling an event");
+      handle = coroutine_id;
+      return f();
     }
     runtime();
   private:
     runtime(const runtime&);
     runtime& operator = (const runtime&);
   };
-
-  void collateral_block(void*, const locator&);
-  bool port_blocked_p(const locator&, void* port);
-  void port_block(const locator&, void* component, void* port);
-  void port_release(const locator&, void*, std::function<void()>&);
 
   template <typename C, typename P>
   struct call_helper
@@ -159,12 +167,12 @@ namespace dzn
     template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
     void operator()(L&& l)
     {
-      c->dzn_rt.handle(c, l);
+      c->dzn_rt.handle(c, l, coroutine_id(c->dzn_locator));
     }
     template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
     auto operator()(L&& l) -> decltype(l())
     {
-      auto r = c->dzn_rt.handle(c, l);
+      auto r = c->dzn_rt.handle(c, l, coroutine_id(c->dzn_locator));
       reply = ::to_string(r);
       return r;
     }
@@ -210,7 +218,7 @@ namespace dzn
       l();
       assert(c->dzn_rt.component_stack.back() == c);
       c->dzn_rt.component_stack.pop_back();
-    });
+    }, coroutine_id(c->dzn_locator));
   }
 }
 #endif //DZN_RUNTIME_HH

@@ -34,12 +34,17 @@
 
 namespace dzn
 {
+  size_t coroutine_id(const locator& l)
+  {
+    auto ppump = l.try_get<dzn::pump>();
+    return !ppump ? 1 : ppump->coroutine_id();
+  }
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines);
   void port_block(const locator& l, void* c, void* p)
   {
     auto& rt = l.get<dzn::runtime>();
     rt.handling(c) = 0;
-    rt.flush(c);
+    rt.flush(c,coroutine_id(l));
     if(rt.skip_block(p)) return;
     auto& pump = l.get<dzn::pump>();
     auto self = find_self (pump.coroutines);
@@ -71,7 +76,7 @@ namespace dzn
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
   {
     size_t count = std::count_if(coroutines.begin(), coroutines.end(), [](const coroutine& c){return c.port == nullptr && !c.finished;});
-    debug << "#runnable coroutines: " << count << std::endl;
+    //debug << "#runnable coroutines: " << count << std::endl;
     assert(count != 0);
     assert(count != 2);
     assert(count < 3);
@@ -98,6 +103,7 @@ namespace dzn
   pump::pump()
   : unblocked()
   , running(true)
+  , id(0)
   , switch_context()
   , task(std::async(std::launch::async, std::ref(*this)))
   {}
@@ -127,11 +133,13 @@ namespace dzn
   }
   void pump::operator()()
   {
+    //debug << "operator(): " << coroutine::get_id() << std::endl;
+
     try
     {
-      thread_id = std::this_thread::get_id();
-
       worker = [&] {
+        debug << "worker self: " << find_self(coroutines)->id << std::endl;
+
         std::unique_lock<std::mutex> lock(mutex);
         if(queue.empty())
         {
@@ -166,7 +174,9 @@ namespace dzn
       };
 
       coroutine zero;
+      debug << "coroutine zero: " << zero.id << std::endl;
       create_context();
+      debug << "coroutine self: " << find_self(coroutines)->id << std::endl;
 
       exit = [&]{debug << "enter exit" << std::endl; zero.release();};
 
@@ -200,9 +210,13 @@ namespace dzn
   {
     return timers.size() && timers.begin()->first.expired();
   }
+  size_t pump::coroutine_id()
+  {
+    return find_self(coroutines)->id;
+  }
   void pump::create_context()
   {
-    coroutines.emplace_back([&]{
+    coroutines.emplace_back(++id, [&]{
         try
         {
           auto self = find_self(coroutines);
