@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -53,9 +53,9 @@ namespace dzn
     public Object component;
     public bool finished;
     public bool skip_block;
-    public coroutine(Action worker)
+    public coroutine(int id, Action worker)
     {
-      this.id = context.get_id();
+      this.id = id;
       this.yield = null;
       this.port = null;
       this.component = null;
@@ -63,14 +63,13 @@ namespace dzn
       this.skip_block = false;
 
       this.context = new context ((yield) => {
-          this.id = context.get_id();
           this.yield = yield;
           worker();
         });
     }
     public coroutine()
     {
-      this.id = context.get_id();
+      this.id = 0;
       this.context = new context (false);
       this.yield = null;
     }
@@ -92,10 +91,6 @@ namespace dzn
     public void release()
     {
       this.context.release();
-    }
-    public static int get_id()
-    {
-      return context.get_id();
     }
   };
 }

@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -42,8 +42,6 @@ namespace dzn
   };
   public class context : IDisposable
   {
-    static Dictionary<int,int> m = new Dictionary<int,int>();
-
     enum State {INITIAL, RELEASED, BLOCKED, FINAL};
     String to_string(State state)
     {
@@ -69,7 +67,6 @@ namespace dzn
         {
           try
           {
-            //Debug.WriteLine("[" + context.get_id() + "] create");
             context.lck(this, () => {
               while(this.state != State.FINAL)
               {
@@ -85,7 +82,7 @@ namespace dzn
               });
           }
           catch (forced_unwind) {
-            Debug.WriteLine("[" + context.get_id() + "] ignoring forced_unwind");
+            Debug.WriteLine("ignoring forced_unwind");
           }
         });
       this.thread.Start();
@@ -123,14 +120,6 @@ namespace dzn
       Dispose(true);
       GC.SuppressFinalize(this);
     }
-    public static int get_id()
-    {
-      return context.lck(m, () => {
-          int i = Thread.CurrentThread.ManagedThreadId;
-          if (!m.ContainsKey(i)) m.Add(i,m.Count);
-          return m[i];
-        });
-    }
     public void finish()
     {
       context.lck(this, () => {
@@ -151,7 +140,6 @@ namespace dzn
     }
     public void call(context c)
     {
-      //Debug.WriteLine("[" + context.get_id() + "] call");
       context.lck(this, () => {
           do_release(this);
 
@@ -174,24 +162,19 @@ namespace dzn
     {
       state = State.BLOCKED;
       Monitor.Pulse(mutex);
-      //Debug.WriteLine("[" + context.get_id() + "] do_block0");
       do { Monitor.Wait(mutex); } while(state == State.BLOCKED);
-      //Debug.WriteLine("[" + context.get_id() + "] do_block1");
       if(state == State.FINAL) throw new forced_unwind();
     }
     private void do_release(Object mutex)
     {
       if(state != State.BLOCKED)
-        throw new runtime_error("[" + context.get_id() + "] not allowed to release a call which is "
+        throw new runtime_error("context is not allowed to release a call which is "
                                 + to_string(state));
       state = State.RELEASED;
-      //Debug.WriteLine("[" + context.get_id() + "] do_release0");
       Monitor.Pulse(mutex);
-      //Debug.WriteLine("[" + context.get_id() + "] do_release1");
     }
     private void do_finish(Object mutex)
     {
-      //Debug.WriteLine("[" + context.get_id() + "] finish0");
       state = State.FINAL;
       Monitor.PulseAll(mutex);
       Monitor.Exit(mutex);

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -54,8 +54,6 @@ class main {
 
     lookup.Add("w.<flush>",()=>{System.Console.Error.WriteLine("w.<flush>");
       c.system.dzn_runtime.flush(c.system);
-      c.system.dzn_runtime.flush(c.system.h);
-
     });
 
     return lookup;

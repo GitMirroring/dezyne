@@ -41,6 +41,7 @@ namespace dzn
 
   public class pump : IDisposable
   {
+    int id = 0;
     public static bool port_blocked_p(Locator loc, Object p)
     {
       dzn.pump pump = loc.try_get<pump>();
@@ -48,12 +49,12 @@ namespace dzn
           return pump.blocked_p(p);
       return false;
     }
-    public static void port_block(Locator loc, Object c, Object p)
+    public static void port_block(Locator l, Object c, Object p)
     {
-      Runtime rt = loc.get<Runtime>();
+      Runtime rt = l.get<Runtime>();
       rt.states[c].handling = 0;
-      rt.flush(c);
-      var pump = loc.get<pump>();
+      rt.flush(c, dzn.Runtime.coroutine_id(l));
+      var pump = l.get<pump>();
       if(pump.skip_block.Remove(p)) return;
 
       var self = find_self(pump.coroutines);
@@ -66,13 +67,13 @@ namespace dzn
       pump.block(rt, c, p);
     }
 
-    public static void port_release(Locator loc, Object p, Action out_binding)
+    public static void port_release(Locator l, Object p, Action out_binding)
     {
       if(out_binding!=null) out_binding();
       out_binding = null;
-      var pump = loc.get<pump>();
+      var pump = l.get<pump>();
       pump.skip_block.Add(p);
-      pump.release(loc.get<dzn.Runtime>(),p);
+      pump.release(l.get<dzn.Runtime>(),p);
     }
 
     public static coroutine find_self(list<coroutine> coroutines)
@@ -235,9 +236,13 @@ namespace dzn
         System.Environment.Exit(1);
       }
     }
+    public int coroutine_id()
+    {
+      return find_self(this.coroutines).id;
+    }
     public void create_context()
     {
-      this.coroutines.Add (new coroutine (() =>
+      this.coroutines.Add (new coroutine (++id, () =>
         {
           try
           {

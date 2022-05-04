@@ -129,14 +129,18 @@ namespace dzn
         {
             return !states.ContainsKey(c);
         }
-        public void flush(Object c)
+        public void flush(ComponentBase c)
+        {
+          flush(c, coroutine_id(c.dzn_locator));
+        }
+        public void flush(Object c, int coroutine_id)
         {
             states[c].handling = 0;
             if (!external(c))
                 {
                     while (states[c].q.Count > 0)
                         {
-                            handle(c, states[c].q.Dequeue());
+                            handle(c, states[c].q.Dequeue(), coroutine_id);
                             states[c].handling = 0;
                         }
                     if (states[c].deferred != null)
@@ -145,7 +149,7 @@ namespace dzn
                             states[c].deferred = null;
                             if (states[t].handling == 0)
                                 {
-                                    flush(t);
+                                    flush(t, coroutine_id);
                                 }
                         }
                 }
@@ -155,12 +159,12 @@ namespace dzn
             if(!states.ContainsKey(o)) states.Add(o, new Runtime.State());
             return states[o].q;
         }
-        public void defer(Component src, Component tgt, Action f)
+        public void defer(Component src, Component tgt, Action f, int coroutine_id)
         {
             if (!(src != null && states[src].flushes) && states[tgt].handling == 0)
                 {
-                    handle(tgt, f);
-                    flush(tgt);
+                    handle(tgt, f, coroutine_id);
+                    flush(tgt, coroutine_id);
                 }
             else
                 {
@@ -171,16 +175,16 @@ namespace dzn
                         }
                 }
         }
-        public R valued_helper<R>(Component c, Func<R> f) where R : struct, IComparable, IConvertible
+        public R valued_helper<R>(Component c, Func<R> f, int coroutine_id) where R : struct, IComparable, IConvertible
         {
             if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
-            states[c].handling = coroutine.get_id();
+            states[c].handling = coroutine_id;
             return f();
         }
-        public void handle(Object c, Action f)
+        public void handle(Object c, Action f, int coroutine_id)
         {
             if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
-            states[c].handling = coroutine.get_id();
+            states[c].handling = coroutine_id;
             f();
         }
         public void call_in(Component c, Action f, Port p, String e)
@@ -192,7 +196,7 @@ namespace dzn
             component_stack.Push(c);
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
-            handle(c, f);
+            handle(c, f, coroutine_id(c.dzn_locator));
             traceOut(m, "return");
             component_stack.Pop();
         }
@@ -205,7 +209,7 @@ namespace dzn
             component_stack.Push(c);
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
-            R r = valued_helper(c, f);
+            R r = valued_helper(c, f, coroutine_id(c.dzn_locator));
             String s;
             if (r.GetType().Equals(typeof(bool)))
                 s = (bool)Convert.ChangeType(r, typeof(bool)) ? "true" : "false";
@@ -228,7 +232,12 @@ namespace dzn
                 traceQout(m, e);
               f();
               component_stack.Pop();
-            });
+            }, coroutine_id(c.dzn_locator));
+        }
+        public static int coroutine_id(dzn.Locator l)
+        {
+          dzn.pump p = l.try_get<dzn.pump>();
+          return p == null ? 1 : p.coroutine_id();
         }
         public static String path(Meta m, String p = "")
         {
