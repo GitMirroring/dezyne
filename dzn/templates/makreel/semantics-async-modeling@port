@@ -1,0 +1,2 @@
+(#.name port != switch) -> sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name end . semantics_async_switch_context ()
++ (#.name port == switch) -> #.name switch_context . semantics_async ()

@@ -224,6 +224,10 @@ semantics_async(blocking: Set(provides_ports), released: List(provides_ports), r
 #x:semantics-async-requires
  ;
 
+semantics_async_switch_context (blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports, switch: requires_ports)
+ = delta #x:semantics-async-modeling
+ ;
+
 semantics_async_allow_ack(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports)
 = #x:semantics-async-allow-ack #x:semantics-no-async
  ;

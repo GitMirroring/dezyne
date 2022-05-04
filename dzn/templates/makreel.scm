@@ -178,6 +178,7 @@
 (define-templates semantics-provides-unblocked-switch-context ast:requires-port* newline-union-prefix)
 (define-templates semantics-async ast:provides-port* newline-union-prefix)
 (define-templates semantics-async-requires ast:requires-port* newline-union-prefix)
+(define-templates semantics-async-modeling ast:requires-port* newline-union-prefix)
 (define-templates semantics-async-flush ast:provides-port* newline-union-prefix)
 (define-templates semantics-async-qin ast:async-port* newline-union-infix)
 (define-templates semantics-async-qout ast:async-port* newline-union-prefix)
