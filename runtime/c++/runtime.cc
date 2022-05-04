@@ -32,9 +32,6 @@
 namespace dzn
 {
   std::ostream debug(nullptr);
-#if HAVE_BOOST_COROUTINE
-  size_t dzn::coroutine::s_current;
-#endif
   runtime::runtime(){}
 
   void trace(std::ostream& os, port::meta const& m, const char* e)

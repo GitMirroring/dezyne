@@ -45,9 +45,6 @@ namespace dzn
 
   struct coroutine
   {
-#if HAVE_BOOST_COROUTINE
-    static size_t s_current;
-#endif
     size_t id;
     dzn::context context;
     dzn::yield yield;
@@ -67,11 +64,7 @@ namespace dzn
     , skip_block()
     {}
     coroutine()
-#if HAVE_BOOST_COROUTINE
     : id(0)
-#else
-    : id(0)
-#endif
     , context()
     , port()
     , finished()
@@ -79,9 +72,6 @@ namespace dzn
     {}
     void yield_to(dzn::coroutine& c)
     {
-#if HAVE_BOOST_COROUTINE
-      coroutine::s_current = (size_t)this;
-#endif
       this->yield(c.context);
     }
 #if HAVE_BOOST_COROUTINE
