@@ -1,6 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
-// Copyright © 2015, 2016, 2017, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2017, 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+//
+// Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -148,7 +149,8 @@ namespace dzn
     std::string trail_expect()
     {
       std::unique_lock<std::mutex> lock(mutex);
-      condition.wait(lock, [this]{return trail.size();});
+      condition.wait_for(lock, std::chrono::seconds(10),
+                         [this]{return trail.size();});
       condition.notify_one();
       std::string expect = trail.front(); trail.pop();
       return expect;
