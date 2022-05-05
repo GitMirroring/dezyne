@@ -61,6 +61,7 @@
             blocked-port
             blocked-ports
             collateral-block
+            defer-event?
             dequeue
             dequeue-external
             enqueue
@@ -86,6 +87,7 @@
             pop-locals
             port-event?
             provides-trigger?
+            prune-defer
             push-local
             pc-equal?
             pc->stack
@@ -594,6 +596,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                #:collateral (.collateral pc)
                #:collateral-instance (.collateral-instance pc)
                #:collateral-released (.collateral-released pc)
+               #:defer (.defer pc)
                #:external-q (.external-q pc)
                #:released (.released pc)
                #:state (.state pc)
@@ -703,6 +706,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                     #:id (.id blocked-pc)
                     #:instance (.instance blocked-pc)
                     #:previous (.previous blocked-pc)
+                    #:running-defer? (.running-defer? blocked-pc)
                     #:statement (.statement blocked-pc)
                     #:trigger (.trigger blocked-pc))))))
     (#f
@@ -742,6 +746,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                #:collateral (acons blocked-port pc (.collateral pc))
                #:external-q (.external-q pc)
                #:released (.released pc)
+               #:running-defer? (.running-defer? pc)
                #:state (.state pc)
                #:trail (.trail pc))))
     (%debug "  ~s ~s <collateral-block> ~a [~a] => [~a]\n"
@@ -1391,6 +1396,22 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (pc-equal? (a <top>) (b <top>))
   (eq? a b))
 
+(define-method (prune-defer (pc <program-counter>))
+  (define (members pc instance)
+    (let* ((state (get-state pc instance))
+           (variables (.variables state))
+           (component (runtime:ast-model instance))
+           (members (ast:member* component)))
+      (take-right variables (length members))))
+  (define (state-equal? pc defer-pc)
+    (let* ((instance (.instance defer-pc))
+           (defer-members (members defer-pc instance))
+           (members (members pc instance)))
+      (ast:equal? members defer-members)))
+  (let* ((defer (.defer pc))
+         (defer (filter (cute state-equal? pc <>) defer)))
+    (clone pc #:defer defer)))
+
 (define (trace-head:eq? a b)
   (pc-equal? (car a) (car b)))
 
@@ -1399,6 +1420,12 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (not (member event (labels)))
        (not (return-trigger? event))
        (pair? (.async pc))))
+
+(define-method (defer-event? (pc <program-counter>) event)
+  (and (string? event)
+       (not (member event (labels)))
+       (not (return-trigger? event))
+       (pair? (.defer pc))))
 
 
 ;;;

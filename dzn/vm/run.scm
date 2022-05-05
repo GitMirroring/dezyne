@@ -42,6 +42,7 @@
   #:use-module (dzn vm util)
   #:export (%exploring?
             did-provides-out?
+            extend-trace
             filter-compliance-error
             filter-error
             filter-illegal+implicit-illegal
@@ -55,6 +56,7 @@
             mark-livelock-error
             run-async
             run-async-event
+            run-defer-event
             run-external
             run-external-q
             run-external-modeling
@@ -756,6 +758,31 @@ until RTC?."
   (let ((pc (clone pc #:trail (cons event (.trail pc)))))
     (flush-async pc)))
 
+(define-method (run-defer-event (pc <program-counter>) event)
+  (%debug "run-defer-event ~a pc: ~s\n" event pc)
+  (let* ((pc (prune-defer pc))
+         (defer (.defer pc)))
+    (if (null? defer) '()
+        (let* ((defer-pc (car defer))
+               (statement (.statement defer-pc))
+               (statement (.statement statement))
+               (instance (.instance defer-pc))
+               (pc (clone pc
+                          #:defer (cdr defer)
+                          #:running-defer? instance
+                          #:instance instance
+                          #:statement statement
+                          #:trigger (.trigger defer-pc)
+                          #:trail (cons event (.trail pc))))
+               (traces (run-to-completion pc 'rtc))
+               (blocked traces
+                        (partition (compose blocked-on-boundary? car) traces))
+               (traces (map (cute rewrite-trace-head
+                                  (cute clone <> #:running-defer? #f) <>)
+                            traces)))
+          (append blocked
+                  traces)))))
+
 (define-method (run-external-q (pc <program-counter>) (instance <runtime:port>))
   (let* ((pc trigger (dequeue-external pc instance))
          (q-out (make <q-out> #:trigger trigger))
@@ -802,17 +829,24 @@ until RTC?."
     (let ((async-traces (if (null? (.async pc)) '()
                             (flush-async-event pc event))))
       (if (pair? async-traces) async-traces
-          (let* ((pcs (cons pc (run-external-modeling pc event)))
-                 (port (.port (string->trigger event)))
-                 (blocked-port (and=> (blocked-on-boundary? pc event) .ast))
-                 (traces (append-map (cute run-requires <> event) pcs)))
-            (if (or (not port) (not (ast:eq? port blocked-port))) traces
-                (filter (negate modeling?) traces))))))
+          (let ((defer-traces (if (null? (.defer pc)) '()
+                                  (run-defer-event pc event))))
+            (append
+             defer-traces
+             (let* ((pcs (cons pc (run-external-modeling pc event)))
+                    (port (.port (string->trigger event)))
+                    (blocked-port (and=> (blocked-on-boundary? pc event)
+                                         .ast))
+                    (traces (append-map (cute run-requires <> event) pcs)))
+               (if (or (not port) (not (ast:eq? port blocked-port))) traces
+                   (filter (negate modeling?) traces))))))))
    ((provides-trigger? event)
     (if (blocked-on-boundary-provides? pc event) (illegal-trace pc)
         (run-to-completion pc event)))
    ((async-event? pc event)
     (flush-async-event pc event))
+   ((defer-event? pc event)
+    (run-defer-event pc event))
    ((and (eq? event #f) (pair? (.async pc)))
     (flush-async pc))
    (else
@@ -821,14 +855,36 @@ until RTC?."
 (define-method (run-to-completion* trace event)
   (extend-trace trace (cute run-to-completion* <> event)))
 
+(define-method (defer-run-to-completion-rtc (pc <program-counter>))
+  (let* ((instance (.running-defer? pc))
+         (pc (clone pc #:running-defer? #f))
+         (instance (if (is-a? instance <runtime:component>) instance
+                       (.container (runtime:other-port instance))))
+         (traces (run-to-completion pc 'rtc))
+         (traces (map (cute rewrite-trace-head
+                            (cute clone <> #:instance instance) <>)
+                      traces))
+         (done traces
+               (partition
+                (disjoin
+                 (compose blocked-on-boundary? car)
+                 (compose (conjoin (cute get-handling <> instance)
+                                   (cute blocked-port <> instance))
+                          car)
+                 (compose (is-status? <error>) car))
+                traces)))
+    (append done
+            (append-map run-flush traces))))
+
 (define-method (run-to-completion*-context-switch (pc <program-counter>) event)
-  (%debug "run-to-completion*-switch-context: ~a\n" event)
+  (%debug "run-to-completion*-context-switch: ~a\n" event)
   (let* ((orig-pc pc)
          (blocked-on-action? (blocked-on-action? pc event))
          (pc (if (and (blocked-on-boundary? pc event)
                       (or blocked-on-action? (return-trigger? event)))
                  (blocked-on-boundary-switch-context pc event)
                  pc))
+         (bob-switched? (not (eq? pc orig-pc)))
          (switched? (not (eq? pc orig-pc)))
          (trigger? (or (is-a? (%sut) <runtime:port>)
                        (provides-trigger? event)
@@ -846,7 +902,14 @@ until RTC?."
                         (provides-trigger? event)))
          (pc (if (or trigger? (not switched?) (rtc-event? event)) pc
                  (clone pc #:trail (cons event (.trail pc)))))
-         (traces (if skip-rtc? (run-to-completion* pc event)
-                     (run-to-completion pc 'rtc))))
+         (traces (cond ((.running-defer? pc)
+                        (defer-run-to-completion-rtc pc))
+                       (skip-rtc?
+                        (run-to-completion* pc event))
+                       (else
+                        (run-to-completion pc 'rtc)))))
     (if (or skip-rtc? (not trigger?)) traces
         (append-map (cute run-to-completion* <> event) traces))))
+
+(define-method (run-to-completion*-context-switch trace event)
+  (extend-trace trace (cute run-to-completion*-context-switch <> event)))

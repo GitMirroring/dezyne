@@ -73,6 +73,7 @@
             .collateral-instance
             .collateral-released
             .component-acceptance
+            .defer
             .deferred
             .external-q
             .handling
@@ -86,6 +87,7 @@
             .released
             .reply
             .return
+            .running-defer?
             .state
             .state-list
             .status
@@ -206,6 +208,8 @@
   (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger)
 
   (async #:getter .async #:init-form (list) #:init-keyword #:async)
+  (defer #:getter .defer #:init-form (list) #:init-keyword #:defer)
+  (running-defer? #:getter .running-defer? #:init-value #f #:init-keyword #:running-defer?)
 
   (id #:getter .id #:init-value 1 #:init-keyword #:id)
   (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
@@ -306,6 +310,9 @@
   (and=> (.return o) (cut format port " return: ~a" <>))
   (when (pair? (.external-q o))
     (format port " ext-q: ~a" (external-q->string (.external-q o))))
+  (when (pair? (.defer o))
+    (format port " defer-q: ~a"
+            (map (compose trigger->string .trigger) (.defer o))))
   (display " " port)
   (display (.state o) port)
   (display " trail: " port)

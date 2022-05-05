@@ -406,7 +406,8 @@ Return a list of traces, possibly marked with <compliance-error>."
                             component-acceptance))
                        (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
                        (compliance-trigger
-                        (and (null? sut-trail)
+                        (and trigger
+                             (null? sut-trail)
                              (not (any (cute event-on-trail? (.event.name trigger) <>)
                                        non-compliances))
                              trigger))
@@ -448,8 +449,7 @@ released by a requires event, also rerun check-provides-compliance for
 the full trace, i.e., starting from the initial blocking provides
 event.  This ensures proper of zipping the port trace, including the
 port return."
-  (let* ((skip? (or (return-trigger? event)
-                    (blocked-on-boundary? (car trace) event)))
+  (let* ((skip? (blocked-on-boundary? (car trace) event))
          (traces (if skip? (list trace)
                      (check-provides-compliance pc event trace)))
          (pc (car trace))
@@ -779,7 +779,9 @@ or false."
 
 (define-method (run-sut (pc+blocked-trace <list>) event)
   (let* ((pc (car pc+blocked-trace))
-         (pc (reset-replies pc)))
+         (blocked-trace (cdr pc+blocked-trace))
+         (pc (reset-replies pc))
+         (pc (prune-defer pc)))
     (%debug "run-sut pc: ~s\n" pc)
     (%debug "     event: ~s\n" event)
     (match event
@@ -806,7 +808,17 @@ or false."
        (list (cons (clone pc #:async '()) pc+blocked-trace)))
       ((? (const (pair? (.async pc))))
        (let ((traces (flush-async pc)))
-         (check-provides-compliance* pc #f traces)))
+         (check-provides-compliance* pc event traces)))
+      ((? (const (and (pair? (.defer pc)) (blocked-on-boundary? pc))))
+       (list (cons (clone pc #:defer '()) pc+blocked-trace)))
+      ((? (const (and (pair? (.defer pc)) (not (%strict?)))))
+       (let* ((traces (run-defer-event pc event))
+              (traces (if (null? blocked-trace) traces
+                          (extend-trace blocked-trace (const traces))))
+              (traces (append-map
+                       (cute run-to-completion*-context-switch <> event)
+                       traces)))
+         (check-provides-compliance* pc event traces)))
       (_
        (when (not (eq? (switch-context pc) pc))
          (%debug "<eot> with switchable, non-rtc pc\n"))
@@ -1011,33 +1023,36 @@ status."
        ;; In the failures model, refusals can only occur when the
        ;; component LTS is stable.  When the component LTS is not
        ;; stable, that means outgoing tau events: no refusals.  A
-       ;; component LTS is stable when all requires port LTSs are
-       ;; stable.  When the a provides port's modeling-LTS is not
-       ;; stable, the refusals set consists of all its observable
-       ;; events.
-       (and (= (length from-pcs) 1)
-            (null? (.external-q (car from-pcs)))
-            (requires-ports-stable? component pc)
-            (let* ((ports (ast:provides-port* component))
-                   (instable (find (negate (port-lts-stable? pc)) ports))
-                   (pc (car from-pcs))
-                   (refusals (and instable (port-refusals pc instable))))
+       ;; component LTS is stable when all requires port LTSs are stable
+       ;; and the defer queue is empty.  When the a provides port's
+       ;; modeling-LTS is not stable, the refusals set consists of all
+       ;; its observable events.
+       (let* ((pcs (if (null? traces) from-pcs
+                       (map car traces)))
+              (pc (car pcs)))
+         (and (= (length from-pcs) 1)
+              (null? (.external-q (car from-pcs)))
+              (and (requires-ports-stable? component pc)
+                   (null? (.defer pc)))
+              (let* ((ports (ast:provides-port* component))
+                     (instable (find (negate (port-lts-stable? pc)) ports))
+                     (refusals (and instable (port-refusals pc instable))))
 
-              (define (mark-refusals pc)
-                (clone pc #:status (make <refusals-error>
-                                     #:ast (.behavior component)
-                                     #:message "non-compliance"
-                                     #:refusals refusals)))
+                (define (mark-refusals pc)
+                  (clone pc #:status (make <refusals-error>
+                                       #:ast (.behavior component)
+                                       #:message "non-compliance"
+                                       #:refusals refusals)))
 
-              (and (pair? refusals)
-                   (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
-                     (report traces
-                             #:eligible '()
-                             #:internal? internal?
-                             #:locations? locations?
-                             #:state? state?
-                             #:trace trace
-                             #:verbose? verbose?))))))))
+                (and (pair? refusals)
+                     (let ((traces (map (cute rewrite-trace-head mark-refusals <>) traces)))
+                       (report traces
+                               #:eligible '()
+                               #:internal? internal?
+                               #:locations? locations?
+                               #:state? state?
+                               #:trace trace
+                               #:verbose? verbose?)))))))))
 
   (let* ((traces (apply append list-of-traces))
          (traces (filter-illegal+implicit-illegal traces))

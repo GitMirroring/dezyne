@@ -150,6 +150,17 @@
   (%debug "MISSING: ~a ~a\n" ((compose name .instance) pc) (name o))
   '())
 
+(define-method (step (pc <program-counter>) (o <defer>))
+  (let* ((defer (.defer pc)))
+    (if (= (length defer) (%queue-size))
+        (let ((error (make <queue-full-error>
+                       #:ast o
+                       #:instance (.instance pc)
+                       #:message "queue-full")))
+          (list (clone pc #:status error)))
+        (let ((pc (clone pc #:defer (append defer (list pc)))))
+          (list (statement-continuation pc o))))))
+
 (define-method (step (pc <program-counter>) (o <initial-compound>))
   (append
    (next-method pc o)
@@ -384,7 +395,7 @@
                   (ports-eq? (ast:eq? reply-port trigger-port)))
              (and reply-port
                   (or blocking?
-                      (and (or (ast:eq? (.port (rtc-trigger pc)) reply-port)
+                      (and (or (ast:eq? (and=> (rtc-trigger pc) .port) reply-port)
                                (not (and=> (as trigger <q-trigger>) .modeling?)))
                            (or (ast:provides? (rtc-trigger pc))
                                (not (is-a? (ast:type value) <void>)))))
@@ -623,7 +634,10 @@
     (match parent
       (($ <compound>) (statement-continuation pc o))
       (($ <if>) (statement-continuation pc parent))
-      (_ '()))))
+      (($ <defer>)
+       (clone pc #:statement #f))
+      (_
+       '()))))
 
 (define-method (statement-continuation (pc <program-counter>) (o <statement>))
   (let ((parent (.parent o)))
@@ -637,6 +651,8 @@
        (statement-continuation pc parent))
       (($ <function>)
        (pop-pc pc))
+      (($ <defer>)
+       (clone pc #:statement #f))
       (_
        '()))))
 
