@@ -199,7 +199,6 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_top			\
  %D%/collateral_double_blocked			\
  %D%/collateral_double_blocked_out		\
- %D%/compliance_blocking_double_release		\
  %D%/compliance_blocking_async_race		\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_out			\
@@ -335,7 +334,6 @@ REGRESSION_TESTS =				\
  %D%/hello_true_guard				\
  %D%/hello_unused_assign			\
  %D%/helloworld					\
- %D%/illegal_external_nonsynchronous		\
  %D%/illegal_garbage				\
  %D%/illegal_provides				\
  %D%/illegal_requires				\
@@ -353,7 +351,6 @@ REGRESSION_TESTS =				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
  %D%/queuefull_component1			\
- %D%/livelock_synchronous_illegal		\
  %D%/livelock_unfold				\
  %D%/match_blocking_race			\
  %D%/deadlock_reply				\
@@ -363,7 +360,6 @@ REGRESSION_TESTS =				\
  %D%/name.space					\
  %D%/pump_twice					\
  %D%/queuefull_external				\
- %D%/queuefull_external_sync			\
  %D%/queue_size_four				\
  %D%/range_action				\
  %D%/range_argument				\
@@ -522,6 +518,12 @@ PARSER_TESTS =					\
  %D%/undefined/interface/function		\
  %D%/undefined/interface/trigger		\
  %D%/undefined/var
+
+UNSTABLE_TESTS =				\
+ %D%/compliance_blocking_double_release		\
+ %D%/illegal_external_nonsynchronous		\
+ %D%/livelock_synchronous_illegal		\
+ %D%/queuefull_external_sync
 
 XFAIL_TESTS =					\
  %D%/async_blocking_missing_ack			\
