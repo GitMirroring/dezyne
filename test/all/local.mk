@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -296,7 +296,6 @@ REGRESSION_TESTS =				\
  %D%/hello_tick					\
  %D%/hello_true_guard				\
  %D%/helloworld					\
- %D%/illegal_external_nonsynchronous		\
  %D%/illegal_garbage				\
  %D%/illegal_provides				\
  %D%/illegal_requires				\
@@ -316,13 +315,11 @@ REGRESSION_TESTS =				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
  %D%/livelock_synchronous2			\
- %D%/livelock_synchronous_illegal		\
  %D%/livelock_unfold				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
  %D%/queuefull_external				\
- %D%/queuefull_external_sync			\
  %D%/range_action				\
  %D%/range_argument				\
  %D%/range_assign				\
@@ -480,6 +477,11 @@ PARSER_TESTS =					\
  %D%/undefined/interface/function		\
  %D%/undefined/interface/trigger		\
  %D%/undefined/var
+
+UNSTABLE_TESTS =				\
+ %D%/illegal_external_nonsynchronous		\
+ %D%/livelock_synchronous_illegal		\
+ %D%/queuefull_external_sync
 
 XFAIL_TESTS =					\
  %D%/alpha_local2				\
