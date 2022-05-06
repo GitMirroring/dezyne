@@ -30,16 +30,14 @@ data-interfaces.  Support for Model Based Testing.
 Enjoy!
 The Dezyne developers.
 
-
-Here are the compressed sources:
-
-Here are the GPG detached signatures[*]:
+Here are the compressed sources and a GPG detached signature[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.15.0.tar.gz
+  https://dezyne.org/download/dezyne/dezyne-2.15.0.tar.gz.sig
 
 Here are the SHA1 and SHA256 checksums:
 
-
-The SHA256 checksum is base64 encoded, instead of the
-hexadecimal encoding that most checksum tools default to.
+395ff05e4f2c17bcee895fd9436d696fb0aab93d  dezyne-2.15.0.tar.gz
+982d8f7cca9de23225e2f06b4c8524c0b57acfba81beaaff1a0c045c1e6409ea  dezyne-2.15.0.tar.gz
 
 [*] Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
