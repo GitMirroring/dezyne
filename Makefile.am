@@ -304,7 +304,7 @@ gen-announce:
 	build-aux/announce-gen					\
 	    --release-type=stable				\
 	    --package-name=$(PACKAGE)				\
-	    --previous-version='2.14.0'				\
+	    --previous-version='2.15.0'				\
             --current-version=$(PACKAGE_VERSION)		\
 	    --gpg-key-id=$(GPG_KEY_ID)				\
 	    --url-directory=https://dezyne.org/download/dezyne	\

@@ -36,7 +36,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.15
+** Release 2.16
   - Pass regression test
     + data_full: split into smaller tests, preferrably trace-based,
       and without handwritten main's
@@ -47,8 +47,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - dezyne.org
     + blog post about free software?
   - register #dezyne
-
-** Release 2.16
   - async -> defer; deprecate async
   - remove interleaving (ladders) of requires in/reply and other events in makreel
     + enable lts for queuefull_component0, queuefull_component1,
