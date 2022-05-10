@@ -127,8 +127,8 @@ that PC has one more collaterally blocked coroutine on the same port."
     (match (.collateral pc)
       (((port . pc0) t ...)
        (and (find (compose (cute eq? <> (.instance pc0)) .instance cdr) t)
-        (let ((pc (drop-collateral pc)))
-          (pc-equal? pc previous-pc))))
+            (let ((pc (drop-collateral pc)))
+              (pc-equal? pc previous-pc))))
       (_
        #f)))
 
