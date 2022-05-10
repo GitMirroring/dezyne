@@ -123,6 +123,9 @@
 
 (define-ast <initial-compound> (<declarative-compound>))
 
+(define-ast <defer-qout> (<imperative>)
+  (statement))
+
 (define-ast <q-in> (<imperative>)
   (trigger))
 

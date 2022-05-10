@@ -161,6 +161,9 @@
         (let ((pc (clone pc #:defer (append defer (list pc)))))
           (list (statement-continuation pc o))))))
 
+(define-method (step (pc <program-counter>) (o <defer-qout>))
+  (list (clone pc #:statement (.statement o))))
+
 (define-method (step (pc <program-counter>) (o <initial-compound>))
   (append
    (next-method pc o)
@@ -636,6 +639,8 @@
       (($ <if>) (statement-continuation pc parent))
       (($ <defer>)
        (clone pc #:statement #f))
+      (($ <defer-qout>)
+       (clone pc #:statement #f))
       (_
        '()))))
 
@@ -652,6 +657,8 @@
       (($ <function>)
        (pop-pc pc))
       (($ <defer>)
+       (clone pc #:statement #f))
+      (($ <defer-qout>)
        (clone pc #:statement #f))
       (_
        '()))))

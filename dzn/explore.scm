@@ -66,6 +66,9 @@
     (cond
      ((eq? event 'async)
       (flush-async pc '()))
+     ((eq? event 'defer)
+      (if (null? (.defer pc)) '()
+          (run-defer-event pc event)))
      ((eq? event 'external)
       (process-external pc))
      ((is-a? (%sut) <runtime:port>)
@@ -138,11 +141,18 @@ that PC has one more collaterally blocked coroutine on the same port."
       (if (and (eq? orig-pc sw-pc)
                (eq? orig-pc bob-pc))
           (run-to-completion** orig-pc label)
-          (if (and (not (eq? orig-pc sw-pc))
-                   (not (provides-trigger? label)))
-              (run-to-completion sw-pc 'rtc)
-              (append (run-to-completion bob-pc 'rtc)
-                      (run-to-completion** orig-pc label))))))
+          (cond
+           ((and (not (eq? orig-pc sw-pc))
+                 (not (provides-trigger? label)))
+            (run-to-completion sw-pc 'rtc))
+           (else
+            (append (let* ((traces (run-to-completion bob-pc 'rtc))
+                           (flush traces
+                                  (partition (compose .running-defer? car)
+                                             traces)))
+                      (append traces
+                              (append-map run-flush flush)))
+                    (run-to-completion** orig-pc label)))))))
 
   (define (run-labels pc labels)
     (let loop ((labels labels) (traces '()))
@@ -153,7 +163,8 @@ that PC has one more collaterally blocked coroutine on the same port."
                           (filter-implicit-illegal-only new)))
                  (new (filter (compose not (is-status? <blocked-error>) car)
                               new))
-                 (new (filter (compose not (cute collateral? <> pc) car) new)))
+                 (new (filter (compose not (cute collateral? <> pc) car) new))
+                 (new (map (cute rewrite-trace-head prune-defer <>) new)))
             (cond
              ((find (compose (is-status? <livelock-error>) car) new)
               (format (current-error-port) "warning: livelock, bailing out\n")
@@ -161,7 +172,9 @@ that PC has one more collaterally blocked coroutine on the same port."
              (else
               (loop (cdr labels) (append new traces))))))))
 
-  (let* ((labels (cons* 'async 'external (labels)))
+  (let* ((labels (labels))
+         (labels (if (is-a? (%sut) <runtime:port>) labels
+                     (cons* 'async 'defer 'external labels)))
          (lts (make-hash-table))
          (state-number-table (make-hash-table))
          (state-number-count (list 1))

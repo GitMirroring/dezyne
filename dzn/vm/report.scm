@@ -114,6 +114,9 @@
 (define-method (pc-event? (pc <program-counter>) (o <statement>))
   (pc-event? (.instance pc) o))
 
+(define-method (pc-event? (pc <program-counter>) (o <defer-qout>))
+  (%modeling?))
+
 (define-method (pc-event? (pc <program-counter>) (o <initial-compound>))
   (pc-event? (.instance pc) (.trigger pc)))
 
@@ -240,6 +243,9 @@
             (let* ((trigger (action->trigger r:other-port action))
                    (trigger (trigger->string trigger)))
               (format #f "~a.~a" (trace-name r:other-port) trigger)))))))
+
+(define-method (pc->event (o <runtime:component>) (defer-qout <defer-qout>))
+  (cons defer-qout "<defer>"))
 
 (define-method (pc->event (o <runtime:component>) (q-out <q-out>))
   (let ((trigger (.trigger q-out)))

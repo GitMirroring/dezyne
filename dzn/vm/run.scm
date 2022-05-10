@@ -57,6 +57,7 @@
             run-async
             run-async-event
             run-defer-event
+            run-flush
             run-external
             run-external-q
             run-external-modeling
@@ -767,11 +768,15 @@ until RTC?."
                (statement (.statement defer-pc))
                (statement (.statement statement))
                (instance (.instance defer-pc))
+               (defer-qout (make <defer-qout>
+                             #:statement statement
+                             #:location (.location statement)))
+               (defer-qout (clone defer-qout #:parent (.parent statement)))
                (pc (clone pc
                           #:defer (cdr defer)
                           #:running-defer? instance
                           #:instance instance
-                          #:statement statement
+                          #:statement defer-qout
                           #:trigger (.trigger defer-pc)
                           #:trail (cons event (.trail pc))))
                (traces (run-to-completion pc 'rtc))
