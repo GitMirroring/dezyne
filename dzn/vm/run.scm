@@ -533,7 +533,7 @@ with EVENT as first step, until RTC?."
 of) TRACE, extending TRACE."
   (let* ((pc (car trace))
          (traces (producer pc)))
-    (map (cut append <> trace) traces)))
+    (map (cute append <> trace) traces)))
 
 (define-method (run-to-completion (trace <list>) event)
   "Return a list of traces produced by RUN-TO-COMPLETION, extending TRACE."
@@ -569,7 +569,7 @@ until RTC?."
                (traces (parameterize ((%sut port)
                                       (%exploring? #t)
                                       (%strict? #t))
-                         (append-map (cut run-to-completion ipc <>) modeling-names)))
+                         (append-map (cute run-to-completion ipc <>) modeling-names)))
                (traces (filter (conjoin (compose null? trace->trail)
                                         (compose (negate .status) car))
                                traces)))
@@ -606,7 +606,7 @@ until RTC?."
                                             (%liveness? 'component)
                                             (%exploring? #t)
                                             (%strict? #f))
-                               (append-map (cut run-to-completion ipc <>) modeling-names)))
+                               (append-map (cute run-to-completion ipc <>) modeling-names)))
                      (traces (filter (compose
                                       (disjoin not (is? <queue-full-error>))
                                       .status car)
@@ -641,13 +641,13 @@ until RTC?."
              (silent-pcs (map car silent-traces))
              (pcs (cons pc silent-pcs))
              (traces (map list pcs)))
-        (append-map (cut run-to-completion <> event) (cons (list pc) traces))))
+        (append-map (cute run-to-completion <> event) (cons (list pc) traces))))
      (else
       (let* ((modeling? (member event '("inevitable" "optional")))
              (pc (if modeling? pc
                      (clone pc #:trail (cons event (.trail pc)))))
              (modeling-names (if modeling? (list event) (modeling-names)))
-             (traces (append-map (cut run-to-completion pc <>) modeling-names))
+             (traces (append-map (cute run-to-completion pc <>) modeling-names))
              (traces (parameterize ((%modeling? modeling?))
                        (filter event-executed? traces))))
         traces)))))
@@ -673,8 +673,8 @@ until RTC?."
          (modeling-names (modeling-names interface))
          (trail (cons event (.trail pc)))
          (pc (clone pc #:trail trail #:status #f))
-         (modeling-events (map (cut string-append port-name "." <>) modeling-names))
-         (traces (append-map (cut run-to-completion pc <>) modeling-events))
+         (modeling-events (map (cute string-append port-name "." <>) modeling-names))
+         (traces (append-map (cute run-to-completion pc <>) modeling-events))
          (traces (filter (cute event-executed? port-instance <>) traces))
          (errors (filter (compose .status car) traces)))
 
@@ -683,8 +683,8 @@ until RTC?."
                (component-trigger (trigger->component-trigger component-port
                                                               trigger))
                (instance (.container component-port))
-               (traces (map (cut rewrite-trace-head
-                              (cut clone <> #:instance instance) <>)
+               (traces (map (cute rewrite-trace-head
+                              (cute clone <> #:instance instance) <>)
                             traces))
                (collateral-blocked? (or (blocked-on-boundary? pc)
                                         (and (get-handling pc instance)
@@ -707,7 +707,7 @@ until RTC?."
           (else
            (let* ((pc (car trace))
                   (traces (flush-async pc trace)))
-             (map (cut append <> trace) traces))))))
+             (map (cute append <> trace) traces))))))
 
 (define (did-provides-out? trace)
   (let* ((trail (map cdr (trace->trail trace)))
