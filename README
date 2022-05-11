@@ -46,7 +46,7 @@ When building from a Git checkout, these additional packages are needed:
   - [[https://gnu.org/software/help2man/][GNU Help2man]] (optional).
 
 #+BEGIN_EXAMPLE
-    guix environment -l guix.scm
+    guix shell
     ./autogen.sh
     ./configure
     make
@@ -64,7 +64,7 @@ reports to [[bug-dezyne@nongnu.org][bug-dezyne@nongnu.org]].  Please check the
 [[bug database][https://gitlab.com/dezyne/dezyne-issues/-/issues]] first!
 
 * Legalese
-Copyright © 2019,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2021,2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright

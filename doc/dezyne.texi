@@ -6638,7 +6638,7 @@ To setup a development environment, we use
 GNU Guix Manual}); run
 
 @example
-guix environment -l guix.scm
+guix shell
 @end example
 
 If you are unable to use Guix when building Dezyne from a Git checkout,

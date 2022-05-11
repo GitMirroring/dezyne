@@ -24,7 +24,7 @@
 ;;
 ;; GNU Guix development package.  To build and play, run:
 ;;
-;;   guix environment --ad-hoc -l guix.scm guile
+;;   guix shell
 ;;
 ;; To build and install, run:
 ;;
@@ -36,7 +36,7 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix time-machine --commit=0e9429544fd737079b9c1562de3beb48329350a9 -- environment -l guix.scm
+;;   guix time-machine --commit=0e9429544fd737079b9c1562de3beb48329350a9 -- shell
 ;;
 ;;; Code:
 

@@ -73,14 +73,14 @@ make publish SITE=kluit.dezyne.org:/srv/dezyne.org/site/dezyne
 #+BEGIN_SRC bash
 git clone kluit.dezyne.org:~janneke/src/web/dezyne.org.git
 cd dezyne.org
-guix environment -m guix.scm
+guix shell -m guix.scm
 make
 make serve # => check localhost:8080
 make publish
 #+END_SRC
 
 * Legalese
-Copyright © 2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2020,2021,2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
