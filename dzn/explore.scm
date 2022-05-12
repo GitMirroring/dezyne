@@ -132,19 +132,15 @@ that PC has one more collaterally blocked coroutine on the same port."
        #f)))
 
   (define (run-label orig-pc label)
-    (let* ((pc (switch-context orig-pc))
-           (switched? (not (eq? pc orig-pc)))
-           (pc (if switched? pc
-                   (blocked-on-boundary-switch-context pc)))
-           (bop-switched? (and (not switched?)
-                               (not (eq? pc orig-pc))))
-           (pc (if (or switched? bop-switched?) pc
-                   (blocked-on-boundary-collateral-release pc))))
-      (if (eq? pc orig-pc) (run-to-completion** pc label)
-          (if (and switched?
+    (let* ((sw-pc (switch-context orig-pc))
+           (bob-pc (blocked-on-boundary-switch-context orig-pc)))
+      (if (and (eq? orig-pc sw-pc)
+               (eq? orig-pc bob-pc))
+          (run-to-completion** orig-pc label)
+          (if (and (not (eq? orig-pc sw-pc))
                    (not (provides-trigger? label)))
-              (run-to-completion pc 'rtc)
-              (append (run-to-completion pc 'rtc)
+              (run-to-completion sw-pc 'rtc)
+              (append (run-to-completion bob-pc 'rtc)
                       (run-to-completion** orig-pc label))))))
 
   (define (run-labels pc labels)
