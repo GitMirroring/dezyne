@@ -197,6 +197,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_blocking_function		\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_out			\
+ %D%/compliance_defer				\
  %D%/compliance_external_inevitable		\
  %D%/compliance_failures_blocking		\
  %D%/compliance_failures_blocking_race		\

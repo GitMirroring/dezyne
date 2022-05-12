@@ -1,0 +1,60 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2018, 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  in void cruel();
+  out void world();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    on cruel: idle = true;
+    [!idle] on inevitable: { world; idle = true; }
+  }
+}
+
+component compliance_defer
+{
+  provides ihello h;
+  behavior {
+    enum S { A, B, C };
+    S s = S.A;
+
+    [s.A] {
+      on h.hello(): {s = S.B; defer {s = S.C; h.world();}}
+      on h.cruel(): {}
+    }
+    [s.B] {
+      on h.cruel(): s = S.A;
+    }
+    [s.C] {
+      on h.hello(): illegal; // this illegal should lead to a compliance error
+      on h.cruel(): {}
+    }
+  }
+}
