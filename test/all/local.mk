@@ -246,6 +246,7 @@ REGRESSION_TESTS =				\
  %D%/defer_cancel_call				\
  %D%/defer_collateral_blocking			\
  %D%/defer_cruel				\
+ %D%/defer_loop					\
  %D%/defer_if					\
  %D%/defer_queuefull				\
  %D%/determinism_async				\
