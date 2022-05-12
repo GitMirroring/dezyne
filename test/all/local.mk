@@ -241,6 +241,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_port_blocked			\
  %D%/deadlock_reply				\
  %D%/deadlock_reply_modeling			\
+ %D%/defer_blocking				\
  %D%/defer_cancel				\
  %D%/defer_cancel_call				\
  %D%/defer_collateral_blocking			\
