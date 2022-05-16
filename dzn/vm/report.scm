@@ -926,11 +926,11 @@ intermediate steps such as assignments, function calls, replies,
       ((and (? (is? <match-error>)) (= .ast ast))
        (let ((location (location-prefix ast))
              (label (label->string ast)))
-         (if (not label)
+         (if label
+             (format #f "~aerror: no match; at `~s', got input `~s'\n"
+                     location label (.input status))
              (format #f "~aerror: no match; got input `~s'\n"
-                     location (.input status))
-             (format #f "~aerror: no match; at ast `~s', got input `~s'\n"
-                     location (label->string ast) (.input status)))))
+                     location (.input status)))))
       ((and ($ <end-of-trail> ) (and (= .ast ast)))
        (and ast
             (let* ((instance (.instance (car pcs)))
