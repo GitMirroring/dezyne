@@ -176,10 +176,10 @@ semantics_provides_blocking(blocking: Set(provides_ports), released: List(provid
  #x:semantics-provides-blocking-requires
  ;
 
-semantics_provides_skip_blocked(released: List(provides_ports), reply: reply_values)
+semantics_provides_skip_blocked(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
 = #x:semantics-provides-skip-blocked-replies
  + !(#x:semantics-port-in-released-or) -> #x:makreel:model-name end
- . (delta
+ . (semantics_blocked_rtc ()
   #x:semantics-provides-skip-blocked-requires)
 
  #x:semantics-provides-skip-blocked-requires
