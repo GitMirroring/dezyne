@@ -178,6 +178,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
  %D%/blocking_external				\
+ %D%/blocking_sync_asynchronous_out		\
  %D%/blocking_system				\
  %D%/blocking_system2				\
  %D%/blocking_system3				\
