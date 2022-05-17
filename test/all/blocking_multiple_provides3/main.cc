@@ -46,11 +46,13 @@ int main ()
 
   sut.r.in.hello = [&]
   {
-    std::clog << "sut.bmp.r.hello -> <external>.r.hello\n";
-    sut.hsb.r.out.world ();
-    std::clog << "sut.bmp.r.return -> <external>.r.return\n";
+    std::clog << "sut.mp.r.hello -> <external>.r.hello\n";
+    sut.mp.r.out.world (); //side step going through pump, since we are
+                           //already executing on the pump and the
+                           //interface of r is synchronous
+    std::clog << "sut.mp.r.return -> <external>.r.return\n";
   };
 
-  sut.h_left.in.hello ();
-  sut.h_right.in.hello ();
+  sut.left.in.hello ();
+  sut.right.in.hello ();
 }

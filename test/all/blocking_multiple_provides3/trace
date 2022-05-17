@@ -1,10 +1,10 @@
-h_left.hello
+left.hello
 r.hello
 r.world
 r.return
-h_left.return
-h_right.hello
+left.return
+right.hello
 r.hello
 r.world
 r.return
-h_right.return
+right.return

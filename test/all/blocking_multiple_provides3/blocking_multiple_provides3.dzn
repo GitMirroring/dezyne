@@ -45,41 +45,44 @@ interface iworld
   }
 }
 
-component hello_skip_block
+component multiple_provides
 {
-  provides blocking ihello h_left;
-  provides blocking ihello h_right;
-  requires iworld r;
+  provides blocking ihello left;
+  provides blocking ihello right;
+  requires blocking iworld r;
 
   behavior
   {
-    enum Side {Left, Right};
-    Side side = Side.Left;
+    enum Side {None, Left, Right, LeftRight, RightLeft};
+    Side side = Side.None;
 
-    blocking on h_left.hello(): {r.hello(); side = Side.Left;}
-    blocking on h_right.hello(): {r.hello(); side = Side.Right;}
+    blocking on left.hello(): {
+      [side.None] {side = Side.Left; r.hello();}
+      [side.Right] {side = Side.RightLeft; r.hello();}
+    }
+    blocking on right.hello(): {
+      [side.None] {r.hello(); side = Side.Right;}
+      [side.Left] {r.hello(); side = Side.LeftRight;}
+    }
 
-    [side.Left]
-    {
-      on r.world(): h_left.reply();
-    }
-    [side.Right]
-    {
-      on r.world(): h_right.reply();
-    }
+    [side.Left] on r.world(): {side = Side.None; left.reply();}
+    [side.LeftRight] on r.world(): {side = Side.Right; left.reply();}
+
+    [side.Right] on r.world(): {side = Side.None; right.reply();}
+    [side.RightLeft] on r.world(): {side = Side.Left; right.reply();}
   }
 }
 
 component blocking_multiple_provides3
 {
-  provides blocking ihello h_left;
-  provides blocking ihello h_right;
+  provides blocking ihello left;
+  provides blocking ihello right;
   requires iworld r;
   system
   {
-    h_left  <=> hsb.h_left;
-    h_right <=> hsb.h_right;
-    hello_skip_block hsb;
-    hsb.r <=> r;
+    left  <=> mp.left;
+    right <=> mp.right;
+    multiple_provides mp;
+    mp.r <=> r;
   }
 }

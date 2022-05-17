@@ -68,23 +68,23 @@ component multiple_provides
 
   behavior
   {
-    enum Side {None, Left, Right};
+    enum Side {None, Left, Right, LeftRight, RightLeft};
     Side side = Side.None;
 
-    subint Count {0..2};
-    Count count = 0;
-
-    blocking on left.hello(): {count = count + 1; r.hello(); side = Side.Left;}
-    blocking on right.hello(): {count = count + 1; r.hello(); side = Side.Right;}
-
-    [side.Left]
-    {
-      on r.world(): {count = count - 1; if(count == 0) side = Side.None; left.reply();}
+    blocking on left.hello(): {
+      [side.None] {side = Side.Left; r.hello();}
+      [side.Right] {side = Side.RightLeft; r.hello();}
     }
-    [side.Right]
-    {
-      on r.world(): {count = count - 1; if(count == 0) side = Side.None; right.reply();}
+    blocking on right.hello(): {
+      [side.None] {r.hello(); side = Side.Right;}
+      [side.Left] {r.hello(); side = Side.LeftRight;}
     }
+
+    [side.Left] on r.world(): {side = Side.None; left.reply();}
+    [side.LeftRight] on r.world(): {side = Side.Right; left.reply();}
+
+    [side.Right] on r.world(): {side = Side.None; right.reply();}
+    [side.RightLeft] on r.world(): {side = Side.Left; right.reply();}
   }
 }
 

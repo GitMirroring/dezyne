@@ -51,12 +51,12 @@ class main
 
       sut.r.inport.hello = () =>
       {
-        System.Console.Error.WriteLine("sut.bmp.r.hello -> <external>.r.hello");
-        sut.hsb.r.outport.world();
-        System.Console.Error.WriteLine("sut.bmp.r.return -> <external>.r.return");
+        System.Console.Error.WriteLine("sut.mp.r.hello -> <external>.r.hello");
+        sut.mp.r.outport.world();
+        System.Console.Error.WriteLine("sut.mp.r.return -> <external>.r.return");
       };
-      sut.h_left.inport.hello ();
-      sut.h_right.inport.hello ();
+      sut.left.inport.hello ();
+      sut.right.inport.hello ();
     }
   }
 }
