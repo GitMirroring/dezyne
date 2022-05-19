@@ -243,6 +243,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_reply_modeling			\
  %D%/defer_cancel				\
  %D%/defer_cruel				\
+ %D%/defer_if					\
  %D%/determinism_async				\
  %D%/determinism_deadlock			\
  %D%/determinism_modeling			\
