@@ -1,0 +1,10 @@
+model: deadlock_asynchronous_sync_reply
+h.hello
+w0.hello
+w0.return
+h.return
+w0.world
+w1.hello
+w1.world
+w1.return
+<deadlock>

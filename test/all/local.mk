@@ -221,6 +221,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_system_provides_bool		\
  %D%/component_modeling_loop			\
  %D%/data_full					\
+ %D%/deadlock_asynchronous_sync_reply		\
  %D%/deadlock_blocking_compliance		\
  %D%/deadlock_blocking_flush			\
  %D%/deadlock_blocking_guard			\
