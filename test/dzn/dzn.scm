@@ -243,12 +243,17 @@ output, and standard error as three values."
 
 (define (filter-<flush> string)
   (let* ((lines (string-split string #\newline))
-         (events (filter (negate (cut string-contains <> "<flush>")) lines)))
+         (events (filter (negate (cute string-contains <> "<flush>")) lines)))
+    (string-join events "\n")))
+
+(define (filter-<defer> string)
+  (let* ((lines (string-split string #\newline))
+         (events (filter (negate (cute string-contains <> "<defer>")) lines)))
     (string-join events "\n")))
 
 (define (filter-state string)
   (let* ((lines (string-split string #\newline))
-         (events (filter (negate (cut string-prefix? "(state " <>)) lines)))
+         (events (filter (negate (cute string-prefix? "(state " <>)) lines)))
     (string-join events "\n")))
 
 
@@ -262,10 +267,10 @@ output, and standard error as three values."
          (baseline (string-append file-name "/baseline/verify"))
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                    (cut string-split <> #\:))
+                                    (cute string-split <> #\:))
                              '())))
          (includes (filter directory-exists? includes))
-         (includes (append-map (cut list "-I" <>) includes))
+         (includes (append-map (cute list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
          (command
@@ -287,10 +292,10 @@ output, and standard error as three values."
               (in-lang (string-append file-name "/" language))
               (includes (cons in-lang
                               (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                         (cut string-split <> #\:))
+                                         (cute string-split <> #\:))
                                   '())))
               (includes (filter directory-exists? includes))
-              (includes (append-map (cut list "-I" <>) includes))
+              (includes (append-map (cute list "-I" <>) includes))
               (out (string-append file-name "/out"))
               (out-lang (string-append file-name "/out/" language))
               (model (or (model? file-name) base-name))
@@ -313,7 +318,7 @@ output, and standard error as three values."
                 (zero? status))
               (let* ((dzn-files (list-files file-name ".+\\.*dzn*$"))
                      (extra-dzn-files (filter
-                                       (negate (cut equal? <> dzn-name))
+                                       (negate (cute equal? <> dzn-name))
                                        dzn-files)))
                 (and-map
                  (lambda (dzn-file)
@@ -326,7 +331,7 @@ output, and standard error as three values."
                  extra-dzn-files)))))
        (run-build file-name language)
        (let ((traces (find-files file-name ".*trace.*$")))
-         (and-map (cut run-execute file-name language <>) traces))))
+         (and-map (cute run-execute file-name language <>) traces))))
 
 (define (run-traces file-name)
   (format #t "** stage: traces\n")
@@ -335,10 +340,10 @@ output, and standard error as three values."
          (input "")
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                    (cut string-split <> #\:))
+                                    (cute string-split <> #\:))
                              '())))
          (includes (filter directory-exists? includes))
-         (includes (append-map (cut list "-I" <>) includes))
+         (includes (append-map (cute list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
          (out (string-append file-name "/out"))
@@ -408,7 +413,8 @@ output, and standard error as three values."
                (let ((net (trace:format-trace stderr #:format "event")))
                  (receive (status stdout stderr)
                      (let* ((input (filter-state input))
-                            (input (filter-<flush> input)))
+                            (input (filter-<flush> input))
+                            (input (filter-<defer> input)))
                        (observe `("bash" "-c"
                                   ,(string-append "diff -ywB"
                                                   ;; ignore foreign/system communications
@@ -426,15 +432,16 @@ output, and standard error as three values."
          (input (with-input-from-file trace read-string))
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                    (cut string-split <> #\:))
+                                    (cute string-split <> #\:))
                              '())))
          (includes (filter directory-exists? includes))
-         (includes (append-map (cut list "-I" <>) includes))
+         (includes (append-map (cute list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (out (string-append file-name "/out"))
          (language "simulate")
          (out-lang (string-append file-name "/out/" language))
          (input (filter-<flush> input))
+         (input (filter-<defer-qout> input))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
          ;; FIXME: METAs `model' is used for component/system tricksery
@@ -475,9 +482,9 @@ output, and standard error as three values."
                    (err-file (string-append out-lang "/err")))
                (mkdir-p out-lang)
                (with-output-to-file out-file
-                 (cut display stdout))
+                 (cute display stdout))
                (with-output-to-file err-file
-                 (cut display stderr))
+                 (cute display stderr))
                (let ((baseline-out (string-append baseline "/" base-name))
                      (baseline-err (string-append baseline "/" base-name ".stderr")))
                  (and (zero? (system* "diff" "-ywB" baseline-out out-file))
@@ -490,7 +497,7 @@ output, and standard error as three values."
   (or (skip? file-name
              "simulate")
       (let ((traces (find-files file-name ".*trace.*$")))
-        (and-map (cut run-simulate-trace file-name <>) traces))))
+        (and-map (cute run-simulate-trace file-name <>) traces))))
 
 (define (run-lts file-name)
   (format #t "** stage: lts\n")
@@ -499,9 +506,9 @@ output, and standard error as three values."
          (input "")
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
-                                    (cut string-split <> #\:))
+                                    (cute string-split <> #\:))
                              '())))
-         (includes (append-map (cut list "-I" <>) includes))
+         (includes (append-map (cute list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
          (out (string-append file-name "/out"))
@@ -544,7 +551,7 @@ output, and standard error as three values."
                             (blocking (map (cute match:substring <> 1) blocking))
                             (blocking (delete-duplicates blocking))
                             (modeling (append modeling '("inevitable" "optional")))
-                            (taus (append taus flushes blocking))
+                            (taus (cons "<defer>" (append taus flushes blocking)))
                             (taus+modeling (append taus modeling)))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
@@ -560,7 +567,7 @@ output, and standard error as three values."
                               "")
                            (display stdout)
                            (let* ((lines (and stdout (string-split stdout #\newline)))
-                                  (stdout-status (and lines (filter (cut string-prefix? "result: " <>) lines)))
+                                  (stdout-status (and lines (filter (cute string-prefix? "result: " <>) lines)))
                                   (stdout-status (and (pair? stdout-status) (car stdout-status)))
                                   (status (if (and (zero? status)
                                                    stdout-status
@@ -583,9 +590,9 @@ output, and standard error as three values."
         (let ((out-file (string-append file-name ".out"))
               (err-file (string-append file-name ".err")))
           (with-output-to-file out-file
-            (cut display (stdout-filter stdout)))
+            (cute display (stdout-filter stdout)))
           (with-output-to-file err-file
-            (cut display stderr))
+            (cute display stderr))
           (let* ((base-name (basename file-name))
                  (baseline-out (string-append baseline "/" base-name))
                  (baseline-err (string-append baseline-out ".stderr")))
@@ -604,7 +611,7 @@ output, and standard error as three values."
                      (run-traces file-name)
                      (run-lts file-name)
                      (run-simulate file-name)
-                     (and-map (cut run-code file-name <>) languages))))
+                     (and-map (cute run-code file-name <>) languages))))
     (format #t "# Local Variables:
 # mode: org
 # End:
