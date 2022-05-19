@@ -121,92 +121,77 @@ REGRESSION_TESTS =				\
  %D%/async_blocking_missing_ack			\
  %D%/async_blocking_ranking_disorder		\
  %D%/async_blocking_verify			\
+ %D%/async_calling_context			\
  %D%/async_cancel				\
  %D%/async_context				\
- %D%/async_calling_context			\
- %D%/async_provides				\
- %D%/livelock_async				\
- %D%/livelock_async_cancel			\
- %D%/livelock_async_choice			\
- %D%/compliance_async				\
  %D%/async_flush				\
  %D%/async_multiple_provides			\
- %D%/illegal_blocking_race			\
- %D%/deadlock_component1			\
- %D%/blocking_queuefull				\
- %D%/blocking_queuefull_reply			\
- %D%/collateral_blocking_reply			\
- %D%/deadlock_interface1			\
- %D%/determinism_async				\
- %D%/determinism_deadlock			\
- %D%/determinism_modeling			\
- %D%/determinism_silent				\
  %D%/async_order				\
  %D%/async_order2				\
  %D%/async_prio					\
  %D%/async_prio2				\
  %D%/async_prio3				\
+ %D%/async_provides				\
  %D%/async_rank					\
  %D%/async_ranking				\
  %D%/async_shell				\
- %D%/async_types				\
- %D%/illegal_async_req				\
  %D%/async_simple				\
+ %D%/async_sync_prio				\
  %D%/async_synccb				\
  %D%/async_synccb2				\
- %D%/async_sync_prio				\
+ %D%/async_types				\
+ %D%/blocking-local-state-diagram		\
  %D%/blocking_binding				\
  %D%/blocking_bottom_system			\
  %D%/blocking_cancel_race			\
+ %D%/blocking_cancel_race_bool			\
  %D%/blocking_double_release			\
+ %D%/blocking_external				\
  %D%/blocking_function_reply			\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\
  %D%/blocking_local				\
- %D%/blocking-local-state-diagram		\
- %D%/blocking_multiple_provides0		\
  %D%/blocking_multiple_provides			\
+ %D%/blocking_multiple_provides0		\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
  %D%/blocking_mux				\
  %D%/blocking_normalize				\
  %D%/blocking_provides_state			\
+ %D%/blocking_queuefull				\
+ %D%/blocking_queuefull_reply			\
  %D%/blocking_race				\
- %D%/blocking_cancel_race_bool			\
  %D%/blocking_race_async			\
  %D%/blocking_release				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
- %D%/blocking_external				\
+ %D%/blocking_shell				\
  %D%/blocking_sync_asynchronous_out		\
  %D%/blocking_system				\
  %D%/blocking_system2				\
  %D%/blocking_system3				\
  %D%/blocking_system4				\
  %D%/blocking_system_diamond			\
- %D%/blocking_shell				\
  %D%/calling_context				\
  %D%/collateral_blocking_async			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_double_release		\
- %D%/collateral_blocking_shell			\
- %D%/collateral_blocking_shell2			\
- %D%/collateral_blocking_reorder		\
- %D%/collateral_blocking_reorder_bypass		\
  %D%/collateral_blocking_multiple_provides	\
  %D%/collateral_blocking_multiple_provides2	\
  %D%/collateral_blocking_release		\
+ %D%/collateral_blocking_reorder		\
+ %D%/collateral_blocking_reorder_bypass		\
+ %D%/collateral_blocking_reply			\
+ %D%/collateral_blocking_shell			\
+ %D%/collateral_blocking_shell2			\
  %D%/collateral_blocking_top			\
  %D%/collateral_double_blocked			\
  %D%/collateral_double_blocked_out		\
+ %D%/compliance_async				\
  %D%/compliance_blocking_async_race		\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_out			\
- %D%/compliance_nonsynchronous_sync		\
- %D%/compliance_implicit_illegal		\
- %D%/compliance_livelock			\
- %D%/compliance_livelock_escape			\
  %D%/compliance_external_inevitable		\
  %D%/compliance_failures_blocking		\
  %D%/compliance_failures_blocking_race		\
@@ -216,7 +201,13 @@ REGRESSION_TESTS =				\
  %D%/compliance_failures_inevitable_optional    \
  %D%/compliance_failures_multiple_provides	\
  %D%/compliance_failures_optional		\
+ %D%/compliance_fork_provides			\
+ %D%/compliance_fork_requires			\
+ %D%/compliance_implicit_illegal		\
  %D%/compliance_invalid_action			\
+ %D%/compliance_livelock			\
+ %D%/compliance_livelock_escape			\
+ %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_optional			\
  %D%/compliance_out_sync			\
  %D%/compliance_provides_bool			\
@@ -230,14 +221,22 @@ REGRESSION_TESTS =				\
  %D%/compliance_system_provides_bool		\
  %D%/component_modeling_loop			\
  %D%/data_full					\
- %D%/deadlock_optional_out_only			\
  %D%/deadlock_blocking_compliance		\
  %D%/deadlock_blocking_flush			\
  %D%/deadlock_blocking_guard			\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
  %D%/deadlock_blocking_replies			\
+ %D%/deadlock_component1			\
+ %D%/deadlock_interface1			\
+ %D%/deadlock_optional_out_only			\
  %D%/deadlock_port_blocked			\
+ %D%/deadlock_reply				\
+ %D%/deadlock_reply_modeling			\
+ %D%/determinism_async				\
+ %D%/determinism_deadlock			\
+ %D%/determinism_modeling			\
+ %D%/determinism_silent				\
  %D%/dollars					\
  %D%/double_collateral_blocking_shell		\
  %D%/double_hello_block				\
@@ -249,21 +248,15 @@ REGRESSION_TESTS =				\
  %D%/end_of_trail_interface_action		\
  %D%/enum_expressions				\
  %D%/equal_binary				\
+ %D%/extern_in_interface			\
  %D%/external_asynchronous_sync			\
  %D%/external_blocking_livelock                 \
- %D%/foreign_injected				\
- %D%/illegal_external_inevitable		\
  %D%/external_requires_twice			\
- %D%/compliance_fork_provides			\
- %D%/compliance_fork_requires			\
  %D%/failures_inevitable			\
  %D%/failures_nondet_inevitable			\
  %D%/failures_second_inevitable			\
- %D%/illegal_external_requires_twice		\
- %D%/illegal_external_requires_twice2		\
- %D%/illegal_pessimism_external			\
- %D%/extern_in_interface			\
  %D%/foreign_import_system			\
+ %D%/foreign_injected				\
  %D%/foreign_namespace				\
  %D%/foreign_optional				\
  %D%/foreign_reply				\
@@ -271,12 +264,13 @@ REGRESSION_TESTS =				\
  %D%/function_out_state				\
  %D%/function_reply_early_return		\
  %D%/guard_expressions				\
- %D%/hello_sync_out_reply			\
- %D%/hello_blocking_multiple_out		\
  %D%/hello_blocking_asynchronous_sync_out	\
- %D%/hellocheckcompbindings			\
- %D%/hellochecksystembindings			\
+ %D%/hello_blocking_multiple_out		\
+ %D%/hello_choice_action			\
+ %D%/hello_choice_reply				\
  %D%/hello_clash_port_variable			\
+ %D%/hello_complete_action			\
+ %D%/hello_complete_reply			\
  %D%/hello_enum					\
  %D%/hello_enum_function			\
  %D%/hello_foreign_file				\
@@ -284,58 +278,62 @@ REGRESSION_TESTS =				\
  %D%/hello_function_assign			\
  %D%/hello_function_local			\
  %D%/hello_function_local_nest			\
- %D%/hellofundata				\
  %D%/hello_garbage				\
  %D%/hello_guard_two				\
  %D%/hello_ifelse				\
  %D%/hello_ifif					\
- %D%/hello_implicit_illegal			\
  %D%/hello_implicit_enum			\
+ %D%/hello_implicit_illegal			\
  %D%/hello_implicit_temporaries			\
- %D%/hello_imported				\
  %D%/hello_import_component			\
+ %D%/hello_imported				\
  %D%/hello_inevitable_action			\
  %D%/hello_inevitable_blocking_sync_out		\
- %D%/hello_inevitable_illegal			\
- %D%/inevitable_multiple_requires		\
  %D%/hello_inevitable_hidden			\
+ %D%/hello_inevitable_illegal			\
  %D%/hello_inevitable_sync_out			\
  %D%/hello_int					\
- %D%/hellointbug				\
  %D%/hello_interface_function			\
- %D%/illegal_interface.space			\
  %D%/hello_interface_optional			\
  %D%/hello_local_assign				\
  %D%/hello_local_enum				\
  %D%/hello_match				\
+ %D%/hello_modeling_nondet			\
  %D%/hello_multiple_out				\
  %D%/hello_multiple_provides_requires		\
  %D%/hello_namespace_enum			\
  %D%/hello_namespace_foreign			\
  %D%/hello_namespace_shadow			\
  %D%/hello_namespace_shadow2			\
- %D%/hello_choice_action			\
- %D%/hello_choice_reply				\
- %D%/hello_complete_action			\
- %D%/hello_complete_reply			\
- %D%/hello_modeling_nondet			\
  %D%/hello_optional_flush			\
  %D%/hello_optional_nondet			\
- %D%/hellooutevent				\
  %D%/hello_out_data				\
  %D%/hello_out_provides				\
- %D%/helloparam					\
- %D%/helloparams				\
  %D%/hello_provides				\
  %D%/hello_recursive				\
  %D%/hello_shadow				\
+ %D%/hello_sync_out_reply			\
  %D%/hello_systems				\
  %D%/hello_tail_recursive_function		\
  %D%/hello_tick					\
  %D%/hello_true_guard				\
  %D%/hello_unused_assign			\
+ %D%/hellocheckcompbindings			\
+ %D%/hellochecksystembindings			\
+ %D%/hellofundata				\
+ %D%/hellointbug				\
+ %D%/hellooutevent				\
+ %D%/helloparam					\
+ %D%/helloparams				\
  %D%/helloworld					\
+ %D%/illegal_async_req				\
+ %D%/illegal_blocking_race			\
+ %D%/illegal_external_inevitable		\
+ %D%/illegal_external_requires_twice		\
+ %D%/illegal_external_requires_twice2		\
  %D%/illegal_garbage				\
+ %D%/illegal_interface.space			\
+ %D%/illegal_pessimism_external			\
  %D%/illegal_provides				\
  %D%/illegal_requires				\
  %D%/illegal_requires2				\
@@ -343,25 +341,28 @@ REGRESSION_TESTS =				\
  %D%/illegal_system_requires			\
  %D%/importPath					\
  %D%/imported.space				\
+ %D%/inevitable_multiple_requires		\
  %D%/inevitable_performance			\
  %D%/injected_dangling				\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/label_instance_mismatch			\
+ %D%/livelock_async				\
+ %D%/livelock_async_cancel			\
+ %D%/livelock_async_choice			\
  %D%/livelock_iterator				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
- %D%/queuefull_component1			\
  %D%/livelock_unfold				\
  %D%/match_blocking_race			\
- %D%/deadlock_reply				\
  %D%/missing_reply				\
- %D%/multiple_provides				\
  %D%/multiple_parallel_blocking			\
+ %D%/multiple_provides				\
  %D%/name.space					\
  %D%/pump_twice					\
- %D%/queuefull_external				\
  %D%/queue_size_four				\
+ %D%/queuefull_component1			\
+ %D%/queuefull_external				\
  %D%/range_action				\
  %D%/range_argument				\
  %D%/range_assign				\
@@ -376,21 +377,20 @@ REGRESSION_TESTS =				\
  %D%/requires_twice				\
  %D%/resolve_formal				\
  %D%/resolve_member				\
- %D%/deadlock_reply_modeling			\
  %D%/second_reply				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
  %D%/simple.space				\
- %D%/space.interface_shadow			\
  %D%/space.import_interface_shadow		\
+ %D%/space.interface_shadow			\
  %D%/space.space				\
  %D%/state_deadlock				\
  %D%/step_state					\
  %D%/stress_comment				\
+ %D%/system_flush				\
  %D%/system_hello				\
  %D%/system_hello_world				\
  %D%/system_helloworld				\
- %D%/system_flush				\
  %D%/system_inevitable				\
  %D%/system_mix_bindings			\
  %D%/system_nondet_out				\
