@@ -1,0 +1,2 @@
+test/all/second_reply_sync/second_reply_sync.dzn:43:5: error: second-reply
+test/all/second_reply_sync/second_reply_sync.dzn:44:20: info: reply previously set here

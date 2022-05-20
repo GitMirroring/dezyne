@@ -1,0 +1,6 @@
+model: second_reply_sync
+h.hello
+w.hello
+w.world
+w.return
+<second-reply>

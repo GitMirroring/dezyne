@@ -1,0 +1,19 @@
+(header ((h) ihello provides) ((sut) second_reply_sync component) ((w) ihello requires))
+(state ((h)) ((sut)) ((w)))
+test/all/second_reply_sync/second_reply_sync.dzn:43:5: error: second-reply
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.world <- ...
+<second-reply>
+(state ((h)) ((sut)) ((w)))
+test/all/second_reply_sync/second_reply_sync.dzn:43:5: error: second-reply
+(trail "h.hello" "w.hello" "w.world" "w.return" "<second-reply>")
+(labels "h.hello" "w.world")
+(eligible)

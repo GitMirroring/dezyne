@@ -378,6 +378,7 @@ REGRESSION_TESTS =				\
  %D%/resolve_formal				\
  %D%/resolve_member				\
  %D%/second_reply				\
+ %D%/second_reply_sync				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
  %D%/simple.space				\
