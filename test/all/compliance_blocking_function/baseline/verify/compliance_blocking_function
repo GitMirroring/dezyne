@@ -1,0 +1,5 @@
+model: compliance_blocking_function
+h.hello
+w.hello
+w.return
+<non-compliance>
