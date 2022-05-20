@@ -36,6 +36,14 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
+** Release 2.15.1
+  - Pass regression test
+    + Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
+      + test/all/compliance_blocking_double_release
+      + test/all/illegal_external_nonsynchronous
+      + test/all/livelock_synchronous_illegal
+      + test/all/queuefull_external_sync
+
 ** Release 2.16
   - Pass regression test
     + data_full: split into smaller tests, preferrably trace-based,
@@ -44,11 +52,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       + Require flush on provides port: h.<flush>
       + Make test fail if without flush
       + Test in combination with foreign
-    + Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
-      + test/all/compliance_blocking_double_release
-      + test/all/illegal_external_nonsynchronous
-      + test/all/livelock_synchronous_illegal
-      + test/all/queuefull_external_sync
   - dezyne.org
     + blog post about free software?
   - register #dezyne
@@ -171,6 +174,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - Paul's bugs
+    + compliance_provides_illegal => broken arrows!
+    + compliance_blocking_function  => broken arrows!
+    + compliance_sync_action  => broken arrows!
+    + deadlock_asynchronous_sync_reply
   - Documentation
     + Blocking, collateral-block.
   - Release on savannah.nongnu.org
