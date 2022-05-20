@@ -1,0 +1,6 @@
+model: compliance_provides_illegal
+h.hello
+h.cruel
+h.return
+h.hello
+<illegal>

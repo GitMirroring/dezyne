@@ -1,0 +1,19 @@
+(header ((h) ihello provides) ((sut) compliance_provides_illegal component))
+(state ((h)) ((sut) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.cruel
+<external>.h.cruel <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (idle . false)))
+(trail "h.hello" "h.cruel" "h.return")
+test/all/compliance_provides_illegal/compliance_provides_illegal.dzn:42:38: error: illegal
+<external>.h.hello -> ...
+... -> sut.h.hello
+<illegal>
+(state ((h)) ((sut) (idle . false)))
+test/all/compliance_provides_illegal/compliance_provides_illegal.dzn:42:38: error: illegal
+(trail "h.hello" "<illegal>")
+(labels "h.hello")
+(eligible)
