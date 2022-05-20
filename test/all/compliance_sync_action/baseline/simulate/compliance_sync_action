@@ -1,0 +1,15 @@
+(header ((h) ihello provides) ((sut) compliance_sync_action component))
+(state ((h)) ((sut)))
+test/all/compliance_sync_action/compliance_sync_action.dzn:40:20: error: non-compliance
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.cruel
+<external>.h.cruel <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+<non-compliance>
+(state ((h)) ((sut)))
+test/all/compliance_sync_action/compliance_sync_action.dzn:40:20: error: non-compliance
+(trail "h.hello" "h.cruel" "h.return" "<non-compliance>")
+(labels "h.hello")
+(eligible)

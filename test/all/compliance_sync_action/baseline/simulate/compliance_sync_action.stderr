@@ -1,0 +1,3 @@
+test/all/compliance_sync_action/compliance_sync_action.dzn:40:20: error: non-compliance
+test/all/compliance_sync_action/compliance_sync_action.dzn:40:20: component performs: h.cruel
+test/all/compliance_sync_action/compliance_sync_action.dzn:31:5: port expects: return
