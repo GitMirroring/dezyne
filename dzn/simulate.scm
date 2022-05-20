@@ -407,10 +407,11 @@ Return a list of traces, possibly marked with <compliance-error>."
                             (trigger->system-trigger instance component-acceptance)
                             component-acceptance))
                        (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
-                       (trigger (and (null? sut-trail)
-                                     (not (any (cute event-on-trail? (.event.name trigger) <>)
-                                               non-compliances))
-                                     trigger))
+                       (compliance-trigger
+                        (and (null? sut-trail)
+                             (not (any (cute event-on-trail? (.event.name trigger) <>)
+                                       non-compliances))
+                             trigger))
                        (pc (clone pc
                                   #:previous #f
                                   #:status (make <compliance-error>
@@ -418,7 +419,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                                              #:component-acceptance component-acceptance
                                              #:port port-instance
                                              #:port-acceptance port-acceptances
-                                             #:trigger trigger))))
+                                             #:trigger compliance-trigger))))
                   (if (null? trace) (list (cons pc (car non-compliances)))
                       (let* ((tail (cdr trace))
                              (trace (cons pc tail)))
