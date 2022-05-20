@@ -69,11 +69,12 @@ if $simulate; then
     if [ -z "$format" ]; then
         format="trace"
     fi
+    flags=$(grep -Eo 'simulate-flags \([^)]*)' $dir/META | cut -d'(' -f 2 | tr -d '()"')
 
     mkdir -p $dir/baseline/simulate
-    ./pre-inst-env dzn simulate --format=$format $dir/$base.dzn < $dir/trace    \
-        > $dir/baseline/simulate/$base                                          \
-        2> $dir/baseline/simulate/$base.stderr
+    ./pre-inst-env dzn simulate --format=$format $flags $dir/$base.dzn < $dir/trace     \
+        > $dir/baseline/simulate/$base                                                  \
+        2> $dir/baseline/simulate/$base.stderr                                          \
 
     rm -f $(find $dir/baseline/simulate -size 1c -o -size 0c)
 fi

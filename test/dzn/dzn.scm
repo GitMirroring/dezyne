@@ -197,6 +197,12 @@ output, and standard error as three values."
     (and alist
          (and=> (assq-ref alist 'non-strict?) car))))
 
+(define (simulate-flags file-name)
+  (let ((alist (get-meta file-name)))
+    (or (and alist
+             (and=> (assq-ref alist 'simulate-flags) car))
+        '())))
+
 (define (error-model? file-name)
   (or (directory-exists? (string-append file-name "/baseline/verify"))
       ;; no verify baseline for system error models
@@ -426,6 +432,7 @@ output, and standard error as three values."
                    ,@(if queue-size `("-q" ,(number->string queue-size)) '())
                    "--format" ,trace-format
                    ,@(if (non-strict? file-name) '() '("--strict"))
+                   ,@(simulate-flags file-name)
                    "-m" ,model
                    ,dzn-name)
                  input)
