@@ -394,6 +394,7 @@ REGRESSION_TESTS =				\
  %D%/state_deadlock				\
  %D%/step_state					\
  %D%/stress_comment				\
+ %D%/system_double_inevitable			\
  %D%/system_double_out				\
  %D%/system_flush				\
  %D%/system_hello				\
