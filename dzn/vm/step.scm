@@ -537,25 +537,37 @@
                    (let ((locals (filter (is? <variable>)
                                          (ast:statement* (.parent o)))))
                      (pop-locals pc locals))))
+           (port (.port o))
            (instance (.instance pc))
-           (pc (if (not blocking?) pc
-                   (let* ((port (.port o))
-                          (r:port (runtime:port instance port))
-                          (blocked (.blocked pc))
-                          (blocked? (assq-ref blocked r:port))
-                          (blocked (if (not blocked?) blocked
-                                       (alist-delete r:port blocked)))
-                          (collateral (.collateral pc))
-                          (collateral-released (.collateral-released pc))
-                          (collateral-released
-                           (if (not (assq-ref collateral r:port)) collateral-released
-                               (append collateral-released (list r:port))))
-                          (released (.released pc))
-                          (released (delete r:port released)))
-                     (clone pc
-                            #:blocked blocked
-                            #:released released
-                            #:collateral-released collateral-released))))
+           (value (and port (get-reply pc (.name port))))
+           (pc (cond
+                ((and (not blocking?)
+                      (is-a? (ast:type value) <void>))
+                 (let ((error (make <second-reply-error>
+                                #:ast o
+                                #:previous (.parent value)
+                                #:message "second-reply")))
+                   (%debug "second reply, previous=~a\n" (ast:location->string value))
+                   (clone pc #:status error)))
+                ((not blocking?)
+                 pc)
+                (else
+                 (let* ((r:port (runtime:port instance port))
+                        (blocked (.blocked pc))
+                        (blocked? (assq-ref blocked r:port))
+                        (blocked (if (not blocked?) blocked
+                                     (alist-delete r:port blocked)))
+                        (collateral (.collateral pc))
+                        (collateral-released (.collateral-released pc))
+                        (collateral-released
+                         (if (not (assq-ref collateral r:port)) collateral-released
+                             (append collateral-released (list r:port))))
+                        (released (.released pc))
+                        (released (delete r:port released)))
+                   (clone pc
+                          #:blocked blocked
+                          #:released released
+                          #:collateral-released collateral-released)))))
            (reset-blocked-on-boundary?
             (and (blocked-on-boundary? pc)
                  (eq? instance (blocked-on-boundary? pc))))

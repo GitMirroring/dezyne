@@ -348,8 +348,11 @@ program-counters produced by taking a step."
                                      (is-a? o <trigger-return>)))
                     (observable (and observable? (and=> (trace->trail pc) cdr)))
                     (pcs (step pc o))
-                    (new-pc (and (pair? pcs) (car pcs)))
-                    (trace (if (any (cute blocked-collaterally? pc <>) pcs)
+                    (trace (if (any (disjoin
+                                     (conjoin (is-status? <second-reply-error>)
+                                              (const (is-a? (.statement pc)
+                                                            <trigger-return>)))
+                                     (cute blocked-collaterally? pc <>)) pcs)
                                (cdr trace)
                                trace))
                     (input pc (if (and observable (not (interactive?)))

@@ -151,7 +151,6 @@
            ast:trigger*
            ast:type*
            ast:variable*
-	   ast:void?
 
            .event
            .event.direction
