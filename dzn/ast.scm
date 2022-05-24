@@ -430,10 +430,10 @@
   (eq? 'in (.direction o)))
 
 (define-method (ast:in? (o <trigger>))
-  (ast:in? (.event o)))
+  (and=> (.event o) ast:in?))
 
 (define-method (ast:in? (o <action>))
-  (ast:in? (.event o)))
+  (and=> (.event o) ast:in?))
 
 (define-method (ast:in? (o <variable>))
   #t)
@@ -448,10 +448,10 @@
   (eq? 'out (.direction o)))
 
 (define-method (ast:out? (o <trigger>))
-  (ast:out? (.event o)))
+  (and=> (.event o) ast:out?))
 
 (define-method (ast:out? (o <action>))
-  (ast:out? (.event o)))
+  (and=> (.event o) ast:out?))
 
 (define-method (ast:out? (o <variable>))
   #f)

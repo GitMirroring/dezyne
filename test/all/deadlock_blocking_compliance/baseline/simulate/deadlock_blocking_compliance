@@ -4,6 +4,7 @@ test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: er
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.world
+<external>.h.world <- ...
 <non-compliance>
 (state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
 test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:46:28: error: non-compliance

@@ -3,6 +3,7 @@
 test/all/compliance_fork_provides/compliance_fork_provides.dzn:43:25: error: non-compliance
 ... -> sut.p_left.hello
 ... <- sut.p_right.world
+<external>.p_right.world <- ...
 <non-compliance>
 (state ((p_left)) ((p_right)) ((sut)) ((r)))
 test/all/compliance_fork_provides/compliance_fork_provides.dzn:43:25: error: non-compliance

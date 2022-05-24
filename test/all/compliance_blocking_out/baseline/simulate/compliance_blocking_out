@@ -4,6 +4,7 @@ test/all/compliance_blocking_out/compliance_blocking_out.dzn:51:43: error: non-c
 <external>.h.hello -> ...
 ... -> sut.h.hello
 ... <- sut.h.planet
+<external>.h.planet <- ...
 <non-compliance>
 (state ((h)) ((sut) (blocked . false)) ((w)))
 test/all/compliance_blocking_out/compliance_blocking_out.dzn:51:43: error: non-compliance
