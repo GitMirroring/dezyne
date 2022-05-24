@@ -88,6 +88,7 @@
             provides-trigger?
             push-local
             pc-equal?
+            pc->stack
             pop-deferred
             pop-pc
             push-pc
@@ -545,12 +546,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (push-pc (pc <program-counter>) (instance <runtime:instance>) (statement <statement>))
   (clone pc #:previous pc #:instance instance #:statement statement))
 
+(define-method (pc->stack (pc <program-counter>))
+  (unfold (negate .previous) identity .previous pc))
+
 (define (pc->statements pc)
-  (unfold (negate (conjoin identity .statement)) .statement .previous pc))
+  (map .statement (pc->stack pc)))
 
 (define-method (rtc-pc (pc <program-counter>))
-  (let ((pcs (unfold (negate .previous) identity .previous pc)))
-    (last pcs)))
+  (last (pc->stack)))
 
 (define-method (rtc-block-pc (pc <program-counter>))
   (let loop ((pc pc))

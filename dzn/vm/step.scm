@@ -374,8 +374,13 @@
          (reply-port (.port o))
          (trigger (.trigger pc)))
     (cond ((let* ((trigger-port (.port trigger))
+                  (stack (pc->stack pc))
+                  (instance-stack (filter
+                                   (compose (cute eq? <> instance) .instance)
+                                   stack))
+                  (statements (map .statement instance-stack))
                   (blocking? (or (pair? (.blocked pc))
-                                 (parent o <blocking>)))
+                                 (any (cute parent <> <blocking>) statements)))
                   (ports-eq? (ast:eq? reply-port trigger-port)))
              (and reply-port
                   (or blocking?

@@ -665,14 +665,15 @@ TRACES."
                           ((event traces ...)
                            (cons event (map car traces))))
                         event-traces-alist))
-            (valid-pcs-alist (map
-                              (match-lambda
-                                ((event pcs ...)
-                                 (cons event (filter (disjoin (is-status? <end-of-trail>)
-                                                              (is-status? <livelock-error>)
-                                                              (negate .status))
-                                                     pcs))))
-                              pcs-alist))
+            (valid-pcs-alist
+             (map
+              (match-lambda
+                ((event pcs ...)
+                 (cons event (filter (disjoin (is-status? <end-of-trail>)
+                                              (is-status? <livelock-error>)
+                                              (negate .status))
+                                     pcs))))
+              pcs-alist))
             (valid-pcs (append-map cdr valid-pcs-alist)))
        (and (null? valid-pcs)
             (let* ((traces (assoc-ref event-traces-alist event))
@@ -880,7 +881,9 @@ final REPORT and return exit status."
 
   (define (deadlock-report pcs traces)
     "Run check-deadlock and report.  Return exit status."
-    (let* ((pc (car pcs))
+    (let* ((pcs (if (null? traces) pcs
+                    (map car traces)))
+           (pc (car pcs))
            (event pc ((%next-input) pc))
            (event-traces-alist (event-traces-alist pcs))
            (eligible (eligible-labels event-traces-alist))
@@ -916,7 +919,8 @@ final REPORT and return exit status."
 
   (define (interface-deadlock-report pcs traces)
     "Run deadlock check for all PCs per state."
-    (let ((pcs (if (pair? traces) (map car traces) pcs)))
+    (let ((pcs (if (null? traces) pcs
+                   (map car traces))))
       (let loop ((pcs pcs))
         (match pcs
           (() #f)
