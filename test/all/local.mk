@@ -183,6 +183,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_release		\
  %D%/collateral_blocking_reorder		\
  %D%/collateral_blocking_reorder_bypass		\
+ %D%/collateral_blocking_reorder_parallel	\
  %D%/collateral_blocking_reply			\
  %D%/collateral_blocking_shell			\
  %D%/collateral_blocking_shell2			\
@@ -361,7 +362,6 @@ REGRESSION_TESTS =				\
  %D%/livelock_unfold				\
  %D%/match_blocking_race			\
  %D%/missing_reply				\
- %D%/multiple_parallel_blocking			\
  %D%/multiple_provides				\
  %D%/name.space					\
  %D%/pump_twice					\

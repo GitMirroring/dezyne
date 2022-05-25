@@ -22,7 +22,7 @@
 //
 // Code:
 
-#include "multiple_parallel_blocking.hh"
+#include "collateral_blocking_reorder_parallel.hh"
 
 #include <thread>
 
@@ -35,7 +35,7 @@ main ()
 {
   //dzn::debug.rdbuf(std::clog.rdbuf());
   dzn::locator loc;
-  multiple_parallel_blocking sut (loc);
+  collateral_blocking_reorder_parallel sut (loc);
   sut.dzn_meta.name = "sut";
   sut.eleft.meta.require.name = "eleft";
   sut.eright.meta.require.name = "eright";

@@ -27,7 +27,7 @@
 
 import collateral_blocking_reorder.dzn;
 
-component multiple_parallel_blocking
+component collateral_blocking_reorder_parallel
 {
   provides blocking ihello pleft;
   provides blocking ihello pright;
