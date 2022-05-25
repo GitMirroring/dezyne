@@ -858,27 +858,37 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (set-state pc (clone (get-state pc) #:handling #f)))
 
 (define-method (pop-deferred (pc <program-counter>))
-  (values (set-deferred pc #f) (.deferred (get-state pc))))
+  (let* ((deferred (.deferred (get-state pc)))
+         (queue? (not (q-empty? pc deferred)))
+         (pc (if queue? pc
+                 (set-deferred pc #f))))
+    (values deferred pc)))
 
 (define-method (set-deferred (pc <program-counter>) deferred)
   (set-state pc (clone (get-state pc) #:deferred deferred)))
 
 (define-method (flush (pc <program-counter>) instance)
-  (let* ((flush-return (make <flush-return>))
+  (%debug "  ~s ~s ~a\n" (name instance) (and=> (.trigger pc) trigger->string) "<flush>")
+  (let* ((orig-pc pc)
+         (flush-return (make <flush-return>))
          (pc (push-pc pc flush-return))
          (pc (clone pc #:instance instance)))
-    (if (null? (.q (get-state pc))) (let ((pc deferred (pop-deferred pc)))
-                                      (%debug "  flush deferred: ~s\n" deferred)
-                                      (if (not deferred) pc
-                                          (if (get-handling pc deferred) (throw 'handling "already handling event" pc)
-                                              (flush pc deferred))))
-        (let ((pc trigger (dequeue pc)))
-          (let* ((q-out (make <q-out> #:trigger trigger))
-                 (q-out (clone q-out #:location (.location trigger))))
-            (push-pc pc trigger instance q-out))))))
+    (cond
+     ((pair? (.q (get-state pc)))
+      (let ((pc trigger (dequeue pc)))
+        (let* ((q-out (make <q-out> #:trigger trigger))
+               (q-out (clone q-out #:location (.location trigger))))
+          (push-pc pc trigger instance q-out))))
+     (else
+      (let ((deferred pc (pop-deferred pc)))
+        (cond ((or (not deferred)
+                   (get-handling pc deferred))
+               orig-pc)
+              (else
+               (%debug "  flush deferred: ~s\n" deferred)
+               (flush pc deferred))))))))
 
 (define-method (flush (pc <program-counter>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<flush>")
   (flush pc (.instance pc)))
 
 
@@ -1334,6 +1344,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (q-empty? (pc <program-counter>))
   (or (not (.instance pc))
       (null? (.q (get-state pc)))))
+
+(define-method (q-empty? (pc <program-counter>) instance)
+  (or (not instance)
+      (null? (.q (get-state pc instance)))))
 
 (define-method (rtc-program-counter-equal? (a <program-counter>) (b <program-counter>))
   (and (ast:equal? (.status a) (.status b))

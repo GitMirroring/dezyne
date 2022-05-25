@@ -74,13 +74,9 @@
 ;; Are we running "explore"?
 (define %exploring? (make-parameter #f))
 
-
 ;;;
-;;; Run
+;;; Trace utilities
 ;;;
-
-;;; ’run’ loops over ’step’ until ’rtc?’ (run to completion done) and
-;;; collects a trace (of program counters).
 
 (define (trace-valid? trace)
   ((compose not .status car) trace))
@@ -383,6 +379,14 @@ program-counters produced by taking a step."
                 (else
                  (append-map loop traces)))))))))
 
+
+;;;
+;;; Run
+;;;
+
+;;; ’run’ loops over ’step’ until ’rtc?’ (run to completion done) and
+;;; collects a trace (of program counters).
+
 (define-method (run-to-completion-unmemoized (pc <program-counter>))
   "Return a list of traces produced by taking steps, starting from
 PC until RTC?."
@@ -553,14 +557,18 @@ until RTC?."
   "Return a list of traces produced by RUN-FLUSH, extending TRACE."
   (extend-trace trace run-flush))
 
+(define-method (run-flush (trace <list>) (instance <runtime:component>))
+  (extend-trace trace (cute run-flush <> instance)))
+
 (define-method (run-flush (pc <program-counter>))
   "Return a list of traces produced by taking steps, starting by flushing (%SUT),
 until RTC?."
-  (let* ((pc (flush pc))
-         (traces (run-to-completion-unmemoized pc))
-         (pcs (map car traces)))
-  (if (every q-empty? pcs) traces
-      (append-map run-flush traces))))
+  (let ((pc (flush pc)))
+    (run-to-completion-unmemoized pc)))
+
+(define-method (run-flush (pc <program-counter>) (instance <runtime:component>))
+  (let ((pc (clone pc #:instance instance)))
+    (run-flush pc)))
 
 (define-method (run-silent (pc <program-counter>) (port <runtime:port>))
   (define (update-state pc port-pc)
@@ -686,14 +694,11 @@ until RTC?."
                (component-trigger (trigger->component-trigger component-port
                                                               trigger))
                (instance (.container component-port))
-               (traces (map (cute rewrite-trace-head
-                              (cute clone <> #:instance instance) <>)
-                            traces))
                (collateral-blocked? (or (blocked-on-boundary? pc)
                                         (and (get-handling pc instance)
                                              (blocked-port pc instance))))
                (traces (if collateral-blocked? traces
-                           (append-map run-flush traces))))
+                           (append-map (cute run-flush <> instance) traces))))
           traces))))
 
 (define-method (run-async-event (pc <program-counter>))
