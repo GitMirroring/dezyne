@@ -5,6 +5,30 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.15.1 since 2.15.0
+** Build
+  - Tests that produce unstable witnesses have been disabled so that the
+    test-suite now passes with different builds of mCRL2 that, in case
+    of multiple counter examples, leads to reporting one of them
+    (pseudo) randomly.
+** Noteworthy bug fixes
+  - Verification no longer erroneously reports a deadlock when using
+    blocking in a synchronous context.
+  - The simulator no longer prints the initiating port event arrow twice
+    which would lead to an invalid split-arrows trace for certain
+    compliance errors.
+  - The simulator now synthesizes the missing port action in case of a
+    compliance error, to produce a complete split-arrows trace.
+  - The simulator now reports a second reply error at the return of a
+    void event if a reply was already set.
+  - The simulator now reports a deadlock when using a void reply in a
+    non-blocking synchronous context.
+  - The simulator no longer reports a deadlock when using a skip-block
+    reply in a function.
+  - The simulator now correctly postpones flushing in system context
+    when using multiple out events on a single modeling event until all
+    events are enqueued.
+
 * Changes in 2.15.0 since 2.14.0
 ** Language
   - Blocking is now fully supported, it may be used:
