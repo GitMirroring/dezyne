@@ -1,0 +1,95 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface icruel
+{
+  in void cruel ();
+  behavior
+  {
+    on cruel: {}
+  }
+}
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    on hello: world;
+  }
+}
+
+interface iworld
+{
+  in void cruel ();
+  out void world ();
+  behavior
+  {
+    on cruel: {}
+    on inevitable: world;
+  }
+}
+
+component hello
+{
+  provides icruel h;
+  requires iworld w;
+  behavior
+  {
+    on h.cruel (): {}
+    on w.world (): w.cruel ();
+  }
+}
+
+component world
+{
+  provides iworld h;
+  requires iworld w;
+  requires ihello r;
+  behavior
+  {
+    bool first = true;
+    [first] on h.cruel (): {}
+    on w.world (): {r.hello(); r.hello();}
+    [first] on r.world (): {first = false; h.world ();}
+    [!first] on r.world (): first = true;
+  }
+}
+
+component system_flush_double
+{
+  provides icruel h;
+  requires iworld w;
+  requires ihello r;
+  system
+  {
+    h <=> top.h;
+    hello top;
+    top.w <=> bottom.h;
+    world bottom;
+    bottom.w <=> w;
+    bottom.r <=> r;
+  }
+}

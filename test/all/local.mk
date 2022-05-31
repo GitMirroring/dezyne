@@ -397,6 +397,7 @@ REGRESSION_TESTS =				\
  %D%/system_double_inevitable			\
  %D%/system_double_out				\
  %D%/system_flush				\
+ %D%/system_flush_double			\
  %D%/system_hello				\
  %D%/system_hello_world				\
  %D%/system_helloworld				\
