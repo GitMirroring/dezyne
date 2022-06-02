@@ -102,7 +102,7 @@
                             (list (pc->state-number (car trace)))))
                   traces)))))
   (let ((alist (hash-map->list entry->pair lts)))
-    (sort alist (match-lambda* (((from-a traces ...) (from-b traces ...))
+    (sort alist (match-lambda* (((from-a tail-a ...) (from-b tail-b ...))
                                 (< from-a from-b))))))
 
 ;;; events predicate
