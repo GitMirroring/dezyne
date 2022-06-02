@@ -20,7 +20,6 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn explore)
-  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
   #:use-module (srfi srfi-1)
@@ -214,7 +213,7 @@ that PC has one more collaterally blocked coroutine on the same port."
         (if (string-prefix? "sut." o) (substring o 4) o))
       (map strip-sut-prefix trail)))
 
-  (define ((transition->dot pc->state-number) from pc+traces)
+  (define (transition->dot pc->state-number from pc+traces)
     (let* ((pc traces (match pc+traces ((pc . traces) (values pc traces))))
            (traces (filter (compose not .status car) traces))
            (pcs (map car traces))
@@ -235,7 +234,14 @@ that PC has one more collaterally blocked coroutine on the same port."
                to
                trigger-location))))
 
-  (apply append (hash-map->list (transition->dot pc->state-number) lts)))
+  (let* ((alist (hash-table->alist lts))
+         (alist (sort alist
+                      (match-lambda*
+                        (((from-a . pc+traces-a) (from-b . pc+traces-b))
+                         (< from-a from-b))))))
+    (append-map (cute transition->dot pc->state-number <> <>)
+                (map car alist)
+                (map cdr alist))))
 
 (define* (lts-remove lts size #:key ports? extended? actions? labels? returns?
                      (self? #t))
@@ -355,30 +361,33 @@ node[shape=\"rectangle\" style=\"rounded\"]
 begin -> 1
 " title))
 
-  (define postamble
-    "
+  (define postamble "
 }
 ")
-  (string-append
-   (preamble (ast:dotted-name (runtime:%sut-model)))
-   (string-join
-    (map (match-lambda ((from pc (trigger actions ...) to trigger-location)
-                        (let* ((separator (make-string (apply max (map string-length (cons trigger actions))) #\-))
-                               (actions (string-join actions "\n"))
-                               (label (if (string-null? actions) trigger
-                                          (format #f "~a\n~a\n~a" trigger separator actions))))
-                          (string-append
-                           (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))
-                           (format #f "~s -> ~s [label=~s]" from to label))))
-                       ((from pc () to trigger-location)
-                        (string-append
-                         (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))
-                         (format #f "~s -> ~s [label=~s]" from to "")))
-                       ((from pc x #f #f)
-                        (format #f "~s [label=~s]\n" from (pc->string-state-diagram pc))))
-         graph)
-    "\n")
-   postamble))
+  (define graph->dot
+    (match-lambda
+      ((from pc (trigger actions ...) to trigger-location)
+       (let* ((separator
+               (make-string
+                (apply max
+                       (map string-length (cons trigger actions))) #\-))
+              (actions (string-join actions "\n"))
+              (label (if (string-null? actions) trigger
+                         (format #f "~a\n~a\n~a" trigger separator actions))))
+         (string-append
+          (format #f "~a [label=~s]\n" from (pc->string-state-diagram pc))
+          (format #f "~a -> ~a [label=~s]" from to label))))
+      ((from pc () to trigger-location)
+       (string-append
+        (format #f "~a [label=~s]\n" from (pc->string-state-diagram pc))
+        (format #f "~a -> ~a [label=~s]" from to "")))
+      ((from pc x #f #f)
+       (format #f "~a [label=~s]\n" from (pc->string-state-diagram pc)))))
+
+  (let* ((preamble (preamble (ast:dotted-name (runtime:%sut-model))))
+         (dot (map graph->dot graph))
+         (dot (string-join dot "\n")))
+    (string-append preamble dot postamble)))
 
 (define-method (state->scm (o <state>))
   (let* ((instance (.instance o))
