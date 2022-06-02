@@ -252,10 +252,10 @@ override $(srcdir)/doc/version.texi:
 #     make tag PACKAGE_VERSION=2.10.0
 #     ./autogen.sh
 #     make dezyne
-#  5. Update announcement with actual URLs and hashes
-#     - Re-generate announcement
-#       make gen-announce PACKAGE_VERSION=2.10.0
-#     - Use git to keep relevant bits of doc/announce/ANNOUNCE-2.10.0
+#  5. Finish announcement
+#     - make sum-announce
+#     - doc: Post-release update.
+#     - build-aux/GNUMakefile.in: gen-announce: update previous-version
 #  6. Create blog post
 #     cp doc/announce/ANNOUNCE-2.10.0 ~/src/web/dezyne.org/posts/announce-2.10.0.md
 #  7. Send mail to
@@ -310,6 +310,13 @@ gen-announce:
 	    --url-directory=https://dezyne.org/download/dezyne	\
 	    --news=NEWS						\
             > doc/announce/ANNOUNCE-$(PACKAGE_VERSION)
+
+sum-announce:
+	sed -ri																						\
+	    -e "s,(^|  )xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  $(PACKAGE)-$(PACKAGE_VERSION).tar.gz,  $(shell sha256sum $(PACKAGE)-$(PACKAGE_VERSION).tar.gz),"	\
+	    -e "s,(^|  )xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  $(PACKAGE)-$(PACKAGE_VERSION).tar.gz,  $(shell sha1sum $(PACKAGE)-$(PACKAGE_VERSION).tar.gz),"				\
+	    -e "s,(^|  )xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  $(PACKAGE)-$(PACKAGE_VERSION).tar.gz,  $(shell md5sum $(PACKAGE)-$(PACKAGE_VERSION).tar.gz),"					\
+	doc/announce/ANNOUNCE-$(PACKAGE_VERSION)
 
 if have_guix
 update-hash: $(DIST_ARCHIVES)
