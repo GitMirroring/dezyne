@@ -46,8 +46,8 @@ dezyne		mono	${D}/dezyne/manual/dezyne/dezyne.html
 dezyne		node	${D}/dezyne/manual/dezyne/html_node/
 
 V = https://download.verum.com
-dezyne-ide	mono	${V}/dezyne-ide/manual/dezyne-ide/dezyne-ide.html
-dezyne-ide	node	${V}/dezyne-ide/manual/dezyne-ide/html_node/
+verum-dezyne	mono	${V}/verum-dezyne/manual/verum-dezyne/verum-dezyne.html
+verum-dezyne	node	${V}/verum-dezyne/manual/verum-dezyne/html_node/
 
 3dldf		mono	${GS}/3dldf/manual/user_ref/3DLDF.html
 3dldf		node	${GS}/3dldf/manual/user_ref/

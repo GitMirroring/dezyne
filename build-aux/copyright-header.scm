@@ -113,10 +113,10 @@ You should have received a copy of the GNU Lesser General Public
 License along with dzn-examples.  If not, see <http://www.gnu.org/licenses/>.
 ")
 
-(define ide-header "Dezyne-IDE --- An IDE for Dezyne
+(define ide-header "Verum-Dezyne --- An IDE for Dezyne
 Copyright © ~a ~a
 
-This file is part of Dezyne-IDE.
+This file is part of Verum-Dezyne.
 
 All rights reserved.
 ")
@@ -176,7 +176,10 @@ All rights reserved.
                  (format #f
                          "git log -i --author='~a' --author='~a' \\
   --pretty=format:'Commit:  %H%nAuthor:  %aN <%aE>%nDate:    %ad%nMessage: %s%n' '~a' \\
-| recsel -i -e '!(Message ~~ \"copyright\") && !(Message ~~ \"dezyne.org\") && !(Message ~~ \"email\")' \\
+| recsel -i -e '!(Message ~~ \"copyright\")
+             && !(Message ~~ \"dezyne.org\")
+             && !(Message ~~ \"Verum-Dezyne\")
+             && !(Message ~~ \"email\")' \\
 | grep ^Date: \\
 | sed -r 's,.*(20[0-9][0-9]).*,\\1,'"
                          name email file-name)))

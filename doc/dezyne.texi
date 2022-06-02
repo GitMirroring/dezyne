@@ -6751,7 +6751,7 @@ See the file @file{HACKING} for some developer tips and tricks.
 The Perfect Setup to hack on Dezyne is basically the perfect setup used
 for GNU Guile hacking (@pxref{Using Guile in Emacs,,, guile, GNU Guile
 Reference Manual}).  To work on real-life Dezyne projects, you need more
-than an editor: you need an IDE, @pxref{Top, ,,dezyne-ide,the Dezyne IDE
+than an editor: you need an IDE, @pxref{Top, ,,verum-dezyne,the Verum-Dezyne
 Manual}.
 
 @table @code
