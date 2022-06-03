@@ -259,8 +259,7 @@
   (runtime:other-instance+port instance))
 
 (define* (runtime:get-sut root #:optional (model (ast:get-model root)))
-  (let* ((sut (make <instance> #:name "sut" #:type.name (.name model)))
-         (root (clone root #:elements (cons sut (ast:top* root)))))
+  (let ((sut (make <instance> #:name "sut" #:type.name (.name model))))
     (ast->runtime:instance (clone sut #:parent (.parent model)) #f)))
 
 (define-method (runtime:runtime-port* (o <runtime:component-model>))
