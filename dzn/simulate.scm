@@ -37,7 +37,6 @@
   #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn shell-util)
-  #:use-module (dzn ast)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm goops)
@@ -822,7 +821,7 @@ optional labels only and stop when observable event seen."
                             #:labels (const '("inevitable" "optional"))))))
     (when (%debug?)
       (parameterize ((%modeling? #t))
-        ((@ (ice-9 pretty-print) pretty-print)
+        (pretty-print
          (debug:lts->alist pc->state-number lts) (current-error-port))))
     lts))
 
