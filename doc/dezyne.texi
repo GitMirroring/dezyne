@@ -2231,7 +2231,7 @@ int main()
 We already saw how to connect code directly to event slots in the
 interface.  If we desire to encapsulate this code, we can use a
 component without a behavior@footnote{A foreign component is a component
-without behaviour in Dezyne.} to achieve this.  The code generator will
+without behavior in Dezyne.} to achieve this.  The code generator will
 generate a similar C++ representation for components with and without
 behavior.  The only difference is that a component without behavior
 declares pure virtual functions which must be implemented by a struct of

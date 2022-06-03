@@ -39,7 +39,7 @@ namespace space
   component interface_shadow
   {
     provides space h;
-    behaviour
+    behavior
     {
       on h.hello(): {}
     }

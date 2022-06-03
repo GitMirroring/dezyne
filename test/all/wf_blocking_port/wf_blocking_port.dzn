@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,7 +44,7 @@ component block_nok1 {
 
   requires ihello r;
 
-  behaviour {
+  behavior {
     on p0.hello(): blocking r.hello();
     on p1.hello(): blocking r.hello();
   }
@@ -120,7 +121,7 @@ component block_ok2 {
 
   requires ihello r;
 
-  behaviour {
+  behavior {
     on p0.hello(): blocking r.hello();
   }
 }

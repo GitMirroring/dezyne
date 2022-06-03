@@ -53,7 +53,7 @@ component collateral_blocking_double_release
   provides blocking ihello release;
   requires iworld w;
 
-  behaviour
+  behavior
   {
     bool blocked0 = false;
     bool blocked1 = false;

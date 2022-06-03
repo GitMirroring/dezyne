@@ -1,6 +1,8 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2018, 2019, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,7 +28,7 @@ interface ihello
   in void hello ();
   out void cruel ();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -35,7 +37,7 @@ interface ihello
 component compliance_provides_illegal
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on h.hello (): {h.cruel (); idle = false;}

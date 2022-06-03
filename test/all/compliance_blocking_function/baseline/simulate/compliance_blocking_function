@@ -1,6 +1,6 @@
 (header ((h) ihello provides) ((sut) compliance_blocking_function component) ((w) ihello requires))
 (state ((h)) ((sut)) ((w)))
-test/all/compliance_blocking_function/compliance_blocking_function.dzn:44:7: error: non-compliance
+test/all/compliance_blocking_function/compliance_blocking_function.dzn:45:7: error: non-compliance
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -13,7 +13,7 @@ sut.w.return <- ...
 <external>.h.return <- ...
 <non-compliance>
 (state ((h)) ((sut)) ((w)))
-test/all/compliance_blocking_function/compliance_blocking_function.dzn:44:7: error: non-compliance
+test/all/compliance_blocking_function/compliance_blocking_function.dzn:45:7: error: non-compliance
 (trail "h.hello" "w.hello" "w.return" "h.cruel" "h.return" "<non-compliance>")
 (labels "h.hello" "w.cruel")
 (eligible)

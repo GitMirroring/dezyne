@@ -27,7 +27,7 @@ interface ihello
   in void hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
     on hello: world;
   }
@@ -37,7 +37,7 @@ component blocking_function
 {
   provides blocking ihello h;
   requires ihello w;
-  behaviour
+  behavior
   {
     void f ()
     {

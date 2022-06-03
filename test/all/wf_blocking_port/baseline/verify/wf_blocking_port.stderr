@@ -1,15 +1,15 @@
-test/all/wf_blocking_port/wf_blocking_port.dzn:33:1: error: all provides ports should be defined as blocking
-test/all/wf_blocking_port/wf_blocking_port.dzn:35:3: info: non-blocking provides port `p1' define here
-test/all/wf_blocking_port/wf_blocking_port.dzn:40:1: error: all provides ports should be defined as blocking
-test/all/wf_blocking_port/wf_blocking_port.dzn:42:3: info: non-blocking provides port `p1' define here
-test/all/wf_blocking_port/wf_blocking_port.dzn:73:7: error: cannot bind non-blocking port `pp' to blocking port `p'
-test/all/wf_blocking_port/wf_blocking_port.dzn:63:3: info: non-blocking port `pp' defined here
-test/all/wf_blocking_port/wf_blocking_port.dzn:53:3: info: blocking port `p' defined here
-test/all/wf_blocking_port/wf_blocking_port.dzn:75:7: error: cannot bind non-blocking port `r' to blocking port `p'
-test/all/wf_blocking_port/wf_blocking_port.dzn:59:3: info: non-blocking port `r' defined here
-test/all/wf_blocking_port/wf_blocking_port.dzn:53:3: info: blocking port `p' defined here
-test/all/wf_blocking_port/wf_blocking_port.dzn:78:7: error: cannot bind non-blocking port `r' to blocking port `rr'
-test/all/wf_blocking_port/wf_blocking_port.dzn:59:3: info: non-blocking port `r' defined here
-test/all/wf_blocking_port/wf_blocking_port.dzn:64:3: info: blocking port `rr' defined here
-test/all/wf_blocking_port/wf_blocking_port.dzn:83:3: error: superfluous blocking annotation on provides port `p0'
-test/all/wf_blocking_port/wf_blocking_port.dzn:92:3: error: superfluous blocking annotation on provides port `pp'
+test/all/wf_blocking_port/wf_blocking_port.dzn:34:1: error: all provides ports should be defined as blocking
+test/all/wf_blocking_port/wf_blocking_port.dzn:36:3: info: non-blocking provides port `p1' define here
+test/all/wf_blocking_port/wf_blocking_port.dzn:41:1: error: all provides ports should be defined as blocking
+test/all/wf_blocking_port/wf_blocking_port.dzn:43:3: info: non-blocking provides port `p1' define here
+test/all/wf_blocking_port/wf_blocking_port.dzn:74:7: error: cannot bind non-blocking port `pp' to blocking port `p'
+test/all/wf_blocking_port/wf_blocking_port.dzn:64:3: info: non-blocking port `pp' defined here
+test/all/wf_blocking_port/wf_blocking_port.dzn:54:3: info: blocking port `p' defined here
+test/all/wf_blocking_port/wf_blocking_port.dzn:76:7: error: cannot bind non-blocking port `r' to blocking port `p'
+test/all/wf_blocking_port/wf_blocking_port.dzn:60:3: info: non-blocking port `r' defined here
+test/all/wf_blocking_port/wf_blocking_port.dzn:54:3: info: blocking port `p' defined here
+test/all/wf_blocking_port/wf_blocking_port.dzn:79:7: error: cannot bind non-blocking port `r' to blocking port `rr'
+test/all/wf_blocking_port/wf_blocking_port.dzn:60:3: info: non-blocking port `r' defined here
+test/all/wf_blocking_port/wf_blocking_port.dzn:65:3: info: blocking port `rr' defined here
+test/all/wf_blocking_port/wf_blocking_port.dzn:84:3: error: superfluous blocking annotation on provides port `p0'
+test/all/wf_blocking_port/wf_blocking_port.dzn:93:3: error: superfluous blocking annotation on provides port `pp'

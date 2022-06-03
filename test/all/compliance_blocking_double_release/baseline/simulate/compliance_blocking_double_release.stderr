@@ -1,2 +1,2 @@
-test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:41:3: error: non-compliance
-test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:46:17: component can omit return of trigger: block0.hello
+test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:42:3: error: non-compliance
+test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:47:17: component can omit return of trigger: block0.hello
