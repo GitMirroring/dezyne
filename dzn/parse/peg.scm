@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -197,7 +197,7 @@ behavior <-- BEHAVIOR (name)? behavior-compound
       function <-- type-name name &(formals BRACE-OPEN) enter-frame formals compound# exit-frame
 
 declarative-statement <- on / blocking / guard / compound
-  on <-- ON (illegal-triggers COLON# illegal /
+  on <-- ON (illegal-triggers COLON illegal /
              enter-frame triggers# COLON# (statement / !unknown-identifier)# exit-frame)
 
     illegal-triggers <-- (illegal-trigger (&COLON / COMMA)#)+
