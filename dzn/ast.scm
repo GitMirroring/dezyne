@@ -38,6 +38,7 @@
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -118,7 +119,6 @@
            ast:out-triggers-void-in-events
            ast:modeling?
            ast:typed?
-           ast:used-model*
            ast:path
            ast:provides?
            ast:requires?
@@ -259,18 +259,44 @@
   (let ((ports (ast:provides-port* o)))
     (and (pair? ports) (car ports))))
 
-(define-method (ast:interface* (o <component>))
+(define-method (ast:interface* (o <component-model>))
   (delete-duplicates
    (map .type
         (append (ast:port* o)
                 (ast:async-port* o)))
    ast:eq?))
 
+(define-method (ast:model* (o <interface>))
+  (list o))
+
+(define-method (ast:model* (o <component-model>))
+  (append (ast:interface* o) (list o)))
+
+(define-method (ast:model* (o <system>))
+  (let* ((components (ast:component-model* o))
+         (components (delete-duplicates components ast:eq?))
+         (interfaces (append-map ast:interface* components))
+         (interfaces (delete-duplicates interfaces ast:eq?)))
+    (ast:topological-model-sort (append interfaces components))))
+
+(define-method (ast:instance-model* (o <system>))
+  (map .type (ast:instance* o)))
+
+(define-method (ast:component-model* (o <component-model>))
+  (list o))
+
 (define-method (ast:component-model* (o <system>))
-  (filter-map .type (ast:instance* o)))
+  (let ((components (ast:instance-model* o)))
+    (cons o (append-map ast:component-model* components))))
+
+(define-method (ast:filter-model (root <root>) (model <model>))
+  (let ((models (ast:model* model)))
+    (tree-filter (disjoin (negate (is? <component-model>))
+                          (cute member <> models ast:eq?))
+                 root)))
 
 (define-method (ast:system* (o <system>))
-  (filter (is? <system>) (ast:component-model* o)))
+  (filter (is? <system>) (ast:instance-model* o)))
 
 (define-method (ast:system* (o <root>))
   (filter (is? <system>) (ast:model* o)))
@@ -883,17 +909,6 @@
                   left)
                  ;; todo: try j.*
                  (else (loop (cdr bindings))))))))
-
-(define-method (ast:used-model* (root <root>) (o <model>)) (list o))
-
-(define-method (ast:used-model* (root <root>) (o <system>))
-  (cons o (append-map (compose (cut ast:used-model* root <>) .type) (ast:instance* o))))
-
-(define-method (ast:filter-model (root <root>) (model <model>))
-  (let ((used (ast:used-model* root model)))
-    (tree-filter (lambda (o) (or (not (is-a? o <component-model>))
-                                 (find (cut ast:eq? o <>) used)))
-                 root)))
 
 (define-method (ast:instance? (o <component-model>))
   (let* ((root (parent o <root>))

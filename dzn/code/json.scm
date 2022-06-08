@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -26,10 +26,12 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (dzn misc)
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
   #:use-module (dzn command-line)
   #:use-module (dzn goops)
+  #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
@@ -97,7 +99,8 @@
 ;;; Entry points.
 ;;;
 (define* (system-diagram root #:key dir model)
-  (let* ((root (remove-behavior root))
+  (let* ((root (ast:filter-model root model))
+         (root (remove-behavior root))
          (root (if (%locations?) root (remove-location root))))
     (x:source (.node root))))
 
