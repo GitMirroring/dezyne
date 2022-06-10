@@ -1,0 +1,7 @@
+model: compliance_failures_defer
+h.hello
+h.return
+<defer>
+c.cruel
+c.false
+<non-compliance>

@@ -202,6 +202,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_failures_blocking		\
  %D%/compliance_failures_blocking_race		\
  %D%/compliance_failures_choice			\
+ %D%/compliance_failures_defer			\
  %D%/compliance_failures_illegal		\
  %D%/compliance_failures_inevitable		\
  %D%/compliance_failures_inevitable_optional    \

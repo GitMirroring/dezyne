@@ -1,0 +1,21 @@
+(header ((h) ihello provides) ((sut) compliance_defer component))
+(state ((h) (idle . true)) ((sut) (s . S:A)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut) (s . S:B)))
+(trail "h.hello" "h.return")
+... <- sut.h.world
+<external>.h.world <- ...
+(state ((h) (idle . true)) ((sut) (s . S:C)))
+(trail "h.world")
+test/all/compliance_defer/compliance_defer.dzn:56:21: error: illegal
+<external>.h.hello -> ...
+... -> sut.h.hello
+<illegal>
+(state ((h) (idle . true)) ((sut) (s . S:C)))
+test/all/compliance_defer/compliance_defer.dzn:56:21: error: illegal
+(trail "h.hello" "<illegal>")
+(labels "h.hello" "h.cruel")
+(eligible)

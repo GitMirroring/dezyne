@@ -1,0 +1,3 @@
+test/all/compliance_failures_defer/compliance_failures_defer.dzn:53:3: error: non-compliance
+test/all/compliance_failures_defer/compliance_failures_defer.dzn:53:3: component can omit all of: h.world
+test/all/compliance_failures_defer/compliance_failures_defer.dzn:53:3: the interface promises inevitably: h.world 
