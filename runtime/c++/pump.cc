@@ -3,7 +3,7 @@
 // Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2015, 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -344,7 +344,11 @@ namespace dzn
   {
     rt.handling(c) = 0;
     rt.flush(c,coroutine_id());
-    if(rt.skip_block(p)) return;
+    if (rt.skip_block(p))
+    {
+      rt.skip_block(p) = false;
+      return;
+    }
     auto self = find_self (coroutines);
     assert(rt.blocked_port_component_stack[self->id].empty());
     rt.blocked_port_component_stack[self->id] = rt.component_stack;
@@ -383,6 +387,7 @@ namespace dzn
       debug.rdbuf() && debug << std::endl;
     }
     remove_finished_coroutines(coroutines);
+    rt.skip_block(p) = false;
   }
   bool pump::collateral_release_skip_block(runtime& rt, void* c)
   {
