@@ -1,7 +1,7 @@
  #x:open-namespace
 #x:model-name ::#x:model-name(const dzn::locator& locator)
 : #x:meta
-, dzn_locator(locator.clone().set(dzn_rt).set(dzn_pump))
+, dzn_locator(std::move(locator.clone().set(dzn_rt).set(dzn_pump)))
  #x:injected-instance-initializer
  #x:injected-instance-system-initializer
  #x:non-injected-instance-initializer

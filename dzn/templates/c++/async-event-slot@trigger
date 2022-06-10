@@ -1,6 +1,6 @@
 #.port.name .#.event.direction .#.event.name  = [&](#x:formals){
   return dzn::call_#.event.direction(this,[=#x:out-arguments ]{
-    dzn_locator.get<dzn::runtime>().skip_block(&this->#.port.name) = false;
+    this->dzn_rt.skip_block(&this->#.port.name) = false;
 ##if DZN_ASYNC_TRACING
     #x:trace-q-out
 ##endif

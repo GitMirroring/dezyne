@@ -29,9 +29,9 @@ namespace library {
   , w({{"w",&w,this,&dzn_meta},{"",0,0,0}})
   {
     w.in.world = [&](){return dzn::call_in(this,[=]{
-      dzn_locator.get<dzn::runtime>().skip_block(&this->w) = false;
+      this->dzn_rt.skip_block(&this->w) = false;
       w_world();
-      dzn_rt.flush(this);
+      this->dzn_rt.flush(this);
     }, this->w, "world");};
   }
   void foreign::w_world()

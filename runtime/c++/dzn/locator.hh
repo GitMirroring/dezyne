@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -52,7 +52,9 @@ namespace dzn {
       }
     };
     std::map<std::pair<Key,type_info>, const void*> services;
+    locator(const locator&) = default;
   public:
+    locator(locator&&) = default;
     locator()
     {
       static illegal_handler ih;
@@ -74,7 +76,7 @@ namespace dzn {
       auto it = services.find(std::make_pair(key,type_info(typeid(T))));
       if(it != services.end() && it->second)
         return reinterpret_cast<T*>(const_cast<void*>(it->second));
-      return 0;
+      return nullptr;
     }
     template <typename T>
     T& get(const Key& key = Key()) const

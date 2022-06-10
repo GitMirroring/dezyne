@@ -92,6 +92,8 @@ namespace dzn
 
   struct runtime
   {
+    runtime(const runtime&) = delete;
+    runtime(runtime&&) = delete;
     struct state
     {
       size_t handling;
@@ -136,9 +138,6 @@ namespace dzn
       return f();
     }
     runtime();
-  private:
-    runtime(const runtime&);
-    runtime& operator = (const runtime&);
   };
 
   template <typename C, typename P>
