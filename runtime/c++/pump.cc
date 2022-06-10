@@ -92,6 +92,7 @@ namespace dzn
   pump::pump()
   : unblocked()
   , running(true)
+  , paused(false)
   , id(0)
   , switch_context()
   , task(std::async(std::launch::async, std::ref(*this)))
@@ -121,6 +122,26 @@ namespace dzn
     debug.rdbuf() && debug << "pump::wait" << std::endl;
     std::unique_lock<std::mutex> lock(mutex);
     idle.wait(lock, [this]{return queue.empty();});
+  }
+  void pump::pause()
+  {
+    debug.rdbuf() && debug << "pump::pause" << std::endl;
+    std::unique_lock<std::mutex> lock(mutex);
+    paused = true;
+  }
+  void pump::resume()
+  {
+    debug.rdbuf() && debug << "pump::resume" << std::endl;
+    std::unique_lock<std::mutex> lock(mutex);
+    paused = false;
+    condition.notify_one();
+  }
+  void pump::flush()
+  {
+    debug.rdbuf() && debug << "pump::flush" << std::endl;
+    resume();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    pause();
   }
   void pump::operator()()
   {
@@ -174,6 +195,7 @@ namespace dzn
       std::unique_lock<std::mutex> lock(mutex);
       while(running || queue.size() || collateral_blocked.size())
       {
+        condition.wait(lock, [this]{return !paused;});
         lock.unlock();
         assert(coroutines.size());
         coroutines.back().call(zero);

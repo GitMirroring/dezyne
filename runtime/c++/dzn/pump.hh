@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -47,6 +47,7 @@ namespace dzn
   {
     std::vector<void*> unblocked;
     bool running;
+    bool paused;
     std::function<void()> worker;
     std::list<coroutine> coroutines;
     std::list<coroutine> collateral_blocked;
@@ -83,6 +84,9 @@ namespace dzn
     size_t coroutine_id();
     void stop();
     void wait();
+    void pause();
+    void resume();
+    void flush();
     void operator()();
 
     void collateral_block(void*, dzn::runtime&);
