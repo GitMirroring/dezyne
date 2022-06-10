@@ -36,18 +36,25 @@ namespace dzn
 
   void trace(std::ostream& os, port::meta const& m, const char* e)
   {
+    if (!os.rdbuf())
+      return;
     os << path(m.require.meta, m.require.name) << "." << e << " -> "
        << path(m.provide.meta, m.provide.name) << "." << e << std::endl;
   }
 
   void trace_out(std::ostream& os, port::meta const& m, const char* e)
   {
+    if (!os.rdbuf())
+      return;
     os << path(m.require.meta, m.require.name) << "." << e << " <- "
        << path(m.provide.meta, m.provide.name) << "." << e << std::endl;
   }
 
   void trace_qin(std::ostream& os, port::meta const& m, const char* e)
   {
+    if (!os.rdbuf())
+      return;
+
     if (path(m.provide.meta) == "<external>")
       os << path(m.require.meta, "<q>") << " <- "
          << path(m.provide.meta, m.provide.name) << "." << e << std::endl;
@@ -58,6 +65,8 @@ namespace dzn
 
   void trace_qout(std::ostream& os, port::meta const& m, const char* e)
   {
+    if (!os.rdbuf())
+      return;
     os << path(m.require.meta, m.require.name) << "." << e << " <- "
        << path(m.require.meta, "<q>") << std::endl;
   }

@@ -94,7 +94,7 @@ namespace dzn
   static void remove_finished_coroutines(std::list<coroutine>& coroutines)
   {
     coroutines.remove_if([](dzn::coroutine& c){
-        if(c.finished) debug << "[" << c.id << "] removing" << std::endl;
+        if(c.finished) debug.rdbuf() && debug << "[" << c.id << "] removing" << std::endl;
         return c.finished;
     });
   }
@@ -117,6 +117,7 @@ namespace dzn
   }
   void pump::stop()
   {
+    debug.rdbuf() && debug << "pump::stop" << std::endl;
     std::unique_lock<std::mutex> lock(mutex);
     if(running)
     {
@@ -128,6 +129,7 @@ namespace dzn
   }
   void pump::wait()
   {
+    debug.rdbuf() && debug << "pump::wait" << std::endl;
     std::unique_lock<std::mutex> lock(mutex);
     idle.wait(lock, [this]{return queue.empty();});
   }
@@ -174,11 +176,11 @@ namespace dzn
       };
 
       coroutine zero;
-      debug << "coroutine zero: " << zero.id << std::endl;
+      debug.rdbuf() && debug << "coroutine zero: " << zero.id << std::endl;
       create_context();
-      debug << "coroutine self: " << find_self(coroutines)->id << std::endl;
+      debug.rdbuf() && debug << "coroutine self: " << find_self(coroutines)->id << std::endl;
 
-      exit = [&]{debug << "enter exit" << std::endl; zero.release();};
+      exit = [&]{debug.rdbuf() && debug << "enter exit" << std::endl; zero.release();};
 
       std::unique_lock<std::mutex> lock(mutex);
       while(running || queue.size() || collateral_blocked.size())
@@ -189,10 +191,10 @@ namespace dzn
         lock.lock();
         remove_finished_coroutines(coroutines);
       }
-      debug << "finish pump; #coroutines: " << coroutines.size()
+      debug.rdbuf() && debug << "finish pump; #coroutines: " << coroutines.size()
             << " #collateral: " << collateral_blocked.size() << std::endl;
 
-      for(auto& c: coroutines) debug << c.id << ":" << c.finished << std::endl;
+      for(auto& c: coroutines) debug.rdbuf() && debug << c.id << ":" << c.finished << std::endl;
 
       assert(queue.empty());
       assert(coroutines.size() != 0);
@@ -202,7 +204,7 @@ namespace dzn
     }
     catch(const std::exception& e)
     {
-      debug << "oops: " << e.what() << std::endl;
+      debug.rdbuf() && debug << "oops: " << e.what() << std::endl;
       std::terminate();
     }
   }
@@ -220,20 +222,20 @@ namespace dzn
         try
         {
           auto self = find_self(coroutines);
-          debug << "[" << self->id << "] create context" << std::endl;
+          debug.rdbuf() && debug << "[" << self->id << "] create context" << std::endl;
           context_switch();
           while(running || queue.size() || timers_expired())
           {
             worker();
-            collateral_release(self);
+            if(unblocked.size()) collateral_release(self);
             context_switch();
           }
           exit();
         }
-        catch(const forced_unwind&) { debug << "ignoring forced_unwind" << std::endl; }
+        catch(const forced_unwind&) { debug.rdbuf() && debug << "ignoring forced_unwind" << std::endl; }
         catch(const std::exception& e)
         {
-          debug << "oops: " << e.what() << std::endl;
+          debug.rdbuf() && debug << "oops: " << e.what() << std::endl;
           std::terminate();
         }
       });
@@ -242,6 +244,7 @@ namespace dzn
   {
     if (switch_context.size())
     {
+      debug.rdbuf() && debug << "context_switch" << std::endl;
       auto context = std::move(switch_context.front());
       switch_context.erase(switch_context.begin());
       context();
@@ -250,7 +253,7 @@ namespace dzn
   void pump::collateral_block(void* c, runtime& rt)
   {
     auto self = find_self(coroutines);
-    debug << "[" << self->id << "] collateral_block" << std::endl;
+    debug.rdbuf() && debug << "[" << self->id << "] collateral_block" << std::endl;
 
     collateral_blocked.splice(collateral_blocked.end(), coroutines, self);
 
@@ -284,20 +287,20 @@ namespace dzn
     rt.blocked_port_component_stack[self->id] = rt.component_stack;
     rt.component_stack.clear ();
 
-    debug << "[" << self->id << "] collateral block on "
+    debug.rdbuf() && debug << "[" << self->id << "] collateral block on "
           << self->port << std::endl;
 
     create_context();
     self->yield_to(coroutines.back());
 
-    debug << "[" << self->id << "] collateral_unblock" << std::endl;
+    debug.rdbuf() && debug << "[" << self->id << "] collateral_unblock" << std::endl;
     auto& v = rt.blocked_port_component_stack[self->id];
     rt.component_stack.insert(rt.component_stack.end(), v.begin(), v.end());
     rt.blocked_port_component_stack[self->id].clear ();
   }
   void pump::collateral_release(std::list<coroutine>::iterator self)
   {
-    debug << "[" << self->id << "] collateral_release" << std::endl;
+    debug.rdbuf() && debug << "[" << self->id << "] collateral_release" << std::endl;
 
     auto predicate = [this](const coroutine& c)
     {return std::find(unblocked.begin(),
@@ -310,7 +313,7 @@ namespace dzn
       it = std::find_if(collateral_blocked.begin(), collateral_blocked.end(), predicate);
       if(it != collateral_blocked.end())
       {
-        debug << "collateral_unblocking: " << it->id
+        debug.rdbuf() && debug << "collateral_unblocking: " << it->id
               << " for port: " << it->port << " " << std::endl;
         coroutines.splice(coroutines.end(), collateral_blocked, it);
         coroutines.back().port = nullptr;
@@ -322,7 +325,7 @@ namespace dzn
 
     if(collateral_blocked.end() == std::find_if(collateral_blocked.begin(), collateral_blocked.end(), predicate))
     {
-      debug << "everything unblocked!!!" << std::endl;
+      debug.rdbuf() && debug << "everything unblocked!!!" << std::endl;
       unblocked.clear();
     }
   }
@@ -330,7 +333,7 @@ namespace dzn
   {
     auto self = find_self(coroutines);
     self->port = p;
-    debug << "[" << self->id << "] block on " << p << std::endl;
+    debug.rdbuf() && debug << "[" << self->id << "] block on " << p << std::endl;
 
     bool collateral_skip = collateral_release_skip_block (rt, c);
     if(!collateral_skip)
@@ -343,7 +346,7 @@ namespace dzn
                                                i.port) != unblocked.end();});
       if(it != collateral_blocked.end())
       {
-        debug << "[" << it->id << "]" << " move from "
+        debug.rdbuf() && debug << "[" << it->id << "]" << " move from "
               << it->port << " to " << p << std::endl;
         it->port = p;
       }
@@ -352,14 +355,14 @@ namespace dzn
 
     assert(coroutines.back().port == nullptr);
     self->yield_to(coroutines.back());
-    debug << "[" << self->id << "] entered context" << std::endl;
+    debug.rdbuf() && debug << "[" << self->id << "] entered context" << std::endl;
     if (debug.rdbuf())
     {
-      debug << "routines: ";
+      debug.rdbuf() && debug << "routines: ";
       for (auto& c: coroutines) {
-        debug << c.id << " ";
+        debug.rdbuf() && debug << c.id << " ";
       }
-      debug << std::endl;
+      debug.rdbuf() && debug << std::endl;
     }
     remove_finished_coroutines(coroutines);
   }
@@ -375,7 +378,7 @@ namespace dzn
                       [&](void* port) {return self->port == port;}) != unblocked.end()
          && self->component == c)
       {
-        debug << "[" << self->id << "]" << " relay skip "
+        debug.rdbuf() && debug << "[" << self->id << "]" << " relay skip "
               << self->port << std::endl;
         std::swap(rt.component_stack,rt.blocked_port_component_stack.at(self->id));
         have_collateral = true;
@@ -390,26 +393,26 @@ namespace dzn
   void pump::release(runtime& rt, void* p)
   {
     auto self = find_self(coroutines);
-    debug << "[" << self->id << "] release of " << p << std::endl;
+    debug.rdbuf() && debug << "[" << self->id << "] release of " << p << std::endl;
 
     auto blocked = find_blocked(coroutines, p);
     if(blocked == coroutines.end())
     {
-      debug << "[" << self->id << "] skip block" << std::endl;
+      debug.rdbuf() && debug << "[" << self->id << "] skip block" << std::endl;
       return;
     }
 
-    debug << "[" << blocked->id << "] unblock" << std::endl;
+    debug.rdbuf() && debug << "[" << blocked->id << "] unblock" << std::endl;
 
     switch_context.emplace_back([blocked,self,&rt,p,this] {
       auto self = find_self(coroutines);
-      debug << "setting unblocked to port " << blocked->port << std::endl;
+      debug.rdbuf() && debug << "setting unblocked to port " << blocked->port << std::endl;
       unblocked.push_back(blocked->port);
       blocked->component = nullptr;
       blocked->port = nullptr;
 
-      debug << "[" << self->id << "] switch from" << std::endl;
-      debug << "[" << blocked->id << "] to" << std::endl;
+      debug.rdbuf() && debug << "[" << self->id << "] switch from" << std::endl;
+      debug.rdbuf() && debug << "[" << blocked->id << "] to" << std::endl;
 
       assert(rt.component_stack.empty());
       std::swap(rt.component_stack,rt.blocked_port_component_stack.at(blocked->id));
