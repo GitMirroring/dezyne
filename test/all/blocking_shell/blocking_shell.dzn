@@ -64,13 +64,7 @@ interface iworld
       on hello_enum: {idle = false; reply(Enum.OK);}
       on hello_enum: {reply(Enum.NOK);}
     }
-    [!idle] {
-      on hello_void: illegal;
-      on hello_bool: illegal;
-      on hello_int: illegal;
-      on hello_enum: illegal;
-      on inevitable: {idle = true; world;}
-    }
+    [!idle] on inevitable: {idle = true; world;}
   }
 }
 
