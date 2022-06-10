@@ -42,24 +42,13 @@ namespace dzn
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines);
   void port_block(const locator& l, void* c, void* p)
   {
-    auto& rt = l.get<dzn::runtime>();
-    rt.handling(c) = 0;
-    rt.flush(c,coroutine_id(l));
-    if(rt.skip_block(p)) return;
-    auto& pump = l.get<dzn::pump>();
-    auto self = find_self (pump.coroutines);
-    assert(rt.blocked_port_component_stack[self->id].empty());
-    rt.blocked_port_component_stack[self->id] = rt.component_stack;
-    rt.component_stack.clear();
-    pump.block(rt, c, p);
+    l.get<dzn::pump>().block(l.get<dzn::runtime>(), c, p);
   }
   void port_release(const locator& l, void* p, std::function<void()>& out_binding)
   {
     if(out_binding) out_binding();
     out_binding = nullptr;
-    auto& rt = l.get<dzn::runtime>();
-    rt.skip_block(p) = true;
-    l.get<dzn::pump>().release(rt,p);
+    l.get<dzn::pump>().release(l.get<dzn::runtime>(),p);
   }
   void collateral_block(void* c, const locator& l)
   {
@@ -331,7 +320,14 @@ namespace dzn
   }
   void pump::block(runtime& rt, void* c, void* p)
   {
-    auto self = find_self(coroutines);
+    rt.handling(c) = 0;
+    rt.flush(c,coroutine_id());
+    if(rt.skip_block(p)) return;
+    auto self = find_self (coroutines);
+    assert(rt.blocked_port_component_stack[self->id].empty());
+    rt.blocked_port_component_stack[self->id] = rt.component_stack;
+    rt.component_stack.clear();
+
     self->port = p;
     debug.rdbuf() && debug << "[" << self->id << "] block on " << p << std::endl;
 
@@ -392,6 +388,8 @@ namespace dzn
   }
   void pump::release(runtime& rt, void* p)
   {
+    rt.skip_block(p) = true;
+
     auto self = find_self(coroutines);
     debug.rdbuf() && debug << "[" << self->id << "] release of " << p << std::endl;
 
