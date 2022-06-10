@@ -54,6 +54,11 @@ namespace dzn
 {
   extern std::ostream debug;
 
+  inline std::string component_to_string(void* c)
+  {
+    return c ? reinterpret_cast<component*>(c)->dzn_meta.name : "<external>";
+  }
+
   void trace_qin(std::ostream&, port::meta const&, const char*);
   void trace_qout(std::ostream&, port::meta const&, const char*);
 
