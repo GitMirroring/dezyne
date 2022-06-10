@@ -1,9 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -130,7 +130,8 @@ actions."
                               behavior)))
          (taus (delete-duplicates
                 (append-map events-trigger/action
-                            (append out-triggers in-actions)))))
+                            (append out-triggers in-actions))))
+         (taus (cons "<defer>" taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)

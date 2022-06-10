@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -668,7 +668,8 @@ required to be non-deterministic."
           (length provides-ports))))
     (or (equal? (node-state node) (1- (vector-length nodes)))
         (and (idle-node? node)
-             (not (find (lambda (e) (equal? "<ack>" (edge-label e)))
+             (not (find (lambda (e) (or (equal? "<ack>" (edge-label e))
+                                        (equal? "<defer>" (edge-label e))))
                         (node-succ node))))))
 
   (define (annotate)
@@ -786,7 +787,7 @@ required to be non-deterministic."
 
 (define (parse-label label)
   (define-peg-string-patterns
-    "tree               <-- event / modeling / reply / state / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
+    "tree               <-- event / modeling / defer-qout / reply / state / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
@@ -816,6 +817,7 @@ required to be non-deterministic."
      enum               <-  identifier
      enum-field         <-  identifier
      direction          <   ('qin' / 'in' / 'out') !identifier
+     defer-qout         <-- 'defer_qout'
      queue-direction    <-- 'qout'
      action-literal     <   'action'
      internal-literal   <   'internal' / 'silent'
@@ -857,6 +859,7 @@ required to be non-deterministic."
   (define (helper tree)
     (match tree
       (('parse-error parse-error) (format (current-error-port) "parse error:~s\n" tree) parse-error)
+      (('defer-qout label) "<defer>")
       (('error error) (cleanup-error error))
       (('error ('identifier port) error) (cleanup-error error))
       (('event ('identifier port) ('identifier event)) (string-append port "." event))

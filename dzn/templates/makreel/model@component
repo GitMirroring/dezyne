@@ -333,7 +333,8 @@ component_semantics_allow = allow({
  }, component_semantics_comm);
 
 component_semantics = rename({
-   #x:makreel:model-name end' -> #x:makreel:model-name end
+   defer_qout' -> defer_qout
+ , #x:makreel:model-name end' -> #x:makreel:model-name end
    #x:semantics-rename-provides
    #x:semantics-rename-requires
  }, component_semantics_allow);
@@ -361,7 +362,7 @@ component_allow = allow({
  , async_pending'
  , declarative_illegal
  , defer_q_empty'
- , defer_qout'
+ , defer_qout
  , defer_end'
  , illegal
  , missing_reply
@@ -394,7 +395,6 @@ component = hide({
  , async_not_pending
  , async_pending
  , defer_q_empty'
- , defer_qout'
  , defer_end'
  , queue_empty
  , queue_not_empty
