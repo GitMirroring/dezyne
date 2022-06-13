@@ -403,6 +403,7 @@ namespace dzn
       Debug.WriteLine("");
 
       remove_finished_coroutines(this.coroutines);
+      this.skip_block.Remove(p);
     }
     bool collateral_release_skip_block(Runtime rt, Object c)
     {
