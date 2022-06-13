@@ -111,13 +111,13 @@ Generate exhaustive set of traces for Dezyne model
 (define (model->traces options root model file-name)
   (let* ((verbose? (dzn:command-line:get 'verbose))
          (lts (model->lts root model file-name))
-         (provided-ports (if (is-a? model <interface>) '()
+         (provides-ports (if (is-a? model <interface>) '()
                              (ast:provides-port* model)))
          (provides-in (if (is-a? model <component>)
                           (map (lambda (t) (string-append (string-drop-right (.port.name t) 1) "." (.event.name t)))
                                (ast:provides-in-triggers model))
                           (map .name (filter ast:in? (ast:event* model)))))
-         (provided (map .name provided-ports))
+         (provides (map .name provides-ports))
          (model-name (makreel:unticked-dotted-name model))
          (bin ((compose dirname car) (command-line)))
          (flush-opt (option-ref options 'flush #f))
@@ -136,7 +136,7 @@ Generate exhaustive set of traces for Dezyne model
                      (is-a? model <interface>)
                      (or output ".")
                      model-name
-                     provided
+                     provides
                      provides-in
                      #:verbose? verbose?)))
     (when lts?
