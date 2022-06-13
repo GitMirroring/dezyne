@@ -215,7 +215,10 @@ compound <-- BRACE-OPEN enter-frame (statement / !unknown-identifier)#* BRACE-CL
 
 imperative-statement <- variable / assign / if-statement / illegal /
                         return / skip-statement / compound /
-                        reply / action-or-call / interface-action SEMICOLON#
+                        reply / defer / action-or-call /
+                        interface-action SEMICOLON#
+
+  defer <-- DEFER imperative-statement
 
   interface-action <-- is-event
 
@@ -307,6 +310,7 @@ BEHAVIOR            <  'behavior' ![a-zA-Z_0-9] / 'behaviour' ![a-zA-Z_0-9]
 BLOCKING            <  'blocking' ![a-zA-Z_0-9]
 BOOL                <- 'bool' ![a-zA-Z_0-9]
 COMPONENT           <  'component' ![a-zA-Z_0-9]
+DEFER               <  'defer' ![a-zA-Z_0-9]
 ELSE                <  'else' ![a-zA-Z_0-9]
 ENUM                <  'enum' ![a-zA-Z_0-9]
 EXTERN              <  'extern' ![a-zA-Z_0-9]
@@ -340,6 +344,7 @@ KEYWORD <
   / 'behaviour' ![a-zA-Z_0-9]
   / 'blocking' ![a-zA-Z_0-9]
   / 'component' ![a-zA-Z_0-9]
+  / 'defer' ![a-zA-Z_0-9]
   / 'else' ![a-zA-Z_0-9]
   / 'enum' ![a-zA-Z_0-9]
   / 'extern' ![a-zA-Z_0-9]

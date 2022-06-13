@@ -1217,6 +1217,9 @@
 (define-method (ast:declaration* (o <behavior>))
   (append (ast:type* o) (ast:function* o) (ast:variable* o) (ast:port* o)))
 
+(define-method (ast:declaration* (o <defer>))
+  (tree-collect (is? <variable>) o))
+
 (define-method (ast:declaration* (o <compound>))
   (ast:variable* o))
 
@@ -1295,10 +1298,12 @@
       (and (is-a? (.parent o) <compound>)
            (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
       (ast:lookup-variable (.parent o) name statements)))
+    ((? (is? <defer>))
+     (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
     ((? (is? <if>))
      (or
       (and (is-a? (.parent o) <compound>)
-              (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
+           (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
       (ast:lookup-variable (.parent o) name statements)))
     (($ <function>)
      (or (find name? ((compose ast:formal* .signature) o))

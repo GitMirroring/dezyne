@@ -422,6 +422,9 @@
            #:function.name (helper function)
            #:arguments (helper arguments)))
 
+        (('defer statement)
+         (make <defer-node>
+           #:statement (helper statement)))
 
         (('arguments argument) (make <arguments-node> #:elements (list(helper argument))))
         (('arguments argument ...) (make <arguments-node> #:elements (helper argument)))
