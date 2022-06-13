@@ -51,20 +51,7 @@ namespace dzn
     }
     public static void port_block(Locator l, Object c, Object p)
     {
-      Runtime rt = l.get<Runtime>();
-      rt.states[c].handling = 0;
-      rt.flush(c, dzn.Runtime.coroutine_id(l));
-      var pump = l.get<pump>();
-      if(pump.skip_block.Remove(p)) return;
-
-      var self = find_self(pump.coroutines);
-      Debug.Assert(!rt.blocked_port_component_stack.ContainsKey(self.id)
-                   || rt.blocked_port_component_stack[self.id].Count == 0);
-
-      rt.blocked_port_component_stack[self.id] = rt.component_stack;
-      rt.component_stack = new Stack<Object>();
-
-      pump.block(rt, c, p);
+      l.get<pump>().block(l.get<Runtime>(), c, p);
     }
 
     public static void port_release(Locator l, Object p, Action out_binding)
@@ -72,7 +59,6 @@ namespace dzn
       if(out_binding!=null) out_binding();
       out_binding = null;
       var pump = l.get<pump>();
-      pump.skip_block.Add(p);
       pump.release(l.get<dzn.Runtime>(),p);
     }
 
@@ -356,7 +342,18 @@ namespace dzn
     }
     public void block(Runtime rt, Object c, Object p)
     {
+      rt.states[c].handling = 0;
+      rt.flush(c, this.coroutine_id());
+      if (this.skip_block.Remove(p))
+        return;
+
       coroutine self = find_self(this.coroutines);
+      Debug.Assert(!rt.blocked_port_component_stack.ContainsKey(self.id)
+                   || rt.blocked_port_component_stack[self.id].Count == 0);
+
+      rt.blocked_port_component_stack[self.id] = rt.component_stack;
+      rt.component_stack = new Stack<Object>();
+
       self.port = p;
       Debug.WriteLine("[" + self.id + "] block on " + p.GetHashCode());
 
@@ -412,6 +409,8 @@ namespace dzn
     }
     void release(Runtime rt, Object p)
     {
+      this.skip_block.Add(p);
+
       coroutine self = find_self(this.coroutines);
       Debug.WriteLine("[" + self.id + "] release of " + p.GetHashCode());
 
