@@ -32,8 +32,10 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <queue>
+#include <sstream>
 #include <string>
 
 namespace dzn
@@ -46,17 +48,15 @@ namespace dzn
     dzn::locator dzn_locator;
     dzn::runtime dzn_rt;
     System system;
-    bool single_threaded;
 
     std::map<std::string, Function> lookup;
-
     std::queue<std::string> trail;
     std::mutex mutex;
     std::condition_variable condition;
-
     dzn::pump pump;
 
-    friend std::ostream& operator << (std::ostream& os, container<System,Function>&) {
+    friend std::ostream& operator << (std::ostream& os, container<System,Function>&)
+    {
       return os;
     }
 
@@ -66,7 +66,6 @@ namespace dzn
     , dzn_locator(std::forward<dzn::locator>(l))
     , dzn_rt()
     , system(dzn_locator.set(dzn_rt).set(pump))
-    , single_threaded(system.dzn_locator.template try_get<dzn::pump>() == &pump)
     , pump()
     {
       dzn_locator.get<illegal_handler>().illegal = []{std::clog << "illegal" << std::endl; std::exit(0);};
@@ -77,82 +76,53 @@ namespace dzn
     {
       std::unique_lock<std::mutex> lock(mutex);
       condition.wait(lock, [this]{return trail.empty();});
-
-      dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); //only shells have a pump
+      dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); // only shells have a pump
       //resolve the race condition between the shell pump dtor and the container pump dtor
       if(p && p != &pump) pump([p] {p->stop();});
+      pump.wait();
+    }
+    void perform(const std::string& str)
+    {
+      if (std::count(str.begin(), str.end(), '.') > 1)
+        return;
+
+      auto it = lookup.find(str);
+      if(it != lookup.end())
+        pump(it->second);
+
+      std::unique_lock<std::mutex> lock(mutex);
+      trail.push(str);
+      condition.notify_one();
+    }
+    void operator()(std::map<std::string, Function>&& lookup)
+    {
+      this->lookup = std::move(lookup);
+      pump.pause();
+      std::string str;
+      while(std::getline (std::cin, str))
+      {
+        if(str.find("<flush>") != std::string::npos)
+          pump.flush();
+        perform(str);
+      }
+      pump.resume();
     }
     void match(const std::string& perform)
     {
       std::string expect = trail_expect();
-      auto it = lookup.find(expect);
-
-      if(it != lookup.end())
-        throw std::runtime_error("match synchronization error");
-
       if(expect != perform)
-        throw std::runtime_error("unmatched expectation: trail expects: \"" + expect +
-                                 "\" behavior expects: \"" + perform + "\"");
+        throw std::runtime_error("unmatched expectation: trail expects: \"" + expect
+                                 + "\" behavior expects: \"" + perform + "\"");
     }
-    void operator()(std::map<std::string, Function>&& lookup, std::set<std::string>&& required_ports)
-    // to be executed on the main thread
-    // reads stdin and offloads the work to its pump
-    {
-      this->lookup = std::move(lookup);
-
-      std::string port;
-      std::string str;
-
-      while(std::getline (std::cin, str))
-      {
-        auto it = this->lookup.find(str);
-        if(it == this->lookup.end() || port.size())
-        {
-          std::string p = str.substr(0, str.find('.'));
-          if(it == this->lookup.end() && required_ports.find(p) != required_ports.end())
-          {
-            if(port.empty() || port != p) port = p;
-            else port.clear();
-          }
-
-          if(std::count(str.begin(), str.end(), '.') > 1) continue;
-
-          std::unique_lock<std::mutex> lock(mutex);
-          trail.push(str);
-          condition.notify_one();
-        }
-        else
-        {
-          std::string p = str.substr(0, str.find('.'));
-          if(single_threaded || required_ports.find(p) == required_ports.end())
-            pump(it->second);
-          else
-            it->second();
-          port.clear();
-        }
-      }
-    }
-    std::string match_return()
-    {
-      std::string expect = trail_expect();
-      if(single_threaded) {
-        auto it = lookup.find(expect);
-        while(it != lookup.end()) {
-          it->second();
-          expect = trail_expect();
-          it = lookup.find(expect);
-        }
-      }
-      return expect;
-    }
-  private:
     std::string trail_expect()
     {
       std::unique_lock<std::mutex> lock(mutex);
       condition.wait_for(lock, std::chrono::seconds(10),
                          [this]{return trail.size();});
-      condition.notify_one();
-      std::string expect = trail.front(); trail.pop();
+      std::string expect = trail.front();
+      trail.pop();
+      if (trail.empty())
+        condition.notify_one();
       return expect;
     }
   };

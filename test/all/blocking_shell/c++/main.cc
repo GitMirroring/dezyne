@@ -17,88 +17,143 @@
 //
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-
-#include <dzn/container.hh>
+//
+// Commentary:
+//
+// Code:
 
 #include "blocking_shell.hh"
 
-#include <algorithm>
-#include <cstring>
-#include <thread>
+#include <future>
+#include <iterator>
+#include <map>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <vector>
 
 int to_int(std::string s){return std::stoi (s);}
 bool to_bool(std::string s){return s == "true";}
-void to_void(std::string){}
 
-void
-connect_ports (dzn::container< blocking_shell, std::function<void()>>& c)
+bool is_reply(const std::string& s)
 {
-  c.system.r.in.hello_void = [&] () {
-    dzn::trace(std::clog, c.system.r.meta, "hello_void");
-    c.match("r.hello_void");
-    std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
-    return to_void(tmp.substr(tmp.rfind('.')+1));
-  };
-  c.system.r.in.hello_int = [&] () {
-    dzn::trace(std::clog, c.system.r.meta, "hello_int");
-    c.match("r.hello_int");
-    std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
-    return to_int(tmp.substr(tmp.rfind('.')+1));
-  };
-  c.system.r.in.hello_bool = [&] () {
-    dzn::trace(std::clog, c.system.r.meta, "hello_bool");
-    c.match("r.hello_bool");
-    std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
-    return to_bool(tmp.substr(tmp.rfind('.')+1));
-  };
-  c.system.r.in.hello_enum = [&] (int i,int& j) {
-    dzn::trace(std::clog, c.system.r.meta, "hello_enum");
-    c.match("r.hello_enum");
-    std::string tmp = c.match_return();
-    dzn::trace_out(std::clog, c.system.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
-    return to_Enum(tmp.substr(tmp.rfind('.')+1));
-  };
-  c.system.p.out.world = [&] (int) {
-    c.match("p.world");
-    return dzn::call_out(&c, [&]{
-      if(c.flush) c.dzn_rt.queue(&c).push([&]{
-        if(c.dzn_rt.queue(&c).empty()) {
-          std::clog << "p.<flush>" << std::endl;
-          c.match("p.<flush>");
-        }
-      });}, c.system.p, "world");};}
-
-std::map<std::string,std::function<void()> >
-event_map (dzn::container< blocking_shell, std::function<void()>>& c)
-{
-  c.system.p.meta.require.component = &c;
-  c.system.p.meta.require.meta = &c.meta;
-  c.system.p.meta.require.name = "p";
-  c.system.r.meta.provide.component = &c;
-  c.system.r.meta.provide.meta = &c.meta;
-  c.system.r.meta.provide.name = "r";
-
-  return {{"illegal", []{std::clog << "illegal" << std::endl;}}
-    ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}
-    , {"p.hello_void",[&]{c.system.p.in.hello_void(); c.match("p.return");}}
-    , {"r.world",[&]{std::this_thread::sleep_for(std::chrono::milliseconds(1000)); int _0 = 0; c.system.r.out.world(0);}}
-    , {"p.hello_int",[&]{c.match("p." + to_string(c.system.p.in.hello_int())); std::queue<std::function<void()>> empty; std::swap(c.dzn_rt.queue(&c.system.p), empty);}}
-    , {"p.hello_bool",[&]{c.match("p." + to_string(c.system.p.in.hello_bool())); std::queue<std::function<void()>> empty; std::swap(c.dzn_rt.queue(&c.system.p), empty);}}
-    , {"p.hello_enum",[&]{int _0 = 0; int _1 = 1;c.match("p." + to_string(c.system.p.in.hello_enum(0,_1))); std::queue<std::function<void()>> empty; std::swap(c.dzn_rt.queue(&c.system.p), empty);}}
-    , {"r.<flush>",[&]{std::clog << "r.<flush>" << std::endl; c.dzn_rt.flush(&c);}}
-  };
+  if(s.empty()) return false;
+  const std::string& v = s.substr(s.find('.')+1);
+  return s.find(':') != std::string::npos
+    || v == "return" || v == "true" || v == "false"
+    || std::find_if(s.begin(), s.end(),
+                    [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
-int
-main(int argc, char* argv[])
+int main()
 {
-  bool flush = argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--flush") == 0;});
-  if(argv + argc != std::find_if(argv + 1, argv + argc, [](const char* s){return std::strcmp(s,"--debug") == 0;})) dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::container< blocking_shell, std::function<void()>> c(flush);
+  dzn::locator locator;
+  dzn::runtime runtime;
+  blocking_shell sut(locator.set(runtime));
+  sut.dzn_meta.name = "sut";
+  sut.p.meta.require.name = "p";
+  sut.r.meta.provide.name = "r";
 
-  connect_ports (c);
-  c(event_map (c), {"r"});
+  int output = 0;
+  std::map<std::string, std::function<void()>> provides = {
+    {"p.hello_void", sut.p.in.hello_void},
+    {"p.hello_bool", sut.p.in.hello_bool},
+    {"p.hello_int", sut.p.in.hello_int},
+    {"p.hello_enum", std::bind(sut.p.in.hello_enum, 123, std::ref(output))},
+  };
+
+  std::map<std::string, std::function<void()>> requires = {
+    {"r.world", std::bind(sut.r.out.world, 0)},
+  };
+
+
+  std::mutex mutex;
+
+  size_t event = 0;
+  std::vector<std::string> trace;
+
+  sut.p.out.world = [&](int) {
+    assert(trace[event] == "p.world");
+    ++event;
+    dzn::trace_qin(std::clog, sut.p.meta, "world");
+  };
+  sut.r.in.hello_void = [&] {
+    std::lock_guard<std::mutex> lock(mutex);
+    assert(trace[event] == "r.hello_void");
+    ++event;
+    dzn::trace(std::clog, sut.r.meta, "hello_void");
+    const std::string& tmp = trace[event];
+    ++event;
+    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
+  };
+  sut.r.in.hello_bool = [&] {
+    std::lock_guard<std::mutex> lock(mutex);
+    assert(trace[event] == "r.hello_bool");
+    ++event;
+    dzn::trace(std::clog, sut.r.meta, "hello_bool");
+    const std::string& tmp = trace[event];
+    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
+    ++event;
+    return to_bool(tmp.substr(tmp.rfind('.')+1));
+  };
+  sut.r.in.hello_int = [&] {
+    std::lock_guard<std::mutex> lock(mutex);
+    assert(trace[event] == "r.hello_int");
+    ++event;
+    dzn::trace(std::clog, sut.r.meta, "hello_int");
+    const std::string& tmp = trace[event];
+    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
+    ++event;
+    return to_int(tmp.substr(tmp.rfind('.')+1));
+  };
+  sut.r.in.hello_enum = [&](int,int&) {
+    std::lock_guard<std::mutex> lock(mutex);
+    assert(trace[event] == "r.hello_enum");
+    ++event;
+    dzn::trace(std::clog, sut.r.meta, "hello_enum");
+    const std::string& tmp = trace[event];
+    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
+    ++event;
+    return to_Enum(tmp.substr(tmp.rfind('.')+1));
+  };
+
+  std::queue<std::future<void>> sync;
+
+
+  std::copy(std::istream_iterator<std::string>(std::cin),
+            std::istream_iterator<std::string>(),
+            std::back_inserter(trace));
+
+  std::unique_lock<std::mutex> lock(mutex);
+
+  while(event < trace.size())
+  {
+    auto pit = provides.find(trace[event]);
+    if(pit != provides.end())
+    {
+      sync.push (std::async (std::launch::async, [&,pit]{
+        pit->second ();
+        std::unique_lock<std::mutex> lock (mutex);
+        ++event;
+      }));
+      ++event;
+      lock.unlock();
+    }
+    else
+    {
+      auto rit = requires.find(trace[event]);
+      if(rit != requires.end())
+      {
+        rit->second();
+        ++event;
+      }
+      lock.unlock();
+    }
+    lock.lock();
+  }
+  while (sync.size())
+  {
+    sync.front().wait();
+    sync.pop();
+  }
 }

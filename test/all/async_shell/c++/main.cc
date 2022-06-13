@@ -52,6 +52,7 @@ event_map (dzn::container< async_shell, std::function<void()>>& c)
   return {{"illegal", []{std::clog << "illegal" << std::endl;}}
     ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}
     , {"h.hello",[&]{
+        c.match("h.hello");
         c.system.h.in.hello();
         c.match("h.return");
       }}
@@ -66,5 +67,5 @@ main(int argc, char* argv[])
   dzn::container< async_shell, std::function<void()>> c(flush);
 
   connect_ports (c);
-  c(event_map (c), {});
+  c(event_map (c));
 }

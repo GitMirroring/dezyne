@@ -1,7 +1,8 @@
 c.system.#.port.name .#.event.direction .#.event.name  = [&] (#x:formals) {
   dzn::trace(std::clog, c.system.#.port.name .meta, "#.event.name");
   c.match("#.port.name .#.event.name");
-  std::string tmp = c.match_return();
+  port_block(c.dzn_locator, nullptr, &c.system.#.port.name);
+  std::string tmp = c.trail_expect();
   dzn::trace_out(std::clog, c.system.#.port.name .meta, tmp.substr(tmp.rfind('.')+1).c_str());
   return to_#x:reply-type(tmp.substr(tmp.rfind('.')+1));
 };

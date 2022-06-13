@@ -23,8 +23,11 @@ event_map (dzn::container< #x:type-name , std::function<void()>>& c)
 
   return {{"illegal", []{std::clog << "illegal" << std::endl;}}
          ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}
-          #x:main-event-map-void
-          #x:main-event-map-valued
+          #x:main-event-map-void-provides-in
+          #x:main-event-map-valued-provides-in
+          #x:main-event-map-void-requires-in
+          #x:main-event-map-valued-in
+          #x:main-event-map-out
           #x:main-event-map-flush };
 }
 
@@ -36,7 +39,7 @@ main(int argc, char* argv[])
   dzn::container< #x:type-name , std::function<void()>> c(flush);
 
   connect_ports (c);
-  c(event_map (c), { #x:main-requires-port-name });
+  c(event_map (c));
 }
 
 //version: #x:version

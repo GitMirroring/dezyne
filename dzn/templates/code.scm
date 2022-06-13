@@ -163,9 +163,13 @@
 (define-templates main-out-arg code:main-out-arg main-out-arg-grammar)
 (define-templates main-event-map-void ast:void-in-triggers event-map-prefix)
 (define-templates main-event-map-valued ast:valued-in-triggers event-map-prefix)
+(define-templates main-event-map-out ast:requires-out-triggers event-map-prefix)
+(define-templates main-event-map-void-provides-in ast:provides-in-void-triggers event-map-prefix)
+(define-templates main-event-map-valued-provides-in ast:provides-in-valued-triggers event-map-prefix)
+(define-templates main-event-map-void-requires-in code:requires-in-void-returns event-map-prefix)
+(define-templates main-event-map-valued-in code:return-values event-map-prefix)
 (define-templates main-event-map-flush ast:requires-port* event-map-prefix)
 (define-templates main-event-map-match-return code:main-event-map-match-return)
-(define-templates main-requires-port-name ast:requires-port* comma-infix)
 
 
 ;;;

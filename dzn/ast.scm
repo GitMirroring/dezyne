@@ -94,6 +94,8 @@
            ast:out-triggers-in-events
            ast:out-triggers-out-events
            ast:provides-in-triggers
+           ast:provides-in-valued-triggers
+           ast:provides-in-void-triggers
            ast:provides-out-triggers
            ast:provides-port
            ast:provides-port*
@@ -102,6 +104,7 @@
            ast:req-events
            ast:requires+async-port*
            ast:requires-in-triggers
+           ast:requires-in-void-triggers
            ast:requires-out-triggers
            ast:requires-port*
            ast:rescope
@@ -399,6 +402,14 @@
                           (filter ast:in? (ast:event* (.type port)))))
                    (filter ast:provides? (ast:port* o)))))
 
+(define-method (ast:provides-in-void-triggers (o <component-model>))
+  (filter (compose (is? <void>) .type .signature .event)
+          (ast:provides-in-triggers o)))
+
+(define-method (ast:provides-in-valued-triggers (o <component-model>))
+  (filter (compose (negate (is? <void>)) .type .signature .event)
+          (ast:provides-in-triggers o)))
+
 (define-method (ast:req-events (o <component>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
@@ -504,6 +515,9 @@
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
                           (filter ast:in? (ast:event* (.type port)))))
                    (filter ast:requires? (ast:port* o) ))))
+
+(define-method (ast:requires-in-void-triggers (o <component-model>))
+  (filter (compose (is? <void>) ast:type) (ast:requires-in-triggers o)))
 
 (define-method (ast:out-triggers (o <component-model>))
   (append (ast:provides-out-triggers o) (ast:requires-in-triggers o)))
@@ -805,6 +819,9 @@
   (append-map (cute ast:return-values <> '("return")) (ast:in-event* o)))
 
 (define-method (ast:return-values (o <action>))
+  (ast:return-values (.event o)))
+
+(define-method (ast:return-values (o <trigger>))
   (ast:return-values (.event o)))
 
 (define-method (ast:location (o <locationed>))

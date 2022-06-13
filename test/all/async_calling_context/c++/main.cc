@@ -33,7 +33,7 @@ calling_context dzn_cc;
 void
 connect_ports (dzn::container< async_calling_context, std::function<void()>>& c)
 {
-  c.system.p.out.world = [&] (calling_context&, std::string s) {
+  c.system.p.out.world = [&] (calling_context&, std::string) {
     c.match("p.world");
     return dzn::call_out(&c, [&]{
       if(c.flush) c.dzn_rt.queue(&c).push([&]{
@@ -54,7 +54,13 @@ event_map (dzn::container< async_calling_context, std::function<void()>>& c)
     ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}
     , {"p.hello",[&]{
         std::string s;
+        c.match("p.hello");
         c.system.p.in.hello(dzn_cc, s);
+        c.match("p.return");
+      }}
+    , {"p.bye",[&]{
+        c.match("p.bye");
+        c.system.p.in.bye(dzn_cc);
         c.match("p.return");
       }}
     , {"a.ack",[&]{
@@ -72,5 +78,5 @@ main(int argc, char* argv[])
   dzn::container< async_calling_context, std::function<void()>> c(flush);
 
   connect_ports (c);
-  c(event_map (c), {});
+  c(event_map (c));
 }

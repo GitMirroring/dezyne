@@ -43,8 +43,11 @@
   #:use-module (dzn code dzn)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
+  #:use-module (dzn vm goops)
 
-  #:export (%calling-context
+  #:export (<port-pair>
+           .other
+            %calling-context
             %queue-size
             %shell
             code
@@ -98,7 +101,9 @@
             code:reply
             code:reply-type
             code:reply-types
+            code:requires-in-void-returns
             code:return
+            code:return-values
             code:trace-q-out
             code:trigger
             code:type-name
@@ -106,7 +111,9 @@
             code:used-foreigns
             code:variable->argument
             code:variable-name
-            string->enum-field))
+            string->enum-field)
+  #:re-export (.port
+               .port.name))
 
 ;; The calling-context to insert.
 (define %calling-context (make-parameter #f))
@@ -116,6 +123,16 @@
 
 ;; The name of the thread-safe shell.
 (define %shell (make-parameter #f))
+
+;;;
+;;; Ast extension.
+;;;
+(define-ast <port-pair> (<ast>)
+  (port)
+  (other))
+
+(define-method (.port.name (o <port-pair>)) (.name (.port o)))
+(define-method (.other.name (o <port-pair>)) (.name (.other o)))
 
 ;;;
 ;;; Top
@@ -252,9 +269,14 @@
       (make <local> #:name (.name o) #:type.name (.type.name o)
             #:expression (.expression o))))
 
+(define (make-out-formal formal)
+  (let* ((type (.type.name formal))
+         (out-formal (make <out-formal> #:name (.name formal) #:type.name type))
+         (out-formal (clone out-formal #:parent formal)))
+    (if (ast:in? formal) formal out-formal)))
+
 (define-method (code:variable-name (o <formal>))
-  (if (ast:in? o) o
-      (make <out-formal> #:name (.name o) #:type.name (.type.name o))))
+  (make-out-formal o))
 
 (define-method (code:variable-name (o <ast>))
   ((compose code:variable-name .variable) o))
@@ -596,12 +618,9 @@
 ;;;
 (define-method (code:main-out-arg (o <trigger>))
   (let* ((formals (ast:formal* o))
-         (formals (map
-                   (lambda (f) (if (ast:in? f) f (make <out-formal>)))
-                   formals)))
-    (map
-     (cute clone <> #:name <>)
-     formals (iota (length formals)))))
+         (formals (map make-out-formal formals)))
+    (map (lambda (f i) (clone f #:name i))
+         formals (iota (length formals)))))
 
 (define-method (code:main-out-arg-define (o <trigger>))
   (let ((formals (ast:formal* o)))
@@ -653,6 +672,26 @@
                #:bindings (.bindings o))
              #:parent (.parent o))
       o))
+
+(define-method (code:return-values (o <component-model>))
+  (define (trigger->port-pairs trigger)
+    (map (cute make
+               <port-pair>
+               #:port (.port.name trigger)
+               #:other <>)
+         (map ->sexp (ast:return-values trigger))))
+  (let* ((triggers (filter (compose not (is? <void>) ast:type)
+                           (ast:requires-in-triggers o)))
+         (pairs (append-map trigger->port-pairs triggers)))
+    (delete-duplicates pairs (lambda (a b)
+                               (and (ast:eq? (.port a) (.port b))
+                                    (equal? (.other a) (.other b)))))))
+
+(define-method (code:requires-in-void-returns (o <component-model>))
+  (let ((triggers (ast:requires-in-void-triggers o)))
+    (delete-duplicates triggers
+                       (lambda (a b)
+                         (ast:eq? (.port a) (.port b))))))
 
 (define (code:om ast)
   ((compose

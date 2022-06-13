@@ -67,13 +67,6 @@
 (define %model-name (make-parameter #f))
 (define %next-alist (make-parameter #f))
 
-(define-ast <port-pair> (<ast>)
-  (port)
-  (other))
-
-(define-method (.port.name (o <port-pair>)) (.name (.port o)))
-(define-method (.other.name (o <port-pair>)) (.name (.other o)))
-
 
 ;;;
 ;;; Ticked root.
