@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -365,21 +365,28 @@
         (('type-name name) (helper name))
         (('event-name name) (helper name))
 
-        (('interface-action event) (make <action-node> #:event.name (helper event)))
+        (('interface-action event)
+         (make <action-node>
+           #:event.name (helper event)))
 
-        (('illegal) (make <illegal-node>))
+        (('illegal)
+         (make <illegal-node>))
 
-        (('action (port event)) (make <action-node> #:port.name (helper port) #:event.name (helper event)))
+        (('action port event)
+         (make <action-node>
+           #:port.name (helper port)
+           #:event.name (helper event)))
 
-        (('action (port event) arguments) (make <action-node> #:port.name (helper port) #:event.name (helper event) #:arguments (helper arguments)))
+        (('action port event arguments)
+         (make <action-node>
+           #:port.name (helper port)
+           #:event.name (helper event)
+           #:arguments (helper arguments)))
 
-        (('action port event) (make <action-node> #:port.name (helper port) #:event.name (helper event)))
-
-        (('action port event arguments) (make <action-node> #:port.name (helper port) #:event.name (helper event) #:arguments (helper arguments)))
-
-        (('assign var expression) (make <assign-node>
-                                    #:variable.name (.name (helper var))
-                                    #:expression (helper expression)))
+        (('assign var expression)
+         (make <assign-node>
+           #:variable.name (.name (helper var))
+           #:expression (helper expression)))
 
         (('behavior-statement statement ...)
          (map helper statement))
