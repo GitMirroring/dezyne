@@ -529,12 +529,12 @@
 
 (define-method (ast:out-triggers-void-in-events (o <component-model>))
   (filter
-   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
+   (compose (is? <void>) .type .signature .event)
    (ast:out-triggers-in-events o)))
 
 (define-method (ast:out-triggers-valued-in-events (o <component-model>))
   (filter
-   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
+   (compose not (is? <void>) .type .signature .event)
    (ast:out-triggers-in-events o)))
 
 (define-method (ast:modeling? (o <event>))
@@ -785,10 +785,18 @@
 
 (define-method (ast:return-values (o <event>) void)
   (let ((type ((compose .type .signature) o)))
-    (cond ((as type <void>) void)
-          ((as type <enum>) (map (cut make <enum-literal> #:type.name (.name type) #:field <>) (ast:field* type)))
-          ((as type <bool>) (map (cut make <literal> #:value <>) '("true" "false")))
-          ((as type <int>) (map (cut make <literal> #:value <>) (iota (1+ (- (.to (.range type)) (.from (.range type)))) (.from (.range type))))))))
+    (cond
+     ((as type <void>)
+      void)
+     ((as type <enum>)
+      (map (cute make <enum-literal> #:type.name (.name type) #:field <>)
+           (ast:field* type)))
+     ((as type <bool>)
+      (map (cute make <literal> #:value <>) '("true" "false")))
+     ((as type <int>)
+      (map (cute make <literal> #:value <>)
+           (iota (1+ (- (.to (.range type)) (.from (.range type))))
+                 (.from (.range type))))))))
 
 (define-method (ast:return-values (o <event>))
   (ast:return-values o '()))
