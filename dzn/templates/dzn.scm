@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -66,8 +66,8 @@
 ;;;
 ;;; Component
 ;;;
-(define-templates provided-port ast:provides-port*)
-(define-templates required-port ast:requires-port*)
+(define-templates provides-port ast:provides-port*)
+(define-templates requires-port ast:requires-port*)
 (define-templates blocking dzn:blocking)
 (define-templates external dzn:external)
 (define-templates injected dzn:injected)

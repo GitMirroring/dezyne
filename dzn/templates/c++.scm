@@ -47,8 +47,8 @@
 ;;;
 (define-templates meta identity)
 (define-templates ports-meta-list ast:requires-port* meta-infix)
-(define-templates provided-port-declare ast:provides-port*)
-(define-templates required-port-declare ast:requires-port*)
+(define-templates provides-port-declare ast:provides-port*)
+(define-templates requires-port-declare ast:requires-port*)
 (define-templates async-port-declare ast:async-port*)
 (define-templates declare-method code:trigger)
 (define-templates pump code:pump?)
@@ -96,29 +96,29 @@
 ;;;
 ;;; System
 ;;;
-(define-templates provided-port-reference-declare ast:provides-port*)
-(define-templates required-port-reference-declare ast:requires-port*)
-(define-templates provided-port-reference-initializer ast:provides-port*)
-(define-templates required-port-reference-initializer ast:requires-port*)
+(define-templates provides-port-reference-declare ast:provides-port*)
+(define-templates requires-port-reference-declare ast:requires-port*)
+(define-templates provides-port-reference-initializer ast:provides-port*)
+(define-templates requires-port-reference-initializer ast:requires-port*)
 
 
 ;;;
 ;;; Shell
 ;;;
 (define-templates shell-non-injected-instance-meta code:non-injected-instances)
-(define-templates shell-provided-in ast:provides-in-triggers)
-(define-templates shell-required-out ast:requires-out-triggers)
-(define-templates shell-provided-out ast:provides-out-triggers)
-(define-templates shell-required-in ast:requires-in-triggers)
+(define-templates shell-provides-in ast:provides-in-triggers)
+(define-templates shell-requires-out ast:requires-out-triggers)
+(define-templates shell-provides-out ast:provides-out-triggers)
+(define-templates shell-requires-in ast:requires-in-triggers)
 (define-templates capture c++:capture-arguments capture-prefix)
 (define-templates capture-list identity)
-(define-templates provided-port-instance-declare ast:provides-port*)
-(define-templates required-port-instance-declare ast:requires-port*)
+(define-templates provides-port-instance-declare ast:provides-port*)
+(define-templates requires-port-instance-declare ast:requires-port*)
 (define-templates local_locator code:injected-instances-system)
 (define-templates injected-instance-declare code:injected-instances)
 (define-templates constructor-meta-initializer code:non-injected-instances)
-(define-templates shell-provided-meta-initializer ast:provides-port*)
-(define-templates shell-required-meta-initializer ast:requires-port*)
+(define-templates shell-provides-meta-initializer ast:provides-port*)
+(define-templates shell-requires-meta-initializer ast:requires-port*)
 (define-templates injected-instance-meta-initializer code:injected-instances)
 (define-templates non-injected-instance-meta-initializer code:non-injected-instances)
 (define-templates dzn-locator c++:dzn-locator)

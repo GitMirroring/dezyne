@@ -173,11 +173,11 @@
                                             ((compose .signature .event) b)))))))
 
 
-(define-method (c:binding-provided (o <binding>))
+(define-method (c:binding-provides (o <binding>))
   (if (ast:provides? (.port (.left o))) (.left o)
       (.right o)))
 
-(define-method (c:binding-required (o <binding>))
+(define-method (c:binding-requires (o <binding>))
   (if (ast:requires? (.port (.left o))) (.left o)
       (.right o)))
 

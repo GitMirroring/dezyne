@@ -6,8 +6,8 @@
  #x:variable-member-initializer
  #x:reply-member-initializer
  #x:injected-member-initializer
- #x:provided-member-initializer
- #x:required-member-initializer
+ #x:provides-member-initializer
+ #x:requires-member-initializer
  #x:async-member-initializer
 {
   dzn_meta.require = {#x:ports-meta-list };

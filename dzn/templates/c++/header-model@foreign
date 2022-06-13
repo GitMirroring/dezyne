@@ -12,15 +12,15 @@ struct #x:model-name
   dzn::meta dzn_meta;
   dzn::runtime& dzn_rt;
   dzn::locator const& dzn_locator;
-  #x:provided-port-declare
-  #x:required-port-declare
+  #x:provides-port-declare
+  #x:requires-port-declare
   #x:model-name (const dzn::locator& dzn_locator)
   : #x:meta
   , dzn_rt(dzn_locator.get<dzn::runtime>())
   , dzn_locator(dzn_locator)
   #x:injected-member-initializer
-  #x:provided-member-initializer
-  #x:required-member-initializer
+  #x:provides-member-initializer
+  #x:requires-member-initializer
   {
   #x:foreign-event-slot
   }

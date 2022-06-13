@@ -1,0 +1,4 @@
+##pragma region #.name
+               #x:requires-port-in-event-wrapper
+               #x:requires-port-out-event-wrapper
+##pragma endregion //#.name

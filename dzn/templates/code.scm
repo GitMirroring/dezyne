@@ -127,8 +127,8 @@
 (define-templates non-injected-instance-declare code:non-injected-instances)
 
 (define-templates injected-member-initializer ast:injected-port*)
-(define-templates provided-member-initializer ast:provides-port*)
-(define-templates required-member-initializer (lambda (o) (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o))))
+(define-templates provides-member-initializer ast:provides-port*)
+(define-templates requires-member-initializer (lambda (o) (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o))))
 (define-templates instance-name code:instance-name)
 (define-templates instance-port-name code:instance-port-name)
 (define-templates injected-instance-initializer code:injected-instances)
@@ -137,8 +137,8 @@
 
 ;; Bindings
 (define-templates bind-connect code:non-injected-bindings)
-(define-templates bind-provided code:bind-provided)
-(define-templates bind-required code:bind-required)
+(define-templates bind-provides code:bind-provides)
+(define-templates bind-requires code:bind-requires)
 (define-templates binding-name code:instance-name)
 (define-templates component-port code:component-port)
 (define-templates injected-instance-system-initializer code:injected-instances-system)
@@ -154,10 +154,10 @@
 (define-templates main-port-connect-in-void ast:out-triggers-void-in-events)
 (define-templates main-port-connect-in-valued ast:out-triggers-valued-in-events)
 (define-templates main-port-connect-out ast:out-triggers-out-events)
-(define-templates main-provided-port-init ast:provides-port*)
-(define-templates main-required-port-init ast:requires-port*)
-(define-templates main-provided-flush-init ast:provides-port*)
-(define-templates main-required-flush-init ast:requires-port*)
+(define-templates main-provides-port-init ast:provides-port*)
+(define-templates main-requires-port-init ast:requires-port*)
+(define-templates main-provides-flush-init ast:provides-port*)
+(define-templates main-requires-flush-init ast:requires-port*)
 (define-templates main-out-arg-define code:main-out-arg-define)
 (define-templates main-out-arg-define-formal identity)
 (define-templates main-out-arg code:main-out-arg main-out-arg-grammar)
@@ -165,7 +165,7 @@
 (define-templates main-event-map-valued ast:valued-in-triggers event-map-prefix)
 (define-templates main-event-map-flush ast:requires-port* event-map-prefix)
 (define-templates main-event-map-match-return code:main-event-map-match-return)
-(define-templates main-required-port-name ast:requires-port* comma-infix)
+(define-templates main-requires-port-name ast:requires-port* comma-infix)
 
 
 ;;;

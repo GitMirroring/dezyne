@@ -1,1 +1,1 @@
-#x:bind-interface-name .connect(#x:bind-provided , #x:bind-required);
+#x:bind-interface-name .connect(#x:bind-provides , #x:bind-requires);

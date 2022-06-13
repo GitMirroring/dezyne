@@ -40,8 +40,8 @@
 (define-templates model-parent-name c:model-parent-name type-infix)
 (define-templates name c:name type-infix)
 
-(define-templates provided-event-tracing-initialization ast:provides-port*)
-(define-templates required-event-tracing-initialization ast:requires-port*)
+(define-templates provides-event-tracing-initialization ast:provides-port*)
+(define-templates requires-event-tracing-initialization ast:requires-port*)
 (define-templates variable-member-initialization c:extract-variables-with-respect-to-enums)
 (define-templates initialize)
 
@@ -65,8 +65,8 @@
 (define-templates helper-in-trigger-prototype c:get-incoming-triggers-from-model)
 (define-templates helper-in-trigger c:get-incoming-triggers-from-model)
 
-(define-templates provided-port-initialization ast:provides-port*)
-(define-templates required-port-initialization ast:requires-port*)
+(define-templates provides-port-initialization ast:provides-port*)
+(define-templates requires-port-initialization ast:requires-port*)
 (define-templates trigger-initialization ast:in-triggers)
 
 (define-templates call-in-trigger-prototype ast:provides-in-triggers)
@@ -113,8 +113,8 @@
 (define-templates instance-declare-dzn-tracing (lambda (o) ( (compose .elements .instances) o)))
 (define-templates system-port-connect c:external-binding)
 (define-templates connect-internal-ports c:internal-binding)
-(define-templates binding-provided c:binding-provided)
-(define-templates binding-required c:binding-required)
+(define-templates binding-provides c:binding-provides)
+(define-templates binding-requires c:binding-requires)
 (define-templates connect-port-name-right (lambda (o) ((compose .port.name .right) o)))
 (define-templates connect-port-name-left (lambda (o) ((compose .port.name .left) o)))
 (define-templates connect-instance-name-right (lambda (o) ((compose .instance.name .right) o)))
@@ -134,8 +134,8 @@
 (define-templates main-illegal-print)
 (define-templates main-content)
 
-(define-templates port-initialization-provided ast:provides-port*)
-(define-templates port-initialization-required ast:requires-port*)
+(define-templates port-initialization-provides ast:provides-port*)
+(define-templates port-initialization-requires ast:requires-port*)
 (define-templates main-log-event-out-trigger ast:out-triggers)
 (define-templates in-trigger-initialization ast:in-triggers)
 (define-templates out-trigger-initialization ast:out-triggers)

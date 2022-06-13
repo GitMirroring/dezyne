@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -30,14 +30,14 @@
 
 (define-templates system-wrapper c++ew:ast-system*)
 
-(define-templates provided-port-initializer ast:provides-port* newline-infix)
-(define-templates required-port-initializer ast:requires-port* newline-infix)
-(define-templates provided-port-event-wrappers ast:provides-port* newline-infix)
-(define-templates required-port-event-wrappers ast:requires-port* newline-infix)
-(define-templates provided-port-in-event-wrapper c++ew:port-to-in-trigger* newline-infix)
-(define-templates provided-port-out-event-wrapper c++ew:port-to-out-trigger* newline-infix)
-(define-templates required-port-in-event-wrapper c++ew:port-to-in-trigger* newline-infix)
-(define-templates required-port-out-event-wrapper c++ew:port-to-out-trigger* newline-infix)
+(define-templates provides-port-initializer ast:provides-port* newline-infix)
+(define-templates requires-port-initializer ast:requires-port* newline-infix)
+(define-templates provides-port-event-wrappers ast:provides-port* newline-infix)
+(define-templates requires-port-event-wrappers ast:requires-port* newline-infix)
+(define-templates provides-port-in-event-wrapper c++ew:port-to-in-trigger* newline-infix)
+(define-templates provides-port-out-event-wrapper c++ew:port-to-out-trigger* newline-infix)
+(define-templates requires-port-in-event-wrapper c++ew:port-to-in-trigger* newline-infix)
+(define-templates requires-port-out-event-wrapper c++ew:port-to-out-trigger* newline-infix)
 
 (define-templates formals c++ew:formals formal-grammar)
 (define-templates formals-anonymous c++ew:formals formal-grammar)
@@ -53,6 +53,6 @@
 
 (define-templates valued-event-wrapper c++ew:valued-event?)
 (define-templates valued-event-return c++ew:valued-event?)
-(define-templates valued-required-in-return c++ew:valued-event?)
+(define-templates valued-requires-in-return c++ew:valued-event?)
 (define-templates ew-trigger-type-base c++ew:trigger-type-base type-infix)
 (define-templates file-name-upcase c++ew:file-name-upcase)

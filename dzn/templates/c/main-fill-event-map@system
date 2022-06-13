@@ -10,7 +10,7 @@ void fill_event_map(#x:name * m, map* e) {
 ##endif /* DZN_TRACING */
 
      #x:out-trigger-initialization
-     #x:port-initialization-provided
-     #x:port-initialization-required
+     #x:port-initialization-provides
+     #x:port-initialization-requires
      #x:in-trigger-initialization
 }

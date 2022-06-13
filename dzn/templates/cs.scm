@@ -67,9 +67,9 @@
 (define-templates async-signature-name cs:async-signature-name name_infix)
 
 (define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
-(define-templates provided-port-init ast:provides-port*)
-(define-templates required-port-init (compose (cut filter (negate .injected?) <>) ast:requires-port*))
-(define-templates required-port-meta ast:requires-port* newline-comma-infix)
+(define-templates provides-port-init ast:provides-port*)
+(define-templates requires-port-init (compose (cut filter (negate .injected?) <>) ast:requires-port*))
+(define-templates requires-port-meta ast:requires-port* newline-comma-infix)
 
 (define-templates method code:ons)
 (define-templates on-trigger (compose car .elements .triggers))
@@ -130,12 +130,12 @@
 ;;; Shell
 ;;;
 (define-templates bind-interface-name (compose ast:full-name .type .port .left) type-infix)
-(define-templates shell-provided-meta-initializer ast:provides-port*)
-(define-templates shell-required-meta-initializer ast:requires-port*)
-(define-templates shell-provided-in ast:provides-in-triggers)
-(define-templates shell-required-out ast:requires-out-triggers)
-(define-templates shell-provided-out ast:provides-out-triggers)
-(define-templates shell-required-in ast:requires-in-triggers)
+(define-templates shell-provides-meta-initializer ast:provides-port*)
+(define-templates shell-requires-meta-initializer ast:requires-port*)
+(define-templates shell-provides-in ast:provides-in-triggers)
+(define-templates shell-requires-out ast:requires-out-triggers)
+(define-templates shell-provides-out ast:provides-out-triggers)
+(define-templates shell-requires-in ast:requires-in-triggers)
 (define-templates return-temporary-assign cs:return-temporary-assign)
 (define-templates return-temporary cs:return-temporary)
 

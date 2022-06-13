@@ -67,12 +67,12 @@
               #x:main-event-map-valued
               #x:main-event-map-flush)))
 
-    #x:main-provided-port-init
-    #x:main-required-port-init
+    #x:main-provides-port-init
+    #x:main-requires-port-init
 
     (when flush?
-      #x:main-provided-flush-init
-      #x:main-required-flush-init)
+      #x:main-provides-flush-init
+      #x:main-requires-flush-init)
 
     #x:main-port-connect-in-void
     #x:main-port-connect-in-valued

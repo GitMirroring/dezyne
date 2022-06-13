@@ -6,13 +6,13 @@ void #x:name _init(#x:name * self, locator* dezyne_locator
         runtime_info_init(&self->dzn_info, dezyne_locator);
         self->dzn_info.performs_flush = true;
         #x:variable-member-initialization
-        #x:provided-port-initialization
-        #x:required-port-initialization
+        #x:provides-port-initialization
+        #x:requires-port-initialization
         #x:trigger-initialization
 
 ##if DZN_TRACING
         memcpy(&self->meta, meta, sizeof(dzn_meta));
-        #x:provided-event-tracing-initialization
-        #x:required-event-tracing-initialization
+        #x:provides-event-tracing-initialization
+        #x:requires-event-tracing-initialization
 ##endif /*DZN_TRACING*/
 }

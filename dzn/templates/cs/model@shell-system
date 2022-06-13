@@ -13,19 +13,19 @@ public class #x:model-name  : dzn.SystemComponent, IDisposable {
     #x:injected-instance-initializer
     #x:non-injected-instance-initializer
 
-    #x:provided-port-init
-    #x:required-port-init
+    #x:provides-port-init
+    #x:requires-port-init
 
-    #x:shell-provided-meta-initializer
-    #x:shell-required-meta-initializer
+    #x:shell-provides-meta-initializer
+    #x:shell-requires-meta-initializer
 
-    #x:shell-provided-in
-    #x:shell-required-out
-    #x:shell-provided-out
-    #x:shell-required-in
+    #x:shell-provides-in
+    #x:shell-requires-out
+    #x:shell-provides-out
+    #x:shell-requires-in
 
     this.dzn_meta.requires = new List<dzn.port.Meta> {
-      #x:required-port-meta
+      #x:requires-port-meta
     };
     this.dzn_meta.children = new List<dzn.Meta> {
       #x:meta-child

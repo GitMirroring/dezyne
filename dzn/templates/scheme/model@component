@@ -5,14 +5,14 @@
   #x:reply-member-initializer
   #x:out-binding-initializer
   #x:injected-port-instance-declare
-  #x:provided-member-initializer
-  #x:required-member-initializer
+  #x:provides-member-initializer
+  #x:requires-member-initializer
   #x:async-member-initializer)
 
 (define-method (initialize (o <#x:type-name >) args)
   (next-method o (cons* ##:flushes? ##t args))
-  #x:provided-port-instance-declare
-  #x:required-port-instance-declare
+  #x:provides-port-instance-declare
+  #x:requires-port-instance-declare
   #x:async-port-instance-declare
   #x:injected-member-initializer
   #x:injected-require-initializer)

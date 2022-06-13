@@ -54,8 +54,8 @@
             code:annotate-shells
             code:arguments
             code:assign-reply
-            code:bind-provided
-            code:bind-required
+            code:bind-provides
+            code:bind-requires
             code:class-member?
             code:component-include
             code:component-port
@@ -566,7 +566,7 @@
 (define-method (code:non-injected-bindings (o <system>))
   (filter code:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
 
-(define-method (code:bind-provided-required (o <binding>))
+(define-method (code:bind-provides-required (o <binding>))
   (let* ((model (parent o <model>))
          (left (.left o))
          (left-port (.port left))
@@ -576,11 +576,11 @@
         (cons left right)
         (cons right left))))
 
-(define-method (code:bind-provided (o <binding>))
-  ((compose car code:bind-provided-required) o))
+(define-method (code:bind-provides (o <binding>))
+  ((compose car code:bind-provides-required) o))
 
-(define-method (code:bind-required (o <binding>))
-  ((compose cdr code:bind-provided-required) o))
+(define-method (code:bind-requires (o <binding>))
+  ((compose cdr code:bind-provides-required) o))
 
 (define-method (code:pump? (o <component>))
   (if ((compose pair? ast:req-events) o) o

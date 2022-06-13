@@ -95,12 +95,12 @@ function #x:model-name _fill_event_map(m)
           };
 
   if (dzn.flush) {
-     #x:main-provided-flush-init
-     #x:main-required-flush-init
+     #x:main-provides-flush-init
+     #x:main-requires-flush-init
   }
 
-  #x:main-provided-port-init
-  #x:main-required-port-init
+  #x:main-provides-port-init
+  #x:main-requires-port-init
 
   #x:main-port-connect-in-void
   #x:main-port-connect-in-valued

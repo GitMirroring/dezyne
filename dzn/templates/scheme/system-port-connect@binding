@@ -1,1 +1,1 @@
-(dzn:connect #x:bind-provided  #x:bind-required)
+(dzn:connect #x:bind-provides  #x:bind-requires)

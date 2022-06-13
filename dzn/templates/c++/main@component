@@ -18,8 +18,8 @@ connect_ports (dzn::container< #x:type-name , std::function<void()>>& c)
 std::map<std::string,std::function<void()> >
 event_map (dzn::container< #x:type-name , std::function<void()>>& c)
 {
-  #x:main-provided-port-init
-  #x:main-required-port-init
+  #x:main-provides-port-init
+  #x:main-requires-port-init
 
   return {{"illegal", []{std::clog << "illegal" << std::endl;}}
          ,{"error", []{std::clog << "sut.error -> sut.error" << std::endl; std::exit(0);}}
@@ -36,7 +36,7 @@ main(int argc, char* argv[])
   dzn::container< #x:type-name , std::function<void()>> c(flush);
 
   connect_ports (c);
-  c(event_map (c), { #x:main-required-port-name });
+  c(event_map (c), { #x:main-requires-port-name });
 }
 
 //version: #x:version

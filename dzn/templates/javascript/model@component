@@ -11,8 +11,8 @@ dzn.#x:class-name  = function (locator, meta) {
   #x:reply-member-initializer
   #x:injected-member-initializer
   #x:injected-require-initializer
-  #x:provided-member-initializer
-  #x:required-member-initializer
+  #x:provides-member-initializer
+  #x:requires-member-initializer
   #x:async-member-initializer
 
   #x:methods

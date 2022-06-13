@@ -11,6 +11,6 @@
                 {
                   #x:calling-context-type-name ::report(e);
                 }
-                return #x:valued-required-in-return ;
+                return #x:valued-requires-in-return ;
               }
             };

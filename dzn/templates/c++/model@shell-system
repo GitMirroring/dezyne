@@ -5,17 +5,17 @@
  #x:injected-instance-initializer
  #x:injected-instance-system-initializer
  #x:non-injected-instance-initializer
- #x:provided-port-reference-initializer
- #x:required-port-reference-initializer
+ #x:provides-port-reference-initializer
+ #x:requires-port-reference-initializer
 , dzn_pump()
 {
-  #x:shell-provided-meta-initializer
-  #x:shell-required-meta-initializer
+  #x:shell-provides-meta-initializer
+  #x:shell-requires-meta-initializer
 
-  #x:shell-provided-in
-  #x:shell-required-out
-  #x:shell-provided-out
-  #x:shell-required-in
+  #x:shell-provides-in
+  #x:shell-requires-out
+  #x:shell-provides-out
+  #x:shell-requires-in
 
   #x:shell-non-injected-instance-meta
   #x:system-port-connect

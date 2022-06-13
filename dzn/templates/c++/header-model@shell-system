@@ -16,8 +16,8 @@ struct #x:model-name
   #x:injected-instance-declare
   #x:local_locator
   #x:non-injected-instance-declare
-  #x:provided-port-instance-declare
-  #x:required-port-instance-declare
+  #x:provides-port-instance-declare
+  #x:requires-port-instance-declare
   dzn::pump dzn_pump;
   #x:model-name (const dzn::locator&);
   void check_bindings() const;

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -59,8 +59,8 @@
 ;;;
 ;;; Component
 ;;;
-(define-templates provided-port-instance-declare ast:provides-port*)
-(define-templates required-port-instance-declare ast:requires-port*)
+(define-templates provides-port-instance-declare ast:provides-port*)
+(define-templates requires-port-instance-declare ast:requires-port*)
 (define-templates injected-port-instance-declare  ast:injected-port*)
 (define-templates async-port-instance-declare ast:async-port*)
 
@@ -78,8 +78,8 @@
 ;;; System
 ;;;
 (define-templates non-injected-instance-declare code:non-injected-instances)
-(define-templates provided-port-reference-declare ast:provides-port*)
-(define-templates required-port-reference-declare ast:requires-port*)
+(define-templates provides-port-reference-declare ast:provides-port*)
+(define-templates requires-port-reference-declare ast:requires-port*)
 
-(define-templates provided-port-reference-initializer ast:provides-port*)
-(define-templates required-port-reference-initializer ast:requires-port*)
+(define-templates provides-port-reference-initializer ast:provides-port*)
+(define-templates requires-port-reference-initializer ast:requires-port*)

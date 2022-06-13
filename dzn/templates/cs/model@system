@@ -12,7 +12,7 @@ public class #x:model-name  : dzn.SystemComponent {
     #x:port-initializer
 
     this.dzn_meta.requires = new List<dzn.port.Meta> {
-      #x:required-port-meta
+      #x:requires-port-meta
     };
     this.dzn_meta.children = new List<dzn.Meta> {
       #x:meta-child
