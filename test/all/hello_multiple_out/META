@@ -1,4 +1,2 @@
 ;;; -*- scheme -*-
-((skip ("javascript:execute"))
- (comment "flush not suported")
- (flush #t))
+((flush #t))

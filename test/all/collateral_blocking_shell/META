@@ -1,3 +1,2 @@
 ;;; -*- scheme -*-
-((skip ("c" "javascript" "scheme"))
- (tss #t))
+((tss #t))

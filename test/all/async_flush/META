@@ -1,4 +1,2 @@
 ;;; -*- scheme -*-
-((skip ("table" "c" "javascript"))
- (comment (("c" "async-refine: not supported")))
- (flush #t))
+((flush #t))

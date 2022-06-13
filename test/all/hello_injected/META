@@ -1,4 +1,0 @@
-;;; -*- scheme -*-
-((skip ("c" "javascript:execute"))
- (comment
-   "handwritten trace; executing javascript produces different prefixes on trace."))

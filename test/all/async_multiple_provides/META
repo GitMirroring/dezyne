@@ -1,4 +1,4 @@
 ;;; -*- scheme -*-
-((skip ("javascript" "c" "execute"))
+((skip ("execute"))
  (comment
-   "requires more system context to execute all traces ;async not supported for c and javascript"))
+   "requires more system context to execute all traces"))

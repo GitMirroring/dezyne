@@ -1,5 +1,2 @@
 ;;; -*- scheme -*-
-((skip ("c" "javascript"))
- (comment
-   (("c" "calling-context: not supported")))
- (code-options ("-c int")))
+((code-options ("-c int")))

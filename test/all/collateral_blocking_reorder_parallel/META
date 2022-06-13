@@ -1,6 +1,3 @@
 ;;; -*- scheme -*-
-((skip ("c"
-        "javascript"
-        "scheme"))
- (model #f)
+((model #f)
  (tss #t))

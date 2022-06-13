@@ -1,4 +1,3 @@
 ;;; -*- scheme -*-
-((skip ("traces" "c" "javascript"))
- (comment "async-refine: not supported")
+((skip ("traces"))
  (tss #t))

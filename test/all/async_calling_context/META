@@ -1,4 +1,2 @@
 ;;; -*- scheme -*-
-((skip ("c" "javascript"))
- (comment (("c" "async-refine: not supported")))
- (code-options ("-c calling_context")))
+((code-options ("-c calling_context")))

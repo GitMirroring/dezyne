@@ -1,4 +1,4 @@
 ;;; -*- scheme -*-
-((skip ("c" "javascript" "lts" "execute"))
+((skip ("lts" "execute"))
  (comment
    "livelock model; javascript: async not supported"))

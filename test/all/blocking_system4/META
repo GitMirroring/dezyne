@@ -1,4 +1,2 @@
 ;;; -*- scheme -*-
-((skip ("scheme:execute" "c" "javascript"))
- (comment (("c" "blocking: not supported")))
- (model "Blocked"))
+((model "Blocked"))

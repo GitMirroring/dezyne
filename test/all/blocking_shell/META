@@ -1,4 +1,3 @@
 ;;; -*- scheme -*-
-((skip ("traces" "c" "javascript"))
- (thread-pool #t)
+((thread-pool #t)
  (tss #t))

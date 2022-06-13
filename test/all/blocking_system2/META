@@ -1,5 +1,3 @@
 ;;; -*- scheme -*-
-((skip ("c" "javascript"))
- (comment (("c" "blocking: not supported")))
- (trace-format "trace")
+((trace-format "trace")
  (model "Blocked"))

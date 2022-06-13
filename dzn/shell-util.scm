@@ -71,12 +71,12 @@
 (define* (list-files dir #:optional (predicate identity))
   "Run scandir on DIR using PREDICATE, and prepend DIR to results.  If
 PREDICATE is a string, filter files using string-match using PREDICATE."
-  (let* ((predicate (if (procedure? predicate) predicate identity))
-         (files (list-directory dir predicate))
+  (let* ((predicate? (procedure? predicate))
+         (files (list-directory dir (if predicate? predicate identity)))
          (files (filter (negate file-is-directory?) files))
          (files (sort files string<?)))
-    (if (procedure? predicate) files
-        (filter (string-match predicate files)))))
+    (if predicate? files
+        (filter (cute string-match predicate <>) files))))
 
 (define (mkdir-p dir)
   "Create directory DIR and all its ancestors."
