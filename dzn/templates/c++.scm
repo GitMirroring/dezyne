@@ -107,8 +107,8 @@
 ;;;
 (define-templates shell-non-injected-instance-meta code:non-injected-instances)
 (define-templates shell-provided-in ast:provides-in-triggers)
-(define-templates shell-required-out ast:required-out-triggers)
-(define-templates shell-provided-out ast:provided-out-triggers)
+(define-templates shell-required-out ast:requires-out-triggers)
+(define-templates shell-provided-out ast:provides-out-triggers)
 (define-templates shell-required-in ast:requires-in-triggers)
 (define-templates capture c++:capture-arguments capture-prefix)
 (define-templates capture-list identity)

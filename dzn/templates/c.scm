@@ -70,9 +70,9 @@
 (define-templates trigger-initialization ast:in-triggers)
 
 (define-templates call-in-trigger-prototype ast:provides-in-triggers)
-(define-templates call-out-trigger-prototype ast:required-out-triggers)
+(define-templates call-out-trigger-prototype ast:requires-out-triggers)
 (define-templates call-in-trigger ast:provides-in-triggers)
-(define-templates call-out-trigger ast:required-out-triggers)
+(define-templates call-out-trigger ast:requires-out-triggers)
 (define-templates formal-handler ast:formal*)
 
 

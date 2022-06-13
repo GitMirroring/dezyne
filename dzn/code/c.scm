@@ -154,7 +154,7 @@
 
 ;; closure struct in triggers of all the components
 (define-method (c:get-incoming-triggers-from-model (o <root>))
-  (delete-duplicates (append-map ast:required-out-triggers (filter (is? <component>) (ast:model* o)))
+  (delete-duplicates (append-map ast:requires-out-triggers (filter (is? <component>) (ast:model* o)))
                      (lambda (a b)
                        (and (equal? (c:model-parent-name a) (c:model-parent-name b))
                             (or (c:equal? ((compose ast:type .type .signature .event) a)
@@ -164,7 +164,7 @@
 
 ;; foreign closure struct and helper functions for foreign only
 (define-method (c:get-incoming-triggers-from-model (o <foreign>))
-  (delete-duplicates (ast:required-out-triggers o)
+  (delete-duplicates (ast:requires-out-triggers o)
                      (lambda (a b)
                        (and (equal? (c:model-parent-name a) (c:model-parent-name b))
                             (or (c:equal? ((compose ast:type .type .signature .event) a)

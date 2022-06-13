@@ -93,16 +93,16 @@
            ast:out-triggers
            ast:out-triggers-in-events
            ast:out-triggers-out-events
-           ast:provided-out-triggers
            ast:provides-in-triggers
+           ast:provides-out-triggers
            ast:provides-port
            ast:provides-port*
            ast:pure-funcq
            ast:rescope
            ast:req-events
-           ast:required-out-triggers
            ast:requires+async-port*
            ast:requires-in-triggers
+           ast:requires-out-triggers
            ast:requires-port*
            ast:rescope
            ast:scope
@@ -415,7 +415,7 @@
                    (if (.behavior o) (ast:port* (.behavior o))
                        '()))))
 
-(define-method (ast:required-out-triggers (o <component-model>))
+(define-method (ast:requires-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
@@ -437,7 +437,7 @@
                        '()))))
 
 (define-method (ast:in-triggers (o <component-model>))
-  (append (ast:provides-in-triggers o) (ast:required-out-triggers o) (ast:async-out-triggers o)))
+  (append (ast:provides-in-triggers o) (ast:requires-out-triggers o) (ast:async-out-triggers o)))
 
 (define-method (ast:in-triggers (o <interface>))
   (map (lambda (event) (make <trigger> #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
@@ -491,7 +491,7 @@
 (define-method (ast:inout? (o <variable>))
   #f)
 
-(define-method (ast:provided-out-triggers (o <component-model>))
+(define-method (ast:provides-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
                      (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
@@ -506,7 +506,7 @@
                    (filter ast:requires? (ast:port* o) ))))
 
 (define-method (ast:out-triggers (o <component-model>))
-  (append (ast:provided-out-triggers o) (ast:requires-in-triggers o)))
+  (append (ast:provides-out-triggers o) (ast:requires-in-triggers o)))
 
 (define-method (ast:void-in-triggers (o <component-model>))
   (filter
