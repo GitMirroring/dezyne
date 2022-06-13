@@ -83,7 +83,8 @@ namespace dzn
     }
     void perform(const std::string& str)
     {
-      if (std::count(str.begin(), str.end(), '.') > 1)
+      if (std::count(str.begin(), str.end(), '.') > 1
+          || str == "<defer>")
         return;
 
       auto it = lookup.find(str);
@@ -101,7 +102,8 @@ namespace dzn
       std::string str;
       while(std::getline (std::cin, str))
       {
-        if(str.find("<flush>") != std::string::npos)
+        if(str.find("<flush>") != std::string::npos
+           || str == "<defer>")
           pump.flush();
         perform(str);
       }

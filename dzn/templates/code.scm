@@ -99,6 +99,16 @@
 
 
 ;;;
+;;; Defer
+;;;
+(define-templates capture-member-value code:capture-member)
+(define-templates capture-member code:capture-member capture-grammar)
+(define-templates default-true code:default-true)
+(define-templates defer-condition code:defer-condition)
+(define-templates member-equality code:capture-member and-infix)
+
+
+;;;
 ;;; Formals, parameters, arguments
 ;;;
 (define-templates code-arguments code:arguments argument-grammar)

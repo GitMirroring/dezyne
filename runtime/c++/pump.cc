@@ -34,12 +34,21 @@
 
 namespace dzn
 {
+  static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines);
+  void defer(const locator& l, void* c, std::function<bool()>&& p, std::function<void(size_t)>&& f)
+  {
+    l.get<dzn::pump>().defer(std::move(p),std::move(f));
+  }
+  void prune_deferred(const locator& l)
+  {
+    if (auto p = l.try_get<dzn::pump>())
+      p->prune_deferred();
+  }
   size_t coroutine_id(const locator& l)
   {
     auto ppump = l.try_get<dzn::pump>();
     return !ppump ? 1 : ppump->coroutine_id();
   }
-  static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines);
   void port_block(const locator& l, void* c, void* p)
   {
     l.get<dzn::pump>().block(l.get<dzn::runtime>(), c, p);
@@ -65,7 +74,6 @@ namespace dzn
   static std::list<coroutine>::iterator find_self(std::list<coroutine>& coroutines)
   {
     size_t count = std::count_if(coroutines.begin(), coroutines.end(), [](const coroutine& c){return c.port == nullptr && !c.finished;});
-    //debug << "#runnable coroutines: " << count << std::endl;
     assert(count != 0);
     assert(count != 2);
     assert(count < 3);
@@ -121,7 +129,7 @@ namespace dzn
   {
     debug.rdbuf() && debug << "pump::wait" << std::endl;
     std::unique_lock<std::mutex> lock(mutex);
-    idle.wait(lock, [this]{return queue.empty();});
+    idle.wait(lock, [this]{return queue.empty() && deferred.empty();});
   }
   void pump::pause()
   {
@@ -145,25 +153,21 @@ namespace dzn
   }
   void pump::operator()()
   {
-    //debug << "operator(): " << coroutine::get_id() << std::endl;
-
     try
     {
       worker = [&] {
-        debug << "worker self: " << find_self(coroutines)->id << std::endl;
-
         std::unique_lock<std::mutex> lock(mutex);
         if(queue.empty())
         {
           idle.notify_one();
         }
-        if(timers.empty())
+        if(timers.empty() && deferred.empty())
         {
-          condition.wait(lock, [this]{return queue.size() || !running;});
+          condition.wait(lock, [this]{return queue.size() || deferred.size() || !running;});
         }
         else
         {
-          condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() || !running;});
+          condition.wait_until(lock, timers.begin()->first.t, [this]{return queue.size() || deferred.size() || !running;});
         }
 
         if(queue.size())
@@ -172,6 +176,15 @@ namespace dzn
           queue.pop();
           lock.unlock();
           f();
+          lock.lock();
+        }
+
+        if(queue.empty() && deferred.size() && deferred.front().first())
+        {
+          auto p = deferred.front();
+          deferred.erase(deferred.begin());
+          lock.unlock();
+          p.second(id);
           lock.lock();
         }
 
@@ -431,6 +444,16 @@ namespace dzn
     std::lock_guard<std::mutex> lock(mutex);
     queue.push(std::move(e));
     condition.notify_one();
+  }
+  void pump::defer(std::function<bool()>&& predicate, std::function<void(size_t)>&& e)
+  {
+    deferred.emplace_back(std::move(predicate), std::move(e));
+  }
+  void pump::prune_deferred()
+  {
+    deferred.erase(std::remove_if(deferred.begin(), deferred.end(),
+                                  [](const std::pair<std::function<bool()>,std::function<void(size_t)>>& e){return !e.first();}),
+                   deferred.end());
   }
   void pump::handle(size_t id, size_t ms, const std::function<void()>& e, size_t rank)
   {

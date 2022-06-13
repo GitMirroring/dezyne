@@ -130,7 +130,7 @@ namespace dzn
     }
   }
 
-  void runtime::defer(void* src, void* tgt, const std::function<void()>& event, size_t coroutine_id)
+  void runtime::enqueue(void* src, void* tgt, const std::function<void()>& event, size_t coroutine_id)
   {
     if(!(src && performs_flush(src)) && !handling(tgt))
     {

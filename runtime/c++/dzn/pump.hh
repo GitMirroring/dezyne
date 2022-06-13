@@ -36,6 +36,7 @@
 #include <mutex>
 #include <queue>
 #include <set>
+#include <vector>
 
 namespace dzn
 {
@@ -53,6 +54,7 @@ namespace dzn
     std::list<coroutine> collateral_blocked;
     size_t id;
     std::queue<std::function<void()>> queue;
+    std::vector<std::pair<std::function<bool()>, std::function<void(size_t)>>> deferred;
 
     struct deadline
     {
@@ -100,6 +102,8 @@ namespace dzn
     void release(runtime&,void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
+    void defer(std::function<bool()>&&, std::function<void(size_t)>&&);
+    void prune_deferred();
     void handle(size_t id, size_t ms, const std::function<void()>&, size_t rank = std::numeric_limits<size_t>::max());
     void remove(size_t id);
   private:

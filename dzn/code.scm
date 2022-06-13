@@ -60,10 +60,13 @@
             code:assign-reply
             code:bind-provides
             code:bind-requires
+            code:capture-member
             code:class-member?
             code:component-include
             code:component-port
             code:declarative-or-imperative
+            code:default-true
+            code:defer-condition
             code:enum-definer
             code:enum-field-definer
             code:enum-literal
@@ -356,6 +359,25 @@
               (disjoin (is? <blocking>) (is? <blocking-compound>))
               (parent o <model>))) '()
       o))
+
+(define-method (code:default-true (o <defer>))
+  (let ((p (parent o <component>)))
+    (if (null? (ast:variable* p)) o
+        '())))
+
+(define-method (code:defer-condition (o <defer>))
+  (let ((p (parent o <component>)))
+    (if (pair? (ast:variable* p)) o
+        '())))
+
+(define-method (code:capture-member (o <component>))
+  (ast:variable* o))
+
+(define-method (code:capture-member (o <defer>))
+  (code:capture-member (parent o <component>)))
+
+(define-method (code:capture-member (o <variable>))
+  o)
 
 
 ;;;

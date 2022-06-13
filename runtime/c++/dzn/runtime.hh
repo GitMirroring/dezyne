@@ -94,6 +94,8 @@ namespace dzn
   void port_block(const locator&, void* component, void* port);
   void port_release(const locator&, void*, std::function<void()>&);
   size_t coroutine_id(const locator&);
+  void defer(const locator&, void *, std::function<bool()>&&, std::function<void(size_t)>&&);
+  void prune_deferred(const locator&);
 
   struct runtime
   {
@@ -124,7 +126,7 @@ namespace dzn
       flush(t, coroutine_id(t->dzn_locator));
     }
     void flush(void*, size_t);
-    void defer(void*, void*, const std::function<void()>&, size_t);
+    void enqueue(void*, void*, const std::function<void()>&, size_t);
     template <typename F, typename = typename std::enable_if<std::is_void<typename std::result_of<F()>::type>::value>::type>
     void handle(void* scope, F&& f, size_t coroutine_id)
     {
@@ -185,6 +187,7 @@ namespace dzn
 #if DZN_STATE_TRACING
       os << *c << std::endl;
 #endif
+      prune_deferred(c->dzn_locator);
       c->dzn_rt.handling(c) = 0;
     }
   };
@@ -209,7 +212,7 @@ namespace dzn
 #if DZN_STATE_TRACING
     os << *c << std::endl;
 #endif
-    c->dzn_rt.defer(p.meta.provide.component, c, [&os,c,l,&p,e]{
+    c->dzn_rt.enqueue(p.meta.provide.component, c, [&os,c,l,&p,e]{
 #if !DZN_ASYNC_TRACING
       if (!dynamic_cast<async_base*> (&p))
         trace_qout(os, p.meta, e);
@@ -218,6 +221,18 @@ namespace dzn
 #endif
       l();
     }, coroutine_id(c->dzn_locator));
+    prune_deferred(c->dzn_locator);
+  }
+  void defer(const locator&, void*, std::function<bool()>&&, std::function<void(size_t)>&&);
+  template <typename C>
+  void defer(C* c, std::function<bool()>&& p, std::function<void()>&& f)
+  {
+    defer(c->dzn_locator, static_cast<void*>(c), std::move(p),
+          std::function<void(size_t)>([=](size_t coroutine_id){
+            c->dzn_rt.handling(c) = coroutine_id;
+            f();
+            c->dzn_rt.flush(c);
+          }));
   }
 }
 #endif //DZN_RUNTIME_HH
