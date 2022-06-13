@@ -275,16 +275,16 @@ component_comm = comm({
  , async_pending | async_pending -> async_pending'
  , queue_empty | queue_empty -> queue_empty'
  , queue_not_empty | queue_not_empty -> queue_not_empty'
-#x:component-comm-requires
-#x:component-comm-async
+   #x:component-comm-requires
+   #x:component-comm-async
  }, component_parallel);
 
 component_allow = allow({
    #x:makreel:model-name end
  , #x:allow-tau
-#x:component-allow-provides
-#x:component-allow-requires
-#x:component-allow-async
+   #x:component-allow-provides
+   #x:component-allow-requires
+   #x:component-allow-async
  , async_not_pending'
  , async_pending'
  , declarative_illegal
@@ -305,17 +305,17 @@ component_rename = rename({
  , async_pending' -> async_pending
  , queue_empty' -> queue_empty
  , queue_not_empty' -> queue_not_empty
-#x:component-rename-provides
-#x:component-rename-requires
-#x:component-rename-async
+   #x:component-rename-provides
+   #x:component-rename-requires
+   #x:component-rename-async
  }, component_allow);
 
 component = hide({
    #x:makreel:model-name end
  , #x:allow-tau
-#x:component-hide-provides
-#x:component-hide-requires
-#x:component-hide-async
+   #x:component-hide-provides
+   #x:component-hide-requires
+   #x:component-hide-async
  , async_not_pending
  , async_pending
  , queue_empty
