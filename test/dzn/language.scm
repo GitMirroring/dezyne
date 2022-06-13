@@ -298,7 +298,7 @@
   (test-complete #:file-name "component4.dzn"))
 
 (test-equal "component5"
-  '("bool" "if" "illegal" "p.f()" "r.e()" "void")
+  '("bool" "defer" "if" "illegal" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component5.dzn"))
 
 (test-equal "component5a"
@@ -306,15 +306,15 @@
   (test-complete #:file-name "component5a.dzn"))
 
 (test-equal "component6"
-  '("bool" "if" "p.f()" "r.e()" "void")
+  '("bool" "defer" "if" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6.dzn"))
 
 (test-equal "component6a"
-  '("bool" "if" "p.f()" "r.e()" "void")
+  '("bool" "defer" "if" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6a.dzn" #:line 24))
 
 (test-equal "component6b"
-  '("bool" "if" "p.f()" "r.e()" "void")
+  '("bool" "defer" "if" "p.f()" "r.e()" "void")
   (test-complete #:file-name "component6b.dzn"))
 
 (test-equal "component7"
@@ -334,11 +334,11 @@
   (test-complete #:file-name "component9a.dzn" #:line 18 #:column 9))
 
 (test-equal "component10"
-  '("bool" "i.a0()" "i.a1()" "if" "illegal" "void")
+  '("bool" "defer" "i.a0()" "i.a1()" "if" "illegal" "void")
   (test-complete #:file-name "component10.dzn" #:line 21 #:column 14))
 
 (test-equal "component10a"
-  '("bool" "i.a0()" "i.a1()" "if" "void")
+  '("bool" "defer" "i.a0()" "i.a1()" "if" "void")
   (test-complete #:file-name "component10a.dzn" #:line 21 #:column 17))
 
 (test-equal "component11"
@@ -516,7 +516,7 @@
                  #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "import statemement"
-  '("Bool" "bool" "if" "int" "m" "p.world()" "r.hello()" "s.hello()" "void")
+  '("Bool" "bool" "defer" "if" "int" "m" "p.world()" "r.hello()" "s.hello()" "void")
   (test-complete #:file-name "import.dzn" #:line 27 #:column 18
                  #:file-name->parse-tree file-name->parse-tree))
 
@@ -686,7 +686,7 @@
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 28))
 
 (test-equal "component-incomplete-port on"
-  '("bool" "if" "void" "w.hello()")
+  '("bool" "defer" "if" "void" "w.hello()")
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 26))
 
 (test-equal "component-incomplete-action before port"
@@ -710,7 +710,7 @@
   (test-complete #:file-name "component-incomplete-action.dzn" #:line 28))
 
 (test-equal "component-incomplete-action on"
-  '("bool" "if" "void" "w.hello()" "w_o_w.hello()")
+  '("bool" "defer" "if" "void" "w.hello()" "w_o_w.hello()")
   (test-complete #:file-name "component-incomplete-action.dzn" #:line 26))
 
 (test-equal "variable-incomplete"

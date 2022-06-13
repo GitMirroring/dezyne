@@ -431,7 +431,7 @@
                       (else
                        '())))
          (statements (if illegal? (cons "illegal" statements) statements))
-         (statements (cons "if" statements))
+         (statements (cons* "defer" "if" statements))
          (statements (if else? (cons "else" statements) statements))
          (actions    (complete:action-names context))
          (types      (complete:type-names context))
