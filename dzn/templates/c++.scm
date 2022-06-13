@@ -3,7 +3,7 @@
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -106,10 +106,10 @@
 ;;; Shell
 ;;;
 (define-templates shell-non-injected-instance-meta code:non-injected-instances)
-(define-templates shell-provided-in ast:provided-in-triggers)
+(define-templates shell-provided-in ast:provides-in-triggers)
 (define-templates shell-required-out ast:required-out-triggers)
 (define-templates shell-provided-out ast:provided-out-triggers)
-(define-templates shell-required-in ast:required-in-triggers)
+(define-templates shell-required-in ast:requires-in-triggers)
 (define-templates capture c++:capture-arguments capture-prefix)
 (define-templates capture-list identity)
 (define-templates provided-port-instance-declare ast:provides-port*)

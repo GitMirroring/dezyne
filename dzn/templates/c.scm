@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
-;;; Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -69,9 +69,9 @@
 (define-templates required-port-initialization ast:requires-port*)
 (define-templates trigger-initialization ast:in-triggers)
 
-(define-templates call-in-trigger-prototype ast:provided-in-triggers)
+(define-templates call-in-trigger-prototype ast:provides-in-triggers)
 (define-templates call-out-trigger-prototype ast:required-out-triggers)
-(define-templates call-in-trigger ast:provided-in-triggers)
+(define-templates call-in-trigger ast:provides-in-triggers)
 (define-templates call-out-trigger ast:required-out-triggers)
 (define-templates formal-handler ast:formal*)
 
@@ -160,4 +160,4 @@
 
 ;; foreign stuff
 (define-templates formal-method-prototype ast:in-triggers)
-(define-templates call-in-trigger-foreign ast:provided-in-triggers)
+(define-templates call-in-trigger-foreign ast:provides-in-triggers)

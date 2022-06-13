@@ -1244,7 +1244,7 @@
       `(,(wfc-error o (format #f "system composition of `~a' is recursive" (type-name (.name o)))))
       '()))
 
-(define-method (required-instances (o <instance>) (s <system>))
+(define-method (requires-instances (o <instance>) (s <system>))
   (let* ((instances (ast:instance* s))
          (bindings (ast:binding* s))
          (component (.type o))
@@ -1273,7 +1273,7 @@
 
 (define-method (cyclic-bindings (o <system>))
   (let* ((instances (ast:instance* o))
-         (required-alist (map (cut required-instances <> o) instances)))
+         (required-alist (map (cut requires-instances <> o) instances)))
     (append-map (lambda (i) (if (find (cut ast:eq? i <>) (all-required i o required-alist))
                                 `(,(wfc-error i (format #f "instance `~a' is in a cyclic binding" (.name i))))
                                 '()))

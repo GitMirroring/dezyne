@@ -132,10 +132,10 @@
 (define-templates bind-interface-name (compose ast:full-name .type .port .left) type-infix)
 (define-templates shell-provided-meta-initializer ast:provides-port*)
 (define-templates shell-required-meta-initializer ast:requires-port*)
-(define-templates shell-provided-in ast:provided-in-triggers)
+(define-templates shell-provided-in ast:provides-in-triggers)
 (define-templates shell-required-out ast:required-out-triggers)
 (define-templates shell-provided-out ast:provided-out-triggers)
-(define-templates shell-required-in ast:required-in-triggers)
+(define-templates shell-required-in ast:requires-in-triggers)
 (define-templates return-temporary-assign cs:return-temporary-assign)
 (define-templates return-temporary cs:return-temporary)
 
