@@ -85,7 +85,8 @@ namespace dzn
     }
     public void perform(String str)
     {
-      if (str.Count(c => (c == '.')) > 1)
+      if (str.Count(c => (c == '.')) > 1
+          || str == "<defer>")
         return;
 
       Action e = lookup.ContainsKey(str) ? this.lookup[str] : null;
@@ -105,7 +106,8 @@ namespace dzn
 
       while ((str = System.Console.ReadLine()) != null)
       {
-        if (str.IndexOf("<flush>") != -1)
+        if (str.IndexOf("<flush>") != -1
+           || str == "<defer>")
           pump.flush();
         perform(str);
       }

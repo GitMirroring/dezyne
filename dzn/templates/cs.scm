@@ -104,6 +104,14 @@
 
 
 ;;;
+;;; defer
+;;;
+(define-templates capture-member-variable cs:capture-variable*)
+(define-templates capture-member-value cs:capture-variable*)
+(define-templates member-equality cs:capture-variable* and-infix)
+
+
+;;;
 ;;; Formals, parameters, arguments
 ;;;
 (define-templates direction cs:direction)

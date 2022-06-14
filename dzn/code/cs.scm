@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -40,7 +40,11 @@
   #:use-module (dzn goops)
   #:use-module (dzn misc)
   #:use-module (dzn normalize)
-  #:use-module (dzn templates))
+  #:use-module (dzn templates)
+  #:export (<capture-variable>))
+
+(define-ast <capture-variable> (<variable>)
+  (depth))
 
 (define-templates-macro define-templates cs)
 (include-from-path "dzn/templates/dzn.scm")
@@ -92,6 +96,13 @@
 
 (define-method (cs:direction (o <argument>))
   (direction o))
+
+(define-method (cs:capture-variable* (o <defer>))
+  (let* ((variables (code:capture-member o))
+         (depth (length (filter (is? <defer>) (ast:path o)))))
+    (map (cute make <capture-variable> #:name <> #:type.name <> #:depth depth)
+         (map .name variables)
+         (map .type.name variables))))
 
 (define-method (cs:formals (o <trigger>))
   (formals o))

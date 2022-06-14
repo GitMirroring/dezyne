@@ -42,6 +42,16 @@ namespace dzn
   public class pump : IDisposable
   {
     int id = 0;
+    public static void defer(Locator l, Object c, Func<bool> p, Action<int> f)
+    {
+      l.get<pump>().defer(p, f);
+    }
+    public static void prune_deferred(Locator l)
+    {
+      pump p = l.try_get<dzn.pump>();
+      if (p != null)
+        p.prune_deferred();
+    }
     public static int coroutine_id(dzn.Locator l)
     {
       pump p = l.try_get<dzn.pump>();
@@ -123,6 +133,7 @@ namespace dzn
     public list<coroutine> collateral_blocked = new list<coroutine>();
     public List<Object> skip_block = new List<Object>();
     public Queue<Action> queue = new Queue<Action>();
+    public Queue<Tuple<Func<bool>,Action<int>>> deferred = new Queue<Tuple<Func<bool>,Action<int>>>();
     public bool running;
     public bool paused;
     public List<Object> unblocked = new List<Object>();
@@ -199,8 +210,8 @@ namespace dzn
               if(this.queue.Count == 0) {
                 Monitor.Pulse(this);
               }
-              if(this.timers.Count == 0) {
-                while(this.queue.Count == 0 && running) {
+              if (this.timers.Count == 0 && this.deferred.Count == 0) {
+                while (this.queue.Count == 0 && this.deferred.Count == 0 && running) {
                   Monitor.Wait(this);
                 }
               } else {
@@ -208,7 +219,7 @@ namespace dzn
                 t.MoveNext();
                 bool timedout = false;
                 TimeSpan wait = t.Current.Key.t - DateTime.Now;
-                while(!timedout && this.queue.Count == 0 && running && wait.Ticks > 0) {
+                while(!timedout && this.queue.Count == 0 && this.deferred.Count == 0 && running && wait.Ticks > 0) {
                   timedout = !Monitor.Wait(this, wait);
                 }
               }
@@ -217,6 +228,15 @@ namespace dzn
                 Action f = this.queue.Dequeue();
                 Monitor.Exit(this);
                 f();
+              }
+
+              if (this.queue.Count == 0 && this.deferred.Count != 0 && this.deferred.Peek().Item1())
+              {
+                var t = this.deferred.Peek();
+                this.deferred.Dequeue();
+                if (Monitor.IsEntered(this)) Monitor.Exit(this);
+                t.Item2(id);
+                Monitor.Enter(this);
               }
 
               {
@@ -454,6 +474,14 @@ namespace dzn
           this.queue.Enqueue(e);
           Monitor.Pulse(this);
         });
+    }
+    public void defer(Func<bool> p, Action<int> e)
+    {
+      this.deferred.Enqueue(new Tuple<Func<bool>,Action<int>> (p, e));
+    }
+    public void prune_deferred()
+    {
+      this.deferred = new Queue<Tuple<Func<bool>,Action<int>>>(this.deferred.Where (t => t.Item1()));
     }
     public void handle(int id, int ms, Action e)
     {

@@ -1,0 +1,4 @@
+{
+   #x:capture-member-value
+   dzn.Runtime.defer(this, () => { #x:defer-condition #x:default-true }, () => { #x:expand-statement });
+}

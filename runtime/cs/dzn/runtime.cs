@@ -157,7 +157,7 @@ namespace dzn
             if(!states.ContainsKey(o)) states.Add(o, new Runtime.State());
             return states[o].q;
         }
-        public void defer(Component src, Component tgt, Action f, int coroutine_id)
+        public void enqueue(Component src, Component tgt, Action f, int coroutine_id)
         {
             if (!(src != null && states[src].flushes) && states[tgt].handling == 0)
                 {
@@ -195,6 +195,7 @@ namespace dzn
             traceIn(m, e);
             handle(c, f, dzn.pump.coroutine_id(c.dzn_locator));
             traceOut(m, "return");
+            dzn.pump.prune_deferred(c.dzn_locator);
             states[c].handling = 0;
         }
         public R call_in<R>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
@@ -214,6 +215,7 @@ namespace dzn
             else
                 s = r.GetType().Name + ":" + Enum.GetName(r.GetType(), r);
             traceOut(m, s);
+            dzn.pump.prune_deferred(c.dzn_locator);
             states[c].handling = 0;
             return r;
         }
@@ -222,11 +224,20 @@ namespace dzn
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             if(!(p is async_base))
               traceQin(m, e);
-            defer(m.provides.component, c, () => {
+            enqueue(m.provides.component, c, () => {
               if(!(p is async_base))
                 traceQout(m, e);
               f();
-            }, coroutine_id(c.dzn_locator));
+            }, dzn.pump.coroutine_id(c.dzn_locator));
+            dzn.pump.prune_deferred(c.dzn_locator);
+        }
+        public static void defer(Component c, Func<bool> p, Action f)
+        {
+            pump.defer(c.dzn_locator, c, p, (int coroutine_id) => {
+              c.dzn_runtime.states[c].handling = coroutine_id;
+              f();
+              c.dzn_runtime.flush(c);
+          });
         }
         public static String path(Meta m, String p = "")
         {
