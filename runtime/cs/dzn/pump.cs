@@ -117,12 +117,14 @@ namespace dzn
     public List<Object> skip_block = new List<Object>();
     public Queue<Action> queue = new Queue<Action>();
     public bool running;
+    public bool paused;
     public List<Object> unblocked = new List<Object>();
     public Thread task;
 
     public pump()
     {
       this.running = true;
+      this.paused = false;
       this.task = new Thread(this.run);
       this.task.Start();
     }
@@ -159,6 +161,28 @@ namespace dzn
             Monitor.Wait(this);
           }
         });
+    }
+    public void pause ()
+    {
+      Debug.WriteLine ("pump.pause");
+      context.lck (this, () => {
+        this.paused = true;
+      });
+    }
+    public void resume ()
+    {
+      Debug.WriteLine ("pump.resume");
+      context.lck (this, () => {
+        this.paused = false;
+        Monitor.Pulse (this);
+      });
+    }
+    public void flush ()
+    {
+      Debug.WriteLine ("pump.flush");
+      resume ();
+      System.Threading.Thread.Sleep (100);
+      pause ();
     }
     public void run()
     {
@@ -207,6 +231,7 @@ namespace dzn
         context.lck(this, () => {
             while(this.running || this.queue.Count!=0 || this.collateral_blocked.Count!=0)
             {
+              while (this.paused) Monitor.Wait(this);
               Monitor.Exit(this);
               Debug.Assert(this.coroutines.Count!=0);
               this.coroutines.Last().call(zero);
