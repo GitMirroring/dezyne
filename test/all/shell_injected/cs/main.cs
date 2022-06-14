@@ -1,6 +1,8 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu..org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +31,7 @@ class main {
     c.system.r.inport.e = () => {
       dzn.Runtime.traceIn(c.system.r.dzn_meta, "e");
       c.match("r.e");
-      String tmp = c.match_return();
+      String tmp = c.trail_expect ();
       dzn.Runtime.traceOut(c.system.r.dzn_meta, tmp.Split('.')[1]);
       return ;
     };c.system.p.outport.f = () => {
@@ -56,8 +58,8 @@ class main {
 
     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
     lookup.Add("illegal",()=>{Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    lookup.Add("p.e",()=>{c.system.p.inport.e(); c.match("p.return");});
-    lookup.Add("r.f",()=>{Thread.Sleep(1000); c.system.r.outport.f(); });
+    lookup.Add("p.e",()=>{c.match("p.e");c.system.p.inport.e(); c.match("p.return");});
+    lookup.Add("r.f",()=>{c.match("r.f");Thread.Sleep(1000); c.system.r.outport.f(); });
     lookup.Add("r.<flush>",()=>{System.Console.Error.WriteLine("r.<flush>");
       c.dzn_runtime.flush(c);
     });
@@ -74,7 +76,7 @@ class main {
     bool flush = Array.Exists(args, s => s == "--flush");
     using(dzn.container<shell_injected> c = new dzn.container<shell_injected>((loc,name)=>{return new shell_injected(loc,name);}, flush)) {
       connect_ports (c);
-      c.run(event_map (c), new List<String> {"r"});
+      c.run(event_map (c));
     }
   }
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -22,84 +22,150 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
-class main {
+class main
+{
 
-  static void connect_ports (dzn.container<blocking_shell> c)
+  static bool is_reply (String s)
   {
-    c.system.r.inport.hello_void = () => {
-      dzn.Runtime.traceIn(c.system.r.dzn_meta, "hello_void");
-      c.match("r.hello_void");
-      String tmp = c.match_return();
-      dzn.Runtime.traceOut(c.system.r.dzn_meta, tmp.Split('.')[1]);
-      return ;
-    };
-    c.system.r.inport.hello_int = () => {
-      dzn.Runtime.traceIn(c.system.r.dzn_meta, "hello_int");
-      c.match("r.hello_int");
-      String tmp = c.match_return();
-      System.Console.WriteLine("hiero:" + tmp);
-      dzn.Runtime.traceOut(c.system.r.dzn_meta, tmp.Split('.')[1]);
-      return dzn.container<blocking_shell>.string_to_value<int>(tmp.Split('.')[1]);;
-    };
-    c.system.r.inport.hello_bool = () => {
-      dzn.Runtime.traceIn(c.system.r.dzn_meta, "hello_bool");
-      c.match("r.hello_bool");
-      String tmp = c.match_return();
-      dzn.Runtime.traceOut(c.system.r.dzn_meta, tmp.Split('.')[1]);
-      return dzn.container<blocking_shell>.string_to_value<bool>(tmp.Split('.')[1]);;
-    };
-    c.system.r.inport.hello_enum = ( int i, out int j) => {
-      dzn.Runtime.traceIn(c.system.r.dzn_meta, "hello_enum");
-      c.match("r.hello_enum");
-      String tmp = c.match_return();
-      dzn.Runtime.traceOut(c.system.r.dzn_meta, tmp.Split('.')[1]);
-      j = default(int);
-      return dzn.container<blocking_shell>.string_to_value<global::Enum>(tmp.Split('.')[1]);;
-    };c.system.p.outport.world = ( int i) => {
-      c.match("p.world");
-      c.dzn_runtime.call_out(c, () => {
-        if(c.flush) c.dzn_runtime.queue(c).Enqueue(() => {
-          if(c.dzn_runtime.queue(c).Count == 0) {
-            Console.Error.WriteLine("p.<flush>");
-            c.match("p.<flush>");
-          }
-        });
-      }, c.system.p, "world");
-    };
+    if (s == "") return false;
+    string v = s.Substring (s.IndexOf ('.')+1);
+    int x;
+    return s.IndexOf (':') != -1
+      || v == "return" || v == "true" || v == "false"
+      || int.TryParse (v, out x);
   }
 
-  static Dictionary<String, Action> event_map (dzn.container<blocking_shell> c)
+  public static List<String> read ()
   {
-    c.system.p.dzn_meta.requires.component = c;
-    c.system.p.dzn_meta.requires.meta = c.dzn_meta;
-    c.system.p.dzn_meta.requires.name = "p";
-    c.system.r.dzn_meta.provides.component = c;
-    c.system.r.dzn_meta.provides.meta = c.dzn_meta;
-    c.system.r.dzn_meta.provides.name = "r";
-
-    Dictionary<String, Action> lookup = new Dictionary<String, Action>();
-    lookup.Add("illegal",()=>{Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    lookup.Add("p.hello_void",()=>{c.system.p.inport.hello_void(); c.match("p.return");});
-    lookup.Add("r.world",()=>{Thread.Sleep(1000); int i = default(int); c.system.r.outport.world( i); });
-    lookup.Add("p.hello_int",()=>{c.match("p." + c.to_string<int>(c.system.p.inport.hello_int()));});
-    lookup.Add("p.hello_bool",()=>{c.match("p." + c.to_string<bool>(c.system.p.inport.hello_bool()));});
-    lookup.Add("p.hello_enum",()=>{int i = default(int); int j = default(int); c.match("p." + c.to_string<global::Enum>(c.system.p.inport.hello_enum( i, out j)));});
-    lookup.Add("r.<flush>",()=>{System.Console.Error.WriteLine("r.<flush>"); c.dzn_runtime.flush(c);});
-
-    return lookup;
+    List<String> trace = new List<String> ();
+    String line;
+    while ((line = System.Console.ReadLine ()) != null)
+      trace.Add (line);
+    return trace;
   }
 
-  public static void Main(String[] args)
+  public static void Main (String[] args)
   {
-    if(Array.Exists(args, s => s == "--debug")) {
-      Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
+    if (Array.Exists (args, s => s == "--debug"))
+    {
+      Debug.Listeners.Add (new TextWriterTraceListener (Console.Error));
       Debug.AutoFlush = true;
     }
-    bool flush = Array.Exists(args, s => s == "--flush");
-    using(dzn.container<blocking_shell> c = new dzn.container<blocking_shell>((loc,name)=>{return new blocking_shell(loc,name);}, flush)) {
-      connect_ports (c);
-      c.run(event_map (c), new List<String> {"r"});
+    dzn.Locator locator = new dzn.Locator ();
+    dzn.Runtime runtime = new dzn.Runtime ();
+    using(blocking_shell sut = new blocking_shell (locator.set (runtime)))
+    {
+      sut.dzn_meta.name = "sut";
+      sut.p.dzn_meta.requires.name = "p";
+      sut.r.dzn_meta.provides.name = "r";
+
+      int output = 0;
+
+      Dictionary<String, Action> provides = new Dictionary<String, Action> ();
+      provides.Add ("p.hello_void", ()=>{sut.p.inport.hello_void ();});
+      provides.Add ("p.hello_bool", ()=>{sut.p.inport.hello_bool ();});
+      provides.Add ("p.hello_int", ()=>{sut.p.inport.hello_int ();});
+      provides.Add ("p.hello_enum", ()=>{sut.p.inport.hello_enum (123, out output);});
+
+      Dictionary<String, Action> requires = new Dictionary<String, Action> ();
+      requires.Add ("r.world", ()=>{sut.r.outport.world (0);});
+
+      int index = 0;
+      List<String> trace = read ();
+
+      sut.p.outport.world = (int i) => {
+        Debug.Assert (trace[index] == "p.world");
+        ++index;
+        dzn.Runtime.traceQin (sut.p.dzn_meta, "world");
+      };
+
+      sut.r.inport.hello_void = () => {
+        dzn.context.lck (sut, () => {
+          Debug.Assert (trace[index] == "r.hello_void");
+          ++index;
+          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_void");
+          String tmp = trace[index];
+          ++index;
+          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+        });
+      };
+      sut.r.inport.hello_bool = () => {
+        String tmp = default (String);
+        dzn.context.lck (sut, () => {
+          Debug.Assert (trace[index] == "r.hello_bool");
+          ++index;
+          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_bool");
+          tmp = trace[index];
+          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+          ++index;
+        });
+        return dzn.container<blocking_shell>.string_to_value<bool> (tmp.Split ('.')[1]);
+      };
+      sut.r.inport.hello_int  = () => {
+        String tmp = default (String);
+        dzn.context.lck (sut, () => {
+          Debug.Assert (trace[index] == "r.hello_int");
+          ++index;
+          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_int");
+          tmp = trace[index];
+          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+          ++index;
+        });
+        return dzn.container<blocking_shell>.string_to_value<int> (tmp.Split ('.')[1]);
+      };
+      sut.r.inport.hello_enum = (int i, out int j) => {
+        String tmp = default (String);
+        j = default (int);
+        dzn.context.lck (sut, () => {
+          Debug.Assert (trace[index] == "r.hello_enum");
+          ++index;
+          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_enum");
+          tmp = trace[index];
+          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+          ++index;
+        });
+        return dzn.container<blocking_shell>.string_to_value<global::Enum> (tmp.Split ('.')[1]);
+      };
+
+      Queue<Task> sync = new Queue<Task> ();
+
+      dzn.context.lck (sut, () => {
+        while (index < trace.Count)
+        {
+          Action pit = provides.ContainsKey (trace[index])
+          ? provides[trace[index]] : null;
+          if (pit != null)
+          {
+            Task task = new Task (() => {
+              pit ();
+              dzn.context.lck (sut, () => {++index;});
+            });
+            sync.Enqueue (task);
+            task.Start();
+            ++index;
+            Monitor.Exit (sut);
+          }
+          else
+          {
+            Action rit = requires.ContainsKey (trace[index])
+            ? requires[trace[index]] : null;
+            if (rit != null)
+            {
+              rit ();
+              ++index;
+            }
+            Monitor.Exit (sut);
+          }
+          Monitor.Enter (sut);
+        }
+        while (sync.Count != 0)
+        {
+          sync.Peek ().Wait ();
+          sync.Dequeue ();
+        }
+      });
     }
   }
 }

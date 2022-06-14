@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -49,9 +49,16 @@ class main {
     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
     lookup.Add("illegal",()=>{Console.Error.WriteLine("illegal"); Environment.Exit(0);});
     lookup.Add("p.hello",()=>{
-      string s = default(string); c.system.p.inport.hello(ref dzn_cc,  s); c.match("p.return");});
+      c.match("p.hello");
+      string s = default(string);
+      c.system.p.inport.hello(ref dzn_cc,  s);
+      c.match("p.return");
+      });
     lookup.Add("p.bye",()=>{
-            c.system.p.inport.bye(ref dzn_cc); c.match("p.return");});
+      c.match("p.bye");
+      c.system.p.inport.bye(ref dzn_cc);
+      c.match("p.return");
+      });
     lookup.Add("a.ack",()=>{
       string s = default(string);
       c.system.a.outport.ack(ref dzn_cc,  s); });
@@ -68,8 +75,7 @@ class main {
     bool flush = Array.Exists(args, s => s == "--flush");
     using(dzn.container<async_calling_context> c = new dzn.container<async_calling_context>((loc,name)=>{return new async_calling_context(loc,name);}, flush)) {
       connect_ports (c);
-      c.run(event_map (c), new List<String> {});
+      c.run(event_map (c));
     }
   }
 }
-//version: 2.12.0.rc1.3-4fcb88

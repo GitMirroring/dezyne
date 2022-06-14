@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -48,7 +49,7 @@ class main {
 
     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
     lookup.Add("illegal",()=>{Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    lookup.Add("h.hello",()=>{c.system.h.inport.hello(); c.match("h.return");});
+    lookup.Add("h.hello",()=>{c.match("h.hello");c.system.h.inport.hello(); c.match("h.return");});
 
     return lookup;
   }
@@ -62,7 +63,7 @@ class main {
     bool flush = Array.Exists(args, s => s == "--flush");
     using(dzn.container<async_shell> c = new dzn.container<async_shell>((loc,name)=>{return new async_shell(loc,name);}, flush)) {
       connect_ports (c);
-      c.run(event_map (c), new List<String> {});
+      c.run(event_map (c));
     }
   }
 }

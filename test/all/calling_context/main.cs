@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,55 +22,35 @@
 //
 // Code:
 
-// -*-java-*-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-class main {
-
-  static void connect_ports (dzn.container<calling_context> c)
-  {
-    c.system.w.inport.world = (ref int dzn_cc, int i) => {
-      dzn.Runtime.traceIn(c.system.w.dzn_meta, "world");
-      c.match("w.world");
-      String tmp = c.match_return();
-      dzn.Runtime.traceOut(c.system.w.dzn_meta, tmp.Split('.')[1]);
-      return ;
-    };
-
-  }
-
-  static Dictionary<String, Action> event_map (dzn.container<calling_context> c)
-  {
-    c.system.h.dzn_meta.requires.name = "h";
-    c.system.w.dzn_meta.provides.component = c;
-    c.system.w.dzn_meta.provides.meta = c.dzn_meta;
-    c.system.w.dzn_meta.provides.name = "w";
-
-
-    Dictionary<String, Action> lookup = new Dictionary<String, Action>();
-    lookup.Add("h.hello",()=>{int _0 = 0; int _1 = 1;
-                              c.system.h.inport.hello(ref _0, _1); c.match("h.return");});
-
-    lookup.Add("w.<flush>",()=>{System.Console.Error.WriteLine("w.<flush>");
-      c.system.dzn_runtime.flush(c.system);
-    });
-
-    return lookup;
-  }
-
+class main
+{
   public static void Main(String[] args)
   {
-    if(Array.Exists(args, s => s == "--debug")) {
-      Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
-      Debug.AutoFlush = true;
-    }
+    dzn.Locator locator = new dzn.Locator ();
+    dzn.Runtime runtime = new dzn.Runtime ();
+    calling_context sut = new calling_context (locator.set (runtime));
+    sut.dzn_meta.name = "sut";
+    sut.h.dzn_meta.requires.name = "h";
+    sut.w.dzn_meta.provides.name = "w";
 
-    using(dzn.container<calling_context> c = new dzn.container<calling_context>((loc,name)=>{return new calling_context(loc,name);}, Array.Exists(args, s => s == "--flush"))) {
-      connect_ports (c);
-      c.run(event_map (c), new List<String> {"w"});
-    }
+    sut.w.inport.world = (ref int c, int i) => {
+      dzn.Runtime.traceIn (sut.w.dzn_meta, "world");
+      if (c == 0)
+        c = 123;
+      else
+      {
+        Debug.Assert (c == 123);
+        c = 456;
+      }
+      dzn.Runtime.traceOut (sut.w.dzn_meta, "return");
+    };
+
+    int cc = 0;
+    sut.h.inport.hello (ref cc, 123);
+    Debug.Assert (cc == 456);
   }
 }
-//version: development

@@ -1,8 +1,8 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2017, 2018, 2019, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -36,19 +36,19 @@ namespace dzn
   {
     public bool flush;
     public TSystem system;
-    public bool single_threaded;
     public Dictionary<String, Action> lookup;
     public Queue<String> trail;
     public pump pump;
+    public Component nullptr;
 
     public container(Func<Locator,String,TSystem> new_system, bool flush, Locator locator)
     : base(locator, "<external>", null)
     {
       this.flush = flush;
       this.pump = new pump();
+      this.nullptr = new Component(locator);
       trail = new Queue<String>();
       system = new_system(locator.set(this.pump),"sut");
-      single_threaded = system.dzn_locator.get<pump>() == this.pump;
       system.dzn_runtime.states[this].flushes = flush;
     }
     public container(Func<Locator,String,TSystem> new_system, bool flush)
@@ -72,75 +72,62 @@ namespace dzn
     public void Dispose()
     {
       Debug.WriteLine("container.Dispose");
-      context.lck(this, () => {while (trail.Count != 0) Monitor.Wait(this);});
+      context.lck(this, () => {
+        while (this.trail.Count != 0)
+          Monitor.Wait(this);
+        pump p = system.dzn_locator.get<pump>();
+        if (p != null && p != pump)
+          pump.execute (()=>{p.stop();});
+        pump.wait();
+      });
       Dispose(true);
       GC.SuppressFinalize(this);
+    }
+    public void perform(String str)
+    {
+      if (str.Count(c => (c == '.')) > 1)
+        return;
+
+      Action e = lookup.ContainsKey(str) ? this.lookup[str] : null;
+      if (e != null)
+        this.pump.execute(e);
+
+      context.lck(this, () => {
+        this.trail.Enqueue(str);
+        Monitor.Pulse(this);
+      });
+    }
+    public void run(Dictionary<String, Action> lookup)
+    {
+      this.lookup = lookup;
+      pump.pause();
+      String str;
+
+      while ((str = System.Console.ReadLine()) != null)
+      {
+        if (str.IndexOf("<flush>") != -1)
+          pump.flush();
+        perform(str);
+      }
+      pump.resume();
     }
     public void match(String perform)
     {
       String expect = trail_expect();
-
-      if(lookup.ContainsKey(perform))
-        throw new runtime_error("match synchronization error");
-
       if(expect != perform)
-        throw new runtime_error("unmatched expectation: trail expects: \"" + expect +
-                               "\" behavior expects: \"" + perform + "\"");
+        throw new runtime_error("unmatched expectation: trail expects: \"" + expect
+                               + "\" behavior expects: \"" + perform + "\"");
     }
-    public void run(Dictionary<String, Action> lookup, List<String> required_ports)
-    {
-      this.lookup = lookup;
-      String port = "";
-      String str;
-
-      while((str = System.Console.ReadLine()) != null)
-      {
-        Action e = lookup.ContainsKey(str) ? lookup[str] : null;
-        if(e == null || port != "")
-        {
-          String p = str.Split('.')[0];
-          if(e == null && required_ports.Find(o => {return o == p;}) != null)
-          {
-            if(port == "" || port != p) port = p;
-            else port = "";
-          }
-
-          if(str.Count(c => (c == '.')) > 1) continue;
-
-          context.lck(this, () => {
-              trail.Enqueue(str);
-              Monitor.Pulse(this);
-            });
-        }
-        else
-        {
-          String p = str.Split('.')[0];
-          if(single_threaded || required_ports.Find(o => {return o == p;}) == null)
-            this.pump.execute(e);
-          else
-              e();
-          port = "";
-        }
-      }
-    }
-    public String match_return()
-    {
-      String expect = trail_expect();
-      if(single_threaded) {
-          while(lookup.ContainsKey(expect)) {
-              lookup[expect]();
-              expect = trail_expect();
-          }
-      }
-      return expect;
-    }
-    String trail_expect()
+    public String trail_expect()
     {
       return context.lck(this, () => {
-              while (trail.Count == 0) Monitor.Wait(this, 10000);
-              Monitor.Pulse(this);
-              return trail.Dequeue();
-          });
+        while (this.trail.Count == 0)
+          Monitor.Wait(this, 10000);
+        var expect = this.trail.Dequeue();
+        if (this.trail.Count == 0)
+          Monitor.Pulse(this);
+        return expect;
+      });
     }
     public static R string_to_value<R>(String s) where R: struct, IComparable, IConvertible {
       String v = s.Substring(s.IndexOf(".")+1);

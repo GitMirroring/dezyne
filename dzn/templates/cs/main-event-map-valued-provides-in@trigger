@@ -1,0 +1,8 @@
+lookup.Add("#.port.name .#.event.name ",()=>{
+  c.match("#.port.name .#.event.name");
+  #x:main-arg-define
+  c.match("#.port.name ." + c.to_string<#x:return-type >(c.system.#.port.name .#.event.direction port.#.event.name (#x:main-arg)));
+  Queue<Action> empty = new Queue<Action>();
+  c.dzn_runtime.queue (c.system.#.port.name);
+  c.dzn_runtime.states[c.system.#.port.name].q = empty;
+});
