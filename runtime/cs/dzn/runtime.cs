@@ -129,7 +129,7 @@ namespace dzn
         }
         public void flush(ComponentBase c)
         {
-          flush(c, coroutine_id(c.dzn_locator));
+          flush(c, dzn.pump.coroutine_id(c.dzn_locator));
         }
         public void flush(Object c, int coroutine_id)
         {
@@ -193,7 +193,7 @@ namespace dzn
             }
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
-            handle(c, f, coroutine_id(c.dzn_locator));
+            handle(c, f, dzn.pump.coroutine_id(c.dzn_locator));
             traceOut(m, "return");
             states[c].handling = 0;
         }
@@ -205,7 +205,7 @@ namespace dzn
             }
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
-            R r = valued_helper(c, f, coroutine_id(c.dzn_locator));
+            R r = valued_helper(c, f, dzn.pump.coroutine_id(c.dzn_locator));
             String s;
             if (r.GetType().Equals(typeof(bool)))
                 s = (bool)Convert.ChangeType(r, typeof(bool)) ? "true" : "false";
@@ -227,11 +227,6 @@ namespace dzn
                 traceQout(m, e);
               f();
             }, coroutine_id(c.dzn_locator));
-        }
-        public static int coroutine_id(dzn.Locator l)
-        {
-          dzn.pump p = l.try_get<dzn.pump>();
-          return p == null ? 1 : p.coroutine_id();
         }
         public static String path(Meta m, String p = "")
         {

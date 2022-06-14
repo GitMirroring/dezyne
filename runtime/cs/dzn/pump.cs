@@ -42,18 +42,15 @@ namespace dzn
   public class pump : IDisposable
   {
     int id = 0;
-    public static bool port_blocked_p(Locator loc, Object p)
+    public static int coroutine_id(dzn.Locator l)
     {
-      dzn.pump pump = loc.try_get<pump>();
-      if(pump != null)
-          return pump.blocked_p(p);
-      return false;
+      pump p = l.try_get<dzn.pump>();
+      return p == null ? 1 : p.coroutine_id();
     }
     public static void port_block(Locator l, Object c, Object p)
     {
       l.get<pump>().block(l.get<Runtime>(), c, p);
     }
-
     public static void port_release(Locator l, Object p, Action out_binding)
     {
       if(out_binding!=null) out_binding();
@@ -61,7 +58,17 @@ namespace dzn
       var pump = l.get<pump>();
       pump.release(l.get<dzn.Runtime>(),p);
     }
-
+    public static void collateral_block(Object c, dzn.Locator l)
+    {
+      l.get<dzn.pump>().collateral_block(c, l.get<dzn.Runtime>());
+    }
+    public static bool port_blocked_p(Locator loc, Object p)
+    {
+      dzn.pump pump = loc.try_get<pump>();
+      if(pump != null)
+          return pump.blocked_p(p);
+      return false;
+    }
     public static coroutine find_self(list<coroutine> coroutines)
     {
       var count = coroutines.FindAll(c => c.port == null && !c.finished).Count;
@@ -102,9 +109,9 @@ namespace dzn
       {
         Deadline d = (Deadline)o;
         if(rank == d.rank && t == d.t && id == d.id) return 0;
-        if(rank < d.rank ||
-           rank == d.rank && t < d.t ||
-           rank == d.rank && t == d.t && id < d.id) return -1;
+        if(rank < d.rank
+           || rank == d.rank && t < d.t
+           || rank == d.rank && t == d.t && id < d.id) return -1;
         return 1;
       }
     };
@@ -285,10 +292,6 @@ namespace dzn
         this.switch_context.RemoveAt(0);
         context();
       }
-    }
-    public static void collateral_block(Object c, dzn.Locator l)
-    {
-      l.get<dzn.pump>().collateral_block(c, l.get<dzn.Runtime>());
     }
     public void collateral_block(Object c, Runtime rt)
     {
