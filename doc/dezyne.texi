@@ -2305,8 +2305,7 @@ this already includes @file{foreign.hh}.
 
 A Dezyne Thread-safe Shell guarantees safe use of a Dezyne system
 component in a multi-threaded environment.  It also implements the use
-of the @code{blocking} keyword and the @code{defer}@footnote{To be
-released in 2.16.}.
+of the @code{blocking} and the @code{defer} keywords.
 
 @subsection Shell Syntax
 
@@ -3356,13 +3355,13 @@ name.
 
 @example
 behavior        blocking        bool            component
-else            extern          external        enum
-false           if              illegal         import
-inevitable      injected        inout           interface
-in              namespace       on              optional
-otherwise       out             provides        reply
-requires        return          subint          system
-true
+defer           else            extern          external
+enum            false           if              illegal
+import          inevitable      injected        inout
+interface       in              namespace       on
+optional        otherwise       out             provides
+reply           requires        return          subint
+system          true
 @end example
 
 @node Operators
@@ -4591,7 +4590,7 @@ behavior refers to these ports by name when it relates @code{trigger}s
 and @code{action}s (see also @xref{Ports}).
 
 @node Async Ports
-@subsection Async Ports
+@subsection Async Ports (deprecated)
 
 An async port is a @code{requires} of builtin type @code{dzn.async}
 which is defined in the behavior of a component.
@@ -4608,19 +4607,17 @@ async-parameter
 For example:
 
 @example
-requires dzn.async (int i) defer;
+requires dzn.async (int i) async;
 @end example
 
-The builtin @code{dzn.async} interface can be represented like this:
+The behavior of the builtin @code{dzn.async} port can be represented like this:
 
 @example
 @verbatiminclude examples/dzn.async.dzn
 @end example
 
 @quotation Note
-The use of @code{dzn.async} is discouraged for new programs, it will be
-replaced by @code{defer} in version 2.16, see the ``wip-defer''
-branch.
+The use of @code{dzn.async} is deprecated, please use @code{defer}.
 @end quotation
 
 @node Component Types
@@ -4740,10 +4737,13 @@ statement   ::= declarative-statement | imperative-statement | illegal
 imperative-statement
             ::= action | assign | call | if | reply | return | variable
                   | imperative-compound
+                  | defer-statement
                   | empty-statement
 illegal     ::= "illegal"
 imperative-compound
             ::= "@{" (imperative-statement ";")* "@}"
+defer-statement
+            ::= "defer" imperative-statement
 empty-statement
             ::=
 illegal-triggers
@@ -4782,6 +4782,7 @@ The @code{formal-binding} is a feature for @code{blocking},
 @node Blocking
 @subsubsection @code{blocking}
 
+@cindex blocking
 The @code{blocking} keyword is a declarative statement that can be used
 in a component.
 
@@ -4923,6 +4924,7 @@ synchronizing a @code{starter} with the activities of two
 * Component If::                Imperative decisions in a component.
 * Component Illegal::           Using illegal in a component.
 * Component Reply::             Using reply in a component.
+* Component Defer::             Decoupling execution from the client.
 @end menu
 
 @node Component Action
@@ -5062,6 +5064,61 @@ like so:
   port.reply ();
   port.reply (expression);
 @end example
+
+@node Component Defer
+@subsubsection Component @code{defer}
+
+@cindex defer
+The @code{defer} keyword may be used before imperative statements to
+indicate postponing the execution of the corresponding statement.  The
+execution is postponed at least until after returning back to the caller
+and the surrounding system has reached an overall state where it can
+accept new activating events, i.e., this state is a system wide run to
+completion state.
+
+The primary goal of @code{defer} is to decouple the execution of an
+imperative statement from the caller.  This allows implementing an
+asynchronous interface almost as concisely as implementing it
+synchronously, as demonstrated by the examle below.
+
+@example
+@verbatiminclude examples/defer.dzn
+@end example
+
+Here we can observe the difference between synchronous and asynchronous
+behavior once more.  When the @code{synchronous} boolean equals
+@code{true} the @code{world} action occurs in the context, e.g. between
+the @code{hello} and its @code{return}.  When @code{synchronous} equals
+@code{false} the @code{world} action occurs after the @code{return}.
+This behavior is clearly depicted by the following state diagram.
+
+@image{images/defer,2.5in,,,.png}
+
+Perhaps the @code{idle} state might seem superfluous in the example
+above, however it is not.  Besides resulting in component behavior which
+is not compliant with its interface, removing the @code{idel} state and
+the corresponding guard would allow a client to do multiple consecutive
+@code{h.hello}'s, which results in an overflow of the defer queue.
+
+Besides state playing a role in avoiding @code{defer} queue overflow,
+there is another aspect related to state and the use of @code{defer}.
+In order for the deferred statement to execute, the component must
+remain in the same state as it was at the time of invoking @code{defer}.
+Anything that changes the state of the component after invoking
+@code{defer} but before the deferred statement executes will remove it
+from the queue, and thereby implicitly cancel it.  This is demonstrated
+by the example below.
+
+@example
+@verbatiminclude examples/defer-cancel.dzn
+@end example
+
+Here we see that the @code{cruel} event makes the component @code{idle}
+again and in compliance with the interface this implies that the
+@code{world} event can no longer occur.  The corresponding component
+state diagram is depicted below.
+
+@image{images/defer-cancel,2in,,,.png}
 
 @node Multiple Provides Ports
 @subsection Multiple Provides Ports

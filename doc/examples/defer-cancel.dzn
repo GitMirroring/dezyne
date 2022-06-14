@@ -1,0 +1,23 @@
+interface ihellocruelworld
+{
+  in void hello ();
+  in void cruel ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    on cruel: idle = true;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+component hellocruelworld
+{
+  provides ihellocruelworld h;
+  behavior
+  {
+    bool idle = true;
+    [idle] on h.hello (): {idle = false; defer {idle = true; h.world ();}}
+    on h.cruel (): idle = true;
+  }
+}

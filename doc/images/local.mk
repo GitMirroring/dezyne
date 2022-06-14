@@ -1,6 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -35,6 +36,8 @@ dist_info_images_DATA =					\
  %D%/collateral0.png					\
  %D%/collateral1.png					\
  %D%/collateral_multiple_provides.png			\
+ %D%/defer.png						\
+ %D%/defer-cancel.png					\
  %D%/direct_in.png					\
  %D%/direct_multiple_out1.png				\
  %D%/direct_multiple_out2.png				\

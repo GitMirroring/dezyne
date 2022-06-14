@@ -1,0 +1,35 @@
+interface ihelloworld
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: world;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+component helloworld
+{
+  provides ihelloworld h;
+  behavior
+  {
+    bool idle = true;
+    bool synchronous = true;
+    [idle]
+    {
+      [synchronous] on h.hello ():
+      {
+        synchronous = false;
+        h.world ();
+      }
+      [!synchronous] on h.hello ():
+      {
+        synchronous = true;
+        idle = false;
+        defer {idle = true; h.world ();}
+      }
+    }
+  }
+}
