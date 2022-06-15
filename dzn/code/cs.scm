@@ -260,7 +260,7 @@
 (define (cs:om ast)
   ((compose
     add-reply-port
-    normalize:event
+    normalize:event+illegals
     (remove-otherwise)
     code:add-calling-context)
    ast))

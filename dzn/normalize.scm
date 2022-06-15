@@ -52,6 +52,7 @@
             binding-into-blocking
             not-or-guards
             normalize:event
+            normalize:event+illegals
             normalize:state
             normalize:state+illegals
             purge-data
@@ -373,7 +374,7 @@
     (_
      o)))
 
-(define (triples:->on-guard* triples)
+(define* (triples:->on-guard* triples #:key otherwise?)
   (define ((trigger-equal? trigger) triple)
     (let ((t ((compose car ast:trigger* triple-on) triple)))
       (and (equal? (.port.name t) (.port.name trigger)) (equal? (.event.name t) (.event.name trigger)))))
@@ -395,7 +396,8 @@
                                      triples))
                         ;; code need <otherwise>
                         (otherwise (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>))))
-                        (otherwise? (not (find (compose ast:literal-true? .expression) guards)))
+                        (otherwise? (and otherwise?
+                                         (not (find (compose ast:literal-true? .expression) guards))))
                         (guards (if otherwise? (append guards otherwise)
                                     guards)))
                    ;; FIXME: up code to use <declarative-compound>
@@ -414,13 +416,32 @@
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
               (rewrite-formals-and-locals (parent o <model>))
-              (triples:add-illegals (parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
               ) o)))
     ((? (is? <ast>))
      (tree-map normalize:event o))
+    (_
+     o)))
+
+(define (normalize:event+illegals o)
+  (match o
+    (($ <behavior>)
+     (clone o #:statement
+            ((compose
+              (cute make <compound> #:elements <>)
+              (cut triples:->on-guard* <> #:otherwise? #t)
+              (cute triples:group-expressions <> (list <and> <field-test> <or>))
+              triples:simplify-guard
+              (rewrite-formals-and-locals (parent o <model>))
+              (triples:add-illegals (parent o <model>))
+              triples:split-multiple-on
+              triples:->triples
+              .statement
+              ) o)))
+    ((? (is? <ast>))
+     (tree-map normalize:event+illegals o))
     (_
      o)))
 

@@ -728,7 +728,7 @@
 (define (code:om ast)
   (let ((root ((compose
                 add-reply-port
-                normalize:event
+                normalize:event+illegals
                 (remove-otherwise)
                 (binding-into-blocking)
                 code:add-calling-context)
