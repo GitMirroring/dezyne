@@ -47,7 +47,7 @@
   (make-parameter #f))
 
 (define multi-options
-  '(import))
+  '(import transform))
 
 (define (command)
   (let ((files (option-ref (parse-opts (command-line)) '() '(#f))))

@@ -240,7 +240,8 @@ using CONTENT-ALIST to transform locations."
       (ast:pretty-print ast (current-error-port)))
     ast))
 
-(define* (file->ast file-name #:key debug? (imports '()) parse-tree? skip-wfc?)
+(define* (file->ast file-name #:key debug? (imports '()) parse-tree? skip-wfc?
+                    (transform '()))
   "Parse FILE-NAME and return an ast.  When PARSE-TREE?, return the
 parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
 @var{debug?}, handle exceptions."
@@ -248,15 +249,18 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
   (define (helper)
     (if (equal? file-name "-") (string->ast (read-string)
                                             #:parse-tree? parse-tree?
-                                            #:skip-wfc? skip-wfc?)
+                                            #:skip-wfc? skip-wfc?
+                                            #:transform transform)
         (let* ((content-alist dir (file+import-content-alist file-name #:imports imports))
                (parse-tree-alist (parse-file+import-content-alist content-alist)))
           (if parse-tree? parse-tree-alist
-              (let ((ast (parse-tree-alist->ast parse-tree-alist
-                                                #:content-alist content-alist
-                                                #:working-directory dir)))
-                (if skip-wfc? ast
-                    (ast:wfc ast)))))))
+              (let* ((ast (parse-tree-alist->ast parse-tree-alist
+                                                 #:content-alist content-alist
+                                                 #:working-directory dir))
+                     (ast (if skip-wfc? ast
+                              (ast:wfc ast)))
+                     (transform (map string->transformation transform)))
+                ((apply compose identity (reverse transform)) ast))))))
 
   (catch (if debug? 'none #t)
     helper
@@ -303,17 +307,19 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
     thunk
     (parse:handle-exceptions file-name)))
 
-(define* (string->ast string #:key parse-tree? skip-wfc?)
+(define* (string->ast string #:key parse-tree? skip-wfc? (transform '()))
   "Parse STRING and return an ast.  When PARSE-TREE?, return the parse
 trees.  When SKIP-WFC? skip the well-formedness checks."
   (let* ((content-alist dir (string->file+import-content-alist string))
          (parse-tree-alist (parse-file+import-content-alist content-alist)))
     (if parse-tree? parse-tree-alist
-        (let ((ast (parse-tree-alist->ast parse-tree-alist
-                                          #:content-alist content-alist
-                                          #:working-directory dir)))
-          (if skip-wfc? ast
-              (ast:wfc ast))))))
+        (let* ((ast (parse-tree-alist->ast parse-tree-alist
+                                           #:content-alist content-alist
+                                           #:working-directory dir))
+               (ast (if skip-wfc? ast
+                        (ast:wfc ast)))
+               (transform (map string->transformation transform)))
+          ((apply compose identity (reverse transform)) ast)))))
 
 (define (string->file+import-content-alist string)
   "Split possibly pre-processed STRING at preprocessing markers
@@ -462,3 +468,11 @@ specified in IMPORTS."
                    (map (cute cons <> file-name)
                         (imported-file-names content)))))
   (append-map parse alist))
+
+(define (string->transformation str)
+  (let* ((transform (resolve-interface `(dzn transform)))
+         (transformation (false-if-exception
+                          (module-ref transform (string->symbol str)))))
+    (unless transformation
+      (throw 'error (format #f "no such transformation: ~a" str)))
+    transformation))

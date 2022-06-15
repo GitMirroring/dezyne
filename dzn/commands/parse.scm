@@ -90,14 +90,16 @@ Parse a Dezyne file and produce an AST
          (locations? (command-line:get 'locations))
          (model-name (option-ref options 'model #f))
          (parse-tree? (command-line:get 'parse-tree))
-         (fall-back? (command-line:get 'fall-back)))
+         (fall-back? (command-line:get 'fall-back))
+         (transform (dzn:multi-opt 'transform)))
     (parameterize ((%locations? locations?)
                    (%peg:fall-back? fall-back?))
       (let ((ast (file->ast file-name
                             #:debug? debug?
                             #:imports imports
                             #:parse-tree? parse-tree?
-                            #:skip-wfc? skip-wfc?)))
+                            #:skip-wfc? skip-wfc?
+                            #:transform transform)))
         (if (not model-name) ast
             (call-with-handle-exceptions
              (lambda _ (ast:filter-model ast (ast:get-model ast model-name)))

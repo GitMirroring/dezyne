@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 # Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
@@ -45,6 +45,7 @@ dist_%C%_scm_DATA =				\
  %D%/simulate.scm				\
  %D%/templates.scm				\
  %D%/trace.scm					\
+ %D%/transform.scm				\
  %D%/wfc.scm
 
 EXTRA_DIST += %D%/config.scm.in

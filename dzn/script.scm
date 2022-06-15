@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -40,10 +40,12 @@
 	  '((debug (single-char #\d))
             (help (single-char #\h))
 	    (skip-wfc (single-char #\p))
+	    (transform (single-char #\t) (value #t))
 	    (verbose (single-char #\v))
 	    (version (single-char #\V))))
 	 (options (getopt-long args option-spec
 		               #:stop-at-first-non-option #t))
+	 (verbose? (option-ref options 'verbose #f))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
 	 (usage? (and (not help?) (null? files)))
@@ -65,7 +67,11 @@
     (when (or help? usage?)
       (let* ((port (if usage? (current-error-port) (current-output-port)))
              (commands (list-commands "/dzn/commands/"))
-             (commands (sort (delete-duplicates commands string=?) string<)))
+             (commands (sort (delete-duplicates commands string=?) string<))
+             (transform (resolve-interface `(dzn transform)))
+             (transformations (map (compose symbol->string car)
+                                   (module-map cons transform)))
+             (transformations (sort transformations string<)))
         (format port "\
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
@@ -73,12 +79,17 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -p, --skip-wfc         use plain PEG, skip well-formedness checking
   -v, --verbose          be more verbose, show progress
   -V, --version          display version
+  -t, --transform=TRANS  use transformation TRANS
 
 Commands:~a
 
+Transformations: ~a
+
 Use \"dzn COMMAND --help\" for command-specific information.
 "
-                (string-join commands "\n  " 'prefix)))
+                (string-join commands "\n  " 'prefix)
+                (if verbose? (string-join transformations "\n  " 'prefix)
+                    "Use dzn --help --verbose to list transformations.")))
       (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
     options))
 
