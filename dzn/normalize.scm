@@ -45,18 +45,19 @@
 
   #:use-module (dzn ast)
 
-  #:export (normalize:state
-            normalize:event
-            add-defer-end
-            add-function-return
+  #:export (add-defer-end
             add-explicit-temporaries
+            add-function-return
             add-reply-port
             binding-into-blocking
             not-or-guards
+            normalize:event
+            normalize:state
+            normalize:state+illegals
             purge-data
-            remove-otherwise
             remove-behavior
-            remove-location))
+            remove-location
+            remove-otherwise))
 
 ;; A prefix is a normalized combination of the declarative statements
 ;; that ... the imperative statement.  It is a triple that combines
@@ -341,6 +342,25 @@
               triples:group-expressions
               triples:simplify-guard
               (triples:fix-empty-interface (parent o <model>))
+              triples:split-multiple-on
+              triples:->triples
+              .statement
+              ) o)))
+    ((? (is? <ast>))
+     (tree-map normalize:state o))
+    (_
+     o)))
+
+(define (normalize:state+illegals o)
+  (match o
+    (($ <behavior>)
+     (clone o #:statement
+            ((compose
+              triples:->compound-guard-on
+              (cute triples:group-expressions <> (list <and> <field-test> <or>))
+              triples:group-expressions
+              triples:simplify-guard
+              (triples:fix-empty-interface (parent o <model>))
               (triples:add-illegals (parent o <model>))
               triples:mark-the-end
               (triples:declarative-illegals (parent o <model>))
@@ -349,7 +369,7 @@
               .statement
               ) o)))
     ((? (is? <ast>))
-     (tree-map normalize:state o))
+     (tree-map normalize:state+illegals o))
     (_
      o)))
 

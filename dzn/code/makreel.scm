@@ -960,7 +960,7 @@
   (let ((root ((compose
                 makreel:mark-tail-call
                 add-function-return
-                normalize:state
+                normalize:state+illegals
                 (remove-otherwise)
                 makreel:tick-names
                 add-explicit-temporaries
