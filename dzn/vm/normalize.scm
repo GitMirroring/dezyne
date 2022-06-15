@@ -34,14 +34,20 @@
   #:use-module (dzn vm goops)
   #:use-module (dzn normalize)
   #:use-module (dzn ast)
-  #:export (vm:normalize))
+  #:export (vm:normalize
+            normalize:compounds))
 
-(define-method (normalize-compounds (o <root>))
+(define* (normalize:compounds o #:key wrap-imperative?)
   (define (normalize-compound o)
     (cond ((is-a? o <model>)
            (tree-map normalize-compound o))
           ((is-a? o <behavior>)
            (tree-map normalize-compound o))
+          ((and (is-a? o <imperative>)
+                (is-a? (.parent o) <declarative>)
+                wrap-imperative?)
+           (let ((compound (make <compound> #:elements (list o))))
+             (clone compound #:location (.location o))))
           ((is-a? o <compound>)
            (cond
             ((is-a? (.parent o) <behavior>)
@@ -55,11 +61,29 @@
                     (location (.location o))
                     (compound (make <declarative-compound> #:elements elements
                                     #:location location)))
-               (clone compound #:location (.location o))))
+               (cond ((and (= (length elements) 1)
+                           (not wrap-imperative?))
+                      (car elements))
+                     (else
+                      (clone compound #:location (.location o))))))
             ((null? (.elements o))
              (let ((skip (make <skip>)))
                (clone skip #:location (.location o))))
-            (else o)))
+            (else
+             (let* ((elements (map normalize-compound (.elements o)))
+                    (elements (filter
+                               (conjoin (negate (is? <skip>))
+                                        (disjoin (negate (is? <compound>))
+                                                 (compose pair? .elements)))
+                               elements)))
+               (cond ((null? elements)
+                      (let ((skip (make <skip>)))
+                        (clone skip #:location (.location o))))
+                     ((and (= (length elements) 1)
+                           (not wrap-imperative?))
+                      (car elements))
+                     (else
+                      (clone o #:elements elements)))))))
           ((is-a? o <declarative>)
            (tree-map normalize-compound o))
           ((is-a? o <namespace>)
@@ -162,7 +186,7 @@
 
 (define (vm:normalize root)
   ((compose
-    normalize-compounds
+    (cut normalize:compounds <> #:wrap-imperative? #t)
     add-function-return
     set-blocking-reply-port
     transform-end-of-on
