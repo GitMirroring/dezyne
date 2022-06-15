@@ -1,0 +1,88 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Alexander Darmonski <alexander.darmonski@sioux.eu>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// When simulating with the compliance check disabled (i.e., using
+// --no-compliance), non-compliant provides port traces should still be
+// ignored, and never be zipped, as that could result in `ghost' state
+// changes in the provides port without visible provides port
+// interaction.  To assert this does not happen, use a simulate
+// baseline.
+//
+// Code:
+
+interface ihello
+{
+  in void start ();
+  in void stop ();
+
+  out void started ();
+  out void error ();
+
+  behavior
+  {
+    enum status { OFF, STARTING, ON, ERROR };
+    status state = status.OFF;
+
+    on stop:          state = status.OFF;
+
+    [state.OFF]
+      on start:       state = status.STARTING;
+    [state.STARTING]
+      {
+        on inevitable:  { state = status.ON; started; }
+        on inevitable:  { state = status.ERROR; error; }
+      }
+    [state.ON]
+        on optional:  { state = status.ERROR; error;}
+    [state.ERROR]
+        on stop:        state = status.OFF;
+  }
+}
+
+component hello_no_compliance
+{
+  provides ihello h;
+  requires ihello w;
+  requires ihello w1;
+
+  behavior
+  {
+    enum status { OFF, STARTING, ON, ERROR };
+    status state = status.OFF;
+
+    void stop ()          { w.stop (); w1.stop (); }
+
+    on h.stop ():         { state = status.OFF; stop (); }
+    on w.error (),
+       w1.error ():       { state = status.ERROR; h.error (); stop (); }
+
+    [state.OFF]
+        on h.start ():    { state = status.STARTING; w.start (); }
+    [state.STARTING]
+      {
+        on w.started ():    w1.start ();
+        on w1.started (): { state = status.ON; h.started (); }
+      }
+    [state.ON]
+        on h.stop ():     { state = status.OFF; stop (); }
+    }
+}

@@ -1,0 +1,2 @@
+;;; -*- scheme -*-
+((simulate-flags ("--no-compliance")))
