@@ -346,8 +346,7 @@ Return a list of traces, possibly marked with <compliance-error>."
 
             (let ((port-traces
                    non-compliances
-                   (partition (if (not (%compliance-check?)) identity
-                                  (negate first-non-match)) port-traces)))
+                   (partition (negate first-non-match) port-traces)))
               (cond
                ((and (pair? trace)
                      (.status (car trace))
@@ -390,7 +389,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                      (pair? trace))
                 (%debug "  exit 4\n")
                 (list trace))
-               (else
+               ((%compliance-check?)
                 (%debug "  exit 5\n")
                 (let* ((port-acceptances (map first-non-match non-compliances))
                        (port-acceptances (delete-duplicates port-acceptances port-acceptance-equal?))
@@ -422,7 +421,16 @@ Return a list of traces, possibly marked with <compliance-error>."
                   (if (null? trace) (list (cons pc (car non-compliances)))
                       (let* ((tail (cdr trace))
                              (trace (cons pc tail)))
-                        (list (zip trigger trace (car non-compliances)))))))))))))
+                        (list (zip trigger trace (car non-compliances)))))))
+               (else
+                (%debug "  exit 6\n")
+                (let* ((port-trace (car non-compliances))
+                       (port-state (get-state (last port-trace)))
+                       (port-trace
+                        (rewrite-trace-head
+                         (cut set-state <> port-state)
+                         port-trace)))
+                  (list (zip trigger trace (car non-compliances)))))))))))
 
     (if port (or (and (> (length (ast:provides-port* component)) 1)
                       (is-a? (%sut) <runtime:component>)
@@ -1043,7 +1051,8 @@ status."
                       traces))
          (deadlock-check? (and deadlock-check?
                                (not status)))
-         (refusals-check? (and refusals-check?
+         (refusals-check? (and (%compliance-check?)
+                               refusals-check?
                                (not status)
                                (is-a? (%sut) <runtime:component>))))
     (or (and deadlock-check?
