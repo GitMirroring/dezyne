@@ -734,28 +734,35 @@ to prevent unintended shadowing
     ((? (is? <ast>)) (tree-map (binding-into-blocking locals) o))
     (_ o)))
 
-(define* ((remove-otherwise #:optional (keep-annotated? #t) (statements '())) o)
+(define* (remove-otherwise o #:optional (keep-annotated? #t) (statements '()))
   (define (virgin-otherwise? x) (or (equal? x "otherwise") (eq? x *unspecified*))) ;; FIXME *unspecified*
   (match o
-    ((? ast:imperative?) o)
+    ((? ast:imperative?)
+     o)
     ((and ($ <guard>) (= .expression (and ($ <otherwise>) (= .value value))) (= .statement statement)) (=> failure)
      (if (or (and keep-annotated?
                   (not (virgin-otherwise? value)))
              (null? statements))
          (failure)
          (clone o #:expression (not-or-guards statements)
-                #:statement ((remove-otherwise keep-annotated?) statement))))
+                #:statement (remove-otherwise statement keep-annotated?))))
     ((and ($ <compound>) (= ast:statement* (statements ...)))
-     (clone o #:elements (map (remove-otherwise keep-annotated? statements) statements)))
-    (($ <skip>) o)
-    (($ <functions>) o)
+     (clone o #:elements (map
+                          (cute remove-otherwise <> keep-annotated? statements)
+                          statements)))
+    (($ <skip>)
+     o)
+    (($ <functions>)
+     o)
     ((and (? (is? <component>) (= .behavior behavior)))
-     (clone o #:behavior ((remove-otherwise keep-annotated? statements) behavior)))
+     (clone o #:behavior (remove-otherwise behavior keep-annotated? statements)))
     ((and (? (is? <interface>) (= .behavior behavior)))
-     (clone o #:behavior ((remove-otherwise keep-annotated? statements) behavior)))
+     (clone o #:behavior (remove-otherwise behavior keep-annotated? statements)))
     ((? (is? <component-model>)) o)
-    ((? (is? <ast>)) (tree-map (remove-otherwise keep-annotated? statements) o))
-    (_ o)))
+    ((? (is? <ast>))
+     (tree-map (cute remove-otherwise <> keep-annotated? statements) o))
+    (_
+     o)))
 
 (define (remove-location o)
   "Remove locations from types, events, formals, signatures, ports."

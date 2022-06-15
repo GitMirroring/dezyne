@@ -261,7 +261,7 @@
   ((compose
     add-reply-port
     normalize:event+illegals
-    (remove-otherwise)
+    remove-otherwise
     code:add-calling-context)
    ast))
 

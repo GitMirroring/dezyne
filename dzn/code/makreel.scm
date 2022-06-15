@@ -961,7 +961,7 @@
                 makreel:mark-tail-call
                 add-function-return
                 normalize:state+illegals
-                (remove-otherwise)
+                remove-otherwise
                 makreel:tick-names
                 add-explicit-temporaries
                 add-defer-end

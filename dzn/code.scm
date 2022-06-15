@@ -729,7 +729,7 @@
   (let ((root ((compose
                 add-reply-port
                 normalize:event+illegals
-                (remove-otherwise)
+                remove-otherwise
                 (binding-into-blocking)
                 code:add-calling-context)
                ast)))
