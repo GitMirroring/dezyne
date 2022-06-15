@@ -785,7 +785,7 @@ to prevent unintended shadowing
           (else o)))
 
   (define (temp-name o)
-    (format #f "dzn'tmp~a" (.offset (.location o))))
+    (format #f "dzn_tmp~a" (.offset (.location o))))
 
   (define (add-temporary o)
     (let* ((expression (.expression o))
