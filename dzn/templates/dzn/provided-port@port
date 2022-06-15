@@ -1,1 +1,1 @@
-provides #x:type  #.name;
+provides#x:blocking  #x:type  #.name;

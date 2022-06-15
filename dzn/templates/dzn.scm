@@ -68,6 +68,7 @@
 ;;;
 (define-templates provided-port (lambda (o) (filter ast:provides? (ast:port* o))))
 (define-templates required-port (lambda (o) (filter ast:requires? (ast:port* o))))
+(define-templates blocking dzn:blocking)
 (define-templates external dzn:external)
 (define-templates injected dzn:injected)
 (define-templates async-port ast:port*)

@@ -46,6 +46,7 @@
   #:use-module (dzn templates)
 
   #:export (ast->dzn
+            dzn:blocking
             dzn:data
             dzn:extension
             dzn:expression
@@ -307,6 +308,10 @@
   (if (not (.port.name o)) '()
       (if (null? (ast:argument* o)) (list "")
           (ast:argument* o))))
+
+(define-method (dzn:blocking (o <port>))
+  (if (not (.blocking? o)) ""
+      o))
 
 (define-method (dzn:external (o <port>))
   (if (not (.external? o)) ""
