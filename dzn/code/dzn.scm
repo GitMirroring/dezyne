@@ -92,8 +92,10 @@
 
 (define-method (dzn:model (o <root>))
   (let* ((models (ast:model* o))
-         (models (filter (negate (disjoin (is? <type>) (is? <namespace>) ast:async?
-                                          (conjoin ast:imported? (negate (is? <foreign>)))))
+         (models (filter (negate (disjoin (is? <namespace>)
+                                          (is? <type>)
+                                          ast:async?
+                                          ast:imported?))
                          models))
          (models (ast:topological-model-sort models)))
     models))
