@@ -34,10 +34,11 @@
 ;;;
 ;;; Top
 ;;;
-(define-templates import dzn:import*)
+(define-templates import dzn:import* double-newline-postfix)
 (define-templates open-namespace dzn:open-namespace)
 (define-templates close-namespace dzn:open-namespace)
-(define-templates global dzn:global)
+(define-templates define-type dzn:define-type double-newline-postfix)
+(define-templates global dzn:global double-newline-postfix)
 (define-templates model dzn:model double-newline-infix)
 
 
@@ -51,7 +52,6 @@
 ;;;
 ;;; Interface
 ;;;
-(define-templates define-type dzn:define-type)
 (define-templates direction dzn:direction)
 (define-templates in-event ast:in-event*)
 (define-templates out-event ast:out-event*)
