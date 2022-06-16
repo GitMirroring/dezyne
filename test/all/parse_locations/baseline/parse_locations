@@ -1,4 +1,20 @@
 (("root"
+  (comment
+    ("comment"
+     (location
+       (("location"
+         (file-name
+           .
+           "test/all/parse_locations/parse_locations.dzn")
+         (line . 1)
+         (column . 1)
+         (end-line . 24)
+         (end-column . 1)
+         (offset . 0)
+         (length . 839))))
+     (string
+       .
+       "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n")))
   (location
     (("location"
       (file-name

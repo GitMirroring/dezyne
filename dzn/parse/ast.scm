@@ -84,6 +84,33 @@
                                    location)))
            location))
         (_ #f)))
+    (define* (make-interface name types-and-events #:optional behavior)
+      (let* ((types-and-events (helper types-and-events))
+             (comments types-and-events
+                       (partition (is? <comment-node>) types-and-events))
+             (comment (and=> (as comments <pair>) car))
+             (types events (partition (is? <type-node>) types-and-events))
+             (types? (pair? types))
+             (types (match types
+                      ((type tail ...)
+                       (cons (clone type #:comment comment) tail))
+                      (_
+                       types)))
+             (types (make <types-node> #:elements types))
+             (events (if types? events
+                         (match events
+                           ((event tail ...)
+                            (cons (clone event #:comment comment) tail))
+                           (_
+                            events))))
+             (events (make <events-node> #:elements events))
+             (behavior (and behavior (set-recursive (helper behavior)))))
+        (make <interface-node>
+          #:name (helper name)
+          #:types types
+          #:events events
+          #:behavior behavior)))
+
     (define (helper o)
       (match o
         ("bool" "bool")
@@ -98,8 +125,21 @@
         ((? string?) o)
 
         (((and (? symbol?) type) body ... ('comment comment ...))
-         (let ((ast (helper (cons type body))))
-           ast)) ;; TODO ensure (is-a? ast <ast>) is invariant to prevent comment loss
+         (let* ((ast (helper (cons type body)))
+                (comment (helper `(comment ,@comment))))
+           (cond ((is-a? ast <locationed-node>)
+                  (clone ast #:comment comment))
+                 ((is-a? ast <pair>)
+                  (cons comment ast))
+                 ((is-a? ast <ast-list-node>)
+                  (match (.elements ast)
+                    ((h t ...)
+                     (let ((elements (cons (clone h #:comment comment) t)))
+                       (clone ast #:elements elements)))
+                    (_
+                     ast)))
+                 (else
+                  ast))))
 
         (((and (? symbol?) type) body ... ('location pos end))
          (let ((ast (helper (cons type body))))
@@ -111,14 +151,15 @@
                  (if location (clone ast #:location location)
                      ast)))))
 
-        (((and (or 'root 'interface 'behavior 'component 'types 'events 'event) type) body ... (? string?))
+        (((and (or 'root 'interface 'behavior 'component 'types 'events 'event) type) body ... (and (? string?) string))
          ;; FIXME: junking non-comment-parsed string
          (helper (cons type body)))
 
         (('comment comment)
-         (make <comment-node> #:comment comment))
+         (make <comment-node> #:string comment))
 
-        (('elements elements ...) (helper elements))
+        (('elements elements ...)
+         (helper elements))
 
         (('import name)
          (make <import-node> #:name (helper name)))
@@ -160,28 +201,13 @@
            #:name (helper name)))
 
         (('interface name (and ('types-and-events x ...) types-and-events))
-         (let* ((types-and-events (helper types-and-events))
-                (types events (partition (is? <type-node>) types-and-events)))
-           (make <interface-node>
-             #:name (helper name)
-             #:types (make <types-node> #:elements types)
-             #:events (make <events-node> #:elements events))))
+         (make-interface name types-and-events))
 
         (('interface name (and ('behavior x ...) behavior))
-         (let ((behavior (set-recursive (helper behavior))))
-           (make <interface-node>
-             #:name (helper name)
-             #:behavior behavior)))
+         (make-interface name '() behavior))
 
         (('interface name types-and-events behavior)
-         (let* ((types-and-events (helper types-and-events))
-                (types events (partition (is? <type-node>) types-and-events))
-                (behavior (set-recursive (helper behavior))))
-           (make <interface-node>
-             #:name (helper name)
-             #:types (make <types-node> #:elements types)
-             #:events (make <events-node> #:elements events)
-             #:behavior behavior)))
+         (make-interface name types-and-events behavior))
 
         (('types-and-events types-and-events ...)
          (helper types-and-events))
@@ -388,7 +414,8 @@
            #:variable.name (.name (helper var))
            #:expression (helper expression)))
 
-        (('behavior-statement statement ...)
+
+        (('behavior-statements statement ...)
          (map helper statement))
 
         (('behavior-compound statement)

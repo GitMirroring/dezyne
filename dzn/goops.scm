@@ -74,6 +74,7 @@
            .bindings
            .blocking?
            .column
+           .comment
            .direction
            .elements
            .else
@@ -312,6 +313,7 @@
   (length))
 
 (define-ast <locationed> (<ast>)
+  (comment)
   (location))                           ; <location>
 
 (define-ast <comment> (<locationed>)
