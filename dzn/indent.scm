@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -42,7 +42,7 @@
 
 (define* (indent #:key (width 2) (open #\{) (close #\}) (no-indent "#") (port (current-input-port)))
   (let ((delims (list->string `(#\newline ,open ,close))))
-    (let loop ((level 0) (last #f))
+    (let loop ((level 0) (last 'start))
       (define* (space #:optional (c level))
         (let ((char (if (= width 1) #\tab #\space)))
           (display (make-string c char))))
@@ -70,12 +70,17 @@
           (loop level 'newline))
          ((eq? c #\newline)
           (cond
+           ((and (eq? last 'start)
+                 (string-null? (string-trim string)))
+            (loop level 'start))
            ((string-null? (string-trim string))
             (loop level 'newline))
            (else
             (when (eq? last 'newline)
               (newline))
-            (cond ((and (not (string-null? no-indent))
+            (cond ((eq? last 'start)
+                   #t)
+                  ((and (not (string-null? no-indent))
                         (string-prefix? no-indent string))
                    #t)
                   ((eq? last 'newline)
