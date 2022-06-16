@@ -21,5 +21,5 @@ sut.<q> <- ...
 (state ((h)) ((sut) (*q* r.world r.world r.world)) ((b)) ((r)))
 test/all/blocking_queuefull_reply/blocking_queuefull_reply.dzn:33:20: error: queue-full in component "blocking_queuefull_reply"
 (trail "h.hello" "r.hello" "r.return" "b.hello" "r.world" "r.world" "r.world" "r.world" "<queue-full>")
-(labels "h.hello" "r.world" "b.true" "b.false")
+(labels "h.hello" "r.world" "b.false" "b.true")
 (eligible)

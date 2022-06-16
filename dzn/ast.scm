@@ -116,6 +116,7 @@
            ast:return-types-provides
            ast:return-values
            ast:valued-in-triggers
+           ast:values
            ast:void-in-triggers
            ast:out-triggers-valued-in-events
            ast:out-triggers-void-in-events
@@ -805,20 +806,27 @@
   "Return all event types used in COMPONENT."
   (delete-duplicates (append-map ast:return-types (filter-map ast:type (ast:provides-port* component))) ast:eq?))
 
+(define-method (ast:values (o <type>) void)
+  (cond
+   ((as o <void>)
+    void)
+   ((as o <enum>)
+    (let ((type (make <scope.name> #:ids (ast:full-name o))))
+     (map (cute make <enum-literal> #:type.name type #:field <>)
+          (ast:field* o))))
+   ((as o <bool>)
+    (map (cute make <literal> #:value <>) '("false" "true")))
+   ((as o <int>)
+    (map (cute make <literal> #:value <>)
+         (iota (1+ (- (.to (.range o)) (.from (.range o))))
+               (.from (.range o)))))))
+
+(define-method (ast:values (o <type>))
+  (ast:values o '()))
+
 (define-method (ast:return-values (o <event>) void)
   (let ((type ((compose .type .signature) o)))
-    (cond
-     ((as type <void>)
-      void)
-     ((as type <enum>)
-      (map (cute make <enum-literal> #:type.name (.name type) #:field <>)
-           (ast:field* type)))
-     ((as type <bool>)
-      (map (cute make <literal> #:value <>) '("true" "false")))
-     ((as type <int>)
-      (map (cute make <literal> #:value <>)
-           (iota (1+ (- (.to (.range type)) (.from (.range type))))
-                 (.from (.range type))))))))
+    (ast:values type void)))
 
 (define-method (ast:return-values (o <event>))
   (ast:return-values o '()))
