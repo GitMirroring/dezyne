@@ -105,7 +105,7 @@
            .port
            .ports
            .range
-           .recursive
+           .recursive?
            .right
            .root
            .scope
@@ -541,7 +541,7 @@
 
 (define-ast <function> (<scope> <declaration>)
   (signature #:init-form (make <signature-node>))
-  (recursive)
+  (recursive?)
   (statement))
 
 (define-ast <action> (<imperative> <unary>)

@@ -769,7 +769,7 @@
 
 (define-method (tail-recursion (o <call>))
   (let ((function (parent o <function>)))
-    (if (or (not function) (not (.recursive function))) '()
+    (if (or (not function) (not (.recursive? function))) '()
         (let* ((continuation ((compose car wfc:continuation) o))
                (continuation (if (or (parent o <assign>)
                                      (parent o <reply>)

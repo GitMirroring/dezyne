@@ -653,10 +653,12 @@ to the AST element."
     (tree-map make-namespaces root)))
 
 (define-method (set-recursive (o <behavior>))
+  (define (mark-recursive f)
+    (if (ast:recursive? f) (clone f #:recursive? #t)
+        f))
   (let* ((functions (.functions o))
          (function-list (.elements functions))
-         (function-list (map (lambda (f) (if (ast:recursive? f) (clone f #:recursive #t) f))
-                             function-list))
+         (function-list (map mark-recursive function-list))
          (functions (clone functions #:elements function-list)))
     (clone o #:functions functions)))
 
