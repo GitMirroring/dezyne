@@ -168,12 +168,21 @@
 
 ;;defer
 (define-templates defer-semantics ast:provides-port* newline-union-infix)
-(define-templates defer-qout makreel:behavior->defer-qout newline-union-prefix)
+(define-templates defer (lambda (o) (if (pair? (makreel:behavior->defer-qout o)) o '())))
+(define-templates defer-qout makreel:behavior->defer-qout newline-union-infix)
+(define-templates defer-process-haakjes)
+(define-templates defer-process-argument makreel:locals comma-infix)
 (define-templates defer-proc makreel:behavior->defer-qout)
 (define-templates provides-flush (lambda (o) (if (ast:provides? o) o '())))
 (define-templates requires-reply (lambda (o) (if (ast:requires? o) o '())))
-(define-templates defer-assignment (cute tree-collect (is? <assign>) <>) comma-infix)
 (define-templates defer-skip (lambda (o) (if (parent o <component>) o '())))
+(define-templates defer-locals-sort (cute tree-collect (is? <defer>) <>) pipe-prefix)
+(define-templates defer-local-arguments-sort (lambda (o) (if (pair? (makreel:locals o)) o '())))
+(define-templates deferred-locals-sort makreel:locals)
+(define-templates defer-locals)
+(define-templates defer-local-arguments (lambda (o) (if (pair? (makreel:locals o)) o '())))
+(define-templates deferred-locals makreel:locals)
+(define-templates defer-process-index (compose makreel:process-index .statement))
 
 (define-templates state-vector (lambda (o) (let ((behavior (.behavior o))) (if (pair? (ast:variable* behavior)) behavior '()))))
 (define-templates state-member ast:variable* comma-infix)

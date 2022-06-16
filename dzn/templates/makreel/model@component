@@ -113,35 +113,41 @@ provides = hide ({
 
 %%%%%%%%%%%%%%%%%%% COMPONENT %%%%%%%%%%%%%%%%%%%
 
-sort
-
-State = struct state #x:state-vector;
-
 act
 
 defer_end;
 defer_end';
 defer_q_empty;
 defer_q_empty';
-defer_qin: State;
-defer_qin': State;
-defer_qout;
-defer_qout';
+defer_qin: StateLocals;
+defer_qin': StateLocals;
+defer_qout: Locals;
+defer_qout': Locals;
 defer_skip: State;
 defer_skip': State;
 
 proc
 
-defer_queue (l: List (State))
- = (##l == QueueLength) -> (sum e: State. defer_qin (e) . queue_full . delta)
- + (##l < QueueLength) -> (sum e: State . defer_qin (e) . defer_queue (l = l <| e))
- + (l != []) -> (defer_qout . defer_queue (l = tail (l))
-                +sum s : State . defer_skip(s) . ((head (l) != s) -> defer_queue (l = tail (l)) <> defer_queue (l)))
+defer_queue (l: List (StateLocals))
+ = (##l == QueueLength) -> (sum sl: StateLocals . defer_qin(sl) . queue_full . delta)
+ + (##l < QueueLength) -> (sum sl: StateLocals . defer_qin(sl) . defer_queue(l = l <| sl))
+ + (l != []) -> defer_qout(locals(head(l))) . defer_queue(l = tail(l))
+ + (l != []) -> sum s : State . defer_skip(s) . ((state(head(l)) != s) -> defer_queue(l = tail(l)) <> defer_queue(l))
  + (l == []) -> sum s : State . defer_skip(s) . defer_queue(l)
  + (l == []) -> defer_q_empty . defer_queue(l)
  ;
 
 #x:proc
+
+
+sort
+
+State = struct state_vector #x:state-vector;
+Locals = struct empty #x:defer-locals-sort;
+StateLocals = struct state_locals(state: State, locals: Locals);
+
+
+proc
 
 component_behavior_comm = comm ({
    defer_qin | defer_qin -> defer_qin'
@@ -241,7 +247,7 @@ semantics_provides_skip_blocked(blocking: Set(provides_ports), released: List(pr
  #x:semantics-provides-skip-blocked-requires
  + (delta #x:semantics-requires-action) . semantics_provides_skip_blocked ()
  + (delta #x:semantics-requires-reply) . semantics_provides_skip_blocked ()
- + defer_qout . semantics_provides_skip_blocked ()
+ + sum l : Locals . defer_qout(l) . semantics_provides_skip_blocked ()
  + defer_end . semantics_provides_skip_blocked ()
  ;
 

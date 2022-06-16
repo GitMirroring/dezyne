@@ -1,1 +1,1 @@
-(defer_q_empty . semantics_main + defer_qout . semantics_async() + semantics_provides)
+(defer_q_empty . semantics_main + sum l : Locals . defer_qout(l) . semantics_async() + semantics_provides)

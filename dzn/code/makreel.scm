@@ -623,9 +623,6 @@
 (define-method (makreel:process-index (o <statement>))
   (mcrl2:process-identifier o))
 
-;; (define-method (makreel:process-index (o <defer>))
-;;   (mcrl2:process-identifier (.statement o)))
-
 (define-method (makreel:process-index (o <action>))
   (let ((parent (.parent o)))
     (mcrl2:process-identifier
@@ -643,13 +640,14 @@
 
 (define-method (makreel:locals- (o <ast>))
   (if (is-a? o <behavior>) '()
-      (let* ((parent (.parent o)))
-        (cond ((is-a? parent <compound>)
-               (let ((pre (cdr (member o (reverse (ast:statement* parent)) ast:eq?))))
-                 (append (filter (is? <variable>) pre) (makreel:locals parent))))
+      (let* ((p (.parent o)))
+        (cond ((is-a? p <compound>)
+               (let ((pre (cdr (member o (reverse (ast:statement* p)) ast:eq?))))
+                 (append (filter (is? <variable>) pre) (makreel:locals p))))
+              ((is-a? p <defer>)
+               (makreel:locals- p))
               ((is-a? o <function>) ((compose ast:formal* .signature) o))
-              ((is-a? parent <defer>) '())
-              (else (makreel:locals parent))))))
+              (else (makreel:locals p))))))
 
 (define (makreel:locals o)
   (define (locals root o)

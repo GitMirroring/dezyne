@@ -1,1 +1,1 @@
-#x:process-id  = defer_qin(state#x:construct-state-vector) . #x:continuation; %% defer
+#x:process-id  = defer_qin(state_locals(state_vector#x:construct-state-vector ,#x:defer-locals)) . #x:continuation; %% defer

@@ -817,7 +817,8 @@ required to be non-deterministic."
      enum               <-  identifier
      enum-field         <-  identifier
      direction          <   ('qin' / 'in' / 'out') !identifier
-     defer-qout         <-- 'defer_qout'
+     defer-qout         <-- 'defer_qout' paren-arguments
+     paren-arguments    <   lpar ((!(lpar / rpar) .)* paren-arguments*)* rpar
      queue-direction    <-- 'qout'
      action-literal     <   'action'
      internal-literal   <   'internal' / 'silent'
