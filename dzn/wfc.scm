@@ -88,6 +88,7 @@
 (define-method (wfc (o <foreign>))
   (append
    (re-definition o)
+   (append-map wfc (ast:port* o))
    (let* ((root (parent o <root>))
           (basename (ast:base-name root)))
      (if (not (equal? (string-join (ast:full-name o) "_") basename)) '()
