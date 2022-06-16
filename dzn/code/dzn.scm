@@ -156,7 +156,7 @@
   ((compose dzn:type .type .signature) o))
 
 (define-method (dzn:type (o <function>))
-  ((compose dzn:type .type .signature) o))
+  (dzn:type (.signature o)))
 
 (define-method (dzn:formal-type (o <formal>)) o)
 (define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
