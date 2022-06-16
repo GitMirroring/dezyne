@@ -366,8 +366,7 @@
 (define-ast <types> (<ast-list>))
 (define-ast <variables> (<ast-list>))
 
-(define-ast <import> (<named>)
-  (root))
+(define-ast <import> (<named>))
 
 (define-ast <model> (<scope> <declaration>))
 
