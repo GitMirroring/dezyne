@@ -53,8 +53,8 @@
 ;;;
 (define-templates define-type (lambda (o) (filter (disjoin (is? <enum>) (is? <int>)) (ast:type* o))))
 (define-templates direction dzn:direction)
-(define-templates in-event (lambda (o) (filter ast:in? (ast:event* o))))
-(define-templates out-event (lambda (o) (filter ast:out? (ast:event* o))))
+(define-templates in-event ast:in-event*)
+(define-templates out-event ast:out-event*)
 (define-templates signature dzn:signature space-infix)
 (define-templates formal-type dzn:formal-type comma-infix)
 (define-templates formal ast:formal* formal-grammar)
@@ -66,8 +66,8 @@
 ;;;
 ;;; Component
 ;;;
-(define-templates provided-port (lambda (o) (filter ast:provides? (ast:port* o))))
-(define-templates required-port (lambda (o) (filter ast:requires? (ast:port* o))))
+(define-templates provided-port ast:provides-port*)
+(define-templates required-port ast:requires-port*)
 (define-templates blocking dzn:blocking)
 (define-templates external dzn:external)
 (define-templates injected dzn:injected)
@@ -126,7 +126,7 @@
 ;;;
 (define-templates system)
 (define-templates declare-instance ast:instance*)
-(define-templates instance (lambda (o) (if (not (.instance.name o)) "" (list (.instance o)))) dot-suffix)
+(define-templates instance dzn:instance dot-suffix)
 (define-templates binding ast:binding*)
 
 

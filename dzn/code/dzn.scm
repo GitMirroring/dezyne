@@ -61,6 +61,7 @@
             dzn:formal-type
             dzn:global
             dzn:injected
+            dzn:instance
             dzn:model
             dzn:model-name
             dzn:model-full-name
@@ -102,14 +103,27 @@
 (define-method (dzn:model (o <ast>))
   o)
 
+
+;;;
+;;; Accessors
+;;;
 (define-method (dzn:data (o <data>))
   (if (.value o) (.value o)
       '()))
+
+(define-method (dzn:instance (o <end-point>))
+  (if (not (.instance.name o)) '()
+      (list (.instance o))))
 
 
 ;;;
 ;;; Names
 ;;;
+(define-method (dzn:define-type (o <scope>))
+  (filter (conjoin (negate ast:imported?)
+                   (negate (is? <bool>))
+                   (negate (is? <void>)))
+          (ast:type* o)))
 
 (define-method (dzn:model-name (o <ast>))
   (ast:name (parent o <model>)))
