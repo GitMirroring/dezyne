@@ -51,7 +51,7 @@
 ;;;
 ;;; Interface
 ;;;
-(define-templates define-type (lambda (o) (filter (disjoin (is? <enum>) (is? <int>)) (ast:type* o))))
+(define-templates define-type dzn:define-type)
 (define-templates direction dzn:direction)
 (define-templates in-event ast:in-event*)
 (define-templates out-event ast:out-event*)

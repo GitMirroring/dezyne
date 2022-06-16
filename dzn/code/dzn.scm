@@ -48,6 +48,7 @@
   #:export (ast->dzn
             dzn:blocking
             dzn:data
+            dzn:define-type
             dzn:extension
             dzn:expression
             dzn:indent
@@ -254,6 +255,10 @@
 (define-method (dzn:expand-statement (o <blocking>))
   (.statement o))
 
+(define-method (dzn:expression (o <extern>))
+  (if (.value o) (.value o)
+      '()))
+
 (define-method (dzn:expand-statement (o <on>))
   (.statement o))
 
@@ -309,10 +314,6 @@
         o)))
 (define-method (dzn:=expression (o <variable>))
   ((compose dzn:=expression .expression) o))
-
-(define-method (dzn:=expression (o <extern>))
-  (if (.value o) (.value o)
-      '()))
 
 
 ;;;

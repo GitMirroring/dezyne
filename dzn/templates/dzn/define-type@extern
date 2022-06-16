@@ -1,1 +1,1 @@
-extern #ast:name #x:=expression;
+extern #ast:name  #x:expression;
