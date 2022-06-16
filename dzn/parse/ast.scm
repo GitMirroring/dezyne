@@ -571,13 +571,7 @@
     (helper o))
 
   (let* ((root-node (file-helper o file-name 0))
-         (root (make <root> #:node root-node))
-         (imports (tree-collect-filter (disjoin (is? <import>) (is? <root>) (is? <ast-list>))
-                                       (is? <import>) root))
-         (root (clone root
-                      #:elements (filter (negate (is? <import>))
-                                         (append (.elements root)
-                                                 (append-map (compose .elements .root) imports))))))
+         (root (make <root> #:node root-node)))
     (tree-map make-namespaces root)))
 
 (define-method (set-recursive (o <behavior>))
