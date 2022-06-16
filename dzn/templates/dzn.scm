@@ -34,7 +34,7 @@
 ;;;
 ;;; Top
 ;;;
-(define-templates import ast:import*)
+(define-templates import dzn:import*)
 (define-templates open-namespace dzn:open-namespace)
 (define-templates close-namespace dzn:open-namespace)
 (define-templates global dzn:global)

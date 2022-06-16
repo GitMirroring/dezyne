@@ -51,7 +51,6 @@
             dzn:define-type
             dzn:extension
             dzn:expression
-            dzn:indent
             dzn:expand-statement
             dzn:expression-expand
             dzn:action-arguments
@@ -61,6 +60,7 @@
             dzn:external
             dzn:formal-type
             dzn:global
+            dzn:import*
             dzn:injected
             dzn:instance
             dzn:model
@@ -111,6 +111,9 @@
 (define-method (dzn:data (o <data>))
   (if (.value o) (.value o)
       '()))
+
+(define-method (dzn:import* (o <root>))
+  (filter (negate ast:imported?) (ast:import* o)))
 
 (define-method (dzn:instance (o <end-point>))
   (if (not (.instance.name o)) '()
