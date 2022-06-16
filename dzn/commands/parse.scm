@@ -36,6 +36,7 @@
 
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
+  #:use-module (dzn display)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse tree)
@@ -132,6 +133,7 @@ Parse a Dezyne file and produce an AST
          (files (option-ref options '() '()))
          (file-name (and (pair? files) (car files)))
          (list-models? (command-line:get 'list-models))
+         (debug? (dzn:command-line:get 'debug))
          (preprocess? (option-ref options 'preprocess #f)))
     (cond (preprocess?
            (display (preprocess options file-name)))
@@ -141,10 +143,12 @@ Parse a Dezyne file and produce an AST
              (if (option-ref options 'output #f)
                  (let* ((file-name (option-ref options 'output "-"))
                         (locations? (command-line:get 'locations))
-                        (sexp (parameterize ((%locations? locations?))
-                                (ast:serialize ast)))
+                        (sexp (and (not debug?)
+                                   (parameterize ((%locations? locations?))
+                                     (ast:serialize ast))))
                         (output (with-output-to-string
-                                      (cute pretty-print sexp))))
+                                  (if debug? (cute ast:pretty-print ast)
+                                      (cute pretty-print sexp)))))
                    (if (equal? file-name "-") (display output)
                        (with-output-to-file file-name (cut display output))))
                  (when (dzn:command-line:get 'verbose)
