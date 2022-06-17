@@ -431,6 +431,7 @@ PARSER_TESTS =					\
  %D%/parse_duplicate_import_prefix		\
  %D%/parse_import_both				\
  %D%/parse_import_end				\
+ %D%/parse_import_order				\
  %D%/parse_import_path				\
  %D%/parse_import_self				\
  %D%/parse_import_twice				\
