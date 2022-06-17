@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,26 +20,43 @@
 //
 // Commentary:
 //
+// If early function return does not work correctly, the component will
+// non-compliant behavior.
+//
 // Code:
 
-interface function_early_return
+interface ihello
 {
-  in void hello();
+  in void hello ();
+  out void world ();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: {idle=false; world;}
+    [!idle] on hello: idle=true;
+  }
+}
+
+component function_early_return
+{
+  provides ihello h;
 
   behavior
   {
     bool b = false;
-    on hello: g();
-    void f()
+    on h.hello (): g ();
+    void f ()
     {
       if (b) return;
       if (b) bool b = true;
+      h.world ();
       bool r = true;
     }
-    void g()
+    void g ()
     {
       bool x = false;
-      f();
+      f ();
       b = !b;
       x = !x;
     }
