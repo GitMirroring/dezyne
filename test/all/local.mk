@@ -251,6 +251,7 @@ REGRESSION_TESTS =				\
  %D%/defer_double				\
  %D%/defer_loop					\
  %D%/defer_if					\
+ %D%/defer_nested				\
  %D%/defer_queuefull				\
  %D%/defer_shadow				\
  %D%/determinism_async				\
