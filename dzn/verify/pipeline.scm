@@ -354,7 +354,7 @@ for MODEL, using ROOT."
     (define (imports->string)
       (let* ((options ((@@ (dzn commands verify) parse-opts)
                        (command:command-line)))
-             (imports (multi-opt options 'import)))
+             (imports (command-line:get 'import)))
         (if (null? imports) ""
             (string-join imports " -I " 'prefix))))
     (let ((file-name (ast:source-file root))

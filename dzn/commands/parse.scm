@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -85,8 +85,7 @@ Parse a Dezyne file and produce an AST
 (define (parse options file-name)
   (let* ((debug? (dzn:command-line:get 'debug #f))
          (skip-wfc? (dzn:command-line:get 'skip-wfc #f))
-         (import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
-         (imports (filter-map import-opt options))
+         (imports (command-line:get 'import))
          (locations? (command-line:get 'locations))
          (model-name (option-ref options 'model #f))
          (parse-tree? (command-line:get 'parse-tree))
@@ -105,8 +104,7 @@ Parse a Dezyne file and produce an AST
              #:file-name file-name))))))
 
 (define (preprocess options file-name)
-  (let* ((import-opt (lambda (o) (and (eq? (car o) 'import) (cdr o))))
-         (imports (filter-map import-opt options))
+  (let* ((imports (command-line:get 'import))
          (debug? (dzn:command-line:get 'debug #f)))
     (file->stream file-name #:debug? debug? #:imports imports)))
 

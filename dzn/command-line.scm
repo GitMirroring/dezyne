@@ -62,10 +62,9 @@
               (parse-opts (let ((module (resolve-module `(dzn commands ,command))))
                             (module-ref module 'parse-opts)))
               (options (if command (parse-opts files)
-                           (parse-opts (command-line))))
-              (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o))))))
+                           (parse-opts (command-line)))))
          (if (not (member option multi-options)) (option-ref options option default)
-             (filter-map (multi-opt option) options)))))
+             (multi-opt options option)))))
 
 (define* (command-line:get-number option #:optional (default 0))
   (let* ((value (command-line:get option (number->string default)))
@@ -87,7 +86,7 @@
 
 (define (multi-opt options name)
   (let ((opt? (lambda (o) (and (eq? (car o) name) (cdr o)))))
-    (filter-map opt? options)))
+    (filter-map opt? (reverse options))))
 
 (define (dzn:multi-opt name)
   (and (> (length (command-line)) 1)

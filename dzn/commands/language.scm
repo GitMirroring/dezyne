@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -98,7 +98,7 @@ Dezyne language tool for completion and lookup information
          (debugity (dzn:debugity))
          (debug? (and (not (zero? debugity)) debugity))
          (file-name (and+pred=> (option-ref options '() #f) last pair?))
-         (imports (multi-opt options 'import))
+         (imports (command-line:get 'import))
          (imports (delete-duplicates (cons* (dirname file-name) "." imports)))
          (help? (option-ref options 'help #f))
          (lookup? (option-ref options 'lookup #f))
