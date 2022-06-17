@@ -36,16 +36,13 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.15.1
+** Release 2.16
   - Pass regression test
     + Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
       + test/all/compliance_blocking_double_release
       + test/all/illegal_external_nonsynchronous
       + test/all/livelock_synchronous_illegal
       + test/all/queuefull_external_sync
-
-** Release 2.16
-  - Pass regression test
     + data_full: split into smaller tests, preferrably trace-based,
       and without handwritten main's
     + Bring multiple events on a single modeling event properly under test
@@ -55,7 +52,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - dezyne.org
     + blog post about free software?
   - register #dezyne
-  - async -> defer; deprecate async
+  - Finish and merge wip-defer
+  - Finish and merge wip-transform
+  - Choose different scenarios in simulator
+    + interface on optional a b; on optional a b c;
+    + component with such a provides port
   - remove interleaving (ladders) of requires in/reply and other events in makreel
     + enable lts for queuefull_component0, queuefull_component1,
       queuefull_external_sync, blocking_queuefull,
@@ -150,16 +151,18 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Simplify grammar through syntax
     + reconsider '.' as infix operator for scoping, field test (Pauls
       sugar), port event separator, ...
+    + replace [<port>.]reply by:
+      + return (allowing early return from on), and
+      + <port>.release ()
     + Disallow UK English spelling of 'behaviour'
   - Documentation
     + Finish and merge wip-doc-snippets branch.
       - Merge snippets/tests with doc/dezyne.texi.
       - Remove error messages.
       - Generate images.
-  - Nsis-based installer for Windows
   - Language support
     + scheme: review blocking, => blocking_system4
-    + javascript: blocking, async
+    + javascript: blocking
 ** After Release 3.0
   - Documentation
     + Integration with IDEs.
