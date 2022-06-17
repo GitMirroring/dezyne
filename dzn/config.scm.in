@@ -32,6 +32,7 @@
             %datadir
             %datarootdir
             %dzn
+            %feature-alist
             %guilemoduledir
             %guileobjectdir
             %default-languages
@@ -114,3 +115,12 @@
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 ")
+
+(define %feature-alist
+  '(("async" . ("c++" "cs" "scheme"))
+    ("block" . ("c++" "cs"))
+    ("calling_context" . ("c++" "cs" "scheme"))
+    ("collateral" . ("c++" "cs"))
+    ("flush" . ("c++" "cs" "scheme"))
+    ("inject" . ("c++" "cs" "javacsript" "scheme"))
+    ("space" . ("c" "c++" "cs" "javascript" "scheme"))))

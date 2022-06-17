@@ -32,28 +32,16 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
   #:use-module (ice-9 regex)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn trace)
-  #:export (observe
-            run-baseline
-            run-build
-            run-code
-            run-execute
-            run-test
-            run-traces
-            run-verify))
+  #:export (run-baseline
+            run-test))
 
-
-;;; Shell-util
-
-(define (list-files dir pred)
-  (filter
-   (negate (compose (cut string-index <> #\/)
-                    (cut string-drop <> (1+ (string-length dir)))))
-   (find-files dir pred)))
-
+;;;
 ;;; Invocation helpers
+;;;
 
 ;; XXX: This is probably the slowest way possible to do this.  I hope
 ;; it is correct, at least.
@@ -135,6 +123,10 @@ output, and standard error as three values."
               (cleanup)
               (apply throw (call-with-input-string ex read))))))))
 
+
+;;;
+;;; META
+;;;
 (define (get-meta file-name)
   (let ((META (string-append file-name "/META")))
     (and (file-exists? META)
@@ -203,10 +195,46 @@ output, and standard error as three values."
              (and=> (assq-ref alist 'simulate-flags) car))
         '())))
 
+
+;;;
+;;; Utility.
+;;;
 (define (error-model? file-name)
   (or (directory-exists? (string-append file-name "/baseline/verify"))
       ;; no verify baseline for system error models
       (directory-exists? (string-append file-name "/baseline/simulate"))))
+
+(define (features file-name)
+  (define (feature? feature)
+    (and (string-contains file-name feature) feature))
+  (filter identity
+          (list
+           (and (not (feature? "asyncchronous")) (feature? "async"))
+           (feature? "block")
+           (and (or (feature? "_race") ;: XXX rename tests => collateral?
+                    (feature? "collateral"))
+                "collateral")
+           (feature? "calling_context")
+           (and (or (feature? "multiple_out")
+                    (feature? "double_inevitable")
+                    (feature? "flush"))
+                "flush")
+           (feature? "inject")
+           (feature? "space"))))
+
+(define (features-missing file-name language)
+  (fold (lambda (feature missing)
+          (if (member language (assoc-ref %feature-alist feature)) '()
+              (cons feature missing)))
+        '()
+        (features file-name)))
+
+(define (feature-skip? file-name language)
+  (let ((missing (features-missing file-name language)))
+    (if (null? missing) #f
+        (format #t "~a: skip, no support for ~a.\n"
+                language
+                (string-join missing ", " 'infix)))))
 
 (define (filter-<flush> string)
   (let* ((lines (string-split string #\newline))
@@ -218,31 +246,10 @@ output, and standard error as three values."
          (events (filter (negate (cut string-prefix? "(state " <>)) lines)))
     (string-join events "\n")))
 
-(define* (run-baseline file-name command #:key
-                       (baseline (string-append file-name "/baseline"))
-                       (input "")
-                       (stdout-filter identity))
-  (receive (status stdout stderr)
-      (observe command input)
-    (or (and (zero? status)
-             (not (directory-exists? baseline)))
-        (let ((out-file (string-append file-name ".out"))
-              (err-file (string-append file-name ".err")))
-          (with-output-to-file out-file
-            (cut display (stdout-filter stdout)))
-          (with-output-to-file err-file
-            (cut display stderr))
-          (let* ((base-name (basename file-name))
-                 (baseline-out (string-append baseline "/" base-name))
-                 (baseline-err (string-append baseline-out ".stderr")))
-            (and (or (and (string-null? stdout)
-                          (not (file-exists? baseline-out)))
-                     (zero? (system* "diff" "-uwB" baseline-out out-file)))
-                 (or (and (string-null? stderr)
-                          (not (file-exists? baseline-err)))
-                     (zero? (system* "diff" "-uwB"
-                                     baseline-err err-file)))))))))
-
+
+;;;
+;;; Stage runners.
+;;;
 (define (run-verify file-name)
   (format #t "** stage: verify\n")
   (let* ((base-name (basename file-name))
@@ -286,6 +293,7 @@ output, and standard error as three values."
               (model base-name))
          (or (error-model? file-name)
              (skip? file-name "code" language (string-append language ":code"))
+             (feature-skip? file-name language)
              (and
               (receive (status stdout stderr)
                   (observe
@@ -363,6 +371,7 @@ output, and standard error as three values."
                     ,(string-append "OUT=" out-lang)
                     ,@(if thread-pool? '("THREAD_POOL_O=thread_pool.o") '()))))
     (or (error-model? file-name)
+        (feature-skip? file-name language)
         (skip? file-name
                language
                "code" (string-append language ":code")
@@ -380,6 +389,7 @@ output, and standard error as three values."
          (out-lang (string-append file-name "/out/" language))
          (test (string-append out-lang "/test")))
     (or (error-model? file-name)
+        (feature-skip? file-name language)
         (skip? file-name
                language
                "code" (string-append language ":code")
@@ -550,6 +560,35 @@ output, and standard error as three values."
                                                    (string=? stdout-status "result: true"))
                                               EXIT_SUCCESS EXIT_FAILURE)))
                              (zero? status))))))))))))
+
+
+;;;
+;;; Entry points.
+;;;
+(define* (run-baseline file-name command #:key
+                       (baseline (string-append file-name "/baseline"))
+                       (input "")
+                       (stdout-filter identity))
+  (receive (status stdout stderr)
+      (observe command input)
+    (or (and (zero? status)
+             (not (directory-exists? baseline)))
+        (let ((out-file (string-append file-name ".out"))
+              (err-file (string-append file-name ".err")))
+          (with-output-to-file out-file
+            (cut display (stdout-filter stdout)))
+          (with-output-to-file err-file
+            (cut display stderr))
+          (let* ((base-name (basename file-name))
+                 (baseline-out (string-append baseline "/" base-name))
+                 (baseline-err (string-append baseline-out ".stderr")))
+            (and (or (and (string-null? stdout)
+                          (not (file-exists? baseline-out)))
+                     (zero? (system* "diff" "-uwB" baseline-out out-file)))
+                 (or (and (string-null? stderr)
+                          (not (file-exists? baseline-err)))
+                     (zero? (system* "diff" "-uwB"
+                                     baseline-err err-file)))))))))
 
 (define (run-test file-name languages)
   (setvbuf (current-output-port) 'line)

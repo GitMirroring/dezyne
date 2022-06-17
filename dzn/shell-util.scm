@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -26,13 +26,14 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
-  #:export (directory-exists?
-            list-directory
-            mkdir-p
+  #:export (copy-recursively
             delete-file-recursively
-            copy-recursively
+            directory-exists?
+            file-is-directory?
             find-files
             list-directory
+            list-files
+            mkdir-p
             mingw?
             set-file-time
             substitute
@@ -54,6 +55,11 @@
          (eq? (stat:type s) 'directory)
          dir)))
 
+(define (file-is-directory? file)
+  (match (stat file #f)
+    (#f #f)                                       ;maybe a dangling symlink
+    (st (eq? 'directory (stat:type st)))))
+
 (define* (list-directory dir #:optional (predicate identity))
   "Run SCANDIR on dir, using PREDICATE, and prepend DIR to results."
   (let ((dir (if (string-suffix? "/" dir) dir
@@ -61,6 +67,16 @@
         (files (scandir dir predicate)))
     (if (equal? dir "./") files
         (map (cute string-append dir <>) files))))
+
+(define* (list-files dir #:optional (predicate identity))
+  "Run scandir on DIR using PREDICATE, and prepend DIR to results.  If
+PREDICATE is a string, filter files using string-match using PREDICATE."
+  (let* ((predicate (if (procedure? predicate) predicate identity))
+         (files (list-directory dir predicate))
+         (files (filter (negate file-is-directory?) files))
+         (files (sort files string<?)))
+    (if (procedure? predicate) files
+        (filter (string-match predicate files)))))
 
 (define (mkdir-p dir)
   "Create directory DIR and all its ancestors."
@@ -192,7 +208,6 @@ name matches REGEXP."
                      (make-regexp regexp))))
     (lambda (file stat)
       (regexp-exec file-rx (basename file)))))
-
 
 (define* (find-files dir #:optional (pred (const #t))
                      #:key (stat lstat)
