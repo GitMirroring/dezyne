@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,7 +41,7 @@ interface ihello
 
 component async_blocking_missing_ack
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires iworld w;
 
   system
@@ -57,8 +58,8 @@ component async_blocking_missing_ack
 
 component Top
 {
-  provides ihello h1;
-  requires ihello h2;
+  provides blocking ihello h1;
+  requires blocking ihello h2;
 
   behavior
   {
@@ -71,7 +72,7 @@ component Top
 
 component Bottom
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires iworld w;
 
   behavior

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,8 +37,8 @@ interface ihello
 
 component Top
 {
-  provides ihello h;
-  requires ihello w;
+  provides blocking ihello h;
+  requires blocking ihello w;
 
   behavior
   {
@@ -52,7 +53,7 @@ component Top
 
 component Bottom
 {
-  provides ihello h;
+  provides blocking ihello h;
 
   behavior
   {
@@ -66,7 +67,7 @@ component Bottom
 
 component collateral_blocking_async
 {
-  provides ihello h;
+  provides blocking ihello h;
   system
   {
     Top top;

@@ -2,7 +2,7 @@
 //
 // Copyright © 2017 Joran Jessurun <joran.jessurun@ajmail.nl>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -75,8 +75,8 @@ interface ihello
 
 component Top
 {
-  provides ihello p;
-  requires iworld w;
+  provides blocking ihello p;
+  requires blocking iworld w;
 
   behavior
   {
@@ -121,7 +121,7 @@ interface iworld
 
 component Bottom_async
 {
-  provides iworld p;
+  provides blocking iworld p;
   behavior
   {
     requires dzn.async async;
@@ -168,7 +168,7 @@ component Sync
 
 component async_blocking_ranking_disorder
 {
-  provides ihello p;
+  provides blocking ihello p;
   system
   {
     Top top;
