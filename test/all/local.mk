@@ -262,6 +262,7 @@ REGRESSION_TESTS =				\
  %D%/failures_inevitable			\
  %D%/failures_nondet_inevitable			\
  %D%/failures_second_inevitable			\
+ %D%/flush_inevitable_sync_out			\
  %D%/foreign_import_system			\
  %D%/foreign_injected				\
  %D%/foreign_namespace				\
@@ -298,7 +299,6 @@ REGRESSION_TESTS =				\
  %D%/hello_inevitable_blocking_sync_out		\
  %D%/hello_inevitable_hidden			\
  %D%/hello_inevitable_illegal			\
- %D%/hello_inevitable_sync_out			\
  %D%/hello_int					\
  %D%/hello_interface_function			\
  %D%/hello_interface_optional			\
