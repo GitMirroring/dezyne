@@ -523,6 +523,7 @@ PARSER_TESTS =					\
  %D%/undefined/component/enum_as_action		\
  %D%/undefined/component/port			\
  %D%/undefined/component/trigger		\
+ %D%/undefined/foreign/port_type		\
  %D%/undefined/formal_type			\
  %D%/undefined/guard				\
  %D%/undefined/if				\

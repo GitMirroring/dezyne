@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -72,6 +72,10 @@ Makefile.in
 /test/all/undefined/component/*.trs
 /test/all/undefined/component/*.err
 /test/all/undefined/component/*.out
+/test/all/undefined/foreign/*.log
+/test/all/undefined/foreign/*.trs
+/test/all/undefined/foreign/*.err
+/test/all/undefined/foreign/*.out
 /test/all/undefined/interface/*.log
 /test/all/undefined/interface/*.trs
 /test/all/undefined/interface/*.err
