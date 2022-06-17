@@ -5,6 +5,41 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.15.2 since 2.15.1
+** Build
+  - The test suite now passes on i686-linux.
+** Code
+  - The c++ runtime now avoids making unnecessary copies.
+  - The c++ runtime now avoids construction of trace strings when
+    tracing is disabled.
+  - The experimental c, javascript, and scheme code generators now pass
+    the test suite for their partial supported feature set.
+** Noteworthy bug fixes
+  - The parser now accepts `on <event>, inevitable:' and `on <event>,
+    optional:'.  This was a regression since 2.9.1.
+  - The `dzn graph' command now also honors the -m,--model option for
+    --format=json.
+  - The `dzn graph --backend=state' command now produces sorted output.
+  - The simulator no longer changes the state of the provides port
+    without showing provides port interaction when using
+    `-C,--no-compliance'.
+  - The order of `-I,--import' options is now preserved.
+  - The dzn code generator has been fixed by:
+    + Adding spacing for port qualifiers,
+    + Adding support for `blocking' port qualifier,
+    + Preserving data type definitions,
+    + Preserving the scope of of function types,
+    + Including import statements.
+  - A bug was fixed in the experimental c code generator with respect to
+    negation in expressions.
+  - The experimental javascript and scheme code generators now support
+    reply on a synchronous out event.
+  - The experimental c, javascript and scheme code generators now use a
+    colon (`:') as separator between the enum-type and enum-field, in
+    compliance with this change in 2.13.0.
+  - The experimental scheme code generator now supports non-collateral
+    blocking, i.e., exclusively in the top component of a system.
+
 * Changes in 2.15.1 since 2.15.0
 ** Build
   - Tests that produce unstable witnesses have been disabled so that the
@@ -69,6 +104,8 @@
 ** Code
   - The C++ and C# code generators and runtime now fully support
     collaterally blocking components.
+  - The C++ and C# code generators generators now support reply on a
+    synchronous out event.
 ** Views
   - Returns are no longer removed from the state-diagram.  Using the new
     `--hide=returns' (or `--hide=actions') now removes void action
@@ -750,7 +787,7 @@
 
 * legalese
 
-Copyright © 2017,2018,2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2017,2018,2019,2020,2021,2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2017,2018,2019,2020,2021 Rutger van Beusekom <rutger@dezyne.org>
 Copyright © 2018,2019 Rob Wieringa <rma.wieringa@gmail.com>
 
