@@ -1,2 +1,3 @@
 (define-method (#.name  (o <#x:model-name >) #x:formals)
-  #x:statement)
+  (let/ec return
+    #x:statement))
