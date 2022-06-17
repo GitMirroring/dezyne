@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
@@ -203,7 +203,7 @@
     (($ <variable>) (make <compound> #:elements (list o)))
     (($ <behavior>) (clone o #:statement (wrap-lonely-variable (.statement o))))
     (($ <component>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
-    ((and ($ <compound>) (? ast:imperative?)) o)
+    ((and (? (is? <compound>)) (? ast:imperative?)) o)
     (($ <system>) o)
     (($ <foreign>) o)
     (($ <interface>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))

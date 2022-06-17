@@ -46,7 +46,7 @@
 
 (define (type-helper value type)
   (cond ((eq? type 'int) (string->number value))
-        ((eq? type 'bool) (string=? value "true"))
+        ((eq? type 'bool) (equal? value "true"))
         (else (string->symbol value))))
 
 (define (log-valued prefix event event-alist)

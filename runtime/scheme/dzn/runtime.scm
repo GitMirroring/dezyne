@@ -1,6 +1,6 @@
 ;;; dzn-runtime -- Dezyne runtime library
 ;;;
-;;; Copyright © 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of dzn-runtime.
 ;;;
@@ -238,7 +238,7 @@
 (define (dzn:trace-qin log i e)
   (let* ((q-path (path (.out i)))
          (q-prefix (substring q-path 0 (string-rindex q-path #\.))))
-   (log "~a.~a <- ~a.~a\n" q-prefix '<q> (path (.out i)) e)))
+   (log "~a.~a <- ~a.~a\n" q-prefix '<q> (path (.in i)) e)))
 
 (define (dzn:trace-qout log i e)
   (log "~a.~a <- ~a.~a\n" (path (.out i)) e (path (.in i)) '<q>))
