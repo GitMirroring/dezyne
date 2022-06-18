@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -49,8 +49,11 @@ component enum_expressions
         }
       [e != ihello.e.one && e != ihello.e.three && e != ihello.e.four]
         {
+          if (e != ihello.e.one && e != ihello.e.three && e != ihello.e.four)
+            w.world();
+          else
+            w.cruel();
           e = ihello.e.three;
-          w.world();
         }
       [e.three]
         {
