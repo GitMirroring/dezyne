@@ -671,6 +671,11 @@
    (ast:equal? (.left a) (.left b))
    (ast:equal? (.right a) (.right b))))
 
+(define-method (ast:equal? (a <unary>) (b <unary>))
+  (and
+   (eq? (class-of a) (class-of b))
+   (ast:equal? (.expression a) (.expression b))))
+
 (define-method (ast:equal? (a <expression>) (b <expression>))
   (if (eq? (class-of a) (class-of b))
       (throw 'add-ast:equal?-overload-for-type (class-of a))

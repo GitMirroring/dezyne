@@ -51,7 +51,7 @@
             add-explicit-temporaries
             add-reply-port
             binding-into-blocking
-            guards-not-or
+            not-or-guards
             purge-data
             remove-otherwise
             remove-behavior
@@ -77,6 +77,120 @@
   (format port "statement: ~a" (triple-statement triple))
   (format port " >"))
 
+
+;;;
+;;; Expressions.
+;;;
+(define-method (group-expression (o <binary>))
+  (make <group> #:expression o))
+
+
+(define-method (group-expression (o <field-test>))
+  (make <group> #:expression o))
+
+(define-method (group-expression (o <expression>))
+  o)
+
+(define (and-expressions expressions)
+  (reduce (cute make <and> #:left <> #:right <>)
+          (make <literal> #:value "true")
+          (map group-expression expressions)))
+
+(define (or-expressions expressions)
+  (reduce (cute make <or> #:left <> #:right <>)
+          (make <literal> #:value "false")
+          (map group-expression expressions)))
+
+(define (not-or-guards guards)
+  (let* ((expressions (map .expression guards))
+         (others (remove (is? <otherwise>) expressions))
+         (expression (or-expressions others)))
+    (match expression
+      ((and ($ <not>) (= .expression expression)) expression)
+      (_ (make <not> #:expression expression)))))
+
+(define (and-not-guards guards)
+  (let ((expression
+         (match guards
+           (()
+            (make <literal> #:value "true"))
+	   ((guard)
+            (make <not> #:expression (.expression guard)))
+	   ((h t ...)
+            (let ((expressions (map (compose (cute make <not> #:expression <>)
+                                             .expression)
+                                    guards)))
+              (and-expressions expressions))))))
+    (make <guard> #:expression expression)))
+
+(define-method (simplify-expression (o <bool-expr>))
+  (match o
+    (($ <not>)
+     (let* ((expression (.expression o))
+            (e (simplify-expression expression)))
+       (cond ((is-a? e <not>) (simplify-expression e))
+             ((is-a? e <group>) (clone o #:expression e))
+             ((ast:literal-true? e) (clone e #:value "false"))
+             ((ast:literal-false? e) (clone e #:value "true"))
+             (else (clone o #:expression e)))))
+    (($ <and>)
+     (let ((left (simplify-expression (.left o)))
+           (right (simplify-expression (.right o))))
+       (cond ((ast:equal? left right) left)
+             ((and (is-a? left <not>)
+                   (ast:equal? (.expression left) right))
+              (make <literal> #:value "false"))
+             ((and (is-a? right <not>)
+                   (ast:equal? (.expression right) left))
+              (make <literal> #:value "false"))
+             ((ast:literal-true? left) right)
+             ((ast:literal-false? left) left)
+             ((ast:literal-true? right) left)
+             ((ast:literal-false? right) right)
+             (else (clone o #:left left #:right right)))))
+    (($ <or>)
+     (let ((left (simplify-expression (.left o)))
+           (right (simplify-expression (.right o))))
+       (cond ((and (is-a? left <not>)
+                   (ast:equal? (.expression left) right))
+              (make <literal> #:value "true"))
+             ((and (is-a? right <not>)
+                   (ast:equal? (.expression right) left))
+              (make <literal> #:value "true"))
+             ((ast:equal? left right) left)
+             ((ast:literal-true? left) left)
+             ((ast:literal-false? left) right)
+             ((ast:literal-true? right) right)
+             ((ast:literal-false? right) left)
+             (else (clone o #:left left #:right right)))))
+    ((? (is? <binary>))
+     (clone o #:left (simplify-expression (.left o))
+            #:right (simplify-expression (.right o))))
+    (_
+     o)))
+
+(define-method (simplify-expression (o <group>))
+  (let* ((expression (.expression o))
+         (expression (simplify-expression expression)))
+    (if (or (is-a? expression <unary>)
+            (is-a? expression <field-test>)) expression
+        (clone o #:expression expression))))
+
+(define-method (simplify-expression (o <expression>))
+  o)
+
+(define-method (simplify-toplevel-expression (o <expression>))
+  (let ((expression (simplify-expression o)))
+    (if (is-a? expression <group>) (.expression expression)
+        expression)))
+
+(define-method (simplify-guard (o <guard>))
+  (clone o #:expression (simplify-toplevel-expression (.expression o))))
+
+
+;;;
+;;; Normalizations.
+;;;
 (define (triples:->compound-guard-on triples)
   (let* ((st (map (lambda (t)
                     (let* ((on (triple-on t))
@@ -109,20 +223,10 @@
   (and (equal? (.port.name a) (.port.name b))
        (equal? (.event.name a) (.event.name b))))
 
-(define (combine-not guards)
-  (cond ((null? guards) (make <guard> #:expression (make <literal> #:value "true")))
-	((= 1 (length guards)) (make <guard>
-				 #:expression (make <not>
-						#:expression (.expression (car guards)))))
-	(else (make <guard> #:expression (reduce (lambda (elem prev)
-						   (make <and> #:left elem #:right prev))
-					         (make <literal> #:value "true")
-					         (map (compose (cut make <not> #:expression <>) .expression) guards))))))
-
 (define (add-illegals model triples trigger)
   (let* ((triples (filter (lambda (t) (trigger-equal? ((compose car ast:trigger* triple-on) t) trigger)) triples))
          (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
-         (guard (combine-not (map triple-guard triples)))
+         (guard (and-not-guards (map triple-guard triples)))
          (provides? (and=> (.port trigger) ast:provides?))
          (statement (make (cond (provides? <declarative-illegal>)
                                 ((is-a? model <interface>) <declarative-illegal>)
@@ -199,16 +303,13 @@
                (make-triple on (triple-guard t) (and provides? (triple-blocking? t)) (triple-statement t)))) ons)))
   (append-map splitriple-on triples))
 
-(define (combine guards)
-  (make <guard> #:expression (reduce (cut make <and> #:left <> #:right <>)
-                                     (make <literal> #:value "true")
-                                     (map .expression guards))))
-
 (define (triples:->triples o)
   (define (triple o)
-    (let ((path (ast:path o (lambda (p) (is-a? (.parent p) <behavior>)))))
+    (let* ((path (ast:path o (lambda (p) (is-a? (.parent p) <behavior>))))
+           (guards (filter (is? <guard>) path))
+           (expression (and-expressions (map .expression guards))))
       (make-triple (find (is? <on>) path)
-                   (combine (filter (is? <guard>) path))
+                   (make <guard> #:expression expression)
                    (find (is? <blocking>) path)
                    o)))
   (if (and (is-a? o <compound>) (null? (ast:statement* o))) '()
@@ -229,6 +330,7 @@
     (($ <behavior>) (clone o #:statement
                             ((compose
                               triples:->compound-guard-on
+                              triples:simplify-guard
                               (triples:fix-empty-interface (parent o <model>))
                               (triples:add-illegals (parent o <model>))
                               triples:mark-the-end
@@ -431,36 +533,10 @@ to prevent unintended shadowing
   (map (lambda (t)
          (make-triple
           (triple-on t)
-          (clone (triple-guard t) #:expression ((compose simplify .expression triple-guard) t))
+          (simplify-guard (triple-guard t))
           (triple-blocking? t)
           (triple-statement t)))
        triples))
-
-;; simplify exp
-(define-method (simplify (o <bool-expr>))
-  (match o
-    (($ <not>)(let ((e (simplify (.expression o))))
-                (cond ((ast:literal-true? e) (clone e #:value "false"))
-                      ((ast:literal-false? e) (clone e #:value "true"))
-                      (else (clone o #:expression e)))))
-    (($ <and>)(let ((left (simplify (.left o)))
-                    (right (simplify (.right o))))
-                (cond ((ast:literal-true? left) right)
-                      ((ast:literal-false? left) left)
-                      ((ast:literal-true? right) left)
-                      ((ast:literal-false? right) right)
-                      (else (clone o #:left left #:right right)))))
-    (($ <or>)(let ((left (simplify (.left o)))
-                   (right (simplify (.right o))))
-               (cond ((ast:literal-true? left) left)
-                     ((ast:literal-false? left) right)
-                     ((ast:literal-true? right) right)
-                     ((ast:literal-false? right) left)
-                     (else (clone o #:left left #:right right)))))
-    (_ o)))
-
-(define-method (simplify (o <ast>))
-  o)
 
 (define (add-function-return o)
   (define* (add-return o #:key (loc o))
@@ -560,7 +636,7 @@ to prevent unintended shadowing
                   (not (virgin-otherwise? value)))
              (null? statements))
          (failure)
-         (clone o #:expression (guards-not-or statements)
+         (clone o #:expression (not-or-guards statements)
                 #:statement ((remove-otherwise keep-annotated?) statement))))
     ((and ($ <compound>) (= ast:statement* (statements ...)))
      (clone o #:elements (map (remove-otherwise keep-annotated? statements) statements)))
@@ -573,16 +649,6 @@ to prevent unintended shadowing
     ((? (is? <component-model>)) o)
     ((? (is? <ast>)) (tree-map (remove-otherwise keep-annotated? statements) o))
     (_ o)))
-
-(define (guards-not-or o)
-  (let* ((expressions (map .expression o))
-         (others (remove (is? <otherwise>) expressions))
-         (expression (reduce (lambda (g0 g1)
-                               (if (ast:equal? g0 g1) g0 (make <or> #:left g0 #:right g1)))
-                             '() others)))
-    (match expression
-      ((and ($ <not>) (= .expression expression)) expression)
-      (_ (make <not> #:expression expression)))))
 
 (define (remove-location o)
   "Remove locations from types, events, formals, signatures, ports."

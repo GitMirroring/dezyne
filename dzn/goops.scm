@@ -442,15 +442,15 @@
 
 (define-ast <expression> (<locationed>))
 
-(define-ast <literal> (<expression>)
-  (value #:init-value "void"))
-
 (define-ast <binary> (<expression>)
   (left #:init-value *unspecified*)
   (right #:init-value *unspecified*))
 
 (define-ast <unary> (<expression>)
   (expression #:init-value *unspecified*))
+
+(define-ast <literal> (<unary>)
+  (value #:init-value "void"))
 
 (define-ast <group> (<unary>))
 
@@ -487,27 +487,27 @@
 (define-ast <data> (<data-expr>)
   (value))
 
-(define-ast <var> (<named> <expression>))
+(define-ast <var> (<named> <unary>))
 
-(define-ast <undefined> (<expression>)
+(define-ast <undefined> (<unary>)
   (name))
 
-(define-ast <variable> (<declaration> <imperative> <expression>)
+(define-ast <variable> (<declaration> <imperative> <unary>)
   (type.name)
   (expression #:init-form (make <expression-node>)))
 
-(define-ast <field-test> (<bool-expr>)
+(define-ast <field-test> (<unary> <bool-expr>)
   (variable.name)
   (field))
 
-(define-ast <enum-literal> (<enum-expr>)
+(define-ast <enum-literal> (<unary> <enum-expr>)
   (type.name)
   (field))
 
 (define-ast <otherwise> (<expression>) ;; FIXME: make <guard-otherwise/guard-else-node> instead
   (value #:init-value *unspecified*))
 
-(define-ast <formal> (<declaration> <expression>)
+(define-ast <formal> (<declaration> <unary>)
   (type.name)
   (direction #:init-value 'in))
 
@@ -540,19 +540,19 @@
   (recursive)
   (statement))
 
-(define-ast <action> (<imperative> <expression>)
+(define-ast <action> (<imperative> <unary>)
   (port.name)
   (event.name)
   (arguments #:init-form (make <arguments-node>)))
 
-(define-ast <action-or-call> (<named> <imperative> <expression>)
+(define-ast <action-or-call> (<named> <imperative> <unary>)
   (arguments #:init-form (make <arguments-node>)))
 
 (define-ast <assign> (<imperative>)
   (variable.name)
   (expression #:init-form (make <expression-node>)))
 
-(define-ast <call> (<imperative> <expression>)
+(define-ast <call> (<imperative> <unary>)
   (function.name)
   (arguments #:init-form (make <arguments-node>))
   (last?))
@@ -614,7 +614,7 @@
 (define-ast <the-end-blocking> (<statement>))
 (define-ast <voidreply> (<statement>))
 
-(define-ast <argument> (<named> <expression>)
+(define-ast <argument> (<named> <unary>)
   (type.name)
   (direction))
 

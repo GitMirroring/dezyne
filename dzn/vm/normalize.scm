@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -108,7 +108,7 @@
          (clone o #:expression ((annotate-otherwise statements) (.expression o)))))
     (($ <otherwise>)
      (or (let* ((guards (filter (is? <guard>) statements))
-                (value (guards-not-or guards)))
+                (value (not-or-guards guards)))
            (and value (clone o #:value value)))
          o))
     ((and ($ <compound>) (= .elements (statements ...)))
