@@ -41,6 +41,7 @@
 
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
+  #:use-module (dzn display)
   #:use-module (dzn misc)
 
   #:use-module (dzn ast)
@@ -944,15 +945,18 @@
 (include-from-path "dzn/templates/makreel.scm")
 
 (define (makreel:om ast)
-  ((compose
-    makreel:mark-tail-call
-    add-function-return
-    normalize:state
-    (remove-otherwise)
-    makreel:tick-names
-    add-explicit-temporaries
-    purge-data
-    ) ast))
+  (let ((root ((compose
+                makreel:mark-tail-call
+                add-function-return
+                normalize:state
+                (remove-otherwise)
+                makreel:tick-names
+                add-explicit-temporaries
+                purge-data
+                ) ast)))
+    (when (> (dzn:debugity) 1)
+      (ast:pretty-print root (current-error-port)))
+    root))
 
 
 ;;;
