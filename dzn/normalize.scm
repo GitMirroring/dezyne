@@ -128,8 +128,13 @@
     (($ <not>)
      (let* ((expression (.expression o))
             (e (simplify-expression expression)))
-       (cond ((is-a? e <not>) (simplify-expression e))
-             ((is-a? e <group>) (clone o #:expression e))
+       (cond ((is-a? expression <not>)
+              (simplify-expression (.expression expression)))
+             ((and (is-a? expression <group>)
+                   (as (simplify-expression (.expression expression))
+                       <not>))
+              =>
+              .expression)
              ((ast:literal-true? e) (clone e #:value "false"))
              ((ast:literal-false? e) (clone e #:value "true"))
              (else (clone o #:expression e)))))
@@ -327,20 +332,25 @@
 
 (define (normalize:state o)
   (match o
-    (($ <behavior>) (clone o #:statement
-                            ((compose
-                              triples:->compound-guard-on
-                              triples:simplify-guard
-                              (triples:fix-empty-interface (parent o <model>))
-                              (triples:add-illegals (parent o <model>))
-                              triples:mark-the-end
-                              (triples:declarative-illegals (parent o <model>))
-                              triples:split-multiple-on
-                              triples:->triples
-                              .statement
-                              ) o)))
-    ((? (is? <ast>)) (tree-map normalize:state o))
-    (_ o)))
+    (($ <behavior>)
+     (clone o #:statement
+            ((compose
+              triples:->compound-guard-on
+              (cute triples:group-expressions <> (list <and> <field-test> <or>))
+              triples:group-expressions
+              triples:simplify-guard
+              (triples:fix-empty-interface (parent o <model>))
+              (triples:add-illegals (parent o <model>))
+              triples:mark-the-end
+              (triples:declarative-illegals (parent o <model>))
+              triples:split-multiple-on
+              triples:->triples
+              .statement
+              ) o)))
+    ((? (is? <ast>))
+     (tree-map normalize:state o))
+    (_
+     o)))
 
 (define (triples:->on-guard* triples)
   (define ((trigger-equal? trigger) triple)
@@ -375,19 +385,23 @@
 
 (define (normalize:event o)
   (match o
-    (($ <behavior>) (clone o #:statement
-                            ((compose
-                              (cut make <compound> #:elements <>)
-                              triples:->on-guard*
-                              triples:simplify-guard
-                              (rewrite-formals-and-locals (parent o <model>))
-                              (triples:add-illegals (parent o <model>))
-                              triples:split-multiple-on
-                              triples:->triples
-                              .statement
-                              ) o)))
-    ((? (is? <ast>)) (tree-map normalize:event o))
-    (_ o)))
+    (($ <behavior>)
+     (clone o #:statement
+            ((compose
+              (cute make <compound> #:elements <>)
+              triples:->on-guard*
+              (cute triples:group-expressions <> (list <field-test>))
+              triples:simplify-guard
+              (rewrite-formals-and-locals (parent o <model>))
+              (triples:add-illegals (parent o <model>))
+              triples:split-multiple-on
+              triples:->triples
+              .statement
+              ) o)))
+    ((? (is? <ast>))
+     (tree-map normalize:event o))
+    (_
+     o)))
 
 (define ((rewrite-formals-and-locals model) triples)
   "Rewrite names of formals and locals for event-first normalization.
@@ -536,6 +550,15 @@ to prevent unintended shadowing
           (simplify-guard (triple-guard t))
           (triple-blocking? t)
           (triple-statement t)))
+       triples))
+
+(define* (triples:group-expressions triples #:optional (group (list)))
+  (map (lambda (t)
+         (make-triple
+          (triple-on t)
+          (group-expressions (triple-guard t) group)
+          (triple-blocking? t)
+          (group-expressions (triple-statement t) group)))
        triples))
 
 (define (add-function-return o)
@@ -793,6 +816,34 @@ to prevent unintended shadowing
     (($ <foreign>) o)
     (($ <system>) o)
     ((? (is? <ast>)) (tree-map add-explicit-temporaries o))
+    (_ o)))
+
+(define* (group-expressions o #:optional (group (list)))
+  (match o
+    ((? (const (find (cute is-a? o <>) group)))
+     (let ((o (tree-map (cute group-expressions <> group) o)))
+       (match (.parent o)
+         (($ <group>) o)
+         ((? (is? <expression>)) (make <group> #:expression o))
+         (else o))))
+    ((and (? (is? <not>))
+          (= .expression (and expression (or (? (is? <binary>))
+                                             (? (is? <field-test>))))))
+     (let ((expression (tree-map (cute group-expressions <> group) expression)))
+       (clone o #:expression (make <group> #:expression expression))))
+    (($ <function>)
+     (clone o #:statement (group-expressions (.statement o) group)))
+    (($ <behavior>)
+     (clone o
+            #:functions (group-expressions (.functions o) group)
+            #:statement (group-expressions (.statement o) group)))
+    (($ <interface>)
+     (clone o #:behavior (group-expressions (.behavior o) group)))
+    (($ <component>)
+     (clone o #:behavior (group-expressions (.behavior o) group)))
+    (($ <foreign>) o)
+    (($ <system>) o)
+    ((? (is? <ast>)) (tree-map (cute group-expressions <> group) o))
     (_ o)))
 
 (define-method (root-> (o <root>))
