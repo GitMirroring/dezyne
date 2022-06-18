@@ -645,21 +645,23 @@
        '()))))
 
 (define-method (statement-continuation (pc <program-counter>) (o <statement>))
-  (let ((parent (.parent o)))
-    (match parent
+  (let ((p (.parent o)))
+    (match p
       (($ <compound>)
-       (let ((next (and=> (member o (ast:statement* parent) ast:eq?) cdr)))
+       (let ((next (and=> (member o (ast:statement* p) ast:eq?) cdr)))
          (if (pair? next) (continuation pc next)
-             (let ((pc (pop-locals pc (filter (is? <variable>) (ast:statement* parent)))))
-               (statement-continuation pc parent)))))
+             (let ((pc (pop-locals pc (filter (is? <variable>) (ast:statement* p)))))
+               (statement-continuation pc p)))))
       (($ <if>)
-       (statement-continuation pc parent))
+       (statement-continuation pc p))
       (($ <function>)
        (pop-pc pc))
       (($ <defer>)
        (clone pc #:statement #f))
       (($ <defer-qout>)
-       (clone pc #:statement #f))
+       (let* ((p (parent p <compound>))
+              (pc (if (not p) pc (pop-locals pc (filter (is? <variable>) (ast:statement* p))))))
+        (clone pc #:statement #f)))
       (_
        '()))))
 

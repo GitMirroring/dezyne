@@ -779,6 +779,7 @@ until RTC?."
                           #:statement defer-qout
                           #:trigger (.trigger defer-pc)
                           #:trail (cons event (.trail pc))))
+               (pc (set-variables pc (get-variables defer-pc)))
                (traces (run-to-completion pc 'rtc))
                (blocked traces
                         (partition (compose blocked-on-boundary? car) traces))
