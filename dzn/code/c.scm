@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -243,6 +243,11 @@
 (define-method (c:enum-literal (o <enum-literal>))
   (append (ast:full-name (.type o)) (list (.field o))))
 
+(define-method (c:generate-foreign-skel? (o <root>))
+  (find (conjoin (negate ast:imported?)
+                 (is? <foreign>))
+        (ast:model* o)))
+
 
 ;;;
 ;;; Entry points.
@@ -258,7 +263,8 @@
           (file-name (code-util:root-file-name root dir ".h")))
       (code-util:dump root generator #:file-name file-name))
 
-    (when (code-util:generate-source? root)
+    (when (or (code-util:generate-source? root)
+              (c:generate-foreign-skel? root))
       (let ((generator (code-util:indenter (cute x:source root)))
             (file-name (code-util:root-file-name root dir ".c")))
         (code-util:dump root generator #:file-name file-name)))
