@@ -171,40 +171,31 @@
   (not (member o (.components (.runtime o)))))
 
 (define (dzn:flush o)
+  (set! (.handling? o) #f)
   (when (not (external? o))
     (while (not (q-empty? (.dzn-q o)))
-      (dzn:handle o (deq! (.dzn-q o))))
+      (dzn:handle o (deq! (.dzn-q o)))
+      (set! (.handling? o) #f))
     (and=> (.deferred? o)
            (lambda (target)
              (set! (.deferred? o) #f)
-             (if (not (.handling? target))
-                 (dzn:flush target))))))
+             (when (not (.handling? target))
+               (dzn:flush target))))))
 
 (define (defer i o f)
-  (if (and (not (and i (.flushes? i))) (not (.handling? o)))
-      (dzn:handle o f)
-      (begin
-        (enq! (.dzn-q o) f)
-        (if i
-            (set! (.deferred? i) o)))))
-
-(define-method (valued-helper o f m)
-  (if (.handling? o) (throw 'defer "a valued event cannot be deferred"))
-  (set! (.handling? o) #t)
-  (let ((r (f)))
-    (set! (.handling? o) #f)
-    (dzn:flush o)
-    r))
+  (cond ((and (not (and i (.flushes? i))) (not (.handling? o)))
+         (dzn:handle o f)
+         (dzn:flush o))
+        (else
+         (enq! (.dzn-q o) f)
+         (when i
+           (set! (.deferred? i) o)))))
 
 (define-method (dzn:handle (o <dzn:component>) f)
-  (if (not (.handling? o))
-      (begin
-        (set! (.handling? o) #t)
-        (let ((r (f)))
-          (set! (.handling? o) #f)
-          (dzn:flush o)
-          r))
-      (throw 'handle "component already handling an event")))
+  (when (.handling? o)
+    (throw 'handle "component already handling an event"))
+  (set! (.handling? o) #t)
+  (f))
 
 (define (dzn:return-value r)
   (cond ((boolean? r) (if r 'true 'false))
@@ -215,14 +206,18 @@
 (define-method (call-in (o <dzn:component>) f m)
   (let ((log (dzn:get (.locator o) <procedure> 'trace)))
     (apply dzn:trace (cons log (take m 2)))
-    (let ((r (dzn:handle o f)))
+    (set! (.handling? o) #t)
+    (let ((r (f)))
       (dzn:trace-out log (car m) (dzn:return-value r))
       r)))
 
 (define-method (call-out (o <dzn:component>) f m)
   (let ((log (dzn:get (.locator o) <procedure> 'trace)))
-    (apply dzn:trace-qin (cons log m)))
-  (defer (.self (.in (car m))) o f))
+    (apply dzn:trace-qin (cons log m))
+    (defer (.self (.in (car m))) o
+      (lambda _
+        (f)
+        (apply dzn:trace-qout (cons log m))))))
 
 (define* (path o #:optional (p ""))
   (let* ((name (or (and o (.name o)) ""))

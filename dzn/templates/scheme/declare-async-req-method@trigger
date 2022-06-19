@@ -1,1 +1,7 @@
-##:#.event.name  (lambda args (dzn:handle dzn-pump (.#.port.name  o) 0 (lambda _ (apply action o .#.port.name  .out .ack args)) (.rank o)))
+##:#.event.name  (lambda args
+  (dzn:handle dzn-pump (.#.port.name  o) 0
+    (lambda _
+      (apply action o .#.port.name  .out .ack args)
+      (dzn:flush o)
+      #x:return)
+  (.rank o)))

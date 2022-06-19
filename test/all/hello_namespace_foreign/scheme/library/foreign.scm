@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -42,7 +42,12 @@
       #:in (make <library:iworld.in>
         #:name "w"
         #:self o
-        #:world (lambda args (call-in o (lambda _ (apply w-world (cons o args))) `(,(.w o) "world"))))
+        #:world (lambda args
+                  (call-in o
+                           (lambda _
+                             (apply w-world (cons o args))
+                             (dzn:flush o))
+                           `(,(.w o) "world"))))
       #:out (make <library:iworld.out>))))
 
 (define-method (w-world (o <library:foreign>))
