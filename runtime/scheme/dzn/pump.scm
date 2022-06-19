@@ -1,6 +1,6 @@
 ;;; dzn-runtime -- Dezyne runtime library
 ;;;
-;;; Copyright © 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of dzn-runtime.
 ;;;
@@ -22,6 +22,7 @@
 ;;; Code:
 
 (define-module (dzn pump)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
@@ -37,8 +38,8 @@
 (define-class <dzn:pump> ()
   (timers #:accessor .timers #:init-form (list))
   (canceled #:accessor .canceled #:init-form (list))
-  (release #:accessor .release #:init-value #f)
-  (stack #:accessor .stack #:init-form (list))
+  (released #:accessor .released #:init-form (list))
+  (blocked #:accessor .blocked #:init-form (list))
   (prompt-tag #:accessor .prompt-tag #:init-form (make-prompt-tag "pump")))
 
 (define-method (dzn:finalize (o <dzn:pump>))
@@ -46,42 +47,38 @@
 
 (define (%debug . rest)
   (when (getenv "PUMP_DEBUG")
-    (apply format (cons (current-error-port) rest)))  )
+    (apply format (cons (current-error-port) rest))))
 
 (define-method (dzn:pump (o <dzn:pump>) (event <procedure>) (next-event <procedure>))
   (define (worker cont request port)
     (%debug "worker! cont: ~a, request:~a, port:~a\n" cont request port)
-    (let ((port-cont (assoc-ref (.stack o) port)))
+    (let ((port-cont (assoc-ref (.blocked o) port)))
       (case request
         ((block)
-         (when port-cont
-           (throw 'pump-invalid "port already blocked" (.name (.in port))))
-         (set! (.stack o) (acons port cont (.stack o)))
-         (if (.release o) (throw 'pump-invalid "release set" (.release o))
-             (let ((event (next-event)))
-               (when (and event (not (eof-object? event)))
-                 (dzn:pump o event next-event)))))
+         (set! (.blocked o) (append (.blocked o) (list (cons port cont))))
+         (let ((event (next-event)))
+           (when (procedure? event)
+             (dzn:pump o event next-event))))
         ((release)
-         (if port-cont
-             (begin
-               (set! (.stack o) (assoc-remove! (.stack o) port))
-               (when (.release o)
-                 (throw 'pump-invalid "release already set" (.release o)))
-               (set! (.release o) cont)
-               (port-cont))
-             (begin
-               (%debug "release fall-through: ~a\n" cont)
-               (set! (.release o) cont)
-               (cont))))
-        (else (throw 'pump-invalid "unknown request" request (.name (.in port)))))))
+         (set! (.released o) (append (.released o) (list (cons port cont))))
+         (cond (port-cont
+                (set! (.blocked o) (assoc-remove! (.blocked o) port))
+                (call-with-prompt (.prompt-tag o) port-cont worker))
+               (cont
+                (%debug "release fall-through: ~a\n" cont)
+                (call-with-prompt (.prompt-tag o) cont worker))
+               (else
+                (%debug "worker without cont\n" cont))))
+        (else
+         (throw 'pump-invalid "unknown request" request (.name (.in port)))))))
 
   (call-with-prompt (.prompt-tag o) event worker)
 
-  (let ((release (.release o)))
-    (when release
-      (set! (.release o) #f)
-      (%debug "release: ~a\n" release)
-      (release)))
+  (match (.released o)
+    (((port . cont) rest ...)
+     (call-with-prompt (.prompt-tag o) cont worker))
+    (_
+     #f))
 
   (let ((timers (.timers o)))
     (set! (.timers o) '())
@@ -100,7 +97,7 @@
         (loop timers)))))
 
 (define-method (dzn:pump (o <dzn:pump>) (event <procedure>))
-  (dzn:pump o event (lambda _ #t)))
+  (dzn:pump o event (const #t)))
 
 (define-method (dzn:handle (o <dzn:pump>) x deadline event rank) ;; FIXME: deadline ignored
   (set! (.timers o) (acons rank (cons x event) (.timers o)))
@@ -112,13 +109,18 @@
 
 (define-method (dzn:block (o <dzn:pump>) (port <dzn:interface>))
   (%debug "dzn:block: port: ~a\n" (.name (.in port)))
-  (if (.release o) (begin
-                     (%debug "dzn:release: fall-through\n")
-                     (set! (.release o ) #f))
-      (abort-to-prompt (.prompt-tag o) 'block port))
+  (let ((entry (assoc port (.released o))))
+    (cond
+          (entry
+           (%debug "dzn:block: fall-through 1\n")
+           (set! (.released o) (alist-delete port (.released o))))
+          (else
+           (abort-to-prompt (.prompt-tag o) 'block port))))
+  (set! (.released o) (alist-delete port (.released o)))
   (%debug "dzn:block: continue: ~a\n" (.name (.in port))))
 
 (define-method (dzn:release (o <dzn:pump>) (port <dzn:interface>))
   (%debug "dzn:release: port: ~a\n" (.name (.in port)))
-  (abort-to-prompt (.prompt-tag o) 'release port)
+  (let ((port-cont (assoc-ref (.blocked o) port)))
+    (set! (.released o) (append (.released o) (list (cons port port-cont)))))
   (%debug "dzn:release: continue: ~a\n" (.name (.in port))))
