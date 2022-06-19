@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2022 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -109,7 +109,7 @@ int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)
 	if (relaxed) return 0;
 	char* s = consume_synchronous_out_events(prefix, event, event_map);
 	int r = string_to_value(drop_prefix(s, prefix));
-	if ((int)r != INT_MIN) {
+	if ((int)r != INT_MAX) {
 		fprintf(stderr, "%s%s\n", prefix, value_to_string(r));
 		return r;
 	}

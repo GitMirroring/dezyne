@@ -3,7 +3,7 @@ uint8_t string_to__#x:name (char* s) {
   ;
   #x:enum-field-else-if
   else {
-    return INT_MIN;
+    return INT_MAX;
   }
 }
 

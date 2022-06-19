@@ -1,5 +1,5 @@
 // dzn-runtime -- Dezyne runtime library
-// Copyright © 2015, 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2019, 2022 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2015, 2016 Rutger van Beusekom <rutger@dezyne.org>
@@ -116,7 +116,7 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void* void_args), void* arg
   component* ctgt = vtgt;
   runtime_info* src = (csrc!=0)?&csrc->dzn_info:0;
   runtime_info* tgt = (ctgt!=0)?&ctgt->dzn_info:0;
-  if ((!((src != 0u) && (src->performs_flush != 0u))) && (tgt->handling==0u))
+  if ((!((src != 0) && (src->performs_flush != 0u))) && (tgt->handling == 0u))
   {
     runtime_handle_event (tgt, event, args);
   }
@@ -136,7 +136,7 @@ runtime_defer (void* vsrc, void* vtgt, void (*event)(void* void_args), void* arg
       memcpy(&c.args, a, (size_t)a->size);
       queue_push (&tgt->q, &c);
 #endif /* !DZN_DYNAMIC_QUEUES */
-      if (src != 0u)
+      if (src != 0)
       {
         src->deferred = tgt;
       }
@@ -274,7 +274,7 @@ string_to__int (char* s)
 {
   char *endptr;
   long int val = strtol(s,&endptr,0);
-  return (endptr != s) ? (int) val : INT_MIN;
+  return (endptr != s) ? (int) val : INT_MAX;
 }
 
 #endif /* !DZN_TRACING */
