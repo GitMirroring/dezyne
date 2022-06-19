@@ -1,0 +1,2 @@
+this.#.name ._dzn.meta.requires.name = "#.name";
+this.#.name ._dzn.meta.requires.component = this;

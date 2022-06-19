@@ -10,6 +10,7 @@ dzn.#x:class-name  = function (locator, meta) {
   #x:variable-member-initializer
   #x:reply-member-initializer
   #x:injected-member-initializer
+  #x:injected-require-initializer
   #x:provided-member-initializer
   #x:required-member-initializer
   #x:async-member-initializer
