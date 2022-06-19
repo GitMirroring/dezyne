@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -75,7 +75,14 @@ if (!Function.prototype.runtime) {
     return function () {
       var args = Array.prototype.slice.call (arguments);
       var ff = function () {
-        return f.apply (o, args);
+        f.apply (o, args);
+        o._dzn.rt.flush (o);
+        if (o.reply != null) {
+          var r = o.reply;
+          if (direction == 'in')
+            o.reply = null;
+          return r;
+        }
       }.bind (this)
       return o._dzn.rt['call_' + direction] (o, ff, [port, name]);
     }
@@ -109,8 +116,10 @@ function runtime(illegal) {
     if (this.external(c)) {
       return;
     }
+    c._dzn.handling = false;
     while (c.queue && c.queue.length) {
       this.handle(c, c.queue.pop());
+      c._dzn.handling = false;
     }
     if (c._dzn.deferred) {
       var t = c._dzn.deferred;
@@ -124,6 +133,7 @@ function runtime(illegal) {
   this.defer = function(i, o, f) {
     if(!(i && i._dzn.flushes) && !o._dzn.handling) {
       this.handle(o, f);
+      this.flush(o);
     }
     else {
       o.queue = [f].concat (o.queue || []);
@@ -143,10 +153,7 @@ function runtime(illegal) {
     if (c._dzn.handling)
       throw new Error ('runtime error: component already handling an event: ' + c._dzn.meta.name);
     c._dzn.handling = true;
-    var r = f();
-    c._dzn.handling = false;
-    this.flush(c);
-    return r;
+    return f ();
   };
 
   this.trace = function(m, e, trace) {
@@ -172,7 +179,8 @@ function runtime(illegal) {
   this.call_in = function(c, f, m) {
     var trace = c._dzn.locator.get(Function.prototype, 'trace');
     this.trace(m, m[1], trace);
-    var r = this.handle(c, f);
+    c._dzn.handling = true;
+    var r = f ();
     this.trace_out(m, (r === undefined ? 'return' : r), trace);
     return r;
   }
@@ -180,7 +188,8 @@ function runtime(illegal) {
   this.call_out = function(c, f, m) {
     var trace = c._dzn.locator.get(Function.prototype, 'trace');
     this.trace_qin(m, m[1], trace);
-    this.defer(m[0]._dzn.meta.provides.component, c, f);
+    this.defer(m[0]._dzn.meta.provides.component, c,
+               function () {f (); this.trace_qout (m, m[1], trace);}.bind (this));
   };
 
   this.bind = function (o) {

@@ -1,1 +1,1 @@
-this.reply_#x:reply-type  = #x:expression;
+this.reply = #x:expression;

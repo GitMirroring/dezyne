@@ -30,11 +30,11 @@ dzn.Foreign = function (locator, meta) {
   dzn.runtime.init (this, locator, meta);
   this._dzn.meta.ports = ['w'];
   //this._dzn.flushes = true;
-  this.reply_bool = null;
+  this.reply = null;
   this.w = new dzn.iworld({provides: {name: 'w', component: this}, requires: {}});
   this.w.in.hello = function(){
-    this.reply_bool = false;
-    return this.reply_bool;
+    this.reply = false;
+    return this.reply;
   };
   this._dzn.rt.bind (this);
 };
