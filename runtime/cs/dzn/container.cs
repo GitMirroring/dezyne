@@ -137,7 +137,7 @@ namespace dzn
     String trail_expect()
     {
       return context.lck(this, () => {
-              while (trail.Count == 0) Monitor.Wait(this);
+              while (trail.Count == 0) Monitor.Wait(this, 10000);
               Monitor.Pulse(this);
               return trail.Dequeue();
           });
