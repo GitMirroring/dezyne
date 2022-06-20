@@ -44,7 +44,7 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
-    using(blocking_multiple_provides sut = new blocking_multiple_provides (locator))
+    using(collateral_blocking_multiple_provides0 sut = new collateral_blocking_multiple_provides0 (locator))
     {
       sut.dzn_meta.name = "sut";
       sut.r.dzn_meta.requires.name = "r";

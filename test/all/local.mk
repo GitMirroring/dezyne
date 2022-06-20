@@ -152,7 +152,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\
  %D%/blocking_local				\
- %D%/blocking_multiple_provides			\
  %D%/blocking_multiple_provides0		\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
@@ -179,6 +178,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_double_release		\
  %D%/collateral_blocking_multiple_provides	\
+ %D%/collateral_blocking_multiple_provides0	\
  %D%/collateral_blocking_multiple_provides2	\
  %D%/collateral_blocking_release		\
  %D%/collateral_blocking_reorder		\

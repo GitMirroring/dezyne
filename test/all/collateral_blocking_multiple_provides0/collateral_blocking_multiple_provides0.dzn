@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -100,7 +100,7 @@ component block
   }
 }
 
-component blocking_multiple_provides
+component collateral_blocking_multiple_provides0
 {
   provides blocking ihello left;
   provides blocking ihello right;

@@ -23,7 +23,7 @@
 //
 // Code:
 
-#include "blocking_multiple_provides.hh"
+#include "collateral_blocking_multiple_provides0.hh"
 
 #include <thread>
 
@@ -37,7 +37,7 @@ main ()
   dzn::locator loc;
   dzn::runtime rt;
   loc.set (rt);
-  blocking_multiple_provides sut (loc);
+  collateral_blocking_multiple_provides0 sut (loc);
   sut.dzn_meta.name = "sut";
   sut.r.meta.require.name = "r";
 
