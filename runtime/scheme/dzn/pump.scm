@@ -119,8 +119,18 @@
   (set! (.released o) (alist-delete port (.released o)))
   (%debug "dzn:block: continue: ~a\n" (.name (.in port))))
 
+(define-method (dzn:block (o <dzn:component>) (port <dzn:interface>))
+  (set! (.handling? o) #f)
+  (dzn:flush o)
+  (dzn:block (dzn:get (.locator o) <dzn:pump>) port))
+
 (define-method (dzn:release (o <dzn:pump>) (port <dzn:interface>))
   (%debug "dzn:release: port: ~a\n" (.name (.in port)))
   (let ((port-cont (assoc-ref (.blocked o) port)))
     (set! (.released o) (append (.released o) (list (cons port port-cont)))))
   (%debug "dzn:release: continue: ~a\n" (.name (.in port))))
+
+(define-method (dzn:release (o <dzn:component>) (port <dzn:interface>) out-binding-accessor)
+  (and=> (out-binding-accessor o) identity)
+  (set! (out-binding-accessor o) #f)
+  (dzn:release (dzn:get (.locator o) <dzn:pump>) port))

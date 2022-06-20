@@ -1,3 +1,1 @@
-(and=> (.out_#.port.name  o) (lambda (x) (x)))
-(set! (.out_#.port.name  o) ##f)
-(dzn:release (dzn:get (.locator o) <dzn:pump>) (.#.port.name  o))
+(dzn:release o (.#.port.name  o) .out_#.port.name)
