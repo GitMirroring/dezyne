@@ -102,19 +102,19 @@ namespace dzn
     struct state
     {
       size_t handling;
+      size_t blocked;
       bool performs_flush;
       void* deferred;
       std::queue<std::function<void()>> queue;
     };
     std::map<void*, state> states;
     std::map<void*, bool> skip_port;
-    std::vector<void*> component_stack;
-    std::map<size_t, std::vector<void*>> blocked_port_component_stack;
     bool& skip_block(void*);
 
 
     bool external(void*);
     size_t& handling(void*);
+    size_t& blocked(void*);
     void*& deferred(void*);
     std::queue<std::function<void()> >& queue(void*);
     bool& performs_flush(void* scope);
@@ -162,7 +162,6 @@ namespace dzn
     {
       if(c->dzn_rt.handling(c) || port_blocked_p(c->dzn_locator, &p))
         collateral_block(c, c->dzn_locator);
-      c->dzn_rt.component_stack.push_back(c);
       trace(os, meta, event);
 #if DZN_STATE_TRACING
       os << *c << std::endl;
@@ -186,8 +185,6 @@ namespace dzn
 #if DZN_STATE_TRACING
       os << *c << std::endl;
 #endif
-      assert(c->dzn_rt.component_stack.back() == c);
-      c->dzn_rt.component_stack.pop_back();
       c->dzn_rt.handling(c) = 0;
     }
   };
@@ -213,7 +210,6 @@ namespace dzn
     os << *c << std::endl;
 #endif
     c->dzn_rt.defer(p.meta.provide.component, c, [&os,c,l,&p,e]{
-      c->dzn_rt.component_stack.push_back(c);
 #if !DZN_ASYNC_TRACING
       if (!dynamic_cast<async_base*> (&p))
         trace_qout(os, p.meta, e);
@@ -221,8 +217,6 @@ namespace dzn
       trace_qout(os, p.meta, e);
 #endif
       l();
-      assert(c->dzn_rt.component_stack.back() == c);
-      c->dzn_rt.component_stack.pop_back();
     }, coroutine_id(c->dzn_locator));
   }
 }

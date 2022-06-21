@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2014, 2015, 2016, 2017, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2014, 2015, 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2015 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -78,6 +78,11 @@ namespace dzn
   size_t& runtime::handling(void* scope)
   {
     return states[scope].handling;
+  }
+
+  size_t& runtime::blocked(void* scope)
+  {
+    return states[scope].blocked;
   }
 
   void*& runtime::deferred(void* scope)

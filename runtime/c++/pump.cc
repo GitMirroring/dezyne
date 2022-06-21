@@ -268,35 +268,15 @@ namespace dzn
 
     collateral_blocked.splice(collateral_blocked.end(), coroutines, self);
 
-    assert(1 == std::count_if(rt.blocked_port_component_stack.begin(),
-                              rt.blocked_port_component_stack.end(),
-                              [c](const std::pair<size_t, std::vector<void*>>& o)
-                              {
-                                return std::find(o.second.begin(),
-                                                 o.second.end(),
-                                                 c)
-                                  != o.second.end();
-                              }));
-
-    auto it = std::find_if(rt.blocked_port_component_stack.begin(),
-                           rt.blocked_port_component_stack.end(),
-                           [c](const std::pair<size_t, std::vector<void*>>& o)
-                           {
-                             return std::find(o.second.begin(),
-                                              o.second.end()
-                                              ,c)
-                               != o.second.end();
-                           });
-
-    assert(it != rt.blocked_port_component_stack.end());
-
     self->component = c;
-    auto itc = find_if (coroutines.begin (), coroutines.end (),
-                        [it](coroutine& c) {return c.id == it->first;});
-    self->port = itc->port;
-    assert(rt.blocked_port_component_stack[self->id].empty());
-    rt.blocked_port_component_stack[self->id] = rt.component_stack;
-    rt.component_stack.clear ();
+    size_t coroutine_id = rt.handling(c) | rt.blocked(c);
+    auto it = find_if (coroutines.begin (), coroutines.end (),
+                       [coroutine_id](coroutine& c) {return c.id == coroutine_id;});
+
+    if (it == coroutines.end() || !it->port)
+      throw std::runtime_error("blocking port not found");
+
+    self->port = it->port;
 
     debug.rdbuf() && debug << "[" << self->id << "] collateral block on "
           << self->port << std::endl;
@@ -305,9 +285,6 @@ namespace dzn
     self->yield_to(coroutines.back());
 
     debug.rdbuf() && debug << "[" << self->id << "] collateral_unblock" << std::endl;
-    auto& v = rt.blocked_port_component_stack[self->id];
-    rt.component_stack.insert(rt.component_stack.end(), v.begin(), v.end());
-    rt.blocked_port_component_stack[self->id].clear ();
   }
   void pump::collateral_release(std::list<coroutine>::iterator self)
   {
@@ -342,18 +319,15 @@ namespace dzn
   }
   void pump::block(runtime& rt, void* c, void* p)
   {
+    auto self = find_self (coroutines);
+    rt.blocked(c) = self->id;
     rt.handling(c) = 0;
-    rt.flush(c,coroutine_id());
+    rt.flush(c,self->id);
     if (rt.skip_block(p))
     {
       rt.skip_block(p) = false;
       return;
     }
-    auto self = find_self (coroutines);
-    assert(rt.blocked_port_component_stack[self->id].empty());
-    rt.blocked_port_component_stack[self->id] = rt.component_stack;
-    rt.component_stack.clear();
-
     self->port = p;
     debug.rdbuf() && debug << "[" << self->id << "] block on " << p << std::endl;
 
@@ -388,6 +362,7 @@ namespace dzn
     }
     remove_finished_coroutines(coroutines);
     rt.skip_block(p) = false;
+    rt.blocked(c) = 0;
   }
   bool pump::collateral_release_skip_block(runtime& rt, void* c)
   {
@@ -403,7 +378,6 @@ namespace dzn
       {
         debug.rdbuf() && debug << "[" << self->id << "]" << " relay skip "
               << self->port << std::endl;
-        std::swap(rt.component_stack,rt.blocked_port_component_stack.at(self->id));
         have_collateral = true;
         self->component = nullptr;
         self->port = nullptr;
@@ -429,7 +403,7 @@ namespace dzn
 
     debug.rdbuf() && debug << "[" << blocked->id << "] unblock" << std::endl;
 
-    switch_context.emplace_back([blocked,self,&rt,p,this] {
+    switch_context.emplace_back([blocked,&rt,p,this] {
       auto self = find_self(coroutines);
       debug.rdbuf() && debug << "setting unblocked to port " << blocked->port << std::endl;
       unblocked.push_back(blocked->port);
@@ -438,9 +412,6 @@ namespace dzn
 
       debug.rdbuf() && debug << "[" << self->id << "] switch from" << std::endl;
       debug.rdbuf() && debug << "[" << blocked->id << "] to" << std::endl;
-
-      assert(rt.component_stack.empty());
-      std::swap(rt.component_stack,rt.blocked_port_component_stack.at(blocked->id));
 
       self->finished = true;
       self->yield_to(*blocked);
