@@ -72,11 +72,15 @@
 
 (define (fill-event-alist o)
   (let* ((dzn-i 0)
-         (flush? (find (cut string=? <> "--flush") (command-line)))
+         (flush? (find (cute string=? <> "--flush") (command-line)))
+         (defer? (find (cute string=? <> "--defer") (command-line)))
+         (defer? ##t) ;; FIXME: always true for now
+         (pump (dzn:get (.locator o) <dzn:pump>))
          (c (make <dzn:component> ##:locator (.locator o) ##:flushes? flush?))
          (e `(#x:main-event-map-void
               #x:main-event-map-valued
-              #x:main-event-map-flush)))
+              #x:main-event-map-flush
+              (<defer> . ,(cute dzn:run-defer pump)))))
 
     #x:main-provides-port-init
     #x:main-requires-port-init

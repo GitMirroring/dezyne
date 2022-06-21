@@ -50,9 +50,11 @@
             dzn:blocked?
             dzn:collateral-block
             dzn:connect
+            dzn:defer
             dzn:flush
             dzn:handle
             dzn:path
+            dzn:prune-deferred
             dzn:rank
             dzn:return-value
             dzn:runtime-locator
@@ -192,7 +194,7 @@
              (when (not (.handling? target))
                (dzn:flush target))))))
 
-(define (defer i o f)
+(define (enqueue i o f)
   (cond ((and (not (and i (.flushes? i))) (not (.handling? o)))
          (dzn:handle o f)
          (dzn:flush o))
@@ -223,6 +225,20 @@
     (when pump
       (dzn:collateral-block pump o port))))
 
+(define-method (dzn:defer (o <dzn:component>) (p <procedure>) (f <procedure>))
+  (let ((f (lambda (coroutine-id)
+             (set! (.handling? o) coroutine-id)
+             (f)
+             (dzn:flush o))))
+    (let ((pump (dzn:get (.locator o) <dzn:runtime-pump>)))
+      (when pump
+        (dzn:defer pump p f)))))
+
+(define-method (dzn:prune-deferred (o <dzn:component>))
+  (let ((pump (dzn:get (.locator o) <dzn:runtime-pump>)))
+    (when pump
+      (dzn:prune-deferred pump))))
+
 (define-method (call-in (o <dzn:component>) f m)
   (let ((log (dzn:get (.locator o) <procedure> "trace"))
         (port (car m)))
@@ -233,16 +249,18 @@
     (set! (.handling? o) (%dzn:id))
     (let ((r (f)))
       (dzn:trace-out log (car m) (dzn:return-value r))
+      (dzn:prune-deferred o)
       (set! (.handling? o) #f)
       r)))
 
 (define-method (call-out (o <dzn:component>) f m)
   (let ((log (dzn:get (.locator o) <procedure> "trace")))
     (apply dzn:trace-qin (cons log m))
-    (defer (.self (.in (car m))) o
+    (enqueue (.self (.in (car m))) o
       (lambda _
         (apply dzn:trace-qout (cons log m))
-        (f)))))
+        (f)))
+    (dzn:prune-deferred o)))
 
 (define* (path o #:optional (p ""))
   (let* ((name (or (and o (.name o)) ""))

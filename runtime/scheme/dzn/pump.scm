@@ -33,14 +33,18 @@
             dzn:handle
             dzn:pump
             dzn:release
-            dzn:remove)
+            dzn:remove
+            dzn:run-defer)
   #:re-export (dzn:blocked?
+               dzn:defer
+               dzn:prune-deferred
                dzn:collateral-block))
 
 (define-class <dzn:pump> (<dzn:runtime-pump>)
   (blocked #:accessor .blocked #:init-form (list))
   (canceled #:accessor .canceled #:init-form (list))
   (collateral #:accessor .collateral #:init-form (list))
+  (deferred #:accessor .deferred #:init-form (list))
   (id #:accessor .id #:init-value 0)
   (prompt-tag #:accessor .prompt-tag #:init-form (make-prompt-tag "pump"))
   (released #:accessor .released #:init-form (list))
@@ -55,6 +59,10 @@
   (display (.id o) port)
   (display ">" port))
 
+(define-class <deferred> ()
+  (predicate #:accessor .predicate #:init-form (const #t) #:init-keyword #:predicate)
+  (procedure #:accessor .procedure #:init-form (const #f) #:init-keyword #:procedure))
+
 (define-method (next-id (o <dzn:pump>))
   (set! (.id o) (1+ (.id o)))
   (.id o))
@@ -65,7 +73,13 @@
     (if (zero? id) (next-id o)
         id)))
 
+(define-method (flush-defer (o <dzn:pump>))
+  (dzn:run-defer o)
+  (when (pair? (.deferred o))
+    (flush-defer o)))
+
 (define-method (dzn:finalize (o <dzn:pump>))
+  (flush-defer o)
   (dzn:pump o (const *unspecified*)))
 
 (define (%debug . rest)
@@ -180,3 +194,19 @@
 (define-method (dzn:collateral-block (o <dzn:pump>) (component <dzn:component>) (port <dzn:interface>))
   (%debug "dzn:collateral-block: port: ~a\n" (.name (.in port)))
   (abort-to-prompt (.prompt-tag o) 'collateral-block port component))
+
+(define-method (dzn:defer (o <dzn:pump>) (p <procedure>) (f <procedure>))
+  (let ((deferred (make <deferred> #:predicate p #:procedure f)))
+    (set! (.deferred o) (append (.deferred o) (list deferred)))))
+
+(define-method (dzn:run-defer (o <dzn:pump>))
+  (dzn:prune-deferred o)
+  (match (.deferred o)
+    ((deferred rest ...)
+     (set! (.deferred o) rest)
+     ((.procedure deferred) #t))
+    (_
+     #f)))
+
+(define-method (dzn:prune-deferred (o <dzn:pump>))
+  (set! (.deferred o) (filter (compose (cute <>) .predicate) (.deferred o))))

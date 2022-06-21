@@ -1,0 +1,6 @@
+(let (#x:capture-member-value)
+  (dzn:defer o
+    (lambda _
+       (and #x:defer-condition))
+    (lambda _
+      #x:expand-statement)))
