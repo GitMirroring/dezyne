@@ -30,9 +30,10 @@
   #:export (<dzn:interface>
             <dzn:component>
             <dzn:port>
+            <dzn:runtime-pump>
             <dzn:system>
             <dzn:runtime>
-            dzn:flush
+            %dzn:id
             .name
             .self
             .locator
@@ -46,22 +47,27 @@
             call-in
             call-out
 
+            dzn:blocked?
+            dzn:collateral-block
             dzn:connect
+            dzn:flush
             dzn:handle
             dzn:path
             dzn:rank
+            dzn:return-value
+            dzn:runtime-locator
             dzn:trace
             dzn:trace-out
-            dzn:trace-qout
             dzn:trace-qin
-            dzn:type-name
-            dzn:return-value
-            dzn:runtime-locator)
+            dzn:trace-qout
+            dzn:type-name)
   #:re-export (<dzn:locator>
                stderr
                dzn:clone
                dzn:get
                dzn:set!))
+
+(define %dzn:id (make-parameter -1))
 
 (define-syntax-rule (assert e)
   (or e (throw 'assert 'e)))
@@ -161,9 +167,15 @@
 (define (action o port dir event . args)
   (apply ((compose event dir port) o) args))
 
+
+;;;
+;;; Runtime.
+;;;
 (define-class <dzn:runtime> ()
   (components #:accessor .components #:init-form (list) #:init-keyword #:components)
   (illegal #:accessor .illegal #:init-value illegal #:init-keyword #:illegal))
+
+(define-class <dzn:runtime-pump> ())
 
 (define (external? o)
   (not (member o (.components (.runtime o)))))
@@ -192,7 +204,7 @@
 (define-method (dzn:handle (o <dzn:component>) f)
   (when (.handling? o)
     (throw 'handle "component already handling an event"))
-  (set! (.handling? o) #t)
+  (set! (.handling? o) (%dzn:id))
   (f))
 
 (define (dzn:return-value r)
@@ -201,10 +213,24 @@
         ((symbol? r) r)
         (else 'return)))
 
+(define-method (dzn:blocked? (o <dzn:component>) (port <dzn:interface>))
+  (let ((pump (dzn:get (.locator o) <dzn:runtime-pump>)))
+    (when pump
+      (dzn:blocked? pump port))))
+
+(define-method (dzn:collateral-block (o <dzn:component>) (port <dzn:interface>))
+  (let ((pump (dzn:get (.locator o) <dzn:runtime-pump>)))
+    (when pump
+      (dzn:collateral-block pump o port))))
+
 (define-method (call-in (o <dzn:component>) f m)
-  (let ((log (dzn:get (.locator o) <procedure> "trace")))
+  (let ((log (dzn:get (.locator o) <procedure> "trace"))
+        (port (car m)))
+    (when (or (.handling? o)
+              (dzn:blocked? o port))
+      (dzn:collateral-block o port))
     (apply dzn:trace (cons log (take m 2)))
-    (set! (.handling? o) #t)
+    (set! (.handling? o) (%dzn:id))
     (let ((r (f)))
       (dzn:trace-out log (car m) (dzn:return-value r))
       (set! (.handling? o) #f)
@@ -215,8 +241,8 @@
     (apply dzn:trace-qin (cons log m))
     (defer (.self (.in (car m))) o
       (lambda _
-        (f)
-        (apply dzn:trace-qout (cons log m))))))
+        (apply dzn:trace-qout (cons log m))
+        (f)))))
 
 (define* (path o #:optional (p ""))
   (let* ((name (or (and o (.name o)) ""))
@@ -225,7 +251,7 @@
                                      (not (string-null? p))) "." "") p)))
     (cond
      ((not o) (string-append "<external>" (if (string-null? p) "" ".") p))
-     ((is-a? o <dzn:port>) (path (.self o) pp))
+    ((is-a? o <dzn:port>) (path (.self o) pp))
      ((and (is-a? o <dzn:model>) (.parent o)) (path (.parent o) pp))
      (else pp))))
 
