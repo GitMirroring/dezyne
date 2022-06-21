@@ -390,7 +390,7 @@
             ((compose
               (cute make <compound> #:elements <>)
               triples:->on-guard*
-              (cute triples:group-expressions <> (list <field-test>))
+              (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
               (rewrite-formals-and-locals (parent o <model>))
               (triples:add-illegals (parent o <model>))
