@@ -108,12 +108,12 @@ component collateral_blocking_multiple_provides0
 
   system
   {
-    multiple_provides mp;
-    left <=> mp.left;
-    right <=> mp.right;
+    multiple_provides top;
+    left <=> top.left;
+    right <=> top.right;
 
-    block b;
-    mp.r <=> b.p;
-    b.r <=> r;
+    block bottom;
+    top.r <=> bottom.p;
+    bottom.r <=> r;
   }
 }
