@@ -98,20 +98,20 @@ namespace dzn
         public class State
         {
             public int handling;
+            public int blocked;
             public Component deferred;
             public Queue<Action> q;
             public bool flushes;
             public State()
             {
                 this.handling = 0;
+                this.blocked = 0;
                 this.q = new Queue<Action>();
                 this.flushes = false;
             }
         }
 
         public Dictionary<Object, State> states;
-        public Stack<Object> component_stack;
-        public Dictionary<int, Stack<Object>> blocked_port_component_stack;
         public Action illegal;
 
         public Runtime(Action illegal = null)
@@ -122,8 +122,6 @@ namespace dzn
             }
             this.illegal = illegal;
             this.states = new Dictionary<Object, State>();
-            this.component_stack = new Stack<Object>();
-            this.blocked_port_component_stack = new Dictionary<int, Stack<Object>>();
         }
         public bool external(Object c)
         {
@@ -193,12 +191,10 @@ namespace dzn
             {
               dzn.pump.collateral_block(c, c.dzn_locator);
             }
-            component_stack.Push(c);
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
             handle(c, f, coroutine_id(c.dzn_locator));
             traceOut(m, "return");
-            component_stack.Pop();
             states[c].handling = 0;
         }
         public R call_in<R>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
@@ -207,7 +203,6 @@ namespace dzn
             {
               dzn.pump.collateral_block(c, c.dzn_locator);
             }
-            component_stack.Push(c);
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
             traceIn(m, e);
             R r = valued_helper(c, f, coroutine_id(c.dzn_locator));
@@ -219,7 +214,6 @@ namespace dzn
             else
                 s = r.GetType().Name + ":" + Enum.GetName(r.GetType(), r);
             traceOut(m, s);
-            component_stack.Pop();
             states[c].handling = 0;
             return r;
         }
@@ -229,11 +223,9 @@ namespace dzn
             if(!(p is async_base))
               traceQin(m, e);
             defer(m.provides.component, c, () => {
-              component_stack.Push(c);
               if(!(p is async_base))
                 traceQout(m, e);
               f();
-              component_stack.Pop();
             }, coroutine_id(c.dzn_locator));
         }
         public static int coroutine_id(dzn.Locator l)

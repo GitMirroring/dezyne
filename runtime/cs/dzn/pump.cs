@@ -300,34 +300,21 @@ namespace dzn
       this.coroutines.Remove(self);
 
       self.component = c;
-      Debug.Assert(self.port == null);
-      foreach(var id in rt.blocked_port_component_stack.Keys)
-        if(rt.blocked_port_component_stack[id].Contains(c))
-        {
-          int i = this.coroutines.FindIndex(o => o.id == id);
-          self.port = this.coroutines[i].port;
-        }
-      Debug.Assert(self.port != null, "no port found associated to component " + c.GetHashCode());
 
-      var v = rt.blocked_port_component_stack.ContainsKey(self.id)
-            ? rt.blocked_port_component_stack[self.id]
-            : new Stack<Object>();
-      foreach(var o in v.ToArray().Reverse())
-        rt.component_stack.Push(o);
-      v.Clear();
-      Debug.Assert(!rt.blocked_port_component_stack.ContainsKey(self.id)
-                   || rt.blocked_port_component_stack[self.id].Count == 0);
-      rt.blocked_port_component_stack[self.id] = rt.component_stack;
-      rt.component_stack = v;
+      int coroutine_id = rt.states[c].handling | rt.states[c].blocked;
+      var it = coroutines.Find(coroutine => coroutine.id == coroutine_id);
+
+      if(it == null || it.port == null)
+        throw new RuntimeException("blocking port not found");
+
+      self.port = it.port;
+
+      Debug.WriteLine("[" + self.id + "] collateral block on "
+                      + self.port.GetHashCode());
 
       create_context();
       self.yield_to(this.coroutines.Last());
       Debug.WriteLine("[" + self.id + "] collateral_unblock");
-
-      v = rt.blocked_port_component_stack[self.id];
-      foreach (var o in v.Reverse ())
-        rt.component_stack.Push (o);
-      rt.blocked_port_component_stack[self.id].Clear ();
     }
     public void collateral_release(coroutine self)
     {
@@ -367,17 +354,12 @@ namespace dzn
     }
     public void block(Runtime rt, Object c, Object p)
     {
+      coroutine self = find_self(this.coroutines);
+      rt.states[c].blocked = self.id;
       rt.states[c].handling = 0;
       rt.flush(c, this.coroutine_id());
       if (this.skip_block.Remove(p))
         return;
-
-      coroutine self = find_self(this.coroutines);
-      Debug.Assert(!rt.blocked_port_component_stack.ContainsKey(self.id)
-                   || rt.blocked_port_component_stack[self.id].Count == 0);
-
-      rt.blocked_port_component_stack[self.id] = rt.component_stack;
-      rt.component_stack = new Stack<Object>();
 
       self.port = p;
       Debug.WriteLine("[" + self.id + "] block on " + p.GetHashCode());
@@ -404,6 +386,7 @@ namespace dzn
 
       remove_finished_coroutines(this.coroutines);
       this.skip_block.Remove(p);
+      rt.states[c].blocked = 0;
     }
     bool collateral_release_skip_block(Runtime rt, Object c)
     {
@@ -412,22 +395,18 @@ namespace dzn
       int it = 0;
       while(it < this.collateral_blocked.Count())
       {
-        coroutine zelf = this.collateral_blocked[it++];
-        if (this.unblocked.FindIndex(i => i == zelf.port) != -1
-            && zelf.component == c)
+        coroutine self = this.collateral_blocked[it++];
+        if (this.unblocked.FindIndex(i => i == self.port) != -1
+            && self.component == c)
         {
-          Debug.WriteLine("[" + zelf.id + "]" + "relay skip "
-                          + zelf.port.GetHashCode());
-          //swap
-          var v = rt.blocked_port_component_stack[zelf.id];
-          rt.blocked_port_component_stack[zelf.id] = rt.component_stack;
-          rt.component_stack = v;
+          Debug.WriteLine("[" + self.id + "]" + "relay skip "
+                          + self.port.GetHashCode());
           have_collateral = true;
-          zelf.component = null;
-          zelf.port = null;
+          self.component = null;
+          self.port = null;
           //splice
-          this.coroutines.Add(zelf);
-          this.collateral_blocked.Remove(zelf);
+          this.coroutines.Add(self);
+          this.collateral_blocked.Remove(self);
         }
       }
       collateral_blocked.Reverse();
@@ -451,28 +430,17 @@ namespace dzn
       Debug.WriteLine("[" + blocked.id + "] unblock");
 
       this.switch_context.Add (() => {
-        var zelf = find_self(this.coroutines);
+        self = find_self(this.coroutines);
         Debug.WriteLine("setting unblocked to port " + blocked.port.GetHashCode());
         this.unblocked.Add(blocked.port);
         blocked.component = null;
         blocked.port = null;
 
-        Debug.WriteLine("[" + zelf.id + "] switch from");
+        Debug.WriteLine("[" + self.id + "] switch from");
         Debug.WriteLine("[" + blocked.id + "] to");
 
-        Debug.Assert(rt.component_stack.Count == 0);
-
-        if(p == null) Console.Error.WriteLine("null port");
-        if(!rt.blocked_port_component_stack.ContainsKey(blocked.id))
-          Console.Error.WriteLine("id " + blocked.id + " not found");
-
-        //swap
-        var v = rt.blocked_port_component_stack[blocked.id];
-        rt.blocked_port_component_stack[blocked.id] = rt.component_stack;
-        rt.component_stack = v;
-
-        zelf.finished = true;
-        zelf.yield_to(blocked);
+        self.finished = true;
+        self.yield_to(blocked);
         Debug.Assert(false, "we must never return here!!!");
         });
     }
