@@ -1,8 +1,8 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,21 +32,27 @@
 #include <dzn/pump.hh>
 
 int
-main ()
+main (int argc, char* argv[])
 {
+  if (argv + argc != std::find_if (argv + 1,
+                                   argv + argc,
+                                   [] (char const* s)
+                                   {return s == "--debug";}))
+    dzn::debug.rdbuf (std::clog.rdbuf ());
+
   dzn::locator loc;
   dzn::runtime rt;
   loc.set (rt);
   collateral_blocking_multiple_provides0 sut (loc);
   sut.dzn_meta.name = "sut";
-  sut.r.meta.require.name = "r";
+  sut.r.meta.provide.name = "r";
 
   sut.r.in.hello = [&]
   {
-    std::clog << "sut.bmp.r.hello -> <external>.r.hello\n";
+    dzn::trace(std::clog, sut.r.meta, "hello");
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     sut.r.out.world();
-    std::clog << "sut.bmp.r.return -> <external>.r.return\n";
+    dzn::trace_out(std::clog, sut.r.meta, "return");
   };
 
   std::thread t([&]{
