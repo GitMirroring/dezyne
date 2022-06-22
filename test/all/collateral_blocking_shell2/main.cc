@@ -42,13 +42,12 @@ main ()
   loc.set (rt);
   collateral_blocking_shell2 sut (loc);
   sut.dzn_meta.name = "sut";
-  sut.w.meta.require.name = "w";
-  sut.w.meta.require.port = &sut.w;
+  sut.w.meta.provide.name = "w";
 
   std::future<void> f1, f2;
   sut.w.in.hello = [&]
   {
-    std::clog << "sut.blocked.w.hello -> <external>.w.hello\n";
+    dzn::trace(std::clog, sut.w.meta, "hello");
     f1 = std::async (std::launch::async, [&]
     {
       std::this_thread::sleep_for (std::chrono::milliseconds (50));
@@ -61,10 +60,13 @@ main ()
       std::clog << "world\n";
       sut.w.out.world ();
     });
+    dzn::trace_out(std::clog, sut.w.meta, "return");
   };
 
   sut.w.in.cruel = [&]{
+    dzn::trace(std::clog, sut.w.meta, "cruel");
     sut.w.out.bye();
+    dzn::trace_out(std::clog, sut.w.meta, "return");
   };
 
   sut.h.in.hello ();

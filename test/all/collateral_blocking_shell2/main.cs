@@ -2,7 +2,7 @@
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,12 +38,11 @@ class main
     using(collateral_blocking_shell2 sut = new collateral_blocking_shell2 (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.w.dzn_meta.requires.name = "w";
-      sut.w.dzn_meta.requires.port = sut.w;
+      sut.w.dzn_meta.provides.name = "w";
 
       sut.w.inport.hello = () =>
       {
-        System.Console.Error.WriteLine("sut.blocked.w.hello -> <external>.w.hello");
+        dzn.Runtime.traceIn(sut.w.dzn_meta, "hello");
 
         new System.Threading.Thread (() =>
         {
@@ -57,6 +56,8 @@ class main
           System.Console.Error.WriteLine("world");
           sut.w.outport.world ();
         }).Start();
+
+        dzn.Runtime.traceOut(sut.w.dzn_meta, "return");
       };
 
       System.Console.Error.WriteLine("hello happy");
