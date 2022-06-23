@@ -101,6 +101,7 @@
 ;;;
 ;;; Defer
 ;;;
+(define-templates capture-local code:capture-local capture-grammar)
 (define-templates capture-member-value code:capture-member)
 (define-templates capture-member code:capture-member capture-grammar)
 (define-templates default-true code:default-true)

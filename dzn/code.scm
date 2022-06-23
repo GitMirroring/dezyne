@@ -60,6 +60,7 @@
             code:assign-reply
             code:bind-provides
             code:bind-requires
+            code:capture-local
             code:capture-member
             code:class-member?
             code:component-include
@@ -369,6 +370,14 @@
   (let ((p (parent o <component>)))
     (if (pair? (ast:variable* p)) o
         '())))
+
+(define-method (code:capture-local (o <defer>))
+  (let* ((references (tree-collect (disjoin(is? <assign>)
+                                           (is? <argument>)
+                                           (is? <var>))
+                                   (.statement o)))
+         (variables (map .variable references)))
+    (filter (negate ast:member?) variables)))
 
 (define-method (code:capture-member (o <component>))
   (ast:variable* o))
