@@ -219,6 +219,7 @@ output, and standard error as three values."
                     (feature? "collateral"))
                 "collateral")
            (feature? "calling_context")
+           (feature? "defer")
            (and (or (feature? "multiple_out")
                     (feature? "double_inevitable")
                     (feature? "flush"))
