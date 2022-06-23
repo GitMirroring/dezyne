@@ -466,19 +466,26 @@ ws               <   [ \t]
        (q-instance? (communication-left o))))
 
 (define (step->event o)
-  (cond ((communication? o)
-         (let ((instance (cond ((and=> (communication-left o) external-instance?) (communication-left o))
-                               ((and=> (communication-right o) external-instance?) (communication-right o))
-                               ((and=> (communication-left o) q-instance?) (communication-right o))
-                               (else (if (communication-left o) (communication-left o)
-                                         (communication-right o))))))
-           (string-join
-            (append
-             (cdr instance)
-             (list (communication-event o)))
-            ".")))
-        ((message? o)
-         (message->string o))))
+  (cond
+   ((communication? o)
+    (let ((instance
+           (cond
+            ((and=> (communication-left o) q-instance?)
+             (communication-right o))
+            ((and=> (communication-left o) external-instance?)
+             (communication-left o))
+            ((and=> (communication-right o) external-instance?)
+             (communication-right o))
+            ((communication-left o))
+            (else
+             (communication-right o)))))
+      (string-join
+       (append
+        (cdr instance)
+        (list (communication-event o)))
+       ".")))
+   ((message? o)
+    (message->string o))))
 
 (define (serialize o)
   (let ((x (record->alist o)))
