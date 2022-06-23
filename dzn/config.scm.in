@@ -121,7 +121,7 @@ There is NO WARRANTY, to the extent permitted by law.
     ("block" . ("c++" "cs" "scheme"))
     ("calling_context" . ("c++" "cs" "scheme"))
     ("collateral" . ("c++" "cs" "scheme"))
-    ("defer" . ("c++"))
+    ("defer" . ("c++" "scheme"))
     ("flush" . ("c++" "cs" "scheme"))
     ("inject" . ("c++" "cs" "javacsript" "scheme"))
     ("space" . ("c" "c++" "cs" "javascript" "scheme"))))
