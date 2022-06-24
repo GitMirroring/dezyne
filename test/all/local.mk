@@ -140,6 +140,7 @@ REGRESSION_TESTS =				\
  %D%/async_synccb				\
  %D%/async_synccb2				\
  %D%/async_types				\
+ %D%/bool_expressions				\
  %D%/blocking-local-state-diagram		\
  %D%/blocking_binding				\
  %D%/blocking_bottom_system			\
