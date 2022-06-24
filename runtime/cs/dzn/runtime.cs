@@ -253,13 +253,8 @@ namespace dzn
         }
         public static void traceQin(port.Meta m, String e)
         {
-            if(path(m.provides.meta) == "<external>")
-                System.Console.Error.WriteLine(path(m.requires.meta, "<q>") + " <- " +
-                                               path(m.provides.meta, m.provides.name) + "." + e);
-            else
-                System.Console.Error.WriteLine(path(m.provides.meta, m.provides.name) + ".<q> <- " +
-                                               path(m.requires.meta, m.requires.name) + "." + e);
-
+            System.Console.Error.WriteLine(path(m.requires.meta, "<q>") + " <- " +
+                                           path(m.provides.meta, m.provides.name) + "." + e);
         }
         public static void traceQout(port.Meta m, String e)
         {
