@@ -167,11 +167,15 @@ function runtime(illegal) {
   };
 
   this.trace_qin = function(m, e, trace) {
+    if (this.path(m[0], '').startsWith ('<external>'))
+      return this.trace_out (m, e, trace);
     trace(this.path(m[0]._dzn.meta.requires, '<q>') + ' <- '
           + this.path(m[0]._dzn.meta.provides) + '.' + e + '\n');
   };
 
   this.trace_qout = function(m, e, trace) {
+    if (this.path(m[0], '').startsWith ('<external>'))
+      return;
     trace(this.path(m[0]._dzn.meta.requires) + '.' + e + ' <- '
           + this.path(m[0]._dzn.meta.provides, '<q>') + '\n');
   };
