@@ -224,6 +224,11 @@ runtime_trace_qin (dzn_port_meta const* mt, char const* e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
+  if (!mt->requires.meta)
+  {
+    runtime_trace_out (mt, e);
+    return;
+  }
   strcpy(pbuf, mt->provides.port);
   strcpy(rbuf, mt->requires.port);
   fprintf (stderr, "%s.%s <- %s.%s\n",
@@ -236,6 +241,8 @@ runtime_trace_qout (dzn_port_meta const* mt, char const* e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
+  if (!mt->requires.meta)
+      return;
   strcpy(pbuf, mt->provides.port);
   strcpy(rbuf, mt->requires.port);
   fprintf (stderr, "%s.%s <- %s.%s\n",
