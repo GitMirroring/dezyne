@@ -176,7 +176,13 @@
          (trail (with-input-from-string trail read-input-file))
          (trail (map ->string trail))
          (loop-index (list-index (cute equal? <> "<loop>") trail))
-         (trail (filter (negate (conjoin string? (cute string-prefix? "<" <>))) trail))
+         (trail (filter (negate (conjoin
+                                 string?
+                                 (conjoin
+                                  (cute string-prefix? "<" <>)
+                                  (negate
+                                   (cute equal? <> "<defer>")))))
+                        trail))
          (loop  (and loop-index (call-with-values
                                     (cute split-at trail loop-index)
                                   (lambda (a b) b))))
@@ -362,13 +368,17 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (filter runtime:boundary-port? (%instances)))))
 
 (define-method (labels (pc <program-counter>))
-  (append (labels) (rtc-labels pc) (return-labels pc)))
+  (append (labels) (rtc-labels pc) (return-labels pc) (defer-labels pc)))
 
 (define-method (label? (o <string>))
   (and (member o (labels)) o))
 
 (define-method (label? (o <boolean>))
   #f)
+
+(define-method (defer-labels (pc <program-counter>))
+  (if (null? (.defer pc)) '()
+      '("<defer>")))
 
 (define-method (return-labels (o <port>))
   (let* ((port (.name o))

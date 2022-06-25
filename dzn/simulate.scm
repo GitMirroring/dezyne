@@ -251,6 +251,7 @@ Return a list of traces, possibly marked with <compliance-error>."
 
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (and (string? event)
+                       (not (equal? event "<defer>"))
                        (clone (string->trigger event) #:parent component)))
          (blocking? (find (compose pair? .blocked) trace))
          (sut-trace (if (or (not trigger) (not blocking?)) trace

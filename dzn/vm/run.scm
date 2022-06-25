@@ -772,13 +772,16 @@ until RTC?."
                              #:statement statement
                              #:location (.location statement)))
                (defer-qout (clone defer-qout #:parent (.parent statement)))
+               (trail (.trail pc))
+               (trail (if (equal? event "<defer>") trail
+                          (cons event trail)))
                (pc (clone pc
                           #:defer (cdr defer)
                           #:running-defer? instance
                           #:instance instance
                           #:statement defer-qout
                           #:trigger (.trigger defer-pc)
-                          #:trail (cons event (.trail pc))))
+                          #:trail trail))
                (pc (set-variables pc (get-variables defer-pc)))
                (traces (run-to-completion pc 'rtc))
                (blocked traces
