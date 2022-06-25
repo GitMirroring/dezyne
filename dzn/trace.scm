@@ -1037,7 +1037,12 @@ ws               <   [ \t]
                 (append events (list event)))))))))
 
 (define (steps->trail steps)
-  (let ((steps (filter (conjoin (negate q-out?) external?) steps)))
+  (define (defer-qout? step)
+    (and (message? step)
+         (equal? (message-message step) "<defer>")))
+  (let ((steps (filter (disjoin (conjoin (negate q-out?) external?)
+                                defer-qout?)
+                       steps)))
     (map step->event steps)))
 
 (define* (trace:format-trace trace #:key debug? file-name format internal? locations?)
