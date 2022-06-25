@@ -441,7 +441,6 @@ output, and standard error as three values."
          (language "simulate")
          (out-lang (string-append file-name "/out/" language))
          (input (filter-<flush> input))
-         (input (filter-<defer> input))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
          ;; FIXME: METAs `model' is used for component/system tricksery

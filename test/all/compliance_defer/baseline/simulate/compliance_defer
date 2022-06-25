@@ -6,10 +6,11 @@
 <external>.h.return <- ...
 (state ((h) (idle . false)) ((sut) (s . S:B)))
 (trail "h.hello" "h.return")
+<defer>
 ... <- sut.h.world
 <external>.h.world <- ...
 (state ((h) (idle . true)) ((sut) (s . S:C)))
-(trail "h.world")
+(trail "<defer>" "h.world")
 test/all/compliance_defer/compliance_defer.dzn:56:21: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello

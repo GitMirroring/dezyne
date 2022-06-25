@@ -115,7 +115,7 @@
   (pc-event? (.instance pc) o))
 
 (define-method (pc-event? (pc <program-counter>) (o <defer-qout>))
-  (%modeling?))
+  #t)
 
 (define-method (pc-event? (pc <program-counter>) (o <initial-compound>))
   (pc-event? (.instance pc) (.trigger pc)))
@@ -322,6 +322,9 @@
 (define-method (pc-arrow? (o <runtime:component>) (action <action>))
   (not (ast:async? (.port action))))
 
+(define-method (pc-arrow? (o <runtime:component>) (action <defer-qout>))
+  #t)
+
 (define-method (pc-arrow? (o <runtime:port>) (q-out <q-out>))
   #t)
 
@@ -409,6 +412,10 @@
             (format #f "... <- ~a.~a" (runtime:instance->string r:port) (.event.name trigger)))
            (else
             (format #f "~a.~a -> ..." (runtime:instance->string r:port) (.event.name trigger)))))))
+
+(define-method (pc->arrow (o <runtime:component>) (defer-qout <defer-qout>))
+  (cons defer-qout
+        (format #f "<defer>")))
 
 (define-method (pc->arrow (o <runtime:component>) (q-in <q-in>))
   (cons q-in (format #f "~a.<q> <- ..." (runtime:instance->string o))))
