@@ -471,8 +471,17 @@ specified in IMPORTS."
 
 (define (string->transformation str)
   (let* ((transform (resolve-interface `(dzn transform)))
+         (input (open-input-string str))
+         (name (false-if-exception (read input)))
          (transformation (false-if-exception
-                          (module-ref transform (string->symbol str)))))
+                          (module-ref transform name)))
+         (parameters (false-if-exception (read input)))
+         (parameters (if (pair? parameters) parameters '()))
+         (parameters? (and (pair? parameters)
+                           (match (warn "arity" (procedure-minimum-arity transformation))
+                             ((1 0 optional) #f)
+                             (_ #t)))))
     (unless transformation
       (throw 'error (format #f "no such transformation: ~a" str)))
-    transformation))
+    (if parameters? (cute transformation <> parameters)
+        transformation)))

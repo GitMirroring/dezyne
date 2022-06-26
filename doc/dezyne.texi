@@ -2579,7 +2579,15 @@ previously checked and unmodified program (@xref{Invoking dzn parse}).
 @itemx -c @var{trans}
 Apply transformation @var{trans} after parsing.  Use @command{dzn --help
 --verbose} to show all transformations.  This option can be used more
-than once.
+than once.  For example,
+
+@example
+dzn code -l dzn -t add-explitic-temporaries -t -o- normalize:compounds test.dzn
+dzn code -l dzn -t 'inline-functions(f)' -t -o- normalize:compounds test.dzn
+@end example
+
+will inline function @code{f} and remove redundant compound-statements
+created by the inlining.
 
 @item --verbose
 @itemx -v
