@@ -550,7 +550,7 @@ output, and standard error as three values."
                             (blocking (map (cute match:substring <> 1) blocking))
                             (blocking (delete-duplicates blocking))
                             (modeling (append modeling '("inevitable" "optional")))
-                            (taus (cons "<defer>" (append taus flushes blocking)))
+                            (taus (append taus flushes blocking))
                             (taus+modeling (append taus modeling)))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
