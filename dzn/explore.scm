@@ -132,7 +132,8 @@ that PC has one more collaterally blocked coroutine on the same port."
        #f)))
 
   (define (run-label orig-pc label)
-    (let* ((sw-pc (switch-context orig-pc))
+    (let* ((orig-pc (clone orig-pc #:collateral-instance #f))
+           (sw-pc (switch-context orig-pc))
            (bob-pc (blocked-on-boundary-switch-context orig-pc)))
       (if (and (eq? orig-pc sw-pc)
                (eq? orig-pc bob-pc))
@@ -174,7 +175,6 @@ that PC has one more collaterally blocked coroutine on the same port."
       (let ((from (pc->state-number pc)))
         (unless (or (.status pc) (hash-ref lts from))
           (let* ((from-pc pc)
-                 (pc (clone pc #:collateral-instance #f))
                  (traces (run-labels pc labels))
                  (traces (map (cute append <> (list from-pc)) traces))
                  (pcs (map car traces)))
