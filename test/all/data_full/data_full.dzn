@@ -117,8 +117,8 @@ component data_full_
 
     on port.e (pi):
     {
-      Idata_full.Status s = funx (pi);
-      s = s;
+      Idata_full.Status s = Idata_full.Status.Yes;
+      s = funx (pi);
       mi = pi;
       // mi = xfunx (pi, $pi + mi$);  // member in $: Ok for C++ but C: self->mi, Python: self.mi
       //mi = xfunx (pi, $pi + pi$); // javascript: foobar NaN
