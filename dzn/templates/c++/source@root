@@ -6,6 +6,5 @@
  #x:pump-include
 
  #x:model
- #x:version-assert
 
 //version: #x:version

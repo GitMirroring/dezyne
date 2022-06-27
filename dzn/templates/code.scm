@@ -186,6 +186,5 @@
 ;;;
 ;;; Misc
 ;;;
-(define-templates version-assert)
 (define-templates interface-include code:interface-include)
 (define-templates component-include code:component-include)
