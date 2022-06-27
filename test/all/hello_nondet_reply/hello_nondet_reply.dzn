@@ -41,9 +41,7 @@ component hello_nondet_reply
   {
     on h.hello():
     {
-      bool b = w.hello();
-      reply (b);
-      b = b;
+      reply (w.hello());
     }
   }
 }
