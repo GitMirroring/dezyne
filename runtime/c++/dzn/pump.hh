@@ -67,7 +67,7 @@ namespace dzn
       bool expired() const {return t <= std::chrono::steady_clock::now();}
       bool operator < (const deadline& d) const { return rank_less(d); }
     private:
-      bool rank_less(const deadline& d) const {return rank < d.rank || rank == d.rank && time_less(d);}
+      bool rank_less(const deadline& d) const {return (rank < d.rank) || (rank == d.rank && time_less(d));}
       bool time_less(const deadline& d) const {return t < d.t || (t == d.t && id < d.id);}
     };
 

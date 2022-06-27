@@ -11,6 +11,7 @@
  #x:requires-port-reference-initializer
 {
   dzn_meta.require = {#x:ports-meta-list };
+  dzn_meta.children = {#x:meta-child };
   #x:constructor-meta-initializer
   #x:injected-instance-meta-initializer
   #x:non-injected-instance-meta-initializer
