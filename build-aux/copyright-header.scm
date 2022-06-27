@@ -150,7 +150,10 @@ All rights reserved.
   (cond
    ((string-prefix? "Henk Katerberg" author)
     "Henk Katerberg <hank@mudball.nl>")
-   ((string-prefix? "Jan Nieuwenhuizen" author)
+   ((or (string-prefix? "Jan Nieuwenhuizen" author)
+        (string-prefix? "Jan (janneke) Nieuwenhuizen" author)
+        (string-prefix? "Jan Nieuwenhuien" author)
+        (string-prefix? "Jan (janneke) Nieuwenhuien" author))
     "Jan (janneke) Nieuwenhuizen <janneke@gnu.org>")
    ((string-prefix? "Johri van Eerd" author)
     "Johri van Eerd <vaneerd.johri@gmail.com>")
@@ -158,8 +161,9 @@ All rights reserved.
     "Paul Hoogendijk <paul@dezyne.org>")
    ((string-prefix? "Rob Wieringa" author)
     "Rob Wieringa <rma.wieringa@gmail.com>")
-   ((string-prefix? "Rutger van Beusekom" author)
-    "Rutger van Beusekom <rutger@dezyne.org>")
+   ((or (string-prefix? "Rutger van Beusekom" author)
+        (string-prefix? "Rutger (regtur) van Beusekom" author))
+    "Rutger (regtur) van Beusekom <rutger@dezyne.org>")
    (else
     author)))
 
