@@ -38,6 +38,7 @@
             normalize:compounds))
 
 (define* (normalize:compounds o #:key wrap-imperative?)
+  "Remove externeous compound wrapping."
   (define (normalize-compound o)
     (cond ((is-a? o <model>)
            (tree-map normalize-compound o))

@@ -334,6 +334,8 @@
   (map foo triples))
 
 (define (normalize:state o)
+  "Push guards up, thereby splitting the body of a trigger into multiple
+guarded occurrences."
   (match o
     (($ <behavior>)
      (clone o #:statement
@@ -407,6 +409,8 @@
     ons))
 
 (define (normalize:event o)
+  "Merge all occurrences of a trigger into a single unguarded `on',
+i.e. pushing guards into the body of the trigger."
   (match o
     (($ <behavior>)
      (clone o #:statement
@@ -543,6 +547,7 @@ to prevent unintended shadowing
   (or (is-a? o <data>) (and (is-a? o <var>) (is-a? ((compose .type .variable) o) <extern>))))
 
 (define (purge-data o)
+  "Remove every `extern' data variable and reference."
   (match o
     (($ <interface>)
      (clone o
@@ -604,6 +609,7 @@ to prevent unintended shadowing
        triples))
 
 (define (add-function-return o)
+  "For each void function make implicit returns explicit."
   (define* (add-return o #:key (loc o))
     (match o
       (($ <compound>)
@@ -735,17 +741,21 @@ to prevent unintended shadowing
     (_ o)))
 
 (define* (remove-otherwise o #:optional (keep-annotated? #t) (statements '()))
+  "Replace otherwise with the negated conjunction of every other guard at
+the same level."
   (define (virgin-otherwise? x) (or (equal? x "otherwise") (eq? x *unspecified*))) ;; FIXME *unspecified*
   (match o
     ((? ast:imperative?)
      o)
-    ((and ($ <guard>) (= .expression (and ($ <otherwise>) (= .value value))) (= .statement statement)) (=> failure)
-     (if (or (and keep-annotated?
-                  (not (virgin-otherwise? value)))
-             (null? statements))
-         (failure)
-         (clone o #:expression (not-or-guards statements)
-                #:statement (remove-otherwise statement keep-annotated?))))
+    ((and ($ <guard>)
+          (= .expression (and ($ <otherwise>) (= .value value)))
+          (= .statement statement)) (=> failure)
+          (if (or (and keep-annotated?
+                       (not (virgin-otherwise? value)))
+                  (null? statements))
+              (failure)
+              (clone o #:expression (not-or-guards statements)
+                     #:statement (remove-otherwise statement keep-annotated?))))
     ((and ($ <compound>) (= ast:statement* (statements ...)))
      (clone o #:elements (map
                           (cute remove-otherwise <> keep-annotated? statements)
@@ -817,7 +827,8 @@ to prevent unintended shadowing
      o)))
 
 (define (add-explicit-temporaries o)
-
+  "Make implicit temporary values in if, reply and return expressions
+explicit."
   (define (add-temporary? o)
     (let ((expression (tree-collect (disjoin (is? <action>) (is? <call>))
                                     (.expression o))))
