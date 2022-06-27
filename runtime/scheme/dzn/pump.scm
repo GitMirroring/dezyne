@@ -52,25 +52,14 @@
 (define-method (dzn:pump (o <dzn:pump>) (event <procedure>) (next-event <procedure>))
   (define (worker cont request port)
     (%debug "worker! cont: ~a, request:~a, port:~a\n" cont request port)
-    (let ((port-cont (assoc-ref (.blocked o) port)))
-      (case request
-        ((block)
-         (set! (.blocked o) (append (.blocked o) (list (cons port cont))))
-         (let ((event (next-event)))
-           (when (procedure? event)
-             (dzn:pump o event next-event))))
-        ((release)
-         (set! (.released o) (append (.released o) (list (cons port cont))))
-         (cond (port-cont
-                (set! (.blocked o) (assoc-remove! (.blocked o) port))
-                (call-with-prompt (.prompt-tag o) port-cont worker))
-               (cont
-                (%debug "release fall-through: ~a\n" cont)
-                (call-with-prompt (.prompt-tag o) cont worker))
-               (else
-                (%debug "worker without cont\n" cont))))
-        (else
-         (throw 'pump-invalid "unknown request" request (.name (.in port)))))))
+    (case request
+      ((block)
+       (set! (.blocked o) (append (.blocked o) (list (cons port cont))))
+       (let ((event (next-event)))
+         (when (procedure? event)
+           (dzn:pump o event next-event))))
+      (else
+       (throw 'pump-invalid "unknown request" request (.name (.in port))))))
 
   (call-with-prompt (.prompt-tag o) event worker)
 
@@ -110,8 +99,7 @@
 (define-method (dzn:block (o <dzn:pump>) (port <dzn:interface>))
   (%debug "dzn:block: port: ~a\n" (.name (.in port)))
   (let ((entry (assoc port (.released o))))
-    (cond
-          (entry
+    (cond (entry
            (%debug "dzn:block: fall-through 1\n")
            (set! (.released o) (alist-delete port (.released o))))
           (else

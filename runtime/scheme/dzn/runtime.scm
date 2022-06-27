@@ -72,10 +72,6 @@
 (define (stderr . args)
   (apply format (cons* (current-error-port) args)))
 
-(define (assoc-xref alist value)
-  (define (cdr-equal? x) (equal? (cdr x) value))
-  (and=> (find cdr-equal? alist) car))
-
 (define-class <dzn:model> ())
 
 (define-class <dzn:port> ()
