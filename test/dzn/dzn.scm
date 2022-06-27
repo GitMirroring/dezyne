@@ -461,7 +461,6 @@ output, and standard error as three values."
                  input)
 
       (cond ((and (zero? status) (not (file-exists? baseline)))
-
              (let* ((input (filter-state input))
                     (trail (filter-state stdout)))
                (and
@@ -474,8 +473,7 @@ output, and standard error as three values."
                              #f)
                   (zero? status))
                 (or (string-null? stderr)
-                    (and (format (current-error-port) "ERROR: ~a\n" stderr)
-                         #f)))))
+                    (format (current-error-port) "ERROR: ~a\n" stderr)))))
             (else
              (let ((out-file (string-append out-lang "/out"))
                    (err-file (string-append out-lang "/err")))
@@ -489,7 +487,8 @@ output, and standard error as three values."
                  (and (zero? (system* "diff" "-ywB" baseline-out out-file))
                       (or (and (string-null? stderr)
                                (not (file-exists? baseline-err)))
-                          (zero? (system* "diff" "-ywB" baseline-err err-file)))))))))))
+                          (zero? (system* "diff" "-ywB"
+                                          baseline-err err-file)))))))))))
 
 (define (run-simulate file-name)
   (format #t "** stage: simulate\n")
