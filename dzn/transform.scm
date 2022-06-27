@@ -46,9 +46,14 @@
                remove-behavior))
 
 (define (normalize:compounds-wrap o)
+  "Like normalize:compounds and wrap singleton top level imperative
+statements in a compound."
   (normalize:compounds o #:wrap-imperative? #t))
 
 (define* (inline-functions o #:optional names)
+  "Expand the function body at each call location for each function, or
+when using --transform=inline-functions(NAMES...) only for the functions
+in NAMES."
   (define (substitute-arguments alist o)
     (match o
       (($ <compound>)
