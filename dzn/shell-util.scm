@@ -26,7 +26,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
-  #:export (copy-recursively
+  #:export (block-format
+            copy-recursively
             delete-file-recursively
             directory-exists?
             file-is-directory?
@@ -374,3 +375,23 @@ match the terminating newline of a line."
           (for-each substitute-one-file files))
          ((? string? f)
           (substitute-one-file f)))))))
+
+
+(define (block-format str prologue tabs width)
+  (let ((indent (string-append "\n" (make-string tabs #\tab)))
+        (words (string-tokenize str))
+        (tab-len (* 8 tabs)))
+    (car (fold (lambda (word result)
+                 (match result
+                   ((str . len)
+                    (let ((delta (string-length word)))
+                      (if (< (+ 1 len delta) width)
+                          (cons (string-append str word " ")
+                                (+ 1 len delta))
+                          (cons (string-append str indent word " ")
+                                (+ tab-len delta)))))))
+               (let* ((prologue-tabs (floor (/ (string-length prologue) 8)))
+                      (indent (make-string (- tabs prologue-tabs) #\tab)))
+                 (cons (string-append prologue indent)
+                       tab-len))
+               words))))

@@ -23,7 +23,9 @@
 ;;; Code:
 
 (define-module (dzn script)
+  #:use-module (ice-9 documentation)
   #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (system repl error-handling)
   #:use-module (srfi srfi-1)
@@ -69,9 +71,25 @@
              (commands (list-commands "/dzn/commands/"))
              (commands (sort (delete-duplicates commands string=?) string<))
              (transform (resolve-interface `(dzn transform)))
-             (transformations (map (compose symbol->string car)
+             (symbol.var->string.doc
+              (match-lambda
+                ((symbol . var)
+                 (cons (string-append "  " (symbol->string symbol))
+                       (object-documentation (variable-ref var))))))
+             (transformations (map symbol.var->string.doc
                                    (module-map cons transform)))
-             (transformations (sort transformations string<)))
+             (string< (lambda (a b) (string< (car a) (car b))) )
+             (transformations (sort transformations string<))
+             (prologue-length (map (compose string-length car) transformations))
+             (tabs (ceiling (/ (apply max prologue-length) 8)))
+             (string.doc->string
+              (match-lambda
+                ((string . doc)
+                 (let* ((prologue (string-append string ":"))
+                        (block-format (cute block-format <> prologue tabs 80))
+                        (doc (and=> doc block-format)))
+                   (if (not doc) string
+                       (string-append doc "\n")))))))
         (format port "\
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
@@ -88,8 +106,10 @@ Transformations: ~a
 Use \"dzn COMMAND --help\" for command-specific information.
 "
                 (string-join commands "\n  " 'prefix)
-                (if verbose? (string-join transformations "\n  " 'prefix)
-                    "Use dzn --help --verbose to list transformations.")))
+                (if verbose? (string-join
+                              (map string.doc->string transformations)
+                              "\n" 'prefix)
+                  "Use dzn --help --verbose to list transformations.")))
       (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
     options))
 
