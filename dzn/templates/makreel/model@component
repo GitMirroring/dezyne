@@ -126,15 +126,29 @@ defer_qout': Locals;
 defer_skip: State;
 defer_skip': State;
 
+
+map
+
+prune_deferred : State # List (StateLocals) -> List(StateLocals);
+
+var defer_state: State;
+    defer_head: StateLocals;
+    defer_tail: List(StateLocals);
+
+eqn
+
+prune_deferred(defer_state, []) = [];
+defer_state != state(defer_head) -> prune_deferred(defer_state, defer_head |> defer_tail) = prune_deferred(defer_state, defer_tail);
+defer_state == state(defer_head) -> prune_deferred(defer_state, defer_head |> defer_tail) = defer_head |> prune_deferred(defer_state, defer_tail);
+
 proc
 
 defer_queue (l: List (StateLocals))
  = (##l == QueueLength) -> (sum sl: StateLocals . defer_qin(sl) . queue_full . delta)
  + (##l < QueueLength) -> (sum sl: StateLocals . defer_qin(sl) . defer_queue(l = l <| sl))
  + (l != []) -> defer_qout(locals(head(l))) . defer_queue(l = tail(l))
- + (l != []) -> sum s : State . defer_skip(s) . ((state(head(l)) != s) -> defer_queue(l = tail(l)) <> defer_queue(l))
- + (l == []) -> sum s : State . defer_skip(s) . defer_queue(l)
  + (l == []) -> defer_q_empty . defer_queue(l)
+ + sum s : State . defer_skip(s) . defer_queue (prune_deferred (s,l))
  ;
 
 #x:proc
