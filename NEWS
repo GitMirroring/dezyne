@@ -5,6 +5,28 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.16.0 since 2.15.3
+** Language
+  - A new keyword `defer' has been introduced.
+  - The `dzn.async' ports are now deprecated.
+** Code
+  - The C++, C#, and experimental Scheme code generators support `defer'.
+  - The experimental Scheme code generator now also supports collateral
+    blocking and thus has full blocking support.
+  - The C++ and C# runtime now has a more elegant and efficient
+    implementation for collateral blocking.
+  - The code generators now produce expressions with `&&' and `||' using
+    courtesy parentheses.  This avoids compiler warnings.
+  - The code generators no longer produce unnecessarily parenthesized
+    and complex expressions.  This also avoids CLANG compiler warnings.
+  - The code generators now preserve the top level comment.
+** Commands
+  - The `dzn' command has a new option: `-t,--transform=TRANS'.  This
+    makes dzn->dzn transformation avaiable from the command line.
+  - A new transformation `inline-functions' has been added.
+** Noteworthy bug fixes
+  - Some warnings in the C++ runtime have been fixed and side-stepped.
+
 * Changes in 2.15.3 since 2.15.2
 ** Noteworthy bug fixes
   - A bug in the C++, C#, and the experimental Scheme and JavaScript
