@@ -1,3 +1,4 @@
+test/all/determinism_async/determinism_async.dzn:48:5: warning: dzn.async is deprecated, please update to defer.
 verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok

@@ -287,7 +287,7 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
        (apply format (current-error-port) "~a:error:~a\n" file-name args)
        (exit EXIT_FAILURE))
       ((well-formedness-error)
-       (for-each wfc:report-error args)
+       (for-each wfc:report-message args)
        (exit EXIT_FAILURE))
       ((system-error)
        (let ((errno (system-error-errno (cons key args))))

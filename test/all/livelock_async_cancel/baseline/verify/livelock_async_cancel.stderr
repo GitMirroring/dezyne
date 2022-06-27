@@ -1,3 +1,4 @@
+test/all/livelock_async_cancel/livelock_async_cancel.dzn:47:5: warning: dzn.async is deprecated, please update to defer.
 verify: IAsync: check: deadlock: ok
 verify: IAsync: check: livelock: ok
 verify: IAsync: check: deterministic: ok

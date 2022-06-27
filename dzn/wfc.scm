@@ -38,7 +38,7 @@
 
   #:export (ast:wfc
             type-name
-            wfc:report-error))
+            wfc:report-message))
 
 ;;; Commentary:
 ;;;
@@ -52,25 +52,32 @@
 ;;; Code:
 
 (define (ast:wfc o)
-  (let ((errors (wfc o)))
+  (let* ((messages (wfc o))
+         (errors (filter (is? <error>) messages))
+         (messages (filter (is? <message>) messages)))
     (when (pair? errors)
-      (apply throw 'well-formedness-error errors)))
+      (apply throw 'well-formedness-error messages))
+    (when (pair? messages)
+       (for-each wfc:report-message messages)))
   o)
 
-(define (wfc:report-error o)
+(define-method (wfc:report-message (o <message>))
   (let* ((ast (.ast o))
          (loc (.location ast)))
-    (if loc
+    (if (not loc) (format (current-error-port) "error: ~a\n" (.message o))
         (format (current-error-port)
                 "~a:~a:~a: ~a: ~a\n"
-                (.file-name loc) (.line loc) (.column loc) (ast-name o) (.message o))
-        (format (current-error-port) "error: ~a\n" (.message o)))))
+                (.file-name loc) (.line loc) (.column loc)
+                (ast-name o) (.message o)))))
 
 (define (wfc-error o message)
   (make <error> #:ast o #:message message))
 
 (define (wfc-info o message)
   (make <info> #:ast o #:message message))
+
+(define (wfc-warning o message)
+  (make <warning> #:ast o #:message message))
 
 (define-method (wfc (o <model>))
   '())
@@ -181,8 +188,9 @@
                                                 (string-join (map .name out-events) ", ")))
                           ,@(map (cut wfc-info <> (format #f "port defined here")) out-events))))))
            (else '())))
-   ;; TODO; do include async port in behavior
-   ))
+   (if (not (ast:async? o)) '()
+       (list
+        (wfc-warning o "dzn.async is deprecated, please update to defer.")))))
 
 
 (define-method (wfc (o <event>))

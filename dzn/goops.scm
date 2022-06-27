@@ -192,6 +192,7 @@
            <local>
            <location>
            <location-end>
+           <message>
            <minus>
            <model-scope>
            <model>
@@ -236,7 +237,8 @@
            <variable>
            <variables>
            <void>
-           <voidreply>)
+           <voidreply>
+           <warning>)
 
 (define-syntax define-ast
   (lambda (x)
@@ -606,11 +608,14 @@
 (define-ast <status> (<ast>)
   (ast))
 
-(define-ast <error> (<status>)
+(define-ast <message> (<status>)
   (message #:init-value ""))
 
-(define-ast <info> (<status>)
-  (message #:init-value ""))
+(define-ast <error> (<message>))
+
+(define-ast <info> (<message>))
+
+(define-ast <warning> (<message>))
 
 (define-ast <skip> (<imperative>))
 

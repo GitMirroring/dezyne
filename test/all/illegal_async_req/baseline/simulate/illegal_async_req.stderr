@@ -1,1 +1,2 @@
+test/all/illegal_async_req/illegal_async_req.dzn:40:5: warning: dzn.async is deprecated, please update to defer.
 test/all/illegal_async_req/illegal_async_req.dzn:43:20: error: illegal

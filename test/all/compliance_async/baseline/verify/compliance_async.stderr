@@ -1,3 +1,5 @@
+test/all/compliance_async/compliance_async.dzn:48:5: warning: dzn.async is deprecated, please update to defer.
+test/all/compliance_async/compliance_async.dzn:49:5: warning: dzn.async is deprecated, please update to defer.
 verify: IAsync: check: deadlock: ok
 verify: IAsync: check: livelock: ok
 verify: IAsync: check: deterministic: ok
