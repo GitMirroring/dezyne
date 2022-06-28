@@ -121,7 +121,7 @@
         (('elements elements ...) (helper elements))
 
         (('import name)
-         (make <import-node> #:name (helper name) #:root (make <root-node>)))
+         (make <import-node> #:name (helper name)))
 
         (('namespace name)
          (make <namespace-node>
