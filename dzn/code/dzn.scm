@@ -47,6 +47,7 @@
 
   #:export (ast->dzn
             dzn:blocking
+            dzn:comment
             dzn:data
             dzn:define-type
             dzn:extension
@@ -110,6 +111,17 @@
 ;;;
 ;;; Accessors
 ;;;
+(define-method (dzn:comment (o <comment>))
+  (let ((str (.string o)))
+    (if (and (string? str) (not (string-null? str))) o
+        '())))
+
+(define-method (dzn:comment (o <locationed>))
+  (dzn:comment (.comment o)))
+
+(define-method (dzn:comment (o <ast>))
+  '())
+
 (define-method (dzn:data (o <data>))
   (if (.value o) (.value o)
       '()))
