@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
 # This file is part of Dezyne.
@@ -117,15 +117,15 @@ AC_SUBST([VERSION_COMMIT])
 AM_CONDITIONAL([CROSS_COMPILING], [test x$cross_compiling = xyes])
 
 # Test framework
-all_languages=""
-if test "x$courageous" = "xyes"; then
-   all_languages="$all_languages,scheme"
-fi
-
 AC_ARG_WITH([courage], [AC_HELP_STRING([--with-courage], [Assert that
   even if this language is unsupported, you will be courageous and
   add/finish Dezyne support for it (see "Porting" in the manual.)])],
   [courageous="$withval"], [courageous="no"])
+
+all_languages=""
+if test "x$courageous" = "xyes"; then
+   all_languages="$all_languages,scheme"
+fi
 
 AC_PROG_CXX
 _AC_PROG_CXX_CXX11([have_cxx11=true])
