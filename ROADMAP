@@ -52,8 +52,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - dezyne.org
     + blog post about free software?
   - register #dezyne
-  - Finish and merge wip-defer
-  - Finish and merge wip-transform
   - Choose different scenarios in simulator
     + interface on optional a b; on optional a b c;
     + component with such a provides port
@@ -63,11 +61,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       blocking_queuefull_reply
 
 ** Release 2.17
-  - Finish and merge wip-stitch
-    + Cleanup dzn/lts.scm!
-  - replace dzn traces with dzn test, i.e. LTS model testing beest
-
-** Release 2.18
   - Pass regression test -- shared state
     + FAIL: compliance_provides_bool (deadlock due to compliance error)
     + FAIL: illegal_requires2 (interface constraint with deadlock in interface)
@@ -133,6 +126,14 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + move ast/wfc.scm tests into PEG parser
     + move ast/wfc.scm tests into TREE postprocessor?
 
+  - Model based testing:
+    + develop single threaded approach to testing on scheme prototype.
+
+** Release 2.18
+  - Finish and merge wip-stitch
+    + Cleanup dzn/lts.scm!
+  - replace dzn traces with dzn test, i.e. LTS model testing beest
+
 ** Release 2.19
   - Language extensions:
     + active system (thread-safe-shell) abstraction: external & blocking
@@ -177,6 +178,10 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - Finish and merge wip-defer
+  - Finish and merge wip-expressions
+  - Finish and merge wip-transform
+  - Finish and merge wip-warnings
   - Paul's bugs
     + compliance_provides_illegal => broken arrows!
     + compliance_blocking_function  => broken arrows!
