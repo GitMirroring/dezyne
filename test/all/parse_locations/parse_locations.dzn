@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +28,7 @@ component hello
   provides ihello h;
   behavior
   {
-    on h.hello(): {}
+    void f () {}
+    on h.hello(): h.world ();
   }
 }
