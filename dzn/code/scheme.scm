@@ -26,6 +26,7 @@
 (define-module (dzn code scheme)
   #:use-module (ice-9 receive)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 string-fun)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -206,6 +207,20 @@
 (define-method (scheme:async-clr (o <port>))
   (let ((event (find (cut ast:name-equal? <> "clr") (ast:event* (.type o)))))
     (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event)  (parent o <model>)))))
+
+(define (comment-mangler str prefix)
+  (let* ((str (string-replace-substring str "/*" ""))
+         (str (string-replace-substring str "*/" ""))
+         (lines (and str (string-split str #\newline)))
+         (lines (map (lambda (s)
+                       (if (not (string-prefix? "//" s)) s
+                           (substring s 2)))
+                     lines))
+         (lines (and str (map (cute string-append prefix <>) lines))))
+    (and str (string-join lines "\n"))))
+
+(define-method (scheme:mangle-comment (o <comment>))
+  (comment-mangler (.string o) ";;;"))
 
 (define (wrap-lonely-variable o)
   (match o

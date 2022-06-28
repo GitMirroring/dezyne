@@ -36,6 +36,7 @@
 ;;; Top
 ;;;
 (define-templates header-data ast:data*)
+(define-templates mangle-comment scheme:mangle-comment)
 
 
 ;;;
