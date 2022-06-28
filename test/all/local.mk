@@ -192,6 +192,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_top			\
  %D%/collateral_double_blocked			\
  %D%/collateral_double_blocked_out		\
+ %D%/comment_traceability			\
  %D%/compliance_async				\
  %D%/compliance_blocking_async_race		\
  %D%/compliance_blocking_function		\
@@ -563,6 +564,7 @@ XFAIL_TESTS =					\
  %D%/async_blocking_ranking_disorder		\
  %D%/async_blocking_verify			\
  %D%/collateral_blocking_async			\
+ %D%/comment_traceability			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock
