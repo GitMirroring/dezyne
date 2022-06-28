@@ -54,15 +54,22 @@ namespace dzn
   {
     if (!os.rdbuf())
       return;
-    os << path(m.require.meta, "<q>") << " <- "
-       << path(m.provide.meta, m.provide.name) << "." << e << std::endl;
+    if (path (m.require.meta, "") == "<external>")
+      trace_out (os, m, e);
+    else
+      os <<  path (m.require.meta, "<q>")
+         << " <- "
+         << path (m.provide.meta, m.provide.name) << "." << e << std::endl;
   }
 
   void trace_qout(std::ostream& os, port::meta const& m, const char* e)
   {
     if (!os.rdbuf())
       return;
-    os << path(m.require.meta, m.require.name) << "." << e << " <- "
+    if (path (m.require.meta, "") == "<external>")
+      return;
+    os << path (m.require.meta, m.require.name) << "." << e
+       << " <- "
        << path(m.require.meta, "<q>") << std::endl;
   }
 
