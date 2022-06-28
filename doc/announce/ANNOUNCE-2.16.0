@@ -1,0 +1,83 @@
+
+Subject: dezyne-2.16.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are happy to announce Dezyne 2.16 which introduces the `defer'
+keyword: A new language concept for implementing an asynchronous
+interface.  With defer, the basic semantics are complete.
+
+Defer replaces dzn.async ports feature that cannot be used in systems
+collateral blocking.  The use of dzn.async ports is now deprecated.
+
+Also new in this release: Cleanups to the code generators and model to
+model transformations.
+
+The documentation is available here:
+<https://dezyne.org/documentation.html>.
+
+We will evaluate your reports and track them via the
+[[https://gitlab.com/groups/dezyne/-/issues][Gitlab dezyne-issues
+project]], see our [[https://dezyne.org/bugreport][guide to writing
+helpful bug reports]].
+
+What's next?
+
+In the next releases we like to see implicit interface constraints,
+shared interface state and verification with system scope for
+automatically exploring possible traces in a system.
+
+Future
+
+Looking beyond the next releases: Module-specifications and
+data-interfaces.  Hierarchical behaviors.  Support for Model Based
+Testing.
+
+Enjoy!
+The Dezyne developers.
+
+Here are the compressed sources and a GPG detached signature[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.16.0.tar.gz
+  https://dezyne.org/download/dezyne/dezyne-2.16.0.tar.gz.sig
+
+Here are the SHA1 and SHA256 checksums:
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.16.0.tar.gz
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.16.0.tar.gz
+
+[*] Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify dezyne-2.16.0.tar.gz.sig
+
+If that command fails because you don't have the required public key,
+then run this command to import it:
+
+  gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+and rerun the 'gpg --verify' command.
+
+NEWS
+
+* Changes in 2.16.0 since 2.15.2
+** Language
+  - A new keyword `defer' has been introduced.
+  - The `dzn.async' ports are now deprecated.
+** Code
+  - The C++, C#, and experimental Scheme code generators support `defer'.
+  - The experimental Scheme code generator now also supports collateral
+    blocking and thus has full blocking support.
+  - The C++ and C# runtime now has a more elegant and efficient
+    implementation for collateral blocking.
+  - The code generators now produce expressions with `&&' and `||' using
+    courtesy parentheses.  This avoids compiler warnings.
+  - The code generators no longer produce unnecessarily parenthesized
+    and complex expressions.  This also avoids CLANG compiler warnings.
+  - The code generators now preserve the top level comment.
+** Commands
+  - The `dzn' command has a new option: `-t,--transform=TRANS'.  This
+    makes dzn->dzn transformation avaiable from the command line.
+  - A new transformation `inline-functions' has been added.
+** Noteworthy bug fixes
+  - Some warnings in the C++ runtime have been fixed and side-stepped.
