@@ -20,7 +20,9 @@
 
 (define (consume-synchronous-out-events prefix event event-alist)
   (let ((match (string-append prefix event)))
+    (when (getenv "PUMP_DEBUG") (format (current-error-port) "consume match=~a\n" match))
     (let loop ((s (read-line)))
+      (when (getenv "PUMP_DEBUG") (format (current-error-port) "consume s=~a\n" s))
       (and s
            (not (eof-object? s))
            (not (equal? s match))
@@ -29,19 +31,24 @@
     (let ((event (and s
                       (not (eof-object? s))
                       (assoc-ref event-alist (string->symbol s)))))
-      (if (not event) (and s (not (eof-object? s)) (last (string-split s #\.)))
-          (begin (event)
-                 (loop (read-line)))))))
+      (cond (event
+              (event)
+              (loop (read-line)))
+            (else
+             (and s (not (eof-object? s))
+                    (last (string-split s #\.))))))))
 
-(define (log-in prefix event event-alist)
-  (stderr "<external>.~a~a -> sut.~a~a\n" prefix event prefix event)
+(define (log-in port event event-alist)
+  (dzn:trace stderr port event)
   (when (not relaxed?)
-    (consume-synchronous-out-events prefix event event-alist)
-    (stderr "<external>.~a~a -> sut.~a~a\n" prefix "return" prefix "return"))
+    (let* ((prefix (string-append (.name (.in port)) "."))
+           (prefix (drop-prefix prefix "<external>.")))
+      (consume-synchronous-out-events prefix event event-alist))
+    (dzn:trace-out stderr port "return"))
   ##f)
 
-(define (log-out prefix event event-alist)
-  (stderr "<external>.~a~a <- sut.~a~a\n" prefix event prefix event)
+(define (log-out port event event-alist)
+  (dzn:trace-out stderr port event)
   ##f)
 
 (define (type-helper value type)
@@ -49,14 +56,18 @@
         ((eq? type 'bool) (equal? value "true"))
         (else (string->symbol value))))
 
-(define (log-valued prefix event event-alist)
-  (stderr "<external>.~a~a -> sut.~a~a\n" prefix event prefix event)
+(define (log-valued port event event-alist)
+  (dzn:trace stderr port event)
   (if (not relaxed?)
-      (let ((s (consume-synchronous-out-events prefix event event-alist)))
-        (if s
-          (begin (stderr "<external>.~a~a <- sut.~a~a\n" prefix s prefix s)
-                  s)
-            0))
+      (let* ((prefix (string-append (.name (.in port)) "."))
+             (prefix (drop-prefix prefix "<external>."))
+             (s (consume-synchronous-out-events prefix event event-alist)))
+        (cond
+        (s
+          (dzn:trace-out stderr port s)
+          s)
+        (else
+          0)))
       0))
 
 (define (fill-event-alist o)
