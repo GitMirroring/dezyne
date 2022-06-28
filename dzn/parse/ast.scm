@@ -74,86 +74,110 @@
     (1+ (- pos (car (vector-ref newlines (1- line))))))
 
   (define (file-helper o file-name start-pos)
-    (define (get-location o)
-      (match o
-        (((and (? symbol?) type) body ... ('location pos end))
-         (let* ((ast (helper (cons type body)))
-                (location (helper (last o)))
-                (location (if (and (is-a? ast <root-node>)
-                                   (.location ast)) (clone location #:file-name (.file-name (.location ast)))
-                                   location)))
-           location))
-        (_ #f)))
-    (define* (make-interface name types-and-events #:optional behavior)
+
+    (define (make-interface name types-and-events behavior comment)
       (let* ((types-and-events (helper types-and-events))
-             (comments types-and-events
-                       (partition (is? <comment-node>) types-and-events))
-             (comment (and=> (as comments <pair>) car))
+             (comments-t/e types-and-events
+                           (partition (is? <comment-node>) types-and-events))
+             (comment-t/e (and=> (as comments-t/e <pair>) car))
              (types events (partition (is? <type-node>) types-and-events))
              (types? (pair? types))
              (types (match types
                       ((type tail ...)
-                       (cons (clone type #:comment comment) tail))
+                       (cons (clone type #:comment comment-t/e) tail))
                       (_
                        types)))
              (types (make <types-node> #:elements types))
              (events (if types? events
                          (match events
                            ((event tail ...)
-                            (cons (clone event #:comment comment) tail))
+                            (cons (clone event #:comment comment-t/e) tail))
                            (_
                             events))))
              (events (make <events-node> #:elements events))
              (behavior (and behavior (set-recursive (helper behavior)))))
         (make <interface-node>
           #:name (helper name)
+          #:comment comment
           #:types types
           #:events events
           #:behavior behavior)))
 
+    (define (comment-ast-list ast comment)
+      (match (.elements ast)
+        ((h t ...)
+         (let ((elements (cons (clone h #:comment comment) t)))
+           (clone ast #:elements elements)))
+        (_
+         ast)))
+
+    (define (comment-statement ast comment)
+      (match ast
+        (($ <compound>)
+         (comment-ast-list ast comment))
+        (_
+         (clone ast #:comment comment))))
+
     (define (helper o)
+      (let* ((ast location comment (strip o))
+             (ast (if (and comment (is-a? ast <root-node>))
+                      (clone ast #:comment comment)
+                      ast)))
+        (values ast location comment)))
+
+    (define (strip o)
+      "Strip comments and locations from the parse tree and add them as fields
+to the AST element."
       (match o
-        ("bool" "bool")
-        ("void" "void")
+        (((and (? symbol?) type) body ... (and ('location pos end) location))
+         (let* ((ast x comment (strip (cons type body)))
+                (location (and location (tree->ast location)))
+                (ast (if (and location (is-a? ast <locationed-node>))
+                         (clone ast #:location location)
+                         ast)))
+           (values ast location comment)))
 
-        ("in" 'in)
-        ("out" 'out)
-        ("inout" 'inout)
-
-        ((and (? string?) (? string->number)) (string->number o))
-
-        ((? string?) o)
-
-        (((and (? symbol?) type) body ... ('comment comment ...))
-         (let* ((ast (helper (cons type body)))
-                (comment (helper `(comment ,@comment))))
+        (((and (? symbol?) type) body ... (and ('comment c ...) comment))
+         (let* ((comment (strip comment))
+                (ast (tree->ast (cons type body) comment)))
            (cond ((is-a? ast <locationed-node>)
                   (clone ast #:comment comment))
                  ((is-a? ast <pair>)
                   (cons comment ast))
                  ((is-a? ast <ast-list-node>)
-                  (match (.elements ast)
-                    ((h t ...)
-                     (let ((elements (cons (clone h #:comment comment) t)))
-                       (clone ast #:elements elements)))
-                    (_
-                     ast)))
+                  (comment-ast-list ast comment))
                  (else
-                  ast))))
+                  ast))
+           (values ast #f comment)))
 
-        (((and (? symbol?) type) body ... ('location pos end))
-         (let ((ast (helper (cons type body))))
-           (if (not (is-a? ast <locationed-node>)) ast
-               (let* ((location (helper (last o)))
-                      (location (if (and (is-a? ast <root-node>) (.location ast))
-                                    (clone location #:file-name (.file-name (.location ast)))
-                                    location)))
-                 (if location (clone ast #:location location)
-                     ast)))))
+        (((and (or 'root 'interface 'behavior 'component 'types 'events 'event)
+               type) body ... (and (? string?) string))
+         ;; FIXME: junking non-parsed STRING
+         (values (tree->ast (cons type body)) #f #f))
 
-        (((and (or 'root 'interface 'behavior 'component 'types 'events 'event) type) body ... (and (? string?) string))
-         ;; FIXME: junking non-comment-parsed string
-         (helper (cons type body)))
+        (((? symbol?) body ...)
+         (values (tree->ast o) #f #f))
+
+        ((or "in" "out" "inout")
+         (values (string->symbol o) #f #f))
+
+        ((and (? string?) (? string->number))
+         (values (string->number o) #f #f))
+
+        ((left (or "||" "&&" "+" "-" "-" "<" "<=" "==" "!=" ">" ">=") right)
+         (values (tree->expression o) #f #f))
+
+        ((or "bool" "void")
+         (values o #f #f))
+
+        ((h ...)
+         (values (filter-map helper o) #f #f))
+
+        (_
+         (values o #f #f))))
+
+    (define* (tree->ast o #:optional comment)
+      (match o
 
         (('comment comment)
          (make <comment-node> #:string comment))
@@ -198,25 +222,31 @@
 
         (('interface name)
          (make <interface-node>
-           #:name (helper name)))
+           #:name (helper name)
+           #:comment comment))
 
         (('interface name (and ('types-and-events x ...) types-and-events))
-         (make-interface name types-and-events))
+         (make-interface name types-and-events #f comment))
 
-        (('interface name (and ('behavior x ...) behavior))
-         (make-interface name '() behavior))
+        (('interface name (and ('behavior x ...) behavior comment))
+         (make-interface name '() behavior comment))
 
         (('interface name types-and-events behavior)
-         (make-interface name types-and-events behavior))
+         (make-interface name types-and-events behavior comment))
 
         (('types-and-events types-and-events ...)
          (helper types-and-events))
 
         (('event direction type name formals)
-         (make <event-node>
-           #:name (helper name)
-           #:signature (make <signature-node> #:type.name (helper type) #:formals (helper formals) #:location (get-location type))
-           #:direction (helper direction)))
+         (let* ((type location comment (helper type))
+                (signature (make <signature-node>
+                             #:type.name type
+                             #:formals (helper formals)
+                             #:location location)))
+           (make <event-node>
+             #:name (helper name)
+             #:signature signature
+             #:direction (helper direction))))
 
         (('formals formal) (make <formals-node> #:elements (list (helper formal))))
         (('formals formals ...) (make <formals-node> #:elements (helper formals)))
@@ -237,11 +267,13 @@
 
         (('component name ports)
          (make <foreign-node>
+           #:comment comment
            #:name (helper name)
            #:ports (helper ports)))
 
         (('component name ports (and ('behavior elements ...) behavior))
          (make <component-node>
+           #:comment comment
            #:name (helper name)
            #:ports (helper ports)
            #:behavior (set-recursive (helper behavior))))
@@ -251,6 +283,7 @@
                 (instances
                  bindings (partition (is? <instance-node>) instances-and-bindings)))
            (make <system-node>
+             #:comment comment
              #:name (helper name)
              #:ports (helper ports)
              #:instances (make <instances-node> #:elements instances)
@@ -342,10 +375,13 @@
              #:elements body)))
 
         (('on triggers)
-         (make <on-node> #:triggers (helper triggers)))
+         (make <on-node> #:comment comment #:triggers (helper triggers)))
 
         (('on triggers statement)
-         (make <on-node> #:triggers (helper triggers) #:statement (helper statement)))
+         (make <on-node>
+           #:comment comment
+           #:triggers (helper triggers)
+           #:statement (helper statement)))
 
         (('action-or-call action-or-call)
          (helper action-or-call))
@@ -414,9 +450,13 @@
            #:variable.name (.name (helper var))
            #:expression (helper expression)))
 
-
         (('behavior-statements statement ...)
-         (map helper statement))
+         (let ((statements (map helper statement)))
+           (match statements
+             ((h t ...)
+              (cons (comment-statement h comment) t))
+             (_
+              statements))))
 
         (('behavior-compound statement)
          (make <compound-node> #:elements (helper statement)))
@@ -473,10 +513,11 @@
         (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
 
         (('function type name formals statement)
-         (let ((signature (make <signature-node>
-                            #:type.name (helper type)
-                            #:formals (helper formals)
-                            #:location (get-location type))))
+         (let* ((type location comment (helper type))
+                (signature (make <signature-node>
+                             #:type.name type
+                             #:formals (helper formals)
+                             #:location location)))
            (make <function-node>
              #:name (helper name)
              #:signature signature
@@ -487,10 +528,12 @@
 
         (('guard expression)
          (make <guard-node>
+           #:comment comment
            #:expression (helper expression)))
 
         (('guard expression statement)
          (make <guard-node>
+           #:comment comment
            #:expression (helper expression)
            #:statement (helper statement)))
 
@@ -575,18 +618,6 @@
         (('expression expression) (helper expression))
         (('expression expression ...) (helper expression))
         (('group expression) (make <group-node> #:expression (helper expression)))
-        ((left "||" right) (make <or-node> #:left (helper left) #:right (helper right)))
-        ((left "&&" right) (make <and-node> #:left (helper left) #:right (helper right)))
-
-        ((left "+" right) (make <plus-node> #:left (helper left) #:right (helper right)))
-        ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
-        ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
-        ((left "<" right) (make <less-node> #:left (helper left) #:right (helper right)))
-        ((left "<=" right) (make <less-equal-node> #:left (helper left) #:right (helper right)))
-        ((left "==" right) (make <equal-node> #:left (helper left) #:right (helper right)))
-        ((left "!=" right) (make <not-equal-node> #:left (helper left) #:right (helper right)))
-        ((left ">"  right) (make <greater-node> #:left (helper left) #:right (helper right)))
-        ((left ">=" right) (make <greater-equal-node> #:left (helper left) #:right (helper right)))
         (('not expression) (make <not-node> #:expression (helper expression)))
 
         (('literal "true") (make <literal-node> #:value "true"))
@@ -599,12 +630,22 @@
                 (column (column-number line pos))
                 (end-line (line-number end))
                 (end-column (column-number end-line end)))
-           (make <location-node> #:file-name file-name #:line (1+ (- line start-line)) #:column column #:end-line (1+ (- end-line start-line)) #:end-column end-column #:offset (- pos start-pos) #:length (- end pos))))
+           (make <location-node> #:file-name file-name #:line (1+ (- line start-line)) #:column column #:end-line (1+ (- end-line start-line)) #:end-column end-column #:offset (- pos start-pos) #:length (- end pos))))))
 
-        ((? (is? <ast>)) o)
+    (define (tree->expression o)
+      (match o
+        ((left "||" right) (make <or-node> #:left (helper left) #:right (helper right)))
+        ((left "&&" right) (make <and-node> #:left (helper left) #:right (helper right)))
+        ((left "+" right) (make <plus-node> #:left (helper left) #:right (helper right)))
+        ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
+        ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
+        ((left "<" right) (make <less-node> #:left (helper left) #:right (helper right)))
+        ((left "<=" right) (make <less-equal-node> #:left (helper left) #:right (helper right)))
+        ((left "==" right) (make <equal-node> #:left (helper left) #:right (helper right)))
+        ((left "!=" right) (make <not-equal-node> #:left (helper left) #:right (helper right)))
+        ((left ">"  right) (make <greater-node> #:left (helper left) #:right (helper right)))
+        ((left ">=" right) (make <greater-equal-node> #:left (helper left) #:right (helper right)))))
 
-        ((h ...) (filter-map helper o))
-        (_ (format #f "LITERAL: \"~s\"" o))))
     (helper o))
 
   (let* ((root-node (file-helper o file-name 0))
