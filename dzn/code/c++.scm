@@ -116,7 +116,6 @@
   (let* ((models (ast:model* o))
          (models (filter (negate
                           (disjoin (is? <type>) (is? <namespace>)
-                                   ast:async?
                                    ast:imported?))
                       models))
          (models (ast:topological-model-sort models))
@@ -127,10 +126,6 @@
   (let ((model (parent o <model>)))
     (if (null? (code:injected-bindings model)) '()
         o)))
-
-(define-method (c++:pump-for-async? (o <component>))
-  (if ((compose pair? ast:req-events) o) o
-      '()))
 
 (define-templates-macro define-templates c++)
 (include-from-path "dzn/templates/dzn.scm")

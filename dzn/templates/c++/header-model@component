@@ -15,7 +15,6 @@ struct #x:model-name : public dzn::component
   #x:provides-port-declare
   #x:requires-port-declare
   #x:injected-port-declare
-  #x:async-port-declare
   #x:model-name (const dzn::locator&);
   void check_bindings() const;
   void dump_tree(std::ostream& os) const;

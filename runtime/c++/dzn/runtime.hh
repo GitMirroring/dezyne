@@ -37,11 +37,6 @@
 #include <tuple>
 #include <vector>
 
-// Set to 1 for tracing of internal async events
-#ifndef DZN_ASYNC_TRACING
-#define DZN_ASYNC_TRACING 0
-#endif
-
 // Set to 1 for experimental state tracing feature.
 #ifndef DZN_STATE_TRACING
 #define DZN_STATE_TRACING 0
@@ -207,23 +202,13 @@ namespace dzn
   void call_out(C* component, L&& event, P& port, const char* event_name)
   {
     auto& os = component->dzn_locator.template get<typename std::ostream>();
-#if !DZN_ASYNC_TRACING
-    if (!dynamic_cast<async_base*> (&port))
-      trace_qin(os, port.meta, event_name);
-#else // DZN_ASYNC_TRACING
     trace_qin(os, port.meta, event_name);
-#endif // DZN_ASYNC_TRACING
 #if DZN_STATE_TRACING
     os << *component << std::endl;
 #endif
     component->dzn_rt.enqueue(port.meta.provide.component, component,
                               [&os,component,event,&port,event_name]{
-#if !DZN_ASYNC_TRACING
-      if (!dynamic_cast<async_base*> (&port))
-        trace_qout(os, port.meta, event_name);
-#else
       trace_qout(os, port.meta, event_name);
-#endif
       event();
     }, coroutine_id(component->dzn_locator));
     prune_deferred(component->dzn_locator);

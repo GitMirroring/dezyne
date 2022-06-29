@@ -1,9 +1,0 @@
-#.port.name .#.event.direction .#.event.name  = [&](#x:formals){
-  return dzn::call_#.event.direction(this,[=#x:out-arguments ]{
-##if DZN_ASYNC_TRACING
-    #x:trace-q-out
-##endif
-    return #.port.name _#.event.name(#x:code-arguments);
-  },
-  this->#.port.name , "#.event.name ");
-};

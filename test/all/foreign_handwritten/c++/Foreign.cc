@@ -24,7 +24,7 @@
 #include <foreign_handwritten.hh>
 
 Foreign::Foreign(const dzn::locator& dzn_locator)
-: dzn_meta{"","Foreign",0,0,{},{},{[this]{w.check_bindings();}}}
+: dzn_meta{"","Foreign",0,{},{},{[this]{w.check_bindings();}}}
 , dzn_rt(dzn_locator.get<dzn::runtime>())
 , dzn_locator(dzn_locator)
 , w({{"w",&w,this,&dzn_meta},{"",0,0,0}})

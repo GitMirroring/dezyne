@@ -19,7 +19,6 @@
 
   #x:shell-non-injected-instance-meta
   #x:system-port-connect
-  #x:system-rank
 }
 
 void #x:model-name ::check_bindings() const

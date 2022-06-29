@@ -8,17 +8,12 @@
  #x:provides-member-initializer
  #x:requires-member-initializer
  #x:injected-member-initializer
- #x:async-member-initializer
 {
   dzn_meta.require = {#x:ports-meta-list };
   #x:injected-require-initializer
   dzn_rt.performs_flush(this) = true;
-  #x:pump-for-async
   #x:event-slot
-  #x:async-event-slot
   #x:valued-event-slot
-  #x:async-req-event-slot
-  #x:async-clr-event-slot
 }
 
  #x:methods
