@@ -50,7 +50,6 @@
             append-port-trace
             action->trigger
             assign
-            async-event?
             block
             blocked-on-action?
             blocked-on-boundary-collateral-release
@@ -617,7 +616,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (instance (.instance pc))
          (pc (reset-handling! pc))
          (pc (make <program-counter>
-               #:async (.async pc)
                #:id (pc:next-id)
                #:blocked (acons port pc (.blocked pc))
                #:collateral (.collateral pc)
@@ -767,7 +765,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (blocked-port (or (blocked-port pc instance)
                            (blocked-on-boundary? (.previous pc))))
          (pc (make <program-counter>
-               #:async (.async pc)
                #:id (pc:next-id)
                #:blocked (.blocked pc)
                #:collateral (acons blocked-port pc (.collateral pc))
@@ -1221,11 +1218,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                                  state-list))))
     (string-join (filter-map state->string state-list) "\n")))
 
-(define-method (async-ports (pc <program-counter>))
-  (map (match-lambda ((timeout port . proc)
-                      (runtime:dotted-name port)))
-       (.async pc)))
-
 (define-method (pc->string (o <program-counter>))
   (match (.status o)
     ((or ($ <illegal-error>) ($ <implicit-illegal-error>))
@@ -1300,7 +1292,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                    ,@(map trigger->string (blocked-on-boundary-statements o))))
              (if (null? (.external-q o)) '()
                  (list (external-q->string (.external-q o))))
-             (async-ports o)
              (let ((defer (.defer o)))
                (if (null? defer) '()
                    `("defer:"
@@ -1330,8 +1321,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                      (string-join
                       (map (compose runtime:dotted-name car) (.collateral o))
                       ","))))
-             (map (compose runtime:dotted-name car) (.collateral o))
-             (async-ports o)))
+             (map (compose runtime:dotted-name car) (.collateral o))))
       "\n"))))
 
 (define-method (pc->hash (o <program-counter>))
@@ -1437,7 +1427,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (ast:eq? (.statement a) (.statement b))
        (equal? (serialize (.state a)) (serialize (.state b)))
        (equal? (.trail a) (.trail b))
-       (equal? (async-ports a) (async-ports b))
        (ast:equal? (.blocked a) (.blocked b))
        (ast:equal? (.collateral a) (.collateral b))
        (equal? (.released a) (.released b))
@@ -1459,7 +1448,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (ast:equal? (.status a) (.status b))
        (pc:ast:equal? (.statement a) (.statement b))
        (equal? (serialize (.state a)) (serialize (.state b)))
-       (equal? (async-ports a) (async-ports b))
        (ast:equal? (.blocked a) (.blocked b))
        (ast:equal? (.collateral a) (.collateral b))
        (equal? (.released a) (.released b))
@@ -1476,12 +1464,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define (trace-head:eq? a b)
   (pc-equal? (car a) (car b)))
-
-(define-method (async-event? (pc <program-counter>) event)
-  (and (string? event)
-       (not (member event (labels)))
-       (not (return-trigger? event))
-       (pair? (.async pc))))
 
 (define-method (defer-event? (pc <program-counter>) event)
   (and (string? event)
