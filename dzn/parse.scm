@@ -36,6 +36,7 @@
   #:use-module (ice-9 poe)
   #:use-module (ice-9 pretty-print)
 
+  #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn display)
   #:use-module (dzn parse peg)
@@ -213,6 +214,13 @@ parse CONTENT and return
 
 using CONTENT-ALIST to transform locations."
 
+  (define (add-builtin-types root)
+    "Return ROOT with bool and void builtins."
+    (let ((bool (make <bool>))
+          (int (make <int>))
+          (void (make <void>)))
+      (clone root #:elements (cons* bool int void (.elements root)))))
+
   (define (expand-imports ast-alist)
     (let ((file (car ast-alist))
           (imports (cdr ast-alist)))
@@ -235,7 +243,7 @@ using CONTENT-ALIST to transform locations."
                                            #:working-directory working-directory)))))
                alist))
          (ast (expand-imports ast-alist))
-         (ast (annotate-ast ast)))
+         (ast (add-builtin-types ast)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print ast (current-error-port)))
     ast))

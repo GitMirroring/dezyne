@@ -43,8 +43,7 @@
   #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn parse silence)
-  #:export (parse-tree->ast
-            annotate-ast))
+  #:export (parse-tree->ast))
 
 (define* (parse-tree->ast o #:key string (file-name "<stdin>") working-directory)
   "Return a root AST for parse-tree O."
@@ -342,21 +341,6 @@ to the AST element."
            (make <port-node>
              #:name (helper name)
              #:type.name type
-             #:direction direction
-             #:blocking? (and=> (assq 'blocking-q qualifiers) helper)
-             #:external? (and=> (assq 'external qualifiers) helper)
-             #:injected? (and=> (assq 'injected qualifiers) helper))))
-
-        (('port direction ('port-qualifiers qualifiers ...) type formals name)
-         (let* ((direction (helper direction))
-                (direction-list? (pair? direction))
-                (formals (helper formals))
-                (type (helper type))
-                (type (async-interface-name type formals)))
-           (make <port-node>
-             #:name (helper name)
-             #:type.name type
-             #:formals formals
              #:direction direction
              #:blocking? (and=> (assq 'blocking-q qualifiers) helper)
              #:external? (and=> (assq 'external qualifiers) helper)
@@ -704,86 +688,3 @@ to the AST element."
         (let loop ((scope scope))
           (if (null? scope) o
               (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope)))))))))
-
-(define (async-interface-name type formals)
-  "Return a unique name for async TYPE, using the types of FORMALS."
-  (let* ((scope (ast:scope type))
-         (single (ast:name type))
-         ;; FIXME: last??
-         ;; Does 'last' mean that
-         ;;   requires dzn.async(foo.T t) defer;
-         ;;   requires dzn.async(bar.T t) defer;
-         ;; are considered to be the same?
-         ;; should they?
-         ;; Why have (dzn async), (dzn async_T) at all, why don't we
-         ;; (dzn async), (dzn async T)  (or dzn async foo T)
-         (single (string-join (cons single (map (compose last .ids .type.name) (.elements formals))) "_")))
-    (make <scope.name> #:ids (append scope (list single)))))
-
-(define (make-async-refine-interface port)
-  (let* ((void (make <scope.name> #:ids '("void")))
-         (formals (.formals port))
-         (signature (make <signature> #:type.name void #:formals formals))
-         (true (make <literal> #:value "true"))
-         (false (make <literal> #:value "false"))
-         (name (.type.name port)))
-    (make <interface>
-      #:name name
-      #:events (make <events> #:elements
-                     (list (make <event> #:name "req" #:direction 'in #:signature signature)
-                           (make <event> #:name "clr" #:direction 'in #:signature (make <signature> #:type.name void))
-                           (make <event> #:name "ack" #:direction 'out #:signature signature)))
-      #:behavior
-      (make <behavior>
-        #:variables (make <variables>
-                      #:elements (list (make <variable> #:type.name "bool" #:name "idle" #:expression true)))
-        #:statement
-        (make <compound>
-          #:elements
-          (list
-           (make <guard>
-             #:expression (make <var> #:name "idle")
-             #:statement
-             (make <compound>
-               #:elements
-               (list
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "req")))
-                      #:statement (make <assign> #:variable.name "idle" #:expression false))
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "clr")))
-                      #:statement (make <compound>)))))
-           (make <guard>
-             #:expression (make <not> #:expression (make <var> #:name "idle"))
-             #:statement
-             (make <compound>
-               #:elements
-               (list
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "clr")))
-                      #:statement (make <assign> #:variable.name "idle" #:expression true))
-                (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "inevitable")))
-                      #:statement
-                      (make <compound>
-                        #:elements
-                        (list
-                         (make <action> #:event.name "ack")
-                         (make <assign> #:variable.name "idle" #:expression true)))))))))))))
-
-(define (annotate-ast root)
-  "Return ROOT with synthesized elements, bool, void and async
-interfaces."
-  (define (async-port-equal? a b)
-    (and
-     (equal? (ast:full-name (.type.name a))
-             (ast:full-name (.type.name b)))
-     (every ast:equal?
-            (map .type.name (ast:formal* a))
-            (map (compose .type.name) (ast:formal* b)))))
-  (let* ((types (list (make <bool>) (make <int>) (make <void>)))
-         (components (filter (is? <component>) (ast:model* root)))
-         (async-ports (append-map ast:async-port* components))
-         (async-ports (delete-duplicates async-ports async-port-equal?))
-         (async-interfaces (map make-async-refine-interface async-ports))
-         (async-namespace (if (null? async-interfaces) '()
-                              (list (make <namespace>
-                                      #:name (make <scope.name> #:ids '("dzn"))
-                                      #:elements async-interfaces)))))
-    (clone root #:elements (append types async-namespace (.elements root)))))
