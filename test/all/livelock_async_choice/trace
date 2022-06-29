@@ -1,6 +1,0 @@
-h.hello
-h.return
-<loop>
-w.hello
-w.false
-<livelock>

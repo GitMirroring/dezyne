@@ -1,5 +1,0 @@
-model: livelock_async_cancel
-p.e
-p.return
-<loop>
-<livelock>

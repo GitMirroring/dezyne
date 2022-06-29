@@ -1,1 +1,0 @@
-test/all/async_provides/async_provides.dzn:40:5: warning: dzn.async is deprecated, please update to defer.

@@ -1,5 +1,0 @@
-model: livelock_async
-h.hello
-h.return
-<loop>
-<livelock>

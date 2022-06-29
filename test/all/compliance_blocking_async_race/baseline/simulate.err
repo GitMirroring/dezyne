@@ -1,4 +1,0 @@
-test/all/compliance_blocking_async_race/compliance_blocking_async_race.dzn:67:5: warning: dzn.async is deprecated, please update to defer.
-test/all/compliance_blocking_async_race/compliance_blocking_async_race.dzn:65:3: error: non-compliance
-test/all/compliance_blocking_async_race/compliance_blocking_async_race.dzn:65:3: component can omit all of: h.world
-test/all/compliance_blocking_async_race/compliance_blocking_async_race.dzn:65:3: the interface promises inevitably: h.world 

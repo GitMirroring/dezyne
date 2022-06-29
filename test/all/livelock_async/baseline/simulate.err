@@ -1,2 +1,0 @@
-test/all/livelock_async/livelock_async.dzn:40:5: warning: dzn.async is deprecated, please update to defer.
-test/all/livelock_async/livelock_async.dzn:44:5: error: livelock

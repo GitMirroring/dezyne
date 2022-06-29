@@ -44,7 +44,6 @@ HELLO_TESTS =					\
  %D%/determinism_out				\
  %D%/determinism_interface			\
  %D%/hello_alpha				\
- %D%/hello_async				\
  %D%/hello_block				\
  %D%/hello_blocking_external			\
  %D%/hello_bool					\
@@ -120,30 +119,6 @@ REGRESSION_TESTS =				\
  %D%/alpha_shadow_port				\
  %D%/alpha_variable				\
  %D%/assign_formal				\
- %D%/async_async_prio				\
- %D%/async_blocking				\
- %D%/async_blocking_missing_ack			\
- %D%/async_blocking_ranking_disorder		\
- %D%/async_blocking_verify			\
- %D%/async_calling_context			\
- %D%/async_cancel				\
- %D%/async_context				\
- %D%/async_flush				\
- %D%/async_multiple_provides			\
- %D%/async_order				\
- %D%/async_order2				\
- %D%/async_prio					\
- %D%/async_prio2				\
- %D%/async_prio3				\
- %D%/async_provides				\
- %D%/async_rank					\
- %D%/async_ranking				\
- %D%/async_shell				\
- %D%/async_simple				\
- %D%/async_sync_prio				\
- %D%/async_synccb				\
- %D%/async_synccb2				\
- %D%/async_types				\
  %D%/bool_expressions				\
  %D%/blocking-local-state-diagram		\
  %D%/blocking_binding				\
@@ -167,7 +142,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_queuefull				\
  %D%/blocking_queuefull_reply			\
  %D%/blocking_race				\
- %D%/blocking_race_async			\
  %D%/blocking_release				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
@@ -179,7 +153,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_system4				\
  %D%/blocking_system_diamond			\
  %D%/calling_context				\
- %D%/collateral_blocking_async			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_double_release		\
@@ -205,8 +178,6 @@ REGRESSION_TESTS =				\
  %D%/complex_member				\
  %D%/complex_not				\
  %D%/complex_or					\
- %D%/compliance_async				\
- %D%/compliance_blocking_async_race		\
  %D%/compliance_blocking_function		\
  %D%/compliance_blocking_illegal		\
  %D%/compliance_blocking_multiple_provides	\
@@ -279,7 +250,6 @@ REGRESSION_TESTS =				\
  %D%/defer_shadow				\
  %D%/defer_twice				\
  %D%/defer_twice_noisy				\
- %D%/determinism_async				\
  %D%/determinism_deadlock			\
  %D%/determinism_modeling			\
  %D%/determinism_silent				\
@@ -378,7 +348,6 @@ REGRESSION_TESTS =				\
  %D%/helloparam					\
  %D%/helloparams				\
  %D%/helloworld					\
- %D%/illegal_async_req				\
  %D%/illegal_blocking_race			\
  %D%/illegal_external_inevitable		\
  %D%/illegal_external_requires_twice		\
@@ -400,9 +369,6 @@ REGRESSION_TESTS =				\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/label_instance_mismatch			\
- %D%/livelock_async				\
- %D%/livelock_async_cancel			\
- %D%/livelock_async_choice			\
  %D%/livelock_iterator				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
@@ -601,27 +567,17 @@ XFAIL_PARSE =					\
  %D%/comment_traceability
 
 XFAIL_VERIFY =					\
- %D%/async_blocking_missing_ack			\
- %D%/async_blocking_ranking_disorder		\
- %D%/async_blocking_verify			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock
 
 XFAIL_SIMULATE =				\
- %D%/async_blocking_ranking_disorder		\
- %D%/collateral_blocking_async			\
  %D%/compliance_livelock
-
-XFAIL_CODE_ASYNC =				\
- %D%/async_blocking_ranking_disorder		\
- %D%/collateral_blocking_async
 
 XFAIL_TESTS =					\
  $(XFAIL_PARSE)					\
  $(XFAIL_VERIFY)				\
- $(XFAIL_SIMULATE)				\
- $(XFAIL_CODE_ASYNC)
+ $(XFAIL_SIMULATE)
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\

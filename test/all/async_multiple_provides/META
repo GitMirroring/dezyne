@@ -1,4 +1,0 @@
-;;; -*- scheme -*-
-((skip ("execute"))
- (comment
-   "requires more system context to execute all traces"))
