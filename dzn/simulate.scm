@@ -552,18 +552,8 @@ port return."
                                     (%liveness? 'component))
                        (run-to-completion*-context-switch pc event))))
         (cons event traces)))
-    (define (async-trace->alist trace)
-      (match (trace->string-trail trace)
-        ((event rest ...)
-         (cons event (list trace)))
-        (()
-         (list trace))))
-    (let* ((labels (labels pc))
-           (alist (map (cute event->label-traces pc <>) labels))
-           (traces (append-map cdr alist))
-           (async-traces (flush-async pc))
-           (async-alist (map async-trace->alist async-traces)))
-      (merge-alist2 alist async-alist)))
+    (let ((labels (labels pc)))
+      (map (cute event->label-traces pc <>) labels)))
 
   (define (provides-event->label-traces pc event)
     (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
@@ -839,11 +829,6 @@ or false."
                     (cpc (reset-replies cpc))
                     (cpc (clone cpc #:instance #f)))
                (check-provides-compliance* cpc event traces)))))
-      ((? (const (and (pair? (.async pc)) (blocked-on-boundary? pc))))
-       (list (cons (clone pc #:async '()) pc+blocked-trace)))
-      ((? (const (pair? (.async pc))))
-       (let ((traces (flush-async pc)))
-         (check-provides-compliance* pc event traces)))
       ((? (const (and (pair? (.defer pc)) (blocked-on-boundary? pc))))
        (list (cons (clone pc #:defer '()) pc+blocked-trace)))
       ((? (const (and (pair? (.defer pc)) (not (%strict?)))))
@@ -1259,8 +1244,7 @@ status."
                                             non-blocked)))
                 (cond ((or (null? valid-traces)
                            error-trace?
-                           (and (not event)
-                                (null? (.async pc))))
+                           (not event))
                        (end-report from-pcs list-of-traces
                                    #:deadlock-check? deadlock-check?
                                    #:interface-determinism-check?
