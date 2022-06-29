@@ -143,12 +143,11 @@
            (not (ast:external? o)))))
 
 (define-method (pc-event? (o <runtime:component>) (action <action>))
-  (and (not (ast:async? action))
-       (let* ((port (.port action))
-              (r:port (runtime:port o port))
-              (r:other-port (runtime:other-port r:port)))
-         (or (ast:injected? port)
-             (runtime:boundary-port? r:other-port)))))
+  (let* ((port (.port action))
+         (r:port (runtime:port o port))
+         (r:other-port (runtime:other-port r:port)))
+    (or (ast:injected? port)
+        (runtime:boundary-port? r:other-port))))
 
 (define-method (pc-event? (o <runtime:component>) (q-out <q-out>))
   (let* ((trigger (.trigger q-out))
@@ -168,7 +167,6 @@
 (define-method (pc-event? (o <runtime:component>) (return <trigger-return>))
   (let ((port (.port return)))
     (and port
-         (not (ast:async? port))
          (let* ((r:port (runtime:port o port))
                 (r:other-port (and r:port (runtime:other-port r:port))))
            (or (eq? r:port r:other-port) ;The other port is injected, no
@@ -320,7 +318,7 @@
                 (ast:external? o)))))
 
 (define-method (pc-arrow? (o <runtime:component>) (action <action>))
-  (not (ast:async? (.port action))))
+  #t)
 
 (define-method (pc-arrow? (o <runtime:component>) (action <defer-qout>))
   #t)
