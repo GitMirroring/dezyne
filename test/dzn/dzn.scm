@@ -220,7 +220,6 @@ output, and standard error as three values."
     (and (string-contains file-name feature) feature))
   (filter identity
           (list
-           (and (not (feature? "asyncchronous")) (feature? "async"))
            (feature? "block")
            (and (or (feature? "_race") ;: XXX rename tests => collateral?
                     (feature? "collateral"))
