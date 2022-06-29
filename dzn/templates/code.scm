@@ -68,19 +68,15 @@
 (define-templates expand-on code:expand-on)
 (define-templates method code:trigger)
 
-(define-templates async-member-initializer (lambda (o) (ast:port* (.behavior o))))
 (define-templates variable-member-initializer ast:variable*)
 (define-templates reply-member-initializer code:reply-types)
 
 (define-templates injected-require-initializer ast:injected-port*)
 (define-templates injected-port-require-override ast:injected-port*)
 
-(define-templates event-slot (lambda (o) (filter (negate ast:async?) (ast:void-in-triggers o))))
+(define-templates event-slot ast:void-in-triggers)
 (define-templates flush (lambda (o) (if (ast:in? o) o '())))
 (define-templates valued-event-slot ast:valued-in-triggers)
-(define-templates async-event-slot ast:async-out-triggers)
-(define-templates async-req-event-slot ast:req-events)
-(define-templates async-clr-event-slot ast:clr-events)
 (define-templates trace-q-out code:trace-q-out)
 
 (define-templates functions code:functions double-newline-infix)
@@ -155,7 +151,6 @@
 (define-templates component-port code:component-port)
 (define-templates injected-instance-system-initializer code:injected-instances-system)
 (define-templates system-port-connect (lambda (o) (filter (negate code:port-bind?) (ast:binding* o))))
-(define-templates system-rank ast:provides-port*)
 
 
 ;;;
