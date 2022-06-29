@@ -37,7 +37,6 @@
             .name
             .self
             .locator
-            .rank
             .runtime
             .in
             .out
@@ -55,7 +54,6 @@
             dzn:handle
             dzn:path
             dzn:prune-deferred
-            dzn:rank
             dzn:return-value
             dzn:runtime-locator
             dzn:trace
@@ -96,8 +94,7 @@
   (locator #:accessor .locator #:init-form (dzn:runtime-locator) #:init-keyword #:locator)
   (runtime #:accessor .runtime #:init-value #f)
   (parent #:accessor .parent #:init-value #f #:init-keyword #:parent)
-  (name #:accessor .name #:init-value "" #:init-keyword #:name)
-  (rank #:accessor .rank #:init-value 0 #:init-keyword #:rank))
+  (name #:accessor .name #:init-value "" #:init-keyword #:name))
 
 (define-method (initialize (o <dzn:component-model>) args)
   (next-method)
@@ -139,17 +136,6 @@
 
 (define-method (dzn:requires* (o <dzn:component>))
   (filter (compose (cut and=> <> (cute eq? <> o)) .self .out) (dzn:interface* o)))
-
-(define-method (dzn:rank (o <dzn:interface>) r)
-  (dzn:rank ((compose .self .in) o) r))
-
-(define-method (dzn:rank (o <dzn:component-model>) r)
-  (when (> r (.rank o))
-    (set! (.rank o) r))
-  (for-each (lambda (i) (dzn:rank ((compose .self .in) i) (1+ (.rank o)))) (dzn:requires* o)))
-
-(define-method (dzn:rank (o <boolean>) r)
-  #t)
 
 (define (dzn:type-name o)
   (string-drop-right (string-drop (symbol->string (class-name (class-of o))) 1) 1))

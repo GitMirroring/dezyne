@@ -192,14 +192,6 @@
 (define-method (scheme:set! (o <assign>))
   (scheme:variable/local (.variable o)))
 
-(define-method (scheme:async-req (o <port>))
-  (let ((event (find (cut ast:name-equal? <> "req") (ast:event* (.type o)))))
-    (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) (parent o <model>)))))
-
-(define-method (scheme:async-clr (o <port>))
-  (let ((event (find (cut ast:name-equal? <> "clr") (ast:event* (.type o)))))
-    (make <trigger> #:port.name (.name o) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event)  (parent o <model>)))))
-
 (define (comment-mangler str prefix)
   (let* ((str (string-replace-substring str "/*" ""))
          (str (string-replace-substring str "*/" ""))

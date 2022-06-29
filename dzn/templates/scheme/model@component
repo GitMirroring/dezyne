@@ -6,14 +6,12 @@
   #x:out-binding-initializer
   #x:injected-port-instance-declare
   #x:provides-member-initializer
-  #x:requires-member-initializer
-  #x:async-member-initializer)
+  #x:requires-member-initializer)
 
 (define-method (initialize (o <#x:type-name >) args)
   (next-method o (cons* ##:flushes? ##t args))
   #x:provides-port-instance-declare
   #x:requires-port-instance-declare
-  #x:async-port-instance-declare
   #x:injected-member-initializer
   #x:injected-require-initializer)
 

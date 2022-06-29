@@ -13,5 +13,4 @@
   #x:bind-connect
   #x:provides-port-reference-initializer
   #x:requires-port-reference-initializer
-  #x:system-port-connect
-  #x:system-rank)
+  #x:system-port-connect)

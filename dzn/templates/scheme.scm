@@ -63,16 +63,10 @@
 (define-templates provides-port-instance-declare ast:provides-port*)
 (define-templates requires-port-instance-declare ast:requires-port*)
 (define-templates injected-port-instance-declare  ast:injected-port*)
-(define-templates async-port-instance-declare ast:async-port*)
-
 (define-templates injected-member-initializer ast:injected-port*)
 
 (define-templates expand-on scheme:expand-on)
 (define-templates declare-method code:trigger double-newline-infix)
-(define-templates declare-async-method code:trigger double-newline-infix)
-
-(define-templates declare-async-req-method scheme:async-req double-newline-infix)
-(define-templates declare-async-clr-method scheme:async-clr double-newline-infix)
 
 
 ;;;
