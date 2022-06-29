@@ -59,7 +59,6 @@
            ast:defer-variable*
            ast:direction
            ast:dotted-name
-           ast:dzn-scope?
            ast:eq?
            ast:equal?
            ast:empty-namespace?
@@ -306,9 +305,6 @@
 
 (define-method (ast:system* (o <root>))
   (filter (is? <system>) (ast:model* o)))
-
-(define-method (ast:dzn-scope? (o <model>))
-  (member (car (.ids (.name o))) '("dzn" "dzn'")))
 
 (define-method (ast:member? (o <variable>))
   (is-a? (.parent (.parent o)) <behavior>))

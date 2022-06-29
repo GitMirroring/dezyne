@@ -70,7 +70,7 @@
     (string-join alphabet ",")))
 
 (define (component-taus model)
-  (let ((ports (ast:requires+async-port* model)))
+  (let ((ports (ast:requires-port* model)))
     (string-join (map makreel:.name ports) ",")))
 
 (define (component-exclude-taus model)
@@ -138,8 +138,8 @@ actions."
   (define (trigger->event trigger)
     (let ((port (.port trigger)))
       (string-append (makreel:.name (.port trigger))
-                     (if (or (ast:async? trigger) (ast:out? trigger)) ".qout."
-                         ".")
+                     (if  (ast:out? trigger) ".qout."
+                          ".")
                      (.event.name trigger))))
   (let* ((triggers (ast:in-triggers component))
          (alphabet (map trigger->event triggers)))
@@ -679,7 +679,7 @@ init for MODEL unless INIT."
     (let* ((models (ast:model* root))
            (components (filter (conjoin (is? <component>) (negate ast:imported?) .behavior) models))
            (component-names (map makreel:unticked-dotted-name components))
-           (interfaces (filter (conjoin (is? <interface>) (negate ast:dzn-scope?)) models))
+           (interfaces (filter (is? <interface>) models))
            (interface-names (map makreel:unticked-dotted-name interfaces))
            (interface-names (let loop ((components components) (interface-names interface-names))
                               (if (null? components) interface-names
