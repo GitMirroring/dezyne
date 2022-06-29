@@ -198,7 +198,7 @@ type-name <-- compound-name / BOOL / VOID
 
 behavior <-- BEHAVIOR (name)? behavior-compound
   behavior-compound <-- BRACE-OPEN# enter-frame behavior-statements BRACE-CLOSE# exit-frame
-    behavior-statements <-- (port / function / variable / declarative-statement / type / &BRACE-CLOSE)#*
+    behavior-statements <-- (function / variable / declarative-statement / type / &BRACE-CLOSE)#*
       function <-- type-name name &(formals BRACE-OPEN) enter-frame formals compound# exit-frame
 
 declarative-statement <- on / blocking / guard / compound
