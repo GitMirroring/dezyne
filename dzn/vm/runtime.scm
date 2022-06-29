@@ -66,8 +66,7 @@
             <runtime:trigger>
             <runtime>
             .container
-            .boundary?
-            .rank))
+            .boundary?))
 
 ;;;
 ;;; Commentary:
@@ -90,8 +89,7 @@
 (define-class <runtime:instance> (<runtime>)
   (ast #:getter .ast #:init-value #f #:init-keyword #:ast) ;; (is? <port) (is? <instance>)
   (container #:getter .container #:init-value #f #:init-keyword #:container) ;;(is? <runtime:instance>)
-  (boundary? #:getter .boundary? #:init-value #f #:init-keyword #:boundary?)
-  (rank #:accessor .rank #:init-value 0 #:init-keyword #:rank)) ; set by runtime:rank!
+  (boundary? #:getter .boundary? #:init-value #f #:init-keyword #:boundary?))
 
 (define-method (runtime:dotted-name (o <runtime:instance>))
   (string-join (runtime:instance->path o) "."))
@@ -245,7 +243,7 @@
   '())
 
 (define-method (runtime:port* (o <runtime:instance>))
-  (append (ast:port* (.type (.ast o))) (ast:async-port* (.type (.ast o)))))
+  (ast:port* (.type (.ast o))))
 
 (define-method (runtime:other-instance+port (instance <runtime:component>) (port <runtime:port>))
   (let* ((other-port (runtime:other-port port))
@@ -361,7 +359,7 @@
                                   (filter ast:provides? (runtime:port* o))))
          (model-instances (model-instances o))
          (requires-instances (map (cut port->instance <> #f #t)
-                                  (filter (conjoin (negate ast:async?) ast:requires?) (runtime:port* o))))
+                                  (filter ast:requires? (runtime:port* o))))
          (instances (append provides-instances
                             model-instances
                             requires-instances))
@@ -373,8 +371,6 @@
                                        instances)))
          (injected-boundaries (map make-injected-boundary injected-instances))
          (instances (append instances injected-boundaries)))
-    (parameterize ((%instances instances))
-      (for-each (cut runtime:rank! <> 0) (filter runtime:provides-instance? instances)))
     instances))
 
 (define-method (runtime:create-instances (o <runtime:instance>))
@@ -390,31 +386,6 @@
 
 (define (runtime:%sut-model)
   (runtime:ast-model (%sut)))
-
-
-;;;
-;;; Async, ranking.
-;;;
-
-(define-method (runtime:rank! (o <runtime:port>) r)
-  (let ((other-port (runtime:other-port o)))
-    (when other-port
-      (runtime:rank! (.container other-port) r))))
-
-(define-method (runtime:rank! (o <runtime:component-model>) r)
-  (define (set-rank! port)
-    (let ((r:other-port (runtime:other-port port)))
-      (when r:other-port
-        (and=> (.container r:other-port)
-               (cute runtime:rank! <> (1+ (.rank o)))))))
-  (when (> r (.rank o))
-    (set! (.rank o) r))
-  (when (not (is-a? o <runtime:foreign>))
-    (for-each set-rank! (filter (compose not ast:injected? .ast)
-                                (runtime:runtime-requires-port* o)))))
-
-(define-method (runtime:rank! (o <boolean>) r)
-  *unspecified*)
 
 
 ;;;
