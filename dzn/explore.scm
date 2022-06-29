@@ -55,17 +55,14 @@
 
 (define-method (process-external (pc <program-counter>))
   (let ((queues (.external-q pc)))
-    (if (or (null? queues)
-            (pair? (.async pc))) '()
-            (let ((instances (map car queues)))
-              (append-map (cute run-external-q pc <>) instances)))))
+    (if (null? queues) '()
+        (let ((instances (map car queues)))
+          (append-map (cute run-external-q pc <>) instances)))))
 
 (define (run-to-completion** pc event)
   (let* ((pc (clone pc #:instance #f #:trail '()))
          (pc (reset-replies pc)))
     (cond
-     ((eq? event 'async)
-      (flush-async pc '()))
      ((eq? event 'defer)
       (if (null? (.defer pc)) '()
           (run-defer-event pc event)))
@@ -74,19 +71,11 @@
      ((is-a? (%sut) <runtime:port>)
       (run-to-completion pc event))
      ((requires-trigger? event)
-      (if (pair? (.async pc)) '()
-          (let* ((traces (run-requires pc event))
-                 (stop flush
-                       (partition
-                        (disjoin (compose null? .async car)
-                                 did-provides-out?
-                                 (compose .status car))
-                        traces))
-                 (port (.port (string->trigger event)))
-                 (blocked-port (and=> (blocked-on-boundary? pc) .ast)))
-            (if (and port (ast:eq? port blocked-port)) '()
-                (append stop (append-map (cute flush-async-trace <> '())
-                                         flush))))))
+      (let* ((traces (run-requires pc event))
+             (port (.port (string->trigger event)))
+             (blocked-port (and=> (blocked-on-boundary? pc) .ast)))
+        (if (and port (ast:eq? port blocked-port)) '()
+            traces)))
      ((provides-trigger? event)
       (if (blocked-on-boundary-provides? pc event) '()
           (run-to-completion pc event))))))
@@ -174,7 +163,7 @@ that PC has one more collaterally blocked coroutine on the same port."
 
   (let* ((labels (labels))
          (labels (if (is-a? (%sut) <runtime:port>) labels
-                     (cons* 'async 'defer 'external labels)))
+                     (cons* 'defer 'external labels)))
          (lts (make-hash-table))
          (state-number-table (make-hash-table))
          (state-number-count (list 1))
