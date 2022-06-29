@@ -193,10 +193,7 @@
                         `(,(wfc-error o (format #f "injected port `~a' has out events: ~a" (.name o)
                                                 (string-join (map .name out-events) ", ")))
                           ,@(map (cut wfc-info <> (format #f "port defined here")) out-events))))))
-           (else '())))
-   (if (not (ast:async? o)) '()
-       (list
-        (wfc-warning o "dzn.async is deprecated, please update to defer.")))))
+           (else '())))))
 
 
 (define-method (wfc (o <event>))
