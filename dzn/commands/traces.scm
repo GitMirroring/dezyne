@@ -82,15 +82,6 @@ Generate exhaustive set of traces for Dezyne model
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
-(define (mark-async text async-ports)
-  (let loop ((text text) (async-ports async-ports))
-    (if (null? async-ports) text
-        (loop (regexp-substitute/global #f (string-append "\"" (makreel:.name  (car async-ports)) ".inevitable\"") text 'pre "\"<ack>\"" 'post)
-              (cdr async-ports)))))
-
-(define (remove-mark-async text)
-  (regexp-substitute/global #f "\"<ack>\"" text 'pre "\"tau\"" 'post))
-
 (define (lts-hide-internal-labels text)
   (let* ((text (regexp-substitute/global #f "\"<declarative-illegal>\"" text 'pre "\"<illegal>\"" 'post))
          (text (regexp-substitute/global #f "\"[^\"]*<blocking>\"" text 'pre "\"tau\"" 'post))
@@ -102,7 +93,6 @@ Generate exhaustive set of traces for Dezyne model
 
 (define (model->lts root model file-name)
   (let* ((lts (verify-pipeline "aut-weak-trace" root model))
-         (lts (if (is-a? model <interface>) lts (mark-async lts (ast:async-port* model))))
          (lts (lts-hide-internal-labels lts)))
     (when (string-null? (string-trim-right lts))
       (throw 'error "failed to create LTS"))
@@ -142,7 +132,7 @@ Generate exhaustive set of traces for Dezyne model
     (when lts?
       (if (and output (not (equal? output "-")))
           (with-output-to-file (string-append output "/" model-name ".aut")
-            (cute display (remove-mark-async lts)))
+            (cute display lts))
           (display lts)))))
 
 (define (main args)
