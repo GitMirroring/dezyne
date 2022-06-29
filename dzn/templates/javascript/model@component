@@ -13,7 +13,6 @@ dzn.#x:class-name  = function (locator, meta) {
   #x:injected-require-initializer
   #x:provides-member-initializer
   #x:requires-member-initializer
-  #x:async-member-initializer
 
   #x:methods
   #x:functions
