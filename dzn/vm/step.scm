@@ -253,8 +253,6 @@
   (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (trigger->string o))
   (cond ((ast:out? o)
          (step-action-up pc o))
-        ((ast:async? o)
-         (step-async-action-down pc o))
         (else
          (step-action-down pc o))))
 
@@ -289,34 +287,6 @@
       (list (begin-step pc other-instance trigger)))
      (else
       (list pc)))))
-
-(define (step-async-action-down pc o)
-  (match (.event.name o)
-    ("req"
-     (let* ((instance (.instance pc))
-            (q-trigger (make <q-trigger> #:port.name (.port.name o) #:event.name "ack"
-                             #:modeling? (ast:modeling? (.trigger pc))))
-            (q-trigger (clone q-trigger
-                              #:parent ((compose .behavior .type .ast) instance)))
-            (ack (lambda (pc) (list (begin-step pc instance q-trigger))))
-            (rank (.rank instance))
-            (r:port (runtime:port instance (.port o)))
-            (req-pending? (find (compose (cute ast:eq? r:port <>) cadr) (.async pc))))
-       (if req-pending?
-           (let ((error (make <illegal-error> #:message "illegal" #:ast o)))
-             (list (clone pc #:status error)))
-           (let ((pc (clone pc #:async (acons rank (cons r:port ack) (.async pc)))))
-             (list (continuation pc o))))))
-    ("clr"
-     (let* ((instance (.instance pc))
-            (r:port (runtime:port instance (.port o)))
-            (timers (.async pc))
-            (canceled (find (compose (cut ast:eq? <> r:port) cadr) (reverse timers)))
-            (timers (reverse (delete canceled timers eq?)))
-            (pc (clone pc #:async timers)))
-       (list (continuation pc o))))
-    (_
-     (throw 'debug "no such async trigger" o))))
 
 (define-method (step-action-up (pc <program-counter>) (o <action>))
   (let* ((instance (.instance pc))
@@ -524,7 +494,6 @@
           (port (.port (.trigger pc))))
       (and (not (and (is-a? instance <runtime:port>)
                      (is-a? (.event (.trigger pc)) <modeling-event>)))
-           (not (and port (ast:async? port)))
            (not (and (is-a? instance <runtime:component>) (not port)))
            (or (is-a? (.instance pc) <runtime:port>)
                (let* ((r:port (runtime:port instance port))
@@ -596,19 +565,6 @@
            (pc (if reset-blocked-on-boundary? (blocked-on-boundary-reset pc)
                    pc)))
       (list (pop-pc pc))))))
-
-(define-method (step (pc <program-counter>) (o <flush-async>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (let ((timers (.async pc)))
-    (if (null? timers) (list pc)
-        (let* ((pc (clone pc #:instance (%sut)))
-               (deadline (apply min (map car timers)))
-               (entry (assoc deadline (reverse timers))))
-          (match entry
-            ((timeout port . proc)
-             (let* ((timers (reverse (delete entry (reverse timers) eq?)))
-                    (pc (clone pc #:async timers)))
-               (proc pc))))))))
 
 
 ;;;
