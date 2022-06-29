@@ -36,7 +36,6 @@
   #:use-module (dzn vm runtime)
   #:export (<block>
             <end-of-on>
-            <flush-async>
             <flush-return>
             <initial-compound>
             <q-in>
@@ -67,7 +66,6 @@
             <second-reply-error>
 
             .action
-            .async
             .blocked
             .collateral
             .collateral-instance
@@ -118,8 +116,6 @@
 (define-ast <end-of-on> (<imperative>))
 
 (define-ast <flush-return> (<imperative>))
-
-(define-ast <flush-async> (<statement>))
 
 (define-ast <initial-compound> (<declarative-compound>))
 
@@ -210,7 +206,6 @@
   (trail #:getter .trail #:init-value (list) #:init-keyword #:trail)
   (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger)
 
-  (async #:getter .async #:init-form (list) #:init-keyword #:async)
   (defer #:getter .defer #:init-form (list) #:init-keyword #:defer)
   (running-defer? #:getter .running-defer? #:init-value #f #:init-keyword #:running-defer?)
 
@@ -303,9 +298,6 @@
   (when (.statement o)
     (display " " port)
     (display ((compose name .statement) o) port))
-  (when (pair? (.async o))
-    (display " async: " port)
-    (display (map (compose runtime:dotted-name cadr) (.async o)) port))
   (when (pair? (.collateral-released o)) (display " *collateral-released*" port))
   (when (pair? (.released o)) (display " *released*" port))
   (when (pair? (.collateral o)) (display " *collateral*" port))
