@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -25,17 +25,12 @@ ifeq ($(MAIN),)
 MAIN:=$(OUT)/main.scm
 endif
 
-GUILE := guile
-
 default: $(OUT)/test
-
-define TEST_SCRIPT
-#! $(SHELL)\n\
-$(GUILE) --no-auto-compile -L $(OUT)/../../scheme -L $(OUT) -L runtime/scheme -e '(main)' $(OUT)/main.scm "'$$@'"\n
-endef
 
 $(OUT)/test: $(MAIN)
 	if test -f $(IN)/main.scm; then cp -f $(IN)/main.scm $(OUT); fi
 	if test -f $(IN)/scheme/main.scm; then cp -f $(IN)/scheme/main.scm $(OUT); fi
-	echo -e "$(TEST_SCRIPT)" > $@
+	sed -e 's,@GUILE@,$(GUILE),g'		\
+	    -e 's,@OUT@,$(OUT),g'		\
+	    test/lib/test.scm > $@
 	chmod +x $@

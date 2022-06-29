@@ -1,7 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
-# Copyright © 2016, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -37,6 +37,7 @@ $(OUT)/test: $(MAIN)
 	cp $(MAIN) $(OUT)/test
 	mkdir -p $(OUT)/dzn
 	ln -fs $(DEVELOPMENT)/runtime/javascript/dzn/* $(OUT)/dzn/
-	if test -f $(IN)/main.js; then cp -f $(IN)/main.js $(OUT)/test; fi
-	if test -f $(IN)/javascript/main.js; then cp -f $(IN)/javascript/main.js $(OUT)/test; fi
-	chmod +x $(OUT)/test
+	if test -f $(IN)/main.js; then cp -f $(IN)/main.js $@; fi
+	if test -f $(IN)/javascript/main.js; then cp -f $(IN)/javascript/main.js $@; fi
+	sed -i -e 's,#!.*,#! $(NODE),' $@
+	chmod +x $@

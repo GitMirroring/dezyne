@@ -152,8 +152,8 @@ if test "x$MCS" != "x"; then
    all_languages="$all_languages,cs"
 fi
 
-AC_PATH_PROGS([NODEJS], [nodejs node])
-if test "x$NODEJS" != "x"; then
+AC_PATH_PROGS([NODE], [nodejs node])
+if test "x$NODE" != "x"; then
    if test "x$courageous" = "xyes"; then
       all_languages="$all_languages,javascript"
    fi
@@ -195,7 +195,7 @@ if test "x$courageous" = xno; then
     AC_MSG_ERROR([`javascript' is not a supported language.
 See "Porting" in the manual, or try `--with-courage'.])
 fi
-if test "x$NODEJS" = x -a x$cross_compiling = xno; then
+if test "x$NODE" = x -a x$cross_compiling = xno; then
     AC_MSG_ERROR([language javascript enabled, but nodejs was not found])
 fi
 have_javascript=true

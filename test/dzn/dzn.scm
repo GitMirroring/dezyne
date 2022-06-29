@@ -43,6 +43,10 @@
 ;;; Invocation helpers
 ;;;
 
+(define %interpreter-alist
+  `(("javascript" . ,(list (or (getenv "NODE") "node")))
+    ("scheme" . ,(list (or (getenv "GUILE") "guile") "--no-auto-compile"))))
+
 ;; XXX: This is probably the slowest way possible to do this.  I hope
 ;; it is correct, at least.
 (define (get-strings-all . ports)
@@ -387,7 +391,8 @@ output, and standard error as three values."
          (input (with-input-from-file trace read-string))
          (out (string-append file-name "/out"))
          (out-lang (string-append file-name "/out/" language))
-         (test (string-append out-lang "/test")))
+         (test (string-append out-lang "/test"))
+         (interpreter (or (assoc-ref %interpreter-alist language) '())))
     (or (error-model? file-name)
         (feature-skip? file-name language)
         (skip? file-name
@@ -396,7 +401,8 @@ output, and standard error as three values."
                "build" (string-append language ":build")
                "execute" (string-append language ":execute"))
         (receive (status stdout stderr)
-            (observe `(,test ,@(if (flush? file-name) '("--flush") '())) input)
+            (observe `(,@interpreter
+                       ,test ,@(if (flush? file-name) '("--flush") '())) input)
           (and (zero? status)
                (let ((net (trace:format-trace stderr #:format "event")))
                  (receive (status stdout stderr)

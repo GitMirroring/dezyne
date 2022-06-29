@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,4 +26,5 @@ EXTRA_DIST +=					\
  %D%/build.c.make				\
  %D%/build.cs.make				\
  %D%/build.javascript.make			\
- %D%/build.scheme.make
+ %D%/build.scheme.make				\
+ %D%/test.scm
