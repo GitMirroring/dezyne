@@ -48,10 +48,6 @@
            ast:base-name
            ast:formal->index
            ast:argument->formal
-           ast:async-out-triggers
-           ast:async?
-           ast:async-port*
-           ast:clr-events
            ast:component-model*
            ast:data*
            ast:declarative?
@@ -101,8 +97,6 @@
            ast:provides-port*
            ast:pure-funcq
            ast:rescope
-           ast:req-events
-           ast:requires+async-port*
            ast:requires-in-triggers
            ast:requires-in-void-triggers
            ast:requires-out-triggers
@@ -249,27 +243,15 @@
             (components (delete-duplicates components ast:eq?)))
        (cons o (append ports components))))))
 
-(define-method (ast:async? (o <port>)) (parent o <behavior>))
-(define-method (ast:async? (o <trigger>)) (ast:async? (.port o)))
-(define-method (ast:async? (o <action>)) (ast:async? (.port o)))
-(define-method (ast:async? (o <interface>))
-  (string-prefix? "dzn.async" (ast:dotted-name o)))
-(define-method (ast:async? (o <ast>))
-  #f)
-
-(define-method (ast:async-port* (o <component>)) ((compose ast:port* .behavior) o))
-(define-method (ast:async-port* (o <component-model>)) '())
-
 (define-method (ast:provides-port o)
   (let ((ports (ast:provides-port* o)))
     (and (pair? ports) (car ports))))
 
 (define-method (ast:interface* (o <component-model>))
-  (delete-duplicates
-   (map .type
-        (append (ast:port* o)
-                (ast:async-port* o)))
-   ast:eq?))
+  (let ((interfaces (map .type (ast:port* o))))
+    (delete-duplicates
+     interfaces
+     ast:eq?)))
 
 (define-method (ast:model* (o <interface>))
   (list o))
@@ -380,9 +362,6 @@
 (define-method (ast:requires-no-injected-port* (o <component-model>))
   (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o)))
 
-(define-method (ast:requires+async-port* (o <component-model>))
-  (append (ast:requires-port* o) (ast:async-port* o)))
-
 (define-method (ast:direction (o <port>))
   (if (ast:provides? o) 'in
       'out))
@@ -418,22 +397,6 @@
   (filter (compose (negate (is? <void>)) .type .signature .event)
           (ast:provides-in-triggers o)))
 
-(define-method (ast:req-events (o <component>))
-  (map (cut trigger-in-component <> o)
-       (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter (conjoin ast:in? (compose (cut equal? "req" <>) .name)) (ast:event* (.type port)))))
-                   (if (.behavior o) (ast:port* (.behavior o))
-                       '()))))
-
-(define-method (ast:clr-events (o <component>))
-  (map (cut trigger-in-component <> o)
-       (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter (conjoin ast:in? (compose (cut equal? "clr" <>) .name)) (ast:event* (.type port)))))
-                   (if (.behavior o) (ast:port* (.behavior o))
-                       '()))))
-
 (define-method (ast:requires-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
@@ -441,22 +404,9 @@
                           (filter ast:out? (ast:event* (.type port)))))
                    (filter ast:requires? (ast:port* o)))))
 
-(define-method (ast:async-out-triggers (o <foreign>))
-  '())
-
-(define-method (ast:async-out-triggers (o <system>))
-  '())
-
-(define-method (ast:async-out-triggers (o <component>))
-  (map (cut trigger-in-component <> o)
-       (append-map (lambda (port)
-                     (map (lambda (event) (make <trigger> #:port.name (.name port) #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
-                          (filter ast:out? (ast:event* (.type port)))))
-                   (if (.behavior o) (ast:port* (.behavior o))
-                       '()))))
-
 (define-method (ast:in-triggers (o <component-model>))
-  (append (ast:provides-in-triggers o) (ast:requires-out-triggers o) (ast:async-out-triggers o)))
+  (append (ast:provides-in-triggers o)
+          (ast:requires-out-triggers o)))
 
 (define-method (ast:in-triggers (o <interface>))
   (map (lambda (event) (make <trigger> #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))

@@ -182,11 +182,10 @@
             (ast:instance* o))))
 
 (define-method (code:pump? (o <component>))
-  (and (or (pair? (ast:async-port* o))
-           (pair? (tree-collect (disjoin (is? <blocking>)
-                                         (is? <defer>)
-                                         (is? <blocking-compound>))
-                                o)))
+  (and (pair? (tree-collect (disjoin (is? <blocking>)
+                                     (is? <defer>)
+                                     (is? <blocking-compound>))
+                            o))
        o))
 
 (define-method (code:pump? (o <root>))
