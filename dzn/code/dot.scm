@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -44,7 +44,6 @@
 ;;;
 (define-method (dot:connection* (o <runtime:system>))
   (let ((ports (filter (conjoin (is? <runtime:port>)
-                                (negate ast:async?)
                                 ast:requires?
                                 (negate runtime:boundary-port?)
                                 (disjoin (negate (compose runtime:boundary-port? runtime:other-port))
@@ -64,7 +63,6 @@
 (define-method (dot:requires-port* (o <runtime:instance>))
   (filter (conjoin (is? <runtime:port>)
                    ast:requires?
-                   (negate ast:async?)
                    (compose (cute eq? <> (%sut)) .container))
           (%instances)))
 
