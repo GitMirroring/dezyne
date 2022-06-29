@@ -61,10 +61,6 @@
 ;;;
 (define-templates meta)
 (define-templates port-declaration ast:port*)
-(define-templates async-port-declare ast:async-port*)
-(define-templates async-port-init ast:async-port*)
-(define-templates async-port-declare-delegate cs:async-interface*)
-(define-templates async-signature-name cs:async-signature-name name_infix)
 
 (define-templates variable-member-initializer (lambda (o) (filter (compose ast:typed? .expression) (ast:variable* o))))
 (define-templates provides-port-init ast:provides-port*)

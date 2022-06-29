@@ -3,8 +3,6 @@
 public class #x:model-name  : dzn.Component {
   #x:enum-definer
   #x:port-declaration
-  #x:async-port-declare-delegate
-  #x:async-port-declare
   #x:variable-member-declare
   #x:reply-member-declare
   #x:formal-binding-lambda
@@ -16,7 +14,6 @@ public class #x:model-name  : dzn.Component {
     #x:injected-member-initializer
     #x:provides-port-init
     #x:requires-port-init
-    #x:async-port-init
 
     this.dzn_meta.requires = new List<dzn.port.Meta> {
       #x:requires-port-meta
@@ -30,10 +27,7 @@ public class #x:model-name  : dzn.Component {
     };
 
     #x:event-slot
-    #x:async-event-slot
     #x:valued-event-slot
-    #x:async-req-event-slot
-    #x:async-clr-event-slot
   }
 
   #x:method

@@ -238,11 +238,9 @@ namespace dzn
         public void call_out(Component c, Action f, Port p, String e)
         {
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
-            if(!(p is async_base))
-              traceQin(m, e);
+            traceQin(m, e);
             enqueue(m.provides.component, c, () => {
-              if(!(p is async_base))
-                traceQout(m, e);
+              traceQout(m, e);
               f();
             }, dzn.pump.coroutine_id(c.dzn_locator));
             dzn.pump.prune_deferred(c.dzn_locator);

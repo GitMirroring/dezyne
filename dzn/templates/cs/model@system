@@ -22,7 +22,6 @@ public class #x:model-name  : dzn.SystemComponent {
     };
 
     #x:system-port-connect
-    #x:system-rank
   }
   public void check_bindings()
   {

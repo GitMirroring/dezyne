@@ -1,1 +1,0 @@
-this.#.port.name .#.event.direction port.#.event.name  = () => {this.dzn_locator.get<dzn.pump>().remove(this.#.port.name .GetHashCode());};

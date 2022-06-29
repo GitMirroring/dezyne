@@ -98,26 +98,4 @@ namespace dzn
                                                  m.provides.component != null ? m.provides.name : m.requires.name) + "." + msg)
     {}
   }
-
-  public class async_base : dzn.Port {}
-  public class async<Signature>: async_base
-  {
-    public class In
-    {
-      public Signature req;
-      public delegate void signature_clr ();
-      public signature_clr clr;
-    }
-    public class Out
-    {
-      public Signature ack;
-    }
-    public In inport;
-    public Out outport;
-    public async ()
-    {
-      inport = new In ();
-      outport = new Out ();
-    }
-  }
 }

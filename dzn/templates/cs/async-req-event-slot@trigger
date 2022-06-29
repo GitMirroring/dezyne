@@ -1,7 +1,0 @@
-this.#.port.name .#.event.direction port.#.event.name  = (#x:formal-parameter) => {
-  #x:out-ref-local
-  this.dzn_locator.get<dzn.pump>().handle(this.#.port.name .GetHashCode(), 0, () => {
-    this.#.port.name .outport.ack(#x:code-arguments);
-    },
-  this.dzn_meta.rank);
-};

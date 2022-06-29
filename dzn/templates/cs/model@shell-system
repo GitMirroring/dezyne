@@ -35,7 +35,6 @@ public class #x:model-name  : dzn.SystemComponent, IDisposable {
     };
 
     #x:system-port-connect
-    #x:system-rank
   }
   protected virtual void Dispose(bool gc)
   {
