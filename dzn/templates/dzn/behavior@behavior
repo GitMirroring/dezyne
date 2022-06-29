@@ -1,5 +1,4 @@
 behavior {
-  #x:async-port
   #x:define-type
   #x:declare-variable
   #x:define-function

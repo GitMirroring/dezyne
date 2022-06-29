@@ -72,7 +72,6 @@
 (define-templates blocking dzn:blocking)
 (define-templates external dzn:external)
 (define-templates injected dzn:injected)
-(define-templates async-port ast:port*)
 
 (define-templates trigger-signature (lambda (o) (if (not (.port.name o)) "" o)))
 (define-templates trigger-formal (lambda (o) (ast:formal* o)) formal-grammar)

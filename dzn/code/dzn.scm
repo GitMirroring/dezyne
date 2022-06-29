@@ -95,7 +95,6 @@
   (let* ((models (ast:model* o))
          (models (filter (negate (disjoin (is? <namespace>)
                                           (is? <type>)
-                                          ast:async?
                                           ast:imported?))
                          models))
          (models (ast:topological-model-sort models)))
