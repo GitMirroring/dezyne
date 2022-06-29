@@ -5,7 +5,7 @@ component_queue (l: List (requires_events)) =
 
 #x:external-proc
 
-req_and_queue_parallel = component_queue([]) || async([])#x:requires-port-parallel-proc #x:external-port-parallel-proc;
+req_and_queue_parallel = component_queue([]) #x:requires-port-parallel-proc #x:external-port-parallel-proc;
 
 req_and_queue_comm = comm({
 #x:queue-comm-requires
@@ -13,8 +13,6 @@ req_and_queue_comm = comm({
 
 req_and_queue_allow = allow({
    #x:allow-tau
- , async_not_pending
- , async_pending
  , declarative_illegal
  , illegal
  , queue_empty

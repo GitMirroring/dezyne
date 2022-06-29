@@ -58,7 +58,7 @@
 (define-templates reply-values ast:provides-port* newline-comma-infix)
 (define-templates event-sort makreel:action-sort action-sort-grammar)
 
-(define-templates requires-sort-construct ast:requires+async-port* newline-pipe-prefix)
+(define-templates requires-sort-construct ast:requires-port* newline-pipe-prefix)
 (define-templates provides-port-construct ast:provides-port* newline-pipe-prefix)
 (define-templates requires-port-construct ast:requires-port* newline-pipe-prefix)
 
@@ -152,22 +152,18 @@
 (define-templates external-port-parallel-proc ast:external-port* newline-parallel-prefix)
 
 ;; q process
-(define-templates queue-proc ast:have-requires+async?)
-(define-templates no-queue-proc ast:have-no-requires+async?)
-(define-templates queue-proc-requires ast:requires+async-port* newline-union-prefix)
-(define-templates queue-comm-requires ast:requires+async-port* newline-comma-infix)
-(define-templates queue-allow-requires ast:requires+async-port* newline-comma-prefix)
-(define-templates queue-rename-requires ast:requires+async-port* newline-comma-infix)
-
+(define-templates queue-proc ast:have-requires?)
+(define-templates no-queue-proc ast:have-no-requires?)
+(define-templates queue-proc-requires ast:requires-port* newline-union-prefix)
+(define-templates queue-comm-requires ast:requires-port* newline-comma-infix)
+(define-templates queue-allow-requires ast:requires-port* newline-comma-prefix)
+(define-templates queue-rename-requires ast:requires-port* newline-comma-infix)
 (define-templates external-proc ast:external-port*)
-
-(define-templates async-parallel ast:async-port*?)
-(define-templates async-parallel-port ast:async-port* newline-union-prefix)
 
 ;;comonent behavior
 (define-templates component-behavior-allow-provides ast:provides-port* newline-comma-prefix)
-(define-templates component-behavior-allow-requires ast:requires+async-port* newline-comma-prefix)
-(define-templates component-behavior-rename-requires ast:requires+async-port* newline-comma-prefix)
+(define-templates component-behavior-allow-requires ast:requires-port* newline-comma-prefix)
+(define-templates component-behavior-rename-requires ast:requires-port* newline-comma-prefix)
 
 ;;defer
 (define-templates defer-semantics ast:provides-port* newline-union-infix)
@@ -218,10 +214,6 @@
 (define-templates semantics-async-modeling ast:requires-port* newline-union-prefix)
 (define-templates semantics-async-flush ast:provides-port* newline-union-prefix)
 (define-templates semantics-async-requires-flush ast:provides-port* newline-union-prefix)
-(define-templates semantics-async-qin ast:async-port* newline-union-infix)
-(define-templates semantics-async-qout ast:async-port* newline-union-prefix)
-(define-templates semantics-async-allow-ack (lambda (o) (let ((a (ast:async-port* o))) (if (pair? a) o '()))))
-(define-templates semantics-no-async (lambda (o) (let ((a (ast:async-port* o))) (if (pair? a) '() o))))
 (define-templates semantics-provides-blocking-defer)
 (define-templates semantics-provides-blocking-provides ast:provides-port* newline-union-prefix)
 (define-templates semantics-provides-blocking-requires ast:requires-port* newline-union-prefix)
@@ -233,7 +225,6 @@
 (define-templates semantics-provides-blocked-provides ast:provides-port* newline-union-prefix)
 (define-templates semantics-provides-blocked-replies ast:provides-port* newline-union-prefix)
 (define-templates semantics-provides-blocked-ports ast:provides-port* newline-union-prefix)
-(define-templates semantics-provides-blocked-async ast:async-port* newline-union-prefix)
 (define-templates semantics-provides-blocked-requires ast:requires-port* newline-union-prefix)
 (define-templates semantics-reply ast:provides-port* newline-union-infix)
 (define-templates semantics-blocked-rtc-defer)
@@ -241,26 +232,21 @@
 (define-templates semantics-blocked-rtc-requires ast:requires-port* newline-union-prefix)
 (define-templates semantics-requires ast:requires-port* newline-union-prefix)
 (define-templates semantics-comm-provides ast:provides-port* newline-comma-prefix)
-(define-templates semantics-comm-requires ast:requires+async-port* newline-comma-prefix)
+(define-templates semantics-comm-requires ast:requires-port* newline-comma-prefix)
 (define-templates semantics-allow-provides ast:provides-port* newline-comma-prefix)
-(define-templates semantics-allow-requires ast:requires+async-port* newline-comma-prefix)
-(define-templates semantics-allow-async ast:async-port* newline-comma-prefix)
+(define-templates semantics-allow-requires ast:requires-port* newline-comma-prefix)
 (define-templates semantics-rename-provides ast:provides-port* newline-comma-prefix)
-(define-templates semantics-rename-requires ast:requires+async-port* newline-comma-prefix)
+(define-templates semantics-rename-requires ast:requires-port* newline-comma-prefix)
 (define-templates semantics-provides-action ast:provides-port* newline-union-prefix)
 
 ;; component
-(define-templates component-comm-requires ast:requires+async-port* newline-comma-prefix)
-(define-templates component-comm-async ast:async-port* newline-comma-prefix)
+(define-templates component-comm-requires ast:requires-port* newline-comma-prefix)
 (define-templates component-allow-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-allow-requires ast:requires-port* newline-comma-prefix)
-(define-templates component-allow-async ast:async-port* newline-comma-prefix)
 (define-templates component-rename-provides ast:provides-port* newline-comma-prefix)
-(define-templates component-rename-requires ast:requires+async-port* newline-comma-prefix)
-(define-templates component-rename-async ast:async-port* newline-comma-prefix)
+(define-templates component-rename-requires ast:requires-port* newline-comma-prefix)
 (define-templates component-hide-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-hide-requires ast:requires-port* newline-comma-prefix)
-(define-templates component-hide-async ast:async-port* newline-comma-prefix)
 (define-templates reordered ast:provides-port* union-infix)
 
 ;; provides

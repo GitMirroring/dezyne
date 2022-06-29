@@ -24,9 +24,6 @@ list2set : List(provides_ports) -> Set(provides_ports);
 
 remove_port : provides_ports # List (provides_ports) -> List(provides_ports);
 
-remove_async : requires_events # List (requires_events) -> List(requires_events);
-find_async : requires_events # List (requires_events) -> Bool;
-
 var p, car: provides_ports;
     l, cdr: List(provides_ports);
     e, h: requires_events;
@@ -43,24 +40,12 @@ remove_port(p, []) = [];
 p == car -> remove_port(p, car |> cdr) = cdr;
 p != car -> remove_port(p, car |> cdr) = car |> remove_port(p,cdr);
 
-remove_async(e, []) = [];
-e == h -> remove_async(e, h |> t) = t;
-e != h -> remove_async(e, h |> t) = h |> remove_async(e,t);
-
-find_async(e, []) = false;
-e == h -> find_async(e, h |> t) = true;
-e != h -> find_async(e, h |> t) = find_async(e, t);
-
 act
 #x:event-act
 #x:makreel:model-name end;
 #x:makreel:model-name end';
 #x:makreel:model-name other_end;
 #x:makreel:model-name other_end';
-async_not_pending;
-async_not_pending';
-async_pending;
-async_pending';
 queue_full;
 queue_empty;
 queue_empty';
@@ -222,12 +207,6 @@ proc
 #x:queue-proc
 #x:no-queue-proc
 
-async (l: List (requires_events))
- = (l != []) -> async_pending . async()
- + (l == []) -> async_not_pending . async()
-#x:async-parallel-port
- ;
-
 %%%%%%%%%%%%%%%%%%%%%%%%% SEMANTICS %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 semantics_main
@@ -255,7 +234,7 @@ semantics_provides_unblocked_switch_context(reply: reply_values, switch: require
 
 semantics_provides_blocking(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
 = (blocking - list2set(released) != {}) -> #x:makreel:model-name end . (semantics_blocked_rtc() + semantics_provides_skip_blocked())
-+ (blocking - list2set(released) == {}) -> #x:makreel:model-name end . (queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . async_not_pending . #x:semantics-provides-blocking-defer) + queue_not_empty . semantics_provides_skip_blocked())
++ (blocking - list2set(released) == {}) -> #x:makreel:model-name end . (queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . #x:semantics-provides-blocking-defer) + queue_not_empty . semantics_provides_skip_blocked())
  #x:semantics-provides-blocking-provides
  #x:semantics-provides-blocking-requires
  ;
@@ -271,16 +250,14 @@ semantics_provides_skip_blocked(blocking: Set(provides_ports), released: List(pr
  ;
 
 semantics_provides_blocked(rtc: provides_ports, blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
-= (blocking == {} && released == []) -> (async_not_pending . #x:semantics-provides-blocked-defer
-                                       +async_pending . (semantics_async_allow_ack(port=no_port)
-                                                        +semantics_provides))
+= (blocking == {} && released == [])
+ -> (#x:semantics-provides-blocked-defer)
  + #x:makreel:model-name end
  . ((released == []) -> queue_empty . semantics_blocked_rtc() <> queue_empty . semantics_reply()
   #x:semantics-provides-blocked-requires)
  #x:semantics-provides-blocked-provides
  #x:semantics-provides-blocked-replies
  #x:semantics-provides-blocked-ports
- #x:semantics-provides-blocked-async
  #x:semantics-provides-blocked-requires
  ;
 
@@ -291,31 +268,23 @@ semantics_reply(rtc: provides_ports, blocking: Set(provides_ports), released: Li
 ;
 
 semantics_blocked_rtc(blocking: Set(provides_ports),released: List(provides_ports), reply: reply_values)
-= (blocking == {}) -> async_not_pending . #x:semantics-blocked-rtc-defer
+= (blocking == {}) -> #x:semantics-blocked-rtc-defer
 + (blocking != {}) ->
  (#x:semantics-blocked-rtc-provides
-  #x:semantics-blocked-rtc-requires
-  + async_pending . semantics_async_allow_ack(port=no_port))
+  #x:semantics-blocked-rtc-requires)
  ;
 
 semantics_async(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports)
- = #x:makreel:model-name end . (queue_empty . (async_not_pending . (no_port_is(port) -> #x:semantics-async-defer #x:semantics-async-requires-flush)
-                                              +async_pending . (no_port_is(port) -> semantics_async_allow_ack() #x:semantics-async-flush))
-                               +queue_not_empty . (async_not_pending . semantics_async ()
-                                                   +async_pending . semantics_async()))
+ = #x:makreel:model-name end . (queue_empty . ((no_port_is(port) -> #x:semantics-async-defer #x:semantics-async-requires-flush))
+                               +queue_not_empty . semantics_async ())
 
 #x:semantics-async
-#x:semantics-async-qout
 #x:semantics-async-requires
 + defer_end . semantics_async ()
 ;
 
 semantics_async_switch_context (blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports, switch: requires_ports)
  = delta #x:semantics-async-modeling
- ;
-
-semantics_async_allow_ack(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values, port: provides_ports)
-= #x:semantics-async-allow-ack #x:semantics-no-async
  ;
 
 component_semantics_parallel = component_behavior || semantics_main;
@@ -334,9 +303,6 @@ component_semantics_allow = allow({
  , #x:allow-tau
    #x:semantics-allow-provides
    #x:semantics-allow-requires
-   #x:semantics-allow-async
- , async_not_pending
- , async_pending
  , declarative_illegal
  , defer_end'
  , defer_q_empty'
@@ -366,12 +332,9 @@ component_semantics = rename({
 component_parallel = component_semantics || req_and_queue;
 
 component_comm = comm({
-   async_not_pending | async_not_pending -> async_not_pending'
- , async_pending | async_pending -> async_pending'
- , queue_empty | queue_empty -> queue_empty'
+   queue_empty | queue_empty -> queue_empty'
  , queue_not_empty | queue_not_empty -> queue_not_empty'
    #x:component-comm-requires
-   #x:component-comm-async
  }, component_parallel);
 
 component_allow = allow({
@@ -379,9 +342,6 @@ component_allow = allow({
  , #x:allow-tau
    #x:component-allow-provides
    #x:component-allow-requires
-   #x:component-allow-async
- , async_not_pending'
- , async_pending'
  , declarative_illegal
  , defer_q_empty'
  , defer_qout
@@ -400,13 +360,10 @@ component_allow = allow({
  }, component_comm);
 
 component_rename = rename({
-   async_not_pending' -> async_not_pending
- , async_pending' -> async_pending
- , queue_empty' -> queue_empty
+   queue_empty' -> queue_empty
  , queue_not_empty' -> queue_not_empty
    #x:component-rename-provides
    #x:component-rename-requires
-   #x:component-rename-async
  }, component_allow);
 
 component = hide({
@@ -414,9 +371,6 @@ component = hide({
  , #x:allow-tau
    #x:component-hide-provides
    #x:component-hide-requires
-   #x:component-hide-async
- , async_not_pending
- , async_pending
  , defer_q_empty'
  , defer_end'
  , queue_empty

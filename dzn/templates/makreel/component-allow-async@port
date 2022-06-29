@@ -1,7 +1,0 @@
-#.name in'
- , #.name reply'
- , #.name internal'
- , #.name end'
- , #.name qin'
- , #.name qout'
- , #.name queue_full

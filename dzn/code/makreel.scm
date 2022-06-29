@@ -334,10 +334,6 @@
 (define-method (makreel:flush-provides-ports (o <port>))
   (ast:provides-port* (parent o <component>)))
 
-(define-method (ast:async-port*? (o <component>))
-  (if (pair? (ast:async-port* o)) o
-      '()))
-
 (define-method (ast:non-external-port* (o <component>))
   (filter (negate ast:external?) (filter ast:requires? (ast:port* o))))
 
@@ -507,12 +503,6 @@
 
 (define-method (ast:have-no-requires? (o <component>))
   (or (and (not (find ast:requires? (ast:port* o))) o) '()))
-
-(define-method (ast:have-requires+async? (o <component>))
-  (if (pair? (ast:requires+async-port* o)) o '()))
-
-(define-method (ast:have-no-requires+async? (o <component>))
-  (if (pair? (ast:requires+async-port* o)) '() o))
 
 (define-method (makreel:queue-length (o <component>))
   (%queue-size))

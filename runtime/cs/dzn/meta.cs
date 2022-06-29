@@ -32,7 +32,6 @@ namespace dzn
   {
     public String name;
     public Meta parent;
-    public int rank;
     public List<port.Meta> requires;
     public List<Meta> children;
     public List<Action> ports_connected;
@@ -41,7 +40,6 @@ namespace dzn
     {
       this.name = name;
       this.parent = parent;
-      this.rank = 0;
       this.requires = requires;
       this.children = children;
       this.ports_connected = ports_connected;
@@ -79,15 +77,6 @@ namespace dzn
       if (m == null) return "<external>" + p;
       if (m.parent == null) return m.name + p;
       return path(m.parent, m.name + p);
-    }
-    public static void rank(dzn.Meta m, int r)
-    {
-      if(null != m && m.requires != null) {
-      	m.rank = Math.Max(m.rank, r);
-	foreach (var i in m.requires) {
-	  MetaHelper.rank(i.provides.meta, m.rank + 1);
-	}
-      }
     }
   }
 
