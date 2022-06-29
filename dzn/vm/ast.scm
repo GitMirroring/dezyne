@@ -34,7 +34,6 @@
             ast:trigger-equal?
             ast:valued?)
   #:re-export (.port
-               ast:async?
                ast:external?
                ast:equal?
                ast:provides?
@@ -68,20 +67,6 @@
 
 (define-method (ast:valued? (o <trigger>))
   (ast:valued-in-triggers))
-
-(define-method (ast:async? (o <port>))
-  (let ((type (.type o)))
-    (and type
-         (string-prefix? "dzn.async" (string-join (ast:full-name type) ".")))))
-
-(define-method (ast:async? (o <action>))
-  (and=> (.port o) ast:async?))
-
-(define-method (ast:async? (o <trigger>))
-  (and=> (.port o) ast:async?))
-
-(define-method (ast:async? (o <runtime:port>))
-  (ast:async? (.ast o)))
 
 (define-method (ast:blocking? (o <runtime:port>))
   (ast:blocking? (.ast o)))
