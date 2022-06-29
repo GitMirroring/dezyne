@@ -41,7 +41,6 @@
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
   #:export (%exploring?
-            did-provides-out?
             extend-trace
             filter-compliance-error
             filter-error
@@ -49,14 +48,10 @@
             filter-implicit-illegal
             filter-implicit-illegal-only
             filter-match-error
-            flush-async
-            flush-async-trace
             flush-defer
             interactive?
             livelock?
             mark-livelock-error
-            run-async
-            run-async-event
             run-defer-event
             run-flush
             run-external
@@ -706,61 +701,6 @@ until RTC?."
                            (append-map (cute run-flush <> instance) traces))))
           traces))))
 
-(define-method (run-async-event (pc <program-counter>))
-  (let ((trace (step pc (make <flush-async>))))
-    (extend-trace trace run-to-completion-unmemoized)))
-
-(define-method (flush-async-trace (trace <list>) previous-trace)
-  (let ((trace (append trace previous-trace)))
-    (cond ((.status (car trace))
-           (list trace))
-          ((livelock? trace)
-           =>
-           (compose list (cute mark-livelock-error trace <>)))
-          (else
-           (let* ((pc (car trace))
-                  (traces (flush-async pc trace)))
-             (map (cute append <> trace) traces))))))
-
-(define (did-provides-out? trace)
-  (let* ((trail (map cdr (trace->trail trace)))
-         (r:ports (filter runtime:boundary-port? (%instances)))
-         (ports (map .ast r:ports))
-         (provide-ports (filter ast:provides? ports))
-         (provide-names (map .name provide-ports)))
-    (find (lambda (event)
-            (match (string-split event #\.)
-              ((port event) (member port provide-names))
-              (_ #f)))
-          trail)))
-
-(define-method (flush-async (pc <program-counter>) previous-trace)
-  (if (null? (.async pc)) '()
-      (let ((traces (run-async-event pc)))
-        (cond
-         ((null? traces) traces)
-         (else
-          (let* ((stop flush (partition
-                              (disjoin (compose null? .async car)
-                                       did-provides-out?
-                                       (compose .status car))
-                              traces))
-                 (traces (append-map (cute flush-async-trace <> previous-trace) flush))
-                 (livelock traces (partition livelock? traces))
-                 (livelock (map (cute mark-livelock-error <> <>)
-                                livelock
-                                (map livelock? livelock))))
-            (append stop
-                    livelock
-                    traces)))))))
-
-(define-method (flush-async (pc <program-counter>))
-  (flush-async pc '()))
-
-(define-method (flush-async-event (pc <program-counter>) event)
-  (let ((pc (clone pc #:trail (cons event (.trail pc)))))
-    (flush-async pc)))
-
 (define-method (run-defer-event (pc <program-counter>) event)
   (%debug "run-defer-event ~a pc: ~s\n" event pc)
   (let* ((pc (prune-defer pc))
@@ -830,20 +770,19 @@ until RTC?."
 (define-method (run-external (pc <program-counter>) event)
   (%debug "run-external ~a pc: ~s\n" event pc)
   (let ((queues (.external-q pc)))
-    (if (or (null? queues)
-            (pair? (.async pc))) '()
-            (match (external-trigger-in-q? pc event)
-              ((port q ...)
-               (run-external-q pc (or port (%sut))))
-              (_
-               (let* ((model (runtime:%sut-model))
-                      (ast (if (is-a? model <system>) model
-                               (.behavior model)))
-                      (error (make <match-error> #:ast ast #:input event
-                                   #:message "match"))
-                      (pc (clone pc #:status error)))
-                 (%debug "<match> ~a pc: ~s\n" event pc)
-                 (list (list pc) )))))))
+    (if (null? queues) '()
+        (match (external-trigger-in-q? pc event)
+          ((port q ...)
+           (run-external-q pc (or port (%sut))))
+          (_
+           (let* ((model (runtime:%sut-model))
+                  (ast (if (is-a? model <system>) model
+                           (.behavior model)))
+                  (error (make <match-error> #:ast ast #:input event
+                               #:message "match"))
+                  (pc (clone pc #:status error)))
+             (%debug "<match> ~a pc: ~s\n" event pc)
+             (list (list pc) )))))))
 
 (define-method (run-to-completion* (pc <program-counter>) event)
   (define (illegal-trace pc)
@@ -862,31 +801,24 @@ until RTC?."
     (let ((pcs (cons pc (run-external-modeling pc event))))
       (append-map (cute run-external <> event) pcs)))
    ((requires-trigger? event)
-    (let ((async-traces (if (null? (.async pc)) '()
-                            (flush-async-event pc event))))
-      (if (pair? async-traces) async-traces
-          (let* ((defer? (and (pair? (.defer pc))
-                              (not (%strict?))))
-                 (defer-traces (if (not defer?) '()
-                                   (run-defer-event pc event))))
-            (append
-             defer-traces
-             (let* ((pcs (cons pc (run-external-modeling pc event)))
-                    (port (.port (string->trigger event)))
-                    (blocked-port (and=> (blocked-on-boundary? pc event)
-                                         .ast))
-                    (traces (append-map (cute run-requires <> event) pcs)))
-               (if (or (not port) (not (ast:eq? port blocked-port))) traces
-                   (filter (negate modeling?) traces))))))))
+    (let* ((defer? (and (pair? (.defer pc))
+                        (not (%strict?))))
+           (defer-traces (if (not defer?) '()
+                             (run-defer-event pc event))))
+      (append
+       defer-traces
+       (let* ((pcs (cons pc (run-external-modeling pc event)))
+              (port (.port (string->trigger event)))
+              (blocked-port (and=> (blocked-on-boundary? pc event)
+                                   .ast))
+              (traces (append-map (cute run-requires <> event) pcs)))
+         (if (or (not port) (not (ast:eq? port blocked-port))) traces
+             (filter (negate modeling?) traces))))))
    ((provides-trigger? event)
     (if (blocked-on-boundary-provides? pc event) (illegal-trace pc)
         (run-to-completion pc event)))
-   ((async-event? pc event)
-    (flush-async-event pc event))
    ((defer-event? pc event)
     (run-defer-event pc event))
-   ((and (eq? event #f) (pair? (.async pc)))
-    (flush-async pc))
    (else
     '())))
 
@@ -927,8 +859,7 @@ until RTC?."
          (trigger? (or (is-a? (%sut) <runtime:port>)
                        (provides-trigger? event)
                        (and (not blocked-on-action?)
-                            (requires-trigger? event))
-                       (async-event? pc event)))
+                            (requires-trigger? event))))
          (pc (if (or switched? trigger?) pc
                  (blocked-on-boundary-collateral-release pc)))
          (pc (if (provides-trigger? event) pc
