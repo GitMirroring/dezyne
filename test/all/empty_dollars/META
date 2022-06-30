@@ -3,4 +3,4 @@
         "c++:build"
         "cs:build"
         "javascript:execute"
-        "scheme:execute")))
+        "scheme:build")))
