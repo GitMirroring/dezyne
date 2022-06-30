@@ -209,6 +209,7 @@
     (set! (.handling? o) #t)
     (let ((r (f)))
       (dzn:trace-out log (car m) (dzn:return-value r))
+      (set! (.handling? o) #f)
       r)))
 
 (define-method (call-out (o <dzn:component>) f m)
