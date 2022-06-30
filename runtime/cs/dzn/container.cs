@@ -124,7 +124,7 @@ namespace dzn
     {
       return context.lck(this, () => {
         while (this.trail.Count == 0)
-          Monitor.Wait(this, 10000);
+          Monitor.Wait(this);
         var expect = this.trail.Dequeue();
         if (this.trail.Count == 0)
           Monitor.Pulse(this);
