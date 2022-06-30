@@ -188,6 +188,7 @@ namespace dzn
 #endif
       assert(c->dzn_rt.component_stack.back() == c);
       c->dzn_rt.component_stack.pop_back();
+      c->dzn_rt.handling(c) = 0;
     }
   };
 
