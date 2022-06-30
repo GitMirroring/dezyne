@@ -86,6 +86,7 @@
     #x:main-requires-port-init
 
     (when flush?
+      ##f
       #x:main-provides-flush-init
       #x:main-requires-flush-init)
 
