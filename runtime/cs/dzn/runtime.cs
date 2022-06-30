@@ -199,6 +199,7 @@ namespace dzn
             handle(c, f, coroutine_id(c.dzn_locator));
             traceOut(m, "return");
             component_stack.Pop();
+            states[c].handling = 0;
         }
         public R call_in<R>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
         {
@@ -219,6 +220,7 @@ namespace dzn
                 s = r.GetType().Name + ":" + Enum.GetName(r.GetType(), r);
             traceOut(m, s);
             component_stack.Pop();
+            states[c].handling = 0;
             return r;
         }
         public void call_out(Component c, Action f, Port p, String e)
