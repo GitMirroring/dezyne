@@ -5,6 +5,14 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.15.3 since 2.15.2
+** Noteworthy bug fixes
+  - A bug in the C++, C#, and the experimental Scheme and JavaScript
+    runtime and code-generators was fixed for the use of handwritten
+    foreign components without skeleton support (this is not
+    recommended!).  This was a regression in 2.15.0 and for the
+    experimental code generators in 2.15.2.
+
 * Changes in 2.15.2 since 2.15.1
 ** Build
   - The test suite now passes on i686-linux.
