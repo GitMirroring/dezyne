@@ -21,47 +21,15 @@
 //
 // Code:
 
-import iworld.dzn;
-
-interface ihello
+interface iworld
 {
-  in void hello();
-  out void goodbye();
-
-  behavior
-  {
-    on hello: {}
-  }
-}
-
-component hello
-{
-  provides ihello h;
-  requires iworld w;
+  in void world();
+  out void howdy();
 
   behavior
   {
     bool b = true;
-    on h.hello(): {b = false; w.world();}
-    [!b] on w.howdy(): {b = true; h.goodbye();}
+    on world: b = false;
+    [!b] on optional: {b = true; howdy;}
   }
-}
-
-component Foreign
-{
-  provides iworld w;
-  // behavior {}
-}
-
-component hello_foreign
-{
-  provides ihello h;
-
-  system
-    {
-      h <=> c.h;
-      hello c;
-      c.w <=> f.w;
-      Foreign f;
-    }
 }
