@@ -94,6 +94,7 @@ endif
 if have_scheme
 runtime_scheme_dzndir = $(pkgdatadir)/runtime/scheme/dzn
 dist_runtime_scheme_dzn_DATA =			\
+ %D%/scheme/dzn/locator.scm			\
  %D%/scheme/dzn/pump.scm			\
  %D%/scheme/dzn/runtime.scm
 endif

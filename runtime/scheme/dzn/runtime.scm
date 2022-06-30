@@ -26,8 +26,8 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 q)
   #:use-module (oop goops)
-  #:export (<dzn:locator>
-            <dzn:interface>
+  #:use-module (dzn locator)
+  #:export (<dzn:interface>
             <dzn:component>
             <dzn:port>
             <dzn:system>
@@ -45,12 +45,6 @@
             action
             call-in
             call-out
-            stderr
-
-            ;; locator
-            dzn:set!
-            dzn:get
-            dzn:clone
 
             dzn:connect
             dzn:handle
@@ -61,16 +55,19 @@
             dzn:trace-qout
             dzn:trace-qin
             dzn:type-name
-            dzn:return-value))
+            dzn:return-value
+            dzn:runtime-locator)
+  #:re-export (<dzn:locator>
+               stderr
+               dzn:clone
+               dzn:get
+               dzn:set!))
 
 (define-syntax-rule (assert e)
   (or e (throw 'assert 'e)))
 
 (define-class <v> ()
   (v #:accessor .v #:init-value 0 #:init-keyword #:v))
-
-(define (stderr . args)
-  (apply format (cons* (current-error-port) args)))
 
 (define-class <dzn:model> ())
 
@@ -82,8 +79,13 @@
   (in #:accessor .in #:init-value #f #:init-keyword #:in)
   (out #:accessor .out #:init-value #f #:init-keyword #:out))
 
+(define (dzn:runtime-locator)
+  (let* ((locator (make <dzn:locator>))
+         (runtime (make <dzn:runtime>)))
+    (dzn:set! locator runtime)))
+
 (define-class <dzn:component-model> (<dzn:model>)
-  (locator #:accessor .locator #:init-value #f #:init-keyword #:locator)
+  (locator #:accessor .locator #:init-form (dzn:runtime-locator) #:init-keyword #:locator)
   (runtime #:accessor .runtime #:init-value #f)
   (parent #:accessor .parent #:init-value #f #:init-keyword #:parent)
   (name #:accessor .name #:init-value "" #:init-keyword #:name)
@@ -200,7 +202,7 @@
         (else 'return)))
 
 (define-method (call-in (o <dzn:component>) f m)
-  (let ((log (dzn:get (.locator o) <procedure> 'trace)))
+  (let ((log (dzn:get (.locator o) <procedure> "trace")))
     (apply dzn:trace (cons log (take m 2)))
     (set! (.handling? o) #t)
     (let ((r (f)))
@@ -209,7 +211,7 @@
       r)))
 
 (define-method (call-out (o <dzn:component>) f m)
-  (let ((log (dzn:get (.locator o) <procedure> 'trace)))
+  (let ((log (dzn:get (.locator o) <procedure> "trace")))
     (apply dzn:trace-qin (cons log m))
     (defer (.self (.in (car m))) o
       (lambda _
@@ -240,59 +242,3 @@
 
 (define (dzn:trace-out log i e)
   (log "~a.~a <- ~a.~a\n" (path (.out i)) e (path (.in i)) e))
-
-(define-class <dzn:locator> ()
-  (services #:accessor .services #:init-form (list (cons (locator-key stderr 'trace) stderr)) #:init-keyword #:services))
-
-(define-method (locator-key (type <class>) (key <symbol>))
-  (symbol-append (class-name type) key))
-
-(define-method (locator-key (type <top>))
-  (locator-key (class-of type) 'key))
-
-(define-method (locator-key (key <symbol>))
-  key)
-
-(define-method (locator-key (key <string>))
-  (locator-key (string->symbol key)))
-
-(define-method (locator-key (type <top>) (key <symbol>))
-  (locator-key (class-of type) key))
-
-(define-method (locator-key (type <class>) (key <string>))
-  (locator-key type (string->symbol key)))
-
-(define-method (locator-key type (key <string>))
-  (locator-key type (string->symbol key)))
-
-(define-method (locator-key type key)
-  (locator-key key))
-
-(define-method (dzn:set! (o <dzn:locator>) (x <object>))
-  (dzn:set! o x 'key))
-
-(define-method (dzn:set! (o <dzn:locator>) x key)
-  (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
-  o)
-
-(define-method (dzn:set! (o <dzn:locator>) (x <object>) key)
-  (set! (.services o) (assoc-set! (.services o) (locator-key x key) x))
-  o)
-
-(define-method (dzn:get (o <dzn:locator>) (key <symbol>))
-  (assoc-ref (.services o) (locator-key key)))
-
-(define-method (dzn:get (o <dzn:locator>) (type <class>))
-  (dzn:get o type 'key))
-
-(define-method (dzn:get (o <dzn:locator>) (type <object>))
-  (dzn:get o type 'key))
-
-(define-method (dzn:get (o <dzn:locator>) (x <class>) key)
-  (assoc-ref (.services o) (locator-key x key)))
-
-(define-method (dzn:get (o <dzn:locator>) (x <object>) key)
-  (assoc-ref (.services o) (locator-key x key)))
-
-(define-method (dzn:clone (o <dzn:locator>))
-  (make <dzn:locator> #:services (list-copy (.services o))))
