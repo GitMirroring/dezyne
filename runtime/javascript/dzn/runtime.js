@@ -182,6 +182,7 @@ function runtime(illegal) {
     c._dzn.handling = true;
     var r = f ();
     this.trace_out(m, (r === undefined ? 'return' : r), trace);
+    c._dzn.handling = false;
     return r;
   }
 
