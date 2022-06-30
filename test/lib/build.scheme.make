@@ -21,11 +21,46 @@
 #
 # Code:
 
+ifeq ($(GUILE),)
+GUILE:=$(shell type -p guile)
+endif
+
+ifeq ($(GUILE_TOOLS),)
+GUILE_TOOLS:=guild
+endif
+
+ifeq ($(abs_top_srcdir),)
+abs_top_srcdir:=$(PWD)
+endif
+
 ifeq ($(MAIN),)
 MAIN:=$(OUT)/main.scm
 endif
 
 default: $(OUT)/test
+
+GUILEC_FLAGS =					\
+ -Warity-mismatch				\
+ -Wformat					\
+ --load-path=$(abs_top_srcdir)			\
+ --load-path=$(abs_top_srcdir)/runtime/scheme	\
+ --load-path=$(IN)				\
+ --load-path=$(IN)/scheme			\
+ --load-path=$(OUT)
+
+AM_DEFAULT_VERBOSITY = 0
+AM_V_GUILEC = $(AM_V_GUILEC_$(V))
+AM_V_GUILEC_ = $(AM_V_GUILEC_$(AM_DEFAULT_VERBOSITY))
+AM_V_GUILEC_0 = @echo "  GUILEC" $@;
+
+%.go:	%.scm
+	$(AM_V_GUILEC)GUILE_AUTO_COMPILE=0	\
+	$(GUILE_TOOLS) compile $(GUILEC_FLAGS)	\
+	-o "$@" "$<"
+
+$(OUT)/test: $(patsubst $(IN)/%.scm, $(OUT)/%.go, $(wildcard $(IN)/*.scm))
+$(OUT)/test: $(patsubst $(OUT)/%.scm, $(OUT)/%.go, $(wildcard $(OUT)/*.scm))
+$(OUT)/test: $(patsubst %.scm, %.go,$(wildcard $(OUT)/*.scm))
 
 $(OUT)/test: $(MAIN)
 	if test -f $(IN)/main.scm; then cp -f $(IN)/main.scm $(OUT); fi
