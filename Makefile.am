@@ -203,7 +203,7 @@ doc/html/dezyne/index.html: ${srcdest}doc/dezyne.texi doc/version.texi $(WEB_IMA
 	$(MAKEINFO) --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/html_node -I ${srcdest}doc -I doc $<
 	$(MAKEINFO) --no-split --html $(MAKEINFO_HTML_OPTIONS) -o $(@D)/dezyne.html -I ${srcdest}doc -I doc $<
 
-SITE = /srv/dezyne.org
+SITE = /srv/dezyne.org/site/dezyne
 publish: html pdf
 	rsync -P -v . $(SITE)/
 	rsync -P -v . $(SITE)/manual/
@@ -212,9 +212,17 @@ publish: html pdf
 	rsync -P -rvz --delete doc/images $(SITE)/manual/dezyne/html_node/
 	rsync -P -rvz doc/dezyne.pdf $(SITE)/manual/
 
+DEVEL_SITE = /srv/dezyne.org/site/devel
+publish-devel: html pdf
+	$(MAKE) publish SITE=$(DEVEL_SITE)
+
 LOCAL_SITE = $(HOME)/src/web/dezyne.org/site/dezyne
 publish-local: html pdf
 	$(MAKE) publish SITE=$(LOCAL_SITE)
+
+LOCAL_DEVEL_SITE = $(HOME)/src/web/dezyne.org/site/devel
+publish-local-devel: html pdf
+	$(MAKE) publish SITE=$(LOCAL_DEVEL_SITE)
 
 # Generate 'version.texi' reproducibly using metadata from Git rather
 # than using metadata from the filesystem.
