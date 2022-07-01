@@ -252,6 +252,7 @@ Component Imperative Statements
 * Component If::                Imperative decisions in a component.
 * Component Illegal::           Using illegal in a component.
 * Component Reply::             Using reply in a component.
+* Component Defer::             Decoupling execution from the client.
 
 Systems
 
