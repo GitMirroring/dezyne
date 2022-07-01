@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
@@ -89,12 +89,4 @@ if have_cxx_exception_wrappers
 runtime_examplesdir = $(pkgdatadir)/runtime/examples
 dist_runtime_examples_DATA =		\
  %D%/examples/exception_context.hh
-endif
-
-if have_scheme
-runtime_scheme_dzndir = $(pkgdatadir)/runtime/scheme/dzn
-dist_runtime_scheme_dzn_DATA =			\
- %D%/scheme/dzn/locator.scm			\
- %D%/scheme/dzn/pump.scm			\
- %D%/scheme/dzn/runtime.scm
 endif

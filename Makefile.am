@@ -94,19 +94,23 @@ include dzn/vm/local.mk
 include dzn/local.mk
 include dzn/commands/local.mk
 include runtime/local.mk
+include runtime/scheme/dzn/local.mk
 include dzn/verify/local.mk
 include dzn/templates/local.mk
 include emacs/local.mk
 
-GUILEC_FLAGS = -Warity-mismatch -Wformat --load-path=$(abs_srcdir)
+GUILEC_FLAGS =					\
+ -Warity-mismatch				\
+ -Wformat					\
+ --load-path=$(abs_top_srcdir)			\
+ --load-path=$(abs_top_srcdir)/runtime/scheme
 
 AM_V_GUILEC = $(AM_V_GUILEC_@AM_V@)
 AM_V_GUILEC_ = $(AM_V_GUILEC_@AM_DEFAULT_V@)
 AM_V_GUILEC_0 = @echo "  GUILEC" $@;
 
-.scm.go:
+%.go:	%.scm
 	$(AM_V_GUILEC)GUILE_AUTO_COMPILE=0				\
-	LTDL_LIBRARY_PATH=$(abs_builddir)/.libs				\
 	$(GUILE_TOOLS) compile --target="$(host)" $(GUILEC_FLAGS)	\
 	-o "$@" "$<"
 
@@ -384,7 +388,8 @@ if have_javascript
 	echo "$(C_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/javascript -type f)
 endif
 if have_scheme
-	echo "$(LISP_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR)$(pkgdatadir)/runtime/scheme -type f)
+	echo "$(LISP_VERSION_COMMENT)" | tee -a $$(find $(DESTDIR) -name locator.scm -o -name pump.scm -o -name runtime.scm)
+	touch -d@0 $$(find $(DESTDIR) -name locator.scm -o -name pump.scm -o -name runtime.scm)
 endif
 
 check-reuse:
