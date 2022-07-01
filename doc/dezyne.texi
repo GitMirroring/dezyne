@@ -228,7 +228,6 @@ Components
 
 * Ports::                       Defining a component's communication channels.
 * Component Behavior::          Defining a component's behavior.
-* Async Ports::                 Implementing decoupled behavior on top of sequential behavior.
 * Component Types::             Three types of components.
 * Component Declarative Statements::  Component-specific declarative statements.
 * Component Imperative Statements::  Component-specific imperative statements.
@@ -4495,7 +4494,6 @@ system    ::= "system" "@{" system-statement* "@}"
 @menu
 * Ports::                       Defining a component's communication channels.
 * Component Behavior::          Defining a component's behavior.
-* Async Ports::                 Implementing decoupled behavior on top of sequential behavior.
 * Component Types::             Three types of components.
 * Component Declarative Statements::  Component-specific declarative statements.
 * Component Imperative Statements::  Component-specific imperative statements.
@@ -4619,8 +4617,7 @@ The @code{behavior} section of a component defines its behavior.
 
 @example
 behavior           ::= "behavior" "@{" behavior-statement* "@}"
-behavior-statement ::= type | variable | function | async-port
-                         | declarative-statement
+behavior-statement ::= type | variable | function | declarative-statement
 @end example
 
 A component behavior describes the communication or the exchange of
@@ -4628,37 +4625,6 @@ events between a itself and other components in its environment
 connected to its ports.  Each port is defined by a local name and a
 behavior refers to these ports by name when it relates @code{trigger}s
 and @code{action}s (see also @xref{Ports}).
-
-@node Async Ports
-@subsection Async Ports (deprecated)
-
-An async port is a @code{requires} of builtin type @code{dzn.async}
-which is defined in the behavior of a component.
-
-@example
-async-port
-  ::= "requires" "dzn.async" async-parameter-list? identifier ";"
-async-parameter-list
-  ::= "(" async-parameter ("," async-parameter)* ")"
-async-parameter
-  ::= data-type identifier
-@end example
-
-For example:
-
-@example
-requires dzn.async (int i) async;
-@end example
-
-The behavior of the builtin @code{dzn.async} port can be represented like this:
-
-@example
-@verbatiminclude examples/dzn.async.dzn
-@end example
-
-@quotation Note
-The use of @code{dzn.async} is deprecated, please use @code{defer}.
-@end quotation
 
 @node Component Types
 @subsection Component Types

@@ -29,7 +29,6 @@ DEZYNE_EXAMPLES =				\
  %D%/bottom_armor.dzn				\
  %D%/compliance-multiple-provides-fork.dzn	\
  %D%/component-if-illegal.dzn			\
- %D%/dzn.async.dzn				\
  %D%/defer.dzn					\
  %D%/defer-cancel.dzn				\
  %D%/defer-selection.dzn			\
