@@ -39,7 +39,7 @@ EXTRA_DIST =					\
  build-aux/gitlog-to-changelog			\
  build-aux/update-semantics.sh			\
  guix.scm					\
- guix/gnu/packages/dezyne.scm
+ guix/pack/dezyne.scm
 
 dist_lisp_DATA = emacs/dzn-mode.el
 
@@ -291,9 +291,9 @@ dist-hook: gen-ChangeLog
 	@rm -rf $(distdir)/test/all/*/out
 
 release: update-hash
-	git commit -m 'guix: dezyne: Update to $(PACKAGE_VERSION).'				\
-	    -m '* guix/gnu/packages/dezyne.scm (dezyne)[source]: Update to $(PACKAGE_VERSION).'	\
-	    guix/gnu/packages/dezyne.scm
+	git commit -m 'guix: dezyne: Update to $(PACKAGE_VERSION).'		\
+	    -m '* guix/pack/dezyne.scm (dezyne): Update to $(PACKAGE_VERSION).'	\
+	    guix/pack/dezyne.scm
 
 GPG_KEY_ID=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
@@ -328,7 +328,7 @@ update-hash: $(DIST_ARCHIVES)
 	sed -i \
 		-e 's,base32 #!dezyne!# "[^"]*"),base32 #!dezyne!# "$(shell $(GUIX) hash $<)"),' \
 		-e 's,version #!dezyne!# "[^"]*"),version #!dezyne!# "$(PACKAGE_VERSION)"),' \
-	guix/gnu/packages/dezyne.scm
+	guix/pack/dezyne.scm
 else
 $(warning update-hash: no Guix)
 endif

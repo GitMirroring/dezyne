@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -24,7 +24,7 @@
 ;;;
 ;;; Code:
 
-(define-module (gnu packages dezyne)
+(define-module (pack dezyne)
   #:use-module (guix build-system gnu)
   #:use-module (guix download)
   #:use-module ((guix licenses) #:prefix license:)

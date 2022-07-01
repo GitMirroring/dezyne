@@ -53,7 +53,7 @@
 (define %source-dir (dirname (current-filename)))
 (add-to-load-path (string-append %source-dir "/guix"))
 (%patch-path (cons (string-append %source-dir "/guix") (%patch-path)))
-(use-modules (gnu packages dezyne))
+(use-modules (pack dezyne))
 
 (define-public dezyne.git
   (package
