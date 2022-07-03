@@ -38,7 +38,7 @@
 ;;; Names
 ;;;
 
-(define-templates file-name code:file-name)
+(define-templates file-name code:file-name file-name-infix)
 (define-templates function-type code:function-type)
 (define-templates port-name code:port-name)
 (define-templates port-type code:port-type type-infix)

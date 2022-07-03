@@ -186,7 +186,7 @@
   (code:file-name (.type o)))
 
 (define-method (code:file-name (o <foreign>))
-  ((compose (cut string-join <> "_") ast:full-name) o))
+  (ast:full-name o))
 
 (define-method (code:file-name (o <ast>))
   (basename (ast:source-file o) ".dzn"))
