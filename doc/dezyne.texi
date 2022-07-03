@@ -5094,7 +5094,7 @@ completion state.
 The primary goal of @code{defer} is to decouple the execution of an
 imperative statement from the caller.  This allows implementing an
 asynchronous interface almost as concisely as implementing it
-synchronously, as demonstrated by the examle below.
+synchronously, as demonstrated by the example below.
 
 @example
 @verbatiminclude examples/defer.dzn
@@ -5111,7 +5111,7 @@ This behavior is clearly depicted by the following state diagram.
 
 Perhaps the @code{idle} state might seem superfluous in the example
 above, however it is not.  Besides resulting in component behavior which
-is not compliant with its interface, removing the @code{idel} state and
+is not compliant with its interface, removing the @code{idle} state and
 the corresponding guard would allow a client to do multiple consecutive
 @code{h.hello}'s, which results in an overflow of the defer queue.
 
