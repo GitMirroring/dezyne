@@ -1,5 +1,5 @@
 ##define _GNU_SOURCE 1
-##include "#code:file-name .h"
+##include "#x:file-name .h"
 ##include <assert.h>
 ##include <dzn/runloc.h>
 ##include <dzn/runtime.h>
