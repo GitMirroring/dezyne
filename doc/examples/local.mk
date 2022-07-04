@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -32,6 +32,7 @@ DEZYNE_EXAMPLES =				\
  %D%/dzn.async.dzn				\
  %D%/foreign.cc					\
  %D%/foreign.hh					\
+ %D%/hello_foreign.dzn				\
  %D%/hello-world.dzn				\
  %D%/ihello-bool.dzn				\
  %D%/ihello-world.dzn				\
