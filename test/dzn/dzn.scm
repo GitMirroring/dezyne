@@ -229,7 +229,7 @@ output, and standard error as three values."
 
 (define (features-missing file-name language)
   (fold (lambda (feature missing)
-          (if (member language (assoc-ref %feature-alist feature)) '()
+          (if (member language (assoc-ref %feature-alist feature)) missing
               (cons feature missing)))
         '()
         (features file-name)))
