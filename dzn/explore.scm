@@ -125,21 +125,22 @@ that PC has one more collaterally blocked coroutine on the same port."
     (let* ((orig-pc (clone orig-pc #:collateral-instance #f))
            (sw-pc (switch-context orig-pc))
            (bob-pc (blocked-on-boundary-switch-context orig-pc)))
-      (if (and (eq? orig-pc sw-pc)
-               (eq? orig-pc bob-pc))
-          (run-to-completion** orig-pc label)
-          (cond
-           ((and (not (eq? orig-pc sw-pc))
-                 (not (provides-trigger? label)))
-            (run-to-completion sw-pc 'rtc))
-           (else
-            (append (let* ((traces (run-to-completion bob-pc 'rtc))
-                           (flush traces
-                                  (partition (compose .running-defer? car)
-                                             traces)))
-                      (append traces
-                              (append-map run-flush flush)))
-                    (run-to-completion** orig-pc label)))))))
+      (cond
+       ((and (eq? orig-pc sw-pc)
+             (eq? orig-pc bob-pc))
+        (run-to-completion** orig-pc label))
+       ((and (not (eq? orig-pc sw-pc))
+             (not (provides-trigger? label)))
+        (run-to-completion sw-pc 'rtc))
+       (else
+        (let* ((traces (run-to-completion bob-pc 'rtc))
+               (flush traces
+                      (partition (compose .running-defer? car)
+                                 traces))
+               (traces (append traces
+                               (append-map run-flush flush))))
+          (append traces
+           (run-to-completion** orig-pc label)))))))
 
   (define (run-labels pc labels)
     (let loop ((labels labels) (traces '()))
