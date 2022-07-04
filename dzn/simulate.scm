@@ -292,7 +292,7 @@ Return a list of traces, possibly marked with <compliance-error>."
         (%debug "check-provides-compliance... ~s: ~a [~a]\n" port-name event port-event)
         (let* ((interface ((compose .type .ast) port-instance))
                (ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
-               (ipc (reset-reply pc port-instance))
+               (ipc (reset-reply ipc port-instance))
                (port-traces (if port-event (run-provides-port ipc port-event)
                                 (run-provides-modeling ipc port-instance))))
 
