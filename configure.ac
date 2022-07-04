@@ -167,7 +167,7 @@ AC_ARG_ENABLE([languages], [AS_HELP_STRING([[--enable-languages=LANGUAGES [defau
 case ,${enable_languages}, in
   *,c++,*)
 if test "x$CXX11" = x -a x$cross_compiling = xno; then
-    AC_MSG_ERROR([language c++ enabled, but no C11 compiler was not found])
+    AC_MSG_ERROR([language c++ enabled, but no C11 compiler was found])
 fi
 have_cxx11=true
 ;;
@@ -183,7 +183,7 @@ if test "x$courageous" = xno; then
 See "Porting" in the manual, or try `--with-courage'.])
 fi
 if test "x$CC99" = x -a x$cross_compiling = xno; then
-    AC_MSG_ERROR([language c enabled, but no C99 compiler was not found])
+    AC_MSG_ERROR([language c enabled, but no C99 compiler was found])
 fi
 have_c99=true
 ;;
