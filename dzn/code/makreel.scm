@@ -652,7 +652,9 @@
 (define (makreel:locals o)
   (define (locals root o)
     (makreel:locals- o))
-  ((ast:pure-funcq locals) (parent o <root>) o))
+  (let* ((model (parent o <model>))
+         (root (parent model <root>)))
+    ((ast:pure-funcq locals) (list root model) o)))
 
 (define-method (variables-in-scope (o <model>)) (members o))
 (define-method (variables-in-scope (o <ast>))
