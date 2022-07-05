@@ -44,7 +44,8 @@
                normalize:state
                purge-data
                remove-otherwise
-               remove-behavior))
+               remove-behavior
+               split-complex-expressions))
 
 (define (normalize:compounds-wrap o)
   "Like normalize:compounds and wrap singleton top level imperative
