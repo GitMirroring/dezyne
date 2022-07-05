@@ -1,0 +1,97 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in bool hello ();
+  out void one ();
+  out void two ();
+  out void three ();
+  out void four ();
+  out void five ();
+
+  behavior
+  {
+    subint int {0..4};
+    int i=0;
+    [i == 0] on hello: {i=i+1; one; one; two; reply (true);}
+    [i == 1] on hello: {i=i+1; one; two; one; three; reply (false);}
+    [i == 2] on hello: {i=i+1; one; two; one; three; one; one; four; five; reply (true);}
+    [i == 3] on hello: {i=0; one; two; one; three; one; one; four; reply (true);}
+  }
+}
+
+interface iworld
+{
+  in bool hello ();
+  in bool cruel ();
+  in bool crash ();
+
+  behavior
+  {
+    subint int {0..4};
+    int i=0;
+    [i == 0] on hello: {i=i+1; reply (true);}
+    [i == 1] on hello: {i=i+1; reply (false);}
+    [i == 2] on hello: {i=i+1; reply (true);}
+    [i == 3] on hello: {i=0; reply (true);}
+  }
+}
+
+component complex_expressions
+{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  {
+    bool is_false () {return false;}
+    bool is_true () {return true;}
+
+    bool first=true;
+    bool one () {h.one (); bool b=first; first= false; return b;}
+
+    bool second=true;
+    bool two () {h.two (); bool b=second; second=false; return b;}
+
+    bool third=true;
+    bool three () {h.three (); bool b=third; third=false; return b;}
+
+    bool fourth=true;
+    bool four () {h.four (); bool b=fourth; fourth=false; return b;}
+
+    bool fifth=true;
+    bool five () {h.five(); bool b=fifth; fifth=false;return b;}
+
+    bool cruel () {return w.cruel ();}
+
+    void reset () {first=true; second=true; third=true; fourth=true; fifth=true;}
+
+    on h.hello ():
+    if (one () || two ()) reply ((one () || two ()) && w.hello ()); //0
+    else if (one () || three ()) reply (w.hello ());                //1
+    else if (one () && four () && cruel ()) reply (w.crash ());     //never
+    else if (one () || (four () && five ())) reply (w.hello ());    //2
+    else {reset (); reply (w.hello ());}                            //3
+  }
+}
