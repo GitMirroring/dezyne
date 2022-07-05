@@ -34,6 +34,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -59,6 +60,7 @@
             remove-behavior
             remove-location
             remove-otherwise
+            split-complex-expressions
             split-variable))
 
 ;; A prefix is a normalized combination of the declarative statements
@@ -94,6 +96,20 @@
          (location (.location o))
          (assign (clone assign #:location location)))
     (values variable assign)))
+
+(define (add-temporary? o)
+  (let ((expression (tree-collect (disjoin (is? <action>) (is? <call>))
+                                  (.expression o))))
+    (match expression
+      (() #f)
+      ((statement) statement))))
+
+(define (complex? o)
+  (pair? (tree-collect (disjoin (is? <and>) (is? <or>)) o)))
+
+(define (split-complex? o)
+  (and (complex? o)
+       (not (add-temporary? o))))
 
 
 ;;;
@@ -863,12 +879,6 @@ the same level."
 (define (add-explicit-temporaries o)
   "Make implicit temporary values in if, reply and return expressions
 explicit."
-  (define (add-temporary? o)
-    (let ((expression (tree-collect (disjoin (is? <action>) (is? <call>))
-                                    (.expression o))))
-      (match expression
-        (() #f)
-        ((statement) statement))))
 
   (define (replace-action/call o var)
     (cond ((or (is-a? o <action>) (is-a? o <call>))
@@ -956,6 +966,128 @@ explicit."
     (($ <foreign>) o)
     (($ <system>) o)
     ((? (is? <ast>)) (tree-map add-explicit-temporaries o))
+    (_ o)))
+
+(define (split-complex-expressions o)
+  "Split && and || into an if with a simple expression.  Depends on the
+add-explicit-temporaries transformation for splitting argument lists."
+
+  (define (replace-argument o old new)
+    (define (replace o)
+      (if (eq? (.node o) (.node old)) new
+          o))
+    (let* ((arguments (ast:argument* o))
+           (arguments (map replace arguments))
+           (arguments (clone (.arguments o) #:elements arguments)))
+      (clone o #:arguments arguments)))
+
+  (define* (split o #:key not-e)
+    (let* ((expression (.expression o))
+           (expression (simplify-expression expression))
+           (o (clone o #:expression expression)))
+      (match expression
+        ((and ($ <and>) (= .left left) (= .right right))
+         (let* ((then (cond (not-e
+                             (clone o #:expression
+                                    (clone not-e #:expression right)))
+                            (else
+                             (clone o #:expression right))))
+                (false (make <literal> #:value "false"))
+                (left (if (not not-e) left
+                          (clone not-e #:expression left)))
+                (left (simplify-expression left))
+                (else (cond ((is-a? o <if>)
+                             (.else then))
+                            (else
+                             (clone o #:expression false))))
+                (simple (make <if> #:expression left
+                              #:then then
+                              #:else else
+                              #:location (.location o)))
+                (simple (clone simple #:parent (.parent o))))
+           (split-complex-expressions simple)))
+        ((and (? (const not-e))
+              ($ <or>) (= .left left) (= .right right))
+         (split (clone o #:expression (make <and> #:left left #:right right))
+                #:not-e not-e))
+        ((and ($ <or>) (= .left left) (= .right right))
+         (let* ((true (make <literal> #:value "true"))
+                (then (cond ((is-a? o <if>)
+                             (.then o))
+                            (else
+                             (clone o #:expression true))))
+                (else (clone o #:expression right))
+                (left (simplify-expression left))
+                (simple (make <if> #:expression left
+                              #:then then
+                              #:else else
+                              #:location (.location o)))
+                (simple (clone simple #:parent (.parent o))))
+           (split-complex-expressions simple)))
+        (($ <group>)
+         (let ((expression-expression (.expression expression)))
+           (split (clone o #:expression expression-expression)
+                  #:not-e not-e)))
+        (($ <not>)
+         (let ((expression-expression (.expression expression)))
+           (split (clone o #:expression expression-expression)
+                  #:not-e expression)))
+        (_
+         o))))
+
+  (match o
+    (($ <if>)
+     (let* ((then (split-complex-expressions (.then o)))
+            (else-clause (split-complex-expressions (.else o)))
+            (o (clone o #:then then #:else else-clause)))
+       (if (split-complex? o) (split o)
+           o)))
+    ((or ($ <assign>) ($ <call>) ($ <reply>) ($ <return>))
+     (if (split-complex? o) (split o)
+         o))
+    (($ <variable>)
+     (if (not (split-complex? o)) o
+         (let* ((expression (.expression o))
+                (expression (simplify-expression expression))
+                (o (clone o #:expression expression))
+                (variable assign (split-variable o))
+                (o (split (clone assign #:expression expression)))
+                (compound (make <compound> #:location (.location o)))
+                (parent (parent (.parent o) <statement>))
+                (compound (clone compound #:parent parent)))
+           (clone compound #:elements (list variable o)))))
+    ((and ($ <compound>) (? ast:declarative?))
+     (clone o #:elements (map split-complex-expressions (ast:statement* o))))
+    (($ <compound>)
+     (let ((statements
+            (let loop ((statements (ast:statement* o)))
+              (match statements
+                (()
+                 '())
+                ((statement rest ...)
+                 (match statement
+                   (($ <compound>)
+                    (cons (split-complex-expressions statement) (loop rest)))
+                   ((? split-complex?)
+                    (let* ((split (split-complex-expressions statement))
+                           (split (match split
+                                    (($ <compound>) (.elements split))
+                                    (_ (list split)))))
+                      (append split (loop rest))))
+                   (else
+                    (cons statement (loop rest)))))))))
+       (clone o #:elements statements)))
+    (($ <behavior>)
+     (clone o
+            #:functions (split-complex-expressions (.functions o))
+            #:statement (split-complex-expressions (.statement o))))
+    (($ <interface>)
+     (clone o #:behavior (split-complex-expressions (.behavior o))))
+    (($ <component>)
+     (clone o #:behavior (split-complex-expressions (.behavior o))))
+    (($ <foreign>) o)
+    (($ <system>) o)
+    ((? (is? <ast>)) (tree-map split-complex-expressions o))
     (_ o)))
 
 (define* (group-expressions o #:optional (group (list)))
