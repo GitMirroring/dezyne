@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
@@ -59,10 +59,14 @@
        (when (and value
                   (not (null? value))
                   (not (eq? value *unspecified*)))
-         (cond ((eq? name 'elements)
-                (if (pair? value)
-                    (for-each (lambda (x) (sdisplay x port)) value)
-                    (format (current-error-port) "<<barf: elements not a pair>> ~a\n" value)))
+         (cond ((and (eq? name 'elements)
+                     (pair? value))
+                (for-each (lambda (x) (sdisplay x port)) value))
+               ((eq? name 'elements)
+                (format port " <<~a>>" value)
+                (format (current-error-port)
+                        "error: expected pair for elements, found: ~a: ~a\n"
+                        (class-name (class-of value)) value))
                (else (sdisplay value port))))))
    (class-slots (class-of o))))
 
