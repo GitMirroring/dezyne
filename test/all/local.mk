@@ -27,6 +27,9 @@
 
 EXTRA_DIST += %D%/README
 
+BUG_TESTS =					\
+ %D%/parse_formal_shadow
+
 SMOKE_TESTS =					\
  %D%/parse_syntax				\
  %D%/parse_type_mismatch			\
@@ -582,6 +585,7 @@ XFAIL_TESTS =					\
  %D%/external_blocking_livelock
 
 FULL_TESTS =					\
+ $(BUG_TESTS)					\
  $(SMOKE_TESTS)					\
  $(HELLO_TESTS)					\
  $(SEMANTICS_TESTS)				\
