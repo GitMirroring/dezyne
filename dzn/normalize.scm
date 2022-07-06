@@ -58,7 +58,8 @@
             purge-data
             remove-behavior
             remove-location
-            remove-otherwise))
+            remove-otherwise
+            split-variable))
 
 ;; A prefix is a normalized combination of the declarative statements
 ;; that ... the imperative statement.  It is a triple that combines
@@ -79,6 +80,20 @@
   (format port "blocking?: ~a" (triple-blocking? triple))
   (format port "statement: ~a" (triple-statement triple))
   (format port " >"))
+
+
+;;;
+;;; Utilities and predicates.
+;;;
+(define-method (split-variable (o <variable>))
+  (let* ((default (ast:default-value o))
+         (variable (clone o #:expression default))
+         (name (.name o))
+         (assign (make <assign> #:variable.name name
+                       #:expression (.expression o)))
+         (location (.location o))
+         (assign (clone assign #:location location)))
+    (values variable assign)))
 
 
 ;;;
