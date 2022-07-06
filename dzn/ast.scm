@@ -56,6 +56,7 @@
            ast:component-model*
            ast:data*
            ast:declarative?
+           ast:default-value
            ast:direction
            ast:dotted-name
            ast:dzn-scope?
@@ -825,6 +826,13 @@
 
 (define-method (ast:values (o <type>))
   (ast:values o '()))
+
+(define-method (ast:default-value (o <type>))
+  (match (ast:values o)
+    ((default rest ...) default)))
+
+(define-method (ast:default-value (o <ast>))
+  (ast:default-value (ast:type o)))
 
 (define-method (ast:return-values (o <event>) void)
   (let ((type ((compose .type .signature) o)))
