@@ -1,3 +1,0 @@
-test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:62:5: error: non-compliance
-test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:62:5: component performs: h.return
-test/all/compliance_failures_illegal/compliance_failures_illegal.dzn:38:23: port expects: illegal
