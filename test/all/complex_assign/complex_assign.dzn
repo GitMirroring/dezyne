@@ -1,0 +1,100 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in bool hello ();
+  in bool hey ();
+  in bool hi ();
+  in bool goodbye ();
+  in bool bye ();
+  in bool sayonara ();
+  out void one ();
+  out void two( );
+  out void three ();
+  out void foo ();
+
+  behavior
+  {
+    on hello: {foo;reply (false);}
+    on hey: {one;foo;reply (true);}
+    on hi: {one;three;foo;reply (false);}
+    on goodbye: {one;three;foo;reply (false);}
+    on bye: {foo;foo;reply (false);}
+    on sayonara: {foo;reply (true);}
+  }
+}
+
+component complex_assign
+{
+  provides ihello h;
+  behavior
+  {
+    bool one () {h.one ();return false;}
+    bool two () {h.two ();return false;}
+    bool three () {h.three ();return true;}
+
+    bool foo (bool x) {h.foo ();return !x;}
+
+    on h.hello ():
+    {
+      bool a = false;
+      bool b = true;
+      bool x = foo (a || b);
+      reply (x);
+    }
+
+    on h.hey ():
+    {
+      bool x = foo (one ());
+      reply (x);
+    }
+
+    on h.hi ():
+    {
+      bool x = true;
+      x = foo (one () || three ());
+      reply (x);
+    }
+
+    on h.goodbye ():
+    {
+      bool x = false;
+      x = foo (one () && two () || three ());
+      reply (x);
+    }
+
+    on h.bye ():
+    {
+      bool x = false;
+      x = true && foo (false) || x;
+      reply (foo (x));
+    }
+
+    on h.sayonara ():
+    {
+      bool x = foo (false) || foo (true);
+      reply (x);
+    }
+  }
+}
