@@ -1,6 +1,0 @@
-model: ihello
-<deadlock>
-model: illegal_requires2
-h.hello
-w.hello
-<illegal>

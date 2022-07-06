@@ -356,7 +356,6 @@ REGRESSION_TESTS =				\
  %D%/illegal_pessimism_external			\
  %D%/illegal_provides				\
  %D%/illegal_requires				\
- %D%/illegal_requires2				\
  %D%/illegal_requires_out			\
  %D%/illegal_system_requires			\
  %D%/import_path				\
