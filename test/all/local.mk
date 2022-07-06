@@ -194,6 +194,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_double_blocked_out		\
  %D%/comment_traceability			\
  %D%/complex_and				\
+ %D%/complex_not				\
  %D%/complex_or					\
  %D%/compliance_async				\
  %D%/compliance_blocking_async_race		\
