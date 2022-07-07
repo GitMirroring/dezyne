@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -44,7 +44,10 @@ component hello
   {
     on h.hello(i): {
       bool b = false;
-      bool b = false;
+      bool b = false;           // duplicate
+      {bool b = false;}         // shadowing
+      if (true) b = false;      // shadowing
+      else b = false;           // shadowing
       reply (0);
     }
   }
