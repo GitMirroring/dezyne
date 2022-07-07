@@ -227,6 +227,8 @@
 (define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
 (define-method (ast:variable* (o <model>)) ((compose ast:variable* .behavior) o))
 (define-method (ast:variable* (o <compound>)) (filter (is? <variable>) (.elements o)))
+(define-method (ast:variable* (o <statement>)) '())
+(define-method (ast:variable* (o <variable>)) (list o))
 
 (define-method (ast:model* (o <model>))
   (define (ports o)
@@ -1234,6 +1236,11 @@
 (define-method (ast:declaration* (o <compound>))
   (ast:variable* o))
 
+(define-method (ast:declaration* (o <if>))
+  (append (ast:variable* (.then o))
+          (or (and=> (.else o) ast:variable*) '())))
+
+
 (define-method (ast:declaration* (o <functions>))
   (ast:function* o))
 
@@ -1389,7 +1396,7 @@
 
 (define-method (.type (o <formal>))
   (let ((type-name (.type.name o)))
-    (if type-name (ast:lookup o (.type.name o))
+    (if type-name (ast:lookup (.parent (.parent o)) (.type.name o))
         (let ((formal (ast:event-formal o)))
           (and formal (.type formal))))))
 

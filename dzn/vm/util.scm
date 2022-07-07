@@ -988,8 +988,11 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                (value (.value value)))
            (and (or (< value (.from range))
                     (> value (.to range)))
-                (make <range-error> #:ast o #:variable o #:value value
-                      #:message "range-error"))))))
+                (let ((parent (.parent (.parent o)))
+                      (error (make <range-error>
+                               #:ast o #:variable o #:value value
+                               #:message "range-error")))
+                  (clone error #:parent parent)))))))
 
 (define-method (assign (pc <program-counter>) variable expression)
   (let* ((name (.name variable))
