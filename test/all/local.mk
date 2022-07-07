@@ -197,6 +197,7 @@ REGRESSION_TESTS =				\
  %D%/complex_arguments				\
  %D%/complex_assign				\
  %D%/complex_expressions			\
+ %D%/complex_int				\
  %D%/complex_not				\
  %D%/complex_or					\
  %D%/compliance_async				\

@@ -1,0 +1,79 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+interface ihello
+{
+  subint int {0..1};
+  in int hello ();
+  in int hey ();
+  in int hi ();
+  out void add ();
+  out void dec ();
+  out void inc ();
+  out void foo ();
+  out void bar ();
+
+  behavior
+  {
+    on hello: {inc;add;inc;dec;add;inc;inc;reply (0);}
+    on hey: {inc;dec;reply (0);}
+    on hi: {inc;dec;dec;inc;bar;foo;reply (0);}
+  }
+}
+
+component complex_int
+{
+  provides ihello h;
+  behavior
+  {
+    subint int {-1..1};
+
+    int add (int a, int b) {h.add ();return a+b;}
+    int dec (int i) {h.dec ();return i-1;}
+    int inc (int i) {h.inc ();return i+1;}
+    void foo (bool b) {h.foo ();}
+    bool bar (bool a, bool b) {h.bar();return a || b;}
+
+    on h.hello ():
+    {
+      int i = 0;
+      int j = 0;
+      i = add (inc (i), -1);
+      i = add (inc (i), dec (j));
+      i = inc (i) - inc (i);
+      reply (i);
+    }
+    on h.hey ():
+    {
+      int i = 0;
+      bool b = inc (i) == 1 && dec (i) == 1;
+      reply (0);
+    }
+    on h.hi ():
+    {
+      int i = 0;
+      foo (bar (inc (i) == 1 && dec (i) == 1,
+                dec (i) == 1 || inc (i) == 1));
+      reply (0);
+    }
+  }
+}
