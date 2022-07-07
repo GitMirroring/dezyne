@@ -162,9 +162,10 @@
       (_ (mcrl2:process-continuation parent)))))
 
 (define (last-statement? o)
-  (let* ((p (parent o <scope>))
-         (statements (ast:statement* p)))
-    (ast:eq? (last statements) o)))
+  (or (not (is-a? (.parent o) <compound>))
+      (let* ((p (parent o <scope>))
+             (statements (ast:statement* p)))
+        (ast:eq? (last statements) o))))
 
 (define-method (makreel:assign-call-parameter (o <variable>))
   (if (last-statement? o) '()
@@ -172,8 +173,11 @@
 
 (define-method (makreel:assign-call-parameter (o <assign>))
   (if (and (last-statement? o)
-           (ast:eq? (parent (.variable o) <scope>) (parent o <scope>))) '()
-           o))
+           (not (let* ((cont (car (makreel:continuation o)))
+                       (variables (variables-in-scope cont)))
+                  (member (.variable o) variables ast:eq?))))
+      '()
+      o))
 
 ;; FIXME: non-compatible copy from mcrl2 scope vs model ticking:
 ;;  <scope-name (IConsole) State'> vs <interface IConsole'>
