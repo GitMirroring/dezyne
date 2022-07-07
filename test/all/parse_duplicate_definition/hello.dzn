@@ -44,7 +44,10 @@ component hello
   {
     on h.hello(i): {
       bool b = false;
-      bool b = false;
+      bool b = false;           // duplicate
+      {bool b = false;}         // shadowing
+      if (true) b = false;      // shadowing
+      else b = false;           // shadowing
       reply (0);
     }
   }
