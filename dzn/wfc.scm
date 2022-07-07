@@ -802,9 +802,9 @@
 
 (define-method (re-definition (o <declaration>))
   (let* ((name (ast:name o))
-         (scope (decl-scope o))
+         (scope (parent (.parent o) <scope>))
          (previous (and scope (ast:lookup scope name)))
-         (previous-scope (and previous (decl-scope previous))))
+         (previous-scope (and previous (parent (.parent previous) <scope>))))
     (if (and scope
              previous
              (ast:eq? scope previous-scope)
@@ -813,28 +813,6 @@
         `(,(wfc-error o (format #f "identifier `~a' defined before" (ast:name o)))
           ,(wfc-info previous (format #f "previous `~a' definition here" (ast:name previous))))
         '())))
-
-
-(define-method (decl-scope (o <declaration>))
-  (and=> (.parent o) (cut parent <> <scope>)))
-
-(define-method (decl-scope (o <event>))
-  (parent o <interface>))
-
-(define-method (decl-scope (o <instance>))
-  (parent o <system>))
-
-(define-method (decl-scope (o <port>))
-  (parent o <component-model>))
-
-(define-method (decl-scope (o <formal>))
-  (.parent o))
-
-(define-method (decl-scope (o <function>))
-  (parent o <behavior>))
-
-(define-method (decl-scope (o <variable>))
-  (or (parent o <compound>) (parent o <behavior>)))
 
 (define-method (assign (o <ast>))
   (let* ((assign-type (ast:type o))

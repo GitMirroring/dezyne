@@ -355,7 +355,7 @@
 (define-ast <declarative-compound> (<ast-list> <declarative>))
 (define-ast <events> (<ast-list>))
 (define-ast <fields> (<ast-list>))
-(define-ast <formals> (<ast-list>))
+(define-ast <formals> (<ast-list> <scope>))
 (define-ast <functions> (<ast-list>))
 (define-ast <instances> (<ast-list>))
 (define-ast <ports> (<ast-list>))
@@ -572,7 +572,7 @@
 
 (define-ast <otherwise-guard> (<guard>))
 
-(define-ast <if> (<imperative>)
+(define-ast <if> (<imperative> <scope>)
   (expression #:init-form (make <expression-node>))
   (then)
   (else))
