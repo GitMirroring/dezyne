@@ -47,6 +47,7 @@
   #:use-module (dzn ast)
 
   #:export (add-defer-end
+            add-determinism-temporaries
             add-explicit-temporaries
             add-function-return
             add-reply-port
@@ -62,6 +63,10 @@
             remove-otherwise
             split-complex-expressions
             split-variable))
+
+;; Should add-explicit-temporaries only cater for deterministic ordering
+;; of noisy expressions?
+(define %noisy-ordering? (make-parameter #f))
 
 ;; A prefix is a normalized combination of the declarative statements
 ;; that ... the imperative statement.  It is a triple that combines
@@ -139,20 +144,63 @@
         (else
          '())))
 
+(define (noisy-temporaries o)
+  (define noisy-call?
+    (conjoin (is? <call>)
+             (compose .noisy? .function)))
+  (define typed-action/call?
+    (conjoin (disjoin (is? <action>)
+                      noisy-call?)
+             ast:typed?))
+  (define >1-argument-typed-action/call?
+    (compose (cute > <> 1)
+             length
+             (cute filter (compose pair?
+                                   (cute tree-collect typed-action/call? <>))
+                   <>)
+             ast:argument*))
+  (define >1-typed-action/call?
+    (compose (cute > <> 1)
+             length
+             (cute tree-collect typed-action/call? <>)))
+  (let* ((arguments (tree-collect
+                     (conjoin (is? <arguments>)
+                              (compose (cute > <> 1) length .elements)
+                              >1-typed-action/call?)
+                     o))
+         (arguments (filter >1-argument-typed-action/call? arguments))
+         (arguments (append-map ast:argument* arguments))
+         (expressions (tree-collect
+                       (conjoin (disjoin (is? <minus>) (is? <plus>))
+                                >1-typed-action/call?)
+                       o))
+         (expressions (append-map (lambda (x) (list (.left x) (.right x)))
+                                  expressions)))
+    (append arguments expressions)))
+
 (define (add-temporary? o)
-  (match (temporaries o)
-    ((h t ...)
-     (let ((p (.parent h)))
-       (and (not (or (parent p <and>) (parent p <or>)))
-           h)))
-    (_
-     #f)))
+  (cond ((%noisy-ordering?)
+         (let ((temporaries (noisy-temporaries o)))
+           (match temporaries
+             ((one two rest ...)
+              one)
+             (_
+              #f))))
+        (else
+         (match (temporaries o)
+           ((h t ...)
+            (let ((p (.parent h)))
+              (and (not (or (parent p <and>) (parent p <or>)))
+                   h)))
+           (_
+            #f)))))
 
 (define (complex? o)
   (pair? (tree-collect (disjoin (is? <and>) (is? <or>)) o)))
 
 (define (split-complex? o)
-  (and (complex? o)
+  (and (not (%noisy-ordering?))
+       (complex? o)
        (pair? (temporaries o))
        (not (add-temporary? o))))
 
@@ -1031,6 +1079,12 @@ expressions explicit."
     (($ <system>) o)
     ((? (is? <ast>)) (tree-map add-explicit-temporaries o))
     (_ o)))
+
+(define (add-determinism-temporaries o)
+  "Make evaluation order of noisy expressions deterministic by adding
+explitic temporaries."
+    (parameterize ((%noisy-ordering? #t))
+    (add-explicit-temporaries o)))
 
 (define (split-complex-expressions o)
   "Split && and || into an if with a simple expression.  Depends on the
