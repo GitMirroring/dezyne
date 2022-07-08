@@ -38,6 +38,7 @@
   #:export (inline-functions
             normalize:compounds-wrap)
   #:re-export (add-function-return
+               add-determinism-temporaries
                add-explicit-temporaries
                normalize:compounds
                normalize:event
