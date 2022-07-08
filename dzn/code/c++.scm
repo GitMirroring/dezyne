@@ -153,7 +153,7 @@
 
   (code-util:foreign-conflict? root)
 
-  (let ((root (code:om root)))
+  (let ((root (code:om+determinism root)))
     (let ((generator (code-util:indenter (cute x:header root)))
           (file-name (code-util:root-file-name root dir ".hh")))
       (code-util:dump root generator #:file-name file-name))
