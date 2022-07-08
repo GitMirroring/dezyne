@@ -384,7 +384,9 @@ match the terminating newline of a line."
     (car (fold (lambda (word result)
                  (match result
                    ((str . len)
-                    (let ((delta (string-length word)))
+                    (let* ((period? (string-suffix? "." word))
+                           (word (if period? (string-append word " ") word))
+                           (delta (string-length word)))
                       (if (< (+ 1 len delta) width)
                           (cons (string-append str word " ")
                                 (+ 1 len delta))
