@@ -42,6 +42,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn parse)
+  #:use-module (dzn parse silence)
   #:export (parse-tree->ast
             annotate-ast))
 
@@ -95,7 +96,7 @@
                            (_
                             events))))
              (events (make <events-node> #:elements events))
-             (behavior (and behavior (set-recursive (helper behavior)))))
+             (behavior (and behavior (annotate-functions (helper behavior)))))
         (make <interface-node>
           #:name (helper name)
           #:comment comment
@@ -276,7 +277,7 @@ to the AST element."
            #:comment comment
            #:name (helper name)
            #:ports (helper ports)
-           #:behavior (set-recursive (helper behavior))))
+           #:behavior (annotate-functions (helper behavior))))
 
         (('component name ports ('system instances-and-bindings rest ...))
          (let* ((instances-and-bindings (helper instances-and-bindings))
@@ -662,9 +663,13 @@ to the AST element."
          (functions (clone functions #:elements function-list)))
     (clone o #:functions functions)))
 
-(define-method (set-recursive (o <behavior-node>))
-  (.node (set-recursive (make <behavior> #:node o))))
+(define-method (set-noisy (o <behavior>))
+  (mark-noisy o))
 
+(define-method (annotate-functions (o <behavior-node>))
+  (let* ((o (set-recursive (make <behavior> #:node o)))
+         (o (set-noisy o)))
+   (.node o)))
 
 (define-method (make-namespaces (o <ast>))
   o)
