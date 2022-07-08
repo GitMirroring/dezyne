@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -25,7 +25,8 @@
 UNIT_TESTS =					\
   %D%/language.scm				\
   %D%/lts.scm					\
-  %D%/makreel.scm
+  %D%/makreel.scm				\
+  %D%/normalize.scm
 
 dist_%C%_scm_DATA =				\
  %D%/automake.scm				\
