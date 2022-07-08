@@ -97,18 +97,63 @@
          (assign (clone assign #:location location)))
     (values variable assign)))
 
+(define temp-name
+  (let ((count -1))
+    (lambda (o)
+      (set! count (1+ count))
+      (format #f "dzn_tmp~a" count))))
+
+(define (temporaries o)
+  (define add-temporary?
+    (conjoin (disjoin (is? <action>)
+                      (is? <binary>)
+                      (is? <call>))
+             ast:typed?
+             (disjoin
+              (cute parent <> <arguments>)
+              (compose (cute parent <> <binary>) .parent))))
+  (define typed-action/call?
+    (conjoin (disjoin (is? <action>) (is? <call>))
+             ast:typed?))
+  (cond ((is-a? o <call>)
+         (tree-collect add-temporary? o))
+        ((or (is-a? o <assign>) (is-a? o <variable>))
+         (append
+          (tree-collect add-temporary? o)
+          (map .expression
+               (tree-collect
+                (conjoin
+                 (is? <not>)
+                 (compose pair? (cute tree-collect typed-action/call? <>)))
+                o))))
+        ((is-a? o <if>)
+         (append (tree-collect
+                  typed-action/call? (.expression o))
+                 (temporaries (.then o))
+                 (or (and=> (.else o) temporaries) '())))
+        ((or (as o <expression>)
+             (and (is-a? o <reply>) (.expression o))
+             (and (is-a? o <return>) (.expression o)))
+         =>
+         (cute tree-collect typed-action/call? <>))
+        (else
+         '())))
+
 (define (add-temporary? o)
-  (let ((expression (tree-collect (disjoin (is? <action>) (is? <call>))
-                                  (.expression o))))
-    (match expression
-      (() #f)
-      ((statement) statement))))
+  (match (temporaries o)
+    ((h t ...)
+     (let ((p (.parent h)))
+       (and (not (or (parent p <and>) (parent p <or>)))
+           h)))
+    (_
+     #f)))
 
 (define (complex? o)
   (pair? (tree-collect (disjoin (is? <and>) (is? <or>)) o)))
 
 (define (split-complex? o)
   (and (complex? o)
+       (pair? (temporaries o))
        (not (add-temporary? o))))
 
 
@@ -699,7 +744,8 @@ to prevent unintended shadowing
          )))
   (match o
     (($ <defer>)
-     (clone o #:statement (add-end (.statement o))))
+     (let ((statement (add-defer-end (.statement o))))
+      (clone o #:statement (add-end statement))))
     (($ <blocking>)
      (clone o #:statement (add-defer-end (.statement o))))
     (($ <on>)
@@ -877,82 +923,100 @@ the same level."
      o)))
 
 (define (add-explicit-temporaries o)
-  "Make implicit temporary values in if, reply and return expressions
-explicit."
+  "Make implicit temporary values in action, call, if, reply, and return
+expressions explicit."
 
-  (define (replace-action/call o var)
-    (cond ((or (is-a? o <action>) (is-a? o <call>))
+  (define (replace-expression old o var)
+    (cond ((ast:eq? old o)
            var)
           ((is-a? o <expression>)
-           (tree-map (cute replace-action/call <> var) o))
-          (else o)))
-
-  (define (temp-name o)
-    (format #f "dzn_tmp~a" (.offset (.location o))))
+           (tree-map (cute replace-expression old <> var) o))
+          ((is-a? o <arguments>)
+           (tree-map (cute replace-expression old <> var) o))
+          (else
+           o)))
 
   (define (add-temporary o)
     (let* ((expression (.expression o))
-           (nested? (not (or (is-a? expression <action>)
-                             (is-a? expression <call>))))
            (variable-expression (add-temporary? o))
            (type (ast:type variable-expression))
-           (type-name (make <scope.name> #:ids (ast:full-name type)))
-           (foo (ast:full-name type))
-           (foo (ast:full-scope type))
+           (local-type? (ast:eq? (parent type <model>)
+                                 (parent o <model>)))
+           (type-name (if local-type? (.name type)
+                          (make <scope.name> #:ids (ast:full-name type))))
            (name (temp-name o))
            (location (.location o))
            (temporary (make <variable> #:name name
                             #:type.name type-name
                             #:expression variable-expression
                             #:location location))
+           (temporary (clone temporary #:parent (parent o <behavior>)))
            (var (make <var> #:name name #:location location))
-           (expression (if nested?
-                           (tree-map
-                            (cute replace-action/call <> var)
-                            expression)
-                           var))
-           (statements (list temporary
-                             (clone o #:expression expression))))
-      (if (is-a? (.parent o) <compound>) statements
-          (make <compound> #:elements statements
-                #:location location))))
+           (o (tree-map
+               (cute replace-expression variable-expression <> var)
+               o))
+           (compound (make <compound> #:location (.location o)))
+           (parent (parent (.parent o)  <statement>))
+           (compound (clone compound #:parent parent)))
+      (clone compound #:elements (list temporary o))))
+
+  (define (split+add-temporaries o)
+    (if (not (split-complex? o)) (add-temporary o)
+        (let ((o (split-complex-expressions o)))
+          (if (add-temporary? o) (add-explicit-temporaries o)
+              o))))
 
   (match o
     (($ <if>)
-     (let* ((then (add-explicit-temporaries (.then o)))
-            (else-clause (add-explicit-temporaries (.else o)))
-            (o (clone o #:then then #:else else-clause)))
-       (cond ((add-temporary? o) (add-temporary o))
-             ((is-a? (.parent o) <compound>) (list o))
-             (else o))))
-    (($ <reply>)
-     (cond ((add-temporary? o) (add-temporary o))
-           ((is-a? (.parent o) <compound>) (list o))
-           (else o)))
-    (($ <return>)
-     (cond ((add-temporary? o) (add-temporary o))
-           ((is-a? (.parent o) <compound>) (list o))
-           (else o)))
-    (($ <blocking>)
-     (clone o #:statement (add-explicit-temporaries (.statement o))))
-    (($ <guard>)
-     (clone o #:statement (add-explicit-temporaries (.statement o))))
-    (($ <on>)
-     (clone o #:statement (add-explicit-temporaries (.statement o))))
+     (let* ((expression (.expression o))
+            (split-expression? (or (add-temporary? (.expression o))
+                                   (split-complex? (.expression o)))))
+       (if split-expression? (let ((o (split+add-temporaries o)))
+                               (add-explicit-temporaries o))
+           (let* ((then (add-explicit-temporaries (.then o)))
+                  (else-clause (add-explicit-temporaries (.else o)))
+                  (location (.location o))
+                  (o (clone o #:then then #:else else-clause)))
+             (if (add-temporary? o) (split+add-temporaries o)
+                 o)))))
+    ((or ($ <assign>) ($ <call>) ($ <reply>) ($ <return>) ($ <variable>))
+     (let ((split? (or (split-complex? o) (add-temporary? o))))
+       (if (not split?) o
+           (let ((o (split+add-temporaries o)))
+             (add-explicit-temporaries o)))))
     (($ <defer>)
-     (let ((deferred (clone o #:statement (add-explicit-temporaries (.statement o)))))
-       (if (is-a? (.parent o) <compound>) (list deferred)
-           deferred)))
+     (let* ((statement (.statement o))
+            (statement (add-explicit-temporaries statement)))
+       (clone o #:statement statement)))
+    (($ <defer>)
+     (let* ((statement (.statement o))
+            (split? (or (split-complex? statement) (add-temporary? statement))))
+       (if (not split?) o
+           (let* ((statement (split+add-temporaries statement))
+                  (statement (add-explicit-temporaries statement)))
+             (clone o #:statement statement)))))
+    ((and ($ <compound>) (? ast:declarative?))
+     (clone o #:elements (map add-explicit-temporaries (ast:statement* o))))
     (($ <compound>)
-     (if (ast:declarative? o)
-         (clone o #:elements (map add-explicit-temporaries (ast:statement* o)))
-         (let ((o (clone o #:elements (append-map add-explicit-temporaries (ast:statement* o)))))
-           (if (is-a? (.parent o) <compound>) (list o)
-               o))))
-    ((? (is? <statement>))
-     (if (is-a? (.parent o) <compound>) (list o)
-         o))
-
+     (let ((statements
+            (let loop ((statements (ast:statement* o)))
+              (match statements
+                (()
+                 '())
+                ((statement rest ...)
+                 (match statement
+                   ((or ($ <compound>) ($ <defer>) ($ <if>))
+                    (cons (add-explicit-temporaries statement) (loop rest)))
+                   ((or (? add-temporary?) (? split-complex?))
+                    (let ((split (add-explicit-temporaries statement)))
+                      (match split
+                        (($ <compound>)
+                         (append (.elements split) (loop rest)))
+                        ((? (is? <statement>))
+                         (cons split (loop rest))))))
+                   (_
+                    (cons statement (loop rest)))))))))
+       (clone o #:elements statements)))
     (($ <function>)
      (clone o #:statement (add-explicit-temporaries (.statement o))))
     (($ <behavior>)
@@ -988,6 +1052,29 @@ add-explicit-temporaries transformation for splitting argument lists."
       (match expression
         ((and ($ <and>) (= .left left) (= .right right))
          (let* ((then (cond (not-e
+                             (.then o))
+                            (else
+                             (clone o #:expression right))))
+                (false (make <literal> #:value "false"))
+                (left (if (not not-e) left
+                          (clone not-e #:expression left)))
+                (left (simplify-expression left))
+                (else (cond ((and not-e (is-a? o <if>))
+                             (clone o #:expression
+                                    (clone not-e #:expression right)))
+                            ((is-a? o <if>)
+                             (.else then))
+                            (else
+                             (clone o #:expression false))))
+                (simple (make <if> #:expression left
+                              #:then then
+                              #:else else
+                              #:location (.location o)))
+                (simple (clone simple #:parent (.parent o))))
+           (split-complex-expressions simple)))
+        ((and (? (const not-e))
+              ($ <or>) (= .left left) (= .right right))
+         (let* ((then (cond (not-e
                              (clone o #:expression
                                     (clone not-e #:expression right)))
                             (else
@@ -1006,10 +1093,6 @@ add-explicit-temporaries transformation for splitting argument lists."
                               #:location (.location o)))
                 (simple (clone simple #:parent (.parent o))))
            (split-complex-expressions simple)))
-        ((and (? (const not-e))
-              ($ <or>) (= .left left) (= .right right))
-         (split (clone o #:expression (make <and> #:left left #:right right))
-                #:not-e not-e))
         ((and ($ <or>) (= .left left) (= .right right))
          (let* ((true (make <literal> #:value "true"))
                 (then (cond ((is-a? o <if>)
@@ -1032,6 +1115,13 @@ add-explicit-temporaries transformation for splitting argument lists."
          (let ((expression-expression (.expression expression)))
            (split (clone o #:expression expression-expression)
                   #:not-e expression)))
+        ((? (const not-e))
+         (let* ((expression (.expression o))
+                (group? (or (is-a? expression <binary>)
+                            (is-a? expression <field-test>)))
+                (expression (if (not group?) expression
+                                (make <group> #:expression expression))))
+           (clone o #:expression (clone not-e #:expression expression))))
         (_
          o))))
 

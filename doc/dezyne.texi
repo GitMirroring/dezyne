@@ -317,9 +317,7 @@ Well-formedness -- Reply
 Well-formedness -- Valued Actions and Calls
 
 * Action in member variable initializer::
-* Action used in a complex expression::
 * Call in member variable initializer::
-* Call used in a complex expression::
 * Action value discarded::
 * Call value discarded::
 
@@ -4245,6 +4243,8 @@ reply (enum_function ());
 reply (enum_function () != result.ERROR);
 @end example
 
+or in any expression (since 2.16.0).
+
 @node Empty Statement
 @subsubsection Empty Statement
 
@@ -4297,6 +4297,8 @@ if (!bool_function () && b) @dots{};
 if (enum_function () == result.TRUE) @dots{};
 if (enum_function () != result.ERROR || b) @dots{};
 @end example
+
+Since 2.16.0, arbitrarily complex expressions may be used.
 
 Note that nested @code{if}s are allowed:
 
@@ -5037,9 +5039,11 @@ reply (r.enum_event ());
 reply (r.enum_event () != result.ERROR);
 @end example
 
+or in any expression (since 2.16.0).
+
 @quotation Note
-Only one @code{action} or @code{call} may be used in such an
-@code{expression}.
+The restriction of using only one @code{action} or @code{call} in an
+expression has been lifted (since 2.16.0).
 @end quotation
 
 @node Component If
@@ -5065,6 +5069,8 @@ if (error) illegal;
 
 Since 2.14.0, one valued @code{action} or valued @code{call} may be used
 in an @code{if}-expression.
+
+Since 2.16.0, arbitrarily complex expressions may be used.
 
 For example:
 
@@ -5616,11 +5622,9 @@ The well-formedness checks in alphabetical order:
 @*
 @xref{Action in member variable initializer},@*
 @xref{Action outside on},@*
-@xref{Action used in a complex expression},@*
 @xref{Action value discarded},@*
 @xref{Assign outside on},@*
 @xref{Call in member variable initializer},@*
-@xref{Call used in a complex expression},@*
 @xref{Call value discarded},@*
 @xref{Cannot bind external port to non-external port},@*
 @xref{Cannot bind port to port},@*
@@ -6161,26 +6165,18 @@ This results in the following error message:
 @section Well-formedness -- Valued Actions and Calls
 
 Both @code{action}s and function @code{call}s can be valued, and as such
-are considered to be expressions.  The places where they can be called
-are severely restricted.  The main reason is that @code{action}s and
-function @code{calls} (at least the functions that contain
-@code{action}s) cause a side effect.  The order of evaluation in complex
-expressions becomes an issue when side effects are considered.  In order
-to exclude that, valued @code{action}s and function @code{call}s can
-only occur in isolation at the right hand side of an assignment or
-variable definition, or (since version 2.14.0) in simple
-@code{if}-expressions and @code{reply}-expressions.
+are considered to be expressions.  They can only be called are from the
+imperative statement.  The reason is that @code{action}s and function
+@code{calls} (at least the functions that contain @code{action}s) cause
+a side effect.
 
-An extra restriction to this rule is put on the initial value of a
-global variable in a behavior.  Such an expression can not contain
-@code{action}s or function @code{call}s at all, since @code{action}s are
-only allowed within an @code{on}.
+This means that @code{action}s or function @code{call}s cannot be used
+to initialize the value of a global variable in a behavior, neither
+can it be used in a @code{guard} statement.
 
 @menu
 * Action in member variable initializer::
-* Action used in a complex expression::
 * Call in member variable initializer::
-* Call used in a complex expression::
 * Action value discarded::
 * Call value discarded::
 @end menu
@@ -6201,22 +6197,6 @@ This results in the following error message:
 @verbatiminclude parse/action-in-member-definition.texi
 @end example
 
-@node Action used in a complex expression
-@subsection @code{action} used in a complex expression
-
-An @code{action} is used in a complex expression.
-
-@example
-@verbatiminclude parse/action-in-complex-expression.dzn
-@end example
-
-@noindent
-This results in the following error messages:
-
-@example
-@verbatiminclude parse/action-in-complex-expression.texi
-@end example
-
 @node Call in member variable initializer
 @subsection @code{call} in member variable initializer
 
@@ -6232,22 +6212,6 @@ This results in the following error message:
 
 @example
 @verbatiminclude parse/call-in-member-definition.texi
-@end example
-
-@node Call used in a complex expression
-@subsection @code{call} used in a complex expression
-
-A function @code{call} is used in a complex expression.
-
-@example
-@verbatiminclude parse/call-in-complex-expression.dzn
-@end example
-
-@noindent
-This results in the following error messages:
-
-@example
-@verbatiminclude parse/call-in-complex-expression.texi
 @end example
 
 @node Action value discarded
