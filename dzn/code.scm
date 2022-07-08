@@ -96,6 +96,7 @@
             code:non-injected-bindings
             code:non-injected-instances
             code:om
+            code:om+determinism
             code:ons
             code:out-argument
             code:port-bind?
@@ -742,6 +743,12 @@
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     root))
+
+(define (code:om+determinism ast)
+  ((compose
+    add-determinism-temporaries
+    code:om)
+   ast))
 
 
 ;;;
