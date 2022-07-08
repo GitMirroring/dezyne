@@ -9,6 +9,12 @@
 ** Language
   - A new keyword `defer' has been introduced.
   - The `dzn.async' ports are now deprecated.
+  - Complex boolean and integer expressions are now supported.
+** Build
+  - The tests for the experimental Scheme code generator are now being
+    compiled.
+  - The tests for the experimental Scheme and JavaScript code generators
+    now also execute out-of-the-box in a container.
 ** Code
   - The C++, C#, and experimental Scheme code generators support `defer'.
   - The experimental Scheme code generator now also supports collateral
@@ -23,9 +29,17 @@
 ** Commands
   - The `dzn' command has a new option: `-t,--transform=TRANS'.  This
     makes dzn->dzn transformation avaiable from the command line.
-  - A new transformation `inline-functions' has been added.
+    + New transformations have been added: `add-determinism-temporaries,
+      `inline-functions', and `split-complex-expressions'.
+    + The `add-explicit-temporaries' transformation now supports complex
+      boolean and integer expressions.
 ** Noteworthy bug fixes
   - Some warnings in the C++ runtime have been fixed and side-stepped.
+  - The mCRL2 code generator now generates correct code for an unused
+    assignment from an action or function call as only statement in a
+    branch of an if-statement.
+  - Shadowing of a variable in a branch of an if-statement is no longer
+    rejected.
 
 * Changes in 2.15.4 since 2.15.3
 ** Code
