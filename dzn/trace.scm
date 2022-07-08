@@ -896,7 +896,7 @@ ws               <   [ \t]
               (header     (make-lifeline-header name kind))
               (prefix     (string-append name "."))
               (labels     (cond ((or (member kind '(component interface)))
-                                 '("<back>"))
+                                 '("<back>" "<defer>"))
                                 ((and (eq? kind 'provides)
                                       (pair? labels)
                                       (not (string-index (car labels) #\.)))
