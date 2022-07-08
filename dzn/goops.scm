@@ -101,6 +101,7 @@
            .location
            .message
            .name
+           .noisy?
            .offset
            .port
            .ports
@@ -541,6 +542,7 @@
 
 (define-ast <function> (<scope> <declaration>)
   (signature #:init-form (make <signature-node>))
+  (noisy?)
   (recursive?)
   (statement))
 
