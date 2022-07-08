@@ -549,7 +549,7 @@ guarded occurrences."
 
 (define (normalize:event o)
   "Merge all occurrences of a trigger into a single unguarded `on',
-i.e. pushing guards into the body of the trigger."
+i.e., pushing guards into the body of the trigger."
   (match o
     (($ <behavior>)
      (clone o #:statement
