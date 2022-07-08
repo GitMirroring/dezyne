@@ -26,7 +26,6 @@ EXTRA_DIST += %D%/README
 
 DEZYNE_PARSE_EXAMPLES =				\
  %D%/action-discard-value.dzn			\
- %D%/action-in-complex-expression.dzn		\
  %D%/action-in-member-definition.dzn		\
  %D%/action-outside-on.dzn			\
  %D%/assign-outside-on.dzn			\
@@ -38,7 +37,6 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/binding-wildcard-requires.dzn		\
  %D%/blocking-in-interface.dzn			\
  %D%/call-discard-value.dzn			\
- %D%/call-in-complex-expression.dzn		\
  %D%/call-in-member-definition.dzn		\
  %D%/component-action-used-as-trigger.dzn	\
  %D%/component-provides-without-trigger.dzn	\

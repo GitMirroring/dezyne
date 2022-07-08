@@ -469,7 +469,6 @@ PARSER_TESTS =					\
  %D%/parse_preprocessed_foo			\
  %D%/parse_preprocessed_imported_bar		\
  %D%/parse_preprocessed_imported_baz		\
- %D%/wf_actionInExpression			\
  %D%/wf_actionNotInOnEvent			\
  %D%/wf_actionValueDiscarded			\
  %D%/wf_assignmentExpressionNotInEventInstance	\
@@ -499,7 +498,6 @@ PARSER_TESTS =					\
  %D%/wf_eventNotValuedAction			\
  %D%/wf_expressionExpected			\
  %D%/wf_foreign_conflict			\
- %D%/wf_functionInExpression			\
  %D%/wf_functionReturnNotExpected		\
  %D%/wf_functionReturnValue			\
  %D%/wf_functionTailRecursion			\
