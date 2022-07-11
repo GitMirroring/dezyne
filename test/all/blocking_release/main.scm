@@ -31,10 +31,6 @@
   #:duplicates (merge-generics)
   #:export (main))
 
-(define (log-out prefix event)
-  (stderr "<external>.~a~a <- sut.~a~a\n" prefix event prefix event)
-  #f)
-
 (define (main . args)
   (let* ((print-illegal (lambda () (stderr "illegal\n") (exit 0)))
          (locator (make <dzn:locator>))
