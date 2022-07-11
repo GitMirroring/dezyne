@@ -396,6 +396,7 @@ REGRESSION_TESTS =				\
  %D%/state_deadlock				\
  %D%/step_state					\
  %D%/stress_comment				\
+ %D%/sync_out_reply_binding			\
  %D%/sync_out_reply_enum			\
  %D%/system_double_inevitable			\
  %D%/system_double_out				\
