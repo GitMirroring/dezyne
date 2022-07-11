@@ -130,7 +130,5 @@
     (set! (.released o) (append (.released o) (list (cons port port-cont)))))
   (%debug "dzn:release: continue: ~a\n" (.name (.in port))))
 
-(define-method (dzn:release (o <dzn:component>) (port <dzn:interface>) out-binding-accessor)
-  (and=> (out-binding-accessor o) identity)
-  (set! (out-binding-accessor o) #f)
+(define-method (dzn:release (o <dzn:component>) (port <dzn:interface>))
   (dzn:release (dzn:get (.locator o) <dzn:pump>) port))

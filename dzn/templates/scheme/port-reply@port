@@ -1,0 +1,2 @@
+(and=> (.out_#.name  o) (lambda (x) (x)))
+(set! (.out_#.name  o) ##f)
