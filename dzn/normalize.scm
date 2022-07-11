@@ -338,17 +338,19 @@
 guarded occurrences."
   (match o
     (($ <behavior>)
-     (clone o #:statement
+     (clone o
+            #:statement
             ((compose
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
-              triples:group-expressions
               triples:simplify-guard
               (triples:fix-empty-interface (parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
-              ) o)))
+              ) o)
+            #:functions
+            (group-expressions (.functions o) (list <and> <field-test> <or>))))
     ((? (is? <ast>))
      (tree-map normalize:state o))
     (_
@@ -361,7 +363,6 @@ guarded occurrences."
             ((compose
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
-              triples:group-expressions
               triples:simplify-guard
               (triples:fix-empty-interface (parent o <model>))
               (triples:add-illegals (parent o <model>))
@@ -370,7 +371,9 @@ guarded occurrences."
               triples:split-multiple-on
               triples:->triples
               .statement
-              ) o)))
+              ) o)
+            #:functions
+            (group-expressions (.functions o) (list <and> <field-test> <or>))))
     ((? (is? <ast>))
      (tree-map normalize:state+illegals o))
     (_
@@ -423,7 +426,9 @@ i.e. pushing guards into the body of the trigger."
               triples:split-multiple-on
               triples:->triples
               .statement
-              ) o)))
+              ) o)
+            #:functions
+            (group-expressions (.functions o) (list <and> <field-test> <or>))))
     ((? (is? <ast>))
      (tree-map normalize:event o))
     (_
@@ -443,7 +448,9 @@ i.e. pushing guards into the body of the trigger."
               triples:split-multiple-on
               triples:->triples
               .statement
-              ) o)))
+              ) o)
+            #:functions
+            (group-expressions (.functions o) (list <and> <field-test> <or>))))
     ((? (is? <ast>))
      (tree-map normalize:event+illegals o))
     (_
