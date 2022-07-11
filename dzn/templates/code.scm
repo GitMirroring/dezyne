@@ -94,6 +94,7 @@
 (define-templates foreign-reply (compose code:reply ast:type))
 (define-templates foreign-return (compose code:reply ast:type))
 (define-templates port-release code:port-release)
+(define-templates port-reply code:port-reply)
 (define-templates reply code:reply)
 (define-templates return code:return)
 

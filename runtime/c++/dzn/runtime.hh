@@ -92,7 +92,7 @@ namespace dzn
   void collateral_block(void*, const locator&);
   bool port_blocked_p(const locator&, void* port);
   void port_block(const locator&, void* component, void* port);
-  void port_release(const locator&, void*, std::function<void()>&);
+  void port_release(const locator&, void*);
   size_t coroutine_id(const locator&);
   void defer(const locator&, void *, std::function<bool()>&&, std::function<void(size_t)>&&);
   void prune_deferred(const locator&);
