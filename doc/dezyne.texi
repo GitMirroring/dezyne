@@ -243,7 +243,7 @@ Component Declarative Statements
 
 * Component On::                Defining what happens on a trigger.
 * Blocking::                    Implementing a synchronous call on decoupled events.
-* Formal Binding::              Parameter assignment in blocking context.
+* Formal Binding::              Parameter assignment in blocking or synchronous out context.
 * Joining Activities::          A full blocking example.
 
 Component Imperative Statements
@@ -4718,7 +4718,7 @@ prefix      ::= <blocking?> <guards> <on>
 @menu
 * Component On::                Defining what happens on a trigger.
 * Blocking::                    Implementing a synchronous call on decoupled events.
-* Formal Binding::              Parameter assignment in blocking context.
+* Formal Binding::              Parameter assignment in blocking or synchronous out context.
 * Joining Activities::          A full blocking example.
 @end menu
 
@@ -4776,8 +4776,8 @@ on p.hello (): ;
 non-determinism in components is not allowed and will lead to a
 verification error (@xref{Verification Checks and Errors}).
 
-The @code{formal-binding} is a feature for @code{blocking},
-@xref{Formal Binding}.
+The @code{formal-binding} is a feature for @code{blocking} and
+synchronous out event contexts @xref{Formal Binding}.
 
 @node Blocking
 @subsubsection @code{blocking}
@@ -4862,6 +4862,8 @@ It does @emph{not} apply to @code{imperative-statement2}.
 A formal binding @emph{binds} a member variable to an @code{out} or
 @code{inout} formal parameter.  At the moment of the @code{reply}, the
 value of the bound member variable is assigned to the formal parameter.
+A formal binding can be used in blocking context or synchronous out
+event context.
 
 @example
 trigger        ::= port-name "." event-name "(" formal-list? ")"
@@ -4898,6 +4900,59 @@ the release of the blocked thread by @code{h.reply ()} ensures that
 parameter @code{n} returns with value @code{456}.  However in the case
 of @code{w.cruel} the caller of @code{h.hello} receives @code{123} via
 parameter @code{n}.
+
+For a synchronous interface @code{iworld} with behavior:
+@example
+on hello: world;
+on hello: cruel;
+@end example
+
+a formal binding can be used in synchronous out event context:
+
+@example
+extern int $int$;
+component synchronous_out_event_binding
+@{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  @{
+    int g = $123$;
+
+    on h.hello (n <- g): w.hello ();
+    on w.world (): @{g = $456$; h.reply (true);@}
+    on w.cruel (): @{h.reply (true); g = $456$; ;@}
+  @}
+@}
+@end example
+
+in the case of @code{w.world} the assignment of @code{g = $456$} before
+the reply by @code{h.reply ()} ensures that parameter @code{n} returns
+with value @code{456}.  However in the case of @code{w.cruel} the caller
+of @code{h.hello} receives @code{123} via parameter @code{n}.
+
+For a void event without reply:
+
+@example
+extern int $int$;
+component synchronous_out_event_binding
+@{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  @{
+    int g = $123$;
+
+    on h.hello (n <- g): w.hello ();
+    on w.world (): g = $456$;
+  @}
+@}
+@end example
+
+the caller receives the caller of @code{h.hello} receives the last
+assigned value: @code{456}.
 
 @quotation Note
 The intent is to simplify this specific behavior in the future when data
@@ -5056,7 +5111,7 @@ moment of returning it:
 @end example
 
 @code{reply} is also used to release a blocked call (@xref{Blocking}),
-like so:
+or set the reply value from a synchrous context like so:
 
 @example
   port.reply ();
