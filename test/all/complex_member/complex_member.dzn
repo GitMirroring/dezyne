@@ -1,0 +1,56 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+interface ihello
+{
+  subint int {0..1};
+  in int hello ();
+  out void add ();
+  out void inc ();
+  out void reset ();
+
+  behavior
+  {
+    on hello: {/*reset;*/inc;add;inc;add;reply (1);}
+  }
+}
+
+component complex_member
+{
+  provides ihello h;
+  behavior
+  {
+    subint int {0..2};
+    int i = 0;
+
+    int add (int a, int b) {h.add ();return a+b;}
+    int inc () {h.inc ();i=i+1;return i;}
+    int reset () {/*h.reset ();*/i=0;return i;}
+
+    on h.hello ():
+    {
+      i = add (inc (), reset ());
+      i = add (reset (), inc ());
+      reply (i);
+    }
+  }
+}
