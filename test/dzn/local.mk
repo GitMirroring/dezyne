@@ -26,7 +26,8 @@ UNIT_TESTS =					\
   %D%/language.scm				\
   %D%/lts.scm					\
   %D%/makreel.scm				\
-  %D%/normalize.scm
+  %D%/normalize.scm				\
+  %D%/silence.scm
 
 dist_%C%_scm_DATA =				\
  %D%/automake.scm				\
