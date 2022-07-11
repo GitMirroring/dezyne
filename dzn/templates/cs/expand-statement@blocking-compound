@@ -1,3 +1,2 @@
-this.out_#.port.name  = () => { #x:formal-binding };
 #x:statement
 #x:block

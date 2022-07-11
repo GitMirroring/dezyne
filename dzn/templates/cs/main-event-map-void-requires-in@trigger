@@ -1,4 +1,3 @@
 lookup.Add("#.port.name .return",()=>{
-  Action f = () => {};
-  dzn.pump.port_release(c.dzn_locator, c.system.#.port.name , f);
+  dzn.pump.port_release(c.dzn_locator, c.system.#.port.name);
 });

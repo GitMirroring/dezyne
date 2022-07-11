@@ -204,10 +204,24 @@
          (models (map code:annotate-shells models)))
     models))
 
+(define-method (cs:formal-bindings (o <on>))
+  (if (pair? (cs:formal-binding o)) o
+      '()))
+
+(define-method (cs:formal-bindings (o <trigger>))
+  (let ((on (or (parent o <on>)
+                (parent (car (tree-collect (cute ast:equal? o <>)
+                                           (parent o <behavior>)))
+                        <on>))))
+    (cs:formal-bindings on)))
+
 (define-method (cs:formal-binding (o <on>))
   (filter (is? <formal-binding>) (cs:formals (car (ast:trigger* o)))))
 
 (define-method (cs:formal-binding (o <blocking-compound>))
+  (cs:formal-binding (parent o <on>)))
+
+(define-method (cs:formal-binding (o <out-bindings>))
   (cs:formal-binding (parent o <on>)))
 
 (define-method (out-ref-local (o <trigger>))
