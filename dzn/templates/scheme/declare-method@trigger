@@ -3,5 +3,6 @@
     (lambda _
       (apply #.port.name -#.event.name  (cons o args))
       (dzn:flush o)
+      #x:port-reply
       #x:return)
   `(,(.#.port.name  o) "#.event.name ")))

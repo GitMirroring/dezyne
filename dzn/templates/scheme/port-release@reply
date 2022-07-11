@@ -1,1 +1,1 @@
-(dzn:release o (.#.port.name  o) .out_#.port.name)
+(dzn:release o (.#.port.name  o))

@@ -182,9 +182,7 @@
     (enqueue! o .released port coroutine))
   (%debug "dzn:release: continue: ~a\n" (.name (.in port))))
 
-(define-method (dzn:release (o <dzn:component>) (port <dzn:interface>) out-binding-accessor)
-  (and=> (out-binding-accessor o) (cute <>))
-  (set! (out-binding-accessor o) #f)
+(define-method (dzn:release (o <dzn:component>) (port <dzn:interface>))
   (dzn:release (dzn:get (.locator o) <dzn:pump>) port))
 
 (define-method (dzn:blocked? (o <dzn:pump>) (port <dzn:interface>))
