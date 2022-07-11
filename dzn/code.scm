@@ -101,6 +101,7 @@
             code:port-bind?
             code:port-name
             code:port-release
+            code:port-reply
             code:port-type
             code:pump?
             code:reply
@@ -359,7 +360,12 @@
                                (is? <location>)))
               (disjoin (is? <blocking>) (is? <blocking-compound>))
               (parent o <model>))) '()
-      o))
+              o))
+
+(define-method (code:port-reply o)
+  (let ((port (.port o)))
+    (if (ast:provides? port) port
+        '())))
 
 (define-method (code:default-true (o <defer>))
   (let ((p (parent o <component>)))
