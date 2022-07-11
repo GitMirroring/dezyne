@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -57,6 +58,7 @@ component enum_expressions
         }
       [e.three]
         {
+          assert_three ();
           e = ihello.e.four;
           w.goodbye();
         }
@@ -65,6 +67,9 @@ component enum_expressions
           e = ihello.e.one;
           w.cruel();
         }
+    }
+    void assert_three() {
+      if(!e.three) illegal;
     }
   }
 }
