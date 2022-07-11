@@ -99,7 +99,8 @@
     (silence action/call function-silence)))
 
 (define-method (silence (o <assign>) function-silence)
-  (silence (.expression o) function-silence))
+  (if (ast:member? (.variable o)) 'noisy
+      (silence (.expression o) function-silence)))
 
 (define-method (silence (o <variable>) function-silence)
   (silence (.expression o) function-silence))

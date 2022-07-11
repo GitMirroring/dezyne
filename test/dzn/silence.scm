@@ -125,6 +125,27 @@ interface test
 interface test
 {
   in void hello ();
+  behavior
+  {
+    bool idle = true;
+    void noisy_assign ()
+    {
+      idle = true;
+    }
+    on hello: noisy_assign ();
+  }
+}
+")
+       (ast (string->ast test))
+       (functions (tree-collect (is? <function>) ast)))
+  (test-equal "noisy assign"
+    '(#t)
+    (map .noisy? functions)))
+
+(let* ((test "
+interface test
+{
+  in void hello ();
   out void world ();
   behavior
   {
