@@ -75,6 +75,7 @@
 (define-templates on-trigger (compose car .elements .triggers))
 (define-templates function code:functions)
 
+(define-templates formal-bindings cs:formal-bindings)
 (define-templates formal-binding cs:formal-binding)
 (define-templates formal-binding-temporary cs:formal-binding)
 (define-templates formal-binding-assign-temporary cs:formal-binding)

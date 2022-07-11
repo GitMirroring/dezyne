@@ -61,10 +61,8 @@ namespace dzn
     {
       l.get<pump>().block(l.get<Runtime>(), c, p);
     }
-    public static void port_release(Locator l, Object p, Action out_binding)
+    public static void port_release(Locator l, Object p)
     {
-      if(out_binding!=null) out_binding();
-      out_binding = null;
       var pump = l.get<pump>();
       pump.release(l.get<dzn.Runtime>(),p);
     }
