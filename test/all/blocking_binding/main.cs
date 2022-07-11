@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,62 +22,80 @@
 //
 // Code:
 
-// -*-java-*-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-class main {
+public class ThrowListener : TextWriterTraceListener
+{
+    public override void Fail(string message)
+    {
+        throw new Exception(message);
+    }
 
-  static void connect_ports (dzn.container<blocking_binding> c)
+    public override void Fail(string message, string detailMessage)
+    {
+        throw new Exception(message);
+    }
+}
+
+class main
+{
+  public static string read ()
   {
-    c.system.w.inport.hello = () => {
-      dzn.Runtime.traceIn(c.system.w.dzn_meta, "hello");
-      c.match("w.hello");
-      dzn.pump.port_block(c.dzn_locator, c.nullptr, c.system.w);
-      String tmp = c.trail_expect();
-      dzn.Runtime.traceOut(c.system.w.dzn_meta, tmp.Split('.')[1]);
-      return ;
+    string str = string.Empty;
+    string line;
+    while ((line = System.Console.ReadLine ()) != null)
+    {
+      str += (string.IsNullOrEmpty (str) ? "" : "\n") + line;
+    }
+    return str;
+  }
+
+  public static void Main (String[] args)
+  {
+    Debug.Listeners.Add (new TextWriterTraceListener (Console.Error));
+    Debug.Listeners.Add (new ThrowListener ());
+    Debug.AutoFlush = true;
+
+    dzn.Locator locator = new dzn.Locator ();
+    dzn.Runtime runtime = new dzn.Runtime ();
+    locator.set (runtime);
+    blocking_binding sut = new blocking_binding (locator);
+    dzn.pump pump = new dzn.pump ();
+    locator.set (pump);
+
+    sut.dzn_meta.name = "sut";
+
+    sut.h.dzn_meta.requires.name = "h";
+    sut.h.dzn_meta.requires.port = sut.h;
+
+    sut.w.dzn_meta.provides.name = "w";
+    sut.w.dzn_meta.provides.port = sut.w;
+
+    sut.w.inport.hello = () =>
+    {
+      dzn.Runtime.traceIn (sut.w.dzn_meta, "hello");
+      dzn.Runtime.traceOut (sut.w.dzn_meta, "return");
     };
-  }
 
-  static Dictionary<String, Action> event_map (dzn.container<blocking_binding> c)
-  {
-    c.system.h.dzn_meta.requires.name = "h";
-
-    c.system.w.dzn_meta.provides.component = c;
-    c.system.w.dzn_meta.provides.meta = c.dzn_meta;
-    c.system.w.dzn_meta.provides.name = "w";
-
-    Dictionary<String, Action> lookup = new Dictionary<String, Action>();
-    lookup.Add("h.hello",()=>{
-      c.match("h.hello");
-      int _0 = 0;
-      c.system.h.inport.hello(ref _0);
-      Debug.Assert(_0 == 456);
-      c.match("h.return");});
-    lookup.Add("w.return",()=>{
-      Action f = () => {};
-      dzn.pump.port_release(c.dzn_locator, c.system.w, f);
-    });
-    lookup.Add("w.world",()=>{
-      c.match("w.world");
-      c.system.w.outport.world();
-    });
-    lookup.Add("w.<flush>",()=>{System.Console.Error.WriteLine("w.<flush>"); c.system.dzn_runtime.flush(c.system);});
-    return lookup;
-  }
-
-  public static void Main(String[] args)
-  {
-    if(Array.Exists(args, s => s == "--debug")) {
-      Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
-      Debug.AutoFlush = true;
+    string trace = read ();
+    if (false);
+    // trace
+    else if (trace == "h.hello\nw.hello\nw.return\nw.world\nh.return")
+    {
+      int v = 0;
+      pump.execute (() => {
+        sut.h.inport.hello (ref v);
+        Console.Error.WriteLine("v=" + v);
+        Debug.Assert (v == 456);
+      });
+      pump.execute (() => sut.w.outport.world ());
     }
+    else
+      throw (new dzn.runtime_error ("missing trace"));
 
-    using(dzn.container<blocking_binding> c = new dzn.container<blocking_binding>((loc,name)=>{return new blocking_binding(loc,name);}, Array.Exists(args, s => s == "--flush"))) {
-      connect_ports (c);
-      c.run(event_map (c));
-    }
+    pump.wait ();
+    pump.Dispose ();
   }
 }
