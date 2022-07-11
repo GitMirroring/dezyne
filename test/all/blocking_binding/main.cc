@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2019, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,62 +22,75 @@
 //
 // Code:
 
-#include <dzn/container.hh>
-
 #include "blocking_binding.hh"
 
-int to_int(std::string s){return std::stoi (s);}
-bool to_bool(std::string s){return s == "true";}
-void to_void(std::string){}
+#include <thread>
 
-void
-connect_ports (dzn::container<blocking_binding, std::function<void()> >& c)
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
+#include <dzn/pump.hh>
+
+std::string
+read ()
 {
-  c.system.w.in.hello = [&] () {
-    dzn::trace(std::clog, c.system.w.meta, "hello");
-    c.match("w.hello");
-    port_block(c.dzn_locator, nullptr, &c.system.w);
-    std::string tmp = c.trail_expect();
-    dzn::trace_out(std::clog, c.system.w.meta, tmp.substr(tmp.rfind('.')+1).c_str());
-    return to_void(tmp.substr(tmp.rfind('.')+1));
-  };
+  std::string str;
+  {
+    std::string line;
+    while (std::cin >> line)
+      str += (str.empty () ? "" : "\n") + line;
+  }
+  return str;
 }
-
-std::map<std::string, std::function<void()> >
-event_map (dzn::container<blocking_binding, std::function<void()> >& c)
-{
-  c.system.h.meta.require.name = "h";
-
-  c.system.w.meta.provide.component = &c;
-  c.system.w.meta.provide.meta = &c.meta;
-  c.system.w.meta.provide.name = "w";
-
-
-  return {
-    {"h.hello",[&]{
-      c.match("h.hello");
-      int _0 = 0;
-      c.system.h.in.hello(_0);
-      assert(_0 == 456);
-      c.match("h.return");}}
-    , {"w.return",[&]{
-        std::function<void()> f([]{});
-        port_release(c.dzn_locator, &c.system.w, f);
-      }}
-    ,{"w.world",[&]{
-        c.match("w.world");
-        c.system.w.out.world();
-      }}
-    ,{"w.<flush>",[&]{std::clog << "w.<flush>" << std::endl; c.dzn_rt.flush(&c);}}
-  };
-}
-
 
 int
-main(int argc, char* argv[])
+main (int argc, char **argv)
 {
-  dzn::container<blocking_binding, std::function<void()> > c(argc > 1 && argv[1] == std::string("--flush"));
+  if (argv + argc != std::find_if (argv + 1,
+                                   argv + argc,
+                                   [] (char const* s)
+                                   {return s == "--debug";}))
+    dzn::debug.rdbuf (std::clog.rdbuf ());
 
-  connect_ports (c);
-  c(event_map (c));
+  dzn::locator locator;
+  dzn::runtime runtime;
+  locator.set (runtime);
+  blocking_binding sut (locator);
+  dzn::pump pump;
+  locator.set(pump);
+
+  sut.dzn_meta.name = "sut";
+
+  sut.h.meta.require.name = "h";
+  sut.h.meta.require.port = &sut.h;
+
+  sut.w.meta.provide.name = "w";
+  sut.w.meta.provide.port = &sut.w;
+
+  sut.w.in.hello = [&]
+  {
+    dzn::trace (std::clog, sut.w.meta, "hello");
+    dzn::trace_out (std::clog, sut.w.meta, "return");
+  };
+
+  std::string trace = read ();
+  if (0);
+  // trace
+  else if (trace == "h.hello\nw.hello\nw.return\nw.world\nh.return")
+  {
+    int v = 0;
+    pump ([&] {
+      sut.h.in.hello (v);
+      assert (v == 456);
+    });
+    pump ([&] {sut.w.out.world ();});
+  }
+  else
+  {
+    std::clog << "missing trace" << std::endl;
+    return 1;
+  }
+
+  pump.wait ();
+
+  return 0;
 }
