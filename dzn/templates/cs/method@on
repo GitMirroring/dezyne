@@ -1,6 +1,4 @@
 public void #x:on-trigger
 {
-  #x:formal-binding-temporary
   #x:statement
-  #x:formal-binding-assign-temporary
 }
