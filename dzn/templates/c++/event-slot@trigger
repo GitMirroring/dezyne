@@ -4,6 +4,7 @@
     this->dzn_rt.skip_block(&this->#.port.name) = false;
     #.port.name _#.event.name(#x:code-arguments);
     #x:flush
+    #x:port-reply
     #x:return
   },
   this->#.port.name , "#.event.name ");

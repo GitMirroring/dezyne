@@ -44,10 +44,8 @@ namespace dzn
   {
     l.get<dzn::pump>().block(l.get<dzn::runtime>(), c, p);
   }
-  void port_release(const locator& l, void* p, std::function<void()>& out_binding)
+  void port_release(const locator& l, void* p)
   {
-    if(out_binding) out_binding();
-    out_binding = nullptr;
     l.get<dzn::pump>().release(l.get<dzn::runtime>(),p);
   }
   void collateral_block(void* c, const locator& l)
