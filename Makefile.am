@@ -132,7 +132,7 @@ include test/language/local.mk
 include test/lts/local.mk
 
 TEST_EXTENSIONS = .scm
-LOG_COMPILER = $(top_builddir)/pre-inst-env run
+LOG_COMPILER = $(top_builddir)/pre-inst-env run $(RUN_FLAGS)
 SCM_LOG_COMPILER = $(top_builddir)/pre-inst-env $(GUILE)
 AM_SCM_LOG_FLAGS = --no-auto-compile
 

@@ -24,31 +24,92 @@
 ;;;
 ;;; Code:
 
-(use-modules (ice-9 match)
+(use-modules (srfi srfi-26)
+             (ice-9 getopt-long)
+             (ice-9 match)
+             (dzn command-line)
+             (dzn misc)
              (dzn shell-util)
              (test dzn dzn))
 
+(define (parse-opts args)
+  (let* ((option-spec
+	  '((help (single-char #\h))
+	    (language (single-char #\l) (value #t))
+	    (skip (single-char #\S) (value #t))
+            (stage (single-char #\s) (value #t))
+            (verbose (single-char #\v))))
+	 (options (getopt-long args option-spec))
+	 (help? (option-ref options 'help #f))
+	 (files (option-ref options '() '()))
+	 (usage? (and (not help?) (null? files))))
+    (when (or help? usage?)
+      (let ((port (if usage? (current-error-port) (current-output-port))))
+        (format port "\
+Usage: run [OPTION]... TEST
+Run test TEST.
+
+  -h, --help             display this help and exit
+  -l, --language=LANG    run code test for LANG [~a]
+  -S, --skip=STAGE       skip STAGE
+  -s, --stage=STAGE      run STAGE
+  -v, --verbose          be more verbose, show progress
+
+Examples:
+  ./pre-inst-env run hello
+  ./pre-inst-env run test/all/hello
+  ./pre-inst-env run test/all/hello/hello.dzn
+"
+                "@languages@")
+          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
+    options))
 
 ;;; Main
 
 (define (main args)
-  (match args
-    ((_ file-name)
-     (let* ((run (string-append file-name "/run"))
-            (file-name (if (string-prefix? "./test" file-name)
-                           (string-drop file-name 2)
-                           file-name))
-            (languages (string-trim-both "@languages@"))
-            (languages (if (string-null? languages) '()
-                           (string-split languages #\space))))
-       (if (and (file-exists? run)
+  (let* ((options (parse-opts args))
+         (file-name (match (option-ref options '() '("hello"))
+                      ((file rest ...) file)))
+         (file-name (cond ((string-suffix? ".dzn" file-name)
+                           (dirname file-name))
+                          ((string-suffix? "/" file-name)
+                           (string-drop-right file-name 1))
+                          (else
+                           file-name)))
+         (file-name (if (string-contains file-name "/") file-name
+                        (string-append "test/all/" file-name)))
+         (run (string-append file-name "/run"))
+         (file-name (if (string-prefix? "./test" file-name)
+                        (string-drop file-name 2)
+                        file-name))
+         (default-languages (string-trim-both "@languages@"))
+         (default-languages (if (string-null? default-languages) '()
+                               (string-split default-languages #\space)))
+         (languages (multi-opt options 'language))
+         (languages (if (pair? languages) languages
+                        default-languages))
+         (skip (multi-opt options 'skip))
+         (stages (multi-opt options 'stage))
+         (stages (if (pair? stages) stages
+                     %default-stages))
+         (need-traces? (or (member "lts" stages)
+                           (member "simulate" stages)
+                           (member "code" stages)))
+         (stages (if need-traces? (cons "traces" stages)
+                     stages))
+         (stages (filter (negate (cute member <> skip)) stages))
+         (verbose? (option-ref options 'verbose #f)))
+    (when verbose?
+      (format (current-error-port) "stages: ~a\n" stages)
+      (format (current-error-port) "languages: ~a\n" languages))
+    (cond ((and (file-exists? run)
                 (not (getenv "run_seen")))
-           (begin (setenv "run_seen" "1")
-                  (unless (getenv "languages")
-                    (setenv "languages" (string-join languages)))
-                  (exit (zero? (system* run file-name))))
-           (exit (run-test file-name languages)))))
-    (_ (error "invalid arguments"))))
+           (setenv "run_seen" "1")
+           (unless (getenv "languages")
+             (setenv "languages" (string-join languages)))
+           (exit (zero? (system* run file-name))))
+          (else
+           (exit (run-test file-name languages #:stages stages))))))
 
 ;;; Local Variables:
 ;;; mode: scheme
