@@ -232,7 +232,7 @@ Return a list of traces, possibly marked with <compliance-error>."
            (instance (.container r:component-port))
            (component-trigger (trigger->component-trigger trigger))
            (at (list-index
-                (if (ast:provides? trigger)
+                (if (ast:provides? component-trigger)
                     (conjoin
                      (compose (cute eq? <> instance) .instance)
                      (compose (is? <initial-compound>) .statement)
@@ -245,7 +245,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                 trace))
            (trace (if (not at) trace
                       (list-head trace (1+ at))))
-           (trace (if (ast:provides? trigger) trace
+           (trace (if (ast:provides? component-trigger) trace
                       (filter (compose (negate (is? <trigger-return>)) .statement) trace))))
       trace))
 
