@@ -101,8 +101,7 @@
      ((and (is-a? instance <runtime:component>)
            (or (get-handling pc instance)
                (assq r:port (.blocked pc)))
-           (blocked-port pc instance)
-           (not (blocked-on-boundary? pc)))
+           (blocked-port pc instance))
       (%debug "<blocked-error> collateral ~a ~a\n" (name instance) (trigger->string trigger))
       (let ((message (format #f "port `~a' is collaterally blocked"
                              (.name port))))
