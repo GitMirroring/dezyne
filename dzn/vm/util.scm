@@ -377,9 +377,11 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (return-labels (.ast o)))
 
 (define-method (rtc-labels (pc <program-counter>))
-  (let* ((released-pc (blocked-on-boundary-collateral-release pc))
+  (let* ((bob-pc (blocked-on-boundary-switch-context pc))
+         (bob-statement (.statement bob-pc))
+         (released-pc (blocked-on-boundary-collateral-release pc))
          (switched-pc (switch-context released-pc)))
-    (if (eq? switched-pc pc) '()
+    (if (or (is-a? bob-statement <trigger-return>) (eq? switched-pc pc)) '()
         (let* ((ports (filter (conjoin runtime:boundary-port? ast:provides?)
                               (%instances)))
                (port-names (map (compose .name .ast) ports)))
