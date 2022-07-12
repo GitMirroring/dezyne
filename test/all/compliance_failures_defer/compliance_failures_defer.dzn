@@ -33,6 +33,7 @@ interface ihello
 
     [idle] on hello: idle = false;
     [!idle] on inevitable: {idle = true; world;}
+    on cancel: idle = true;
   }
 }
 
@@ -53,6 +54,7 @@ component compliance_failures_defer
   behavior
   {
     bool idle = true;
-    [idle] on h.hello (): {idle = false; defer {idle = true; if(c.cruel()) h.world();}}
+    [idle] on h.hello (): {idle = false; defer if (c.cruel()) h.world();}
+    on h.cancel (): idle = true;
   }
 }
