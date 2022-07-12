@@ -9,9 +9,27 @@ Run an individual test
 
    ./pre-inst-env run test/all/hello
 
+or
+
+   ./pre-inst-env run hello
+
+See
+
+    ./pre-inst-env run --help
+
+for more options.
+
 Re-run all failures (e.g., after making fixes)
 
     make recheck
+
+Run only verify
+
+    make check RUN_FLAGS=--stage=verify
+
+Skip code
+
+    make check RUN_FLAGS=--skip=code
 
 Run all parser tests
 
@@ -24,6 +42,10 @@ or
 Run all blocking tests
 
     make check TESTS="$(find test/all -maxdepth 1 -type d -a -name '*block*')"
+
+Run verify for all defer tests
+
+    make check TESTS="$(find test/all -maxdepth 1 -type d -a -name '*defer*')" RUN_FLAGS=--stage=verify
 
 * The Perfect GNU Emacs Setup
 

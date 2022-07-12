@@ -36,9 +36,14 @@
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn trace)
-  #:export (run-baseline
+  #:export (%default-stages
+            run-baseline
             run-test))
 
+(define %default-stages
+  '("verify" "traces" "lts" "simulate" "code"))
+
+
 ;;;
 ;;; Invocation helpers
 ;;;
@@ -602,14 +607,18 @@ output, and standard error as three values."
                      (zero? (system* "diff" "-uwB"
                                      baseline-err err-file)))))))))
 
-(define (run-test file-name languages)
+(define* (run-test file-name languages #:key (stages %default-stages))
+  (define (skip? stage)
+    (not (member stage stages)))
   (setvbuf (current-output-port) 'line)
   (format #t "* run: ~a ~a\n" file-name languages)
-  (let ((result (and (run-verify file-name)
-                     (run-traces file-name)
-                     (run-lts file-name)
-                     (run-simulate file-name)
-                     (and-map (cute run-code file-name <>) languages))))
+  (let ((result
+         (and
+          (or (skip? "verify") (run-verify file-name))
+          (or (skip? "traces") (run-traces file-name))
+          (or (skip? "lts") (run-lts file-name))
+          (or (skip? "simulate") (run-simulate file-name))
+          (or (skip? "code") (and-map (cute run-code file-name <>) languages)))))
     (format #t "# Local Variables:
 # mode: org
 # End:
