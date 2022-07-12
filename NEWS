@@ -5,6 +5,13 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.15.4 since 2.15.3
+** Code
+  - In C++, C# and the experimental Scheme code generators, a
+    formal-binding ("<-") to assign an out-parameter is now also
+    supported without blocking, in a synchronous out event context
+    ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/74][#74]]).
+
 * Changes in 2.15.3 since 2.15.2
 ** Noteworthy bug fixes
   - A bug in the C++, C#, and the experimental Scheme and JavaScript
