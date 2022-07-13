@@ -51,6 +51,7 @@
             filter-match-error
             flush-async
             flush-async-trace
+            flush-defer
             interactive?
             livelock?
             mark-livelock-error
@@ -791,6 +792,20 @@ until RTC?."
                             traces)))
           (append blocked
                   traces)))))
+
+(define-method (flush-defer (pc <program-counter>))
+  (let* ((event "<defer>")
+         (traces (run-defer-event pc event))
+         (blocked? (pair? (.blocked pc)))
+         (traces (if (not blocked?) traces
+                     (append-map
+                      (cute run-to-completion*-context-switch <> event)
+                      traces)))
+         (traces flush (partition (compose null? .defer car) traces)))
+    (append traces (append-map flush-defer flush))))
+
+(define-method (flush-defer trace)
+  (extend-trace trace flush-defer))
 
 (define-method (run-external-q (pc <program-counter>) (instance <runtime:port>))
   (let* ((pc trigger (dequeue-external pc instance))
