@@ -1,0 +1,3 @@
+test/all/compliance_fork_blocking_bypass/compliance_fork_blocking_bypass.dzn:69:26: error: non-compliance
+test/all/compliance_fork_blocking_bypass/compliance_fork_blocking_bypass.dzn:69:26: forking not allowed, action on port: bypassp
+test/all/compliance_fork_blocking_bypass/compliance_fork_blocking_bypass.dzn:64:5: for trigger on port block

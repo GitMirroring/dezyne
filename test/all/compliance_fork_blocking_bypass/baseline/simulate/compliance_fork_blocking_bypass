@@ -1,0 +1,21 @@
+(header ((block) ihello provides) ((bypassp) ibypass provides) ((sut) compliance_fork_blocking_bypass component) ((world) iworld requires) ((bypassr) ibypass requires))
+(state ((block)) ((bypassp)) ((sut)) ((world) (idle . true)) ((bypassr)))
+test/all/compliance_fork_blocking_bypass/compliance_fork_blocking_bypass.dzn:69:26: error: non-compliance
+<external>.block.hello -> ...
+... -> sut.block.hello
+sut.world.hello -> ...
+... -> <external>.world.hello
+... <- <external>.world.return
+sut.world.return <- ...
+... <- <external>.bypassr.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.bypassr.world <- ...
+... <- sut.bypassp.world
+<external>.bypassp.world <- ...
+<non-compliance>
+(state ((block)) ((bypassp)) ((sut)) ((world) (idle . true)) ((bypassr)))
+test/all/compliance_fork_blocking_bypass/compliance_fork_blocking_bypass.dzn:69:26: error: non-compliance
+(trail "block.hello" "world.hello" "world.return" "bypassr.world" "bypassp.world" "<non-compliance>")
+(labels "block.hello" "bypassp.hello" "world.world" "bypassr.world")
+(eligible)
