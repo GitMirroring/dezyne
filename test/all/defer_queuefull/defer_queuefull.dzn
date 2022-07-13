@@ -40,6 +40,6 @@ component defer_queuefull
   {
     bool b = true;
 
-    on h.hello (): if (b) defer b = false;
+    on h.hello (): defer b = false;
   }
 }

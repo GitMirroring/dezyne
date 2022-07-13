@@ -205,6 +205,7 @@
 
 (define-method (ast:argument* (o <action>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
+(define-method (ast:argument* (o <defer>)) ((compose (cute and=> <> ast:argument*) .arguments) o))
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
 (define-method (ast:event* (o <interface>)) ((compose ast:event* .events) o))
 (define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
@@ -782,13 +783,8 @@
     index))
 
 (define-method (ast:defer-variable* (o <defer>))
-  (let* ((path (ast:path o (is? <behavior>)))
-         (guards (filter (disjoin (is? <guard>) (is? <if>)) path))
-         (expressions (map .expression guards))
-         (expression? (disjoin (is? <var>) (is? <field-test>)))
-         (vars (append-map (cute tree-collect expression? <>) expressions))
-         (vars (delete-duplicates vars ast:equal?)))
-    (map .variable vars)))
+  (if (not (.arguments o)) (ast:member* (parent o <model>))
+      (map .variable (ast:argument* o))))
 
 (define-method (ast:expression->type (o <expression>))
   (cond ((parent o <call>) ((compose .type ast:argument->formal) o))
