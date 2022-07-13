@@ -73,6 +73,7 @@
             get-reply
             get-state
             get-variables
+            graft-locals
             in-event?
             is-status?
             label?
@@ -1421,20 +1422,43 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (eq? a b))
 
 (define-method (prune-defer (pc <program-counter>))
-  (define (members pc instance)
-    (let* ((state (get-state pc instance))
-           (variables (.variables state))
-           (component (runtime:ast-model instance))
-           (members (ast:member* component)))
-      (take-right variables (length members))))
   (define (state-equal? pc defer-pc)
+    (define defer-variable-names
+      (map .name (ast:defer-variable* (.statement defer-pc))))
+    (define defer-variable?
+      (match-lambda ((name . expression)
+                     (or (null? defer-variable-names)
+                         (member name defer-variable-names)))))
     (let* ((instance (.instance defer-pc))
-           (defer-members (members defer-pc instance))
-           (members (members pc instance)))
-      (ast:equal? members defer-members)))
+           (defer-members (get-members defer-pc instance))
+           (defer-members (filter defer-variable? defer-members))
+           (members (get-members pc instance))
+           (members (filter defer-variable? members)))
+      (or (null? defer-variable-names)
+          (ast:equal? members defer-members))))
   (let* ((defer (.defer pc))
          (defer (filter (cute state-equal? pc <>) defer)))
     (clone pc #:defer defer)))
+
+(define-method (get-members (pc <program-counter>) instance)
+  (let* ((state (get-state pc instance))
+         (variables (.variables state))
+         (component (runtime:ast-model instance))
+         (members (ast:member* component)))
+    (take-right variables (length members))))
+
+(define-method (get-locals (pc <program-counter>) instance)
+  (let* ((state (get-state pc instance))
+         (variables (.variables state))
+         (component (runtime:ast-model instance))
+         (members (ast:member* component)))
+    (drop-right variables (length members))))
+
+(define-method (graft-locals (pc <program-counter>) (from <program-counter>))
+  (let* ((instance (.instance from))
+         (members (get-members pc instance))
+         (locals (get-locals from instance)))
+    (set-variables pc (append locals members))))
 
 (define (trace-head:eq? a b)
   (pc-equal? (car a) (car b)))
