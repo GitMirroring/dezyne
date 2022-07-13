@@ -57,6 +57,7 @@
            ast:data*
            ast:declarative?
            ast:default-value
+           ast:defer-variable*
            ast:direction
            ast:dotted-name
            ast:dzn-scope?
@@ -779,6 +780,15 @@
   (let* ((formals (.elements (parent o <formals>)))
          (index (list-index (cut ast:eq? o <>) formals)))
     index))
+
+(define-method (ast:defer-variable* (o <defer>))
+  (let* ((path (ast:path o (is? <behavior>)))
+         (guards (filter (disjoin (is? <guard>) (is? <if>)) path))
+         (expressions (map .expression guards))
+         (expression? (disjoin (is? <var>) (is? <field-test>)))
+         (vars (append-map (cute tree-collect expression? <>) expressions))
+         (vars (delete-duplicates vars ast:equal?)))
+    (map .variable vars)))
 
 (define-method (ast:expression->type (o <expression>))
   (cond ((parent o <call>) ((compose .type ast:argument->formal) o))
