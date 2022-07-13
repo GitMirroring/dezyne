@@ -1,0 +1,68 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2021, 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  in void cruel();
+  out void world();
+  out void bye();
+  behavior
+  {
+    bool idle = true;
+    bool busy = false;
+
+    [idle] on hello: {idle = false;}
+    [!busy] on cruel: {busy = true;}
+    [!idle] on inevitable: {idle=true; world;}
+    [busy] on inevitable: {busy=false; bye;}
+  }
+}
+
+component defer_nested_parallel
+{
+  provides ihello h;
+  behavior
+  {
+    bool idle = true;
+    bool busy = false;
+    [idle] on h.hello():
+    {
+      idle = false;
+      defer
+      {
+        idle = true; h.world();
+        defer if(busy) {busy = false; h.bye();}
+      }
+    }
+    [!busy] on h.cruel():
+    {
+      busy = true;
+      defer
+      {
+        busy = false; h.bye();
+        defer if(!idle) {idle = true; h.world();}
+      }
+    }
+  }
+}
