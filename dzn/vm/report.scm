@@ -1039,7 +1039,7 @@ value of the trail."
                eligible)
       (let* ((eligible (if (and (is-a? status <end-of-trail>) (.ast status)) (end-of-trail-labels pc)
                            eligible))
-             (labels (labels pc))
+             (labels (or (and=> pc labels) '()))
              (labels (if (and (pair? eligible) (not (member (car eligible) labels))) eligible
                          labels)))
         (format #t "~s\n" (cons 'labels labels))

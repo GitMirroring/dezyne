@@ -591,9 +591,10 @@ port return."
       (event-traces-alist pc)))
 
 (define-method (event-traces-alist (pcs <list>))
-  (let ((pcs (map (cute clone <> #:status #f) pcs)))
-    (merge-alist-list
-     (map event-traces-alist pcs))))
+  (let* ((pcs (map (cute clone <> #:status #f) pcs))
+         (alists (map event-traces-alist pcs)))
+    (if (null? alists) '()
+        (merge-alist-list alists))))
 
 (define-method (eligible-labels event-traces-alist)
   (let* ((eligible-traces
@@ -626,7 +627,9 @@ TRACES."
 
   (let* ((pcs (map car traces))
          (blocked-sets (map blocked+collateral-ports pcs))
-         (blocked-port-names (apply lset-intersection equal? blocked-sets)))
+         (blocked-port-names
+          (if (null? blocked-sets) '()
+              (apply lset-intersection equal? blocked-sets))))
     (filter (disjoin
              rtc-event?
              return-trigger?
