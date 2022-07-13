@@ -224,10 +224,11 @@
 
 (define (wrap-lonely-variable o)
   (match o
-    (($ <variable>) (make <compound> #:elements (list o)))
+    (($ <variable>)
+     (if (is-a? (.parent o) <compound>) o
+         (make <compound> #:elements (list o))))
     (($ <behavior>) (clone o #:statement (wrap-lonely-variable (.statement o))))
     (($ <component>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
-    ((and (? (is? <compound>)) (? ast:imperative?)) o)
     (($ <system>) o)
     (($ <foreign>) o)
     (($ <interface>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
