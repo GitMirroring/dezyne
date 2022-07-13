@@ -264,6 +264,7 @@ REGRESSION_TESTS =				\
  %D%/defer_nested_parallel			\
  %D%/defer_parallel				\
  %D%/defer_queuefull				\
+ %D%/defer_selection				\
  %D%/defer_shadow				\
  %D%/defer_twice				\
  %D%/defer_twice_noisy				\
