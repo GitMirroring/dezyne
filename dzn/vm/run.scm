@@ -783,7 +783,7 @@ until RTC?."
                           #:statement defer-qout
                           #:trigger (.trigger defer-pc)
                           #:trail trail))
-               (pc (set-variables pc (get-variables defer-pc)))
+               (pc (graft-locals pc defer-pc))
                (traces (run-to-completion pc 'rtc))
                (blocked traces
                         (partition (compose blocked-on-boundary? car) traces))

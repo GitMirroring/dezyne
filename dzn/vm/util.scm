@@ -73,6 +73,7 @@
             get-reply
             get-state
             get-variables
+            graft-locals
             in-event?
             is-status?
             label?
@@ -884,6 +885,25 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (set-deferred (pc <program-counter>) deferred)
   (set-state pc (clone (get-state pc) #:deferred deferred)))
 
+(define-method (prune-defer (pc <program-counter>))
+  (define (state-equal? pc defer-pc)
+    (define defer-variable-names
+      (map .name (ast:defer-variable* (.statement defer-pc))))
+    (define defer-variable?
+      (match-lambda ((name . expression)
+                     (or (null? defer-variable-names)
+                         (member name defer-variable-names)))))
+    (let* ((instance (.instance defer-pc))
+           (defer-members (get-members defer-pc instance))
+           (defer-members (filter defer-variable? defer-members))
+           (members (get-members pc instance))
+           (members (filter defer-variable? members)))
+      (or (null? defer-variable-names)
+          (ast:equal? members defer-members))))
+  (let* ((defer (.defer pc))
+         (defer (filter (cute state-equal? pc <>) defer)))
+    (clone pc #:defer defer)))
+
 (define-method (flush (pc <program-counter>) instance)
   (%debug "  ~s ~s ~a\n" (name instance) (and=> (.trigger pc) trigger->string) "<flush>")
   (let* ((orig-pc pc)
@@ -964,6 +984,26 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (set-variables (pc <program-counter>) (o <list>))
   (set-state pc (clone (get-state pc) #:variables o)))
+
+(define-method (get-members (pc <program-counter>) instance)
+  (let* ((state (get-state pc instance))
+         (variables (.variables state))
+         (component (runtime:ast-model instance))
+         (members (ast:member* component)))
+    (take-right variables (length members))))
+
+(define-method (get-locals (pc <program-counter>) instance)
+  (let* ((state (get-state pc instance))
+         (variables (.variables state))
+         (component (runtime:ast-model instance))
+         (members (ast:member* component)))
+    (drop-right variables (length members))))
+
+(define-method (graft-locals (pc <program-counter>) (from <program-counter>))
+  (let* ((instance (.instance from))
+         (members (get-members pc instance))
+         (locals (get-locals from instance)))
+    (set-variables pc (append locals members))))
 
 (define-method (push-local (o <formal>) (e <expression>) (pc <program-counter>))
   (or (and=> (range-error o e) (cut clone pc #:status <>))
@@ -1419,22 +1459,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (pc-equal? (a <top>) (b <top>))
   (eq? a b))
-
-(define-method (prune-defer (pc <program-counter>))
-  (define (members pc instance)
-    (let* ((state (get-state pc instance))
-           (variables (.variables state))
-           (component (runtime:ast-model instance))
-           (members (ast:member* component)))
-      (take-right variables (length members))))
-  (define (state-equal? pc defer-pc)
-    (let* ((instance (.instance defer-pc))
-           (defer-members (members defer-pc instance))
-           (members (members pc instance)))
-      (ast:equal? members defer-members)))
-  (let* ((defer (.defer pc))
-         (defer (filter (cute state-equal? pc <>) defer)))
-    (clone pc #:defer defer)))
 
 (define (trace-head:eq? a b)
   (pc-equal? (car a) (car b)))
