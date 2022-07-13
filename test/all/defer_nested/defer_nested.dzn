@@ -24,18 +24,15 @@
 interface ihello
 {
   in void hello();
-  in void cruel();
   out void world();
   out void bye();
   behavior
   {
     bool idle = true;
-    bool busy = false;
+    bool first = true;
 
-    [idle] on hello: {idle = false;}
-    [!busy] on cruel: {busy = true;}
-    [!idle] on inevitable: {idle=true; world;}
-    [busy] on inevitable: {busy=false; bye;}
+    [idle] on hello: {first = true; idle = false;}
+    [!idle] on inevitable: {world; if(first) first = false; else idle=true;}
   }
 }
 
@@ -45,23 +42,13 @@ component defer_nested
   behavior
   {
     bool idle = true;
-    bool busy = false;
     [idle] on h.hello():
     {
       idle = false;
       defer
       {
-        idle = true; h.world();
-        defer if(busy) {busy = false; h.bye();}
-      }
-    }
-    [!busy] on h.cruel():
-    {
-      busy = true;
-      defer
-      {
-        busy = false; h.bye();
-        defer if(!idle) {idle = true; h.world();}
+        h.world();
+        defer {idle = true; h.world();}
       }
     }
   }
