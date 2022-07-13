@@ -386,11 +386,8 @@
          (variables (map .variable references)))
     (filter (negate ast:member?) variables)))
 
-(define-method (code:capture-member (o <component>))
-  (ast:variable* o))
-
 (define-method (code:capture-member (o <defer>))
-  (code:capture-member (parent o <component>)))
+  (ast:defer-variable* o))
 
 (define-method (code:capture-member (o <variable>))
   o)
