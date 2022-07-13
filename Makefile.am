@@ -139,6 +139,24 @@ AM_SCM_LOG_FLAGS = --no-auto-compile
 TESTS = $(UNIT_TESTS) $(FULL_TESTS)
 EXTRA_DIST += $(TESTS)
 
+check-smoke: $(BUILT_SOURCES)
+	$(MAKE) check TESTS="$(SMOKE_TESTS)"
+
+recheck-smoke: all
+	$(MAKE) recheck TESTS="$(SMOKE_TESTS)"
+
+check-semantics: $(BUILT_SOURCES)
+	$(MAKE) check TESTS="$(SEMANTICS_TESTS)"
+
+recheck-semantics: all
+	$(MAKE) recheck TESTS="$(HELLO_SEMANTICS)"
+
+check-hello: $(BUILT_SOURCES)
+	$(MAKE) check TESTS="$(HELLO_TESTS)"
+
+recheck-hello: all
+	$(MAKE) recheck TESTS="$(HELLO_TESTS)"
+
 # Documentation
 ###############
 
