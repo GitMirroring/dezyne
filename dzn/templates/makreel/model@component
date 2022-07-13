@@ -119,8 +119,8 @@ defer_end;
 defer_end';
 defer_q_empty;
 defer_q_empty';
-defer_qin: StateLocals;
-defer_qin': StateLocals;
+defer_qin: DeferContext;
+defer_qin': DeferContext;
 defer_qout: Locals;
 defer_qout': Locals;
 defer_skip: State;
@@ -129,23 +129,30 @@ defer_skip': State;
 
 map
 
-prune_deferred : State # List (StateLocals) -> List(StateLocals);
+prune_deferred : State # List (DeferContext) -> List(DeferContext);
+state_current : State # DeferContext -> Bool;
 
-var defer_state: State;
-    defer_head: StateLocals;
-    defer_tail: List(StateLocals);
+var current : State;
+    context : DeferContext;
+    defer_state: State;
+    defer_head: DeferContext;
+    defer_tail: List(DeferContext);
 
 eqn
 
+state_current(current, context) = (#x:defer-predicate-true #x:defer-predicate);
+
 prune_deferred(defer_state, []) = [];
-defer_state != state(defer_head) -> prune_deferred(defer_state, defer_head |> defer_tail) = prune_deferred(defer_state, defer_tail);
-defer_state == state(defer_head) -> prune_deferred(defer_state, defer_head |> defer_tail) = defer_head |> prune_deferred(defer_state, defer_tail);
+(!state_current(defer_state, defer_head))
+  -> prune_deferred(defer_state, defer_head |> defer_tail) = prune_deferred(defer_state, defer_tail);
+(state_current(defer_state, defer_head))
+  -> prune_deferred(defer_state, defer_head |> defer_tail) = defer_head |> prune_deferred(defer_state, defer_tail);
 
 proc
 
-defer_queue (l: List (StateLocals))
- = (##l == QueueLength) -> (sum sl: StateLocals . defer_qin(sl) . queue_full . delta)
- + (##l < QueueLength) -> (sum sl: StateLocals . defer_qin(sl) . defer_queue(l = l <| sl))
+defer_queue (l: List (DeferContext))
+ = (##l == QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . queue_full . delta)
+ + (##l < QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . defer_queue(l = l <| dc))
  + (l != []) -> defer_qout(locals(head(l))) . defer_queue(l = tail(l))
  + (l == []) -> defer_q_empty . defer_queue(l)
  + sum s : State . defer_skip(s) . defer_queue (prune_deferred (s,l))
@@ -153,13 +160,15 @@ defer_queue (l: List (StateLocals))
 
 #x:proc
 
+%% defer continuation identifiers are determined by x:proc above,
+%% therefore this defer related sort must be here
 
 sort
 
 State = struct state_vector #x:state-vector;
+Selection = struct selection_empty #x:defer-select-member;
 Locals = struct empty #x:defer-locals-sort;
-StateLocals = struct state_locals(state: State, locals: Locals);
-
+DeferContext = struct defer_context(state: State, select: Set(Selection), locals: Locals);
 
 proc
 

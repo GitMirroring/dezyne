@@ -189,6 +189,11 @@
 (define-templates construct-state-vector (lambda (o) (let ((behavior (.behavior (parent o <component>)))) (if (pair? (ast:variable* behavior)) behavior '()))))
 (define-templates state-var ast:variable* comma-infix)
 
+(define-templates defer-select-member ast:variable* pipe-prefix)
+(define-templates defer-select-variable ast:defer-variable* comma-infix)
+(define-templates defer-predicate ast:variable* and-infix)
+(define-templates defer-predicate-true (lambda (o) (if (null? (ast:variable* o)) o '())) and-infix)
+
 ;;semantics
 (define-templates semantics-main)
 (define-templates semantics-provides ast:provides-port* newline-union-infix)

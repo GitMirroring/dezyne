@@ -1,0 +1,1 @@
+(!(select_#.name  in select(context)) || state_#.name(current) == state_#.name(state(context)))
