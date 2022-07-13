@@ -815,12 +815,9 @@ or false."
       ((? (const (and (pair? (.defer pc)) (blocked-on-boundary? pc))))
        (list (cons (clone pc #:defer '()) pc+blocked-trace)))
       ((? (const (and (pair? (.defer pc)) (not (%strict?)))))
-       (let* ((traces (run-defer-event pc event))
+       (let* ((traces (flush-defer pc))
               (traces (if (null? blocked-trace) traces
-                          (extend-trace blocked-trace (const traces))))
-              (traces (append-map
-                       (cute run-to-completion*-context-switch <> event)
-                       traces)))
+                          (extend-trace blocked-trace (const traces)))))
          (check-provides-compliance* pc event traces)))
       (_
        (when (not (eq? (switch-context pc) pc))
