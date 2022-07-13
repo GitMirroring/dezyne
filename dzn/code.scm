@@ -369,14 +369,14 @@
         '())))
 
 (define-method (code:default-true (o <defer>))
-  (let ((p (parent o <component>)))
-    (if (null? (ast:variable* p)) o
-        '())))
+  (if (or (and=> (.arguments o) (compose null? .elements))
+          (null? (ast:variable* (parent o <component>)))) o
+          '()))
 
 (define-method (code:defer-condition (o <defer>))
-  (let ((p (parent o <component>)))
-    (if (pair? (ast:variable* p)) o
-        '())))
+  (if (not (or (and=> (.arguments o)(compose null? .elements))
+               (null? (ast:variable* (parent o <component>))))) o
+      '()))
 
 (define-method (code:capture-local (o <defer>))
   (let* ((references (tree-collect (disjoin(is? <assign>)
@@ -386,11 +386,8 @@
          (variables (map .variable references)))
     (filter (negate ast:member?) variables)))
 
-(define-method (code:capture-member (o <component>))
-  (ast:variable* o))
-
 (define-method (code:capture-member (o <defer>))
-  (code:capture-member (parent o <component>)))
+  (ast:defer-variable* o))
 
 (define-method (code:capture-member (o <variable>))
   o)
