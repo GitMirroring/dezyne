@@ -43,7 +43,7 @@ component defer_loop
     [b] on h.hello (): b = false;
     void f ()
     {
-      if (!b) defer f ();
+      defer f ();
     }
   }
 }

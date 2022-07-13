@@ -49,7 +49,7 @@ component defer_cancel_call
     void f()
     {
       h.world();
-      if(!idle) defer f();
+      defer f();
     }
   }
 }
