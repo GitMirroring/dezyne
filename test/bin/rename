@@ -52,6 +52,9 @@ if [ $to/$from_base.dzn != $to/$to_base.dzn ]; then
     git add $to/$to_base.dzn
 fi
 
+sed -i -e s,$from_base,$to_base,g $to/*trace* ||:
+git add $to/*trace* ||:
+
 for i in $(cd $to && git ls-files 'main.*'); do
     sed -i -e "s,$from_base,$to_base,g" $to/$i;
 done
@@ -65,23 +68,10 @@ for i in $(ls -1 $to/baseline 2>/dev/null); do
     if [ -L $to/baseline/$i ]; then
         continue
     fi
-    sed -i -e s,$from_base,$to_base,g $to/baseline/$i/*trace* ||:
-    if [ -f $to/baseline/$i/$from_base ]; then
-        if [ $to/baseline/$i/$from_base != $to/baseline/$i/$to_base ]; then
-            git mv $to/baseline/$i/$from_base $to/baseline/$i/$to_base
-        fi
-        sed -i -e s,$from,$to,g $to/baseline/$i/$to_base
-        sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base
-        git add $to/baseline/$i/$to_base
-    fi
-
-    if [ -f $to/baseline/$i/$from_base.stderr ]; then
-        if [ $to/baseline/$i/$from_base.stderr != $to/baseline/$i/$to_base.stderr ]; then
-            git mv $to/baseline/$i/$from_base.stderr $to/baseline/$i/$to_base.stderr
-        fi
-        sed -i -e s,$from,$to,g $to/baseline/$i/$to_base.stderr
-        sed -i -e s,$from_base,$to_base,g $to/baseline/$i/$to_base.stderr
-        git add $to/baseline/$i/$to_base.stderr
+    if [ -f $to/baseline/$i ]; then
+        sed -i -e s,$from,$to,g $to/baseline/$i
+        sed -i -e s,$from_base,$to_base,g $to/baseline/$i
+        git add $to/baseline/$i
     fi
 done
 

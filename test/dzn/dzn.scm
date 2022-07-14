@@ -209,9 +209,11 @@ output, and standard error as three values."
 ;;; Utility.
 ;;;
 (define (error-model? file-name)
-  (or (directory-exists? (string-append file-name "/baseline/verify"))
+  (or (file-exists? (string-append file-name "/baseline/verify.out"))
+      (file-exists? (string-append file-name "/baseline/verify.err"))
       ;; no verify baseline for system error models
-      (directory-exists? (string-append file-name "/baseline/simulate"))))
+      (file-exists? (string-append file-name "/baseline/simulate.out"))
+      (file-exists? (string-append file-name "/baseline/simulate.err"))))
 
 (define (features file-name)
   (define (feature? feature)
@@ -269,7 +271,6 @@ output, and standard error as three values."
   (format #t "** stage: verify\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
-         (baseline (string-append file-name "/baseline/verify"))
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
                                     (cute string-split <> #\:))
@@ -287,7 +288,7 @@ output, and standard error as three values."
             ,dzn-name)))
     (or (skip? file-name "verify")
         (run-baseline file-name command
-                      #:baseline baseline))))
+                      #:language "verify"))))
 
 (define (run-code file-name language)
   (format #t "** stage: code: ~a\n" language)
@@ -451,7 +452,7 @@ output, and standard error as three values."
          (queue-size (queue-size file-name))
          ;; FIXME: METAs `model' is used for component/system tricksery
          (model base-name)
-         (baseline? (file-exists? (string-append baseline "/" base-name)))
+         (baseline? (file-exists? (string-append baseline ".out")))
          (trace-format (cond ((trace-format file-name))
                              (baseline? "trace")
                              (else "event"))))
@@ -488,8 +489,8 @@ output, and standard error as three values."
                  (cute display stdout))
                (with-output-to-file err-file
                  (cute display stderr))
-               (let ((baseline-out (string-append baseline "/" base-name))
-                     (baseline-err (string-append baseline "/" base-name ".stderr")))
+               (let ((baseline-out (string-append baseline ".out"))
+                     (baseline-err (string-append baseline ".err")))
                  (and (zero? (system* "diff" "-ywB" baseline-out out-file))
                       (or (and (string-null? stderr)
                                (not (file-exists? baseline-err)))
@@ -586,20 +587,25 @@ output, and standard error as three values."
 (define* (run-baseline file-name command #:key
                        (baseline (string-append file-name "/baseline"))
                        (input "")
+                       (language "parse")
                        (stdout-filter identity))
-  (receive (status stdout stderr)
-      (observe command input)
-    (or (and (zero? status)
-             (not (directory-exists? baseline)))
-        (let ((out-file (string-append file-name ".out"))
-              (err-file (string-append file-name ".err")))
-          (with-output-to-file out-file
-            (cute display (stdout-filter stdout)))
-          (with-output-to-file err-file
-            (cute display stderr))
-          (let* ((base-name (basename file-name))
-                 (baseline-out (string-append baseline "/" base-name))
-                 (baseline-err (string-append baseline-out ".stderr")))
+  (let* ((base-out (string-append baseline "/" language))
+         (baseline-out (string-append base-out ".out"))
+         (baseline-err (string-append base-out ".err")))
+    (receive (status stdout stderr)
+        (observe command input)
+      (or (and (zero? status)
+               (not (file-exists? baseline-out))
+               (not (file-exists? baseline-err)))
+          (let* ((out (string-append file-name "/out"))
+                 (out-lang (string-append out "/" language))
+                 (out-file (string-append out-lang "/out"))
+                 (err-file (string-append out-lang "/err")))
+            (mkdir-p out-lang)
+            (with-output-to-file out-file
+              (cute display (stdout-filter stdout)))
+            (with-output-to-file err-file
+              (cute display stderr))
             (and (or (and (string-null? stdout)
                           (not (file-exists? baseline-out)))
                      (zero? (system* "diff" "-uwB" baseline-out out-file)))

@@ -58,10 +58,8 @@ if $verify; then
 
     mkdir -p $dir/baseline/verify
     ./pre-inst-env dzn -v verify -a $model $determinism $dir/$base.dzn  \
-        > $dir/baseline/verify/$base                                    \
-        2> $dir/baseline/verify/$base.stderr
-
-    rm -f $(find $dir/baseline/verify -size 1c -o -size 0c)
+        > $dir/baseline/verify.out                                   \
+        2> $dir/baseline/verify.err
 fi
 
 if $simulate; then
@@ -73,8 +71,8 @@ if $simulate; then
 
     mkdir -p $dir/baseline/simulate
     ./pre-inst-env dzn simulate --format=$format $flags $dir/$base.dzn < $dir/trace     \
-        > $dir/baseline/simulate/$base                                                  \
-        2> $dir/baseline/simulate/$base.stderr                                          \
-
-    rm -f $(find $dir/baseline/simulate -size 1c -o -size 0c)
+        > $dir/baseline/simulate.out                                                 \
+        2> $dir/baseline/simulate.err
 fi
+
+rm -f $(find $dir/baseline -size 1c -o -size 0c)

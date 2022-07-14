@@ -46,8 +46,8 @@ component bool_expressions
       {
         bool a = false;
         Bool e = Bool.False;
-        bool c = a == e.True;
-        bool d = a == (e == Bool.True);
+        a = a == e.True;
+        a = a == (e == Bool.True);
         b = w.world();
         reply (b);
       }
