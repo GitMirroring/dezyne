@@ -220,7 +220,7 @@ imperative-statement <- variable / assign / if-statement / illegal /
                         reply / defer / action-or-call /
                         interface-action SEMICOLON#
 
-  defer <-- DEFER imperative-statement
+  defer <-- DEFER arguments? imperative-statement
 
   interface-action <-- is-event
 
