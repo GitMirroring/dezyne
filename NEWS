@@ -40,6 +40,10 @@
     branch of an if-statement.
   - Shadowing of a variable in a branch of an if-statement is no longer
     rejected.
+  - The simulator now correctly displays a V-fork compliance error in a
+    blocking trace.
+  - The simulator now correctly handles a trace with foreign provides
+    triggers.
 
 * Changes in 2.15.4 since 2.15.3
 ** Code
