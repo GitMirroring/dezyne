@@ -14,16 +14,28 @@ interface ihelloworld
   }
 }
 
-component synchronous_asynchronous
+interface icruel
+{
+  in void cruel();
+  behavior
+  {
+    on cruel: {}
+  }
+}
+
+component defer_selection
 {
   provides ihelloworld h;
+  provides icruel c;
   behavior
   {
     bool synchronous = false;
+    bool cruel = false;
+    on c.cruel(): cruel = !cruel;
     [synchronous] on h.hello (): h.world ();
     [!synchronous] on h.hello (): {
       synchronous = true;
-      defer {
+      defer(synchronous) {
         synchronous = false;
         h.world ();
       }

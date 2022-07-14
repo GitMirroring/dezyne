@@ -32,6 +32,7 @@ DEZYNE_EXAMPLES =				\
  %D%/dzn.async.dzn				\
  %D%/defer.dzn					\
  %D%/defer-cancel.dzn				\
+ %D%/defer-selection.dzn			\
  %D%/foreign.cc					\
  %D%/foreign.hh					\
  %D%/hello_foreign.dzn				\

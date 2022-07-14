@@ -75,7 +75,7 @@ This document describes Dezyne version @value{VERSION}.
 * Ideas and Concepts::          Explaining the underlying thinking.
 * Installation::                Installing Dezyne.
 * Getting Started::             Writing a program in Dezyne.
-* Execution Semantics::         How does it work?
+* Execution Semantics::         How do they do it?
 * Formal Verification::         A guide to verification errors.
 * Defensive Design::            A protective armor.
 * Code Integration::            Creating an executable.
@@ -4744,29 +4744,30 @@ trigger is to be handled.  Component triggers, however, belong to
 a port and carry formal parameters:
 
 @example
-on          ::= ("on" triggers ":" statement)
+on            ::= ("on" triggers ":" statement)
                   | ("on" illegal-triggers ":" illegal)
-triggers    ::= trigger ("," trigger)*
-trigger     ::= port-name "." event-name "(" formal-list? ")"
-formal-list ::= formal ("," formal)*
-formal      ::= identifier | (identifier formal-binding)
-statement   ::= declarative-statement | imperative-statement | illegal
+triggers      ::= trigger ("," trigger)*
+trigger       ::= port-name "." event-name "(" formal-list? ")"
+formal-list   ::= formal ("," formal)*
+formal        ::= identifier | (identifier formal-binding)
+statement     ::= declarative-statement | imperative-statement | illegal
 imperative-statement
-            ::= action | assign | call | if | reply | return | variable
+              ::= action | assign | call | if | reply | return | variable
                   | imperative-compound
                   | defer-statement
                   | empty-statement
-illegal     ::= "illegal"
+illegal       ::= "illegal"
 imperative-compound
-            ::= "@{" (imperative-statement ";")* "@}"
+              ::= "@{" (imperative-statement ";")* "@}"
 defer-statement
-            ::= "defer" imperative-statement
+              ::= "defer" argument-list? imperative-statement
+argument-list ::= "(" ")" | "(" expression ("," expression)* ")"
 empty-statement
-            ::=
+              ::=
 illegal-triggers
-            ::= illegal-trigger ("," illegal-trigger)*
+              ::= illegal-trigger ("," illegal-trigger)*
 illegal-trigger
-            ::= port-name "." event-name
+              ::= port-name "." event-name
 @end example
 
 The @code{formal-list} to be used is defined by the parameters of the
@@ -5008,8 +5009,8 @@ or more events over its ports.  The sending of a
 as an @code{action}.
 
 @example
-action        ::= port-name "." event-name "(" argument-list? ")"
-argument-list ::= expression ("," expression)*
+action        ::= port-name "." event-name argument-list
+argument-list ::= "(" ")" | "(" expression ("," expression)* ")"
 @end example
 
 where @code{port-name} is the name of a port defined in the component,
@@ -5145,10 +5146,19 @@ or set the reply value from a synchrous context like so:
 @subsubsection Component @code{defer}
 
 @cindex defer
-The @code{defer} keyword may be used before imperative statements to
-indicate postponing the execution of the corresponding statement.  The
-execution is postponed at least until after returning back to the caller
-and the surrounding system has reached an overall state where it can
+@code{defer} is a keyword that may be placed in front of an imperative
+statement.
+
+@example
+defer-statement
+              ::= "defer" argument-list? imperative-statement
+argument-list ::= "(" ")" | "(" expression ("," expression)* ")"
+@end example
+
+@code{defer} indicates that the execution of the corresponding statement
+must be postponed at least until after returning back to the
+caller. Note that in order for the deferred statement to execute, the
+surrounding system must have reached an overall state where it can
 accept new activating events, i.e., this state is a system wide run to
 completion state.
 
@@ -5195,6 +5205,32 @@ again and in compliance with the interface this implies that the
 state diagram is depicted below.
 
 @image{images/defer-cancel,2in,,,.png}
+
+The ability to cancel a deferred statement is not always desirable. The
+way to influence the skip behavior is to add an argument list of state
+variables to the @code{defer} keyword.  This limits the scope of the
+state which is observed by @code{defer} in deciding when to skip the
+execution.  The two extreme cases are:
+
+@itemize
+@item
+The full list of variables, which is equivalent to @code{defer} without
+an arument list.
+@item
+The empty list of variables, which removes ability to cancel entirely.
+@end itemize
+
+We can see an example of a @code{defer} argument list below.
+
+@example
+@verbatiminclude examples/defer-selection.dzn
+@end example
+
+Here the execution of the deferred statement must remain unaffected by
+the change to the @code{cruel} state variable. We can achieve this by
+only observing the @code{state} variable as the example shows or not
+observing any state at all.  The latter case is left as an exercise to
+the reader.
 
 @node Multiple Provides Ports
 @subsection Multiple Provides Ports

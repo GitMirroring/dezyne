@@ -7,17 +7,26 @@ interface ihellocruelworld
   {
     bool idle = true;
     [idle] on hello: idle = false;
+    [!idle] on inevitable: {
+      idle = true;
+      world;
+    }
     on cruel: idle = true;
-    [!idle] on inevitable: {idle = true; world;}
   }
 }
-component hellocruelworld
+component defer_cancel
 {
   provides ihellocruelworld h;
   behavior
   {
     bool idle = true;
-    [idle] on h.hello (): {idle = false; defer {idle = true; h.world ();}}
+    [idle] on h.hello (): {
+      idle = false;
+      defer {
+        idle = true;
+        h.world ();
+      }
+    }
     on h.cruel (): idle = true;
   }
 }
