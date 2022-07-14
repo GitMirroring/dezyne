@@ -32,7 +32,7 @@
     + New transformations have been added: `add-determinism-temporaries,
       `inline-functions', and `split-complex-expressions'.
     + The `add-explicit-temporaries' transformation now supports complex
-      boolean and integer expressions.
+      boolean and integer expressions ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/67][#67]]).
 ** Noteworthy bug fixes
   - Some warnings in the C++ runtime have been fixed and side-stepped.
   - The mCRL2 code generator now generates correct code for an unused
@@ -40,6 +40,10 @@
     branch of an if-statement.
   - Shadowing of a variable in a branch of an if-statement is no longer
     rejected.
+  - The simulator now correctly displays a V-fork compliance error in a
+    blocking trace.
+  - The simulator now correctly handles a trace with foreign provides
+    triggers.
 
 * Changes in 2.15.4 since 2.15.3
 ** Code
