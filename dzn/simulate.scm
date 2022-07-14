@@ -185,17 +185,24 @@ format."
 actions to a provides port other than PORT, mark the trace as
 <fork-error>, otherwise return false."
   (let ((action-step (list-index (cute action-other-provides-port? port <>)
-                                 trace)))
-    (and action-step
+                                 trace))
+        (pc (find (conjoin
+                   .trigger
+                   (compose .port .trigger)
+                   (compose (is? <on>) .statement)
+                   (compose ast:provides? .port .trigger))
+                  trace)))
+    (and pc
+         action-step
          (let* ((trace (drop trace action-step))
-                (pc (car trace))
+                (action-pc (car trace))
+                (action (.statement action-pc))
                 (pc (clone pc
                            #:previous #f
                            #:status (make <fork-error>
-                                      #:ast (.statement pc)
+                                      #:ast action
                                       #:message "non-compliance"))))
-           (and (ast:provides? (.trigger pc))
-                (list (cons pc trace)))))))
+           (list (cons pc trace))))))
 
 (define (check-requires-provides-fork trace)
   "Check TRACE for a Y-fork.  If TRACE contains actions to more than one
@@ -437,10 +444,17 @@ Return a list of traces, possibly marked with <compliance-error>."
                       (is-a? (%sut) <runtime:component>)
                       (check-provides-fork port trace))
                  (check-compliance port (list trace)))
-        (let ((ports (ast:provides-port* component)))
+        (let ((ports (ast:provides-port* component))
+              (port (any (conjoin
+                          .trigger
+                          (compose .port .trigger)
+                          (compose ast:provides? .port .trigger))
+                         (reverse trace))))
           (or (and (> (length ports) 1)
                    (is-a? (%sut) <runtime:component>)
-                   (check-requires-provides-fork trace))
+                   (or (and port
+                            (check-provides-fork port trace))
+                       (check-requires-provides-fork trace)))
               (fold check-compliance (list trace) ports))))))
 
 (define* (check-provides-compliance+ pc event trace)

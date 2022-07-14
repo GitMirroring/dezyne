@@ -887,7 +887,7 @@ intermediate steps such as assignments, function calls, replies,
                       (first-port-name (.name (.port first))))
                  (format #f "~aafter action on port: ~a\n" first-location first-port-name))
                (let* ((trigger (.trigger pc))
-                      (trigger-location (location-prefix (parent action <on>)))
+                      (trigger-location (location-prefix (.statement pc)))
                       (trigger-port (.port trigger))
                       (trigger-port-name (.name trigger-port)))
                  (format #f "~afor trigger on port ~a\n" trigger-location trigger-port-name))))
