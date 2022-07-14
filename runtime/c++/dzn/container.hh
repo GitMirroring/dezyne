@@ -44,7 +44,6 @@ namespace dzn
   struct container
   {
     dzn::meta meta;
-    const bool flush;
     dzn::locator dzn_locator;
     dzn::runtime dzn_rt;
     System system;
@@ -61,8 +60,7 @@ namespace dzn
     }
 
     container(bool flush, dzn::locator&& l = dzn::locator{})
-    : flush(flush)
-    , meta{"<external>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
+    : meta{"<external>","container",0,0,{},{&system.dzn_meta},{[this]{system.check_bindings();}}}
     , dzn_locator(std::forward<dzn::locator>(l))
     , dzn_rt()
     , system(dzn_locator.set(dzn_rt).set(pump))

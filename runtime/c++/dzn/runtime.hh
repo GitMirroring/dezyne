@@ -89,12 +89,12 @@ namespace dzn
   }
 
   // implemented conditionally in pump.cc
-  void collateral_block(void*, const locator&);
-  bool port_blocked_p(const locator&, void* port);
-  void port_block(const locator&, void* component, void* port);
+  void collateral_block(const locator&, void*);
+  bool port_blocked_p(const locator&, void*);
+  void port_block(const locator&, void*, void*);
   void port_release(const locator&, void*);
   size_t coroutine_id(const locator&);
-  void defer(const locator&, void *, std::function<bool()>&&, std::function<void(size_t)>&&);
+  void defer(const locator&, std::function<bool()>&&, std::function<void(size_t)>&&);
   void prune_deferred(const locator&);
 
   struct runtime
@@ -150,36 +150,37 @@ namespace dzn
   template <typename C, typename P>
   struct call_helper
   {
-    C* c;
+    C* component;
     std::ostream& os;
     const dzn::port::meta& meta;
     const char* event;
     std::string reply;
-    call_helper(C* c, P& p, const char* event)
-    : c(c)
+    call_helper(C* c, P& port, const char* event)
+    : component(c)
     , os(c->dzn_locator.template get<typename std::ostream>())
-    , meta(p.meta)
+    , meta(port.meta)
     , event(event)
     , reply("return")
     {
-      if(c->dzn_rt.handling(c) || port_blocked_p(c->dzn_locator, &p))
-        collateral_block(c, c->dzn_locator);
+      if(component->dzn_rt.handling(component) ||
+         port_blocked_p(component->dzn_locator, &port))
+        collateral_block(component->dzn_locator, component);
       trace(os, meta, event);
 #if DZN_STATE_TRACING
-      os << *c << std::endl;
+      os << *component << std::endl;
 #endif
     }
     template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-    void operator()(L&& l)
+    void operator()(L&& event)
     {
-      c->dzn_rt.handle(c, l, coroutine_id(c->dzn_locator));
+      component->dzn_rt.handle(component, event, coroutine_id(component->dzn_locator));
     }
     template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-    auto operator()(L&& l) -> decltype(l())
+    auto operator()(L&& event) -> decltype(event())
     {
-      auto r = c->dzn_rt.handle(c, l, coroutine_id(c->dzn_locator));
-      reply = ::to_string(r);
-      return r;
+      auto value = component->dzn_rt.handle(component, event, coroutine_id(component->dzn_locator));
+      reply = ::to_string(value);
+      return value;
     }
     ~call_helper()
     {
@@ -187,51 +188,51 @@ namespace dzn
 #if DZN_STATE_TRACING
       os << *c << std::endl;
 #endif
-      prune_deferred(c->dzn_locator);
-      c->dzn_rt.handling(c) = 0;
+      prune_deferred(component->dzn_locator);
+      component->dzn_rt.handling(component) = 0;
     }
   };
 
   template <typename C, typename P, typename L>
-  auto call_in(C* c, L&& l, P& p, const char* event) -> decltype(l())
+  auto call_in(C* component, L&& event, P& port, const char* event_name) -> decltype(event())
   {
-    call_helper<C,P> helper(c, p, event);
-    return helper(l);
+    call_helper<C,P> helper(component, port, event_name);
+    return helper(event);
   }
 
   template <typename C, typename P, typename L>
-  void call_out(C* c, L&& l, P& p, const char* e)
+  void call_out(C* component, L&& event, P& port, const char* event_name)
   {
-    auto& os = c->dzn_locator.template get<typename std::ostream>();
+    auto& os = component->dzn_locator.template get<typename std::ostream>();
 #if !DZN_ASYNC_TRACING
-    if (!dynamic_cast<async_base*> (&p))
-      trace_qin(os, p.meta, e);
+    if (!dynamic_cast<async_base*> (&port))
+      trace_qin(os, port.meta, event_name);
 #else // DZN_ASYNC_TRACING
-    trace_qin(os, p.meta, e);
+    trace_qin(os, port.meta, event_name);
 #endif // DZN_ASYNC_TRACING
 #if DZN_STATE_TRACING
-    os << *c << std::endl;
+    os << *component << std::endl;
 #endif
-    c->dzn_rt.enqueue(p.meta.provide.component, c, [&os,c,l,&p,e]{
+    component->dzn_rt.enqueue(port.meta.provide.component, component,
+                              [&os,component,event,&port,event_name]{
 #if !DZN_ASYNC_TRACING
-      if (!dynamic_cast<async_base*> (&p))
-        trace_qout(os, p.meta, e);
+      if (!dynamic_cast<async_base*> (&port))
+        trace_qout(os, port.meta, event_name);
 #else
-      trace_qout(os, p.meta, e);
+      trace_qout(os, port.meta, event_name);
 #endif
-      l();
-    }, coroutine_id(c->dzn_locator));
-    prune_deferred(c->dzn_locator);
+      event();
+    }, coroutine_id(component->dzn_locator));
+    prune_deferred(component->dzn_locator);
   }
-  void defer(const locator&, void*, std::function<bool()>&&, std::function<void(size_t)>&&);
-  template <typename C>
-  void defer(C* c, std::function<bool()>&& p, std::function<void()>&& f)
+  template <typename C, typename P, typename E>
+  void defer(C* component, P&& predicate, E&& event)
   {
-    defer(c->dzn_locator, static_cast<void*>(c), std::move(p),
+    defer(component->dzn_locator, std::function<bool()>(predicate),
           std::function<void(size_t)>([=](size_t coroutine_id){
-            c->dzn_rt.handling(c) = coroutine_id;
-            f();
-            c->dzn_rt.flush(c);
+            component->dzn_rt.handling(component) = coroutine_id;
+            event();
+            component->dzn_rt.flush(component);
           }));
   }
 }

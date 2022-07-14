@@ -36,7 +36,7 @@ connect_ports (dzn::container< async_calling_context, std::function<void()>>& c)
   c.system.p.out.world = [&] (calling_context&, std::string) {
     c.match("p.world");
     return dzn::call_out(&c, [&]{
-      if(c.flush) c.dzn_rt.queue(&c).push([&]{
+      if(c.dzn_rt.performs_flush(&c)) c.dzn_rt.queue(&c).push([&]{
         if(c.dzn_rt.queue(&c).empty()) {
           std::clog << "p.<flush>" << std::endl;
           c.match("p.<flush>");

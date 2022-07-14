@@ -34,43 +34,43 @@ namespace dzn
   std::ostream debug(nullptr);
   runtime::runtime(){}
 
-  void trace(std::ostream& os, port::meta const& m, const char* e)
+  void trace(std::ostream& os, port::meta const& meta, const char* event_name)
   {
     if (!os.rdbuf())
       return;
-    os << path(m.require.meta, m.require.name) << "." << e << " -> "
-       << path(m.provide.meta, m.provide.name) << "." << e << std::endl;
+    os << path(meta.require.meta, meta.require.name) << "." << event_name << " -> "
+       << path(meta.provide.meta, meta.provide.name) << "." << event_name << std::endl;
   }
 
-  void trace_out(std::ostream& os, port::meta const& m, const char* e)
+  void trace_out(std::ostream& os, port::meta const& meta, const char* event_name)
   {
     if (!os.rdbuf())
       return;
-    os << path(m.require.meta, m.require.name) << "." << e << " <- "
-       << path(m.provide.meta, m.provide.name) << "." << e << std::endl;
+    os << path(meta.require.meta, meta.require.name) << "." << event_name << " <- "
+       << path(meta.provide.meta, meta.provide.name) << "." << event_name << std::endl;
   }
 
-  void trace_qin(std::ostream& os, port::meta const& m, const char* e)
+  void trace_qin(std::ostream& os, port::meta const& meta, const char* event_name)
   {
     if (!os.rdbuf())
       return;
-    if (path (m.require.meta, "") == "<external>")
-      trace_out (os, m, e);
+    if (path (meta.require.meta, "") == "<external>")
+      trace_out (os, meta, event_name);
     else
-      os <<  path (m.require.meta, "<q>")
+      os <<  path (meta.require.meta, "<q>")
          << " <- "
-         << path (m.provide.meta, m.provide.name) << "." << e << std::endl;
+         << path (meta.provide.meta, meta.provide.name) << "." << event_name << std::endl;
   }
 
-  void trace_qout(std::ostream& os, port::meta const& m, const char* e)
+  void trace_qout(std::ostream& os, port::meta const& meta, const char* event_name)
   {
     if (!os.rdbuf())
       return;
-    if (path (m.require.meta, "") == "<external>")
+    if (path (meta.require.meta, "") == "<external>")
       return;
-    os << path (m.require.meta, m.require.name) << "." << e
+    os << path (meta.require.meta, meta.require.name) << "." << event_name
        << " <- "
-       << path(m.require.meta, "<q>") << std::endl;
+       << path(meta.require.meta, "<q>") << std::endl;
   }
 
   bool runtime::external(void* scope) {
@@ -130,17 +130,17 @@ namespace dzn
     }
   }
 
-  void runtime::enqueue(void* src, void* tgt, const std::function<void()>& event, size_t coroutine_id)
+  void runtime::enqueue(void* source, void* target, const std::function<void()>& event, size_t coroutine_id)
   {
-    if(!(src && performs_flush(src)) && !handling(tgt))
+    if(!(source && performs_flush(source)) && !handling(target))
     {
-      handle(tgt, event, coroutine_id);
-      flush(tgt, coroutine_id);
+      handle(target, event, coroutine_id);
+      flush(target, coroutine_id);
     }
     else
     {
-      deferred(src) = tgt;
-      queue(tgt).push(event);
+      deferred(source) = target;
+      queue(target).push(event);
     }
   }
 }

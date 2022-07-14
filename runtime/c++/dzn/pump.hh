@@ -52,7 +52,7 @@ namespace dzn
     std::function<void()> worker;
     std::list<coroutine> coroutines;
     std::list<coroutine> collateral_blocked;
-    size_t id;
+    size_t current_coroutine;
     std::queue<std::function<void()>> queue;
     std::vector<std::pair<std::function<bool()>, std::function<void(size_t)>>> deferred;
 
@@ -69,8 +69,10 @@ namespace dzn
       bool expired() const {return t <= std::chrono::steady_clock::now();}
       bool operator < (const deadline& d) const { return rank_less(d); }
     private:
-      bool rank_less(const deadline& d) const {return (rank < d.rank) || (rank == d.rank && time_less(d));}
-      bool time_less(const deadline& d) const {return t < d.t || (t == d.t && id < d.id);}
+      bool rank_less(const deadline& d) const
+      {return (rank < d.rank) || (rank == d.rank && time_less(d));}
+      bool time_less(const deadline& d) const
+      {return t < d.t || (t == d.t && id < d.id);}
     };
 
     std::map<deadline, std::function<void()>> timers;
@@ -91,12 +93,12 @@ namespace dzn
     void flush();
     void operator()();
 
-    void collateral_block(void*, dzn::runtime&);
+    void collateral_block(runtime&, void*);
     void collateral_release(std::list<coroutine>::iterator);
 
     bool blocked_p(void*);
     void block(runtime&, void*, void*);
-    bool collateral_release_skip_block (runtime& rt, void* c);
+    bool collateral_release_skip_block (void*);
     void create_context();
     void context_switch();
     void release(runtime&,void*);
@@ -104,8 +106,9 @@ namespace dzn
     void operator()(std::function<void()>&&);
     void defer(std::function<bool()>&&, std::function<void(size_t)>&&);
     void prune_deferred();
-    void handle(size_t id, size_t ms, const std::function<void()>&, size_t rank = std::numeric_limits<size_t>::max());
-    void remove(size_t id);
+    void handle(size_t, size_t, const std::function<void()>&,
+                size_t rank = std::numeric_limits<size_t>::max());
+    void remove(size_t);
   private:
     bool timers_expired() const;
   };

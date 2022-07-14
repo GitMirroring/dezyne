@@ -13,6 +13,7 @@ void to_void(std::string){}
 void
 connect_ports (dzn::container< #x:type-name , std::function<void()>>& c)
 {
+  dzn::debug.rdbuf() && dzn::debug << c.meta.name << std::endl;
   #x:main-port-connect-in #x:main-port-connect-out }
 
 std::map<std::string,std::function<void()> >
