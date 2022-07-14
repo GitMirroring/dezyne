@@ -552,6 +552,7 @@
   (arguments #:init-form (make <arguments-node>)))
 
 (define-ast <defer> (<scope> <imperative>)
+  (arguments)
   (statement))
 
 (define-ast <defer-end> (<imperative>))
