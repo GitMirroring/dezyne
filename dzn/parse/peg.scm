@@ -113,6 +113,8 @@ SKIP < !IMPORT . 'import'*")
   (define variable-stack '())
 
   (define (-enter-frame- str len pos)
+    (when (%peg:debug?)
+      (format (current-error-port) "push: ~a\n" variable-stack))
     (set! variable-stack (cons (if (null? variable-stack) '() (car variable-stack))
                                variable-stack))
     (list pos '()))
@@ -120,6 +122,8 @@ SKIP < !IMPORT . 'import'*")
 
   (define (-exit-frame- str len pos)
     (set! variable-stack (if (null? variable-stack) '()  (cdr variable-stack)))
+    (when (%peg:debug?)
+      (format (current-error-port) "pop: ~a\n" variable-stack))
     (list pos '()))
   (define-skip-parser exit-frame none -exit-frame-)
 
@@ -251,7 +255,7 @@ or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
 compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
 plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
-not-expression <- not / group / dollars / (!var !is-port enum-literal / literal / var !DOT / action / call / interface-action / field-test / unknown-identifier)
+not-expression <- not / group / dollars / (!var !is-port enum-literal / literal / call / var !DOT / action / interface-action / field-test / unknown-identifier)
 not <-- NOT not-expression#
 enum-literal <-- global? scope name
 field-test <-- !is-port var DOT# name#
