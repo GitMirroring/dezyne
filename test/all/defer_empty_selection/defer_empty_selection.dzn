@@ -1,0 +1,71 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  out void world();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+component defer_empty_selection
+{
+  provides ihello l;
+  provides ihello r;
+  requires ihello w;
+  behavior
+  {
+    bool left = false;
+    bool right = false;
+    bool pending = false;
+    bool toggle = false;
+
+    [!left] on l.hello(): {
+      left = true;
+      defer_hello();
+    }
+    [!right] on r.hello(): {
+      right = true;
+      defer_hello();
+    }
+    void defer_hello() {
+      if(!pending) {pending = true; w.hello();}
+      else defer() defer_hello();
+    }
+    on w.world(): {
+      pending = false;
+      toggle = !toggle;
+      if(toggle)
+        if(left) {left = false; l.world();}
+        else {right = false; r.world();}
+      else
+        if(right) {right = false; r.world();}
+        else {left = false; l.world();}
+    }
+  }
+}

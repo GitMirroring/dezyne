@@ -258,6 +258,7 @@ REGRESSION_TESTS =				\
  %D%/defer_collateral_blocking			\
  %D%/defer_cruel				\
  %D%/defer_double				\
+ %D%/defer_empty_selection			\
  %D%/defer_loop					\
  %D%/defer_if					\
  %D%/defer_nested				\
