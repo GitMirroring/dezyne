@@ -625,6 +625,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                #:defer (.defer pc)
                #:external-q (.external-q pc)
                #:released (.released pc)
+               #:skip-compliance? (.skip-compliance? pc)
                #:state (.state pc)
                #:trail (.trail pc))))
     (%debug "  ~s ~s <block> ~a [~a] => [~a]\n"
@@ -1212,11 +1213,16 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
           "]"))))
 
 (define-method (state->string (o <system-state>))
+  (let ((state-list (.state-list o)))
+    (string-join (filter-map state->string state-list) "\n")))
+
+(define-method (state->string (o <system-state>) include-provides?)
   (let* ((state-list (.state-list o))
-         (state-list (if (is-a? (%sut) <runtime:port>) state-list
-                         (filter (disjoin (compose (is? <runtime:component>) .instance)
-                                          (compose ast:requires? .ast .instance))
-                                 state-list))))
+         (state-list (if include-provides? state-list
+                         (filter
+                          (disjoin (compose (is? <runtime:component>) .instance)
+                                   (compose ast:requires? .ast .instance))
+                          state-list))))
     (string-join (filter-map state->string state-list) "\n")))
 
 (define-method (pc->string (o <program-counter>))
@@ -1229,7 +1235,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
      "<deadlock>")
     (_
      (string-join
-      (cons (state->string (.state o))
+      (cons (state->string (.state o) (not (.skip-compliance? o)))
             (append
              (let* ((instance (.instance o))
                     (statement (.statement o))

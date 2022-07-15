@@ -112,9 +112,13 @@ format."
                    (and (pair? trace-suffix)
                         (find (compose (cute eq? <> port-instance) .instance)
                               trace-suffix))))
+         (status (.status (car trace)))
+         (error? (and (is-a? status <error>)
+                      (not (is-a? status <illegal-error>))
+                      (not (is-a? status <implicit-illegal-error>))))
          (trace (if merged? trace
                     (append trace-suffix port-trace-prefix trace-prefix)))
-         (trace (if (not port-illegal?) trace
+         (trace (if (or (not port-illegal?) error?) trace
                     (let ((pc (clone (car trace) #:status port-illegal?)))
                       (cons pc trace))))
          (full-trace trace))
@@ -263,7 +267,15 @@ Return a list of traces, possibly marked with <compliance-error>."
          (sut-trace (if (or (not trigger) (not blocking?)) trace
                         (drop-prefix pc trigger trace)))
          (sut-trail (trace->trail sut-trace))
-         (provides-trigger? (provides-trigger? event))
+         (provides-event (any (compose (conjoin (disjoin (is? <action>)
+                                                         (is? <trigger>))
+                                                ast:provides?
+                                                identity)
+                                       .statement)
+                              (reverse trace)))
+         (provides-event (and=> provides-event .event.name))
+         (provides-trigger? (or (provides-trigger? provides-event)
+                                (provides-trigger? event)))
          (port-event (and provides-trigger? (.event.name trigger)))
          (port (and provides-trigger? (.port trigger))))
 
@@ -377,8 +389,7 @@ Return a list of traces, possibly marked with <compliance-error>."
               (let* ((statement (.statement (car trace)))
                      (trace (rewrite-trace-head (cut clone <> #:statement #f) trace))
                      (trace (zip trigger trace (car (append port-traces non-compliances))))
-                     (trace (if (not (.status (car trace))) trace
-                                (rewrite-trace-head (cut clone <> #:statement statement) trace))))
+                     (trace (rewrite-trace-head (cut clone <> #:statement statement) trace)))
                 (list trace)))
              ((and (pair? port-traces)
                    (pair? trace))
@@ -454,8 +465,13 @@ Return a list of traces, possibly marked with <compliance-error>."
                      (port-trace
                       (rewrite-trace-head
                        (cut set-state <> port-state)
-                       port-trace)))
-                (list (zip trigger trace (car non-compliances))))))))))
+                       port-trace))
+                     (trace (zip trigger trace (car non-compliances)))
+                     (trace
+                      (rewrite-trace-head
+                       (cut clone <> #:skip-compliance? #t)
+                       trace)))
+                (list trace))))))))
 
     (define (check-provides-fork-and-zip port trace)
       (let ((traces (check-provides-fork port trace)))
@@ -527,6 +543,7 @@ port return."
                                            ast:provides?)
                                     (equal? (trigger->string rtc-block-trigger)
                                             event))
+                               (symbol? event)
                                (not (.port (string->trigger event))))))
                   (if skip? (loop traces (cdr pcs))
                       (loop

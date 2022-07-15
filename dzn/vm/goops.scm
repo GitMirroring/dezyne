@@ -88,6 +88,7 @@
             .reply
             .return
             .running-defer?
+            .skip-compliance?
             .state
             .state-list
             .status
@@ -217,7 +218,9 @@
   (collateral #:getter .collateral #:init-form (list) #:init-keyword #:collateral)
   (collateral-instance #:getter .collateral-instance #:init-value #f #:init-keyword #:collateral-instance)
   (collateral-released #:getter .collateral-released #:init-form (list) #:init-keyword #:collateral-released)
-  (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q))
+  (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q)
+
+  (skip-compliance? #:getter .skip-compliance? #:init-form #f #:init-keyword #:skip-compliance?))
 
 (define-class <state> ()
   (instance #:getter .instance #:init-form #f #:init-keyword #:instance)

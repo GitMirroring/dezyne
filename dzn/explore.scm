@@ -34,6 +34,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)
+  #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
@@ -76,7 +77,9 @@
             traces)))
      ((provides-trigger? event)
       (if (blocked-on-boundary-provides? pc event) '()
-          (run-to-completion pc event))))))
+          (run-to-completion pc event)))
+     (else
+      '()))))
 
 ;; table is initially (<"<illegal>") . 0>)
 (define* ((pc->state-number table count) pc #:optional trail)
@@ -121,76 +124,135 @@ that PC has one more collaterally blocked coroutine on the same port."
       (_
        #f)))
 
-  (define (run-label orig-pc label)
-    (%debug "run-label ~a\n" label)
-    (let* ((orig-pc (clone orig-pc #:collateral-instance #f))
-           (defer? (eq? label 'defer))
-           (sw-pc (if defer? orig-pc
-                      (switch-context orig-pc)))
-           (bob-pc (if defer? orig-pc
-                       (blocked-on-boundary-switch-context orig-pc))))
-      (cond
-       ((and (eq? orig-pc sw-pc)
-             (eq? orig-pc bob-pc))
-        (run-to-completion** orig-pc label))
-       ((and (not (eq? orig-pc sw-pc))
-             (not (provides-trigger? label)))
-        (run-to-completion sw-pc 'rtc))
-       (else
-        (let* ((traces (run-to-completion bob-pc 'rtc))
-               (flush traces
-                      (partition (compose .running-defer? car)
-                                 traces))
-               (traces (append traces
-                               (append-map run-flush flush))))
-          (append traces
-           (run-to-completion** orig-pc label)))))))
-
-  (define (run-labels pc labels)
-    (%debug "run-labels ~a\n" labels)
-    (let loop ((labels labels) (traces '()))
-      (if (null? labels) traces
-          (let* ((label (car labels))
-                 (new (run-label pc label))
-                 (new (if (eq? label 'external) new
-                          (filter-implicit-illegal-only new)))
-                 (new (filter (compose not (is-status? <blocked-error>) car)
-                              new))
-                 (new (filter (compose not (cute collateral? <> pc) car) new))
-                 (new (map (cute rewrite-trace-head prune-defer <>) new)))
-            (cond
-             ((find (compose (is-status? <livelock-error>) car) new)
-              (format (current-error-port) "warning: livelock, bailing out\n")
-              '())
-             (else
-              (loop (cdr labels) (append new traces))))))))
-
-  (let* ((labels (labels))
-         (labels (if (is-a? (%sut) <runtime:port>) labels
-                     (cons* 'defer 'external labels)))
-         (lts (make-hash-table))
+  (let* ((lts (make-hash-table))
          (state-number-table (make-hash-table))
          (state-number-count (list 1))
          (pc->state-number (pc->state-number state-number-table
                                              state-number-count)))
+
+    (define (blocked-prefix pc)
+      (let* ((blocking-pc (rtc-block-pc (cdar (.blocked pc))))
+             (blocking-pc (.previous blocking-pc))
+             (blocked-from (and=> blocking-pc pc->state-number))
+             (pc+traces (hash-ref lts blocked-from)))
+        (match pc+traces
+          ((pc . traces)
+           (or (find (compose pair? .blocked car) traces)
+               '()))
+          (_
+           '()))))
+
+    (define (check-compliance-blocked trace)
+      (let ((orig-pc (last trace)))
+        (let* ((blocked-prefix (blocked-prefix orig-pc))
+               (q-trigger (and (null? blocked-prefix)
+                               (and=>
+                                (as (.q (get-state orig-pc (%sut))) <pair>)
+                                car)))
+               (full-trace (append trace blocked-prefix))
+               (orig-pc (last full-trace))
+               (trigger (or
+                         q-trigger
+                         (any
+                          (conjoin
+                           (compose (is? <runtime:component>) .instance)
+                           .trigger)
+                          (reverse full-trace))))
+               (label (and trigger (trigger->string trigger)))
+               (checked (if (not label) '()
+                            (check-provides-compliance orig-pc label
+                                                       full-trace)))
+               (illegal? (is-status? <implicit-illegal-error>))
+               (checked (filter (compose not illegal? car) checked))
+               (pcs (map car checked))
+               (corrected (if (not (= 1 (length pcs))) trace
+                              (cons (car pcs) trace))))
+          corrected)))
+
+    (define (run-label orig-pc label)
+      (%debug "run-label ~a\n" label)
+      (let* ((orig-pc (clone orig-pc #:collateral-instance #f))
+             (defer? (eq? label 'defer))
+             (sw-pc (if defer? orig-pc
+                        (switch-context orig-pc)))
+             (bob-pc (if defer? orig-pc
+                         (blocked-on-boundary-switch-context orig-pc)))
+             (traces (cond
+                      ((and (eq? orig-pc sw-pc)
+                            (eq? orig-pc bob-pc))
+                       (run-to-completion** orig-pc label))
+                      ((and (not (eq? orig-pc sw-pc))
+                            (not (provides-trigger? label)))
+                       (run-to-completion sw-pc 'rtc))
+                      (else
+                       (let* ((traces (run-to-completion bob-pc 'rtc))
+                              (flush traces
+                                     (partition (compose .running-defer? car)
+                                                traces))
+                              (traces (append traces
+                                              (append-map run-flush flush))))
+                         (append traces
+                                 (run-to-completion** orig-pc label))))))
+             (blocked? (not (eq? bob-pc orig-pc)))
+             (skip-compliance? (or (.skip-compliance? orig-pc)
+                                   (is-a? (%sut) <runtime:port>)
+                                   (null? traces)))
+             (traces (map (cute append <> (list orig-pc)) traces))
+             (traces (cond
+                      ((and (not skip-compliance?) (not blocked?))
+                       (let* ((cpc orig-pc)
+                              (cpc (reset-replies cpc))
+                              (cpc (clone cpc #:instance #f)))
+                         (check-provides-compliance* cpc label traces)))
+                      ((and blocked?
+                            (not (.skip-compliance? orig-pc))
+                            (not (eq? label 'defer))
+                            (not (or (.status pc)
+                                     (is-a? (%sut) <runtime:port>)
+                                     (is-a? (%sut) <runtime:system>))))
+                       (map check-compliance-blocked traces))
+                      (else
+                       traces)))
+             (traces (if (eq? label 'external) traces
+                         (filter-implicit-illegal-only traces)))
+             (traces (filter (compose not (is-status? <blocked-error>) car)
+                             traces))
+             (traces (filter (compose not (cute collateral? <> pc) car) traces)))
+        (map (cute rewrite-trace-head prune-defer <>) traces)))
+
+    (define (run-labels pc labels)
+      (%debug "run-labels ~a\n" labels)
+      (let loop ((labels labels) (traces '()))
+        (if (null? labels) traces
+            (let* ((label (car labels))
+                   (new (run-label pc label)))
+              (cond
+               ((find (compose (is-status? <livelock-error>) car) new)
+                (format (current-error-port) "warning: livelock, bailing out\n")
+                '())
+               (else
+                (loop (cdr labels) (append new traces))))))))
+
     (hash-set! state-number-table "<illegal>" 0)
-    (when (.status pc)
-      (let ((pc0 (clone pc #:status #f)))
-        (hash-set! lts 1 (cons pc0 (list (list pc0 pc))))))
     (let loop ((pc pc))
       (let ((from (pc->state-number pc)))
         (%debug "loop ~a~a\n" from (if (hash-ref lts from) ": seen!" ""))
         (unless (or (.status pc) (hash-ref lts from))
-          (let* ((from-pc pc)
-                 (traces (run-labels pc labels))
-                 (traces (map (cute append <> (list from-pc)) traces))
-                 (pcs (map car traces)))
-            (hash-set! lts from (cons from-pc traces))
-            (let* ((traces (filter (negate trace-done?) traces))
-                   (pcs (map car traces)))
-              (for-each loop pcs))))))
-    (when (= (car state-number-count) 1)
-      (hash-set! lts 1 (cons pc (list (list pc)))))
+          (let* ((labels (labels pc))
+                 (labels (if (is-a? (%sut) <runtime:port>) labels
+                             (cons* 'defer 'external labels)))
+                 (traces (run-labels pc labels)))
+            (when (or (is-a? (%sut) <runtime:port>)
+                      (any pair? traces))
+              (hash-set! lts from (cons pc traces))
+              (let* ((traces (filter (negate trace-done?) traces))
+                     (pcs (map car traces)))
+                (for-each loop pcs)))))))
+
+    (when (.status pc) ;; range-member
+      (let ((pc0 (clone pc #:status #f)))
+        (hash-set! lts 1 (cons pc0 (list (list pc0 pc))))))
+
     (values lts pc->state-number state-number-count)))
 
 
@@ -523,7 +585,10 @@ triple per label in the trail of the transition."
 
   (define (transition->aut from pc+traces)
     (let ((pc traces (match pc+traces ((pc . traces) (values pc traces)))))
-      (append-map (cute trace->lts-triples pc from <>) traces)))
+      (delete-duplicates
+       (append-map
+        (cute trace->lts-triples pc from <>)
+        traces))))
 
   (values
    (cons
@@ -548,7 +613,8 @@ RTC-LTS->LTS."
 (define* (state-diagram root #:key format model queue-size
                         ports? extended? actions? labels? returns?)
   "Entry-point for dzn explore --state-diagram."
-  (parameterize ((%debug? (> (dzn:debugity) 0))
+  (parameterize ((%compliance-check? #f)
+                 (%debug? (> (dzn:debugity) 0))
                  (%exploring? #t)
                  (%queue-size queue-size)
                  (%sut (runtime:get-sut root model)))
@@ -572,7 +638,8 @@ RTC-LTS->LTS."
 
 (define* (lts root #:key model queue-size)
   "Entry-point for dzn explore --lts."
-  (parameterize ((%debug? (> (dzn:debugity) 0))
+  (parameterize ((%compliance-check? #f)
+                 (%debug? (> (dzn:debugity) 0))
                  (%exploring? #t)
                  (%queue-size queue-size)
                  (%sut (runtime:get-sut root model)))
