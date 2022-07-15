@@ -313,7 +313,6 @@ REGRESSION_TESTS =				\
  %D%/hello_inevitable_blocking_sync_out		\
  %D%/hello_inevitable_hidden			\
  %D%/hello_inevitable_illegal			\
- %D%/hello_int					\
  %D%/hello_interface_function			\
  %D%/hello_interface_optional			\
  %D%/hello_local_assign				\
@@ -368,6 +367,7 @@ REGRESSION_TESTS =				\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/interface_enum				\
+ %D%/interface_int				\
  %D%/interface_missing_reply			\
  %D%/label_instance_mismatch			\
  %D%/livelock_iterator				\
