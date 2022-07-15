@@ -53,6 +53,7 @@ HELLO_TESTS =					\
  %D%/hello_data					\
  %D%/hello_defer				\
  %D%/hello_else					\
+ %D%/hello_enum					\
  %D%/hello_expression				\
  %D%/hello_external				\
  %D%/hello_external_inevitable			\
@@ -61,7 +62,6 @@ HELLO_TESTS =					\
  %D%/hello_function				\
  %D%/hello_function_argument			\
  %D%/hello_function_void_bool_if		\
- %D%/hello_global_enum				\
  %D%/hello_global_int				\
  %D%/hello_guard				\
  %D%/hello_if					\

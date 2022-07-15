@@ -34,7 +34,7 @@ interface ihello
   }
 }
 
-component hello_global_enum
+component hello_enum
 {
   provides ihello h;
   requires iworld w;
