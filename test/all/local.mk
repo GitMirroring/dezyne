@@ -293,7 +293,6 @@ REGRESSION_TESTS =				\
  %D%/hello_clash_port_variable			\
  %D%/hello_complete_action			\
  %D%/hello_complete_reply			\
- %D%/hello_enum					\
  %D%/hello_enum_function			\
  %D%/hello_foreign_file				\
  %D%/hello_foreign_path				\
@@ -368,6 +367,7 @@ REGRESSION_TESTS =				\
  %D%/injected_foreign				\
  %D%/inner.space				\
  %D%/integer_expressions			\
+ %D%/interface_enum				\
  %D%/interface_missing_reply			\
  %D%/label_instance_mismatch			\
  %D%/livelock_iterator				\
