@@ -34,7 +34,7 @@ interface ihello
   }
 }
 
-component hello_global_int
+component hello_int
 {
   provides ihello h;
   requires iworld w;
