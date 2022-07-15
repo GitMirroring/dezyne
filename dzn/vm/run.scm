@@ -853,8 +853,10 @@ until RTC?."
     (let ((async-traces (if (null? (.async pc)) '()
                             (flush-async-event pc event))))
       (if (pair? async-traces) async-traces
-          (let ((defer-traces (if (null? (.defer pc)) '()
-                                  (run-defer-event pc event))))
+          (let* ((defer? (and (pair? (.defer pc))
+                              (not (%strict?))))
+                 (defer-traces (if (not defer?) '()
+                                   (run-defer-event pc event))))
             (append
              defer-traces
              (let* ((pcs (cons pc (run-external-modeling pc event)))
