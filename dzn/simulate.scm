@@ -88,6 +88,9 @@ format."
          (ast:equal? (.statement a) (.statement b))))
 
   (let* ((trigger (and=> trigger trigger->component-trigger))
+         (port-status (.status (car port-trace)))
+         (port-illegal? (or (as port-status <illegal-error>)
+                            (as port-status <implicit-illegal-error>)))
          (port-on-index (or (list-index (compose (is? <on>) .statement)
                                         port-trace)
                             0))
@@ -109,6 +112,8 @@ format."
                                  1+)
                           (length trace)))
          (trace-suffix trace-prefix (split-at trace trace-index))
+         (trace-suffix (if (not port-illegal?) trace-suffix
+                           (take-right trace-suffix 1)))
          (merged? (or
                    (and (pair? trace-prefix)
                         (eq? (.instance (car trace-prefix)) port-instance))
@@ -117,6 +122,9 @@ format."
                               trace-suffix))))
          (trace (if merged? trace
                     (append trace-suffix port-trace-prefix trace-prefix)))
+         (trace (if (not port-illegal?) trace
+                    (let ((pc (clone (car trace) #:status port-illegal?)))
+                      (cons pc trace))))
          (full-trace trace))
 
     (let loop ((trace trace) (port-trace port-trace) (previous #f))
@@ -361,11 +369,19 @@ Return a list of traces, possibly marked with <compliance-error>."
                  non-compliances
                  (partition (negate first-non-match) port-traces)))
             (cond
+             ((and (pair? (append port-traces non-compliances))
+                   (every (compose (disjoin (is-status? <illegal-error>)
+                                            (is-status? <implicit-illegal-error>))
+                                   car)
+                          (append port-traces non-compliances)))
+              (%debug "  exit 0\n")
+              (map (cute zip trigger <> <>) traces
+                   (append port-traces non-compliances)))
              ((and (pair? trace)
                    (.status (car trace))
                    (not (is-a? (.status (car trace)) <match-error>))
                    (pair? (append port-traces non-compliances)))
-              (%debug "  exit 0\n")
+              (%debug "  exit 1\n")
               (let* ((statement (.statement (car trace)))
                      (trace (rewrite-trace-head (cut clone <> #:statement #f) trace))
                      (trace (zip trigger trace (car (append port-traces non-compliances))))
@@ -374,7 +390,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                 (list trace)))
              ((and (pair? port-traces)
                    (pair? trace))
-              (%debug "  exit 1\n")
+              (%debug "  exit 2\n")
               (let* ((port-pcs (map (compose (cut clone pc #:state <>) .state car) port-traces))
                      (traces (map (lambda (port-pc)
                                     (cons (set-state (car trace) (get-state port-pc port-instance))
@@ -386,23 +402,23 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (not blocking?)
                    (null? port-traces)
                    (pair? sut-trail))
-              (%debug "  exit 2\n")
+              (%debug "  exit 3\n")
               (let ((status (make <compliance-error>
                               #:message "non-compliance"
                               #:component-acceptance (caar sut-trail)
                               #:port port-instance)))
                 (list (rewrite-trace-head (cut clone <> #:status status) trace))))
              ((null? non-compliances)
-              (%debug "  exit 3\n")
+              (%debug "  exit 4\n")
               (if (null? trace) '()
                   (list trace)))
              ((and (not port-event)
                    (null? sut-trail)
                    (pair? trace))
-              (%debug "  exit 4\n")
+              (%debug "  exit 5\n")
               (list trace))
              ((%compliance-check?)
-              (%debug "  exit 5\n")
+              (%debug "  exit 6\n")
               (let* ((port-acceptances (map first-non-match non-compliances))
                      (port-acceptances (delete-duplicates port-acceptances port-acceptance-equal?))
                      (component-acceptance
@@ -440,7 +456,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                            (trace (cons pc tail)))
                       (list (zip trigger trace (car non-compliances)))))))
              (else
-              (%debug "  exit 6\n")
+              (%debug "  exit 7\n")
               (let* ((port-trace (car non-compliances))
                      (port-state (get-state (last port-trace)))
                      (port-trace
