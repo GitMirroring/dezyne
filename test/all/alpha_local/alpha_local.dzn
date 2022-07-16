@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
@@ -48,7 +48,7 @@ component alpha_local
     {
       on p.e(): {}
       on r.f, r.g: illegal;
-      on r.g(x): {xint a; a = $ax$;}
+      on r.g(x): {xint a = $0$; a = $ax$;}
     }
   }
 }
