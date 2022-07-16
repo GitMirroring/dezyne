@@ -43,6 +43,10 @@ CXX:=$(CCACHE) g++
 WARN_FLAGS=					\
  -Wall						\
  -Wextra
+NOWARN_FLAGS=					\
+ -Wno-unused-variable				\
+ -Wno-unused-parameter				\
+ -Wno-unused-but-set-variable
 CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread $(WARN_FLAGS)
 # FIXME: handwritten code, versioned?  $(IN)/../.. or ?
 CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/runtime/c++ -D DZN_VERSION_ASSERT=1
@@ -66,6 +70,10 @@ $(OUT)/%.o: $(IN)/%.cc
 $(OUT)/%.o: $(IN)/c++/%.cc
 	mkdir -p $(dir $@)
 	$(COMPILE.cc) -o $@ $<
+
+$(OUT)/%.o: $(OUT)/%.cc
+	mkdir -p $(dir $@)
+	$(COMPILE.cc) $(NOWARN_FLAGS) -o $@ $<
 
 $(foreach f, $(wildcard $(IN)/c++/*.cc), $(eval $(OUT)/test: $(patsubst $(IN)/c++/%.cc, $(OUT)/%.o, $(f))))
 
