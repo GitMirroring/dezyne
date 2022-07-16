@@ -109,6 +109,7 @@
            ast:requires-in-void-triggers
            ast:requires-out-triggers
            ast:requires-port*
+           ast:requires-no-injected-port*
            ast:rescope
            ast:scope
            ast:source-file
@@ -380,6 +381,9 @@
 
 (define-method (ast:requires-port* (o <port>))
   (ast:requires-port* (parent o <component-model>)))
+
+(define-method (ast:requires-no-injected-port* (o <component-model>))
+  (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o)))
 
 (define-method (ast:requires+async-port* (o <component-model>))
   (append (ast:requires-port* o) (ast:async-port* o)))

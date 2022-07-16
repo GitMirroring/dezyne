@@ -138,9 +138,9 @@
 (define-templates injected-instance-declare code:injected-instances)
 (define-templates non-injected-instance-declare code:non-injected-instances)
 
-(define-templates injected-member-initializer ast:injected-port*)
 (define-templates provides-member-initializer ast:provides-port*)
-(define-templates requires-member-initializer (lambda (o) (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o))))
+(define-templates requires-member-initializer ast:requires-no-injected-port*)
+(define-templates injected-member-initializer ast:injected-port*)
 (define-templates instance-name code:instance-name)
 (define-templates instance-port-name code:instance-port-name)
 (define-templates injected-instance-initializer code:injected-instances)

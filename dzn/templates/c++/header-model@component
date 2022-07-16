@@ -14,6 +14,7 @@ struct #x:model-name
   #x:out-binding-lambda
   #x:provides-port-declare
   #x:requires-port-declare
+  #x:injected-port-declare
   #x:async-port-declare
   #x:model-name (const dzn::locator&);
   void check_bindings() const;
