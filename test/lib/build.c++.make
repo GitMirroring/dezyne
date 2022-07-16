@@ -1,7 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
-# Copyright © 2016, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+# Copyright © 2016, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
@@ -40,7 +40,10 @@ $(foreach i,IN OUT,$(eval $(call CHECKPARAM,$(i))))
 SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
-CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread
+WARN_FLAGS=					\
+ -Wall						\
+ -Wextra
+CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread $(WARN_FLAGS)
 # FIXME: handwritten code, versioned?  $(IN)/../.. or ?
 CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/runtime/c++ -D DZN_VERSION_ASSERT=1
 GLOBALS_H=$(wildcard $(IN)/globals.h)
