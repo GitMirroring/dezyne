@@ -26,17 +26,8 @@
 
 interface ihello
 {
-  in void hello();
-
-  behavior
-  {
-    on hello:;
-  }
-}
-
-interface iworld
-{
   in bool hello();
+
   behavior
   {
     on hello: reply(true);
@@ -46,13 +37,14 @@ interface iworld
 component assign_formal
 {
   provides ihello h;
-  requires iworld w;
+  requires ihello w;
   behavior
   {
-    void f(bool b)
+    bool f(bool b)
     {
       b = w.hello();
+      return b;
     }
-    on h.hello(): { f(true); }
+    on h.hello(): { reply(f(false)); }
   }
 }
