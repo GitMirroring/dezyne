@@ -48,7 +48,7 @@ main (int argc, char **argv)
   if (argv + argc != std::find_if (argv + 1,
                                    argv + argc,
                                    [] (char const* s)
-                                   {return s == "--debug";}))
+                                   {return s == std::string ("--debug");}))
     dzn::debug.rdbuf (std::clog.rdbuf ());
 
   dzn::locator locator;
