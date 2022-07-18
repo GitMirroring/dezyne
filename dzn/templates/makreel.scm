@@ -178,10 +178,10 @@
 (define-templates defer-skip (lambda (o) (if (parent o <component>) o '())))
 (define-templates defer-locals-sort (cute tree-collect (is? <defer>) <>) pipe-prefix)
 (define-templates defer-local-arguments-sort (lambda (o) (if (pair? (makreel:locals o)) o '())))
-(define-templates deferred-locals-sort makreel:locals)
+(define-templates deferred-locals-sort makreel:locals comma-infix)
 (define-templates defer-locals)
 (define-templates defer-local-arguments (lambda (o) (if (pair? (makreel:locals o)) o '())))
-(define-templates deferred-locals makreel:locals)
+(define-templates deferred-locals makreel:locals comma-infix)
 (define-templates defer-process-index (compose makreel:process-index .statement))
 
 (define-templates state-vector (lambda (o) (let ((behavior (.behavior o))) (if (pair? (ast:variable* behavior)) behavior '()))))
