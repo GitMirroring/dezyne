@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -44,12 +44,5 @@ namespace library {
   void foreign::dump_tree(std::ostream& os) const
   {
     dzn::dump_tree(os, &dzn_meta);
-  }
-  void foreign::set_state(std::map<std::string,std::map<std::string,std::string> > state_alist)
-  {
-    set_state(state_alist["foreign."]);
-  }
-  void foreign::set_state(std::map<std::string,std::string> state_alist)
-  {
   }
 };
