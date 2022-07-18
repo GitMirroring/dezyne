@@ -1,0 +1,80 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
+// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ITransfer
+{
+  extern TrPosition $Integer$;
+
+  in void calibrate();
+  out void calibrated();
+  in void stop();
+
+  in void move(TrPosition x, TrPosition y);
+  out void arrived();
+  in void transfer(TrPosition x, TrPosition y);
+  out void picked();
+  out void placed();
+
+  behavior
+  {
+    enum State {Lost, Calibrating, Ready, Moving, Transferring};
+    State s = State.Lost;
+    bool isPicked = false;
+
+    on stop: s = State.Lost;
+
+    [s.Lost]
+    {
+      on calibrate: s = State.Calibrating;
+      on calibrate: {calibrated; s = State.Ready;}
+    }
+    [s.Calibrating]
+    {
+      on inevitable: {calibrated; s = State.Ready;}
+    }
+    [s.Ready]
+    {
+      on move: s = State.Moving;
+      on move: arrived;
+
+      on transfer: {s = State.Transferring; isPicked = false;}
+      on transfer: {s = State.Transferring; picked; isPicked = true;}
+      on transfer: {s = State.Ready; picked; placed;}
+
+      on calibrate: illegal;
+    }
+    [s.Moving]
+    {
+      on inevitable: {arrived; s = State.Ready;}
+    }
+    [s.Transferring]
+    {
+      on inevitable: [!isPicked] {picked; isPicked = true;}
+      on inevitable: [isPicked] {placed; s = State.Ready;}
+    }
+  }
+}

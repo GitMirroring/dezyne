@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,6 +23,7 @@
 // Code:
 
 import MaterialHandler.dzn;
+import Robot.dzn;
 import Inspector.dzn;
 import Conveyor.dzn;
 import FeedPort.dzn;
@@ -61,6 +63,7 @@ component BallSorter
   system
   {
     MaterialHandler handler;
+    Robot robot;
     Inspector inspector;
     FeedPort input;
     Conveyor accept;
@@ -68,6 +71,7 @@ component BallSorter
     Feeder track;
 
     ctrl <=> handler.ctrl;
+    handler.robot <=> robot.ctrl;
     handler.feedPort <=> input.ctrl;
     handler.inspector <=> inspector.ctrl;
     handler.acceptPort <=> accept.ctrl;
@@ -75,12 +79,12 @@ component BallSorter
 
     input.feeder <=> track.ctrl;
 
-    move1 <=> handler.trolleyMotor; // robot trolley
+    move1 <=> robot.trolleyMotor; // robot trolley
     move2 <=> input.motor; // input
     move3 <=> track.motor; // feeder
     touch1 <=> inspector.stageXEndSensor; // stage x end
     touch2 <=> input.sensor; // input
-    touch3 <=> handler.truckHomeSensor; // robot truck home
+    touch3 <=> robot.truckHomeSensor; // robot truck home
     touch4 <=> track.endSensor; // feeder retracted switch
 
     move4 <=> reject.motor; // reject
@@ -96,11 +100,11 @@ component BallSorter
     touch9 <=> inspector.stageYEndSensor;  // stage y end
     touch10 <=> inspector.stageYHomeSensor; // stage y home
 
-    move8 <=> handler.hoistMotor; // robot hoist
-    move9 <=> handler.gripperMotor; // robot gripper
-    move10 <=> handler.truckMotor; // truck
-    touch11 <=> handler.gripperEndSensor;
-    touch12 <=> handler.trolleyEndSensor; // extender home
-    touch13 <=> handler.hoistEndSensor; // hoist home
+    move8 <=> robot.hoistMotor; // robot hoist
+    move9 <=> robot.gripperMotor; // robot gripper
+    move10 <=> robot.truckMotor; // truck
+    touch11 <=> robot.gripperEndSensor;
+    touch12 <=> robot.trolleyEndSensor; // extender home
+    touch13 <=> robot.hoistEndSensor; // hoist home
   }
 }

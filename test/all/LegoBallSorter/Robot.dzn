@@ -1,0 +1,399 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
+// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import ITransfer.dzn;
+import Motor.dzn;
+import IConstrainedMove.dzn;
+import HomeConstrainedAxis.dzn;
+import EndConstrainedAxis.dzn;
+import ConstrainedAxis.dzn;
+
+component Robot
+{
+  provides ITransfer ctrl;
+
+  // required by aggregate components
+  requires IMove hoistMotor;
+  requires ITouchSense hoistEndSensor;
+  requires IMove gripperMotor;
+  requires ITouchSense gripperEndSensor;
+  requires IMove trolleyMotor;
+  requires ITouchSense trolleyEndSensor;
+  requires IMove truckMotor;
+  requires ITouchSense truckHomeSensor;
+  //requires ITouchSense truckEndSensor;
+
+
+  system
+  {
+    Transfer bhv;
+    Hoist hoist;
+    Gripper gripper;
+    EndConstrainedAxis trolley;
+    HomeConstrainedAxis truck;
+
+    ctrl <=> bhv.ctrl;
+    bhv.hoist <=> hoist.ctrl;
+    bhv.gripper <=> gripper.ctrl;
+    bhv.trolley <=> trolley.ctrl;
+    bhv.truck <=> truck.ctrl;
+
+    hoist.motor <=> hoistMotor;
+    hoist.endSensor <=> hoistEndSensor;
+    gripper.motor <=> gripperMotor;
+    gripper.endSensor <=> gripperEndSensor;
+    trolley.motor <=> trolleyMotor;
+    trolley.endSensor <=> trolleyEndSensor;
+    truck.motor <=> truckMotor;
+    truck.homeSensor <=> truckHomeSensor;
+    //truck.endSensor <=> truckEndSensor;
+  }
+}
+
+component Transfer
+{
+  provides ITransfer ctrl;
+  requires IRetain hoist;
+  requires IRetain gripper;
+  requires IConstrainedMove trolley;
+  requires IConstrainedMove truck;
+
+  behavior
+  {
+    enum State {Idle, Calibrating, Moving, Transferring};
+    subint Count {0..5};
+    enum TransferState {Picking, Raising, Moving, Placing, Idle};
+    State s = State.Idle;
+    TransferState ts = TransferState.Idle;
+    Count nCalibrated = 0;
+    Count nMoving = 0;
+    bool isCalibrated = false;
+    bool isXYMoveAllowed = false; // Hoist must be up to move without gripper collisions.
+    bool isRetaining = true;
+
+    ITransfer.TrPosition placeX = $0$;
+    ITransfer.TrPosition placeY = $0$;
+
+    void tryCalibrated() {
+      nCalibrated = nCalibrated + 1;
+      if (nCalibrated == 2) {isXYMoveAllowed = true; calibrateXY();}
+      if (nCalibrated == 5) {isCalibrated = true; s = State.Idle; isRetaining = false; ctrl.calibrated();}
+    }
+    void calibrateZ() {
+      s = State.Calibrating;
+      isXYMoveAllowed = false;
+      nCalibrated = 0;
+      hoist.calibrate();
+      gripper.calibrate();
+    }
+    void calibrateXY() {
+      if (isXYMoveAllowed) {
+        s = State.Calibrating;
+        gripper.release();
+        trolley.calibrate();
+        truck.calibrate();
+      }
+    }
+    void startPick(ITransfer.TrPosition tgtX, ITransfer.TrPosition tgtY) {
+      placeX = tgtX;
+      placeY = tgtY;
+      isXYMoveAllowed = false;
+      s = State.Transferring;
+      ts = TransferState.Picking;
+      hoist.release();
+    }
+
+    on ctrl.stop():
+      {
+        hoist.stop();
+        gripper.stop();
+        trolley.stop();
+        truck.stop();
+        s = State.Idle;
+        isCalibrated = false;
+        isRetaining = true;
+        isXYMoveAllowed = false;
+      }
+
+    [s.Idle]
+    {
+      [!isCalibrated]
+      {
+        on ctrl.calibrate(): {isCalibrated = false; isRetaining = true; calibrateZ();}
+      }
+      [isCalibrated]
+      {
+        on ctrl.move(x, y): [isXYMoveAllowed] {truck.move(x); trolley.move(y); nMoving = 2; s = State.Moving;}
+        on ctrl.transfer(x, y): startPick(x, y);
+      }
+    }
+
+    [s.Calibrating]
+    {
+      on hoist.calibrated(), gripper.calibrated(), trolley.homed(), truck.homed(): tryCalibrated();
+      on gripper.ready(): tryCalibrated();
+    }
+
+    [s.Moving]
+    {
+      on truck.arrived(), trolley.arrived(): {nMoving = nMoving - 1; if (nMoving == 0) {s = State.Idle; ctrl.arrived();}}
+    }
+
+    [s.Transferring]
+    {
+      [ts.Picking]
+      {
+        on hoist.ready(): gripper.retain();
+        on gripper.ready(): {hoist.retain(); isRetaining = true; ts = TransferState.Raising;}
+      }
+      [ts.Raising][isRetaining]
+      {
+        on hoist.ready():
+        {
+          isXYMoveAllowed = true;
+          ctrl.picked();
+          truck.move(placeX);
+          trolley.move(placeY);
+          nMoving = 2;
+          ts = TransferState.Moving;
+        }
+      }
+      [ts.Moving]
+      {
+        on truck.arrived(), trolley.arrived():
+        {
+          nMoving = nMoving - 1;
+          if (nMoving == 0) {
+            isXYMoveAllowed = false;
+            hoist.release();
+            ts = TransferState.Placing;
+          }
+        }
+      }
+      [ts.Placing]
+      {
+        on hoist.ready(): gripper.release();
+        on gripper.ready():
+        {
+          isRetaining = false;
+          hoist.retain();
+          ts = TransferState.Raising;
+        }
+      }
+      [ts.Raising][!isRetaining]
+      {
+        on hoist.ready(): [!isRetaining]
+        {
+          isXYMoveAllowed = true;
+          s = State.Idle;
+          ts = TransferState.Idle;
+          ctrl.placed();
+        }
+      }
+    }
+  }
+}
+
+interface IRetain
+{
+  in void stop();
+  in void calibrate();
+  out void calibrated();
+
+  in void retain(); // raise, close
+  in void release(); // lower, open
+  out void ready();
+
+  behavior
+  {
+    enum State {Lost, Calibrating, Ready, Moving};
+    State s = State.Lost;
+    bool isHolding = false; // true => up/closed, false => down/open
+
+    on stop: {s = State.Lost; isHolding = false;}
+
+    [s.Lost]
+    {
+      on calibrate: s = State.Calibrating;
+      on calibrate: {calibrated; s = State.Ready; isHolding = true;} // hoist is up => safe to move
+    }
+    [s.Calibrating]
+    {
+      on inevitable: {calibrated; s = State.Ready; isHolding = true;}  // hoist is up => safe to move
+    }
+    [s.Ready]
+    {
+      [!isHolding]
+      {
+        on retain: s = State.Moving;
+        on retain: {ready; isHolding = true;}
+      }
+      [isHolding]
+      {
+        on release: s = State.Moving;
+        on release: {ready; isHolding = false;}
+      }
+    }
+    [s.Moving]
+    {
+      on inevitable:
+        {
+          ready;
+          s = State.Ready;
+          isHolding = !isHolding;
+        }
+    }
+  }
+}
+
+component Hoist
+{
+  provides IRetain ctrl;
+
+  requires IMove motor; // required by HalfConstrainedAxis winch
+  requires ITouchSense endSensor; // required by HalfConstrainedAxis winch
+
+  system
+  {
+    Lift bhv;
+    EndConstrainedAxis winch;
+
+    ctrl <=> bhv.ctrl;
+    bhv.winch <=> winch.ctrl;
+    winch.motor <=> motor;
+    winch.endSensor <=> endSensor;
+  }
+}
+
+component Lift
+{
+  provides IRetain ctrl;
+  requires IConstrainedMove winch;
+
+  behavior
+  {
+    enum State {Lost, Calibrating, Ready, Moving};
+    State s = State.Lost;
+    bool isHolding = false; // true => up/closed, false => down/open
+
+    on ctrl.stop(): {winch.stop(); s = State.Lost; isHolding = false;}
+
+    [s.Lost]
+    {
+      on ctrl.calibrate(): {winch.calibrate(); s = State.Calibrating;}
+    }
+    [s.Calibrating]
+    {
+      on winch.homed(): {winch.move($(config.get("Position::Robot::Z::Up"))$);} // end sensor pressed position
+      on winch.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
+    }
+    [s.Ready]
+    {
+      [!isHolding]
+      {
+        on ctrl.retain(): {winch.move($(config.get("Position::Robot::Z::Up"))$); s = State.Moving;}
+      }
+      [isHolding]
+      {
+        on ctrl.release(): {winch.move($(config.get("Position::Robot::Z::Down"))$); s = State.Moving;}
+      }
+    }
+    [s.Moving]
+    {
+      on winch.arrived():
+      {
+        ctrl.ready();
+        s = State.Ready;
+        isHolding = !isHolding;
+      }
+    }
+  }
+}
+
+component Gripper
+{
+  provides IRetain ctrl;
+
+  requires IMove motor; // required by motor
+  requires ITouchSense endSensor;
+
+  system
+  {
+    Grip bhv;
+    EndConstrainedAxis gripper;
+
+    ctrl <=> bhv.ctrl;
+    bhv.gripper <=> gripper.ctrl;
+
+    gripper.motor <=> motor;
+    gripper.endSensor <=> endSensor;
+  }
+}
+
+component Grip
+{
+  provides IRetain ctrl;
+  requires IConstrainedMove gripper;
+
+  behavior
+  {
+    enum State {Lost, Calibrating, Ready, Moving};
+    State s = State.Lost;
+    bool isHolding = false;
+
+    on ctrl.stop(): {gripper.stop(); s = State.Lost; isHolding = false;}
+
+    [s.Lost]
+    {
+      on ctrl.calibrate(): {gripper.calibrate(); s = State.Calibrating;}
+    }
+    [s.Calibrating]
+    {
+      on gripper.homed(): {gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
+      on gripper.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
+    }
+    [s.Ready]
+    {
+      [!isHolding]
+      {
+        on ctrl.retain(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
+      }
+      [isHolding]
+      {
+        on ctrl.release(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Open"))$);}
+      }
+    }
+    [s.Moving]
+    {
+      on gripper.arrived(): {
+        ctrl.ready();
+        s = State.Ready;
+        isHolding = !isHolding;
+      }
+    }
+  }
+}
