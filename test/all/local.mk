@@ -573,15 +573,31 @@ UNSTABLE_TESTS =				\
  %D%/livelock_synchronous_illegal		\
  %D%/queuefull_external_sync
 
-XFAIL_TESTS =					\
+XFAIL_PARSE =					\
+ %D%/comment_traceability
+
+XFAIL_VERIFY =					\
  %D%/async_blocking_missing_ack			\
  %D%/async_blocking_ranking_disorder		\
  %D%/async_blocking_verify			\
- %D%/collateral_blocking_async			\
- %D%/comment_traceability			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock
+
+XFAIL_SIMULATE =				\
+ %D%/async_blocking_ranking_disorder		\
+ %D%/collateral_blocking_async			\
+ %D%/compliance_livelock
+
+XFAIL_CODE_ASYNC =				\
+ %D%/async_blocking_ranking_disorder		\
+ %D%/collateral_blocking_async
+
+XFAIL_TESTS =					\
+ $(XFAIL_PARSE)					\
+ $(XFAIL_VERIFY)				\
+ $(XFAIL_SIMULATE)				\
+ $(XFAIL_CODE_ASYNC)
 
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
