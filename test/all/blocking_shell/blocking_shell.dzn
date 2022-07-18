@@ -93,11 +93,12 @@ component blocked
     enum TYPE {VOID, BOOL, INT, ENUM};
     TYPE type = TYPE.VOID;
 
+    bool b = true;
     Int i = 1;
     Enum r = Enum.NOK;
 
     on bottom_p.hello_void(): blocking {type = TYPE.VOID; bottom_r.hello_void();}
-    on bottom_p.hello_bool(): blocking {type = TYPE.BOOL; bool b = bottom_r.hello_bool();}
+    on bottom_p.hello_bool(): blocking {type = TYPE.BOOL; b = bottom_r.hello_bool();}
     on bottom_p.hello_int(): blocking {type = TYPE.INT; i = bottom_r.hello_int();}
     on bottom_p.hello_enum(i,j): blocking {type = TYPE.ENUM; r = bottom_r.hello_enum(i,j); if(r.NOK) reply(r);}
     [type.VOID] on bottom_r.world(i): {bottom_p.world(i); bottom_p.reply();}
