@@ -659,9 +659,10 @@
          formals (iota (length formals)))))
 
 (define-method (code:main-out-arg-define (o <trigger>))
-  (let ((formals (ast:formal* o)))
-    (map (lambda (f i) (clone f #:name i))
-         formals (iota (length formals)))))
+  (let* ((formals (ast:formal* o))
+         (formals (map (lambda (f i) (clone f #:name i))
+                       formals (iota (length formals)))))
+    (filter (disjoin ast:out? ast:inout?) formals)))
 
 (define-method (code:main-out-arg-define-formal (o <formal>))
   (let ((type ((compose .value .type) o)))
