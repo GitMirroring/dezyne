@@ -3,6 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -81,35 +82,25 @@ component Move
 
   behavior
   {
-    bool moving = false;
-
     itimer.milliseconds_t time = $(config.get("Duration::PollInterval"))$;
     imotor.position_t destination;
 
-    [moving]
-    {
-      on timer.timeout():
-        {
-          imotor.result_t arrive = motor.at(destination);
+    on ctrl.move(power, position): {
+        destination = position;
+        timer.create(time);
+        motor.move(power, destination);
+      }
+    on ctrl.zero(): motor.zero();
 
-          if (arrive == imotor.result_t.yes) {ctrl.arrived(); moving = false;}
-          else                               timer.create(time);
-        }
-    }
-    [!moving]
-    {
-      on ctrl.move(power, position):
-        {
-          destination = position;
-          timer.create(time);
-          motor.move(power, destination);
-          moving = true;
-        }
-      on ctrl.zero(): motor.zero();
+    on timer.timeout(): {
+      imotor.result_t arrive = motor.at(destination);
+
+      if (arrive == imotor.result_t.yes) ctrl.arrived();
+      else                               timer.create(time);
     }
     on ctrl.run(power, invert): motor.run(power, invert);
-    on ctrl.stop(): {motor.stop(); timer.cancel(); moving = false;;}
-    on ctrl.coast(): {motor.coast(); timer.cancel(); moving = false;}
+    on ctrl.stop(): {motor.stop(); timer.cancel();}
+    on ctrl.coast(): {motor.coast(); timer.cancel();}
     on ctrl.position(pos): motor.position(pos);
   }
 }

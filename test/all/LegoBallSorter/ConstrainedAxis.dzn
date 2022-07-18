@@ -4,6 +4,7 @@
 // Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,8 +41,8 @@ component ConstrainedAxis
 
   behavior
   {
-    enum State {lost, idle, moving, calibratingHome, calibratingLength};
-    State s = State.lost;
+    enum State {None, Home, Length};
+    State s = State.None;
 
     void slowForward() {motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);}
     void slowBackward() {motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);}
@@ -58,84 +59,65 @@ component ConstrainedAxis
       motor.stop();
       homeSensor.disable();
       endSensor.disable();
-      s = State.idle;
       ctrl.arrived();
     }
 
-    on ctrl.stop(): {motor.stop(); homeSensor.disable(); endSensor.disable(); s = State.lost;}
+    on ctrl.stop(): {motor.stop(); homeSensor.disable(); endSensor.disable();}
 
-    [s.lost]
-    {
-      on ctrl.calibrate():
-        {
-          if (homeSensor.enable() == ITouchSense.TouchState.Pressed)
-          {
-            recordHome();
-            if (endSensor.enable() == ITouchSense.TouchState.Pressed) // axis length 0 is not an error
-            {
-              recordLength();
-              s = State.idle;
-              ctrl.homed();
-            }
-            else
-            {
-              slowForward();
-              s = State.calibratingLength;
-            }
-          }
-          else
-          {
-            slowBackward();
-            s = State.calibratingHome;
-          }
+    on ctrl.calibrate(): {
+      if (homeSensor.enable() == itouch.status.pressed) {
+        recordHome();
+        if (endSensor.enable() == itouch.status.pressed) { // axis length 0 is not an error
+          recordLength();
+          s = State.None;
+          ctrl.homed();
+        } else {
+          slowForward();
+          s = State.Length;
         }
+      } else {
+        slowBackward();
+        s = State.Home;
+      }
     }
 
-    [s.calibratingHome]
-    {
-      on homeSensor.pressed():
-        {
-          recordHome();
-          if (endSensor.enable() == ITouchSense.TouchState.Pressed) // axis length 0
-          {
-            recordLength();
-            s = State.idle;
-            ctrl.homed();
-          }
-          else
-          {
-            slowForward();
-            s = State.calibratingLength;
-          }
+    [s.Home] {
+      on homeSensor.pressed(): {
+        recordHome();
+        if (endSensor.enable() == itouch.status.pressed) { // axis length 0
+          recordLength();
+          s = State.None;
+          ctrl.homed();
+        } else {
+          slowForward();
+          s = State.Length;
         }
-
+      }
     }
-
-    [s.calibratingLength]
-    {
-      on endSensor.pressed(): {recordLength(); ctrl.homed(); s = State.idle;}
-    }
-
-    [s.idle]
-    {
-      //on ctrl.move(pos): startAbsoluteMove(pos);
-      on ctrl.move(target):
-        {
-          ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
-          ignore = homeSensor.enable();
-          ignore = endSensor.enable();
-          motor.move($(config.get("Power::OperationalSpeed"))$, target);
-          s = State.moving;
-        }
-    }
-
-    [s.moving]
-    {
+    [!s.Home] {
       on homeSensor.pressed(): {motor.stop(); notifyArrived();} // out of range => recalibrate?
       on homeSensor.released(): {}
+    }
+
+    [s.Length] {
+      on endSensor.pressed(): {
+        recordLength();
+        ctrl.homed();
+        s = State.None;
+      }
+    }
+    [!s.Length] {
       on endSensor.pressed(): {motor.stop(); notifyArrived();} // out of range => recalibrate?
       on endSensor.released(): {}
-      on motor.arrived(): notifyArrived();
     }
+
+    on ctrl.move(target): {
+      itouch.status ignore = itouch.status.released;
+      ignore = homeSensor.enable();
+      ignore = endSensor.enable();
+      motor.move($(config.get("Power::OperationalSpeed"))$, target);
+    }
+
+    on motor.arrived(): notifyArrived();
   }
 }

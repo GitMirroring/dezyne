@@ -3,6 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,35 +22,35 @@
 //
 // Commentary:
 //
+// This component starts in either the pressed or the released state,
+// then with time it repeatedly toggles its state.
+//
 // Code:
 
 import lego.dzn;
 
 interface ITouchSense
 {
-  enum TouchState {Pressed, Released};
-
-  in TouchState enable();
+  in itouch.status enable();
   out void pressed();
   out void released();
   in void disable();
 
   behavior
   {
-    bool disabled = true;
-    TouchState ts = TouchState.Released;
+    itouch.status state = itouch.status.none;
 
-    [disabled]
+    [state.none]
     {
-      on enable: {ts = TouchState.Pressed; reply(ts); disabled = false;}
-      on enable: {ts = TouchState.Released; reply(ts); disabled = false;}
+      on enable: {state = itouch.status.pressed; reply(state);}
+      on enable: {state = itouch.status.released; reply(state);}
       on disable: {}
     }
-    [!disabled]
+    [!state.none]
     {
-      on disable: disabled = true;
-      on inevitable: [ts.Released] {ts = TouchState.Pressed; pressed;}
-      on inevitable: [ts.Pressed] {ts = TouchState.Released; released;}
+      on disable: state = itouch.status.none;
+      [state.released] on inevitable: {state = itouch.status.pressed; pressed;}
+      [state.pressed] on inevitable: {state = itouch.status.released; released;}
     }
   }
 }
@@ -78,42 +79,22 @@ component TouchSense
 
   behavior
   {
-    ITouchSense.TouchState previous = ITouchSense.TouchState.Released;
+    itouch.status previous = itouch.status.released;
     itimer.milliseconds_t time = $50$;
-    bool disabled = true;
 
-    ITouchSense.TouchState getStatus()
-    {
-      if (sensor.detect() == itouch.status.released) return ITouchSense.TouchState.Released;
-      else return ITouchSense.TouchState.Pressed;
+    on ctrl.disable(): timer.cancel();
+
+    on ctrl.enable(): {
+      timer.create(time);
+      previous = sensor.detect();
+      reply(previous);
     }
-
-    on ctrl.disable(): {timer.cancel(); disabled = true;}
-
-    [disabled]
-    {
-      on ctrl.enable():
-        {
-          previous = getStatus();
-          timer.create(time);
-          disabled = false;
-          reply(previous);
-        }
-    }
-    [!disabled]
-    {
-      on timer.timeout():
-        {
-          ITouchSense.TouchState current = getStatus();
-          if (previous == ITouchSense.TouchState.Released &&
-              current  == ITouchSense.TouchState.Pressed)
-            ctrl.pressed();
-          else if (previous == ITouchSense.TouchState.Pressed &&
-                   current  == ITouchSense.TouchState.Released)
-            ctrl.released();
-          previous = current;
-          timer.create(time);
-        }
+    on timer.timeout(): {
+      timer.create(time);
+      itouch.status current = sensor.detect();
+      if (previous.released && current.pressed) ctrl.pressed();
+      if (previous.pressed && current.released) ctrl.released();
+      previous = current;
     }
   }
 }

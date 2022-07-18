@@ -3,6 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -64,19 +65,16 @@ component LightSense
   requires ilight sensor;
   requires itimer timer;
   behavior {
-    bool settling = false;
-    [!settling] on ctrl.measure(): {
+    on ctrl.measure(): {
       timer.create($100$);
       sensor.turnon();
-      settling = !settling;
     }
-    on ctrl.cancel(): { timer.cancel(); sensor.turnoff(); settling = false; }
-    [settling] on timer.timeout(): {
+    on ctrl.cancel(): { timer.cancel(); sensor.turnoff();}
+    on timer.timeout(): {
       ilight.status st = sensor.detect();
       sensor.turnoff();
       if (st.accept) ctrl.accept();
       else ctrl.reject();
-      settling = !settling;
     }
   }
 }

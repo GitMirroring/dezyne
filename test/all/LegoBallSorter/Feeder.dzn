@@ -4,6 +4,7 @@
 // Copyright © 2016, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -55,19 +56,16 @@ component Feed
 
   behavior
   {
-    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
     subint Count {0..4};
-    State s = State.Lost;
+    Count inventory = 0; // number of balls in store
     bool isRetracting = false;
     bool isFeedRequested = false;
-    Count inventory = 0; // number of balls in store
 
     void feedNext() {
       if (inventory == 4) {axis.move($(config.get("Position::Feeder::DropFirst"))$);}
       if (inventory == 3) {axis.move($(config.get("Position::Feeder::DropSecond"))$);}
       if (inventory == 2) {axis.move($(config.get("Position::Feeder::DropThird"))$);}
       if (inventory == 1) {axis.move($(config.get("Position::Feeder::DropLast"))$);}
-      s = State.Preparing;
       inventory = inventory - 1;
     }
     void retract() {
@@ -78,36 +76,18 @@ component Feed
       inventory = 4;
     }
 
-    on ctrl.stop(): {axis.stop(); s = State.Lost; isRetracting = false; isFeedRequested = false;}
-
-    [s.Lost]
-    {
-      on ctrl.calibrate(): {axis.calibrate(); s = State.Calibrating;}
+    on ctrl.stop(): {axis.stop(); isRetracting = false; isFeedRequested = false;}
+    on ctrl.calibrate(): axis.calibrate();
+    on axis.homed(): {ctrl.calibrated(); refill();}
+    [!isRetracting] on ctrl.produceBall(): feedNext();
+    [isRetracting] on ctrl.produceBall(): isFeedRequested = true;
+    [isRetracting] on axis.arrived(): {
+      refill();
+      if (isFeedRequested) feedNext();
+      isRetracting = false;
+      isFeedRequested = false;
     }
-    [s.Calibrating]
-    {
-      on axis.homed(): {ctrl.calibrated(); refill(); s = State.Idle;}
-    }
-    [s.Idle]
-    {
-      on ctrl.produceBall(): [!isRetracting] feedNext();
-      on ctrl.produceBall(): [isRetracting] [!isFeedRequested] isFeedRequested = true;
-      on axis.arrived(): [isRetracting]
-      {
-        refill();
-        if (isFeedRequested) feedNext();
-        isRetracting = false;
-        isFeedRequested = false;
-      }
-    }
-    [s.Preparing]
-    {
-      on axis.arrived(): [inventory > 0] {ctrl.consumeNextBall(); s = State.Prepared;}
-      on axis.arrived(): [inventory == 0] {ctrl.consumeLastBall(); retract(); s = State.Idle;}
-    }
-    [s.Prepared]
-    {
-      on ctrl.produceBall(): feedNext();
-    }
+    on axis.arrived(): [!isRetracting][inventory > 0] ctrl.consumeNextBall();
+    on axis.arrived(): [!isRetracting][inventory == 0] {ctrl.consumeLastBall(); retract();}
   }
 }

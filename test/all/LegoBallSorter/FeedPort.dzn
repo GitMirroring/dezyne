@@ -4,6 +4,7 @@
 // Copyright © 2016, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -58,44 +59,19 @@ component FeedConvey
 
   behavior
   {
-    enum State {Lost, Calibrating, Idle, Preparing, Prepared};
-    enum FeedPhase {Idle, Feeding, ConveyingNext, ConveyingLast};
-    State s = State.Lost;
-    FeedPhase p = FeedPhase.Idle;
+    bool next = true;
 
-    on ctrl.stop(): {feeder.stop(); conveyor.stop(); s = State.Lost; p = FeedPhase.Idle;}
+    on ctrl.stop(): {feeder.stop(); conveyor.stop();}
 
-    [s.Lost]
-    {
-      on ctrl.calibrate(): {feeder.calibrate(); s = State.Calibrating;}
-    }
-    [s.Calibrating]
-    {
-      on feeder.calibrated(): {ctrl.calibrated(); s = State.Idle;}
-    }
-    [s.Idle]
-    {
-      on ctrl.produceBall(): {feeder.produceBall(); s = State.Preparing; p = FeedPhase.Feeding;}
-    }
-    [s.Preparing]
-    {
-      [p.Feeding]
-      {
-        on feeder.consumeNextBall(): {conveyor.convey(); p = FeedPhase.ConveyingNext;}
-        on feeder.consumeLastBall(): {conveyor.convey(); p = FeedPhase.ConveyingLast;}
-      }
-      [p.ConveyingNext]
-      {
-        on conveyor.conveyed(): {ctrl.consumeNextBall(); s = State.Prepared; p = FeedPhase.Idle;}
-      }
-      [p.ConveyingLast]
-      {
-        on conveyor.conveyed(): {ctrl.consumeLastBall(); s = State.Prepared; p = FeedPhase.Idle;}
-      }
-    }
-    [s.Prepared]
-    {
-      on ctrl.produceBall(): {feeder.produceBall(); s = State.Preparing; p = FeedPhase.Feeding;}
-    }
+    on ctrl.calibrate(): feeder.calibrate();
+    on feeder.calibrated(): ctrl.calibrated();
+
+    on ctrl.produceBall(): feeder.produceBall();
+
+    on feeder.consumeNextBall(): {conveyor.convey(); next = true;}
+    on feeder.consumeLastBall(): {conveyor.convey(); next = false;}
+
+    [next] on conveyor.conveyed(): ctrl.consumeNextBall();
+    [!next] on conveyor.conveyed(): ctrl.consumeLastBall();
   }
 }

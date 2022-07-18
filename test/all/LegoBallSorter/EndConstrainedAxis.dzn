@@ -4,6 +4,7 @@
 // Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,8 +41,7 @@ component EndConstrainedAxis
 
   behavior
   {
-    enum State {lost, idle, moving, calibratingEnd};
-    State s = State.lost;
+    bool home = false;
 
     void slowForward() {motor.run($(config.get("Power::CalibrationSpeed"))$, $false$);}
     void recordHome() {
@@ -52,56 +52,31 @@ component EndConstrainedAxis
     void notifyArrived() {
       motor.stop();
       endSensor.disable();
-      s = State.idle;
       ctrl.arrived();
     }
 
-    on ctrl.stop(): {motor.stop(); endSensor.disable(); s = State.lost;}
+    on ctrl.stop(): {home = false; motor.stop(); endSensor.disable();}
 
-    [s.lost]
-    {
-      on ctrl.calibrate():
-        {
-          if (endSensor.enable() == ITouchSense.TouchState.Pressed)
-          {
-            recordHome();
-            s = State.idle;
-            ctrl.homed();
-          }
-          else
-          {
-            slowForward();
-            s = State.calibratingEnd;
-          }
-        }
+    on ctrl.calibrate(): {
+      if (endSensor.enable() == itouch.status.pressed) {
+        recordHome();
+         ctrl.homed();
+      } else {
+        home = true;
+        slowForward();
+       }
     }
 
-    [s.calibratingEnd]
-    {
-      on endSensor.pressed():
-        {
-          recordHome();
-          s = State.idle;
-          ctrl.homed();
-        }
+    [home] on endSensor.pressed(): {home = false; recordHome(); ctrl.homed();}
+
+    on ctrl.move(target): {
+      itouch.status ignore = itouch.status.released;
+      ignore = endSensor.enable();
+      motor.move($(config.get("Power::OperationalSpeed"))$, target);
     }
 
-    [s.idle]
-    {
-      on ctrl.move(target):
-        {
-          ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
-          ignore = endSensor.enable();
-          motor.move($(config.get("Power::OperationalSpeed"))$, target);
-          s = State.moving;
-        }
-    }
-
-    [s.moving]
-    {
-      on endSensor.pressed(): {motor.stop(); notifyArrived();} // out of range => recalibrate?
-      on endSensor.released(): {}
-      on motor.arrived(): notifyArrived();
-    }
+    [!home] on endSensor.pressed(): {motor.stop(); notifyArrived();} // out of range => recalibrate?
+    on endSensor.released(): {}
+    on motor.arrived(): notifyArrived();
   }
 }

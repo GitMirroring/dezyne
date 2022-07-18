@@ -4,6 +4,7 @@
 // Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,8 +38,7 @@ component HomeConstrainedAxis
 
   behavior
   {
-    enum State {lost, idle, moving, calibratingHome};
-    State s = State.lost;
+    bool home = false;
 
     void slowBackward() {motor.run($(config.get("Power::CalibrationSpeed"))$, $true$);}
     void recordHome() {
@@ -49,56 +49,37 @@ component HomeConstrainedAxis
     void notifyArrived() {
       motor.stop();
       homeSensor.disable();
-      s = State.idle;
       ctrl.arrived();
     }
 
-    on ctrl.stop(): {motor.stop(); homeSensor.disable(); s = State.lost;}
+    on ctrl.stop(): {home = false; motor.stop(); homeSensor.disable();}
 
-    [s.lost]
-    {
-      on ctrl.calibrate():
-        {
-          if (homeSensor.enable() == ITouchSense.TouchState.Pressed)
-          {
-            recordHome();
-            s = State.idle;
-            ctrl.homed();
-          }
-          else
-          {
-            slowBackward();
-            s = State.calibratingHome;
-          }
-        }
+    on ctrl.calibrate(): {
+      if (homeSensor.enable() == itouch.status.pressed) {
+        recordHome();
+        ctrl.homed();
+      } else {
+        home = true;
+        slowBackward();
+      }
     }
 
-    [s.calibratingHome]
-    {
-      on homeSensor.pressed():
-        {
-          recordHome();
-          s = State.idle;
-          ctrl.homed();
-        }
+    [home] on homeSensor.pressed(): {
+      home = false;
+      recordHome();
+      ctrl.homed();
     }
 
-    [s.idle]
-    {
-      on ctrl.move(target):
-        {
-          ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
-          ignore = homeSensor.enable();
-          motor.move($(config.get("Power::OperationalSpeed"))$, target);
-          s = State.moving;
-        }
+    on ctrl.move(target): {
+      itouch.status ignore = itouch.status.released;
+      ignore = homeSensor.enable();
+      motor.move($(config.get("Power::OperationalSpeed"))$, target);
     }
 
-    [s.moving]
-    {
-      on homeSensor.pressed(): {motor.stop(); recordHome(); notifyArrived();} // out of range => recalibrate?
-      on homeSensor.released(): {}
-      on motor.arrived(): notifyArrived();
+    [!home] on homeSensor.pressed(): { // out of range => recalibrate?
+      motor.stop(); recordHome(); notifyArrived();
     }
+    on homeSensor.released(): {}
+    on motor.arrived(): notifyArrived();
   }
 }
