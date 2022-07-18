@@ -2,7 +2,7 @@
 //
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -43,16 +43,12 @@ interface IConstrainedMove
     enum State {lost, idle, calibrating, moving};
     State s = State.lost;
 
-    void notifyHomed() { s = State.idle; homed; }
-    void notifyArrived() { s = State.idle; arrived; }
-
     on calibrate: [s.lost] s = State.calibrating;
-    on calibrate: [s.lost] notifyHomed();
 
     on move: [s.idle] s = State.moving;
     on stop: s = State.lost;
 
-    [s.moving] on inevitable: notifyArrived();
-    [s.calibrating] on inevitable: notifyHomed();
+    [s.moving] on inevitable: { s = State.idle; arrived; }
+    [s.calibrating] on inevitable: { s = State.idle; homed; }
   }
 }

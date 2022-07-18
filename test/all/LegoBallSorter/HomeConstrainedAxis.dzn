@@ -57,7 +57,8 @@ component HomeConstrainedAxis
     on ctrl.calibrate(): {
       if (homeSensor.enable() == itouch.status.pressed) {
         recordHome();
-        ctrl.homed();
+        home = true;
+        defer {home = false; ctrl.homed();}
       } else {
         home = true;
         slowBackward();

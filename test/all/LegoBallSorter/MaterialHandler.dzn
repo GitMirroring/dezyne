@@ -41,10 +41,8 @@ interface IHandleRobust
   behavior
   {
     on calibrate:{}
-    on calibrate: calibrated;
     on stop: {}
     on operate: {}
-    on operate: finished;
     on optional: calibrated;
     on optional: finished;
   }
@@ -128,7 +126,6 @@ interface IHandle
     [s.Lost]
     {
       on calibrate: {s = State.Calibrating;}
-      on calibrate: {calibrated; s = State.Idle;}
     }
     [s.Calibrating]
     {
@@ -137,7 +134,6 @@ interface IHandle
     [s.Idle]
     {
       on operate: s = State.Operating;
-      on operate: finished;
     }
     [s.Operating]
     {
@@ -177,21 +173,6 @@ component Handler
     bool isAcceptEmpty = true;
     bool isRejectEmpty = true;
 
-    void tryCalibrated() {
-      calibrated = calibrated + 1;
-      if (calibrated == requiredCalibrations)
-      {
-        s = State.Idle;
-        isInspectorAtInput = true;
-        isInspectorAtOutput = false;
-        ctrl.calibrated();
-      }
-    }
-    void startBatch() {
-      s = State.Operating;
-      isLastBall = false;
-      prepareInputTransfer();
-    }
     void prepareInputTransfer() {
       o = Operation.PreparingInput;
       if (!isBallAtInput) {feedPort.produceBall(); isBallAtInput = false;}
@@ -201,30 +182,42 @@ component Handler
       tryInputTransfer();
     }
     void sendRobotToInputPick() {
-      robot.move($(config.get("Position::Robot::X::InputPick"))$, $(config.get("Position::Robot::Y::InputPick"))$);
+      robot.move($(config.get("Position::Robot::X::InputPick"))$,
+                 $(config.get("Position::Robot::Y::InputPick"))$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
     }
     void tryInputTransfer() {
       if (isBallAtInput && isRobotAtInput && isInspectorAtInput) {
-        robot.transfer($(config.get("Position::Robot::X::InputDrop"))$, $(config.get("Position::Robot::Y::InputDrop"))$);
+        robot.transfer($(config.get("Position::Robot::X::InputDrop"))$,
+                       $(config.get("Position::Robot::Y::InputDrop"))$);
         o = Operation.TransferringInput;
       }
     }
     void tryOutputTransfer() {
       if (isRobotAtOutput && isInspectorAtOutput) {
         if (isAcceptEmpty && isBallAccepted) {
-          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$, $(config.get("Position::Robot::Y::AcceptDrop"))$);
+          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$,
+                         $(config.get("Position::Robot::Y::AcceptDrop"))$);
           o = Operation.TransferringOutput;
         }
         if (isRejectEmpty && !isBallAccepted) {
-          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$, $(config.get("Position::Robot::Y::RejectDrop"))$);
+          robot.transfer($(config.get("Position::Robot::X::OutputDrop"))$,
+                         $(config.get("Position::Robot::Y::RejectDrop"))$);
           o = Operation.TransferringOutput;
         }
       }
     }
+    bool finished() {
+      return !isBallAtInput &&
+        isLastBall &&
+        isAcceptEmpty &&
+        isRejectEmpty &&
+        isRobotAtInput &&
+        isInspectorAtInput;
+    }
     void tryFinished() {
-      if (isLastBall && !isBallAtInput && isAcceptEmpty && isRejectEmpty && isRobotAtInput && isInspectorAtInput) {
+      if (finished()) {
         s = State.Idle;
         ctrl.finished();
       }
@@ -249,19 +242,30 @@ component Handler
 
     on ctrl.calibrate(): [s.Lost]
     {
+      calibrated = 0;
+
       robot.calibrate();
       inspector.calibrate();
       feedPort.calibrate();
 
-      calibrated = 0;
       s = State.Calibrating;
     }
 
-    [s.Calibrating] on robot.calibrated(),
-      inspector.calibrated(),
-      feedPort.calibrated(): tryCalibrated();
+    [s.Calibrating] on robot.calibrated(), inspector.calibrated(), feedPort.calibrated(): {
+      calibrated = calibrated + 1;
+      if (calibrated == requiredCalibrations) {
+        s = State.Idle;
+        isInspectorAtInput = true;
+        isInspectorAtOutput = false;
+        ctrl.calibrated();
+      }
+    }
 
-    on ctrl.operate(): [s.Idle] startBatch();
+    on ctrl.operate(): [s.Idle] {
+      s = State.Operating;
+      isLastBall = false;
+      prepareInputTransfer();
+    }
 
     [s.Operating] // batch processing
     {

@@ -4,6 +4,7 @@
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -52,7 +53,6 @@ interface IInspect
     [s.Lost]
     {
       on calibrate: s = State.Calibrating;
-      on calibrate: {calibrated; s = State.Ready;}
     }
     [s.Calibrating]
     {
@@ -70,7 +70,6 @@ interface IInspect
     [s.Waiting]
     {
       on prepare: s = State.Preparing;
-      on prepare: {prepared; s = State.Ready;}
     }
     [s.Preparing]
     {

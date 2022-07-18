@@ -3,6 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,7 +44,6 @@ interface IFeed
     [s.Lost]
     {
       on calibrate: {s = State.Calibrating;}
-      on calibrate: {calibrated; s = State.Idle;}
     }
     [s.Calibrating]
     {
@@ -52,8 +52,6 @@ interface IFeed
     [s.Idle]
     {
       on produceBall: {s = State.Preparing;}
-      on produceBall: {consumeNextBall; s = State.Prepared;}
-      on produceBall: {consumeLastBall; s = State.Idle;}
     }
     [s.Preparing]
     {
@@ -63,8 +61,6 @@ interface IFeed
     [s.Prepared]
     {
       on produceBall: {s = State.Preparing;}
-      on produceBall: {consumeNextBall; s = State.Prepared;}
-      on produceBall: {consumeLastBall; s = State.Idle;}
     }
   }
 }

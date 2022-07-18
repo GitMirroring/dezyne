@@ -239,7 +239,6 @@ interface IRetain
     [s.Lost]
     {
       on calibrate: s = State.Calibrating;
-      on calibrate: {calibrated; s = State.Ready; isHolding = true;} // hoist is up => safe to move
     }
     [s.Calibrating]
     {
@@ -260,12 +259,11 @@ interface IRetain
     }
     [s.Moving]
     {
-      on inevitable:
-        {
-          ready;
-          s = State.Ready;
-          isHolding = !isHolding;
-        }
+      on inevitable: {
+        ready;
+        s = State.Ready;
+        isHolding = !isHolding;
+      }
     }
   }
 }

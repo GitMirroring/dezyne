@@ -62,15 +62,15 @@ component ConstrainedAxis
       ctrl.arrived();
     }
 
-    on ctrl.stop(): {motor.stop(); homeSensor.disable(); endSensor.disable();}
+    on ctrl.stop(): {s = State.None; motor.stop(); homeSensor.disable(); endSensor.disable();}
 
     on ctrl.calibrate(): {
       if (homeSensor.enable() == itouch.status.pressed) {
         recordHome();
         if (endSensor.enable() == itouch.status.pressed) { // axis length 0 is not an error
           recordLength();
-          s = State.None;
-          ctrl.homed();
+          s = State.Length;
+          defer {s = State.None; ctrl.homed();}
         } else {
           slowForward();
           s = State.Length;

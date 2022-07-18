@@ -60,7 +60,8 @@ component EndConstrainedAxis
     on ctrl.calibrate(): {
       if (endSensor.enable() == itouch.status.pressed) {
         recordHome();
-         ctrl.homed();
+        home = true;
+        defer {home = false; ctrl.homed();}
       } else {
         home = true;
         slowForward();

@@ -50,7 +50,6 @@ interface ITransfer
     [s.Lost]
     {
       on calibrate: s = State.Calibrating;
-      on calibrate: {calibrated; s = State.Ready;}
     }
     [s.Calibrating]
     {
@@ -64,8 +63,6 @@ interface ITransfer
       on transfer: {s = State.Transferring; isPicked = false;}
       on transfer: {s = State.Transferring; picked; isPicked = true;}
       on transfer: {s = State.Ready; picked; placed;}
-
-      on calibrate: illegal;
     }
     [s.Moving]
     {
