@@ -520,7 +520,7 @@ with EVENT as first step, until RTC?."
         (gc-buffer (make-gc-buffer 256)))
     (lambda (pc event)
       "Memoizing version of RUN-TO-COMPLETION-UNMEMOIZED."
-      (if (not (%exploring?)) (run-to-completion-unmemoized pc event)
+      (if (or #t (not (%exploring?))) (run-to-completion-unmemoized pc event)
           (let* ((event-string (cond ((string? event) event)
                                      ((eq? event 'rtc) "*rtc*")
                                      (else (trigger->string event))))
@@ -763,7 +763,17 @@ until RTC?."
 (define-method (run-defer-event (pc <program-counter>) event)
   (%debug "run-defer-event ~a pc: ~s\n" event pc)
   (let* ((pc (prune-defer pc))
-         (defer (.defer pc)))
+         (defer (.defer pc))
+         (trail (.trail pc))
+         (trail (if (equal? event "<defer>") trail
+                    (cons event trail))))
+    (define (livelock? trace)
+      (let* ((new-pc (car trace))
+             (pc (clone pc #:trail trail)))
+        (and (requires-trigger? event)
+             (rtc-program-counter-equal? new-pc pc)
+             (>= (length (.defer new-pc)) (length  defer))
+             (1- (length trace)))))
     (if (null? defer) '()
         (let* ((defer-pc (car defer))
                (statement (.statement defer-pc))
@@ -773,9 +783,6 @@ until RTC?."
                              #:statement statement
                              #:location (.location statement)))
                (defer-qout (clone defer-qout #:parent (.parent statement)))
-               (trail (.trail pc))
-               (trail (if (equal? event "<defer>") trail
-                          (cons event trail)))
                (pc (clone pc
                           #:defer (cdr defer)
                           #:running-defer? instance
@@ -789,9 +796,13 @@ until RTC?."
                         (partition (compose blocked-on-boundary? car) traces))
                (traces (map (cute rewrite-trace-head
                                   (cute clone <> #:running-defer? #f) <>)
-                            traces)))
-          (append blocked
-                  traces)))))
+                            traces))
+               (traces (append blocked traces))
+               (livelock traces (partition livelock? traces))
+               (livelock (map (cute mark-livelock-error <> <>)
+                              livelock
+                              (map livelock? livelock))))
+          (append livelock traces)))))
 
 (define-method (flush-defer (pc <program-counter>))
   (let* ((event "<defer>")

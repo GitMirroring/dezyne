@@ -990,7 +990,9 @@ value of the trail."
                 (string< (string-join trail-a)
                          (string-join trail-b)))))))
 
-  (let* ((traces (sort traces trace<))
+  (let* ((error traces (partition (compose (is? <error>) .status car) traces))
+         (traces (if (null? error) traces error))
+         (traces (sort traces trace<))
          (trace-format trace)
          (trace (and (pair? traces) (car traces)))
          (pc (and trace (car trace)))
