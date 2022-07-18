@@ -29,7 +29,8 @@
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
 
-int main(int argc, char* argv[])
+int
+main ()
 {
   dzn::locator locator;
   dzn::runtime runtime;
@@ -42,6 +43,7 @@ int main(int argc, char* argv[])
   sut.w.meta.provide.name = "w";
 
   sut.w.in.world = [&](int& cc, int i){
+    (void)i;
     //std::clog << "cc=" << cc << ", i=" << i << std::endl;
     dzn::trace (std::clog, sut.w.meta,"world");
     if(cc == 0){cc = 123;} else {assert(cc == 123); cc = 456;}
