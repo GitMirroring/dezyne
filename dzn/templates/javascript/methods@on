@@ -1,3 +1,1 @@
-#x:method {
-  #x:expand-on
-};
+#x:method #x:expand-on
