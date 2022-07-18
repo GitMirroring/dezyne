@@ -31,6 +31,84 @@ import ITransfer.dzn;
 import Inspector.dzn;
 import Conveyor.dzn;
 
+interface IHandleRobust
+{
+  in void calibrate();
+  out void calibrated();
+  in void stop();
+  in void operate(); // start next batch
+  out void finished(); // batch finished
+  behavior
+  {
+    on calibrate:{}
+    on calibrate: calibrated;
+    on stop: {}
+    on operate: {}
+    on operate: finished;
+    on optional: calibrated;
+    on optional: finished;
+  }
+}
+
+component Armor
+{
+  provides IHandleRobust ctrl;
+  requires IHandle handler;
+  behavior
+  {
+    enum State {Lost, Calibrating, Idle, Operating};
+    State s = State.Lost;
+
+    on ctrl.stop(): {s = State.Lost; handler.stop();}
+
+    [s.Lost]
+    {
+      on ctrl.calibrate(): {s = State.Calibrating; handler.calibrate();}
+      on ctrl.operate(): {}
+    }
+    [s.Calibrating]
+    {
+      on ctrl.calibrate(): {}
+      on ctrl.operate(): {}
+      on handler.calibrated(): {s = State.Idle; ctrl.calibrated();}
+    }
+    [s.Idle]
+    {
+      on ctrl.calibrate(): {}
+      on ctrl.operate(): {s = State.Operating; handler.operate();}
+    }
+    [s.Operating]
+    {
+      on ctrl.calibrate(): {}
+      on ctrl.operate(): {}
+      on handler.finished(): {s = State.Idle; ctrl.finished();}
+    }
+  }
+}
+
+component MaterialHandler
+{
+  provides IHandleRobust ctrl;
+  requires ITransfer robot;
+  requires IInspect inspector;
+  requires IFeed feedPort;
+  requires IConvey acceptPort;
+  requires IConvey rejectPort;
+  system
+  {
+    ctrl <=> armor.ctrl;
+    Armor armor;
+    armor.handler <=> handler.ctrl;
+    Handler handler;
+    handler.robot <=> robot;
+    handler.inspector <=> inspector;
+    handler.feedPort <=> feedPort;
+    handler.acceptPort <=> acceptPort;
+    handler.rejectPort <=> rejectPort;
+
+  }
+}
+
 interface IHandle
 {
   in void calibrate();
@@ -51,30 +129,24 @@ interface IHandle
     {
       on calibrate: {s = State.Calibrating;}
       on calibrate: {calibrated; s = State.Idle;}
-      on operate: {}
     }
     [s.Calibrating]
     {
-      on calibrate: {}
-      on operate: {}
       on inevitable: {calibrated; s = State.Idle;}
     }
     [s.Idle]
     {
-      on calibrate: {}
       on operate: s = State.Operating;
       on operate: finished;
     }
     [s.Operating]
     {
-      on calibrate: {}
-      on operate: {}
       on inevitable: {s = State.Idle; finished;}
     }
   }
 }
 
-component MaterialHandler
+component Handler
 {
   provides IHandle ctrl;
   requires ITransfer robot;
@@ -114,11 +186,6 @@ component MaterialHandler
         isInspectorAtOutput = false;
         ctrl.calibrated();
       }
-    }
-    void ignoreIllegal() {
-      // NoOp instead of illegal =>
-      // no assert on illegal control commands received from UI.
-      // This functionality could be moved to a separate armour component
     }
     void startBatch() {
       s = State.Operating;
@@ -189,17 +256,12 @@ component MaterialHandler
       calibrated = 0;
       s = State.Calibrating;
     }
-    on ctrl.calibrate(): [!s.Lost] ignoreIllegal();
 
-    [s.Calibrating]
-    {
-      on robot.calibrated(),
-        inspector.calibrated(),
-        feedPort.calibrated(): tryCalibrated();
-    }
+    [s.Calibrating] on robot.calibrated(),
+      inspector.calibrated(),
+      feedPort.calibrated(): tryCalibrated();
 
     on ctrl.operate(): [s.Idle] startBatch();
-    on ctrl.operate(): [!s.Idle] ignoreIllegal();
 
     [s.Operating] // batch processing
     {

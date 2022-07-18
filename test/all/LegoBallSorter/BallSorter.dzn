@@ -32,7 +32,7 @@ import lego.dzn;
 
 component BallSorter
 {
-  provides IHandle ctrl;
+  provides IHandleRobust ctrl;
 
   requires ILightSense light1; //<=> inspector.sensor; // inspect light sensor
   requires IMove move6; //<=> inspector.stageXMotor; // stage x

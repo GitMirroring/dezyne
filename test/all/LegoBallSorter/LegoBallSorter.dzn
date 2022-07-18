@@ -3,6 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,7 +32,7 @@ import BallSorter.dzn;
 
 component LegoBallSorter
 {
-  provides IHandle ctrl;
+  provides IHandleRobust ctrl;
   // NxtBrick brick1; // INPUT
   requires imotor brick1_aA; //<=> handler.trolleyMotor; // robot trolley
   requires imotor brick1_aB; //<=> input.motor; // input
