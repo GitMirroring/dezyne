@@ -1,4 +1,5 @@
 c.system.#.port.name .#.event.direction .#.event.name  = [&] (#x:formals) {
+  #x:formals-cast-void
   dzn::trace(std::clog, c.system.#.port.name .meta, "#.event.name");
   c.match("#.port.name .#.event.name");
   port_block(c.dzn_locator, nullptr, &c.system.#.port.name);

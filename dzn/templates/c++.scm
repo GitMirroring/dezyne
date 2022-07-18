@@ -74,6 +74,7 @@
 ;;; Formals, parameters, arguments
 ;;;
 (define-templates formal-type c++:formal-type comma-infix)
+(define-templates formals-cast-void ast:formal*)
 
 
 ;;;
