@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,9 +38,10 @@ interface ihello
     on hello: {}
   }
 }
-component async_blocking_external
+
+component async_blocking_verify
 {
-  provides ihello h;
+  provides blocking ihello h;
   requires iworld w;
 
   behavior
