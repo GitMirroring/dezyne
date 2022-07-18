@@ -24,9 +24,9 @@
 extern Data $int$;
 interface ihellocruelworld
 {
-  in void hello (Data data);
+  in void hello (Data data1, Data data2);
   in void cruel ();
-  out void world (Data data);
+  out void world (Data data1, Data data2);
   behavior
   {
     bool idle = true;
@@ -43,10 +43,11 @@ component defer_shadow
   {
     bool idle = true;
     bool shadow = false;
-    [idle] on h.hello (data): {
+    [idle] on h.hello (data1, data2): {
       idle = false;
       bool shadow = true;
-      defer {idle = true; if(shadow) h.world (data);}
+      bool local = true;
+      defer {idle = true; if(shadow && local) h.world (data1, data2);}
     }
     on h.cruel (): idle = true;
   }
