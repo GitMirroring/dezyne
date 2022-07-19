@@ -769,7 +769,10 @@
 
 (define-method (ast:return-types-provides (component <component-model>))
   "Return all event types used in COMPONENT."
-  (delete-duplicates (append-map ast:return-types (filter-map ast:type (ast:provides-port* component))) ast:eq?))
+  (let* ((ports (ast:provides-port* component))
+         (interfaces (filter-map ast:type ports))
+         (types (append-map ast:return-types interfaces)))
+   (delete-duplicates types ast:eq?)))
 
 (define-method (ast:values (o <type>) void)
   (cond
