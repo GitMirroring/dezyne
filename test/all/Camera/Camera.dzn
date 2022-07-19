@@ -77,31 +77,11 @@ component Driver
 
   behavior
   {
-    enum State {Idle, Setup, Ready, Acquire};
-
-    State state = State.Idle;
-
-    [state.Idle]
-    {
-      on control.setup(): {acquisition.prepare(); optics.prepare(); state = State.Setup;}
-      on optics.ready(): {}
-    }
-    [state.Setup]
-    {
-      on optics.ready(): {state = State.Ready; control.focus_lock();}
-      on control.shoot(): {acquisition.acquire(); optics.capture(); state = State.Acquire;}
-      on control.release(): {acquisition.cancel(); optics.cancel(); state = State.Idle;}
-    }
-    [state.Ready]
-    {
-      on control.shoot(): {acquisition.acquire(); optics.capture(); state = State.Acquire;}
-      on control.release(): {acquisition.cancel(); optics.cancel(); state = State.Idle;}
-    }
-    [state.Acquire]
-    {
-      on acquisition.image(): {control.image(); state = State.Idle;}
-      on optics.ready(): {}
-    }
+    on control.setup(): {acquisition.prepare(); optics.prepare();}
+    on optics.ready(): control.focus_lock();
+    on control.shoot(): {acquisition.acquire(); optics.capture();}
+    on control.release(): {acquisition.cancel(); optics.cancel();}
+    on acquisition.image(): control.image();
   }
 }
 

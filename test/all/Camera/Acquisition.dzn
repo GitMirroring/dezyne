@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -90,27 +90,11 @@ component Acquire
 
   behavior
   {
-    enum State {Idle, Ready, Acquiring};
-    State state = State.Idle;
+    on port.cancel(): sensor.cancel();
 
-    on port.cancel(): {state = State.Idle; sensor.cancel();}
-
-    [state.Idle]
-    {
-      on port.prepare():
-      {
-        sensor.prepare();
-        state = State.Ready;
-      }
-    }
-    [state.Ready]
-    {
-      on port.acquire(): {sensor.acquire(); state = State.Acquiring;}
-    }
-    [state.Acquiring]
-    {
-      on sensor.image():{memory.store(); port.image(); state = State.Idle;}
-    }
+    on port.prepare(): sensor.prepare();
+    on port.acquire(): sensor.acquire();
+    on sensor.image(): {memory.store(); port.image();}
   }
 }
 

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -102,14 +102,13 @@ component FocusControl
 
   behavior
   {
-    bool idle = true;
     IContrast.EContrast contrast_was = IContrast.EContrast.Blurrier;
-    [idle] on port.measure(): {idle = false; contrast_was = sensor.measure(); lens.forward();}
-    on port.cancel(): {idle = true; lens.stop();}
-    [!idle] on lens.stopped():
+    on port.measure(): {contrast_was = sensor.measure(); lens.forward();}
+    on port.cancel(): {lens.stop();}
+    on lens.stopped():
     {
       IContrast.EContrast contrast_is = sensor.measure();
-      if(contrast_was.Sharper && contrast_is.Blurrier) {idle = true; port.maximum();}
+      if(contrast_was.Sharper && contrast_is.Blurrier) port.maximum();
       else if(contrast_was.Sharper && contrast_is.Sharper) lens.forward();
       else lens.backward();
       contrast_was = contrast_is;
@@ -157,24 +156,10 @@ component OpticsControl
 
   behavior
   {
-    enum State {Idle, Prepare, Ready};
-    State state = State.Idle;
-    bool ready = false;
-    on port.prepare():
-    {
-      [state.Idle] {state = State.Prepare; focus.measure();}
-    }
-    on port.cancel():
-    {
-      focus.cancel();
-      state = State.Idle;
-    }
-    [state.Prepare] on focus.maximum(): {state = State.Ready; port.ready();}
-    on port.capture():
-    {
-      [state.Prepare] {state = State.Idle; focus.cancel(); shutter.expose();}
-      [state.Ready]   {state = State.Idle; shutter.expose();}
-    }
+    on port.prepare(): focus.measure();
+    on port.cancel(): focus.cancel();
+    on focus.maximum(): port.ready();
+    on port.capture(): {focus.cancel(); shutter.expose();}
   }
 }
 component Optics
