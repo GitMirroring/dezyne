@@ -26,9 +26,6 @@
       (end-column . 1)
       (offset . 845)
       (length . 127))))
-  (("bool" (name . bool)))
-  (("int" (name . <int>)))
-  (("void" (name . void)))
   (("file-name"
     (name . "test/all/parse_locations/ihello.dzn")))
   (("interface"

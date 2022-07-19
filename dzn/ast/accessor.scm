@@ -29,6 +29,7 @@
 (define-module (dzn ast accessor)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
 
@@ -57,6 +58,7 @@
 
             ast:full-name
             ast:name
+            ast:name+scope
             ast:parent
             ast:path
             ast:scope)
@@ -144,24 +146,25 @@
 ;;;
 ;;; Scope and name.
 ;;;
-(define-method (ast:name (o <scope.name-node>))
-  (last (.ids o)))
+(define-method (ast:name+scope (o <scope.name>))
+  (match (.ids o)
+    ((scope ... name)
+     (values name scope))))
 
-(define-method (ast:name (o <scope.name>))
-  (ast:name (.node o)))
-
-(define-method (ast:name (o <named>))
+(define-method (ast:name+scope (o <named>))
   (let ((name (.name o)))
-    (if (is-a? name <scope.name>) (ast:name name) name)))
+    (if name (ast:name+scope name)
+        (values #f '()))))
 
-(define-method (ast:scope (o <scope.name-node>))
-  (drop-right (.ids o) 1))
+(define-method (ast:name+scope (o <string>))
+  (values o '()))
 
-(define-method (ast:scope (o <scope.name>))
-  (ast:scope (.node o)))
+(define-method (ast:name (o <top>))
+  (ast:name+scope o))
 
-(define-method (ast:scope (o <named>))
-  (ast:scope (.name o)))
+(define-method (ast:scope (o <top>))
+  (let ((name scope (ast:name+scope o)))
+    scope))
 
 (define-method (ast:full-name (o <scope.name>))
   (let ((ids (.ids o)))

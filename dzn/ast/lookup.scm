@@ -29,6 +29,7 @@
 (define-module (dzn ast lookup)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
 
@@ -49,10 +50,38 @@
             ast:pure-funcq))
 
 ;;;
+;;; TODO: Lazy import, lazy well-formedness check.
+;;;
+
+;;; Function returning AST for FILE-NAME.
+(define %file-name->ast (make-parameter (const (make <root>))))
+
+
+;;;
+;;; Builtin types.
+;;;
+(define ast:bool (make <bool>))
+(define ast:int (make <int>))
+(define ast:void (make <void>))
+
+
+;;;
 ;;; Accessors.
 ;;;
+(define-method (ast:id* (o <string>))
+  (list o))
+
+(define-method (ast:id* (o <scope.name>))
+  (.ids o))
+
+(define-method (ast:id* (o <named>))
+  (ast:id* (.name o)))
+
 (define-method (ast:declaration* (o <root>))
   (filter (cut is-a? <> <declaration>) (ast:top* o)))
+
+(define-method (ast:declaration* (o <ast>))
+  (list o))
 
 (define-method (ast:declaration* (o <namespace>))
   (let* ((full-name (ast:full-name o))
@@ -104,6 +133,18 @@
 ;;;
 ;;; Predicates.
 ;;;
+(define-method (ast:global? (o <scope.name>))
+  (match (ast:scope o)
+    (("/" scope ...)
+     #t)
+    (_ #f)))
+
+(define-method (ast:global? (o <named>))
+  (ast:global? (.name o)))
+
+(define-method (ast:global? (o <string>))
+  #f)
+
 (define-method (ast:has-equal-name a (b <named>))
   (ast:name-equal? a (.name b)))
 
@@ -149,79 +190,94 @@
 ;;;
 ;;; Lookup.
 ;;;
-(define-method (ast:lookup-n (o <scope>) (name <scope.name>))
-  (let ((ids (.ids name)))
-    (if (null? (cdr ids))
-        (let ((down (ast:lookdown o name)))
-          (if (pair? down) down
-              (if (ast:has-equal-name (car ids) o) (list o)
-                  (ast:lookup-n o (car ids)))))
-        (let* ((first (car ids))
-               (first-scopes (ast:lookup-n o first)))
-          (if (null? first-scopes) '()
-              (let ((name (clone name #:ids (cdr ids))))
-                (ast:lookdown first-scopes name)))))))
+(define (search-import-unmemoized root scope name import)
+  (let* ((file-name (.name import))
+         (ast       (and file-name ((%file-name->ast) file-name))))
+    (and ast (search-or-widen-context scope name ast))))
 
-(define-method (ast:lookdown (o <list>) (name <scope.name>))
-  (append-map (cut ast:lookdown <> name) o))
+(define (search-import scope name import)
+  (let ((root (ast:parent import <root>)))
+    ((ast:pure-funcq search-import-unmemoized) root scope name import)))
 
-(define-method (ast:lookdown (o <scope>) (name <string>))
-  (filter (lambda (decl)
-            (let ((decl (cond ((string? decl) decl)
-                              ((is-a? decl <named>) (.name decl)))))
-              (ast:name-equal? decl name)))
-          (ast:declaration* o)))
+(define (search-unmemoized root scope name context)
+  (let* ((global? (and (pair? scope) (equal? "/" (car scope))))
+         (scope (if (not (and global? (is-a? context <root>))) scope
+                    (filter (match-lambda ("/" #f) (o o)) scope)))
+         (global? (and (pair? scope) (equal? "/" (car scope))))
+         (target (if (null? scope) name (car scope)))
+         (found (filter (cute ast:name-equal? <> target)
+                        (ast:declaration* context))))
+    (and (pair? found)
+         (match scope
+           (()
+            (or (any (compose (cute widen-to-imports <> name context)
+                              ast:id*)
+                     found)
+                (car found)))
+           ((scope tail ...)
+            (any (cute search tail name <>) found))))))
 
-(define-method (ast:lookdown (o <scope>) (name <scope.name>))
-  (let ((ids (.ids name)))
-    (if (null? (cdr ids)) (ast:lookdown o (car ids))
-        (let* ((first (car ids))
-               (first-scopes (ast:lookdown o first)))
-          (if (null? first-scopes) '()
-              (let ((name (clone name #:ids (cdr ids))))
-                (ast:lookdown first-scopes name)))))))
+(define (search scope name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq search-unmemoized) root scope name context)))
 
-(define-method (ast:lookdown (o <ast>) (name <scope.name>))
-  '())
+(define (widen-to-parent-unmemoized root scope name context)
+  (let ((parent (ast:parent context <scope>)))
+    (and parent
+         (let* ((scope-name (and=> (as context <named>) .name))
+                (scope+ (if scope-name (cons scope-name scope) scope)))
+           (or (search-or-widen-context scope name parent)
+               (search-or-widen-context scope+ name parent))))))
 
-(define-method (ast:lookup-n (o <ast>) name)
-  (ast:lookup-n (or (as o <scope>) (ast:parent o <scope>)) name))
+(define (widen-to-parent scope name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq widen-to-parent-unmemoized) root scope name context)))
 
-(define-method (ast:lookup-n (o <formals>) name)
-  (filter (cut ast:name-equal? <> name) (ast:formal* o)))
+(define (widen-to-imports-unmemoized root scope name context)
+  (and context (is-a? context <root>)
+       (let ((imports (ast:import* context)))
+         (any (cute search-import scope name <>) imports))))
 
-(define-method (ast:lookup-n (o <scope>) (name <string>))
-  (cond ((equal? name "void")
-         (list (find (conjoin (is? <declaration>)
-                              (lambda (decl) (ast:name-equal? (.name decl) name)))
-                     (ast:declaration* (or (as o <root>)
-                                           (ast:parent o <root>))))))
-        ((ast:empty-namespace? name) (list (or (as o <root>)
-                                           (ast:parent o <root>))))
-        (else (let ((found (filter (conjoin (is? <declaration>)
-                                            (lambda (decl) (ast:name-equal? (.name decl) name)))
-                                   (ast:declaration* o)))
-                    (p (.parent o)))
-                (cond
-                 ((pair? found) found)
-                 ((or (not name) (not p)) '())
-                 (else (ast:lookup-list (or (as p <scope>)
-                                            (ast:parent p <scope>))
-                                        name)))))))
+(define (widen-to-imports scope name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq widen-to-imports-unmemoized) root scope name context)))
 
-(define-method (ast:lookup-n (o <boolean>) name)
-  '())
+(define (search-or-widen-context scope name context)
+  (or (search scope name context)
+      (widen-to-parent scope name context)
+      (widen-to-imports scope name context)))
 
-(define (ast:lookup-list- root o name)
-  (ast:lookup-n o name))
+(define (ast:lookup-list-unmemoized root name context)
+  "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a context? or
+null) and return its CONTEXT."
+  (cond
+   ((not context)
+    '())
+   ((ast:name-equal? name (.name ast:bool))
+    ast:bool)
+   ((ast:name-equal? name (.name ast:int))
+    ast:int)
+   ((ast:name-equal? name (.name ast:void))
+    ast:void)
+   (else
+    (let* ((global? (ast:global? name))
+           (context (if global? (ast:parent context <root>) context))
+           (name scope (ast:name+scope name)))
+      (search-or-widen-context scope name context)))))
 
-(define (ast:lookup-list o name)
-  ((ast:pure-funcq ast:lookup-list-)
-   (or (as o <root>) (ast:parent o <root>)) o name))
+(define (ast:lookup-list name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq ast:lookup-list-unmemoized) root name context)))
 
-(define (ast:lookup o name)
-  (let ((lookup (ast:lookup-list o name)))
-    (if (null? lookup) #f (car lookup))))
+(define-method (ast:lookup context name)
+  (let ((scope (or (as context <scope>)
+                   (ast:parent context <scope>))))
+    (match (ast:lookup-list name scope)
+      (() #f)
+      (ast ast))))
+
+(define-method (ast:lookup name)
+  (ast:lookup name name))
 
 (define-method (ast:lookup-variable (o <ast>) name statements)
   (define (name? o) (and (equal? (.name o) name) o))
@@ -314,8 +370,7 @@
                 (equal? (.event.name o) "optional"))
            (clone (ast:optional) #:parent interface))
           (else (and interface
-                     (let ((event (ast:lookdown interface (.event.name o))))
-                       (and (pair? event) (car event))))))))
+                     (ast:lookup interface (.event.name o)))))))
 
 (define-method (.event.direction (o <action>))
   ((compose .direction .event) o))
@@ -383,9 +438,8 @@
           (and formal (.direction formal))))))
 
 (define-method (.type (o <instance>))
-  (let* ((name (.type.name o))
-         (found (ast:lookdown (.parent o) name)))
-    (if (pair? found) (car found)
+  (let ((name (.type.name o)))
+    (or (ast:lookup (.parent o) name)
         (ast:lookup o name))))
 
 (define-method (.type (o <port>))

@@ -211,13 +211,6 @@ parse CONTENT and return
 
 using CONTENT-ALIST to transform locations."
 
-  (define (add-builtin-types root)
-    "Return ROOT with bool and void builtins."
-    (let ((bool (make <bool>))
-          (int (make <int>))
-          (void (make <void>)))
-      (clone root #:elements (cons* bool int void (.elements root)))))
-
   (define (expand-imports ast-alist)
     (let ((file (car ast-alist))
           (imports (cdr ast-alist)))
@@ -239,8 +232,7 @@ using CONTENT-ALIST to transform locations."
                                            #:file-name file-name
                                            #:working-directory working-directory)))))
                alist))
-         (ast (expand-imports ast-alist))
-         (ast (add-builtin-types ast)))
+         (ast (expand-imports ast-alist)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print ast (current-error-port)))
     ast))
