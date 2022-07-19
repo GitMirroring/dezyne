@@ -58,29 +58,12 @@ component Armor
     State s = State.Lost;
 
     on ctrl.stop(): {s = State.Lost; handler.stop();}
-
-    [s.Lost]
-    {
-      on ctrl.calibrate(): {s = State.Calibrating; handler.calibrate();}
-      on ctrl.operate(): {}
-    }
-    [s.Calibrating]
-    {
-      on ctrl.calibrate(): {}
-      on ctrl.operate(): {}
-      on handler.calibrated(): {s = State.Idle; ctrl.calibrated();}
-    }
-    [s.Idle]
-    {
-      on ctrl.calibrate(): {}
-      on ctrl.operate(): {s = State.Operating; handler.operate();}
-    }
-    [s.Operating]
-    {
-      on ctrl.calibrate(): {}
-      on ctrl.operate(): {}
-      on handler.finished(): {s = State.Idle; ctrl.finished();}
-    }
+    [s.Lost] on ctrl.calibrate(): {s = State.Calibrating; handler.calibrate();}
+    [!s.Lost] on ctrl.calibrate(): {}
+    [s.Calibrating] on handler.calibrated(): {s = State.Idle; ctrl.calibrated();}
+    [s.Idle] on ctrl.operate(): {s = State.Operating; handler.operate();}
+    [!s.Idle] on ctrl.operate(): {}
+    [s.Operating] on handler.finished(): {s = State.Idle; ctrl.finished();}
   }
 }
 
@@ -122,23 +105,10 @@ interface IHandle
     State s = State.Lost;
 
     on stop: {s = State.Lost;}
-
-    [s.Lost]
-    {
-      on calibrate: {s = State.Calibrating;}
-    }
-    [s.Calibrating]
-    {
-      on inevitable: {calibrated; s = State.Idle;}
-    }
-    [s.Idle]
-    {
-      on operate: s = State.Operating;
-    }
-    [s.Operating]
-    {
-      on inevitable: {s = State.Idle; finished;}
-    }
+    [s.Lost] on calibrate: {s = State.Calibrating;}
+    [s.Calibrating] on inevitable: {calibrated; s = State.Idle;}
+    [s.Idle] on operate: s = State.Operating;
+    [s.Operating] on inevitable: {s = State.Idle; finished;}
   }
 }
 
@@ -186,6 +156,19 @@ component Handler
                  $(config.get("Position::Robot::Y::InputPick"))$);
       isRobotAtOutput = false;
       isRobotAtInput = false;
+    }
+    void sendRobotToOutputPick() {
+      o = Operation.PreparingOutput;
+      isRobotAtInput = false;
+      robot.move($(config.get("Position::Robot::X::OutputPick"))$,
+                 $(config.get("Position::Robot::Y::OutputPick"))$);
+    }
+    void finalizeOrPrepare() {
+      sendRobotToInputPick();
+      if (isLastBall && !isBallAtInput)
+        o = Operation.Finalizing;
+      else
+        o = Operation.PreparingInput;
     }
     void tryInputTransfer() {
       if (isBallAtInput && isRobotAtInput && isInspectorAtInput) {
@@ -284,7 +267,7 @@ component Handler
         on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
         on robot.picked(): [!isLastBall] {feedPort.produceBall(); isBallAtInput = false;}
         on robot.picked(): [isLastBall] {isBallAtInput = false;}
-        on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); isRobotAtInput = false; robot.move($(config.get("Position::Robot::X::OutputPick"))$, $(config.get("Position::Robot::Y::OutputPick"))$); o = Operation.PreparingOutput;}
+        on robot.placed(): {isInspectorAtInput = false; inspector.inspect(); sendRobotToOutputPick();}
         on acceptPort.conveyed(): isAcceptEmpty = true;
         on rejectPort.conveyed(): isRejectEmpty = true;
       }
@@ -304,8 +287,8 @@ component Handler
         on feedPort.consumeLastBall(): {isLastBall = true; isBallAtInput = true;}
         on inspector.prepared(): isInspectorAtInput = true;
         on robot.picked(): {isInspectorAtOutput = false; inspector.prepare();}
-        on robot.placed(): [isBallAccepted] {isAcceptEmpty = false; acceptPort.convey(); sendRobotToInputPick(); if (isLastBall && !isBallAtInput) o = Operation.Finalizing; else o = Operation.PreparingInput;}
-        on robot.placed(): [!isBallAccepted] {isRejectEmpty = false; rejectPort.convey(); sendRobotToInputPick(); if (isLastBall && !isBallAtInput) o = Operation.Finalizing; else o = Operation.PreparingInput;}
+        [isBallAccepted]  on robot.placed(): {isAcceptEmpty = false; acceptPort.convey(); finalizeOrPrepare();}
+        [!isBallAccepted] on robot.placed(): {isRejectEmpty = false; rejectPort.convey(); finalizeOrPrepare();}
         on acceptPort.conveyed(): isAcceptEmpty = true;
         on rejectPort.conveyed(): isRejectEmpty = true;
       }

@@ -68,6 +68,7 @@ component LegoBallSorter
   system
   {
     BallSorter sorter;
+    // NxtBrick brick1; // INPUT
     Motor motor1_aA; // <=> handler.trolleyMotor; // robot trolley
     Motor motor1_aB; // <=> input.motor; // input
     Motor motor1_aC; // <=> track.motor; // feeder
@@ -92,7 +93,7 @@ component LegoBallSorter
     Motor motor4_aA; // <=> handler.hoistMotor; // robot hoist
     Motor motor4_aB; // <=> handler.gripperMotor; // robot gripper
     Motor motor4_aC; // <=> handler.truckMotor; // truck
-    TouchSensor touch11;
+    TouchSensor touch11; // gripper end
     TouchSensor touch12; // <=> handler.trolleyHomeSensor; // extender home
     TouchSensor touch13; // <=> handler.hoistEndSensor; // hoist home
     // ///////////////////////////
