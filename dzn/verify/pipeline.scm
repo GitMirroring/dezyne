@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -243,7 +243,6 @@ actions."
 
 (define (in-out:aut->aut-weak-trace options)
   (let* ((model (options-model options))
-         (model-name (makreel:name model))
          (taus (if (is-a? model <interface>)
                    '("--tau=inevitable,optional")
                    '())))
@@ -461,18 +460,21 @@ init for MODEL unless INIT."
       (_
        (throw 'programming-error (format #f "ill-formed assert: ~s, result: ~s\n" assert result))))))
 
-(define (report-ok model-type model-name assert)
-  (let ((verbose? (dzn:command-line:get 'verbose)))
+(define (report-ok model assert)
+  (let ((verbose? (dzn:command-line:get 'verbose))
+        (model-name (makreel:unticked-dotted-name model)))
     (when (dzn:command-line:get 'verbose)
-      (format (current-error-port) "verify: ~a: check: ~a: ok\n" model-name assert))
+      (format (current-error-port)
+              "verify: ~a: check: ~a: ok\n" model-name assert))
     #f))
 
-(define (report-fail model-type model-name assert trace)
+(define (report-fail model assert trace)
   (define (remove-flushes trace)
     (filter (negate (cut string-contains <> "<flush>")) trace))
   (define (drop-queue-full-tail trace)
     (append (take-while (negate (cut equal? "<queue-full>" <>)) trace) (list "<queue-full>")))
-  (let* ((trace (filter (negate string-null?) (string-split trace #\newline)))
+  (let* ((model-name (makreel:unticked-dotted-name model))
+         (trace (filter (negate string-null?) (string-split trace #\newline)))
          (last-el (and (pair? trace) (last trace)))
          (second-last (and (pair? trace)
                            (pair? (drop-right trace 1))
@@ -489,9 +491,11 @@ init for MODEL unless INIT."
          (message (case error
                     ((illegal) (format #f "illegal action performed in model ~a" model-name))
                     ((non-deterministic)
-                     (case model-type
-                       ((component) (format #f "component ~a is non-deterministic due to overlapping guards" model-name))
-                       ((interface) (format #f "interface ~a is unobservably non-deterministic" model-name))))
+                     (cond
+                      ((is-a? model <interface>)
+                       (format #f "interface ~a is unobservably non-deterministic" model-name))
+                      ((is-a? model <component>)
+                       (format #f "component ~a is non-deterministic due to overlapping guards" model-name))))
                     ((non-compliance) (format #f "component ~a is non-compliant with interface(s) of provides port(s)" model-name))
                     ((<range-error>) (format #f "integer range error in model ~a" model-name))
                     ((<type-error>) (format #f "type error in model ~a" model-name))
@@ -513,15 +517,19 @@ init for MODEL unless INIT."
       (format #t "~a\n" trace))
     #t))
 
-(define (report-skip model-type model-name assert)
-  (when (dzn:command-line:get 'verbose)
-    (format (current-error-port) "verify: ~a: check: ~a: skip\n" model-name assert))
-  #f)
+(define (report-skip model assert)
+  (let ((verbose? (dzn:command-line:get 'verbose))
+        (model-name (makreel:unticked-dotted-name model)))
+    (when verbose?
+      (format (current-error-port)
+              "verify: ~a: check: ~a: skip\n"
+              model-name assert))
+    #f))
 
-(define (report assert skip trace model-type model-name)
-  (cond (skip  (report-skip model-type model-name assert))
-        (trace (report-fail model-type model-name assert trace))
-        (else  (report-ok   model-type model-name assert))))
+(define (report assert skip trace model)
+  (cond (skip  (report-skip model assert))
+        (trace (report-fail model assert trace))
+        (else  (report-ok   model assert))))
 
 
 ;;;
@@ -539,7 +547,7 @@ init for MODEL unless INIT."
                   (verify-pipeline "verify-interface-nondet" root model)))
          (result (result-split result)))
     (define (report-assert assert)
-      (report assert #f (get-trace assert result) 'interface model-name))
+      (report assert #f (get-trace assert result) model))
     (reduce-or (command-line:get 'all)
                (list (cute report-assert 'deadlock)
                      (cute report-assert 'livelock)
@@ -592,7 +600,7 @@ init for MODEL unless INIT."
          (refinement-trace interface-accepts component-accepts
                            (mcrl2:verify-compliance root model)))
     (define (report-assert assert)
-      (report assert #f (get-trace assert result) 'component model-name))
+      (report assert #f (get-trace assert result) model))
     (define (extend-trace trace accepts)
       (if accepts (string-append trace (car accepts) "\n")
           trace))
@@ -604,14 +612,13 @@ init for MODEL unless INIT."
                      (cut report 'compliance
                           (or (get-trace 'illegal result) (get-trace 'deadlock result))
                           refinement-trace
-                          'component model-name)))))
+                          model)))))
 
-(define (mcrl2:verify-interface root model-name)
-  (let ((model (makreel:get-model root model-name)))
-    (mcrl2:verify-interface-asserts model root)))
+(define (mcrl2:verify-interface root model)
+  (mcrl2:verify-interface-asserts model root))
 
-(define (mcrl2:verify-component root model-name)
-  (let* ((component (makreel:get-model root model-name))
+(define (mcrl2:verify-component root model)
+  (let* ((component model)
          (interfaces (delete-duplicates (map .type (ast:port* component)) ast:eq?))
          (verify-models (append (map (lambda (i) (cut mcrl2:verify-interface-asserts i root)) interfaces)
                                 (list (cut mcrl2:verify-component-asserts component root)))))
@@ -619,8 +626,8 @@ init for MODEL unless INIT."
 
 (define (mcrl2:verify root model-name)
   (let ((model (makreel:get-model root model-name)))
-    (cond ((is-a? model <interface>) (mcrl2:verify-interface root model-name))
-          ((is-a? model <component>) (mcrl2:verify-component root model-name))
+    (cond ((is-a? model <interface>) (mcrl2:verify-interface root model))
+          ((is-a? model <component>) (mcrl2:verify-component root model))
           (else #f))))
 
 
