@@ -44,7 +44,6 @@
             .type
             .variable
             context:lookup
-            context:look-down
             declaration->offset
             lookup
             lookup-definition
@@ -63,7 +62,6 @@
             (tree      (and file-name ((%file-name->parse-tree) file-name))))
        (and tree (search-or-widen-context scope name (tree->context tree)))))))
 
-(use-modules (dzn misc))
 (define search
   (pure-funcq
    (lambda (scope name context)
