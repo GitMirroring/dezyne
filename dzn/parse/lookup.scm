@@ -80,11 +80,13 @@
                       (car found))))
                 (cons found context))))
        (and (pair? found)
-            (let* ((found (if (null? scope) (search-in-scope)
-                              (let ((tail (cdr scope)))
-                                (any (compose (cute search tail name <>)
-                                              (cute tree->context <> context))
-                                     found))))
+            (let* ((found (match scope
+                            (()
+                             (search-in-scope))
+                            ((scope tail ...)
+                             (any (compose (cute search tail name <>)
+                                           (cute tree->context <> context))
+                                  found))))
                    (root (find (is? 'root) context))
                    (file-name (and=> root .file-name)))
               (and found
@@ -95,8 +97,7 @@
    (lambda (scope name context)
      (let ((context:parent (context:parent context tree:scope?)))
        (and context:parent
-            (let* ((parent-tree (and=> context:parent .tree))
-                   (scope-name (.name (.tree context)))
+            (let* ((scope-name (.name (.tree context)))
                    (scope+ (if scope-name (cons scope-name scope) scope)))
               (or (search-or-widen-context scope name context:parent)
                   (search-or-widen-context scope+ name context:parent))))))))
