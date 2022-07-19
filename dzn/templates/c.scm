@@ -145,7 +145,7 @@
 
 (define-templates type-name c:type-name name-infix)
 (define-templates type-name-different c:type-name-different name-infix)
-(define-templates function-return-type (lambda (o) ((compose c:name .type .signature) o)) name-infix)
+(define-templates function-return-type (compose c:type-name .type .signature) name-infix)
 (define-templates formals ast:formal*)
 (define-templates in-event-definer ast:in-event*)
 (define-templates out-event-definer ast:out-event*)
