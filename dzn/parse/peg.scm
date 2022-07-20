@@ -32,7 +32,6 @@
   #:use-module (ice-9 rdelim)
 
   #:use-module (dzn peg)
-  #:use-module (dzn parse ast)
 
   #:re-export (%peg:locations?
                %peg:skip?
