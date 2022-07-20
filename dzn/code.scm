@@ -171,10 +171,18 @@
                                                                           (ast:source-file (.type i)))))))
          (ast:instance* o)))
 
+(define-method (code:pump? (o <component>))
+  (and (or (pair? (ast:async-port* o))
+           (pair? (tree-collect (disjoin (is? <blocking>)
+                                         (is? <defer>)
+                                         (is? <blocking-compound>))
+                                o)))
+       o))
+
 (define-method (code:pump? (o <root>))
-  (filter (conjoin (negate ast:imported?) (is? <component>)
-                   (compose pair? ast:req-events))
-          (ast:model* o)))
+  (let ((components (filter (conjoin (negate ast:imported?) (is? <component>))
+                            (ast:model* o))))
+    (any code:pump? components)))
 
 
 ;;;
@@ -639,10 +647,6 @@
 
 (define-method (code:bind-requires (o <binding>))
   ((compose cdr code:bind-provides-required) o))
-
-(define-method (code:pump? (o <component>))
-  (if ((compose pair? ast:req-events) o) o
-      '()))
 
 (define-method (code:trace-q-out o)
   (if ((compose ast:out? .event) o) o

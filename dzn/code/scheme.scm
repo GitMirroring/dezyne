@@ -173,15 +173,7 @@
          (modules (map scheme:module-name models))
          (foreigns (map scheme:module-name (code:used-foreigns o)))
          (components (filter (is? <component>) (ast:model* o)))
-         (pump? (or (pair? (append-map ast:async-port* components))
-                    (pair? (append-map (cute
-                                        tree-collect
-                                        (disjoin (is? <blocking>)
-                                                 (is? <defer>)
-                                                 (is? <blocking-compound>))
-                                        <>)
-                                       components))))
-         (pump (if pump? '("dzn pump")
+         (pump (if (code:pump? o) '("dzn pump")
                    '()))
          (files (delete-duplicates (append pump modules foreigns))))
     (map (cut make <file-name> #:name <>) files)))
