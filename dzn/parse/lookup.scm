@@ -68,21 +68,15 @@
      (let* ((target (if (null? scope) name (car scope)))
             (found (filter (compose (cute tree:name-equal? <> target) .name)
                            (tree:declaration* (.tree context)))))
-       (define (search-in-scope)
-         (and (pair? found)
-              (let ((found
-                     (or
-                      (find (compose (cute tree:name-equal? <> target) .name)
-                            (append-map tree:declaration* found))
-                      (any (compose (cute widen-to-imports <> name context)
-                                    tree:id* .name)
-                           found)
-                      (car found))))
-                (cons found context))))
        (and (pair? found)
             (let* ((found (match scope
                             (()
-                             (search-in-scope))
+                             (cons
+                              (or (any (compose (cute widen-to-imports <> name context)
+                                                tree:id* .name)
+                                       found)
+                                  (car found))
+                              context))
                             ((scope tail ...)
                              (any (compose (cute search tail name <>)
                                            (cute tree->context <> context))
