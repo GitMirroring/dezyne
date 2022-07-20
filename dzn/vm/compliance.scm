@@ -512,25 +512,27 @@ port return."
           (or (find blocked-on-boundary? trace)
               (and (not (find .status trace))
                    (find (compose pair? .blocked) trace))))
-         (rtc-block-pc (and (pair? collateral)
-                            (rtc-block-pc (cdar collateral))))
-         (rtc-block-trigger (and=> rtc-block-pc .trigger))
-         (rtc-block-trigger (if (and rtc-block-trigger
-                                     (is-a? (%sut) <runtime:system>))
-                                (trigger->system-trigger (.instance rtc-block-pc) rtc-block-trigger)
-                                rtc-block-trigger)))
+         (pcs (filter
+               (conjoin
+                (compose (is? <initial-compound>) .statement)
+                (compose ast:provides? .trigger))
+               (reverse trace))))
     (cond
-     ((and compliance-for-blocking?
-           (find (compose (is? <trigger-return>)
-                          .statement)
-                 trace))
+     ((and (pair? pcs)
+           compliance-for-blocking?
+           (find (compose (is? <trigger-return>) .statement) trace))
       =>
       (lambda (rpc)
-        (let ((pcs (filter
-                    (conjoin
-                     (compose (is? <initial-compound>) .statement)
-                     (compose ast:provides? .trigger))
-                    (reverse trace))))
+        (let* ((rtc-block-pc (and (pair? collateral)
+                                  (rtc-block-pc (cdar collateral))))
+               (rtc-block-trigger (and=> rtc-block-pc .trigger))
+               (rtc-block-trigger (if (not
+                                       (and rtc-block-trigger
+                                            (is-a? (%sut) <runtime:system>)))
+                                      rtc-block-trigger
+                                      (trigger->system-trigger
+                                       (.instance rtc-block-pc)
+                                       rtc-block-trigger))))
           (let loop ((traces traces) (pcs pcs))
             (if (null? pcs) traces
                 (let* ((trail (trace->trail (car pcs)))
