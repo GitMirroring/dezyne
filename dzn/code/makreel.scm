@@ -949,7 +949,7 @@
 
 (define-method (makreel:process-argument-stack? (o <call>))
   (let ((function (parent o <function>)))
-    (cond ((and function (.last? o)) #f)
+    (cond ((and function (.last? o)) function)
           (else o))))
 
 (define-method (makreel:enum-name (o <enum>))
