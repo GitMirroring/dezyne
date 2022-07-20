@@ -128,6 +128,7 @@
                ast:equal?
                ast:full-name
                ast:name
+               ast:parent
                ast:path
                ast:pure-funcq
 
@@ -184,7 +185,7 @@
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
 (define-method (ast:imported? (o <ast>))
-  (not (equal? (ast:source-file o) (ast:source-file (parent o <root>)))))
+  (not (equal? (ast:source-file o) (ast:source-file (ast:parent o <root>)))))
 
 (define-method (ast:in? (o <event>))
   (eq? 'in (.direction o)))
@@ -325,7 +326,7 @@
     (_ #t)))
 
 (define-method (ast:instance? (o <component-model>))
-  (let* ((root (parent o <root>))
+  (let* ((root (ast:parent o <root>))
          (models (ast:model* root))
          (systems (filter (is? <system>) models)))
     (find (lambda (s)
@@ -377,19 +378,19 @@
   (filter ast:injected? (ast:port* o)))
 
 (define-method (ast:injected-port* (o <trigger>))
-  (ast:injected-port* (parent o <component-model>)))
+  (ast:injected-port* (ast:parent o <component-model>)))
 
 (define-method (ast:provides-port* (o <component-model>))
   (filter ast:provides? (ast:port* o)))
 
 (define-method (ast:provides-port* (o <port>))
-  (ast:provides-port* (parent o <component-model>)))
+  (ast:provides-port* (ast:parent o <component-model>)))
 
 (define-method (ast:requires-port* (o <component-model>))
   (filter ast:requires? (ast:port* o)))
 
 (define-method (ast:requires-port* (o <port>))
-  (ast:requires-port* (parent o <component-model>)))
+  (ast:requires-port* (ast:parent o <component-model>)))
 
 (define-method (ast:requires-no-injected-port* (o <component-model>))
   (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o)))
@@ -509,7 +510,7 @@
 (define-method (ast:type (o <bool>)) o)
 (define-method (ast:type (o <enum>)) o)
 (define-method (ast:type (o <enum-literal>))
-  (or (parent o <enum>)
+  (or (ast:parent o <enum>)
       (.type o)))
 (define-method (ast:type (o <enum-field>))
   (.type o))
@@ -570,19 +571,19 @@
   o)
 
 (define-method (ast:argument->formal (o <expression>))
-  (let* ((call (parent o <call>))
+  (let* ((call (ast:parent o <call>))
          (arguments (ast:argument* call))
          (index (list-index (cut ast:eq? o <>) arguments))
          (formals ((compose ast:formal* .function) call)))
     (list-ref formals index)))
 
 (define-method (ast:formal->index (o <formal>))
-  (let* ((formals (.elements (parent o <formals>)))
+  (let* ((formals (.elements (ast:parent o <formals>)))
          (index (list-index (cut ast:eq? o <>) formals)))
     index))
 
 (define-method (ast:defer-variable* (o <defer>))
-  (if (not (.arguments o)) (ast:member* (parent o <model>))
+  (if (not (.arguments o)) (ast:member* (ast:parent o <model>))
       (map .variable (ast:argument* o))))
 
 (define-method (ast:expression->type (o <expression>))
@@ -594,10 +595,11 @@
           ((as-p o <arguments>) ((compose .type ast:argument->formal) o))
           ((as-p o <var>) => (compose .type .variable))
           ((as-p o <variable>) => .type)
-          ((as-p o <return>) => (compose .type .signature (cute parent <> <function>)))
+          ((as-p o <return>)
+           => (compose .type .signature (cute ast:parent <> <function>)))
           ((is-a? o <bool-expr>) (make <bool>))
           ((is-a? o <int-expr>) (make <int>))
-          ((parent (.parent o) <expression>) => ast:expression->type)
+          ((ast:parent <expression>) => ast:expression->type)
           ((is-a? o <literal>) (ast:literal-value->type (.value o)))
           (else (make <void>)))))
 
@@ -776,7 +778,7 @@ to bottom."
         (clone o #:left right #:right left))))
 
 (define-method (ast:other-end-point (o <port>))
-  (let loop ((bindings (ast:binding* (parent o <system>))))
+  (let loop ((bindings (ast:binding* (ast:parent o <system>))))
     (and (pair? bindings)
          (let* ((binding (car bindings))
                 (left (.left binding))
@@ -791,7 +793,7 @@ to bottom."
                  (else (loop (cdr bindings))))))))
 
 (define-method (ast:other-end-point (i <instance>) (o <port>))
-  (let ((system (parent i <system>)))
+  (let ((system (ast:parent i <system>)))
     (let loop ((bindings (ast:binding* system)))
       (and (pair? bindings)
            (let* ((binding (car bindings))

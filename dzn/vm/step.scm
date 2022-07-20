@@ -363,7 +363,8 @@
                                    stack))
                   (statements (map .statement instance-stack))
                   (blocking? (or (pair? (.blocked pc))
-                                 (any (cute parent <> <blocking>) statements)))
+                                 (any (cute ast:parent <> <blocking>)
+                                      statements)))
                   (ports-eq? (ast:eq? reply-port trigger-port)))
              (and reply-port
                   (or blocking?
@@ -521,7 +522,7 @@
    (else
     (let* ((trigger (.trigger pc))
            (blocking? (and (ast:provides? trigger)
-                           (parent o <blocking>)))
+                           (ast:parent o <blocking>)))
            (pc (if (or blocking? (.status pc)) pc
                    (let ((locals (filter (is? <variable>)
                                          (ast:statement* (.parent o)))))
@@ -614,8 +615,10 @@
       (($ <defer>)
        (clone pc #:statement #f))
       (($ <defer-qout>)
-       (let* ((p (parent p <compound>))
-              (pc (if (not p) pc (pop-locals pc (filter (is? <variable>) (ast:statement* p))))))
+       (let* ((p (ast:parent p <compound>))
+              (pc (if (not p) pc
+                      (let ((locals (filter (is? <variable>) (ast:statement* p))))
+                        (pop-locals pc locals)))))
         (clone pc #:statement #f)))
       (_
        '()))))

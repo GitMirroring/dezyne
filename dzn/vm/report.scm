@@ -335,7 +335,7 @@
        (pc-arrow? (.instance pc) o)))
 
 (define-method (pc-arrow? (o <runtime:port>) (return <trigger-return>))
-  (let ((on (parent return <on>)))
+  (let ((on (ast:parent return <on>)))
     (and on
          (let ((trigger (car (ast:trigger* on))))
            (or (is-a? (%sut) <runtime:port>)
@@ -678,14 +678,14 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                                  (r:other-port (runtime:other-port r:port)))
                             (or (ast:requires? r:other-port)
                                 (eq? r:port r:other-port))))) ; injected
-                 (not (ast:modeling? (car (ast:trigger* (parent statement <on>))))))
+                 (not (ast:modeling? (car (ast:trigger* (ast:parent statement <on>))))))
             (let* ((next-statement (.statement next)) ;; XXX statement *after* action
                    (next-instance (.instance next))
                    (port (.port statement))
                    (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
                                (runtime:port pc-instance port)))
                    (r:other-port (runtime:other-port r:port))
-                   (interface (if port (.type port) (parent statement <interface>)))
+                   (interface (if port (.type port) (ast:parent statement <interface>)))
                    (component (.type (.ast next-instance)))
                    (port-name (if (or (not r:other-port) (eq? r:port r:other-port)) (injected-port-name component interface)
                                   (.name (.ast r:other-port))))
@@ -706,10 +706,10 @@ the location of the executed <on>-statement."
     (if (null? trace) '()
         (let* ((pc (car trace))
                (trigger (.trigger pc))
-               (model (and trigger (parent trigger <model>)))
+               (model (and trigger (ast:parent trigger <model>)))
                (on (and=> (find (conjoin (compose (is? <on>) .statement)
                                          (compose (cute ast:eq? <> model)
-                                                  (cute parent <> <model>)
+                                                  (cute ast:parent <> <model>)
                                                   .statement))
                                 trace)
                           .statement))
@@ -799,7 +799,7 @@ intermediate steps such as assignments, function calls, replies,
                                 (or (and=> (.ast (.status pc)) location-prefix)
                                     (location-prefix ast)))
                               pcs))
-              (message (if (is-a? (parent ast <model>) <component>)
+              (message (if (is-a? (ast:parent ast <model>) <component>)
                            "component is non-deterministic due to overlapping guards"
                            "interface is unobservably non-deterministic")))
          (string-join

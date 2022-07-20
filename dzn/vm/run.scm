@@ -518,7 +518,7 @@ with EVENT as first step, until RTC?."
                                      ((eq? event 'rtc) "*rtc*")
                                      (else (trigger->string event))))
                  (sut (%sut))
-                 (root (parent (.ast sut) <root>))
+                 (root (ast:parent (.ast sut) <root>))
                  (key (string-append
                        (number->string (.id root))
                        (parameterize ((%sut #f)) (runtime:dotted-name sut))

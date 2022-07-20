@@ -75,7 +75,7 @@
   (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 (define-method (c++:enum->string (o <interface>))
-  (filter (is? <enum>) (append (ast:type* (parent o <root>))
+  (filter (is? <enum>) (append (ast:type* (ast:parent o <root>))
                                 (ast:type* o))))
 
 (define-method (c++:type-name o)
@@ -119,7 +119,7 @@
     models))
 
 (define-method (c++:dzn-locator (o <instance>))
-  (let ((model (parent o <model>)))
+  (let ((model (ast:parent o <model>)))
     (if (null? (code:injected-bindings model)) '()
         o)))
 

@@ -102,7 +102,7 @@
      (let* ((requires? (ast:requires? ((compose .port car ast:trigger*) o)))
             (block? (or block? requires?))
             (port (if port port
-                      (if requires? (ast:provides-port (parent o <model>))
+                      (if requires? (ast:provides-port (ast:parent o <model>))
                           ((compose .port car ast:trigger*) o)))))
        (clone o #:statement (set-blocking-reply-port (.statement o) port block?))))
     (($ <guard>) (clone o #:statement (set-blocking-reply-port (.statement o) port block?)))
@@ -151,12 +151,12 @@
              (block (make <block> #:location location)))
          (clone o
                 #:elements (append (ast:statement* o)
-                                   (if (parent o <blocking>) (cons block r) r)))))
+                                   (if (ast:parent o <blocking>) (cons block r) r)))))
       ((? ast:imperative?)
        (let* ((location (.location o))
               (block (make <block> #:location location)))
          (make <compound>
-           #:elements (cons o (if (parent o <blocking>) (cons block r) r))
+           #:elements (cons o (if (ast:parent o <blocking>) (cons block r) r))
            #:location location)))
       (($ <compound>)
        (clone o #:elements (map (cut add-end-of-on <> r) (ast:statement* o))))

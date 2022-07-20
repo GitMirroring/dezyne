@@ -174,7 +174,7 @@
 (define-templates defer-proc makreel:behavior->defer-qout)
 (define-templates provides-flush (lambda (o) (if (ast:provides? o) o '())))
 (define-templates requires-reply (lambda (o) (if (ast:requires? o) o '())))
-(define-templates defer-skip (lambda (o) (if (parent o <component>) o '())))
+(define-templates defer-skip (lambda (o) (if (ast:parent o <component>) o '())))
 (define-templates defer-locals-sort (cute tree-collect (is? <defer>) <>) pipe-prefix)
 (define-templates defer-local-arguments-sort (lambda (o) (if (pair? (makreel:locals o)) o '())))
 (define-templates deferred-locals-sort makreel:locals comma-infix)
@@ -185,7 +185,7 @@
 
 (define-templates state-vector (lambda (o) (let ((behavior (.behavior o))) (if (pair? (ast:variable* behavior)) behavior '()))))
 (define-templates state-member ast:variable* comma-infix)
-(define-templates construct-state-vector (lambda (o) (let ((behavior (.behavior (parent o <component>)))) (if (pair? (ast:variable* behavior)) behavior '()))))
+(define-templates construct-state-vector (lambda (o) (let ((behavior (.behavior (ast:parent o <component>)))) (if (pair? (ast:variable* behavior)) behavior '()))))
 (define-templates state-var ast:variable* comma-infix)
 
 (define-templates defer-select-member ast:variable* pipe-prefix)

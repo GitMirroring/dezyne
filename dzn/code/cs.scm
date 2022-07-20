@@ -132,9 +132,9 @@
         formals)))
 
 (define-method (cs:illegal-out-assign (o <ast>))
-  (let ((on (parent o <on>)))
+  (let ((on (ast:parent o <on>)))
     (if on (filter ast:out? (cs:formals (car (ast:trigger* on))))
-        (filter ast:out? (cs:formals (parent o <function>))))))
+        (filter ast:out? (cs:formals (ast:parent o <function>))))))
 
 (define-method (cs:args o)
   (let ((args (ast:argument* o)))
@@ -193,20 +193,20 @@
       '()))
 
 (define-method (cs:formal-bindings (o <trigger>))
-  (let ((on (or (parent o <on>)
-                (parent (car (tree-collect (cute ast:equal? o <>)
-                                           (parent o <behavior>)))
-                        <on>))))
+  (let ((on (or (ast:parent o <on>)
+                (let ((trigger (car (tree-collect (cute ast:equal? o <>)
+                                                   (ast:parent o <behavior>)))))
+                  (ast:parent trigger <on>)))))
     (cs:formal-bindings on)))
 
 (define-method (cs:formal-binding (o <on>))
   (filter (is? <formal-binding>) (cs:formals (car (ast:trigger* o)))))
 
 (define-method (cs:formal-binding (o <blocking-compound>))
-  (cs:formal-binding (parent o <on>)))
+  (cs:formal-binding (ast:parent o <on>)))
 
 (define-method (cs:formal-binding (o <out-bindings>))
-  (cs:formal-binding (parent o <on>)))
+  (cs:formal-binding (ast:parent o <on>)))
 
 (define-method (out-ref-local (o <trigger>))
   (filter (negate ast:in?) (cs:formals o)))

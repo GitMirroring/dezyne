@@ -55,8 +55,10 @@
 
 (define-method (ast:declaration* (o <namespace>))
   (let* ((full-name (ast:full-name o))
+         (namespaces (ast:namespace-recursive* (or (as o <root>)
+                                                   (ast:parent o <root>))))
          (namespaces (filter (compose (cute equal? <> full-name) ast:full-name)
-                             (ast:namespace-recursive* (parent o <root>)))))
+                             namespaces)))
     (filter (cut is-a? <> <declaration>)
             (append-map ast:top* namespaces))))
 
@@ -107,7 +109,7 @@
 (define-method (ast:has-equal-name a b) #f)
 
 (define-method (ast:statement-prefix (o <ast>))
-  (let ((compound (parent (if (is-a? o <compound>) (.parent o) o) <compound>)))
+  (let ((compound (ast:parent o <compound>)))
     (if (not compound) '()
         (let* ((statements (ast:statement* compound))
                (path (ast:path o)))
@@ -182,7 +184,7 @@
   '())
 
 (define-method (ast:lookup-n (o <ast>) name)
-  (ast:lookup-n (parent o <scope>) name))
+  (ast:lookup-n (or (as o <scope>) (ast:parent o <scope>)) name))
 
 (define-method (ast:lookup-n (o <formals>) name)
   (filter (cut ast:name-equal? <> name) (ast:formal* o)))
@@ -191,8 +193,10 @@
   (cond ((equal? name "void")
          (list (find (conjoin (is? <declaration>)
                               (lambda (decl) (ast:name-equal? (.name decl) name)))
-                     (ast:declaration* (parent o <root>)))))
-        ((ast:empty-namespace? name) (list (parent o <root>)))
+                     (ast:declaration* (or (as o <root>)
+                                           (ast:parent o <root>))))))
+        ((ast:empty-namespace? name) (list (or (as o <root>)
+                                           (ast:parent o <root>))))
         (else (let ((found (filter (conjoin (is? <declaration>)
                                             (lambda (decl) (ast:name-equal? (.name decl) name)))
                                    (ast:declaration* o)))
@@ -200,7 +204,9 @@
                 (cond
                  ((pair? found) found)
                  ((or (not name) (not p)) '())
-                 (else (ast:lookup-list (parent p <scope>) name)))))))
+                 (else (ast:lookup-list (or (as p <scope>)
+                                            (ast:parent p <scope>))
+                                        name)))))))
 
 (define-method (ast:lookup-n (o <boolean>) name)
   '())
@@ -209,7 +215,8 @@
   (ast:lookup-n o name))
 
 (define (ast:lookup-list o name)
-  ((ast:pure-funcq ast:lookup-list-) (parent o <root>) o name))
+  ((ast:pure-funcq ast:lookup-list-)
+   (or (as o <root>) (ast:parent o <root>)) o name))
 
 (define (ast:lookup o name)
   (let ((lookup (ast:lookup-list o name)))
@@ -255,7 +262,7 @@
   (ast:lookup-variable o name (ast:statement-prefix o)))
 
 (define-method (ast:lookup-variable (o <ast>) name)
-  ((ast:pure-funcq ast:lookup-variable-) (parent o <root>) o name))
+  ((ast:pure-funcq ast:lookup-variable-) (ast:parent o <root>) o name))
 
 (define-method (ast:lookup-variable (o <boolean>) name)
   #f)
@@ -287,13 +294,15 @@
 (define-method (.event (o <action>))
   (let* ((port-name (.port.name o))
          (port (.port o))
-         (interface (if port (.type port) (parent o <interface>))))
+         (interface (if port (.type port)
+                        (ast:parent o <interface>))))
     (ast:lookup interface (.event.name o))))
 
 (define-method (.event (o <trigger>))
   (let* ((port-name (.port.name o))
          (port (.port o))
-         (interface (if (is-a? port <port>) (.type port) (parent o <interface>))))
+         (interface (if (is-a? port <port>) (.type port)
+                        (ast:parent o <interface>))))
     (cond ((and (not port-name)
                 (equal? (.event.name o) "inevitable"))
            (clone (ast:inevitable) #:parent interface))
@@ -332,22 +341,22 @@
   (ast:lookup o (.type.name o)))
 
 (define-method (.type (o <enum-field>))
-  (or (parent o <enum>)
+  (or (ast:parent o <enum>)
       (ast:lookup o (.type.name o))))
 
 (define-method (.type (o <enum-literal>))
-  (or (parent o <enum>)
+  (or (ast:parent o <enum>)
       (ast:lookup o (.type.name o))))
 
 (define-method (ast:event-formal (o <formal>))
-  (let* ((trigger (parent o <trigger>))
+  (let* ((trigger (ast:parent o <trigger>))
          (event (.event trigger))
          (index (list-index (cute ast:eq? o <>) (reverse (.elements (.parent o)))))
          (formals (if (not event) '() (ast:formal* event))))
     (and event (< index (length formals)) (list-ref (reverse formals) index))))
 
 (define-method (ast:event-formal (o <formal-binding>))
-  (let* ((on (parent o <on>))
+  (let* ((on (ast:parent o <on>))
          (trigger (car (ast:trigger* on)))
          (event (.event trigger))
          (index (list-index (cute ast:eq? o <>) (reverse (.elements (.parent o))))))
@@ -355,11 +364,10 @@
 
 (define-method (.type (o <formal>))
   (let* ((type-name (.type.name o))
-         (p (.parent o))
-         (scope (or (and=> (parent p <on>) .parent)
-                    (parent p <statement>)
-                    (parent p <behavior>)
-                    (and=> (parent p <scope>) .parent))))
+         (scope (or (and=> (ast:parent o <on>) .parent)
+                    (ast:parent o <statement>)
+                    (ast:parent o <behavior>)
+                    (and=> (ast:parent o <scope>) .parent))))
     (if type-name (ast:lookup scope type-name)
         (let ((formal (ast:event-formal o)))
           (and formal (.type formal))))))
@@ -377,7 +385,7 @@
         (ast:lookup o name))))
 
 (define-method (.type (o <port>))
-  (let ((component (parent o <component-model>)))
+  (let ((component (ast:parent o <component-model>)))
     (and component
          (ast:lookup (.parent component) (.type.name o)))))
 

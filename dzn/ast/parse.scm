@@ -683,7 +683,7 @@ to the AST element."
           (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope))))))))
 
 (define-method (make-namespaces (o <type>))
-  (if (parent o <model>) o
+  (if (ast:parent o <model>) o
       (let ((scope (ast:scope o)))
         (let loop ((scope scope))
           (if (null? scope) o

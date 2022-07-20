@@ -56,6 +56,7 @@
 
             ast:full-name
             ast:name
+            ast:parent
             ast:path
             ast:scope))
 
@@ -154,7 +155,10 @@
 (define-method (ast:full-name (o <scope.name>))
   (let ((ids (.ids o)))
     (if (pair? (cdr ids)) ids
-        (append (ast:full-name (parent (.parent o) <scope>)) (car ids)))))
+        (append (ast:full-name (ast:parent o <scope>)) (car ids)))))
+
+(define-method (ast:full-name (o <named>))
+  (ast:full-name (.name o)))
 
 (define-method (ast:full-name (o <bool>))
   '("bool"))
@@ -169,27 +173,24 @@
 (define-method (ast:full-name (o <void>))
   '("void"))
 
-(define-method (ast:full-name (o <named>))
-  (ast:full-name (.name o)))
-
 (define-method (ast:full-name (o <declaration>))
   (if (is-a? o <named>)
-      (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o)))
-      (ast:full-name (parent (.parent o) <scope>))))
+      (append (ast:full-name (ast:parent o <scope>)) (list (ast:name o)))
+      (ast:full-name (ast:parent o <scope>))))
 
 (define-method (ast:full-name (o <root>))
   '())
 
 (define-method (ast:full-name (o <scope>))
   (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
-      (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o)))
-      (ast:full-name (parent (.parent o) <scope>))))
+      (append (ast:full-name (ast:parent o <scope>)) (list (ast:name o)))
+      (ast:full-name (ast:parent o <scope>))))
 
 (define-method (ast:full-name (o <namespace>))
-  (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o))))
+  (append (ast:full-name (ast:parent o <scope>)) (list (ast:name o))))
 
 (define-method (ast:full-name (o <ast>))
-  (ast:full-name (parent (.parent o) <scope>)))
+  (ast:full-name (ast:parent o <scope>)))
 
 
 ;;;
@@ -200,3 +201,9 @@
 
 (define-method (ast:path (o <ast>) stop?)
   (unfold stop? identity .parent o))
+
+(define-method (ast:parent o (class <class>)) #f)
+(define-method (ast:parent (o <ast>) (class <class>))
+  (let ((parent (.parent o)))
+    (or (as parent class)
+        (ast:parent parent class))))

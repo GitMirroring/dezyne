@@ -79,7 +79,7 @@
     (map (cut make <file-name> #:name <>) (delete-duplicates (append modules foreigns)))))
 
 (define-method (javascript:require-module (o <model>))
-  (javascript:require-module (parent o <root>)))
+  (javascript:require-module (ast:parent o <root>)))
 
 (define (javascript:namespace-setup o)
   (string-join

@@ -119,8 +119,10 @@
              (compose pair?
                       (cute tree-collect typed-action/call? <>))
              (disjoin
-              (cute parent <> <arguments>)
-              (compose (cute parent <> <binary>) .parent))))
+              (cute as <> <arguments>)
+              (cute ast:parent <> <arguments>)
+              (compose (cute as <> <binary>) .parent)
+              (compose (cute ast:parent <> <binary>) .parent))))
   (cond ((is-a? o <call>)
          (tree-collect add-temporary? o))
         ((or (is-a? o <assign>) (is-a? o <variable>))
@@ -194,7 +196,8 @@
          (match (temporaries o)
            ((h t ...)
             (let ((p (.parent h)))
-              (and (not (or (parent p <and>) (parent p <or>)))
+              (and (not (or (as p <and>) (ast:parent p <and>)
+                            (as p <or>) (ast:parent p <or>)))
                    h)))
            (_
             #f)))))
@@ -402,7 +405,7 @@
            (modeling? (is-a? ((compose .event car ast:trigger*) on) <modeling-event>))
            (port ((compose .port car ast:trigger*) on))
            (provides? (and port (ast:provides? port))))
-      (if (parent on <interface>)
+      (if (ast:parent on <interface>)
           (if (or valued-trigger? illegal?) t
               (let* ((statement (triple-statement t))
                      (end (make (if modeling? <the-end> <reply>)))
@@ -500,7 +503,7 @@ guarded occurrences."
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              (triples:fix-empty-interface (parent o <model>))
+              (triples:fix-empty-interface (ast:parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
@@ -520,10 +523,10 @@ guarded occurrences."
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              (triples:fix-empty-interface (parent o <model>))
-              (triples:add-illegals (parent o <model>))
+              (triples:fix-empty-interface (ast:parent o <model>))
+              (triples:add-illegals (ast:parent o <model>))
               triples:mark-the-end
-              (triples:declarative-illegals (parent o <model>))
+              (triples:declarative-illegals (ast:parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
@@ -578,7 +581,7 @@ i.e., pushing guards into the body of the trigger."
               triples:->on-guard*
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              (rewrite-formals-and-locals (parent o <model>))
+              (rewrite-formals-and-locals (ast:parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
@@ -599,8 +602,8 @@ i.e., pushing guards into the body of the trigger."
               (cut triples:->on-guard* <> #:otherwise? #t)
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              (rewrite-formals-and-locals (parent o <model>))
-              (triples:add-illegals (parent o <model>))
+              (rewrite-formals-and-locals (ast:parent o <model>))
+              (triples:add-illegals (ast:parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
@@ -1015,8 +1018,8 @@ expressions explicit."
     (let* ((expression (.expression o))
            (variable-expression (add-temporary? o))
            (type (ast:type variable-expression))
-           (local-type? (ast:eq? (parent type <model>)
-                                 (parent o <model>)))
+           (local-type? (ast:eq? (ast:parent type <model>)
+                                 (ast:parent o <model>)))
            (type-name (cond
                        ((is-a? type <subint>) (.name (ast:type (make <int>))))
                        (local-type? (.name type))
@@ -1027,13 +1030,13 @@ expressions explicit."
                             #:type.name type-name
                             #:expression variable-expression
                             #:location location))
-           (temporary (clone temporary #:parent (parent o <behavior>)))
+           (temporary (clone temporary #:parent (ast:parent o <behavior>)))
            (var (make <var> #:name name #:location location))
            (o (tree-map
                (cute replace-expression variable-expression <> var)
                o))
            (compound (make <compound> #:location (.location o)))
-           (parent (parent (.parent o)  <statement>))
+           (parent (ast:parent o <statement>))
            (compound (clone compound #:parent parent)))
       (clone compound #:elements (list temporary o))))
 
@@ -1226,7 +1229,7 @@ add-explicit-temporaries transformation for splitting argument lists."
                 (variable assign (split-variable o))
                 (o (split (clone assign #:expression expression)))
                 (compound (make <compound> #:location (.location o)))
-                (parent (parent (.parent o) <statement>))
+                (parent (ast:parent o <statement>))
                 (compound (clone compound #:parent parent)))
            (clone compound #:elements (list variable o)))))
     ((and ($ <compound>) (? ast:declarative?))

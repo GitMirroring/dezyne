@@ -166,7 +166,7 @@
   (code:interface-include o (ast:source-file o)))
 
 (define-method (code:interface-include (o <foreign>))
-  (code:interface-include o (ast:source-file (parent o <root>))))
+  (code:interface-include o (ast:source-file (ast:parent o <root>))))
 
 (define (code:component-include o)
   (let ((source-file (ast:source-file o)))
@@ -227,7 +227,7 @@
     (.name (car (ast:provides-port* component)))))
 
 (define-method (code:port-name (o <binding>))
-  (let* ((model (parent o <model>))
+  (let* ((model (ast:parent o <model>))
          (left (.left o))
          (right (.right o))
          (port (and (code:port-bind? o)
@@ -261,7 +261,7 @@
 (define-method (code:type-name (o <binding>))
   ((compose code:type-name
             .type
-            (cute ast:lookup (parent o <model>) <>)
+            (cute ast:lookup (ast:parent o <model>) <>)
             injected-instance-name)
    o))
 
@@ -308,8 +308,11 @@
 (define-method (code:variable-name (o <ast>))
   ((compose code:variable-name .variable) o))
 
+(define-method (code:upcase-model-name (o <model>))
+  (map string-upcase (ast:full-name o)))
+
 (define-method (code:upcase-model-name o)
-  (map string-upcase (ast:full-name (parent o <model>))))
+  (code:upcase-model-name (ast:parent o <model>)))
 
 
 ;;;
@@ -324,7 +327,7 @@
         (ast:statement* behavior))))
 
 (define-method (code:ons (o <port>))
-  (let* ((component (parent o <component>))
+  (let* ((component (ast:parent o <component>))
          (behavior (.behavior component))
          (ons (if (not behavior) '()
                   (ast:statement* behavior))))
@@ -380,16 +383,16 @@
                            (is? <expression>)
                            (is? <location>)))
           (disjoin (is? <blocking>) (is? <blocking-compound>))
-          (parent o <model>))))
+          (ast:parent o <model>))))
 
 (define-method (code:port-release o)
-  (let ((trigger (and=> (parent o <on>)
+  (let ((trigger (and=> (ast:parent o <on>)
                         (compose car ast:trigger*))))
     (and (or (not trigger)
              (ast:requires? trigger)
              (or (not (ast:equal? (.port o) (.port trigger)))
-                 (parent o <blocking>)
-                 (parent o <blocking-compound>)))
+                 (ast:parent o <blocking>)
+                 (ast:parent o <blocking-compound>)))
          (code:blocking? o)
          o)))
 
@@ -400,12 +403,12 @@
 
 (define-method (code:default-true (o <defer>))
   (if (or (and=> (.arguments o) (compose null? .elements))
-          (null? (ast:variable* (parent o <component>)))) o
+          (null? (ast:variable* (ast:parent o <component>)))) o
           '()))
 
 (define-method (code:defer-condition (o <defer>))
   (if (not (or (and=> (.arguments o)(compose null? .elements))
-               (null? (ast:variable* (parent o <component>))))) o
+               (null? (ast:variable* (ast:parent o <component>))))) o
       '()))
 
 (define-method (code:capture-local (o <defer>))
@@ -415,7 +418,7 @@
                                    (.statement o)))
          (variables (map .variable references))
          (local? (compose (cute ast:eq? <> o)
-                          (cute parent <> <defer>))))
+                          (cute ast:parent <> <defer>))))
     (filter (negate (disjoin ast:member? local?))
             variables)))
 
@@ -551,7 +554,7 @@
   (filter (is? <enum>) (ast:type* o)))
 
 (define-method (code:global-enum-definer (o <model>))
-  (filter (is? <enum>) (ast:type* (parent o <root>))))
+  (filter (is? <enum>) (ast:type* (ast:parent o <root>))))
 
 (define-method (code:global-enum-definer (o <root>))
   (filter (is? <enum>) (ast:type* o)))
@@ -562,8 +565,8 @@
 (define-method (code:enum-scope (o <enum-literal>))
   (let* ((enum (.type o))
          (scope (ast:full-scope enum))
-         (model-scope (and=> (parent o <model>) ast:full-name)))
-    (cond ((or (null? scope) (null? model-scope)) (parent enum <root>))
+         (model-scope (and=> (ast:parent o <model>) ast:full-name)))
+    (cond ((or (null? scope) (null? model-scope)) (ast:parent enum <root>))
           ((equal? scope model-scope) (make <model-scope> #:scope model-scope))
           (else enum))))
 
@@ -589,7 +592,7 @@
   '())
 
 (define-method (code:instance-name (o <binding>))
-  (let* ((model (parent o <model>))
+  (let* ((model (ast:parent o <model>))
          (left (.left o))
          (right (.right o))
          (bind (and (code:port-bind? o)
@@ -654,7 +657,7 @@
   (filter code:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
 
 (define-method (code:bind-provides-required (o <binding>))
-  (let* ((model (parent o <model>))
+  (let* ((model (ast:parent o <model>))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))

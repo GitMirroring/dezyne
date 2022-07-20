@@ -62,7 +62,7 @@
               ((compose string-upcase code:file-name) o)))
 
 (define-method (c:get-trigger-port-type (o <trigger>))
-  (c:name (parent (.event o) <interface>)))
+  (c:name (ast:parent (.event o) <interface>)))
 
 (define-method (c:comma (o <list>))
   (if (null? o) "" ","))
@@ -111,8 +111,11 @@
 (define-method (c:name (o <model>))
   (ast:full-name o))
 
+(define-method (c:model-parent-name (o <model>))
+  (c:name o))
+
 (define-method (c:model-parent-name (o <ast>))
-  (c:name (parent o <model>)))
+  (c:model-parent-name (ast:parent o <model>)))
 
 ;; enum stuff
 (define-method (c:enum-complete-name-upcase (o <enum>))
@@ -122,9 +125,12 @@
   (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 ;;enum main stuff
+(define-method (c:get-all-enums (o <root>))
+  (tree-collect (is? <enum>) o))
+
 (define-method (c:get-all-enums (o <ast>))
-  (let ((root (parent o <root>)))
-    (tree-collect (is? <enum>) root)))
+  (let ((root (ast:parent o <root>)))
+    (c:get-all-enums root)))
 
 (define-method (c:enum-printed-name (o <enum-field>))
   (ast:name (.type o)))
@@ -148,8 +154,8 @@
 
 ;; helper struct stuff
 (define-method (c:equal? (a <type>) (b <type>))
-  (and(is-a? a <enum>)
-      (is-a? b <enum>)))
+  (and (is-a? a <enum>)
+       (is-a? b <enum>)))
 
 ;; closure struct in triggers of all the components
 (define-method (c:get-incoming-triggers-from-model (o <root>))
@@ -255,9 +261,15 @@
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
+  (pke "hiero")
   (code-util:foreign-conflict? root)
+  (pke "daaro")
 
   (let ((root (code:om+determinism root)))
+    (pke "hero")
+    (x:header root)
+    (pke "ERNA")
+
     (let ((generator (code-util:indenter (cute x:header root)))
           (file-name (code-util:root-file-name root dir ".h")))
       (code-util:dump root generator #:file-name file-name))

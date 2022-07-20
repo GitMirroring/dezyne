@@ -807,11 +807,6 @@
       (apply clone-base-ast (cons o setters))
       (clone-base-ast o #:node (apply clone-base-node (cons (.node o) setters)))))
 
-(define-method (parent o (class <class>)) #f)
-(define-method (parent (o <ast>) (class <class>))
-  (if (is-a? o class) o
-      (parent (.parent o) class)))
-
 (define (drop-<> o)
   (string-drop (string-drop-right (symbol->string o) 1) 1))
 

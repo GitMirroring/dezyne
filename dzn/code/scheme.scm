@@ -51,7 +51,7 @@
   (string-join (ast:full-name o) ":"))
 
 (define-method (scheme:class-name (o <ast>))
-  (scheme:class-name (parent o <model>)))
+  (scheme:class-name (ast:parent o <model>)))
 
 ;; Work around a bug that base name of a Guile module cannot include
 ;; dots.  See http://debbugs.gnu.org/cgi/bugreport.cgi?bug=39162
@@ -177,7 +177,7 @@
     (map (cut make <file-name> #:name <>) files)))
 
 (define-method (scheme:use-module (o <model>))
-  (scheme:use-module (parent o <root>)))
+  (scheme:use-module (ast:parent o <root>)))
 
 (define-method (scheme:variable/local (o <formal>))
   (if (ast:in? o) o
