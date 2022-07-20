@@ -25,12 +25,11 @@
 
 (define-module (test dzn silence)
   #:use-module (srfi srfi-64)
-  #:use-module (oop goops)
   #:use-module (test dzn automake)
 
+  #:use-module (dzn ast goops)
   #:use-module (dzn code makreel)
-  #:use-module (dzn parse)
-  #:use-module (dzn goops))
+  #:use-module (dzn parse))
 
 (test-begin "silence")
 

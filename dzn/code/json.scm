@@ -23,18 +23,22 @@
 ;;; Code:
 
 (define-module (dzn code json)
-  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module (dzn misc)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
 
-  #:use-module (dzn command-line)
-  #:use-module (dzn goops)
+  #:use-module (ice-9 match)
+  #:use-module ((oop goops)
+                #:select (class-name class-of class-slots
+                                     slot-definition-name slot-ref))
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
+  #:use-module (dzn command-line)
+  #:use-module (dzn misc)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
+
   #:export (json:get-fields
             json:elements
             json:value

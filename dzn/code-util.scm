@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -25,12 +25,13 @@
 (define-module (dzn code-util)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn indent)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
+
   #:export (code-util:dump
             code-util:file-name
             code-util:foreign-conflict?

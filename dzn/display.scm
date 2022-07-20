@@ -26,12 +26,14 @@
 
 (define-module (dzn display)
   #:use-module (srfi srfi-26)
+
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 pretty-print)
+  #:use-module ((oop goops)
+                #:select (class-slots slot-definition-name slot-ref))
 
+  #:use-module (dzn ast goops)
   #:use-module (dzn command-line)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
   #:export (ast:display
             ast:pretty-print))
 

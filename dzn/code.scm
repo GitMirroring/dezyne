@@ -21,28 +21,25 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn code)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 receive)
 
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-
-  #:use-module (dzn misc)
-  #:use-module (dzn command-line)
-  #:use-module (dzn config)
-
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-  #:use-module (dzn display)
-  #:use-module (dzn shell-util)
-  #:use-module (dzn config)
-
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
+  #:use-module (dzn command-line)
+  #:use-module (dzn config)
+  #:use-module (dzn config)
+  #:use-module (dzn display)
+  #:use-module (dzn misc)
   #:use-module (dzn normalize)
+  #:use-module (dzn shell-util)
   #:use-module (dzn templates)
   #:use-module (dzn vm goops)
 

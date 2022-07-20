@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -26,21 +26,25 @@
 (define-module (dzn templates)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 peg)
   #:use-module (ice-9 peg codegen)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn config)
-  #:use-module (dzn goops)
+  #:use-module ((oop goops) #:select (class-name class-of))
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn command-line)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
 
   #:export (define-templates-base
              define-templates-macro
-             display-template))
+             display-template)
+  #:re-export (class-name
+               class-of))
 
 (eval-when (compile load expand)
   (define (template->tree file-name)

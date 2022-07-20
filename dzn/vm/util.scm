@@ -24,21 +24,22 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 readline)
   #:use-module (ice-9 regex)
   #:use-module (ice-9 string-fun)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn config)
-  #:use-module (dzn goops)
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn serialize)
   #:use-module (dzn vm ast)
-  #:use-module (dzn vm goops)
   #:use-module (dzn vm evaluate)
+  #:use-module (dzn vm goops)
   #:use-module (dzn vm runtime)
   #:export (%debug
             %debug?

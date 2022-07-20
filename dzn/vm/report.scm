@@ -27,20 +27,21 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-  #:use-module (dzn command-line)
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
+  #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn wfc)
   #:use-module (dzn trace)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
+  #:use-module (dzn wfc)
   #:export (%modeling?
             debug:lts->alist
             display-trace-n

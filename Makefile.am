@@ -89,6 +89,7 @@ dist_noinst_DATA =
 ALL_GO =
 include dzn/peg/local.mk
 include dzn/parse/local.mk
+include dzn/ast/local.mk
 include dzn/code/local.mk
 include dzn/vm/local.mk
 include dzn/local.mk

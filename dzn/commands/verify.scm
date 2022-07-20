@@ -29,18 +29,18 @@
 (define-module (dzn commands verify)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+
   #:use-module (ice-9 getopt-long)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn code makreel)
+  #:use-module (dzn command-line)
+  #:use-module (dzn commands code)
+  #:use-module (dzn commands parse)
   #:use-module (dzn config)
   #:use-module (dzn parse)
-  #:use-module (dzn code makreel)
-  #:use-module (dzn commands parse)
-  #:use-module (dzn commands code)
   #:use-module (dzn verify pipeline)
-  #:use-module (dzn command-line)
   #:export (parse-opts
             main))
 

@@ -62,6 +62,7 @@
             dzn:trace-qout
             dzn:type-name)
   #:re-export (<dzn:locator>
+               define-method
                stderr
                dzn:clone
                dzn:get

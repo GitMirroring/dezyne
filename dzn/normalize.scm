@@ -26,25 +26,22 @@
 ;;; Code:
 
 (define-module (dzn normalize)
-  #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 pretty-print)
-  #:use-module (ice-9 receive)
-
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
-  #:use-module (dzn command-line)
-  #:use-module (dzn misc)
-  #:use-module (dzn display)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 receive)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-  #:use-module (dzn display)
-
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn command-line)
+  #:use-module (dzn display)
+  #:use-module (dzn display)
+  #:use-module (dzn misc)
 
   #:export (add-defer-end
             add-determinism-temporaries

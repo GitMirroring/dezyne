@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -26,12 +26,11 @@
 
 (define-module (test dzn makreel)
   #:use-module (srfi srfi-64)
-  #:use-module (oop goops)
   #:use-module (test dzn automake)
 
+  #:use-module (dzn ast goops)
   #:use-module (dzn code makreel)
-  #:use-module (dzn parse)
-  #:use-module (dzn goops))
+  #:use-module (dzn parse))
 
 (test-begin "makreel")
 

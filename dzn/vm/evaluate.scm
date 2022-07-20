@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,18 +22,16 @@
 ;;; Code:
 
 (define-module (dzn vm evaluate)
-  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
 
-  #:use-module (dzn misc)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-  #:use-module (dzn ast)
+  #:use-module (ice-9 match)
 
-  #:export (
-           eval-expression
-           true?
-           ))
+  #:use-module (dzn ast goops)
+  #:use-module (dzn ast)
+  #:use-module (dzn misc)
+
+  #:export (eval-expression
+            true?))
 
 (define-method (expr:equal? (left <enum-literal>) (right <enum-literal>))
   (and (eq? (.node (.type left)) (.node (.type right)))

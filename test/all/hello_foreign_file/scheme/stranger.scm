@@ -22,7 +22,7 @@
 ;;; Code:
 
 (define-module (stranger)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
+  #:use-module (oop goops)
   #:use-module (dzn runtime)
   #:use-module (iworld)
   #:export (<stranger>

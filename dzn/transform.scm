@@ -27,13 +27,14 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+
   #:use-module (ice-9 match)
+
+  #:use-module (dzn ast goops)
+  #:use-module (dzn ast)
   #:use-module (dzn misc)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn normalize)
   #:use-module (dzn vm normalize)
-  #:use-module (dzn goops)
-  #:use-module (dzn ast)
 
   #:export (inline-functions
             normalize:compounds-wrap)

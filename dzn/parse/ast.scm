@@ -26,23 +26,22 @@
 ;;; Code:
 
 (define-module (dzn parse ast)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 pretty-print)
-  #:use-module (ice-9 curried-definitions)
-
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
   #:use-module (srfi srfi-71)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-  #:use-module (dzn display)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 curried-definitions)
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
+  #:use-module (dzn display)
   #:use-module (dzn misc)
-  #:use-module (dzn parse)
   #:use-module (dzn parse silence)
+  #:use-module (dzn parse)
   #:export (parse-tree->ast))
 
 (define* (parse-tree->ast o #:key string (file-name "<stdin>") working-directory)

@@ -23,8 +23,7 @@
 ;;;
 ;;; Code:
 
-(use-modules (oop goops)
-             (dzn goops)
+(use-modules (dzn ast goops)
              (dzn ast))
 (define-generic equal?)
 (define-method (equal? (a <ast>) (b <ast>))
@@ -32,11 +31,10 @@
 
 (define-module (test dzn normalize)
   #:use-module (srfi srfi-64)
-  #:use-module (oop goops)
   #:use-module (test dzn automake)
-  #:use-module (dzn misc)
-  #:use-module (dzn goops)
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn misc)
   #:use-module (dzn normalize))
 
 (define simplify-expression (@@ (dzn normalize) simplify-expression))

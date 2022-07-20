@@ -24,17 +24,17 @@
 ;;; Code:
 
 (define-module (dzn commands graph)
-  #:use-module (ice-9 getopt-long)
   #:use-module (srfi srfi-26)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-  #:use-module (dzn command-line)
-  #:use-module (dzn explore)
+  #:use-module (ice-9 getopt-long)
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
-  #:use-module (dzn parse)
+  #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
+  #:use-module (dzn explore)
+  #:use-module (dzn parse)
   #:use-module (dzn vm normalize)
   #:export (parse-opts
             main))

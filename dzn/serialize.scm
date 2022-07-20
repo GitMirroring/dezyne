@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -25,9 +25,12 @@
 (define-module (dzn serialize)
   #:use-module (srfi srfi-26)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
+  #:use-module ((oop goops)
+                #:select (class-slots slot-definition-name slot-ref))
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn command-line)
+
   #:export (ast:serialize))
 
 (define-method (serialize-slot (o <object>) name port)

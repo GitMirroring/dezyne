@@ -24,23 +24,21 @@
 ;;; Code:
 
 (define-module (dzn code scheme)
-  #:use-module (ice-9 receive)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 string-fun)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module (dzn config)
-  #:use-module (dzn misc)
+  #:use-module (ice-9 receive)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 string-fun)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn code-util)
+  #:use-module (dzn config)
   #:use-module (dzn indent)
+  #:use-module (dzn misc)
   #:use-module (dzn templates))
 
 (define (string->class-name o)

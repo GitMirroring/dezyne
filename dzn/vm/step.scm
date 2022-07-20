@@ -19,15 +19,13 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn vm step)
-  #:use-module (ice-9 match)
-
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
+  #:use-module (ice-9 match)
 
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)

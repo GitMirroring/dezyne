@@ -19,21 +19,20 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn simulate)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
+
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
 
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:use-module (srfi srfi-71)
-
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-  #:use-module (dzn goops)
-
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn display)
+  #:use-module (dzn explore)
   #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn shell-util)
@@ -41,12 +40,11 @@
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm normalize)
-  #:use-module (dzn vm runtime)
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
+  #:use-module (dzn vm runtime)
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
-  #:use-module (dzn explore)
   #:export (filter-root
             repl
             run-trail

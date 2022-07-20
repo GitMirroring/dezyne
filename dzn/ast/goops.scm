@@ -25,7 +25,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn goops)
+(define-module (dzn ast goops)
   #:use-module (system foreign)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
@@ -33,11 +33,14 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (dzn misc)
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-
-  #:export (define-ast
-            <ast>
+  #:use-module ((oop goops)
+                #:renamer (lambda (x)
+                            (if (member x '(<port> <foreign>))
+                                (symbol-append 'goops: x)
+                                x)))
+  #:export (<ast>
             <ast-node>
+            define-ast
             .node
             .parent
 
@@ -64,7 +67,21 @@
             tree-collect
             tree-collect-filter
             tree-filter
-            tree-map))
+            tree-map)
+  #:re-export (<top>
+               <class> <object>
+               <procedure>
+               <boolean> <char> <list> <pair> <null> <string> <symbol>
+               <number>
+               <unknown>
+
+               class-name
+               class-of
+               define-class
+               define-generic
+               define-method
+               is-a?
+               make))
 
 ;; FIXME: generate-me
 (export
@@ -656,6 +673,10 @@
 (define-ast <direction> (<named>))
 (define-ast <unspecified> (<ast>))
 
+
+;;;
+;;; Compound accessors.
+;;;
 (define-method (.variable.name (o <action>))
   (let ((parent (.parent o)))
     (match parent
@@ -665,6 +686,10 @@
 (define-method (.variable.name (o <var>))
   (.name o))
 
+
+;;;
+;;; Helpers.
+;;;
 (define-method (.id (o <object>))
   (pointer-address (scm->pointer o)))
 

@@ -30,14 +30,12 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
-
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
-  #:use-module (dzn config)
+  #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn code-util)
-  #:use-module (dzn code dzn)
-  #:use-module (dzn goops)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
