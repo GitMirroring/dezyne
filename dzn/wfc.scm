@@ -892,7 +892,12 @@
       "<unknown type>"))
 
 (define-method (type-name (o <scope.name>))
-  (string-join (.ids o) "."))
+  (string-join
+   (map (match-lambda
+          ("/" "")
+          (id id))
+        (.ids o))
+   "."))
 
 (define-method (reply-in-on (o <reply>))
   "pre: in <on> clause"
