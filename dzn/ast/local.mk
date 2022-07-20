@@ -27,7 +27,8 @@ dist_%C%_scm_DATA =				\
  %D%/goops.scm					\
  %D%/lookup.scm					\
  %D%/parse.scm					\
- %D%/silence.scm
+ %D%/silence.scm				\
+ %D%/wfc.scm
 
 dist_nocompile_%C%_scm_DATA =
 

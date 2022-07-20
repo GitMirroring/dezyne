@@ -41,7 +41,7 @@
   #:use-module (dzn vm goops)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
-  #:use-module (dzn wfc)
+  #:use-module (dzn ast wfc)
   #:export (%modeling?
             debug:lts->alist
             display-trace-n

@@ -44,8 +44,7 @@ dist_%C%_scm_DATA =				\
  %D%/simulate.scm				\
  %D%/templates.scm				\
  %D%/trace.scm					\
- %D%/transform.scm				\
- %D%/wfc.scm
+ %D%/transform.scm
 
 EXTRA_DIST += %D%/config.scm.in
 BUILT_SOURCES += %D%/config.scm

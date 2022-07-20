@@ -20,7 +20,7 @@
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (dzn wfc)
+(define-module (dzn ast wfc)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 

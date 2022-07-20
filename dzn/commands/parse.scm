@@ -42,7 +42,7 @@
   #:use-module (dzn parse tree)
   #:use-module (dzn shell-util)
   #:use-module (dzn ast)
-  #:use-module (dzn wfc)
+  #:use-module (dzn ast wfc)
 
   #:export (parse
             parse-opts

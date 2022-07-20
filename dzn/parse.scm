@@ -42,7 +42,7 @@
   #:use-module (dzn display)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse peg)
-  #:use-module (dzn wfc)
+  #:use-module (dzn ast wfc)
 
   #:export (file->ast
             file->stream
