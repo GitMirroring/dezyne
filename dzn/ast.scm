@@ -51,7 +51,6 @@
            ast:async-out-triggers
            ast:async?
            ast:async-port*
-           ast:call-statement
            ast:clr-events
            ast:component-model*
            ast:data*
@@ -1093,13 +1092,6 @@
     (or (and (null? statements) (not (is-a? (.parent o) <behavior>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
-(define (ast:call-statement o)
-  (match o
-    (($ <call>) o)
-    ((and ($ <assign>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-    ((and ($ <variable>) (? (compose (is? <call>) .expression)) (= .expression call)) call)
-    (_ #f)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; LOOKUP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1563,13 +1555,12 @@ to bottom."
     (or (not (null? (cdr scc)))
         (find (lambda (s) (eq? (.node o) (.node s))) (succ* o)))))
 
-
 (define-method (ast:function* (o <function>))
-  (let* ((compound (.statement o))
-         (statements (tree-collect ast:call-statement compound))
-         (functions (map (compose .function ast:call-statement) statements)))
-    (delete-duplicates (filter identity functions) ;; skip invalid calls
-                       (lambda (a b) (equal? (.name a) (.name b))))))
+  (let* ((calls (tree-collect (is? <call>) o))
+         (functions (filter-map .function calls)))
+    (delete-duplicates
+     functions
+     (lambda (a b) (equal? (.name a) (.name b))))))
 
 (define-method (ast:recursive? (o <function>))
-    (ast:graph-cyclic? ast:function* o))
+  (ast:graph-cyclic? ast:function* o))
