@@ -35,6 +35,7 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 curried-definitions)
 
+  #:use-module (dzn ast accessor)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast silence)
   #:use-module (dzn ast)

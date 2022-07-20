@@ -31,6 +31,7 @@
   #:use-module (ice-9 receive)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
   #:use-module (dzn command-line)
@@ -258,7 +259,11 @@
   (ast:full-name o))
 
 (define-method (code:type-name (o <binding>))
-  ((compose code:type-name .type (cut ast:lookup (parent o <model>) <>) injected-instance-name) o))
+  ((compose code:type-name
+            .type
+            (cute ast:lookup (parent o <model>) <>)
+            injected-instance-name)
+   o))
 
 (define-method (code:type-name (o <enum-field>))
   (append (code:type-name (.type o)) (list (.field o))))

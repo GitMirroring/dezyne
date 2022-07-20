@@ -22,7 +22,10 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
+ %D%/accessor.scm				\
+ %D%/equal.scm					\
  %D%/goops.scm					\
+ %D%/lookup.scm					\
  %D%/parse.scm					\
  %D%/silence.scm
 

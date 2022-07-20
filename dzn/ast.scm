@@ -31,261 +31,241 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
-  #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
-  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 q)
 
+  #:use-module (dzn ast accessor)
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast equal)
+  #:use-module (dzn ast lookup)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
 
-  #:export (
-           ast:base-name
-           ast:formal->index
-           ast:argument->formal
-           ast:component-model*
-           ast:data*
-           ast:declarative?
-           ast:default-value
-           ast:defer-variable*
-           ast:direction
-           ast:dotted-name
-           ast:eq?
-           ast:equal?
-           ast:empty-namespace?
-           ast:expression->type
-           ast:filter-model
-           ast:full-name
-           ast:full-scope
-           ast:get-model
-           ast:graph-cyclic?
-           ast:imperative?
-           ast:import*
-           ast:imported?
-           ast:in-event*
-           ast:in-triggers
-           ast:in?
-           ast:injected-port*
-           ast:inout?
-           ast:instance?
-           ast:interface*
-           ast:literal-false?
-           ast:literal-true?
-           ast:location
-           ast:location->string
-           ast:name
-           ast:normalize
-           ast:optional?
-           ast:other-direction
-           ast:other-end-point
-           ast:other-end-point-injected
-           ast:out?
-           ast:out-event*
-           ast:out-triggers
-           ast:out-triggers-in-events
-           ast:out-triggers-out-events
-           ast:provides-in-triggers
-           ast:provides-in-valued-triggers
-           ast:provides-in-void-triggers
-           ast:provides-out-triggers
-           ast:provides-port
-           ast:provides-port*
-           ast:pure-funcq
-           ast:rescope
-           ast:requires-in-triggers
-           ast:requires-in-void-triggers
-           ast:requires-out-triggers
-           ast:requires-port*
-           ast:requires-no-injected-port*
-           ast:rescope
-           ast:scope
-           ast:source-file
-           ast:system*
-           ast:return-type
-           ast:return-types
-           ast:return-types-provides
-           ast:return-values
-           ast:valued-in-triggers
-           ast:values
-           ast:void-in-triggers
-           ast:out-triggers-valued-in-events
-           ast:out-triggers-void-in-events
-           ast:modeling?
-           ast:typed?
-           ast:path
-           ast:provides?
-           ast:requires?
-           ast:wildcard?
-           ast:blocking?
-           ast:external?
-           ast:injected?
-           ast:type
-           ast:value
+  #:export (ast:argument->formal
+            ast:base-name
+            ast:blocking?
+            ast:component-model*
+            ast:declarative?
+            ast:default-value
+            ast:defer-variable*
+            ast:direction
+            ast:dotted-name
+            ast:expression->type
+            ast:external?
+            ast:filter-model
+            ast:formal->index
+            ast:full-scope
+            ast:get-model
+            ast:graph-cyclic?
+            ast:imperative?
+            ast:imported?
+            ast:in-event*
+            ast:in-triggers
+            ast:in?
+            ast:injected-port*
+            ast:injected?
+            ast:inout?
+            ast:instance?
+            ast:interface*
+            ast:literal-false?
+            ast:literal-true?
+            ast:location
+            ast:location->string
+            ast:member?
+            ast:modeling?
+            ast:normalize
+            ast:optional?
+            ast:other-direction
+            ast:other-end-point
+            ast:other-end-point-injected
+            ast:out-event*
+            ast:out-triggers
+            ast:out-triggers-in-events
+            ast:out-triggers-out-events
+            ast:out-triggers-valued-in-events
+            ast:out-triggers-void-in-events
+            ast:out?
+            ast:provides-in-triggers
+            ast:provides-in-valued-triggers
+            ast:provides-in-void-triggers
+            ast:provides-out-triggers
+            ast:provides-port
+            ast:provides-port*
+            ast:provides?
+            ast:recursive?
+            ast:requires-in-triggers
+            ast:requires-in-void-triggers
+            ast:requires-no-injected-port*
+            ast:requires-out-triggers
+            ast:requires-port*
+            ast:requires?
+            ast:rescope
+            ast:return-type
+            ast:return-types
+            ast:return-types-provides
+            ast:return-values
+            ast:source-file
+            ast:system*
+            ast:topological-model-sort
+            ast:type
+            ast:typed?
+            ast:value
+            ast:valued-in-triggers
+            ast:values
+            ast:void-in-triggers
+            ast:wildcard?)
+  #:re-export (.direction
+               .event
+               .event.direction
+               .function
+               .type
+               .instance
+               .variable
 
-           ast:argument*
-           ast:binding*
-           ast:event*
-           ast:field*
-           ast:formal*
-           ast:function*
-           ast:instance*
-           ast:lookup
-           ast:lookup-var
-           ast:member*
-           ast:member?
-           ast:model*
-           ast:namespace*
-           ast:name-equal?
-           ast:port*
-           ast:recursive?
-           ast:statement*
-           ast:top*
-           ast:topological-model-sort
-           ast:trigger*
-           ast:type*
-           ast:variable*
+               ast:eq?
+               ast:equal?
+               ast:full-name
+               ast:name
+               ast:path
+               ast:pure-funcq
 
-           .event
-           .event.direction
-           .function
-           .type
-           .instance
-           .variable
-           )
-  #:re-export (
-               .direction
-               ))
+               ast:argument*
+               ast:binding*
+               ast:data*
+               ast:event*
+               ast:field*
+               ast:formal*
+               ast:function*
+               ast:import*
+               ast:instance*
+               ast:member*
+               ast:model*
+               ast:namespace*
+               ast:port*
+               ast:statement*
+               ast:top*
+               ast:trigger*
+               ast:type*
+               ast:variable*))
 
-(define (deprecated . where)
-  (format (current-error-port) "DEPRECATED:~a\n" where))
+;;;
+;;; Predicates.
+;;;
+(define-method (ast:literal-true? (e <ast>))
+  (and (is-a? e <literal>)
+       (equal? (.value e) "true")))
 
-;;; ast: accessors
+(define-method (ast:literal-false? (e <ast>))
+  (and (is-a? e <literal>)
+       (equal? (.value e) "false")))
 
-(define-method (ast:argument* (o <arguments>)) (.elements o))
-(define-method (ast:binding* (o <bindings>)) (.elements o))
-(define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))
-(define-method (ast:import* (o <root>)) (filter (is? <import>) (ast:top* o)))
-(define-method (ast:statement* (o <compound>)) (.elements o))
-(define-method (ast:statement* (o <declarative-compound>)) (.elements o))
-(define-method (ast:event* (o <events>)) (.elements o))
-(define-method (ast:field* (o <fields>)) (.elements o))
-(define-method (ast:formal* (o <formals>)) (.elements o))
-(define-method (ast:function* (o <functions>)) (.elements o))
-(define-method (ast:instance* (o <instances>)) (.elements o))
-(define-method (ast:port* (o <ports>)) (.elements o))
-(define-method (ast:top* (o <namespace>)) (.elements o))
-(define-method (ast:member* (o <behavior>)) (ast:variable* o))
-(define-method (ast:member* (o <model>)) ((compose ast:member* .behavior) o))
-(define-method (ast:namespace* (o <namespace>)) (filter (is? <namespace>) (ast:top* o)))
-(define-method (ast:trigger* (o <triggers>)) (.elements o))
-(define-method (ast:type* (o <types>)) (.elements o))
-(define-method (ast:variable* (o <variables>)) (.elements o))
+(define-method (ast:declarative? (o <declarative>))
+  #t)
 
-;; namespace-recursive getters
-(define-method (ast:namespace-recursive* (o <root>)) (filter (is? <namespace>) (append (ast:top* o) (append-map ast:namespace-recursive* (ast:namespace* o)))))
-(define-method (ast:namespace-recursive* (o <namespace>)) (filter (is? <namespace>) (append (ast:top* o) (append-map ast:namespace-recursive* (ast:namespace* o)))))
-(define-method (ast:model* (o <root>)) (filter (is? <model>) (append (ast:top* o) (append-map ast:model* (ast:namespace* o)))))
-(define-method (ast:model* (o <namespace>)) (filter (is? <model>) (append (ast:top* o) (append-map ast:model* (ast:namespace* o)))))
-(define-method (ast:type* (o <root>)) (filter (is? <type>) (append (ast:top* o) (append-map ast:type* (ast:namespace* o)))))
-(define-method (ast:type* (o <namespace>)) (filter (is? <type>) (append (ast:top* o) (append-map ast:type* (ast:namespace* o)))))
+(define-method (ast:declarative? o)
+  #f)
 
-(define-method (ast:namespace* (o <scope>)) '())
+(define-method (ast:declarative? (o <compound>))
+  (let ((statements (ast:statement* o)))
+    (or (and (null? statements) (is-a? (.parent o) <behavior>))
+        (and (pair? statements) ((compose ast:declarative? car) statements)))))
 
-(define-method (ast:argument* (o <action>)) ((compose ast:argument* .arguments) o))
-(define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
-(define-method (ast:argument* (o <defer>)) ((compose (cute and=> <> ast:argument*) .arguments) o))
-(define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
-(define-method (ast:event* (o <interface>)) ((compose ast:event* .events) o))
-(define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
-(define-method (ast:function* (o <component>)) ((compose ast:function* .behavior) o))
-(define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
-(define-method (ast:formal* (o <event>)) ((compose ast:formal* .signature) o))
-(define-method (ast:formal* (o <function>)) ((compose ast:formal* .signature) o))
-(define-method (ast:formal* (o <port>)) ((compose ast:formal* .formals) o))
-(define-method (ast:formal* (o <signature>)) ((compose ast:formal* .formals) o))
-(define-method (ast:formal* (o <trigger>)) ((compose ast:formal* .formals) o))
-(define-method (ast:formal* (o <out-bindings>)) (.elements o))
-(define-method (ast:function* (o <behavior>)) ((compose ast:function* .functions) o))
-(define-method (ast:instance* (o <system>)) ((compose ast:instance* .instances) o))
-(define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
-(define-method (ast:port* (o <behavior>)) ((compose ast:port* .ports) o))
-(define-method (ast:statement* (o <behavior>)) ((compose ast:statement* .statement) o))
-(define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
-(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behavior) o))
-(define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
-(define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))
-(define-method (ast:type* (o <behavior>)) ((compose ast:type* .types) o))
-(define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
-(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behavior) o))
-(define-method (ast:variable* (o <compound>)) (filter (is? <variable>) (.elements o)))
-(define-method (ast:variable* (o <statement>)) '())
-(define-method (ast:variable* (o <variable>)) (list o))
+(define-method (ast:imperative? (o <imperative>))
+  #t)
 
-(define-method (ast:model* (o <model>))
-  (define (ports o)
-    (delete-duplicates (map .type (ast:port* o)) ast:eq?))
-  (match o
-    (($ <interface>)
-     (list o))
-    (($ <component>)
-     (cons o (ports o)))
-    (($ <foreign>)
-     (cons o (ports o)))
-    (($ <system>)
-     (let* ((ports (ports o))
-            (instances (ast:instance* o))
-            (components (append-map (compose ast:model* .type) instances))
-            (components (delete-duplicates components ast:eq?)))
-       (cons o (append ports components))))))
+(define-method (ast:imperative? o)
+  #f)
 
-(define-method (ast:provides-port o)
-  (let ((ports (ast:provides-port* o)))
-    (and (pair? ports) (car ports))))
+(define-method (ast:imperative? (o <compound>))
+  (let ((statements (ast:statement* o)))
+    (or (and (null? statements) (not (is-a? (.parent o) <behavior>)))
+        (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
-(define-method (ast:interface* (o <component-model>))
-  (let ((interfaces (map .type (ast:port* o))))
-    (delete-duplicates
-     interfaces
-     ast:eq?)))
+(define-method (ast:imported? (o <ast>))
+  (not (equal? (ast:source-file o) (ast:source-file (parent o <root>)))))
 
-(define-method (ast:model* (o <interface>))
-  (list o))
+(define-method (ast:in? (o <event>))
+  (eq? 'in (.direction o)))
 
-(define-method (ast:model* (o <component-model>))
-  (append (ast:interface* o) (list o)))
+(define-method (ast:in? (o <formal>))
+  (eq? 'in (.direction o)))
 
-(define-method (ast:model* (o <system>))
-  (let* ((components (ast:component-model* o))
-         (components (delete-duplicates components ast:eq?))
-         (interfaces (append-map ast:interface* components))
-         (interfaces (delete-duplicates interfaces ast:eq?)))
-    (ast:topological-model-sort (append interfaces components))))
+(define-method (ast:in? (o <argument>))
+  (eq? 'in (.direction o)))
 
-(define-method (ast:instance-model* (o <system>))
-  (filter-map .type (ast:instance* o)))
+(define-method (ast:in? (o <trigger>))
+  (and=> (.event o) ast:in?))
 
-(define-method (ast:component-model* (o <component-model>))
-  (list o))
+(define-method (ast:in? (o <action>))
+  (and=> (.event o) ast:in?))
 
-(define-method (ast:component-model* (o <system>))
-  (let ((components (ast:instance-model* o)))
-    (cons o (append-map ast:component-model* components))))
+(define-method (ast:in? (o <variable>))
+  #t)
 
-(define-method (ast:filter-model (root <root>) (model <model>))
-  (let ((models (ast:model* model)))
-    (tree-filter (disjoin (negate (is? <component-model>))
-                          (cute member <> models ast:eq?))
-                 root)))
+(define-method (ast:out? (o <event>))
+  (eq? 'out (.direction o)))
 
-(define-method (ast:system* (o <system>))
-  (filter (is? <system>) (ast:instance-model* o)))
+(define-method (ast:out? (o <formal>))
+  (eq? 'out (.direction o)))
 
-(define-method (ast:system* (o <root>))
-  (filter (is? <system>) (ast:model* o)))
+(define-method (ast:out? (o <argument>))
+  (eq? 'out (.direction o)))
+
+(define-method (ast:out? (o <trigger>))
+  (and=> (.event o) ast:out?))
+
+(define-method (ast:out? (o <action>))
+  (and=> (.event o) ast:out?))
+
+(define-method (ast:out? (o <variable>))
+  #f)
+
+(define-method (ast:inout? (o <event>))
+  (eq? 'inout (.direction o)))
+
+(define-method (ast:inout? (o <formal>))
+  (eq? 'inout (.direction o)))
+
+(define-method (ast:inout? (o <argument>))
+  (eq? 'inout (.direction o)))
+
+(define-method (ast:inout? (o <variable>))
+  #f)
+
+(define-method (ast:modeling? (o <event>))
+  #f)
+
+(define-method (ast:modeling? (o <modeling-event>))
+  #t)
+
+(define-method (ast:modeling? (o <trigger>))
+  ((compose ast:modeling? .event) o))
+
+(define-method (ast:optional? (o <optional>))
+  #t)
+
+(define-method (ast:optional? (o <event>))
+  #f)
+
+(define-method (ast:optional? (o <trigger>))
+  (ast:optional? (.event o)))
+
+(define-method (ast:optional? (o <interface>))
+ (pair? (ast:optional* o)))
+
+(define-method (ast:blocking? (o <port>))
+  (and (.blocking? o) o))
+
+(define-method (ast:blocking? (o <action>))
+  (and=> (.port o) ast:blocking?))
+
+(define-method (ast:external? (o <port>))
+  (and (.external? o) o))
+
+(define-method (ast:injected? (o <port>))
+  (and (.injected? o) o))
 
 (define-method (ast:member? (o <variable>))
   (is-a? (.parent (.parent o)) <behavior>))
@@ -311,26 +291,79 @@
 (define-method (ast:requires? (o <action>))
   (and (.port.name o) ((compose ast:requires? .port) o)))
 
-(define-method (ast:empty-namespace? (o <string>))
-  (equal? o "/"))
-
 (define-method (ast:wildcard? (o <string>))
   (equal? o "*"))
 
 (define-method (ast:wildcard? (o <boolean>))
   #f)
 
-(define-method (ast:blocking? (o <port>))
-  (and (.blocking? o) o))
+(define-method (ast:typed? (o <event>))
+  (let ((type ((compose .type .signature) o)))
+    (not (as type <void>))))
 
-(define-method (ast:blocking? (o <action>))
-  (and=> (.port o) ast:blocking?))
+(define-method (ast:typed? (o <action>))
+  (ast:typed? (.event o)))
 
-(define-method (ast:external? (o <port>))
-  (and (.external? o) o))
+(define-method (ast:typed? (o <signature>))
+  (not (as (.type o) <void>)))
 
-(define-method (ast:injected? (o <port>))
-  (and (.injected? o) o))
+(define-method (ast:typed? (o <trigger>))
+  ((compose ast:typed? .event) o))
+
+(define-method (ast:typed? (o <type>))
+  #t)
+
+(define-method (ast:typed? (o <void>))
+  #f)
+
+(define-method (ast:typed? (o <modeling-event>))
+  #f)
+
+(define-method (ast:typed? (o <expression>))
+  (match o
+    (($ <literal>) (not (equal? "void" (.value o))))
+    (_ #t)))
+
+(define-method (ast:instance? (o <component-model>))
+  (let* ((root (parent o <root>))
+         (models (ast:model* root))
+         (systems (filter (is? <system>) models)))
+    (find (lambda (s)
+            (find (lambda (i) (ast:eq? (.type i) o)) (ast:instance* s)))
+          systems)))
+
+
+;;;
+;;; Resolving accessors.
+;;;
+(define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
+
+(define-method (ast:function* (o <function>))
+  (let* ((calls (tree-collect (is? <call>) o))
+         (functions (filter-map .function calls)))
+    (delete-duplicates
+     functions
+     (lambda (a b) (equal? (.name a) (.name b))))))
+
+
+;;;
+;;; Algorithmic accessors.
+;;;
+(define-method (ast:dotted-name (o <ast>))
+  (string-join (ast:full-name o) "."))
+
+(define-method (ast:full-scope (o <ast>))
+  (drop-right (ast:full-name o) 1))
+
+(define-method (ast:full-scope (o <root>))
+  '())
+
+(define-method (ast:full-scope (o <field-test>))
+  ((compose ast:full-scope .type .variable) o))
+
+(define-method (ast:provides-port o)
+  (let ((ports (ast:provides-port* o)))
+    (and (pair? ports) (car ports))))
 
 (define-method (ast:other-direction (o <event>))
   (assoc-ref `((in . out)
@@ -411,54 +444,6 @@
   (map (lambda (event) (make <trigger> #:event.name (.name event) #:formals (ast:rescope ((compose .formals .signature) event) o)))
        (filter ast:in? (ast:event* o))))
 
-(define-method (ast:in? (o <event>))
-  (eq? 'in (.direction o)))
-
-(define-method (ast:in? (o <formal>))
-  (eq? 'in (.direction o)))
-
-(define-method (ast:in? (o <argument>))
-  (eq? 'in (.direction o)))
-
-(define-method (ast:in? (o <trigger>))
-  (and=> (.event o) ast:in?))
-
-(define-method (ast:in? (o <action>))
-  (and=> (.event o) ast:in?))
-
-(define-method (ast:in? (o <variable>))
-  #t)
-
-(define-method (ast:out? (o <event>))
-  (eq? 'out (.direction o)))
-
-(define-method (ast:out? (o <formal>))
-  (eq? 'out (.direction o)))
-
-(define-method (ast:out? (o <argument>))
-  (eq? 'out (.direction o)))
-
-(define-method (ast:out? (o <trigger>))
-  (and=> (.event o) ast:out?))
-
-(define-method (ast:out? (o <action>))
-  (and=> (.event o) ast:out?))
-
-(define-method (ast:out? (o <variable>))
-  #f)
-
-(define-method (ast:inout? (o <event>))
-  (eq? 'inout (.direction o)))
-
-(define-method (ast:inout? (o <formal>))
-  (eq? 'inout (.direction o)))
-
-(define-method (ast:inout? (o <argument>))
-  (eq? 'inout (.direction o)))
-
-(define-method (ast:inout? (o <variable>))
-  #f)
-
 (define-method (ast:provides-out-triggers (o <component-model>))
   (map (cut trigger-in-component <> o)
        (append-map (lambda (port)
@@ -508,15 +493,6 @@
    (compose not (is? <void>) .type .signature .event)
    (ast:out-triggers-in-events o)))
 
-(define-method (ast:modeling? (o <event>))
-  #f)
-
-(define-method (ast:modeling? (o <modeling-event>))
-  #t)
-
-(define-method (ast:modeling? (o <trigger>))
-  ((compose ast:modeling? .event) o))
-
 (define-method (ast:optional* (o <ast>))
    (match o
      (($ <interface>) ((compose ast:optional* .behavior) o))
@@ -525,133 +501,6 @@
      (($ <guard>) ((compose ast:optional* .statement) o))
      (($ <on>) (filter (cut equal? "optional" <>) (map .event.name (ast:trigger* o))))
      ((? (disjoin (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
-
-(define-method (ast:optional? (o <optional>))
-  #t)
-
-(define-method (ast:optional? (o <event>))
-  #f)
-
-(define-method (ast:optional? (o <trigger>))
-  (ast:optional? (.event o)))
-
-(define-method (ast:optional? (o <interface>))
- (pair? (ast:optional* o)))
-
-(define-method (ast:typed? (o <event>))
-  (let ((type ((compose .type .signature) o)))
-    (not (as type <void>))))
-
-(define-method (ast:typed? (o <action>))
-  (ast:typed? (.event o)))
-
-(define-method (ast:typed? (o <signature>))
-  (not (as (.type o) <void>)))
-
-(define-method (ast:typed? (o <trigger>))
-  ((compose ast:typed? .event) o))
-
-(define-method (ast:typed? (o <type>))
-  #t)
-
-(define-method (ast:typed? (o <void>))
-  #f)
-
-(define-method (ast:typed? (o <modeling-event>))
-  #f)
-
-(define-method (ast:typed? (o <expression>))
-  (match o
-    (($ <literal>) (not (equal? "void" (.value o))))
-    (_ #t)))
-
-(define-method (ast:path (o <ast>))
-  (ast:path o (negate identity)))
-
-(define-method (ast:path (o <ast>) stop?)
-  (unfold stop? identity .parent o))
-
-(define-method (ast:eq? (a <ast>) (b <ast>))
-  (or (eq? a b)
-      (and (eq? (.node a) (.node b))
-           (ast:eq? (.parent a) (.parent b)))))
-
-(define-method (ast:eq? (a <ast>) b)
-  #f)
-
-(define-method (ast:eq? a (b <ast>))
-  #f)
-
-(define-method (ast:eq? a b)
-  (eq? a b))
-
-(define-method (ast:equal? a b)
-  (equal? a b))
-
-(define-method (ast:equal? (a <pair>) (b <pair>))
-  (and (ast:equal? (car a) (car b))
-       (ast:equal? (cdr a) (cdr b))))
-
-(define-method (ast:equal? (a <ast>) (b <ast>))
-  (eq? (.node a) (.node b)))
-
-(define-method (ast:equal? (a <declaration>) (b <declaration>))
-  (and (eq? (class-of a) (class-of b))
-   (equal? (ast:full-name a) (ast:full-name b))))
-
-(define-method (ast:equal? (a <named>) (b <named>))
-  (ast:equal? (.name a) (.name b)))
-
-(define-method (ast:equal? (a <scope.name>) (b <scope.name>))
-  (equal? (.ids a) (.ids b)))
-
-(define-method (ast:equal? (a <enum-literal>) (b <enum-literal>))
-  (and (ast:equal? (.type.name a) (.type.name b))
-       (equal? (.field a) (.field b))))
-
-(define-method (ast:equal? (a <end-point>) (b <end-point>))
-  (and (equal? (.instance.name a) (.instance.name b))
-       (equal? (.port.name a) (.port.name b))))
-
-(define-method (ast:equal? (a <field-test>) (b <field-test>))
-  (and (ast:equal? (.variable a) (.variable b))
-       (equal? (.field a) (.field b))))
-
-(define-method (ast:equal? (a <literal>) (b <literal>))
-  (equal? (.value a) (.value b)))
-
-(define-method (ast:equal? (a <not>) (b <not>))
-  (ast:equal? (.expression a) (.expression b)))
-
-(define-method (ast:equal? (a <binary>) (b <binary>))
-  (and
-   (eq? (class-of a) (class-of b))
-   (ast:equal? (.left a) (.left b))
-   (ast:equal? (.right a) (.right b))))
-
-(define-method (ast:equal? (a <unary>) (b <unary>))
-  (and
-   (eq? (class-of a) (class-of b))
-   (ast:equal? (.expression a) (.expression b))))
-
-(define-method (ast:equal? (a <expression>) (b <expression>))
-  (if (eq? (class-of a) (class-of b))
-      (throw 'add-ast:equal?-overload-for-type (class-of a))
-      #f))
-
-(define-method (ast:equal? (a <signature>) (b <signature>))
-  (and
-   (ast:equal? (.type.name a) (.type.name b))
-   (= (length (ast:formal* a)) (length (ast:formal* b)))
-   (every ast:equal? (map .type.name (ast:formal* a)) (map .type.name (ast:formal* b)))))
-
-(define-method (ast:equal? (a <action>) (b <action>))
-  (and (equal? (.port.name a) (.port.name b))
-       (equal? (.event.name a) (.event.name b))))
-
-(define-method (ast:equal? (a <trigger>) (b <trigger>))
-  (and (equal? (.port.name a) (.port.name b))
-       (equal? (.event.name a) (.event.name b))))
 
 (define-method (ast:type (o <action>))
   ((compose ast:type .event) o))
@@ -842,35 +691,89 @@
 (define-method (ast:source-file (o <ast>))
   (or (and=> (ast:location o) .file-name) (ast:source-file (.parent o))))
 
-(define-method (ast:imported? (o <ast>))
-  (not (equal? (ast:source-file o) (ast:source-file (parent o <root>)))))
+(define-method (ast:value (o <literal>))
+  (.value o))
+(define-method (ast:value (o <enum-literal>))
+  (string-join (append (.ids (.type.name o)) (list (.field o)))))
 
-(define-method (ast:name (o <scope.name-node>))
-  (last (.ids o)))
+(define-method (ast:interface* (o <component-model>))
+  (let ((ports (ast:port* o)))
+    (delete-duplicates (map .type ports) ast:eq?)))
 
-(define-method (ast:name (o <scope.name>))
-  (ast:name (.node o)))
+(define-method (ast:model* (o <interface>))
+  (list o))
 
-(define-method (ast:name (o <named>))
-  (let ((name (.name o)))
-    (if (is-a? name <scope.name>) (ast:name name) name)))
+(define-method (ast:model* (o <component-model>))
+  (append (ast:interface* o) (list o)))
 
-(define-method (ast:scope (o <scope.name-node>))
-  (drop-right (.ids o) 1))
+(define-method (ast:model* (o <system>))
+  (let* ((components (ast:component-model* o))
+         (components (delete-duplicates components ast:eq?))
+         (interfaces (append-map ast:interface* components))
+         (interfaces (delete-duplicates interfaces ast:eq?)))
+    (ast:topological-model-sort (append interfaces components))))
 
-(define-method (ast:scope (o <scope.name>))
-  (ast:scope (.node o)))
+(define-method (ast:instance-model* (o <system>))
+  (filter-map .type (ast:instance* o)))
 
-(define-method (ast:scope (o <named>))
-  (ast:scope (.name o)))
+(define-method (ast:component-model* (o <component-model>))
+  (list o))
 
-(define-method (ast:literal-true? (e <ast>))
-  (and (is-a? e <literal>)
-       (equal? (.value e) "true")))
+(define-method (ast:component-model* (o <system>))
+  (let ((components (ast:instance-model* o)))
+    (cons o (append-map ast:component-model* components))))
 
-(define-method (ast:literal-false? (e <ast>))
-  (and (is-a? e <literal>)
-       (equal? (.value e) "false")))
+(define-method (ast:system* (o <system>))
+  (filter (is? <system>) (ast:instance-model* o)))
+
+(define-method (ast:system* (o <root>))
+  (filter (is? <system>) (ast:model* o)))
+
+
+;;;
+;;; Filtering, partitioning.
+;;;
+
+(define-method (ast:filter-model (root <root>) (model <model>))
+  (let ((models (ast:model* model)))
+    (tree-filter (disjoin (negate (is? <component-model>))
+                          (cute member <> models ast:eq?))
+                 root)))
+
+
+;;;
+;;; Utility.
+;;;
+(define* (ast:get-model root #:optional model-name)
+  (let ((models (ast:model* root)))
+    (cond
+     (model-name
+      (let ((model (find (lambda (o) (equal? (ast:dotted-name o) model-name)) models)))
+        (unless model
+          (throw 'error (format #f "No such model: ~s" model-name)))
+        model))
+     (else
+      (let ((models (filter (negate ast:imported?) models)))
+        (or (let ((systems (filter (is? <system>) models)))
+              (find (negate ast:instance?) systems))
+            (find (is? <component>) models)
+            (find (is? <interface>) models)))))))
+
+(define-method (ast:normalize (o <binding>))
+  "Bring binding O in canonical form, i.e., ordering from a system's top
+to bottom."
+  (let* ((left (.left o))
+         (right (.right o))
+         (left-instance (.instance left))
+         (right-instance (.instance right))
+         (left-provides? (and=> (.port left) ast:provides?))
+         (right-provides? (and=> (.port right) ast:provides?))
+         (canonical?
+          (or (and (not left-instance) right-instance left-provides?)
+              (and left-instance right-instance (not left-provides?))
+              (and left-instance (not right-instance) (not left-provides?)))))
+    (if canonical? o
+        (clone o #:left right #:right left))))
 
 (define-method (ast:other-end-point (o <port>))
   (let loop ((bindings (ast:binding* (parent o <system>))))
@@ -922,80 +825,6 @@
                  ;; todo: try j.*
                  (else (loop (cdr bindings))))))))
 
-(define-method (ast:instance? (o <component-model>))
-  (let* ((root (parent o <root>))
-         (models (ast:model* root))
-         (systems (filter (is? <system>) models)))
-    (find (lambda (s) (find (lambda (i) (ast:eq? (.type i) o)) (ast:instance* s))) systems))
-  )
-
-(define* (ast:get-model root #:optional model-name)
-  (let ((models (ast:model* root)))
-    (cond
-     (model-name
-      (let ((model (find (lambda (o) (equal? (ast:dotted-name o) model-name)) models)))
-        (unless model
-          (throw 'error (format #f "No such model: ~s" model-name)))
-        model))
-     (else
-      (let ((models (filter (negate ast:imported?) models)))
-        (or (let ((systems (filter (is? <system>) models)))
-              (find (negate ast:instance?) systems))
-            (find (is? <component>) models)
-            (find (is? <interface>) models)))))))
-
-(define-method (ast:dotted-name (o <ast>))
-  (string-join (ast:full-name o) "."))
-
-(define-method (ast:full-name (o <scope.name>))
-  (let ((ids (.ids o)))
-    (if (pair? (cdr ids)) ids
-        (append (ast:full-name (parent (.parent o) <scope>)) (car ids)))))
-
-(define-method (ast:full-name (o <bool>))
-  '("bool"))
-
-(define-method (ast:full-name (o <data>))
-  '("data"))
-
-(define-method (ast:full-name (o <int>))
-  (if (and (is-a? o <subint>) (ast:name o)) (next-method)
-      '("<int>")))
-
-(define-method (ast:full-name (o <void>))
-  '("void"))
-
-(define-method (ast:full-name (o <named>))
-  (ast:full-name (.name o)))
-
-(define-method (ast:full-name (o <declaration>))
-  (if (is-a? o <named>)
-      (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o)))
-      (ast:full-name (parent (.parent o) <scope>))))
-
-(define-method (ast:full-name (o <root>))
-  '())
-
-(define-method (ast:full-name (o <scope>))
-  (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
-      (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o)))
-      (ast:full-name (parent (.parent o) <scope>))))
-
-(define-method (ast:full-name (o <namespace>))
-  (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o))))
-
-(define-method (ast:full-name (o <ast>))
-  (ast:full-name (parent (.parent o) <scope>)))
-
-(define-method (ast:full-scope (o <ast>))
-  (drop-right (ast:full-name o) 1))
-
-(define-method (ast:full-scope (o <root>))
-  '())
-
-(define-method (ast:full-scope (o <field-test>))
-  ((compose ast:full-scope .type .variable) o))
-
 (define-method (rescope-name (o <ast>) (parent <model>))
   (let* ((name (ast:full-name o))
          (parent-name (ast:full-name parent))
@@ -1017,400 +846,8 @@
      (clone o #:type.name (rescope-name (.type o) parent)))
     (_ o)))
 
-(define-method (ast:value (o <literal>))
-  (.value o))
-(define-method (ast:value (o <enum-literal>))
-  (string-join (append (.ids (.type.name o)) (list (.field o)))))
-
 (define-method (ast:rescope (o <boolean>) x)
   o)
-
-(define-method (ast:declarative? (o <declarative>))
-  #t)
-
-(define-method (ast:declarative? o)
-  #f)
-
-(define-method (ast:declarative? (o <compound>))
-  (let ((statements (ast:statement* o)))
-    (or (and (null? statements) (is-a? (.parent o) <behavior>))
-        (and (pair? statements) ((compose ast:declarative? car) statements)))))
-
-(define-method (ast:imperative? (o <imperative>))
-  #t)
-
-(define-method (ast:imperative? o)
-  #f)
-
-(define-method (ast:imperative? (o <compound>))
-  (let ((statements (ast:statement* o)))
-    (or (and (null? statements) (not (is-a? (.parent o) <behavior>)))
-        (and (pair? statements) ((compose ast:imperative? car) statements)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; LOOKUP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-method (ast:name-equal? (a <string>) (b <string>))
-  (equal? a b))
-
-(define-method (ast:name-equal? (a <scope.name>) (b <string>))
-  (and=> (ast:name a) (cut ast:name-equal? <> b)))
-
-(define-method (ast:name-equal? (b <string>) (a <scope.name>))
-  (ast:name-equal? a b))
-
-(define-method (ast:name-equal? (a <scope.name>) (b <scope.name>))
-  (and (pair? (.ids a)) (pair? (.ids b)) (ast:name-equal? (ast:name a) (ast:name b))))
-
-(define-method (ast:name-equal? (a <named>) (b <string>))
-    (ast:name-equal? (.name a) b))
-
-(define-method (ast:name-equal? (b <string>) (a <named>))
-    (ast:name-equal? a b))
-
-(define-method (ast:name-equal? a b)
-  #f)
-
-(define-method (ast:has-equal-name a (b <named>))
-  (ast:name-equal? a (.name b)))
-
-(define-method (ast:has-equal-name a b) #f)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define funcq-hash (@@ (ice-9 poe) funcq-hash))
-(define funcq-assoc (@@ (ice-9 poe) funcq-assoc))
-(define funcq-memo (@@ (ice-9 poe) funcq-memo))
-(define funcq-buffer (@@ (ice-9 poe) funcq-buffer))
-(define not-found (list 'not-found))
-
-(define (ast:pure-funcq base-func)
-  (define (name->symbol o)
-    (match o
-      ((? string?) (string->symbol o))
-      (($ <scope.name-node>) (name->symbol (string-join (.ids o) ".")))
-      (_ o)))
-  (lambda args
-    (let* ((key (cons base-func (map (compose name->symbol ast:unwrap) args)))
-           (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
-      (if (not (eq? cached not-found))
-	  (begin
-	    (funcq-buffer key)
-	    cached)
-
-	  (let ((val (apply base-func args)))
-	    (funcq-buffer key)
-	    (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
-	    val)))))
-
-(define-method (ast:lookup-n (o <scope>) (name <scope.name>))
-  (let ((ids (.ids name)))
-    (if (null? (cdr ids))
-        (let ((down (ast:lookdown o name)))
-          (if (pair? down) down
-              (if (ast:has-equal-name (car ids) o) (list o)
-                  (ast:lookup-n o (car ids)))))
-        (let* ((first (car ids))
-               (first-scopes (ast:lookup-n o first)))
-          (if (null? first-scopes) '()
-              (let ((name (clone name #:ids (cdr ids))))
-                (ast:lookdown first-scopes name)))))))
-
-(define-method (ast:lookdown (o <list>) (name <scope.name>))
-  (append-map (cut ast:lookdown <> name) o))
-
-(define-method (ast:lookdown (o <scope>) (name <string>))
-  (filter (lambda (decl)
-            (let ((decl (cond ((string? decl) decl)
-                              ((is-a? decl <named>) (.name decl)))))
-              (ast:name-equal? decl name)))
-          (ast:declaration* o)))
-
-(define-method (ast:lookdown (o <scope>) (name <scope.name>))
-  (let ((ids (.ids name)))
-    (if (null? (cdr ids)) (ast:lookdown o (car ids))
-        (let* ((first (car ids))
-               (first-scopes (ast:lookdown o first)))
-          (if (null? first-scopes) '()
-              (let ((name (clone name #:ids (cdr ids))))
-                (ast:lookdown first-scopes name)))))))
-
-(define-method (ast:lookdown (o <ast>) (name <scope.name>))
-  '())
-
-(define-method (ast:lookup-n (o <ast>) name)
-  (ast:lookup-n (parent o <scope>) name))
-
-(define-method (ast:lookup-n (o <formals>) name)
-  (filter (cut ast:name-equal? <> name) (ast:formal* o)))
-
-(define-method (ast:lookup-n (o <scope>) (name <string>))
-  (cond ((equal? name "void")
-         (list (find (conjoin (is? <declaration>)
-                              (lambda (decl) (ast:name-equal? (.name decl) name)))
-                     (ast:declaration* (parent o <root>)))))
-        ((ast:empty-namespace? name) (list (parent o <root>)))
-        (else (let ((found (filter (conjoin (is? <declaration>)
-                                            (lambda (decl) (ast:name-equal? (.name decl) name)))
-                                   (ast:declaration* o)))
-                    (p (.parent o)))
-                (cond
-                 ((pair? found) found)
-                 ((or (not name) (not p)) '())
-                 (else (ast:lookup-list (parent p <scope>) name)))))))
-
-(define-method (ast:lookup-n (o <boolean>) name)
-  '())
-
-(define (ast:lookup-list- root o name)
-  (ast:lookup-n o name))
-
-(define (ast:lookup-list o name)
-  ((ast:pure-funcq ast:lookup-list-) (parent o <root>) o name))
-
-(define (ast:lookup o name)
-  (let ((lookup (ast:lookup-list o name)))
-    (if (null? lookup) #f (car lookup))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(define-method (ast:declaration* (o <root>))
-  (filter (cut is-a? <> <declaration>) (ast:top* o)))
-
-(define-method (ast:declaration* (o <namespace>))
-  (filter (cut is-a? <> <declaration>)
-          (append-map ast:top* (filter (compose (cut equal? <> (ast:full-name o)) ast:full-name)
-                                       (ast:namespace-recursive* (parent o <root>))))))
-
-(define-method (ast:declaration* (o <interface>))
-  (append (ast:type* o) (ast:event* o)))
-
-(define-method (ast:declaration* (o <component-model>))
-  (ast:port* o))
-
-(define-method (ast:declaration* (o <system>))
-  (append (ast:port* o) (ast:instance* o)))
-
-(define-method (ast:declaration* (o <behavior>))
-  (append (ast:type* o) (ast:function* o) (ast:variable* o) (ast:port* o)))
-
-(define-method (ast:declaration* (o <defer>))
-  (tree-collect (is? <variable>) o))
-
-(define-method (ast:declaration* (o <compound>))
-  (ast:variable* o))
-
-(define-method (ast:declaration* (o <if>))
-  (append (ast:variable* (.then o))
-          (or (and=> (.else o) ast:variable*) '())))
-
-
-(define-method (ast:declaration* (o <functions>))
-  (ast:function* o))
-
-(define-method (ast:declaration* (o <function>))
-  (ast:formal* o))
-
-(define-method (ast:declaration* (o <trigger>))
-  (ast:formal* o))
-
-(define-method (ast:declaration* (o <formals>))
-  (ast:formal* o))
-
-(define-method (ast:declaration* (o <enum>))
-  (ast:field* o))
-
-(define-method (.port (o <trigger>))
-  ;;<trigger> opens a new scope, so lookup the port name the parent scope
-  (and (.port.name o) (ast:lookup (.parent o) (.port.name o))))
-
-(define-method (.port (o <action>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
-
-(define-method (.port (o <reply>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
-
-(define-method (.port (o <end-point>))
-  (if (.instance.name o)
-      (let* ((instance (.instance o))
-             (component (.type instance)))
-        (ast:lookup component (.port.name o)))
-      (ast:lookup o (.port.name o))))
-
-(define-method (.instance (o <end-point>))
-  (and (.instance.name o) (ast:lookup o (.instance.name o))))
-
-(define-method (.event (o <action>))
-  (let* ((port-name (.port.name o))
-         (port (.port o))
-         (interface (if port (.type port) (parent o <interface>))))
-    (ast:lookup interface (.event.name o))))
-
-(define-method (.event (o <trigger>))
-  (let* ((port-name (.port.name o))
-         (port (.port o))
-         (interface (if (is-a? port <port>) (.type port) (parent o <interface>))))
-    (cond ((and (not port-name)
-                (equal? (.event.name o) "inevitable"))
-           (clone (ast:inevitable) #:parent interface))
-          ((and (not port-name)
-                (equal? (.event.name o) "optional"))
-           (clone (ast:optional) #:parent interface))
-          (else (and interface
-                     (let ((event (ast:lookdown interface (.event.name o))))
-                       (and (pair? event) (car event))))))))
-
-(define-method (.event.direction (o <action>))
-  ((compose .direction .event) o))
-
-(define-method (.event.direction (o <trigger>))
-  ((compose .direction .event) o))
-
-(define-method (.function (model <model>) (o <call>))
-  (and (.function.name o) (ast:lookup model (.function.name o))))
-
-(define-method (.function (o <call>))
-  (and (.function.name o) (ast:lookup o (.function.name o))))
-
-(define-method (ast:lookup-variable (o <ast>) name statements)
-  (define (name? o) (and (equal? (.name o) name) o))
-  (match o
-    (($ <behavior>)
-     (find name? (ast:variable* o)))
-    ((? (is? <compound>))
-     (or
-      (find name? (filter (is? <variable>) statements))
-      (and (is-a? (.parent o) <compound>)
-           (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
-      (ast:lookup-variable (.parent o) name statements)))
-    ((? (is? <defer>))
-     (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
-    ((? (is? <if>))
-     (or
-      (and (is-a? (.parent o) <compound>)
-           (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
-      (ast:lookup-variable (.parent o) name statements)))
-    (($ <function>)
-     (or (find name? ((compose ast:formal* .signature) o))
-         (ast:lookup-variable (.parent o) name statements)))
-    (($ <formal>)
-     (name? o))
-    (($ <formal-binding>)
-     (name? o))
-    (($ <on>)
-     (or (find (cute ast:lookup-variable <> name statements)
-               (append-map ast:formal* (ast:trigger* o)))
-         (ast:lookup-variable (.parent o) name statements)))
-    (($ <variable>)
-     (name? o))
-    ((? (lambda (o) (is-a? (.parent o) <variable>)))
-     (ast:lookup-variable ((compose .parent .parent) o) name statements))
-    (_
-     (ast:lookup-variable (.parent o) name statements))))
-
-(define (ast:lookup-variable- root o name)
-  (ast:lookup-variable o name (ast:statement-prefix o)))
-
-(define-method (ast:lookup-variable (o <ast>) name)
-  ((ast:pure-funcq ast:lookup-variable-) (parent o <root>) o name))
-
-(define-method (ast:statement-prefix (o <ast>))
-  (let ((compound (parent (if (is-a? o <compound>) (.parent o) o) <compound>)))
-    (if (not compound) '()
-        (let* ((statements (ast:statement* compound))
-               (path (ast:path o)))
-          (take-while (negate (cute member <> path ast:eq?)) statements)))))
-
-(define-method (ast:lookup-variable (o <boolean>) name)
-  #f)
-
-(define-method (.variable (o <assign>))
-  (and=> (.variable.name o) (cut ast:lookup-variable o <>)))
-
-(define-method (.variable (o <field-test>))
-  (and=> (.variable.name o) (cut ast:lookup-variable o <>)))
-
-(define-method (.variable (o <formal-binding>))
-  (and=> (.variable.name o) (cut ast:lookup-variable (.parent o) <>)))
-
-(define-method (.variable (o <var>))
-  (and=> (.name o) (cut ast:lookup-variable o <>)))
-
-(define-method (.type (o <argument>))
-  (ast:lookup o (.type.name o)))
-
-(define-method (.type (o <enum-field>))
-  (or (parent o <enum>) ;; FIXME: ref vs decl!
-      (ast:lookup o (.type.name o))))
-
-(define-method (.type (o <enum-literal>))
-  (or (parent o <enum>) ;; FIXME: ref vs decl!
-      (ast:lookup o (.type.name o))))
-
-(define-method (ast:event-formal (o <formal>))
-  (let* ((trigger (parent o <trigger>))
-         (event (.event trigger))
-         (index (list-index (cut ast:equal? o <>) (reverse (.elements (.parent o)))))
-         (formals (if (not event) '() (ast:formal* event))))
-    (and event (< index (length formals)) (list-ref (reverse formals) index))))
-
-(define-method (ast:event-formal (o <formal-binding>))
-  (let* ((on (parent o <on>))
-         (trigger (car (ast:trigger* on)))
-         (event (.event trigger))
-         (index (list-index (cut ast:equal? o <>) (reverse (.elements (.parent o))))))
-    (and event (list-ref (reverse (ast:formal* event)) index))))
-
-(define-method (.type (o <formal>))
-  (let* ((type-name (.type.name o))
-         (p (.parent o))
-         (scope (or (and=> (parent p <on>) .parent)
-                    (parent p <statement>)
-                    (parent p <behavior>)
-                    (and=> (parent p <scope>) .parent))))
-    (if type-name (ast:lookup scope type-name)
-        (let ((formal (ast:event-formal o)))
-          (and formal (.type formal))))))
-
-(define-method (.direction (o <formal>))
-  (let ((type-name (.type.name o)))
-    (if type-name (.direction (.node o))
-        (let ((formal (ast:event-formal o)))
-          (and formal (.direction formal))))))
-
-(define-method (.type (o <instance>))
-  (let* ((name (.type.name o))
-         (found (ast:lookdown (.parent o) name)))
-    (if (pair? found) (car found)
-        (ast:lookup o name))))
-
-(define-method (.type (o <port>))
-  (let ((component (parent o <component-model>)))
-    (and component
-         (ast:lookup (.parent component) (.type.name o)))))
-
-(define-method (.type (o <signature>))
-  (ast:lookup o (.type.name o)))
-
-(define-method (.type (o <variable>))
-  (ast:lookup o (.type.name o)))
-
-(define-method (ast:normalize (o <binding>))
-  "Bring binding O in canonical form, i.e., ordering from a system's top
-to bottom."
-  (let* ((left (.left o))
-         (right (.right o))
-         (left-instance (.instance left))
-         (right-instance (.instance right))
-         (left-provides? (and=> (.port left) ast:provides?))
-         (right-provides? (and=> (.port right) ast:provides?))
-         (canonical?
-          (or (and (not left-instance) right-instance left-provides?)
-              (and left-instance right-instance (not left-provides?))
-              (and left-instance (not right-instance) (not left-provides?)))))
-    (if canonical? o
-        (clone o #:left right #:right left))))
 
 (define-method (topological-sort (dag <list>) key)
 "Sort DAG topologically using function KEY, where DAG looks like
@@ -1517,13 +954,6 @@ to bottom."
   (let ((scc (ast:graph-scc succ* o)))
     (or (not (null? (cdr scc)))
         (find (lambda (s) (eq? (.node o) (.node s))) (succ* o)))))
-
-(define-method (ast:function* (o <function>))
-  (let* ((calls (tree-collect (is? <call>) o))
-         (functions (filter-map .function calls)))
-    (delete-duplicates
-     functions
-     (lambda (a b) (equal? (.name a) (.name b))))))
 
 (define-method (ast:recursive? (o <function>))
   (ast:graph-cyclic? ast:function* o))

@@ -29,7 +29,9 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 pretty-print)
 
+  #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
   #:use-module (dzn display)
   #:use-module (dzn misc)

@@ -38,6 +38,7 @@
   #:use-module (ice-9 textual-ports)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast equal)
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
   #:use-module (dzn code)
