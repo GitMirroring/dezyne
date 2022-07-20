@@ -22,7 +22,9 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/goops.scm
+ %D%/goops.scm					\
+ %D%/parse.scm					\
+ %D%/silence.scm
 
 dist_nocompile_%C%_scm_DATA =
 

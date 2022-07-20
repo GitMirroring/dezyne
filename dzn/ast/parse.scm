@@ -25,7 +25,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn parse ast)
+(define-module (dzn ast parse)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
@@ -36,11 +36,11 @@
   #:use-module (ice-9 curried-definitions)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast silence)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn display)
   #:use-module (dzn misc)
-  #:use-module (dzn parse silence)
   #:use-module (dzn parse)
   #:export (parse-tree->ast))
 

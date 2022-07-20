@@ -22,7 +22,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn parse silence)
+(define-module (dzn ast silence)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 

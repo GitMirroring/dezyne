@@ -23,11 +23,9 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/ast.scm					\
  %D%/complete.scm				\
  %D%/lookup.scm					\
  %D%/peg.scm					\
- %D%/silence.scm				\
  %D%/stress.scm					\
  %D%/util.scm					\
  %D%/tree.scm

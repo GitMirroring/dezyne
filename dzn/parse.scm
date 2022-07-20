@@ -36,10 +36,10 @@
   #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast parse)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn display)
-  #:use-module (dzn parse ast)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse peg)
   #:use-module (dzn wfc)
