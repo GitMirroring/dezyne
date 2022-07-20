@@ -1216,6 +1216,9 @@
 (define-method (ast:declaration* (o <trigger>))
   (ast:formal* o))
 
+(define-method (ast:declaration* (o <formals>))
+  (ast:formal* o))
+
 (define-method (ast:declaration* (o <enum>))
   (ast:field* o))
 
