@@ -443,9 +443,7 @@ null) and return its CONTEXT."
         (ast:lookup o name))))
 
 (define-method (.type (o <port>))
-  (let ((component (ast:parent o <component-model>)))
-    (and component
-         (ast:lookup (.parent component) (.type.name o)))))
+  (ast:lookup o (.type.name o)))
 
 (define-method (.type (o <signature>))
   (ast:lookup o (.type.name o)))
