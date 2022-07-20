@@ -82,7 +82,7 @@
 (define-method (wfc (o <model>))
   '())
 
-(define-method (wfc (o <interface>)) ;; is-a <model>
+(define-method (wfc (o <interface>))
   (append
    (re-definition o)
    (append-map wfc (ast:type* o))
@@ -149,7 +149,7 @@
 (define-method (wfc (o <type>))
   (re-definition o))
 
-(define-method (wfc (o <enum>)) ;; is-a <type>
+(define-method (wfc (o <enum>))
   (append
    (re-definition o)
    (let loop ((fields (ast:field* o)) (result '()))
@@ -164,7 +164,7 @@
        '())
    '()))
 
-(define-method (wfc (o <int>)) ;; is-a <type>
+(define-method (wfc (o <int>))
   (append (re-definition o)
           (let ((range (.range o)))
             (if (<= (.from range) (.to range)) '()
@@ -374,21 +374,21 @@
 (define-method (wfc (o <statement>))
   '())
 
-(define-method (wfc (o <compound>)) ;; is-a <statement>
+(define-method (wfc (o <compound>))
   (append
    (imperative-context o)
    (mixing-declarative-imperative o)
    (append-map wfc (ast:statement* o))))
 
-(define-method (wfc (o <declarative>)) ;; is-a <statement>
+(define-method (wfc (o <declarative>))
   '())
 
-(define-method (wfc (o <declarative-compound>)) ;; is-a <declarative>
+(define-method (wfc (o <declarative-compound>))
   (append
    (mixing-declarative-imperative o)
    (append-map wfc (ast:statement* o))))
 
-(define-method (wfc (o <guard>)) ;; is-a <declarative>
+(define-method (wfc (o <guard>))
   (define (otherwise-guard? o)
     (and (is-a? o <guard>)
          (is-a? (.expression o) <otherwise>)))
@@ -417,11 +417,11 @@
             (if (is-a? (.statement o) <statement>) (wfc (.statement o))
                 `(,(wfc-error o "statement expected"))))))
 
-(define-method (wfc (o <declarative-illegal>)) ;; is-a <declarative>
+(define-method (wfc (o <declarative-illegal>))
   ;; TODO; in source??
   '())
 
-(define-method (wfc (o <blocking>)) ;; is-a <declarative>
+(define-method (wfc (o <blocking>))
   (define (blocking o)
     (let ((model (parent o <model>)))
       (cond ((is-a? model <interface>)
@@ -435,7 +435,7 @@
 (define-method (wfc (o <defer>))
   (wfc (.statement o)))
 
-(define-method (wfc (o <on>)) ;; is-a <declarative>
+(define-method (wfc (o <on>))
   (define (on o)
     (append
      (let ((parent (parent (.parent o) <on>)))
@@ -448,38 +448,38 @@
    (if (is-a? (.statement o) <statement>) (wfc (.statement o))
        `(,(wfc-error o "statement expected")))))
 
-(define-method (wfc (o <imperative>)) ;; is-a <statement>
+(define-method (wfc (o <imperative>))
   '())
 
-(define-method (wfc (o <variable>)) ;; is-a <imperative>
+(define-method (wfc (o <variable>))
   (append
    (imperative-context o)
    (re-definition o)
    (assign o)))
 
-(define-method (wfc (o <action>)) ;; is-a <imperative>
+(define-method (wfc (o <action>))
   (append
    (action o)
    (call-context o)))
 
-(define-method (wfc (o <action-or-call>)) ;; is-a <imperative>
+(define-method (wfc (o <action-or-call>))
   (append
    (call-context o)
    '()))
 
-(define-method (wfc (o <assign>)) ;; is-a <imperative>
+(define-method (wfc (o <assign>))
   (append
    (assign o)
    (imperative-context o)))
 
-(define-method (wfc (o <call>)) ;; is-a <imperative>
+(define-method (wfc (o <call>))
   (append
    (defined-function o)
    (call-context o)
    (tail-recursion o)
    (wfc (.arguments o))))
 
-(define-method (wfc (o <if>)) ;; is-a <imperative>
+(define-method (wfc (o <if>))
   (let* ((expression (.expression o))
          (wfce (wfc expression)))
     (append wfce
@@ -489,7 +489,7 @@
             (wfc (.then o))
             (if (.else o) (wfc (.else o)) '()))))
 
-(define-method (wfc (o <illegal>)) ;; is-a <imperative>
+(define-method (wfc (o <illegal>))
   (define (illegal o)
     (let ((model (parent o <model>)))
       (cond ((and (is-a? model <interface>) (parent (.parent o) <function>))
@@ -511,7 +511,7 @@
    (imperative-context o)
    (illegal o)))
 
-(define-method (wfc (o <reply>)) ;; is-a <imperative>
+(define-method (wfc (o <reply>))
   (append
    (imperative-context o)
    (if (.expression o) (wfc (.expression o)) '())
@@ -573,7 +573,7 @@
             `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a'"
                                     reply-type-name)))))))))
 
-(define-method (wfc (o <return>)) ;; is-a <imperative>
+(define-method (wfc (o <return>))
   (let* ((wfce (if (.expression o) (wfc (.expression o)) '()))
          (function (parent o <function>))
          (function-type (and function (ast:type function)))
@@ -588,11 +588,11 @@
                                            (type-name return-type)))))
                   (else '())))))
 
-(define-method (wfc (o <the-end>))  ;; is-a <statement> ;; not in source
+(define-method (wfc (o <the-end>))
   '())
-(define-method (wfc (o <the-end-blocking>))  ;; is-a <statement> ;; not in source
+(define-method (wfc (o <the-end-blocking>))
   '())
-(define-method (wfc (o <voidreply>))  ;; is-a <statement> ;; not in source
+(define-method (wfc (o <voidreply>))
   '())
 
 (define-method (wfc (o <trigger>))
