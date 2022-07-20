@@ -62,8 +62,6 @@
             has-slot?
             is?
             parent
-            parent-not
-            symbol->class
             tree-collect
             tree-collect-filter
             tree-filter
@@ -814,12 +812,6 @@
   (if (is-a? o class) o
       (parent (.parent o) class)))
 
-(define-method (parent-not o (class <class>)) #f)
-(define-method (parent-not (o <ast>) (class <class>))
-  (let ((parent (.parent o)))
-    (if (not (is-a? parent class)) parent
-        (parent-not parent class))))
-
 (define (drop-<> o)
   (string-drop (string-drop-right (symbol->string o) 1) 1))
 
@@ -828,8 +820,6 @@
 
 (define-method (ast-name (o <class>))
   (drop-<> (class-name o)))
-
-(define (symbol->class x) (symbol-append '< x '>))
 
 (define (as o c)
   (and (is-a? o c) o))
