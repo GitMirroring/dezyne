@@ -107,33 +107,40 @@
               basename)))))
    (blocking-ports o)))
 
-(define-method (wfc (o <component>)) ;; is-a <component-model>
+(define-method (wfc-skeleton (o <component>))
   (append
    (re-definition o)
    (blocking-ports o)
    (if (> (length (ast:provides-port* o)) 0) '()
        `(,(wfc-error o "component with behavior must define a provides port")))
-   (let ((port-errors (append-map wfc (ast:port* o)))
-         (trigger-events (wfc:trigger-event* o)))
-     (if (or (pair? port-errors) (pair? trigger-events)) port-errors
-         `(,(wfc-error o "component with behavior must have a trigger"))))
-   (or (and=> (.behavior o) wfc) '())))
+   (let ((port-errors (append-map wfc (ast:port* o))))
+     (if (or (pair? port-errors) (pair? (wfc:trigger-event* o))) port-errors
+         `(,(wfc-error o "component with behavior must have a trigger"))))))
 
-(define-method (wfc (o <system>)) ;; is-a <component-model>
+(define-method (wfc (o <component>))
+  (or (as (wfc-skeleton o) <pair>)
+      (and=> (.behavior o) wfc)
+      '()))
+
+(define-method (wfc-skeleton (o <system>))
   (append
    (re-definition o)
    (append-map wfc (ast:port* o))
-   (append-map wfc (ast:instance* o))
-   (recursive o)
-   (let ((errors (binding-declaration o)))
-     (if (pair? errors) errors
-         (let ((errors (append
-                        (binding-type o)
-                        (binding-direction o)
-                        (double-bindings o)
-                        (missing-bindings o))))
-           (if (pair? errors) errors
-               (cyclic-bindings o)))))))
+   (append-map wfc (ast:instance* o))))
+
+(define-method (wfc (o <system>))
+  (or (as (wfc-skeleton o) <pair>)
+      (append
+       (recursive o)
+       (let ((errors (binding-declaration o)))
+         (if (pair? errors) errors
+             (let ((errors (append
+                            (binding-type o)
+                            (binding-direction o)
+                            (double-bindings o)
+                            (missing-bindings o))))
+               (if (pair? errors) errors
+                   (cyclic-bindings o))))))))
 
 (define-method (wfc (o <instance>))
   (append
@@ -182,7 +189,7 @@
    (if (ast:name-equal? (.name (parent o <model>)) (.name o))
        `(,(wfc-error o (format #f "port `~a' must not have the same name as the model it is defined in" (.name o))))
        '())
-   (let ((interface (.type o)))
+   (let ((interface (wfc:interface o)))
      (cond ((not interface)
             `(,(wfc-error o (format #f "undefined interface `~a'" (type-name (.type.name o))))))
            ((not (is-a? interface <interface>))
@@ -1297,6 +1304,11 @@
 (define-method (wfc:trigger-event* (o <component>))
   (append (wfc:provides-in-event* o)
           (wfc:requires-out-event* o)))
+
+(define-method (wfc:interface (o <port>))
+  (let ((component (parent o <component-model>)))
+    (and component
+         (ast:lookup (.parent component) (.type.name o)))))
 
 
 ;;;
