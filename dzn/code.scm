@@ -169,12 +169,15 @@
   (code:interface-include o (ast:source-file (parent o <root>))))
 
 (define (code:component-include o)
- (filter (disjoin
-          (compose (is? <foreign>) .type)
-          (conjoin (compose ast:imported? .type)
-                   (lambda (i) (not (equal? (ast:source-file o)
-                                            (ast:source-file (.type i)))))))
-         (ast:instance* o)))
+  (let ((source-file (ast:source-file o)))
+    (filter (disjoin
+             (compose (is? <foreign>) .type)
+             (conjoin (compose ast:imported? .type)
+                      (compose not
+                               (cute equal? <> source-file)
+                               ast:source-file
+                               .type)))
+            (ast:instance* o))))
 
 (define-method (code:pump? (o <component>))
   (and (or (pair? (ast:async-port* o))
