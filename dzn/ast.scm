@@ -646,7 +646,7 @@
 (define-method (ast:values (o <type>) void)
   (cond
    ((as o <void>)
-    void)
+    (if void (list void) '()))
    ((as o <enum>)
     (let ((type (make <scope.name> #:ids (ast:full-name o))))
      (map (cute make <enum-literal> #:type.name type #:field <>)
@@ -659,7 +659,7 @@
                (.from (.range o)))))))
 
 (define-method (ast:values (o <type>))
-  (ast:values o '()))
+  (ast:values o #f))
 
 (define-method (ast:default-value (o <type>))
   (match (ast:values o)
@@ -673,10 +673,10 @@
     (ast:values type void)))
 
 (define-method (ast:return-values (o <event>))
-  (ast:return-values o '()))
+  (ast:return-values o #f))
 
 (define-method (ast:return-values (o <port>))
-  (append-map (cute ast:return-values <> '("return")) (ast:in-event* o)))
+  (append-map (cute ast:return-values <> "return") (ast:in-event* o)))
 
 (define-method (ast:return-values (o <action>))
   (ast:return-values (.event o)))
