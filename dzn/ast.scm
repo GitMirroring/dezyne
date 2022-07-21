@@ -1573,8 +1573,3 @@ to bottom."
 
 (define-method (ast:recursive? (o <function>))
     (ast:graph-cyclic? ast:function* o))
-
-(define (ast-> ast)
-  ((compose
-    pretty-print
-    ) ast))
