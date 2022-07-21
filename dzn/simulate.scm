@@ -304,8 +304,9 @@ Return a list of traces, possibly marked with <compliance-error>."
                (port-traces (if port-event (run-provides-port ipc port-event)
                                 (run-provides-modeling ipc port-instance)))
                (port-prefix (format #f "~a." port-name))
-               (sut-trail (filter (compose (disjoin (cut equal? <> "illegal")
-                                                    (cut string-prefix? port-prefix <>))
+               (sut-trail (filter (compose (disjoin
+                                            (cute equal? <> "<illegal>")
+                                            (cute string-prefix? port-prefix <>))
                                            cdr)
                                   sut-trail))
                (blocked? (and (pair? trace)
