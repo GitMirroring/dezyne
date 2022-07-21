@@ -419,7 +419,7 @@
           (if (equal? direct reached) direct
               (loop rest reached)))))))
 
-(define (reachable-calls- o)
+(define (reachable-calls-unmemoized root o)
   (let* ((calls (tree-collect-filter
                   (disjoin (is? <behavior>) (is? <declarative>) (is? <functions>) (is? <function>) (is? <statement>))
                   (is? <call>) o))
@@ -427,9 +427,7 @@
     calls))
 
 (define (reachable-calls o)
-  (define (calls root o)
-    (reachable-calls- o))
- ((ast:pure-funcq calls) (ast:parent o <root>) o))
+ ((ast:pure-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
 
 (define-method (no-tail-call (o <call>))
   (not (.last? o)))
@@ -640,23 +638,22 @@
 (define-method (members (o <ast>))
   (members (ast:parent o <model>)))
 
-(define-method (makreel:locals- (o <ast>))
+(define-method (makreel:locals-unmemoized root (o <ast>))
   (if (is-a? o <behavior>) '()
       (let* ((p (.parent o)))
         (cond ((is-a? p <compound>)
                (let ((pre (cdr (member o (reverse (ast:statement* p)) ast:eq?))))
                  (append (filter (is? <variable>) pre) (makreel:locals p))))
               ((is-a? p <defer>)
-               (makreel:locals- p))
+               (let ((model (ast:parent p <model>)))
+                 (makreel:locals-unmemoized (list root model) p)))
               ((is-a? o <function>) ((compose ast:formal* .signature) o))
               (else (makreel:locals p))))))
 
 (define (makreel:locals o)
-  (define (locals root o)
-    (makreel:locals- o))
   (let* ((model (ast:parent o <model>))
          (root (ast:parent model <root>)))
-    ((ast:pure-funcq locals) (list root model) o)))
+    ((ast:pure-funcq makreel:locals-unmemoized) (list root model) o)))
 
 (define-method (variables-in-scope (o <model>)) (members o))
 (define-method (variables-in-scope (o <ast>))
