@@ -53,5 +53,6 @@ component illegal_blocking_race
   behavior
   {
     on pt.request(): {rt.request(); rb.block(); rt.cancel();}
+    on pt.cancel(): {}
   }
 }
