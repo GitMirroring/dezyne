@@ -477,12 +477,20 @@ RTC-LTS->STATE-DIAGRAM."
 
    ((from label to)
      ...))"
+
   (define (fix-missing-reply-trace trace)
-    (match trace
-      (((and ($ <program-counter>) (? (is-status? <missing-reply-error>)) error)
-        ($ <program-counter>) tail ...)
-       (cons error tail))
-      (_ trace)))
+    (let* ((pc (car trace))
+           (status (.status pc)))
+      (if (not (is-a? status <missing-reply-error>)) trace
+          (let* ((instance
+                  (or (any (compose (is? <runtime:component>) .instance) trace)
+                      (any (compose (is? <runtime:port>) .instance) trace)))
+                 (return (list-index
+                         (conjoin (negate (is-status? <missing-reply-error>))
+                                  (compose (cute eq? <> instance) .instance)
+                                  (compose (is? <trigger-return>) .statement))
+                         trace)))
+            (cons pc (drop trace (1+ return)))))))
 
   (define (trail->state-numbers pc trail to)
     "Use every trail prefix to hash pc and produce contiguous state
