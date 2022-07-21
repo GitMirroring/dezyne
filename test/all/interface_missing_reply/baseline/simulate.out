@@ -1,0 +1,13 @@
+(header ((client) interface_missing_reply provides) ((sut) interface_missing_reply interface))
+(state ((client)) ((sut)))
+test/all/interface_missing_reply/interface_missing_reply.dzn:31:5: error: missing-reply: bool reply expected
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+<missing-reply>
+(state ((client)) ((sut)))
+test/all/interface_missing_reply/interface_missing_reply.dzn:31:5: error: missing-reply: bool reply expected
+(trail "hello" "return" "<missing-reply>")
+(labels "hello")
+(eligible)

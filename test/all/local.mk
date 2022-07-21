@@ -368,6 +368,7 @@ REGRESSION_TESTS =				\
  %D%/injected_foreign				\
  %D%/inner.space				\
  %D%/integer_expressions			\
+ %D%/interface_missing_reply			\
  %D%/label_instance_mismatch			\
  %D%/livelock_iterator				\
  %D%/livelock_recurse				\

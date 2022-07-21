@@ -1,0 +1,1 @@
+test/all/interface_missing_reply/interface_missing_reply.dzn:31:5: error: missing-reply: bool reply expected
