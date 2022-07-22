@@ -520,7 +520,7 @@ with EVENT as first step, until RTC?."
         (gc-buffer (make-gc-buffer 256)))
     (lambda (pc event)
       "Memoizing version of RUN-TO-COMPLETION-UNMEMOIZED."
-      (if (or #t (not (%exploring?))) (run-to-completion-unmemoized pc event)
+      (if (not (%exploring?)) (run-to-completion-unmemoized pc event)
           (let* ((event-string (cond ((string? event) event)
                                      ((eq? event 'rtc) "*rtc*")
                                      (else (trigger->string event))))
