@@ -22,7 +22,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn serialize)
+(define-module (dzn ast serialize)
   #:use-module (srfi srfi-26)
 
   #:use-module ((oop goops)

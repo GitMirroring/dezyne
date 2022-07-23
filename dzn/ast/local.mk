@@ -28,6 +28,7 @@ dist_%C%_scm_DATA =				\
  %D%/goops.scm					\
  %D%/lookup.scm					\
  %D%/parse.scm					\
+ %D%/serialize.scm				\
  %D%/silence.scm				\
  %D%/wfc.scm
 

@@ -32,11 +32,11 @@
   #:use-module (ice-9 string-fun)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast serialize)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn misc)
-  #:use-module (dzn serialize)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm goops)

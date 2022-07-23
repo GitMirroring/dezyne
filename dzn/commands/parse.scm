@@ -32,7 +32,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 
-  #:use-module (dzn serialize)
+  #:use-module (dzn ast serialize)
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast wfc)

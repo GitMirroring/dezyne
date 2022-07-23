@@ -37,7 +37,6 @@ dist_%C%_scm_DATA =				\
  %D%/parse.scm					\
  %D%/peg.scm					\
  %D%/pipe.scm					\
- %D%/serialize.scm				\
  %D%/script.scm					\
  %D%/shell-util.scm				\
  %D%/simulate.scm				\
