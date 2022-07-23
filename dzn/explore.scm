@@ -28,10 +28,10 @@
   #:use-module (ice-9 match)
   #:use-module (json)
 
+  #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn display)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm goops)

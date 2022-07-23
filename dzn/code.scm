@@ -30,6 +30,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 receive)
 
+  #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
@@ -37,7 +38,6 @@
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn config)
-  #:use-module (dzn display)
   #:use-module (dzn misc)
   #:use-module (dzn normalize)
   #:use-module (dzn shell-util)

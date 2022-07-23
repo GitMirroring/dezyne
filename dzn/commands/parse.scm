@@ -34,15 +34,15 @@
 
   #:use-module (dzn serialize)
 
+  #:use-module (dzn ast display)
+  #:use-module (dzn ast wfc)
+  #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn display)
-  #:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse tree)
+  #:use-module (dzn parse)
   #:use-module (dzn shell-util)
-  #:use-module (dzn ast)
-  #:use-module (dzn ast wfc)
 
   #:export (parse
             parse-opts

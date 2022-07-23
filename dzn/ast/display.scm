@@ -24,7 +24,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn display)
+(define-module (dzn ast display)
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 rdelim)

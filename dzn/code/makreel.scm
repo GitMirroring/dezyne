@@ -37,6 +37,7 @@
   #:use-module (ice-9 receive)
   #:use-module (ice-9 textual-ports)
 
+  #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast)
@@ -44,7 +45,6 @@
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
-  #:use-module (dzn display)
   #:use-module (dzn misc)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)

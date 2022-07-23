@@ -29,7 +29,6 @@ dist_%C%_scm_DATA =				\
  %D%/code.scm					\
  %D%/code-util.scm				\
  %D%/command-line.scm				\
- %D%/display.scm				\
  %D%/explore.scm				\
  %D%/indent.scm					\
  %D%/lts.scm					\
