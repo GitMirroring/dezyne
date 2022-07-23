@@ -122,6 +122,7 @@
                .function
                .type
                .instance
+               .port.name
                .variable
                .variable.name
 

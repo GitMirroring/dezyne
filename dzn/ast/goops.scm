@@ -362,12 +362,10 @@
 (define-ast <bindings> (<ast-list>))
 (define-ast <out-bindings> (<ast-list> <imperative>)
   (port))
-(define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
 
 (define-ast <compound> (<scope> <ast-list> <statement>))
 (define-ast <blocking-compound> (<compound>)
   (port))
-(define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
 
 (define-ast <declarative-compound> (<ast-list> <declarative>))
 (define-ast <events> (<ast-list>))

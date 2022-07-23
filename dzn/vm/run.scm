@@ -29,7 +29,6 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
-  #:use-module (dzn display)
   #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn vm ast)

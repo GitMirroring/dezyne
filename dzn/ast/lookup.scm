@@ -288,6 +288,9 @@
         (ast:lookup component (.port.name o)))
       (ast:lookup o (.port.name o))))
 
+(define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
+(define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
+
 (define-method (.instance (o <end-point>))
   (and (.instance.name o) (ast:lookup o (.instance.name o))))
 
