@@ -33,6 +33,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast util)
 
   #:export (ast:argument*
             ast:binding*

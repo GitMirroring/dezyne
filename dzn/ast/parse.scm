@@ -38,6 +38,7 @@
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast silence)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)

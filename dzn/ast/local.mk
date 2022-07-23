@@ -30,6 +30,7 @@ dist_%C%_scm_DATA =				\
  %D%/parse.scm					\
  %D%/serialize.scm				\
  %D%/silence.scm				\
+ %D%/util.scm					\
  %D%/wfc.scm
 
 dist_nocompile_%C%_scm_DATA =

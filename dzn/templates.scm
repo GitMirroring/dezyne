@@ -36,6 +36,7 @@
   #:use-module ((oop goops) #:select (class-name class-of))
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast util)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn misc)

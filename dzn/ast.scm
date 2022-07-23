@@ -40,6 +40,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast lookup)
+  #:use-module (dzn ast util)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
 
@@ -151,7 +152,17 @@
                ast:top*
                ast:trigger*
                ast:type*
-               ast:variable*))
+               ast:variable*
+
+               as
+               ast-name
+               clone
+               drop-<>
+               is?
+               tree-collect
+               tree-collect-filter
+               tree-filter
+               tree-map))
 
 ;;;
 ;;; Predicates.
