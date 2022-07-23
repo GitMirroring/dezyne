@@ -58,11 +58,21 @@
             ast:name
             ast:parent
             ast:path
-            ast:scope))
+            ast:scope)
+  #:re-export (.variable.name))
 
 ;;;
 ;;; Direct accessors.
 ;;;
+(define-method (.variable.name (o <action>))
+  (let ((parent (.parent o)))
+    (match parent
+      (($ <assign>) (.variable.name parent))
+      (($ <variable>) (.name parent)))))
+
+(define-method (.variable.name (o <var>))
+  (.name o))
+
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
 (define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))

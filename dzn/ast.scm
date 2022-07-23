@@ -123,6 +123,7 @@
                .type
                .instance
                .variable
+               .variable.name
 
                ast:eq?
                ast:equal?

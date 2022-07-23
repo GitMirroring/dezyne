@@ -26,13 +26,13 @@
 ;;; Code:
 
 (define-module (dzn ast goops)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+
   #:use-module (system foreign)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 poe)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:use-module (dzn misc)
+
   #:use-module ((oop goops)
                 #:renamer (lambda (x)
                             (if (member x '(<port> <foreign>))
@@ -669,19 +669,6 @@
 (define-ast <out-formal> (<variable>))
 (define-ast <direction> (<named>))
 (define-ast <unspecified> (<ast>))
-
-
-;;;
-;;; Compound accessors.
-;;;
-(define-method (.variable.name (o <action>))
-  (let ((parent (.parent o)))
-    (match parent
-      (($ <assign>) (.variable.name parent))
-      (($ <variable>) (.name parent)))))
-
-(define-method (.variable.name (o <var>))
-  (.name o))
 
 
 ;;;
