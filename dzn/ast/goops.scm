@@ -59,7 +59,6 @@
             clone
             clone-base
             drop-<>
-            has-slot?
             is?
             parent
             tree-collect
@@ -714,19 +713,9 @@
   (if (and (member <ast> (class-precedence-list class))
            (not (memq #:node initargs))
            (not (memq #:parent initargs))) (apply construct (cons class initargs))
-           ;; FIXME: copy of body in (oop goops)
            (let ((instance (allocate-instance class initargs)))
              (initialize instance initargs)
              instance)))
-
-(define-method (slot-names (o <class>))
-  (map slot-definition-name (class-slots o)))
-(define-method (slot-names (o <object>))
-  ((compose slot-names class-of) o))
-(define-method (slot-names (o <ast>))
-  ((compose slot-names .node) o))
-(define-method (has-slot? (o <object>) name)
-  (memq name (slot-names o)))
 
 (define-method (tree-map f o) o)
 
@@ -807,14 +796,17 @@
       (apply clone-base-ast (cons o setters))
       (clone-base-ast o #:node (apply clone-base-node (cons (.node o) setters)))))
 
-(define (drop-<> o)
-  (string-drop (string-drop-right (symbol->string o) 1) 1))
+(define-method (drop-<> (o <string>))
+  (string-drop (string-drop-right o 1) 1))
 
-(define-method (ast-name (o <top>))
-  (drop-<> (class-name (class-of o))))
+(define-method (drop-<> (o <symbol>))
+  (string->symbol (drop-<> (symbol->string o))))
 
 (define-method (ast-name (o <class>))
-  (drop-<> (class-name o)))
+  (symbol->string (drop-<> (class-name o))))
+
+(define-method (ast-name (o <top>))
+  (ast-name (class-of o)))
 
 (define (as o c)
   (and (is-a? o c) o))
