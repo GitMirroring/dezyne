@@ -39,8 +39,6 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn display)
-  #:use-module (dzn display)
   #:use-module (dzn misc)
 
   #:export (add-defer-end
@@ -1358,14 +1356,3 @@ code check."
      (tree-map tag-imperative-blocks o))
     (_
      o)))
-
-(define-method (root-> (o <root>))
-  ((compose
-    normalize:event
-    ) o))
-
-(define (ast-> ast)
-  ((compose
-    ast:pretty-print
-    root->)
-   ast))
