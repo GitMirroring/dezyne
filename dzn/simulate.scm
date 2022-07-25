@@ -357,8 +357,6 @@ or false."
                     (cpc (reset-replies cpc))
                     (cpc (clone cpc #:instance #f)))
                (check-provides-compliance* cpc event traces)))))
-      ((? (const (and (pair? (.defer pc)) (blocked-on-boundary? pc))))
-       (list (cons (clone pc #:defer '()) pc+blocked-trace)))
       ((? (const (and (pair? (.defer pc)) (not (%strict?)))))
        (let* ((traces (flush-defer pc))
               (traces (if (null? blocked-trace) traces
