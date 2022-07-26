@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,7 +41,7 @@ component hello_expression
   {
     bool b = false;
     [0 == 0] on h.hello(): w.world();
-    [0 == 1] on h.hello(): b = !b;
+    [0 == 1] on h.hello(): illegal;
   }
 }
 

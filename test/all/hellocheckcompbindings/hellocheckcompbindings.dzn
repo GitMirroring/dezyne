@@ -2,6 +2,7 @@
 //
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,6 +31,7 @@ interface ihello
   behavior
   {
     on hello: {}
+    on inevitable: world;
   }
 }
 

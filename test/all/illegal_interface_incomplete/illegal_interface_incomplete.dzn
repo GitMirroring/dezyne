@@ -2,6 +2,7 @@
 //
 // Copyright © 2016, 2018 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -45,7 +46,7 @@ interface iworld
   {
     bool idle = false;
     on hello: {}
-    [idle] on bye: {}
+    [idle] on bye: illegal;
   }
 }
 

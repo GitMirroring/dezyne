@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -48,7 +49,7 @@ component inevitable_multiple_requires
     int x = 0;
     on h.hello (): {x=wl.hello ();h.world ();reply (x);}
     [x==0] on wl.world (): x=wl.hello();
-    [x==1] on wl.world (): x=wr.hello();
+    [x==1] on wl.world (): illegal;
     on wr.world (): {}
   }
 }

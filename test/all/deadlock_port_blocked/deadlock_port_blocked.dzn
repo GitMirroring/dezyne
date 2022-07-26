@@ -2,6 +2,7 @@
 //
 // Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -57,7 +58,6 @@ component deadlock_port_blocked
     [blocked]
     {
       on w.world(): {h.reply (); blocked=false;}
-      on h.hello (): {}
     }
     on h.cruel(): {}
   }

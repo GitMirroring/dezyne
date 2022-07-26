@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -39,7 +40,7 @@ interface ihello
     on hello: {foo;reply (false);}
     on hey: {one;foo;reply (true);}
     on hi: {one;three;foo;reply (false);}
-    on goodbye: {one;three;foo;reply (false);}
+    on goodbye: {two;one;three;foo;reply (false);}
     on bye: {foo;foo;reply (false);}
     on sayonara: {foo;reply (true);}
   }
@@ -79,6 +80,7 @@ component complex_assign
 
     on h.goodbye ():
     {
+      bool dummy = two ();
       bool x = false;
       x = foo (one () && two () || three ());
       reply (x);

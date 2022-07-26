@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -60,7 +61,6 @@ component blocking_cancel_race_bool
     [active]
     {
       [race] on rt.complete(): race = false;
-      [!race] on rt.complete(): {active = false; pt.complete();}
     }
   }
 }

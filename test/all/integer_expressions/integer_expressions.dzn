@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,10 +44,8 @@ interface I
         {
           if (state != 1)
             state = 3;
-          if (!(state == 3) && true)
-            a;
-          if (true && !(state == 3))
-            a;
+          bool b0 = !(state == 3) && true;
+          bool b1 = true && !(state == 3);
           a;
         }
         else
@@ -59,8 +58,7 @@ interface I
           //else
           else if (c >= state || c > state)
           {
-            if (c >= (state + 3))
-              lo;
+            bool b0 = c >= (state + 3);
             if (c <= (state + 1))
               lo;
             else
@@ -95,16 +93,16 @@ component integer_expressions
           if (state != 1)
             state = 3;
           if (!(state == 3) && true)
-            i.lo();
+            illegal;
           if (true && !(state == 3))
-            i.a();
+            illegal;
           i.a();
         }
         else
         {
           state = state - 1;
           if (c >= (state + 3))
-            i.lo();
+            illegal;
           if (c < state)
             c = c + 1;
           else

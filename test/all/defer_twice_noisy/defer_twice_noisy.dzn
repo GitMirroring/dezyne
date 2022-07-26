@@ -2,6 +2,7 @@
 //
 // Copyright © 2021 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -47,11 +48,14 @@ component defer_twice_noisy
     bool idle = true;
     [idle] on h.hello ():
     {
+      w.hello();
       idle = false;
       defer h.cruel ();
       defer {idle = true; h.world ();}
     }
     [!idle] on h.hello (): {}
-    on w.world (): idle = true;
+    [idle] on w.world (): {}
+    [!idle] on w.world (): {idle = true; h.world ();}
+    on w.cruel (): {}
   }
 }

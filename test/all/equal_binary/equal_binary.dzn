@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2020, 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -25,8 +25,8 @@ interface equal_binary
   {
     on e:
     {
-      [false && false] {}
-      [false && false] {}
+      [false && false] illegal;
+      [false && false] illegal;
       [otherwise] {}
     }
   }
