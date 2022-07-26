@@ -2,6 +2,7 @@
 //
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -39,7 +40,8 @@ component hello_ifelse
 
   behavior
   {
-    on h.hello(): if (false) w.world (); else {w.cruel (); w.world ();}
+    bool b = false;
+    on h.hello(): { if (b) w.world (); else {w.cruel (); w.world ();} b=!b;}
   }
 }
 

@@ -2,7 +2,7 @@
 //
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2020, 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -34,7 +34,7 @@ interface i
 
   behavior
   {
-    on e: {}
+    on e: g;
   }
 }
 
@@ -46,9 +46,9 @@ component alpha_local
   behavior
   {
     {
-      on p.e(): {}
-      on r.f, r.g: illegal;
-      on r.g(x): {xint a = $0$; a = $ax$;}
+      on p.e(): r.e();
+      on r.f: illegal;
+      on r.g(x): {xint a = $0$; a = $ax$; p.g(x);}
     }
   }
 }

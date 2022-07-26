@@ -12,14 +12,14 @@ sut.w.return <- ...
 <external>.h.return <- ...
 (state ((h) (seen . true)) ((sut) (seen . true)) ((w) (idle . false)))
 (trail "h.hello" "w.hello" "w.return" "h.world" "h.return")
-test/all/illegal_interface_incomplete/illegal_interface_incomplete.dzn:45:3: error: illegal
+test/all/illegal_interface_incomplete/illegal_interface_incomplete.dzn:46:3: error: illegal
 <external>.h.bye -> ...
 ... -> sut.h.bye
 sut.w.bye -> ...
 ... -> <external>.w.bye
 <illegal>
 (state ((h) (seen . true)) ((sut) (seen . false)) ((w) (idle . false)))
-test/all/illegal_interface_incomplete/illegal_interface_incomplete.dzn:45:3: error: illegal
+test/all/illegal_interface_incomplete/illegal_interface_incomplete.dzn:46:3: error: illegal
 (trail "h.bye" "w.bye" "<illegal>")
 (labels "h.hello" "h.bye")
 (eligible)

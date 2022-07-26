@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,5 +28,6 @@ interface parse_call_before_var {
     bool b () {return false;}
     void cruel (bool b) {}    // triggers parse error
     on hello: bool x = b ();  // on b ();
+    on hello: cruel (true);
   }
 }

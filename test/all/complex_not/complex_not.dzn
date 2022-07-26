@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -49,11 +50,11 @@ component complex_not
 
     on h.hello ():
       if (true && !(one () && two ())) reply (true);
-      else reply (false);
+      else illegal;
 
     on h.hey ():
       if (false || !(one () || two ())) reply (true);
-      else reply (false);
+      else illegal;
 
     on h.hi ():
     {
@@ -61,7 +62,7 @@ component complex_not
       if (!(b == false) && true)
         reply (true);
       else
-        reply (false);
+        illegal;
     }
 
     on h.goodbye ():

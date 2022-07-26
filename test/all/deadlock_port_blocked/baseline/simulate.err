@@ -1,1 +1,1 @@
-test/all/deadlock_port_blocked/deadlock_port_blocked.dzn:50:3: error: port `h' is blocked
+test/all/deadlock_port_blocked/deadlock_port_blocked.dzn:51:3: error: port `h' is blocked

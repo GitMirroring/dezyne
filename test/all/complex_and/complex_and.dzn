@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,12 +37,14 @@ component complex_and
   provides ihello h;
   behavior
   {
-    bool a () {return false;}
-    bool b () {return false;}
-    bool c () {return true;}
+    bool a () {return true;}
+    bool b () {return true;}
+    bool c () {return false;}
 
     on h.hello(): {
-      if (a () && b () && c ()) reply (false);
+      bool dummyb = b();
+      bool dummyc = c();
+      if (a () && b () && c ()) illegal;
       else reply (true);
     }
   }
