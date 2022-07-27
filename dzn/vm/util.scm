@@ -1198,21 +1198,22 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((instance (.instance o))
          (path (runtime:instance->path instance))
          (path (match path
-                 (("sut" path ...) path)
+                 (("sut" path ...) (if (null? path) '("sut") path))
                  (_ path)))
          (variables (map (match-lambda ((x . y)
                                         (format #f "~a=~a" x (->sexp y))))
                          (.variables o)))
-         (q (.q o)))
+         (q (.q o))
+         (q-string (string-join (map trigger->string q) ","))
+         (variables (if (null? q) variables
+                        (cons (string-append "q=" q-string) variables))))
     (and (not (equal? path '("client")))
          (or (pair? variables) (pair? q))
          (string-append
           (string-join path ".")
-          (if (pair? path) "=" "")
+          (if (pair? path) ":" "")
           "["
           (string-join variables ",\n")
-          (if (null? q) ""
-              (string-append "q=" (string-join (map trigger->string q) ",")))
           "]"))))
 
 (define-method (state->string (o <system-state>))
