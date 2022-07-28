@@ -399,8 +399,11 @@
                                            (is? <argument>)
                                            (is? <var>))
                                    (.statement o)))
-         (variables (map .variable references)))
-    (filter (negate ast:member?) variables)))
+         (variables (map .variable references))
+         (local? (compose (cute ast:eq? <> o)
+                          (cute parent <> <defer>))))
+    (filter (negate (disjoin ast:member? local?))
+            variables)))
 
 (define-method (code:capture-member (o <defer>))
   (ast:defer-variable* o))
