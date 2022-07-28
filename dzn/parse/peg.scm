@@ -49,7 +49,7 @@
 (define-skip-parser peg-ws none (or " " "\t"))
 (define-skip-parser peg-line all
   (and "//" (* (and (not-followed-by peg-eol) peg-any))
-       (expect (or "\n" peg-eof))))
+       (expect (or "\n" "\r\n" peg-eof))))
 (define-skip-parser peg-block-strict all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
 (define-skip-parser peg-skip all (* (or peg-ws peg-eol peg-line peg-block-strict)))
 
