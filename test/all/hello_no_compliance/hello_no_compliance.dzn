@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Alexander Darmonski <alexander.darmonski@sioux.eu>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -82,7 +83,5 @@ component hello_no_compliance
         on w.started ():    w1.start ();
         on w1.started (): { state = status.ON; h.started (); }
       }
-    [state.ON]
-        on h.stop ():     { state = status.OFF; stop (); }
-    }
+  }
 }
