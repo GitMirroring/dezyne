@@ -435,7 +435,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
       ((path ... "true") (make <literal> #:value "true"))
       ((path ... "false") (make <literal> #:value "false")))))
 
-(define-method (string->value (type <int>) (o <string>))
+(define-method (string->value (type <subint>) (o <string>))
   (let ((value (string-split o #\.)))
     (match value
       ((path ... number) (make <literal> #:value (string->number number))))))
@@ -1026,7 +1026,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (unless (or (is-a? o <formal>) (is-a? o <variable>))
     (error "range-error" o))
   (let ((type (.type o)))
-    (and (is-a? type <int>)
+    (and (is-a? type <subint>)
          (let ((range (.range type))
                (value (.value value)))
            (and (or (< value (.from range))

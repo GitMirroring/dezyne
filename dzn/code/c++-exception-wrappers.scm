@@ -55,7 +55,7 @@
   (let ((type ((compose .type .signature .event) o)))
     (match type
       (($ <bool>) "false")
-      (($ <int>) (.from (.range type)))
+      (($ <subint>) (.from (.range type)))
       (($ <enum>) (append (code:type-name type) (list (last (ast:field* type))))))))
 
 (define-method (c++ew:valued-event? (o <trigger>))

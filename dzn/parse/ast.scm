@@ -208,7 +208,7 @@ to the AST element."
          (make <fields-node> #:elements (helper names)))
 
         (('int name range)
-         (make <int-node> #:name (helper name) #:range (helper range)))
+         (make <subint-node> #:name (helper name) #:range (helper range)))
 
         (('range from to) (make <range-node> #:from (helper from) #:to (helper to)))
 

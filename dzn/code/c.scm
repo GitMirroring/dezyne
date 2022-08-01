@@ -88,7 +88,7 @@
   (let ((type (.type o)))
     (match type
      (($ <enum>) "uint8_t")
-     (($ <int>) (c:range-type (.type o)))
+     (($ <subint>) (c:range-type (.type o)))
      (($ <extern>) (list ((compose .value .value .type) o)))
      (_ (ast:name type)))))
 
@@ -204,13 +204,13 @@
   (let ((type (ast:type o)))
     (match type
       (($ <enum>) "uint8_t")
-      (($ <int>) (c:range-type (ast:type o)))
+      (($ <subint>) (c:range-type (ast:type o)))
       (($ <extern>) (if (string= "int" ((compose ast:name .type) o))
                         "int16_t"
                         ((compose .value .type) o)))
       (_ (code:type-name o)))))
 
-(define-method (c:range-type (o <int>))
+(define-method (c:range-type (o <subint>))
   (let*((range (.range o))
         (from ( .from range))
         (to (.to range)))
