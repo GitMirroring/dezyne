@@ -1055,8 +1055,10 @@ expressions explicit."
            (type (ast:type variable-expression))
            (local-type? (ast:eq? (parent type <model>)
                                  (parent o <model>)))
-           (type-name (if local-type? (.name type)
-                          (make <scope.name> #:ids (ast:full-name type))))
+           (type-name (cond
+                       ((is-a? type <subint>) (.name (ast:type (make <int>))))
+                       (local-type? (.name type))
+                       (else (make <scope.name> #:ids (ast:full-name type)))))
            (name (temp-name o))
            (location (.location o))
            (temporary (make <variable> #:name name

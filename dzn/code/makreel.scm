@@ -195,9 +195,10 @@
   (match o
     (($ <root>) (tree-map (tick-names-) o))
     ((? (is? <model>)) (clone (tree-map (tick-names-) o) #:name ((compose (tick-names-) .name) o)))
+    (($ <int>) o)
     (($ <bool>) o)
     (($ <void>) o)
-    ((and ($ <scope.name>) (or (= .ids '("void")) (= .ids '("bool")))) o)
+    ((and ($ <scope.name>) (or (= .ids '("<int>")) (= .ids '("void")) (= .ids '("bool")))) o)
     ((? (is? <type>)) (clone o #:name ((compose (tick-names-) .name) o)))
     (($ <scope.name>) (clone o #:ids (map (append-tick) (.ids o))))
     (($ <port>) (clone o #:name ((compose (append-tick) .name) o) #:type.name ((compose (tick-names-) .type.name) o)))
@@ -388,6 +389,7 @@
   (let ((type (ast:type o)))
     (match type
       (($ <bool>) o)
+      (($ <int>) o)
       (($ <subint>) o)
       (($ <void>) o)
       (_ type))))
@@ -914,10 +916,10 @@
       '()))
 
 (define (as-int o)
-  (or (and o (is-a? (ast:type o) <subint>) o) '()))
+  (or (and o (is-a? (ast:expression->type o) <subint>) o) '()))
 
 (define-method (makreel:type-check (o <call>))
-  (filter (compose (is? <subint>) ast:type) (ast:argument* o)))
+  (filter (compose (is? <subint>) ast:expression->type) (ast:argument* o)))
 
 (define-method (makreel:type-check (o <return>))
   (as-int (.expression o)))
