@@ -156,7 +156,7 @@
 (define-method (scheme:reply-name (o <enum>))
   (cons "reply" (append (ast:full-name o))))
 
-(define-method (scheme:reply-name (o <subint>))
+(define-method (scheme:reply-name (o <int>))
   '("reply-int"))
 
 (define-method (scheme:reply-name (o <bool>))

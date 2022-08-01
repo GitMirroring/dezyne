@@ -199,9 +199,10 @@
   (match o
     (($ <root>) (tree-map (tick-names-) o))
     ((? (is? <model>)) (clone (tree-map (tick-names-) o) #:name ((compose (tick-names-) .name) o)))
+    (($ <int>) o)
     (($ <bool>) o)
     (($ <void>) o)
-    ((and ($ <scope.name>) (or (= .ids '("void")) (= .ids '("bool")))) o)
+    ((and ($ <scope.name>) (or (= .ids '("<int>")) (= .ids '("void")) (= .ids '("bool")))) o)
     ((? (is? <type>)) (clone o #:name ((compose (tick-names-) .name) o)))
     (($ <scope.name>) (clone o #:ids (map (append-tick) (.ids o))))
     (($ <port>) (clone o #:name ((compose (append-tick) .name) o) #:type.name ((compose (tick-names-) .type.name) o)))
@@ -392,6 +393,7 @@
   (let ((type (ast:type o)))
     (match type
       (($ <bool>) o)
+      (($ <int>) o)
       (($ <subint>) o)
       (($ <void>) o)
       (_ type))))
@@ -906,22 +908,24 @@
        (ast:field* o)))
 
 (define-method (makreel:type-bound (o <action>))
-  (if (is-a? ((compose .type .signature .event) o) <subint>) o
-      '()))
+  (and (is-a? ((compose .type .signature .event) o) <subint>)
+       o))
 
 (define-method (makreel:type-check (o <action>))
-  (if (is-a? ((compose .type .signature .event) o) <subint>)
-      (let ((parent (.parent o)))
-        (match parent
-          (($ <assign>) (.variable parent))
-          (($ <variable>) parent)))
-      '()))
+  (and (is-a? ((compose .type .signature .event) o) <subint>)
+       (let* ((parent (.parent o))
+              (variable (match parent
+                          (($ <assign>) (.variable parent))
+                          (($ <variable>) parent)))
+              (type (ast:type variable)))
+         (and (is-a? type <subint>)
+              variable))))
 
 (define (as-int o)
-  (or (and o (is-a? (ast:type o) <subint>) o) '()))
+  (and o (is-a? (ast:expression->type o) <subint>) o))
 
 (define-method (makreel:type-check (o <call>))
-  (filter (compose (is? <subint>) ast:type) (ast:argument* o)))
+  (filter (compose (is? <subint>) ast:expression->type) (ast:argument* o)))
 
 (define-method (makreel:type-check (o <return>))
   (as-int (.expression o)))

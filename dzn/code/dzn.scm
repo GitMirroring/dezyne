@@ -140,6 +140,7 @@
 (define-method (dzn:define-type (o <scope>))
   (filter (conjoin (negate ast:imported?)
                    (negate (is? <bool>))
+                   (negate (is? <int>))
                    (negate (is? <void>)))
           (ast:type* o)))
 
@@ -152,16 +153,24 @@
 (define-method (dzn:enum-literal (o <enum-literal>))
   (append (dzn:type o) (list (.field o))))
 
-(define-method (dzn:type o)
-  (if (as o <model>)
-      (ast:full-name o)
-      (let* ((type (or (as o <type>) (.type o)))
-             (scope (ast:full-scope type))
-             (model-scope (parent o <model>))
-             (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
+(define-method (dzn:type (o <model>))
+  (ast:full-name o))
 
-             (common (or (list-index (negate equal?) scope model-scope) (min (length scope) (length model-scope)))))
-        (drop (ast:full-name type) common))))
+(define-method (dzn:type o)
+  (let ((type (or (as o <type>) (.type o))))
+    (dzn:type type)))
+
+(define-method (dzn:type (o <type>))
+  (let* ((scope (ast:full-scope o))
+         (model-scope (parent o <model>))
+         (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
+         (common (or (list-index (negate equal?) scope model-scope)
+                     (min (length scope) (length model-scope)))))
+    (drop (ast:full-name o) common)))
+
+(define-method (dzn:type (o <int>))
+  (if (is-a? o <subint>) (next-method)
+      o))
 
 (define-method (dzn:type (o <bool>))
   o)

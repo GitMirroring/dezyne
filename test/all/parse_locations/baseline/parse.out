@@ -26,6 +26,7 @@
       (end-column . 1)
       (offset . 845)
       (length . 127))))
+  (("int" (name . <int>)))
   (("bool" (name . bool)))
   (("void" (name . void)))
   (("file-name"
