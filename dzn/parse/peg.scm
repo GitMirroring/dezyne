@@ -253,7 +253,7 @@ expression <-- or-expression
 or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
 compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
-plus-min-expression <- not-expression (PLUS / MINUS) not-expression# / not-expression
+plus-min-expression <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
 not-expression <- not / group / dollars / (!var !is-port enum-literal / literal / call / var !DOT / action / interface-action / field-test / unknown-identifier)
 not <-- NOT not-expression#
 enum-literal <-- global? scope name
