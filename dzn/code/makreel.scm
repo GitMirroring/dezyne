@@ -374,7 +374,7 @@
       (lambda (o) (filter (is? <enum>) (ast:type* (.behavior o))))
       (append (list o) (ast:interface* o)))))
 
-(define-method (makreel:reply-type-eq? (a <int>) (b <int>))
+(define-method (makreel:reply-type-eq? (a <subint>) (b <subint>))
   #t)
 (define-method (makreel:reply-type-eq? a b)
   (ast:eq? a b))
@@ -392,7 +392,7 @@
   (let ((type (ast:type o)))
     (match type
       (($ <bool>) o)
-      (($ <int>) o)
+      (($ <subint>) o)
       (($ <void>) o)
       (_ type))))
 
@@ -906,11 +906,11 @@
        (ast:field* o)))
 
 (define-method (makreel:type-bound (o <action>))
-  (if (is-a? ((compose .type .signature .event) o) <int>) o
+  (if (is-a? ((compose .type .signature .event) o) <subint>) o
       '()))
 
 (define-method (makreel:type-check (o <action>))
-  (if (is-a? ((compose .type .signature .event) o) <int>)
+  (if (is-a? ((compose .type .signature .event) o) <subint>)
       (let ((parent (.parent o)))
         (match parent
           (($ <assign>) (.variable parent))
@@ -918,10 +918,10 @@
       '()))
 
 (define (as-int o)
-  (or (and o (is-a? (ast:type o) <int>) o) '()))
+  (or (and o (is-a? (ast:type o) <subint>) o) '()))
 
 (define-method (makreel:type-check (o <call>))
-  (filter (compose (is? <int>) ast:type) (ast:argument* o)))
+  (filter (compose (is? <subint>) ast:type) (ast:argument* o)))
 
 (define-method (makreel:type-check (o <return>))
   (as-int (.expression o)))
@@ -933,7 +933,7 @@
   (as-int (.expression o)))
 
 (define-method (makreel:type-check (o <model>))
-  (map .expression (filter (compose (is? <int>) .type) (ast:member* o))))
+  (map .expression (filter (compose (is? <subint>) .type) (ast:member* o))))
 
 (define-method (makreel:stack? (o <call>))
   (or (and (not (parent o <defer>)) (parent o <function>) o) '()))

@@ -185,7 +185,7 @@
            <instance>
            <instances>
            <int-expr>
-           <int>
+           <subint>
            <interface>
            <less-equal>
            <less>
@@ -397,7 +397,7 @@
 (define-method (initialize (o <void-node>) . initargs)
   (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '("void"))))))
 
-(define-ast <int> (<type>)
+(define-ast <subint> (<type>)
   (range #:init-form (make <range-node>)))
 
 (define-ast <range> (<ast>)

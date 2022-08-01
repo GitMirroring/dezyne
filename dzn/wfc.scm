@@ -164,7 +164,7 @@
        '())
    '()))
 
-(define-method (wfc (o <int>))
+(define-method (wfc (o <subint>))
   (append (re-definition o)
           (let ((range (.range o)))
             (if (<= (.from range) (.to range)) '()
@@ -684,7 +684,7 @@
   (wfc (.expression o)))
 
 (define-method (equal-type? t1 t2)
-  (or (and (is-a? t1 <int>) (is-a? t2 <int>))
+  (or (and (is-a? t1 <subint>) (is-a? t2 <subint>))
       (and (is-a? t1 <extern>) (is-a? t2 <extern>))
       (ast:equal? t1 t2)))
 
@@ -747,12 +747,12 @@
 (define-method (wfc (o <equal>)) (binary-equal-no-extern-type o))
 (define-method (wfc (o <not-equal>)) (binary-equal-no-extern-type o))
 
-(define-method (wfc (o <greater-equal>)) (typed-binary o <int>))
-(define-method (wfc (o <greater>)) (typed-binary o <int>))
-(define-method (wfc (o <less-equal>)) (typed-binary o <int>))
-(define-method (wfc (o <less>)) (typed-binary o <int>))
-(define-method (wfc (o <plus>)) (typed-binary o <int>))
-(define-method (wfc (o <minus>)) (typed-binary o <int>))
+(define-method (wfc (o <greater-equal>)) (typed-binary o <subint>))
+(define-method (wfc (o <greater>)) (typed-binary o <subint>))
+(define-method (wfc (o <less-equal>)) (typed-binary o <subint>))
+(define-method (wfc (o <less>)) (typed-binary o <subint>))
+(define-method (wfc (o <plus>)) (typed-binary o <subint>))
+(define-method (wfc (o <minus>)) (typed-binary o <subint>))
 
 (define-method (wfc (o <field-test>))
   (let* ((variable (.variable o))

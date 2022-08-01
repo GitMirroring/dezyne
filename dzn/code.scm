@@ -246,7 +246,7 @@
 (define-method (code:reply-type (o <ast>))
   (ast:full-name o))
 
-(define-method (code:reply-type (o <int>))
+(define-method (code:reply-type (o <subint>))
   "int")
 
 (define-method (code:reply-type (o <trigger>))
@@ -279,7 +279,7 @@
       (($ <enum>) (code:type-name type))
       (($ <extern>) (list (.value type)))
       (($ <bool>) '("bool"))
-      (($ <int>) '("int"))
+      (($ <subint>) '("int"))
       (($ <void>) '("void"))
       (_ (ast:full-name type)))))
 
@@ -333,7 +333,7 @@
 (define-method (code:reply (o <type>))
   o)
 
-(define-method (code:return-type-eq? (a <int>) (b <int>))
+(define-method (code:return-type-eq? (a <subint>) (b <subint>))
   #t)
 (define-method (code:return-type-eq? a b)
   (ast:eq? a b))

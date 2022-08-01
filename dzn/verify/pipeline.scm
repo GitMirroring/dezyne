@@ -94,7 +94,7 @@ EVENT."
          '("false" "true"))
         (($ <enum>)
          (map enum-literal->event (makreel:enum-fields type)))
-        (($ <int>)
+        (($ <subint>)
          (let* ((range (.range type))
                 (from (.from range)))
            (map number->string (iota (1+ (- (.to range) from)) from))))
