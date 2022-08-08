@@ -62,6 +62,7 @@
             blocked-ports
             collateral-block
             defer-event?
+            defer-labels
             dequeue
             dequeue-external
             enqueue

@@ -591,9 +591,10 @@ port return."
     (let* ((boundary (filter runtime:boundary-port? (%instances)))
            (traces (append-map (cute port->label-traces pc <>) boundary))
            (fake-traces (list (list pc)))
+           (defer-traces (map (cute cons <> fake-traces) (defer-labels pc)))
            (return-traces (map (cute cons <> fake-traces) (return-labels pc)))
            (rtc-traces (map (cute cons <> fake-traces) (rtc-labels pc))))
-      (append traces return-traces rtc-traces)))
+      (append traces defer-traces return-traces rtc-traces)))
 
   (if (is-a? (%sut) <runtime:system>) (system-event-traces-alist pc)
       (event-traces-alist pc)))
