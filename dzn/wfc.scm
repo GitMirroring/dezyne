@@ -432,6 +432,9 @@
             (else '()))))
   (append (blocking o) (wfc (.statement o))))
 
+(define-method (wfc (o <defer>))
+  (wfc (.statement o)))
+
 (define-method (wfc (o <on>)) ;; is-a <declarative>
   (define (on o)
     (append
