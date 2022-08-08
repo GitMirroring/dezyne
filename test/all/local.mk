@@ -430,6 +430,7 @@ REGRESSION_TESTS =				\
  %D%/stress_comment				\
  %D%/sync_out_reply_binding			\
  %D%/sync_out_reply_enum			\
+ %D%/system_defer				\
  %D%/system_double_inevitable			\
  %D%/system_double_out				\
  %D%/system_flush				\

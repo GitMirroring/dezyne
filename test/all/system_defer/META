@@ -1,0 +1,2 @@
+;;; -*- scheme -*-
+((model "hello_defer"))
