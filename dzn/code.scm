@@ -614,10 +614,6 @@
   (if (null? (code:injected-bindings o)) '()
       (list o)))
 
-;; (define-method (code:injected-instances (o <system>))
-;;   (if (null? (code:injected-bindings o)) '()
-;;       (injected-instances o)))
-
 (define (code:port-bind? bind)
   (and (code:port-binding? bind)
        bind))
