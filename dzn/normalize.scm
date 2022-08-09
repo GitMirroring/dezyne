@@ -371,11 +371,17 @@
   (let* ((triples (filter (lambda (t) (trigger-equal? ((compose car ast:trigger* triple-on) t) trigger)) triples))
          (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
          (guard (and-not-guards (map triple-guard triples)))
-         (provides? (and=> (.port trigger) ast:provides?))
-         (statement (make (cond (provides? <declarative-illegal>)
-                                ((is-a? model <interface>) <declarative-illegal>)
-                                (else <illegal>)))))
-    (append triples (list (make-triple on guard #f statement)))))
+         (guard (simplify-guard guard)))
+    (if (ast:literal-false? (.expression guard)) triples
+        (let* ((provides? (and=> (.port trigger) ast:provides?))
+               (statement (make (cond (provides?
+                                       <declarative-illegal>)
+                                      ((is-a? model <interface>)
+                                       <declarative-illegal>)
+                                      (else
+                                       <illegal>))))
+               (illegal-triple (make-triple on guard #f statement)))
+          (append triples (list illegal-triple))))))
 
 (define ((triples:add-illegals model) triples)
   (append (append-map (cut add-illegals model triples <>) (ast:in-triggers model))
