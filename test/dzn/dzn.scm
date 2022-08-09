@@ -41,7 +41,7 @@
             run-test))
 
 (define %default-stages
-  '("verify" "traces" "lts" "simulate" "code"))
+  '("verify" "traces" "simulate" "lts" "code"))
 
 
 ;;;
@@ -623,8 +623,8 @@ output, and standard error as three values."
          (and
           (or (skip? "verify") (run-verify file-name))
           (or (skip? "traces") (run-traces file-name))
-          (or (skip? "lts") (run-lts file-name))
           (or (skip? "simulate") (run-simulate file-name))
+          (or (skip? "lts") (run-lts file-name))
           (or (skip? "code") (and-map (cute run-code file-name <>) languages)))))
     (format #t "# Local Variables:
 # mode: org
