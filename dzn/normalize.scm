@@ -788,8 +788,7 @@ to prevent unintended shadowing
                 (end (make <defer-end>)))
            (make <compound>
              #:elements (cons o (list end))
-             #:location location))
-         )))
+             #:location location)))))
   (match o
     (($ <defer>)
      (let ((statement (add-defer-end (.statement o))))
