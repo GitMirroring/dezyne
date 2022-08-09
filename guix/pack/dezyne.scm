@@ -82,10 +82,10 @@
           (add-after 'install 'wrap-binaries
             (lambda* (#:key inputs outputs #:allow-other-keys)
               (let* ((out (assoc-ref outputs "out"))
-                     (bash (assoc-ref %build-inputs "bash"))
-                     (guile (assoc-ref %build-inputs "guile"))
+                     (bash (assoc-ref %build-inputs "bash-minimal"))
+                     (guile (assoc-ref %build-inputs "guile-next"))
                      (json (assoc-ref %build-inputs "guile-json"))
-                     (mcrl2 (assoc-ref %build-inputs "mcrl2"))
+                     (mcrl2 (assoc-ref %build-inputs "mcrl2-minimal"))
                      (readline (assoc-ref %build-inputs "guile-readline"))
                      (sed (assoc-ref %build-inputs "sed"))
                      (effective (read
