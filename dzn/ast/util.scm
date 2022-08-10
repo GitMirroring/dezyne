@@ -31,6 +31,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast accessor)
@@ -41,6 +42,7 @@
   #:export (ast-name
             clone
             clone-top
+            clone+root
             drop-<>
             graft
             graft*
@@ -207,3 +209,31 @@ create a fresh clone, and #true if any slots need mutation."
 
 (define-method (tree-collect predicate o)
   (tree-collect-filter identity predicate o))
+
+(define-method (clone+root (o <ast>) . keyword-values)
+  "clone o and its ancestors including root returning multiple values: the
+clone and the cloned root."
+  (define (replace orig kloon)
+    (match-lambda
+      ((keyword value)
+       (let ((value (or (and (pair? value)
+                             (map (lambda (v)
+                                    (if (eq? v orig) kloon
+                                        v))
+                                  value))
+                        (and (eq? value orig) kloon)
+                        value)))
+         `(,keyword ,value)))))
+  (define clone-children
+    (match-lambda*
+      ((ancestor (orig . kloon))
+       (let* ((class (class-of ancestor))
+              (keyword-values (ast:keyword+child* ancestor))
+              (keyword-values (map (replace orig kloon) keyword-values))
+              (keyword-values (apply append keyword-values)))
+         `(,ancestor . ,(apply clone ancestor keyword-values))))))
+  (let* ((context (.parent (ast:context o)))
+         (kloon (apply clone o keyword-values))
+         (ancestor+root (fold clone-children `(,o . ,kloon) context))
+         (root (match ancestor+root ((ancestor . root) root))))
+    (values kloon root)))

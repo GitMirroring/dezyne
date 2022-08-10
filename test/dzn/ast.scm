@@ -26,7 +26,9 @@
 
 (define-module (test dzn ast)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
+  #:use-module (srfi srfi-71)
 
   #:use-module (test dzn automake)
 
@@ -41,8 +43,21 @@
   #:use-module (dzn parse)
   #:use-module (dzn parse peg))
 
+(define ast:keyword+child* (@@ (dzn ast context) ast:keyword+child*))
 (define deep-copy (@@ (dzn ast util) deep-copy))
 (define deep-copy* (@@ (dzn ast util) deep-copy*))
+
+(define-method (equal? (a <ast>) (b <ast>))
+  (define comment?
+    (compose (cute eq? <> #:location) car))
+  (let ((class-a (class-of a))
+        (class-b (class-of b)))
+    (and (eq? class-a class-b)
+         (let* ((keyword-values-a (ast:keyword+child* a))
+                (keyword-values-a (filter (negate comment?) keyword-values-a))
+                (keyword-values-b (ast:keyword+child* b))
+                (keyword-values-b (filter (negate comment?) keyword-values-b)))
+           (equal? keyword-values-a keyword-values-b)))))
 
 (test-begin "ast")
 
@@ -144,7 +159,8 @@ component hello
                     (car (ast:statement* (deep-copy compound))))))
 
         (let* ((defer (make <defer> #:statement compound))
-               (defer-copy (deep-copy* (.parent compound) defer)))
+               (defer-copy (deep-copy defer))
+               (defer-copy* (deep-copy* (.parent compound) defer)))
 
           (test-assert "deep-copy*'d has new id"
             (not (eq? (.id defer-copy)
@@ -154,8 +170,37 @@ component hello
             (not (eq? (.id compound)
                       (.id (.statement defer-copy)))))
 
-          (test-eq "deep-copy*'d child's parent"
-            defer-copy
-            (.parent (.statement defer-copy))))))))
+          (test-eq "deep-copy'd child's parent"
+            defer-copy*
+            (.parent (.statement defer-copy*))))
+
+        (let* ((context (ast:context action))
+               (kloon kloon-root (clone+root action #:event.name "world"))
+               (kloon-context (parameterize ((%context (ast:memoize-context kloon-root)))
+                                (ast:context kloon))))
+
+          (test-assert "root and kloon-root not eq?"
+            (not (eq? (%root)
+                      kloon-root)))
+
+          (test-equal "root and kloon-root equal"
+            (%root)
+            kloon-root)
+
+          (test-assert "original and clone not eq?"
+            (not (eq? action
+                      kloon)))
+
+          (test-equal "action and kloon equal"
+            action
+            kloon)
+
+          (test-assert "contexts not eq?"
+            (not (eq? context
+                      kloon-context)))
+
+          (test-equal "context and kloon-context equal"
+            context
+            kloon-context))))))
 
 (test-end)
