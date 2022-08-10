@@ -109,17 +109,19 @@
       (format #f "dzn_tmp~a" count))))
 
 (define (temporaries o)
+  (define typed-action/call?
+    (conjoin (disjoin (is? <action>) (is? <call>))
+             ast:typed?))
   (define add-temporary?
     (conjoin (disjoin (is? <action>)
                       (is? <binary>)
                       (is? <call>))
              ast:typed?
+             (compose pair?
+                      (cute tree-collect typed-action/call? <>))
              (disjoin
               (cute parent <> <arguments>)
               (compose (cute parent <> <binary>) .parent))))
-  (define typed-action/call?
-    (conjoin (disjoin (is? <action>) (is? <call>))
-             ast:typed?))
   (cond ((is-a? o <call>)
          (tree-collect add-temporary? o))
         ((or (is-a? o <assign>) (is-a? o <variable>))
