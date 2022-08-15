@@ -32,11 +32,11 @@
                                      slot-definition-name slot-ref))
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn normalize)
   #:use-module (dzn templates)
 
   #:export (json:get-fields

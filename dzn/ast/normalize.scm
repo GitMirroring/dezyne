@@ -25,7 +25,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn normalize)
+(define-module (dzn ast normalize)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)

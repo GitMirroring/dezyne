@@ -33,11 +33,11 @@
   #:use-module (srfi srfi-64)
   #:use-module (test dzn automake)
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
-  #:use-module (dzn misc)
-  #:use-module (dzn normalize))
+  #:use-module (dzn misc))
 
-(define simplify-expression (@@ (dzn normalize) simplify-expression))
+(define simplify-expression (@@ (dzn ast normalize) simplify-expression))
 
 (test-begin "normalize")
 

@@ -33,7 +33,6 @@ dist_%C%_scm_DATA =				\
  %D%/indent.scm					\
  %D%/lts.scm					\
  %D%/misc.scm					\
- %D%/normalize.scm				\
  %D%/parse.scm					\
  %D%/peg.scm					\
  %D%/pipe.scm					\

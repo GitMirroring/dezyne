@@ -30,9 +30,9 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
-  #:use-module (dzn normalize)
   #:use-module (dzn vm goops)
   #:export (vm:normalize
             normalize:compounds))

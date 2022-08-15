@@ -38,15 +38,15 @@
   #:use-module (ice-9 textual-ports)
 
   #:use-module (dzn ast display)
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast equal)
+  #:use-module (dzn ast goops)
+  #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn misc)
-  #:use-module (dzn normalize)
   #:use-module (dzn templates)
 
   #:export (%model-name
