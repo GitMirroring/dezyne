@@ -120,8 +120,8 @@
   (tree-collect (is? <defer>) o))
 
 (define-method (makreel:interface-reorder (o <behavior>))
-  (if (ast:parent o <interface>) o
-      '()))
+  (and (ast:parent o <interface>)
+       o))
 
 (define-method (makreel:interface-reorder (o <ast>))
   '())
@@ -172,8 +172,8 @@
         (ast:eq? (last statements) o))))
 
 (define-method (makreel:assign-call-parameter (o <variable>))
-  (if (last-statement? o) '()
-      o))
+  (and (not (last-statement? o))
+       o))
 
 (define-method (makreel:assign-call-parameter (o <assign>))
   (if (and (last-statement? o)
@@ -444,19 +444,20 @@
   (call-continuations o #f))
 
 (define-method (makreel:recurse? (o <call>))
-  (if (.last? o) o
-      '()))
+  (and (.last? o)
+       o))
 
 (define-method (makreel:non-recurse? (o <call>))
-  (if (.last? o) '()
-      o))
+  (and (not (.last? o))
+       o))
 
 (define-method (makreel:function-return-proc (o <model>))
-  (if (pair? ((compose makreel:called-function* .behavior) o)) o
-      '()))
+  (and (pair? ((compose makreel:called-function* .behavior) o))
+       o))
 
 (define-method (makreel:function-return (o <model>))
-  (append-map makreel:function-return ((compose makreel:called-function* .behavior) o)))
+  (append-map makreel:function-return
+              ((compose makreel:called-function* .behavior) o)))
 
 (define-method (makreel:function-return (o <function>))
   (call-continuations (ast:parent o <behavior>) (.name o)))
@@ -476,8 +477,8 @@
       (clone o #:expression (make <void>))))
 
 (define-method (makreel:return-type-sort (o <model>))
-  (if (pair? ((compose makreel:called-function* .behavior) o)) o
-      '()))
+  (and (pair? ((compose makreel:called-function* .behavior) o))
+       o))
 
 (define-method (ast:return-type-eq? (a <function>) (b <function>) )
   (apply ast:eq? (map (compose .type .signature) (list a b))))
@@ -701,22 +702,24 @@
           ""))
 
 (define-method (makreel:continuation-haakjes (o <ast>))
-  (if (or (pair? ((compose variables-in-scope car makreel:continuation) o))
-          (ast:parent o <function>)) o
-          '()))
+  (and (or (pair? ((compose variables-in-scope car makreel:continuation) o))
+           (ast:parent o <function>))
+       o))
 
 (define-method (makreel:process-continuation (o <ast>))
   (mcrl2:process-continuation o))
 
 (define-method (makreel:sum-helper-params (o <ast>))
   (let* ((locals (variables-in-scope o))
-         (var (list (or (ast:parent o <variable>) (.variable (ast:parent o <assign>)))))
+         (var (list (or (ast:parent o <variable>)
+                        (.variable (ast:parent o <assign>)))))
          (params (append locals var)))
     (delete-duplicates params ast:eq?)))
 
 (define-method (makreel:the-end (o <ast>))
-  (if (and (ast:parent o <component>) (ast:eq? o (.statement (ast:parent o <behavior>)))) o
-      '()))
+  (and (ast:parent o <component>)
+       (ast:eq? o (.statement (ast:parent o <behavior>)))
+        o))
 
 (define-method (makreel:continuation (o <ast>))
   (define (statement-continuation o)
@@ -734,7 +737,6 @@
           (match o
             ((and ($ <declarative-compound>) (= ast:statement* ())) (throw 'barf "unexpected empty declarative-compound"))
             ((and ($ <declarative-compound>) (= ast:statement* elements)) elements)
-            ;;ASSUME normalized model <guard> <on> <compound>
             (($ <behavior>) (list (.statement o)))
             (($ <function>) (list (.statement o)))
             (($ <guard>) (list (.statement o)))
@@ -824,12 +826,12 @@
         other)))
 
 (define-method (makreel:rename-flush-provides (o <port>))
-  (if (ast:provides? o) o
-      '()))
+  (and (ast:provides? o)
+       o))
 
 (define-method (makreel:rename-flush-requires (o <port>))
-  (if (ast:requires? o) o
-      '()))
+  (and (ast:requires? o)
+       o))
 
 (define-method (makreel:allow-tau (o <component>))
   (delete-duplicates (append (map .type (ast:port* o))) ast:eq?))
