@@ -1,4 +1,4 @@
 ;;; -*- scheme -*-
-((skip ("verify"))
+((skip ("verify" "lts"))
  (comment
    "LTS is not generated reproducibly over mcrl2/boost builds."))
