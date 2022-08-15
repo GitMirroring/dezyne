@@ -23,17 +23,22 @@
 //
 // Commentary:
 //
+// ihello                     : hello, return, world (refuses hello)
+// compliance_failures_choice : hello, return, hello (refuses world)
+//
 // Code:
 
 interface ihello
 {
   in void hello();
+  in void cruel();
   out void world();
 
   behavior
   {
     bool b = false;
 
+    on cruel: {} // required to avoid deadlock in component
     [!b] on hello: b = true;
     [b] on hello: illegal;   // refuse second hello
     [b] on inevitable: {b = false; world;}
@@ -43,7 +48,7 @@ interface ihello
 interface iworld
 {
   in void hello();
-  in bool terminated();
+  in void cruel();
 
   behavior
   {
@@ -51,7 +56,7 @@ interface iworld
 
     [!b] on hello: b = true;
     [b] on hello: illegal;
-    on terminated: reply(!b); // avoids deadlock
+    on cruel: {} // avoids deadlock
   }
 }
 
@@ -65,8 +70,6 @@ component compliance_failures_choice
     bool b = true;
 
     on h.hello(): {if(b) w.hello(); b = false;} // accept second hello
+    on h.cruel(): {} // avoids deadlock
   }
 }
-
-// ihello                            : hello, return, world (refuses hello)
-// compliance_failures_choice : hello, return, hello (refuses world)
