@@ -177,8 +177,14 @@
                        (conjoin (disjoin (is? <minus>) (is? <plus>))
                                 >1-typed-action/call?)
                        o))
-         (expressions (append-map (lambda (x) (list (.left x) (.right x)))
-                                  expressions)))
+         (expressions (append-map
+                       (lambda (x)
+                         (let ((expressions (list (.left x) (.right x))))
+                           (filter
+                            (compose pair?
+                                     (cute tree-collect typed-action/call? <>))
+                            expressions)))
+                       expressions)))
     (append arguments expressions)))
 
 (define (add-temporary? o)
