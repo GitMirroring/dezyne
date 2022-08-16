@@ -1,12 +1,15 @@
 verify: I: check: deadlock: ok
+verify: I: check: unreachable: ok
 verify: I: check: livelock: ok
 verify: I: check: deterministic: ok
 verify: II: check: deadlock: ok
+verify: II: check: unreachable: ok
 verify: II: check: livelock: ok
 verify: II: check: deterministic: ok
 verify: second_reply_blocking: check: deterministic: ok
 verify: second_reply_blocking: check: illegal: ok
 verify: second_reply_blocking: check: deadlock: fail
 error: double reply in model second_reply_blocking
+verify: second_reply_blocking: check: unreachable: skip
 verify: second_reply_blocking: check: livelock: ok
 verify: second_reply_blocking: check: compliance: skip

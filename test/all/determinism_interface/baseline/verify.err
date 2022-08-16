@@ -1,4 +1,5 @@
 verify: determinism_interface: check: deadlock: ok
+verify: determinism_interface: check: unreachable: ok
 verify: determinism_interface: check: livelock: ok
 verify: determinism_interface: check: deterministic: fail
 error: interface determinism_interface is unobservably non-deterministic

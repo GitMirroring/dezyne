@@ -1,9 +1,11 @@
 verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: compliance_defer: check: deterministic: ok
 verify: compliance_defer: check: illegal: ok
 verify: compliance_defer: check: deadlock: ok
+verify: compliance_defer: check: unreachable: ok
 verify: compliance_defer: check: livelock: ok
 verify: compliance_defer: check: compliance: fail
 error: component compliance_defer is non-compliant with interface(s) of provides port(s)

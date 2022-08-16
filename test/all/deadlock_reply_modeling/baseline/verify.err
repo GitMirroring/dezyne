@@ -1,4 +1,5 @@
 verify: deadlock_reply_modeling: check: deadlock: fail
 error: deadlock in model deadlock_reply_modeling
+verify: deadlock_reply_modeling: check: unreachable: skip
 verify: deadlock_reply_modeling: check: livelock: ok
 verify: deadlock_reply_modeling: check: deterministic: ok

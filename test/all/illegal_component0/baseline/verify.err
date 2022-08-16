@@ -1,9 +1,11 @@
 verify: I: check: deadlock: ok
+verify: I: check: unreachable: ok
 verify: I: check: livelock: ok
 verify: I: check: deterministic: ok
 verify: illegal_component0: check: deterministic: ok
 verify: illegal_component0: check: illegal: fail
 error: illegal action performed in model illegal_component0
 verify: illegal_component0: check: deadlock: ok
+verify: illegal_component0: check: unreachable: skip
 verify: illegal_component0: check: livelock: ok
 verify: illegal_component0: check: compliance: skip

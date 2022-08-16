@@ -1,9 +1,11 @@
 verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: second_reply: check: deterministic: ok
 verify: second_reply: check: illegal: ok
 verify: second_reply: check: deadlock: fail
 error: double reply in model second_reply
+verify: second_reply: check: unreachable: skip
 verify: second_reply: check: livelock: ok
 verify: second_reply: check: compliance: skip

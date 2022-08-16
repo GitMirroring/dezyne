@@ -1,9 +1,11 @@
 verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: compliance_external_inevitable: check: deterministic: ok
 verify: compliance_external_inevitable: check: illegal: ok
 verify: compliance_external_inevitable: check: deadlock: ok
+verify: compliance_external_inevitable: check: unreachable: ok
 verify: compliance_external_inevitable: check: livelock: ok
 verify: compliance_external_inevitable: check: compliance: fail
 error: component compliance_external_inevitable is non-compliant with interface(s) of provides port(s)

@@ -1,9 +1,11 @@
 verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: defer_queuefull: check: deterministic: ok
 verify: defer_queuefull: check: illegal: ok
 verify: defer_queuefull: check: deadlock: fail
 error: queue full in model defer_queuefull
+verify: defer_queuefull: check: unreachable: skip
 verify: defer_queuefull: check: livelock: ok
 verify: defer_queuefull: check: compliance: skip
