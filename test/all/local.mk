@@ -422,6 +422,7 @@ REGRESSION_TESTS =				\
  %D%/second_reply_blocking			\
  %D%/shell_injected				\
  %D%/simple.space				\
+ %D%/simplify_guards				\
  %D%/space.import_interface_shadow		\
  %D%/space.interface_shadow			\
  %D%/space.space				\
