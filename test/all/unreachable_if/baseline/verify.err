@@ -1,0 +1,15 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: unreachable_if: check: deterministic: ok
+verify: unreachable_if: check: illegal: ok
+verify: unreachable_if: check: deadlock: ok
+verify: unreachable_if: check: unreachable: fail
+test/all/unreachable_if/unreachable_if.dzn:49:9: error: code will never be executed
+test/all/unreachable_if/unreachable_if.dzn:52:9: error: code will never be executed
+test/all/unreachable_if/unreachable_if.dzn:60:9: error: code will never be executed
+test/all/unreachable_if/unreachable_if.dzn:72:11: error: code will never be executed
+test/all/unreachable_if/unreachable_if.dzn:75:11: error: code will never be executed
+verify: unreachable_if: check: livelock: ok
+verify: unreachable_if: check: compliance: ok
