@@ -1,0 +1,11 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: unreachable_defer: check: deterministic: ok
+verify: unreachable_defer: check: illegal: ok
+verify: unreachable_defer: check: deadlock: ok
+verify: unreachable_defer: check: unreachable: fail
+test/all/unreachable_defer/unreachable_defer.dzn:45:13: error: code will never be executed
+verify: unreachable_defer: check: livelock: ok
+verify: unreachable_defer: check: compliance: ok

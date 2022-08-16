@@ -92,7 +92,8 @@ HELLO_TESTS =					\
  %D%/livelock_component				\
  %D%/queuefull_component0			\
  %D%/semantics					\
- %D%/state-diagram
+ %D%/state-diagram				\
+ %D%/unreachable_component
 
 SEMANTICS_TESTS =				\
  %D%/direct_in					\
@@ -450,6 +451,11 @@ REGRESSION_TESTS =				\
  %D%/system_out_two				\
  %D%/system_reply_bool				\
  %D%/system_reply_enum				\
+ %D%/unreachable_defer		 		\
+ %D%/unreachable_function			\
+ %D%/unreachable_if				\
+ %D%/unreachable_interface	 		\
+ %D%/unreachable_shared				\
  %D%/unused_assign				\
  %D%/unused_function
 
