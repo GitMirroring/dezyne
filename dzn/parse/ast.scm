@@ -632,6 +632,11 @@ to the AST element."
         (('expression expression) (helper expression))
         (('expression expression ...) (helper expression))
         (('group expression) (make <group-node> #:expression (helper expression)))
+        (('minus expression)
+         (let* ((right (helper expression))
+                (zero (make <literal-node> #:value 0))
+                (left (clone zero #:location (.location right))))
+          (make <minus-node> #:left left #:right right)))
         (('not expression) (make <not-node> #:expression (helper expression)))
 
         (('literal "true") (make <literal-node> #:value "true"))
