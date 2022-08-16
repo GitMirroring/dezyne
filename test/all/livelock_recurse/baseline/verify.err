@@ -1,4 +1,5 @@
 verify: livelock_recurse: check: deadlock: ok
+verify: livelock_recurse: check: unreachable: ok
 verify: livelock_recurse: check: livelock: fail
 error: livelock in model livelock_recurse
 verify: livelock_recurse: check: deterministic: ok

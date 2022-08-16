@@ -1,9 +1,11 @@
 verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: compliance_provides_enum: check: deterministic: ok
 verify: compliance_provides_enum: check: illegal: ok
 verify: compliance_provides_enum: check: deadlock: ok
+verify: compliance_provides_enum: check: unreachable: ok
 verify: compliance_provides_enum: check: livelock: ok
 verify: compliance_provides_enum: check: compliance: fail
 error: component compliance_provides_enum is non-compliant with interface(s) of provides port(s)

@@ -31,7 +31,7 @@ interface ihello
   }
 }
 
-component and_not_guards
+component unreachable_determinism
 {
   provides ihello h;
 

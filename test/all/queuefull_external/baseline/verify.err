@@ -1,12 +1,15 @@
 verify: i: check: deadlock: ok
+verify: i: check: unreachable: ok
 verify: i: check: livelock: ok
 verify: i: check: deterministic: ok
 verify: ii: check: deadlock: ok
+verify: ii: check: unreachable: ok
 verify: ii: check: livelock: ok
 verify: ii: check: deterministic: ok
 verify: queuefull_external: check: deterministic: ok
 verify: queuefull_external: check: illegal: ok
 verify: queuefull_external: check: deadlock: fail
 error: queue full in model queuefull_external
+verify: queuefull_external: check: unreachable: skip
 verify: queuefull_external: check: livelock: ok
 verify: queuefull_external: check: compliance: skip

@@ -55,6 +55,7 @@
             makreel:enum-fields
             makreel:get-model
             makreel:init-process
+            makreel:line-column
             makreel:model->makreel
             makreel:model-name
             makreel:name

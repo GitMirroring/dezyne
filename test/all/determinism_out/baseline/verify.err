@@ -1,9 +1,11 @@
 verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: determinism_out: check: deterministic: fail
 error: component determinism_out is non-deterministic due to overlapping guards
 verify: determinism_out: check: illegal: ok
 verify: determinism_out: check: deadlock: ok
+verify: determinism_out: check: unreachable: ok
 verify: determinism_out: check: livelock: ok
 verify: determinism_out: check: compliance: ok

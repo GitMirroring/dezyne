@@ -1,0 +1,18 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: fail
+test/all/unused_function/unused_function.dzn:31:15: error: code will never be executed
+test/all/unused_function/unused_function.dzn:32:15: error: code will never be executed
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: iworld: check: deadlock: ok
+verify: iworld: check: unreachable: ok
+verify: iworld: check: livelock: ok
+verify: iworld: check: deterministic: ok
+verify: unused_function: check: deterministic: ok
+verify: unused_function: check: illegal: ok
+verify: unused_function: check: deadlock: ok
+verify: unused_function: check: unreachable: fail
+test/all/unused_function/unused_function.dzn:44:14: error: code will never be executed
+test/all/unused_function/unused_function.dzn:45:14: error: code will never be executed
+verify: unused_function: check: livelock: ok
+verify: unused_function: check: compliance: ok

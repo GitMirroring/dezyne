@@ -1,4 +1,5 @@
 verify: determinism_silent: check: deadlock: ok
+verify: determinism_silent: check: unreachable: ok
 verify: determinism_silent: check: livelock: ok
 verify: determinism_silent: check: deterministic: fail
 error: interface determinism_silent is unobservably non-deterministic

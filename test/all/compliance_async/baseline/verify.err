@@ -1,11 +1,13 @@
 test/all/compliance_async/compliance_async.dzn:48:5: warning: dzn.async is deprecated, please update to defer.
 test/all/compliance_async/compliance_async.dzn:49:5: warning: dzn.async is deprecated, please update to defer.
 verify: IAsync: check: deadlock: ok
+verify: IAsync: check: unreachable: ok
 verify: IAsync: check: livelock: ok
 verify: IAsync: check: deterministic: ok
 verify: compliance_async: check: deterministic: ok
 verify: compliance_async: check: illegal: ok
 verify: compliance_async: check: deadlock: ok
+verify: compliance_async: check: unreachable: ok
 verify: compliance_async: check: livelock: ok
 verify: compliance_async: check: compliance: fail
 error: component compliance_async is non-compliant with interface(s) of provides port(s)

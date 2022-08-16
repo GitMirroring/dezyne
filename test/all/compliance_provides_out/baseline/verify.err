@@ -1,9 +1,11 @@
 verify: i: check: deadlock: ok
+verify: i: check: unreachable: ok
 verify: i: check: livelock: ok
 verify: i: check: deterministic: ok
 verify: compliance_provides_out: check: deterministic: ok
 verify: compliance_provides_out: check: illegal: ok
 verify: compliance_provides_out: check: deadlock: ok
+verify: compliance_provides_out: check: unreachable: ok
 verify: compliance_provides_out: check: livelock: ok
 verify: compliance_provides_out: check: compliance: fail
 error: component compliance_provides_out is non-compliant with interface(s) of provides port(s)

@@ -1,4 +1,5 @@
 verify: deadlock_interface1: check: deadlock: fail
 error: deadlock in model deadlock_interface1
+verify: deadlock_interface1: check: unreachable: skip
 verify: deadlock_interface1: check: livelock: ok
 verify: deadlock_interface1: check: deterministic: ok

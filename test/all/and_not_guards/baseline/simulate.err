@@ -1,2 +1,0 @@
-test/all/and_not_guards/and_not_guards.dzn:43:26: error: component is non-deterministic due to overlapping guards
-test/all/and_not_guards/and_not_guards.dzn:45:20: error: component is non-deterministic due to overlapping guards

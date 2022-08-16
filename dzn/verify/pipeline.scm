@@ -165,17 +165,27 @@ actions."
              (string-split trace #\;))
      "\n")))
 
+(define (model-tags model)
+  (define (line-column o)
+    (format #f "tag(~a)" (makreel:line-column o)))
+  (let ((tags (tree-collect-filter (negate (disjoin (is? <expression>)
+                                                    (is? <location>)))
+                                   (is? <tag>)
+                                   model)))
+    (map line-column tags)))
+
 
 ;;;
 ;;; Verify pipeline.
 ;;;
 
 (define-immutable-record-type <options>
-  (make-options root model init)
+  (make-options root model init tags)
   options?
   (root options-root)
   (model options-model)
-  (init options-init))
+  (init options-init)
+  (tags options-tags))
 
 (define (get-commands in-out.pipeline format) ;target-format -> commands
   (define (get-input in-out.pipeline format) ;target-format -> input
@@ -274,11 +284,15 @@ actions."
 
 (define (in-out:aut->verify-interface options)
   (let* ((taus (model-taus options))
-         (model (options-model options)))
+         (model (options-model options))
+         (tags (options-tags options))
+         (tags (string-join tags ";")))
     `(,%dzn "lts" "--single-line"
             "--deadlock"
             ,@taus
             "--livelock"
+            ,@(if (%no-unreachable?) '()
+                  `(,(string-append "--unreachable=" tags)))
             "-")))
 
 (define in-out:aut->verify-interface-nondet
@@ -288,6 +302,8 @@ actions."
 (define (in-out:aut->verify-component options)
   (let* ((taus (model-taus options))
          (model (options-model options))
+         (tags (options-tags options))
+         (tags (string-join tags ";"))
          (deterministic (deterministic-labels model)))
     `(,%dzn "lts" "--single-line"
             "--deterministic-labels" ,deterministic
@@ -295,6 +311,8 @@ actions."
             "--deadlock"
             ,@taus
             "--livelock"
+            ,@(if (%no-unreachable?) '()
+                  `(,(string-append "--unreachable=" tags)))
             "--failures"
             "-")))
 
@@ -384,7 +402,8 @@ to (current-output-port)."
   (define ((prepare options) next result)
     (let ((next (if (procedure? next) (next options) next)))
       (cons next result)))
-  (let* ((options (make-options root model init))
+  (let* ((tags (model-tags model))
+         (options (make-options root model init tags))
          (commands (get-commands in-out.pipeline out))
          (commands (reverse (fold (prepare options) '() commands))))
     (when (dzn:command-line:get 'debug)
@@ -440,8 +459,7 @@ init for MODEL unless INIT."
 
 (define (get-line key result)
   (let ((key (symbol->string key)))
-    (or (find (compose (cute equal? key <>) car) result)
-        (throw 'programming-error (format #f "no such assert: ~s, result: ~s\n" key result)))))
+    (find (compose (cute equal? key <>) car) result)))
 
 (define (get-lts result)
   (let ((line (get-line 'failures result)))
@@ -459,8 +477,7 @@ init for MODEL unless INIT."
       ((assert "fail" trace)
        (let ((trace (semi->newline trace)))
          (hide-internal-labels trace)))
-      (_
-       (throw 'programming-error (format #f "ill-formed assert: ~s, result: ~s\n" assert result))))))
+      (_ #f))))
 
 (define (report-ok model assert)
   (let ((verbose? (dzn:command-line:get 'verbose))
@@ -475,8 +492,15 @@ init for MODEL unless INIT."
     (filter (negate (cut string-contains <> "<flush>")) trace))
   (define (drop-queue-full-tail trace)
     (append (take-while (negate (cut equal? "<queue-full>" <>)) trace) (list "<queue-full>")))
+  (define (tag->message tag)
+    (apply format #f "~a:~a:~a: error: code will never be executed"
+           (.file-name (.location (.behavior model)))
+           (string-split tag #\,)))
   (let* ((model-name (makreel:unticked-dotted-name model))
+         (unreachable? (eq? assert 'unreachable))
          (trace (filter (negate string-null?) (string-split trace #\newline)))
+         (tags (and unreachable? trace))
+         (trace (if unreachable? '() trace))
          (last-el (and (pair? trace) (last trace)))
          (second-last (and (pair? trace)
                            (pair? (drop-right trace 1))
@@ -499,6 +523,7 @@ init for MODEL unless INIT."
                       ((is-a? model <component>)
                        (format #f "component ~a is non-deterministic due to overlapping guards" model-name))))
                     ((non-compliance) (format #f "component ~a is non-compliant with interface(s) of provides port(s)" model-name))
+                    ((unreachable) (string-join (map tag->message tags) "\n"))
                     ((<range-error>) (format #f "integer range error in model ~a" model-name))
                     ((<type-error>) (format #f "type error in model ~a" model-name))
                     ((<missing-reply>) (format #f "reply missing from model ~a" model-name))
@@ -513,7 +538,8 @@ init for MODEL unless INIT."
          (trace (string-join trace "\n")))
     (when (dzn:command-line:get 'verbose)
       (format (current-error-port) "verify: ~a: check: ~a: fail\n" model-name assert))
-    (format (current-error-port) "error: ~a\n" message)
+    (if unreachable? (write-line message (current-error-port))
+        (format (current-error-port) "error: ~a\n" message))
     (unless (string-null? trace)
       (format #t "model: ~a\n" model-name)
       (format #t "~a\n" trace))
@@ -528,8 +554,8 @@ init for MODEL unless INIT."
               model-name assert))
     #f))
 
-(define (report assert skip trace model)
-  (cond (skip  (report-skip model assert))
+(define (report assert skip? trace model)
+  (cond (skip? (report-skip model assert))
         (trace (report-fail model assert trace))
         (else  (report-ok   model assert))))
 
@@ -547,11 +573,13 @@ init for MODEL unless INIT."
          (result (string-append
                   (verify-pipeline "verify-interface" root model)
                   (verify-pipeline "verify-interface-nondet" root model)))
-         (result (result-split result)))
-    (define (report-assert assert)
-      (report assert #f (get-trace assert result) model))
+         (result (result-split result))
+         (deadlock? (get-trace 'deadlock result)))
+    (define* (report-assert assert #:key skip?)
+      (report assert skip? (get-trace assert result) model))
     (reduce-or (command-line:get 'all)
                (list (cute report-assert 'deadlock)
+                     (cut report-assert 'unreachable #:skip? deadlock?)
                      (cute report-assert 'livelock)
                      (cute report-assert 'deterministic)))))
 
@@ -599,22 +627,25 @@ init for MODEL unless INIT."
   (let* ((model-name (makreel:unticked-dotted-name model))
          (result status (verify-pipeline "verify-component" root model))
          (result (result-split result))
+         (illegal? (get-trace 'illegal result))
+         (deadlock? (get-trace 'deadlock result))
          (refinement-trace interface-accepts component-accepts
                            (mcrl2:verify-compliance root model)))
-    (define (report-assert assert)
-      (report assert #f (get-trace assert result) model))
+    (define* (report-assert assert #:key skip? trace)
+      (report assert skip? (or trace (get-trace assert result)) model))
     (define (extend-trace trace accepts)
       (if accepts (string-append trace (car accepts) "\n")
           trace))
     (reduce-or (command-line:get 'all)
-               (list (cut report-assert 'deterministic)
-                     (cut report-assert 'illegal)
-                     (cut report-assert 'deadlock)
-                     (cut report-assert 'livelock)
-                     (cut report 'compliance
-                          (or (get-trace 'illegal result) (get-trace 'deadlock result))
-                          refinement-trace
-                          model)))))
+               (list (cute report-assert 'deterministic)
+                     (cute report-assert 'illegal)
+                     (cute report-assert 'deadlock)
+                     (cut report-assert 'unreachable
+                          #:skip? (or illegal? deadlock?))
+                     (cute report-assert 'livelock)
+                     (cut report-assert 'compliance
+                          #:skip? (or illegal? deadlock?)
+                          #:trace refinement-trace)))))
 
 (define (mcrl2:verify-interface root model)
   (mcrl2:verify-interface-asserts model root))

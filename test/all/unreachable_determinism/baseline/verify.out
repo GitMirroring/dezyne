@@ -1,0 +1,3 @@
+model: unreachable_determinism
+h.hello
+<non-deterministic>

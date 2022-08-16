@@ -1,12 +1,15 @@
 verify: itransaction: check: deadlock: ok
+verify: itransaction: check: unreachable: ok
 verify: itransaction: check: livelock: ok
 verify: itransaction: check: deterministic: ok
 verify: iblock: check: deadlock: ok
+verify: iblock: check: unreachable: ok
 verify: iblock: check: livelock: ok
 verify: iblock: check: deterministic: ok
 verify: illegal_blocking_race: check: deterministic: ok
 verify: illegal_blocking_race: check: illegal: fail
 error: illegal action performed in model illegal_blocking_race
 verify: illegal_blocking_race: check: deadlock: ok
+verify: illegal_blocking_race: check: unreachable: skip
 verify: illegal_blocking_race: check: livelock: ok
 verify: illegal_blocking_race: check: compliance: skip
