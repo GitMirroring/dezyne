@@ -53,6 +53,7 @@
             assert-illegal
             assert-livelock
             assert-partially-deterministic
+            assert-unreachable
             edge-label
             aut-file->lts
             aut-text->lts
@@ -73,6 +74,7 @@
             lts-state
             lts-states
             remove-illegal
+            remove-tag-edges
             rm-tau-loops
             run
             step-tau
@@ -449,17 +451,28 @@ livelock to deadlock.)"
                                     new-node))
                       (vector->list nodes)))))
 
-(define (remove-state-edges nodes)
-  (define (state-edge? edge)
-    (string-prefix? "<state>" (edge-label edge)))
-  (list->vector (map (lambda (n) (let ((new-node (clone-node n)))
-                                   (set-node-succ! new-node (filter (negate state-edge?) (node-succ n)))
-                                   new-node))
-                      (vector->list nodes))))
+(define (remove-info-edges nodes)
+  (define (info-edge? edge)
+    (or (string-prefix? "<state>" (edge-label edge))
+        (string-prefix? "tag(" (edge-label edge))))
+  (define (remove-info node)
+    (let ((new-node (clone-node node)))
+      (set-node-succ! new-node (filter (negate info-edge?) (node-succ node)))
+      new-node))
+  (list->vector (map remove-info (vector->list nodes))))
+
+(define (remove-tag-edges nodes)
+  (define (tag-edge? edge)
+    (string-prefix? "tag(" (edge-label edge)))
+  (define (remove-tag node)
+    (let ((new-node (clone-node node)))
+      (set-node-succ! new-node (filter (negate tag-edge?) (node-succ node)))
+      new-node))
+  (list->vector (map remove-tag (vector->list nodes))))
 
 (define (deadlock-nodes nodes)
   "States without outgoing edges"
-  (let* ((nodes (remove-state-edges nodes)))
+  (let* ((nodes (remove-info-edges nodes)))
     (define (has-deadlock? state)
       (null? (filter
               (lambda (e) ((negate node-color) (vector-ref nodes (edge-end-state e))))
@@ -477,6 +490,17 @@ livelock to deadlock.)"
          (deadlock-trace (and (not (null? deadlock-nodes)) (trace nodes (car deadlock-nodes)))))
     (if (null? deadlock-nodes) #f
         deadlock-trace)))
+
+(define (assert-unreachable lts tags)
+  "Return any TAGS that are not present in LTS."
+  (let* ((edges (lts-edges lts))
+         (labels (map edge-label edges))
+         (lts-tages (filter (cut string-prefix? "tag(" <>) labels))
+         (lts-tages (delete-duplicates lts-tages))
+         (missing-tags (filter (negate (cut member <> lts-tages)) tags))
+         (missing-tags (delete-duplicates missing-tags)))
+    (if (null? missing-tags) #f
+        missing-tags)))
 
 (define (illegal-nodes nodes)
   "States with labels of illegal outgoing edges."
@@ -778,7 +802,7 @@ required to be non-deterministic."
     (let* ((lts (aut-text->lts (string-join data "\n")))
            (lts (remove-edges-to-illegal (add-illegal-state lts)))
            (nodes (lts->nodes lts #t))
-           (nodes (remove-state-edges nodes))
+           (nodes (remove-info-edges nodes))
            (root (car (lts-state lts))))
       (generate-trace root nodes provides-ports provides-in
                       (string-append model ".trace") out #:verbose? verbose?))))
