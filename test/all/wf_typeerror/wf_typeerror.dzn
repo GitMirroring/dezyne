@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -41,7 +41,10 @@ component wf_typeerror {
     provides E p;
     provides I q;
     behavior {
-        on p.e(): {}
+        subint int {0..0};
+        int state = 0;
+        int c = 0;
+        on p.e(): bool b = (c >= (state + 3));
         on q.e(): reply(EE.AA);
     }
 }
