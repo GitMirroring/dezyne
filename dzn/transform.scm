@@ -46,6 +46,7 @@
                purge-data
                remove-otherwise
                remove-behavior
+               simplify-guard-expressions
                split-complex-expressions))
 
 (define (normalize:compounds-wrap o)

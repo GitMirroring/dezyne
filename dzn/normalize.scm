@@ -61,6 +61,7 @@
             remove-behavior
             remove-location
             remove-otherwise
+            simplify-guard-expressions
             split-complex-expressions
             split-variable))
 
@@ -1284,6 +1285,24 @@ add-explicit-temporaries transformation for splitting argument lists."
     (($ <system>) o)
     ((? (is? <ast>)) (tree-map (cute group-expressions <> group) o))
     (_ o)))
+
+(define (simplify-guard-expressions o)
+  "Simplify guard expressions by using static analysis."
+  (match o
+    (($ <behavior>)
+     (clone o
+            #:statement
+            ((compose
+              triples:->compound-guard-on
+              (cute triples:group-expressions <> (list <and> <field-test> <or>))
+              triples:simplify-guard
+              triples:->triples
+              .statement
+              ) o)))
+    ((? (is? <ast>))
+     (tree-map simplify-guard-expressions o))
+    (_
+     o)))
 
 (define-method (root-> (o <root>))
   ((compose
