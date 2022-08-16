@@ -38,7 +38,7 @@ interface ihello
     on hello: {inc;add;inc;dec;add;inc;inc;reply (0);}
     on hey: {inc;dec;reply (0);}
     on hi: {inc;dec;dec;inc;bar;foo;reply (0);}
-    on goodbye: {inc;dec;inc;dec;reply (0);}
+    on goodbye: {inc;inc;dec;dec;reply (0);}
   }
 }
 
@@ -80,7 +80,7 @@ component complex_int
     on h.goodbye ():
     {
       int i = 0;
-      i = inc (i) + dec (i) + inc (i) + dec (i);
+      i = inc (i) + inc (i) + dec (i) + dec (i);
       reply (i);
     }
   }
