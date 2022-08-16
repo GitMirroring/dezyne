@@ -669,7 +669,8 @@
        (equal? (.port.name a) (.port.name b))))
 
 (define-method (ast:equal? (a <field-test>) (b <field-test>))
-  (equal? (.field a) (.field b)))
+  (and (ast:equal? (.variable a) (.variable b))
+       (equal? (.field a) (.field b))))
 
 (define-method (ast:equal? (a <literal>) (b <literal>))
   (equal? (.value a) (.value b)))
