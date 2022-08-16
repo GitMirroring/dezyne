@@ -26,6 +26,7 @@ interface ihello
   in int hello ();
   in int hey ();
   in int hi ();
+  in int goodbye ();
   out void add ();
   out void dec ();
   out void inc ();
@@ -37,6 +38,7 @@ interface ihello
     on hello: {inc;add;inc;dec;add;inc;inc;reply (0);}
     on hey: {inc;dec;reply (0);}
     on hi: {inc;dec;dec;inc;bar;foo;reply (0);}
+    on goodbye: {inc;dec;inc;dec;reply (0);}
   }
 }
 
@@ -74,6 +76,12 @@ component complex_int
       foo (bar (inc (i) == 1 && dec (i) == 1,
                 dec (i) == 1 || inc (i) == 1));
       reply (0);
+    }
+    on h.goodbye ():
+    {
+      int i = 0;
+      i = inc (i) + dec (i) + inc (i) + dec (i);
+      reply (i);
     }
   }
 }
