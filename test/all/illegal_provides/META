@@ -1,5 +1,5 @@
 ;;; -*- scheme -*-
-((skip ("cs:execute" "lts"))
+((skip ("cs:execute"))
  (comment
    "stacktrace: CLR finalization is a mystery")
  (trace_illegals #t))
