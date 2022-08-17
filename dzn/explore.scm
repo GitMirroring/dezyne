@@ -200,7 +200,7 @@ that PC has one more collaterally blocked coroutine on the same port."
    ((from from-label transition to trigger-location)
     ...)
 "
-  (define (trigger-location trace)
+  (define (on-location trace)
     (let ((pc (find (conjoin (compose (is? <on>) .statement)
                              (disjoin (const (is-a? (%sut) <runtime:port>))
                                       (compose (is? <runtime:component>) .instance)))
@@ -227,12 +227,12 @@ that PC has one more collaterally blocked coroutine on the same port."
                                    (equal? a-transition b-transition))))))
            (to (map car to+transition))
            (transition (map cdr to+transition))
-           (trigger-location (map trigger-location traces)))
+           (on-location (map on-location traces)))
       (if (null? to) (list (list from pc #f #f #f))
           (map (cut list from pc <> <> <>)
                transition
                to
-               trigger-location))))
+               on-location))))
 
   (let* ((alist (hash-table->alist lts))
          (alist (sort alist
