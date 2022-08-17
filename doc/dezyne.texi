@@ -944,6 +944,7 @@ Checks and Errors})
 @example
 $ dzn -v verify doc/examples/ihello-bool.dzn
 verify: ihello_bool: check: deadlock: ok
+verify: ihello_bool: check: unreachable: ok
 verify: ihello_bool: check: livelock: ok
 verify: ihello_bool: check: deterministic: ok
 @end example
@@ -1065,14 +1066,17 @@ Verification suceeds
 @example
 $ dzn -v verify doc/examples/simple-state-machine.dzn
 verify: ihello_bool: check: deadlock: ok
+verify: ihello_bool: check: unreachable: ok
 verify: ihello_bool: check: livelock: ok
 verify: ihello_bool: check: deterministic: ok
 verify: iworld: check: deadlock: ok
+verify: iworld: check: unreachable: ok
 verify: iworld: check: livelock: ok
 verify: iworld: check: deterministic: ok
 verify: simple_state_machine: check: deterministic: ok
 verify: simple_state_machine: check: illegal: ok
 verify: simple_state_machine: check: deadlock: ok
+verify: simple_state_machine: check: unreachable: ok
 verify: simple_state_machine: check: livelock: ok
 verify: simple_state_machine: check: compliance: ok
 @end example
@@ -1623,11 +1627,12 @@ hard for humans to get right in all their detail, and which are
 relatively easily translatable to process algebra.
 
 These properties concern the ordering of events, synchronous versus
-asynchronous calls and transactions, deadlock, livelock, and strict
-adherence to contract.  Verifying a component together with its provides
-and requires interfaces ensures that the component behaves correctly in
-its environment according to the specified behavior.  It also ensures
-that all possible error paths are fully and correctly handled.
+asynchronous calls and transactions, deadlock, unreachable code,
+livelock, and strict adherence to contract.  Verifying a component
+together with its provides and requires interfaces ensures that the
+component behaves correctly in its environment according to the
+specified behavior.  It also ensures that all possible error paths are
+fully and correctly handled.
 
 All properties that Dezyne verifies on interface and component level
 are @emph{compositional}, which implies, e.g., that as system consisting
@@ -1683,6 +1688,10 @@ Upon violation, the following error is reported:
 @example
 error: deadlock in model <name>
 @end example
+
+@item unreachable code
+An unreachable code error occurs when there is no code path possible
+that ever leads to the execution of the code.
 
 @item illegal
 A trigger that is not handled in a certain state, results in an
