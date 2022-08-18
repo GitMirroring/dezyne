@@ -5193,7 +5193,9 @@ remain in the same state as it was at the time of invoking @code{defer}.
 Anything that changes the state of the component after invoking
 @code{defer} but before the deferred statement executes will remove it
 from the queue, and thereby implicitly cancel it.  This is demonstrated
-by the example below.
+by the example below.  Note that a data member variable is not part of
+the component state, and changing its value does not cancel the deferred
+statement.
 
 @example
 @verbatiminclude examples/defer-cancel.dzn
