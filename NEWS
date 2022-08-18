@@ -5,7 +5,7 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* Changes in 2.16.0 since 2.15.3
+* Changes in 2.16.0 since 2.15.4
 ** Language
   - A new keyword `defer' has been introduced.
   - The `dzn.async' ports are now deprecated.
@@ -29,9 +29,9 @@
 ** Commands
   - The `dzn' command has a new option: `-t,--transform=TRANS'.  This
     makes dzn->dzn transformation avaiable from the command line.
-    + New transformations have been added: `add-determinism-temporaries,
-      `inline-functions', `simplify-guard-expressions', and
-      `split-complex-expressions'.
+    + New transformations have been added:
+      `add-determinism-temporaries`, `inline-functions',
+      `simplify-guard-expressions', and `split-complex-expressions'.
     + The `add-explicit-temporaries' transformation now supports complex
       boolean and integer expressions ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/67][#67]]).
 ** Noteworthy bug fixes
