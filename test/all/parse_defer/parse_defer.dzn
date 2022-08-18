@@ -39,6 +39,12 @@ component parse_defer
 
   behavior
   {
-    on h.hello (): defer bool b = 0;
+    extern int $int$;
+    int m;
+    on h.hello ():
+    {
+      bool l = true;
+      defer (u,m,l) bool b = 0;
+    }
   }
 }
