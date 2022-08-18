@@ -109,7 +109,7 @@
 ;;;
 (define-templates capture-member-variable cs:capture-variable*)
 (define-templates capture-member-value cs:capture-variable*)
-(define-templates member-equality cs:capture-variable* and-infix)
+(define-templates member-equality cs:member-equality-variable* and-infix)
 
 
 ;;;

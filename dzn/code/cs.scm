@@ -104,6 +104,9 @@
          (map .name variables)
          (map .type.name variables))))
 
+(define-method (cs:member-equality-variable* (o <defer>))
+  (filter (compose not (is? <extern>) .type) (cs:capture-variable* o)))
+
 (define-method (cs:formals (o <trigger>))
   (formals o))
 
