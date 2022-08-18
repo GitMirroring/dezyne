@@ -258,6 +258,7 @@ REGRESSION_TESTS =				\
  %D%/defer_cancel_call				\
  %D%/defer_collateral_blocking			\
  %D%/defer_cruel				\
+ %D%/defer_data					\
  %D%/defer_double				\
  %D%/defer_empty_selection			\
  %D%/defer_locals				\
