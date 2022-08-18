@@ -92,6 +92,7 @@
             code:main-event-map-match-return
             code:main-out-arg
             code:main-out-arg-define
+            code:member-equality
             code:model
             code:non-injected-bindings
             code:non-injected-instances
@@ -410,6 +411,9 @@
 
 (define-method (code:capture-member (o <variable>))
   o)
+
+(define-method (code:member-equality (o <defer>))
+  (filter (compose not (is? <extern>) .type) (ast:defer-variable* o)))
 
 
 ;;;

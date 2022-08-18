@@ -107,7 +107,7 @@
 (define-templates capture-member code:capture-member capture-grammar)
 (define-templates default-true code:default-true)
 (define-templates defer-condition code:defer-condition)
-(define-templates member-equality code:capture-member and-infix)
+(define-templates member-equality code:member-equality and-infix)
 
 
 ;;;
