@@ -13,8 +13,7 @@ collateral blocking.  The use of dzn.async ports is now deprecated.
 Also new in this release: Cleanups to the code generators and model to
 model transformations.
 
-The documentation is available here:
-<https://dezyne.org/documentation.html>.
+See also the [[https://dezyne.org/documentation.html][Dezyne documentation]].
 
 We will evaluate your reports and track them via the
 [[https://gitlab.com/groups/dezyne/-/issues][Gitlab dezyne-issues
@@ -36,14 +35,18 @@ Testing.
 Enjoy!
 The Dezyne developers.
 
+Download
+
+  git clone git://git.savannah.nongnu.org/dezyne.git
+
 Here are the compressed sources and a GPG detached signature[*]:
   https://dezyne.org/download/dezyne/dezyne-2.16.0.tar.gz
   https://dezyne.org/download/dezyne/dezyne-2.16.0.tar.gz.sig
 
 Here are the SHA1 and SHA256 checksums:
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.16.0.tar.gz
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.16.0.tar.gz
+  91e8d61cdd9333edbd2768c26c187c35ba7e8a6c  dezyne-2.16.0.tar.gz
+  6d41b2e671afc629610de8f7ed48dd1799bae08b17bd9455a3b9b684f69524f4  dezyne-2.16.0.tar.gz
 
 [*] Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
@@ -58,12 +61,22 @@ then run this command to import it:
 
 and rerun the 'gpg --verify' command.
 
+Alternatively, Dezyne can be installed using GNU Guix:
+  guix pull
+  guix install dezyne
+
 NEWS
 
-* Changes in 2.16.0 since 2.15.2
+* Changes in 2.16.0 since 2.15.4
 ** Language
   - A new keyword `defer' has been introduced.
   - The `dzn.async' ports are now deprecated.
+  - Complex boolean and integer expressions are now supported.
+** Build
+  - The tests for the experimental Scheme code generator are now being
+    compiled.
+  - The tests for the experimental Scheme and JavaScript code generators
+    now also execute out-of-the-box in a container.
 ** Code
   - The C++, C#, and experimental Scheme code generators support `defer'.
   - The experimental Scheme code generator now also supports collateral
@@ -78,6 +91,19 @@ NEWS
 ** Commands
   - The `dzn' command has a new option: `-t,--transform=TRANS'.  This
     makes dzn->dzn transformation avaiable from the command line.
-  - A new transformation `inline-functions' has been added.
+    + New transformations have been added:
+      `add-determinism-temporaries`, `inline-functions',
+      `simplify-guard-expressions', and `split-complex-expressions'.
+    + The `add-explicit-temporaries' transformation now supports complex
+      boolean and integer expressions ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/67][#67]]).
 ** Noteworthy bug fixes
   - Some warnings in the C++ runtime have been fixed and side-stepped.
+  - The mCRL2 code generator now generates correct code for an unused
+    assignment from an action or function call as only statement in a
+    branch of an if-statement.
+  - Shadowing of a variable in a branch of an if-statement is no longer
+    rejected.
+  - The simulator now correctly displays a V-fork compliance error in a
+    blocking trace.
+  - The simulator now correctly handles a trace with foreign provides
+    triggers.
