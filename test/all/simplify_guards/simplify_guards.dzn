@@ -25,6 +25,21 @@ interface ihello
 {
   in void hello ();
   out void world ();
+  out void cruel ();
+
+  behaviour
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [idle] on hello: cruel;
+    [!idle] on inevitable: {world; idle = true;}
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
 
   behaviour
   {
@@ -36,17 +51,21 @@ interface ihello
 
 component simplify_guards
 {
-  provides ihello h;
-  requires ihello w;
+  provides ihello h0;
+  provides ihello h1;
+  requires iworld w;
 
   behaviour {
     enum status {IDLE, BUSY};
+    status state0 = status.IDLE;
     status state1 = status.IDLE;
-    status state2 = status.IDLE;
 
-    [state1.IDLE] on h.hello(): {w.hello(); state1 = status.BUSY;}
-    [state1.BUSY] on w.world(): {h.world(); state1 = status.IDLE;}
+    [state0.IDLE && state1.IDLE] on h0.hello (): {w.hello (); state0 = status.BUSY;}
+    [state0.IDLE && state1.BUSY] on h0.hello (): h0.cruel ();
+    [state0.BUSY] on w.world (): {h0.world (); state0 = status.IDLE;}
 
-    [!state1.IDLE && !state2.IDLE] on h.hello (): {}
+    [state1.IDLE && state0.IDLE] on h1.hello (): {w.hello (); state1 = status.BUSY;}
+    [state1.IDLE && state0.BUSY] on h1.hello (): h1.cruel ();
+    [state1.BUSY] on w.world (): {h1.world (); state1 = status.IDLE;}
   }
 }
