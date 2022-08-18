@@ -83,16 +83,6 @@
                                 (ast:type* o))))
 
 (define-method (c++:type-name o)
-  (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))
-    (match type
-      (($ <enum>) (c++:type-name type))
-      (($ <extern>) (list (.value type)))
-      (($ <bool>) '("bool"))
-      (($ <int>) '("int"))
-      (($ <void>) '("void"))
-      (_ (c++:type-name type)))))
-
-(define-method (c++:type-name o)
   (code:type-name o))
 
 (define-method (c++:type-name (o <enum>))
