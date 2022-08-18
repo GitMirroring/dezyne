@@ -61,7 +61,8 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
       blocking_queuefull_reply
   - Implicit interface constraints
     + Finish and merge wip-constraint
-      + wip <- wip-async <- wip-ast <- wip-lookup <- wip-constraint
+      + wip <- wip-unreachable <- wip-integer
+        <- wip-async <- wip-ast <- wip-lookup <- wip-constraint
     + Increase regression test coverage
       - hello_proxy_nondet
       - constrained_alarm
@@ -69,14 +70,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Document it!
     + Add CSP alphabetized parallel support (weak illegals, modules)
     + Refactor makreel with alphabetized parallel
-   - Unreachable code
-     + Finish and merge wip-unreachable
-       - TODO: test/all/simplify_guards
-     + Document it!
-   - Unbound integers?
-     + Finish and merge wip-integer
-     + temporaries, range-error!
-       - TODO: test/all/simplify_guards
 
 ** Release 2.18
   - shared state
@@ -106,6 +99,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 ** Release 2.21
   - Data
     + Support global functions (with ports?)
+    + Deprecate injected, replace with global functions
     + data behavior (data interfaces, data shims)
     + structured state types
 
@@ -151,6 +145,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Simulate
      + show trace in all diagrams consistently and interactively
   - Lazy import in lookup
+    + Lazy well-formedness checking?
     + What about normalizations, must be lazy too?
   - UX
     + wfc: check for reply on modeling event
@@ -185,6 +180,11 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - Finish and merge wip-unreachable
+  - Finish and merge wip-integer
+  - Finish and merge wip-lookup
+  - Finish and merge wip-ast
+  - Finish and merge wip-async
   - Finish and merge wip-defer
   - Finish and merge wip-expressions
   - Finish and merge wip-transform
