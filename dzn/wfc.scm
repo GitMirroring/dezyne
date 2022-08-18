@@ -432,8 +432,34 @@
             (else '()))))
   (append (blocking o) (wfc (.statement o))))
 
+(define (wfc-defer-argument var)
+  (if (is-a? var <undefined>)
+      `(,(wfc-error var (format #f "undefined identifier `~a'" (.name var))))
+      (let* ((variable (.variable var))
+             (name (.variable.name var))
+             (type (and=> variable .type)))
+        (cond
+         ((not (ast:member? variable))
+          `(,(wfc-error var (format
+                             #f
+                             "cannot use local variable `~a' as defer argument"
+                             name))
+            ,(wfc-info var (format #f "variable `~a' defined here" name))))
+         ((is-a? type <extern>)
+          `(,(wfc-error var (format
+                             #f
+                             "cannot use data variable `~a' as defer argument"
+                             name))
+            ,(wfc-info var (format #f "variable `~a' defined here" name))))
+         (else
+          '())))))
+
 (define-method (wfc (o <defer>))
-  (wfc (.statement o)))
+  (let ((arguments (ast:argument* o)))
+    (append
+     (if (not arguments) '()
+         (append-map wfc-defer-argument arguments))
+     (wfc (.statement o)))))
 
 (define-method (wfc (o <on>))
   (define (on o)
