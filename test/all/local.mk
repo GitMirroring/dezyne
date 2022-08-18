@@ -426,6 +426,7 @@ REGRESSION_TESTS =				\
  %D%/system_out_two				\
  %D%/system_reply_bool				\
  %D%/system_reply_enum				\
+ %D%/unreachable_constraint			\
  %D%/unreachable_defer		 		\
  %D%/unreachable_determinism			\
  %D%/unreachable_function			\
