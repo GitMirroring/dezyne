@@ -5,6 +5,39 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.0 since 2.16.2
+** Language
+  - A component's behavior is now implicitly constrained by the behavior
+    of its provides interfaces.
+  - Unary minus is now supported in integer expressions.
+  - Integer expressions have been generalized: It is no longer necessary
+    to split a longer expression or to use parameters.
+  - Support for `dzn.async' ports has been removed.
+** Parser
+  - A new transformation has been added: `tag-imperative-blocks'.
+** Verification
+  - The verifier now checks for unreachable code.
+  - The verifier has a new option `-C,--no-constraint' to disable
+    the constraining fo a component's behavior.
+  - The verifier has a new option '-D,--non-non-compliance' to report a
+    deadlock error instead of a non-compliance error.
+  - The verifier has a new option `-U,--no-unreachable' to disable the
+    unreachable code check.
+  - The verifier has a new option `--jitty' to run `lps2ts' using
+    `--rewriter=jittyc' for large models.
+  - The performance of the verifier has been improved by skipping
+    normalization of imported components.
+** Code
+  - The performance of the code generators has been improved by skipping
+    normalization of imported interfaces and components.
+  - The generated C++ and its runtime now uses typed pointers instead of
+    void pointers for component instances.
+** Noteworthy bug fixes
+  - Some longstanding bugs have been fixed in relation to
+    + Extending nested namespaces in imports,
+    + Referencing partially named identifiers,
+    by a full rewrite of the lookup algorithm.
+
 * Changes in 2.16.2 since 2.16.1
 ** Language
   - In a valued function, after an "illegal" a return is no longer
