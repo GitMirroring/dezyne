@@ -48,6 +48,7 @@ HELLO_TESTS =					\
  %D%/hello_blocking_external			\
  %D%/hello_bool					\
  %D%/hello_comment				\
+ %D%/hello_constraint				\
  %D%/hello_data					\
  %D%/hello_defer				\
  %D%/hello_else					\
