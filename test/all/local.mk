@@ -298,7 +298,6 @@ REGRESSION_TESTS =				\
  %D%/flush_inevitable_sync_out			\
  %D%/foreign_handwritten			\
  %D%/foreign_import_system			\
- %D%/foreign_injected				\
  %D%/foreign_multiple_provides			\
  %D%/foreign_namespace				\
  %D%/foreign_optional				\
@@ -388,6 +387,7 @@ REGRESSION_TESTS =				\
  %D%/inevitable_multiple_requires		\
  %D%/inevitable_performance			\
  %D%/injected_dangling				\
+ %D%/injected_foreign				\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/label_instance_mismatch			\

@@ -19,6 +19,8 @@
 //
 // Commentary:
 //
+// Test the injection of a foreign component.
+//
 // Code:
 
 import iworld.dzn;
@@ -49,7 +51,7 @@ component hello
   }
 }
 
-component foreign_injected
+component injected_foreign
 {
   provides ihello h;
 
