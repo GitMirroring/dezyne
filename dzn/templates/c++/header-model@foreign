@@ -12,6 +12,7 @@ struct #x:model-name
   dzn::meta dzn_meta;
   dzn::runtime& dzn_rt;
   dzn::locator const& dzn_locator;
+  #x:injected-port-declare
   #x:provides-port-declare
   #x:requires-port-declare
   #x:model-name (const dzn::locator& dzn_locator)
