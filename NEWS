@@ -5,6 +5,14 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.16.1 since 2.16.0
+** Code
+  - The C# code generator now supports using a requires injected port in
+    a foreign component.
+** Noteworthy bug fixes
+  - A regression was fixed in the C++ code generator for foreign
+    components using a requires injected port.
+
 * Changes in 2.16.0 since 2.15.4
 ** Language
   - A new keyword `defer' has been introduced.
