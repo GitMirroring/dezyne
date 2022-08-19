@@ -357,17 +357,27 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (values input pc)))
 
 (define-method (labels)
-  (if (is-a? (%sut) <runtime:port>)
-      (let* ((interface ((compose .type .ast %sut)))
-             (modeling-names (modeling-names interface)))
-        (append (map .name (ast:in-event* interface))
-                modeling-names))
+  (cond
+   ((is-a? (%sut) <runtime:port>)
+    (let* ((interface ((compose .type .ast %sut)))
+           (modeling-names (modeling-names interface)))
+      (append (map .name (ast:in-event* interface))
+              modeling-names)))
+   (else
+    (let ((ports (filter
+                  (conjoin runtime:boundary-port?
+                           runtime:other-port
+                           (negate (compose (is? <runtime:foreign>)
+                                            .container
+                                            runtime:other-port)))
+                  (%instances))))
       (append-map
        (lambda (p)
-         (map (compose (cute string-append (runtime:dotted-name p) "." <>) .name)
-              (filter (if (or (ast:provides? (.ast p))) ast:in? ast:out?)
+         (map (compose (cute string-append (runtime:dotted-name p) "." <>)
+                       .name)
+              (filter (if (ast:provides? (.ast p)) ast:in? ast:out?)
                       (ast:event* (.ast p)))))
-       (filter runtime:boundary-port? (%instances)))))
+       ports)))))
 
 (define-method (labels (pc <program-counter>))
   (append (labels) (rtc-labels pc) (return-labels pc) (defer-labels pc)))
