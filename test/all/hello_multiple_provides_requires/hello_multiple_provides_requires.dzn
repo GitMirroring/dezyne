@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -48,19 +48,14 @@ component hello_multiple_provides_requires
     bool i1_idle = true;
     bool i2_idle = true;
 
-    [i1_idle && i2_idle] on i1.hello(): {i1_idle = !i1_idle; i3.hello();}
-    [i1_idle && i2_idle] on i2.hello(): {i2_idle = !i2_idle; i3.hello();}
+    [i2_idle] on i1.hello(): {i1_idle = !i1_idle; i3.hello();}
+    [i1_idle] on i2.hello(): {i2_idle = !i2_idle; i3.hello();}
 
-    [i1_idle && !i2_idle] on i1.hello(): {i1_idle = !i1_idle;}
-    [!i1_idle && i2_idle] on i2.hello(): {i2_idle = !i2_idle;}
+    [!i2_idle] on i1.hello(): {i1_idle = !i1_idle;}
+    [!i1_idle] on i2.hello(): {i2_idle = !i2_idle;}
 
-    [!i1_idle] on i1.hello(): illegal;
-    [!i2_idle] on i2.hello(): illegal;
-
-    [!i1_idle && i2_idle] on i3.world(): {i1_idle = !i1_idle; i1.world();}
-    [i1_idle && !i2_idle] on i3.world(): {i2_idle = !i2_idle; i2.world();}
+    [i2_idle] on i3.world(): {i1_idle = !i1_idle; i1.world();}
+    [i1_idle] on i3.world(): {i2_idle = !i2_idle; i2.world();}
     [!i1_idle && !i2_idle] on i3.world(): {i1_idle = !i1_idle; i1.world(); i3.hello();}
-
-    [i1_idle && i2_idle] on i3.world(): illegal;
   }
 }
