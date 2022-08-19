@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,28 +24,14 @@
 dzn_require = typeof (require) !== 'undefined' ? require : function () {return {};};
 dzn = typeof (dzn) !== 'undefined' ? dzn : require (__dirname + '/runtime');
 dzn = dzn || {};
-dzn = dzn || {};
-
-
 
 dzn.Foreign = function (locator, meta) {
   dzn.runtime.init (this, locator, meta);
   this._dzn.meta.ports = ['w'];
-  this._dzn.flushes = true;
-
-
-
-
 
   this.w = new dzn.iworld({provides: {name: 'w', component: this}, requires: {}});
 
-
-
-
-  this.w.in.world = function(){
-  };
-
-
+  this.w.in.world = function () {};
 
   this._dzn.rt.bind (this);
 };
