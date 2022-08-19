@@ -398,18 +398,22 @@ Return a list of traces, possibly marked with <compliance-error>."
               (%debug "  exit 5\n")
               (let* ((port-acceptances (map first-non-match non-compliances))
                      (port-acceptances (delete-duplicates port-acceptances port-acceptance-equal?))
-                     (component-acceptance (and (pair? trace)
-                                                (or (and (pair? port-acceptances)
-                                                         (cadar port-acceptances))
-                                                    (and=> (.status pc) .ast)
-                                                    (trigger->component-trigger trigger))))
-                     (other-port-instances (runtime:other-port port-instance))
-                     (instance (.container other-port-instances))
+                     (component-acceptance
+                      (and (pair? trace)
+                           (or (and (pair? port-acceptances)
+                                    (cadar port-acceptances))
+                               (and=> (.status pc) .ast)
+                               (if (is-a? (%sut) <runtime:system>)
+                                   (trigger->system-trigger port-instance trigger)
+                                   (trigger->component-trigger trigger)))))
+                     (other-port-instance (runtime:other-port port-instance))
+                     (instance (.container other-port-instance))
                      (component-acceptance
                       (if (and component-acceptance (is-a? (%sut) <runtime:system>))
                           (trigger->system-trigger instance component-acceptance)
                           component-acceptance))
-                     (port-acceptances (make <acceptances> #:elements (map caar port-acceptances)))
+                     (port-acceptances (make <acceptances>
+                                         #:elements (map caar port-acceptances)))
                      (compliance-trigger
                       (and trigger
                            (null? sut-trail)

@@ -58,6 +58,7 @@
             runtime:system-instance?
             runtime:create-instances
             <runtime:component>
+            <runtime:component-model>
             <runtime:foreign>
             <runtime:instance>
             <runtime:port>

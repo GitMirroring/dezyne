@@ -508,7 +508,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (trigger->system-trigger (o <runtime:port>) trigger)
   (trigger->component-trigger o trigger))
 
-(define-method (trigger->system-trigger (component <runtime:component>) trigger)
+(define-method (trigger->system-trigger (component <runtime:component-model>) trigger)
   (let* ((port-name (.port.name trigger))
          (ports (runtime:runtime-port* component))
          (port (find (compose (cute equal? <> port-name) .name .ast) ports))
