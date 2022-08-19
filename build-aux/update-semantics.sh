@@ -189,8 +189,8 @@ inkscape -o doc/images/indirect_blocking_multiple_external_out.png indirect_bloc
 echo dun
 
 # echo
-# echo "** system_hello"
-# ./pre-inst-env dzn simulate test/all/system_hello/system_hello.dzn -t h.hello | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
+# echo "** hello_system"
+# ./pre-inst-env dzn simulate test/all/hello_system/hello_system.dzn -t h.hello | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
 # echo save
 # read
 # echo 'let Data = ' > ~/src/dezyne-p5/SequenceDiagram/data.js --internal

@@ -588,15 +588,15 @@
   (test-complete #:file-name "system.dzn" #:line 30))
 
 (test-equal "system before instance"
-  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "system_hello" "w")
+  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "hello_system" "w")
   (test-complete #:file-name "system.dzn" #:line 33))
 
 (test-equal "system after instance"
-  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "system_hello" "w")
+  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "hello_system" "w")
   (test-complete #:file-name "system.dzn" #:line 35))
 
 (test-equal "system after binding"
-  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "system_hello" "w")
+  '("c" "c.hh" "c.ww" "d" "d.hh" "d.ww" "h" "hello" "hello_system" "w")
   (test-complete #:file-name "system.dzn" #:line 37))
 
 (test-equal "system binding port provides"

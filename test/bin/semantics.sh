@@ -79,8 +79,8 @@ echo "** indirect_blocking_multiple_external_out"
 ./pre-inst-env dzn simulate test/all/indirect_blocking_multiple_external_out/indirect_blocking_multiple_external_out.dzn -t p.a,r1.a,r1.return,r2.a,r2.return,r1.b,p.b,r2.b,p.return | ./pre-inst-env dzn trace --format=diagram
 
 echo
-echo "** system_hello"
-./pre-inst-env dzn simulate test/all/system_hello/system_hello.dzn -t h.hello | ./pre-inst-env dzn trace --format=diagram --internal
+echo "** hello_system"
+./pre-inst-env dzn simulate test/all/hello_system/hello_system.dzn -t h.hello | ./pre-inst-env dzn trace --format=diagram --internal
 
 echo
 echo "** system_bool_enum"

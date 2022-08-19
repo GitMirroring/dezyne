@@ -441,8 +441,8 @@ p indirect_blocking_multiple_external_out r1 r2
 (labels p.a r1.b r2.b)
 (eligible p.a)
 
-** system_hello
-h         system_hello.c
+** hello_system
+h         hello_system.c
 .               :
 .               :
 .hello          :

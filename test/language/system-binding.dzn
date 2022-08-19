@@ -33,7 +33,7 @@ component hello
   }
 }
 
-component system_hello
+component hello_system
 {
   provides ihello h;
   provides iworld hx;
@@ -55,7 +55,7 @@ component system_hello
       w <=> c. ;
       h <=> c ;
       w <=> c ;
-      h <=> c  
-      w <=> c  
+      h <=> c
+      w <=> c
     }
 }

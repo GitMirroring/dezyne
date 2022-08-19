@@ -870,7 +870,7 @@ status."
 ;;;
 
 (define* (repl file-name #:optional model-name)
-  "Entry point REPL, try: C-c C-a (repl \"system_hello.dzn\") RET (n \"h.hello\") RET."
+  "Entry point REPL, try: C-c C-a (repl \"hello_system.dzn\") RET (n \"h.hello\") RET."
   #!
   ;; Start Emacs inside [Guix] environment or set it after
   ;; echo $GUIX_ENVIRONMENT  => <profile>
@@ -882,7 +882,7 @@ status."
 
   ;; then
   C-c C-a
-  (repl "system_hello.dzn")
+  (repl "hello_system.dzn")
   (n "h.hello")
   (n)
   !#

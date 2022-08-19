@@ -84,6 +84,7 @@ HELLO_TESTS =					\
  %D%/hello_parse				\
  %D%/hello_reorder				\
  %D%/hello_reply				\
+ %D%/hello_system				\
  %D%/hello_system_reply				\
  %D%/hello_two					\
  %D%/hello_usuk					\
@@ -415,7 +416,6 @@ REGRESSION_TESTS =				\
  %D%/system_double_out				\
  %D%/system_flush				\
  %D%/system_flush_double			\
- %D%/system_hello				\
  %D%/system_hello_world				\
  %D%/system_helloworld				\
  %D%/system_inevitable				\

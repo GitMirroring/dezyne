@@ -42,7 +42,7 @@ component hello
   }
 }
 
-component system_hello
+component hello_system
 {
   provides ihello h;
 
