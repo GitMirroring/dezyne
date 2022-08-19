@@ -1,0 +1,8 @@
+sut.f.w0.hello
+w0.hello
+w0.return
+sut.f.w0.return
+sut.f.w1.hello
+w1.hello
+w1.return
+sut.f.w1.return
