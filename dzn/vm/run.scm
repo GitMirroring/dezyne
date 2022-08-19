@@ -699,7 +699,8 @@ until RTC?."
                                                               trigger))
                (instance (.container component-port))
                (collateral-blocked? (or (blocked-on-boundary? pc)
-                                        (and (get-handling pc instance)
+                                        (and instance
+                                             (get-handling pc instance)
                                              (blocked-port pc instance))))
                (traces (if collateral-blocked? traces
                            (append-map (cute run-flush <> instance) traces))))
