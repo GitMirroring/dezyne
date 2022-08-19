@@ -299,6 +299,7 @@ REGRESSION_TESTS =				\
  %D%/foreign_handwritten			\
  %D%/foreign_import_system			\
  %D%/foreign_injected				\
+ %D%/foreign_multiple_provides			\
  %D%/foreign_namespace				\
  %D%/foreign_optional				\
  %D%/foreign_reply				\
