@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,18 +22,13 @@
 //
 // Code:
 
-/*
-make && { set -o pipefail; rm -f my.aut; { echo "eqn  I'allow_dillegals = true; C'allow_dillegals = true; I'allow_dillegals = true; init C'Implementation();"; ./pre-inst-env dzn code -l mcrl2 -o - my.dzn; } | tee /dev/stderr | mcrl22lps -b | lps2lts /dev/stdin my.aut; cat my.aut | ltsconvert --tau=tau -edpweak-bisim my.aut my.aut; cat my.aut 1>&2; } && ltsgraph my.aut
-*/
-
 interface ihello {
-  in void a ();
-  in void b ();
+  in void hello ();
+  in void cruel ();
   behavior {
     bool open = true;
-    on a: open = !open;
-    [open] on b: {}
-    [!open] on b: illegal;
+    on hello: open = !open;
+    [open] on cruel: {}
   }
 }
 
@@ -41,15 +36,10 @@ component hello_multiple_provides {
   provides ihello p1;
   provides ihello p2;
   behavior {
-    bool p1_open = true;
-    bool p2_open = true;
+    on p1.hello (): {}
+    on p1.cruel (): {}
 
-    on p1.a (): p1_open = !p1_open;
-    [p1_open] on p1.b (): {}
-    [!p1_open] on p1.b (): illegal;
-
-    on p2.a(): p2_open = !p2_open;
-    [p2_open] on p2.b (): {}
-    [!p2_open] on p2.b (): illegal;
+    on p2.hello(): {}
+    on p2.cruel (): {}
   }
 }
