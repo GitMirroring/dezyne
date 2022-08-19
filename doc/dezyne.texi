@@ -3817,6 +3817,7 @@ expressions are of the correct type.
 
 @example
 bool-expression ::= bool-literal
+                     | bool-variable
                      | action
                      | call
                      | field-test
@@ -3838,6 +3839,7 @@ where @code{action} and @code{call} are of type @code{bool}.
 @cindex enum-expression
 @example
 enum-expression ::= enum-literal
+                     | enum-variable
                      | action
                      | call
 enum-literal    ::= enum "." field
@@ -3851,8 +3853,11 @@ where @code{action} and @code{call} are of the correct @code{enum} type.
 @cindex integer-expression
 @example
 int-expression ::= int-literal
+                     | subint-variable
                      | action
                      | call
+                     | "-" int-expression
+                     | "(" int-expression ")"
                      | int-expression int-operator int-expression
 int-literal    ::= "-"? [0-9]+
 int-operator   ::= "+" | "-"
