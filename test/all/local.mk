@@ -84,7 +84,6 @@ HELLO_TESTS =					\
  %D%/hello_parse				\
  %D%/hello_reorder				\
  %D%/hello_reply				\
- %D%/hello_system				\
  %D%/hello_system_reply				\
  %D%/hello_two					\
  %D%/hello_usuk					\
@@ -410,6 +409,7 @@ REGRESSION_TESTS =				\
  %D%/stress_comment				\
  %D%/sync_out_reply_binding			\
  %D%/sync_out_reply_enum			\
+ %D%/system_bool_enum				\
  %D%/system_defer				\
  %D%/system_double_inevitable			\
  %D%/system_double_out				\

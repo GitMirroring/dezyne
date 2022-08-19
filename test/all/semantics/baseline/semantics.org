@@ -459,8 +459,8 @@ h         system_hello.c
 (labels h.hello)
 (eligible h.hello)
 
-** hello_system
-p         hello_system.e                 hello_system.b         r
+** system_bool_enum
+p       system_bool_enum.e             system_bool_enum.b       r
 .               :                              :                .
 .               :                              :                .
 .hello          :                              :                .

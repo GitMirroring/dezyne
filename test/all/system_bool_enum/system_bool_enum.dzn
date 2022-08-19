@@ -78,7 +78,7 @@ interface ihello_nondet
   }
 }
 
-component hello_system
+component system_bool_enum
 {
   provides ihello p;
   requires ihello_nondet r;

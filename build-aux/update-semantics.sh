@@ -1,7 +1,7 @@
 #! /bin/sh
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -196,8 +196,8 @@ echo dun
 # echo 'let Data = ' > ~/src/dezyne-p5/SequenceDiagram/data.js --internal
 
 # echo
-# echo "** hello_system"
-# ./pre-inst-env dzn simulate test/all/hello_system/hello_system.dzn -t p.hello,r.false | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
+# echo "** system_bool_enum"
+# ./pre-inst-env dzn simulate test/all/system_bool_enum/system_bool_enum.dzn -t p.hello,r.false | ./pre-inst-env dzn trace --format=json >> ~/src/dezyne-p5/SequenceDiagram/data.js
 # echo save
 # read
 # echo 'let Data = ' > ~/src/dezyne-p5/SequenceDiagram/data.js --internal
