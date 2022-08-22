@@ -5,6 +5,7 @@ public partial class #x:model-name : dzn.Component
   public #x:model-name (dzn.Locator locator, String name="", dzn.Meta parent=null)
   : base(locator, name, parent) {
     this.dzn_runtime.states[this].flushes = false;
+    #x:injected-member-initializer
     #x:provides-port-init
     #x:requires-port-init
 
