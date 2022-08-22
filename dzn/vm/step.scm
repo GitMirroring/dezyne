@@ -126,6 +126,9 @@
       (let ((pc (set-handling! pc)))
         pc)))))
 
+(define-method (begin-step (pc <program-counter>) (instance <runtime:foreign>) (trigger <trigger>))
+  (make-implicit-illegal pc trigger))
+
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
@@ -167,8 +170,7 @@
   (append
    (next-method pc o)
    (if (ast:modeling? (.trigger pc)) '()
-       (let ((illegal (make <implicit-illegal-error> #:ast o #:message "illegal")))
-         (list (clone pc #:previous #f #:status illegal))))))
+       (list (make-implicit-illegal pc o)))))
 
 (define-method (step (pc <program-counter>) (o <declarative-compound>))
   (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))

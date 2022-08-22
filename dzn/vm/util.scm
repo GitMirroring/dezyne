@@ -79,6 +79,7 @@
             is-status?
             label?
             labels
+            make-implicit-illegal
             make-pc
             make-system-state
             modeling-names
@@ -1514,3 +1515,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (pc (if (null? errors) pc
                  (clone pc #:status (car errors)))))
   pc))
+
+(define-method (make-implicit-illegal (pc <program-counter>) (o <ast>))
+  (let ((illegal (make <implicit-illegal-error> #:ast o #:message "illegal")))
+    (clone pc #:previous #f #:status illegal)))

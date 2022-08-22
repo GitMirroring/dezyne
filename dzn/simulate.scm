@@ -663,7 +663,7 @@ TRACES."
     (let* ((error (.status pc))
            (ast (or (and error (.ast error))
                     (let ((model (runtime:%sut-model)))
-                      (if (is-a? model <system>) model
+                      (if (or (is-a? model <system>) (is-a? model <foreign>)) model
                           (.behavior model))))))
       (if (and error
                (not (is-a? error <implicit-illegal-error>))
