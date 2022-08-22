@@ -124,8 +124,11 @@ that PC has one more collaterally blocked coroutine on the same port."
   (define (run-label orig-pc label)
     (%debug "run-label ~a\n" label)
     (let* ((orig-pc (clone orig-pc #:collateral-instance #f))
-           (sw-pc (switch-context orig-pc))
-           (bob-pc (blocked-on-boundary-switch-context orig-pc)))
+           (defer? (eq? label 'defer))
+           (sw-pc (if defer? orig-pc
+                      (switch-context orig-pc)))
+           (bob-pc (if defer? orig-pc
+                       (blocked-on-boundary-switch-context orig-pc))))
       (cond
        ((and (eq? orig-pc sw-pc)
              (eq? orig-pc bob-pc))
