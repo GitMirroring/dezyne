@@ -162,6 +162,17 @@ Generate exhaustive set of traces for Dezyne model
              (model (or (and model-name (find named? models))
                         (and (pair? components-interfaces)
                              (car components-interfaces)))))
+        (when (and=> model ast:imported?)
+          (let ((name (ast:dotted-name model)))
+            (format (current-error-port)
+                    "~a:error: cannot generate traces for imported model: ~a\n"
+                    (ast:source-file root)
+                    name)
+            (format (current-error-port)
+                    "~a:info: ~a imported from here\n"
+                    (ast:source-file model)
+                    name))
+          (exit EXIT_OTHER_FAILURE))
         (cond ((and model-name (not model))
                (error "no such model:" model-name))
               ((is-a? model <system>) ;; silently no traces

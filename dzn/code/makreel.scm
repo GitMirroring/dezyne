@@ -1073,21 +1073,31 @@
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/makreel.scm")
 
+(define (makreel:short-circuit? o)
+  (match o
+    ((or ($ <foreign>) ($ <system>))
+     o)
+    ((and ($ <component>) (? ast:imported?))
+     o)
+    (_
+     #f)))
+
 (define (makreel:om ast)
-  (let ((root ((compose
-                makreel:mark-tail-call
-                add-function-return
-                normalize:state+illegals
-                remove-otherwise
-                makreel:tick-names
-                add-explicit-temporaries
-                add-defer-end
-                (if (%no-unreachable?) identity tag-imperative-blocks)
-                purge-data
-                ) ast)))
-    (when (> (dzn:debugity) 1)
-      (ast:pretty-print root (current-error-port)))
-    root))
+  (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
+    (let ((root ((compose
+                  makreel:mark-tail-call
+                  add-function-return
+                  normalize:state+illegals
+                  remove-otherwise
+                  makreel:tick-names
+                  add-explicit-temporaries
+                  add-defer-end
+                  (if (%no-unreachable?) identity tag-imperative-blocks)
+                  purge-data
+                  ) ast)))
+      (when (> (dzn:debugity) 1)
+        (ast:pretty-print root (current-error-port)))
+      root)))
 
 
 ;;;

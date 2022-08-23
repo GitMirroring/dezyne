@@ -104,6 +104,17 @@ Check DZN-FILE for verification errors in Dezyne models
          (no-unreachable? (command-line:get 'no-unreachable)))
     (parameterize ((%no-unreachable? no-unreachable?))
       (let ((root (makreel:om ast)))
+        (when (and=> model ast:imported?)
+          (let ((name (ast:dotted-name model)))
+            (format (current-error-port)
+                    "~a:error: cannot verify imported model: ~a\n"
+                    (ast:source-file root)
+                    name)
+            (format (current-error-port)
+                    "~a:info: ~a imported from here\n"
+                    (ast:source-file model)
+                    name))
+          (exit EXIT_OTHER_FAILURE))
         (cond
          (out
           (let ((formats (verification:formats)))

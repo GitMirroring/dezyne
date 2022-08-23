@@ -1,2 +1,3 @@
 ;;; -*- scheme -*-
-((model "hello_defer"))
+((model "hello_defer")
+ (skip ("traces" "verify")))
