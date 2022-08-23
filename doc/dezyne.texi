@@ -1957,6 +1957,32 @@ adhere to the interface specifications, it is impossible for an
 @code{illegal} is triggered, it means that some non-Dezyne code is
 violating a protocol (interface specification).
 
+@subsection Implicit interface constraints
+
+Dezyne version 2.17.0 introduces implicit interface constraints.
+
+Before 2.17.0, for a component to be compliant with its provides
+interface(s), implementing a component required meticulously specifying
+the same behavior in the component as in the provides interface(s);
+therefore the code from the interface(s) is often repeated in the
+component.
+
+Since version 2.17.0 the provides interface(s) are implicitly applied as
+a constraint on the component behavior.  This means that anything
+disallowed by the interface, i.e., explicitly or implicitly marked as
+@code{illegal}, is implicitly marked as @code{illegal} in the component
+behavior.
+
+How does this differ from the existing implicit illegal feature
+@xref{Illegal} you may wonder.  The implicit @code{illegal} feature
+leads to implicitly marked @code{illegal} behavior when a certain event
+is ommitted in a certain state.  The constraint feature marks as
+@code{illegal} every event in the component behavior which is marked as
+@code{illegal} in the corresponding state in the interface behavior.
+This avoids the need to repeat the state and guarding from the interface
+in the component.  An example of how this may reduce the behavior
+specification of a component is the component @ref{proxy}.
+
 @node Error Handling and Recovery
 @section Error Handling and Recovery
 
@@ -2008,6 +2034,7 @@ Consider this simple strict interface
 
 used by this simple proxy component
 
+@anchor{proxy}
 @example
 @verbatiminclude examples/proxy.dzn
 @end example
