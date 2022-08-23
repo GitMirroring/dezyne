@@ -1,18 +1,18 @@
 test/all/parse_duplicate_definition/hello.dzn:30:1: error: identifier `ihello' defined before
 test/all/parse_duplicate_definition/ihello.dzn:28:1: info: previous `ihello' definition here
-test/all/parse_duplicate_definition/hello.dzn:47:7: error: identifier `b' defined before
-test/all/parse_duplicate_definition/hello.dzn:46:7: info: previous `b' definition here
 test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:31:1: error: identifier `ihello' defined before
 test/all/parse_duplicate_definition/ihello.dzn:28:1: info: previous `ihello' definition here
 test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:41:1: error: identifier `hello' defined before
 test/all/parse_duplicate_definition/hello.dzn:40:1: info: previous `hello' definition here
-test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:50:1: error: identifier `float' defined before
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:57:7: error: identifier `b' defined before
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:56:7: info: previous `b' definition here
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:66:1: error: identifier `float' defined before
 test/all/parse_duplicate_definition/ihello.dzn:25:1: info: previous `float' definition here
-test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:52:3: error: port `float' must not have the same name as the model it is defined in
-test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:52:3: error: interface expected, found: `extern float'
-test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:55:1: error: identifier `ihello' defined before
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:68:3: error: port `float' must not have the same name as the model it is defined in
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:68:3: error: interface expected, found: `extern float'
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:71:1: error: identifier `ihello' defined before
 test/all/parse_duplicate_definition/ihello.dzn:28:1: info: previous `ihello' definition here
-test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:57:3: error: port `ihello' must not have the same name as the model it is defined in
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:73:3: error: port `ihello' must not have the same name as the model it is defined in
 test/all/parse_duplicate_definition/hello.dzn:27:1: error: identifier `float' defined before
 test/all/parse_duplicate_definition/ihello.dzn:25:1: info: previous `float' definition here
 test/all/parse_duplicate_definition/hello.dzn:28:1: error: identifier `int' defined before

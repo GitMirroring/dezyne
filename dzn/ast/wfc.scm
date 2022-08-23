@@ -353,17 +353,18 @@
 
 (define-method (wfc (o <behavior>))
   (let ((model (ast:parent o <model>)))
-    (parameterize ((%model-event-types
-                    (if (is-a? model <interface>) (ast:return-types model)
-                        (ast:return-types-provides model)))
-                   (%model-blocking? (model-blocking? model)))
-      (append
-       (append-map wfc (ast:type* o))
-       (append-map wfc (ast:port* o))
-       (append-map wfc (ast:variable* o))
-       (append-map (cute wfc model <>) (ast:variable* o))
-       (append-map wfc (ast:function* o))
-       (wfc (.statement o))))))
+    (if (and (is-a? model <component>) (ast:imported? o)) '()
+        (parameterize ((%model-event-types
+                        (if (is-a? model <interface>) (ast:return-types model)
+                            (ast:return-types-provides model)))
+                       (%model-blocking? (model-blocking? model)))
+          (append
+           (append-map wfc (ast:type* o))
+           (append-map wfc (ast:port* o))
+           (append-map wfc (ast:variable* o))
+           (append-map (cute wfc model <>) (ast:variable* o))
+           (append-map wfc (ast:function* o))
+           (wfc (.statement o)))))))
 
 (define-method (wfc (o <variable>))
   (append
