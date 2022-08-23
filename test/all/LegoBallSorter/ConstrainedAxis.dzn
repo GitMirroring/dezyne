@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -53,13 +53,6 @@ component ConstrainedAxis
     void recordLength() {
       endSensor.disable();
       motor.stop(); // brake
-    }
-    void startAbsoluteMove(IConstrainedMove.position_t target) {
-      ITouchSense.TouchState ignore = ITouchSense.TouchState.Released;
-      ignore = homeSensor.enable();
-      ignore = endSensor.enable();
-      motor.move($(config.get("Power::OperationalSpeed"))$, target);
-      s = State.moving;
     }
     void notifyArrived() {
       motor.stop();

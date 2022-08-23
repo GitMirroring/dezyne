@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -173,14 +173,10 @@ component Handle
       isLastBall = false;
       prepareInputTransfer();
     }
-    void finalizeBatch() {
-      s = State.Idle;
-      ctrl.finished();
-    }
     void prepareInputTransfer() {
       o = Operation.PreparingInput;
       if (!isBallAtInput) {feedPort.produceBall(); isBallAtInput = false;}
-      if (!isInspectorAtInput) {inspector.prepare(); isInspectorAtInput = false;}
+      if (!isInspectorAtInput) illegal;
       if (!isRobotAtInput) {sendRobotToInputPick(); isRobotAtInput = false;}
 
       tryInputTransfer();
