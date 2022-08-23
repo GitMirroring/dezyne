@@ -41,7 +41,8 @@
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
 
-  #:export (add-defer-end
+  #:export (%normalize:short-circuit?
+            add-defer-end
             add-determinism-temporaries
             add-explicit-temporaries
             add-function-return
@@ -64,6 +65,9 @@
 ;; Should add-explicit-temporaries only cater for deterministic ordering
 ;; of noisy expressions?
 (define %noisy-ordering? (make-parameter #f))
+
+;; Should transformation stop here?
+(define %normalize:short-circuit? (make-parameter (const #f)))
 
 ;; A prefix is a normalized combination of the declarative statements
 ;; that ... the imperative statement.  It is a triple that combines
@@ -508,6 +512,8 @@ guarded occurrences."
               ) o)
             #:functions
             (group-expressions (.functions o) (list <and> <field-test> <or>))))
+    ((? (%normalize:short-circuit?))
+     o)
     ((? (is? <ast>))
      (tree-map normalize:state o))
     (_
@@ -531,6 +537,8 @@ guarded occurrences."
               ) o)
             #:functions
             (group-expressions (.functions o) (list <and> <field-test> <or>))))
+    ((? (%normalize:short-circuit?))
+     o)
     ((? (is? <ast>))
      (tree-map normalize:state+illegals o))
     (_
@@ -586,6 +594,8 @@ i.e., pushing guards into the body of the trigger."
               ) o)
             #:functions
             (group-expressions (.functions o) (list <and> <field-test> <or>))))
+    ((? (%normalize:short-circuit?))
+     o)
     ((? (is? <ast>))
      (tree-map normalize:event o))
     (_
@@ -608,6 +618,8 @@ i.e., pushing guards into the body of the trigger."
               ) o)
             #:functions
             (group-expressions (.functions o) (list <and> <field-test> <or>))))
+    ((? (%normalize:short-circuit?))
+     o)
     ((? (is? <ast>))
      (tree-map normalize:event+illegals o))
     (_
@@ -666,6 +678,10 @@ to prevent unintended shadowing
                             o))
       (($ <formal>) (clone o #:name (rename-string (.name o))))
       (($ <formal-binding>) (clone o #:name (rename-string (.name o))))
+      (($ <interface>)
+       o)
+      ((? (%normalize:short-circuit?))
+       o)
       ((? (is? <ast>)) (tree-map (rename mapping) o))
       (_ o)))
 
@@ -721,14 +737,6 @@ to prevent unintended shadowing
 (define (purge-data o)
   "Remove every `extern' data variable and reference."
   (match o
-    (($ <interface>)
-     (clone o
-            #:types (purge-data (.types o))
-            #:events (purge-data (.events o))))
-    (($ <component>)
-     (clone o #:behavior (purge-data (.behavior o))))
-    (($ <system>)
-     o)
     ((? (is? <ast-list>))
      (clone o #:elements (filter-map purge-data (.elements o))))
     (($ <data>) #f)
@@ -759,6 +767,14 @@ to prevent unintended shadowing
        (and type (not (is-a? type <extern>)) o)))
 
     ((and ($ <return>) (= .expression ($ <data-expr>))) (clone o #:expression #f))
+    ((? (%normalize:short-circuit?))
+     o)
+    (($ <interface>)
+     (clone o
+            #:types (purge-data (.types o))
+            #:events (purge-data (.events o))))
+    (($ <component>)
+     (clone o #:behavior (purge-data (.behavior o))))
     ((? (is? <ast>)) (tree-map purge-data o))
     (_ o)))
 
@@ -790,10 +806,6 @@ to prevent unintended shadowing
       ((statement ... t) (append o (list (make <return> #:location (.location (.parent t))))))
       ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
   (match o
-    (($ <interface>)
-     (clone o #:behavior (add-function-return (.behavior o))))
-    (($ <component>)
-     (clone o #:behavior (add-function-return (.behavior o))))
     (($ <behavior>)
      (clone o #:functions (add-function-return (.functions o))))
     (($ <functions>)
@@ -801,6 +813,12 @@ to prevent unintended shadowing
     (($ <function>)
      (if (not (is-a? (ast:type o) <void>)) o
          (clone o #:statement (add-return (.statement o)))))
+    ((? (%normalize:short-circuit?))
+     o)
+    (($ <interface>)
+     (clone o #:behavior (add-function-return (.behavior o))))
+    (($ <component>)
+     (clone o #:behavior (add-function-return (.behavior o))))
     ((? (is? <ast>)) (tree-map add-function-return o))
     (_ o)))
 
@@ -834,12 +852,10 @@ to prevent unintended shadowing
     (($ <behavior>)
      (clone o #:statement (add-defer-end (.statement o))
             #:functions (add-defer-end (.functions o))))
+    ((? (%normalize:short-circuit?))
+     o)
     (($ <component>)
      (clone o #:behavior (add-defer-end (.behavior o))))
-    (($ <system>)
-     o)
-    (($ <foreign>)
-     o)
     (($ <interface>)
      o)
     ((? (is? <ast>))
@@ -865,9 +881,8 @@ to prevent unintended shadowing
     (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (ast:statement* o))))
     (($ <behavior>) (clone o #:statement (add-reply-port (.statement o) port block?)
                             #:functions (add-reply-port (.functions o) port block?)))
+    ((? (%normalize:short-circuit?)) o)
     (($ <component>) (clone o #:behavior (add-reply-port (.behavior o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
-    (($ <system>) o)
-    (($ <foreign>) o)
     (($ <interface>) o)
     ((? (is? <ast>)) (tree-map (cut add-reply-port <> port block?) o))
     (_ o)))
@@ -900,15 +915,13 @@ to prevent unintended shadowing
                                     #:elements (list (clone trigger #:formals (make <formals> #:elements on-formals))))
                   #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))))
 
-    (($ <component>)
-     (clone o #:behavior ((binding-into-blocking) (.behavior o))))
-
     (($ <behavior>)
      (clone o #:statement ((binding-into-blocking '()) (.statement o))))
-
+    ((? (%normalize:short-circuit?))
+     o)
+    (($ <component>)
+     (clone o #:behavior ((binding-into-blocking) (.behavior o))))
     (($ <interface>) o)
-    (($ <system>) o)
-    (($ <foreign>) o)
     ((? (is? <ast>)) (tree-map (binding-into-blocking locals) o))
     (_ o)))
 
@@ -936,11 +949,12 @@ the same level."
      o)
     (($ <functions>)
      o)
+    ((? (%normalize:short-circuit?))
+     o)
     ((and (? (is? <component>) (= .behavior behavior)))
      (clone o #:behavior (remove-otherwise behavior keep-annotated? statements)))
     ((and (? (is? <interface>) (= .behavior behavior)))
      (clone o #:behavior (remove-otherwise behavior keep-annotated? statements)))
-    ((? (is? <component-model>)) o)
     ((? (is? <ast>))
      (tree-map (cute remove-otherwise <> keep-annotated? statements) o))
     (_
@@ -1101,12 +1115,12 @@ expressions explicit."
      (clone o
             #:functions (add-explicit-temporaries (.functions o))
             #:statement (add-explicit-temporaries (.statement o))))
+    ((? (%normalize:short-circuit?))
+     o)
     (($ <interface>)
      (clone o #:behavior (add-explicit-temporaries (.behavior o))))
     (($ <component>)
      (clone o #:behavior (add-explicit-temporaries (.behavior o))))
-    (($ <foreign>) o)
-    (($ <system>) o)
     ((? (is? <ast>)) (tree-map add-explicit-temporaries o))
     (_ o)))
 
@@ -1255,12 +1269,12 @@ add-explicit-temporaries transformation for splitting argument lists."
      (clone o
             #:functions (split-complex-expressions (.functions o))
             #:statement (split-complex-expressions (.statement o))))
+    ((? (%normalize:short-circuit?))
+     o)
     (($ <interface>)
      (clone o #:behavior (split-complex-expressions (.behavior o))))
     (($ <component>)
      (clone o #:behavior (split-complex-expressions (.behavior o))))
-    (($ <foreign>) o)
-    (($ <system>) o)
     ((? (is? <ast>)) (tree-map split-complex-expressions o))
     (_ o)))
 
@@ -1283,12 +1297,12 @@ add-explicit-temporaries transformation for splitting argument lists."
      (clone o
             #:functions (group-expressions (.functions o) group)
             #:statement (group-expressions (.statement o) group)))
+    ((? (%normalize:short-circuit?))
+     o)
     (($ <interface>)
      (clone o #:behavior (group-expressions (.behavior o) group)))
     (($ <component>)
      (clone o #:behavior (group-expressions (.behavior o) group)))
-    (($ <foreign>) o)
-    (($ <system>) o)
     ((? (is? <ast>)) (tree-map (cute group-expressions <> group) o))
     (_ o)))
 
@@ -1305,6 +1319,8 @@ add-explicit-temporaries transformation for splitting argument lists."
               triples:->triples
               .statement
               ) o)))
+    ((? (%normalize:short-circuit?))
+     o)
     ((? (is? <ast>))
      (tree-map simplify-guard-expressions o))
     (_
@@ -1352,6 +1368,8 @@ code check."
                            (not (ast:imperative? p)))))
        (if (not add-tag?) o
            (add-tag o))))
+    ((? (%normalize:short-circuit?))
+     o)
     ((? (is? <ast>))
      (tree-map tag-imperative-blocks o))
     (_
