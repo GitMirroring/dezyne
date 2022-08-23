@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -36,7 +36,6 @@ interface IMove
   out void arrived();
 
   in void run(imove_power_t power, imove_boolean invert);        //unregulated
-  in void pulse(imove_power_t power, imove_boolean invert, imove_milliseconds_t duration);
   in void stop(); // brake
   in void coast();
   in void zero();
@@ -52,7 +51,6 @@ interface IMove
       on zero: {}
     }
     on run: {}
-    on pulse: {moving = true;}
     on stop: {moving = false;}
     on coast: {moving = false;}
     on position: {}
@@ -84,12 +82,11 @@ component Move
   behavior
   {
     bool moving = false;
-    bool pulsing = false;
 
     itimer.milliseconds_t time = $(config.get("Duration::PollInterval"))$;
     imotor.position_t destination;
 
-    [moving][!pulsing]
+    [moving]
     {
       on timer.timeout():
         {
@@ -99,7 +96,7 @@ component Move
           else                               timer.create(time);
         }
     }
-    [!moving][!pulsing]
+    [!moving]
     {
       on ctrl.move(power, position):
         {
@@ -108,21 +105,11 @@ component Move
           motor.move(power, destination);
           moving = true;
         }
-      on ctrl.pulse(power, invert, duration):
-        {
-          timer.create(duration);
-          motor.run(power, invert);
-          pulsing = true;
-        }
       on ctrl.zero(): motor.zero();
     }
-    [pulsing][!moving]
-    {
-      on timer.timeout(): {motor.coast(); ctrl.arrived(); pulsing = false;}
-    }
     on ctrl.run(power, invert): motor.run(power, invert);
-    on ctrl.stop(): {motor.stop(); timer.cancel(); moving = false; pulsing = false;}
-    on ctrl.coast(): {motor.coast(); timer.cancel(); moving = false; pulsing = false;}
+    on ctrl.stop(): {motor.stop(); timer.cancel(); moving = false;;}
+    on ctrl.coast(): {motor.coast(); timer.cancel(); moving = false;}
     on ctrl.position(pos): motor.position(pos);
   }
 }
