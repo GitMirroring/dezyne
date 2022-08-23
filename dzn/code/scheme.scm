@@ -33,6 +33,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn ast normalize)
   #:use-module (dzn code dzn)
   #:use-module (dzn code)
   #:use-module (dzn code-util)
@@ -211,17 +212,17 @@
          (make <compound> #:elements (list o))))
     (($ <behavior>) (clone o #:statement (wrap-lonely-variable (.statement o))))
     (($ <component>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
-    (($ <system>) o)
-    (($ <foreign>) o)
     (($ <interface>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
+    ((? (%normalize:short-circuit?)) o)
     ((? (is? <ast>)) (tree-map wrap-lonely-variable o))
     (_ o)))
 
 (define (scheme:om ast)
-  ((compose
-    wrap-lonely-variable
-    code:om)
-   ast))
+  (parameterize ((%normalize:short-circuit? code:short-circuit?))
+    ((compose
+      wrap-lonely-variable
+      code:om)
+     ast)))
 
 (define-templates-macro define-templates scheme)
 (include-from-path "dzn/templates/dzn.scm")

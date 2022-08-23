@@ -256,12 +256,13 @@
         (else '())))
 
 (define (cs:om ast)
-  ((compose
-    add-reply-port
-    normalize:event+illegals
-    remove-otherwise
-    code:add-calling-context)
-   ast))
+  (parameterize ((%normalize:short-circuit? code:short-circuit?))
+    ((compose
+      add-reply-port
+      normalize:event+illegals
+      remove-otherwise
+      code:add-calling-context)
+     ast)))
 
 
 ;;;

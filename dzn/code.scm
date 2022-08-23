@@ -110,6 +110,7 @@
             code:requires-in-void-returns
             code:return
             code:return-values
+            code:short-circuit?
             code:trace-q-out
             code:trigger
             code:type-name
@@ -758,23 +759,34 @@
                        (lambda (a b)
                          (ast:eq? (.port a) (.port b))))))
 
+(define (code:short-circuit? o)
+  (match o
+    ((or ($ <foreign>) ($ <system>))
+     o)
+    ((and (or ($ <interface>) ($ <component>)) (? ast:imported?))
+     o)
+    (_
+     #f)))
+
 (define (code:om ast)
-  (let ((root ((compose
-                add-reply-port
-                normalize:event+illegals
-                remove-otherwise
-                (binding-into-blocking)
-                code:add-calling-context)
-               ast)))
-    (when (> (dzn:debugity) 1)
-      (ast:pretty-print root (current-error-port)))
-    root))
+  (parameterize ((%normalize:short-circuit? code:short-circuit?))
+    (let ((root ((compose
+                  add-reply-port
+                  normalize:event+illegals
+                  remove-otherwise
+                  (binding-into-blocking)
+                  code:add-calling-context)
+                 ast)))
+      (when (> (dzn:debugity) 1)
+        (ast:pretty-print root (current-error-port)))
+      root)))
 
 (define (code:om+determinism ast)
-  ((compose
-    add-determinism-temporaries
-    code:om)
-   ast))
+  (parameterize ((%normalize:short-circuit? code:short-circuit?))
+    ((compose
+      add-determinism-temporaries
+      code:om)
+     ast)))
 
 
 ;;;
