@@ -1,0 +1,112 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// A parameterizable interface that before compression is very large
+// (thousands of states), and pretty big after compression (hundreds of
+// states).
+//
+// Code:
+
+interface huge_interface
+{
+  subint int {0..9};
+  in int hello ();
+  in int bye ();
+  in int cruel0 ();
+  in int cruel1 ();
+  in int cruel2 ();
+  in int cruel3 ();
+  // in int cruel4 ();
+
+  out void foo0 ();
+  // out void foo1 ();
+  // out void foo2 ();
+  // out void foo3 ();
+
+  behavior
+  {
+    int state = 0;
+    int previous = 0;
+    int past = 0;
+    int target = 0;
+    // int future = 0;
+
+    on hello: reply (1);
+    on hello: reply (2);
+    on hello: reply (3);
+    on hello: reply (4);
+    on hello: reply (5);
+    on hello: reply (6);
+    on hello: reply (7);
+    on hello: reply (8);
+    on hello: reply (9);
+
+    on bye: reply (1);
+    on bye: reply (2);
+    on bye: reply (3);
+    on bye: reply (4);
+    on bye: reply (5);
+    on bye: reply (6);
+    on bye: reply (7);
+    on bye: reply (8);
+    on bye: reply (9);
+
+    on cruel0: reply (previous);
+    on cruel1: reply (past);
+    on cruel2: reply (state);
+    on cruel3: reply (target);
+    // on cruel4: reply (future);
+
+    on inevitable: {foo0; previous=state;}
+    // on inevitable: {foo1; past=previous;}
+    // on inevitable: {foo2; target=state;}
+    // on inevitable: {foo3; future=target;}
+
+    [state == 0]
+      {
+        on hello: {state=1;reply (0);}
+        on bye: reply (0);
+      }
+    [state > 0 && state < 9]
+      {
+        [previous == 0]
+        {
+          on hello: {state=state+1;reply (0);}
+          on bye: reply (0);
+        }
+        [previous > 0 && previous < 9]
+        {
+          on hello: {state=state-1;reply (0);}
+          on bye: {state=state+1; reply (0);}
+        }
+        [previous == 9]
+        {
+          on hello: reply (0);
+          on bye: {state=state-1; reply (0);}
+        }
+      }
+    [state == 9]
+      {
+        on hello: reply (0);
+        on bye: {state=state-1;reply (0);}
+      }
+    }
+}
