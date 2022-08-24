@@ -35,7 +35,9 @@
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:export (main
-            parse-opts))
+            parse-opts
+            script:command
+            script:command-module))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -115,19 +117,27 @@ Use \"dzn COMMAND --help\" for command-specific information.
 
 (define parse-opts (pure-funcq parse-opts))
 
+(define* (script:command #:key (options (parse-opts (command-line))))
+  (match (command:command-line options)
+    ((command rest ...) (string->symbol command))
+    (_ #f)))
+
+(define* (script:command-module #:key (options (parse-opts (command-line))))
+  (let ((command (script:command #:options options)))
+    (resolve-module `(dzn commands ,command))))
+
 (define (run-command args)
-  (let* ((command (string->symbol (car args)))
-         (module (resolve-module `(dzn commands ,command)))
-         (main (and module (false-if-exception (module-ref module 'main)))))
+  (let* ((options (parse-opts args))
+         (command (script:command #:options options))
+         (module (script:command-module #:options options))
+         (main (and module (false-if-exception (module-ref module 'main))))
+         (command-args (command:command-line options)))
     (unless main
       (format (current-error-port) "dzn: no such command: ~a\n" command)
       (exit EXIT_OTHER_FAILURE))
-    (main args)))
+    (main command-args)))
 
 (define (main args)
-  (let* ((options (parse-opts args))
-         (command-args (command:command-line options))
-         (command (and (pair? command-args) (car command-args)))
-         (debug? (option-ref options 'debug #f)))
-    (if (getenv "DZN_REPL") (call-with-error-handling (cut run-command command-args))
-        (run-command command-args))))
+  (let ((repl? (getenv "DZN_REPL")))
+    (if repl? (call-with-error-handling (cute run-command args))
+        (run-command args))))
