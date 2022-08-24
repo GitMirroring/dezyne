@@ -65,10 +65,18 @@
             cleanup-error
             display-lts
             edge-label
+            edge-to
+            edge?
+            initial
+            lts->alphabet
+            lts->nodes
             lts->rtc-lts
             lts->traces
             lts-hide
             make-shared-string
+            node?
+            node-edges
+            node-state
             remove-illegal
             remove-tag-edges))
 
@@ -896,7 +904,7 @@ from LABELS."
           (display out-line))
         (loop (read-line input-port 'concat))))))
 
-(define* (display-lts lts #:key (separator "\n"))
+(define* (display-lts lts #:key (separator "\n") (port (current-output-port)))
   (let* ((edges (append-map node-edges (vector->list lts)))
          (header (format #f "des (~a,~a,~a)"
                          (initial lts)
@@ -915,4 +923,4 @@ from LABELS."
                  edges))
          (lines (cons header lines))
          (text (string-join lines separator)))
-    (display text)))
+    (display text port)))

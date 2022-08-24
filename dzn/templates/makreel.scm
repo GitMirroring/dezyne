@@ -261,12 +261,6 @@
 
 ;; constraint
 (define-templates constraint makreel:constraint double-newline-infix)
-(define-templates constraint-start makreel:constraint-start)
-(define-templates constraint-prefix makreel:constraint-prefix dot-space-suffix)
-(define-templates constraint-branch makreel:constraint-branch* newline-union-infix)
-(define-templates constraint-assign makreel:constraint-assignment* comma-infix)
-
-(define-templates constraint-process-parameters makreel:constraint-process-parameters parameters-grammar)
 (define-templates constraint-member-init makreel:member-init parameters-grammar)
 
 (define-templates constraint-continuation makreel:constraint-continuation)

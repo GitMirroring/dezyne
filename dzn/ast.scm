@@ -136,10 +136,7 @@
                ast:pure-funcq
 
                ast:argument*
-               ast:assignment*
                ast:binding*
-               ast:constraint-branch*
-               ast:constraint-transition*
                ast:data*
                ast:event*
                ast:field*

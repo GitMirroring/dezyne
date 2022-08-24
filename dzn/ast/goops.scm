@@ -72,12 +72,10 @@
 ;; FIXME: generate-me
 (export
            .arguments
-           .assignments
            .ast
            .behavior
            .bindings
            .blocking?
-           .branches
            .column
            .comment
            .direction
@@ -119,11 +117,9 @@
            .scope
            .signature
            .statement
-           .statements
            .string
            .then
            .to
-           .transitions
            .trigger
            .triggers
            .type.name
@@ -662,36 +658,6 @@
 (define-ast <out-formal> (<variable>))
 (define-ast <direction> (<named>))
 (define-ast <unspecified> (<ast>))
-
-
-;;;
-;;; Constraining process
-;;;
-(define-ast <constraint-transitions> (<ast-list>))
-
-(define-ast <constraint-transition> (<ast>)
-  (from)
-  (statements #:init-form (make <compound>))
-  (assignments #:init-form (make <compound>))
-  (to))
-
-(define-ast <constraint-process> (<ast>)
-  (to)
-  (assignments #:init-form (make <compound>)))
-
-(define-ast <unconstrained-process> (<ast>))
-
-(define-ast <constraint-branch> (<ast>)
-  (prefix) ;<compound>
-  (branches))
-
-(define-ast <constraint-branches> (<ast-list>))
-
-(define-ast <constraint> (<ast>)
-  (from)
-  (branches))
-
-(define-ast <constrained-legal> (<ast>))
 
 
 ;;;

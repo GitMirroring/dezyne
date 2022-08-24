@@ -1,5 +1,0 @@
-#x:constraint-start
-
-#x:makreel:interface-name constraint_#.from #x:constraint-process-parameters
- = (#x:constraint-branch)
- ;

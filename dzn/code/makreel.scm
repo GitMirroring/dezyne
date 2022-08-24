@@ -46,9 +46,9 @@
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
-  #:use-module (dzn explore constraint)
   #:use-module (dzn misc)
   #:use-module (dzn templates)
+  #:use-module (dzn verify constraint)
 
   #:export (%model-name
             %no-unreachable?
@@ -291,15 +291,6 @@
 
 (define-method (makreel:interface-name (o <interface>))
   (makreel:model-name o))
-
-(define-method (makreel:interface-name (o <constraint>))
-  (makreel:interface-name (ast:parent o <model>)))
-
-(define-method (makreel:interface-name (o <constraint-branch>))
-  (makreel:interface-name (ast:parent o <model>)))
-
-(define-method (makreel:interface-name (o <unconstrained-process>))
-  (makreel:interface-name (ast:parent o <model>)))
 
 (define-method (makreel:interface-name (o <port>))
   ((compose makreel:interface-name .type) o))
@@ -1024,64 +1015,18 @@
 ;;;
 ;;; Constraint
 ;;;
-(define-method (makreel:constraint (o <interface>))
-  (let ((constraint (interface->constraint (ast:parent o <root>) o)))
-    (sort constraint (match-lambda* ((a b) (< (.from a) (.from b)))))))
+(define (makreel:constraint-unmemoized o)
+  (let ((root (ast:parent o <root>)))
+    (interface->constraint root o)))
 
-(define-method (makreel:constraint-start (o <constraint>))
-  (and (eq? 1 (.from o)) (ast:parent o <model>)))
-
-(define-method (makreel:constraint-prefix (o <constraint-branch>))
-  (let ((statements (ast:statement* o)))
-    (match statements
-      (((and (? ast:modeling?) modeling) tail ...)
-       tail)
-      (((and ($ <trigger>) trigger) tail ...)
-       (cons trigger tail))
-      (_
-       statements))))
-
-(define-method (makreel:constraint-empty-prefix (o <constraint-branch>))
-  (let* ((statements (filter (is? <action>) (ast:statement* o))))
-    (and (null? statements)
-         (ast:parent o <model>))))
-
-(define-method (makreel:constraint-assignment* (o <constraint-process>))
-  (let ((statements (ast:assignment* o)))
-    (and (not (find (is? <illegal>) statements))
-        statements)))
-
-(define (top-constraint-branch o)
-  (let loop ((o o))
-    (let* ((parent (.parent o))
-           (grandparent (.parent parent)))
-      (if (is-a? grandparent <constraint>) o
-          (loop parent)))))
-
-(define-method (constrained-illegal? (o <compound>))
-  (match (.elements o)
-    ((e ... (and ($ <illegal>) i)) i)
-    (_ #f)))
-
-(define (makreel:constraint-branch* o)
-  (cond ((.branches o)
-         (filter (negate (conjoin (is? <constraint-branch>)
-                                  (compose null? .elements (cute .prefix <>))))
-                 (ast:constraint-branch* o)))
-        ((and (is-a? o <constraint-branch>)
-              (constrained-illegal? (.prefix o))))
-        (else
-         (let ((process (make <unconstrained-process>)))
-           (clone process #:parent (ast:parent o <model>))))))
-
-(define-method (makreel:constraint-process-parameters (o <interface>))
-  (makreel:process-parameters o))
-
-(define-method (makreel:constraint-process-parameters (o <port>))
-  (makreel:constraint-process-parameters (.type o)))
-
-(define-method (makreel:constraint-process-parameters (o <constraint>))
-  (makreel:constraint-process-parameters (ast:parent o <model>)))
+(define makreel:constraint
+  (let ((cache-alist '()))
+    (lambda (o)
+      (let ((key (makreel:unticked-dotted-name o)))
+        (or (assoc-ref cache-alist key)
+            (let ((result (makreel:constraint-unmemoized o)))
+              (set! cache-alist (acons key result cache-alist))
+              result))))))
 
 (define-method (makreel:provides-port-name (o <component>))
   (.name (ast:provides-port o)))

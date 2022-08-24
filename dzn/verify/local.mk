@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -23,6 +23,7 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
+ %D%/constraint.scm				\
  %D%/pipeline.scm
 
 dist_nocompile_%C%_scm_DATA =

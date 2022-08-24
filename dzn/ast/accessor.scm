@@ -37,10 +37,7 @@
   #:use-module (dzn ast util)
 
   #:export (ast:argument*
-            ast:assignment*
             ast:binding*
-            ast:constraint-branch*
-            ast:constraint-transition*
             ast:data*
             ast:event*
             ast:field*
@@ -81,8 +78,6 @@
 
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
-(define-method (ast:constraint-branch* (o <constraint-branches>)) (.elements o))
-(define-method (ast:constraint-transition* (o <constraint-transitions>)) (.elements o))
 (define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))
 (define-method (ast:import* (o <root>)) (filter (is? <import>) (ast:top* o)))
 (define-method (ast:statement* (o <compound>)) (.elements o))
@@ -121,11 +116,7 @@
 (define-method (ast:argument* (o <action>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:argument* (o <call>)) ((compose ast:argument* .arguments) o))
 (define-method (ast:argument* (o <defer>)) ((compose (cute and=> <> ast:argument*) .arguments) o))
-(define-method (ast:assignment* (o <constraint-process>)) ((compose ast:statement* .assignments) o))
 (define-method (ast:binding* (o <system>)) ((compose ast:binding* .bindings) o))
-(define-method (ast:constraint-branch* (o <constraint>)) ((compose ast:constraint-branch* .branches) o))
-(define-method (ast:constraint-branch* (o <constraint-branch>)) ((compose ast:constraint-branch* .branches) o))
-(define-method (ast:constraint-transition* (o <constraint>)) ((compose ast:constraint-transition* .transitions) o))
 (define-method (ast:event* (o <interface>)) ((compose ast:event* .events) o))
 (define-method (ast:function* (o <component>)) ((compose ast:function* .behavior) o))
 (define-method (ast:field* (o <enum>)) ((compose ast:field* .fields) o))
@@ -140,9 +131,6 @@
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
 (define-method (ast:port* (o <behavior>)) ((compose ast:port* .ports) o))
 (define-method (ast:statement* (o <behavior>)) ((compose ast:statement* .statement) o))
-(define-method (ast:statement* (o <constraint-branch>)) ((compose ast:statement* .prefix) o))
-(define-method (ast:statement* (o <constraint-process>)) ((compose ast:statement* .assignments) o))
-(define-method (ast:statement* (o <constraint-transition>)) ((compose ast:statement* .statements) o))
 (define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
 (define-method (ast:variable* (o <model>)) ((compose ast:variable* .behavior) o))
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))

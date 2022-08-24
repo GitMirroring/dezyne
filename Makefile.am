@@ -96,7 +96,6 @@ include dzn/local.mk
 include dzn/commands/local.mk
 include runtime/local.mk
 include runtime/scheme/dzn/local.mk
-include dzn/explore/local.mk
 include dzn/verify/local.mk
 include dzn/templates/local.mk
 include emacs/local.mk
