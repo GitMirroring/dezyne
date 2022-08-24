@@ -49,8 +49,7 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((debug (single-char #\d))
-            (flush (single-char #\f))
+          '((flush (single-char #\f))
             (dzn (single-char #\G))
             (help (single-char #\h))
             (illegal (single-char #\i))
