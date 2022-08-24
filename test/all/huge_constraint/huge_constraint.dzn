@@ -1,0 +1,88 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// A parameterizable model that performs an order of magnitude slower
+// with 2.17 than with 2.16.
+//
+// Code:
+
+import huge_interface.dzn;
+
+component huge_constraint
+{
+  provides huge_interface h;
+
+  behavior
+  {
+    subint int {0..9};
+    int state = 0;
+    int previous = 0;
+    int past = 0;
+    int target = 0;
+    // int future = 0;
+
+    on h.cruel0 (): reply (previous);
+    on h.cruel1 (): reply (past);
+    on h.cruel2 (): reply (state);
+    on h.cruel3 (): reply (target);
+    // on h.cruel4 (): reply (state);
+    // on h.cruel5 (): reply (state);
+    // on h.cruel6 (): reply (state);
+    // on h.cruel7 (): reply (state);
+    // on h.cruel8 (): reply (state);
+    // on h.cruel9 (): reply (state);
+
+    //on w.foo0 (): {h.foo0 ();previous=state;}
+    on h.bar0 (): {h.foo0 ();previous=state;}
+    // on w.foo1 (): {h.foo1 ();past=previous;}
+    // on w.foo2 (): {h.foo2 ();target=state;}
+    // on w.foo3 (): {h.foo3 ();future=target;}
+
+    [state == 0]
+      {
+        on h.hello (): {state=1;reply (0);}
+        on h.bye (): reply (0);
+      }
+    [state > 0 && state < 9]
+      {
+        [previous == 0]
+        {
+          on h.hello (): {state=state+1;reply (0);}
+          on h.bye (): reply (0);
+        }
+        [previous > 0 && previous < 9]
+        {
+          on h.hello (): {state=state-1;reply (0);}
+          on h.bye (): {state=state+1; reply (0);}
+        }
+        [previous == 9]
+        {
+          on h.hello (): reply (0);
+          on h.bye (): {state=state-1; reply (0);}
+        }
+      }
+    [state == 9]
+      {
+        on h.hello (): reply (0);
+        on h.bye (): {state=state-1;reply (0);}
+      }
+    }
+}

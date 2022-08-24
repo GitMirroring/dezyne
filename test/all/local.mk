@@ -352,6 +352,7 @@ REGRESSION_TESTS =				\
  %D%/helloparams				\
  %D%/helloworld					\
  %D%/huge_interface				\
+ %D%/huge_constraint				\
  %D%/illegal_blocking_race			\
  %D%/illegal_external_inevitable		\
  %D%/illegal_external_requires_twice		\

@@ -41,6 +41,8 @@ interface huge_interface
   // out void foo2 ();
   // out void foo3 ();
 
+  in void bar0 ();
+
   behavior
   {
     int state = 0;
@@ -75,10 +77,12 @@ interface huge_interface
     on cruel3: reply (target);
     // on cruel4: reply (future);
 
-    on inevitable: {foo0; previous=state;}
+    // on inevitable: {foo0; previous=state;}
     // on inevitable: {foo1; past=previous;}
     // on inevitable: {foo2; target=state;}
     // on inevitable: {foo3; future=target;}
+
+    on bar0: {foo0; previous=state;}
 
     [state == 0]
       {
