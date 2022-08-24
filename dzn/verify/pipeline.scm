@@ -256,6 +256,14 @@ actions."
                    '("--tau=inevitable,optional,tag,<flush>"))))
     `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
+(define (in-out:lts-hide-internal-labels options)
+  (let* ((model (options-model options))
+         (name (makreel:model-name model))
+         (taus (if (not (is-a? model <interface>)) '()
+                   `(,(format #f "--tau=optional,inevitable,tag,~aflush,~astate"
+                              name name)))))
+    `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
+
 (define in-out:aut->aut-dpweak-bisim
   '("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut"))
 
@@ -334,6 +342,8 @@ actions."
     (("maut"                    "maut-weak-trace")         . ,in-out:aut->aut-weak-trace)
     (("maut"                    "maut-dpweak-bisim")       . ,in-out:aut->aut-dpweak-bisim)
     (("maut-weak-trace"         "aut-weak-trace")          . ,in-out:maut->aut)
+    (("aut-weak-trace"          "aut-weak-trace+hide")     . ,in-out:lts-hide-internal-labels)
+    (("maut-weak-trace"         "maut-weak-trace+hide")    . ,in-out:lts-hide-internal-labels)
     (("maut-dpweak-bisim"       "aut-dpweak-bisim")        . ,in-out:maut->aut)
     (("aut-dpweak-bisim"        "aut-failures")            . ,in-out:aut->aut-failures)
     (("dzn"                     "aut-dpweak-bisim-cached") . ,in-out:dzn->aut-dpweak-bisim-cached)
