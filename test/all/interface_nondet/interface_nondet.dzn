@@ -23,7 +23,7 @@
 //
 // Code:
 
-interface hello_nondet
+interface interface_nondet
 {
   in void hello();
   out void cruel();

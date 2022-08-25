@@ -75,7 +75,6 @@ HELLO_TESTS =					\
  %D%/hello_local_bool				\
  %D%/hello_locations				\
  %D%/hello_multiple_provides			\
- %D%/hello_nondet				\
  %D%/hello_nondet_reply				\
  %D%/hello_optional				\
  %D%/hello_otherwise				\
@@ -93,6 +92,7 @@ HELLO_TESTS =					\
  %D%/inline-functions				\
  %D%/livelock_interface0			\
  %D%/livelock_component				\
+ %D%/interface_nondet				\
  %D%/queuefull_component0			\
  %D%/semantics					\
  %D%/state-diagram				\
