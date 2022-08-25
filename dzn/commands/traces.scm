@@ -39,7 +39,6 @@
   #:use-module (dzn command-line)
   #:use-module (dzn lts)
   #:use-module (dzn code makreel)
-  #:use-module (dzn normalize)
   #:use-module (dzn parse)
   #:use-module (dzn shell-util)
 

@@ -47,7 +47,8 @@
                remove-otherwise
                remove-behavior
                simplify-guard-expressions
-               split-complex-expressions))
+               split-complex-expressions
+               tag-imperative-blocks))
 
 (define (normalize:compounds-wrap o)
   "Like normalize:compounds and wrap singleton top level imperative

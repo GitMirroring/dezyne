@@ -46,8 +46,7 @@
 
   #:use-module (dzn ast)
 
-  #:export (%no-unreachable?
-            add-defer-end
+  #:export (add-defer-end
             add-determinism-temporaries
             add-explicit-temporaries
             add-function-return
@@ -64,14 +63,12 @@
             remove-otherwise
             simplify-guard-expressions
             split-complex-expressions
-            split-variable))
+            split-variable
+            tag-imperative-blocks))
 
 ;; Should add-explicit-temporaries only cater for deterministic ordering
 ;; of noisy expressions?
 (define %noisy-ordering? (make-parameter #f))
-
-;; Should unreachable-code tags be omitted?
-(define %no-unreachable? (make-parameter #f))
 
 ;; A prefix is a normalized combination of the declarative statements
 ;; that ... the imperative statement.  It is a triple that combines
@@ -399,37 +396,6 @@
   (append (append-map (cut add-illegals model triples <>) (ast:in-triggers model))
           (filter (compose ast:modeling? car ast:trigger* triple-on) triples)))
 
-(define (add-tag statement)
-  (define (location statement)
-    (let ((loc (.location statement)))
-      (if loc loc (location (.parent statement)))))
-  (if (declarative-illegal? statement) statement
-      (let* ((tag (make <tag> #:location (location statement)))
-             (elements (if (is-a? statement <compound>)
-                           (append (list tag) (ast:statement* statement))
-                           (list tag statement)))
-             (statement (make <compound> #:elements elements)))
-      statement)))
-
-(define (tag-blocks o)
-  (cond ((not (is-a? o <ast>)) o)
-    ((is-a? o <if>)
-      (let* ((then (add-tag (tag-blocks (.then o))))
-                   (else (tag-blocks (.else o)))
-                   (else (if else (add-tag else) else)))
-        (clone o #:then then #:else else)))
-    ((or (is-a? o <function>) (is-a? o <defer>))
-      (clone o #:statement (add-tag (tag-blocks (.statement o)))))
-    (else (tree-map tag-blocks o))))
-
-(define (triples:tag-blocks triples)
-  (define (tag-blocks-triple t)
-    (make-triple (triple-on t)
-                 (triple-guard t)
-                 (triple-blocking? t)
-                 (add-tag (tag-blocks (triple-statement t)))))
-  (map tag-blocks-triple triples))
-
 (define (triples:mark-the-end triples)
   (define (mark-the-end t)
     (let* ((on (triple-on t))
@@ -560,17 +526,13 @@ guarded occurrences."
               (triples:fix-empty-interface (parent o <model>))
               (triples:add-illegals (parent o <model>))
               triples:mark-the-end
-              (if (%no-unreachable?) identity triples:tag-blocks)
               (triples:declarative-illegals (parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
               ) o)
             #:functions
-            ((compose
-              (if (%no-unreachable?) identity tag-blocks)
-              (cute group-expressions <> (list <and> <field-test> <or>))
-             ) (.functions o))))
+            (group-expressions (.functions o) (list <and> <field-test> <or>))))
     ((? (is? <ast>))
      (tree-map normalize:state+illegals o))
     (_
@@ -1345,6 +1307,53 @@ add-explicit-temporaries transformation for splitting argument lists."
               ) o)))
     ((? (is? <ast>))
      (tree-map simplify-guard-expressions o))
+    (_
+     o)))
+
+(define (tag-imperative-blocks o)
+  "Mark imperative statement blocks with a unique tag for unreachable
+code check."
+  (define (location o)
+    (or (.location o)
+        (location (.parent o))))
+  (define (add-tag o)
+    (match o
+      (($ <illegal>)
+       o)
+      (($ <compound>)
+       (let ((tag (make <tag> #:location (location o))))
+         (clone o #:elements (cons tag (ast:statement* o)))))
+      (_
+       (let* ((location (location o))
+              (tag (make <tag> #:location location)))
+         (make <compound> #:elements (list tag o) #:location location)))))
+
+  (match o
+    (($ <function>)
+     (let* ((statement (.statement o))
+            (statement (add-tag (tag-imperative-blocks statement))))
+       (clone o #:statement statement)))
+    (($ <defer>)
+     (let* ((statement (.statement o))
+            (statement (add-tag (tag-imperative-blocks statement))))
+       (clone o #:statement statement)))
+    (($ <if>)
+     (let ((then (add-tag (tag-imperative-blocks (.then o))))
+           (else (and=> (tag-imperative-blocks (.else o)) add-tag)))
+       (clone o #:then then #:else else)))
+    (($ <variables>)
+     o)
+    (($ <illegal>)
+     o)
+    ((? ast:imperative?)
+     (let* ((o (tree-map tag-imperative-blocks o))
+            (p (.parent o))
+            (add-tag? (and (is-a? p <statement>)
+                           (not (ast:imperative? p)))))
+       (if (not add-tag?) o
+           (add-tag o))))
+    ((? (is? <ast>))
+     (tree-map tag-imperative-blocks o))
     (_
      o)))
 
