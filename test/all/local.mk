@@ -326,6 +326,7 @@ REGRESSION_TESTS =				\
  %D%/hello_namespace_shadow			\
  %D%/hello_namespace_shadow2			\
  %D%/hello_no_compliance			\
+ %D%/hello_nondet				\
  %D%/hello_optional_flush			\
  %D%/hello_optional_nondet			\
  %D%/hello_out_data				\
