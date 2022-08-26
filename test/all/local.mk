@@ -528,7 +528,6 @@ PARSER_TESTS =					\
  %D%/wf_illegalInIf				\
  %D%/wf_illegalOnlyStatement			\
  %D%/wf_imperativeDeclarative			\
- %D%/wf_importPathErr				\
  %D%/wf_injectionOutEvent			\
  %D%/wf_interfaceMustDefineBehavior		\
  %D%/wf_interfaceMustDefineEvent		\
