@@ -181,7 +181,8 @@
 (define-method (ast:full-name (o <scope.name>))
   (let ((ids (.ids o)))
     (if (pair? (cdr ids)) ids
-        (append (ast:full-name (ast:parent o <scope>)) (car ids)))))
+        (append (ast:full-name (ast:parent o <scope>))
+                (list-head ids 1)))))
 
 (define-method (ast:full-name (o <named>))
   (ast:full-name (.name o)))
