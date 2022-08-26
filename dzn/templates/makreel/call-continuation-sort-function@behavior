@@ -1,1 +1,1 @@
-#x:process-identifier 'return?is'#x:process-identifier 'return
+#x:continuation-process-identifier 'return?is'#x:continuation-process-identifier 'return

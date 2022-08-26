@@ -121,7 +121,8 @@
 
 (define-templates continuation makreel:continuation newline-union-infix)
 (define-templates then-continuation makreel:then-continuation newline-union-infix)
-(define-templates continuation-identifier makreel:continuation) ;;ASSUME list of one
+(define-templates continuation-identifier makreel:continuation)
+(define-templates continuation-process-identifier identity)
 (define-templates else-continuation makreel:else-continuation newline-union-infix)
 
 ;; statement helpers
