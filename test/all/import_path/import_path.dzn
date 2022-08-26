@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,15 +22,16 @@
 //
 // Code:
 
-import I2.dzn;
-import I.dzn;
+import ihello.dzn;
+import iworld.dzn;
 
-component importPath {
-  provides I i;
-  requires I2 i2;
+component import_path
+{
+  provides ihello h;
+  requires iworld w;
 
   behavior {
-    on i.esub(): { reply(E.E1); }
-    on i2.e(): {}
+    on h.hello (): reply (Bool.True);
+    on w.world (): {}
   }
 }

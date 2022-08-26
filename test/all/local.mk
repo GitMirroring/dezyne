@@ -383,7 +383,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_requires2				\
  %D%/illegal_requires_out			\
  %D%/illegal_system_requires			\
- %D%/importPath					\
+ %D%/import_path				\
  %D%/imported.space				\
  %D%/inevitable_multiple_requires		\
  %D%/inevitable_performance			\

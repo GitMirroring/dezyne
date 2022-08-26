@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,9 +22,4 @@
 //
 // Code:
 
-interface I2 {
-  out void e();
-  behavior {
-    on inevitable: e;
-  }
-}
+enum Bool {False, True};

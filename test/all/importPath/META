@@ -1,5 +1,0 @@
-;;; -*- scheme -*-
-((skip ("build"))
- (comment "multiple provides")
- (imports
-   ("all/importPath/subdir" "all/importPath/foo")))

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,10 +22,11 @@
 //
 // Code:
 
-import H.dzn;
-interface I {
-  in E esub();
-  behavior {
-    on esub: { reply(E.E1); }
+interface iworld
+{
+  out void world ();
+  behavior
+  {
+    on inevitable: world;
   }
 }
