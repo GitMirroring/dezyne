@@ -227,6 +227,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_optional			\
  %D%/compliance_out_sync			\
+ %D%/compliance_provides_enum			\
  %D%/compliance_provides_illegal		\
  %D%/compliance_provides_illegal4		\
  %D%/compliance_provides_illegal5		\

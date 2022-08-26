@@ -1,0 +1,13 @@
+(header ((h) ihello provides) ((sut) compliance_provides_enum component))
+(state ((h)) ((sut)))
+test/all/compliance_provides_enum/compliance_provides_enum.dzn:44:5: error: non-compliance
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.Bool:False
+<external>.h.Bool:True <- ...
+<non-compliance>
+(state ((h)) ((sut)))
+test/all/compliance_provides_enum/compliance_provides_enum.dzn:44:5: error: non-compliance
+(trail "h.hello" "h.Bool:False" "<non-compliance>")
+(labels "h.hello")
+(eligible)

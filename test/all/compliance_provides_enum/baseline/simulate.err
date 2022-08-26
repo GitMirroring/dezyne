@@ -1,0 +1,5 @@
+test/all/compliance_provides_enum/compliance_provides_enum.dzn:44:5: error: non-compliance
+test/all/compliance_provides_enum/compliance_provides_enum.dzn:44:5: component performs: h.Bool:False
+test/all/compliance_provides_enum/compliance_provides_enum.dzn:33:5: port expects: Bool:True
+test/all/compliance_provides_enum/compliance_provides_enum.dzn:34:16: port expects: cruel
+test/all/compliance_provides_enum/compliance_provides_enum.dzn:35:16: port expects: world
