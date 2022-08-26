@@ -30,6 +30,7 @@
   #:use-module (ice-9 poe)
   #:use-module (dzn config)
   #:use-module (dzn code)
+  #:use-module (dzn code makreel)
   #:use-module (dzn shell-util)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
@@ -60,6 +61,7 @@
             (language (single-char #\l) (value #t))
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
+            (no-unreachable (single-char #\U))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))
             (shell (single-char #\s) (value #t))))
@@ -83,6 +85,7 @@ Generate code for Dezyne models in DZN-FILE
   -o, --output=DIR            write output to DIR (use - for stdout)
   -q, --queue-size=SIZE       use queue size SIZE
   -s, --shell=MODEL           generate thread safe system shell for MODEL
+  -U, --no-unreachable        do not generate unreachable code tags
 
 Languages: ~a
 " %default-language (string-join %languages ", "))
@@ -99,12 +102,14 @@ Languages: ~a
          (locations? (option-ref options 'locations #f))
          (model (option-ref options 'model #f))
          (queue-size (command-line:get-number 'queue-size 3))
+         (no-unreachable? (command-line:get 'no-unreachable))
          (shell (option-ref options 'shell #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name)))
     (parameterize ((%calling-context calling-context)
                    (%locations? locations?)
+                   (%no-unreachable? no-unreachable?)
                    (%queue-size queue-size)
                    (%shell shell))
     (code ast

@@ -50,6 +50,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
+            (no-unreachable (single-char #\U))
             (out (value #t))
             (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec))
@@ -71,6 +72,7 @@ Check DZN-FILE for verification errors in Dezyne models
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL
       --out=FORMAT            produce output FORMAT (use \"help\" for a list)
+  -U, --no-unreachable        skip the unreachable code check
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
 ")
 	(exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
@@ -90,17 +92,22 @@ Check DZN-FILE for verification errors in Dezyne models
                                  (lambda _ (ast:get-model ast model-name))
                                  #:backtrace? debug?
                                  #:file-name file-name)))
-         (root (makreel:om ast)))
-    (cond (out
-           (let ((formats (verification:formats)))
-             (unless (member out formats)
-               (format #t "formats:~a\n" (string-join (verification:formats) "\n  " 'prefix))
-               (exit EXIT_OTHER_FAILURE))
-             (let* ((model (call-with-handle-exceptions
-                            (lambda _ (ast:get-model ast model-name))
-                            #:backtrace? debug?
-                            #:file-name file-name))
-                    (model-name (ast:dotted-name model)))
-               (verification:partial root model-name #:out out))))
-          (else
-           (exit (verification:verify options root #:all? all? #:model-name model-name))))))
+         (no-unreachable? (command-line:get 'no-unreachable)))
+    (parameterize ((%no-unreachable? no-unreachable?))
+      (let ((root (makreel:om ast)))
+        (cond
+         (out
+          (let ((formats (verification:formats)))
+            (unless (member out formats)
+              (format #t "formats:~a\n" (string-join (verification:formats)
+                                                     "\n  " 'prefix))
+              (exit EXIT_OTHER_FAILURE))
+            (let* ((model (call-with-handle-exceptions
+                           (lambda _ (ast:get-model ast model-name))
+                           #:backtrace? debug?
+                           #:file-name file-name))
+                   (model-name (ast:dotted-name model)))
+              (verification:partial root model-name #:out out))))
+         (else
+          (exit (verification:verify options root #:all? all?
+                                     #:model-name model-name))))))))

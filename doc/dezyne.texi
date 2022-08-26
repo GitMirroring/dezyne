@@ -2664,6 +2664,10 @@ Generate a trivial main for @var{model}.  This ``generated main'' can
 execute an event trace read from stdin, and writes a code trace to
 stderr.  @xref{Getting Started}.
 
+@item --no-unreachable
+@itemx -U
+Do not generate tags for the unreachable code check.
+
 @item --output=@var{dir}
 @itemx -o @var{dir}
 Write output to directory @var{dir} (use @code{-} for standard output).
@@ -3268,6 +3272,11 @@ verification of all its @code{interface} models and behavioral
 @code{component} models.}.
 @c XXX TODO: reference to compositional quality/property
 @end quotation
+
+@item --no-unreachable
+@itemx -U
+Disable the unreachable code check.  For large models the unreachable
+code check may have a serious performance impact.
 
 @item --out=@var{format}
 @cindex Aldebaran

@@ -578,10 +578,11 @@ init for MODEL unless INIT."
     (define* (report-assert assert #:key skip?)
       (report assert skip? (get-trace assert result) model))
     (reduce-or (command-line:get 'all)
-               (list (cute report-assert 'deadlock)
-                     (cut report-assert 'unreachable #:skip? deadlock?)
-                     (cute report-assert 'livelock)
-                     (cute report-assert 'deterministic)))))
+               `(,(cute report-assert 'deadlock)
+                 ,@(if (%no-unreachable?) '()
+                       `(,(cut report-assert 'unreachable #:skip? deadlock?)))
+                 ,(cute report-assert 'livelock)
+                 ,(cute report-assert 'deterministic)))))
 
 (define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))
@@ -637,15 +638,16 @@ init for MODEL unless INIT."
       (if accepts (string-append trace (car accepts) "\n")
           trace))
     (reduce-or (command-line:get 'all)
-               (list (cute report-assert 'deterministic)
-                     (cute report-assert 'illegal)
-                     (cute report-assert 'deadlock)
-                     (cut report-assert 'unreachable
-                          #:skip? (or illegal? deadlock?))
-                     (cute report-assert 'livelock)
-                     (cut report-assert 'compliance
-                          #:skip? (or illegal? deadlock?)
-                          #:trace refinement-trace)))))
+               `(,(cute report-assert 'deterministic)
+                 ,(cute report-assert 'illegal)
+                 ,(cute report-assert 'deadlock)
+                 ,@(if (%no-unreachable?) '()
+                       `(,(cut report-assert 'unreachable
+                               #:skip? (or illegal? deadlock?))))
+                 ,(cute report-assert 'livelock)
+                 ,(cut report-assert 'compliance
+                       #:skip? (or illegal? deadlock?)
+                       #:trace refinement-trace)))))
 
 (define (mcrl2:verify-interface root model)
   (mcrl2:verify-interface-asserts model root))
