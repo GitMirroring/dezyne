@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,25 +21,25 @@
 //
 // Code:
 
-interface ibool
+interface ihello
 {
-  in bool hello();
-  out void a();
-  out void b();
+  in bool hello ();
+  out void cruel ();
+  out void world ();
 
   behavior
   {
     on hello: reply (true);
-    on hello: {a; reply (true);}
-    on hello: {b; reply (true);}
+    on hello: {cruel; reply (true);}
+    on hello: {world; reply (true);}
   }
 }
 
 component compliance_provides_bool
 {
-  provides ibool p;
+  provides ihello h;
   behavior
   {
-    on p.hello(): reply (false);
+    on h.hello (): reply (false);
   }
 }
