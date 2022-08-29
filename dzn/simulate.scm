@@ -283,7 +283,7 @@ Return a list of traces, possibly marked with <compliance-error>."
 
         (define (run-provides-modeling ipc port-instance)
           (%debug "run-provides-modeling... ~a\n" event)
-          (let* ((ipc (clone pc #:instance port-instance))
+          (let* ((ipc (clone pc #:instance port-instance #:statement #f))
                  (interface ((compose .type .ast) port-instance))
                  (modeling-names (modeling-names interface)))
             (parameterize ((%sut port-instance)
@@ -527,7 +527,7 @@ port return."
 
   (define (event-traces-alist pc)
     (define (event->label-traces pc event)
-      (let* ((pc (clone pc #:instance #f #:trail '()))
+      (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
              (pc (reset-replies pc))
              (traces (parameterize ((%exploring? #t)
                                     (%liveness? 'component))
@@ -547,7 +547,7 @@ port return."
       (merge-alist2 alist async-alist)))
 
   (define (provides-event->label-traces pc event)
-    (let* ((pc (clone pc #:instance #f #:trail '()))
+    (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
            (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t)
                                   (%liveness? 'component))
@@ -555,7 +555,7 @@ port return."
       (cons event traces)))
 
   (define (requires-event->label-traces pc event)
-    (let* ((pc (clone pc #:instance #f #:trail '()))
+    (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
            (pc (reset-replies pc))
            (traces (parameterize ((%exploring? #t)
                                   (%liveness? 'component))
