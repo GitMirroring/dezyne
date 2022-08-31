@@ -325,6 +325,7 @@ REGRESSION_TESTS =				\
  %D%/hello_function_local_nest			\
  %D%/hello_garbage				\
  %D%/hello_guard_two				\
+ %D%/hello_hello_block				\
  %D%/hello_ifelse				\
  %D%/hello_ifif					\
  %D%/hello_implicit_enum			\
