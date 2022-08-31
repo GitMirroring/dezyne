@@ -1,0 +1,7 @@
+model: compliance_blocking_illegal
+h.hello
+w.hello
+w.return
+h.true
+h.cruel
+<non-compliance>

@@ -1,0 +1,3 @@
+test/all/compliance_blocking_illegal/compliance_blocking_illegal.dzn:49:1: error: non-compliance
+test/all/compliance_blocking_illegal/compliance_blocking_illegal.dzn:49:1: component performs: h.cruel
+test/all/compliance_blocking_illegal/compliance_blocking_illegal.dzn:30:3: port expects: illegal
