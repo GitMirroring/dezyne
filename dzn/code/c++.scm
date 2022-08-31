@@ -138,6 +138,10 @@
     (if (null? (code:injected-bindings model)) '()
         o)))
 
+(define-method (c++:pump-for-async? (o <component>))
+  (if ((compose pair? ast:req-events) o) o
+      '()))
+
 (define-templates-macro define-templates c++)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/code.scm")

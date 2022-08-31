@@ -13,7 +13,7 @@
   dzn_meta.require = {#x:ports-meta-list };
   #x:injected-require-initializer
   dzn_rt.performs_flush(this) = true;
-  #x:pump
+  #x:pump-for-async
   #x:event-slot
   #x:async-event-slot
   #x:valued-event-slot

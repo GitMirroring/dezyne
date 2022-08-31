@@ -52,7 +52,7 @@
 (define-templates injected-port-declare ast:injected-port*)
 (define-templates async-port-declare ast:async-port*)
 (define-templates declare-method code:trigger)
-(define-templates pump code:pump?)
+(define-templates pump-for-async c++:pump-for-async?)
 (define-templates method-declare code:ons)
 (define-templates declare-method code:trigger)
 (define-templates stream-member ast:variable* stream-comma-infix)
