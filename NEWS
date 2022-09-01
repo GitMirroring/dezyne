@@ -7,11 +7,18 @@
 
 * Changes in 2.16.1 since 2.16.0
 ** Code
+  - In the the C++ runtime, the signature of skip_block has been changed
+    and moved into the call_helper.
   - The C# code generator now supports using a requires injected port in
     a foreign component.
 ** Noteworthy bug fixes
+  - A regression was fixed in the C++ and C# code generators that could
+    make a valued blocking trigger to not block if an earlier
+    non-blocking reply was issued on the same port.
   - A regression was fixed in the C++ code generator for foreign
     components using a requires injected port.
+  - The simulator now correctly shows a compliance error for a blocked
+    trigger that is (marked) illegal in the provides interface.
 
 * Changes in 2.16.0 since 2.15.4
 ** Language
