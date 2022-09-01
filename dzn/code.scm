@@ -371,14 +371,24 @@
 (define-method (code:return (o <on>))
   (code:return (code:trigger o)))
 
+(define (code:blocking? o)
+  (pair? (tree-collect-filter
+          (negate (disjoin (is? <imperative>)
+                           (is? <expression>)
+                           (is? <location>)))
+          (disjoin (is? <blocking>) (is? <blocking-compound>))
+          (parent o <model>))))
+
 (define-method (code:port-release o)
-  (if (null? (tree-collect-filter
-              (negate (disjoin (is? <imperative>)
-                               (is? <expression>)
-                               (is? <location>)))
-              (disjoin (is? <blocking>) (is? <blocking-compound>))
-              (parent o <model>))) '()
-              o))
+  (let ((trigger (and=> (parent o <on>)
+                        (compose car ast:trigger*))))
+    (and (or (not trigger)
+             (ast:requires? trigger)
+             (or (not (ast:equal? (.port o) (.port trigger)))
+                 (parent o <blocking>)
+                 (parent o <blocking-compound>)))
+         (code:blocking? o)
+         o)))
 
 (define-method (code:port-reply o)
   (let ((port (.port o)))
