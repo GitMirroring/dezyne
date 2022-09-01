@@ -58,7 +58,12 @@ component hello_hello_block
     status s = status.A;
     bool pending = false;
 
-    [s.A] on h.hello (): {h.reply (true);s = status.B;}
+    void h_reply (bool b)
+    {
+      h.reply (b);
+    }
+
+    [s.A] on h.hello (): {h_reply (true);s = status.B;}
     [s.B] on h.hello (): {w.hello (); s = status.C; h.reply (true);}
     [s.C]
     {
