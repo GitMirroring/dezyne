@@ -29,7 +29,6 @@ namespace library {
   , w({{"w",&w,this,&dzn_meta},{"",0,0,0}})
   {
     w.in.world = [&](){return dzn::call_in(this,[=]{
-      this->dzn_rt.skip_block(&this->w) = false;
       w_world();
       this->dzn_rt.flush(this);
     }, this->w, "world");};

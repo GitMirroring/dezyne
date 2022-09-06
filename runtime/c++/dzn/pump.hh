@@ -101,7 +101,7 @@ namespace dzn
     bool collateral_release_skip_block (void*);
     void create_context();
     void context_switch();
-    void release(runtime&,void*);
+    void release(runtime&, void*, void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
     void defer(std::function<bool()>&&, std::function<void(size_t)>&&);

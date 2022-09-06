@@ -92,7 +92,7 @@ namespace dzn
   void collateral_block(const locator&, void*);
   bool port_blocked_p(const locator&, void*);
   void port_block(const locator&, void*, void*);
-  void port_release(const locator&, void*);
+  void port_release(const locator&, void*, void*);
   size_t coroutine_id(const locator&);
   void defer(const locator&, std::function<bool()>&&, std::function<void(size_t)>&&);
   void prune_deferred(const locator&);
@@ -105,13 +105,15 @@ namespace dzn
     {
       size_t handling;
       size_t blocked;
+      void* skip;
       bool performs_flush;
       void* deferred;
       std::queue<std::function<void()>> queue;
     };
     std::map<void*, state> states;
-    std::map<void*, bool> skip_port;
-    bool& skip_block(void*);
+    bool skip_block(void*, void*);
+    void set_skip_block(void*, void*);
+    void reset_skip_block(void*);
 
 
     bool external(void*);
@@ -162,6 +164,7 @@ namespace dzn
     , event(event)
     , reply("return")
     {
+      component->dzn_rt.reset_skip_block(this);
       if(component->dzn_rt.handling(component) ||
          port_blocked_p(component->dzn_locator, &port))
         collateral_block(component->dzn_locator, component);

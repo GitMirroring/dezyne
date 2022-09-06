@@ -54,9 +54,9 @@ namespace dzn
   {
     locator.get<dzn::pump>().block(locator.get<dzn::runtime>(), component, port);
   }
-  void port_release(const dzn::locator& locator, void* port)
+  void port_release(const dzn::locator& locator, void* component, void* port)
   {
-    locator.get<dzn::pump>().release(locator.get<dzn::runtime>(),port);
+    locator.get<dzn::pump>().release(locator.get<dzn::runtime>(), component, port);
   }
   void collateral_block(const dzn::locator& locator, void* component)
   {
@@ -358,9 +358,9 @@ namespace dzn
     runtime.blocked(component) = self->id;
     runtime.handling(component) = 0;
     runtime.flush(component,self->id);
-    if (runtime.skip_block(port))
+    if (runtime.skip_block(component, port))
     {
-      runtime.skip_block(port) = false;
+      runtime.reset_skip_block(component);
       return;
     }
     self->port = port;
@@ -396,7 +396,7 @@ namespace dzn
       debug.rdbuf() && debug << std::endl;
     }
     remove_finished_coroutines(coroutines);
-    runtime.skip_block(port) = false;
+    runtime.reset_skip_block(component);
     runtime.blocked(component) = 0;
   }
   bool pump::collateral_release_skip_block(void* component)
@@ -423,9 +423,9 @@ namespace dzn
     collateral_blocked.reverse();
     return have_collateral;
   }
-  void pump::release(dzn::runtime& runtime, void* port)
+  void pump::release(dzn::runtime& runtime, void* component, void* port)
   {
-    runtime.skip_block(port) = true;
+    runtime.set_skip_block(component, port);
 
     auto self = find_self(coroutines);
     debug.rdbuf() && debug << "[" << self->id << "] release of "

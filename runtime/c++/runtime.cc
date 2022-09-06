@@ -73,56 +73,65 @@ namespace dzn
        << path(meta.require.meta, "<q>") << std::endl;
   }
 
-  bool runtime::external(void* scope) {
-    return (states.find(scope) == states.end());
+  bool runtime::external(void* component) {
+    return (states.find(component) == states.end());
   }
 
-  size_t& runtime::handling(void* scope)
+  size_t& runtime::handling(void* component)
   {
-    return states[scope].handling;
+    return states[component].handling;
   }
 
-  size_t& runtime::blocked(void* scope)
+  size_t& runtime::blocked(void* component)
   {
-    return states[scope].blocked;
+    return states[component].blocked;
   }
 
-  void*& runtime::deferred(void* scope)
+  void*& runtime::deferred(void* component)
   {
-    return states[scope].deferred;
+    return states[component].deferred;
   }
 
-  std::queue<std::function<void()> >& runtime::queue(void* scope)
+  std::queue<std::function<void()> >& runtime::queue(void* component)
   {
-    return states[scope].queue;
+    return states[component].queue;
   }
 
-  bool& runtime::performs_flush(void* scope)
+  bool& runtime::performs_flush(void* component)
   {
-    return states[scope].performs_flush;
+    return states[component].performs_flush;
   }
 
-  bool& runtime::skip_block(void* port)
+  bool runtime::skip_block(void* component, void* port)
   {
-    return skip_port[port];
+    return states[component].skip == port;
   }
 
-  void runtime::flush(void* scope, size_t coroutine_id)
+  void runtime::set_skip_block(void* component, void* port)
   {
-    handling(scope) = 0;
-    if(!external(scope))
+    states[component].skip = port;
+  }
+  void runtime::reset_skip_block(void* component)
+  {
+    states[component].skip = nullptr;
+  }
+
+  void runtime::flush(void* component, size_t coroutine_id)
+  {
+    handling(component) = 0;
+    if(!external(component))
     {
-      std::queue<std::function<void()> >& q = queue(scope);
+      std::queue<std::function<void()> >& q = queue(component);
       while(! q.empty())
       {
         std::function<void()> event = q.front();
         q.pop();
-        handle(scope, event, coroutine_id);
-        handling(scope) = 0;
+        handle(component, event, coroutine_id);
+        handling(component) = 0;
       }
-      if (deferred(scope)) {
-        void* tgt = deferred(scope);
-        deferred(scope) = nullptr;
+      if (deferred(component)) {
+        void* tgt = deferred(component);
+        deferred(component) = nullptr;
         if (!handling(tgt)) {
           runtime::flush(tgt, coroutine_id);
         }
