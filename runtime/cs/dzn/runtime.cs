@@ -187,6 +187,7 @@ namespace dzn
         }
         public void call_in(Component c, Action f, Port p, String e)
         {
+            dzn.pump.reset_skip_block(c.dzn_locator, p);
             if(states[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
               dzn.pump.collateral_block(c, c.dzn_locator);
@@ -200,6 +201,7 @@ namespace dzn
         }
         public R call_in<R>(Component c, Func<R> f, Port p, String e) where R : struct, IComparable, IConvertible
         {
+            dzn.pump.reset_skip_block(c.dzn_locator, p);
             if(states[c].handling != 0 || dzn.pump.port_blocked_p(c.dzn_locator, p))
             {
               dzn.pump.collateral_block(c, c.dzn_locator);

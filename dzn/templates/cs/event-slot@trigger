@@ -2,8 +2,6 @@ this.#.port.name .#.event.direction port.#.event.name  =
   (#x:formal-parameter) => {
     #x:out-ref-local  dzn_runtime.call_#.event.direction (this,
     () => {
-      var pump = dzn_locator.try_get<dzn.pump>();
-      if(pump != null) pump.skip_block.Remove(this.#.port.name);
       #x:formal-bindings
       #.port.name _#.event.name(#x:code-arguments);
       #x:flush

@@ -77,6 +77,12 @@ namespace dzn
           return pump.blocked_p(p);
       return false;
     }
+    public static void reset_skip_block(Locator l, Object p)
+    {
+      dzn.pump pump = l.try_get<pump>();
+      if(pump != null)
+          pump.skip_block.Remove(p);
+    }
     public static coroutine find_self(list<coroutine> coroutines)
     {
       var count = coroutines.FindAll(c => c.port == null && !c.finished).Count;
