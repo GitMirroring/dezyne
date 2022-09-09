@@ -164,7 +164,7 @@ namespace dzn
     , event(event)
     , reply("return")
     {
-      component->dzn_rt.reset_skip_block(this);
+      component->dzn_rt.reset_skip_block(c);
       if(component->dzn_rt.handling(component) ||
          port_blocked_p(component->dzn_locator, &port))
         collateral_block(component->dzn_locator, component);

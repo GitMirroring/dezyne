@@ -111,6 +111,7 @@ namespace dzn
   {
     states[component].skip = port;
   }
+
   void runtime::reset_skip_block(void* component)
   {
     states[component].skip = nullptr;
