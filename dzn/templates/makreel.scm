@@ -4,7 +4,7 @@
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -245,10 +245,7 @@
 (define-templates semantics-allow-async ast:async-port* newline-comma-prefix)
 (define-templates semantics-rename-provides ast:provides-port* newline-comma-prefix)
 (define-templates semantics-rename-requires ast:requires+async-port* newline-comma-prefix)
-
 (define-templates semantics-provides-action ast:provides-port* newline-union-prefix)
-(define-templates semantics-requires-action ast:requires+async-port* newline-union-prefix)
-(define-templates semantics-requires-reply ast:requires+async-port* newline-union-prefix)
 
 ;; component
 (define-templates component-comm-requires ast:requires+async-port* newline-comma-prefix)

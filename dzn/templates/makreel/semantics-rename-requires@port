@@ -1,4 +1,2 @@
-#.name in' -> #.name in
- , #.name qout' -> #.name qout
- , #.name reply' -> #.name reply
+#.name qout' -> #.name qout
  , #.name switch_context' -> #.name switch_context

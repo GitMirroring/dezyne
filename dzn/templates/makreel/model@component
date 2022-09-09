@@ -245,8 +245,6 @@ semantics_provides_unblocked(reply: reply_values)
       #x:semantics-provides-unblocked-replies)
       #x:semantics-provides-flush)
  #x:semantics-provides-unblocked-switch-context
- + (delta #x:semantics-requires-action) . semantics_provides_unblocked ()
- + (delta #x:semantics-requires-reply) . semantics_provides_unblocked ()
  ;
 
 semantics_provides_unblocked_switch_context(reply: reply_values, switch: requires_ports)
@@ -258,8 +256,6 @@ semantics_provides_blocking(blocking: Set(provides_ports), released: List(provid
 + (blocking - list2set(released) == {}) -> #x:makreel:model-name end . (queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . async_not_pending . #x:semantics-provides-blocking-defer) + queue_not_empty . semantics_provides_skip_blocked())
  #x:semantics-provides-blocking-provides
  #x:semantics-provides-blocking-requires
-+ (delta #x:semantics-requires-action) . semantics_provides_blocking ()
-+ (delta #x:semantics-requires-reply) . semantics_provides_blocking ()
  ;
 
 semantics_provides_skip_blocked(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
@@ -268,8 +264,6 @@ semantics_provides_skip_blocked(blocking: Set(provides_ports), released: List(pr
  . (semantics_blocked_rtc ()
   #x:semantics-provides-skip-blocked-requires)
  #x:semantics-provides-skip-blocked-requires
- + (delta #x:semantics-requires-action) . semantics_provides_skip_blocked ()
- + (delta #x:semantics-requires-reply) . semantics_provides_skip_blocked ()
  + sum l : Locals . defer_qout(l) . semantics_provides_skip_blocked ()
  + defer_end . semantics_provides_skip_blocked ()
  ;
@@ -286,8 +280,6 @@ semantics_provides_blocked(rtc: provides_ports, blocking: Set(provides_ports), r
  #x:semantics-provides-blocked-ports
  #x:semantics-provides-blocked-async
  #x:semantics-provides-blocked-requires
- + (delta #x:semantics-requires-action) . semantics_provides_blocked ()
- + (delta #x:semantics-requires-reply) . semantics_provides_blocked ()
  ;
 
 semantics_reply(rtc: provides_ports, blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
@@ -313,8 +305,6 @@ semantics_async(blocking: Set(provides_ports), released: List(provides_ports), r
 #x:semantics-async
 #x:semantics-async-qout
 #x:semantics-async-requires
-+ (delta #x:semantics-requires-action) . semantics_async ()
-+ (delta #x:semantics-requires-reply) . semantics_async ()
 + defer_end . semantics_async ()
 ;
 
