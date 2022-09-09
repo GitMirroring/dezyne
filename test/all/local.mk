@@ -152,6 +152,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_external				\
  %D%/blocking_function				\
  %D%/blocking_function_reply			\
+ %D%/blocking_function_reply2			\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\
  %D%/blocking_local				\
