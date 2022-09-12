@@ -73,12 +73,13 @@ namespace dzn
     auto coroutine_p = [](const dzn::coroutine& coroutine)
     {return coroutine.port == nullptr && !coroutine.finished;};
 
+#ifndef NDEBUG
     size_t count = std::count_if(coroutines.begin(), coroutines.end(), coroutine_p);
     assert(count != 0);
     assert(count != 2);
     assert(count < 3);
     assert(count == 1);
-
+#endif
     return std::find_if(coroutines.begin(), coroutines.end(), coroutine_p);
   }
 
