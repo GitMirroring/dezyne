@@ -11,6 +11,9 @@
     and moved into the call_helper.
   - The C# code generator now supports using a requires injected port in
     a foreign component.
+** Verification
+  - A performance regression since 2.15.4 for certain types of model was
+    fixed.
 ** Noteworthy bug fixes
   - A regression was fixed in the C++ and C# code generators that could
     make a valued blocking trigger to not block if an earlier
@@ -19,6 +22,7 @@
     components using a requires injected port.
   - The simulator now correctly shows a compliance error for a blocked
     trigger that is (marked) illegal in the provides interface.
+  - The C++ runtime now avoids a compiler warning when using -DNDEBUG.
 
 * Changes in 2.16.0 since 2.15.4
 ** Language
