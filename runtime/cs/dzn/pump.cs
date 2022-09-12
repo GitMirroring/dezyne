@@ -61,10 +61,10 @@ namespace dzn
     {
       l.get<pump>().block(l.get<Runtime>(), c, p);
     }
-    public static void port_release(Locator l, Object p)
+    public static void port_release(Locator l, Component c, Object p)
     {
       var pump = l.get<pump>();
-      pump.release(l.get<dzn.Runtime>(),p);
+      pump.release(l.get<dzn.Runtime>(),c,p);
     }
     public static void collateral_block(Object c, dzn.Locator l)
     {
@@ -76,12 +76,6 @@ namespace dzn
       if(pump != null)
           return pump.blocked_p(p);
       return false;
-    }
-    public static void reset_skip_block(Locator l, Object p)
-    {
-      dzn.pump pump = l.try_get<pump>();
-      if(pump != null)
-          pump.skip_block.Remove(p);
     }
     public static coroutine find_self(list<coroutine> coroutines)
     {
@@ -135,7 +129,6 @@ namespace dzn
     public Action exit;
     public list<coroutine> coroutines = new list<coroutine>();
     public list<coroutine> collateral_blocked = new list<coroutine>();
-    public List<Object> skip_block = new List<Object>();
     public Queue<Action> queue = new Queue<Action>();
     public Queue<Tuple<Func<bool>,Action<int>>> deferred = new Queue<Tuple<Func<bool>,Action<int>>>();
     public bool running;
@@ -385,8 +378,10 @@ namespace dzn
       rt.states[c].blocked = self.id;
       rt.states[c].handling = 0;
       rt.flush(c, this.coroutine_id());
-      if (this.skip_block.Remove(p))
+      if (rt.skip_block(c, p)) {
+        rt.reset_skip_block(c);
         return;
+      }
 
       self.port = p;
       Debug.WriteLine("[" + self.id + "] block on " + p.GetHashCode());
@@ -412,7 +407,7 @@ namespace dzn
       Debug.WriteLine("");
 
       remove_finished_coroutines(this.coroutines);
-      this.skip_block.Remove(p);
+      rt.reset_skip_block(c);
       rt.states[c].blocked = 0;
     }
     bool collateral_release_skip_block(Runtime rt, Object c)
@@ -439,18 +434,16 @@ namespace dzn
       collateral_blocked.Reverse();
       return have_collateral;
     }
-    void release(Runtime rt, Object p)
+    void release(Runtime rt, Component component, Object port)
     {
-      this.skip_block.Add(p);
-
       coroutine self = find_self(this.coroutines);
-      Debug.WriteLine("[" + self.id + "] release of " + p.GetHashCode());
+      Debug.WriteLine("[" + self.id + "] release of " + port.GetHashCode());
 
-      coroutine blocked = this.coroutines.Find(c => c.port == p);
+      coroutine blocked = this.coroutines.Find(c => c.port == port);
       if(blocked == null)
       {
         if (self!=null) Debug.WriteLine("[" + self.id + "] skip block");
-        this.skip_block.Add(p);
+        rt.set_skip_block(component,port);
         return;
       }
 

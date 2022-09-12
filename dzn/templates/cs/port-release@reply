@@ -1,1 +1,1 @@
-dzn.pump.port_release(this.dzn_locator, this.#.port.name);
+dzn.pump.port_release(this.dzn_locator, this, this.#.port.name);
