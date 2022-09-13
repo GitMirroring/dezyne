@@ -1,6 +1,6 @@
 #x:port-wrapper
 
-struct #x:model-name Wrapper
+struct #x:model-name Wrapper: public dzn::component
 {
     dzn::meta dzn_meta;
 
@@ -9,7 +9,7 @@ struct #x:model-name Wrapper
     #x:model-name  impl;
 
     #x:model-name Wrapper(const dzn::locator& l)
-        : dzn_meta{"", "#x:model-name Wrapper",0,0,{#x:ports-meta-list },{ &impl.dzn_meta },
+        : dzn_meta{"", "#x:model-name Wrapper",nullptr,{#x:ports-meta-list },{ &impl.dzn_meta },
         { #x:check-bindings-list }}
         #x:provides-port-initializer
         #x:requires-port-initializer

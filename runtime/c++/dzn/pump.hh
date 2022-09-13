@@ -93,15 +93,15 @@ namespace dzn
     void flush();
     void operator()();
 
-    void collateral_block(runtime&, void*);
+    void collateral_block(runtime&, dzn::component*);
     void collateral_release(std::list<coroutine>::iterator);
 
     bool blocked_p(void*);
-    void block(runtime&, void*, void*);
-    bool collateral_release_skip_block (void*);
+    void block(runtime&, dzn::component*, void*);
+    bool collateral_release_skip_block (dzn::component*);
     void create_context();
     void context_switch();
-    void release(runtime&, void*, void*);
+    void release(runtime&, dzn::component*, void*);
     void operator()(const std::function<void()>&);
     void operator()(std::function<void()>&&);
     void defer(std::function<bool()>&&, std::function<void(size_t)>&&);

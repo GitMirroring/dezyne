@@ -7,7 +7,7 @@
 
  #x:open-namespace
 namespace skel {
-struct #x:model-name
+struct #x:model-name : public dzn::component
 {
   dzn::meta dzn_meta;
   dzn::runtime& dzn_rt;

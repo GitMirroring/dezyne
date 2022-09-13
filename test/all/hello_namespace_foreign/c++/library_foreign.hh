@@ -24,7 +24,7 @@
 
 namespace library {
 
-  struct foreign
+  struct foreign: public dzn::component
   {
     dzn::meta dzn_meta;
     dzn::runtime& dzn_rt;

@@ -45,6 +45,7 @@ int const version_minor = @VERSION_MINOR@;
 int const version_patch = @VERSION_PATCH@;
 
   struct meta;
+  struct component {};
 
   namespace port
   {
@@ -54,7 +55,7 @@ int const version_patch = @VERSION_PATCH@;
       {
         std::string name;
         void* port;
-        void* component;
+        dzn::component* component;
         const dzn::meta* meta;
       } provide;
 
@@ -62,7 +63,7 @@ int const version_patch = @VERSION_PATCH@;
       {
         std::string name;
         void* port;
-        void* component;
+        dzn::component* component;
         const dzn::meta* meta;
       } require;
     };
@@ -85,7 +86,7 @@ int const version_patch = @VERSION_PATCH@;
     std::vector<std::function<void()>> ports_connected;
   };
 
-  struct component
+  struct component_meta
   {
     meta dzn_meta;
   };

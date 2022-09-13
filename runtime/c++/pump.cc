@@ -25,6 +25,7 @@
 // Code:
 
 #include <dzn/locator.hh>
+#include <dzn/meta.hh>
 #include <dzn/pump.hh>
 #include <dzn/runtime.hh>
 
@@ -50,15 +51,15 @@ namespace dzn
     auto pump = locator.try_get<dzn::pump>();
     return !pump ? 1 : pump->coroutine_id();
   }
-  void port_block(const dzn::locator& locator, void* component, void* port)
+  void port_block(const dzn::locator& locator, dzn::component* component, void* port)
   {
     locator.get<dzn::pump>().block(locator.get<dzn::runtime>(), component, port);
   }
-  void port_release(const dzn::locator& locator, void* component, void* port)
+  void port_release(const dzn::locator& locator, dzn::component* component, void* port)
   {
     locator.get<dzn::pump>().release(locator.get<dzn::runtime>(), component, port);
   }
-  void collateral_block(const dzn::locator& locator, void* component)
+  void collateral_block(const dzn::locator& locator, dzn::component* component)
   {
     locator.get<dzn::pump>().collateral_block(locator.get<dzn::runtime>(), component);
   }
@@ -288,7 +289,7 @@ namespace dzn
       context();
     }
   }
-  void pump::collateral_block(dzn::runtime& runtime, void* component)
+  void pump::collateral_block(dzn::runtime& runtime, dzn::component* component)
   {
     auto self = find_self(coroutines);
     debug.rdbuf() && debug << "[" << self->id << "] collateral_block"
@@ -352,7 +353,7 @@ namespace dzn
       unblocked.clear();
     }
   }
-  void pump::block(dzn::runtime& runtime, void* component, void* port)
+  void pump::block(dzn::runtime& runtime, dzn::component* component, void* port)
   {
     auto self = find_self (coroutines);
     runtime.blocked(component) = self->id;
@@ -399,7 +400,7 @@ namespace dzn
     runtime.reset_skip_block(component);
     runtime.blocked(component) = 0;
   }
-  bool pump::collateral_release_skip_block(void* component)
+  bool pump::collateral_release_skip_block(dzn::component* component)
   {
     bool have_collateral = false;
     collateral_blocked.reverse();
@@ -423,7 +424,7 @@ namespace dzn
     collateral_blocked.reverse();
     return have_collateral;
   }
-  void pump::release(dzn::runtime& runtime, void* component, void* port)
+  void pump::release(dzn::runtime& runtime, dzn::component* component, void* port)
   {
     runtime.set_skip_block(component, port);
 

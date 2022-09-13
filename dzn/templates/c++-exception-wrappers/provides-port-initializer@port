@@ -1,1 +1,1 @@
-, #.name ({ {"#.name ", this, &dzn_meta },{ "#.name ", &impl, &impl.dzn_meta } })
+, #.name ({ {"#.name ", nullptr, this, &dzn_meta },{ "#.name ", nullptr, &impl, &impl.dzn_meta } })

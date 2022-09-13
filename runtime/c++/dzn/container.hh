@@ -41,7 +41,7 @@
 namespace dzn
 {
   template <typename System, typename Function>
-  struct container
+  struct container: public component
   {
     dzn::meta meta;
     dzn::locator dzn_locator;

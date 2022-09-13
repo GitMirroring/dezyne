@@ -73,51 +73,51 @@ namespace dzn
        << path(meta.require.meta, "<q>") << std::endl;
   }
 
-  bool runtime::external(void* component) {
+  bool runtime::external(dzn::component* component) {
     return (states.find(component) == states.end());
   }
 
-  size_t& runtime::handling(void* component)
+  size_t& runtime::handling(dzn::component* component)
   {
     return states[component].handling;
   }
 
-  size_t& runtime::blocked(void* component)
+  size_t& runtime::blocked(dzn::component* component)
   {
     return states[component].blocked;
   }
 
-  void*& runtime::deferred(void* component)
+  dzn::component*& runtime::deferred(dzn::component* component)
   {
     return states[component].deferred;
   }
 
-  std::queue<std::function<void()> >& runtime::queue(void* component)
+  std::queue<std::function<void()> >& runtime::queue(dzn::component* component)
   {
     return states[component].queue;
   }
 
-  bool& runtime::performs_flush(void* component)
+  bool& runtime::performs_flush(dzn::component* component)
   {
     return states[component].performs_flush;
   }
 
-  bool runtime::skip_block(void* component, void* port)
+  bool runtime::skip_block(dzn::component* component, void* port)
   {
-    return states[component].skip == port;
+    return states.at(component).skip == port;
   }
 
-  void runtime::set_skip_block(void* component, void* port)
+  void runtime::set_skip_block(dzn::component* component, void* port)
   {
     states[component].skip = port;
   }
 
-  void runtime::reset_skip_block(void* component)
+  void runtime::reset_skip_block(dzn::component* component)
   {
-    states[component].skip = nullptr;
+    states.at(component).skip = nullptr;
   }
 
-  void runtime::flush(void* component, size_t coroutine_id)
+  void runtime::flush(dzn::component* component, size_t coroutine_id)
   {
     handling(component) = 0;
     if(!external(component))
@@ -131,7 +131,7 @@ namespace dzn
         handling(component) = 0;
       }
       if (deferred(component)) {
-        void* tgt = deferred(component);
+        dzn::component* tgt = deferred(component);
         deferred(component) = nullptr;
         if (!handling(tgt)) {
           runtime::flush(tgt, coroutine_id);
@@ -140,7 +140,8 @@ namespace dzn
     }
   }
 
-  void runtime::enqueue(void* source, void* target, const std::function<void()>& event, size_t coroutine_id)
+  void runtime::enqueue(dzn::component* source, dzn::component* target,
+                        const std::function<void()>& event, size_t coroutine_id)
   {
     if(!(source && performs_flush(source)) && !handling(target))
     {

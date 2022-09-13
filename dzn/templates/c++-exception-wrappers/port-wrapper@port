@@ -3,21 +3,25 @@
 
 struct #x:port-type Wrapper
 {
-    struct
-    {
-      #x:in-event-definer } in;
-
-    struct
-    {
-      #x:out-event-definer } out;
-
     dzn::port::meta meta;
+    struct
+    {
+      #x:in-event-definer
+    } in;
+
+    struct
+    {
+      #x:out-event-definer
+    } out;
+
     inline #x:port-type Wrapper(const dzn::port::meta& m) : meta(m) {}
     virtual ~#x:port-type Wrapper() {}
 
     void check_bindings() const
     {
-      #x:check-in-binding #x:check-out-binding }
+      #x:check-in-binding
+      #x:check-out-binding
+    }
 };
 
 ##endif //#x:port-type-upcase _WRAPPER

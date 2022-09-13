@@ -26,9 +26,10 @@
 #define FOREIGN_HH
 
 #include <dzn/locator.hh>
+#include <dzn/meta.hh>
 #include <dzn/runtime.hh>
 
-struct Foreign
+struct Foreign: public dzn::component
 {
   dzn::meta dzn_meta;
   dzn::runtime& dzn_rt;

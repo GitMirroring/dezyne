@@ -54,9 +54,9 @@ namespace dzn
 {
   extern std::ostream debug;
 
-  inline std::string component_to_string(void* c)
+  inline std::string component_to_string(dzn::component* c)
   {
-    return c ? reinterpret_cast<component*>(c)->dzn_meta.name : "<external>";
+    return c ? reinterpret_cast<component_meta*>(c)->dzn_meta.name : "<external>";
   }
 
   void trace_qin(std::ostream&, port::meta const&, const char*);
@@ -89,10 +89,10 @@ namespace dzn
   }
 
   // implemented conditionally in pump.cc
-  void collateral_block(const locator&, void*);
+  void collateral_block(const locator&, dzn::component*);
   bool port_blocked_p(const locator&, void*);
-  void port_block(const locator&, void*, void*);
-  void port_release(const locator&, void*, void*);
+  void port_block(const locator&, dzn::component*, void*);
+  void port_release(const locator&, dzn::component*, void*);
   size_t coroutine_id(const locator&);
   void defer(const locator&, std::function<bool()>&&, std::function<void(size_t)>&&);
   void prune_deferred(const locator&);
@@ -107,41 +107,40 @@ namespace dzn
       size_t blocked;
       void* skip;
       bool performs_flush;
-      void* deferred;
+      dzn::component* deferred;
       std::queue<std::function<void()>> queue;
     };
-    std::map<void*, state> states;
-    bool skip_block(void*, void*);
-    void set_skip_block(void*, void*);
-    void reset_skip_block(void*);
+    std::map<dzn::component*, state> states;
+    bool skip_block(dzn::component*, void*);
+    void set_skip_block(dzn::component*, void*);
+    void reset_skip_block(dzn::component*);
 
-
-    bool external(void*);
-    size_t& handling(void*);
-    size_t& blocked(void*);
-    void*& deferred(void*);
-    std::queue<std::function<void()> >& queue(void*);
-    bool& performs_flush(void* scope);
+    bool external(dzn::component*);
+    size_t& handling(dzn::component*);
+    size_t& blocked(dzn::component*);
+    dzn::component*& deferred(dzn::component*);
+    std::queue<std::function<void()> >& queue(dzn::component*);
+    bool& performs_flush(dzn::component*);
     template <typename T>
     void flush(T* t)
     {
       flush(t, coroutine_id(t->dzn_locator));
     }
-    void flush(void*, size_t);
-    void enqueue(void*, void*, const std::function<void()>&, size_t);
+    void flush(dzn::component*, size_t);
+    void enqueue(dzn::component*, dzn::component*, const std::function<void()>&, size_t);
     template <typename F, typename = typename std::enable_if<std::is_void<typename std::result_of<F()>::type>::value>::type>
-    void handle(void* scope, F&& f, size_t coroutine_id)
+    void handle(dzn::component* component, F&& f, size_t coroutine_id)
     {
-      size_t& handle = handling(scope);
+      size_t& handle = handling(component);
       if(handle) throw std::logic_error("component already handling an event");
       handle = coroutine_id;
       assert(handle != 0);
       f();
     }
     template <typename F, typename = typename std::enable_if<!std::is_void<typename std::result_of<F()>::type>::value>::type>
-    inline auto handle(void* scope, F&& f, size_t coroutine_id) -> decltype(f())
+    inline auto handle(dzn::component* component, F&& f, size_t coroutine_id) -> decltype(f())
     {
-      size_t& handle = handling(scope);
+      size_t& handle = handling(component);
       if(handle) throw std::logic_error("component already handling an event");
       handle = coroutine_id;
       return f();
@@ -164,10 +163,11 @@ namespace dzn
     , event(event)
     , reply("return")
     {
-      component->dzn_rt.reset_skip_block(c);
       if(component->dzn_rt.handling(component) ||
          port_blocked_p(component->dzn_locator, &port))
         collateral_block(component->dzn_locator, component);
+
+      component->dzn_rt.reset_skip_block(component);
       trace(os, meta, event);
 #if DZN_STATE_TRACING
       os << *component << std::endl;
