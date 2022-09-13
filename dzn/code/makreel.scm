@@ -646,7 +646,7 @@
                  (append (filter (is? <variable>) pre) (makreel:locals p))))
               ((is-a? p <defer>)
                (let ((model (ast:parent p <model>)))
-                 (makreel:locals-unmemoized (list root model) p)))
+                 (makreel:locals p)))
               ((is-a? o <function>) ((compose ast:formal* .signature) o))
               (else (makreel:locals p))))))
 
