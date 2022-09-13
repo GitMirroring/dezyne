@@ -51,6 +51,7 @@
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
             (no-constraint (single-char #\C))
+            (no-non-compliance (single-char #\D))
             (no-unreachable (single-char #\U))
             (out (value #t))
             (queue-size (single-char #\q) (value #t))))
@@ -70,6 +71,7 @@ Check DZN-FILE for verification errors in Dezyne models
 
   -a, --all                   keep going after first error
   -C, --no-constraint         do not use a constraining process
+  -D, --no-non-compliance     report deadlock upon non-compliance
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL

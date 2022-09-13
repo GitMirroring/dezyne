@@ -168,7 +168,8 @@ to current-output-port."
                (actions+replies
                 (filter (negate (cute member <> events))
                         actions+replies))
-               (any? (and (not first?)
+               (any? (and (not (command-line:get 'no-non-compliance))
+                          (not first?)
                           (or action? reply?)))
                (fork? (or any? (pair? transitions)))
                (error? (error? event)))
@@ -210,13 +211,15 @@ to current-output-port."
       (let* ((illegals transitions (partition transition-illegal? transitions))
              (transitions (fold strip-modeling '() transitions))
              (top-actions (filter-map (compose action? edge-label) transitions))
-             (actions (filter (negate (cute member <> top-actions)) actions)))
+             (actions (filter (negate (cute member <> top-actions)) actions))
+             (any? (not (command-line:get 'no-non-compliance))))
         (for-each print-illegal-transition illegals)
         (when (pair? transitions)
           (print-tree transitions #:first? #t))
-        (for-each
-         (cute format #t " + ~a . ~aconstraint_any\n" <> name)
-         actions)))
+        (when any?
+          (for-each
+           (cute format #t " + ~a . ~aconstraint_any\n" <> name)
+           actions))))
 
     (define (print-node i node)
       (let* ((transitions (node-edges node))

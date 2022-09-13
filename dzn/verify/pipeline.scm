@@ -389,7 +389,8 @@ for MODEL, using ROOT."
       (string-append
        (imports->string)
        (if (%no-unreachable?) " --no-unreachable" "")
-       (flag->string 'no-constraint)))
+       (flag->string 'no-constraint)
+       (flag->string 'no-non-compliance)))
     (let ((file-name (ast:source-file root))
           (model-name (makreel:unticked-dotted-name model)))
       (match command
