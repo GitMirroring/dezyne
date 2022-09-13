@@ -16,8 +16,8 @@
     fixed.
 ** Noteworthy bug fixes
   - A regression was fixed in the C++ and C# code generators that could
-    make a valued blocking trigger to not block if an earlier
-    non-blocking reply was issued on the same port.
+    make a valued blocking trigger not block if an earlier non-blocking
+    reply was issued on the same port.
   - A regression was fixed in the C++ code generator for foreign
     components using a requires injected port.
   - The simulator now correctly shows a compliance error for a blocked
