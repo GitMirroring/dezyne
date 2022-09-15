@@ -260,6 +260,9 @@
 (define-templates provides-rename ast:provides-port* newline-comma-infix)
 
 ;; constraint
+(define-templates component-parallel (lambda (o) (if (command-line:get 'no-constraint) o '())))
+(define-templates component-parallel-constraint (lambda (o) (if (command-line:get 'no-constraint) '() o)))
+(define-templates component-constraint (lambda (o) (if (command-line:get 'no-constraint) '() o)))
 (define-templates constraint makreel:constraint double-newline-infix)
 (define-templates constraint-member-init makreel:member-init parameters-grammar)
 

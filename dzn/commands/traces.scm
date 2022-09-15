@@ -56,6 +56,7 @@
             (lts (single-char #\l))
             (traces (single-char #\t))
             (model (single-char #\m) (value #t))
+            (no-constraint (single-char #\C))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))))
 	 (options (getopt-long args option-spec))
@@ -68,6 +69,7 @@
 Usage: dzn traces [OPTION]... DZN-FILE
 Generate exhaustive set of traces for Dezyne model
 
+  -C, --no-constraint         do not use a constraining process
   -f, --flush                 include <flush> events in trace
   -h, --help                  display this help and exit
   -i, --illegal               include traces that lead to an illegal

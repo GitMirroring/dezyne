@@ -2690,6 +2690,10 @@ Generate a trivial main for @var{model}.  This ``generated main'' can
 execute an event trace read from stdin, and writes a code trace to
 stderr.  @xref{Getting Started}.
 
+@item --no-comstaint
+@itemx -C
+Do not use a constraining process.
+
 @item --no-unreachable
 @itemx -U
 Do not generate tags for the unreachable code check.
@@ -3242,6 +3246,10 @@ format.
 @itemx -m @var{model}
 Generate traces for model @var{model}.
 
+@item --no-comstaint
+@itemx -C
+Do not use a constraining process.
+
 @item --output=@var{dir}
 @itemx -o @var{dir}
 Write trace files to directory @var{dir}.
@@ -3298,6 +3306,10 @@ verification of all its @code{interface} models and behavioral
 @code{component} models.}.
 @c XXX TODO: reference to compositional quality/property
 @end quotation
+
+@item --no-comstaint
+@itemx -C
+Do not use a constraining process.
 
 @item --no-unreachable
 @itemx -U

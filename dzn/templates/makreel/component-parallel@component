@@ -1,0 +1,1 @@
+component_parallel = component_semantics || req_and_queue;

@@ -382,10 +382,14 @@ for MODEL, using ROOT."
       (let ((imports (command-line:get 'import)))
         (if (null? imports) ""
             (string-join imports " -I " 'prefix))))
+    (define (flag->string flag)
+      (if (command-line:get flag) (format #f " --~a" flag)
+          ""))
     (define (flags->string)
       (string-append
        (imports->string)
-       (if (%no-unreachable?) " --no-unreachable" "")))
+       (if (%no-unreachable?) " --no-unreachable" "")
+       (flag->string 'no-constraint)))
     (let ((file-name (ast:source-file root))
           (model-name (makreel:unticked-dotted-name model)))
       (match command

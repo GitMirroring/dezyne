@@ -1,0 +1,42 @@
+#x:provides-interface-constraint
+
+#x:provides-constraint
+
+#x:single-provides-constraint
+#x:multiple-provides-constraint
+
+component_constrained_comm = comm ({
+  constrained_legal | constrained_legal -> constrained_legal'
+, constrained_illegal | constrained_illegal -> constrained_illegal'
+ #x:comm-provides-constraint
+ }, component_semantics || provides_constraint);
+
+component_constrained_allow = allow({
+ #x:makreel:model-name end
+ , #x:allow-tau
+#x:constrained-semantics-allow-provides
+#x:constrained-semantics-allow-requires
+, constrained_legal'
+, constrained_illegal'
+, declarative_illegal
+, defer_q_empty
+, defer_qout
+, defer_end
+, illegal
+, missing_reply
+, queue_empty
+, queue_full
+, queue_not_empty
+, range_error
+, recurse
+, return
+, second_reply
+, tag
+, tau_void },
+  component_constrained_comm);
+
+component_constrained = rename({
+  constrained_legal' -> constrained_legal
+, constrained_illegal' -> declarative_illegal
+ #x:rename-comm-provides-constraint
+}, component_constrained_allow);
