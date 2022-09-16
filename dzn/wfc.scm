@@ -173,6 +173,12 @@
 (define-method (wfc (o <port>))
   (append
    (re-definition o)
+   (if (and (ast:provides? o) (ast:external? o))
+       `(,(wfc-error o (format #f "provides port `~a' cannot be external" (.name o))))
+       '())
+   (if (and (ast:provides? o) (ast:injected? o))
+       `(,(wfc-error o (format #f "provides port `~a' cannot be injected" (.name o))))
+       '())
    (if (ast:name-equal? (.name (parent o <model>)) (.name o))
        `(,(wfc-error o (format #f "port `~a' must not have the same name as the model it is defined in" (.name o))))
        '())

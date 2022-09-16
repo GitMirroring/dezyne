@@ -4561,10 +4561,10 @@ ports.
 @subsubsection @code{external}
 
 @cindex external
-The @code{external} keyword specifies that communication over a port may
-experience a delay.  This may for instance be caused by the switch
-between execution contexts as in inter-process communication or the use
-of threads.
+The @code{external} keyword specifies that communication over a
+@code{requires} port may experience a delay.  This may for instance be
+caused by the switch between execution contexts as in inter-process
+communication or the use of threads.
 
 @example
 @b{requires} @b{external} itimer t;
