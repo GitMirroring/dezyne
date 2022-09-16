@@ -218,6 +218,10 @@ actions."
       (newline)
       (display (makreel:init-process (options-init options))))))
 
+(define (component-stage)
+  (if (command-line:get 'jitty) "verify-component-jitty"
+      "verify-component"))
+
 (define (in-out:dzn->aut+provides-aut options)
   (let* ((model (options-model options))
          (root (options-root options))
@@ -228,7 +232,7 @@ actions."
            ;; "aut-failures" pipeline.  Running the already memoized
            ;; "verify-component" gives us the same result, and has
            ;; already been memoized.
-           (get-lts (result-split (verify-pipeline "verify-component" root model)))
+           (get-lts (result-split (verify-pipeline (component-stage) root model)))
            "\n\x04\n"
            (verify-pipeline "aut-failures" root model #:init provides-init)))))
 
@@ -246,6 +250,9 @@ actions."
 
 (define in-out:lps->lpsparelm
   '("lpsparelm"))
+
+(define in-out:lps->aut-jitty
+  '("lps2lts" "--quiet" "--cached" "--rewriter=jittyc" "--out=aut""--save-at-end" "-" "-"))
 
 (define in-out:lps->aut
   '("lps2lts" "--quiet" "--cached" "--out=aut""--save-at-end" "-" "-"))
@@ -338,19 +345,26 @@ actions."
     (("lps"                     "lpsconstelm")             . ,in-out:lps->lpsconstelm)
     (("lpsconstelm"             "lpsparelm")               . ,in-out:lps->lpsparelm)
     (("lpsparelm"               "maut")                    . ,in-out:lps->aut)
+    (("lpsparelm"               "maut-jitty")              . ,in-out:lps->aut-jitty)
     (("maut"                    "aut")                     . ,in-out:maut->aut)
+    (("maut-jitty"              "aut-jitty")               . ,in-out:maut->aut)
     (("maut"                    "maut-weak-trace")         . ,in-out:aut->aut-weak-trace)
+    (("maut-jitty"              "maut-weak-trace-jitty")   . ,in-out:aut->aut-weak-trace)
     (("maut"                    "maut-dpweak-bisim")       . ,in-out:aut->aut-dpweak-bisim)
+    (("maut-jitty"              "maut-dpweak-bisim-jitty") . ,in-out:aut->aut-dpweak-bisim)
     (("maut-weak-trace"         "aut-weak-trace")          . ,in-out:maut->aut)
+    (("maut-weak-trace-jitty"   "aut-weak-trace-jitty")    . ,in-out:maut->aut)
     (("aut-weak-trace"          "aut-weak-trace+hide")     . ,in-out:lts-hide-internal-labels)
     (("maut-weak-trace"         "maut-weak-trace+hide")    . ,in-out:lts-hide-internal-labels)
     (("maut-dpweak-bisim"       "aut-dpweak-bisim")        . ,in-out:maut->aut)
+    (("maut-dpweak-bisim-jitty" "aut-dpweak-bisim-jitty")  . ,in-out:maut->aut)
     (("aut-dpweak-bisim"        "aut-failures")            . ,in-out:aut->aut-failures)
     (("dzn"                     "aut-dpweak-bisim-cached") . ,in-out:dzn->aut-dpweak-bisim-cached)
     (("aut-dpweak-bisim-cached" "verify-interface")        . ,in-out:aut->verify-interface)
     (("aut-dpweak-bisim-cached" "aut-weak-trace-cached")   . ,in-out:aut->aut-weak-trace)
     (("aut-weak-trace-cached"   "verify-interface-nondet") . ,in-out:aut->verify-interface-nondet)
     (("aut-dpweak-bisim"        "verify-component")        . ,in-out:aut->verify-component)
+    (("aut-dpweak-bisim-jitty"  "verify-component-jitty")  . ,in-out:aut->verify-component)
     (("dzn"                     "aut+provides-aut")        . ,in-out:dzn->aut+provides-aut)
     (("aut+provides-aut"        "verify-compliance")       . ,in-out:aut+provides-aut->verify-compliance)))
 
@@ -642,7 +656,7 @@ init for MODEL unless INIT."
 
 (define (mcrl2:verify-component-asserts model root)
   (let* ((model-name (makreel:unticked-dotted-name model))
-         (result status (verify-pipeline "verify-component" root model))
+         (result status (verify-pipeline (component-stage) root model))
          (result (result-split result))
          (illegal? (get-trace 'illegal result))
          (deadlock? (get-trace 'deadlock result))
