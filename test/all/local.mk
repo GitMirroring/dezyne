@@ -496,6 +496,7 @@ PARSER_TESTS =					\
  %D%/parse_preprocessed_foo			\
  %D%/parse_preprocessed_imported_bar		\
  %D%/parse_preprocessed_imported_baz		\
+ %D%/parse_port_qualifier			\
  %D%/wf_actionNotInOnEvent			\
  %D%/wf_actionValueDiscarded			\
  %D%/wf_assignmentExpressionNotInEventInstance	\
