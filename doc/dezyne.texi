@@ -3319,6 +3319,9 @@ verification of all its @code{interface} models and behavioral
 @itemx -C
 Do not use a constraining process.
 
+@item --no-interfaces
+Do not verify a model's interfaces.
+
 @item --no-non-compliance
 @itemx -D
 Report deadlock upon a non-compliance error.

@@ -51,6 +51,7 @@
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
             (no-constraint (single-char #\C))
+            (no-interfaces)
             (no-non-compliance (single-char #\D))
             (no-unreachable (single-char #\U))
             (out (value #t))
@@ -75,6 +76,7 @@ Check DZN-FILE for verification errors in Dezyne models
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL
+      --no-interfaces         skip interface verification
       --out=FORMAT            produce output FORMAT (use \"help\" for a list)
   -U, --no-unreachable        skip the unreachable code check
   -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
