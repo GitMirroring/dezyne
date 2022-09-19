@@ -179,7 +179,6 @@ REGRESSION_TESTS =				\
  %D%/complex_not				\
  %D%/complex_or					\
  %D%/compliance_blocking_function		\
- %D%/compliance_blocking_illegal		\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_out			\
  %D%/compliance_defer				\
