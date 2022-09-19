@@ -218,6 +218,7 @@ REGRESSION_TESTS =				\
  %D%/component_modeling_loop			\
  %D%/compound.space				\
  %D%/constraint_nondet				\
+ %D%/constraint_nondet2				\
  %D%/data_full					\
  %D%/deadlock_asynchronous_sync_reply		\
  %D%/deadlock_blocking_compliance		\

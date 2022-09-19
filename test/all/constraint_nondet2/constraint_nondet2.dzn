@@ -1,0 +1,90 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+subint int {0..1};
+
+interface ihello
+{
+  in void inc ();
+  in void dec ();
+
+  in bool get0 ();
+  in bool get1 ();
+
+  behavior
+  {
+    int i = 0;
+    [i<1] on inc: i=i+1;
+    [0<i] on dec: i=i-1;
+
+    on get0: reply (false);
+    on get0: reply (true);
+    on get1: reply (false);
+    on get1: reply (true);
+  }
+}
+
+interface iworld
+{
+  in int hello ();
+
+  behavior
+  {
+    on hello: reply (0);
+    on hello: reply (1);
+  }
+}
+
+interface ibool
+{
+  in void hello ();
+  in void cruel ();
+
+  behavior
+  {
+    on hello: {}
+    on cruel: {}
+  }
+}
+
+component constraint_nondet2
+{
+  provides ihello h;
+  requires iworld w;
+  requires ibool b;
+  behavior
+  {
+    int i = 0;
+    void f ()
+    {
+      if (w.hello () == 0)
+        b.hello ();
+      else
+        b.cruel ();
+    }
+    [i<1] on h.inc (): {i=i+1; f ();}
+    [0<i] on h.dec (): {i=i-1; f ();}
+    on h.get0 (): reply (i==0);
+    on h.get1 (): reply (i==1);
+  }
+}
