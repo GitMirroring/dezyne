@@ -689,27 +689,33 @@
       (ast:equal? t1 t2)))
 
 (define-method (typed-expression (o <expression>) (type <class>))
-  (let* ((expr-wfc (wfc o))
-         (expr-type (ast:type o)))
-    (cond ((pair? expr-wfc) expr-wfc)
-          ((not expr-type)
-           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
-          ((not (is-a? expr-type type))
-           `(,(wfc-error o (format #f "~a expression expected" (class-name type)))))
-          (else '()))))
+  (or (as (wfc o) <pair>)
+      (let ((expr-type (ast:type o)))
+        (cond
+         ((and (not expr-type)
+               (not (is-a? o <named>)))
+          `(,(wfc-error o (format #f "typed expression expected `~a'" (ast-name o)))))
+         ((not expr-type)
+          `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
+         ((not (is-a? expr-type type))
+          `(,(wfc-error o (format #f "~a expression expected" (class-name type)))))
+         (else '())))))
 
 (define-method (no-extern-expression (o <expression>))
-  (let* ((expr-wfc (wfc o))
-         (expr-type (ast:type o)))
-    (cond ((pair? expr-wfc) expr-wfc)
-          ((not expr-type)
-           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
-          ((is-a? expr-type <extern>)
-           `(,(wfc-error
-               o
-               (format #f "extern data-type `~a' expression in binary operator"
-                       (type-name expr-type)))))
-          (else '()))))
+  (or (as (wfc o) <pair>)
+      (let ((type (ast:type o)))
+        (cond
+         ((and (not type)
+               (not (is-a? type <named>)))
+          `(,(wfc-error o (format #f "typed expression expected `~a'" (ast-name o)))))
+         ((not type)
+          `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
+         ((is-a? type <extern>)
+          `(,(wfc-error
+              o
+              (format #f "extern data-type `~a' expression in binary operator"
+                      (type-name type)))))
+         (else '())))))
 
 (define-method (wfc (o <not>))
   (typed-expression (.expression o) <bool>))
