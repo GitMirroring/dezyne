@@ -70,6 +70,7 @@
             cleanup-error
             display-lts
             edge-label
+            lts->rtc-lts
             lts->traces
             lts-hide
             make-shared-string
@@ -651,6 +652,58 @@
       (generate-trace initial lts provides-ports provides-in
                       (string-append model ".trace") out #:verbose? verbose?))))
 
+(define (lts->rtc-lts lts)
+  (define (clear-node-succ i node)
+    (let ((new-node (clone-node node)))
+      (set-node-succ! new-node '())
+      new-node))
+
+  (let ((result (vector-map clear-node-succ lts)))
+    (define (illegal? label)
+      (match label
+        ("<illegal>" #t)
+        ("<declarative-illegal>" #t)
+        ("illegal" #t)
+        ("declarative_illegal" #t)
+        (_ #f)))
+
+    (define (modeling? o)
+      (and (string? o)
+           (string-contains o "'internal(")))
+
+    (define (trigger? o)
+      (and (string? o)
+           (string-contains o "'in(")))
+
+    (define (rtc? node)
+      (find (disjoin modeling? trigger?) (map edge-label (node-succ node))))
+
+    (define (extend trail label)
+      (match label
+        (#f trail)
+        ("tau" trail)
+        ((and (? string?) (? (cute string-suffix? "<flush>" <>))) trail)
+        ((? string?) (cons label trail))))
+
+    (define (add from to trail)
+      (let ((from (vector-ref result (node-state from))))
+        (set-node-succ! from (cons (make-edge (node-state from) (reverse trail) to) (node-succ from))))) ;; todo: avoid duplicates
+
+    (define (step from to trail)
+      (let ((node (vector-ref lts to)))
+        (if (and (pair? trail) (or (rtc? node) (illegal? (car trail))))
+          (add from to trail)
+          (for-each
+            (lambda (edge)
+              (step from (edge-to edge) (extend trail (edge-label edge))))
+            (node-succ node)))))
+
+    (vector-for-each
+      (lambda (i node)
+        (when (rtc? node)
+          (step node i '())))
+      lts)
+    result))
 
 ;;;
 ;;; Cleanup.
