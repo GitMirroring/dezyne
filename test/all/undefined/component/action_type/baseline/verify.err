@@ -1,0 +1,2 @@
+test/all/undefined/component/action_type/action_type.dzn:26:6: error: unknown type name `int'
+test/all/undefined/component/action_type/action_type.dzn:40:24: error: typed expression expected `action'

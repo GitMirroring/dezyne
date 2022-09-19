@@ -566,6 +566,7 @@ PARSER_TESTS =					\
  %D%/undefined/reply				\
  %D%/undefined/return				\
  %D%/undefined/component/action			\
+ %D%/undefined/component/action_type		\
  %D%/undefined/component/argument		\
  %D%/undefined/component/argument_seen		\
  %D%/undefined/component/enum_as_action		\
