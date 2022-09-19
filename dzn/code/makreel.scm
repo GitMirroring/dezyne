@@ -289,6 +289,10 @@
           (find (is? <component>) (ast:model* o))
           (find (is? <interface>) (ast:model* o))))))
 
+;;HACK: TODO REMOVEME
+(define-method (makreel:interface-name (o <component>))
+  (makreel:interface-name (car (ast:port* o))))
+
 (define-method (makreel:interface-name (o <interface>))
   (makreel:model-name o))
 
@@ -855,6 +859,18 @@
         other)))
 
 (define-method (makreel:provides-reply (o <port>))
+  (ast:provides-port* o))
+
+(define-method (makreel:provides-reply-init (o <port-pair>))
+  (let* ((other (.other o))
+         (interface (makreel:interface-name (.port o))))
+    (if (ast:eq? other (.port o)) (format #f "~anil" interface)
+        other)))
+
+(define-method (makreel:provides-reply-init (o <port>))
+  (ast:provides-port* o))
+
+(define-method (makreel:provides-reply-init (o <component>))
   (ast:provides-port* o))
 
 (define-method (makreel:provides-reset-reply (o <port-pair>))

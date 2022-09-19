@@ -1,1 +1,0 @@
-component_parallel = component_constrained || req_and_queue;

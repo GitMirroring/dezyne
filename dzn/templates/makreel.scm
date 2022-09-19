@@ -160,10 +160,16 @@
 (define-templates queue-rename-requires ast:requires-port* newline-comma-infix)
 (define-templates external-proc ast:external-port*)
 
-;;comonent behavior
-(define-templates component-behavior-allow-provides ast:provides-port* newline-comma-prefix)
-(define-templates component-behavior-allow-requires ast:requires-port* newline-comma-prefix)
-(define-templates component-behavior-rename-requires ast:requires-port* newline-comma-prefix)
+;;component behavior
+(define-templates component-behavior-comm-provides ast:provides-port* newline-comma-suffix)
+(define-templates component-behavior-allow-provides ast:provides-port* newline-comma-suffix)
+(define-templates component-behavior-allow-requires ast:requires-port* newline-comma-suffix)
+(define-templates component-behavior-rename-provides ast:provides-port* newline-comma-suffix)
+(define-templates component-behavior-rename-requires ast:requires-port* newline-comma-suffix)
+(define-templates component-defer-allow-provides ast:provides-port* newline-comma-prefix)
+(define-templates component-defer-allow-requires ast:requires-port* newline-comma-prefix)
+(define-templates component-defer-rename-requires ast:requires-port* newline-comma-prefix)
+
 
 ;;defer
 (define-templates defer-semantics ast:provides-port* newline-union-infix)
@@ -260,9 +266,8 @@
 (define-templates provides-rename ast:provides-port* newline-comma-infix)
 
 ;; constraint
-(define-templates component-parallel (lambda (o) (if (command-line:get 'no-constraint) o '())))
-(define-templates component-parallel-constraint (lambda (o) (if (command-line:get 'no-constraint) '() o)))
 (define-templates component-constraint (lambda (o) (if (command-line:get 'no-constraint) '() o)))
+(define-templates component-no-constraint (lambda (o) (if (command-line:get 'no-constraint) o '())))
 (define-templates constraint makreel:constraint double-newline-infix)
 (define-templates constraint-member-init makreel:member-init parameters-grammar)
 

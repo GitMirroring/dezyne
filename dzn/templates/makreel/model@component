@@ -156,13 +156,13 @@ DeferContext = struct defer_context(state: State, select: Set(Selection), locals
 
 proc
 
-component_behavior_comm = comm ({
+component_defer_comm = comm ({
    defer_qin | defer_qin -> defer_qin'
  , defer_qout | defer_qout -> defer_qout'
  , defer_skip | defer_skip -> defer_skip'
 }, #x:type-check  #x:makreel:model-name behavior #x:member-init || defer_queue([]));
 
-component_behavior_allow = allow({
+component_defer_allow = allow({
    constrained_legal
  , constrained_illegal
  , declarative_illegal
@@ -176,19 +176,21 @@ component_behavior_allow = allow({
  , recurse
  , return
  , tag
-   #x:component-behavior-allow-provides
-   #x:component-behavior-allow-requires
- , #x:makreel:model-name end }, component_behavior_comm);
+   #x:component-defer-allow-provides
+   #x:component-defer-allow-requires
+ , #x:makreel:model-name end }, component_defer_comm);
 
-component_behavior_rename = rename({
+component_defer_rename = rename({
   defer_qout' -> defer_qout
-  #x:component-behavior-rename-requires }, component_behavior_allow);
+, defer_skip' -> defer_skip
+  #x:component-defer-rename-requires
+}, component_defer_allow);
 
-component_behavior = hide({
-   defer_skip'
- , defer_qin'}, component_behavior_rename);
+component_defer = hide({
+defer_qin'
+}, component_defer_rename);
 
-
+component_behavior = component_defer;
 
 %%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -221,9 +223,8 @@ semantics_provides_unblocked(reply: reply_values)
  = #x:semantics-provides-unblocked
  + #x:makreel:model-name end
  . (queue_empty
-   . ((#x:semantics-provides-unblocked-missing-replies) -> missing_reply . delta
-      #x:semantics-provides-unblocked-replies)
-      #x:semantics-provides-flush)
+   . ((#x:semantics-provides-unblocked-missing-replies) -> missing_reply . delta #x:semantics-provides-unblocked-replies)
+ #x:semantics-provides-flush)
  #x:semantics-provides-unblocked-switch-context
  ;
 
@@ -291,6 +292,7 @@ component_semantics_parallel = component_behavior || semantics_main;
 component_semantics_comm = comm({
    defer_end | defer_end -> defer_end'
  , defer_qout | defer_qout -> defer_qout'
+ , defer_skip | defer_skip -> defer_skip'
  , #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
    #x:semantics-comm-provides
    #x:semantics-comm-requires
@@ -306,6 +308,7 @@ component_semantics_allow = allow({
  , declarative_illegal
  , defer_end'
  , defer_qout'
+ , defer_skip
  , illegal
  , missing_reply
  , queue_empty
@@ -327,12 +330,12 @@ component_semantics = rename({
    #x:semantics-rename-requires
  }, component_semantics_allow);
 
+#x:component-no-constraint
 #x:component-constraint
 
 %%%%%%%%%%%%%%%%%%%%% COMPONENT ASSEMBLY %%%%%%%%%%%%%%%%%%%%%%
 
-#x:component-parallel-constraint
-#x:component-parallel
+component_parallel = component_constrained || req_and_queue;
 
 component_comm = comm({
    queue_empty | queue_empty -> queue_empty'
@@ -349,7 +352,7 @@ component_allow = allow({
  , declarative_illegal
  , defer_end
  , defer_qout
- , defer_end
+ , defer_skip
  , illegal
  , missing_reply
  , queue_empty'
@@ -366,14 +369,12 @@ component_allow = allow({
 component_rename = rename({
    queue_empty' -> queue_empty
  , queue_not_empty' -> queue_not_empty
-   #x:component-rename-provides
    #x:component-rename-requires
  }, component_allow);
 
 component = hide({
    #x:makreel:model-name end
  , #x:allow-tau
-   #x:component-hide-provides
    #x:component-hide-requires
  , constrained_legal
  , defer_end

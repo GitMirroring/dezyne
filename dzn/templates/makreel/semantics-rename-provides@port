@@ -1,4 +1,5 @@
 #.name in' -> #.name in
  , #.name out' -> #.name out
  , #.name blocking' -> #.name blocking
- , #.name reply' -> #.name reply
+ , #.name reply' -> #makreel:interface-name tau_reply
+ , #.name reply'reordered -> #.name reply

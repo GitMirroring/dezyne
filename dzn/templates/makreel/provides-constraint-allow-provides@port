@@ -1,4 +1,3 @@
 #.name in
- , #.name blocking
  , #.name out
- , #.name reply'reordered
+ , #.name reply

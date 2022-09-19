@@ -21,6 +21,7 @@ component_constrained_allow = allow({
 , declarative_illegal
 , defer_qout
 , defer_end
+, defer_skip
 , illegal
 , missing_reply
 , queue_empty

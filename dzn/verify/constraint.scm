@@ -42,10 +42,6 @@
   "Print constraint proces in makreel code for MODEL's deterministic LTS
 to current-output-port."
 
-  (define (fixup-reply o)
-    (if (not (reply? o)) o
-        (string-replace-substring o "'reply(" "'reply'reordered(")))
-
   (define (illegal? o)
     (match o
       ((trigger action rest ...) (illegal? action))
@@ -131,7 +127,7 @@ to current-output-port."
            (values (map value->string values))
            (types (map type->string types))
            (name (full-name model)))
-      (map (cute format #f "~areply'reordered(~a(~a))"
+      (map (cute format #f "~areply(~a(~a))"
                  name <> <>)
            types values)))
 
@@ -155,11 +151,9 @@ to current-output-port."
                (event (edge-label transition))
                (action-events (filter action? events))
                (reply-events (filter reply? events))
-               (events (map fixup-reply events))
                (events (lset-union equal? seen events))
                (action? (action? event))
                (reply? (reply? event))
-               (event (fixup-reply event))
                (replies (if (> (length reply-events) 1) '()
                             replies))
                (actions (if (> (length action-events) 1) '()

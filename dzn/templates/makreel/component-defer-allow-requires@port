@@ -1,5 +1,4 @@
 #.name in
- , #.name blocking
  , #.name out
  , #.name reply
- , #.name flush
+ , #.name switch_context
