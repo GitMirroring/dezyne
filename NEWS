@@ -5,6 +5,11 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* UNRELEASED
+** Noteworthy bug fixes
+   - The well-formedness check now gracefully handles an action with an
+     undefined type, used in an expression.
+
 * Changes in 2.16.1 since 2.16.0
 ** Code
   - In the the C++ runtime, the signature of skip_block has been changed
