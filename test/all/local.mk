@@ -217,6 +217,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_system_provides_bool		\
  %D%/component_modeling_loop			\
  %D%/compound.space				\
+ %D%/constraint_modeling_nondet			\
  %D%/constraint_nondet				\
  %D%/constraint_nondet2				\
  %D%/data_full					\
