@@ -27,6 +27,7 @@ interface ihello
   in int hey ();
   in int hi ();
   in int goodbye ();
+  in int bye ();
   out void add ();
   out void dec ();
   out void inc ();
@@ -39,12 +40,25 @@ interface ihello
     on hey: {inc;dec;reply (0);}
     on hi: {inc;dec;dec;inc;bar;foo;reply (0);}
     on goodbye: {inc;dec;inc;dec;reply (0);}
+    on bye: reply (0);
+  }
+}
+
+interface iworld
+{
+  subint int {0..1};
+  in int hello ();
+
+  behavior
+  {
+    on hello: reply (0);
   }
 }
 
 component complex_int
 {
   provides ihello h;
+  requires iworld w;
   behavior
   {
     subint int {-1..1};
@@ -83,5 +97,7 @@ component complex_int
       i = inc (i) + dec (i) + inc (i) + dec (i);
       reply (i);
     }
+    on h.bye (): if (w.hello () == 0)
+      reply (0);
   }
 }
