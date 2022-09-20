@@ -60,7 +60,6 @@
             (language (single-char #\l) (value #t))
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
-            (no-blocking (single-char #\B))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))
             (shell (single-char #\s) (value #t))))
@@ -81,7 +80,6 @@ Generate code for Dezyne models in DZN-FILE
   -l, --language=LANG         generate code for language=LANG [~a]
   -L, --locations             prepend locations to output trace
   -m, --model=MODEL           generate main for MODEL
-  -B, --no-blocking           assume system without collateral blocking
   -o, --output=DIR            write output to DIR (use - for stdout)
   -q, --queue-size=SIZE       use queue size SIZE
   -s, --shell=MODEL           generate thread safe system shell for MODEL
