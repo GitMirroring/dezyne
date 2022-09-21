@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -40,20 +40,17 @@
 ;;; Code:
 
 (define-module (dzn lts)
-  #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 ftw)
-  #:use-module (ice-9 getopt-long)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-43)
+
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 receive)
   #:use-module (ice-9 regex)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-9)
-  #:use-module (srfi srfi-9 gnu)
-  #:use-module (srfi srfi-26)
-  #:use-module (srfi srfi-43)
+
   #:use-module (dzn misc)
   #:use-module (dzn peg)
   #:export (%<declarative-illegal>
