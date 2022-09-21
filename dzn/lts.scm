@@ -250,9 +250,12 @@
 (define (annotate-parent lts)
   "Set 'parent' and 'distance' from initial-state in each node in LTS"
   (define (update-frontier distance edge next-frontier)
-    (let ((node (vector-ref lts (edge-to edge))))
-      (set-node-distance! node (1+ distance))
-      (set-node-parent! node edge)
+    (let* ((i (edge-to edge))
+           (node (vector-ref lts i))
+           (node (set-fields node
+                             ((node-distance) (1+ distance))
+                             ((node-parent) edge))))
+      (vector-set! lts i node)
       (cons (edge-to edge) next-frontier)))
   (define (annotate-parent-it lts curr-frontier next-frontier)
     (cond ((and (null? curr-frontier)
@@ -276,9 +279,11 @@
                                        succ)))
              (annotate-parent-it lts (cdr curr-frontier) next-frontier)))))
   (let* ((initial-state (initial lts))
-         (initial-node (vector-ref lts initial-state)))
-    (set-node-distance! initial-node 0)
-    (set-node-parent! initial-node #f)
+         (initial-node (vector-ref lts initial-state))
+         (initial-node (set-fields initial-node
+                                   ((node-distance) 0)
+                                   ((node-parent) #f))))
+    (vector-set! lts initial-state initial-node)
     (annotate-parent-it lts (list initial-state) '())))
 
 (define (iota-distance-sorted lts)
