@@ -587,12 +587,17 @@ from LABELS."
                                     (eq? %<defer> (edge-label e))))
                     (node-succ node)))))
 
+  (define (set-allowed-end? node)
+    (let* ((allowed-end? (allowed-end? node))
+           (node (set-field node (node-color) allowed-end?)))
+      (vector-set! lts (node-state node) node)
+      (node-allowed-end? node)))
+
   (define (annotate)
-    (let* ((frontier (map node-state
-                          (filter (lambda (node)
-                                    (set-node-allowed-end?! node (allowed-end? node))
-                                    (node-allowed-end? node))
-                                  (vector->list lts)))))
+    (let* ((lts-list (vector->list lts))
+           (allowed-end (filter set-allowed-end? lts-list))
+           (frontier (map node-state allowed-end)))
+
       (define (extend-frontier index)
         (let loop ((edges (node-pred (vector-ref lts index))))
           (if (null? edges) '()
@@ -600,8 +605,8 @@ from LABELS."
                      (node-index (edge-from edge))
                      (node (vector-ref lts node-index)))
                 (if (node-close node) (loop (cdr edges))
-                    (begin
-                      (set-node-close! node edge)
+                    (let ((node (set-field node (node-parent) edge)))
+                      (vector-set! lts node-index node)
                       (cons node-index (loop (cdr edges)))))))))
       (let loop ((frontier frontier))
         (when (pair? frontier)
