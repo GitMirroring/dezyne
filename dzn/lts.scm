@@ -303,15 +303,25 @@
         (set! livelocks (cons state livelocks)))
       (let ((node (vector-ref lts state)))
         (cond ((= (node-color node) %grey)
-               (set-node-cycle! node entry-edge)
-               (report-cycle state))
+               (let* ((edge (make-edge- (edge-from entry-edge)
+                                        (edge-label entry-edge)
+                                        (edge-to entry-edge)
+                                        (edge-tau? entry-edge)))
+                      (node (set-field node (node-cycle) entry-edge)))
+                 (vector-set! lts state node) ;; XXX imperative!
+                 (report-cycle state)))
               ((= (node-color node) %white)
-               (let* ((tau-edges (filter edge-tau? (node-succ node))))
-                 (set-node-color! node %grey)
-                 (set-node-cycle! node entry-edge)
+               (let* ((tau-edges (filter edge-tau? (node-succ node)))
+                      (node (set-fields node
+                                        ((node-color) %grey)
+                                        ((node-cycle) entry-edge))))
+                 (vector-set! lts state node)
                  (for-each (lambda (e) (loop-detect (edge-to e) e)) tau-edges)
-                 (set-node-color! node %black)))
-              (else node))))
+                 (let* ((node (vector-ref lts state)) ;; XXX imperative!
+                        (node (set-field node (node-color) %black)))
+                   (vector-set! lts state node))))
+              (else
+               node))))
     (for-each (cute loop-detect <> #f) (iota-distance-sorted lts))
     (delete-duplicates livelocks)))
 
