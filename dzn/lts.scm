@@ -26,8 +26,6 @@
 ;;; * functional style
 ;;;   + reduce use of set! and imperative style;
 ;;;   + use functional setters and map instead of for-each.
-;;;   + make <edge> immutable
-;;;     - use set-field instead of set-edge-*!
 ;;;   + make <node> immutable
 ;;;     - use set-field instead of set-node-*!
 ;;;   + remove set! (add-failures, lts-tau-loops, ... etc.)
@@ -74,6 +72,17 @@
             remove-illegal
             remove-tag-edges))
 
+;;; TODO:
+;;; * functional style
+;;;   + make <node> immutable
+;;;     - use set-field instead of set-node-*!
+;;;   + remove set! (add-failures, lts-tau-loops, ... etc.)
+;;;   + use vector-map instead of vector-set! !
+;;; * remove edge-from
+;;; * remove node-state
+;;; * node-succ => node-edges
+;;; * move node-pred, node-color, node-parent etc into <node-info> record(s)
+
 ;;;
 ;;; Utility.
 ;;;
@@ -96,6 +105,9 @@
 (define %optional (make-shared-string "optional"))
 (define %tau (make-shared-string "tau"))
 
+(define (vector-map-one f vector)
+  (vector-map (lambda (i n) (f n)) vector))
+
 (define-immutable-record-type <aut-header>
   (make-aut-header first-state nr-transitions state-count)
   aut-header?
@@ -112,14 +124,14 @@
     (and initial nr-transitions state-count
          (make-aut-header first-state nr-transitions state-count))))
 
-(define-record-type <edge>
+(define-immutable-record-type <edge>
   (make-edge- from label to tau?)
   edge?
-  (from edge-from set-edge-from!)
-  (label edge-label set-edge-label!)
-  (to edge-to set-edge-to!)
-
-  (tau? edge-tau? set-edge-tau?!))
+  (from edge-from)
+  (label edge-label)
+  (to edge-to)
+  ;;
+  (tau? edge-tau?))
 
 (define (text->edge text)
   (let* ((first-paren 0)
@@ -218,21 +230,18 @@
   "Mark edges labeled with name occurring in TAU as tau-edge."
   (let ((tau (map make-shared-string tau))
         (exclude-tau (map make-shared-string exclude-tau)))
-    (vector-for-each
-     (lambda (i n)
-       (for-each
-        (lambda (edge)
-          (set-edge-tau?!
-           edge
-           (and (or (memq (edge-label edge) tau)
-                    (find (cut string-prefix? <> (edge-label edge))
-                          (append (map (cute string-append <> ".") tau)
-                                  (map (cute string-append <> "(") tau))))
-                (not (memq (edge-label edge) exclude-tau))
-                #t)))
-        (node-succ n)))
-     lts))
-  lts)
+    (define (set-edge-tau edge)
+      (let ((tau? (and (or (memq (edge-label edge) tau)
+                           (find (cut string-prefix? <> (edge-label edge))
+                                 (append (map (cute string-append <> ".") tau)
+                                         (map (cute string-append <> "(") tau))))
+                       (not (memq (edge-label edge) exclude-tau))
+                       #t)))
+        (set-field edge (edge-tau?) tau?)))
+    (define (set-edge-taus node)
+      (let ((succ (map set-edge-tau (node-succ node))))
+        (set-field node (node-succ) succ)))
+    (vector-map-one set-edge-taus lts)))
 
 (define (annotate-parent lts)
   "Set 'parent' and 'distance' from initial-state in each node in LTS"
@@ -496,7 +505,9 @@
                               (cons (make-edge (node-state org-node) %tau state)
                                     (map clone-edge (node-succ org-node))))
               (set-node-state! node state)
-              (for-each (lambda (e) (set-edge-from! e state)) (node-succ node))
+              (let* ((succ (node-succ node))
+                     (succ (map (cut set-field <> (edge-from) state) succ)))
+                (set-node-succ! node succ))
               (1+ state))) state-count add)
     (let* ((lts-list (append lts-list add))
            (lts-list (map (lambda (node)
@@ -622,19 +633,16 @@
           (_ label))))
 
     (define (convert-edge edge)
-      (set-edge-label! edge (convert-label (edge-label edge)))
-      edge)
+      (set-field edge (edge-label) (convert-label (edge-label edge))))
 
-    (define (convert-node i node)
+    (define (convert-node node)
       (let ((pred (map convert-edge (node-pred node)))
             (succ (map convert-edge (node-succ node))))
-        (set-node-pred! node pred)
-        (set-node-succ! node succ)
-        node))
+        (set-fields node ((node-pred) pred) ((node-succ) succ))))
 
     (let* ((text (string-join data "\n"))
            (lts (aut-text->lts text #:traces? #t))
-           (lts (vector-map convert-node lts))
+           (lts (vector-map-one convert-node lts))
            (lts (if illegal? lts (remove-illegal lts)))
            (lts (remove-info-edges lts))
            (initial (initial lts)))
