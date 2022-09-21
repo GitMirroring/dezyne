@@ -57,7 +57,6 @@
             %<illegal>
             add-failures
             assert-deadlock
-            assert-file-exists
             assert-illegal
             assert-livelock
             assert-nondeterministic
@@ -74,8 +73,9 @@
             remove-illegal
             remove-tag-edges))
 
-(define %version "git")
-
+;;;
+;;; Utility.
+;;;
 (define make-shared-string
   (let ((table (make-hash-table)))
     (lambda (string)
@@ -93,14 +93,7 @@
 (define %<queue-full> (make-shared-string "<queue-full>"))
 (define %inevitable (make-shared-string "inevitable"))
 (define %optional (make-shared-string "optional"))
-(define %rtc (make-shared-string "rtc"))
 (define %tau (make-shared-string "tau"))
-
-(define (assert-file-exists file)
-  (if (not (access? file R_OK))
-      (begin (format (current-error-port) "File not found: ~a\n" file)
-             #f)
-      file))
 
 ;; ===== text-file =====
 (define (text->line-list text)
@@ -121,8 +114,9 @@
   (let* ((rem (regexp-exec aut-header-regex text))
          (first-state (and rem (string->number (match:substring rem 1))))
          (nr-transitions (and rem (string->number (match:substring rem 2))))
-         (nr-states (and rem (string->number (match:substring rem 3)))))
-    (and initial nr-transitions nr-states (make-aut-header first-state nr-transitions nr-states))))
+         (state-count (and rem (string->number (match:substring rem 3)))))
+    (and initial nr-transitions state-count
+         (make-aut-header first-state nr-transitions state-count))))
 
 (define-record-type <edge>
   (make-edge- from label to tau?)
@@ -229,8 +223,6 @@
 (define (aut-file->lts file-name)
   (aut-text->lts (with-input-from-file file-name read-string)))
 
-;;;;;;;;;;;;;;;
-
 (define (lts-hide lts tau exclude-tau)
   "Mark edges labeled with name occurring in TAU as tau-edge."
   (let ((tau (map make-shared-string tau))
@@ -250,8 +242,6 @@
         (node-succ n)))
      lts))
   lts)
-
-;; v v v v v   l i v e l o c k   c h e c k   v v v v v
 
 (define (annotate-parent lts)
   "Set 'parent' and 'distance' from initial-state in each node in LTS"
@@ -284,8 +274,10 @@
 (define BLACK 2)
 
 
-;;;;;;;;;;;;;;;;;;
-
+
+;;;
+;;; Livelock.
+;;;
 (define (lts-tau-loops lts)
   "States that are part of a tau-loop"
   (let ((livelocks '()))
@@ -336,8 +328,10 @@
                 (list (make-edge-loop))
                 (or loop-trace '())))))
 
-;; ^ ^ ^ ^ ^   l i v e l o c k   c h e c k   ^ ^ ^ ^ ^
-
+
+;;;
+;;; Illegal.
+;;;
 (define (annotate-exclude lts excludes)
   (define (exclude-label i node)
     (let* ((labels (map edge-label (node-succ node)))
@@ -374,6 +368,10 @@
   (vector-for-each set-exclude-queue-full lts)
   (vector-map exclude-queue-full lts))
 
+
+;;;
+;;; Deadlock.
+;;;
 (define (remove-info-edges lts)
   (define (info-edge? edge)
     (or (string-prefix? "<state>" (edge-label edge))
@@ -470,9 +468,10 @@
                                                   (list nondeterministic-witness))))))
     nondeterministic-trace))
 
-;; - - - - -   i n t r o d u c e   f a i l u r e s - - - - -
-;;
-
+
+;;;
+;;; Failures.
+;;;
 (define (optional? e)
   (or (eq? (edge-label e) %optional)
       (string-suffix? ".optional" (edge-label e))
@@ -516,7 +515,6 @@
 ;;;
 ;;; Trace generation.
 ;;;
-
 (define %fout-inc 0)
 
 (define node-allowed-end? node-color)
@@ -701,11 +699,11 @@
           (step node i '())))
       lts)
     result))
+
 
 ;;;
 ;;; Cleanup.
 ;;;
-
 (define (parse-label label)
   (define-peg-string-patterns
     "tree               <-- event / modeling / defer-qout / tag / reply / state / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
@@ -778,7 +776,7 @@
 
 (define* (cleanup-label label #:key internal? illegal?)
   (define (helper-params parameters)
-    (let* ((parameters (if (pair? (car parameters)) parameters (list parameters))))
+    (let ((parameters (if (pair? (car parameters)) parameters (list parameters))))
       (string-join (map helper parameters) ",")))
   (define (helper tree)
     (match tree
@@ -825,7 +823,6 @@
 ;;;
 ;;; Entry points.
 ;;;
-
 (define* (cleanup-aut #:key file-name (illegal? #t) (internal? #t) prefix)
   (let ((input-port (if file-name (open-input-file file-name) (current-input-port)))
         (label-re (make-regexp "\"([^\"]*)\"")))
