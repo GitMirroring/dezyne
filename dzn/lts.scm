@@ -466,20 +466,26 @@
         illegal-trace)))
 
 (define (nondeterministic-nodes lts labels)
-  "States with multiple outgoing edges with same label of set of 'labels'"
+  "Return states from LTS with multiple outgoing edges with same label
+from LABELS."
   (let ((labels (map make-shared-string labels)))
-    (define (is-nondeterministic? state)
+    (define (nondeterministic? state)
       (let* ((node (vector-ref lts state))
-             (succ (filter (lambda (e) (memq (edge-canonical-label e) labels)) (node-succ node)))
-             (res (let loop ((last #f) (succ succ))
-                    (cond
-                     ((null? succ) #f)
-                     ((and last (eq? (edge-canonical-label last) (edge-canonical-label (car succ)))) last)
-                     (else (loop (car succ) (cdr succ)))))))
-        (when res
-          (set-node-nondet-witness! node res))
-        res))
-    (filter is-nondeterministic? (iota-distance-sorted lts))))
+             (succ (filter (compose (cute memq <> labels) edge-canonical-label)
+                           (node-succ node)))
+             (color (let loop ((last #f) (succ succ))
+                      (cond
+                       ((null? succ)
+                        #f)
+                       ((and last (eq? (edge-canonical-label last)
+                                       (edge-canonical-label (car succ))))
+                        last)
+                       (else (loop (car succ) (cdr succ)))))))
+        (when color
+          (let ((node (set-field node (node-color) color)))
+            (vector-set! lts state node)))
+        color))
+    (filter nondeterministic? (iota-distance-sorted lts))))
 
 (define (assert-nondeterministic lts labels)
   "Trace to nondetermistic node of #f is none found"
