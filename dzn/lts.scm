@@ -96,7 +96,7 @@
 (define %optional (make-shared-string "optional"))
 (define %tau (make-shared-string "tau"))
 
-(define-record-type <aut-header>
+(define-immutable-record-type <aut-header>
   (make-aut-header first-state nr-transitions state-count)
   aut-header?
   (first-state aut-header-first-state)
