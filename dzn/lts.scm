@@ -351,22 +351,23 @@
   (vector-map exclude lts))
 
 (define (trim-queue-full lts)
-  (define (reset-exclude i node)
-    (set-node-exclude?! node #f))
-  (define (set-exclude-queue-full i node)
+  (define (reset-exclude node)
+    (set-field node (node-color) #f))
+  (define (exclude-queue-full node)
+    (let ((succ (if (node-exclude? node) '()
+                    (node-succ node))))
+      (set-field node (node-succ) succ)))
+  (define (set-exclude-queue-full lts i node)
     (let* ((succ (node-succ node))
            (edge (find (compose (cute eq? <> %<queue-full>) edge-label) succ)))
       (when edge
-        (set-node-exclude?! (vector-ref lts (edge-to edge)) #t))))
-  (define (exclude-queue-full i node)
-    (let* ((new-node (clone-node node))
-           (succ (if (node-exclude? node) '()
-                     (node-succ node))))
-      (set-node-succ! new-node succ)
-      new-node))
-  (vector-for-each reset-exclude lts)
-  (vector-for-each set-exclude-queue-full lts)
-  (vector-map exclude-queue-full lts))
+        (let* ((i (edge-to edge))
+               (node (vector-ref lts i))
+               (node (set-field node (node-color) #t)))
+          (vector-set! lts i node)))))
+  (let ((lts (vector-map-one reset-exclude lts)))
+    (vector-for-each (cute set-exclude-queue-full lts <> <>) lts)
+    (vector-map-one exclude-queue-full lts)))
 
 
 ;;;
