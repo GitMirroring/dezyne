@@ -726,10 +726,12 @@ from LABELS."
         ((? string?) (cons label trail))))
 
     (define (add from to trail)
-      (let ((from (vector-ref result (node-state from)))
-            (succ (cons (make-edge (node-state from) (reverse trail) to)
-                        (node-succ from))))
-        (set-node-succ! from succ))) ;; todo: avoid duplicates
+      (let* ((state (node-state from))
+             (from (vector-ref result state))
+             (succ (cons (make-edge (node-state from) (reverse trail) to)
+                         (node-succ from)))
+             (from (set-field from (node-succ) succ)))
+        (vector-set! result state from))) ;; TODO: avoid duplicates
 
     (define (step from to trail)
       (let ((node (vector-ref lts to)))
