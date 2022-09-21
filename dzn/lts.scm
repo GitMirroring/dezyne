@@ -188,7 +188,6 @@
           ((node-initial? (vector-ref lts state)) state)
           (else (it (1+ state))))))
 
-
 (define* (construct-lts header edges #:key traces?)
   (define (state->node state)
     (make-node state '() '() #f %white #f -1 #f))
@@ -246,21 +245,29 @@
 
 (define (annotate-parent lts)
   "Set 'parent' and 'distance' from initial-state in each node in LTS"
+  (define (update-frontier distance edge next-frontier)
+    (let ((node (vector-ref lts (edge-to edge))))
+      (set-node-distance! node (1+ distance))
+      (set-node-parent! node edge)
+      (cons (edge-to edge) next-frontier)))
   (define (annotate-parent-it lts curr-frontier next-frontier)
-    (cond ((and (null? curr-frontier) (null? next-frontier)) lts)
-          ((and (null? curr-frontier) (not (null? next-frontier)))
+    (cond ((and (null? curr-frontier)
+                (null? next-frontier))
+           lts)
+          ((and (null? curr-frontier)
+                (not (null? next-frontier)))
            (annotate-parent-it lts next-frontier curr-frontier))
           ((not (null? curr-frontier))
            (let* ((state (car curr-frontier))
                   (node (vector-ref lts state))
                   (distance (node-distance node))
                   (succ (node-succ node))
-                  (succ (filter (lambda (edge) (= -1 (node-distance (vector-ref lts (edge-to edge))))) succ))
-                  (next-frontier (fold (lambda (edge next-frontier)
-                                         (let ((node (vector-ref lts (edge-to edge))))
-                                           (set-node-distance! node (1+ distance))
-                                           (set-node-parent! node edge)
-                                           (cons (edge-to edge) next-frontier)))
+                  (succ (filter (compose (cute =  <> -1)
+                                         node-distance
+                                         (cute vector-ref lts <>)
+                                         edge-to)
+                                succ))
+                  (next-frontier (fold (cute update-frontier distance <> <>)
                                        next-frontier
                                        succ)))
              (annotate-parent-it lts (cdr curr-frontier) next-frontier)))))
@@ -269,6 +276,11 @@
     (set-node-distance! initial-node 0)
     (set-node-parent! initial-node #f)
     (annotate-parent-it lts (list initial-state) '())))
+
+(define (iota-distance-sorted lts)
+  (sort (iota (vector-length lts))
+        (lambda (a b) (< (node-distance (vector-ref lts a))
+                         (node-distance (vector-ref lts b))))))
 
 
 ;;;
@@ -291,10 +303,7 @@
                  (for-each (lambda (e) (loop-detect (edge-to e) e)) tau-edges)
                  (set-node-color! node %black)))
               (else node))))
-    (for-each (lambda (s) (loop-detect s #f))
-              (sort (iota (vector-length lts))
-                    (lambda (a b) (< (node-distance (vector-ref lts a))
-                                     (node-distance (vector-ref lts b))))))
+    (for-each (cute loop-detect <> #f) (iota-distance-sorted lts))
     (delete-duplicates livelocks)))
 
 (define (trace lts state)
@@ -312,14 +321,15 @@
     (let* ((predecessor-edge (node-cycle (vector-ref lts state)))
            (predecessor-state (edge-from predecessor-edge))
            (predecessor-node (vector-ref lts predecessor-state)))
-      (if (equal? predecessor-state loop-entry-state) (cons predecessor-edge trace)
+      (if (eq? predecessor-state loop-entry-state) (cons predecessor-edge trace)
           (loop-edges (cons predecessor-edge trace) predecessor-state))))
   (loop-edges '()  loop-entry-state))
 
 (define (assert-livelock lts)
   "Trace to entry point of first livelock or #f if no tau loops found"
   (let* ((livelock-nodes (lts-tau-loops lts))
-         (loop-entry-trace (and (pair? livelock-nodes) (trace lts (car livelock-nodes))))
+         (loop-entry-trace (and (pair? livelock-nodes)
+                                (trace lts (car livelock-nodes))))
          (loop-entry-node (and loop-entry-trace (car livelock-nodes)))
          (loop-trace (and loop-entry-node (tau-loop loop-entry-node lts))))
     (if (null? livelock-nodes) #f
@@ -395,21 +405,21 @@
   (let* ((lts (remove-info-edges lts))
          (lts (trim-queue-full lts))
          (lts (annotate-exclude lts (list %<declarative-illegal>))))
-    (define (has-deadlock? state)
-      (null? (filter
-              (lambda (e) ((negate node-exclude?) (vector-ref lts (edge-to e))))
-              (node-succ (vector-ref lts state)))))
-    (filter
-     has-deadlock?
-     (filter (compose (negate node-exclude?) (cute vector-ref lts <>))
-             (sort (iota (vector-length lts))
-                   (lambda (a b) (< (node-distance (vector-ref lts a))
-                                    (node-distance (vector-ref lts b)))))))))
+    (define (edges? state)
+      (let ((node (vector-ref lts state)))
+        (find (compose (negate node-exclude?)
+                       (cute vector-ref lts <>)
+                       edge-to)
+              (node-succ node))))
+    (filter (negate edges?)
+            (filter (compose (negate node-exclude?) (cute vector-ref lts <>))
+                    (iota-distance-sorted lts)))))
 
 (define (assert-deadlock lts)
   "Trace to node without outgoing edges or #f if no deadlock found"
   (let* ((deadlock-nodes (deadlock-nodes lts))
-         (deadlock-trace (and (pair? deadlock-nodes) (trace lts (car deadlock-nodes)))))
+         (deadlock-trace (and (pair? deadlock-nodes)
+                              (trace lts (car deadlock-nodes)))))
     deadlock-trace))
 
 (define (assert-unreachable lts tags)
@@ -427,10 +437,7 @@
   "States with labels of illegal outgoing edges."
   (define (has-illegal? state)
     (find (cute eq? <> %<illegal>) (map edge-label (node-succ (vector-ref lts state)))))
-  (filter has-illegal?
-          (sort (iota (vector-length lts))
-                (lambda (a b) (< (node-distance (vector-ref lts a))
-                                 (node-distance (vector-ref lts b)))))))
+  (filter has-illegal? (iota-distance-sorted lts)))
 
 (define (assert-illegal lts)
   "Trace to nodes without outgoing edges or #f if no deadlock found"
@@ -453,10 +460,7 @@
         (when res
           (set-node-nondet-witness! node res))
         res))
-    (filter is-nondeterministic?
-            (sort (iota (vector-length lts))
-                  (lambda (a b) (< (node-distance (vector-ref lts a))
-                                   (node-distance (vector-ref lts b))))))))
+    (filter is-nondeterministic? (iota-distance-sorted lts))))
 
 (define (assert-nondeterministic lts labels)
   "Trace to nondetermistic node of #f is none found"
@@ -488,33 +492,33 @@
 (define modeling? (disjoin optional? inevitable?))
 
 (define (add-failures lts)
-
+  "Return LTS with failures."
   (define (modeling->tau e)
     (if (modeling? e) (make-edge (edge-from e) %tau (edge-to e))
         e))
-
+  (define (add-failure node state)
+    (let* ((org-node (vector-ref lts (node-state node)))
+           (succ (cons (make-edge (node-state org-node) %tau state)
+                       (map clone-edge (node-succ org-node)))))
+      (set-node-succ! org-node succ)
+      (set-node-state! node state)
+      (let* ((succ (node-succ node))
+             (succ (map (cut set-field <> (edge-from) state) succ)))
+        (set-node-succ! node succ))
+      (1+ state)))
+  (define (remove-optional node)
+    (let ((succ (filter (negate optional?) (node-succ node))))
+      (set-field node (node-succ) succ)))
+  (define (node:modeling->tau node)
+    (let ((succ (map modeling->tau (node-succ node))))
+      (set-field node (node-succ) succ)))
   (let* ((state-count (vector-length lts))
          (lts-list (vector->list lts))
-         (add (filter (lambda (n) (not (null? (filter optional? (node-succ n))))) lts-list))
-         (add (map (lambda (node)
-                     (let ((succ (filter (negate optional?) (node-succ node))))
-                       (set-field node (node-succ) succ)))
-                   add)))
-    (fold (lambda (node state)
-            (let ((org-node (vector-ref lts (node-state node))))
-              (set-node-succ! org-node
-                              (cons (make-edge (node-state org-node) %tau state)
-                                    (map clone-edge (node-succ org-node))))
-              (set-node-state! node state)
-              (let* ((succ (node-succ node))
-                     (succ (map (cut set-field <> (edge-from) state) succ)))
-                (set-node-succ! node succ))
-              (1+ state))) state-count add)
+         (add (filter (compose (cute find optional? <>) node-succ) lts-list))
+         (add (map remove-optional add)))
+    (fold add-failure state-count add)
     (let* ((lts-list (append lts-list add))
-           (lts-list (map (lambda (node)
-                            (let ((succ (map modeling->tau (node-succ node))))
-                              (set-field node (node-succ) succ)))
-                          lts-list)))
+           (lts-list (map node:modeling->tau lts-list)))
       (list->vector lts-list))))
 
 
@@ -682,8 +686,10 @@
         ((? string?) (cons label trail))))
 
     (define (add from to trail)
-      (let ((from (vector-ref result (node-state from))))
-        (set-node-succ! from (cons (make-edge (node-state from) (reverse trail) to) (node-succ from))))) ;; todo: avoid duplicates
+      (let ((from (vector-ref result (node-state from)))
+            (succ (cons (make-edge (node-state from) (reverse trail) to)
+                        (node-succ from))))
+        (set-node-succ! from succ))) ;; todo: avoid duplicates
 
     (define (step from to trail)
       (let ((node (vector-ref lts to)))
@@ -694,11 +700,11 @@
               (step from (edge-to edge) (extend trail (edge-label edge))))
             (node-succ node)))))
 
-    (vector-for-each
-      (lambda (i node)
-        (when (rtc? node)
-          (step node i '())))
-      lts)
+    (define (step-rtc i node)
+      (when (rtc? node)
+        (step node i '())))
+
+    (vector-for-each step-rtc lts)
     result))
 
 
