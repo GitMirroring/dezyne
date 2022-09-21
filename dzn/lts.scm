@@ -74,8 +74,6 @@
 
 ;;; TODO:
 ;;; * functional style
-;;;   + make <node> immutable
-;;;     - use set-field instead of set-node-*!
 ;;;   + remove set! (add-failures, lts-tau-loops, ... etc.)
 ;;;   + use vector-map instead of vector-set! !
 ;;; * remove edge-from
@@ -157,18 +155,18 @@
   (let ((label (edge-label edge)))
     (if (string-prefix? "<state>" label) %<state> label)))
 
-(define-record-type <node>
+(define-immutable-record-type <node>
   (make-node state succ pred initial? color parent distance cycle)
   node?
-  (state node-state set-node-state!)
-  (succ node-succ set-node-succ!)             ; (<edge>)
-  (initial? node-initial? set-node-initial?!)
-  ;;
-  (pred node-pred set-node-pred!)
-  (color node-color set-node-color!)          ; integer
-  (parent node-parent set-node-parent!)       ; edge from parent
-  (distance node-distance set-node-distance!) ; -1 signifies infinite distance (unreachable)
-  (cycle node-cycle set-node-cycle!))         ; edge to previous node in tau-loop
+  (state node-state)
+  (succ node-succ)         ; list of <edge>
+  (initial? node-initial?)
+
+  (pred node-pred)
+  (color node-color)       ; integer
+  (parent node-parent)     ; edge from parent
+  (distance node-distance) ; -1 signifies infinite distance (unreachable)
+  (cycle node-cycle))      ; edge to previous node in tau-loop
 
 (define %white 0)
 (define %grey 1)
@@ -178,8 +176,6 @@
 (define node-type node-color)
 (define node-nondet-witness node-color)
 (define node-rtc? node-color)
-(define set-node-rtc?! set-node-color!)
-(define set-node-nondet-witness! set-node-color!)
 
 (define (initial lts)
   "Index (state) of initial node in LTS vector."
@@ -563,9 +559,7 @@ from LABELS."
 (define %fout-inc 0)
 
 (define node-allowed-end? node-color)
-(define set-node-allowed-end?! set-node-color!)
 (define node-close node-parent)
-(define set-node-close! set-node-parent!)
 
 (define* (generate-trace initial lts provides-ports provides-in fout out #:key verbose?)
 
