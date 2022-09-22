@@ -294,9 +294,10 @@
 (define (lts-tau-loops lts)
   "States that are part of a tau-loop"
   (let ((livelocks '()))
-    (define (loop-detect state entry-edge)
-      (define (report-cycle state)
-        (set! livelocks (cons state livelocks)))
+    (define (detect-loops state entry-edge)
+      (define (collect-loops edge loops)
+        (append (detect-loops (edge-to edge) edge)
+                loops))
       (let ((node (vector-ref lts state)))
         (cond ((= (node-color node) %grey)
                (let* ((edge (make-edge- (edge-from entry-edge)
@@ -305,21 +306,25 @@
                                         (edge-tau? entry-edge)))
                       (node (set-field node (node-cycle) entry-edge)))
                  (vector-set! lts state node) ;; XXX imperative!
-                 (report-cycle state)))
+                 (list state)))
               ((= (node-color node) %white)
                (let* ((tau-edges (filter edge-tau? (node-succ node)))
                       (node (set-fields node
                                         ((node-color) %grey)
                                         ((node-cycle) entry-edge))))
                  (vector-set! lts state node)
-                 (for-each (lambda (e) (loop-detect (edge-to e) e)) tau-edges)
-                 (let* ((node (vector-ref lts state)) ;; XXX imperative!
+                 (let* ((loops (fold collect-loops '() tau-edges))
+                        (node (vector-ref lts state)) ;; XXX imperative!
                         (node (set-field node (node-color) %black)))
-                   (vector-set! lts state node))))
+                   (vector-set! lts state node)
+                   loops)))
               (else
-               node))))
-    (for-each (cute loop-detect <> #f) (iota-distance-sorted lts))
-    (delete-duplicates livelocks)))
+               '()))))
+    (define (collect-loops state loops node)
+      (append (detect-loops state #f)
+              loops))
+    (let ((loops (vector-fold collect-loops '() lts)))
+      (delete-duplicates loops))))
 
 (define (trace lts state)
   "Trace from INITIAL to STATE"
