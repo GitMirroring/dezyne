@@ -47,8 +47,8 @@
 (define make-edge (@@ (dzn lts) make-edge))
 (define make-node (@@ (dzn lts) make-node))
 (define node-distance (@@ (dzn lts) node-distance))
+(define node-edges (@@ (dzn lts) node-edges))
 (define node-parent (@@ (dzn lts) node-parent))
-(define node-succ (@@ (dzn lts) node-succ))
 (define tau-loop (@@ (dzn lts) tau-loop))
 (define text->aut-header (@@ (dzn lts) text->aut-header))
 (define text->edge (@@ (dzn lts) text->edge))
@@ -105,7 +105,7 @@
 (test-assert (test:aut-file->lts))
 
 (define (lts-edges lts)
-  (append-map node-succ (vector->list lts)))
+  (append-map node-edges (vector->list lts)))
 
 (define (test:lts-hide)
   (and (equal?

@@ -78,7 +78,6 @@
 ;;;   + use vector-map instead of vector-set! !
 ;;; * remove edge-from
 ;;; * remove node-state
-;;; * node-succ => node-edges
 ;;; * move node-pred, node-color, node-parent etc into <node-info> record(s)
 
 ;;;
@@ -156,10 +155,10 @@
     (if (string-prefix? "<state>" label) %<state> label)))
 
 (define-immutable-record-type <node>
-  (make-node state succ pred initial? color parent distance cycle)
+  (make-node state edges pred initial? color parent distance cycle)
   node?
   (state node-state)
-  (succ node-succ)         ; list of <edge>
+  (edges node-edges)         ; list of <edge>
   (initial? node-initial?)
 
   (pred node-pred)
@@ -193,8 +192,8 @@
     (define (set-edge lts edge)
       (let* ((from (edge-from edge))
              (node (vector-ref lts from))
-             (succ (cons edge (node-succ node)))
-             (node (set-field node (node-succ) succ)))
+             (edges (cons edge (node-edges node)))
+             (node (set-field node (node-edges) edges)))
         (vector-set! lts from node))
       (when pred?
         (let* ((to (edge-to edge))
@@ -202,15 +201,15 @@
                (pred (cons edge (node-pred node)))
                (node (set-field node (node-pred) pred)))
           (vector-set! lts to node))))
-    (define (set-node-succ node)
-      (let ((succ (sort (node-succ node)
-                        (lambda (e0 e1)
-                          (string<? (edge-canonical-label e0)
-                                    (edge-canonical-label e1))))))
-        (set-field node (node-succ) succ)))
+    (define (set-node-edges node)
+      (let ((edges (sort (node-edges node)
+                         (lambda (e0 e1)
+                           (string<? (edge-canonical-label e0)
+                                     (edge-canonical-label e1))))))
+        (set-field node (node-edges) edges)))
     (let ((lts (list->vector (map state->node (iota state-count)))))
       (for-each (cute set-edge lts <>) edges)
-      (let ((lts (vector-map-one set-node-succ lts)))
+      (let ((lts (vector-map-one set-node-edges lts)))
         (if pred? lts
             (annotate-parent lts))))))
 
@@ -239,8 +238,8 @@
                        #t)))
         (set-field edge (edge-tau?) tau?)))
     (define (set-edge-taus node)
-      (let ((succ (map set-edge-tau (node-succ node))))
-        (set-field node (node-succ) succ)))
+      (let ((edges (map set-edge-tau (node-edges node))))
+        (set-field node (node-edges) edges)))
     (vector-map-one set-edge-taus lts)))
 
 (define (annotate-parent lts)
@@ -264,15 +263,15 @@
            (let* ((state (car curr-frontier))
                   (node (vector-ref lts state))
                   (distance (node-distance node))
-                  (succ (node-succ node))
-                  (succ (filter (compose (cute =  <> -1)
-                                         node-distance
-                                         (cute vector-ref lts <>)
-                                         edge-to)
-                                succ))
+                  (edges (node-edges node))
+                  (edges (filter (compose (cute =  <> -1)
+                                          node-distance
+                                          (cute vector-ref lts <>)
+                                          edge-to)
+                                 edges))
                   (next-frontier (fold (cute update-frontier distance <> <>)
                                        next-frontier
-                                       succ)))
+                                       edges)))
              (annotate-parent-it lts (cdr curr-frontier) next-frontier)))))
   (let* ((initial-state (initial lts))
          (initial-node (vector-ref lts initial-state))
@@ -308,7 +307,7 @@
                  (vector-set! lts state node) ;; XXX imperative!
                  (list state)))
               ((= (node-color node) %white)
-               (let* ((tau-edges (filter edge-tau? (node-succ node)))
+               (let* ((tau-edges (filter edge-tau? (node-edges node)))
                       (node (set-fields node
                                         ((node-color) %grey)
                                         ((node-cycle) entry-edge))))
@@ -363,7 +362,7 @@
 ;;;
 (define (annotate-exclude lts excludes)
   (define (exclude-label node)
-    (let* ((labels (map edge-label (node-succ node)))
+    (let* ((labels (map edge-label (node-edges node)))
            (exclude? (find (cute memq <> excludes) labels))
            (node (set-field node (node-color) exclude?)))
       (vector-set! lts (node-state node) node) ;; FIXME
@@ -374,9 +373,9 @@
   (define (exclude? lts edge)
     (node-exclude? (vector-ref lts (edge-to edge))))
   (define (exclude node)
-    (let ((succ (filter (negate (cute exclude? lts <>))
-                        (node-succ node))))
-      (set-field node (node-succ) succ)))
+    (let ((edges (filter (negate (cute exclude? lts <>))
+                         (node-edges node))))
+      (set-field node (node-edges) edges)))
   (let ((lts (annotate-exclude lts (list %<declarative-illegal> %<illegal>))))
     (vector-map-one exclude lts)))
 
@@ -384,12 +383,12 @@
   (define (reset-exclude node)
     (set-field node (node-color) #f))
   (define (exclude-queue-full node)
-    (let ((succ (if (node-exclude? node) '()
-                    (node-succ node))))
-      (set-field node (node-succ) succ)))
+    (let ((edges (if (node-exclude? node) '()
+                     (node-edges node))))
+      (set-field node (node-edges) edges)))
   (define (set-exclude-queue-full lts i node)
-    (let* ((succ (node-succ node))
-           (edge (find (compose (cute eq? <> %<queue-full>) edge-label) succ)))
+    (let* ((edges (node-edges node))
+           (edge (find (compose (cute eq? <> %<queue-full>) edge-label) edges)))
       (when edge
         (let* ((i (edge-to edge))
                (node (vector-ref lts i))
@@ -408,16 +407,16 @@
     (or (string-prefix? "<state>" (edge-label edge))
         (string-prefix? "tag(" (edge-label edge))))
   (define (remove-info node)
-    (let ((succ (filter (negate info-edge?) (node-succ node))))
-      (set-field node (node-succ) succ)))
+    (let ((edges (filter (negate info-edge?) (node-edges node))))
+      (set-field node (node-edges) edges)))
   (vector-map-one remove-info lts))
 
 (define (remove-tag-edges lts)
   (define (tag-edge? edge)
     (string-prefix? "tag(" (edge-label edge)))
   (define (remove-tag node)
-    (let ((succ (filter (negate tag-edge?) (node-succ node))))
-      (set-field node (node-succ) succ)))
+    (let ((edges (filter (negate tag-edge?) (node-edges node))))
+      (set-field node (node-edges) edges)))
   (vector-map-one remove-tag lts))
 
 (define (deadlock-nodes lts)
@@ -430,7 +429,7 @@
         (find (compose (negate node-exclude?)
                        (cute vector-ref lts <>)
                        edge-to)
-              (node-succ node))))
+              (node-edges node))))
     (filter (negate edges?)
             (filter (compose (negate node-exclude?) (cute vector-ref lts <>))
                     (iota-distance-sorted lts)))))
@@ -444,8 +443,8 @@
 
 (define (assert-unreachable lts tags)
   "Return any TAGS that are not present in LTS."
-  (let* ((succs (append-map node-succ (vector->list lts)))
-         (labels (map edge-label succs))
+  (let* ((edges (append-map node-edges (vector->list lts)))
+         (labels (map edge-label edges))
          (lts-tages (filter (cut string-prefix? "tag(" <>) labels))
          (lts-tages (delete-duplicates lts-tages))
          (missing-tags (filter (negate (cut member <> lts-tages)) tags))
@@ -456,7 +455,7 @@
 (define (illegal-nodes lts)
   "States with labels of illegal outgoing edges."
   (define (has-illegal? state)
-    (find (cute eq? <> %<illegal>) (map edge-label (node-succ (vector-ref lts state)))))
+    (find (cute eq? <> %<illegal>) (map edge-label (node-edges (vector-ref lts state)))))
   (filter has-illegal? (iota-distance-sorted lts)))
 
 (define (assert-illegal lts)
@@ -472,16 +471,16 @@ from LABELS."
   (let ((labels (map make-shared-string labels)))
     (define (nondeterministic? state)
       (let* ((node (vector-ref lts state))
-             (succ (filter (compose (cute memq <> labels) edge-canonical-label)
-                           (node-succ node)))
-             (color (let loop ((last #f) (succ succ))
+             (edges (filter (compose (cute memq <> labels) edge-canonical-label)
+                            (node-edges node)))
+             (color (let loop ((last #f) (edges edges))
                       (cond
-                       ((null? succ)
+                       ((null? edges)
                         #f)
                        ((and last (eq? (edge-canonical-label last)
-                                       (edge-canonical-label (car succ))))
+                                       (edge-canonical-label (car edges))))
                         last)
-                       (else (loop (car succ) (cdr succ)))))))
+                       (else (loop (car edges) (cdr edges)))))))
         (when color
           (let ((node (set-field node (node-color) color)))
             (vector-set! lts state node)))
@@ -525,14 +524,14 @@ from LABELS."
   (define (add-failure node state)
     (let* ((original-node (vector-ref lts (node-state node)))
            (original-state (node-state original-node))
-           (succ (cons (make-edge (node-state original-node) %tau state)
-                       (map clone-edge (node-succ original-node))))
-           (original-node (set-field original-node (node-succ) succ))
+           (edges (cons (make-edge (node-state original-node) %tau state)
+                        (map clone-edge (node-edges original-node))))
+           (original-node (set-field original-node (node-edges) edges))
            (node (set-field node (node-state) state)))
       (vector-set! lts original-state original-node)
-      (let* ((succ (node-succ node))
-             (succ (map (cut set-field <> (edge-from) state) succ))
-             (node (set-field node (node-succ) succ)))
+      (let* ((edges (node-edges node))
+             (edges (map (cut set-field <> (edge-from) state) edges))
+             (node (set-field node (node-edges) edges)))
         (when (= state (vector-length lts))
           ;; FIXME
           (let ((new (make-vector (1+ state))))
@@ -542,14 +541,14 @@ from LABELS."
           (vector-set! lts state node)))
       (1+ state)))
   (define (remove-optional node)
-    (let ((succ (filter (negate optional?) (node-succ node))))
-      (set-field node (node-succ) succ)))
+    (let ((edges (filter (negate optional?) (node-edges node))))
+      (set-field node (node-edges) edges)))
   (define (node:modeling->tau node)
-    (let ((succ (map modeling->tau (node-succ node))))
-      (set-field node (node-succ) succ)))
+    (let ((edges (map modeling->tau (node-edges node))))
+      (set-field node (node-edges) edges)))
   (let* ((state-count (vector-length lts))
          (lts-list (vector->list lts))
-         (add (filter (compose (cute find optional? <>) node-succ) lts-list))
+         (add (filter (compose (cute find optional? <>) node-edges) lts-list))
          (add (map remove-optional add)))
     (fold add-failure state-count add)
     (let* ((lts-list (vector->list lts))
@@ -574,7 +573,7 @@ from LABELS."
     (define (get-port label)
       (car (string-split label #\.)))
     (define (idle-node? node)
-      (let* ((labels (map edge-label (node-succ node)))
+      (let* ((labels (map edge-label (node-edges node)))
              (labels (filter label-provides-in? labels))
              (ports (map get-port labels))
              (ports (delete-duplicates ports string=?)))
@@ -584,7 +583,7 @@ from LABELS."
          (not (find (compose (disjoin (cute eq? %<ack> <> )
                                       (cute eq? %<defer> <>))
                              edge-label)
-                    (node-succ node)))))
+                    (node-edges node)))))
 
   (define (set-allowed-end? node)
     (let* ((allowed-end? (allowed-end? node))
@@ -642,7 +641,7 @@ from LABELS."
          (not (hashq-ref done index #f))
          (let ((node (vector-ref lts index)))
            (hashq-set! done index #t)
-           (let loop ((edges (node-succ node)) (generated-trace? #f))
+           (let loop ((edges (node-edges node)) (generated-trace? #f))
              (if (null? edges) generated-trace?
                  (let* ((edge (car edges))
                         (edge-index (edge-to edge)))
@@ -685,8 +684,8 @@ from LABELS."
 
     (define (convert-node node)
       (let ((pred (map convert-edge (node-pred node)))
-            (succ (map convert-edge (node-succ node))))
-        (set-fields node ((node-pred) pred) ((node-succ) succ))))
+            (edges (map convert-edge (node-edges node))))
+        (set-fields node ((node-pred) pred) ((node-edges) edges))))
 
     (let* ((text (string-join data "\n"))
            (lts (aut-text->lts text #:pred? #t))
@@ -702,10 +701,10 @@ from LABELS."
                        #:verbose? verbose?))))
 
 (define (lts->rtc-lts lts)
-  (define (clear-node-succ node)
-    (set-field node (node-succ) '()))
+  (define (clear-node-edges node)
+    (set-field node (node-edges) '()))
 
-  (let ((result (vector-map-one clear-node-succ lts)))
+  (let ((result (vector-map-one clear-node-edges lts)))
     (define (illegal? label)
       (match label
         ("<illegal>" #t)
@@ -723,7 +722,7 @@ from LABELS."
            (string-contains o "'in(")))
 
     (define (rtc? node)
-      (find (disjoin modeling? trigger?) (map edge-label (node-succ node))))
+      (find (disjoin modeling? trigger?) (map edge-label (node-edges node))))
 
     (define (extend trail label)
       (match label
@@ -735,19 +734,19 @@ from LABELS."
     (define (add from to trail)
       (let* ((state (node-state from))
              (from (vector-ref result state))
-             (succ (cons (make-edge (node-state from) (reverse trail) to)
-                         (node-succ from)))
-             (from (set-field from (node-succ) succ)))
+             (edges (cons (make-edge (node-state from) (reverse trail) to)
+                          (node-edges from)))
+             (from (set-field from (node-edges) edges)))
         (vector-set! result state from))) ;; TODO: avoid duplicates
 
     (define (step from to trail)
       (let ((node (vector-ref lts to)))
         (if (and (pair? trail) (or (rtc? node) (illegal? (car trail))))
-          (add from to trail)
-          (for-each
-            (lambda (edge)
-              (step from (edge-to edge) (extend trail (edge-label edge))))
-            (node-succ node)))))
+            (add from to trail)
+            (for-each
+             (lambda (edge)
+               (step from (edge-to edge) (extend trail (edge-label edge))))
+             (node-edges node)))))
 
     (define (step-rtc i node)
       (when (rtc? node)
@@ -898,7 +897,7 @@ from LABELS."
         (loop (read-line input-port 'concat))))))
 
 (define* (display-lts lts #:key (separator "\n"))
-  (let* ((edges (append-map node-succ (vector->list lts)))
+  (let* ((edges (append-map node-edges (vector->list lts)))
          (header (format #f "des (~a,~a,~a)"
                          (initial lts)
                          (length edges)
