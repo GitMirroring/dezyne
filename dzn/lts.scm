@@ -693,7 +693,9 @@ required to be non-deterministic."
           (let ((index (car frontier)))
             (loop (append (cdr frontier) (extend-frontier index))))))))
 
-  (let ((done (make-hash-table)))
+  (let ((done (make-hash-table))
+        (dir (if (equal? out "-") ""
+                 (format #f "~a/" out))))
 
     (define (trace-extend trace label)
       (if (member label (list "tau" "<ack>")) trace
@@ -709,11 +711,12 @@ required to be non-deterministic."
               (trace-close ext-trace (edge-end-state close-edge))))))
 
     (define (trace-log trace)
-      (let ((file-name (format #f "~a/~a.~a" out fout %fout-inc)))
+      (let ((file-name (format #f "~a~a.~a" dir fout %fout-inc)))
         (when verbose?
           (format (current-error-port) "~a\n" file-name))
-        (with-output-to-file file-name
-          (lambda _ (display (string-join trace "\n" 'suffix)))))
+        (let ((port (if (equal? out "-") (current-output-port)
+                        (open-output-file file-name))))
+          (display (string-join trace "\n" 'suffix) port)))
       (set! %fout-inc (1+ %fout-inc)))
 
     (define (step index trace)
