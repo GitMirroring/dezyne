@@ -561,12 +561,11 @@ from LABELS."
 ;;;
 ;;; Trace generation.
 ;;;
-(define %fout-inc 0)
+(define* (generate-traces initial lts provides-ports provides-in dir base
+                          #:key verbose?)
 
-(define node-allowed-end? node-color)
-(define node-close node-parent)
-
-(define* (generate-trace initial lts provides-ports provides-in fout out #:key verbose?)
+  (define node-allowed-end? node-color)
+  (define node-close node-parent)
 
   (define (allowed-end? node)
     (define (label-provides-in? label)
@@ -579,11 +578,12 @@ from LABELS."
              (labels (filter label-provides-in? labels))
              (ports (map get-port labels))
              (ports (delete-duplicates ports string=?)))
-       (= (length ports)
-          (length provides-ports))))
+        (= (length ports)
+           (length provides-ports))))
     (and (idle-node? node)
-         (not (find (lambda (e) (or (eq? %<ack> (edge-label e))
-                                    (eq? %<defer> (edge-label e))))
+         (not (find (compose (disjoin (cute eq? %<ack> <> )
+                                      (cute eq? %<defer> <>))
+                             edge-label)
                     (node-succ node)))))
 
   (define (set-allowed-end? node)
@@ -613,8 +613,7 @@ from LABELS."
             (loop (append (cdr frontier) (extend-frontier index))))))))
 
   (let ((done (make-hash-table))
-        (dir (if (equal? out "-") ""
-                 (format #f "~a/" out))))
+        (count 0))
 
     (define (trace-extend trace label)
       (if (memq label (list %tau %<ack>)) trace
@@ -629,29 +628,34 @@ from LABELS."
             (let ((ext-trace (trace-extend trace (edge-label close-edge))))
               (trace-close ext-trace (edge-to close-edge))))))
 
-    (define (trace-log trace)
-      (let ((file-name (format #f "~a~a.~a" dir fout %fout-inc)))
+    (define (trace-log trace count)
+      (let ((file-name (format #f "~a~a.~a" (or dir "") base count)))
         (when verbose?
           (format (current-error-port) "~a\n" file-name))
-        (let ((port (if (equal? out "-") (current-output-port)
-                        (open-output-file file-name))))
-          (display (string-join trace "\n" 'suffix) port)))
-      (set! %fout-inc (1+ %fout-inc)))
+        (let ((port (if dir (open-output-file file-name)
+                        (current-output-port))))
+          (display (string-join trace "\n" 'suffix) port))))
 
     (define (step index trace)
       (let ((generated-trace? #f))
-        (and (not (hashq-ref done index #f))
-             (let ((node (vector-ref lts index)))
-               (hashq-set! done index #t)
-               (let loop ((edges (node-succ node)) (generated-trace? #f))
-                 (if (null? edges) generated-trace?
-                     (let* ((edge (car edges))
-                            (edge-index (edge-to edge)))
-                       (if (= edge-index index) (loop (cdr edges) generated-trace?)
-                           (let ((ext-trace (trace-extend trace (edge-label edge))))
-                             (when (not (step edge-index ext-trace))
-                               (trace-log (trace-close ext-trace edge-index)))
-                             (loop (cdr edges) #t))))))))))
+        (and
+         (not (hashq-ref done index #f))
+         (let ((node (vector-ref lts index)))
+           (hashq-set! done index #t)
+           (let loop ((edges (node-succ node)) (generated-trace? #f))
+             (if (null? edges) generated-trace?
+                 (let* ((edge (car edges))
+                        (edge-index (edge-to edge)))
+                   (cond
+                    ((= edge-index index)
+                     (loop (cdr edges) generated-trace?))
+                    (else
+                     (let* ((ext-trace (trace-extend trace (edge-label edge)))
+                            (trace? (not (step edge-index ext-trace))))
+                       (when trace?
+                         (trace-log (trace-close ext-trace edge-index) count)
+                         (set! count (1+ count)))
+                       (loop (cdr edges) #t)))))))))))
 
     (annotate)
     (step initial '())))
@@ -689,9 +693,13 @@ from LABELS."
            (lts (vector-map-one convert-node lts))
            (lts (if illegal? lts (remove-illegal lts)))
            (lts (remove-info-edges lts))
-           (initial (initial lts)))
-      (generate-trace initial lts provides-ports provides-in
-                      (string-append model ".trace") out #:verbose? verbose?))))
+           (initial (initial lts))
+           (base (string-append model ".trace"))
+           (dir (cond ((equal? out "-") #f)
+                      ((equal? out "") "./")
+                      (else (format #f "~a/" out)))))
+      (generate-traces initial lts provides-ports provides-in dir base
+                       #:verbose? verbose?))))
 
 (define (lts->rtc-lts lts)
   (define (clear-node-succ node)
