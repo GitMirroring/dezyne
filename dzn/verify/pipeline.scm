@@ -284,7 +284,7 @@ actions."
 
 (define in-out:aut->verify-interface-nondet
   `(,%dzn "lts" "--single-line"
-          "--deterministic-labels" "<state>"))
+          "--deterministic-labels=<state>"))
 
 (define (in-out:aut->verify-component options)
   (let* ((taus (model-taus options))
