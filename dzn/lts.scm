@@ -170,6 +170,10 @@
   (distance node-distance set-node-distance!) ; -1 signifies infinite distance (unreachable)
   (cycle node-cycle set-node-cycle!))         ; edge to previous node in tau-loop
 
+(define %white 0)
+(define %grey 1)
+(define %black 2)
+
 (define node-exclude? node-color)
 (define set-node-exclude?! set-node-color!)
 (define node-type node-color)
@@ -190,7 +194,7 @@
 
 (define* (construct-lts header edges #:key traces?)
   (define (state->node state)
-    (make-node state '() '() #f WHITE #f -1 #f))
+    (make-node state '() '() #f %white #f -1 #f))
   (let* ((state-count (aut-header-state-count header))
          (lts (list->vector (map state->node (iota state-count)))))
     (for-each
@@ -269,11 +273,6 @@
     (set-node-parent! initial-node #f)
     (annotate-parent-it lts (list initial-state) '())))
 
-(define WHITE 0)
-(define GREY 1)
-(define BLACK 2)
-
-
 
 ;;;
 ;;; Livelock.
@@ -285,13 +284,13 @@
       (define (report-cycle state)
         (set! livelocks (cons state livelocks)))
       (let ((node (vector-ref lts state)))
-        (if (= (node-color node) GREY) (begin (set-node-cycle! node entry-edge)
-                                              (report-cycle state))
-            (if (= (node-color node) WHITE) (let* ((tau-edges (filter edge-tau? (node-succ node))))
-                                              (set-node-color! node GREY)
-                                              (set-node-cycle! node entry-edge)
-                                              (for-each (lambda (e) (loop-detect (edge-to e) e)) tau-edges)
-                                              (set-node-color! node BLACK))))))
+        (if (= (node-color node) %grey) (begin (set-node-cycle! node entry-edge)
+                                               (report-cycle state))
+            (if (= (node-color node) %white) (let* ((tau-edges (filter edge-tau? (node-succ node))))
+                                               (set-node-color! node %grey)
+                                               (set-node-cycle! node entry-edge)
+                                               (for-each (lambda (e) (loop-detect (edge-to e) e)) tau-edges)
+                                               (set-node-color! node %black))))))
     (for-each (lambda (s) (loop-detect s #f))
               (sort (iota (vector-length lts))
                     (lambda (a b) (< (node-distance (vector-ref lts a))
