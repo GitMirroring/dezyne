@@ -1,1 +1,2 @@
 test/all/wf_functionValueDiscarded/wf_functionValueDiscarded.dzn:36:7: error: call value discarded
+test/all/wf_functionValueDiscarded/wf_functionValueDiscarded.dzn:39:28: error: call value discarded
