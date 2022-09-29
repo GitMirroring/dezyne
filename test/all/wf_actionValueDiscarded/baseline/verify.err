@@ -1,1 +1,4 @@
-test/all/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:47:23: error: action value discarded
+test/all/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:47:24: error: action value discarded
+test/all/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:48:8: error: event `deactivate' not defined for port `start'
+test/all/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:44:3: info: port `start' defined here
+test/all/wf_actionValueDiscarded/wf_actionValueDiscarded.dzn:48:39: error: action value discarded
