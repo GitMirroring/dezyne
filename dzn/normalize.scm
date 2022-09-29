@@ -135,10 +135,7 @@
                  (compose pair? (cute tree-collect typed-action/call? <>)))
                 o))))
         ((is-a? o <if>)
-         (append (tree-collect
-                  typed-action/call? (.expression o))
-                 (temporaries (.then o))
-                 (or (and=> (.else o) temporaries) '())))
+         (tree-collect typed-action/call? (.expression o)))
         ((or (as o <expression>)
              (and (is-a? o <reply>) (.expression o))
              (and (is-a? o <return>) (.expression o)))
