@@ -243,17 +243,17 @@
       (_ (make <not> #:expression expression)))))
 
 (define (and-not-guards guards)
-  (let ((expression
-         (match guards
-           (()
-            (make <literal> #:value "true"))
-	   ((guard)
-            (make <not> #:expression (.expression guard)))
-	   ((h t ...)
-            (let ((expressions (map (compose (cute make <not> #:expression <>)
-                                             .expression)
-                                    guards)))
-              (and-expressions expressions))))))
+  (let* ((expression
+          (match guards
+            (()
+             (make <literal> #:value "true"))
+	    ((guard)
+             (make <not> #:expression (.expression guard)))
+	    ((h t ...)
+             (let ((expressions (map (compose (cute make <not> #:expression <>)
+                                              .expression)
+                                     guards)))
+               (and-expressions expressions))))))
     (make <guard> #:expression expression)))
 
 (define-method (simplify-expression (o <bool-expr>))
@@ -376,7 +376,9 @@
 (define (add-illegals model triples trigger)
   (let* ((triples (filter (lambda (t) (trigger-equal? ((compose car ast:trigger* triple-on) t) trigger)) triples))
          (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
+         (behavior (.behavior model))
          (guard (and-not-guards (map triple-guard triples)))
+         (guard (clone guard #:parent behavior))
          (guard (simplify-guard guard)))
     (if (ast:literal-false? (.expression guard)) triples
         (let* ((provides? (and=> (.port trigger) ast:provides?))
