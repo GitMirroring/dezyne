@@ -1193,9 +1193,12 @@
      ((and (not (is-a? (ast:type o) <void>))
            (or (is-a? p <compound>)
                (is-a? p <guard>)
-               (is-a? p <on>)))
+               (is-a? p <on>)
+               (and (is-a? p <if>)
+                    (not (ast:eq? o (.expression p))))))
       `(,(wfc-error o (format #f "~a value discarded" class))))
-     (else '()))))
+     (else
+      '()))))
 
 (define-method (imperative-context (o <ast>))
   (let* ((p (.parent o))
