@@ -158,20 +158,19 @@ namespace dzn
   {
     try
     {
+      auto work_p = [this]{return queue.size() || deferred.size() || !running;};
+
       worker = [&] {
         std::unique_lock<std::mutex> lock(mutex);
         if(queue.empty())
-        {
           idle.notify_one();
-        }
-        if(timers.empty() && deferred.empty())
+
+        if(queue.empty() && deferred.empty())
         {
-          condition.wait(lock, [this]{return queue.size() || deferred.size() || !running;});
-        }
-        else
-        {
-          condition.wait_until(lock, timers.begin()->first.t,
-                               [this]{return queue.size() || deferred.size() || !running;});
+          if(timers.size())
+            condition.wait_until(lock, timers.begin()->first.t, work_p);
+          else
+            condition.wait(lock, work_p);
         }
 
         if(queue.size())
