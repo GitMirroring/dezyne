@@ -105,4 +105,5 @@
     (x:source (.node root))))
 
 (define* (ast-> ast #:key dir model)
-  (system-diagram ast #:dir dir #:model model))
+  (let ((model (ast:get-model ast model)))
+    (system-diagram ast #:dir dir #:model model)))
