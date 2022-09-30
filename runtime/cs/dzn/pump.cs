@@ -207,18 +207,18 @@ namespace dzn
               if(this.queue.Count == 0) {
                 Monitor.Pulse(this);
               }
-              if (this.timers.Count == 0 && this.deferred.Count == 0) {
-                while (this.queue.Count == 0 && this.deferred.Count == 0 && running) {
-                  Monitor.Wait(this);
+              if (this.queue.Count == 0 && this.deferred.Count == 0) {
+                if (this.timers.Count != 0) {
+                  IEnumerator<KeyValuePair<Deadline, Action>> t = timers.OrderBy(k => k.Key).GetEnumerator();
+                  t.MoveNext();
+                  bool timedout = false;
+                  TimeSpan wait = t.Current.Key.t - DateTime.Now;
+                  while(!timedout && this.queue.Count == 0 && this.deferred.Count == 0 && running && wait.Ticks > 0)
+                    timedout = !Monitor.Wait(this, wait);
                 }
-              } else {
-                IEnumerator<KeyValuePair<Deadline, Action>> t = timers.OrderBy(k => k.Key).GetEnumerator();
-                t.MoveNext();
-                bool timedout = false;
-                TimeSpan wait = t.Current.Key.t - DateTime.Now;
-                while(!timedout && this.queue.Count == 0 && this.deferred.Count == 0 && running && wait.Ticks > 0) {
-                  timedout = !Monitor.Wait(this, wait);
-                }
+                else
+                  while (this.queue.Count == 0 && this.deferred.Count == 0 && running)
+                    Monitor.Wait(this);
               }
 
               if(this.queue.Count != 0) {
