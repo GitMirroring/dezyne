@@ -368,8 +368,11 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (not (is-a? (.status (car trace)) <match-error>))
                    (pair? (append port-traces non-compliances)))
               (%debug "  exit 0\n")
-              (let* ((trace (rewrite-trace-head (cut clone <> #:statement #f) trace))
-                     (trace (zip trigger trace (car (append port-traces non-compliances)))))
+              (let* ((statement (.statement (car trace)))
+                     (trace (rewrite-trace-head (cut clone <> #:statement #f) trace))
+                     (trace (zip trigger trace (car (append port-traces non-compliances))))
+                     (trace (if (not (.status (car trace))) trace
+                                (rewrite-trace-head (cut clone <> #:statement statement) trace))))
                 (list trace)))
              ((and (pair? port-traces)
                    (pair? trace))
@@ -448,16 +451,26 @@ Return a list of traces, possibly marked with <compliance-error>."
                        port-trace)))
                 (list (zip trigger trace (car non-compliances))))))))))
 
+    (define (check-provides-fork-and-zip port trace)
+      (let ((traces (check-provides-fork port trace)))
+        (cond ((not traces)
+               #f)
+              (port
+               (check-compliance port traces))
+              (else
+               (let ((ports (ast:provides-port* component)))
+                 (fold check-compliance traces ports))))))
+
     (if port (or (and (%compliance-check?)
                       (> (length (ast:provides-port* component)) 1)
                       (is-a? (%sut) <runtime:component>)
-                      (check-provides-fork port trace))
+                      (check-provides-fork-and-zip port trace))
                  (check-compliance port (list trace)))
         (let ((ports (ast:provides-port* component)))
           (or (and (%compliance-check?)
                    (> (length ports) 1)
                    (is-a? (%sut) <runtime:component>)
-                   (or (check-provides-fork #f trace)
+                   (or (check-provides-fork-and-zip #f trace)
                        (check-requires-provides-fork trace)))
               (fold check-compliance (list trace) ports))))))
 
