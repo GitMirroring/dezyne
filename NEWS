@@ -5,10 +5,29 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* UNRELEASED
+* Changes in 2.16.2 since 2.16.1
+** Language
+  - In a valued function, after an "illegal" a return is no longer
+    required.
+  - Shadowing of a type name with a variable identifier is now a
+    well-formedness error.
+  - Compound namespace definitions are now supported.
 ** Noteworthy bug fixes
-   - The well-formedness check now gracefully handles an action with an
-     undefined type, used in an expression.
+  - A bug in the C++ and C# runtime has been fixed that could lead to
+    reading from an empty list of timers when using defer.
+  - The C++ code generator no longer generates multiple includes when
+    multiple interfaces are defined in one file ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/75][#75]]).
+  - The simulator now produces a correct split-arrow trace for certain
+    models with a V-fork compliance error.
+  - A crash in normalization has been fixed for certain models with
+    non-deterministic guards.
+  - The well-formedness check now gracefully handles an action with an
+    undefined type, used in an expression, and report the error.
+  - The parser no longer crashes when using a comment on an enum field.
+  - The `inline-functions' transformation now correctly handles the
+    optional list of function names and also transforms function bodies.
+  - A system diagram can now also be generated for some incomplete
+    (faulty) systems.
 
 * Changes in 2.16.1 since 2.16.0
 ** Code
