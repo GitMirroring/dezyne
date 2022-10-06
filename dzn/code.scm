@@ -156,12 +156,13 @@
 
 (define-method (code:interface-include (o <top>) source-file)
   (let* ((interfaces (ast:interface* o))
-         (files (filter (compose not
-                                 (cute equal? source-file <>)
-                                 ast:source-file)
-                        interfaces)))
-    (map (compose (cut make <file-name> #:name <>) code:file-name)
-         files)))
+         (interfaces (filter (compose not
+                                      (cute equal? source-file <>)
+                                      ast:source-file)
+                             interfaces))
+         (file-names (map code:file-name interfaces))
+         (file-names (delete-duplicates file-names)))
+    (map (cut make <file-name> #:name <>) file-names)))
 
 (define-method (code:interface-include (o <top>))
   (code:interface-include o (ast:source-file o)))
