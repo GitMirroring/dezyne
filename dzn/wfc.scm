@@ -1139,6 +1139,8 @@
     (ast:eq? s (.statement o)))
   (define (step o continuation)
     (cond
+     ((is-a? o <illegal>)
+      '())
      ((is-a? o <return>)
       (list o))
      ((function-body? continuation)
