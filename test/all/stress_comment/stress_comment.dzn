@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -52,5 +53,9 @@
 /* b:29 */  {                                                      /* e:29 */
 /* b:30 */    on/*i:30*/world/*i:30.1*/: {/*i:30.2*/}              /* e:30 */
 /* b:31 */  }                                                      /* e:31 */
-/* b:32 */}
-// b:33 end
+/* b:32 */}                                                        /* e:32 */
+/* b:33 */enum/*i:33*/E/*i:33.1*/{/*i:33.3*/                       /* e:33 */
+/* b:34 */A/*i:34*/,/*i:34.1*/                                     /* e:34 */
+/* b:35 */B/*i:35*/,/*i:35.1*/                                     /* e:35 */
+/* b:36 */}/*i:36*/;/*i:36.1*/                                     /* e:36 */
+// b:37 end
