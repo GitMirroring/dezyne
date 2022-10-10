@@ -1,0 +1,76 @@
+#! /bin/sh
+# Dezyne --- Dezyne command line tools
+#
+# Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+#
+# This file is part of Dezyne.
+#
+# Dezyne is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# Dezyne is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public
+# License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Commentary:
+#
+# Code:
+
+set -e
+set -x
+mkdir -p test/all/inline-functions/out
+
+echo default
+dzn --transform=inline-functions                        \
+    code --language=dzn                                 \
+    -o-                                                 \
+    test/all/inline-functions/inline-functions.dzn      \
+    | tee test/all/inline-functions/out/default.dzn
+diff -u test/all/inline-functions/baseline/default.dzn  \
+    test/all/inline-functions/out/default.dzn
+
+echo
+echo inline f g
+dzn --transform='inline-functions(f g)'                 \
+    code --language=dzn                                 \
+    -o-                                                 \
+    test/all/inline-functions/inline-functions.dzn      \
+    | tee test/all/inline-functions/out/inline-f-g.dzn
+diff -u test/all/inline-functions/baseline/default.dzn  \
+    test/all/inline-functions/out/inline-f-g.dzn
+
+echo
+echo inline null
+dzn --transform='inline-functions()'                    \
+    code --language=dzn                                 \
+    -o-                                                 \
+    test/all/inline-functions/inline-functions.dzn      \
+    | tee test/all/inline-functions/out/inline-null.dzn
+diff -u test/all/inline-functions/baseline/inline-null.dzn      \
+    test/all/inline-functions/out/inline-null.dzn
+
+echo
+echo inline f
+dzn --transform='inline-functions(f)'                   \
+    code --language=dzn                                 \
+    -o-                                                 \
+    test/all/inline-functions/inline-functions.dzn      \
+    | tee test/all/inline-functions/out/inline-f.dzn
+diff -u test/all/inline-functions/baseline/inline-f.dzn \
+    test/all/inline-functions/out/inline-f.dzn
+
+echo
+echo inline g
+dzn --transform='inline-functions(g)'                   \
+    code --language=dzn                                 \
+    -o-                                                 \
+    test/all/inline-functions/inline-functions.dzn      \
+    | tee test/all/inline-functions/out/inline-g.dzn
+diff -u test/all/inline-functions/baseline/inline-g.dzn \
+    test/all/inline-functions/out/inline-g.dzn
