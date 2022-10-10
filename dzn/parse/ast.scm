@@ -106,7 +106,7 @@
 
     (define (comment-ast-list ast comment)
       (match (.elements ast)
-        ((h t ...)
+        (((and (? (negate string?)) h) t ...)
          (let ((elements (cons (clone h #:comment comment) t)))
            (clone ast #:elements elements)))
         (_
