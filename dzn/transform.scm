@@ -109,21 +109,21 @@ in NAMES."
        (tree-map (cute substitute-return assign <>) o))
       (_
        o)))
-  (define (skip? function)
-    (or (.recursive? function)
-        (match names
-          (((? symbol?) ...)
-           (member (.name function) (map symbol->string names)))
-          (((? string?) ...)
-           (member (.name function) names))
-          (_
-           #t))))
+  (define (transform? function)
+    (and (not (.recursive? function))
+         (match names
+           (((? symbol?) ...)
+            (member (.name function) (map symbol->string names)))
+           (((? string?) ...)
+            (member (.name function) names))
+           (#f
+            #t))))
   (define (helper o)
     (match o
       (($ <call>)
        (let* ((function (.function o))
               (type (ast:type function)))
-         (if (skip? function) o
+         (if (not (transform? function)) o
              (let* ((formals (ast:formal* function))
                     (arguments (ast:argument* o))
                     (formal-alist (map cons formals arguments))
@@ -166,6 +166,7 @@ in NAMES."
               (functions (filter (conjoin (cute member <> called ast:eq?)
                                           (negate .recursive?))
                                  functions))
+              (functions (map helper functions))
               (functions (clone (.functions o) #:elements functions)))
          (clone o #:statement statement
                 #:functions functions)))
