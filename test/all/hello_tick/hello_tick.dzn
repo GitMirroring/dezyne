@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,10 +43,10 @@ component hello_tick
 
     on h.hello():
       {
-        ihello.r r = w.world();
+        ihello.r s = w.world();
         ihello.r t = ihello.r.f;
-        ihello.r s = r;
-        reply (r);
+        ihello.r u = s;
+        reply (s);
       }
   }
 }
