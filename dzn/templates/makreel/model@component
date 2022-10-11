@@ -104,8 +104,6 @@ act
 
 defer_end;
 defer_end';
-defer_q_empty;
-defer_q_empty';
 defer_qin: DeferContext;
 defer_qin': DeferContext;
 defer_qout: Locals;
@@ -141,7 +139,6 @@ defer_queue (l: List (DeferContext))
  = (##l == QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . queue_full . delta)
  + (##l < QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . defer_queue(l = l <| dc))
  + (l != []) -> defer_qout(locals(head(l))) . defer_queue(l = tail(l))
- + (l == []) -> defer_q_empty . defer_queue(l)
  + sum s : State . defer_skip(s) . defer_queue (prune_deferred (s,l))
  ;
 
@@ -170,7 +167,6 @@ component_behavior_allow = allow({
  , constrained_illegal
  , declarative_illegal
  , defer_end
- , defer_q_empty
  , defer_qin'
  , defer_qout'
  , defer_skip'
@@ -294,7 +290,6 @@ component_semantics_parallel = component_behavior || semantics_main;
 
 component_semantics_comm = comm({
    defer_end | defer_end -> defer_end'
- , defer_q_empty | defer_q_empty -> defer_q_empty'
  , defer_qout | defer_qout -> defer_qout'
  , #x:makreel:model-name end | #x:makreel:model-name end -> #x:makreel:model-name end'
    #x:semantics-comm-provides
@@ -310,7 +305,6 @@ component_semantics_allow = allow({
  , constrained_illegal
  , declarative_illegal
  , defer_end'
- , defer_q_empty'
  , defer_qout'
  , illegal
  , missing_reply
@@ -327,7 +321,6 @@ component_semantics_allow = allow({
 
 component_semantics = rename({
    defer_qout' -> defer_qout
- , defer_q_empty' -> defer_q_empty
  , defer_end' -> defer_end
  , #x:makreel:model-name end' -> #x:makreel:model-name end
    #x:semantics-rename-provides
@@ -354,7 +347,7 @@ component_allow = allow({
    #x:component-allow-requires
  , constrained_legal
  , declarative_illegal
- , defer_q_empty
+ , defer_end
  , defer_qout
  , defer_end
  , illegal
@@ -383,9 +376,8 @@ component = hide({
    #x:component-hide-provides
    #x:component-hide-requires
  , constrained_legal
- , defer_q_empty'
- , defer_q_empty
  , defer_end
+ , defer_skip
  , queue_empty
  , queue_not_empty
  , recurse

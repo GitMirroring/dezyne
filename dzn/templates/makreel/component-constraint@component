@@ -19,7 +19,6 @@ component_constrained_allow = allow({
 , constrained_legal'
 , constrained_illegal'
 , declarative_illegal
-, defer_q_empty
 , defer_qout
 , defer_end
 , illegal
