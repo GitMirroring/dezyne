@@ -479,6 +479,7 @@ PARSER_TESTS =					\
  %D%/parse_defer				\
  %D%/parse_duplicate_definition			\
  %D%/parse_duplicate_import_prefix		\
+ %D%/parse_formal_shadow_type			\
  %D%/parse_import_both				\
  %D%/parse_import_end				\
  %D%/parse_import_order				\

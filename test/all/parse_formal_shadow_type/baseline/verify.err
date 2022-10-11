@@ -1,0 +1,2 @@
+test/all/parse_formal_shadow_type/parse_formal_shadow_type.dzn:29:17: error: identifier `data' defined before
+test/all/parse_formal_shadow_type/parse_formal_shadow_type.dzn:25:1: info: previous `data' definition here
