@@ -843,17 +843,24 @@
 
 (define-method (re-definition (o <declaration>))
   (let* ((name (ast:name o))
-         (scope (parent (.parent o) <scope>))
-         (previous (and scope (ast:lookup scope name)))
-         (previous-scope (and previous (parent (.parent previous) <scope>))))
-    (if (and scope
-             previous
-             (ast:eq? scope previous-scope)
-             (not (ast:eq? previous o))
-             (not (is-a? previous <namespace>)))
-        `(,(wfc-error o (format #f "identifier `~a' defined before" (ast:name o)))
-          ,(wfc-info previous (format #f "previous `~a' definition here" (ast:name previous))))
-        '())))
+         (scope (parent (.parent o) <scope>)))
+    (define (get-previous scope)
+      (let ((previous (and scope (ast:lookup scope name))))
+        (cond ((not (ast:eq? previous o))
+               previous)
+              (else
+               (get-previous (parent (.parent scope) <scope>))))))
+    (let* ((previous (get-previous scope))
+           (previous-scope (and previous (parent (.parent previous) <scope>))))
+      (if (and previous
+               (or (ast:eq? scope previous-scope)
+                   (and (is-a? previous <type>)
+                        (not (is-a? o <type>))))
+               (not (ast:eq? previous o))
+               (not (is-a? previous <namespace>)))
+          `(,(wfc-error o (format #f "identifier `~a' defined before" (ast:name o)))
+            ,(wfc-info previous (format #f "previous `~a' definition here" (ast:name previous))))
+          '()))))
 
 (define-method (assign (o <ast>))
   (or (as (wfc (.expression o)) <pair>)

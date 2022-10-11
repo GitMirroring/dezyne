@@ -8,6 +8,8 @@ test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:41:1: error: 
 test/all/parse_duplicate_definition/hello.dzn:40:1: info: previous `hello' definition here
 test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:50:1: error: identifier `float' defined before
 test/all/parse_duplicate_definition/ihello.dzn:25:1: info: previous `float' definition here
+test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:52:3: error: identifier `float' defined before
+test/all/parse_duplicate_definition/ihello.dzn:25:1: info: previous `float' definition here
 test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:52:3: error: port `float' must not have the same name as the model it is defined in
 test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:52:3: error: interface expected, found: `extern float'
 test/all/parse_duplicate_definition/parse_duplicate_definition.dzn:55:1: error: identifier `ihello' defined before
