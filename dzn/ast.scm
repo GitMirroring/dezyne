@@ -1411,8 +1411,13 @@
     (and event (list-ref (reverse (ast:formal* event)) index))))
 
 (define-method (.type (o <formal>))
-  (let ((type-name (.type.name o)))
-    (if type-name (ast:lookup (.parent (.parent o)) (.type.name o))
+  (let* ((type-name (.type.name o))
+         (p (.parent o))
+         (scope (or (and=> (parent p <on>) .parent)
+                    (parent p <statement>)
+                    (parent p <behavior>)
+                    (and=> (parent p <scope>) .parent))))
+    (if type-name (ast:lookup scope type-name)
         (let ((formal (ast:event-formal o)))
           (and formal (.type formal))))))
 
