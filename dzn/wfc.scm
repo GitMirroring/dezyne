@@ -856,24 +856,27 @@
         '())))
 
 (define-method (assign (o <ast>))
-  (let* ((assign-type (ast:type o))
-         (expression (.expression o))
-         (wfce (wfc expression))
-         (expression-type (ast:type expression)))
-    (cond ((pair? wfce) wfce)
-          ((not expression-type)
-           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name expression)))))
-          ((and (not assign-type) (is-a? o <variable>))
-           `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
-          ((and (is-a? o <variable>) (is-a? expression-type <void>))
-           (if (is-a? assign-type <extern>) '()
-               `(,(wfc-error o (format #f "uninitialized variable `~a'" (.name o))))))
-          ((not assign-type) '()) ;; reported before
-          ((not (equal-type? expression-type assign-type))
-           `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
-                                   (type-name assign-type)
-                                   (type-name expression-type)))))
-          (else '()))))
+  (or (as (wfc (.expression o)) <pair>)
+      (let* ((assign-type (ast:type o))
+             (expression (.expression o))
+             (expression-type (ast:type expression))
+             (variable (or (as o <variable>)
+                           (.variable o))))
+        (cond
+         ((and (not assign-type) (is-a? variable <variable>))
+          `(,(wfc-error o (format #f "unknown type name `~a'"
+                                  (type-name (.type.name variable))))))
+         ((not expression-type)
+          `(,(wfc-error o (format #f "undefined identifier `~a'" (.name expression)))))
+         ((and (is-a? o <variable>) (is-a? expression-type <void>))
+          (if (is-a? assign-type <extern>) '()
+              `(,(wfc-error o (format #f "uninitialized variable `~a'" (.name o))))))
+         ((not assign-type) '()) ;; reported before
+         ((not (equal-type? expression-type assign-type))
+          `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
+                                  (type-name assign-type)
+                                  (type-name expression-type)))))
+         (else '())))))
 
 (define-method (type-name (o <boolean>))
   "<unknown type>")

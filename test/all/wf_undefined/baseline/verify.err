@@ -8,6 +8,7 @@ test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
 test/all/wf_undefined/wf_undefined.dzn:43:5: error: unknown type name `ENN'
 test/all/wf_undefined/wf_undefined.dzn:45:12: error: no field `EN5' in enum `I1'; expected: `EN1', `EN2', `EN3'
 test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
+test/all/wf_undefined/wf_undefined.dzn:46:7: error: unknown type name `ENN'
 test/all/wf_undefined/wf_undefined.dzn:48:13: error: no field `EN0' in enum `I1'; expected: `EN1', `EN2', `EN3'
 test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
 test/all/wf_undefined/wf_undefined.dzn:69:3: error: undefined interface `I3'
