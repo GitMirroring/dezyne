@@ -24,10 +24,14 @@
 interface ihello
 {
   in int hello ();
+  in int hey ();
+  in int hi ();
 
   behavior
   {
     on hello: reply (0);
+    on hey: reply (0);
+    on hi: reply (0);
   }
 }
 
@@ -37,6 +41,8 @@ component parse_action_unkonwn_type
   requires ihello w;
   behavior
   {
-    on h.hello (): if (w.hello () == 0) reply (0);
+    on h.hello (): {int i = w.hello (); reply (i);}
+    on h.hey (): {int i = 0; i = w.hello (); reply (i);}
+    on h.hi (): if (w.hello () == 0) reply (0);
   }
 }

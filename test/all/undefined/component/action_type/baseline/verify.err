@@ -1,2 +1,7 @@
 test/all/undefined/component/action_type/action_type.dzn:26:6: error: unknown type name `int'
-test/all/undefined/component/action_type/action_type.dzn:40:24: error: typed expression expected `action'
+test/all/undefined/component/action_type/action_type.dzn:27:6: error: unknown type name `int'
+test/all/undefined/component/action_type/action_type.dzn:28:6: error: unknown type name `int'
+test/all/undefined/component/action_type/action_type.dzn:44:21: error: unknown type name `int'
+test/all/undefined/component/action_type/action_type.dzn:45:19: error: unknown type name `int'
+test/all/undefined/component/action_type/action_type.dzn:45:30: error: unknown type name `int'
+test/all/undefined/component/action_type/action_type.dzn:46:21: error: typed expression expected `action'
