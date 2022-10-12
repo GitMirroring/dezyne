@@ -3410,8 +3410,8 @@ scope do not interfere (collide or shadow) with another scope.
 Referring to a scoped identifier
 
 @example
-  reference :: scope* identifier
-  scope :: identifier "."
+reference ::= scope* identifier
+scope ::= identifier "."
 @end example
 
 Dezyne defines the following scopes:
@@ -5470,8 +5470,11 @@ All component, interface, and type definitions are defined in a
 prefix when referring to the name from another scope.
 
 @example
-namespace      ::= "namespace" identifier "@{" namespace-root "@}"
+namespace      ::= "namespace" compound-identifier "@{" namespace-root "@}"
 namespace-root ::= (namespace | type | interface | component)*
+compound-identifier
+               ::= scope* identifier
+scope          ::= identifier "."
 @end example
 
 For example:
