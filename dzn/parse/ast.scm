@@ -189,17 +189,25 @@ to the AST element."
         (('import name)
          (make <import-node> #:name (helper name)))
 
-        (('namespace name)
-         (make <namespace-node>
-           #:name (helper name)))
+        (('namespace name root)
+         (let* ((name location comment (helper name))
+                (ids (.ids name))
+                (elements (helper root)))
+           (define (wrap-namespace name result)
+             (let ((name (make <scope.name-node>
+                           #:ids (list name)
+                           #:comment comment
+                           #:location location))
+                   (elements (or (as result <null>)
+                                 (as result <pair>)
+                                 (list result))))
+               (make <namespace-node>
+                 #:name name
+                 #:elements elements)))
+           (fold-right wrap-namespace elements ids)))
 
         (('namespace-root elements ...)
          (map helper elements))
-
-        (('namespace name root)
-         (make <namespace-node>
-           #:name (helper name)
-           #:elements (helper root)))
 
         (('enum name fields)
          (make <enum-node> #:name (helper name) #:fields (helper fields)))
