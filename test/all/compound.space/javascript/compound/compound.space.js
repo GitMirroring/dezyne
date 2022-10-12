@@ -1,0 +1,1 @@
+../../out/javascript/compound.space.js

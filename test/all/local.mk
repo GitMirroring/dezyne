@@ -244,6 +244,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_sync_action			\
  %D%/compliance_system_provides_bool		\
  %D%/component_modeling_loop			\
+ %D%/compound.space				\
  %D%/data_full					\
  %D%/deadlock_asynchronous_sync_reply		\
  %D%/deadlock_blocking_compliance		\
