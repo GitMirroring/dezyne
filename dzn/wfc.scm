@@ -866,12 +866,11 @@
          ((and (not assign-type) (is-a? variable <variable>))
           `(,(wfc-error o (format #f "unknown type name `~a'"
                                   (type-name (.type.name variable))))))
-         ((not expression-type)
+         ((and (not expression-type) (is-a? expression <named>))
           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name expression)))))
          ((and (is-a? o <variable>) (is-a? expression-type <void>))
           (if (is-a? assign-type <extern>) '()
               `(,(wfc-error o (format #f "uninitialized variable `~a'" (.name o))))))
-         ((not assign-type) '()) ;; reported before
          ((not (equal-type? expression-type assign-type))
           `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
                                   (type-name assign-type)
