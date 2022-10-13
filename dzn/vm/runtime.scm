@@ -121,7 +121,8 @@
     (($ <component>) (make <runtime:component> #:ast o #:container c))
     (($ <foreign>) (make <runtime:foreign> #:ast o #:container c))
     (($ <interface>) (make <runtime:port> #:ast o #:container c))
-    (($ <system>) (make <runtime:system> #:ast o #:container c))))
+    (($ <system>) (make <runtime:system> #:ast o #:container c))
+    (#f #f)))
 
 (define-method (runtime:kind (o <runtime:instance>))
   (match o
@@ -285,6 +286,7 @@
 (define-method (ast:sorted-instance* (o <system>))
   (define (end-point-direction? end-point direction instance)
     (and (equal? (.name instance) (.instance.name end-point))
+         (.type instance)
          (find (lambda (p) (and (eq? (.direction p) direction)
                                 (equal? (.name p) (.port.name end-point))))
                (ast:port* (.type instance)))))
@@ -321,7 +323,8 @@
       (clone p #:direction direction #:external? #f)))
 
   (define (model-instances o)
-    (let ((t (.type (.ast o))))
+    (let* ((ast (and=> o .ast))
+           (t (and=> ast .type)))
       (match t
         (($ <interface>) (list o))
         (($ <component>) (cons o (map (cut port->instance <> o #f) (runtime:port* o))))
@@ -338,7 +341,8 @@
            (cons o (append (map (cut port->instance <> o #f) (runtime:port* o))
                            (append-map (compose model-instances
                                                 (cute ast->runtime:instance <> o))
-                                       instances))))))))
+                                       instances)))))
+        (#f '()))))
 
   (define (injected-instances instances)
     (filter (conjoin (is? <runtime:port>)

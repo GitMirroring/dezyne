@@ -286,7 +286,7 @@
     (ast:topological-model-sort (append interfaces components))))
 
 (define-method (ast:instance-model* (o <system>))
-  (map .type (ast:instance* o)))
+  (filter-map .type (ast:instance* o)))
 
 (define-method (ast:component-model* (o <component-model>))
   (list o))

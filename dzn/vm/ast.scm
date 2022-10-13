@@ -70,7 +70,9 @@
   (ast:valued-in-triggers))
 
 (define-method (ast:async? (o <port>))
-  (string-prefix? "dzn.async" (string-join ((compose ast:full-name .type) o) ".")))
+  (let ((type (.type o)))
+    (and type
+         (string-prefix? "dzn.async" (string-join (ast:full-name type) ".")))))
 
 (define-method (ast:async? (o <action>))
   (and=> (.port o) ast:async?))
