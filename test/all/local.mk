@@ -50,6 +50,7 @@ HELLO_TESTS =					\
  %D%/hello_comment				\
  %D%/hello_constraint				\
  %D%/hello_constraint_modeling			\
+ %D%/hello_constraint_multiple_provides		\
  %D%/hello_data					\
  %D%/hello_defer				\
  %D%/hello_else					\
