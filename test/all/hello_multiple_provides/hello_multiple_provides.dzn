@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,10 +36,12 @@ component hello_multiple_provides {
   provides ihello p1;
   provides ihello p2;
   behavior {
-    on p1.hello (): {}
-    on p1.cruel (): {}
+    bool p1_open = true;
+    on p1.hello (): p1_open = !p1_open;
+    [p1_open] on p1.cruel (): {}
 
-    on p2.hello(): {}
-    on p2.cruel (): {}
+    bool p2_open = true;
+    on p2.hello(): p2_open = !p2_open;
+    [p2_open] on p2.cruel (): {}
   }
 }
