@@ -26,12 +26,16 @@ interface ihello
   in int hello ();
   in int hey ();
   in int hi ();
+  in void goodbye ();
+  in void bye ();
 
   behavior
   {
     on hello: reply (0);
     on hey: reply (0);
     on hi: reply (0);
+    on goodbye: {}
+    on bye: {}
   }
 }
 
@@ -39,10 +43,13 @@ component parse_action_unkonwn_type
 {
   provides ihello h;
   requires ihello w;
+
   behavior
   {
     on h.hello (): {int i = w.hello (); reply (i);}
     on h.hey (): {int i = 0; i = w.hello (); reply (i);}
     on h.hi (): if (w.hello () == 0) reply (0);
+    on h.goodbye (): bool b = w.hello ();
+    on h.bye (): {bool b = true; b = w.hello ();}
   }
 }
