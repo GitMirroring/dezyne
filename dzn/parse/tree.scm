@@ -525,6 +525,7 @@ procedure)."
      behavior-compound
      behavior-statements
      binding
+     blocking-q
      comment
      compound
      compound-name
@@ -715,7 +716,9 @@ procedure)."
     ((? (is? 'event)) (tree:out? (.direction o)))))
 
 (define (tree:port-qualifier? o)
-  (or (is-a? o 'external)
+  (or (and (is-a? o 'blocking-q)
+           'blocking)
+      (is-a? o 'external)
       (is-a? o 'injected)))
 
 (define (tree:provides? o)
