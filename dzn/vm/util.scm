@@ -173,11 +173,13 @@
   (helper (read)))
 
 (define (string->trail trail)
-  (define (->string o)
-    (if (symbol? o) (symbol->string o) o))
+  (define (event->string o)
+    (match o
+      ((h t ...) o)
+      (_ (format #f "~a" o))))
   (let* ((trail (string-join (string-split trail #\,) " "))
          (trail (with-input-from-string trail read-input-file))
-         (trail (map ->string trail))
+         (trail (map event->string trail))
          (loop-index (list-index (cute equal? <> "<loop>") trail))
          (trail (filter (negate (conjoin
                                  string?
