@@ -1,0 +1,113 @@
+
+Subject: dezyne-2.17.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are happy to announce Dezyne 2.17 which introduces implicit interface
+constraints.
+
+Before 2.17.0, for a component to be compliant with its provides
+interface(s), implementing a component required meticulously specifying
+the same behavior in the component as in the provides interface;
+therefore the code from the interface is often repeated in the
+component.
+
+Now the provides interface(s) are implicitly applied as
+a constraint on the component behavior.  This means that anything
+disallowed by the interface, i.e., explicitly or implicitly marked as
+`illegal', is implicitly marked as `illegal' in the component
+behavior.
+
+Also in this release: An unreachable code check, generalized integer
+expressions, and a full rewrite of the language lookup mechanism fixing
+some long standing namespace bugs.
+
+The dzn.async ports feature---which proved not to be composable---has
+been removed.
+
+See also the [[https://dezyne.org/documentation.html][Dezyne documentation]].
+
+We will evaluate your reports and track them via the
+[[https://gitlab.com/groups/dezyne/-/issues][Gitlab dezyne-issues
+project]], see our [[https://dezyne.org/bugreport][guide to writing
+helpful bug reports]].
+
+What's next?
+
+In the next releases we like to see shared interface state and
+verification with system scope for automatically exploring possible
+traces in a system.
+
+Future
+
+Looking beyond the next releases: Module-specifications and
+data-interfaces.  Hierarchical behaviors.  Support for Module Based
+Testing.
+
+Enjoy!
+The Dezyne developers.
+
+Download
+
+  git clone git://git.savannah.nongnu.org/dezyne.git
+
+Here are the compressed sources and a GPG detached signature[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.17.0.tar.gz
+  https://dezyne.org/download/dezyne/dezyne-2.17.0.tar.gz.sig
+
+Here are the SHA1 and SHA256 checksums:
+
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.17.0.tar.gz
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.17.0.tar.gz
+
+[*] Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify dezyne-2.17.0.tar.gz.sig
+
+If that command fails because you don't have the required public key,
+then run this command to import it:
+
+  gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+and rerun the 'gpg --verify' command.
+
+Alternatively, Dezyne can be installed using GNU Guix:
+  guix pull
+  guix install dezyne
+
+NEWS
+
+* Changes in 2.17.0 since 2.16.2
+** Language
+  - A component's behavior is now implicitly constrained by the behavior
+    of its provides interfaces.
+  - Unary minus is now supported in integer expressions.
+  - Integer expressions have been generalized: It is no longer necessary
+    to split a longer expression or to use parameters.
+  - Support for `dzn.async' ports has been removed.
+** Parser
+  - A new transformation has been added: `tag-imperative-blocks'.
+** Verification
+  - The verifier now checks for unreachable code.
+  - The verifier has a new option `-C,--no-constraint' to disable
+    the constraining fo a component's behavior.
+  - The verifier has a new option '-D,--non-non-compliance' to report a
+    deadlock error instead of a non-compliance error.
+  - The verifier has a new option `-U,--no-unreachable' to disable the
+    unreachable code check.
+  - The verifier has a new option `--jitty' to run `lps2ts' using
+    `--rewriter=jittyc' for large models.
+  - The performance of the verifier has been improved by skipping
+    normalization of imported components.
+** Code
+  - The performance of the code generators has been improved by skipping
+    normalization of imported interfaces and components.
+  - The generated C++ and its runtime now uses typed pointers instead of
+    void pointers for component instances.
+** Noteworthy bug fixes
+  - Some longstanding bugs have been fixed in relation to
+    + Extending nested namespaces in imports,
+    + Referencing partially named identifiers,
+    by a full rewrite of the lookup algorithm.
