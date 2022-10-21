@@ -1,0 +1,53 @@
+digraph G
+{
+  component_behavior[label="component\nbehavior"]
+  interface_behavior[label="interface\nbehavior"]
+  postpone_reply[label="postpone\nreply"]
+  synchronize_reply[label="synchronize\nreply"]
+  external_port[label="external\nport"]
+  external_queue[label="external\nqueue"]
+  provides_constraint[label="provides\nconstraint"]
+
+  {rank=same
+  component -> provides [label="refines",style=dashed]}
+
+  {rank=same
+  semantics -> component_behavior[label="constrains",style=dashed]
+  provides_constraint -> semantics[label="constrains",style=dashed]
+  component_behavior -> requires[label="constrains",style=dashed]}
+
+  {rank=same
+  postpone_reply -> queue[label="synchronizes",style=dashed]}
+
+  {rank=same
+  queue -> port [label="decouples",style=dashed]}
+
+  {rank=same
+  external_queue -> external_port [label="delays",style=dashed]}
+
+  synchronize_reply -> component_behavior[label="constrains",style=dashed]
+  provides_constraint -> interface_behavior[label="derives",style=dashed]
+
+  edge [dir=back,arrowtail=odiamond]
+  component -> component_behavior
+  component -> semantics
+  component -> requires
+
+  component_behavior -> defer
+  defer -> queue
+
+  component -> provides_constraint
+  semantics -> reordering
+  reordering -> synchronize_reply
+  reordering -> postpone_reply
+
+  requires -> queue
+  requires -> port
+  port -> interface_behavior
+
+  requires -> external_queue
+  requires -> external_port
+  external_port -> port
+
+  provides -> port
+}
