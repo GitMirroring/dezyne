@@ -27,6 +27,7 @@
 (define-module (test dzn dzn)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
   #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
@@ -34,6 +35,7 @@
   #:use-module (ice-9 regex)
   #:use-module (dzn config)
   #:use-module (dzn misc)
+  #:use-module (dzn pipe)
   #:use-module (dzn shell-util)
   #:use-module (dzn trace)
   #:export (%default-stages
@@ -131,6 +133,15 @@ output, and standard error as three values."
              ((_ _ ex)
               (cleanup)
               (apply throw (call-with-input-string ex read))))))))
+
+(define (ltscompare-status? status stdout)
+  (let* ((lines (and stdout (string-split stdout #\newline)))
+         (stdout-status (and lines (filter (cute string-prefix? "result: " <>) lines)))
+         (stdout-status (and (pair? stdout-status) (car stdout-status))))
+    (if (and (zero? status)
+             stdout-status
+             (string=? stdout-status "result: true"))
+        EXIT_SUCCESS EXIT_FAILURE)))
 
 
 ;;;
@@ -372,6 +383,152 @@ output, and standard error as three values."
              input)
           (zero? status)))))
 
+(define (run-constrained-component file-name)
+  "Assert that the constrained component and the unconstrained component
+are weak-bisim equivalent"
+  (format #t "** stage: constrained-component\n")
+  (let* ((base-name (basename file-name))
+         (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (input "")
+         (includes (cons (string-append file-name "/dzn")
+                         (or (and=> (getenv "DZN_INCLUDE_PATH")
+                                    (cute string-split <> #\:))
+                             '())))
+         (includes (filter directory-exists? includes))
+         (includes (append-map (cute list "-I" <>) includes))
+         (model (or (model? file-name) base-name))
+         (queue-size (queue-size file-name))
+         (language "constrained-component")
+         (out (string-append file-name "/out"))
+         (out-lang (string-append out "/" language))
+         (constrained (string-append out-lang "/constrained.aut"))
+         (unconstrained (string-append out-lang "/unconstrained.aut"))
+         (input ""))
+    (define (component?)
+      (let ((stdout
+             status
+             (pipeline->string
+              `(("dzn" "parse"
+                 ,@includes
+                 "-m" ,model
+                 "--list-models"
+                 ,dzn-name)))))
+        (and (zero? status)
+             (string-contains stdout (string-append model " component")))))
+    (mkdir-p out-lang)
+    (or (and (error-model? file-name))
+        (skip? file-name "constrained-component")
+        (not (component?))
+        (let ((status-constrained
+               stdout-constrained
+               stderr-constrained
+               (observe
+                `("dzn" "traces"
+                  "--lts"
+                  ,@includes
+                  "-m" ,model
+                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  ,dzn-name)
+                input))
+              (status-unconstrained
+               stdout-unconstrained
+               stderr-unconstrained
+               (observe
+                `("dzn" "traces"
+                  "--lts"
+                  "-C"
+                  ,@includes
+                  "-m" ,model
+                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  ,dzn-name)
+                input)))
+          (with-output-to-file constrained (cute display stdout-constrained))
+          (with-output-to-file unconstrained (cute display stdout-unconstrained))
+          (and (zero? status-constrained)
+               (zero? status-unconstrained)
+               (let ((status
+                      stdout
+                      stderr
+                      (observe
+                       `("ltscompare" "--structured-output" "-eweak-bisim" "--tau=constrained_legal"
+                         ,constrained
+                         ,unconstrained)
+                       input)))
+                 (zero? (ltscompare-status? status stdout))))))))
+
+(define (run-constrained-no-compliance file-name)
+  "Assert that the constrained component and the no-compliance component
+are weak-bisim equivalent"
+  (format #t "** stage: constrained-no-compliance\n")
+  (let* ((base-name (basename file-name))
+         (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (input "")
+         (includes (cons (string-append file-name "/dzn")
+                         (or (and=> (getenv "DZN_INCLUDE_PATH")
+                                    (cute string-split <> #\:))
+                             '())))
+         (includes (filter directory-exists? includes))
+         (includes (append-map (cute list "-I" <>) includes))
+         (model (or (model? file-name) base-name))
+         (queue-size (queue-size file-name))
+         (language "constrained-no-compliance")
+         (out (string-append file-name "/out"))
+         (out-lang (string-append out "/" language))
+         (constrained (string-append out-lang "/constrained.aut"))
+         (no-compliance (string-append out-lang "/no-compliance.aut"))
+         (input ""))
+    (define (component?)
+      (let ((stdout
+             status
+             (pipeline->string
+              `(("dzn" "parse"
+                 ,@includes
+                 "-m" ,model
+                 "--list-models"
+                 ,dzn-name)))))
+        (and (zero? status)
+             (string-contains stdout (string-append model " component")))))
+    (mkdir-p out-lang)
+    (or (and (error-model? file-name))
+        (skip? file-name "constrained-component")
+        (not (component?))
+        (let ((status-constrained
+               stdout-constrained
+               stderr-constrained
+               (observe
+                `("dzn" "traces"
+                  "--lts"
+                  ,@includes
+                  "-m" ,model
+                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  ,dzn-name)
+                input))
+              (status-no-compliance
+               stdout-no-compliance
+               stderr-no-compliance
+               (observe
+                `("dzn" "traces"
+                  "--lts"
+                  "-D"
+                  ,@includes
+                  "-m" ,model
+                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  ,dzn-name)
+                input)))
+          (with-output-to-file constrained (cute display stdout-constrained))
+          (with-output-to-file no-compliance (cute display stdout-no-compliance))
+          (and (zero? status-constrained)
+               (zero? status-no-compliance)
+               (let ((status
+                      stdout
+                      stderr
+                      (observe
+                       `("ltscompare" "--structured-output" "-eweak-bisim" "--tau=constrained_legal"
+                         ,constrained
+                         ,no-compliance)
+                       input)))
+                 (zero? (ltscompare-status? status stdout))))))))
+
 (define (run-build file-name language)
   (format #t "** stage: build: ~a\n" language)
   (let* ((base-name (basename file-name))
@@ -570,14 +727,7 @@ output, and standard error as three values."
                                 ,(string-append base-name ".aut"))
                               "")
                            (display stdout)
-                           (let* ((lines (and stdout (string-split stdout #\newline)))
-                                  (stdout-status (and lines (filter (cute string-prefix? "result: " <>) lines)))
-                                  (stdout-status (and (pair? stdout-status) (car stdout-status)))
-                                  (status (if (and (zero? status)
-                                                   stdout-status
-                                                   (string=? stdout-status "result: true"))
-                                              EXIT_SUCCESS EXIT_FAILURE)))
-                             (zero? status))))))))))))
+                           (zero? (ltscompare-status? status stdout))))))))))))
 
 
 ;;;
@@ -624,7 +774,9 @@ output, and standard error as three values."
           (or (skip? "traces") (run-traces file-name))
           (or (skip? "simulate") (run-simulate file-name))
           (or (skip? "lts") (run-lts file-name))
-          (or (skip? "code") (and-map (cute run-code file-name <>) languages)))))
+          (or (skip? "code") (and-map (cute run-code file-name <>) languages))
+          (or (skip? "constrained-component") (run-constrained-component file-name))
+          (or (skip? "constrained-no-compliance") (run-constrained-no-compliance file-name)))))
     (format #t "# Local Variables:
 # mode: org
 # End:
