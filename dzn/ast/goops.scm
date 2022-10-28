@@ -56,7 +56,7 @@
             ast:unwrap)
   #:re-export (<top>
                <class> <object>
-               <procedure>
+               <applicable> <procedure>
                <boolean> <char> <list> <pair> <null> <string> <symbol>
                <number>
                <unknown>
