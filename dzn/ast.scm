@@ -428,19 +428,28 @@
 (define-method (ast:out-event* o)
   (filter ast:out? (ast:event* o)))
 
-(define-method (ast:provides-in-triggers (o <component-model>))
-  (map (cut trigger-in-component <> o)
+(define-method (port+event->trigger (o <port>) (event <event>))
+  (let* ((component (ast:parent o <component-model>))
+         (formals (ast:rescope (.formals (.signature event)) component)))
+    (make <trigger>
+      #:port.name (.name o)
+      #:event.name (.name event)
+      #:formals formals)))
+
+(define-method (port->trigger (o <port>) (direction <applicable>))
+  (map (cute port+event->trigger o <>)
+       (filter direction (ast:event* (.type o)))))
+
+(define-method (component->triggers (o <component-model>)
+                                    (port-direction <applicable>)
+                                    (event-direction <applicable>))
+  (map (cute trigger-in-component <> o)
        (append-map
-        (lambda (port)
-          (map
-           (lambda (event)
-             (let ((formals (ast:rescope (.formals (.signature event)) o)))
-               (make <trigger>
-                 #:port.name (.name port)
-                 #:event.name (.name event)
-                 #:formals formals)))
-           (filter ast:in? (ast:event* (.type port)))))
-        (filter ast:provides? (ast:port* o)))))
+        (cute port->trigger <> event-direction)
+        (filter port-direction (ast:port* o)))))
+
+(define-method (ast:provides-in-triggers (o <component-model>))
+  (component->triggers o ast:provides? ast:in?))
 
 (define-method (ast:provides-in-void-triggers (o <component-model>))
   (filter (compose (is? <void>) .type .signature .event)
@@ -450,19 +459,17 @@
   (filter (compose (negate (is? <void>)) .type .signature .event)
           (ast:provides-in-triggers o)))
 
+(define-method (ast:provides-out-triggers (o <component-model>))
+  (component->triggers o ast:provides? ast:out?))
+
+(define-method (ast:requires-in-triggers (o <component-model>))
+  (component->triggers o ast:requires? ast:in?))
+
+(define-method (ast:requires-in-void-triggers (o <component-model>))
+  (filter (compose (is? <void>) ast:type) (ast:requires-in-triggers o)))
+
 (define-method (ast:requires-out-triggers (o <component-model>))
-  (map (cut trigger-in-component <> o)
-       (append-map
-        (lambda (port)
-          (map
-           (lambda (event)
-             (let ((formals (ast:rescope (.formals (.signature event)) o)))
-               (make <trigger>
-                 #:port.name (.name port)
-                 #:event.name (.name event)
-                 #:formals formals)))
-           (filter ast:out? (ast:event* (.type port)))))
-        (filter ast:requires? (ast:port* o)))))
+  (component->triggers o ast:requires? ast:out?))
 
 (define-method (ast:in-triggers (o <component-model>))
   (append (ast:provides-in-triggers o)
@@ -473,37 +480,6 @@
          (let ((formals (ast:rescope ((compose .formals .signature) event) o)))
            (make <trigger> #:event.name (.name event) #:formals formals)))
        (filter ast:in? (ast:event* o))))
-
-(define-method (ast:provides-out-triggers (o <component-model>))
-  (map (cut trigger-in-component <> o)
-       (append-map
-        (lambda (port)
-          (map
-           (lambda (event)
-             (let ((formals (ast:rescope ((compose .formals .signature) event) o)))
-               (make <trigger>
-                 #:port.name (.name port)
-                 #:event.name (.name event)
-                 #:formals formals)))
-           (filter ast:out? (ast:event* (.type port)))))
-        (filter ast:provides? (ast:port* o)))))
-
-(define-method (ast:requires-in-triggers (o <component-model>))
-  (map (cut trigger-in-component <> o)
-       (append-map
-        (lambda (port)
-          (map
-           (lambda (event)
-             (let ((formals (ast:rescope ((compose .formals .signature) event) o)))
-               (make <trigger>
-                 #:port.name (.name port)
-                 #:event.name (.name event)
-                 #:formals formals)))
-           (filter ast:in? (ast:event* (.type port)))))
-        (filter ast:requires? (ast:port* o) ))))
-
-(define-method (ast:requires-in-void-triggers (o <component-model>))
-  (filter (compose (is? <void>) ast:type) (ast:requires-in-triggers o)))
 
 (define-method (ast:out-triggers (o <component-model>))
   (append (ast:provides-out-triggers o) (ast:requires-in-triggers o)))
