@@ -614,7 +614,7 @@ port return."
                                     (modeling-names interface))))))
       (map (cute add-port port <>) alist)))
 
-  (define (system-event-traces-alist pc)
+  (define (interfaces-event-traces-alist pc)
     (let* ((boundary (filter runtime:boundary-port? (%instances)))
            (traces (append-map (cute port->label-traces pc <>) boundary))
            (fake-traces (list (list pc)))
@@ -623,8 +623,17 @@ port return."
            (rtc-traces (map (cute cons <> fake-traces) (rtc-labels pc))))
       (append traces defer-traces return-traces rtc-traces)))
 
-  (if (is-a? (%sut) <runtime:system>) (system-event-traces-alist pc)
-      (event-traces-alist pc)))
+  (cond
+   ((is-a? (%sut) <runtime:port>)
+    (event-traces-alist pc))
+   ((is-a? (%sut) <runtime:component>)
+    (let* ((interface (interfaces-event-traces-alist pc))
+           (interface-eligible (map car interface))
+           (component (event-traces-alist pc)))
+      (filter (compose (cute member <> interface-eligible) car)
+              component)))
+   ((is-a? (%sut) <runtime:system>)
+    (interfaces-event-traces-alist pc))))
 
 (define-method (event-traces-alist (pcs <list>))
   (let* ((pcs (map (cute clone <> #:status #f) pcs))
