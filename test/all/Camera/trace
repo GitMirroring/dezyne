@@ -1,8 +1,8 @@
 control.setup
+sut.acquisition.sensor.port.prepare
+sut.acquisition.sensor.port.return
 sut.optics.focus.sensor.port.measure
 sut.optics.focus.sensor.port.EContrast:Sharper
 sut.optics.focus.lens.port.forward
 sut.optics.focus.lens.port.return
-sut.acquisition.sensor.port.prepare
-sut.acquisition.sensor.port.return
 control.return
