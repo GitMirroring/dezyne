@@ -408,6 +408,7 @@ REGRESSION_TESTS =				\
  %D%/second_reply				\
  %D%/second_reply_sync				\
  %D%/second_reply_blocking			\
+ %D%/shared_requires				\
  %D%/shell_injected				\
  %D%/simple.space				\
  %D%/simplify_guards				\
