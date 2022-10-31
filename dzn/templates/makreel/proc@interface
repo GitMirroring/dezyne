@@ -3,7 +3,7 @@ proc
  = sum i : #x:makreel:model-name events. #x:makreel:model-name in(i) . (sum r : #x:makreel:model-name replies. #x:makreel:model-name reply(r) . #x:makreel:model-name reorder_replied(r)
                                                                        +#x:makreel:model-name reorder_end . missing_reply . delta)
  + sum m : #x:makreel:model-name modeling. #x:makreel:model-name internal (m) . #x:makreel:model-name end .  #x:makreel:model-name reorder
- + #x:state-sum #x:makreel:model-name state #x:members-name  . #x:makreel:model-name reorder
+ + sum s : #x:makreel:model-name State . #x:makreel:model-name state (s)  . #x:makreel:model-name reorder
  ;
 
 #x:makreel:model-name reorder_replied(r : #x:makreel:model-name replies)
@@ -115,8 +115,7 @@ proc
  , #x:makreel:model-name tau_reply}, #x:makreel:model-name interface_internal);
 
 #x:makreel:model-name behavior #x:process-parameters
- = #x:makreel:model-name state #x:members-name  . #x:makreel:model-name behavior ()
- + #x:behavior-proc
+ = #x:share-state  #x:behavior-proc
 
 %%%%%%%%%%%%%%%%%%%%%%%%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%
 #x:function

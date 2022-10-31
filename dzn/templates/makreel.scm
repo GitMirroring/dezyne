@@ -96,8 +96,6 @@
 (define-templates recurse makreel:recurse?)
 (define-templates return-process-parameter makreel:non-recurse?)
 
-(define-templates global-state-type members pair-grammar)
-(define-templates state-sum members sum-grammar)
 (define-templates members-name members members-name-grammar)
 
 ;; statement process
@@ -121,11 +119,13 @@
 (define-templates process-index makreel:process-index)
 (define-templates event (compose car ast:trigger*))
 
-(define-templates continuation makreel:continuation newline-union-infix)
-(define-templates then-continuation makreel:then-continuation newline-union-infix)
+(define-templates continuation makreel:continuation-pair newline-union-infix)
+(define-templates behavior-continuation makreel:behavior-continuation)
+(define-templates ast-continuation makreel:ast-continuation)
+(define-templates then-continuation makreel:then-continuation-pair newline-union-infix)
 (define-templates continuation-identifier makreel:continuation)
-(define-templates continuation-process-identifier identity)
-(define-templates else-continuation makreel:else-continuation newline-union-infix)
+(define-templates continuation-process-identifier makreel:continuation-process-identifier)
+(define-templates else-continuation makreel:else-continuation-pair newline-union-infix)
 
 ;; statement helpers
 (define-templates assign)
@@ -255,6 +255,7 @@
 (define-templates component-allow-requires ast:requires-port* newline-comma-prefix)
 (define-templates component-rename-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-rename-requires ast:requires-port* newline-comma-prefix)
+(define-templates component-hide-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-hide-requires ast:requires-port* newline-comma-prefix)
 (define-templates reordered ast:provides-port* union-infix)
 
@@ -292,5 +293,12 @@
 (define-templates constrained-semantics-allow-requires ast:requires-port* newline-comma-prefix)
 
 ;;shared
+(define-templates share-state makreel:shared-interface newline-union-suffix)
 (define-templates shared-component-proc makreel:shared-var* newline-dot-suffix)
-(define-templates shared-value makreel:shared-variable* parameters-grammar)
+(define-templates shared-values (lambda (o) (and (pair? (makreel:shared-variable* o)) o)) comma-suffix)
+(define-templates shared-value makreel:shared-variable* comma-infix)
+(define-templates add-shared-value makreel:shared-variable* comma-suffix)
+(define-templates interface-state-sort makreel:interface* double-newline-infix)
+(define-templates interface-state-variables makreel:shared-interface)
+(define-templates interface-no-state-variables makreel:no-shared-interface double-newline-infix)
+(define-templates interface-state-variable ast:variable* comma-infix)

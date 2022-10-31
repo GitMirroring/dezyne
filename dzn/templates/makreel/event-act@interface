@@ -15,6 +15,6 @@
 #x:makreel:model-name reorder_end;
 #x:makreel:model-name reorder_end';
 #x:makreel:model-name end'reordered;
-#x:makreel:model-name state #x:global-state-type;
-#x:makreel:model-name state' #x:global-state-type;
+#x:makreel:model-name state: #x:makreel:model-name State;
+#x:makreel:model-name state': #x:makreel:model-name State;
 #x:makreel:model-name flush;

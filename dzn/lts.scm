@@ -737,7 +737,7 @@ from LABELS."
 ;;;
 (define (parse-label label)
   (define-peg-string-patterns
-    "tree               <-- event / modeling / defer-qout / tag / reply / state / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
+    "tree               <-- event / modeling / defer-qout / tag / reply / state / tau-void / tau-reply / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
@@ -747,13 +747,14 @@ from LABELS."
      flush              <-- port-scope* identifier tick 'flush'
      blocking           <-- port-scope* identifier tick 'blocking'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
-     state              <-- port-name tick state-literal state-arguments
-     state-arguments    <-  (lpar state-argument (comma state-argument)* rpar)?
+     tau-reply          <-- port-name tick tau-reply-literal lpar scope* reply-value rpar
+     state              <-- port-name tick state-literal lpar state-arguments rpar
+     state-arguments    <-- port-name tick variables-literal (lpar state-argument (comma state-argument)* rpar)
      state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
      tag                <   tag-literal lpar int comma int rpar
      port-name          <-  port-scope* identifier
-     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / state-literal / 'queue_full' / 'flush' / 'blocking')
+     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / tau-reply-literal / state-literal / variables-literal / 'queue_full' / 'flush' / 'blocking')
      event-name         <-  identifier
      reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
      bool-literal       <   'Bool'
@@ -773,9 +774,12 @@ from LABELS."
      action-literal     <   'action'
      internal-literal   <   'internal' / 'silent'
      reply-literal      <   'reply' (tick 'reordered')?
+     tau-reply-literal  <   'tau_reply'
      state-literal      <   'state'
+     variables-literal  <   'variables'
      tag-literal        <   'tag'
      tau-literal        <   'tau'
+     tau-void           <   'tau_void'
      illegal            <-- 'illegal' / 'declarative_illegal' / 'constrained_illegal'
      error              <--  queue-full / range-error / reply-error / missing-reply / second-reply
      queue-full         <-  'queue_full' / port-name tick 'queue_full'
@@ -829,6 +833,8 @@ from LABELS."
       (('return return) (and internal? "return"))
       (('state ('identifier port) parameters) (string-append port ".<state>(" (helper-params parameters) ")"))
       (('state ('identifier port)) (string-append port ".<state>"))
+      (('state-arguments ('identifier interface) arguments) (helper arguments))
+      ((('state-argument value) ..1) (string-join (map helper value) ","))
       (('state-argument value) (helper value))
       (('bool value) value)
       (('int value) value)

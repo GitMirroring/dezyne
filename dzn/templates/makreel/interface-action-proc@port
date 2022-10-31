@@ -5,5 +5,6 @@ proc
   , #x:basic-type reply -> #.name reply
   , #x:basic-type internal -> #.name internal
   , #x:basic-type end -> #.name end
-  #x:rename-flush-provides #x:rename-flush-requires
+  , #x:basic-type state -> #.name state
+#x:rename-flush-provides #x:rename-flush-requires
   }, #x:basic-type interface_internal);

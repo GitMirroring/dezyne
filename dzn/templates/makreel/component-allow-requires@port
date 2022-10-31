@@ -6,4 +6,5 @@
  , #.name qin
  , #.name qout'
  , #.name queue_full
+ , #.name state'
  , #.name switch_context

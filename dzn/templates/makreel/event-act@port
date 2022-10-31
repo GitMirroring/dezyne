@@ -12,3 +12,5 @@
 #x:event-act-provides #x:event-act-requires
 #x:event-prefix switch_context;
 #x:event-prefix switch_context';
+#x:event-prefix state: #x:makreel:interface-name State;
+#x:event-prefix state': #x:makreel:interface-name State;
