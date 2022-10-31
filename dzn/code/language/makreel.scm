@@ -249,6 +249,11 @@
                            #:type.name ((compose (tick-names-) .type.name) o)
                            #:expression ((compose (tick-names- names)
                                                   .expression) o)))
+    (($ <shared-variable>) (clone o #:port.name ((compose (append-tick names) .port.name) o)
+                                  #:name ((compose (append-tick names) .name) o)
+                                  #:type.name ((compose (tick-names-) .type.name) o)
+                                  #:expression ((compose (tick-names- names)
+                                                         .expression) o)))
     (($ <compound>)
      (clone o
             #:elements
@@ -299,6 +304,9 @@
 
 (define-method (makreel:interface-name (o <shared-variable>))
   ((compose makreel:interface-name .port) o))
+
+(define-method (makreel:interface-name (o <shared-var>))
+  (makreel:interface-name ((compose .type .port) o)))
 
 (define-method (makreel:interface-name (o <on>))
   (makreel:interface-name (or (ast:parent o <interface>)
@@ -590,6 +598,13 @@
 (define-method (makreel:interface-proc (o <interface>))
   o)
 
+(define-method (makreel:interface* (o <interface>))
+  o)
+
+(define-method (makreel:interface* (o <root>))
+  (let ((model (makreel:get-model o)))
+    (makreel:interface* model)))
+
 (define-method (makreel:interface* (o <component>))
   (delete-duplicates
    (append
@@ -712,8 +727,8 @@
 
 (define-method (makreel:variable-parameter (o <ast>))
   (let ((v (match o
-               (($ <variable>) o)
-               (($ <assign>) (.variable o)))))
+             (($ <variable>) o)
+             (($ <assign>) (.variable o)))))
     (if (find (cut ast:eq? v <>) ((compose variables-in-scope car makreel:continuation) o)) o
         '())))
 
@@ -1108,13 +1123,13 @@
   (filter (is? <shared-variable>) (ast:member* o)))
 
 (define-method (makreel:shared-var* (o <behavior>))
-  (define (port->shared-vars port)
-    (define (variable->shared-var variable)
-      (let ((shared (make <shared-var> #:name (.name variable) #:port.name (.name port))))
-        (clone shared #:parent (.parent variable))))
-    (map variable->shared-var (ast:variable* (.type port))))
-  (let ((model (ast:parent o <component-model>)))
-    (append-map port->shared-vars (ast:port* model))))
+  (delete-duplicates (tree-collect (is? <shared-var>) o) ast:equal?))
+
+(define-method (makreel:shared-interface (o <interface>))
+  (if (null? (ast:variable* o)) '() (list o)))
+
+(define-method (makreel:no-shared-interface (o <interface>))
+  (if (null? (ast:variable* o)) (list o) '()))
 
 
 ;;;

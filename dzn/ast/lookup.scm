@@ -404,7 +404,9 @@ null) and return its CONTEXT."
 
 (define-method (.variable (o <shared-var>))
   (and=> (.name o)
-         (cut ast:lookup-variable ((compose .behavior .type .port) o) <>)))
+         (disjoin
+          (cut ast:lookup-variable (ast:parent o <behavior>) <>)
+          (cut ast:lookup-variable ((compose .behavior .type .port) o) <>))))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))

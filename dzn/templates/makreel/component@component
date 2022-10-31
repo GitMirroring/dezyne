@@ -43,6 +43,8 @@ remove_port(p, []) = [];
 p == car -> remove_port(p, car |> cdr) = cdr;
 p != car -> remove_port(p, car |> cdr) = car |> remove_port(p,cdr);
 
+#x:interface-state-sort
+
 map
 
 prune_deferred : State # List (DeferContext) -> List(DeferContext);

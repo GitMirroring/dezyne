@@ -94,8 +94,6 @@
 (define-templates recurse makreel:recurse?)
 (define-templates return-process-parameter makreel:non-recurse?)
 
-(define-templates global-state-type members pair-grammar)
-(define-templates state-sum members sum-grammar)
 (define-templates members-name members members-name-grammar)
 
 ;; statement process
@@ -290,5 +288,10 @@
 (define-templates constrained-semantics-allow-requires ast:requires-port* newline-comma-prefix)
 
 ;;shared
+(define-templates share-state makreel:shared-interface newline-union-suffix)
 (define-templates shared-component-proc makreel:shared-var* newline-dot-suffix)
 (define-templates shared-value makreel:shared-variable* parameters-grammar)
+(define-templates interface-state-sort makreel:interface* double-newline-infix)
+(define-templates interface-state-variables makreel:shared-interface)
+(define-templates interface-no-state-variables makreel:no-shared-interface double-newline-infix)
+(define-templates interface-state-variable ast:variable* comma-infix)

@@ -6,3 +6,4 @@
  , #.name end
  , #.name flush
  , #.name queue_full
+ , #.name state

@@ -6,6 +6,8 @@ Void = struct void;
 #x:reply-sort
 #x:event-sort
 
+#x:interface-state-sort
+
 act
 #x:event-act
 

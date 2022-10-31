@@ -11,6 +11,37 @@ requires_ports = struct no_requires #x:requires-port-construct;
 
 reply_values = struct replies (#x:reply-values);
 
+requires_events
+ = struct no_event
+#x:requires-sort-construct
+ ;
+
+map
+
+QueueLength : Nat;
+
+list2set : List(provides_ports) -> Set(provides_ports);
+
+remove_port : provides_ports # List (provides_ports) -> List(provides_ports);
+
+var p, car: provides_ports;
+    l, cdr: List(provides_ports);
+    e, h: requires_events;
+    t: List(requires_events);
+
+eqn
+
+QueueLength = #x:makreel:queue-length;
+
+l == [] -> list2set(l) = {};
+l != [] -> list2set(l) = {head(l)} + list2set(tail(l));
+
+remove_port(p, []) = [];
+p == car -> remove_port(p, car |> cdr) = cdr;
+p != car -> remove_port(p, car |> cdr) = car |> remove_port(p,cdr);
+
+#x:interface-state-sort
+
 act
 #x:event-act
 #x:makreel:model-name end;
