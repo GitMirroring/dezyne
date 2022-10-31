@@ -346,6 +346,9 @@ null) and return its CONTEXT."
 (define-method (.port (o <shared-var>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
+(define-method (.port (o <shared-variable>))
+  (and (.port.name o) (ast:lookup o (.port.name o))))
+
 (define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
 (define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
 

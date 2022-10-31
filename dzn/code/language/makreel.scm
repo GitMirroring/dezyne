@@ -209,6 +209,8 @@
              (list #:types #:ports #:variables #:functions #:statement)
              (list .types .ports .variables .functions .statement))))
     (($ <var>) (clone o #:name ((compose (append-tick names) .name) o)))
+    (($ <shared-var>) (clone o #:port.name ((compose (append-tick names) .port.name) o)
+                             #:name ((compose (append-tick names) .name) o)))
     (($ <field-test>) (clone o #:variable.name ((compose (append-tick names) .variable.name) o)))
     (($ <formal>) (clone o #:name ((compose (append-tick names) .name) o)
                          #:type.name ((compose (tick-names-) .type.name) o)))
@@ -290,6 +292,9 @@
 
 (define-method (makreel:interface-name (o <port>))
   ((compose makreel:interface-name .type) o))
+
+(define-method (makreel:interface-name (o <shared-variable>))
+  ((compose makreel:interface-name .port) o))
 
 (define-method (makreel:interface-name (o <on>))
   (makreel:interface-name (or (ast:parent o <interface>)
@@ -741,6 +746,12 @@
           (ast:parent o <function>)) "()"
           ""))
 
+(define-method (makreel:shared-process-haakjes (o <behavior>))
+  (let* ((members (ast:member* o))
+         (shared? (find (is? <shared-variable>) members)))
+    (if (and (not shared?) (pair? members)) "()"
+              "")))
+
 (define-method (makreel:continuation-haakjes (o <ast>))
   (and (or (pair? ((compose variables-in-scope car makreel:continuation) o))
            (ast:parent o <function>))
@@ -1071,6 +1082,47 @@
   (and (pair? (ast:requires-port* o))
        o))
 
+
+;;;
+;;; Shared state
+;;;
+
+(define (makreel:add-shared-variables o)
+  (define (shared-var->shared-variable var)
+    (let ((variable (.variable var)))
+      (make <shared-variable>
+        #:port.name (.port.name var)
+        #:name (.name var)
+        #:type.name (.type.name variable)
+        #:expression (.expression variable))))
+  (match o
+    (($ <interface>) o)
+    (($ <variables>)
+     (let* ((behavior (ast:parent o <behavior>))
+            (shared (tree-collect (is? <shared-var>) behavior))
+            (shared (delete-duplicates shared ast:equal?))
+            (shared (map shared-var->shared-variable shared)))
+       (clone o #:elements (append (ast:variable* o) shared))))
+    ((? (is? <ast>)) (tree-map makreel:add-shared-variables o))
+    (_ o)))
+
+(define-method (makreel:shared-variable* o)
+  (filter (is? <shared-variable>) (ast:member* o)))
+
+(define-method (makreel:shared-var* (o <behavior>))
+  (define (port->shared-vars port)
+    (define (variable->shared-var variable)
+      (let ((shared (make <shared-var> #:name (.name variable) #:port.name (.name port))))
+        (clone shared #:parent (.parent variable))))
+    (map variable->shared-var (ast:variable* (.type port))))
+  (let ((model (ast:parent o <component-model>)))
+    (append-map port->shared-vars (ast:port* model))))
+
+
+;;;
+;;; Templates
+;;;
+
 (define-templates-macro define-templates makreel)
 (include-from-path "dzn/templates/dzn.scm")
 (include-from-path "dzn/templates/makreel.scm")
@@ -1087,6 +1139,7 @@
 (define (makreel:om ast)
   (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
     (let ((root ((compose
+                  makreel:add-shared-variables
                   makreel:mark-tail-call
                   add-function-return
                   normalize:state+illegals
