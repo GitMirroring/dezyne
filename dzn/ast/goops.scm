@@ -512,6 +512,9 @@
   (type.name)
   (expression #:init-form (make <expression-node>)))
 
+(define-ast <shared-variable> (<variable>)
+  (port.name))
+
 (define-ast <field-test> (<unary> <bool-expr>)
   (variable.name)
   (field))

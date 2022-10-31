@@ -288,3 +288,7 @@
 
 (define-templates constrained-semantics-allow-provides ast:provides-port* newline-comma-prefix)
 (define-templates constrained-semantics-allow-requires ast:requires-port* newline-comma-prefix)
+
+;;shared
+(define-templates shared-component-proc makreel:shared-var* newline-dot-suffix)
+(define-templates shared-value makreel:shared-variable* parameters-grammar)
