@@ -94,11 +94,9 @@ interface ISiren
 
   behavior
   {
-    enum State { Off, On };
-    State state = State.Off;
-
-    [state.Off] on turnon:  state = State.On;
-    [state.On]  on turnoff: state = State.Off;
+    bool sounding = false;
+    [!sounding] on turnon:  sounding = true;
+    [sounding]  on turnoff: sounding = false;
   }
 }
 
@@ -112,18 +110,14 @@ component Alarm
 
   behavior
   {
-    bool sounding = false;
-
     on console.arm():         sensor.enable();
     on console.disarm():      sensor.disable();
     on sensor.triggered():    { console.detected();
                                 siren.turnon();
-                                sounding = true;
                               }
     on sensor.disabled():     {
-      [sounding] {
+      [siren.sounding] {
         console.deactivated();
-        sounding = false;
 /*
 If the next line is left commented out then an illegal behavior is spotted;
 the Alarm makes an attempt to turn on the Siren when that is already turned on.
