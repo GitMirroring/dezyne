@@ -45,9 +45,9 @@ component hello
 
   behavior
   {
-    on th.hello (): tw.hello ();
-    on th.bye (): tw.bye ();
-    on tw.world (): th.world ();
+    [th:idle] on th.hello (): tw.hello ();
+    [!th:idle] on th.bye (): tw.bye ();
+    [!th:idle] on tw.world (): th.world ();
   }
 }
 
@@ -58,9 +58,9 @@ component world
 
   behavior
   {
-    on bh.hello (): bw.hello ();
-    on bh.bye (): bw.bye ();
-    on bw.world (): bh.world ();
+    [bh:idle] on bh.hello (): bw.hello ();
+    [!bh:idle] on bh.bye (): bw.bye ();
+    [!bh:idle] on bw.world (): bh.world ();
   }
 }
 
