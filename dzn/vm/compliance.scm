@@ -233,9 +233,11 @@ provides port, mark the trace as <fork-error>, otherwise return false."
                                              #:message "non-compliance"))))
                   (list (cons pc trace))))))))
 
-(define (check-provides-compliance pc event trace)
-  "Check TRACE for traces-compliance with the provides ports, for EVENT.
-Update the state of the provides port in TRACE for EVENT.  For a blocked
+(define-method (check-provides-compliance (pc <program-counter>)
+                                          (instance <runtime:instance>)
+                                          trigger trace)
+  "Check TRACE for traces-compliance with the provides ports of INSTANCE, for EVENT.
+Update the state of the provides port in TRACE for TRIGGER.  For a blocked
 trace, the check is done in an incremental way: only the part that the
 component has executed is considered.
 
@@ -264,14 +266,12 @@ Return a list of traces, possibly marked with <compliance-error>."
                       (filter (compose (negate (is? <trigger-return>)) .statement) trace))))
       trace))
 
-  (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (and (string? event)
-                       (not (equal? event "<defer>"))
-                       (clone (string->trigger event) #:parent component)))
+  (let* ((event (and=> trigger trigger->string))
          (blocking? (find (compose pair? .blocked) trace))
          (sut-trace (if (or (not trigger) (not blocking?)) trace
                         (drop-prefix pc trigger trace)))
          (sut-trail (trace->trail sut-trace))
+         (component (runtime:ast-model instance))
          (provides-event (any (compose (conjoin (disjoin (is? <action>)
                                                          (is? <trigger>))
                                                 ast:provides?
@@ -508,6 +508,13 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (or (check-provides-fork-and-zip #f trace)
                        (check-requires-provides-fork trace)))
               (fold check-compliance (list trace) ports))))))
+
+(define-method (check-provides-compliance (pc <program-counter>) event trace)
+  (let* ((component ((compose .type .ast) (%sut)))
+         (trigger (and (string? event)
+                       (not (equal? event "<defer>"))
+                       (clone (string->trigger event) #:parent component))))
+    (check-provides-compliance pc (%sut) trigger trace)))
 
 (define* (check-provides-compliance+ pc event trace)
   "Run check-provides-compliance.  For a blocking trace that has been
