@@ -34,12 +34,14 @@
             %instances
             ast->runtime:instance
             runtime:%sut-model
+            runtime:%sut-port?
             runtime:ast-model
             runtime:get-sut
             runtime:boundary-port?
             runtime:component-instance?
             runtime:container-eq?
             runtime:container-path
+            runtime:create-instances
             runtime:dotted-name
             runtime:foreign-instance?
             runtime:instance->path
@@ -58,7 +60,7 @@
             runtime:runtime-requires-port*
             runtime:requires-instance?
             runtime:system-instance?
-            runtime:create-instances
+            runtime:system-port?
             <runtime:component>
             <runtime:component-model>
             <runtime:foreign>
@@ -189,6 +191,12 @@
 
 (define-method (runtime:boundary-port? o)
   #f)
+
+(define-method (runtime:system-port? (o <runtime:port>))
+  (is-a? (.container o) <runtime:system>))
+
+(define-method (runtime:%sut-port? (o <runtime:port>))
+  (eq? (.container o) (%sut)))
 
 (define-method (runtime:container-eq? (a <runtime:instance>) (b <runtime:instance>))
   (equal? (runtime:id-container-path a) (runtime:id-container-path b)))
