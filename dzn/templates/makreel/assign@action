@@ -1,3 +1,3 @@
-. sum #.variable.name : #x:basic-type . #x:type-bound  #x:event-prefix reply(#x:reply-constructor (#.variable.name)) . #x:type-check #x:process-identifier _sum_helper(#.variable.name = #.variable.name);
+. sum #.variable.name : #x:basic-type . #x:type-bound  #x:event-prefix reply(#x:reply-constructor (#.variable.name)) . #x:type-check sum #.port.name s : #x:makreel:interface-name State . #.port.name state(#.port.name s) . #x:process-identifier _sum_helper(#x:shared-value , #.variable.name = #.variable.name);
 
 #x:process-identifier _sum_helper#x:sum-helper-params = #x:continuation;

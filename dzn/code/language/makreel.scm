@@ -1119,8 +1119,11 @@
     ((? (is? <ast>)) (tree-map makreel:add-shared-variables o))
     (_ o)))
 
-(define-method (makreel:shared-variable* o)
+(define-method (makreel:shared-variable* (o <behavior>))
   (filter (is? <shared-variable>) (ast:member* o)))
+
+(define-method (makreel:shared-variable* (o <ast>))
+  (filter (is? <shared-variable>) (ast:member* (ast:parent o <behavior>))))
 
 (define-method (makreel:shared-var* (o <behavior>))
   (delete-duplicates (tree-collect (is? <shared-var>) o) ast:equal?))
