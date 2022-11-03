@@ -31,6 +31,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
@@ -117,7 +118,8 @@
 
 (define-ast <end-of-on> (<imperative>))
 
-(define-ast <flush-return> (<imperative>))
+(define-ast <flush-return> (<imperative>)
+  (trigger))
 
 (define-ast <initial-compound> (<declarative-compound>))
 
