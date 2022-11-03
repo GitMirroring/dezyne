@@ -1,10 +1,10 @@
-(header ((p) ihello provides) ((sut) state_deadlock system) ((sut c1) helloworld1 component) ((sut c2) helloworld2 component) ((r) ihello requires))
-(state ((p) (b . true)) ((sut c1) (b . false)) ((sut c2) (b . true)) ((r) (b . true)))
+(header ((p) ihello provides) ((sut) state_deadlock system) ((sut c1 pc1) ihello provides) ((sut c1) helloworld1 component) ((sut c1 rc1) ihello provides) ((sut c2 pc2) ihello provides) ((sut c2) helloworld2 component) ((sut c2 rc2) ihello provides) ((r) ihello requires))
+(state ((p) (b . true)) ((sut c1 pc1) (b . true)) ((sut c1) (b . false)) ((sut c1 rc1) (b . true)) ((sut c2 pc2) (b . true)) ((sut c2) (b . true)) ((sut c2 rc2) (b . true)) ((r) (b . true)))
 test/all/state_deadlock/state_deadlock.dzn:44:3: error: illegal
 <external>.p.hello -> ...
 ... -> sut.c1.pc1.hello
 <illegal>
-(state ((p) (b . true)) ((sut c1) (b . false)) ((sut c2) (b . true)) ((r) (b . true)))
+(state ((p) (b . true)) ((sut c1 pc1) (b . true)) ((sut c1) (b . false)) ((sut c1 rc1) (b . true)) ((sut c2 pc2) (b . true)) ((sut c2) (b . true)) ((sut c2 rc2) (b . true)) ((r) (b . true)))
 test/all/state_deadlock/state_deadlock.dzn:44:3: error: illegal
 (trail "p.hello" "<illegal>")
 (labels "p.hello" "r.world")

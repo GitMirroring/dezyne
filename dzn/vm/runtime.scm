@@ -34,12 +34,14 @@
             %instances
             ast->runtime:instance
             runtime:%sut-model
+            runtime:%sut-port?
             runtime:ast-model
             runtime:get-sut
             runtime:boundary-port?
             runtime:component-instance?
             runtime:container-eq?
             runtime:container-path
+            runtime:create-instances
             runtime:dotted-name
             runtime:foreign-instance?
             runtime:instance->path
@@ -58,7 +60,7 @@
             runtime:runtime-requires-port*
             runtime:requires-instance?
             runtime:system-instance?
-            runtime:create-instances
+            runtime:system-port?
             <runtime:component>
             <runtime:component-model>
             <runtime:foreign>
@@ -189,6 +191,12 @@
 
 (define-method (runtime:boundary-port? o)
   #f)
+
+(define-method (runtime:system-port? (o <runtime:port>))
+  (is-a? (.container o) <runtime:system>))
+
+(define-method (runtime:%sut-port? (o <runtime:port>))
+  (eq? (.container o) (%sut)))
 
 (define-method (runtime:container-eq? (a <runtime:instance>) (b <runtime:instance>))
   (equal? (runtime:id-container-path a) (runtime:id-container-path b)))
@@ -336,7 +344,11 @@
         (($ <interface>)
          (list o))
         (($ <component>)
-         (cons o (map (cute port->instance <> o #f) (runtime:port* o))))
+         (let ((ports (runtime:port* o)))
+           (append
+            (map (cute port->instance <> o #f) (filter ast:provides? ports))
+            (list o)
+            (map (cute port->instance <> o #f) (filter ast:requires? ports)))))
         (($ <foreign>)
          (let* ((ports (runtime:port* o))
                 (port-instances (map (cute port->instance <> o #f) (runtime:port* o)))
@@ -344,13 +356,17 @@
                 (inverted-requires (map invert-direction (filter ast:requires? ports)))
                 (provides-instances (map (cute port->instance <> o #t) inverted-requires))
                 (requires-instances (map (cute port->instance <> o #t) inverted-provides)))
-           (cons o (append port-instances provides-instances requires-instances))))
+           (append port-instances provides-instances (list o) requires-instances)))
         (($ <system>)
          (let ((instances (ast:instance* t)))
-           (cons o (append (map (cute port->instance <> o #f) (runtime:port* o))
-                           (append-map (compose model-instances
-                                                (cute ast->runtime:instance <> o))
-                                       instances)))))
+           (let ((ports (runtime:port* o)))
+             (append
+              (map (cute port->instance <> o #f) (filter ast:provides? ports))
+              (list o)
+              (map (cute port->instance <> o #f) (filter ast:requires? ports))
+              (append-map (compose model-instances
+                                   (cute ast->runtime:instance <> o))
+                          instances)))))
         (#f '()))))
 
   (define (injected-instances instances)

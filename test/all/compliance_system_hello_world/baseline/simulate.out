@@ -1,5 +1,5 @@
-(header ((h) ihello provides) ((sut) compliance_system_hello_world system) ((sut ch) hello component) ((sut cw) world component) ((w) ihello requires))
-(state ((h)) ((sut ch)) ((sut cw)) ((w)))
+(header ((h) ihello provides) ((sut) compliance_system_hello_world system) ((sut ch hh) ihello provides) ((sut ch) hello component) ((sut ch hw) ihello provides) ((sut cw ww) ihello provides) ((sut cw) world component) ((sut cw wh) ihello provides) ((w) ihello requires))
+(state ((h)) ((sut ch hh)) ((sut ch)) ((sut ch hw)) ((sut cw ww)) ((sut cw)) ((sut cw wh)) ((w)))
 test/all/compliance_system_hello_world/compliance_system_hello_world.dzn:60:1: error: non-compliance
 <external>.h.hello -> ...
 ... -> sut.ch.hh.hello
@@ -22,7 +22,7 @@ sut.ch.hw.world <- ...
 ... <- sut.ch.hh.world
 <external>.h.world <- ...
 <non-compliance>
-(state ((h)) ((sut ch)) ((sut cw)) ((w)))
+(state ((h)) ((sut ch hh)) ((sut ch)) ((sut ch hw)) ((sut cw ww)) ((sut cw)) ((sut cw wh)) ((w)))
 test/all/compliance_system_hello_world/compliance_system_hello_world.dzn:60:1: error: non-compliance
 (trail "h.hello" "w.hello" "w.world" "w.return" "h.world" "<non-compliance>")
 (labels "h.hello" "w.world")

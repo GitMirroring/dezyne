@@ -1170,12 +1170,21 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
       (serialize o (current-output-port)))))
 
 (define-method (serialize (o <system-state>) port)
-  (display "(state " port)
-  (for-each (lambda (x) (unless (eq? x ((compose car .state-list) o))
-                          (display " " port))
-                    (serialize x port))
-            (.state-list o))
-  (display ")" port))
+  (let* ((state-list (.state-list o))
+         (state-list (filter (compose
+                              (disjoin
+                               (negate (is? <runtime:port>))
+                               (conjoin (negate runtime:%sut-port?)
+                                        (negate runtime:system-port?)))
+                              .instance)
+                             state-list)))
+    (define (serialize-state o)
+      (unless (eq? o (car state-list))
+        (display " " port))
+      (serialize o port))
+    (display "(state " port)
+    (for-each serialize-state state-list)
+    (display ")" port)))
 
 (define-method (serialize (o <state>) port)
   (let ((path ((compose runtime:instance->path .instance) o)))
@@ -1191,20 +1200,18 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
       (display `("*q*" . ,(map trigger->string (.q o))) port))
     (display ")" port)))
 
-(define-method (serialize-header (o <system-state>))
-  (with-output-to-string
-    (lambda _ (cons 'header (serialize-header o (current-output-port))))))
-
 (define-method (serialize-header (o <system-state>) port)
-  (display "(header " port)
-  (for-each (lambda (x)
-              (unless (eq? x ((compose car %instances)))
-                (display " " port))
-              (serialize-header x port))
-            (filter (disjoin (negate (is? <runtime:port>))
-                             runtime:boundary-port?)
-                    (%instances)))
-  (display ")" port))
+  (let ((instances (filter (disjoin (negate (is? <runtime:port>))
+                                    (conjoin (negate runtime:%sut-port?)
+                                             (negate runtime:system-port?)))
+                           (%instances))))
+    (define (display-instance o)
+      (unless (eq? o (car instances))
+        (display " " port))
+      (serialize-header o port))
+    (display "(header " port)
+    (for-each display-instance instances)
+    (display ")" port)))
 
 (define-method (serialize-header (o <runtime:instance>) port)
   (display "(" port)
@@ -1544,7 +1551,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
         (make <state> #:instance o #:variables variables))))
 
 (define-method (make-system-state instances)
-  (make <system-state> #:state-list (map make-state (filter (disjoin runtime:boundary-port? (is? <runtime:component>)) instances))))
+  (let* ((instances
+          (filter (disjoin
+                   (is? <runtime:component>)
+                   (if (is-a? (%sut) <runtime:system>) (is? <runtime:port>)
+                       runtime:boundary-port?))
+                  instances))
+         (lst (map make-state instances)))
+    (make <system-state> #:state-list lst)))
 
 (define* (make-pc #:key (instances (%instances)) (trail '()))
   (let* ((system-state (make-system-state instances))
