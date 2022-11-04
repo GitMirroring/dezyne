@@ -1,0 +1,80 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  in void bye ();
+  out void world ();
+  out void cruel ();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: cruel;
+    [idle] on hello: idle = false;
+    [!idle] on bye: idle = true;
+    [!idle] on optional: {world; idle = true;}
+  }
+}
+
+component hello
+{
+  provides ihello th;
+  requires ihello tw;
+
+  behavior
+  {
+    on th.hello (): tw.hello ();
+    on th.bye (): tw.bye ();
+    on tw.world (): th.world ();
+  }
+}
+
+component world
+{
+  provides ihello bh;
+  requires ihello bw;
+
+  behavior
+  {
+    on bh.hello (): bw.hello ();
+    on bh.bye (): bw.bye ();
+    on bw.world (): bh.world ();
+  }
+}
+
+component system_shared
+{
+  provides ihello h;
+  requires ihello w;
+
+  system
+    {
+      hello top;
+      world bottom;
+      h <=> top.th;
+      top.tw <=> bottom.bh;
+      bottom.bw <=> w;
+    }
+}
