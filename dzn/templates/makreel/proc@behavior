@@ -1,5 +1,5 @@
 #x:makreel:model-name behavior #x:process-parameters
- = #x:shared-component-proc #x:makreel:model-name 0 #makreel:shared-process-haakjes (#x:shared-value)
+ = #x:shared-component-proc #x:makreel:model-name 0 #makreel:shared-process-haakjes #x:shared-values
  #x:defer
  ;
 
