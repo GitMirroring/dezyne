@@ -65,6 +65,7 @@
             defer-labels
             dequeue
             dequeue-external
+            end-of-trail-labels
             enqueue
             enqueue-external
             external-trigger?
@@ -77,6 +78,7 @@
             graft-locals
             in-event?
             is-status?
+            label->string
             label?
             labels
             make-implicit-illegal
@@ -383,7 +385,12 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        ports)))))
 
 (define-method (labels (pc <program-counter>))
-  (append (labels) (rtc-labels pc) (return-labels pc) (defer-labels pc)))
+  (delete-duplicates
+   (append (labels)
+           (rtc-labels pc)
+           (end-of-trail-labels pc)
+           (return-labels pc)
+           (defer-labels pc))))
 
 (define-method (label? (o <string>))
   (and (member o (labels)) o))
@@ -413,6 +420,48 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                               (%instances)))
                (port-names (map (compose .name .ast) ports)))
           (map (cute format #f "~a.<rtc>" <>) port-names)))))
+
+(define (label->string o)
+  (match o
+    (($ <action>)
+     (trigger->string o))
+    (($ <enum-literal>)
+     (string-append (ast:name (.type.name o)) ":" (.field o)))
+    (($ <literal>)
+     (label->string (.value o)))
+    ((? (is? <trigger>))
+     (trigger->string o))
+    (($ <trigger-return>)
+     (let ((prefix (or (and=> (.port.name o) (cute string-append <> ".")) "")))
+       (string-append prefix (label->string (.event.name o)))))
+    ((? (is? <model>))
+     #f)
+    ((? string?)
+     o)
+    (#f
+     "false")
+    (#t
+     "true")))
+
+(define (end-of-trail-labels pc)
+  (let* ((status (.status pc))
+         (ast (and=> status .ast))
+         (instance (.instance pc))
+         (end-of-trail-labels? (and (is-a? status <end-of-trail>)
+                                    (or (is-a? ast <action>)
+                                        (is-a? ast <trigger-return>)))))
+    (if (not end-of-trail-labels?) '()
+        (let* ((ast (.ast status))
+               (port-name (if (not instance) (.port.name ast)
+                              (string-join (runtime:instance->path instance)
+                                           ".")))
+               (ast (trigger->string (clone ast #:port.name #f)))
+               (labels (ast:label* status))
+               (labels (map label->string labels))
+               (labels (if (is-a? (%sut) <runtime:port>) labels
+                           (map (cute string-append port-name "." <>)
+                                labels))))
+          labels))))
 
 (define-method (return-labels (pc <program-counter>))
   (let* ((blocked (.blocked pc))
@@ -1344,7 +1393,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 ;;;
 
 (define-method (is-status? (type <class>))
-  (lambda (pc) (is-a? (.status pc) type)))
+  (lambda (pc)
+    (let ((status (.status pc)))
+      (and (is-a? status type)
+           status))))
 
 (define (provides/requires-trigger? string ast:provides/requires? ast:in/out?)
   (let* ((trigger (string->trigger string))

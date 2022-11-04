@@ -14,5 +14,5 @@ sut.w.hello -> ...
 ... -> <external>.w.hello
 (state ((h)) ((sut)) ((w)))
 (trail "h.hello" "w.hello" "w.world" "w.return" "w.hello")
-(labels "h.hello" "w.world" "w.bye")
+(labels "w.world" "w.bye")
 (eligible "w.world" "w.bye")

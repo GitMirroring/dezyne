@@ -46,7 +46,6 @@
             debug:lts->alist
             display-trace-n
             display-trails
-            label->string
             set-trigger-locations
             trace-equal?
             trace->trail
@@ -748,28 +747,6 @@ intermediate steps such as assignments, function calls, replies,
            (newline)))))
     (for-each write-step steps (iota (length steps)))))
 
-(define (label->string o)
-  (match o
-    (($ <action>)
-     (trigger->string o))
-    (($ <enum-literal>)
-     (string-append (ast:name (.type.name o)) ":" (.field o)))
-    (($ <literal>)
-     (label->string (.value o)))
-    ((? (is? <trigger>))
-     (trigger->string o))
-    (($ <trigger-return>)
-     (let ((prefix (or (and=> (.port.name o) (cute string-append <> ".")) "")))
-       (string-append prefix (label->string (.event.name o)))))
-    ((? (is? <model>))
-     #f)
-    ((? string?)
-     o)
-    (#f
-     "false")
-    (#t
-     "true")))
-
 (define (initial-error-message traces)
   (let* ((pcs (map car traces))
          (status (.status (car pcs))))
@@ -957,20 +934,6 @@ intermediate steps such as assignments, function calls, replies,
               (format #f "~ainfo: end of trail; stopping here: ~a~a\n" location prefix ast))))
       (_ #f))))
 
-(define (end-of-trail-labels pc)
-  (let* ((status (.status pc))
-         (instance (.instance pc))
-         (ast (.ast status))
-         (port-name (if instance (string-join (runtime:instance->path instance) ".")
-                        (.port.name ast)))
-         (location (location-prefix (.ast status)))
-         (ast (trigger->string (clone ast #:port.name #f)))
-         (labels (ast:label* status))
-         (labels (map label->string labels))
-         (labels (if (is-a? (%sut) <runtime:port>) labels
-                     (map (cut string-append port-name "." <>) labels))))
-    labels))
-
 (define* (report traces #:key eligible (trace "event") internal? locations? state? verbose?)
   "Print any error messages and the trail of (car TRACES) in
 trace-format TRACE, given that the trail is the same for all TRACES."
@@ -1038,10 +1001,12 @@ value of the trail."
 
     (when (and (equal? trace-format "trace")
                eligible)
-      (let* ((eligible (if (and (is-a? status <end-of-trail>) (.ast status)) (end-of-trail-labels pc)
-                           eligible))
+      (let* ((end-of-trail? (and (is-a? status <end-of-trail>) (.ast status)))
+             (end-of-trail (and end-of-trail? (end-of-trail-labels pc)))
+             (eligible (if (not end-of-trail?) eligible
+                           end-of-trail))
              (labels (or (and=> pc labels) '()))
-             (labels (if (and (pair? eligible) (not (member (car eligible) labels))) eligible
+             (labels (if (pair? end-of-trail) eligible
                          labels)))
         (format #t "~s\n" (cons 'labels labels))
         (format #t "~s\n" (cons 'eligible eligible))))
