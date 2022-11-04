@@ -442,46 +442,46 @@ p indirect_blocking_multiple_external_out r1 r2
 (eligible p.a)
 
 ** hello_system
-h         hello_system.c
-.               :
-.               :
-.hello          :
-.-------------->:
-.               :
-.          world:
-.<--------------:
-.               :
-.         return:
-.<--------------:
-(state ((h)) ((sut c)))
+h         hello_system.c               hello_system.c.hh
+.               :                              .
+.               :                              .
+.hello          :                              .
+.-------------->:                              .
+.               :                              .
+.          world:                              .
+.<--------------:                              .
+.               :                              .
+.         return:                              .
+.<--------------:                              .
+(state ((h)) ((sut c)) ((sut c hh)))
 (trail h.hello h.world h.return)
-(state ((h)) ((sut c)))
+(state ((h)) ((sut c)) ((sut c hh)))
 (labels h.hello)
 (eligible h.hello)
 
 ** system_bool_enum
-p       system_bool_enum.e             system_bool_enum.b       r
-.               :                              :                .
-.               :                              :                .
-.hello          :                              :                .
-.-------------->:                              :                .
-.               :                              :                .
-.               :hello                         :                .
-.               :----------------------------->:                .
-.               :                              :                .
-.               :                              :hello           .
-.               :                              :--------------->.
-.               :                              :                .
-.               :                              :           false.
-.               :                              :<---------------.
-.               :                              :                .
-.               :                        return:                .
-.               :<-----------------------------:                .
-.               :                              :                .
-.         return:                              :                .
-.<--------------:                              :                .
-(state ((p) (b . false)) ((sut e) (e . E:T)) ((sut b) (b . false)) ((r) (b . false)))
+p       system_bool_enum.e           system_bool_enum.e.p1          system_bool_enum.e.r1            system_bool_enum.b           system_bool_enum.b.p2          system_bool_enum.b.r2      r
+.               :                              .                              .                              :                              .                              .                .
+.               :                              .                              .                              :                              .                              .                .
+.hello          :                              .                              .                              :                              .                              .                .
+.-------------->:                              .                              .                              :                              .                              .                .
+.               :                              .                              .                              :                              .                              .                .
+.               :hello                         .                              .                              :                              .                              .                .
+.               :------------------------------------------------------------------------------------------->:                              .                              .                .
+.               :                              .                              .                              :                              .                              .                .
+.               :                              .                              .                              :hello                         .                              .                .
+.               :                              .                              .                              :----------------------------------------------------------------------------->.
+.               :                              .                              .                              :                              .                              .                .
+.               :                              .                              .                              :                              .                              .           false.
+.               :                              .                              .                              :<-----------------------------------------------------------------------------.
+.               :                              .                              .                              :                              .                              .                .
+.               :                              .                              .                        return:                              .                              .                .
+.               :<-------------------------------------------------------------------------------------------:                              .                              .                .
+.               :                              .                              .                              :                              .                              .                .
+.         return:                              .                              .                              :                              .                              .                .
+.<--------------:                              .                              .                              :                              .                              .                .
+(state ((p) (b . false)) ((sut e) (e . E:T)) ((sut e p1) (b . true)) ((sut e r1) (b . true)) ((sut b) (b . false)) ((sut b p2) (b . true)) ((sut b r2) (b . true)) ((r) (b . false)))
 (trail p.hello r.hello r.false p.return)
-(state ((p) (b . false)) ((sut e) (e . E:T)) ((sut b) (b . false)) ((r) (b . false)))
+(state ((p) (b . false)) ((sut e) (e . E:T)) ((sut e p1) (b . true)) ((sut e r1) (b . true)) ((sut b) (b . false)) ((sut b p2) (b . true)) ((sut b r2) (b . true)) ((r) (b . false)))
 (labels p.hello r.world)
 (eligible p.hello r.world)
