@@ -1,5 +1,5 @@
-(header ((h) ihello provides) ((sut) hello_system_reply system) ((sut p) proxy component) ((sut p p) ihello provides) ((sut p r) ihello provides) ((sut b) bottom component) ((sut b h) ihello provides))
-(state ((h)) ((sut p)) ((sut p p)) ((sut p r)) ((sut b)) ((sut b h)))
+(header ((h) ihello provides) ((sut) hello_system_reply system) ((sut p p) ihello provides) ((sut p) proxy component) ((sut p r) ihello provides) ((sut b h) ihello provides) ((sut b) bottom component))
+(state ((h)) ((sut p p)) ((sut p)) ((sut p r)) ((sut b h)) ((sut b)))
 <external>.h.hello -> ...
 ... -> sut.p.p.hello
 sut.p.r.hello -> ...
@@ -14,8 +14,8 @@ sut.p.r.world <- ...
 <external>.h.world <- ...
 ... <- sut.p.p.true
 <external>.h.true <- ...
-(state ((h)) ((sut p)) ((sut p p)) ((sut p r)) ((sut b)) ((sut b h)))
+(state ((h)) ((sut p p)) ((sut p)) ((sut p r)) ((sut b h)) ((sut b)))
 (trail "h.hello" "h.world" "h.true")
-(state ((h)) ((sut p)) ((sut p p)) ((sut p r)) ((sut b)) ((sut b h)))
+(state ((h)) ((sut p p)) ((sut p)) ((sut p r)) ((sut b h)) ((sut b)))
 (labels "h.hello")
 (eligible "h.hello")

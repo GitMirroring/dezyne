@@ -1,12 +1,12 @@
-(header ((h) ihello provides) ((sut) illegal_system_requires system) ((sut c) compliance_requires_illegal component) ((sut c hh) ihello provides) ((sut c ww) ihello provides) ((w) ihello requires))
-(state ((h)) ((sut c)) ((sut c hh)) ((sut c ww)) ((w)))
+(header ((h) ihello provides) ((sut) illegal_system_requires system) ((sut c hh) ihello provides) ((sut c) compliance_requires_illegal component) ((sut c ww) ihello provides) ((w) ihello requires))
+(state ((h)) ((sut c hh)) ((sut c)) ((sut c ww)) ((w)))
 test/all/illegal_system_requires/illegal_system_requires.dzn:30:3: error: illegal
 <external>.h.hello -> ...
 ... -> sut.c.hh.hello
 sut.c.ww.cruel -> ...
 ... -> <external>.w.cruel
 <illegal>
-(state ((h)) ((sut c)) ((sut c hh)) ((sut c ww)) ((w)))
+(state ((h)) ((sut c hh)) ((sut c)) ((sut c ww)) ((w)))
 test/all/illegal_system_requires/illegal_system_requires.dzn:30:3: error: illegal
 (trail "h.hello" "w.cruel" "<illegal>")
 (labels "h.hello" "h.cruel")

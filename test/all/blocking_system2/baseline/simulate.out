@@ -1,5 +1,5 @@
-(header ((port1) IBlocked provides) ((port2) IBlocked provides) ((sut) blocking_system2 system) ((sut blocked1) Blocked component) ((sut blocked1 provided) IBlocked provides) ((sut blocked1 required) IAsync provides) ((sut blocked2) Blocked component) ((sut blocked2 provided) IBlocked provides) ((sut blocked2 required) IAsync provides) ((async1) IAsync requires) ((async2) IAsync requires))
-(state ((port1)) ((port2)) ((sut blocked1)) ((sut blocked1 provided)) ((sut blocked1 required) (pending . false)) ((sut blocked2)) ((sut blocked2 provided)) ((sut blocked2 required) (pending . false)) ((async1) (pending . false)) ((async2) (pending . false)))
+(header ((port1) IBlocked provides) ((port2) IBlocked provides) ((sut) blocking_system2 system) ((sut blocked1 provided) IBlocked provides) ((sut blocked1) Blocked component) ((sut blocked1 required) IAsync provides) ((sut blocked2 provided) IBlocked provides) ((sut blocked2) Blocked component) ((sut blocked2 required) IAsync provides) ((async1) IAsync requires) ((async2) IAsync requires))
+(state ((port1)) ((port2)) ((sut blocked1 provided)) ((sut blocked1)) ((sut blocked1 required) (pending . false)) ((sut blocked2 provided)) ((sut blocked2)) ((sut blocked2 required) (pending . false)) ((async1) (pending . false)) ((async2) (pending . false)))
 <external>.port1.e -> ...
 ... -> sut.blocked1.provided.e
 sut.blocked1.required.trigger -> ...
@@ -24,8 +24,8 @@ sut.blocked2.<q> <- ...
 sut.blocked2.required.notify <- ...
 ... <- sut.blocked2.provided.return
 <external>.port2.return <- ...
-(state ((port1)) ((port2)) ((sut blocked1)) ((sut blocked1 provided)) ((sut blocked1 required) (pending . false)) ((sut blocked2)) ((sut blocked2 provided)) ((sut blocked2 required) (pending . false)) ((async1) (pending . false)) ((async2) (pending . false)))
+(state ((port1)) ((port2)) ((sut blocked1 provided)) ((sut blocked1)) ((sut blocked1 required) (pending . false)) ((sut blocked2 provided)) ((sut blocked2)) ((sut blocked2 required) (pending . false)) ((async1) (pending . false)) ((async2) (pending . false)))
 (trail "port1.e" "async1.trigger" "async1.return" "port2.e" "async2.trigger" "async2.return" "async1.notify" "port1.return" "async2.notify" "port2.return")
-(state ((port1)) ((port2)) ((sut blocked1)) ((sut blocked1 provided)) ((sut blocked1 required) (pending . false)) ((sut blocked2)) ((sut blocked2 provided)) ((sut blocked2 required) (pending . false)) ((async1) (pending . false)) ((async2) (pending . false)))
+(state ((port1)) ((port2)) ((sut blocked1 provided)) ((sut blocked1)) ((sut blocked1 required) (pending . false)) ((sut blocked2 provided)) ((sut blocked2)) ((sut blocked2 required) (pending . false)) ((async1) (pending . false)) ((async2) (pending . false)))
 (labels "port1.e" "port2.e" "async1.notify" "async2.notify")
 (eligible "port1.e" "port2.e")
