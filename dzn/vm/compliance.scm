@@ -75,7 +75,8 @@ format."
            (eq? instance r:port))))
 
   (define (statement-equal? a b)
-    (and (eq? (.instance a) (.instance a))
+    (and a b
+         (eq? (.instance a) (.instance b))
          (ast:equal? (.trigger a) (.trigger b))
          (ast:equal? (.statement a) (.statement b))))
 
