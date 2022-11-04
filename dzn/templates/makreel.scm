@@ -293,6 +293,7 @@
 (define-templates shared-values (lambda (o) (and (pair? (makreel:shared-variable* o)) o)) comma-suffix)
 (define-templates shared-value makreel:shared-variable* comma-infix)
 (define-templates add-shared-value makreel:shared-variable* comma-suffix)
+(define-templates shared-state (lambda (o) (and (pair? (makreel:shared-variable* o)) o)) comma-suffix)
 (define-templates interface-state-sort makreel:interface* double-newline-infix)
 (define-templates interface-state-variables makreel:shared-interface)
 (define-templates interface-no-state-variables makreel:no-shared-interface double-newline-infix)
