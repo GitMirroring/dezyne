@@ -261,15 +261,9 @@
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
-  (pke "hiero")
   (code-util:foreign-conflict? root)
-  (pke "daaro")
 
   (let ((root (code:om+determinism root)))
-    (pke "hero")
-    (x:header root)
-    (pke "ERNA")
-
     (let ((generator (code-util:indenter (cute x:header root)))
           (file-name (code-util:root-file-name root dir ".h")))
       (code-util:dump root generator #:file-name file-name))
