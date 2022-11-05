@@ -396,10 +396,10 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (pair? trace))
               (%debug "  exit 2\n")
               (let* ((port-pcs (map (compose (cut clone pc #:state <>) .state car) port-traces))
-                     (traces (map (lambda (port-pc)
-                                    (cons (set-state (car trace) (get-state port-pc port-instance))
-                                          (cdr trace)))
-                                  port-pcs)))
+                     (pcs (map (cute update-state pc port-instance <>)
+                               port-pcs))
+                     (traces (map (lambda (pc trace) (cons pc (cdr trace)))
+                                  pcs traces)))
                 (map (cute zip trigger <> <>) traces port-traces)))
              ((and (%compliance-check?)
                    (null? non-compliances)
@@ -462,10 +462,11 @@ Return a list of traces, possibly marked with <compliance-error>."
              (else
               (%debug "  exit 7\n")
               (let* ((port-trace (car non-compliances))
-                     (port-state (get-state (last port-trace)))
+                     (port-pc (last port-trace))
+                     (port-instance (.instance port-pc))
                      (port-trace
                       (rewrite-trace-head
-                       (cut set-state <> port-state)
+                       (cut update-state <> port-instance port-pc)
                        port-trace))
                      (trace (zip trigger trace (car non-compliances)))
                      (trace

@@ -1028,6 +1028,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
   (fold (cut update-state state <> <>) pc ((compose .state-list .state) pc)))
 
+(define (update-state pc from-instance from-pc)
+  (let ((from-state (get-state from-pc from-instance)))
+    (set-state pc from-state)))
+
 (define-method (get-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
   (assoc-ref (.reply (get-state pc instance)) port))
 
