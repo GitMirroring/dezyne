@@ -130,6 +130,7 @@
             trigger->system-trigger
             trigger->port-trigger
             trigger->string
+            update-other-state
             update-state)
   #:re-export (eval-expression))
 
@@ -962,7 +963,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (flush (pc <program-counter>) instance)
   (%debug "  ~s ~s ~a\n" (name instance) (and=> (.trigger pc) trigger->string) "<flush>")
   (let* ((orig-pc pc)
-         (flush-return (make <flush-return>))
+         (trigger (and=> (as (.q (get-state pc instance)) <pair>)
+                         car))
+         (flush-return (make <flush-return> #:trigger trigger))
+         (flush-return (clone flush-return #:parent (and=> trigger .parent)))
          (pc (push-pc pc flush-return))
          (pc (clone pc #:instance instance)))
     (cond
@@ -1028,6 +1032,24 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
   (fold (cut update-state state <> <>) pc ((compose .state-list .state) pc)))
 
+(define* (update-other-state pc instance #:key (direction? ast:provides?))
+  (let ((other-instance (runtime:other-port instance)))
+    (cond
+     ((not other-instance)
+      pc)
+     ((direction? instance)
+      (let ((variables (get-variables pc instance)))
+        (set-variables pc other-instance variables)))
+     (else
+      (let* ((variables (get-variables pc other-instance)))
+        (set-variables pc instance variables))))))
+
+(define (update-state pc from-instance from-pc)
+  (let* ((from-state (get-state from-pc from-instance))
+         (pc (set-state pc from-state)))
+    (if (is-a? (%sut) <runtime:component>) pc
+        (update-other-state pc from-instance))))
+
 (define-method (get-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
   (assoc-ref (.reply (get-state pc instance)) port))
 
@@ -1067,6 +1089,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (set-variables (pc <program-counter>) (o <list>))
   (set-state pc (clone (get-state pc) #:variables (copy-tree o))))
+
+(define-method (set-variables (pc <program-counter>) (instance <runtime:instance>) (o <list>))
+  (set-state pc (clone (get-state pc instance) #:variables (copy-tree o))))
 
 (define-method (get-members (pc <program-counter>) instance)
   (let* ((state (get-state pc instance))
@@ -1151,10 +1176,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 (define-method (assign (pc <program-counter>) (variable <formal>) (e <call>))
   (assign pc variable (.return pc)))
 
-(define (rewrite-trace-head rewriter trace)
+(define (rewrite-trace-head rewriter trace . rest)
   (match trace
     ((pc tail ...)
-     (cons (rewriter pc) tail))))
+     (cons (apply rewriter pc rest) tail))))
 
 (define-method (append-port-trace (pc <program-counter>) trace (port-instance <runtime:port>) port-trace)
   (let* ((ipc (car port-trace))

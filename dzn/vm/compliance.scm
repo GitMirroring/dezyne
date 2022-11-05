@@ -38,7 +38,8 @@
 
   #:export (%compliance-check?
             check-provides-compliance
-            check-provides-compliance*))
+            check-provides-compliance*
+            internal-check-compliance))
 
 ;;; Commentary:
 ;;;
@@ -244,10 +245,14 @@ component has executed is considered.
 Return a list of traces, possibly marked with <compliance-error>."
 
   (define (drop-prefix pc trigger trace)
-    (let* ((r:port (runtime:port-name->instance (.port.name trigger)))
-           (r:component-port (runtime:other-port r:port))
+    (let* ((port (.port trigger))
+           (r:port (runtime:port-name->instance (.name port)))
+           (r:component-port (if r:port (runtime:other-port r:port)
+                                 (runtime:port instance port)))
+           (component-trigger
+            (if r:port (trigger->component-trigger trigger)
+                (trigger->component-trigger r:component-port trigger)))
            (instance (.container r:component-port))
-           (component-trigger (trigger->component-trigger trigger))
            (at (list-index
                 (if (ast:provides? component-trigger)
                     (conjoin
@@ -270,24 +275,34 @@ Return a list of traces, possibly marked with <compliance-error>."
          (blocking? (find (compose pair? .blocked) trace))
          (sut-trace (if (or (not trigger) (not blocking?)) trace
                         (drop-prefix pc trigger trace)))
-         (sut-trail (trace->trail sut-trace))
+         (internal? (and (is-a? (%sut) <runtime:system>)
+                         (not (eq? instance (%sut)))))
+         (sut-trail (if (not internal?) (trace->trail sut-trace)
+                        (trace->component-trail sut-trace)))
          (component (runtime:ast-model instance))
-         (provides-event (any (compose (conjoin (disjoin (is? <action>)
-                                                         (is? <trigger>))
-                                                ast:provides?
-                                                identity)
-                                       .statement)
+         (provides-event (any (conjoin
+                               (compose (cute eq? <> instance) .instance)
+                               (compose (is? <initial-compound>) .statement)
+                               .trigger)
                               (reverse trace)))
-         (provides-event (and=> provides-event .event.name))
-         (provides-trigger? (or (provides-trigger? provides-event)
+         (event-name (and event (.event.name (string->trigger event))))
+         (provides-event (and provides-event
+                              (equal? (.event.name provides-event)
+                                      event-name)
+                              provides-event))
+         (provides-trigger? (or (and=> (as provides-event <trigger>) ast:provides?)
                                 (provides-trigger? event)))
          (port-event (and provides-trigger? (.event.name trigger)))
          (port (and provides-trigger? (.port trigger))))
 
     (define (check-compliance port traces)
       (let* ((trace (if (null? traces) '() (car traces)))
-             (port-name (.name port))
-             (port-instance (runtime:port-name->instance port-name)))
+             (r:port (runtime:port instance port))
+             (port-name (if (not internal?) (.name port)
+                            (trace-name r:port)))
+             (port-instance
+              (if (not internal?) (runtime:port-name->instance port-name)
+                  (runtime:port instance port))))
 
         (define (port-event? e)
           (and (string? e)
@@ -399,11 +414,14 @@ Return a list of traces, possibly marked with <compliance-error>."
              ((and (pair? port-traces)
                    (pair? trace))
               (%debug "  exit 2\n")
-              (let* ((port-pcs (map (compose (cut clone pc #:state <>) .state car) port-traces))
-                     (traces (map (lambda (port-pc)
-                                    (cons (set-state (car trace) (get-state port-pc port-instance))
-                                          (cdr trace)))
-                                  port-pcs)))
+              (let* ((port-pcs (map
+                                (compose (cut clone pc #:state <>) .state car)
+                                port-traces))
+                     (pc (car trace))
+                     (pcs (map (cute update-state pc port-instance <>)
+                               port-pcs))
+                     (traces (map (lambda (pc trace) (cons pc (cdr trace)))
+                                  pcs traces)))
                 (map (cute zip trigger <> <>) traces port-traces)))
              ((and (%compliance-check?)
                    (null? non-compliances)
@@ -474,10 +492,11 @@ Return a list of traces, possibly marked with <compliance-error>."
              (else
               (%debug "  exit 8\n")
               (let* ((port-trace (car non-compliances))
-                     (port-state (get-state (last port-trace)))
+                     (port-pc (last port-trace))
+                     (port-instance (.instance port-pc))
                      (port-trace
                       (rewrite-trace-head
-                       (cut set-state <> port-state)
+                       (cut update-state <> port-instance port-pc)
                        port-trace))
                      (trace (zip trigger trace (car non-compliances)))
                      (trace
@@ -588,3 +607,48 @@ TRACES."
     (append-map
      (cute check-provides-compliance+ pc event <>)
      traces))))
+
+(define-method (internal-check-compliance (pc <program-counter>) trace traces)
+  "Check component TRACE for compliance using PC as starting point,
+update TRACES."
+  (let* ((statement (.statement pc))
+         (trigger (if (is-a? statement <trigger-return>) (.trigger pc)
+                      (.trigger statement)))
+         (port (.port trigger))
+         (instance (.instance pc))
+         (r:port (runtime:port instance port))
+         (r:other-port (runtime:other-port r:port))
+         (trigger (if (not (is-a? trigger <q-trigger>)) trigger
+                      (trigger->component-trigger r:other-port trigger)))
+         (r:port
+          r:other-port
+          (if (is-a? statement <trigger-return>) (values r:port r:other-port)
+              (values r:other-port r:port)))
+         (instance (if (is-a? statement <trigger-return>) instance
+                       (.container r:port)))
+         (start-index (list-index
+                       (conjoin
+                        (compose (cute eq? <> instance) .instance)
+                        (compose (cute is-a? <> <initial-compound>) .statement))
+                       trace))
+         (internal-compliance? (and start-index
+                                    (not (runtime:boundary-port? r:other-port))
+                                    (null? (.blocked pc)))))
+
+    (%debug "internal-check-compliance... ~s: ~a [~a]\n"
+            (trace-name r:port) (trigger->string trigger) internal-compliance?)
+    (if (not internal-compliance?) traces
+        (let* ((sut-trace (list-head trace (1+ start-index)))
+               (cpc (reset-replies pc))
+               (cpc (clone cpc #:instance #f))
+               (event (trigger->string trigger))
+               (compliance-traces
+                (append-map
+                 (cute check-provides-compliance cpc instance trigger <>)
+                 (list sut-trace)))
+               (traces (map (cute
+                             rewrite-trace-head
+                             (cute update-state <> r:port <>) <> <>)
+                            traces
+                            (map car compliance-traces))))
+          traces))))

@@ -27,9 +27,10 @@
   #:use-module (ice-9 hcons)
   #:use-module (ice-9 match)
 
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn ast goops)
   #:use-module (dzn misc)
+  #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm report)
   #:use-module (dzn vm runtime)
@@ -356,7 +357,33 @@ program-counters produced by taking a step."
                                 (map (cute clone <> #:trail (.trail pc)) pcs))
                                (else
                                 (map (mark-pc input pc) pcs))))
-                    (traces (map (cut cons <> trace) pcs)))
+                    (instance (.instance pc))
+                    (internal-compliance?
+                     (and (is-a? (%sut) <runtime:system>)
+                          (not (is-a? (%sut) <runtime:port>))
+                          (or (and
+                               (is-a? o <trigger-return>)
+                               (and=> (.port o) ast:provides?)
+                               (and=> (.trigger pc) .port)
+                               (ast:provides?
+                                (runtime:port instance (.port o))))
+                              (and (is-a? o <flush-return>)
+                                   (.trigger o)))))
+                    (traces (map (cut cons <> trace) pcs))
+                    (traces (if (not internal-compliance?) traces
+                                (internal-check-compliance pc trace traces)))
+                    (update? (and
+                              (not internal-compliance?)
+                              (is-a? (%sut) <runtime:system>)
+                              (is-a? o <trigger-return>)
+                              (runtime:boundary-port? instance)))
+                    (traces (if (not update?) traces
+                                (map
+                                 (cute rewrite-trace-head
+                                       (cut update-other-state <> instance
+                                            #:direction? ast:requires?)
+                                       <>)
+                                 traces))))
                (cond
                 ((ast:declarative? o)
                  (let ((declarative

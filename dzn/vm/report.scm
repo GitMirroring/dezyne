@@ -46,9 +46,13 @@
             display-trace-n
             display-trails
             set-trigger-locations
+            strip-sut-prefix
             trace-equal?
+            trace-name
             trace->trail
+            trace->component-trail
             trace->string-trail
+            trace->component-string-trail
             report))
 
 ;;;
@@ -76,10 +80,21 @@
 (define-method (trace->trail (o <program-counter>))
   (and (pc-event? o) (pc->event o)))
 
+(define (strip-sut-prefix o)
+  (if (string-prefix? "sut." o) (substring o 4) o))
+
 (define (trace->string-trail trace)
   (let ((trail (map cdr (trace->trail trace))))
-    (define (strip-sut-prefix o)
-      (if (string-prefix? "sut." o) (substring o 4) o))
+    (map strip-sut-prefix trail)))
+
+(define-method (trace->component-trail (o <list>))
+  (filter-map trace->component-trail (reverse o)))
+
+(define-method (trace->component-trail (o <program-counter>))
+  (and (pc-arrow? o) (pc->component-event o)))
+
+(define (trace->component-string-trail trace)
+  (let ((trail (map cdr (trace->component-trail trace))))
     (map strip-sut-prefix trail)))
 
 (define (trace-equal? a b)
@@ -279,6 +294,59 @@
 (define-method (pc->event x y)
   #f)
 
+;;; component-events formatting
+
+(define-method (pc->component-event (o <program-counter>))
+  (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc->component-event (.status o))
+      (pc->component-event o (.statement o))))
+
+(define-method (pc->component-event (pc <program-counter>) (o <statement>))
+  (pc->component-event (.instance pc) o))
+
+(define-method (pc->component-event (pc <program-counter>) (o <initial-compound>))
+  (pc->component-event (.instance pc) o (.trigger pc)))
+
+(define-method (pc->component-event (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))
+  (cons trigger
+        (if (is-a? (%sut) <runtime:port>)
+            (format #f "~a" (.event.name trigger))
+            (format #f "~a.~a" (.name (.ast o)) (.event.name trigger)))))
+
+(define-method (pc->component-event (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
+  (cons trigger
+        (let* ((port (.port trigger))
+               (r:port (runtime:port o port)))
+          (format #f "~a.~a" (trace-name r:port) (.event.name trigger)))))
+
+(define-method (pc->component-event (o <runtime:component>) (action <action>))
+  (cons action
+        (let* ((port (.port action))
+               (r:port (runtime:port o port)))
+          (cond
+           ((ast:injected? port)
+            (format #f "~a.~a" (trace-name r:port) (.event.name action)))
+           (else
+            (format #f "~a.~a" (trace-name r:port) (.event.name action)))))))
+
+(define-method (pc->component-event (pc <program-counter>) (o <trigger-return>))
+  (pc->component-event (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
+
+(define-method (pc->component-event (o <runtime:component>) (return <trigger-return>))
+  (cons return
+        (let ((port (.port return)))
+          (let* ((r:port (runtime:port o port))
+                 (r:other-port (and r:port (runtime:other-port r:port))))
+            (if (eq? r:port r:other-port) ;The other port is injected
+                (format #f "~a.~a" (trace-name r:port) (.event.name return))
+                (let ((value (.event.name return)))
+                  (format #f "~a.~a" (trace-name r:port) value)))))))
+
+(define-method (pc->component-event x)
+  (pc->event x))
+
+(define-method (pc->component-event x y)
+  (pc->event x y))
+
 
 ;;;
 ;;; Trace (a.k.a. arrows, broken arrows)
@@ -347,7 +415,7 @@
                (not (ast:modeling? trigger)))))))
 
 (define-method (pc-arrow? (o <runtime:component>) (return <trigger-return>))
-  #t)
+  (.port return))
 
 (define-method (pc-arrow? x y)
   (pc-event? x y))
@@ -555,7 +623,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
   (define (injected-port-name component interface)
     (let* ((ports (filter ast:injected? (ast:port* component)))
            (port (find (compose (cute ast:eq? <> interface) .type) ports)))
-      (.name port)))
+      (and=> port .name)))
 
   (let loop ((trace trace) (result '()))
     (if (null? trace) (reverse result)
