@@ -998,7 +998,13 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (get-state o (.instance o)))
 
 (define-method (set-state (pc <program-counter>) (o <state>))
-  (clone pc #:state (clone (.state pc) #:state-list (map (lambda (x) (if (eq? (.instance o) (.instance x)) o x)) ((compose .state-list .state) pc)))))
+  (define (replace-instance-state x)
+    (if (eq? (.instance o) (.instance x)) o
+        x))
+  (let* ((state-list ((compose .state-list .state) pc))
+         (state-list (map replace-instance-state state-list))
+         (state (clone (.state pc) #:state-list state-list)))
+    (clone pc #:state state)))
 
 (define-method (set-state (pc <program-counter>) (state <list>))
 
@@ -1060,7 +1066,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (.variables (get-state pc instance)))
 
 (define-method (set-variables (pc <program-counter>) (o <list>))
-  (set-state pc (clone (get-state pc) #:variables o)))
+  (set-state pc (clone (get-state pc) #:variables (copy-tree o))))
 
 (define-method (get-members (pc <program-counter>) instance)
   (let* ((state (get-state pc instance))
