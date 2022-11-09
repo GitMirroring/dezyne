@@ -1,1 +1,0 @@
-sum #.port.name s : #x:makreel:interface-name State . #.port.name state(#.port.name s)
