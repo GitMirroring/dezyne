@@ -127,7 +127,10 @@
        o))
 
 (define-method (makreel:interface-reorder (o <ast>))
-  '())
+  #f)
+
+(define-method (makreel:interface-reorder (o <continuation-pair>))
+  (makreel:interface-reorder (.continuation o)))
 
 (define interface-alist '())
 
@@ -149,7 +152,6 @@
 (define (mcrl2:process-identifier o)
   (let* ((model-key ((compose .id (cute ast:parent <> <model>)) o))
          (path (ast:path o))
-         ;; (foo (pke "PATH" path))
          (path (filter (negate (is? <continuation-pair>)) path))
          (key (map .id path))
 	 (next (assq-ref (%next-alist) model-key))
@@ -714,7 +716,6 @@
   (if (is-a? o <behavior>) '()
       (let* ((p (.parent o)))
         (cond ((is-a? p <continuation-pair>)
-               ;;(pke "hiero-p=cont" p "cont=" (.continuation p))
                (makreel:locals (.parent (.continuation p))))
               ((is-a? p <compound>)
                (let ((pre (cdr (member o (reverse (ast:statement* p)) ast:eq?))))
@@ -728,20 +729,23 @@
                (makreel:locals p))))))
 
 (define-method (makreel:locals (o <ast>))
-  ;;(pke "makreel:locals<ast>" o)
   (let* ((model (ast:parent o <model>))
          (root (ast:parent model <root>)))
     ((ast:pure-funcq makreel:locals-unmemoized) (list root model) o)))
 
 (define-method (makreel:locals (o <continuation-pair>))
-  ;; (pke "makreel:locals<cp>" o)
-  ;; (pke "   cont" (.continuation o))
-  ;; (pke "   parent" (.parent o))
-  (makreel:locals (.parent o)))
+  (let* ((continuation (.continuation o))
+         (lst (tree-collect (conjoin (is? <ast>)
+                                     (compose (cute eq? <> (.node continuation))
+                                              .node))
+                            (.parent o)))
+         (foo (unless (= (length lst) 1)
+                (throw 'programming-error "more than two of me" continuation)))
+         (continuation (car lst)))
+    (makreel:locals continuation)))
 
 (define-method (variables-in-scope (o <model>)) (members o))
 (define-method (variables-in-scope (o <ast>))
-  ;; (pke 'variables-in-scope o)
   (let ((stack (and (or (as o <function>)
                         (ast:parent o <function>))
                     (not (ast:parent o <defer>))
@@ -749,7 +753,6 @@
     (append (members o) (makreel:locals o) (if stack (list stack) '()))))
 
 (define-method (makreel:stack-parameters (o <ast>))
-  ;; (pke 'stack-parameters o)
   ((compose makreel:locals car makreel:continuation) o))
 
 (define-method (makreel:variable-parameter (o <ast>))
@@ -782,13 +785,11 @@
           ((compose list .function .expression) o)))
 
 (define-method (makreel:process-haakjes (o <ast>))
-  ;; (pke "process-haakjes<ast>"  o)
   (if (or (pair? (variables-in-scope o))
           (ast:parent o <function>)) "()"
           ""))
 
 (define-method (makreel:process-haakjes (o <continuation-pair>))
-  ;; (pke "process-haakjes<c-p>"  o)
   (makreel:process-haakjes (.continuation o)))
 
 (define-method (makreel:shared-process-haakjes (o <behavior>))
@@ -851,14 +852,23 @@
             (_ (makreel:continuation (.parent o))))))
     (step-into-assign/variable o cont)))
 
+(define (make-continuation-pair o c)
+  (let ((pair (make <continuation-pair> #:statement o #:continuation c)))
+    (clone pair #:parent (.parent c))))
+
 (define-method (makreel:continuation-pair (o <ast>))
-  (define (make-pair c)
-    (let ((pair (make <continuation-pair> #:statement o #:continuation c)))
-      (clone pair #:parent (.parent c))
-      ;;pair
-      ))
-  (pke 'make-continuation-pairs o "=>"
-       (map make-pair (makreel:continuation o))))
+  (map (cute make-continuation-pair o <>) (makreel:continuation o)))
+
+(define-method (makreel:behavior-continuation (o <continuation-pair>))
+  (and (is-a? (.continuation o) <behavior>)
+       o))
+
+(define-method (makreel:ast-continuation (o <continuation-pair>))
+  (and (not (is-a? (.continuation o) <behavior>))
+       o))
+
+(define-method (makreel:ast-continuation (o <ast>))
+  o)
 
 (define (step-into-assign/variable o continuation)
   (let* ((c (car continuation))
@@ -871,10 +881,16 @@
 (define-method (makreel:then-continuation (o <if>))
   (step-into-assign/variable o (list (.then o))))
 
+(define-method (makreel:then-continuation-pair (o <if>))
+  (map (cute make-continuation-pair o <>) (makreel:then-continuation o)))
+
 (define-method (makreel:else-continuation (o <if>))
   (let ((else (.else o)))
     (if else (step-into-assign/variable o (list else))
         (makreel:continuation o))))
+
+(define-method (makreel:else-continuation-pair (o <if>))
+  (map (cute make-continuation-pair o <>) (makreel:else-continuation o)))
 
 (define-method (makreel:proc-list (o <ast>))
   (let ((lst (proc-list o)))
@@ -1063,7 +1079,6 @@
       '()))
 
 (define-method (makreel:stack-destructor (o <ast>))
-  (pke 'stack-destructor o)
   (let ((f (and (not (is-a? o <defer>))
                 (not (ast:parent o <defer>))
                 (or (is-a? o <function>)
