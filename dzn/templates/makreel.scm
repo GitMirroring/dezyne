@@ -117,10 +117,10 @@
 (define-templates process-index makreel:process-index)
 (define-templates event (compose car ast:trigger*))
 
-(define-templates continuation makreel:continuation newline-union-infix)
+(define-templates continuation makreel:continuation-pair newline-union-infix)
 (define-templates then-continuation makreel:then-continuation newline-union-infix)
 (define-templates continuation-identifier makreel:continuation)
-(define-templates continuation-process-identifier identity)
+(define-templates continuation-process-identifier makreel:continuation-process-identifier)
 (define-templates else-continuation makreel:else-continuation newline-union-infix)
 
 ;; statement helpers
