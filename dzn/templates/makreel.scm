@@ -290,6 +290,7 @@
 (define-templates constrained-semantics-allow-requires ast:requires-port* newline-comma-prefix)
 
 ;;shared
+(define-templates shared-process-haakjes makreel:shared-process-haakjes)
 (define-templates share-state makreel:shared-interface newline-union-suffix)
 (define-templates shared-component-proc makreel:shared-var* newline-dot-suffix)
 (define-templates shared-values (lambda (o) (and (pair? (makreel:shared-variable* o)) o)) comma-suffix)

@@ -1181,6 +1181,17 @@
                  (compose (cute equal? (.port.name o) <>) .port.name))
         (ast:member* (ast:parent o <behavior>))))
 
+(define-method (makreel:shared-process-haakjes (o <continuation-pair>))
+  (let ((s (.statement o)))
+    (or (and (is-a? s <action>)
+             (ast:requires? s)
+             (shared-variable? s)
+             o)
+        (makreel:process-haakjes o))))
+
+(define-method (makreel:shared-process-haakjes (o <ast>))
+  '())
+
 (define-method (makreel:communicate-shared-state (o <action>))
   (and (shared-variable? o) (.port o)))
 
