@@ -1198,8 +1198,13 @@
 (define-method (makreel:shared-variable* (o <behavior>))
   (filter (is? <shared-variable>) (ast:member* o)))
 
-(define-method (makreel:shared-variable* (o <ast>))
-  (filter (is? <shared-variable>) (ast:member* (ast:parent o <behavior>))))
+(define-method (makreel:shared-variable* (o <action>))
+  (filter (conjoin (is? <shared-variable>)
+                   (compose (cute equal? (.port.name o) <>) .port.name))
+          (ast:member* (ast:parent o <behavior>))))
+
+(define-method (makreel:shared-variable* (o <continuation-pair>))
+  (makreel:shared-variable* (.statement o)))
 
 (define-method (makreel:shared-var* (o <behavior>))
   (delete-duplicates (tree-collect (is? <shared-var>) o) ast:equal?))
