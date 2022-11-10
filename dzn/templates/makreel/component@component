@@ -308,6 +308,7 @@ component_rename = rename({
 component = hide({
    #x:makreel:model-name end
  , #x:allow-tau
+   #x:component-hide-provides
    #x:component-hide-requires
  , constrained_legal
  , defer_end

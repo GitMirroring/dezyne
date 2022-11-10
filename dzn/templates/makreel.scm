@@ -255,6 +255,7 @@
 (define-templates component-allow-requires ast:requires-port* newline-comma-prefix)
 (define-templates component-rename-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-rename-requires ast:requires-port* newline-comma-prefix)
+(define-templates component-hide-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-hide-requires ast:requires-port* newline-comma-prefix)
 (define-templates reordered ast:provides-port* union-infix)
 
