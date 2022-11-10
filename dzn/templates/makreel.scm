@@ -118,8 +118,10 @@
 (define-templates event (compose car ast:trigger*))
 
 (define-templates continuation makreel:continuation-pair newline-union-infix)
+(define-templates assign-continuation makreel:continuation-pair newline-union-infix)
 (define-templates behavior-continuation makreel:behavior-continuation)
 (define-templates ast-continuation makreel:ast-continuation)
+(define-templates ast-assign-continuation makreel:ast-continuation)
 (define-templates then-continuation makreel:then-continuation-pair newline-union-infix)
 (define-templates continuation-identifier makreel:continuation)
 (define-templates continuation-process-identifier makreel:continuation-process-identifier)
