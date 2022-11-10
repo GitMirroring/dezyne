@@ -34,7 +34,6 @@
   #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:use-module (dzn verify pipeline)
-  #:use-module (dzn vm normalize)
 
   #:export (interface->constraint))
 
@@ -234,9 +233,7 @@ to current-output-port."
 ;;;
 (define (interface->constraint root model)
   "Return constraint process as mCRL2 string from MODEL."
-  (let* ((root (vm:normalize root))
-         (model (ast:get-model root (ast:dotted-name model)))
-         (aut (verify-pipeline "maut-weak-trace+hide" root model))
+  (let* ((aut (verify-pipeline "maut-weak-trace+hide" root model))
          (debugity (dzn:debugity))
          (lts (aut-text->lts aut)))
     (when (> debugity 0)
