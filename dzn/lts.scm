@@ -781,7 +781,7 @@ from LABELS."
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      tau-reply          <-- port-name tick tau-reply-literal lpar scope* reply-value rpar
      state              <-- port-name tick state-literal lpar state-arguments rpar
-     state-arguments    <-  port-name tick variables-literal (lpar state-argument (comma state-argument)* rpar)
+     state-arguments    <-- port-name tick variables-literal (lpar state-argument (comma state-argument)* rpar)
      state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
      tag                <   tag-literal lpar int comma int rpar
@@ -865,6 +865,8 @@ from LABELS."
       (('return return) (and internal? "return"))
       (('state ('identifier port) parameters) (string-append port ".<state>(" (helper-params parameters) ")"))
       (('state ('identifier port)) (string-append port ".<state>"))
+      (('state-arguments ('identifier interface) arguments) (helper arguments))
+      ((('state-argument value) ..1) (string-join (map helper value) ","))
       (('state-argument value) (helper value))
       (('bool value) value)
       (('int value) value)
