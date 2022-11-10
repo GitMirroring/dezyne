@@ -1,0 +1,1 @@
+sum #.name s : #x:makreel:interface-name State . #.name state(#.name s) . 

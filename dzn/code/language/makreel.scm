@@ -1178,11 +1178,35 @@
     ((? (is? <ast>)) (tree-map makreel:add-shared-variables o))
     (_ o)))
 
+(define-method (shared-variable? (o <action>))
+  (find (conjoin (is? <shared-variable>)
+                 (compose (cute equal? (.port.name o) <>) .port.name))
+        (ast:member* (ast:parent o <behavior>))))
+
+(define-method (makreel:shared-process-haakjes (o <continuation-pair>))
+  (let ((s (.statement o)))
+    (or (and (is-a? s <action>)
+             (ast:requires? s)
+             (shared-variable? s)
+             o)
+        (makreel:process-haakjes o))))
+
+(define-method (makreel:shared-process-haakjes (o <ast>))
+  '())
+
+(define-method (makreel:communicate-shared-state (o <action>))
+  (and (shared-variable? o) (.port o)))
+
 (define-method (makreel:shared-variable* (o <behavior>))
   (filter (is? <shared-variable>) (ast:member* o)))
 
-(define-method (makreel:shared-variable* (o <ast>))
-  (filter (is? <shared-variable>) (ast:member* (ast:parent o <behavior>))))
+(define-method (makreel:shared-variable* (o <action>))
+  (filter (conjoin (is? <shared-variable>)
+                   (compose (cute equal? (.port.name o) <>) .port.name))
+          (ast:member* (ast:parent o <behavior>))))
+
+(define-method (makreel:shared-variable* (o <continuation-pair>))
+  (makreel:shared-variable* (.statement o)))
 
 (define-method (makreel:shared-var* (o <behavior>))
   (delete-duplicates (tree-collect (is? <shared-var>) o) ast:equal?))

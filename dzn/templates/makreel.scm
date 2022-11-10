@@ -120,8 +120,10 @@
 (define-templates event (compose car ast:trigger*))
 
 (define-templates continuation makreel:continuation-pair newline-union-infix)
+(define-templates assign-continuation makreel:continuation-pair newline-union-infix)
 (define-templates behavior-continuation makreel:behavior-continuation)
 (define-templates ast-continuation makreel:ast-continuation)
+(define-templates ast-assign-continuation makreel:ast-continuation)
 (define-templates then-continuation makreel:then-continuation-pair newline-union-infix)
 (define-templates continuation-identifier makreel:continuation)
 (define-templates continuation-process-identifier makreel:continuation-process-identifier)
@@ -293,11 +295,13 @@
 (define-templates constrained-semantics-allow-requires ast:requires-port* newline-comma-prefix)
 
 ;;shared
+(define-templates shared-process-haakjes makreel:shared-process-haakjes)
 (define-templates share-state makreel:shared-interface newline-union-suffix)
 (define-templates shared-component-proc makreel:shared-var* newline-dot-suffix)
 (define-templates shared-values (lambda (o) (and (pair? (makreel:shared-variable* o)) o)) comma-suffix)
 (define-templates shared-value makreel:shared-variable* comma-infix)
 (define-templates add-shared-value makreel:shared-variable* comma-suffix)
+(define-templates communicate-shared-state makreel:communicate-shared-state dot-suffix)
 (define-templates interface-state-sort makreel:interface* double-newline-infix)
 (define-templates interface-state-variables makreel:shared-interface)
 (define-templates interface-no-state-variables makreel:no-shared-interface double-newline-infix)
