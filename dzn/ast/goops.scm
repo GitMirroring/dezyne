@@ -517,6 +517,9 @@
   (variable.name)
   (field))
 
+(define-ast <shared-field-test> (<field-test>)
+  (port.name))
+
 (define-ast <enum-literal> (<unary> <enum-expr>)
   (type.name)
   (field))

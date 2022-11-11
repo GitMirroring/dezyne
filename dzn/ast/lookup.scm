@@ -349,6 +349,9 @@ null) and return its CONTEXT."
 (define-method (.port (o <shared-variable>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
+(define-method (.port (o <shared-field-test>))
+  (and (.port.name o) (ast:lookup o (.port.name o))))
+
 (define-method (.port.name (o <out-bindings>)) (and=> (.port o) .name))
 (define-method (.port.name (o <blocking-compound>)) (and=> (.port o) .name))
 
@@ -408,6 +411,12 @@ null) and return its CONTEXT."
 
 (define-method (.variable (o <shared-var>))
   (and=> (.name o)
+         (disjoin
+          (cut ast:lookup-variable (ast:parent o <behavior>) <>)
+          (cut ast:lookup-variable ((compose .behavior .type .port) o) <>))))
+
+(define-method (.variable (o <shared-field-test>))
+  (and=> (.variable.name o)
          (disjoin
           (cut ast:lookup-variable (ast:parent o <behavior>) <>)
           (cut ast:lookup-variable ((compose .behavior .type .port) o) <>))))
