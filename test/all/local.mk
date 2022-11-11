@@ -232,6 +232,7 @@ REGRESSION_TESTS =				\
  %D%/constraint_modeling_nondet			\
  %D%/constraint_nondet				\
  %D%/constraint_nondet2				\
+ %D%/cruise_control				\
  %D%/data_full					\
  %D%/deadlock_asynchronous_sync_reply		\
  %D%/deadlock_blocking_compliance		\
