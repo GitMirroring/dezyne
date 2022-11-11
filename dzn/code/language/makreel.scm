@@ -231,6 +231,8 @@
     (($ <shared-var>) (clone o #:port.name ((compose (append-tick names) .port.name) o)
                              #:name ((compose (append-tick names) .name) o)))
     (($ <field-test>) (clone o #:variable.name ((compose (append-tick names) .variable.name) o)))
+    (($ <shared-field-test>) (clone o #:port.name ((compose (append-tick names) .port.name) o)
+                                    #:variable.name ((compose (append-tick names) .variable.name) o)))
     (($ <formal>) (clone o #:name ((compose (append-tick names) .name) o)
                          #:type.name ((compose (tick-names-) .type.name) o)))
     (($ <formal-binding>) (clone o
@@ -321,6 +323,9 @@
   ((compose makreel:interface-name .port) o))
 
 (define-method (makreel:interface-name (o <shared-var>))
+  (makreel:interface-name ((compose .type .port) o)))
+
+(define-method (makreel:interface-name (o <shared-field-test>))
   (makreel:interface-name ((compose .type .port) o)))
 
 (define-method (makreel:interface-name (o <on>))
@@ -1176,15 +1181,19 @@
                          (clone expression #:type.name type-name)))))
       (make <shared-variable>
         #:port.name (.port.name var)
-        #:name (.name var)
+        #:name (.name variable)
         #:type.name type-name
         #:expression expression)))
   (match o
     (($ <interface>) o)
     (($ <variables>)
      (let* ((behavior (ast:parent o <behavior>))
-            (shared (tree-collect (is? <shared-var>) behavior))
-            (shared (delete-duplicates shared ast:equal?))
+            (shared (tree-collect (disjoin (is? <shared-var>)
+                                           (is? <shared-field-test>)) behavior))
+            (shared (delete-duplicates shared
+                                       (lambda (a b)
+                                         (and (equal? (.port.name a) (.port.name b))
+                                              (equal? (.variable.name a) (.variable.name b))))))
             (shared (map shared-var->shared-variable shared)))
        (clone o #:elements (append (ast:variable* o) shared))))
     ((? (is? <ast>)) (tree-map makreel:add-shared-variables o))
@@ -1221,7 +1230,8 @@
   (makreel:shared-variable* (.statement o)))
 
 (define-method (makreel:shared-var* (o <behavior>))
-  (delete-duplicates (tree-collect (is? <shared-var>) o) ast:equal?))
+  (delete-duplicates (tree-collect (disjoin (is? <shared-var>)
+                                            (is? <shared-field-test>)) o) ast:equal?))
 
 (define-method (makreel:shared-interface (o <interface>))
   (if (null? (ast:variable* o)) '() (list o)))
