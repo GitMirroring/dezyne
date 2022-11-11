@@ -410,6 +410,7 @@ REGRESSION_TESTS =				\
  %D%/second_reply_blocking			\
  %D%/shared_assign				\
  %D%/shared_enum				\
+ %D%/shared_field_test				\
  %D%/shared_requires				\
  %D%/shared_variable				\
  %D%/shell_injected				\
