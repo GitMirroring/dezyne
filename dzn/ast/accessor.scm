@@ -35,6 +35,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
+  #:use-module (dzn misc)
 
   #:export (ast:argument*
             ast:binding*
@@ -185,6 +186,12 @@
 
 (define-method (ast:full-name (o <void>))
   '("void"))
+
+(define-method (ast:full-name (o <shared-variable>))
+  (cons (.port.name o) (list (.name o))))
+
+(define-method (ast:full-name (o <shared-var>))
+  (cons (.port.name o) (list (.name o))))
 
 (define-method (ast:full-name (o <declaration>))
   (let ((scope (ast:parent o <scope>)))
