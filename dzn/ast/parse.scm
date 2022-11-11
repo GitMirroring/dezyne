@@ -510,6 +510,8 @@ to the AST element."
         (('field-test ('var name _ ...) field) (make <field-test-node> #:variable.name (helper name) #:field (helper field)))
         (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
 
+        (('shared-field-test port.name name field) (make <shared-field-test-node> #:port.name (helper port.name) #:variable.name (helper name) #:field (helper field)))
+
         (('function type name formals statement)
          (let* ((type location comment (helper type))
                 (signature (make <signature-node>
