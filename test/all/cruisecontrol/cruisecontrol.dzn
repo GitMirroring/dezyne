@@ -1,0 +1,156 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface icontrol
+{
+  in void enable();
+  in void disable();
+
+  in void set();
+  in void resume();
+  in void cancel();
+
+  behavior
+  {
+    bool idle = true;
+    bool setpoint = false;
+    bool previous = false;
+    [idle] {
+      on enable: idle = false;
+      on disable, set, resume: {/*ignore when idle*/}
+    }
+    [!idle] {
+      on enable: {}
+      on disable: {idle = true; previous = false; setpoint = false;}
+      on cancel: setpoint = false;
+      [!setpoint] on set: {setpoint = true; previous = setpoint;}
+      [setpoint] on set: {/*ignore when setpoint is set*/}
+      [previous] on resume: setpoint = previous;
+      [!previous] on resume: {/*ignore without a previous setpoint*/}
+    }
+  }
+}
+
+interface imonitor
+{
+  in void enable();
+  in void disable();
+  out void engage();
+  out void disengage();
+  behavior
+  {
+    bool monitor = false;
+    bool engaged = false;
+    [!monitor] on enable: monitor = true;
+    [monitor] {
+      on disable: monitor = false;
+      on inevitable: {
+        if(!engaged) engage; else disengage;
+        engaged = !engaged;
+      }
+    }
+  }
+}
+
+interface ithrottle
+{
+  in void set();
+  in void reset();
+  out void unset();
+
+  behavior
+  {
+    bool active = false;
+    on set: active = true;
+    on reset: active = false;
+    [active] on optional: {active = false; unset;}
+  }
+}
+
+interface itimer
+{
+  in void start();
+  out void timeout();
+  in void cancel();
+  behavior
+  {
+    bool idle = true;
+    [idle] on start: idle = false;
+    [!idle] on inevitable: timeout;
+    on cancel: idle = true;
+  }
+}
+
+component cruisecontrol
+{
+  provides icontrol control;
+  requires imonitor gear;
+  requires imonitor brake;
+  requires imonitor clutch;
+  requires ithrottle throttle;
+  requires itimer timer;
+
+  behavior
+  {
+    [control:idle] {
+      on control.enable():
+      {
+        gear.enable();
+        brake.enable();
+        clutch.enable();
+      }
+      on control.disable()
+        , control.set()
+        , control.resume(): {}
+    }
+    [!control:idle] {
+      on control.enable(): {}
+      on control.disable(): {
+        throttle.reset();
+        timer.cancel();
+        gear.disable();
+        brake.disable();
+        clutch.disable();
+      }
+      //a set leads to active throttle control
+      [timer:idle] on control.set(), control.resume():
+        if(!brake:engaged && !clutch:engaged) timer.start();
+
+      [!timer:idle] on control.set(), control.resume(): {}
+    }
+    on timer.timeout(): throttle.set();
+    on throttle.unset(): timer.cancel();
+
+    // when the throttle is active,
+    // it must be no longer active and remain that way,
+    // after these events
+    on control.cancel()
+      , gear.engage()
+      , gear.disengage()
+      , brake.engage()
+      , clutch.engage(): {throttle.reset(); timer.cancel();}
+
+    on brake.disengage()
+      , clutch.disengage(): {}
+  }
+}
