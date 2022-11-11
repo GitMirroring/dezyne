@@ -740,7 +740,7 @@
                                               .node))
                             (.parent o)))
          (foo (unless (= (length lst) 1)
-                (throw 'programming-error "more than two of me" continuation)))
+                (throw 'programming-error "more than one of me" continuation)))
          (continuation (car lst)))
     (makreel:locals continuation)))
 
