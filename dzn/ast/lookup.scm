@@ -280,7 +280,11 @@ null) and return its CONTEXT."
   (ast:lookup name name))
 
 (define-method (ast:lookup-variable (o <ast>) name statements)
-  (define (name? o) (and (equal? (.name o) name) o))
+  (define (name? o)
+    (cond ((is-a? o <shared-variable>)
+           (and (equal? (string-append (.port.name o) (.name o)) name) o))
+          (else
+           (and (equal? (.name o) name) o))))
   (match o
     (($ <behavior>)
      (find name? (ast:variable* o)))
@@ -408,14 +412,16 @@ null) and return its CONTEXT."
 (define-method (.variable (o <shared-var>))
   (and=> (.name o)
          (disjoin
-          (cut ast:lookup-variable (ast:parent o <behavior>) <>)
-          (cut ast:lookup-variable ((compose .behavior .type .port) o) <>))))
+          (compose (cute ast:lookup-variable (ast:parent o <behavior>) <>)
+                   (cute string-append (.port.name o) <>))
+          (cute ast:lookup-variable ((compose .behavior .type .port) o) <>))))
 
 (define-method (.variable (o <shared-field-test>))
   (and=> (.variable.name o)
          (disjoin
-          (cut ast:lookup-variable (ast:parent o <behavior>) <>)
-          (cut ast:lookup-variable ((compose .behavior .type .port) o) <>))))
+          (compose (cute ast:lookup-variable (ast:parent o <behavior>) <>)
+                   (cute string-append (.port.name o) <>))
+          (cute ast:lookup-variable ((compose .behavior .type .port) o) <>))))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))
