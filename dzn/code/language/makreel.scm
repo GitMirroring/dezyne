@@ -1177,26 +1177,12 @@
 
 (define (makreel:add-shared-variables o)
   (define (shared-var->shared-variable var)
-    (let* ((variable (.variable var))
-           (expression (.expression variable))
-           (type-name (.type.name variable))
-           (type-name (cond
-                       ((is-a? (ast:type expression) <bool>)
-                        type-name)
-                       (else
-                        (clone type-name
-                               #:ids (append (.ids (.type.name (.port var)))
-                                             (.ids type-name))))))
-           (expression (cond
-                        ((is-a? (ast:type expression) <bool>)
-                         expression)
-                        (else
-                         (clone expression #:type.name type-name)))))
+    (let ((variable (.variable var)))
       (make <shared-variable>
         #:port.name (.port.name var)
         #:name (.name variable)
-        #:type.name type-name
-        #:expression expression)))
+        #:type.name (.type.name variable)
+        #:expression (.expression variable))))
   (match o
     (($ <interface>) o)
     (($ <variables>)

@@ -480,18 +480,16 @@ null) and return its CONTEXT."
   (ast:lookup o (.type.name o)))
 
 (define-method (.type (o <shared-variable>))
-  (let* ((type-name (.type.name o))
-         (ids (.ids type-name))
-         (type-name (if (= 1 (length ids)) type-name (cadr ids))))
+  (let ((type-name (.type.name o)))
     (ast:lookup ((compose .behavior .type .port) o) type-name)))
 
 (define-method (.type (o <enum-literal>))
   (let ((parent (.parent o))
         (type-name (.type.name o)))
-    (cond ((or (is-a? parent <shared-field-test>) (is-a? parent <shared-variable>))
-           (let ((type-name (cadr (.ids (.type.name o)))))
-             (or (ast:lookup (ast:parent o <behavior>) type-name)
-                 (ast:lookup ((compose .behavior .type .port) parent) type-name))))
+    (cond (((disjoin (is? <shared-field-test>)
+                     (is? <shared-variable>)) parent)
+           (or (ast:lookup (ast:parent o <behavior>) type-name)
+               (ast:lookup ((compose .behavior .type .port) parent) type-name)))
           (else
            (or (ast:parent o <enum>)
                (ast:lookup o type-name))))))
