@@ -1150,7 +1150,7 @@ add-explicit-temporaries transformation for splitting argument lists."
       (match expression
         ((and ($ <and>) (= .left left) (= .right right))
          (let* ((then (cond (not-e
-                             (deep-clone (.then o)))
+                             (.then o))
                             (else
                              (clone o #:expression right))))
                 (false (make <literal> #:value "false"))
@@ -1161,7 +1161,7 @@ add-explicit-temporaries transformation for splitting argument lists."
                              (clone o #:expression
                                     (clone not-e #:expression right)))
                             ((is-a? o <if>)
-                             (deep-clone (.else then)))
+                             (.else then))
                             (else
                              (clone o #:expression false))))
                 (simple (make <if> #:expression left
@@ -1182,7 +1182,7 @@ add-explicit-temporaries transformation for splitting argument lists."
                           (clone not-e #:expression left)))
                 (left (simplify-expression left))
                 (else (cond ((is-a? o <if>)
-                             (deep-clone (.else then)))
+                             (.else then))
                             (else
                              (clone o #:expression false))))
                 (simple (make <if> #:expression left
@@ -1194,7 +1194,7 @@ add-explicit-temporaries transformation for splitting argument lists."
         ((and ($ <or>) (= .left left) (= .right right))
          (let* ((true (make <literal> #:value "true"))
                 (then (cond ((is-a? o <if>)
-                             (deep-clone (.then o)))
+                             (.then o))
                             (else
                              (clone o #:expression true))))
                 (else (clone o #:expression right))
