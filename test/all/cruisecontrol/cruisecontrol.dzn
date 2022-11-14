@@ -30,30 +30,42 @@ interface icontrol
   in void resume();
   in void cancel();
 
+  out void inactive();
+
   behavior
   {
-    bool idle = true;
-    bool setpoint = false;
-    bool previous = false;
-    [idle] {
-      on enable: idle = false;
-      on disable, set, resume: {/*ignore when idle*/}
+    enum State {Disabled,Enabled,Active};
+    enum Setpoint {Unset,Set};
+
+    State state = State.Disabled;
+    Setpoint setpoint = Setpoint.Unset;
+
+    // allow always
+    on disable: {state = State.Disabled; setpoint = Setpoint.Unset;}
+
+    [state.Disabled] {
+      on enable: state = State.Enabled;
+      on cancel, resume, set: {/*ignore when disabled*/}
     }
-    [!idle] {
+    [state.Enabled] {
       on enable: {}
-      on disable: {idle = true; previous = false; setpoint = false;}
-      on cancel: setpoint = false;
-      [!setpoint] on set: {setpoint = true; previous = setpoint;}
-      [setpoint] on set: {/*ignore when setpoint is set*/}
-      [previous] on resume: setpoint = previous;
-      [!previous] on resume: {/*ignore without a previous setpoint*/}
+      on cancel: {}
+      on set: {state = State.Active; setpoint = Setpoint.Set;}
+      [setpoint.Set] on resume: state = State.Active;
+      [setpoint.Unset] on resume: {/*ignore without a previous setpoint*/}
+    }
+    [state.Active]
+    {
+      on optional: {state = State.Enabled; inactive;}
+      on cancel: state = State.Enabled;
+      on enable, set, resume: {/*ignore when active*/}
     }
   }
 }
 
 interface imonitor
 {
-  in void enable();
+  in bool enable();
   in void disable();
   out void engage();
   out void disengage();
@@ -61,9 +73,12 @@ interface imonitor
   {
     bool monitor = false;
     bool engaged = false;
-    [!monitor] on enable: monitor = true;
+    [!monitor] {
+      on enable: {monitor = true; reply(engaged);}
+      on enable: {monitor = true; engaged = !engaged; reply(engaged);}
+    }
     [monitor] {
-      on disable: monitor = false;
+      on disable: {monitor = false; engaged = false;}
       on inevitable: {
         if(!engaged) engage; else disengage;
         engaged = !engaged;
@@ -104,53 +119,62 @@ interface itimer
 component cruisecontrol
 {
   provides icontrol control;
-  requires imonitor gear;
-  requires imonitor brake;
-  requires imonitor clutch;
+  requires imonitor pedals;
   requires ithrottle throttle;
   requires itimer timer;
 
   behavior
   {
-    [control:idle] {
+    [control:state.Disabled] {
       on control.enable():
       {
-        gear.enable();
-        brake.enable();
-        clutch.enable();
+        bool b = false;
+        b = pedals.enable();
       }
-      on control.disable()
-        , control.set()
-        , control.resume(): {}
+      on control.disable(): {}
     }
-    [!control:idle] {
+    [!control:state.Disabled] {
       on control.enable(): {}
       on control.disable(): {
         throttle.reset();
         timer.cancel();
-        gear.disable();
-        brake.disable();
-        clutch.disable();
+        pedals.disable();
       }
-      //a set leads to active throttle control
-      [timer:idle] on control.set(), control.resume():
-        if(!brake:engaged && !clutch:engaged) timer.start();
-
-      [!timer:idle] on control.set(), control.resume(): {}
+    }
+    //a set leads to active throttle control
+    [control:state.Enabled && timer:idle] {
+      on control.set():
+        if(!pedals:engaged) {
+          throttle.set();
+          timer.start();
+        }
+      on control.resume():
+        if(!pedals:engaged && control:setpoint.Set) {
+          throttle.set();
+          timer.start();
+        }
+    }
+    [!control:state.Enabled || !timer:idle] {
+      on control.set(): {}
+      on control.resume(): {}
     }
     on timer.timeout(): throttle.set();
-    on throttle.unset(): timer.cancel();
-
     // when the throttle is active,
     // it must be no longer active and remain that way,
     // after these events
-    on control.cancel()
-      , gear.engage()
-      , gear.disengage()
-      , brake.engage()
-      , clutch.engage(): {throttle.reset(); timer.cancel();}
-
-    on brake.disengage()
-      , clutch.disengage(): {}
+    on control.cancel(): {
+      throttle.reset();
+      timer.cancel();
+    }
+    on pedals.engage()
+      , throttle.unset(): {
+      if(control:state.Active) control.inactive();
+      throttle.reset();
+      timer.cancel();
+    }
+    on pedals.disengage(): if(control:state.Active) {
+      control.inactive();
+      timer.cancel();
+    }
   }
 }
