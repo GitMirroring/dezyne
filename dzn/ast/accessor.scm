@@ -35,6 +35,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
+  #:use-module (dzn misc)
 
   #:export (ast:argument*
             ast:binding*
@@ -50,6 +51,7 @@
             ast:namespace*
             ast:namespace-recursive*
             ast:port*
+            ast:shared*
             ast:statement*
             ast:top*
             ast:trigger*
@@ -92,6 +94,9 @@
 (define-method (ast:member* (o <behavior>)) (ast:variable* o))
 (define-method (ast:member* (o <model>)) ((compose ast:member* .behavior) o))
 (define-method (ast:namespace* (o <namespace>)) (filter (is? <namespace>) (ast:top* o)))
+(define-method (ast:shared* (o <behavior>))
+  (tree-collect (disjoin (is? <shared-var>)
+                         (is? <shared-field-test>)) o))
 (define-method (ast:trigger* (o <triggers>)) (.elements o))
 (define-method (ast:type* (o <types>)) (.elements o))
 (define-method (ast:variable* (o <variables>)) (.elements o))

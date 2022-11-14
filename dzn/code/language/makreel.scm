@@ -1188,8 +1188,7 @@
     (($ <interface>) o)
     (($ <variables>)
      (let* ((behavior (ast:parent o <behavior>))
-            (shared (tree-collect (disjoin (is? <shared-var>)
-                                           (is? <shared-field-test>)) behavior))
+            (shared (ast:shared* behavior))
             (shared (delete-duplicates shared
                                        (lambda (a b)
                                          (and (equal? (.port.name a) (.port.name b))
@@ -1230,8 +1229,7 @@
   (makreel:shared-variable* (.statement o)))
 
 (define-method (makreel:shared-var* (o <behavior>))
-  (delete-duplicates (tree-collect (disjoin (is? <shared-var>)
-                                            (is? <shared-field-test>)) o) ast:equal?))
+  (delete-duplicates (ast:shared* o) ast:equal?))
 
 (define-method (makreel:shared-interface (o <interface>))
   (if (null? (ast:variable* o)) '() (list o)))
