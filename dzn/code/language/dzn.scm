@@ -322,7 +322,7 @@
 
 (define-method (dzn:expression-expand (o <field-test>))
   (clone (make <enum-literal> #:type.name ((compose .type.name .variable) o) #:field (.field o))
-         #:parent (.parent o)))
+         #:parent o))
 
 (define-method (dzn:expression-expand (o <variable>))
   (let ((type ((compose ast:type .expression) o)))
