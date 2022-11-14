@@ -66,6 +66,11 @@
             makreel:constraint->makreel
             root->))
 
+;; pair of asts
+(define-ast <continuation-pair> (<ast>)
+  (statement)
+  (continuation))
+
 (define %id-alist (make-parameter #f))
 (define %model-name (make-parameter #f))
 (define %next-alist (make-parameter #f))
@@ -124,6 +129,9 @@
 (define-method (makreel:interface-reorder (o <ast>))
   #f)
 
+(define-method (makreel:interface-reorder (o <continuation-pair>))
+  (makreel:interface-reorder (.continuation o)))
+
 (define interface-alist '())
 
 (define (makreel:interface-proc-memo o)
@@ -144,6 +152,7 @@
 (define (mcrl2:process-identifier o)
   (let* ((model-key ((compose .id (cute ast:parent <> <model>)) o))
          (path (ast:path o))
+         (path (filter (negate (is? <continuation-pair>)) path))
          (key (map .id path))
 	 (next (assq-ref (%next-alist) model-key))
 	 (next (or next -1)))
@@ -153,9 +162,11 @@
                           (%next-alist (assoc-set! (%next-alist) model-key next))
                           next)))))
 
-(define-method (makreel:continuation-process-identifier (o <assign>))
-  (let ((continuation (car (makreel:continuation o))))
-    (mcrl2:process-identifier continuation)))
+(define-method (makreel:continuation-process-identifier (o <ast>))
+  o)
+
+(define-method (makreel:continuation-process-identifier (o <continuation-pair>))
+  (.continuation o))
 
 (define-method (mcrl2:process-continuation (o <ast>))
   (let* ((parent (.parent o)))
@@ -709,7 +720,9 @@
 (define-method (makreel:locals-unmemoized root (o <ast>))
   (if (is-a? o <behavior>) '()
       (let* ((p (.parent o)))
-        (cond ((is-a? p <compound>)
+        (cond ((is-a? p <continuation-pair>)
+               (makreel:locals (.parent (.continuation p))))
+              ((is-a? p <compound>)
                (let ((pre (cdr (member o (reverse (ast:statement* p)) ast:eq?))))
                  (append (filter (is? <variable>) pre) (makreel:locals p))))
               ((is-a? p <defer>)
@@ -724,6 +737,17 @@
   (let* ((model (ast:parent o <model>))
          (root (ast:parent model <root>)))
     ((ast:pure-funcq makreel:locals-unmemoized) (list root model) o)))
+
+(define-method (makreel:locals (o <continuation-pair>))
+  (let* ((continuation (.continuation o))
+         (lst (tree-collect (conjoin (is? <ast>)
+                                     (compose (cute eq? <> (.node continuation))
+                                              .node))
+                            (.parent o)))
+         (foo (unless (= (length lst) 1)
+                (throw 'programming-error "more than one of me" continuation)))
+         (continuation (car lst)))
+    (makreel:locals continuation)))
 
 (define-method (variables-in-scope (o <model>)) (members o))
 (define-method (variables-in-scope (o <ast>))
@@ -770,46 +794,14 @@
           (ast:parent o <function>)) "()"
           ""))
 
-(define-method (makreel:ast-continuation (o <ast>))
-  (let ((continuations (makreel:continuation o)))
-    (and
-     (not (find (is? <behavior>) continuations))
-     (let* ((shared-process-haakjes
-             (if (and (is-a? o <action>)
-                      (ast:requires? o)
-                      (not (is-a? (.parent o) <variable>))
-                      (shared-variable? o))
-                 (with-output-to-string
-                   (cute x:shared-process-haakjes o))
-                 (with-output-to-string
-                   (cute x:process-haakjes o))))
-            (continuations (map (lambda (x)
-                                  (with-output-to-string
-                                    (cute x:process-identifier x)))
-                                continuations))
-            (continuations
-             (map
-              (cute format #f "~a ~a" <> shared-process-haakjes)
-              continuations)))
-       (string-join continuations "\n + ")))))
-
-(define-method (makreel:continuation-process-haakjes (o <ast>))
-  (makreel:process-haakjes (makreel:singleton-continuation o)))
+(define-method (makreel:process-haakjes (o <continuation-pair>))
+  (makreel:process-haakjes (.continuation o)))
 
 (define-method (makreel:shared-process-haakjes (o <behavior>))
   (let* ((members (ast:member* o))
          (shared? (find (is? <shared-variable>) members)))
     (if (and (not shared?) (pair? members)) "()"
               "")))
-
-(define-method (makreel:shared-process-haakjes (o <action>))
-  (or (and (ast:requires? o)
-           (shared-variable? o)
-           o)
-      (makreel:process-haakjes o)))
-
-(define-method (makreel:shared-process-haakjes (o <ast>))
-  (makreel:process-haakjes o))
 
 (define-method (makreel:continuation-haakjes (o <ast>))
   (and (or (pair? ((compose variables-in-scope car makreel:continuation) o))
@@ -865,25 +857,23 @@
             (_ (makreel:continuation (.parent o))))))
     (step-into-assign/variable o cont)))
 
-(define-method (makreel:singleton-continuation (o <ast>))
-  (let* ((continuations (makreel:continuation o))
-         (continuation (car continuations)))
-    (throw 'programming-error "more than one of me" continuation)
-    continuation))
+(define (make-continuation-pair o c)
+  (let ((pair (make <continuation-pair> #:statement o #:continuation c)))
+    (clone pair #:parent (.parent c))))
 
-(define-method (makreel:behavior-continuation (o <ast>))
-  (define (continuation->string o)
-    (let* ((model-name (makreel:model-name o))
-           (interface-reorder (with-output-to-string
-                               (cute x:interface-reorder o)))
-          (process-haakjes (makreel:process-haakjes o)))
-      (if (string-null? interface-reorder)
-          ""
-          (format #f "~a ~abehavior ~a"
-                  interface-reorder model-name process-haakjes))))
-  (let* ((continuations (makreel:continuation o))
-         (continuations (map continuation->string continuations)))
-    (string-join continuations "\n + ")))
+(define-method (makreel:continuation-pair (o <ast>))
+  (map (cute make-continuation-pair o <>) (makreel:continuation o)))
+
+(define-method (makreel:behavior-continuation (o <continuation-pair>))
+  (and (is-a? (.continuation o) <behavior>)
+       o))
+
+(define-method (makreel:ast-continuation (o <continuation-pair>))
+  (and (not (is-a? (.continuation o) <behavior>))
+       o))
+
+(define-method (makreel:ast-continuation (o <ast>))
+  o)
 
 (define (step-into-assign/variable o continuation)
   (let* ((c (car continuation))
@@ -896,10 +886,16 @@
 (define-method (makreel:then-continuation (o <if>))
   (step-into-assign/variable o (list (.then o))))
 
+(define-method (makreel:then-continuation-pair (o <if>))
+  (map (cute make-continuation-pair o <>) (makreel:then-continuation o)))
+
 (define-method (makreel:else-continuation (o <if>))
   (let ((else (.else o)))
     (if else (step-into-assign/variable o (list else))
         (makreel:continuation o))))
+
+(define-method (makreel:else-continuation-pair (o <if>))
+  (map (cute make-continuation-pair o <>) (makreel:else-continuation o)))
 
 (define-method (makreel:proc-list (o <ast>))
   (let ((lst (proc-list o)))
@@ -1208,6 +1204,17 @@
                  (compose (cute equal? (.port.name o) <>) .port.name))
         (ast:member* (ast:parent o <behavior>))))
 
+(define-method (makreel:shared-process-haakjes (o <continuation-pair>))
+  (let ((s (.statement o)))
+    (or (and (is-a? s <action>)
+             (ast:requires? s)
+             (shared-variable? s)
+             o)
+        (makreel:process-haakjes o))))
+
+(define-method (makreel:shared-process-haakjes (o <ast>))
+  '())
+
 (define-method (makreel:communicate-shared-state (o <action>))
   (and (shared-variable? o) (.port o)))
 
@@ -1218,6 +1225,9 @@
   (filter (conjoin (is? <shared-variable>)
                    (compose (cute equal? (.port.name o) <>) .port.name))
           (ast:member* (ast:parent o <behavior>))))
+
+(define-method (makreel:shared-variable* (o <continuation-pair>))
+  (makreel:shared-variable* (.statement o)))
 
 (define-method (makreel:shared-var* (o <behavior>))
   (delete-duplicates (tree-collect (disjoin (is? <shared-var>)

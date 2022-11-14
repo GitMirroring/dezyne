@@ -117,16 +117,15 @@
 (define-templates process-index makreel:process-index)
 (define-templates event (compose car ast:trigger*))
 
-(define-templates continuation)
-(define-templates assign-continuation)
+(define-templates continuation makreel:continuation-pair newline-union-infix)
+(define-templates assign-continuation makreel:continuation-pair newline-union-infix)
 (define-templates behavior-continuation makreel:behavior-continuation)
 (define-templates ast-continuation makreel:ast-continuation)
 (define-templates ast-assign-continuation makreel:ast-continuation)
-(define-templates then-continuation makreel:then-continuation newline-union-infix)
+(define-templates then-continuation makreel:then-continuation-pair newline-union-infix)
 (define-templates continuation-identifier makreel:continuation)
 (define-templates continuation-process-identifier makreel:continuation-process-identifier)
-(define-templates continuation-process-haakjes makreel:continuation-process-haakjes)
-(define-templates else-continuation makreel:else-continuation newline-union-infix)
+(define-templates else-continuation makreel:else-continuation-pair newline-union-infix)
 
 ;; statement helpers
 (define-templates assign)
