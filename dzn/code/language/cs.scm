@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn code cs)
+(define-module (dzn code language cs)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
 
@@ -33,7 +33,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
-  #:use-module (dzn code dzn)
+  #:use-module (dzn code language dzn)
   #:use-module (dzn code)
   #:use-module (dzn code-util)
   #:use-module (dzn config)

@@ -18,7 +18,7 @@
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (dzn code dot)
+(define-module (dzn code language dot)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 

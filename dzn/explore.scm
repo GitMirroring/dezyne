@@ -32,7 +32,7 @@
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn code makreel)
+  #:use-module (dzn code language makreel)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm compliance)

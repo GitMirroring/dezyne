@@ -30,7 +30,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
-  #:use-module (dzn code makreel)
+  #:use-module (dzn code language makreel)
   #:use-module (dzn parse))
 
 (test-begin "makreel")
