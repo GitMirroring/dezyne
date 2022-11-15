@@ -23,7 +23,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn code-util)
+(define-module (dzn code util)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -34,61 +34,45 @@
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
 
-  #:export (code-util:dump
-            code-util:file-name
-            code-util:foreign-conflict?
-            code-util:generate-source?
-            code-util:root-file-name
-            code-util:indenter))
+  #:export (code:dump
+            code:foreign-conflict?
+            code:generate-source?
+            code:indenter
+            code:root-file-name
+            code:source-file-name))
 
-(define* (code-util:indenter thunk #:key (width 2) (open #\{) (close #\}) (no-indent "#"))
+(define* (code:indenter thunk #:key (width 2) (open #\{) (close #\}) (no-indent "#"))
   (define (pipe producer consumer)
     (with-input-from-string (with-output-to-string producer) consumer))
   (cute pipe thunk
         (cute indent #:width width #:open open #:close close #:no-indent no-indent)))
 
-(define (code-util:file-name base dir ext)
+(define (code:source-file-name base dir ext)
   (cond ((equal? dir "-") "-")
         (dir (string-append dir "/" base ext))
         (else (string-append base ext))))
 
-(define (code-util:root-file-name root dir ext)
+(define (code:root-file-name root dir ext)
   (let ((base (basename (ast:source-file root) ".dzn")))
-    (code-util:file-name base dir ext)))
+    (code:source-file-name base dir ext)))
 
-(define (code-util:handle-exceptions file-name)
-  (lambda (key . args)
-    (case key
-      ((system-error)
-       (let ((errno (system-error-errno (cons key args))))
-         (format (current-error-port) "~a: ~a\n"
-                 (strerror errno) file-name))
-       (exit EXIT_FAILURE))
-      (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
-                    file-name key args)
-            (exit EXIT_FAILURE)))))
+(define* (code:dump root generate #:key file-name)
+  (cond
+   ((equal? file-name "-")
+    (generate))
+   (else
+    (mkdir-p (dirname file-name))
+    (with-output-to-file file-name
+      generate))))
 
-(define* (code-util:dump root generate #:key file-name)
-  (let ((debug? (dzn:command-line:get 'debug #f)))
-    (cond
-     ((equal? file-name "-")
-      (generate))
-     (else
-      (catch (if debug? 'none #t)
-        (lambda ()
-          (mkdir-p (dirname file-name))
-          (with-output-to-file file-name
-            generate))
-        (code-util:handle-exceptions file-name))))))
-
-(define-method (code-util:base-name (o <foreign>))
+(define-method (code:base-name (o <foreign>))
   (string-join (ast:full-name o) "_"))
 
-(define-method (code-util:foreign-conflict? (o <root>))
+(define-method (code:foreign-conflict? (o <root>))
   (let* ((foreigns (filter (conjoin (is? <foreign>)
                                     (negate ast:imported?))
                            (ast:model* o)))
-         (foreign-bases (map code-util:base-name foreigns))
+         (foreign-bases (map code:base-name foreigns))
          (conflict? (member (ast:base-name o) foreign-bases)))
     (when conflict?
       ;; XXX TODO: throw / catch
@@ -96,7 +80,7 @@
               (ast:base-name o))
       (exit EXIT_FAILURE))))
 
-(define-method (code-util:generate-source? (o <root>))
+(define-method (code:generate-source? (o <root>))
   (find (conjoin (negate ast:imported?)
                  (disjoin (is? <component>) (is? <foreign>) (is? <system>)))
         (ast:model* o)))

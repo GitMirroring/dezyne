@@ -32,7 +32,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
-  #:use-module (dzn code-util)
+  #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn templates)
@@ -371,7 +371,7 @@
 ;;; Utility
 ;;;
 (define-method (generator->string generator)
-  (with-output-to-string (code-util:indenter generator)))
+  (with-output-to-string (code:indenter generator)))
 
 (define-templates-macro define-templates dzn)
 (include-from-path "dzn/templates/dzn.scm")
@@ -392,6 +392,6 @@
 
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
-  (let ((file-name (code-util:root-file-name root dir ".dzn"))
-        (generator (code-util:indenter (cute x:source root))))
-    (code-util:dump root generator #:file-name file-name)))
+  (let ((file-name (code:root-file-name root dir ".dzn"))
+        (generator (code:indenter (cute x:source root))))
+    (code:dump root generator #:file-name file-name)))
