@@ -36,7 +36,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
-  #:use-module (dzn code makreel)
+  #:use-module (dzn code language makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn lts)
@@ -53,7 +53,7 @@
 ;;; '(dzn verify pipeline)' implements a mCRL2-base pipeline for
 ;;; verification of Dezyne models.  Entry point: dzn verify.
 ;;;
-;;; Starting point is from dzn code -l makreel, (dzn code makreel),
+;;; Starting point is from dzn code -l makreel, (dzn code language makreel),
 ;;; the verification pipeline consists of mCRL2 commands and dzn lts.
 ;;; The result is reported in plain text.
 

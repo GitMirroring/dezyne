@@ -33,5 +33,5 @@ diff -u <(cat test/all/comment_traceability/comment_traceability.dzn | tags ) \
 for code in dzn c++; do
     echo -e "\ncomment TAG traceability for $code:"
     diff -u <(cat test/all/comment_traceability/comment_traceability.dzn | tags ) \
-            <(dzn code -l $code test/all/comment_traceability/comment_traceability.dzn -o- | tags)
+            <(dzn code language -l $code test/all/comment_traceability/comment_traceability.dzn -o- | tags)
 done

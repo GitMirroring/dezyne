@@ -48,7 +48,8 @@
 (define list-languages (pure-funcq list-languages))
 
 (define %languages
-  (sort (delete-duplicates (list-languages "/dzn/code/") string=?) string<))
+  (sort (delete-duplicates (list-languages "/dzn/code/language") string=?)
+        string<))
 
 (define (parse-opts args)
   (let* ((option-spec

@@ -25,7 +25,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn code makreel)
+(define-module (dzn code language makreel)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -38,7 +38,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
-  #:use-module (dzn code dzn)
+  #:use-module (dzn code language dzn)
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn config)

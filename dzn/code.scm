@@ -32,7 +32,7 @@
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
-  #:use-module (dzn code dzn)
+  #:use-module (dzn code language dzn)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -828,7 +828,7 @@
 ;;;
 (define* (code ast #:key (ast-> 'ast->) calling-context dir language locations?
                model shell)
-  (let* ((module (resolve-module `(dzn code ,(string->symbol language))))
+  (let* ((module (resolve-module `(dzn code language ,(string->symbol language))))
          (ast-> (false-if-exception (module-ref module ast->))))
     (unless ast->
       (format (current-error-port) "code: no such language: ~a\n" language)

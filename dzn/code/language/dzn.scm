@@ -26,7 +26,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn code dzn)
+(define-module (dzn code language dzn)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 

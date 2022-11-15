@@ -24,7 +24,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn code c)
+(define-module (dzn code language c)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -33,7 +33,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
-  #:use-module (dzn code dzn)
+  #:use-module (dzn code language dzn)
   #:use-module (dzn code)
   #:use-module (dzn code-util)
   #:use-module (dzn config)

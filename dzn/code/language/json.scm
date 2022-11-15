@@ -22,7 +22,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn code json)
+(define-module (dzn code language json)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 

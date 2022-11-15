@@ -860,7 +860,7 @@
                                      (ast:parent o <reply>)
                                      (ast:parent o <return>)
                                      (ast:parent o <variable>))
-                                 ((compose car (@@ (dzn code makreel) makreel:continuation)) continuation)
+                                 ((compose car (@@ (dzn code language makreel) makreel:continuation)) continuation)
                                  continuation))
                (continuation (and continuation
                                   (not (ast:eq? continuation (.statement (ast:parent o <function>))))
@@ -1284,11 +1284,11 @@
      (else '()))))
 
 (define-method (wfc:continuation (o <ast>))
-  ((@@ (dzn code makreel) makreel:continuation) o))
+  ((@@ (dzn code language makreel) makreel:continuation) o))
 
 (define-method (wfc:continuation (o <if>))
-  (append ((@@ (dzn code makreel) makreel:then-continuation) o)
-          ((@@ (dzn code makreel) makreel:else-continuation) o)))
+  (append ((@@ (dzn code language makreel) makreel:then-continuation) o)
+          ((@@ (dzn code language makreel) makreel:else-continuation) o)))
 
 (define-method (recursive? (o <system>))
   (ast:graph-cyclic? ast:system* o))
