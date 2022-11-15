@@ -1,9 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-# Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-# Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
+# Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -25,26 +22,7 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/ast.scm					\
- %D%/code.scm					\
- %D%/command-line.scm				\
- %D%/explore.scm				\
- %D%/indent.scm					\
- %D%/lts.scm					\
- %D%/misc.scm					\
- %D%/parse.scm					\
- %D%/peg.scm					\
- %D%/pipe.scm					\
- %D%/script.scm					\
- %D%/shell-util.scm				\
- %D%/simulate.scm				\
- %D%/templates.scm				\
- %D%/trace.scm					\
- %D%/transform.scm
-
-EXTRA_DIST += %D%/config.scm.in
-BUILT_SOURCES += %D%/config.scm
-nodist_%C%_scm_DATA = %D%/config.scm
+ %D%/util.scm
 
 dist_nocompile_%C%_scm_DATA =
 
@@ -52,5 +30,4 @@ dist_nocompile_%C%_scm_DATA =
 nocompile_%C%_scmdir = $(%C%_scmdir)
 %C%_godir = $(guileobjectdir)/%D%
 %C%_go_DATA = $(dist_%C%_scm_DATA:%.scm=%.go)
-%C%_go_DATA += $(nodist_%C%_scm_DATA:%.scm=%.go)
 ALL_GO += $(%C%_go_DATA)

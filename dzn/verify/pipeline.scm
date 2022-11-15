@@ -37,7 +37,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
-  #:use-module (dzn code makreel)
+  #:use-module (dzn code language makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn lts)

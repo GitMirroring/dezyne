@@ -34,7 +34,7 @@
   #:use-module (dzn code language c++)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code)
-  #:use-module (dzn code-util)
+  #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
@@ -110,7 +110,7 @@
   "Entry point."
 
   (let ((root (code:om root)))
-    (let* ((generator (code-util:indenter (cute x:header root)))
+    (let* ((generator (code:indenter (cute x:header root)))
            (base (basename (ast:source-file root) ".dzn"))
-           (file-name (code-util:file-name base dir "_exception_forwarding.hh")))
-      (code-util:dump root generator #:file-name file-name))))
+           (file-name (code:source-file-name base dir "_exception_forwarding.hh")))
+      (code:dump root generator #:file-name file-name))))

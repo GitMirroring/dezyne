@@ -31,7 +31,7 @@
   #:use-module (dzn ast)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code)
-  #:use-module (dzn code-util)
+  #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn templates))
@@ -104,17 +104,17 @@
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
-  (code-util:foreign-conflict? root)
+  (code:foreign-conflict? root)
 
   (let ((root (code:om root)))
 
-    (let ((generator (code-util:indenter (cute x:source root)))
-          (file-name (code-util:root-file-name root dir ".js")))
-      (code-util:dump root generator #:file-name file-name))
+    (let ((generator (code:indenter (cute x:source root)))
+          (file-name (code:root-file-name root dir ".js")))
+      (code:dump root generator #:file-name file-name))
 
     (when model
       (let ((model (ast:get-model root model)))
         (when (is-a? model <component-model>)
-          (let ((generator (code-util:indenter (cute x:main model)))
-                (file-name (code-util:file-name "main" dir ".js")))
-            (code-util:dump root generator #:file-name file-name)))))))
+          (let ((generator (code:indenter (cute x:main model)))
+                (file-name (code:source-file-name "main" dir ".js")))
+            (code:dump root generator #:file-name file-name)))))))

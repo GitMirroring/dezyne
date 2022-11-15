@@ -36,7 +36,7 @@
   #:use-module (dzn ast normalize)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code)
-  #:use-module (dzn code-util)
+  #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn indent)
   #:use-module (dzn misc)
@@ -237,19 +237,19 @@
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
-  (code-util:foreign-conflict? root)
+  (code:foreign-conflict? root)
 
   (let ((root (scheme:om root))
-        (indenter (cute code-util:indenter <>
+        (indenter (cute code:indenter <>
                         #:open #\( #:close #\) #:no-indent "")))
 
     (let ((generator (indenter (cute x:source root)))
-          (file-name (code-util:root-file-name root dir ".scm")))
-      (code-util:dump root generator #:file-name file-name))
+          (file-name (code:root-file-name root dir ".scm")))
+      (code:dump root generator #:file-name file-name))
 
     (when model
       (let ((model (ast:get-model root model)))
         (when (is-a? model <component-model>)
           (let ((generator (indenter (cute x:main model)))
-                (file-name (code-util:file-name "main" dir ".scm")))
-            (code-util:dump root generator #:file-name file-name)))))))
+                (file-name (code:source-file-name "main" dir ".scm")))
+            (code:dump root generator #:file-name file-name)))))))
