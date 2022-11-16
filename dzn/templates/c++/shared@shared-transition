@@ -1,1 +1,1 @@
-else if (dzn_state == #.from  && dzn_prefix == "#.prefix") dzn_state = #.to;
+else if (dzn_state == #.from  && dzn_prefix == std::list<std::string>{{#x:shared-prefix }}) dzn_state = #.to;

@@ -18,7 +18,7 @@ struct #x:model-name
   } out;
 
   int dzn_state;
-  std::string dzn_prefix;
+  std::list<std::string> dzn_prefix;
   #x:variable-member-declare
   inline #x:model-name(const dzn::port::meta& m)
   : meta(m)
@@ -35,7 +35,7 @@ struct #x:model-name
   }
   void dzn_event(std::string event)
   {
-    dzn_prefix += event + " ";
+    dzn_prefix.push_back(event);
   }
   void dzn_update_state()
   {

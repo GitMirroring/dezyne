@@ -10,6 +10,7 @@ namespace dzn {
  #x:header-data
 
 ##include <iostream>
+##include <list>
 ##include <map>
 
  #x:global-enum-definer

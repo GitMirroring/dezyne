@@ -193,6 +193,7 @@
 (define-templates shared code:shared)
 (define-templates shared-state code:shared-state)
 (define-templates shared-assign ast:statement*)
+(define-templates shared-prefix code:shared-value* argument-grammar)
 (define-templates shared-value code:shared-value)
 (define-templates shared-update-prefix code:shared-update-prefix)
 (define-templates shared-update-prefix-return code:shared-update-prefix)

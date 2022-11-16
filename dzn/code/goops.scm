@@ -29,7 +29,8 @@
             <shared-value>
             .assign
             .other
-            .prefix)
+            .prefix
+            code:shared-value*)
   #:re-export (.event.name
                .from
                .to
@@ -63,6 +64,9 @@
 
 (define-ast <shared-value> (<expression>)
   (value))
+
+(define-method (code:shared-value* (o <shared-transition>))
+  (ast:statement* (.prefix o)))
 
 (define-method (ast:statement* (o <shared-state>))
   (ast:statement* (.assign o)))
