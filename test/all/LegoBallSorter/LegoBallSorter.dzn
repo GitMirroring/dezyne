@@ -29,124 +29,295 @@ import TouchSensor.dzn;
 import LightSensor.dzn;
 import BallSorter.dzn;
 
+component Brick1
+{
+  provides IMove motorA;
+  provides IMove motorB;
+  provides IMove motorC;
+  provides ITouchSense touch1;
+  provides ITouchSense touch2;
+  provides ITouchSense touch3;
+  provides ITouchSense touch4;
+
+  requires imotor aA; // robot trolley
+  requires imotor aB; // input
+  requires imotor aC; // feeder
+
+  requires itouch s1; // stage x home
+  requires itouch s2; // input
+  requires itouch s3; // robot truck home
+  requires itouch s4; // feeder retracted switch
+
+  system
+  {
+    // NxtBrick brick1; // INPUT
+    Motor motor_A; // robot trolley
+    Motor motor_B; // input
+    Motor motor_C; // feeder
+
+    motorA <=> motor_A.ctrl;
+    motorB <=> motor_B.ctrl;
+    motorC <=> motor_C.ctrl;
+
+    motor_A.hw <=> aA;
+    motor_B.hw <=> aB;
+    motor_C.hw <=> aC;
+
+    TouchSensor touch_1; // stage x home
+    TouchSensor touch_2; // input
+    TouchSensor touch_3; // robot truck home
+    TouchSensor touch_4; // feeder retracted switch
+
+    touch1 <=> touch_1.ctrl;
+    touch2 <=> touch_2.ctrl;
+    touch3 <=> touch_3.ctrl;
+    touch4 <=> touch_4.ctrl;
+
+    touch_1.hw <=> s1;
+    touch_2.hw <=> s2;
+    touch_3.hw <=> s3;
+    touch_4.hw <=> s4;
+  }
+}
+
+component Brick2
+{
+  provides IMove motorA;
+  provides IMove motorB;
+
+  provides ITouchSense touch6;
+  provides ITouchSense touch7;
+  provides ITouchSense touch8;
+
+  requires imotor aA; // reject
+  requires imotor aB; // accept
+
+  requires itouch s2; // stage x home
+  requires itouch s3; // reject
+  requires itouch s4; // accept
+
+  system
+  {
+    // NxtBrick brick2; // OUTPUT
+    Motor motor_A; // reject
+    Motor motor_B; // accept
+
+    motorA <=> motor_A.ctrl; // reject
+    motorB <=> motor_B.ctrl; // accept
+
+    motor_A.hw <=> aA; // reject
+    motor_B.hw <=> aB; // accept
+
+    TouchSensor touch_6; // stage x home
+    TouchSensor touch_7; // reject
+    TouchSensor touch_8; // accept
+
+    touch6 <=> touch_6.ctrl; // stage x home
+    touch7 <=> touch_7.ctrl; // reject
+    touch8 <=> touch_8.ctrl; // accept
+
+    touch_6.hw <=> s2; // stage x home
+    touch_7.hw <=> s3; // reject
+    touch_8.hw <=> s4; // accept
+  }
+}
+
+component Brick3
+{
+  provides IMove motorA;
+  provides IMove motorC;
+
+  provides ILightSense light1;
+  provides ITouchSense touch9;
+  provides ITouchSense touch10;
+
+  requires imotor aA; // stage x
+  requires imotor aC; // stage y
+
+  requires ilight s1; // light
+  requires itouch s2; // stage y end
+  requires itouch s3; // stage y home
+
+  system
+  {
+    // NxtBrick brick3; // STAGE
+    Motor motor_A; // stage x
+    Motor motor_C; // stage y
+
+    motorA <=> motor_A.ctrl;
+    motorC <=> motor_C.ctrl;
+
+    motor_A.hw <=> aA;
+    motor_C.hw <=> aC;
+
+    LightSensor light_1;
+    TouchSensor touch_9; // stage y end
+    TouchSensor touch_10; // stage y home
+
+    light1 <=> light_1.ctrl;
+    light_1.hw <=> s1;
+
+    touch9 <=> touch_9.ctrl;
+    touch_9.hw <=> s2;
+
+    touch10 <=> touch_10.ctrl;
+    touch_10.hw <=> s3;
+  }
+}
+
+component Brick4
+{
+  provides IMove motorA;
+  provides IMove motorB;
+  provides IMove motorC;
+
+  provides ITouchSense touch11;
+  provides ITouchSense touch12;
+  provides ITouchSense touch13;
+
+  requires imotor aA; // robot hoist
+  requires imotor aB; // robot gripper
+  requires imotor aC; // robot truck
+
+  requires itouch s1;
+  requires itouch s2; // extender home
+  requires itouch s3; // hoist home
+
+  system
+  {
+    // NxtBrick brick4; // ROBOT
+    Motor motor_A;
+    Motor motor_B;
+    Motor motor_C;
+
+    motorA <=> motor_A.ctrl;
+    motor_A.hw <=> aA;
+
+    motorB <=> motor_B.ctrl;
+    motor_B.hw <=> aB;
+
+    motorC <=> motor_C.ctrl;
+    motor_C.hw <=> aC;
+
+    TouchSensor touch_11;
+    TouchSensor touch_12;
+    TouchSensor touch_13;
+
+    touch11 <=> touch_11.ctrl;
+    touch_11.hw <=> s1;
+
+    touch12 <=> touch_12.ctrl;
+    touch_12.hw <=> s2;
+
+    touch13 <=> touch_13.ctrl;
+    touch_13.hw <=> s3;
+  }
+}
 
 component LegoBallSorter
 {
   provides IHandleRobust ctrl;
-  // NxtBrick brick1; // INPUT
-  requires imotor brick1_aA; //<=> handler.trolleyMotor; // robot trolley
-  requires imotor brick1_aB; //<=> input.motor; // input
-  requires imotor brick1_aC; //<=> track.motor; // feeder
-  requires itouch brick1_s1; //<=> inspector.stageXEndSensor; // stage x home
-  requires itouch brick1_s2; //<=> input.sensor;  // input
-  requires itouch brick1_s3; //<=> handler.truckHomeSensor; // robot truck home
-  requires itouch brick1_s4; //<=> track.endSensor; // feeder retracted switch
+  requires imotor brick1_aA;
+  requires imotor brick1_aB;
+  requires imotor brick1_aC;
+  requires itouch brick1_s1;
+  requires itouch brick1_s2;
+  requires itouch brick1_s3;
+  requires itouch brick1_s4;
 
-  //  NxtBrick brick2; // OUTPUT
-  requires imotor brick2_aA; //<=> reject.motor; // reject
-  requires imotor brick2_aB; //<=> accept.motor; // accept
-  //requires itouch brick2_s1; //<=> handler.truckEndSensor; // robot truck end
-  requires itouch brick2_s2; //<=> inspector.stageXHomeSensor;  // stage x home
-  requires itouch brick2_s3; //<=> reject.sensor; // reject
-  requires itouch brick2_s4; //<=> accept.sensor; // accept
+  requires imotor brick2_aA;
+  requires imotor brick2_aB;
+  requires itouch brick2_s2;
+  requires itouch brick2_s3;
+  requires itouch brick2_s4;
 
-  //  NxtBrick brick3; // STAGE
-  requires imotor brick3_aA; //<=> inspector.stageXMotor; // stage x
-  requires imotor brick3_aC; //<=> inspector.stageYMotor; // stage y
-  requires ilight brick3_s1; //<=> inspector.sensor; // inspect light sensor
-  requires itouch brick3_s2; //<=> inspector.stageYEndSensor; // stage y end
-  requires itouch brick3_s3; //<=> inspector.stageYHomeSensor; // stage y home
+  requires imotor brick3_aA;
+  requires imotor brick3_aC;
+  requires ilight brick3_s1;
+  requires itouch brick3_s2;
+  requires itouch brick3_s3;
 
-  //  NxtBrick brick4; // ROBOT
-  requires imotor brick4_aA; //<=> handler.hoistMotor; // robot hoist
-  requires imotor brick4_aB; //<=> handler.gripperMotor; // robot gripper
-  requires imotor brick4_aC; //<=> handler.truckMotor; // truck
+  requires imotor brick4_aA;
+  requires imotor brick4_aB;
+  requires imotor brick4_aC;
   requires itouch brick4_s1;
-  requires itouch brick4_s2; //<=> handler.trolleyHomeSensor; // extender home
-  requires itouch brick4_s3; //<=> handler.hoistEndSensor; // hoist home
+  requires itouch brick4_s2;
+  requires itouch brick4_s3;
 
   system
   {
     BallSorter sorter;
-    // NxtBrick brick1; // INPUT
-    Motor motor1_aA; // <=> handler.trolleyMotor; // robot trolley
-    Motor motor1_aB; // <=> input.motor; // input
-    Motor motor1_aC; // <=> track.motor; // feeder
-    TouchSensor touch1; // <=> inspector.stageXEndSensor; // stage x home
-    TouchSensor touch2; // <=> input.sensor;  // input
-    TouchSensor touch3; // <=> handler.truckHomeSensor; // robot truck home
-    TouchSensor touch4; // <=> track.endSensor; // feeder retracted switch
-    // NxtBrick brick2; // OUTPUT
-    Motor motor2_aA; // <=> reject.motor; // reject
-    Motor motor2_aB; // <=> accept.motor; // accept
-    // TouchSensor touch5; //<=> handler.truckEndSensor; // robot truck end
-    TouchSensor touch6; // <=> inspector.stageXHomeSensor;  // stage x home
-    TouchSensor touch7; // <=> reject.sensor; // reject
-    TouchSensor touch8; // <=> accept.sensor; // accept
-    // NxtBrick brick3; // STAGE
-    Motor motor3_aA; // <=> inspector.stageXMotor; // stage x
-    Motor motor3_aC; // <=> inspector.stageYMotor; // stage y
-    LightSensor light1;
-    TouchSensor touch9; // <=> inspector.stageYEndSensor; // stage y end
-    TouchSensor touch10; // <=> inspector.stageYHomeSensor; // stage y home
-    // NxtBrick brick4; // ROBOT
-    Motor motor4_aA; // <=> handler.hoistMotor; // robot hoist
-    Motor motor4_aB; // <=> handler.gripperMotor; // robot gripper
-    Motor motor4_aC; // <=> handler.truckMotor; // truck
-    TouchSensor touch11; // gripper end
-    TouchSensor touch12; // <=> handler.trolleyHomeSensor; // extender home
-    TouchSensor touch13; // <=> handler.hoistEndSensor; // hoist home
-    // ///////////////////////////
+
     ctrl <=> sorter.ctrl;
-    motor1_aA.ctrl <=> sorter.move1;
-    motor1_aA.hw <=> brick1_aA; // <=> handler.trolleyMotor; // robot trolley
-    motor1_aB.ctrl <=> sorter.move2; // <=> input.motor; // input
-    motor1_aB.hw <=> brick1_aB; // <=> input.motor; // input
-    motor1_aC.ctrl <=> sorter.move3; // <=> track.motor; // feeder
-    motor1_aC.hw <=> brick1_aC; // <=> track.motor; // feeder
-    touch1.ctrl <=> sorter.touch1; // <=> inspector.stageXEndSensor; // stage x home
-    touch1.hw <=> brick1_s1; // <=> inspector.stageXEndSensor; // stage x home
-    touch2.ctrl <=> sorter.touch2; // <=> input.sensor;  // input
-    touch2.hw <=> brick1_s2; // <=> input.sensor;  // input
-    touch3.ctrl <=> sorter.touch3; // <=> handler.truckHomeSensor; // robot truck home
-    touch3.hw <=> brick1_s3; // <=> handler.truckHomeSensor; // robot truck home
-    touch4.ctrl <=> sorter.touch4; // <=> track.endSensor; // feeder retracted switch
-    touch4.hw <=> brick1_s4; // <=> track.endSensor; // feeder retracted switch
-    motor2_aA.ctrl <=> sorter.move4; // <=> reject.motor; // reject
-    motor2_aA.hw <=> brick2_aA; // <=> reject.motor; // reject
-    motor2_aB.ctrl <=> sorter.move5; // <=> accept.motor; // accept
-    motor2_aB.hw <=> brick2_aB; // <=> accept.motor; // accept
-    // touch5; //<=> handler.truckEndSensor; // robot truck end
-    touch6.ctrl <=> sorter.touch6; // <=> inspector.stageXHomeSensor;  // stage x home
-    touch6.hw <=> brick2_s2; // <=> inspector.stageXHomeSensor;  // stage x home
-    touch7.ctrl <=> sorter.touch7; // <=> reject.sensor; // reject
-    touch7.hw <=> brick2_s3; // <=> reject.sensor; // reject
-    touch8.ctrl <=> sorter.touch8; // <=> accept.sensor; // accept
-    touch8.hw <=> brick2_s4; // <=> accept.sensor; // accept
-    // NxtBrick brick3; // STAGE
-    motor3_aA.ctrl <=> sorter.move6; // <=> inspector.stageXMotor; // stage x
-    motor3_aA.hw <=> brick3_aA; // <=> inspector.stageXMotor; // stage x
-    motor3_aC.ctrl <=> sorter.move7; // <=> inspector.stageYMotor; // stage y
-    motor3_aC.hw <=> brick3_aC; // <=> inspector.stageYMotor; // stage y
-    //TODO  requires ilight brick3_s1; //<=> inspector.sensor; // inspect light sensor
-    light1.ctrl <=> sorter.light1;
-    light1.hw <=> brick3_s1;
-    touch9.ctrl <=> sorter.touch9; // <=> inspector.stageYEndSensor; // stage y end
-    touch9.hw <=> brick3_s2; // <=> inspector.stageYEndSensor; // stage y end
-    touch10.ctrl <=> sorter.touch10; // <=> inspector.stageYHomeSensor; // stage y home
-    touch10.hw <=> brick3_s3; // <=> inspector.stageYHomeSensor; // stage y home
-    // NxtBrick brick4; // ROBOT
-    motor4_aA.ctrl <=> sorter.move8; // <=> handler.hoistMotor; // robot hoist
-    motor4_aA.hw <=> brick4_aA; // <=> handler.hoistMotor; // robot hoist
-    motor4_aB.ctrl <=> sorter.move9; // <=> handler.gripperMotor; // robot gripper
-    motor4_aB.hw <=> brick4_aB; // <=> handler.gripperMotor; // robot gripper
-    motor4_aC.ctrl <=> sorter.move10; // <=> handler.truckMotor; // truck
-    motor4_aC.hw <=> brick4_aC; // <=> handler.truckMotor; // truck
-    touch11.ctrl <=> sorter.touch11;
-    touch11.hw <=> brick4_s1;
-    touch12.ctrl <=> sorter.touch12; // <=> handler.trolleyHomeSensor; // extender home
-    touch12.hw <=> brick4_s2; // <=> handler.trolleyHomeSensor; // extender home
-    touch13.ctrl <=> sorter.touch13; // <=> handler.hoistEndSensor; // hoist home
-    touch13.hw <=> brick4_s3; // <=> handler.hoistEndSensor; // hoist home
+
+    Brick1 brick1;
+
+    sorter.move1 <=> brick1.motorA;
+    sorter.move2 <=> brick1.motorB;
+    sorter.move3 <=> brick1.motorC;
+
+    sorter.touch1 <=> brick1.touch1;
+    sorter.touch2 <=> brick1.touch2;
+    sorter.touch3 <=> brick1.touch3;
+    sorter.touch4 <=> brick1.touch4;
+
+    brick1.aA <=> brick1_aA;
+    brick1.aB <=> brick1_aB;
+    brick1.aC <=> brick1_aC;
+
+    brick1.s1 <=> brick1_s1;
+    brick1.s2 <=> brick1_s2;
+    brick1.s3 <=> brick1_s3;
+    brick1.s4 <=> brick1_s4;
+
+    Brick2 brick2;
+
+    sorter.move4 <=> brick2.motorA;
+    sorter.move5 <=> brick2.motorB;
+
+    sorter.touch6 <=> brick2.touch6;
+    sorter.touch7 <=> brick2.touch7;
+    sorter.touch8 <=> brick2.touch8;
+
+    brick2.aA <=> brick2_aA;
+    brick2.aB <=> brick2_aB;
+
+    brick2.s2 <=> brick2_s2;
+    brick2.s3 <=> brick2_s3;
+    brick2.s4 <=> brick2_s4;
+
+    Brick3 brick3;
+
+    sorter.move6 <=> brick3.motorA;
+    sorter.move7 <=> brick3.motorC;
+
+    sorter.light1 <=> brick3.light1;
+    sorter.touch9 <=> brick3.touch9;
+    sorter.touch10 <=> brick3.touch10;
+
+    brick3.aA <=> brick3_aA;
+    brick3.aC <=> brick3_aC;
+
+    brick3.s1 <=> brick3_s1;
+    brick3.s2 <=> brick3_s2;
+    brick3.s3 <=> brick3_s3;
+
+    Brick4 brick4;
+
+    sorter.move8 <=> brick4.motorA;
+    sorter.move9 <=> brick4.motorB;
+    sorter.move10 <=> brick4.motorC;
+
+    sorter.touch11 <=> brick4.touch11;
+    sorter.touch12 <=> brick4.touch12;
+    sorter.touch13 <=> brick4.touch13;
+
+    brick4.aA <=> brick4_aA;
+    brick4.aB <=> brick4_aB;
+    brick4.aC <=> brick4_aC;
+
+    brick4.s1 <=> brick4_s1;
+    brick4.s2 <=> brick4_s2;
+    brick4.s3 <=> brick4_s3;
   }
 }
