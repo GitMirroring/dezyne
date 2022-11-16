@@ -1,1 +1,1 @@
-this->#.port.name .dzn_prefix += to_string (this->#.name) + " ";
+#.port.name .dzn_event(to_string (#.name));

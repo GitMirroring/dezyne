@@ -1,1 +1,1 @@
-this->#.port.name .dzn_prefix += "#.event.name  ";
+this->#.port.name .dzn_event("#.event.name");

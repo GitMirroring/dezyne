@@ -1,5 +1,5 @@
 #.port.name .#.event.direction .#.event.name  = [&](#x:formals){
-  this->#.port.name .dzn_prefix += "#.event.name  ";
+  this->#.port.name .dzn_event("#.event.name");
   dzn::call_#.event.direction(this,[=#x:out-arguments ]{
     #x:injected-port-require-override
     this->#.port.name _#.event.name(#x:code-arguments);
@@ -8,6 +8,6 @@
     #x:return
   },
   this->#.port.name , "#.event.name ");
-  this->#.port.name .dzn_prefix += "return ";
+  this->#.port.name .dzn_event("return");
   this->#.port.name .#.event.direction _#.event.name();
 };

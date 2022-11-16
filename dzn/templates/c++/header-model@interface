@@ -33,6 +33,10 @@ struct #x:model-name
     #x:check-in-binding
     #x:check-out-binding
   }
+  void dzn_event(std::string event)
+  {
+    dzn_prefix += event + " ";
+  }
   void dzn_update_state()
   {
     if (false) {}
