@@ -3,7 +3,7 @@ this.#.port.name .#.event.direction port.#.event.name  =
     #x:out-ref-local  dzn_runtime.call_#.event.direction (this,
     () => {
       #x:formal-bindings
-      #.port.name _#.event.name(#x:code-arguments);
+      this.#.port.name _#.event.name(#x:code-arguments);
       #x:flush
       #x:port-reply
     }, this.#.port.name , "#.event.name");
