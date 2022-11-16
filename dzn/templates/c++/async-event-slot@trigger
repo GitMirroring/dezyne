@@ -3,7 +3,7 @@
 ##if DZN_ASYNC_TRACING
     #x:trace-q-out
 ##endif
-    return #.port.name _#.event.name(#x:code-arguments);
+    return this->#.port.name _#.event.name(#x:code-arguments);
   },
   this->#.port.name , "#.event.name ");
 };
