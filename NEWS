@@ -5,6 +5,13 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.16.3 since 2.16.2
+** Noteworthy bug fixes
+  - A bug was fixed in the C++ and C# code generators where a data
+    parameter could shadow an event method.
+  - Simulation of an interface with a subint event type now works
+    correctly.
+
 * Changes in 2.16.2 since 2.16.1
 ** Language
   - In a valued function, after an "illegal" a return is no longer
