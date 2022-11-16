@@ -37,6 +37,10 @@
     + Extending nested namespaces in imports,
     + Referencing partially named identifiers,
     by a full rewrite of the lookup algorithm.
+  - A bug was fixed in the C++ and C# code generators where a data
+    parameter could shadow an event method.
+  - Simulation of an interface with a subint event type now works
+    correctly.
 
 * Changes in 2.16.2 since 2.16.1
 ** Language
