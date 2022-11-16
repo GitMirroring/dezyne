@@ -15,6 +15,7 @@
   - Support for `dzn.async' ports has been removed.
 ** Parser
   - A new transformation has been added: `tag-imperative-blocks'.
+  - Reduced wellformedness checking overhead by about 50%.
 ** Verification
   - The verifier now checks for unreachable code.
   - The verifier has a new option `-C,--no-constraint' to disable
@@ -25,18 +26,22 @@
     unreachable code check.
   - The verifier has a new option `--jitty' to run `lps2ts' using
     `--rewriter=jittyc' for large models.
-  - The performance of the verifier has been improved by skipping
-    normalization of imported components.
 ** Code
   - The performance of the code generators has been improved by skipping
     normalization of imported interfaces and components.
   - The generated C++ and its runtime now uses typed pointers instead of
     void pointers for component instances.
+  - The C++ code generator now uses C++11 style enums, instead of struct
+    scoped C style enums.
 ** Noteworthy bug fixes
   - Some longstanding bugs have been fixed in relation to
     + Extending nested namespaces in imports,
     + Referencing partially named identifiers,
     by a full rewrite of the lookup algorithm.
+  - A bug was fixed in the C++ and C# code generators where a data
+    parameter could shadow an event method.
+  - Simulation of an interface with a subint event type now works
+    correctly.
 
 * Changes in 2.16.2 since 2.16.1
 ** Language
