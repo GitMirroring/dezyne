@@ -90,7 +90,8 @@
 ;;; Foreign
 ;;;
 (define-templates declare-pure-virtual-method ast:in-triggers)
-(define-templates foreign-event-slot ast:in-triggers)
+(define-templates foreign-event-slot ast:void-in-triggers)
+(define-templates valued-foreign-event-slot ast:valued-in-triggers)
 
 
 ;;;
