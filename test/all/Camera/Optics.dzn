@@ -97,8 +97,8 @@ component FocusControl
 {
   provides IFocus port;
 
-  requires ILens lens;
   requires IContrast sensor;
+  requires ILens lens;
 
   behavior
   {
@@ -151,8 +151,8 @@ component OpticsControl
 {
   provides IOptics port;
 
-  requires IFocus focus;
   requires IShutter shutter;
+  requires IFocus focus;
 
   behavior
   {
