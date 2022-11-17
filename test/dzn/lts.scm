@@ -69,13 +69,13 @@
                   (make-edge 2 "blaat" 3 #:tau? #t)
                   (make-edge 3 "live" 4 #:tau? #t)
                   (make-edge 4 "lock" 3 #:tau? #t)
-                  (make-edge 3 "tau" 3)
+                  (make-edge 3 "tau" 3 #:tau? #t)
                   (make-edge 3 "mies" 0))))
 
 (define (test-lts-livelock-2)
   (make-lts 1
             3
-            (list (make-edge 0 "tau" 0)
+            (list (make-edge 0 "tau" 0 #:tau? #t)
                   (make-edge 2 "BlindLoop'return(BlindLoop'in'start, reply_BlindLoop'Void(void))" 0)
                   (make-edge 1 "BlindLoop'event(BlindLoop'in'start)" 2))))
 
@@ -184,7 +184,7 @@
        (equal? (list (make-edge 1 "BlindLoop'event(BlindLoop'in'start)" 2)
                      (make-edge 2 "BlindLoop'return(BlindLoop'in'start, reply_BlindLoop'Void(void))" 0)
                      (make-edge -1 "<loop>" -1 #:tau? #t)
-                     (make-edge 0 "tau" 0))
+                     (make-edge 0 "tau" 0 #:tau? #t))
                (let ((lts (test-lts-livelock-2)))
                  (assert-livelock lts)))
        (not (let* ((test-lts (lts-hide (aut-file->lts "test/lts/no-livelock.aut") '() '())))
@@ -266,6 +266,5 @@
           "test/lts/no-loop.aut")) ;; expect: exit value: ?? stderr output: "No tau loop found"
   )
 (test-assert (test:main))
-(test:main)
 
 (test-end)

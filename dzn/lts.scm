@@ -54,7 +54,11 @@
   #:use-module (dzn peg)
   #:export (%<declarative-illegal>
             %<illegal>
+            %tau
             add-failures
+            annotate-collateral-blocked-out
+            annotate-node-rtc
+            annotate-parent
             assert-deadlock
             assert-illegal
             assert-livelock
@@ -64,8 +68,11 @@
             cleanup-error
             cleanup-lts
             display-lts
-            edge-from
+            display-lts-rtc
+            edge-blocked?
             edge-label
+            edge-tau?
+            edge-from
             edge-to
             edge?
             initial
@@ -80,8 +87,18 @@
             node?
             node-edges
             node-state
+            mark-common
+
+            ;; XXX SORT ME
+            compose-parallel
+            hide
+            rename
+            rename-label
             remove-illegal
-            remove-state-loops))
+            remove-modeling
+            remove-state-loops
+            remove-tag-edges
+            transform-labels))
 
 ;;; TODO:
 ;;; * functional style
@@ -133,13 +150,14 @@
          (make-aut-header first-state nr-transitions state-count))))
 
 (define-immutable-record-type <edge>
-  (make-edge- from label to tau?)
+  (make-edge- from label to tau? blocked?)
   edge?
   (from edge-from)
   (label edge-label)
   (to edge-to)
   ;;
-  (tau? edge-tau?))
+  (tau? edge-tau?)
+  (blocked? edge-blocked?))
 
 (define (text->edge text)
   (let* ((first-paren 0)
@@ -151,12 +169,12 @@
          (to (string->number (string-copy text (1+ last-comma) (1- last-paren)))))
     (make-edge from label to)))
 
-(define* (make-edge from label to #:key tau?)
+(define* (make-edge from label to #:key tau? blocked?)
   (let ((label (make-shared-string label)))
-    (make-edge- from label to (or tau? (eq? %tau label)))))
+    (make-edge- from label to (or tau? (eq? %tau label)) blocked?)))
 
 (define (clone-edge e)
-  (make-edge- (edge-from e) (edge-label e) (edge-to e) (edge-tau? e)))
+  (make-edge- (edge-from e) (edge-label e) (edge-to e) (edge-tau? e) (edge-blocked? e)))
 
 (define (make-edge-loop)
   (make-edge -1 "<loop>" -1 #:tau? #t))
@@ -181,11 +199,6 @@
 (define %white 0)
 (define %grey 1)
 (define %black 2)
-
-(define node-exclude? node-color)
-(define node-type node-color)
-(define node-nondet-witness node-color)
-(define node-rtc? node-color)
 
 (define (initial lts)
   "Index (state) of initial node in LTS vector."
@@ -298,6 +311,88 @@
                          (node-distance (vector-ref lts b))))))
 
 
+;;; XXX WHAT'S THIS???
+;;; TODO: ...also system composition?
+;;; TODO: Refactor transformations
+;;;
+
+(define (add-hash f)
+  (let ((hash (make-hash-table)))
+    (lambda (label)
+      (let ((res (hashq-ref hash label)))
+        (if res
+            res
+            (let ((res (f label)))
+              (hashq-set! hash label res)
+              res))))))
+
+(define (transform-labels transform lts)
+  (define (transform-edges node)
+    (map
+     (lambda (edge)
+       (let* ((label (transform (edge-label edge)))
+              (edge (set-field edge (edge-label) label))
+              (tau? (eq? label %tau))
+              (edge (if tau? (set-field edge (edge-tau?) #t)
+                        edge)))
+         (unless (string? label)
+           (throw 'error label))
+         edge))
+     (node-edges node)))
+  (let ((transform (add-hash transform)))
+    (vector-map-one
+     (lambda (n)
+       (let ((edges (transform-edges n)))
+         (set-field n (node-edges) edges)))
+     lts)))
+
+(define (rename-label from to)
+  (let ((from-dot (make-shared-string (string-append from "."))))
+    (lambda (label)
+      (if (or (eq? from-dot label)
+              (string-prefix? from-dot label))
+          (let ((label (string-append to (substring label
+                                                    (string-length from)))))
+            (make-shared-string label))
+          label))))
+
+(define* (rename lts #:key from to)
+  (transform-labels
+   (rename-label from to)
+   lts))
+
+(define* (hide lts #:key hide-prefix)
+  (let ((hide-prefix-dot (make-shared-string (string-append hide-prefix "."))))
+    (transform-labels
+     (lambda (label)
+       (if (or (eq? hide-prefix label)
+               (string-prefix? hide-prefix-dot label))
+           %tau
+           label))
+     lts)))
+
+(define* (mark-common lts #:key alphabet)
+  (let ((alphabet (map make-shared-string alphabet)))
+    (define (common? label prefix)
+      (or (eq? prefix label)
+          (and (string-prefix? (string-append prefix ".") label)
+               (not (or (string-suffix? "<blocking>" label)
+                        (string-suffix? "<blocked>" label))))))
+    (define (mark-edges node)
+      (set-field node (node-edges)
+                 (map
+                  (lambda (edge)
+                    (let* ((label (edge-label edge))
+                           (tau? (find (cute common? label <>) alphabet)))
+                      (when (and tau? (eq? (node-color node) 'blocked))
+                        (set-node-color! node 'rtc))
+                      (set-field edge (edge-tau?) tau?)))
+                  (node-edges node))))
+    (vector-map-one mark-edges lts)))
+
+;;;;;;;;;;;;;;;;;;
+
+
 ;;;
 ;;; Livelock.
 ;;;
@@ -310,10 +405,10 @@
                 loops))
       (let ((node (vector-ref lts state)))
         (cond ((= (node-color node) %grey)
-               (let* ((edge (make-edge- (edge-from entry-edge)
-                                        (edge-label entry-edge)
-                                        (edge-to entry-edge)
-                                        (edge-tau? entry-edge)))
+               (let* ((edge (make-edge (edge-from entry-edge)
+                                       (edge-label entry-edge)
+                                       (edge-to entry-edge)
+                                       #:tau? (edge-tau? entry-edge)))
                       (node (set-field node (node-cycle) entry-edge)))
                  (vector-set! lts state node) ;; XXX imperative!
                  (list state)))
@@ -404,13 +499,32 @@
 
 (define (remove-illegal lts)
   (define (exclude? lts edge)
-    (node-exclude? (vector-ref lts (edge-to edge))))
+    (node-color (vector-ref lts (edge-to edge))))
   (define (exclude node)
     (let ((edges (filter (negate (cute exclude? lts <>))
                          (node-edges node))))
       (set-field node (node-edges) edges)))
   (let ((lts (annotate-exclude lts (list %<declarative-illegal> %<illegal>))))
     (vector-map-one exclude lts)))
+
+(define (trim-queue-full lts)
+  (define (reset-exclude node)
+    (set-field node (node-color) #f))
+  (define (exclude-queue-full node)
+    (let ((edges (if (node-color node) '()
+                     (node-edges node))))
+      (set-field node (node-edges) edges)))
+  (define (set-exclude-queue-full lts i node)
+    (let* ((edges (node-edges node))
+           (edge (find (compose (cute eq? <> %<queue-full>) edge-label) edges)))
+      (when edge
+        (let* ((i (edge-to edge))
+               (node (vector-ref lts i))
+               (node (set-field node (node-color) #t)))
+          (vector-set! lts i node)))))
+  (let ((lts (vector-map-one reset-exclude lts)))
+    (vector-for-each (cute set-exclude-queue-full lts <> <>) lts)
+    (vector-map-one exclude-queue-full lts)))
 
 
 ;;;
@@ -423,12 +537,12 @@
          (lts (annotate-exclude lts (list %<declarative-illegal>))))
     (define (edges? state)
       (let ((node (vector-ref lts state)))
-        (find (compose (negate node-exclude?)
+        (find (compose (negate node-color)
                        (cute vector-ref lts <>)
                        edge-to)
               (node-edges node))))
     (filter (negate edges?)
-            (filter (compose (negate node-exclude?) (cute vector-ref lts <>))
+            (filter (compose (negate node-color) (cute vector-ref lts <>))
                     (iota-distance-sorted lts)))))
 
 (define (assert-deadlock lts)
@@ -484,7 +598,7 @@ from LABELS."
   "Trace to nondetermistic node of #f is none found"
   (let* ((nondeterministic-nodes (nondeterministic-nodes lts labels))
          (nondeterministic-node (and (pair? nondeterministic-nodes) (car nondeterministic-nodes)))
-         (nondeterministic-witness (and nondeterministic-node (node-nondet-witness (vector-ref lts nondeterministic-node))))
+         (nondeterministic-witness (and nondeterministic-node (node-color (vector-ref lts nondeterministic-node))))
          (nondeterministic-trace (and nondeterministic-node
                                       (append (trace lts nondeterministic-node)
                                               (if (equal? (edge-canonical-label nondeterministic-witness) %<state>) '()
@@ -549,6 +663,183 @@ from LABELS."
            (lts-list (map node:modeling->tau lts-list)))
       (list->vector lts-list))))
 
+(define* (remove-modeling lts #:key ports)
+  (let* ((ports (and ports (map make-shared-string ports)))
+         (modeling-labels (and ports (append (map (cute string-append <> ".optional") ports)
+                                             (map (cute string-append <> ".inevitable") ports))))
+         (modeling-labels (map make-shared-string modeling-labels))
+         (modeling-edge? (if modeling-labels (lambda (e) (memq (edge-label e) modeling-labels)) modeling?))
+         (modeling-edges (vector-fold
+                          (lambda (i edges node)
+                            (append (filter modeling-edge? (node-edges node)) edges))
+                          '()
+                          lts)))
+    (define (foo edge) ;; FIXME: sensible name
+      (let* ((from (edge-from edge))
+             (start-node (vector-ref lts from))
+             (end-node (vector-ref lts (edge-to edge)))
+             (edges (append
+                     (node-edges start-node)
+                     (map (lambda (edge)
+                            (set-field edge (edge-from) from))
+                          (node-edges end-node)))))
+        (set-node-color! start-node (or (node-color start-node) (node-color end-node)))
+        (set-node-edges! start-node edges)))
+
+    (for-each foo modeling-edges)
+    (vector-map-one
+     (lambda (node)
+       (let ((edges (filter (negate modeling-edge?) (node-edges node))))
+         (set-field node (node-edges) edges)))
+     lts)))
+
+
+;;;
+;;; System composition.
+;;;
+
+(define (->string o)
+  (cond
+   ((string? o) o)
+   ((symbol? o) (symbol->string o))
+   ((number? o) (number->string o))
+   ((boolean? o) (if o "#t" "#f"))
+   (else "unknown-type")))
+
+(define* (display-lts-rtc lts #:key port)
+  (display-lts lts #:port port #:node-info (compose ->string node-color))
+  (if port (display #\newline port) (display #\newline)))
+
+(define* (annotate-node-rtc lts #:key incoming-events)
+  (let* ((incoming-events (map make-shared-string incoming-events)))
+    (vector-for-each
+     (lambda (i node)
+       (set-node-color!
+        node
+        (if (find (lambda (e) (memq (edge-label e) incoming-events)) (node-edges node)) 'rtc #f)))
+     lts)
+    lts))
+
+(define* (annotate-collateral-blocked-out lts #:key provides-out-events)
+  (let* ((provides-out-events (map make-shared-string provides-out-events)))
+    (vector-for-each
+     (lambda (i node)
+       (for-each
+        (lambda (edge)
+          (let* ((label (edge-label edge))
+                 (blocked? (memq label provides-out-events))
+                 (edge (if (not blocked?) edge
+                           (set-field edge (edge-blocked?) #t))))
+            (when blocked?
+              (set-node-color! (vector-ref lts (edge-from edge)) 'blocked))))
+        (node-edges node)))
+     lts)
+    (when (> (dzn:debugity) 1)
+      (display-lts-rtc lts #:port (current-error-port)))
+    lts))
+
+(define* (compose-parallel lts0 lts1)
+  (let* ((size0 (vector-length lts0))
+         (lts (make-hash-table))
+         (lts '())
+         (lts-size 0))
+    (define (common? edge) (edge-tau? edge))
+    (define (blocked-in-call? node)
+      (and (not (node-color node)) (find common? (node-edges node))))
+    (define* (step from-node edge state0 state1 active #:key lts-deadlocked)
+      (let* ((node0 (vector-ref lts0 state0))
+             (node1 (vector-ref lts1 state1))
+             (rtc0 (or (node-color node0) (eq? active 'lts1)))
+             (rtc1 (or (node-color node1) (eq? active 'lts0)))
+             (blocked (and edge (string-suffix? "<blocked>" (edge-label edge))))
+             (rtc (or blocked (and rtc0 rtc1)))
+             (do-step0 (or rtc (not rtc0)))
+             (do-step1 (or rtc (not rtc1)))
+             (node-key (list state0 state1 do-step0 do-step1 rtc active lts-deadlocked))
+             (done (hash-ref lts node-key #f))
+             (node (if done done
+                       (let* ((new-node (make-node lts-size '() '() #f %white #f -1 #f)))
+                         (set-node-color! new-node rtc)
+                         (hash-set! lts node-key new-node)
+                         (set! lts-size (1+ lts-size))
+                         (set! lts (cons new-node lts))
+                         new-node))))
+              (when (> (dzn:debugity) 2)
+                 (warn (if from-node (node-state from-node) "*") "->" (node-state node) (if done "" "*") ":"
+                        state0 state1 'do0: do-step0 'd01: do-step1 'r0: rtc0 'r1: rtc1 'r: rtc
+                        'act: active 'lts-dlk lts-deadlocked))
+          (define (swap active)
+            (case active
+              ((lts0) 'lts1)
+              ((lts1) 'lts0)))
+          (define (calc-active active do-step0)
+            (if active active (if do-step0 'lts0 'lts1)))
+          (define (clear-lts lts-old lts)
+            (if (eq? lts-old lts) #f lts-old))
+          (define (modelling? edge)
+            (let ((label (edge-label edge)))
+              (or (string-suffix? ".inevitable" label) (string-suffix? ".optional" label))))
+          (define (step0 edge)
+            (let ((label (edge-label edge))
+                  (to0 (edge-to edge)))
+              (if (not (common? edge))
+                  (step node edge to0 state1 'lts0 #:lts-deadlocked (clear-lts lts-deadlocked 'lts0))
+                  (let ((matches (filter (lambda (e) (equal? label (edge-label e)))
+                                          (node-edges node1))))
+                    (for-each (lambda (e) (step node edge to0 (edge-to e) #f)) matches)))))
+          (define (step1 edge)
+            (let ((label (edge-label edge))
+                  (to1 (edge-to edge)))
+              (if (not (common? edge))
+                  (step node edge state0 to1 'lts1 #:lts-deadlocked (clear-lts lts-deadlocked 'lts0))
+                  (unless do-step0 ;; common steps already done in step0
+                    (let ((matches (filter (lambda (e) (equal? label (edge-label e)))
+                                            (node-edges node0))))
+                      (for-each (lambda (e) (step node edge (edge-to e) to1 #f)) matches))))))
+
+        (when from-node
+          (set-node-edges!
+            from-node
+            (cons
+              (make-edge
+                (node-state from-node)
+                (edge-label edge)
+                (node-state node)
+                #:tau? (edge-tau? edge)
+                #:blocked? (edge-blocked? edge))
+              (node-edges from-node))))
+        (when (not done)
+          (when do-step0
+            (for-each step0 (node-edges node0)))
+          (when do-step1
+            (for-each step1 (node-edges node1)))
+          (when (null? (node-edges node))
+              (when (> (dzn:debugity) 2)
+                (warn 'DEADLOCK!!!! 'active active))
+            (step node (make-edge (node-state from-node) "tau" (node-state node)) state0 state1 (swap (calc-active active do-step0))
+                  #:lts-deadlocked (calc-active active do-step0)))
+          (when (and lts-deadlocked (find common? (node-edges node)))
+            (when (> (dzn:debugity) 2)
+              (warn "-----------" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
+            (set-node-edges! node (filter (negate modelling?) (node-edges node)))
+            (when (> (dzn:debugity) 2)
+              (warn "          -" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))))
+          (when (and (eq? active 'lts0) (find (conjoin common? edge-blocked?) (node-edges node)))
+            (when (> (dzn:debugity) 2)
+              (warn "!!!!!!!!!!!" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
+            (set-node-edges! node (filter edge-blocked? (node-edges node)))
+            (set-node-color! node #f)
+            (when (> (dzn:debugity) 2)
+              (warn "          !" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))))))
+
+    (if (equal? size0 0)
+      lts1
+      (begin
+        (step #f #f (initial lts0) (initial lts1) #f)
+        (let* ((lts (list->vector (reverse lts)))
+              (initial (vector-ref lts 0)))
+          (set-node-initial?! lts #t)
+          lts)))))
 
 ;;;
 ;;; Trace generation.
