@@ -136,8 +136,8 @@ component shell_injected
 
   system
   {
-    Logger logger;
     TopArmor top;
+    Logger logger;
     C c;
     BottomArmor bottom;
     Watchdog watchdog;

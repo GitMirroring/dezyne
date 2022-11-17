@@ -23,16 +23,27 @@
 
 import collateral_blocking_reorder.dzn;
 
-component proxy
+interface iworld2
 {
-  provides iworld p;
-  requires iworld r;
+  in void hello ();
+  out void world ();
 
   behavior
   {
-    bool idle = true;
-    [idle] on p.hello (): {r.hello(); idle = false;}
-    on r.world (): {p.world(); idle = true;}
+    on hello: {}
+    on inevitable: world;
+  }
+}
+
+component proxy
+{
+  provides blocking iworld2 p;
+  requires blocking iworld2 r;
+
+  behavior
+  {
+    on p.hello (): r.hello ();
+    on r.world (): p.world ();
   }
 }
 
@@ -43,8 +54,8 @@ component collateral_blocking_reorder_bypass
   requires iworld rleft;
   requires iworld eleft;
 
-  provides iworld pright;
-  requires iworld rright;
+  provides blocking iworld2 pright;
+  requires blocking iworld2 rright;
 
   system
   {

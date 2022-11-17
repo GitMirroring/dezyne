@@ -1,12 +1,11 @@
 verify: ihello: check: deadlock: ok
-verify: ihello: check: unreachable: fail
-test/all/illegal_system_requires/illegal_system_requires.dzn:33:23: error: code will never be executed
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
-verify: compliance_requires_illegal: check: deterministic: ok
-verify: compliance_requires_illegal: check: illegal: fail
-error: illegal action performed in model compliance_requires_illegal
-verify: compliance_requires_illegal: check: deadlock: ok
-verify: compliance_requires_illegal: check: unreachable: skip
-verify: compliance_requires_illegal: check: livelock: ok
-verify: compliance_requires_illegal: check: compliance: skip
+verify: illegal_system_requires: check: deterministic: ok
+verify: illegal_system_requires: check: illegal: fail
+error: illegal action performed in model illegal_system_requires
+verify: illegal_system_requires: check: deadlock: ok
+verify: illegal_system_requires: check: unreachable: skip
+verify: illegal_system_requires: check: livelock: ok
+verify: illegal_system_requires: check: compliance: skip

@@ -31,12 +31,8 @@ interface ihello
 
   behavior
   {
-    bool b = true;
-    [b] {
-      on hello: reply(b);
-      on hello: {b = false; reply(b);}
-    }
-    [!b] on inevitable: {b = true; goodbye;}
+    on hello: {}
+    on optional: goodbye;
   }
 }
 

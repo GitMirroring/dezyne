@@ -1,1 +1,3 @@
-
+model: compliance_system_provides_bool
+pp.hello
+<compliance>

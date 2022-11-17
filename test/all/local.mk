@@ -314,6 +314,7 @@ REGRESSION_TESTS =				\
  %D%/double_hello_block				\
  %D%/double_inevitable				\
  %D%/empty_dollars				\
+ %D%/empty_system				\
  %D%/end_of_trail				\
  %D%/end_of_trail_action			\
  %D%/end_of_trail_action2			\
@@ -403,6 +404,7 @@ REGRESSION_TESTS =				\
  %D%/hello_shadow				\
  %D%/hello_sync_out_reply			\
  %D%/hello_systems				\
+ %D%/hello_diamond				\
  %D%/hello_tail_recursive_function		\
  %D%/hello_tick					\
  %D%/hello_true_guard				\
@@ -696,6 +698,7 @@ XFAIL_VERIFY =					\
  %D%/blocking_defer				\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
+ %D%/empty_system				\
  %D%/external_blocking_livelock
 
 XFAIL_SIMULATE =				\

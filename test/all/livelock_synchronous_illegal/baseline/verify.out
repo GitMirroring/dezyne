@@ -9,10 +9,10 @@ w.world
 w.return
 <loop>
 d.hello
-d.E1:D
+d.E1:B
 w.hello
 w.world
 w.return
 d.world
-d.E2:D
+d.E2:E
 <livelock>

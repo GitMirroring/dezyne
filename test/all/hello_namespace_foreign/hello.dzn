@@ -28,10 +28,17 @@ namespace library
     {
       in void hello();
 
-      behavior
-      {
-        on hello: {}
-      }
+     behavior
+     {
+       on hello: {}
+       on optional: goodbye;
+     }
+    }
+
+  component foreign
+    {
+      provides iworld w;
+      // behavior {}
     }
 
   component hello

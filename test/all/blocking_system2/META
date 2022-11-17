@@ -1,3 +1,2 @@
 ;;; -*- scheme -*-
-((trace-format "trace")
- (component "Blocked"))
+((trace-format "trace"))
