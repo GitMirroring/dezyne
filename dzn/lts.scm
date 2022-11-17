@@ -1280,3 +1280,9 @@ from LABELS."
                    (vector-length lts)
                    separator)
     (for-each display-edge edges)))
+
+(define %lts-cnt 0)
+(define (write-lts-tmp lts)
+  (let ((file-name (string-append "lts" (number->string %lts-cnt) ".aut")))
+    (set! %lts-cnt (1+ %lts-cnt))
+    (with-output-to-file file-name (cut display-lts lts #:mark-common #t))))
