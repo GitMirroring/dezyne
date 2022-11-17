@@ -1,0 +1,49 @@
+interface ihello
+{
+  in bool hello();
+  out void world();
+  in void bye();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] {
+      on hello: {idle = false; reply(true);}
+      on hello: reply(false);
+      on bye: {}
+    }
+    [!idle] {
+      on hello: reply(false);
+      on bye: idle = true;
+      on inevitable: {idle = true; world;}
+    }
+  }
+}
+
+component shared_defer
+{
+  provides ihello h;
+  requires inondet n;
+  behavior
+  {
+    [h:idle] on h.hello(): {
+      if(n.test()) {
+        reply(true);
+        defer h.world();
+      } else reply(false);
+    }
+    [!h:idle] on h.hello(): reply(false);
+
+    on h.bye(): {}
+  }
+}
+
+interface inondet
+{
+  in bool test();
+  behavior
+  {
+    on test: reply(true);
+    on test: reply(false);
+  }
+}
