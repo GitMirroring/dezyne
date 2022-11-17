@@ -75,6 +75,7 @@
             makreel:switch-context?
             makreel:tick-names
             makreel:unticked-dotted-name
+            makreel:unticked-name
             makreel:proc-list
             makreel:process-identifier
             makreel:variables-in-scope
@@ -127,7 +128,13 @@
                    (%model-name model-name))
       (root-> root'))))
 
-(define (makreel:unticked-dotted-name o)
+(define-method (makreel:unticked-name (o <string>))
+  (untick o))
+
+(define-method (makreel:unticked-name (o <named>))
+  (untick (.name o)))
+
+(define-method (makreel:unticked-dotted-name o)
   "Return a full name of MODEL, separated with dots, with ticks removed."
   (string-join (map untick (ast:full-name o)) "."))
 
@@ -672,7 +679,14 @@ etc."
     ((or ($ <foreign>) ($ <system>))
      o)
     ((and ($ <component>) (? ast:imported?))
-     o)
+     (let* ((root (tree:ancestor o <root>))
+            (system (find (is? <system>) (ast:model* root))))
+       ;; FIXME: must NOT skip imported component when it's part of
+       ;; the system to be verified
+       ;; do we have that information here?
+       ;; no skip if there's any system at all, for now
+       (and (not system)
+            o)))
     (_
      #f)))
 

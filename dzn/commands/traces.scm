@@ -41,6 +41,7 @@
   #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
+  #:use-module (dzn stitch)
   #:use-module (dzn verify pipeline)
 
   #:export (parse-opts
@@ -91,22 +92,17 @@ Generate exhaustive set of traces for Dezyne model
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
-(define (lts-hide-internal-labels text)
-  (let* ((text (regexp-substitute/global #f "\"<declarative-illegal>\"" text 'pre "\"<illegal>\"" 'post))
-         (text (regexp-substitute/global #f "\"[^\"]*<blocking>\"" text 'pre "\"tau\"" 'post))
-         (text (regexp-substitute/global #f "\"[^\"]*\\.qout\\.[^\"]*\"" text 'pre "\"tau\"" 'post))
+(define (lts-hide-modeling-events text)
+  (let* ((text (regexp-substitute/global #f "\"[^\"]*<blocking>\"" text 'pre "\"tau\"" 'post))
+         (text (regexp-substitute/global #f "\"[^\"]*<blocked>\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"(optional|inevitable)\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"[^\"]*\\.(optional|inevitable)\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"[^\"]*<state>[^\"]*\"" text 'pre "\"tau\"" 'post))
          (text (regexp-substitute/global #f "\"tag[()].[^\"]*\"" text 'pre "\"tau\"" 'post)))
     text))
 
-(define (model->lts root model)
-  (let* ((lts (verify-pipeline "aut-weak-trace" root model))
-         (lts (lts-hide-internal-labels lts)))
-    (when (string-null? (string-trim-right lts))
-      (error "failed to create LTS for ~a\n" (makreel:unticked-dotted-name model)))
-    lts))
+(define (declarative-illegal->illegal label)
+  (if (eq? label %<declarative-illegal>) %<illegal> label))
 
 (define-method (makreel:trigger->string (o <trigger>))
   (let ((port-name (and=> (.port.name o) makreel:name))
@@ -116,12 +112,20 @@ Generate exhaustive set of traces for Dezyne model
 
 (define (model->traces options root model)
   (let* ((verbose? (dzn:command-line:get 'verbose))
-         (lts (model->lts root model))
+         (lts (model->lts root model verbose?))
+         (lts (transform-labels declarative-illegal->illegal lts))
+         (lts (with-output-to-string (cute display-lts lts)))
+         (lts (lts-hide-modeling-events lts))
          (provides-ports (if (is-a? model <interface>) '()
                              (ast:provides-port* model)))
-         (triggers (if (is-a? model <interface>) (ast:in-triggers model)
-                       (ast:provides-in-triggers model)))
-         (provides-in (map makreel:trigger->string triggers))
+         (provides-in (if (is-a? model <component-model>)
+                          (map (lambda (t)
+                                 (string-append
+                                  (string-drop-right (.port.name t) 1)
+                                  "."
+                                  (.event.name t)))
+                               (ast:provides-in-triggers model))
+                          (map .name (filter ast:in? (ast:event* model)))))
          (provides (map .name provides-ports))
          (model-name (makreel:unticked-dotted-name model))
          (bin ((compose dirname car) (command-line)))
@@ -170,13 +174,14 @@ Generate exhaustive set of traces for Dezyne model
                    (%queue-size-external queue-size-external))
       (let* ((ast (parse options file-name))
              (models (ast:model** ast))
-             (components-interfaces
+             (verify-models
               (append
                (filter (conjoin (is? <component>) .behavior) models)
+               (filter (is? <system>) models)
                (filter (is? <interface>) models)))
              (model (or (and model-name (find named? models))
-                        (and (pair? components-interfaces)
-                             (car components-interfaces))))
+                        (and (pair? verify-models)
+                             (car verify-models))))
              (model-name (ast:dotted-name model)))
         (when (and=> model ast:imported?)
           (let ((name (ast:dotted-name model)))
@@ -192,11 +197,8 @@ Generate exhaustive set of traces for Dezyne model
         (let ((root (makreel:normalize ast)))
           (cond ((and model-name (not model))
                  (error "no such model:" model-name))
-                ((is-a? model <system>) ;silently no traces
-                 #t)
                 ((and model-name
-                      (or (is-a? model <foreign>)
-                          (not (.behavior model))))
+                      (is-a? model <foreign>))
                  (error "no model with behavior:" model-name))
                 (model
                  (let ((model (makreel:get-model root model-name)))

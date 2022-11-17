@@ -37,6 +37,7 @@ dist_%C%_scm_DATA =				\
  %D%/script.scm					\
  %D%/shell-util.scm				\
  %D%/simulate.scm				\
+ %D%/stitch.scm					\
  %D%/templates.scm				\
  %D%/timing.scm					\
  %D%/trace.scm					\

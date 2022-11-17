@@ -748,8 +748,8 @@ from LABELS."
 (define* (compose-parallel lts0 lts1)
   (let* ((size0 (vector-length lts0))
          (lts (make-hash-table))
-         (lts '())
-         (lts-size 0))
+         (result '())
+         (result-size 0))
     (define (common? edge) (edge-tau? edge))
     (define (blocked-in-call? node)
       (and (not (node-color node)) (find common? (node-edges node))))
@@ -764,65 +764,65 @@ from LABELS."
              (do-step1 (or rtc (not rtc1)))
              (node-key (list state0 state1 do-step0 do-step1 rtc active lts-deadlocked))
              (done (hash-ref lts node-key #f))
-             (node (if done done
-                       (let* ((new-node (make-node lts-size '() '() #f %white #f -1 #f)))
+             (node (or done
+                       (let ((new-node (make-node result-size '() '() #f %white #f -1 #f)))
                          (set-node-color! new-node rtc)
                          (hash-set! lts node-key new-node)
-                         (set! lts-size (1+ lts-size))
-                         (set! lts (cons new-node lts))
+                         (set! result-size (1+ result-size))
+                         (set! result (cons new-node result))
                          new-node))))
-              (when (> (dzn:debugity) 2)
-                 (warn (if from-node (node-state from-node) "*") "->" (node-state node) (if done "" "*") ":"
-                        state0 state1 'do0: do-step0 'd01: do-step1 'r0: rtc0 'r1: rtc1 'r: rtc
-                        'act: active 'lts-dlk lts-deadlocked))
-          (define (swap active)
-            (case active
-              ((lts0) 'lts1)
-              ((lts1) 'lts0)))
-          (define (calc-active active do-step0)
-            (if active active (if do-step0 'lts0 'lts1)))
-          (define (clear-lts lts-old lts)
-            (if (eq? lts-old lts) #f lts-old))
-          (define (modelling? edge)
-            (let ((label (edge-label edge)))
-              (or (string-suffix? ".inevitable" label) (string-suffix? ".optional" label))))
-          (define (step0 edge)
-            (let ((label (edge-label edge))
-                  (to0 (edge-to edge)))
-              (if (not (common? edge))
-                  (step node edge to0 state1 'lts0 #:lts-deadlocked (clear-lts lts-deadlocked 'lts0))
+        (when (> (dzn:debugity) 2)
+          (warn (if from-node (node-state from-node) "*") "->" (node-state node) (if done "" "*") ":"
+                state0 state1 'do0: do-step0 'd01: do-step1 'r0: rtc0 'r1: rtc1 'r: rtc
+                'act: active 'lts-dlk lts-deadlocked))
+        (define (swap active)
+          (case active
+            ((lts0) 'lts1)
+            ((lts1) 'lts0)))
+        (define (calc-active active do-step0)
+          (if active active (if do-step0 'lts0 'lts1)))
+        (define (clear-lts lts-old lts)
+          (if (eq? lts-old lts) #f lts-old))
+        (define (modelling? edge)
+          (let ((label (edge-label edge)))
+            (or (string-suffix? ".inevitable" label) (string-suffix? ".optional" label))))
+        (define (step0 edge)
+          (let ((label (edge-label edge))
+                (to0 (edge-to edge)))
+            (if (not (common? edge))
+                (step node edge to0 state1 'lts0 #:lts-deadlocked (clear-lts lts-deadlocked 'lts0))
+                (let ((matches (filter (lambda (e) (equal? label (edge-label e)))
+                                       (node-edges node1))))
+                  (for-each (lambda (e) (step node edge to0 (edge-to e) #f)) matches)))))
+        (define (step1 edge)
+          (let ((label (edge-label edge))
+                (to1 (edge-to edge)))
+            (if (not (common? edge))
+                (step node edge state0 to1 'lts1 #:lts-deadlocked (clear-lts lts-deadlocked 'lts0))
+                (unless do-step0 ;; common steps already done in step0
                   (let ((matches (filter (lambda (e) (equal? label (edge-label e)))
-                                          (node-edges node1))))
-                    (for-each (lambda (e) (step node edge to0 (edge-to e) #f)) matches)))))
-          (define (step1 edge)
-            (let ((label (edge-label edge))
-                  (to1 (edge-to edge)))
-              (if (not (common? edge))
-                  (step node edge state0 to1 'lts1 #:lts-deadlocked (clear-lts lts-deadlocked 'lts0))
-                  (unless do-step0 ;; common steps already done in step0
-                    (let ((matches (filter (lambda (e) (equal? label (edge-label e)))
-                                            (node-edges node0))))
-                      (for-each (lambda (e) (step node edge (edge-to e) to1 #f)) matches))))))
+                                         (node-edges node0))))
+                    (for-each (lambda (e) (step node edge (edge-to e) to1 #f)) matches))))))
 
         (when from-node
           (set-node-edges!
-            from-node
-            (cons
-              (make-edge
-                (node-state from-node)
-                (edge-label edge)
-                (node-state node)
-                #:tau? (edge-tau? edge)
-                #:blocked? (edge-blocked? edge))
-              (node-edges from-node))))
+           from-node
+           (cons
+            (make-edge
+             (node-state from-node)
+             (edge-label edge)
+             (node-state node)
+             #:tau? (edge-tau? edge)
+             #:blocked? (edge-blocked? edge))
+            (node-edges from-node))))
         (when (not done)
           (when do-step0
             (for-each step0 (node-edges node0)))
           (when do-step1
             (for-each step1 (node-edges node1)))
           (when (null? (node-edges node))
-              (when (> (dzn:debugity) 2)
-                (warn 'DEADLOCK!!!! 'active active))
+            (when (> (dzn:debugity) 2)
+              (warn 'DEADLOCK!!!! 'active active))
             (step node (make-edge (node-state from-node) "tau" (node-state node)) state0 state1 (swap (calc-active active do-step0))
                   #:lts-deadlocked (calc-active active do-step0)))
           (when (and lts-deadlocked (find common? (node-edges node)))
@@ -839,15 +839,14 @@ from LABELS."
             (when (> (dzn:debugity) 2)
               (warn "          !" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))))))
 
-    (if (equal? size0 0)
-      lts1
-      (begin
-        (step #f #f (initial lts0) (initial lts1) #f)
-        (let* ((lts (list->vector (reverse lts)))
-              (initial (vector-ref lts 0)))
-          ;;WTF is this?
-          (set-node-initial?! lts #t)
-          lts)))))
+    (if (zero? size0) lts1
+        (begin
+          (step #f #f (initial lts0) (initial lts1) #f)
+          (let* ((result (list->vector (reverse result)))
+                 (initial (vector-ref result 0)))
+            ;;WTF is this?
+            (set-node-initial?! initial #t)
+            result)))))
 
 ;;;
 ;;; Trace generation.

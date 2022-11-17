@@ -800,7 +800,8 @@ are weak-bisim equivalent"
           (and (zero? status)
                (let* ((makreel-lts-file (string-append out "/traces/" base-name ".aut"))
                       (lts-file (string-append out-lang "/" base-name ".aut"))
-                      (taus '("<deadlock>" "<livelock>" "<non-compliance>" "<state>"))
+                      (taus '("<blocked>""<deadlock>" "<livelock>"
+                              "<non-compliance>" "<state>"))
                       (modeling (list-matches
                                  "\"([^\"]*[.](inevitable|optional))\""
                                  stdout))
