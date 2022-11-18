@@ -76,7 +76,10 @@
       "@bindir@"))
 
 (define %template-dir
-  (string-append %pkgdatadir "/dzn/templates"))
+  (string-append
+   %pkgdatadir
+   (if (getenv "DZN_UNINSTALLED") "/dzn" "")
+   "/templates"))
 
 (define %test-dir
   (string-append %pkgdatadir "/test"))

@@ -1,3 +1,0 @@
-sum i: #x:type-constructor replies . #.name reply (i) . provides_r2c ()
- + #.name end . provides_r2c ()
- + sum i: #x:type-constructor actions . #.name out (#x:type-constructor action (i)) . provides_out ()

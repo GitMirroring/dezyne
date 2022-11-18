@@ -1,5 +1,0 @@
-#.name end' -> tau_void
- , #.name in' -> #.name in
- , #.name out' -> #.name out
- , #.name internal' -> #.name internal
- , #.name reply' -> #.name reply

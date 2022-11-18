@@ -1,5 +1,0 @@
-proc provides_constraint = allow ({
-   constrained_legal
- , constrained_illegal
- #x:provides-constraint-allow-provides
- }, #x:provides-constraint-port-parallel);

@@ -1,3 +1,0 @@
-proc component_queue = queue_empty . component_queue;
-
-proc req_and_queue = component_queue;

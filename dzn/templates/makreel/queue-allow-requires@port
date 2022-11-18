@@ -1,9 +1,0 @@
-#.name qin'
- , #.name in
- , #.name reply
- , #.name internal
- , #.name qout
- , #.name end
- , #.name flush
- , #.name queue_full
- , #.name state

@@ -744,8 +744,8 @@ from LABELS."
      queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      end                <   scope* ('end' / 'silent_end')
      return             <-- 'return'
-     flush              <-- port-scope* identifier tick 'flush'
-     blocking           <-- port-scope* identifier tick 'blocking'
+     flush              <-- port-scope* identifier tick flush-literal
+     blocking           <-- port-scope* identifier tick port- 'blocking'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      tau-reply          <-- port-name tick tau-reply-literal lpar scope* reply-value rpar
      state              <-- port-name tick state-literal lpar state-arguments rpar
@@ -753,12 +753,14 @@ from LABELS."
      state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
      tag                <   tag-literal lpar int comma int rpar
+     port-              <   'port_'
      port-name          <-  port-scope* identifier
-     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / tau-reply-literal / state-literal / variables-literal / 'queue_full' / 'flush' / 'blocking')
+     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / tau-reply-literal / state-literal / variables-literal / port-? 'queue_full' / port-? 'flush' / port- 'blocking')
      event-name         <-  identifier
      reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
      bool-literal       <   'Bool'
      bool               <-- ('true' / 'false' )
+     flush-literal      <   port-? 'flush'
      int-literal        <   'Int'
      int                <-- '-'?[0-9]+
      void-literal       <   'Void'
@@ -767,22 +769,22 @@ from LABELS."
      enum-literal       <-- (enum tick)* enum-field
      enum               <-  identifier
      enum-field         <-  identifier
-     direction          <   ('qin' / 'in' / 'out') !identifier
+     direction          <   (port-? 'in' / port-? 'out' / port- 'qin') !identifier
      defer-qout         <-- 'defer_qout' paren-arguments
      paren-arguments    <   lpar ((!(lpar / rpar) .)* paren-arguments*)* rpar
-     queue-direction    <-- 'qout'
+     queue-direction    <-- port-? 'qout'
      action-literal     <   'action'
-     internal-literal   <   'internal' / 'silent'
-     reply-literal      <   'reply' (tick 'reordered')?
+     internal-literal   <   port-? 'internal'
+     reply-literal      <   port-? 'reply' (tick 'reordered')?
      tau-reply-literal  <   'tau_reply'
-     state-literal      <   'state'
+     state-literal      <   port-? 'state'
      variables-literal  <   'variables'
      tag-literal        <   'tag'
      tau-literal        <   'tau'
      tau-void           <   'tau_void'
      illegal            <-- 'illegal' / 'declarative_illegal' / 'constrained_illegal'
      error              <--  queue-full / range-error / reply-error / missing-reply / second-reply
-     queue-full         <-  'queue_full' / port-name tick 'queue_full'
+     queue-full         <-  'queue_full' / port-name tick port- 'queue_full'
      range-error        <-  'range_error'
      reply-error        <-  'double_reply_error' / 'no_reply_error'
      missing-reply      <-  'missing_reply'
@@ -820,6 +822,7 @@ from LABELS."
       (('error error) (cleanup-error error))
       (('error ('identifier port) error) (cleanup-error error))
       (('event ('identifier port) ('identifier event)) (string-append port "." event))
+      (('flush ('identifier port)) (string-append port ".<flush>"))
       (('flush ('identifier port) "flush") (string-append port ".<flush>"))
       (('blocking ('identifier port) "blocking") (string-append port ".<blocking>"))
       (('illegal illegal) (and illegal? (cleanup-error illegal)))

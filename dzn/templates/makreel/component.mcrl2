@@ -1,0 +1,20 @@
+map QueueLength: Nat;
+map DeferQueueLength: Nat;
+map ExternalQueueLength: Nat;
+map list2set: List (provides_ports) -> Set (provides_ports);
+map remove_port: provides_ports # List (provides_ports) -> List (provides_ports);
+
+var p, car: provides_ports;
+    l, cdr: List (provides_ports);
+    e, h: requires_events;
+    t: List (requires_events);
+
+eqn l == [] -> list2set (l) = {};
+    l != [] -> list2set (l) = {head (l)} + list2set (tail (l));
+
+remove_port (p, []) = [];
+    p == car -> remove_port (p, car |> cdr) = cdr;
+    p != car -> remove_port (p, car |> cdr) = car |> remove_port (p,cdr);
+
+var current: State;
+    context: DeferContext;

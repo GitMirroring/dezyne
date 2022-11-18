@@ -1,1 +1,0 @@
-sort #x:makreel:model-name State = struct #x:interface-no-state-variables #x:interface-state-variables;

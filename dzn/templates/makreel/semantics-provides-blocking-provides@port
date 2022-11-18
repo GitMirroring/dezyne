@@ -1,2 +1,0 @@
-sum i: #x:makreel:interface-name replies . #.name reply (i) . semantics_provides_blocking (released=released <| #.name port, reply=replies (#x:semantics-provides-reply-pair))
- + sum i: #x:makreel:interface-name actions . #.name out (#x:makreel:interface-name action (i)) . semantics_provides_blocking ()

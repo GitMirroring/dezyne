@@ -1,6 +1,0 @@
-#x:makreel:interface-name constraint_any
- = sum i: #x:makreel:interface-name actions . #x:makreel:interface-name in (#x:makreel:interface-name action (i)) . constrained_legal . #x:makreel:interface-name constraint_any
- + sum i: #x:makreel:interface-name actions . #x:makreel:interface-name out (#x:makreel:interface-name action (i)) . #x:makreel:interface-name constraint_any
- + sum i: #x:makreel:interface-name replies . #x:makreel:interface-name reply (i) . #x:makreel:interface-name constraint_any;
-
-#x:constraint

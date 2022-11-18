@@ -1,2 +1,0 @@
-sum i: #x:makreel:interface-name actions . #.name qout (#x:makreel:interface-name action (i)) . semantics_provides_blocked ()
- + #.name switch_context . semantics_provides_blocked ()

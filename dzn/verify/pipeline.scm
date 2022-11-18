@@ -264,7 +264,7 @@ actions."
 
 (define (in-out:lts-hide-internal-labels options)
   (let* ((model (options-model options))
-         (name (makreel:model-name model))
+         (name (makreel:full-name model))
          (taus (if (not (is-a? model <interface>)) '()
                    `(,(format #f "--tau=optional,inevitable,tag,~aflush"
                               name)))))

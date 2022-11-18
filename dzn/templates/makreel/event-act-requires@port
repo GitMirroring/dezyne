@@ -1,5 +1,0 @@
-#x:event-prefix qin: #x:makreel:interface-name events;
-#x:event-prefix qin': #x:makreel:interface-name events;
-#x:event-prefix qout: #x:makreel:interface-name events;
-#x:event-prefix qout': #x:makreel:interface-name events;
-#x:event-prefix queue_full;

@@ -1,5 +1,0 @@
-#.name in | #.name in -> #.name in'
- , #.name out | #.name out -> #.name out'
- , #.name internal | #.name internal -> #.name internal'
- , #.name reply | #.name reply -> #.name reply'
- , #.name end | #.name end -> #.name end'

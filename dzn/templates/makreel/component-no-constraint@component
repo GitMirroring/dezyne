@@ -1,2 +1,0 @@
-%% actually unconstrained
-component_constrained = block ({constrained_illegal}, component_semantics);

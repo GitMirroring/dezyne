@@ -1,2 +1,0 @@
-(semantics_main
- + sum i: Locals . defer_qout (i) . semantics_async ())

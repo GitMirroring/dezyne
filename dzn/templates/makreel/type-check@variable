@@ -1,1 +1,0 @@
-(!(#x:from  <= i && i <= #x:to)) -> range_error . delta <>

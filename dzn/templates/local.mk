@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -28,8 +28,7 @@ dist_nocompile_%C%_scm_DATA =			\
  %D%/code.scm					\
  %D%/dot.scm					\
  %D%/dzn.scm					\
- %D%/json.scm					\
- %D%/makreel.scm
+ %D%/json.scm
 
 #if have_cxx11
 dist_nocompile_%C%_scm_DATA += %D%/c++.scm
@@ -68,6 +67,12 @@ endif
 %C%_scmdir = $(guilemoduledir)/%D%
 nocompile_%C%_scmdir = $(%C%_scmdir)
 
+dzn_templates_makreeldir = $(pkgdatadir)/templates/makreel
+dist_%C%_makreel_DATA =				\
+ %D%/makreel/component.mcrl2			\
+ %D%/makreel/defer.mcrl2			\
+ %D%/makreel/process-dependencies.dot
+
 EXTRA_DIST +=					\
  %D%/README					\
  %D%/c						\
@@ -77,7 +82,6 @@ EXTRA_DIST +=					\
  %D%/dot					\
  %D%/javascript					\
  %D%/json					\
- %D%/makreel					\
  %D%/scheme
 
 %C%dir = $(pkgdatadir)/%D%

@@ -1,3 +1,0 @@
-#x:process-id  = ((#x:expression)
-   -> #x:then-continuation
-   <> #x:else-continuation);

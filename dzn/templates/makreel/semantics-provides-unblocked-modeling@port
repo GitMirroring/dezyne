@@ -1,2 +1,0 @@
-((#.name port != switch) -> sum i: #x:makreel:interface-name modeling . #.name internal (i) . #.name end . semantics_provides_unblocked_switch_context ())
- + ((#.name port == switch) -> #.name switch_context . semantics_provides_unblocked ())

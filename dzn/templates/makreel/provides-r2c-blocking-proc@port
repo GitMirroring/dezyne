@@ -1,6 +1,0 @@
-sum i: #x:type-constructor actions . #.name in (#x:type-constructor action (i)) . (tau . #.name blocking
- + tau) . provides_r2c (ports+{#.name port})
- + ((#.name port in ports) -> tau . (sum i: #x:type-constructor replies . #.name reply (i) . provides_r2c (ports-{#.name port})
- + sum i: #x:type-constructor actions . #.name out (#x:type-constructor action (i)) . provides_r2c ()))
- + sum i: #x:type-constructor modeling . #.name internal (i) . provides_out ()
- + #.name end . provides_r2c ()

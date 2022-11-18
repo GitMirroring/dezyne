@@ -44,6 +44,7 @@
             dzn:model-name
             dzn:statement?
             dzn:top*
+            operator->string
             print-ast
             print-ast-join
             print-brace-close

@@ -1,3 +1,0 @@
-. sum i: #x:basic-type  . #x:type-bound  #x:event-prefix reply (#x:reply-constructor  (i)) .#x:type-check #x:communicate-shared-state #x:process-identifier _sum_helper (#x:add-shared-value #.variable.name =i);
-
-proc #x:process-identifier _sum_helper#x:sum-helper-params = #x:assign-continuation;

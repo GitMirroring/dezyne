@@ -425,6 +425,9 @@
 (define-method (ast:direction (o <trigger>))
   (.direction (.event o)))
 
+(define-method (ast:direction (o <action>))
+  (.direction (.event o)))
+
 (define-method (trigger-in-component (t <trigger>) (c <component>))
   (let ((parent (or (and=> (.behavior c) .statement) c)))
     (clone t #:parent parent)))
@@ -625,8 +628,9 @@
   (ast:formal->index (.expression o)))
 
 (define-method (ast:defer-variable* (o <defer>))
-  (if (not (.arguments o)) (ast:member* (ast:parent o <model>))
-      (map .variable (ast:argument* o))))
+  (if (.arguments o) (map .variable (ast:argument* o))
+      (filter (negate (is? <shared-variable>))
+              (ast:member* (ast:parent o <model>)))))
 
 (define-method (ast:expression->type (o <expression>))
   (let ((p (.parent o)))

@@ -1,0 +1,18 @@
+map prune_deferred: State # List (DeferContext) -> List (DeferContext);
+map state_current: State # DeferContext -> Bool;
+
+var defer_state: State;
+    defer_head: DeferContext;
+    defer_tail: List (DeferContext);
+
+eqn prune_deferred (defer_state, []) = [];
+ (!state_current (defer_state, defer_head))
+  -> prune_deferred (defer_state, defer_head |> defer_tail) = prune_deferred (defer_state, defer_tail);
+ (state_current (defer_state, defer_head))
+  -> prune_deferred (defer_state, defer_head |> defer_tail) = defer_head |> prune_deferred (defer_state, defer_tail);
+
+proc defer_queue (l: List (DeferContext))
+ = (#l == DeferQueueLength) -> (sum dc: DeferContext . defer_qin (dc) . queue_full . Illegal)
+ + (#l < DeferQueueLength) -> (sum dc: DeferContext . defer_qin (dc) . defer_queue (l=l <| dc))
+ + (l != []) -> defer_qout (locals (head (l))) . defer_queue (l=tail (l))
+ + sum s: State . defer_skip (s) . defer_queue (prune_deferred (s, l));

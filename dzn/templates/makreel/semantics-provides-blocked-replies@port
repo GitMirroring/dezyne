@@ -1,3 +1,0 @@
-((#x:makreel:interface-name nil_is (#.name port (reply)))
-   -> sum i: #x:makreel:interface-name replies . #.name reply (i) . semantics_provides_blocked (released=released <| #.name port, reply=replies (#x:semantics-provides-reply-pair))
-   <> sum i: #x:makreel:interface-name replies . #.name reply (i) . second_reply . delta)

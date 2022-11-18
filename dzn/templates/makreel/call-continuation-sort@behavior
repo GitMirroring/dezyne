@@ -1,4 +1,0 @@
-sort Stack'#x:makreel:model-name  = struct stack_empty'#x:makreel:model-name
- #x:stack-sort;
-
-sort #x:makreel:model-name returns = struct #x:call-continuation-sort-function;

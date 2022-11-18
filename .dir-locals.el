@@ -75,9 +75,9 @@
    (eval . (put 'origin 'scheme-indent-function 0))
    (eval . (put 'with-directory-excursion 'scheme-indent-function 1))
 
-   ;; Emacsy
-   (eval . (put 'with-current-buffer 'scheme-indent-function 1))
-   (eval . (put 'save-excursion 'scheme-indent-function 1))))
+   ;; SCMackerel
+   (eval . (put 'process 'scheme-indent-function 0))))
+   (eval . (put 'entity 'scheme-indent-function 0))
 
  (texinfo-mode    . ((indent-tabs-mode . nil)
                      (fill-column . 72))))

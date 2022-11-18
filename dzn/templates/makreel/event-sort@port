@@ -1,2 +1,0 @@
-sort #.name events = struct #.name action (value: #.name actions)
- | #.name reply (value: #.name replies);
