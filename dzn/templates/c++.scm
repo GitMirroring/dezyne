@@ -78,8 +78,8 @@
 ;;;
 ;;; Enums
 ;;;
-(define-templates interface-enum-to-string c++:enum->string)
-(define-templates interface-string-to-enum c++:enum->string)
+(define-templates enum-to-string c++:enum->string)
+(define-templates string-to-enum c++:enum->string)
 (define-templates enum-field-to-string c++:enum-field->string)
 (define-templates enum-field-type c++:enum-field-type type-infix)
 (define-templates enum-literal c++:enum-literal type-infix)

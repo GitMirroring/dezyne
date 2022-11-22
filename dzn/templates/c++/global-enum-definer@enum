@@ -2,13 +2,28 @@
 ##define ENUM_#x:enum-name  1
 
  #x:open-namespace
-struct #ast:name
+enum struct #ast:name
 {
-  enum type
-  {
-    #x:enum-field-definer
-  };
+  #x:enum-field-definer
 };
+
  #x:close-namespace
+
+##ifndef ENUM_TO_STRING_#x:enum-name
+##define ENUM_TO_STRING_#x:enum-name  1
+inline std::string to_string(#x:type-name  v)
+{
+  switch(v)
+  {
+    #x:enum-field-to-string
+  }
+  return "";
+}
+##endif // ENUM_TO_STRING_#x:enum-name
+
+inline std::ostream& operator << (std::ostream& os, #x:type-name  v)
+{
+  return os << to_string(v);
+}
 
 ##endif // ENUM_#x:enum-name

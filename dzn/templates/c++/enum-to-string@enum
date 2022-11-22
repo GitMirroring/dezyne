@@ -8,4 +8,8 @@ inline std::string to_string(#x:type-name  v)
   }
   return "";
 }
+inline std::ostream& operator << (std::ostream& os, #x:type-name  v)
+{
+  return os << to_string(v);
+}
 ##endif // ENUM_TO_STRING_#x:enum-name
