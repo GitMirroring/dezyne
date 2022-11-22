@@ -1,12 +1,9 @@
 ##ifndef ENUM_#x:enum-name
 ##define ENUM_#x:enum-name  1
 
-struct #ast:name
+enum struct #ast:name
 {
-  enum type
-  {
-    #x:enum-field-definer
-  };
+  #x:enum-field-definer
 };
 
 ##endif // ENUM_#x:enum-name

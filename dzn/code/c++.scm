@@ -69,20 +69,32 @@
 
 (define-method (c++:enum-field->string (o <enum>))
   (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
-(define-method (c++:string->enum (o <model>))
-  (filter (is? <enum>) (ast:type* o)))
+
+(define-method (c++:string->enum (o <interface>))
+  (filter (is? <enum>) (append (ast:type* (ast:parent o <root>))
+                               (ast:type* o))))
+
+(define-method (c++:string->enum (o <component>))
+  (filter (is? <enum>) (ast:type* (.behavior o))))
+
 (define-method (c++:string->enum (o <enum>))
   (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 (define-method (c++:enum->string (o <interface>))
   (filter (is? <enum>) (append (ast:type* (ast:parent o <root>))
-                                (ast:type* o))))
+                               (ast:type* o))))
+
+(define-method (c++:enum->string (o <component>))
+  (filter (is? <enum>) (ast:type* (.behavior o))))
+
+(define-method (c++:enum->string (o <enum>))
+  o)
 
 (define-method (c++:type-name o)
   (code:type-name o))
 
 (define-method (c++:type-name (o <enum>))
-  (append (list "") (ast:full-name o) (list "type")))
+  (append (list "") (ast:full-name o)))
 
 (define-method (c++:type-name (o <enum-field>))
   (append (c++:type-name (.type o)) (list (.field o))))

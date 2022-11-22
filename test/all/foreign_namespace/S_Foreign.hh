@@ -21,20 +21,14 @@
 //
 // Code:
 
-#ifndef S_FOREIGN_HH
-#define S_FOREIGN_HH
-
-#include "foreign_namespace.hh"
-
 namespace S
 {
-struct Foreign: public skel::Foreign
-{
-  Foreign(const dzn::locator& l)
-  : skel::Foreign(l)
-  {}
-  void p_e(){}
-  I::R::type p_f(){return I::R::r;}
-};
+  struct Foreign: public skel::Foreign
+  {
+    Foreign(const dzn::locator& l)
+    : skel::Foreign(l)
+    {}
+    void p_e(){}
+    I::R p_f(){return I::R::r;}
+  };
 }
-#endif

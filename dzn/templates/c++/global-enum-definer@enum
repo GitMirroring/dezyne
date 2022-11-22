@@ -2,13 +2,13 @@
 ##define ENUM_#x:enum-name  1
 
  #x:open-namespace
-struct #ast:name
+enum struct #ast:name
 {
-  enum type
-  {
-    #x:enum-field-definer
-  };
+  #x:enum-field-definer
 };
+
  #x:close-namespace
+
+#x:enum-to-string
 
 ##endif // ENUM_#x:enum-name
