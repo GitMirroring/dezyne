@@ -184,7 +184,8 @@
 (define-templates defer-proc makreel:behavior->defer-qout)
 (define-templates provides-flush (lambda (o) (if (ast:provides? o) o '())))
 (define-templates requires-reply (lambda (o) (if (ast:requires? o) o '())))
-(define-templates defer-skip (lambda (o) (if (ast:parent o <component>) o '())))
+
+(define-templates defer-skip makreel:defer-skip)
 (define-templates defer-locals-sort (cute tree-collect (is? <defer>) <>) pipe-prefix)
 (define-templates defer-local-arguments-sort (lambda (o) (if (pair? (makreel:locals o)) o '())))
 (define-templates deferred-locals-sort makreel:locals comma-infix)
@@ -193,15 +194,22 @@
 (define-templates deferred-locals makreel:locals comma-infix)
 (define-templates defer-process-index (compose makreel:process-index .statement))
 
-(define-templates state-vector (lambda (o) (let ((behavior (.behavior o))) (if (pair? (ast:variable* behavior)) behavior '()))))
-(define-templates state-member ast:variable* comma-infix)
-(define-templates construct-state-vector (lambda (o) (let ((behavior (.behavior (ast:parent o <component>)))) (if (pair? (ast:variable* behavior)) behavior '()))))
-(define-templates state-var ast:variable* comma-infix)
+(define requires-shared-variable? (disjoin (negate (is? <shared-variable>))
+                                           (compose ast:requires? .port)))
+
+(define requires-shared-variables (cute filter requires-shared-variable? <>))
+
+(define behavior-with-variables (conjoin (compose pair? ast:variable*) identity))
+
+(define-templates state-vector (conjoin (compose pair? requires-shared-variables ast:variable* .behavior) .behavior))
+(define-templates state-member (compose requires-shared-variables ast:variable*) comma-infix)
+(define-templates construct-state-vector (compose behavior-with-variables .behavior (cute ast:parent <> <component>)))
+(define-templates state-var (compose requires-shared-variables ast:variable*) comma-infix)
 
 (define-templates defer-select-member ast:variable* pipe-prefix)
-(define-templates defer-select-variable ast:defer-variable* comma-infix)
-(define-templates defer-predicate ast:variable* and-infix)
-(define-templates defer-predicate-true (lambda (o) (if (null? (ast:variable* o)) o '())) and-infix)
+(define-templates defer-select-variable (compose requires-shared-variables ast:defer-variable*) comma-infix)
+(define-templates defer-predicate (compose requires-shared-variables ast:variable*) and-infix)
+(define-templates defer-predicate-true (conjoin (compose null? requires-shared-variables ast:variable*) identity) and-infix)
 
 ;;semantics
 (define-templates semantics-main)

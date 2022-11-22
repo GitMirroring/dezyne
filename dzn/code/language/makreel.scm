@@ -1175,6 +1175,12 @@
       (equal? (.variable.name a)
               (.variable.name b))))))
 
+(define-method (makreel:defer-skip (o <the-end>))
+  (let ((c (ast:parent o <component>)))
+    (and c
+         (pair? (filter requires-shared-variable? (ast:variable* c)))
+         o)))
+
 (define (makreel:add-shared-variables o)
   (define (shared-var->shared-variable var)
     (let ((variable (.variable var)))
@@ -1211,7 +1217,8 @@
   '())
 
 (define-method (makreel:communicate-shared-state (o <action>))
-  (and (shared-variable? o) (.port o)))
+  (let ((port (.port o)))
+    (and (shared-variable? o) (ast:requires? port) port)))
 
 (define-method (makreel:shared-variable* (o <behavior>))
   (filter (is? <shared-variable>) (ast:member* o)))
