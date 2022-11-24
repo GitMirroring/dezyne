@@ -37,6 +37,7 @@
   #:use-module (dzn code)
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
+  #:use-module (dzn code legacy dzn)
   #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn indent)
@@ -213,6 +214,15 @@
 
 (define-method (scheme:mangle-comment (o <comment>))
   (comment-mangler (.string o) ";;;"))
+
+(define-method (scheme:comment (o <comment>))
+  (let ((comment (.string o)))
+    (and comment
+         (not (string-null? comment))
+         o)))
+
+(define-method (scheme:comment (o <ast>))
+  (scheme:comment (.comment o)))
 
 (define (wrap-lonely-variable o)
   (match o

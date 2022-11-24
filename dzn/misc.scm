@@ -31,6 +31,7 @@
   #:export (alist->hash-table
             conjoin
             disjoin
+            display-join
             hash-table->alist
             json-string->alist-scm
             merge-alist2
@@ -112,3 +113,38 @@ guile-json-4 (which produces vectors)."
           (loop (cdr lists)
                 (if (null? head) heads (cons head heads))
                 (if (null? tail) tails (cons tail tails)))))))
+
+(define (display-join lst port . grammar)
+  "Like STRING-JOIN but displaying to PORT, also allowing \"PRE\" 'pre
+and \"POST\" 'post in GRAMMAR."
+  (define (reduce-sexp l)
+    (unfold null? (compose (cute apply list <>) (cute list-head <> 2)) cddr l))
+
+  (define (xassq key alist)
+    (find (compose (cute eq? <> key) cadr) alist))
+
+  (define (xassq-ref alist key)
+    (and=> (xassq key alist) car))
+
+  (let* ((grammar-alist (match grammar
+                          (((and (? string?) str)) `((,str infix)))
+                          (_ (reduce-sexp grammar))))
+         (infix (xassq-ref grammar-alist 'infix))
+         (suffix (xassq-ref grammar-alist 'suffix))
+         (prefix (xassq-ref grammar-alist 'prefix))
+         (pre (xassq-ref grammar-alist 'pre))
+         (post (xassq-ref grammar-alist 'post)))
+    (when (and pre (pair? lst))
+      (display pre port))
+    (let loop ((lst lst))
+      (when (pair? lst)
+        (when prefix
+          (display prefix port))
+        (display (car lst) port)
+        (when suffix
+          (display suffix port))
+        (when (and (pair? (cdr lst)) infix)
+          (display infix port))
+        (loop (cdr lst))))
+    (when (and post (pair? lst))
+      (display post port))))

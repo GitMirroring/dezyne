@@ -1,6 +1,0 @@
-behavior {
-  #x:define-type
-  #x:declare-variable
-  #x:define-function
-  #x:statement
-}

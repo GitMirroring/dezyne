@@ -87,6 +87,7 @@
             ast:out-triggers-valued-in-events
             ast:out-triggers-void-in-events
             ast:out?
+            ast:previous-statement
             ast:provides-in-triggers
             ast:provides-in-valued-triggers
             ast:provides-in-void-triggers
@@ -1051,3 +1052,14 @@ call steps over the function and returns the next statement."
                       (or else
                           (car (helper o))))))
     (_ (helper o))))
+
+(define-method (ast:previous-statement (o <statement>))
+  (let ((p (.parent o)))
+    (match p
+      (($ <compound>)
+       (match (member o (reverse (ast:statement* p)) ast:eq?)
+         ((self previous rest ...) previous)
+         ((self)
+          (ast:previous-statement p))
+         (_ #f)))
+      (_ #f))))

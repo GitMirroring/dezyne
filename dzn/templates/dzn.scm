@@ -37,9 +37,9 @@
 (define-templates import dzn:import* double-newline-postfix)
 (define-templates open-namespace dzn:open-namespace)
 (define-templates close-namespace dzn:open-namespace)
-(define-templates define-type dzn:define-type double-newline-postfix)
-(define-templates global dzn:global double-newline-postfix)
-(define-templates model dzn:model double-newline-infix)
+(define-templates define-type dzn:type* double-newline-postfix)
+(define-templates global dzn:global* double-newline-postfix)
+(define-templates model dzn:model* double-newline-infix)
 (define-templates comment dzn:comment)
 
 

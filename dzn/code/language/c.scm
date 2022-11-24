@@ -36,6 +36,7 @@
   #:use-module (dzn code)
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
+  #:use-module (dzn code legacy dzn)
   #:use-module (dzn code util)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -47,7 +48,7 @@
 (include-from-path "dzn/templates/c.scm")
 
 (define-method (c:models (o <root>))
-  (filter (negate ast:imported?) (dzn:model o)))
+  (filter (negate ast:imported?) (code:model o)))
 
 (define-method (c:components (o <root>))
   (filter (negate (cute is-a? <> <interface>)) (c:models o)))

@@ -1,5 +1,0 @@
-component #x:type  {
-   #x:provides-port
-   #x:requires-port
-   #x:system
-}

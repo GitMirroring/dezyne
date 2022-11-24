@@ -1,3 +1,0 @@
-#x:type  #.name (#x:formal) {
-  #x:expand-statement
-}

@@ -1,1 +1,0 @@
-subint #x:type  {#x:from ..#x:to };

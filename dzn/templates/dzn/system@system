@@ -1,5 +1,0 @@
-system {
-  #x:declare-instance
-
-  #x:binding
-}

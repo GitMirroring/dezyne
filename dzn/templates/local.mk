@@ -74,7 +74,6 @@ EXTRA_DIST +=					\
  %D%/c++					\
  %D%/c++-exception-wrappers			\
  %D%/cs						\
- %D%/dzn					\
  %D%/dot					\
  %D%/javascript					\
  %D%/json					\

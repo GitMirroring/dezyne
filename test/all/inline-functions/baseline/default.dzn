@@ -21,11 +21,13 @@
 //
 // Code:
 
-interface ihello {
-  in void hello();
-
-  behavior {
-    on hello: {
+interface ihello
+{
+  in void hello ();
+  behavior
+  {
+    on hello:
+    {
       bool bf = true;
       {
         bf = true;
@@ -34,24 +36,28 @@ interface ihello {
   }
 }
 
-interface iworld {
-  in void world();
-
-  behavior {
-    on world: {}
-  }
-}
-
-component hello_functions {
+component hello_functions
+{
   provides ihello h;
   requires iworld w;
-  behavior {
-    on h.hello(): {
+  behavior
+  {
+    on h.hello ():
+    {
       bool bf = true;
       {
         bf = true;
       }
-      w.world();
+      w.world ();
     }
+  }
+}
+
+interface iworld
+{
+  in void world ();
+  behavior
+  {
+    on world: {}
   }
 }

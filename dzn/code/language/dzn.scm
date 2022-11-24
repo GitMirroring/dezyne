@@ -30,135 +30,57 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 rdelim)
+
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code util)
-  #:use-module (dzn config)
   #:use-module (dzn misc)
-  #:use-module (dzn templates)
-  #:use-module (dzn vm goops)
 
   #:export (ast->dzn
-            dzn:blocking
+            ast->string
             dzn:comment
-            dzn:data
-            dzn:define-type
-            dzn:extension
-            dzn:expression
-            dzn:expand-statement
-            dzn:expression-expand
-            dzn:action-arguments
-            dzn:direction
-            dzn:enum-literal
-            dzn:=expression
-            dzn:external
-            dzn:formal-type
-            dzn:global
-            dzn:import*
-            dzn:injected
-            dzn:instance
-            dzn:model
             dzn:model-name
-            dzn:model-full-name
-            dzn:open-namespace
-            dzn:port-prefix
-            dzn:reply-port
-            dzn:signature
-            dzn:statement
-            dzn:from
-            dzn:to
-            dzn:type))
+            dzn:statement?
+            dzn:top*
+            print-ast
+            print-ast-join
+            print-brace-close
+            print-brace-open
+            print-newline
+            print-type))
 
 ;;;
-;;; Top
+;;; Accessors.
 ;;;
-(define-method (dzn:namespace (o <root>))
-  (let ((dzn-file (ast:source-file o))
-        (namespaces (filter (negate ast:imported?) (ast:namespace* o))))
-    (if (null? namespaces) '()
-        (ast:full-name (car namespaces)))))
+(define-method (dzn:top* (o <root>))
+  (filter (negate (disjoin ast:imported?
+                           (is? <file-name>)))
+          (ast:top* o)))
 
-(define-method (dzn:open-namespace (o <ast>))
-  (cdr (reverse (ast:path (ast:parent o <namespace>)))))
-
-(define (dzn:global o)
-  (filter (is? <type>) (ast:top* o)))
-
-(define-method (dzn:model (o <root>))
-  (let* ((models (ast:model* o))
-         (models (filter (negate (disjoin (is? <namespace>)
-                                          (is? <type>)
-                                          ast:imported?))
-                         models))
-         (models (ast:topological-model-sort models)))
-    models))
-
-(define-method (dzn:model (o <namespace>))
-  (ast:top* o))
-
-(define-method (dzn:model (o <ast>))
-  o)
-
-
-;;;
-;;; Accessors
-;;;
-(define-method (dzn:comment (o <top>))
-  '())
+(define-method (dzn:top* (o <namespace>))
+  (filter (negate (disjoin ast:imported?
+                           (is? <file-name>)))
+          (ast:top* o)))
 
 (define-method (dzn:comment (o <comment>))
-  (let ((str (.string o)))
-    (if (and (string? str) (not (string-null? str))) o
-        '())))
+  (let ((comment (.string o)))
+    (and comment
+         (not (string-null? comment))
+         comment)))
 
-(define-method (dzn:comment (o <locationed>))
-  (dzn:comment (.comment o)))
-
-(define-method (dzn:data (o <data>))
-  (if (.value o) (.value o)
-      '()))
-
-(define-method (dzn:import* (o <root>))
-  (filter (negate ast:imported?) (ast:import* o)))
-
-(define-method (dzn:instance (o <end-point>))
-  (if (not (.instance.name o)) '()
-      (list (.instance o))))
-
-
-;;;
-;;; Names
-;;;
-(define-method (dzn:define-type (o <scope>))
-  (filter (conjoin (negate ast:imported?)
-                   (negate (is? <bool>))
-                   (negate (is? <int>))
-                   (negate (is? <void>)))
-          (ast:type* o)))
+(define-method (dzn:comment (o <ast>))
+  (and=> (.comment o) dzn:comment))
 
 (define-method (dzn:model-name (o <model>))
   (ast:name o))
 
-(define-method (dzn:model-name (o <ast>))
-  (dzn:model-name (ast:parent o <model>)))
-
-(define-method (dzn:model-full-name (o <model>))
-  (or (ast:full-name o) '()))
-
-(define-method (dzn:model-full-name (o <ast>))
-  (and=> (ast:parent o <model>) dzn:model-full-name ))
-
-(define-method (dzn:enum-literal (o <enum-literal>))
-  (append (dzn:type o) (list (.field o))))
-
-(define-method (dzn:type (o <model>))
-  (ast:full-name o))
-
-(define-method (dzn:type o)
-  (let ((type (or (as o <type>) (.type o))))
-    (dzn:type type)))
-
-(define-method (dzn:type (o <type>))
+
+;;;
+;;; Names.
+;;;
+(define-method (dzn:full-name (o <type>))
   (let* ((scope (ast:full-scope o))
          (model-scope (ast:parent o <model>))
          (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
@@ -166,233 +88,462 @@
                      (min (length scope) (length model-scope)))))
     (drop (ast:full-name o) common)))
 
-(define-method (dzn:type (o <int>))
-  (if (is-a? o <subint>) (next-method)
-      o))
+(define-method (dzn:dotted-name (o <ast>))
+  (ast:dotted-name o))
 
-(define-method (dzn:type (o <bool>))
-  o)
+(define-method (dzn:dotted-name (o <enum>))
+  (string-join (dzn:full-name o) "."))
 
-(define-method (dzn:type (o <void>))
-  o)
-
-(define-method (dzn:type (o <event>))
-  ((compose dzn:type .type .signature) o))
-
-(define-method (dzn:type (o <function>))
-  (dzn:type (.signature o)))
-
-(define-method (dzn:formal-type (o <formal>)) o)
-(define-method (dzn:formal-type (o <event>)) ((compose ast:formal* .signature) o))
-(define-method (dzn:formal-type (o <trigger>)) ((compose dzn:formal-type .event) o))
-(define-method (dzn:formal-type (o <port>)) ((compose dzn:formal-type car ast:event*) o))
-
-(define-method (dzn:direction (o <ast>))
-  (if (not (.direction o)) '()
-      (make <direction> #:name (.direction o))))
-
-(define-method (dzn:direction (o <trigger>))
-  ((compose dzn:direction .event) o))
-
-(define-method (dzn:direction (o <action>))
-  ((compose dzn:direction .event) o))
-
-(define-method (dzn:direction (o <on>))
-  ((compose dzn:direction car ast:trigger*) o))
-
-(define-method (dzn:from (o <expression>))
-  ((compose dzn:from ast:expression->type) o))
-
-(define-method (dzn:from (o <type>))
-  ((compose .from .range) o))
-
-(define-method (dzn:to (o <expression>))
-  ((compose dzn:to ast:expression->type) o))
-
-(define-method (dzn:to (o <type>))
-  ((compose .to .range) o))
-
-(define-method (dzn:port-prefix (o <action>))
-  (if (not (.port.name o)) '()
-      (list (.port.name o))))
-
-(define-method (dzn:port-prefix (o <end-point>))
-  (if (not (.port.name o)) '()
-      (list (.port.name o))))
-
-(define-method (dzn:port-prefix (o <trigger>))
-  (if (not (.port.name o)) '()
-      (list (.port.name o))))
-
-(define-method (dzn:signature (o <event>))
-  (.signature o))
-
-(define-method (dzn:signature (o <port>))
-  (list ((compose ast:name .type) o) "t"))
+(define-method (dzn:dotted-name (o <subint>))
+  (string-join (dzn:full-name o) "."))
 
 
 ;;;
-;;; Statements
+;;; Print-ast.
 ;;;
-(define-method (dzn:signature (o <event>))
-  (.signature o))
+(define (operator->string o)
+  (match o
+    (($ <and>) "&&")
+    (($ <equal>) "==")
+    (($ <greater-equal>) ">=")
+    (($ <greater>) ">")
+    (($ <less-equal>) "<=")
+    (($ <less>) "<")
+    (($ <minus>) "-")
+    (($ <not-equal>) "!=")
+    (($ <not>) "!")
+    (($ <or>) "||")
+    (($ <plus>) "+")))
 
-(define-method (dzn:statement (o <statement>))
-  o)
+(define (dzn:statement? o)
+  (let ((parent (.parent o)))
+    (or (is-a? parent <blocking>)
+        (is-a? parent <compound>)
+        (is-a? parent <guard>)
+        (is-a? parent <on>)
+        (and (is-a? parent <if>)
+             (not (ast:eq? o (.expression parent)))))))
 
-(define-method (dzn:statement (o <compound>))
-  (if (null? (ast:statement* o)) (make <skip>)
-      o))
+(define (print-ast-join lst port . grammar)
+  "Like STRING-JOIN but PRINT-AST'ing to PORT, also allowing \"PRE\" 'pre
+and \"POST\" 'post in GRAMMAR."
+  (define (reduce-sexp l)
+    (unfold null? (compose (cute apply list <>) (cute list-head <> 2)) cddr l))
 
-(define-method (dzn:statement (o <guard>))
-  (cond ((is-a? (.expression o) <otherwise>)
-         (clone (make <otherwise-guard> #:expression (.expression o)
-                      #:statement (.statement o))
-                #:parent (.parent o)))
-        ((ast:literal-true? (.expression o))
-         (.statement o))
-        ((ast:literal-false? (.expression o))
-         '())
+  (define (xassq key alist)
+    (find (compose (cute eq? <> key) cadr) alist))
+
+  (define (xassq-ref alist key)
+    (and=> (xassq key alist) car))
+
+  (let* ((grammar-alist (match grammar
+                          (((and (? string?) str)) `((,str infix)))
+                          (_ (reduce-sexp grammar))))
+         (infix (xassq-ref grammar-alist 'infix))
+         (suffix (xassq-ref grammar-alist 'suffix))
+         (prefix (xassq-ref grammar-alist 'prefix))
+         (pre (xassq-ref grammar-alist 'pre))
+         (post (xassq-ref grammar-alist 'post)))
+    (when (and pre (pair? lst))
+      (display pre port))
+    (let loop ((lst lst))
+      (when (pair? lst)
+        (when prefix
+          (display prefix port))
+        (print-ast (car lst) port)
+        (when suffix
+          (display suffix port))
+        (when (and (pair? (cdr lst)) infix)
+          (display infix port))
+        (loop (cdr lst))))
+    (when (and post (pair? lst))
+      (display post port))))
+
+(define print-indent
+  (let ((level 0)
+        (indent 2))
+    (lambda* (type #:optional (port type))
+      (case type
+        ((open)
+         (print-indent port)
+         (set! level (1+ level))
+         (display "{" port)
+         (print-newline port))
+        ((close)
+         (set! level (1- level))
+         (print-indent port)
+         (display "}" port))
         (else
-         o)))
+         (unless (zero? level)
+           (display (make-string (* indent level) #\space) port)))))))
 
-(define-method (dzn:statement (o <behavior>))
-  ((compose dzn:expand-statement .statement) o))
+(define (print-brace-open port)
+  (print-indent 'open port))
 
-(define-method (dzn:statement (o <function>))
-  (.statement o))
+(define (print-brace-close port)
+  (print-indent 'close port))
 
-(define-method (dzn:expand-statement (o <defer>))
-  (.statement o))
+(define (print-newline port)
+  (newline port)
+  (print-indent port))
 
-(define-method (dzn:expand-statement (o <statement>))
-  o)
+(define-method (print-ast (o <top>) port)
+  (display o port))
 
-(define-method (dzn:expand-statement (o <function>))
-  ((compose dzn:expand-statement .statement) o))
+(define-method (print-ast (o <ast>))
+  (print-ast o (current-output-port)))
 
-(define-method (dzn:expand-statement (o <compound>))
-  (if (null? (ast:statement* o)) (make <skip>)
-      (ast:statement* o)))
+(define-method (print-ast (o <root>) port)
+  (print-ast (.comment o) port)
+  (print-ast-join (dzn:top* o) port "\n"))
 
-(define-method (dzn:expand-statement (o <declarative-compound>))
-  (if (null? (ast:statement* o)) (make <skip>)
-      (ast:statement* o)))
+(define-method (print-ast (o <namespace>) port)
+  (display "namespace " port)
+  (display (ast:dotted-name o) port)
+  (print-newline port)
+  (print-brace-open port)
+  (print-ast-join (dzn:top* o) port "\n")
+  (print-brace-close port)
+  (print-newline port))
 
-(define-method (dzn:expand-statement (o <blocking>))
-  (.statement o))
+(define-method (print-ast (o <comment>) port)
+  (and=> (dzn:comment o)
+         (cute write-line <> port)))
 
-(define-method (dzn:expression (o <extern>))
-  (if (.value o) (.value o)
-      '()))
+(define-method (print-ast (o <import>) port)
+  (simple-format port "import ~a;\n" (.name o)))
 
-(define-method (dzn:expand-statement (o <on>))
-  (.statement o))
+(define-method (print-ast (o <bool>) port)
+  (display "bool" port))
 
-(define-method (dzn:expand-statement (o <guard>))
-  (.statement o))
+(define-method (print-ast (o <void>) port)
+  (display "void" port))
 
-(define-method (dzn:expression (o <top>))
-  o)
-(define-method (dzn:expression (o <assign>))
-  (.expression o))
-(define-method (dzn:expression (o <if>))
-  (.expression o))
-(define-method (dzn:expression (o <guard>))
-  (.expression o))
-(define-method (dzn:expression (o <reply>))
-  (.expression o))
+(define-method (print-ast (o <enum>) port)
+  (simple-format port "enum ")
+  (print-type o port)
+  (display " {" port)
+  (print-ast-join (ast:field* o) port ", ")
+  (display "};\n" port))
 
-(define-method (dzn:expression (o <return>))
-  (let ((type (ast:type o)))
-    (if (is-a? type <void>) type
-        (.expression o))))
+(define-method (print-ast (o <extern>) port)
+  (simple-format port "extern ~a " (ast:name o))
+  (print-ast (.value o) port)
+  (display ";\n" port))
 
-(define-method (dzn:expression (o <var>))
-  (.variable o))
+(define-method (print-ast (o <data>) port)
+  (simple-format port "$~a$" (.value o)))
 
-(define-method (dzn:expression-expand (o <var>))
-  (.variable o))
+(define-method (print-ast (o <subint>) port)
+  (let ((range (.range o)))
+    (display "subint " port)
+    (print-type o port)
+    (simple-format port "{~a..~a}\n" (.from range) (.to range))))
 
-(define-method (dzn:expression-expand (o <field-test>))
-  (clone (make <enum-literal> #:type.name ((compose .type.name .variable) o) #:field (.field o))
-         #:parent o))
+(define-method (print-ast (o <interface>) port)
+  (simple-format port "interface ~a" (ast:name o))
+  (print-newline port)
+  (print-brace-open port)
+  (for-each (cute print-ast <> port) (ast:type* o))
+  (for-each (cute print-ast <> port) (ast:event* o))
+  (print-ast (.behavior o) port)
+  (print-newline port)
+  (print-brace-close port)
+  (print-newline port))
 
-(define-method (dzn:expression-expand (o <variable>))
-  (let ((type ((compose ast:type .expression) o)))
-    (if (is-a? type <void>) type
-        (.expression o))))
+(define-method (print-ast (o <component>) port)
+  (simple-format port "component ~a" (ast:name o))
+  (print-newline port)
+  (print-brace-open port)
+  (for-each (cute print-ast <> port) (ast:port* o))
+  (print-ast (.behavior o) port)
+  (print-newline port)
+  (print-brace-close port)
+  (print-newline port))
 
-(define-method (dzn:expression-expand (o <assign>))
-  (.expression o))
+(define-method (print-ast (o <foreign>) port)
+  (simple-format port "component ~a" (ast:name o))
+  (print-newline port)
+  (print-brace-open port)
+  (for-each (cute print-ast <> port) (ast:port* o))
+  (print-brace-close port)
+  (print-newline port))
 
-(define-method (dzn:expression-expand (o <expression>))
-  o)
+(define-method (print-ast (o <system>) port)
+  (simple-format port "component ~a" (ast:name o))
+  (print-newline port)
+  (print-brace-open port)
+  (for-each (cute print-ast <> port) (ast:port* o))
+  (display "system" port)
+  (print-newline port)
+  (print-brace-open port)
+  (for-each (cute print-ast <> port) (ast:instance* o))
+  (for-each (cute print-ast <> port) (ast:binding* o))
+  (print-brace-close port)
+  (print-newline port)
+  (print-brace-close port)
+  (print-newline port))
 
-(define-method (dzn:expression-expand (o <group>))
-  (.expression o))
+(define-method (print-ast (o <instance>) port)
+  (print-type (.type o) port)
+  (display " " port)
+  (display (.name o) port)
+  (display "\n" port))
 
-(define-method (dzn:=expression (o <ast>))
-  o)
+(define-method (print-ast (o <binding>) port)
+  (print-ast (.left o) port)
+  (display " <=> " port)
+  (print-ast (.right o) port)
+  (display ";\n" port))
 
-(define-method (dzn:=expression (o <literal>))
-  (let ((value (.value o)))
-    (if (equal? value "void") (make <void>)
-        o)))
-(define-method (dzn:=expression (o <variable>))
-  ((compose dzn:=expression .expression) o))
+(define-method (print-ast (o <end-point>) port)
+  (let ((port-name (.port.name o))
+        (instance-name (.instance.name o)))
+    (when port-name
+      (display port-name port))
+    (when (and port-name instance-name)
+      (display "." port))
+    (when instance-name
+      (display instance-name port))))
 
-
-;;;
-;;; Component
-;;;
-(define-method (dzn:action-arguments (o <action>))
-  (if (not (.port.name o)) '()
-      (if (null? (ast:argument* o)) (list "")
-          (ast:argument* o))))
+(define-method (print-ast (o <event>) port)
+  (simple-format port "~a " (.direction o))
+  (print-ast (ast:type o) port)
+  (simple-format port " ~a (" (.name o))
+  (print-ast-join (ast:formal* o) port ", ")
+  (display ");\n" port))
 
-(define-method (dzn:blocking (o <port>))
-  (if (not (.blocking? o)) ""
-      o))
+(define-method (print-ast (o <formal>) port)
+  (display (.direction o) port)
+  (print-type (.type o) port)
+  (display " " port)
+  (display (.name o) port))
 
-(define-method (dzn:external (o <port>))
-  (if (not (.external? o)) ""
-      o))
+(define-method (print-ast (o <formal-binding>) port)
+  (simple-format port "~a <- ~a" (.name o) (.variable.name o)))
 
-(define-method (dzn:injected (o <port>))
-  (if (not (.injected? o)) ""
-      o))
+(define-method (print-ast (o <port>) port)
+  (simple-format port "~a" (.direction o))
+  (when (.blocking? o)
+    (display " blocking" port))
+  (when (.external? o)
+    (display " external" port))
+  (when (.injected? o)
+    (display " injected" port))
+  (display " " port)
+  (print-type (.type o) port)
+  (display " " port)
+  (display (.name o) port)
+  (display ";\n" port))
 
-(define-method (dzn:reply-port (o <reply>))
-  (if (not (.port o)) ""
-      (list (.port o))))
+(define-method (print-ast (o <behavior>) port)
+  (display "behavior" port)
+  (and=> (.name o) (cute simple-format port " ~a" <>))
+  (print-newline port)
+  (print-brace-open port)
+  (print-ast-join (ast:type* o) port)
+  (print-ast-join (ast:variable* o) port)
+  (print-ast-join (ast:function* o) port)
+  (print-ast-join (ast:statement* o) port)
+  (print-brace-close port))
+
+(define-method (print-ast (o <function>) port)
+  (print-ast (ast:type o) port)
+  (simple-format port " ~a (" (.name o))
+  (print-ast-join (ast:formal* o) port ", ")
+  (display ")" port)
+  (print-ast (.statement o) port))
+
+(define-method (print-ast (o <compound>) port)
+  (let ((statements (ast:statement* o)))
+    (cond
+     ((null? statements)
+      (display "{}\n" port))
+     (else
+      (unless (is-a? (ast:previous-statement o) <imperative>)
+        (print-newline port))
+      (print-brace-open port)
+      (print-ast-join statements port)
+      (print-brace-close port)
+      (print-newline port)))))
+
+(define-method (print-ast (o <blocking>) port)
+  (display "blocking " port)
+  (print-ast (.statement o) port))
+
+(define-method (print-ast (o <guard>) port)
+  (let ((statement (.statement o)))
+    (display "[" port)
+    (print-ast (.expression o))
+    (display "]" port)
+    (unless (is-a? statement <compound>)
+      (display " " port))
+    (print-ast (.statement o) port)))
+
+(define-method (print-ast (o <on>) port)
+  (let ((statement (.statement o)))
+    (display "on " port)
+    (print-ast-join (ast:trigger* o) port ",")
+    (display ":" port)
+    (when (or (not (is-a? statement <compound>))
+              (null? (ast:statement* statement)))
+      (display " " port))
+    (print-ast statement port)))
+
+(define-method (print-ast (o <trigger>) port)
+  (let ((event-name (.event.name o))
+        (port-name (.port.name o)))
+    (cond
+     (port-name
+      (simple-format port "~a.~a (" port-name event-name)
+      (print-ast-join (map .name (ast:formal* o)) port ",")
+      (display ")" port))
+     (else
+      (display event-name port)))))
+
+;;; imperative
+(define-method (print-ast (o <variable>) port)
+  (let* ((expression (.expression o))
+         (type (and=> expression ast:type)))
+    (print-type (.type o) port)
+    (cond ((and expression
+                (not (is-a? type <void>)))
+           (simple-format port " ~a = " (.name o))
+           (print-ast expression port)
+           (display ";\n" port))
+          (else
+           (simple-format port " ~a;\n" (.name o))))))
+
+(define-method (print-ast (o <illegal>) port)
+  (display "illegal;\n" port))
+
+(define-method (print-ast (o <action>) port)
+  (let ((port-name (.port.name o)))
+    (cond
+     (port-name
+      (simple-format port "~a.~a (" port-name (.event.name o))
+      (print-ast-join (ast:argument* o) port ",")
+      (display ")" port))
+     (else
+      (simple-format port "~a" (.event.name o))))
+    (when (dzn:statement? o)
+      (display ";\n" port))))
+
+(define-method (print-ast (o <call>) port)
+  (simple-format port "~a (" (.function.name o))
+  (print-ast-join (ast:argument* o) port ",")
+  (display ")" port)
+  (when (dzn:statement? o)
+    (display ";\n" port)))
+
+(define-method (print-ast (o <assign>) port)
+  (simple-format port "~a = " (.variable.name o))
+  (print-ast (.expression o) port)
+  (display ";\n" port))
+
+(define-method (print-ast (o <reply>) port)
+  (let ((port-name (.port.name o)))
+    (cond
+     (port-name
+      (simple-format port "~a.reply (" port-name)
+      (print-ast (.expression o) port)
+      (display ");\n" port))
+     (else
+      (display "reply (" port)
+      (print-ast (.expression o) port)
+      (display ");\n" port)))))
+
+(define-method (print-ast (o <return>) port)
+  (display "return " port)
+  (print-ast (.expression o) port)
+  (display ";\n" port))
+
+(define-method (print-ast (o <if>) port)
+  (let ((else (.else o)))
+    (display "if (" port)
+    (print-ast (.expression o) port)
+    (display ") " port)
+    (print-ast (.then o) port)
+    (when else
+      (display "else " port)
+      (print-ast else port))))
+
+(define-method (print-ast (o <defer>) port)
+  (let ((statement (.statement o)))
+    (display "defer" port)
+    (if (is-a? statement <compound>) (display "\n" port)
+        (display " " port))
+    (print-ast statement port)))
+
+;;; expressions
+(define-method (print-type (o <interface>) port) ;;; FIXME why isn't interface a <type>
+  (display (dzn:dotted-name o) port))
+
+(define-method (print-type (o <type>) port)
+  (display (dzn:dotted-name o) port))
+
+(define-method (print-ast (o <literal>) port)
+  (print-ast (.value o) port))
+
+(define-method (print-ast (o <var>) port)
+  (display (.name o) port))
+
+(define-method (print-ast (o <shared-var>) port)
+  (let ((lst (ast:full-name o)))
+    (display (string-join lst ".") port)))
+
+(define-method (print-ast (o <binary>) port)
+  (print-ast (.left o) port)
+  (simple-format port " ~a " (operator->string o))
+  (print-ast (.right o) port))
+
+(define-method (print-ast (o <group>) port)
+  (display "(" port)
+  (print-ast (.expression o) port)
+  (display ")" port))
+
+(define-method (print-ast (o <not>) port)
+  (display "!" port)
+  (print-ast (.expression o) port))
+
+(define-method (print-ast (o <field-test>) port)
+  (display (.variable.name o) port)
+  (display "." port)
+  (display (.field o) port))
+
+(define-method (print-ast (o <shared-field-test>) port)
+  (let ((lst (ast:full-name o)))
+    (display (string-join lst ".") port))
+  (display "." port)
+  (display (.field o) port))
+
+(define-method (print-ast (o <enum-literal>) port)
+  (print-type (.type o) port)
+  (display "." port)
+  (display (.field o) port))
+
+(define-method (print-ast (o <otherwise>) port)
+  (display "otherwise" port))
 
 
 ;;;
 ;;; Utility
 ;;;
+(define-method (ast->string (o <ast>))
+  (with-output-to-string (cute print-ast o)))
+
 (define-method (generator->string generator)
   (with-output-to-string (code:indenter generator)))
-
-(define-templates-macro define-templates dzn)
-(include-from-path "dzn/templates/dzn.scm")
 
 
 ;;;
 ;;; Entry points.
 ;;;
-
-(define-method (ast->dzn (o <root>))
-  (generator->string (cute x:source o)))
-(define-method (ast->dzn (o <statement>))
-  (generator->string(cute x:statement o)))
-(define-method (ast->dzn (o <function>))
-  (generator->string (cute x:source o)))
-(define-method (ast->dzn (o <expression>))
-  (generator->string (cute x:expression o)))
+(define-method (ast->dzn (o <ast>))
+  (generator->string (cute print-ast o)))
 
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
   (let ((file-name (code:root-file-name root dir ".dzn"))
-        (generator (code:indenter (cute x:source root))))
+        (generator (code:indenter (cute print-ast root))))
     (code:dump root generator #:file-name file-name)))
