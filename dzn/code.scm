@@ -47,6 +47,7 @@
   #:export (<port-pair>
            .other
             %calling-context
+            %no-unreachable?
             %queue-size
             %shell
             code
@@ -124,6 +125,9 @@
 
 ;; The calling-context to insert.
 (define %calling-context (make-parameter #f))
+
+;; Should unreachable-code tags be omitted?
+(define %no-unreachable? (make-parameter #f))
 
 ;; The size of the queue.
 (define %queue-size (make-parameter #f))

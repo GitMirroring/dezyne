@@ -30,7 +30,6 @@
   #:use-module (ice-9 poe)
   #:use-module (dzn config)
   #:use-module (dzn code)
-  #:use-module (dzn code makreel)
   #:use-module (dzn shell-util)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)

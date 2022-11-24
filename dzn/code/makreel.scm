@@ -51,7 +51,6 @@
   #:use-module (dzn verify constraint)
 
   #:export (%model-name
-            %no-unreachable?
             makreel:.name
             makreel:enum-fields
             makreel:get-model
@@ -70,9 +69,6 @@
 (define %id-alist (make-parameter #f))
 (define %model-name (make-parameter #f))
 (define %next-alist (make-parameter #f))
-
-;; Should unreachable-code tags be omitted?
-(define %no-unreachable? (make-parameter #f))
 
 
 ;;;
