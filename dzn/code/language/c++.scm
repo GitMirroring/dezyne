@@ -87,6 +87,9 @@
 (define-method (c++:enum->string (o <component>))
   (filter (is? <enum>) (ast:type* (.behavior o))))
 
+(define-method (c++:enum->string (o <enum>))
+  o)
+
 (define-method (c++:type-name o)
   (code:type-name o))
 

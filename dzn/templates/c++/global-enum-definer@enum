@@ -9,21 +9,6 @@ enum struct #ast:name
 
  #x:close-namespace
 
-##ifndef ENUM_TO_STRING_#x:enum-name
-##define ENUM_TO_STRING_#x:enum-name  1
-inline std::string to_string(#x:type-name  v)
-{
-  switch(v)
-  {
-    #x:enum-field-to-string
-  }
-  return "";
-}
-##endif // ENUM_TO_STRING_#x:enum-name
-
-inline std::ostream& operator << (std::ostream& os, #x:type-name  v)
-{
-  return os << to_string(v);
-}
+#x:enum-to-string
 
 ##endif // ENUM_#x:enum-name
