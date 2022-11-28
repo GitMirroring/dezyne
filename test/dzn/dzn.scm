@@ -257,6 +257,7 @@ output, and standard error as three values."
                     (feature? "flush"))
                 "flush")
            (feature? "inject")
+           (feature? "shared")
            (feature? "space"))))
 
 (define (features-missing file-name language)

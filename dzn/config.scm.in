@@ -123,6 +123,7 @@ There is NO WARRANTY, to the extent permitted by law.
     ("defer" . ("c++" "cs" "scheme"))
     ("flush" . ("c++" "cs" "scheme"))
     ("inject" . ("c++" "cs" "javacsript" "scheme"))
+    ("shared" . ())
     ("space" . ("c" "c++" "cs" "javascript" "scheme"))))
 
 
