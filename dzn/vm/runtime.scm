@@ -522,5 +522,4 @@
                   ((runtime:system-or-foreign-instance? (.container next)) (loop next o))
                   (else next)))))))))
 
-(define (runtime:other-port o) (runtime:other-port-unmemoized o))
-(define runtime:other-port (pure-funcq runtime:other-port))
+(define runtime:other-port runtime:other-port-unmemoized)
