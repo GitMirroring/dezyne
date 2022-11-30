@@ -788,25 +788,31 @@
     (_
      #f)))
 
+(define (code:om- ast)
+  (parameterize ((%normalize:short-circuit? code:short-circuit?))
+    ((compose
+      add-reply-port
+      normalize:event+illegals
+      remove-otherwise
+      (binding-into-blocking)
+      code:add-calling-context)
+     ast)))
+
 (define (code:om ast)
+  (let ((root (code:om- ast)))
+    (when (> (dzn:debugity) 1)
+      (ast:pretty-print root (current-error-port)))
+    root))
+
+(define (code:om+determinism ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     (let ((root ((compose
-                  add-reply-port
-                  normalize:event+illegals
-                  remove-otherwise
-                  (binding-into-blocking)
-                  code:add-calling-context)
+                  add-determinism-temporaries
+                  code:om-)
                  ast)))
       (when (> (dzn:debugity) 1)
         (ast:pretty-print root (current-error-port)))
       root)))
-
-(define (code:om+determinism ast)
-  (parameterize ((%normalize:short-circuit? code:short-circuit?))
-    ((compose
-      add-determinism-temporaries
-      code:om)
-     ast)))
 
 
 ;;;
