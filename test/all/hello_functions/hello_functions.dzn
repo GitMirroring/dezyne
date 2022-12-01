@@ -36,7 +36,7 @@ interface ihello
   }
 }
 
-component hello_function
+component hello_functions
 {
   provides ihello h;
   requires iworld w;
