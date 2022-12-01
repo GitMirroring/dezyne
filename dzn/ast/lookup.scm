@@ -46,6 +46,9 @@
             .type
             .variable
 
+            ast:bool
+            ast:int
+            ast:void
             ast:lookup
             ast:pure-funcq
             ast:unique-import*))

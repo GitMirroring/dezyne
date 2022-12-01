@@ -124,6 +124,10 @@
                .variable
                .variable.name
 
+               ast:bool
+               ast:int
+               ast:void
+
                ast:eq?
                ast:equal?
                ast:full-name
