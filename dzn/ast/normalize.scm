@@ -45,6 +45,7 @@
             add-function-return
             add-reply-port
             binding-into-blocking
+            extract-call
             not-or-guards
             normalize:event
             normalize:event+illegals
@@ -822,6 +823,76 @@ to prevent unintended shadowing
     (($ <component>)
      (clone o #:behavior (add-function-return (.behavior o))))
     ((? (is? <ast>)) (tree-map add-function-return o))
+    (_ o)))
+
+(define (extract-call o)
+  (define (extract-assign/variable-call o call)
+    (let ((expression (make <literal> #:value "return_value")))
+      (match o
+        (($ <assign>)
+         (let ((assign (clone o #:expression expression)))
+           (list call assign)))
+        (($ <variable>)
+         (let* ((type (.type o))
+                (default (ast:default-value type))
+                (variable (clone o #:expression default))
+                (assign (make <assign> #:variable.name (.name variable)
+                              #:expression expression)))
+           (list variable call assign))))))
+  (match o
+    (($ <behavior>)
+     (clone o
+            #:functions (extract-call (.functions o))
+            #:statement (extract-call (.statement o))))
+    (($ <defer>)
+     (let ((statement (extract-call (.statement o))))
+       (clone o #:statement (extract-call statement))))
+    (($ <blocking>)
+     (clone o #:statement (extract-call (.statement o))))
+    (($ <on>)
+     (clone o #:statement (extract-call (.statement o))))
+    (($ <guard>)
+     (clone o #:statement (extract-call (.statement o))))
+    (($ <functions>)
+     (clone o #:elements (map extract-call (ast:function* o))))
+    ((and (or ($ <assign>)
+              ($ <variable>))
+          (= .expression (and ($ <call>) call)))
+     (let* ((statements (extract-assign/variable-call o call))
+            (compound (make <compound> #:elements statements)))
+       (clone compound #:parent (.parent o))))
+    (($ <compound>)
+     (let ((statements
+            (let loop ((statements (ast:statement* o)))
+              (match statements
+                (()
+                 '())
+                ((statement rest ...)
+                 (match statement
+                   ((and (or ($ <assign>)
+                             ($ <variable>))
+                         (= .expression (and ($ <call>) call)))
+                    (let ((statements (extract-assign/variable-call
+                                       statement call)))
+                      (append
+                       statements
+                       (loop rest))))
+                   (($ <if>)
+                    (cons (extract-call statement)
+                          (loop rest)))
+                   (($ <compound>)
+                    (cons (extract-call statement)
+                          (loop rest)))
+                   (_
+                    (cons statement (loop rest)))))))))
+       (clone o #:elements statements)))
+    ((? (%normalize:short-circuit?))
+     o)
+    (($ <interface>)
+     (clone o #:behavior (extract-call (.behavior o))))
+    (($ <component>)
+     (clone o #:behavior (extract-call (.behavior o))))
+    ((? (is? <ast>)) (tree-map extract-call o))
     (_ o)))
 
 (define* (add-defer-end o)
