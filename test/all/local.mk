@@ -63,6 +63,7 @@ HELLO_TESTS =					\
  %D%/hello_foreign				\
  %D%/hello_function_argument			\
  %D%/hello_function_assign			\
+ %D%/hello_function_variable			\
  %D%/hello_guard				\
  %D%/hello_if					\
  %D%/hello_if_action				\
