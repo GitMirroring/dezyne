@@ -63,7 +63,6 @@ HELLO_TESTS =					\
  %D%/hello_foreign				\
  %D%/hello_function_argument			\
  %D%/hello_function_assign			\
- %D%/hello_function_void_bool_if		\
  %D%/hello_guard				\
  %D%/hello_if					\
  %D%/hello_if_action				\
@@ -314,6 +313,7 @@ REGRESSION_TESTS =				\
  %D%/hello_foreign_path				\
  %D%/hello_function_local			\
  %D%/hello_function_local_nest			\
+ %D%/hello_function_void_bool_if		\
  %D%/hello_functions				\
  %D%/hello_garbage				\
  %D%/hello_guard_two				\
