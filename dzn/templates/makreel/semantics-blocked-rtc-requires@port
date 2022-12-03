@@ -1,1 +1,1 @@
-(released == []) -> sum e : #x:makreel:interface-name modeling. #.name internal (e) . #.name end . semantics_provides_blocked(rtc=no_port)
+((released == []) -> sum i: #x:makreel:interface-name modeling . #.name internal (i) . #.name end . semantics_provides_blocked (rtc=no_port))

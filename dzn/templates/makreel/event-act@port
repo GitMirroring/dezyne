@@ -1,16 +1,17 @@
-#x:event-prefix in: #x:makreel:interface-name events;
-#x:event-prefix in': #x:makreel:interface-name events;
-#x:event-prefix out: #x:makreel:interface-name events;
-#x:event-prefix out': #x:makreel:interface-name events;
-#x:event-prefix reply: #x:makreel:interface-name replies;
-#x:event-prefix reply': #x:makreel:interface-name replies;
-#x:event-prefix internal: #x:makreel:interface-name modeling;
-#x:event-prefix internal': #x:makreel:interface-name modeling;
-#x:event-prefix end;
-#x:event-prefix end';
-#x:event-prefix flush;
-#x:event-act-provides #x:event-act-requires
-#x:event-prefix switch_context;
-#x:event-prefix switch_context';
-#x:event-prefix state: #x:makreel:interface-name State;
-#x:event-prefix state': #x:makreel:interface-name State;
+act #x:event-prefix in: #x:makreel:interface-name events;
+act #x:event-prefix in': #x:makreel:interface-name events;
+act #x:event-prefix out: #x:makreel:interface-name events;
+act #x:event-prefix out': #x:makreel:interface-name events;
+act #x:event-prefix reply: #x:makreel:interface-name replies;
+act #x:event-prefix reply': #x:makreel:interface-name replies;
+act #x:event-prefix internal: #x:makreel:interface-name modeling;
+act #x:event-prefix internal': #x:makreel:interface-name modeling;
+act #x:event-prefix end;
+act #x:event-prefix end';
+act #x:event-prefix flush;
+#x:event-act-provides
+#x:event-act-requires
+act #x:event-prefix switch_context;
+act #x:event-prefix switch_context';
+act #x:event-prefix state: #x:makreel:interface-name State;
+act #x:event-prefix state': #x:makreel:interface-name State;

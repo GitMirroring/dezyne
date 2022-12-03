@@ -1,1 +1,1 @@
-("(" pre "," infix ")" post)
+ (" (" pre ", " infix ")" post)

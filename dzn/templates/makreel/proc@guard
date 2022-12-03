@@ -1,1 +1,1 @@
-#x:process-id  = (#x:expression) -> #x:continuation;
+#x:process-id  = ((#x:expression) -> #x:continuation);

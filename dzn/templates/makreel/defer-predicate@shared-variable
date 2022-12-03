@@ -1,1 +1,1 @@
-(!(select_#.port.name #.name  in select(context)) || state_#.port.name #.name(current) == state_#.port.name #.name(state(context)))
+(!(select_#.port.name #.name  in select (context)) || state_#.port.name #.name (current) == state_#.port.name #.name (state (context)))

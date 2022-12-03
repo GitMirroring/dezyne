@@ -1,2 +1,1 @@
-#.name actions = struct
-#x:action-sort-event;
+sort #.name actions = struct #x:action-sort-event;

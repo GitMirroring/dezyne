@@ -118,6 +118,9 @@
 (define-method (makreel:behavior->defer-qout (o <behavior>))
   (tree-collect (is? <defer>) o))
 
+(define-method (makreel:behavior->defer-qout (o <model>))
+  (makreel:behavior->defer-qout (.behavior o)))
+
 (define-method (makreel:interface-reorder (o <behavior>))
   (and (ast:parent o <interface>)
        o))
@@ -793,7 +796,7 @@
 
 (define-method (makreel:process-haakjes (o <ast>))
   (if (or (pair? (variables-in-scope o))
-          (ast:parent o <function>)) "()"
+          (ast:parent o <function>)) " ()"
           ""))
 
 (define-method (makreel:process-haakjes (o <continuation-pair>))
@@ -941,7 +944,7 @@
 
 (define-method (makreel:provides-reply (o <port-pair>))
   (let ((other (.other o)))
-    (if (ast:eq? other (.port o)) "r"
+    (if (ast:eq? other (.port o)) "i"
         other)))
 
 (define-method (makreel:provides-reply (o <port>))

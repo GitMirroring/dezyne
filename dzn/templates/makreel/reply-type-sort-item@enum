@@ -1,2 +1,2 @@
 
-  | #x:type-constructor(value: #x:basic-type)
+ | #x:type-constructor  (value: #x:basic-type)

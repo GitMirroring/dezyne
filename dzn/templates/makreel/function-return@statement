@@ -1,1 +1,1 @@
-is'#x:continuation-process-identifier 'return (return(s)) -> #x:continuation-process-identifier  (#x:stack-destructor)
+((is'#x:continuation-process-identifier 'return (return (s))) -> #x:continuation-process-identifier  (#x:stack-destructor))

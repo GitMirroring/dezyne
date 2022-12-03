@@ -1,2 +1,1 @@
- + sum l : Locals . defer_qout(l) .
-   (#x:defer-qout)
+ + sum i: Locals . defer_qout (i) . (#x:defer-qout)

@@ -1,29 +1,29 @@
-component_queue (l: List (requires_events)) =
-(##l == 0) -> queue_empty . component_queue ()
-+ (l != []) -> queue_not_empty . component_queue ()
+proc component_queue (l: List (requires_events))
+ = ((##l == 0) -> queue_empty . component_queue ())
+ + ((l != []) -> queue_not_empty . component_queue ())
 #x:queue-proc-requires;
 
 #x:external-proc
 
-req_and_queue_parallel = component_queue([]) #x:requires-port-parallel-proc #x:external-port-parallel-proc;
+proc req_and_queue_parallel = component_queue ([])#x:requires-port-parallel-proc #x:external-port-parallel-proc;
 
-req_and_queue_comm = comm({
-#x:queue-comm-requires
+proc req_and_queue_comm = comm ({
+   #x:queue-comm-requires
  }, req_and_queue_parallel);
 
-req_and_queue_allow = allow({
-   #x:allow-tau
+proc req_and_queue_allow = allow ({
+   #x:queue-allow-requires
  , declarative_illegal
  , illegal
  , queue_empty
- , queue_not_empty
  , queue_full
+ , queue_not_empty
  , tau_void
  , tag
-#x:queue-allow-requires
+#x:allow-tau
  }, req_and_queue_comm);
 
-req_and_queue = rename({
-   #x:queue-rename-requires
- , declarative_illegal -> illegal
+proc req_and_queue = rename ({
+   declarative_illegal -> illegal
+ , #x:queue-rename-requires
  }, req_and_queue_allow);

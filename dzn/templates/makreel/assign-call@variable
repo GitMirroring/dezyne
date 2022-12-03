@@ -1,1 +1,1 @@
-#x:process-identifier #x:process-parameters-return  = #x:reorder-end #x:continuation-identifier (#x:assign-call-parameter);
+proc #x:process-identifier #x:process-parameters-return  = #x:reorder-end #x:continuation-identifier (#x:assign-call-parameter);

@@ -1,1 +1,1 @@
-sum e : #x:makreel:interface-name actions. #.name in (#x:makreel:interface-name action(e))
+sum i: #x:makreel:interface-name actions . #.name in (#x:makreel:interface-name action (i))

@@ -1,14 +1,12 @@
-sort
-Void = struct void;
+sort Void = struct void;
 #x:action-sort
 #x:modeling-sort
-#x:enum-sort
 #x:reply-sort
 #x:event-sort
+#x:enum-sort
 
 #x:interface-state-sort
 
-act
 #x:event-act
 
 #x:interface-proc-memo

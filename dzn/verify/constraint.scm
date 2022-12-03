@@ -217,12 +217,12 @@ to current-output-port."
              (labels (map edge-label transitions)))
         (when (or (= i initial)
                   (any (disjoin trigger? modeling-event?) labels))
-          (format #t "\n~aconstraint~a\n = delta\n" name (node-state node))
+          (format #t "\nproc ~aconstraint~a\n = delta\n" name (node-state node))
           (when (pair? (node-edges node))
             (print-transitions transitions))
           (format #t ";\n"))))
 
-    (format #t "~aconstraint_start = ~aconstraint~a;\n" name name initial)
+    (format #t "proc ~aconstraint_start = ~aconstraint~a;\n" name name initial)
     (vector-for-each print-node lts)))
 
 

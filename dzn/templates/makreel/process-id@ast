@@ -1,2 +1,2 @@
 #x:pretty-print-dzn
-#x:process-identifier #x:process-parameters
+proc #x:process-identifier #x:process-parameters

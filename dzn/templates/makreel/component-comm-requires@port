@@ -1,6 +1,6 @@
 #.name in | #.name in -> #.name in'
  , #.name reply | #.name reply -> #.name reply'
  , #.name internal | #.name internal -> #.name internal'
- , #.name end | #.name end -> #.name end'
  , #.name qout | #.name qout -> #.name qout'
+ , #.name end | #.name end -> #.name end'
  , #.name state | #.name state -> #.name state'

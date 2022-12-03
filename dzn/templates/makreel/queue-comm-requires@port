@@ -1,1 +1,1 @@
-#.name out | #.name qin -> #.name qin'
+#.name qin | #.name out -> #.name qin'

@@ -1,1 +1,1 @@
-#.port.name #.name =#x:makreel:interface-name #.name(#.port.name s)
+#.port.name #.name =#x:makreel:interface-name #.name  (#.port.name s)

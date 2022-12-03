@@ -1,10 +1,10 @@
 #.name in'
  , #.name reply'
  , #.name internal'
- , #.name end'
- , #.name flush
- , #.name qin
  , #.name qout'
- , #.name queue_full
+ , #.name end'
  , #.name state'
+ , #.name qin
+ , #.name flush
+ , #.name queue_full
  , #.name switch_context

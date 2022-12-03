@@ -1,5 +1,1 @@
-sort
-
-#x:makreel:model-name Return'Type
- = struct #x:return-type
- ;
+sort #x:makreel:model-name Return'Type = struct #x:return-type;

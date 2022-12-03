@@ -1,103 +1,91 @@
-sort
 #x:action-sort
 #x:modeling-sort
-#x:enum-sort
 #x:reply-sort
 #x:event-sort
+#x:enum-sort
 
-provides_ports = struct no_port?no_port_is#x:provides-port-construct;
+sort provides_ports = struct no_port ? no_port_is#x:provides-port-construct;
 
-requires_ports = struct no_requires #x:requires-port-construct;
+sort requires_ports = struct no_requires#x:requires-port-construct;
 
-reply_values = struct replies (#x:reply-values);
+sort reply_values = struct replies (#x:reply-values);
 
-requires_events
- = struct no_event
-#x:requires-sort-construct
- ;
+sort requires_events = struct no_event
+#x:requires-sort-construct;
 
-map
+%% map QueueLength: Nat;
 
-QueueLength : Nat;
+map list2set: List (provides_ports) -> Set (provides_ports);
 
-list2set : List(provides_ports) -> Set(provides_ports);
-
-remove_port : provides_ports # List (provides_ports) -> List(provides_ports);
+remove_port: provides_ports # List (provides_ports) -> List (provides_ports);
 
 var p, car: provides_ports;
-    l, cdr: List(provides_ports);
+    l, cdr: List (provides_ports);
     e, h: requires_events;
-    t: List(requires_events);
+    t: List (requires_events);
 
-eqn
+%%eqn  QueueLength = #x:makreel:queue-length;
+eqn l == [] -> list2set (l) = {};
+    l != [] -> list2set (l) = {head (l)} + list2set (tail (l));
 
-QueueLength = #x:makreel:queue-length;
-
-l == [] -> list2set(l) = {};
-l != [] -> list2set(l) = {head(l)} + list2set(tail(l));
-
-remove_port(p, []) = [];
-p == car -> remove_port(p, car |> cdr) = cdr;
-p != car -> remove_port(p, car |> cdr) = car |> remove_port(p,cdr);
+remove_port (p, []) = [];
+p == car -> remove_port (p, car |> cdr) = cdr;
+p != car -> remove_port (p, car |> cdr) = car |> remove_port (p,cdr);
 
 #x:interface-state-sort
 
-act
 #x:event-act
 #x:makreel:model-name end;
 #x:makreel:model-name end';
 #x:makreel:model-name other_end;
 #x:makreel:model-name other_end';
-queue_full;
-queue_empty;
-queue_empty';
-queue_not_empty;
-queue_not_empty';
+act queue_full;
+act queue_empty;
+act queue_empty';
+act queue_not_empty;
+act queue_not_empty';
 
-%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INTERFACE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #x:interface-proc-memo
 
-%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PORT PROCESSES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #x:interface-action-proc
 
-%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PROVIDES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-proc
-provides_r2c(ports: Set(provides_ports))
- = #x:provides-r2c-proc #x:provides-r2c-blocking-proc
- ;
+proc provides_r2c (ports: Set (provides_ports))
+ = #x:provides-r2c-proc #x:provides-r2c-blocking-proc;
 
-provides_out(ports: Set(provides_ports))
- = #x:provides-out
- ;
+proc provides_out (ports: Set (provides_ports))
+ = #x:provides-out;
 
-provides_parallel = #x:provides-port-parallel-proc || provides_r2c({});
+proc provides_parallel = #x:provides-port-parallel-proc  || provides_r2c ({});
 
-provides_comm = comm ({
-#x:provides-comm
+proc provides_comm = comm ({
+   #x:provides-comm
  }, provides_parallel);
 
-provides_allow = allow ({
-   declarative_illegal
+proc provides_allow = allow ({
+   #x:provides-allow
+   #x:provides-interface-allow
+ , declarative_illegal
  , illegal
  , missing_reply
  , range_error
  , second_reply
  , tag
  , tau_void
-#x:provides-interface-allow
-#x:provides-allow
  }, provides_comm);
 
-provides_rename = rename ({
-#x:provides-rename
+proc provides_rename = rename ({
+   #x:provides-rename
  }, provides_allow);
 
-provides = hide ({
+proc provides = hide ({
    tau_void
- , #x:allow-tau
+#x:allow-tau
  }, provides_rename);
 
 #x:component

@@ -1,38 +1,38 @@
-#.name _portexternal_queue (l : List (requires_events)) =
-  (##l < ExternalQueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name flush . #.name _portexternal_queue (l = l <| #.name events (e)))
-  + (l != [] && #.name is (head (l))) -> #.name internal(#x:makreel:interface-name inevitable) . #.name qout (#.name projection (head (l))) . #.name end . #.name _portexternal_queue(l = tail(l))
-  + (##l == ExternalQueueLength) -> (sum e: #x:makreel:interface-name events. #.name qin (e) . #.name queue_full . Illegal)
-;
+proc #.name _portexternal_queue (l: List (requires_events))
+ = (##l < ExternalQueueLength) -> (sum i: #x:makreel:interface-name events . #.name qin (i) . #.name flush . #.name _portexternal_queue (l = l <| #.name events (i)))
+ + (l != [] && #.name is (head (l))) -> #.name internal (#x:makreel:interface-name inevitable) . #.name qout (#.name projection (head (l))) . #.name end . #.name _portexternal_queue (l = tail (l))
+ + (##l == ExternalQueueLength) -> (sum i: #x:makreel:interface-name events . #.name qin (i) . #.name queue_full . Illegal);
 
-#.name _portinternal = rename({
-  #.name internal -> #x:basic-type tau_modeling
-  , #.name end -> tau_void
-  , #.name flush -> tau_void}, #.name _port);
+proc #.name _portinternal = rename ({
+   #.name internal -> #x:basic-type tau_modeling
+ , #.name end -> tau_void
+ , #.name flush -> tau_void
+ }, #.name _port);
 
-#.name _portexternal_parallel = #.name _portexternal_queue([]) || #.name _portinternal;
+proc #.name _portexternal_parallel = #.name _portexternal_queue ([]) || #.name _portinternal;
 
-#.name _portexternal_comm = comm({
+proc #.name _portexternal_comm = comm ({
   #.name out | #.name qin -> #.name qin'
-  }, #.name _portexternal_parallel);
+ }, #.name _portexternal_parallel);
 
-#.name _portexternal_allow = allow({
-    #x:makreel:interface-name tau_modeling
-  , #x:makreel:interface-name tau_reply
-  , #.name in
-  , #.name qin'
-  , #.name qout
-  , #.name reply
-  , #.name internal
-  , #.name end
-  , #.name flush
-  , #.name queue_full
-  , declarative_illegal
-  , illegal
-  , tag
-  , tau_void
-  }, #.name _portexternal_comm);
+proc #.name _portexternal_allow = allow ({
+   #.name qin'
+ , declarative_illegal
+ , illegal
+ , tag
+ , tau_void
+ , #x:makreel:interface-name tau_modeling
+ , #x:makreel:interface-name tau_reply
+ , #.name in
+ , #.name qout
+ , #.name reply
+ , #.name internal
+ , #.name end
+ , #.name flush
+ , #.name queue_full
+ }, #.name _portexternal_comm);
 
-#.name _portexternal = rename({
-  #.name qin' -> #x:basic-type tau_event
-  , #.name qout -> #.name out
-  }, #.name _portexternal_allow);
+proc #.name _portexternal = rename ({
+   #.name qin' -> #x:basic-type tau_event
+ , #.name qout -> #.name out
+ }, #.name _portexternal_allow);

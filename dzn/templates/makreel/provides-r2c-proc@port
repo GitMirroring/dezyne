@@ -1,2 +1,2 @@
-sum x: #x:type-constructor actions . #.name in (#x:type-constructor action (x)) . provides_out ()
-+ sum m: #x:type-constructor modeling. #.name internal (m) . provides_out ()
+sum i: #x:type-constructor actions . #.name in (#x:type-constructor action (i)) . provides_out ()
+ + sum i: #x:type-constructor modeling . #.name internal (i) . provides_out ()

@@ -73,7 +73,7 @@
 (define-templates stack-sort makreel:call-continuation-sort newline-pipe-prefix)
 (define-templates call-stack-arguments makreel:stack-parameters comma-suffix)
 (define-templates stack-parameters makreel:locals comma-suffix)
-(define-templates stack-destructor makreel:stack-destructor comma-infix)
+(define-templates stack-destructor makreel:stack-destructor comma-space-infix)
 (define-templates process-argument-stack makreel:process-argument-stack?)
 
 (define-templates stack makreel:stack?)
@@ -143,7 +143,7 @@
 (define-templates interface-action-proc makreel:interface-action-proc)
 (define-templates rename-flush-provides makreel:rename-flush-provides)
 (define-templates rename-flush-requires makreel:rename-flush-requires)
-(define-templates allow-tau makreel:allow-tau newline-comma-infix)
+(define-templates allow-tau makreel:allow-tau newline-comma-prefix)
 (define-templates member-init makreel:member-init parameters-grammar)
 
 (define-templates sum-helper-params makreel:sum-helper-params parameters-grammar)
@@ -151,16 +151,16 @@
 (define-templates makreel:line-column makreel:line-column)
 
 ;; interface
-(define-templates provides-port-parallel-proc ast:provides-port* newline-parallel-infix)
-(define-templates requires-port-parallel-proc ast:non-external-port* newline-parallel-prefix)
-(define-templates external-port-parallel-proc ast:external-port* newline-parallel-prefix)
+(define-templates provides-port-parallel-proc ast:provides-port* parallel-infix)
+(define-templates requires-port-parallel-proc ast:non-external-port* parallel-prefix)
+(define-templates external-port-parallel-proc ast:external-port* parallel-prefix)
 
 ;; q process
 (define-templates queue-proc ast:have-requires?)
 (define-templates no-queue-proc ast:have-no-requires?)
 (define-templates queue-proc-requires ast:requires-port* newline-union-prefix)
 (define-templates queue-comm-requires ast:requires-port* newline-comma-infix)
-(define-templates queue-allow-requires ast:requires-port* newline-comma-prefix)
+(define-templates queue-allow-requires ast:requires-port* newline-comma-infix)
 (define-templates queue-rename-requires ast:requires-port* newline-comma-infix)
 (define-templates external-proc ast:external-port*)
 
@@ -177,21 +177,21 @@
 
 ;;defer
 (define-templates defer-semantics ast:provides-port* newline-union-infix)
-(define-templates defer (lambda (o) (if (pair? (makreel:behavior->defer-qout o)) o '())))
+(define-templates defer (lambda (o) (and (pair? (makreel:behavior->defer-qout o)) (list o))) newline-prefix)
 (define-templates defer-qout makreel:behavior->defer-qout newline-union-infix)
 (define-templates defer-process-haakjes)
-(define-templates defer-process-argument makreel:locals comma-infix)
+(define-templates defer-process-argument makreel:locals comma-space-infix)
 (define-templates defer-proc makreel:behavior->defer-qout)
 (define-templates provides-flush (lambda (o) (if (ast:provides? o) o '())))
 (define-templates requires-reply (lambda (o) (if (ast:requires? o) o '())))
 
 (define-templates defer-skip makreel:defer-skip)
-(define-templates defer-locals-sort (cute tree-collect (is? <defer>) <>) pipe-prefix)
+(define-templates defer-locals-sort (cute tree-collect (is? <defer>) <>) newline-pipe-prefix)
 (define-templates defer-local-arguments-sort (lambda (o) (if (pair? (makreel:locals o)) o '())))
-(define-templates deferred-locals-sort makreel:locals comma-infix)
+(define-templates deferred-locals-sort makreel:locals comma-space-infix)
 (define-templates defer-locals)
 (define-templates defer-local-arguments (lambda (o) (if (pair? (makreel:locals o)) o '())))
-(define-templates deferred-locals makreel:locals comma-infix)
+(define-templates deferred-locals makreel:locals comma-space-infix)
 (define-templates defer-process-index (compose makreel:process-index .statement))
 
 (define requires-shared-variable? (disjoin (negate (is? <shared-variable>))
@@ -202,12 +202,12 @@
 (define behavior-with-variables (conjoin (compose pair? ast:variable*) identity))
 
 (define-templates state-vector (conjoin (compose pair? requires-shared-variables ast:variable* .behavior) .behavior))
-(define-templates state-member (compose requires-shared-variables ast:variable*) comma-infix)
+(define-templates state-member (compose requires-shared-variables ast:variable*) comma-space-infix)
 (define-templates construct-state-vector (compose behavior-with-variables .behavior (cute ast:parent <> <component>)))
-(define-templates state-var (compose requires-shared-variables ast:variable*) comma-infix)
+(define-templates state-var (compose requires-shared-variables ast:variable*) comma-space-infix)
 
 (define-templates defer-select-member ast:variable* pipe-prefix)
-(define-templates defer-select-variable (compose requires-shared-variables ast:defer-variable*) comma-infix)
+(define-templates defer-select-variable (compose requires-shared-variables ast:defer-variable*) comma-space-infix)
 (define-templates defer-predicate (compose requires-shared-variables ast:variable*) and-infix)
 (define-templates defer-predicate-true (conjoin (compose null? requires-shared-variables ast:variable*) identity) and-infix)
 
@@ -216,11 +216,11 @@
 (define-templates semantics-provides ast:provides-port* newline-union-infix)
 (define-templates semantics-provides-flush makreel:semantics-provides-flush)
 (define-templates semantics-provides-unblocked-out ast:requires-port* newline-union-infix)
-(define-templates semantics-provides-reply-init ast:provides-port* comma-infix)
-(define-templates semantics-provides-reset-reply-pair makreel:provides-pair* comma-infix)
-(define-templates semantics-provides-reset-reply makreel:provides-reset-reply comma-infix)
-(define-templates semantics-provides-reply-pair makreel:provides-pair* comma-infix)
-(define-templates semantics-provides-reply makreel:provides-reply comma-infix)
+(define-templates semantics-provides-reply-init ast:provides-port* comma-space-infix)
+(define-templates semantics-provides-reset-reply-pair makreel:provides-pair* comma-space-infix)
+(define-templates semantics-provides-reset-reply makreel:provides-reset-reply comma-space-infix)
+(define-templates semantics-provides-reply-pair makreel:provides-pair* comma-space-infix)
+(define-templates semantics-provides-reply makreel:provides-reply comma-space-infix)
 (define-templates semantics-provides-unblocked ast:provides-port* newline-union-infix)
 (define-templates semantics-provides-unblocked-missing-replies ast:provides-port* and-infix)
 (define-templates semantics-provides-unblocked-replies ast:provides-port* newline-union-prefix)
@@ -254,7 +254,7 @@
 (define-templates semantics-comm-requires ast:requires-port* newline-comma-prefix)
 (define-templates semantics-allow-provides ast:provides-port* newline-comma-prefix)
 (define-templates semantics-allow-requires ast:requires-port* newline-comma-prefix)
-(define-templates semantics-rename-provides ast:provides-port* newline-comma-prefix)
+(define-templates semantics-rename-provides ast:provides-port* newline-comma-infix)
 (define-templates semantics-rename-requires ast:requires-port* newline-comma-prefix)
 (define-templates semantics-provides-action ast:provides-port* newline-union-prefix)
 
@@ -267,14 +267,14 @@
 (define-templates component-rename-requires ast:requires-port* newline-comma-prefix)
 (define-templates component-hide-provides ast:provides-port* newline-comma-prefix)
 (define-templates component-hide-requires ast:requires-port* newline-comma-prefix)
-(define-templates reordered ast:provides-port* union-infix)
+(define-templates reordered ast:provides-port* newline-union-infix)
 
 ;; provides
 (define-templates provides-r2c-blocking-proc (lambda (o) (if (any ast:blocking? (ast:provides-port* o)) (makreel:provides-proc o) '())) newline-union-infix)
 (define-templates provides-r2c-proc (lambda (o) (if (not (any ast:blocking? (ast:provides-port* o))) (makreel:provides-proc o) '())) newline-union-infix)
 (define-templates provides-out makreel:provides-proc newline-union-infix)
 (define-templates provides-comm ast:provides-port* newline-comma-infix)
-(define-templates provides-allow ast:provides-port* newline-comma-prefix)
+(define-templates provides-allow ast:provides-port* newline-comma-infix)
 (define-templates provides-interface-allow ast:provides-interface* newline-comma-prefix)
 (define-templates provides-rename ast:provides-port* newline-comma-infix)
 
@@ -296,8 +296,8 @@
 (define-templates multiple-provides-constraint makreel:multiple-provides-component)
 
 (define-templates rename-provides-constraint)
-(define-templates comm-provides-constraint ast:provides-port* newline-comma-prefix)
-(define-templates rename-comm-provides-constraint ast:provides-port* newline-comma-prefix)
+(define-templates comm-provides-constraint ast:provides-port* newline-comma-infix)
+(define-templates rename-comm-provides-constraint ast:provides-port* newline-comma-infix)
 
 (define-templates constrained-semantics-allow-provides ast:provides-port* newline-comma-prefix)
 (define-templates constrained-semantics-allow-requires ast:requires-port* newline-comma-prefix)
@@ -305,12 +305,12 @@
 ;;shared
 (define-templates shared-process-haakjes makreel:shared-process-haakjes)
 (define-templates share-state makreel:shared-interface newline-union-suffix)
-(define-templates shared-component-proc makreel:shared-var* newline-dot-suffix)
+(define-templates shared-component-proc makreel:shared-var* dot-space-suffix)
 (define-templates shared-values (lambda (o) (and (pair? (makreel:shared-variable* o)) o)) comma-suffix)
-(define-templates shared-value makreel:shared-variable* comma-infix)
+(define-templates shared-value makreel:shared-variable* comma-space-infix)
 (define-templates add-shared-value makreel:shared-variable* comma-suffix)
-(define-templates communicate-shared-state makreel:communicate-shared-state dot-suffix)
+(define-templates communicate-shared-state makreel:communicate-shared-state dot-space-suffix)
 (define-templates interface-state-sort makreel:interface* double-newline-infix)
 (define-templates interface-state-variables makreel:shared-interface)
 (define-templates interface-no-state-variables makreel:no-shared-interface double-newline-infix)
-(define-templates interface-state-variable ast:variable* comma-infix)
+(define-templates interface-state-variable ast:variable* comma-space-infix)

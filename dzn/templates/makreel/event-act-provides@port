@@ -1,4 +1,4 @@
-#x:event-prefix reply'reordered: #x:makreel:interface-name replies;
-#x:event-prefix reply'reordered': #x:makreel:interface-name replies;
-#x:event-prefix blocking;
-#x:event-prefix blocking';
+act #x:event-prefix reply'reordered: #x:makreel:interface-name replies;
+act #x:event-prefix reply'reordered': #x:makreel:interface-name replies;
+act #x:event-prefix blocking;
+act #x:event-prefix blocking';

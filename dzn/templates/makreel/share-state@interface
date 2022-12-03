@@ -1,1 +1,1 @@
-#x:makreel:model-name state (#x:makreel:model-name variables #x:members-name)  . #x:makreel:model-name behavior ()
+#x:makreel:model-name state (#x:makreel:model-name variables#x:members-name) . #x:makreel:model-name behavior ()

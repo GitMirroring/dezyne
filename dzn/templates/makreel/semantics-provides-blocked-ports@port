@@ -1,1 +1,1 @@
-#.name blocking . semantics_provides_blocked(rtc=no_port,blocking=blocking + {#.name port})
+#.name blocking . semantics_provides_blocked (rtc=no_port, blocking=blocking+{#.name port})
