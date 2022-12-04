@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,22 +24,22 @@
 
 interface range_return
 {
-  in void e();
-  out void a();
+  in void hello ();
+  out void world ();
 
   behavior
   {
-    subint State {0..3};
-    State state = 3; //4; //TODO static well-formedness check?
-    State f ()
+    subint int {0..3};
+    int state = 3; //4; //TODO static well-formedness check?
+    int f ()
     {
       return 5;
     }
 
-    on e:
+    on hello:
     {
-      state = f();
-      a;
+      state = f ();
+      world;
     }
   }
 }
