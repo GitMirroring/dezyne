@@ -1,3 +1,0 @@
-test/all/range_declaration_expression/range_declaration_expression.dzn:54:18: error: range-error: invalid value `5' for variable `n'
-test/all/range_declaration_expression/range_declaration_expression.dzn:54:18: info: variable `n' defined here
-test/all/range_declaration_expression/range_declaration_expression.dzn:53:6: info: of type `Sub' defined here

@@ -1,0 +1,11 @@
+(header ((client) range_local_expression provides) ((sut) range_local_expression interface))
+(state ((client)) ((sut)))
+test/all/range_local_expression/range_local_expression.dzn:35:7: error: range-error: invalid value `6' for variable `x'
+<external>.hello -> ...
+... -> sut.hello
+<range-error>
+(state ((client)) ((sut) (x . 6)))
+test/all/range_local_expression/range_local_expression.dzn:35:7: error: range-error: invalid value `6' for variable `x'
+(trail "hello" "<range-error>")
+(labels "hello")
+(eligible)
