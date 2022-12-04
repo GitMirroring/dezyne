@@ -413,7 +413,7 @@ REGRESSION_TESTS =				\
  %D%/range_action				\
  %D%/range_argument				\
  %D%/range_assign				\
- %D%/range_expression				\
+ %D%/range_assign_expression			\
  %D%/range_function				\
  %D%/range_local				\
  %D%/range_local_expression			\

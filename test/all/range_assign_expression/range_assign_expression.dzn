@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2023 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,36 +22,19 @@
 //
 // Code:
 
-interface I
+interface range_assign_expression
 {
-  in void e();
+  in void hello ();
+  out void world ();
 
   behavior
   {
-    on e: {}
-  }
-}
-
-interface II
-{
-  in void e();
-  out void add();
-
-  behavior
-  {
-    on e: add;
-  }
-}
-
-component range_expression
-{
-  provides I p;
-  requires II r;
-
-  behavior {
-     subint Sub {0..4};
-     Sub n = 3;
-     on p.e(): { n = n+1; r.e(); }
-     on r.add(): {}
+    subint int {0..3};
+    int state = 3;
+    on hello:
+    {
+      state = 3 + 1;
+      world;
+    }
   }
 }

@@ -1,0 +1,11 @@
+(header ((client) range_assign_expression provides) ((sut) range_assign_expression interface))
+(state ((client)) ((sut) (state . 3)))
+test/all/range_assign_expression/range_assign_expression.dzn:36:7: error: range-error: invalid value `4' for variable `state'
+<external>.hello -> ...
+... -> sut.hello
+<range-error>
+(state ((client)) ((sut) (state . 4)))
+test/all/range_assign_expression/range_assign_expression.dzn:36:7: error: range-error: invalid value `4' for variable `state'
+(trail "hello" "<range-error>")
+(labels "hello")
+(eligible)

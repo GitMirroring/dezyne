@@ -1,0 +1,5 @@
+verify: range_assign_expression: check: deadlock: fail
+error: integer range error in model range_assign_expression
+verify: range_assign_expression: check: unreachable: skip
+verify: range_assign_expression: check: livelock: ok
+verify: range_assign_expression: check: deterministic: ok
