@@ -1,3 +1,0 @@
-test/all/range_function/range_function.dzn:34:13: error: range-error: invalid value `4' for variable `s'
-test/all/range_function/range_function.dzn:32:12: info: formal `s' defined here
-test/all/range_function/range_function.dzn:30:5: info: of type `State' defined here

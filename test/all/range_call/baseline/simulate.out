@@ -1,0 +1,11 @@
+(header ((client) range_call provides) ((sut) range_call interface))
+(state ((client)) ((sut)))
+test/all/range_call/range_call.dzn:34:15: error: range-error: invalid value `4' for variable `s'
+<external>.hello -> ...
+... -> sut.hello
+<range-error>
+(state ((client)) ((sut)))
+test/all/range_call/range_call.dzn:34:15: error: range-error: invalid value `4' for variable `s'
+(trail "hello" "<range-error>")
+(labels "hello")
+(eligible)

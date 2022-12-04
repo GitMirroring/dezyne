@@ -1,0 +1,5 @@
+verify: range_call: check: deadlock: fail
+error: integer range error in model range_call
+verify: range_call: check: unreachable: skip
+verify: range_call: check: livelock: ok
+verify: range_call: check: deterministic: ok

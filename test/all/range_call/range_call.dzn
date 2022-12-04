@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,16 +21,16 @@
 //
 // Code:
 
-interface range_function
+interface range_call
 {
-  in void e();
+  in void hello ();
 
   behavior
   {
-    subint State {0..3};
+    subint int {0..3};
 
-    void f(State s) {}
+    void f (int s) {}
 
-    on e: { f(4); }
+    on hello: f (4);
   }
 }
