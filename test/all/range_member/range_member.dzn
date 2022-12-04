@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,29 +22,29 @@
 //
 // Code:
 
-interface irange_member
+interface ihello
 {
-  in void e();
+  in void hello ();
 
   behavior
   {
-    subint State {0..3};
+    subint int {0..3};
 
-    State state = 2+2;
+    int state = 2+2;
 
-    on e: {state = 0;}
+    on hello: {state = 0;}
   }
 }
 
 component range_member
 {
-  provides irange_member p;
+  provides ihello h;
   behavior
   {
-    subint State {0..3};
+    subint int {0..3};
 
-    State state = 2+2;
+    int state = 2+2;
 
-    on p.e(): {}
+    on h.hello (): {}
   }
 }

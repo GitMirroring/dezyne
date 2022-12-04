@@ -1,4 +1,4 @@
-(header ((p) irange_member provides) ((sut) range_member component))
+(header ((h) ihello provides) ((sut) range_member component))
 test/all/range_member/range_member.dzn:33:5: error: range-error: invalid value `4' for variable `state'
 <range-error>
 (state )
