@@ -44,6 +44,7 @@
   #:export (ast:argument->formal
             ast:base-name
             ast:blocking?
+            ast:continuation*
             ast:component-model*
             ast:declarative?
             ast:default-value
@@ -997,3 +998,53 @@ to bottom."
 
 (define-method (ast:recursive? (o <function>))
   (ast:graph-cyclic? ast:function* o))
+
+(define-method (ast:continuation* (o <ast>))
+  "Return a naive list of continuations.  A <declarative-compound>
+returns its statements, an <if> returns both the then and else cases, a
+call steps over the function and returns the next statement."
+  (define (statement-continuation o)
+    (let* ((p (.parent o))
+           (cont (cdr (member o (ast:statement* p) ast:eq?))))
+      (if (pair? cont) (list (car cont))
+          (let ((grandparent (.parent p)))
+            (match grandparent
+              (($ <compound>) (statement-continuation p))
+              (($ <defer>) (list (ast:parent o <behavior>)))
+              ((? (is? <declarative>)) (list (ast:parent o <behavior>)))
+              (_  (helper grandparent)))))))
+
+  (define (helper o)
+    (match o
+      ((and ($ <declarative-compound>) (= ast:statement* ()))
+       (throw 'programming-error "unexpected empty declarative-compound"))
+      ((and ($ <declarative-compound>)
+            (= ast:statement* elements)) elements)
+      (($ <behavior>)
+       (list (.statement o)))
+      (($ <function>)
+       (list (.statement o)))
+      (($ <guard>)
+       (list (.statement o)))
+      (($ <blocking>)
+       (list (.statement o)))
+      (($ <on>)
+       (list (.statement o)))
+      ((and ($ <compound>) (= ast:statement* (? pair?)) (= ast:statement* elements))
+       (take elements 1))
+      ((? (is? <statement>))
+       (let* ((p (.parent o)))
+         (match p
+           (($ <compound>) (statement-continuation o))
+           ((? (is? <declarative>)) (list (ast:parent o <behavior>)))
+           (($ <on>) (throw 'programming-error "unexpected on"))
+           (_ (helper p)))))
+      (_ (helper (.parent o)))))
+
+  (match o
+    (($ <if>) (let ((then (.then o))
+                    (else (.else o)))
+                (list then
+                      (or else
+                          (car (helper o))))))
+    (_ (helper o))))
