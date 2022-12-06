@@ -316,6 +316,7 @@ REGRESSION_TESTS =				\
  %D%/hello_function_local			\
  %D%/hello_function_local_nest			\
  %D%/hello_functions_local			\
+ %D%/hello_function_nest			\
  %D%/hello_function_void_bool_if		\
  %D%/hello_functions				\
  %D%/hello_garbage				\
