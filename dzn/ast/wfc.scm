@@ -855,21 +855,20 @@
 (define-method (tail-recursion (o <call>))
   (let ((function (ast:parent o <function>)))
     (if (or (not function) (not (.recursive? function))) '()
-        (let* ((continuation ((compose car wfc:continuation) o))
-               (continuation (if (or (ast:parent o <assign>)
-                                     (ast:parent o <reply>)
-                                     (ast:parent o <return>)
-                                     (ast:parent o <variable>))
-                                 ((compose car (@@ (dzn code language makreel) makreel:continuation)) continuation)
-                                 continuation))
-               (continuation (and continuation
-                                  (not (ast:eq? continuation (.statement (ast:parent o <function>))))
+        (let* ((assign (or (ast:parent o <assign>)
+                           (ast:parent o <return>)
+                           (ast:parent o <variable>)))
+               (continuation ((compose car ast:continuation*) o))
+               (function (ast:parent o <function>))
+               (statement (.statement function))
+               (continuation (and (not (ast:eq? continuation statement))
                                   continuation)))
-          (cond ((is-a? continuation <return>)
+          (cond (assign
                  `(,(wfc-error o "cannot use valued function in recursion")
+                   ,(wfc-info assign "statement after call")))
+                (continuation
+                 `(,(wfc-error o "cannot use statement after recursive call")
                    ,(wfc-info continuation "statement after call")))
-                (continuation `(,(wfc-error o "cannot use statement after recursive call")
-                                ,(wfc-info continuation "statement after call")))
                 (else '()))))))
 
 (define-method (mixing-declarative-imperative (o <compound>))
@@ -1213,7 +1212,7 @@
      (else
       (run continuation))))
   (define (run o)
-    (let ((continuations (wfc:continuation o)))
+    (let ((continuations (ast:continuation* o)))
       (if (is-a? o <if>)
           (append-map (cute step o <>) continuations)
           (step o (car continuations)))))
@@ -1282,13 +1281,6 @@
       (let ((class (if (equal? class "compound") "imperative compound" class)))
         `(,(wfc-error o (format #f "~a outside on" class)))))
      (else '()))))
-
-(define-method (wfc:continuation (o <ast>))
-  ((@@ (dzn code language makreel) makreel:continuation) o))
-
-(define-method (wfc:continuation (o <if>))
-  (append ((@@ (dzn code language makreel) makreel:then-continuation) o)
-          ((@@ (dzn code language makreel) makreel:else-continuation) o)))
 
 (define-method (recursive? (o <system>))
   (ast:graph-cyclic? ast:system* o))
