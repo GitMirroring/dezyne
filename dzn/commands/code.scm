@@ -54,7 +54,6 @@
 (define (parse-opts args)
   (let* ((option-spec
           '((calling-context (single-char #\c) (value #t))
-            (debug (single-char #\d))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (init (value #t))
