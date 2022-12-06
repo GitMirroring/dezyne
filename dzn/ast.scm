@@ -669,7 +669,9 @@
    ((as o <subint>)
     (map (cute make <literal> #:value <>)
          (iota (1+ (- (.to (.range o)) (.from (.range o))))
-               (.from (.range o)))))))
+               (.from (.range o)))))
+   ((as o <int>)
+    (list (make <literal> #:value 0)))))
 
 (define-method (ast:values (o <type>))
   (ast:values o #f))
