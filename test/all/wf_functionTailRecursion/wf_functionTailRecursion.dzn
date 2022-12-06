@@ -140,3 +140,17 @@ interface Intf7
     on hello: g ();
   }
 }
+
+interface Intf8
+{
+  in bool hello ();
+  behavior
+  {
+    void f ()
+    {
+      f ();
+    }
+
+    on hello: f ();
+  }
+}
