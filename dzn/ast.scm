@@ -53,6 +53,7 @@
             ast:dotted-name
             ast:expression->type
             ast:external?
+            ast:false
             ast:filter-model
             ast:formal->index
             ast:full-scope
@@ -108,6 +109,7 @@
             ast:source-file
             ast:system*
             ast:topological-model-sort
+            ast:true
             ast:type
             ast:typed?
             ast:value
@@ -170,13 +172,14 @@
 ;;;
 ;;; Predicates.
 ;;;
-(define-method (ast:literal-true? (e <ast>))
-  (and (is-a? e <literal>)
-       (equal? (.value e) "true")))
+(define ast:true (make <literal> #:value "true"))
+(define ast:false (make <literal> #:value "false"))
 
-(define-method (ast:literal-false? (e <ast>))
-  (and (is-a? e <literal>)
-       (equal? (.value e) "false")))
+(define-method (ast:literal-true? (o <ast>))
+  (ast:equal? o ast:true))
+
+(define-method (ast:literal-false? (o <ast>))
+  (ast:equal? o ast:false))
 
 (define-method (ast:declarative? (o <declarative>))
   #t)
