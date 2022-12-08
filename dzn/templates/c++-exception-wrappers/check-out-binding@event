@@ -1,1 +1,1 @@
-../c++/check-out-binding@event
+if (! #.direction .#.name) throw dzn::binding_error(meta, "#.direction .#.name");

@@ -1,1 +1,3 @@
-../c++/expand-on@compound
+{
+#x:expand-statement
+}

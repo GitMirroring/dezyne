@@ -1,1 +1,1 @@
-../c++/default-true@defer
+return true;

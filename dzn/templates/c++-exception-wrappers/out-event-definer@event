@@ -1,1 +1,1 @@
-../c++/out-event-definer@event
+std::function< #x:type-name (#x:formals-type)> #.name;

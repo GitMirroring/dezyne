@@ -1,1 +1,1 @@
-../c++/statement@assign
+#x:variable-name  = #x:expression;

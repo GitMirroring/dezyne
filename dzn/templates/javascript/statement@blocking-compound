@@ -1,1 +1,4 @@
-../c++/statement@blocking-compound
+{
+ #x:expand-statement
+ #x:block
+}

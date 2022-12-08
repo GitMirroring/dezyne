@@ -1,1 +1,1 @@
-../dzn/expression@or
+#x:left  || #x:right
