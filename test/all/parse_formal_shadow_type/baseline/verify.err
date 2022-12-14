@@ -1,2 +1,1 @@
-test/all/parse_formal_shadow_type/parse_formal_shadow_type.dzn:29:17: error: identifier `data' defined before
-test/all/parse_formal_shadow_type/parse_formal_shadow_type.dzn:25:1: info: previous `data' definition here
+test/all/parse_formal_shadow_type/parse_formal_shadow_type.dzn:29:17: error: formal parameter data must not have the same name as its type

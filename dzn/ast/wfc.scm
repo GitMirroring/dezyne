@@ -293,10 +293,11 @@
     =>
     (lambda (ast)
       (let* ((count (length (ast:formal* o)))
-             (event (.event ast)))
+             (event (.event ast))
+             (formals (ast:formal* o)))
         (append
-         (let* ((formals (ast:formal* o))
-                (formal-bindings (filter (is? <formal-binding>) formals)))
+         (map wfc formals)
+         (let ((formal-bindings (filter (is? <formal-binding>) formals)))
            (append-map wfc formal-bindings))
          (if (not event) '()
              (let* ((formals (ast:formal* event))
@@ -316,6 +317,14 @@
 
 (define-method (wfc (o <formal>))
   (append
+   (if (ast:name-equal? (.type.name o) (.name o))
+       `(,(wfc-error
+           o
+           (format
+            #f
+            "formal parameter ~a must not have the same name as its type"
+            (.name o))))
+       '())
    (re-definition o)
    (let ((type (ast:type o))
          (event (ast:parent o <event>)))
@@ -847,25 +856,32 @@
           '())))
 
 (define-method (re-definition (o <declaration>))
-  (let* ((name (ast:name o))
-         (scope (ast:parent o <scope>)))
-    (define (get-previous scope)
-      (let ((previous (and scope (ast:lookup scope name))))
-        (cond ((not (ast:eq? previous o))
-               previous)
-              (else
-               (get-previous (ast:parent scope <scope>))))))
-    (let* ((previous (get-previous scope))
-           (previous-scope (and previous (ast:parent previous <scope>))))
-      (if (and previous
-               (or (ast:eq? scope previous-scope)
-                   (and (is-a? previous <type>)
-                        (not (is-a? o <type>))))
-               (not (ast:eq? previous o))
-               (not (is-a? previous <namespace>)))
-          `(,(wfc-error o (format #f "identifier `~a' defined before" (ast:name o)))
-            ,(wfc-info previous (format #f "previous `~a' definition here" (ast:name previous))))
-          '()))))
+  (re-definition-error o (previous-definition o)))
+
+(define-method (re-definition (o <extern>))
+  (re-definition-error o (previous-definition-unshadowed o)))
+
+(define-method (re-definition (o <model>))
+  (re-definition-error o (previous-definition-unshadowed o)))
+
+(define-method (previous-definition (o <declaration>))
+  "Allow shadowing, but not in the same scope"
+  (let* ((name (ast:name o)))
+    (ast:lookup (ast:parent o <scope>) name)))
+
+(define (previous-definition-unshadowed o)
+  "Disallow shadowing altogether"
+  (let* ((name (ast:name o)))
+    (ast:lookup (ast:parent o <root>) name)))
+
+(define (re-definition-error o previous)
+  (if (or (not previous)
+          (ast:eq? o previous)
+          (not (equal? (ast:full-name o) (ast:full-name previous)))) '()
+          `(,(wfc-error o (format #f "identifier `~a' defined before"
+                                  (ast:name o)))
+        ,(wfc-info previous (format #f "previous `~a' definition here"
+                                    (ast:name previous))))))
 
 (define-method (assign (o <ast>))
   (or (as (wfc (.expression o)) <pair>)
