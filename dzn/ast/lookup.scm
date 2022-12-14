@@ -190,16 +190,12 @@
 ;;;
 ;;; Lookup.
 ;;;
-(define (search-import-unmemoized root scope name import)
+(define (search-import scope name import)
   (let* ((file-name (.name import))
          (ast       (and file-name ((%file-name->ast) file-name))))
     (and ast (search-or-widen-context scope name ast))))
 
-(define (search-import scope name import)
-  (let ((root (ast:parent import <root>)))
-    ((ast:pure-funcq search-import-unmemoized) root scope name import)))
-
-(define (search-unmemoized root scope name context)
+(define (search scope name context)
   (let* ((global? (and (pair? scope) (equal? "/" (car scope))))
          (scope (if (not (and global? (is-a? context <root>))) scope
                     (filter (match-lambda ("/" #f) (o o)) scope)))
@@ -217,11 +213,7 @@
            ((scope tail ...)
             (any (cute search tail name <>) found))))))
 
-(define (search scope name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((ast:pure-funcq search-unmemoized) root scope name context)))
-
-(define (widen-to-parent-unmemoized root scope name context)
+(define (widen-to-parent scope name context)
   (let ((parent (ast:parent context <scope>)))
     (and parent
          (let* ((scope-name (and=> (as context <named>) .name))
@@ -229,30 +221,22 @@
            (or (search-or-widen-context scope name parent)
                (search-or-widen-context scope+ name parent))))))
 
-(define (widen-to-parent scope name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((ast:pure-funcq widen-to-parent-unmemoized) root scope name context)))
-
-(define (widen-to-imports-unmemoized root scope name context)
+(define (widen-to-imports scope name context)
   (and context (is-a? context <root>)
        (let ((imports (ast:import* context)))
          (any (cute search-import scope name <>) imports))))
-
-(define (widen-to-imports scope name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((ast:pure-funcq widen-to-imports-unmemoized) root scope name context)))
 
 (define (search-or-widen-context scope name context)
   (or (search scope name context)
       (widen-to-parent scope name context)
       (widen-to-imports scope name context)))
 
-(define (ast:lookup-list-unmemoized root name context)
+(define (ast:lookup-unmemoized root name context)
   "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a context? or
 null) and return its CONTEXT."
   (cond
    ((not context)
-    '())
+    #f)
    ((ast:name-equal? name (.name ast:bool))
     ast:bool)
    ((ast:name-equal? name (.name ast:int))
@@ -265,17 +249,11 @@ null) and return its CONTEXT."
            (name scope (ast:name+scope name)))
       (search-or-widen-context scope name context)))))
 
-(define (ast:lookup-list name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((ast:pure-funcq ast:lookup-list-unmemoized) root name context)))
-
-(define-method (ast:lookup context name)
-  (let ((scope (or (as context <scope>)
-                   (ast:parent context <scope>))))
-    (match (ast:lookup-list name scope)
-      (() #f)
-      (ast ast))))
-
+(define ast:lookup-memoized (ast:pure-funcq ast:lookup-unmemoized))
+(define-method (ast:lookup (context <ast>) name)
+  (let* ((context (or (as context <scope>) (ast:parent context <scope>)))
+         (root (or (as context <root>) (ast:parent context <root>))))
+    (ast:lookup-memoized root name context)))
 (define-method (ast:lookup name)
   (ast:lookup name name))
 
@@ -315,14 +293,15 @@ null) and return its CONTEXT."
     (_
      (ast:lookup-variable (.parent o) name statements))))
 
-(define (ast:lookup-variable- root o name)
-  (ast:lookup-variable o name (ast:statement-prefix o)))
-
-(define-method (ast:lookup-variable (o <ast>) name)
-  ((ast:pure-funcq ast:lookup-variable-) (ast:parent o <root>) o name))
-
 (define-method (ast:lookup-variable (o <boolean>) name)
   #f)
+
+(define (ast:lookup-variable-unmemoized root o name)
+  (ast:lookup-variable o name (ast:statement-prefix o)))
+
+(define ast:lookup-variable-memoized (ast:pure-funcq ast:lookup-variable-unmemoized))
+(define-method (ast:lookup-variable (o <ast>) name)
+  (ast:lookup-variable-memoized (ast:parent o <root>) o name))
 
 
 ;;;
