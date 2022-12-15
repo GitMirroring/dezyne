@@ -34,7 +34,8 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages maths)
-  #:use-module (gnu packages pkg-config))
+  #:use-module (gnu packages pkg-config)
+  #:use-module (pack scmackerel))
 
 (define %source-dir (getcwd))
 
@@ -60,6 +61,7 @@
                   guile-json-4
                   guile-readline
                   mcrl2-minimal
+                  scmackerel
                   sed))
     (native-inputs (list guile-3.0-latest pkg-config))
     (build-system gnu-build-system)
@@ -87,6 +89,7 @@
                      (json (assoc-ref %build-inputs "guile-json"))
                      (mcrl2 (assoc-ref %build-inputs "mcrl2-minimal"))
                      (readline (assoc-ref %build-inputs "guile-readline"))
+                     (scmackerel (assoc-ref %build-inputs "scmackerel"))
                      (sed (assoc-ref %build-inputs "sed"))
                      (effective (read
                                  (open-pipe* OPEN_READ
@@ -100,12 +103,14 @@
                      (scm-path
                       (list (string-append out scm-dir)
                             (string-append json scm-dir)
-                            (string-append readline scm-dir)))
+                            (string-append readline scm-dir)
+                            (string-append scmackerel scm-dir)))
                      (go-dir (string-append "/lib/guile/" effective
                                             "/site-ccache/"))
                      (go-path (list (string-append out go-dir)
                                     (string-append json go-dir)
-                                    (string-append readline go-dir))))
+                                    (string-append readline go-dir)
+                                    (string-append scmackerel go-dir))))
                 (wrap-program (string-append out "/bin/dzn")
                   `("PATH" ":" prefix ,path)
                   `("GUILE_AUTO_COMPILE" ":" = ("0"))
