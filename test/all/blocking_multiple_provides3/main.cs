@@ -45,10 +45,9 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
-    using(blocking_multiple_provides3 sut = new blocking_multiple_provides3 (locator))
+    using (blocking_multiple_provides3 sut
+      = new blocking_multiple_provides3 (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
-
       sut.r.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.mp.r.hello -> <external>.r.hello");

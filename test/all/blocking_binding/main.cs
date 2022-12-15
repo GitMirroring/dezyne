@@ -61,11 +61,9 @@ class main
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
-    blocking_binding sut = new blocking_binding (locator);
+    blocking_binding sut = new blocking_binding (locator, "sut");
     dzn.pump pump = new dzn.pump ();
     locator.set (pump);
-
-    sut.dzn_meta.name = "sut";
 
     sut.h.meta.require.name = "h";
     sut.h.meta.require.port = sut.h;

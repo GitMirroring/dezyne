@@ -55,9 +55,9 @@ class main
     }
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
-    using(blocking_shell sut = new blocking_shell (locator.set (runtime)))
+    locator.set (runtime);
+    using (blocking_shell sut = new blocking_shell (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
       sut.p.meta.require.name = "p";
       sut.r.meta.provide.name = "r";
 

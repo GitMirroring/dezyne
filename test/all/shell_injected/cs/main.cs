@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu..org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -74,7 +73,12 @@ class main {
       Debug.AutoFlush = true;
     }
     bool flush = Array.Exists(args, s => s == "--flush");
-    using(dzn.container<shell_injected> c = new dzn.container<shell_injected>((loc,name)=>{return new shell_injected(loc,name);}, flush)) {
+    using (dzn.container<shell_injected> c
+      = new dzn.container<shell_injected>((loc,name)=>
+      {
+        return new shell_injected(loc,name);
+      }, flush))
+    {
       connect_ports (c);
       c.run(event_map (c));
     }

@@ -32,8 +32,8 @@ class main
   {
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
-    calling_context sut = new calling_context (locator.set (runtime));
-    sut.dzn_meta.name = "sut";
+    locator.set (runtime);
+    calling_context sut = new calling_context (locator, "sut");
     sut.h.meta.require.name = "h";
     sut.w.meta.provide.name = "w";
 

@@ -41,7 +41,7 @@ class main
     unbound_in_event.p.out_port.world = () => {};
     try
     {
-      unbound_in_event.check_bindings ();
+      unbound_in_event.dzn_check_bindings ();
     }
     catch (dzn.binding_error e)
     {
@@ -53,7 +53,7 @@ class main
     unbound_out_event.r.in_port.hello = () => {};
     try
     {
-      unbound_out_event.check_bindings ();
+      unbound_out_event.dzn_check_bindings ();
     }
     catch (dzn.binding_error e)
     {
@@ -66,7 +66,7 @@ class main
     no_unbound_events.r.in_port.hello = () => {};
     try
     {
-      no_unbound_events.check_bindings ();
+      no_unbound_events.dzn_check_bindings ();
     }
     catch (dzn.binding_error e)
     {

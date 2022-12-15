@@ -60,11 +60,9 @@ class main
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
-    defer_data sut = new defer_data (locator);
+    defer_data sut = new defer_data (locator, "sut");
     dzn.pump pump = new dzn.pump ();
     locator.set (pump);
-
-    sut.dzn_meta.name = "sut";
 
     sut.h.meta.require.name = "h";
     sut.h.meta.require.port = sut.h;

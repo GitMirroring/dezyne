@@ -1,5 +1,0 @@
-lookup.Add("#.name .<flush>",()=>{
-  c.match("#.name .<flush>");
-  System.Console.Error.WriteLine("#.name .<flush>");
-  c.dzn_runtime.flush(c);
-});

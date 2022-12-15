@@ -1,3 +1,0 @@
-lookup.Add("#.port .#.other",()=>{
-  dzn.pump.port_release(c.dzn_locator, c.system, c.system.#.port);
-});

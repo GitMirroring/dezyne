@@ -50,9 +50,9 @@ class main
 
     bool once = true;
 
-    using(collateral_blocking_reorder sut = new collateral_blocking_reorder (locator))
+    using (collateral_blocking_reorder sut
+      = new collateral_blocking_reorder (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
       sut.r.meta.require.name = "r";
       sut.e.meta.require.name = "e";
 

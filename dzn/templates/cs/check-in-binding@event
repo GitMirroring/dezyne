@@ -1,1 +1,0 @@
-if (this.#.direction _port.#.name  == null) throw new dzn.binding_error(this.meta, "#.direction _port.#.name");

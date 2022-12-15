@@ -39,6 +39,7 @@
   #:use-module (dzn vm goops)
 
   #:export (%calling-context
+            %language
             %member-prefix
             %name-infix
             %no-constraint?
@@ -107,6 +108,9 @@
 
 ;; The calling-context to insert.
 (define %calling-context (make-parameter #f))
+
+;; The output language.
+(define %language (make-parameter "c++"))
 
 ;; Prefix for member variable.
 (define %member-prefix (make-parameter "this->"))
@@ -273,6 +277,7 @@
 (define-method (code:event-name (o <event>))
   (string-append
    (code:direction o)
+   (match (%language) ("cs" "_port") (_ ""))
    "."
    (.name o)))
 

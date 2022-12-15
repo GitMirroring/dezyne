@@ -1,3 +1,0 @@
-#.port.name .#.event.direction _port.#.event.name  = (#x:formal-parameter)=>{
-  this.pump.execute(()=>{#x:instance-name .#x:instance-port-name .#.event.direction _port.#.event.name(#x:code-arguments);});
-};

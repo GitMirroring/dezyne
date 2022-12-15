@@ -34,9 +34,9 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
-    using(collateral_blocking_shell sut = new collateral_blocking_shell (locator))
+    using (collateral_blocking_shell sut
+      = new collateral_blocking_shell (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
       sut.w0.meta.require.name = "w0";
       sut.w0.meta.require.port = sut.w0;
       sut.w1.meta.require.name = "w1";

@@ -36,12 +36,6 @@ else
 dist_noinst_DATA += %D%/c++-exception-wrappers.scm
 endif
 
-if have_cs
-dist_nocompile_%C%_scm_DATA += %D%/cs.scm
-else
-dist_noinst_DATA += %D%/cs.scm
-endif
-
 if have_c99
 dist_nocompile_%C%_scm_DATA += %D%/c.scm
 else
@@ -73,7 +67,6 @@ EXTRA_DIST +=					\
  %D%/README					\
  %D%/c						\
  %D%/c++-exception-wrappers			\
- %D%/cs						\
  %D%/dot					\
  %D%/javascript					\
  %D%/json					\

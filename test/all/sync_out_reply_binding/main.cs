@@ -60,9 +60,7 @@ class main
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
-    sync_out_reply_binding sut = new sync_out_reply_binding (locator);
-
-    sut.dzn_meta.name = "sut";
+    sync_out_reply_binding sut = new sync_out_reply_binding (locator, "sut");
 
     sut.h.meta.require.name = "h";
     sut.h.meta.require.port = sut.h;

@@ -33,6 +33,12 @@ else
 dist_noinst_DATA += %D%/c++.scm
 endif
 
+if have_cs
+dist_%C%_scm_DATA += %D%/cs.scm
+else
+dist_noinst_DATA += %D%/cs.scm
+endif
+
 %C%_scmdir = $(guilemoduledir)/%D%
 nocompile_%C%_scmdir = $(%C%_scmdir)
 %C%_godir = $(guileobjectdir)/%D%

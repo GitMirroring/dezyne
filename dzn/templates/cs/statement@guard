@@ -1,4 +1,0 @@
-if (#x:expression) {
- #x:expand-statement
-}
-else

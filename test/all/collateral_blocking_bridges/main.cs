@@ -47,10 +47,9 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
-    using(collateral_blocking_bridges sut = new collateral_blocking_bridges (locator))
+    using (collateral_blocking_bridges sut
+      = new collateral_blocking_bridges (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
-
       sut.top_w.meta.provide.name = "top_w";
       sut.top_w.meta.provide.port = sut.top_w;
 

@@ -36,9 +36,9 @@ class main
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
-    using (blocking_system_diamond sut = new blocking_system_diamond (locator))
+    using (blocking_system_diamond sut
+      = new blocking_system_diamond (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
       sut.r_left.meta.provide.name = "r_left";
       sut.r_left.meta.provide.port = sut.r_left;
       sut.r_right.meta.provide.name = "r_right";

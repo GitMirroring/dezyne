@@ -1,3 +1,0 @@
-#.name  = new #x:global-type-name(locator, "#.name", this.dzn_meta);
-locator = locator.clone().set(#.name .#x:port-name);
-#.name .#x:port-name .meta.require.name = "#x:port-name";

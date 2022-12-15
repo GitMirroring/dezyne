@@ -46,9 +46,9 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
-    using(collateral_blocking_reorder_parallel sut = new collateral_blocking_reorder_parallel (locator))
+    using (collateral_blocking_reorder_parallel sut
+      = new collateral_blocking_reorder_parallel (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
       sut.eleft.meta.require.name = "eleft";
       sut.eright.meta.require.name = "eright";
       sut.rleft.meta.require.name = "rleft";

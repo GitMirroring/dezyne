@@ -33,10 +33,9 @@ class main
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     locator.set (runtime);
-    using(blocking_double_release sut = new blocking_double_release (locator))
+    using (blocking_double_release sut
+      = new blocking_double_release (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
-
       System.Threading.Thread f0 = new System.Threading.Thread (() =>
       {
          sut.block0.in_port.hello ();

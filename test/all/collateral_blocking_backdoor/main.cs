@@ -36,9 +36,9 @@ class main
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
-    using (collateral_blocking_backdoor sut = new collateral_blocking_backdoor (locator))
+    using (collateral_blocking_backdoor sut
+      = new collateral_blocking_backdoor (locator, "sut"))
     {
-      sut.dzn_meta.name = "sut";
       sut.w.meta.provide.name = "w";
       sut.w.meta.provide.port = sut.w;
 

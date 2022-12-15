@@ -1,6 +1,0 @@
-#x:open-namespace
-public enum #ast:name
-{
-  #x:enum-field-definer
-};
-#x:close-namespace

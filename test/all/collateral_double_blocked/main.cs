@@ -47,11 +47,10 @@ class main
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
-    collateral_double_blocked sut = new collateral_double_blocked (locator);
+    collateral_double_blocked sut
+      = new collateral_double_blocked (locator, "sut");
     dzn.pump pump = new dzn.pump ();
     locator.set (pump);
-
-    sut.dzn_meta.name = "sut";
 
     sut.left.meta.require.name = "left";
     sut.left.meta.require.port = sut.left;
