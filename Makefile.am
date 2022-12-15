@@ -67,7 +67,7 @@ do_subst = sed						\
 
 AM_V_SED = $(AM_V_SED_@AM_V@)
 AM_V_SED_ = $(AM_V_SED_@AM_DEFAULT_V@)
-AM_V_SED_0 = @echo "  SED" $@;
+AM_V_SED_0 = @echo "  SED     " $@;
 
 bin/%: bin/%.in Makefile
 	$(AM_V_SED)$(do_subst) < $< > $@
@@ -108,7 +108,7 @@ GUILEC_FLAGS =					\
 
 AM_V_GUILEC = $(AM_V_GUILEC_@AM_V@)
 AM_V_GUILEC_ = $(AM_V_GUILEC_@AM_DEFAULT_V@)
-AM_V_GUILEC_0 = @echo "  GUILEC" $@;
+AM_V_GUILEC_0 = @echo "  GUILEC  " $@;
 
 %.go:	%.scm
 	$(AM_V_GUILEC)GUILE_AUTO_COMPILE=0				\
