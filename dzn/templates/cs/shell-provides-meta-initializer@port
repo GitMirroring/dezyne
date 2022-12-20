@@ -1,1 +1,1 @@
-#x:instance-name .#x:instance-port-name .dzn_meta.requires.name = "#.name";
+#x:instance-name .#x:instance-port-name .meta.require.name = "#.name";

@@ -67,16 +67,16 @@ class main
 
     sut.dzn_meta.name = "sut";
 
-    sut.h.dzn_meta.requires.name = "h";
-    sut.h.dzn_meta.requires.port = sut.h;
+    sut.h.meta.require.name = "h";
+    sut.h.meta.require.port = sut.h;
 
-    sut.w.dzn_meta.provides.name = "w";
-    sut.w.dzn_meta.provides.port = sut.w;
+    sut.w.meta.provide.name = "w";
+    sut.w.meta.provide.port = sut.w;
 
-    sut.w.inport.hello = () =>
+    sut.w.in_port.hello = () =>
     {
-      dzn.Runtime.traceIn (sut.w.dzn_meta, "hello");
-      dzn.Runtime.traceOut (sut.w.dzn_meta, "return");
+      dzn.Runtime.trace (sut.w.meta, "hello");
+      dzn.Runtime.trace_out (sut.w.meta, "return");
     };
 
     string trace = read ();
@@ -86,11 +86,11 @@ class main
     {
       int v = 0;
       pump.execute (() => {
-        sut.h.inport.hello (ref v);
+        sut.h.in_port.hello (ref v);
         Console.Error.WriteLine("v=" + v);
         Debug.Assert (v == 456);
       });
-      pump.execute (() => sut.w.outport.world ());
+      pump.execute (() => sut.w.out_port.world ());
     }
     else
       throw (new dzn.runtime_error ("missing trace"));

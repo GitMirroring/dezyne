@@ -54,19 +54,19 @@ class main
 
     sut.dzn_meta.name = "sut";
 
-    sut.block.dzn_meta.requires.name = "block";
-    sut.block.dzn_meta.requires.port = sut.block;
+    sut.block.meta.require.name = "block";
+    sut.block.meta.require.port = sut.block;
 
-    sut.release.dzn_meta.requires.name = "release";
-    sut.release.dzn_meta.requires.port = sut.release;
+    sut.release.meta.require.name = "release";
+    sut.release.meta.require.port = sut.release;
 
-    sut.w.dzn_meta.provides.name = "w";
-    sut.w.dzn_meta.provides.port = sut.w;
+    sut.w.meta.provide.name = "w";
+    sut.w.meta.provide.port = sut.w;
 
-    sut.w.inport.hello = () =>
+    sut.w.in_port.hello = () =>
     {
-      dzn.Runtime.traceIn (sut.w.dzn_meta, "hello");
-      dzn.Runtime.traceOut (sut.w.dzn_meta, "return");
+      dzn.Runtime.trace (sut.w.meta, "hello");
+      dzn.Runtime.trace_out (sut.w.meta, "return");
     };
 
     string trace = read ();
@@ -74,21 +74,21 @@ class main
     // trace
     else if (trace == "block.hello\nw.hello\nw.return\nrelease.hello\nw.hello\nw.return\nrelease.return\nrelease.hello\nrelease.return\nblock.return")
     {
-      pump.execute (() => sut.block.inport.hello ());
-      pump.execute (() => {sut.release.inport.hello (); sut.release.inport.hello ();});
+      pump.execute (() => sut.block.in_port.hello ());
+      pump.execute (() => {sut.release.in_port.hello (); sut.release.in_port.hello ();});
     }
     else if (trace == "block.hello\nw.hello\nw.return\nrelease.hello\nw.hello\nw.return\nrelease.return\nblock.return")
     {
-      pump.execute (() => sut.block.inport.hello ());
-      pump.execute (() => sut.release.inport.hello ());
+      pump.execute (() => sut.block.in_port.hello ());
+      pump.execute (() => sut.release.in_port.hello ());
     }
     else if (trace == "block.hello\nw.hello\nw.return\nw.world\nblock.return")
     {
-      pump.execute (() => sut.block.inport.hello ());
-      pump.execute (() => sut.w.outport.world ());
+      pump.execute (() => sut.block.in_port.hello ());
+      pump.execute (() => sut.w.out_port.world ());
     }
     else if (trace == "release.hello\nrelease.return")
-      pump.execute (() => sut.release.inport.hello ());
+      pump.execute (() => sut.release.in_port.hello ());
     else
       throw (new dzn.runtime_error ("missing trace"));
 

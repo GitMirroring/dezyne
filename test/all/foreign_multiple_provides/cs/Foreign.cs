@@ -24,6 +24,6 @@
 
 public partial class Foreign
 {
-  public void h0_hello () {h0.outport.world ();}
-  public void h1_hello () {h1.outport.world ();}
+  public void h0_hello () {h0.out_port.world ();}
+  public void h1_hello () {h1.out_port.world ();}
 }

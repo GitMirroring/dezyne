@@ -1,5 +1,5 @@
     this.#.name  = new #x:non-primitive #x:port-type ();
-    this.#.name .dzn_meta.requires.name = "#.name";
-    this.#.name .dzn_meta.provides.port = this.#.name;
-    this.#.name .dzn_meta.requires.meta = this.dzn_meta;
-    this.#.name .dzn_meta.requires.component = this;
+    this.#.name .meta.require.name = "#.name";
+    this.#.name .meta.provide.port = this.#.name;
+    this.#.name .meta.require.meta = this.dzn_meta;
+    this.#.name .meta.require.component = this;

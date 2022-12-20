@@ -65,45 +65,45 @@ class main {
     dzn.Locator locator = new dzn.Locator();
     dzn.Runtime runtime = new dzn.Runtime();
     data_full sut = new data_full(locator.set(runtime), "sut");
-    sut.port.dzn_meta.requires.name = "port";
-    sut.port.dzn_meta.requires.component = null;
+    sut.port.meta.require.name = "port";
+    sut.port.meta.require.component = null;
 
-    sut.port.outport.a0 = () => {a0();};
-    sut.port.outport.a = (int p) => {a(p);};
-    sut.port.outport.aa = (int p0, int p1) => {aa(p0, p1);};
-    sut.port.outport.a6 = (int p0, int p1, int p2, int p3, int p4, int p5) => {a6(p0, p1, p2, p3, p4, p5);};
+    sut.port.out_port.a0 = () => {a0();};
+    sut.port.out_port.a = (int p) => {a(p);};
+    sut.port.out_port.aa = (int p0, int p1) => {aa(p0, p1);};
+    sut.port.out_port.a6 = (int p0, int p1, int p2, int p3, int p4, int p5) => {a6(p0, p1, p2, p3, p4, p5);};
 
-    assert(Idata_full.Status.Yes == sut.port.inport.e0r());
-    sut.port.inport.e0();
-    assert(Idata_full.Status.Yes == sut.port.inport.er(123));
-    sut.port.inport.e(123);
-    assert(Idata_full.Status.No == sut.port.inport.eer(123,345));
+    assert(Idata_full.Status.Yes == sut.port.in_port.e0r());
+    sut.port.in_port.e0();
+    assert(Idata_full.Status.Yes == sut.port.in_port.er(123));
+    sut.port.in_port.e(123);
+    assert(Idata_full.Status.No == sut.port.in_port.eer(123,345));
 
     int i = 0;
-    sut.port.inport.eo(out i);
+    sut.port.in_port.eo(out i);
     assert(i == 234);
 
     int j = 0;
-    sut.port.inport.eoo(out i,out j);
+    sut.port.in_port.eoo(out i,out j);
     assert(i == 123 && j == 456);
 
-    sut.port.inport.eio(i,out j);
+    sut.port.in_port.eio(i,out j);
     assert(i == 123 && j == i);
 
-    sut.port.inport.eio2(ref i);
+    sut.port.in_port.eio2(ref i);
     assert(i == 246);
 
 
-    assert(Idata_full.Status.Yes == sut.port.inport.eor(out i));
+    assert(Idata_full.Status.Yes == sut.port.in_port.eor(out i));
     assert(i == 234);
 
-    assert(Idata_full.Status.Yes == sut.port.inport.eoor(out i,out j));
+    assert(Idata_full.Status.Yes == sut.port.in_port.eoor(out i,out j));
     assert(i == 123 && j == 456);
 
-    assert(Idata_full.Status.Yes == sut.port.inport.eior(i,out j));
+    assert(Idata_full.Status.Yes == sut.port.in_port.eior(i,out j));
     assert(i == 123 && j == i);
 
-    assert(Idata_full.Status.Yes == sut.port.inport.eio2r(ref i));
+    assert(Idata_full.Status.Yes == sut.port.in_port.eio2r(ref i));
     assert(i == 246);
   }
 }

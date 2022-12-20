@@ -32,11 +32,11 @@ class main {
     locator.set(runtime);
 
     var sut = new foreign_requires (locator, "sut");
-    sut.c.w0.inport.hello = () => {
+    sut.c.w0.in_port.hello = () => {
         System.Console.Error.WriteLine("<external>.w0.hello -> sut.c.w0.world");
         System.Console.Error.WriteLine("<external>.w0.return <- sut.c.w0.return");
     };
-    sut.c.w1.inport.hello = () => {
+    sut.c.w1.in_port.hello = () => {
         System.Console.Error.WriteLine("<external>.w1.hello -> sut.c.w1.world");
         System.Console.Error.WriteLine("<external>.w1.return <- sut.c.w1.return");
     };

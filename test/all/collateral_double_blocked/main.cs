@@ -53,22 +53,22 @@ class main
 
     sut.dzn_meta.name = "sut";
 
-    sut.left.dzn_meta.requires.name = "left";
-    sut.left.dzn_meta.requires.port = sut.left;
+    sut.left.meta.require.name = "left";
+    sut.left.meta.require.port = sut.left;
 
-    sut.middle.dzn_meta.requires.name = "middle";
-    sut.middle.dzn_meta.requires.port = sut.middle;
+    sut.middle.meta.require.name = "middle";
+    sut.middle.meta.require.port = sut.middle;
 
-    sut.right.dzn_meta.requires.name = "right";
-    sut.right.dzn_meta.requires.port = sut.right;
+    sut.right.meta.require.name = "right";
+    sut.right.meta.require.port = sut.right;
 
-    sut.r.dzn_meta.provides.name = "r";
-    sut.r.dzn_meta.provides.port = sut.r;
+    sut.r.meta.provide.name = "r";
+    sut.r.meta.provide.port = sut.r;
 
-    sut.r.inport.hello = () =>
+    sut.r.in_port.hello = () =>
     {
-      dzn.Runtime.traceIn (sut.r.dzn_meta, "hello");
-      dzn.Runtime.traceOut (sut.r.dzn_meta, "return");
+      dzn.Runtime.trace (sut.r.meta, "hello");
+      dzn.Runtime.trace_out (sut.r.meta, "return");
     };
 
     // Let's pick just one trace of the 8 traces...
@@ -77,15 +77,15 @@ class main
     // trace
     else if (trace == "left.hello\nr.hello\nr.return\nmiddle.hello\nleft.return\nr.world\nmiddle.return")
     {
-      pump.execute (() => sut.left.inport.hello ());
-      pump.execute (() => sut.middle.inport.hello ());
-      pump.execute (() => sut.r.outport.world ());
+      pump.execute (() => sut.left.in_port.hello ());
+      pump.execute (() => sut.middle.in_port.hello ());
+      pump.execute (() => sut.r.out_port.world ());
     }
     else if (trace == "middle.hello\nr.hello\nr.return\nleft.hello\nmiddle.return\nr.world\nleft.return")
     {
-      pump.execute (() => sut.middle.inport.hello ());
-      pump.execute (() => sut.left.inport.hello ());
-      pump.execute (() => sut.r.outport.world ());
+      pump.execute (() => sut.middle.in_port.hello ());
+      pump.execute (() => sut.left.in_port.hello ());
+      pump.execute (() => sut.r.out_port.world ());
     }
     else
       throw (new dzn.runtime_error ("missing trace"));

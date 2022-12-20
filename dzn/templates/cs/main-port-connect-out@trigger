@@ -1,4 +1,4 @@
-c.system.#.port.name .outport.#.event.name  = (#x:formal-parameter) => {
+c.system.#.port.name .out_port.#.event.name  = (#x:formal-parameter) => {
   c.match("#.port.name .#.event.name");
   c.dzn_runtime.call_out(c, () => {
     if(c.flush) c.dzn_runtime.queue(c).Enqueue(() => {

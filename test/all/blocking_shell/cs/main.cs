@@ -58,72 +58,72 @@ class main
     using(blocking_shell sut = new blocking_shell (locator.set (runtime)))
     {
       sut.dzn_meta.name = "sut";
-      sut.p.dzn_meta.requires.name = "p";
-      sut.r.dzn_meta.provides.name = "r";
+      sut.p.meta.require.name = "p";
+      sut.r.meta.provide.name = "r";
 
       int output = 0;
 
       Dictionary<String, Action> provides = new Dictionary<String, Action> ();
-      provides.Add ("p.hello_void", ()=>{sut.p.inport.hello_void ();});
-      provides.Add ("p.hello_bool", ()=>{sut.p.inport.hello_bool ();});
-      provides.Add ("p.hello_int", ()=>{sut.p.inport.hello_int ();});
-      provides.Add ("p.hello_enum", ()=>{sut.p.inport.hello_enum (123, out output);});
+      provides.Add ("p.hello_void", ()=>{sut.p.in_port.hello_void ();});
+      provides.Add ("p.hello_bool", ()=>{sut.p.in_port.hello_bool ();});
+      provides.Add ("p.hello_int", ()=>{sut.p.in_port.hello_int ();});
+      provides.Add ("p.hello_enum", ()=>{sut.p.in_port.hello_enum (123, out output);});
 
       Dictionary<String, Action> requires = new Dictionary<String, Action> ();
-      requires.Add ("r.world", ()=>{sut.r.outport.world (0);});
+      requires.Add ("r.world", ()=>{sut.r.out_port.world (0);});
 
       int index = 0;
       List<String> trace = read ();
 
-      sut.p.outport.world = (int i) => {
+      sut.p.out_port.world = (int i) => {
         Debug.Assert (trace[index] == "p.world");
         ++index;
-        dzn.Runtime.traceQin (sut.p.dzn_meta, "world");
+        dzn.Runtime.trace_qin (sut.p.meta, "world");
       };
 
-      sut.r.inport.hello_void = () => {
+      sut.r.in_port.hello_void = () => {
         dzn.context.lck (sut, () => {
           Debug.Assert (trace[index] == "r.hello_void");
           ++index;
-          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_void");
+          dzn.Runtime.trace (sut.r.meta, "hello_void");
           String tmp = trace[index];
           ++index;
-          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+          dzn.Runtime.trace_out (sut.r.meta, tmp.Split ('.')[1]);
         });
       };
-      sut.r.inport.hello_bool = () => {
+      sut.r.in_port.hello_bool = () => {
         String tmp = default (String);
         dzn.context.lck (sut, () => {
           Debug.Assert (trace[index] == "r.hello_bool");
           ++index;
-          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_bool");
+          dzn.Runtime.trace (sut.r.meta, "hello_bool");
           tmp = trace[index];
-          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+          dzn.Runtime.trace_out (sut.r.meta, tmp.Split ('.')[1]);
           ++index;
         });
         return dzn.container<blocking_shell>.string_to_value<bool> (tmp.Split ('.')[1]);
       };
-      sut.r.inport.hello_int  = () => {
+      sut.r.in_port.hello_int  = () => {
         String tmp = default (String);
         dzn.context.lck (sut, () => {
           Debug.Assert (trace[index] == "r.hello_int");
           ++index;
-          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_int");
+          dzn.Runtime.trace (sut.r.meta, "hello_int");
           tmp = trace[index];
-          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+          dzn.Runtime.trace_out (sut.r.meta, tmp.Split ('.')[1]);
           ++index;
         });
         return dzn.container<blocking_shell>.string_to_value<int> (tmp.Split ('.')[1]);
       };
-      sut.r.inport.hello_enum = (int i, out int j) => {
+      sut.r.in_port.hello_enum = (int i, out int j) => {
         String tmp = default (String);
         j = default (int);
         dzn.context.lck (sut, () => {
           Debug.Assert (trace[index] == "r.hello_enum");
           ++index;
-          dzn.Runtime.traceIn (sut.r.dzn_meta, "hello_enum");
+          dzn.Runtime.trace (sut.r.meta, "hello_enum");
           tmp = trace[index];
-          dzn.Runtime.traceOut (sut.r.dzn_meta, tmp.Split ('.')[1]);
+          dzn.Runtime.trace_out (sut.r.meta, tmp.Split ('.')[1]);
           ++index;
         });
         return dzn.container<blocking_shell>.string_to_value<global::Enum> (tmp.Split ('.')[1]);

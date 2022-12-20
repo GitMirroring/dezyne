@@ -1,4 +1,4 @@
-this.#.port.name .#.event.direction port.#.event.name  =
+this.#.port.name .#.event.direction _port.#.event.name  =
   (#x:formal-parameter) => {
     #x:out-ref-local  dzn_runtime.call_#.event.direction(this,
       () => {

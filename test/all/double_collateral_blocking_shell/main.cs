@@ -38,40 +38,40 @@ class main
     using(double_collateral_blocking_shell sut = new double_collateral_blocking_shell (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.la.dzn_meta.requires.name = "la";
-      sut.la.dzn_meta.requires.port = sut.la;
-      sut.ra.dzn_meta.requires.name = "ra";
-      sut.ra.dzn_meta.requires.port = sut.ra;
+      sut.la.meta.require.name = "la";
+      sut.la.meta.require.port = sut.la;
+      sut.ra.meta.require.name = "ra";
+      sut.ra.meta.require.port = sut.ra;
 
       bool toggle = true;
-      sut.la.inport.ping = () =>
+      sut.la.in_port.ping = () =>
       {
         System.Console.Error.WriteLine("sut.lbp.async.ping -> <external>.la.ping");
         System.Threading.Thread.Sleep(toggle ? 200 : 100);
-        sut.la.outport.pong();
+        sut.la.out_port.pong();
         System.Console.Error.WriteLine("sut.lbp.async.return <- <external>.la.return");
       };
 
-      sut.ra.inport.ping = () =>
+      sut.ra.in_port.ping = () =>
       {
         System.Console.Error.WriteLine("sut.rbp.async.ping -> <external>.ra.ping");
         System.Threading.Thread.Sleep(toggle ? 200 : 100);
-        sut.ra.outport.pong();
+        sut.ra.out_port.pong();
         System.Console.Error.WriteLine("sut.rbp.async.return <- <external>.ra.return");
       };
 
       for(int i = 0; i < 2; ++i)
       {
-        System.Threading.Thread t1 = new System.Threading.Thread (() => {sut.right.inport.hello ();});
+        System.Threading.Thread t1 = new System.Threading.Thread (() => {sut.right.in_port.hello ();});
         System.Threading.Thread t2 = new System.Threading.Thread (() => {
            System.Threading.Thread.Sleep(100);
-           sut.left.inport.hello ();
+           sut.left.in_port.hello ();
         });
         t1.Start();
         t2.Start();
 
         System.Threading.Thread.Sleep(50);
-        sut.left.inport.hello();
+        sut.left.in_port.hello();
 
         t1.Join();
         t2.Join();

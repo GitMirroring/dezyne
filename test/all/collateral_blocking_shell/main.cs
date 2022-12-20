@@ -37,18 +37,18 @@ class main
     using(collateral_blocking_shell sut = new collateral_blocking_shell (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.w0.dzn_meta.requires.name = "w0";
-      sut.w0.dzn_meta.requires.port = sut.w0;
-      sut.w1.dzn_meta.requires.name = "w1";
-      sut.w1.dzn_meta.requires.port = sut.w1;
+      sut.w0.meta.require.name = "w0";
+      sut.w0.meta.require.port = sut.w0;
+      sut.w1.meta.require.name = "w1";
+      sut.w1.meta.require.port = sut.w1;
 
       bool cruel = false;
-      sut.w0.inport.hello = () =>
+      sut.w0.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.blocked.w0.hello -> <external>.w0.hello");
         System.Console.Error.WriteLine("sut.blocked.w0.return -> <external>.w0.return");
       };
-      sut.w1.inport.hello = () =>
+      sut.w1.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.blocked.w1.hello -> <external>.w1.hello");
         if (cruel)
@@ -56,7 +56,7 @@ class main
             new System.Threading.Thread (() =>
             {
               System.Console.Error.WriteLine("cruel");
-              sut.h.inport.cruel ();
+              sut.h.in_port.cruel ();
             }).Start();
           }
 
@@ -64,18 +64,18 @@ class main
         {
           System.Threading.Thread.Sleep(50);
           System.Console.Error.WriteLine("world0");
-          sut.w0.outport.world ();
+          sut.w0.out_port.world ();
           System.Console.Error.WriteLine("world1");
-          sut.w1.outport.world ();
+          sut.w1.out_port.world ();
         }).Start();
         System.Console.Error.WriteLine("sut.blocked.w1.return -> <external>.w1.return");
       };
 
       System.Console.Error.WriteLine("hello happy");
-      sut.h.inport.hello ();
+      sut.h.in_port.hello ();
       cruel = true;
       System.Console.Error.WriteLine("hello cruel");
-      sut.h.inport.hello ();
+      sut.h.in_port.hello ();
     }
   }
 }

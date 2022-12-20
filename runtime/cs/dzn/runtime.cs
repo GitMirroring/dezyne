@@ -38,15 +38,15 @@ namespace dzn
 
     abstract public class Port
     {
-        public dzn.port.Meta dzn_meta;
+        public dzn.port.Meta meta;
         public Port()
         {
-            dzn_meta = new dzn.port.Meta ();
+            this.meta = new dzn.port.Meta ();
         }
         public Port other ()
         {
-            return (this == this.dzn_meta.provides.port)
-            ? this.dzn_meta.requires.port : this.dzn_meta.provides.port;
+            return (this == this.meta.provide.port)
+            ? this.meta.require.port : this.meta.provide.port;
         }
     }
 
@@ -55,9 +55,10 @@ namespace dzn
         public Locator dzn_locator;
         public Runtime dzn_runtime;
         public Meta dzn_meta;
-        public ComponentBase(Locator locator, String name, Meta parent)
+        public ComponentBase (Locator locator, String name, Meta parent)
         {
-            this.dzn_locator = locator; this.dzn_meta = new Meta(name, parent);
+            this.dzn_locator = locator;
+            this.dzn_meta = new Meta(name, parent);
             this.dzn_runtime = locator.get<Runtime>();
         }
     }
@@ -206,10 +207,10 @@ namespace dzn
             {
               dzn.pump.collateral_block(c, c.dzn_locator);
             }
-            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
-            traceIn(m, e);
+            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("meta").GetValue(p);
+            trace(m, e);
             handle(c, f, dzn.pump.coroutine_id(c.dzn_locator));
-            traceOut(m, "return");
+            trace_out(m, "return");
             dzn.pump.prune_deferred(c.dzn_locator);
             states[c].handling = 0;
         }
@@ -220,8 +221,8 @@ namespace dzn
             {
               dzn.pump.collateral_block(c, c.dzn_locator);
             }
-            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
-            traceIn(m, e);
+            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("meta").GetValue(p);
+            trace(m, e);
             R r = valued_helper(c, f, dzn.pump.coroutine_id(c.dzn_locator));
             String s;
             if (r.GetType().Equals(typeof(bool)))
@@ -230,17 +231,17 @@ namespace dzn
                 s = r.ToString();
             else
                 s = r.GetType().Name + ":" + Enum.GetName(r.GetType(), r);
-            traceOut(m, s);
+            trace_out(m, s);
             dzn.pump.prune_deferred(c.dzn_locator);
             states[c].handling = 0;
             return r;
         }
         public void call_out(Component c, Action f, Port p, String e)
         {
-            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("dzn_meta").GetValue(p);
-            traceQin(m, e);
-            enqueue(m.provides.component, c, () => {
-              traceQout(m, e);
+            dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("meta").GetValue(p);
+            trace_qin(m, e);
+            enqueue(m.provide.component, c, () => {
+              trace_qout(m, e);
               f();
             }, dzn.pump.coroutine_id(c.dzn_locator));
             dzn.pump.prune_deferred(c.dzn_locator);
@@ -261,30 +262,30 @@ namespace dzn
                 return (m.name != "" ? m.name : "<external>") + p;
             return path(m.parent, m.name + p);
         }
-        public static void traceIn(port.Meta m, String e)
+        public static void trace(port.Meta m, String e)
         {
-            System.Console.Error.WriteLine(path(m.requires.meta, m.requires.name) + "." + e + " -> "
-                                           + path(m.provides.meta, m.provides.name) + "." + e);
+            System.Console.Error.WriteLine(path(m.require.meta, m.require.name) + "." + e + " -> "
+                                           + path(m.provide.meta, m.provide.name) + "." + e);
         }
-        public static void traceOut(port.Meta m, String e)
+        public static void trace_out(port.Meta m, String e)
         {
-            System.Console.Error.WriteLine(path(m.requires.meta, m.requires.name) + "." + e + " <- "
-                                           + path(m.provides.meta, m.provides.name) + "." + e);
+            System.Console.Error.WriteLine(path(m.require.meta, m.require.name) + "." + e + " <- "
+                                           + path(m.provide.meta, m.provide.name) + "." + e);
         }
-        public static void traceQin(port.Meta m, String e)
+        public static void trace_qin(port.Meta m, String e)
         {
-           if (path (m.requires.meta) == "<external>")
-                traceOut(m, e);
+           if (path (m.require.meta) == "<external>")
+                trace_out(m, e);
             else
-                System.Console.Error.WriteLine(path(m.requires.meta, "<q>") + " <- " +
-                                               path(m.provides.meta, m.provides.name) + "." + e);
+                System.Console.Error.WriteLine(path(m.require.meta, "<q>") + " <- " +
+                                               path(m.provide.meta, m.provide.name) + "." + e);
         }
-        public static void traceQout(port.Meta m, String e)
+        public static void trace_qout(port.Meta m, String e)
         {
-           if (path (m.requires.meta) == "<external>")
+           if (path (m.require.meta) == "<external>")
                return;
-            System.Console.Error.WriteLine(path(m.requires.meta, m.requires.name) + "." + e + " <- " +
-                                           path(m.requires.meta, "<q>"));
+            System.Console.Error.WriteLine(path(m.require.meta, m.require.name) + "." + e + " <- " +
+                                           path(m.require.meta, "<q>"));
         }
     }
 }

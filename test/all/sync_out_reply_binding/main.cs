@@ -64,24 +64,24 @@ class main
 
     sut.dzn_meta.name = "sut";
 
-    sut.h.dzn_meta.requires.name = "h";
-    sut.h.dzn_meta.requires.port = sut.h;
+    sut.h.meta.require.name = "h";
+    sut.h.meta.require.port = sut.h;
 
-    sut.w.dzn_meta.provides.name = "w";
-    sut.w.dzn_meta.provides.port = sut.w;
+    sut.w.meta.provide.name = "w";
+    sut.w.meta.provide.port = sut.w;
 
-    sut.w.inport.hello = () =>
+    sut.w.in_port.hello = () =>
     {
-      dzn.Runtime.traceIn (sut.w.dzn_meta, "hello");
-      sut.w.outport.world ();
-      dzn.Runtime.traceOut (sut.w.dzn_meta, "return");
+      dzn.Runtime.trace (sut.w.meta, "hello");
+      sut.w.out_port.world ();
+      dzn.Runtime.trace_out (sut.w.meta, "return");
     };
 
-    sut.w.inport.hello_void = () =>
+    sut.w.in_port.hello_void = () =>
     {
-      dzn.Runtime.traceIn (sut.w.dzn_meta, "hello_void");
-      sut.w.outport.world_void ();
-      dzn.Runtime.traceOut (sut.w.dzn_meta, "return");
+      dzn.Runtime.trace (sut.w.meta, "hello_void");
+      sut.w.out_port.world_void ();
+      dzn.Runtime.trace_out (sut.w.meta, "return");
     };
 
     string trace = read ();
@@ -90,14 +90,14 @@ class main
     else if (trace == "h.hello\nw.hello\nw.world\nw.return\nh.true")
     {
       int v = 0;
-      sut.h.inport.hello (ref v);
+      sut.h.in_port.hello (ref v);
       Console.Error.WriteLine("v=" + v);
       Debug.Assert (v == 456);
     }
     else if (trace == "h.hello_void\nw.hello_void\nw.world_void\nw.return\nh.return")
     {
       int v = 0;
-      sut.h.inport.hello_void (ref v);
+      sut.h.in_port.hello_void (ref v);
       Console.Error.WriteLine("v=" + v);
       Debug.Assert (v == 456);
     }

@@ -51,34 +51,34 @@ class main
     {
       sut.dzn_meta.name = "sut";
 
-      sut.top_w.dzn_meta.provides.name = "top_w";
-      sut.top_w.dzn_meta.provides.port = sut.top_w;
+      sut.top_w.meta.provide.name = "top_w";
+      sut.top_w.meta.provide.port = sut.top_w;
 
-      sut.middle_w.dzn_meta.provides.name = "middle_w";
-      sut.middle_w.dzn_meta.provides.port = sut.middle_w;
+      sut.middle_w.meta.provide.name = "middle_w";
+      sut.middle_w.meta.provide.port = sut.middle_w;
 
-      sut.bottom_w.dzn_meta.provides.name = "bottom_w";
-      sut.bottom_w.dzn_meta.provides.port = sut.bottom_w;
+      sut.bottom_w.meta.provide.name = "bottom_w";
+      sut.bottom_w.meta.provide.port = sut.bottom_w;
 
-      sut.top_w.inport.hello = () =>
+      sut.top_w.in_port.hello = () =>
       {
-        dzn.Runtime.traceIn(sut.top_w.dzn_meta, "hello");
-        dzn.Runtime.traceOut(sut.top_w.dzn_meta, "return");
+        dzn.Runtime.trace(sut.top_w.meta, "hello");
+        dzn.Runtime.trace_out(sut.top_w.meta, "return");
       };
-      sut.middle_w.inport.hello = () =>
+      sut.middle_w.in_port.hello = () =>
       {
-        dzn.Runtime.traceIn(sut.middle_w.dzn_meta, "hello");
-        dzn.Runtime.traceOut(sut.middle_w.dzn_meta, "return");
+        dzn.Runtime.trace(sut.middle_w.meta, "hello");
+        dzn.Runtime.trace_out(sut.middle_w.meta, "return");
       };
-      sut.bottom_w.inport.hello = () =>
+      sut.bottom_w.in_port.hello = () =>
       {
-        dzn.Runtime.traceIn(sut.bottom_w.dzn_meta, "hello");
-        dzn.Runtime.traceOut(sut.bottom_w.dzn_meta, "return");
+        dzn.Runtime.trace(sut.bottom_w.meta, "hello");
+        dzn.Runtime.trace_out(sut.bottom_w.meta, "return");
       };
 
       System.Threading.Thread f = new System.Threading.Thread (() => // 1: run through top to middle and block
       {
-         sut.h.inport.hello ();
+         sut.h.in_port.hello ();
       });
       f.Start ();
 
@@ -89,23 +89,23 @@ class main
       // trace
       else if (trace == "h.hello\ntop_w.hello\ntop_w.return\nmiddle_w.hello\nmiddle_w.return\ntop_w.world\nmiddle_w.world\nbottom_w.hello\nbottom_w.return\nbottom_w.world\nh.return")
       {
-        sut.top_w.outport.world();    // 2: collaterally blocks on top
-        sut.middle_w.outport.world(); // 3: releases 1; 1 continues and blocks on bottom
-        sut.bottom_w.outport.world(); // 4: releases 1 again then 2 finishes
+        sut.top_w.out_port.world();    // 2: collaterally blocks on top
+        sut.middle_w.out_port.world(); // 3: releases 1; 1 continues and blocks on bottom
+        sut.bottom_w.out_port.world(); // 4: releases 1 again then 2 finishes
       }
       // trace.1
       else if (trace == "h.hello\ntop_w.hello\ntop_w.return\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\nbottom_w.hello\nbottom_w.return\ntop_w.world\nbottom_w.world\nh.return")
       {
-        sut.middle_w.outport.world(); // 2: releases 1; 1 continues and blocks on bottom
-        sut.top_w.outport.world();    // 3: collaterally blocks on top
-        sut.bottom_w.outport.world(); // 4: releases 1 again then 2 finishes
+        sut.middle_w.out_port.world(); // 2: releases 1; 1 continues and blocks on bottom
+        sut.top_w.out_port.world();    // 3: collaterally blocks on top
+        sut.bottom_w.out_port.world(); // 4: releases 1 again then 2 finishes
       }
       // trace.2
       else if (trace == "h.hello\ntop_w.hello\ntop_w.return\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\nbottom_w.hello\nbottom_w.return\nbottom_w.world\ntop_w.world\nh.return")
       {
-        sut.middle_w.outport.world(); // 2: releases 1; 1 continues and blocks on bottom
-        sut.bottom_w.outport.world(); // 3: releases 1 again then 2 finishes
-        sut.top_w.outport.world();    // 2: releases 1, finishes
+        sut.middle_w.out_port.world(); // 2: releases 1; 1 continues and blocks on bottom
+        sut.bottom_w.out_port.world(); // 3: releases 1 again then 2 finishes
+        sut.top_w.out_port.world();    // 2: releases 1, finishes
         // 1 finished
       }
       else

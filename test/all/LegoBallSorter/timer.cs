@@ -30,7 +30,7 @@ public partial class timer : dzn.Component {
 
     public void port_create(Integer ms) {
         if(id == 0) id = ++s_id;
-        dzn_locator.get<dzn.pump>().handle(id, ms, ()=>port.outport.timeout());
+        dzn_locator.get<dzn.pump>().handle(id, ms, ()=>port.out_port.timeout());
     }
     public void port_cancel() {
         dzn_locator.get<dzn.pump>().remove(id);

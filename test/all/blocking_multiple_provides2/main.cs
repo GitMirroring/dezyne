@@ -49,32 +49,32 @@ class main
     {
       sut.dzn_meta.name = "sut";
 
-      sut.w_left.inport.hello = () =>
+      sut.w_left.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.bmp.w_left.hello -> <external>.w_left.hello");
         new System.Threading.Thread (() =>
         {
           System.Threading.Thread.Sleep(100);
-          sut.w_left.outport.world();
+          sut.w_left.out_port.world();
         }).Start();
         System.Console.Error.WriteLine("sut.bmp.w_left.return -> <external>.w_left.return");
       };
-      sut.w_right.inport.hello = () =>
+      sut.w_right.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.bmp.w_right.hello -> <external>.w_right.hello");
         new System.Threading.Thread (() =>
         {
           System.Threading.Thread.Sleep(150);
-          sut.w_right.outport.world();
+          sut.w_right.out_port.world();
         }).Start();
         System.Console.Error.WriteLine("sut.bmp.w_right.return -> <external>.w_right.return");
       };
       new System.Threading.Thread (() =>
       {
-        sut.h_left.inport.hello ();
+        sut.h_left.in_port.hello ();
       }).Start();
       System.Threading.Thread.Sleep(50);
-      sut.h_right.inport.hello ();
+      sut.h_right.in_port.hello ();
     }
   }
 }

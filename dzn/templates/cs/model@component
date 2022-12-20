@@ -15,7 +15,7 @@ public class #x:model-name  : dzn.Component {
     #x:provides-port-init
     #x:requires-port-init
 
-    this.dzn_meta.requires = new List<dzn.port.Meta> {
+    this.dzn_meta.require = new List<dzn.port.Meta> {
       #x:requires-port-meta
     };
     #x:injected-require-initializer

@@ -47,23 +47,23 @@ class main
     using(collateral_blocking_multiple_provides0 sut = new collateral_blocking_multiple_provides0 (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.r.dzn_meta.requires.name = "r";
+      sut.r.meta.require.name = "r";
 
-      sut.r.inport.hello = () =>
+      sut.r.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.bmp.r.hello -> <external>.r.hello");
         System.Threading.Thread.Sleep(200);
-        sut.r.outport.world();
+        sut.r.out_port.world();
         System.Console.Error.WriteLine("sut.bmp.r.return -> <external>.r.return");
       };
       var t = new System.Threading.Thread (() =>
       {
         System.Threading.Thread.Sleep(100);
-        sut.right.inport.hello ();
+        sut.right.in_port.hello ();
       });
       t.Start();
 
-      sut.left.inport.hello ();
+      sut.left.in_port.hello ();
 
       t.Join();
     }

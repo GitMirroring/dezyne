@@ -11,7 +11,7 @@ public class #x:model-name  : dzn.SystemComponent {
     #x:non-injected-instance-initializer
     #x:port-initializer
 
-    this.dzn_meta.requires = new List<dzn.port.Meta> {
+    this.dzn_meta.require = new List<dzn.port.Meta> {
       #x:requires-port-meta
     };
     this.dzn_meta.children = new List<dzn.Meta> {

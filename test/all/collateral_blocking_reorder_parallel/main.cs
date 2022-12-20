@@ -49,48 +49,48 @@ class main
     using(collateral_blocking_reorder_parallel sut = new collateral_blocking_reorder_parallel (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.eleft.dzn_meta.requires.name = "eleft";
-      sut.eright.dzn_meta.requires.name = "eright";
-      sut.rleft.dzn_meta.requires.name = "rleft";
-      sut.rright.dzn_meta.requires.name = "rright";
+      sut.eleft.meta.require.name = "eleft";
+      sut.eright.meta.require.name = "eright";
+      sut.rleft.meta.require.name = "rleft";
+      sut.rright.meta.require.name = "rright";
 
       bool once_left = true;
 
-      sut.eleft.inport.hello = () =>
+      sut.eleft.in_port.hello = () =>
       {
         Console.Error.WriteLine("sut.left.e.hello -> <external>.eleft.hello");
         Console.Error.WriteLine("sut.left.e.return -> <external>.eleft.return");
       };
-      sut.eright.inport.hello = () =>
+      sut.eright.in_port.hello = () =>
       {
         Console.Error.WriteLine("sut.right.e.hello -> <external>.eright.hello");
         Console.Error.WriteLine("sut.right.e.return -> <external>.eright.return");
       };
-      sut.rleft.inport.hello = () =>
+      sut.rleft.in_port.hello = () =>
       {
         Console.Error.WriteLine("sut.left.r.hello -> <external>.rleft.hello");
         Thread.Sleep(100);
-        if(once_left) {once_left = false; sut.eleft.outport.world();}
+        if(once_left) {once_left = false; sut.eleft.out_port.world();}
         Thread.Sleep(100);
-        sut.rleft.outport.world();
+        sut.rleft.out_port.world();
         Thread.Sleep(100);
         Console.Error.WriteLine("sut.left.r.return -> <external>.rleft.return");
       };
-      sut.rright.inport.hello = () =>
+      sut.rright.in_port.hello = () =>
       {
         Console.Error.WriteLine("sut.right.r.hello -> <external>.rright.hello");
         Thread.Sleep(200);
-        sut.rright.outport.world();
+        sut.rright.out_port.world();
         Thread.Sleep(100);
         Console.Error.WriteLine("sut.right.r.return -> <external>.rright.return");
       };
       var t = new Thread (() =>
       {
         Thread.Sleep(50);
-        sut.pright.inport.hello();
+        sut.pright.in_port.hello();
       });
       t.Start();
-      sut.pleft.inport.hello();
+      sut.pleft.in_port.hello();
       t.Join();
 
       dzn.pump pump = sut.dzn_locator.get<dzn.pump>();

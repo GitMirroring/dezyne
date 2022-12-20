@@ -53,26 +53,26 @@ class main
     using(collateral_blocking_reorder sut = new collateral_blocking_reorder (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.r.dzn_meta.requires.name = "r";
-      sut.e.dzn_meta.requires.name = "e";
+      sut.r.meta.require.name = "r";
+      sut.e.meta.require.name = "e";
 
-      sut.r.inport.hello = () =>
+      sut.r.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.block.r.hello -> <external>.r.hello");
         new System.Threading.Thread (() =>
         {
-          if(once) {once = false; sut.e.outport.world ();}
-          sut.r.outport.world ();
+          if(once) {once = false; sut.e.out_port.world ();}
+          sut.r.out_port.world ();
         }).Start();
         System.Console.Error.WriteLine("sut.block.r.return <- <external>.r.return");
       };
-      sut.e.inport.hello = () =>
+      sut.e.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.proxy.e.hello -> <external>.e.hello");
         System.Console.Error.WriteLine("sut.proxy.e.return <- <external>.e.return");
       };
 
-      sut.p.inport.hello ();
+      sut.p.in_port.hello ();
 
       dzn.pump pump = sut.dzn_locator.get<dzn.pump>();
       pump.wait ();

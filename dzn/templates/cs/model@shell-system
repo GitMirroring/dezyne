@@ -24,7 +24,7 @@ public class #x:model-name  : dzn.SystemComponent, IDisposable {
     #x:shell-provides-out
     #x:shell-requires-in
 
-    this.dzn_meta.requires = new List<dzn.port.Meta> {
+    this.dzn_meta.require = new List<dzn.port.Meta> {
       #x:requires-port-meta
     };
     this.dzn_meta.children = new List<dzn.Meta> {

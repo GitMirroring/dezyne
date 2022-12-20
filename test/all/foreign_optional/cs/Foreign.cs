@@ -27,6 +27,6 @@ public partial class Foreign
   public void w_hello()
   {
       System.Console.Error.WriteLine("sut.f.w.world");
-      w.outport.world();
+      w.out_port.world();
   }
 }

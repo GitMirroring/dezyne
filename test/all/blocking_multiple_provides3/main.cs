@@ -49,14 +49,14 @@ class main
     {
       sut.dzn_meta.name = "sut";
 
-      sut.r.inport.hello = () =>
+      sut.r.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.mp.r.hello -> <external>.r.hello");
-        sut.mp.r.outport.world();
+        sut.mp.r.out_port.world();
         System.Console.Error.WriteLine("sut.mp.r.return -> <external>.r.return");
       };
-      sut.left.inport.hello ();
-      sut.right.inport.hello ();
+      sut.left.in_port.hello ();
+      sut.right.in_port.hello ();
     }
   }
 }

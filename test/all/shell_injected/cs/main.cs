@@ -28,13 +28,13 @@ class main {
 
   static void connect_ports (dzn.container<shell_injected> c)
   {
-    c.system.r.inport.e = () => {
-      dzn.Runtime.traceIn(c.system.r.dzn_meta, "e");
+    c.system.r.in_port.e = () => {
+      dzn.Runtime.trace(c.system.r.meta, "e");
       c.match("r.e");
       String tmp = c.trail_expect ();
-      dzn.Runtime.traceOut(c.system.r.dzn_meta, tmp.Split('.')[1]);
+      dzn.Runtime.trace_out(c.system.r.meta, tmp.Split('.')[1]);
       return ;
-    };c.system.p.outport.f = () => {
+    };c.system.p.out_port.f = () => {
       c.match("p.f");
       c.dzn_runtime.call_out(c, () => {
         if(c.flush) c.dzn_runtime.queue(c).Enqueue(() => {
@@ -49,17 +49,17 @@ class main {
 
   static Dictionary<String, Action> event_map (dzn.container<shell_injected> c)
   {
-    c.system.p.dzn_meta.requires.component = c;
-    c.system.p.dzn_meta.requires.meta = c.dzn_meta;
-    c.system.p.dzn_meta.requires.name = "p";
-    c.system.r.dzn_meta.provides.component = c;
-    c.system.r.dzn_meta.provides.meta = c.dzn_meta;
-    c.system.r.dzn_meta.provides.name = "r";
+    c.system.p.meta.require.component = c;
+    c.system.p.meta.require.meta = c.dzn_meta;
+    c.system.p.meta.require.name = "p";
+    c.system.r.meta.provide.component = c;
+    c.system.r.meta.provide.meta = c.dzn_meta;
+    c.system.r.meta.provide.name = "r";
 
     Dictionary<String, Action> lookup = new Dictionary<String, Action>();
     lookup.Add("illegal",()=>{Console.Error.WriteLine("illegal"); Environment.Exit(0);});
-    lookup.Add("p.e",()=>{c.match("p.e");c.system.p.inport.e(); c.match("p.return");});
-    lookup.Add("r.f",()=>{c.match("r.f");Thread.Sleep(1000); c.system.r.outport.f(); });
+    lookup.Add("p.e",()=>{c.match("p.e");c.system.p.in_port.e(); c.match("p.return");});
+    lookup.Add("r.f",()=>{c.match("r.f");Thread.Sleep(1000); c.system.r.out_port.f(); });
     lookup.Add("r.<flush>",()=>{System.Console.Error.WriteLine("r.<flush>");
       c.dzn_runtime.flush(c);
     });

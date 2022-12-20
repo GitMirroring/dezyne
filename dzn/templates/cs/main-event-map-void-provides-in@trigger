@@ -1,6 +1,6 @@
 lookup.Add("#.port.name .#.event.name ",()=>{
   c.match("#.port.name .#.event.name");
   #x:main-arg-define
-  c.system.#.port.name .#.event.direction port.#.event.name(#x:main-arg);
+  c.system.#.port.name .#.event.direction _port.#.event.name(#x:main-arg);
   #x:main-event-map-match-return
 });

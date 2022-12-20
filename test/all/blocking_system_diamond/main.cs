@@ -39,36 +39,36 @@ class main
     using (blocking_system_diamond sut = new blocking_system_diamond (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.r_left.dzn_meta.provides.name = "r_left";
-      sut.r_left.dzn_meta.provides.port = sut.r_left;
-      sut.r_right.dzn_meta.provides.name = "r_right";
-      sut.r_right.dzn_meta.provides.port = sut.r_right;
+      sut.r_left.meta.provide.name = "r_left";
+      sut.r_left.meta.provide.port = sut.r_left;
+      sut.r_right.meta.provide.name = "r_right";
+      sut.r_right.meta.provide.port = sut.r_right;
 
-      sut.r_left.inport.hello = () =>
+      sut.r_left.in_port.hello = () =>
       {
-        dzn.Runtime.traceIn (sut.r_left.dzn_meta, "hello");
-        dzn.Runtime.traceOut (sut.r_left.dzn_meta, "return");
+        dzn.Runtime.trace (sut.r_left.meta, "hello");
+        dzn.Runtime.trace_out (sut.r_left.meta, "return");
       };
-      sut.r_right.inport.hello = () =>
+      sut.r_right.in_port.hello = () =>
       {
-        dzn.Runtime.traceIn (sut.r_right.dzn_meta, "hello");
-        dzn.Runtime.traceOut (sut.r_right.dzn_meta, "return");
+        dzn.Runtime.trace (sut.r_right.meta, "hello");
+        dzn.Runtime.trace_out (sut.r_right.meta, "return");
       };
 
       // 1: run through left to bottom and block
       System.Threading.Thread f = new System.Threading.Thread ( () =>
       {
-         sut.p.inport.hello ();
+         sut.p.in_port.hello ();
       });
       f.Start ();
       System.Threading.Thread.Sleep (100);
 
       // 2: release: finish left,
       //    continue through right to bottom and block
-      sut.r_left.outport.world ();
+      sut.r_left.out_port.world ();
 
       // 3: release: finish right and return
-      sut.r_right.outport.world ();
+      sut.r_right.out_port.world ();
 
       f.Join ();
     }

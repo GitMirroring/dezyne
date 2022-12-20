@@ -66,12 +66,12 @@ class main
 
     sut.dzn_meta.name = "sut";
 
-    sut.h.dzn_meta.requires.name = "h";
-    sut.h.dzn_meta.requires.port = sut.h;
+    sut.h.meta.require.name = "h";
+    sut.h.meta.require.port = sut.h;
 
-    sut.h.outport.world = (int i) =>
+    sut.h.out_port.world = (int i) =>
     {
-      dzn.Runtime.traceIn (sut.h.dzn_meta, "world");
+      dzn.Runtime.trace (sut.h.meta, "world");
     };
 
     string trace = read ();
@@ -79,13 +79,13 @@ class main
     // trace
     else if (trace == "h.hello\nh.return\nh.hi\nh.return\n<defer>\nh.world")
     {
-        pump.execute (() => {sut.h.inport.hello (0);});
-        pump.execute (() => {sut.h.inport.hi (0);});
+        pump.execute (() => {sut.h.in_port.hello (0);});
+        pump.execute (() => {sut.h.in_port.hi (0);});
     }
     else if (trace == "h.hello\nh.return\nh.cruel\nh.return\n<defer>\nh.world")
     {
-        pump.execute (() => {sut.h.inport.hello (0);});
-        pump.execute (() => {sut.h.inport.cruel (1);});
+        pump.execute (() => {sut.h.in_port.hello (0);});
+        pump.execute (() => {sut.h.in_port.cruel (1);});
     }
     else
       throw (new dzn.runtime_error ("missing trace"));

@@ -25,6 +25,6 @@
 public partial class Foreign
 {
   public void h_hello () {}
-  public void w0_world () {w0.inport.hello ();}
-  public void w1_world () {w1.inport.hello ();}
+  public void w0_world () {w0.in_port.hello ();}
+  public void w1_world () {w1.in_port.hello ();}
 }

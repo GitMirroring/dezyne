@@ -39,18 +39,18 @@ class main
 
       System.Threading.Thread f0 = new System.Threading.Thread (() =>
       {
-         sut.block0.inport.hello ();
+         sut.block0.in_port.hello ();
       });
       f0.Start ();
       System.Threading.Thread.Sleep(100);
 
       System.Threading.Thread f1 = new System.Threading.Thread (() =>
       {
-         sut.block1.inport.hello ();
+         sut.block1.in_port.hello ();
       });
       f1.Start ();
       System.Threading.Thread.Sleep(100);
-      sut.release.inport.hello ();
+      sut.release.in_port.hello ();
 
       f0.Join ();
       f1.Join ();

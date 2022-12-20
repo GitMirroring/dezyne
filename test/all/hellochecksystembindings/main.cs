@@ -37,32 +37,32 @@ class main {
     locator.set(runtime);
 
 		var unbound_in_event = new hellochecksystembindings(locator, "unbound_in_event");
-		unbound_in_event.p.outport.world = () => {};
+		unbound_in_event.p.out_port.world = () => {};
 		try
 		{
 			unbound_in_event.check_bindings();
 		}
 		catch(dzn.binding_error e)
 		{
-			string expected_event = "unbound_in_event.comp.r.inport.hello";
+			string expected_event = "unbound_in_event.comp.r.in_port.hello";
 			assert(e.Message.Contains(expected_event));
 		}
 
 		var unbound_out_event = new hellochecksystembindings(locator, "unbound_out_event");
-		unbound_out_event.r.inport.hello = () => {};
+		unbound_out_event.r.in_port.hello = () => {};
 		try
 		{
 			unbound_out_event.check_bindings();
 		}
 		catch(dzn.binding_error e)
 		{
-			string expected_event = "unbound_out_event.comp.p.outport.world";
+			string expected_event = "unbound_out_event.comp.p.out_port.world";
 			assert(e.Message.Contains(expected_event));
 		}
 
 		var no_unbound_events = new hellochecksystembindings(locator, "no_unbound_events");
-		no_unbound_events.p.outport.world = () => {};
-		no_unbound_events.r.inport.hello = () => {};
+		no_unbound_events.p.out_port.world = () => {};
+		no_unbound_events.r.in_port.hello = () => {};
 		try
 		{
 			no_unbound_events.check_bindings();

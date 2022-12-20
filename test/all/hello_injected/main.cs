@@ -29,12 +29,12 @@ class main {
     dzn.Runtime runtime = new dzn.Runtime();
     hello_injected sut = new hello_injected(locator.set(runtime), "sut");
 
-    sut.t.outport.f = () => {System.Console.Error.WriteLine("sut.m.t.f -> <external>.t.f");};
-    sut.t.dzn_meta.requires.name = "t";
+    sut.t.out_port.f = () => {System.Console.Error.WriteLine("sut.m.t.f -> <external>.t.f");};
+    sut.t.meta.require.name = "t";
 
     //sut.check_bindings ();
     //sut.dump_tree ();
 
-    sut.t.inport.e();
+    sut.t.in_port.e();
   }
 }

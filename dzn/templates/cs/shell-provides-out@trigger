@@ -1,1 +1,1 @@
-#x:instance-name .#x:instance-port-name .#.event.direction port.#.event.name  = (#x:formal-parameter)=>{#.port.name .#.event.direction port.#.event.name(#x:code-arguments);};
+#x:instance-name .#x:instance-port-name .#.event.direction _port.#.event.name  = (#x:formal-parameter)=>{#.port.name .#.event.direction _port.#.event.name(#x:code-arguments);};

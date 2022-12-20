@@ -2,26 +2,26 @@
 public class #x:model-name  : dzn.Port {
   public static string to_string(bool b) {return b ? "true" : "false";}
   #x:enum-definer
-  public class In {
+  public class in_events {
     #x:in-event-signature
     #x:in-event-definer
   }
-  public class Out {
+  public class out_events {
     #x:out-event-signature
     #x:out-event-definer
   }
-  public In inport;
-  public Out outport;
+  public in_events in_port;
+  public out_events out_port;
   public #x:model-name () {
-    inport = new In();
-    outport = new Out();
+    in_port = new in_events ();
+    out_port = new out_events ();
   }
 
   public static void connect(#x:model-name  provided, #x:model-name  required) {
-    provided.outport = required.outport;
-    required.inport = provided.inport;
-    provided.dzn_meta.requires = required.dzn_meta.requires;
-    required.dzn_meta.provides = provided.dzn_meta.provides;
+    provided.out_port = required.out_port;
+    required.in_port = provided.in_port;
+    provided.meta.require = required.meta.require;
+    required.meta.provide = provided.meta.provide;
   }
   public void check_bindings() {
     #x:check-in-binding

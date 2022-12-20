@@ -38,30 +38,30 @@ class main
     using(collateral_blocking_shell2 sut = new collateral_blocking_shell2 (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.w.dzn_meta.provides.name = "w";
+      sut.w.meta.provide.name = "w";
 
-      sut.w.inport.hello = () =>
+      sut.w.in_port.hello = () =>
       {
-        dzn.Runtime.traceIn(sut.w.dzn_meta, "hello");
+        dzn.Runtime.trace(sut.w.meta, "hello");
 
         new System.Threading.Thread (() =>
         {
           System.Threading.Thread.Sleep(50);
           System.Console.Error.WriteLine("cruel");
-          sut.h.inport.cruel ();
+          sut.h.in_port.cruel ();
         }).Start();
         new System.Threading.Thread (() =>
         {
           System.Threading.Thread.Sleep(100);
           System.Console.Error.WriteLine("world");
-          sut.w.outport.world ();
+          sut.w.out_port.world ();
         }).Start();
 
-        dzn.Runtime.traceOut(sut.w.dzn_meta, "return");
+        dzn.Runtime.trace_out(sut.w.meta, "return");
       };
 
       System.Console.Error.WriteLine("hello happy");
-      sut.h.inport.hello ();
+      sut.h.in_port.hello ();
     }
   }
 }

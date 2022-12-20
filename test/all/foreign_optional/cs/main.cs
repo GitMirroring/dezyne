@@ -32,7 +32,7 @@ class main {
     locator.set(runtime);
 
     var sut = new foreign_optional(locator, "sut");
-    sut.c.h.outport.world = () => {
+    sut.c.h.out_port.world = () => {
         System.Console.Error.WriteLine("<external>.h.world <- sut.c.h.world");
     };
     sut.f.w_hello ();

@@ -35,29 +35,29 @@ class main
     using(collateral_blocking_multiple_provides sut = new collateral_blocking_multiple_provides (locator))
     {
       sut.dzn_meta.name = "sut";
-      sut.world.dzn_meta.requires.name = "world";
-      sut.world.dzn_meta.requires.port = sut.world;
+      sut.world.meta.require.name = "world";
+      sut.world.meta.require.port = sut.world;
 
-      sut.world.inport.hello = () =>
+      sut.world.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.world.hello -> <external>.world.hello");
         System.Threading.Thread.Sleep(200);
-        sut.world.outport.world();
+        sut.world.out_port.world();
         System.Console.Error.WriteLine("sut.world.return <- <external>.world.return");
       };
 
-      sut.left.inport.hello();
+      sut.left.in_port.hello();
       new System.Threading.Thread (() =>
       {
-         sut.right.inport.hello ();
+         sut.right.in_port.hello ();
       }).Start();
 
       System.Threading.Thread.Sleep(50);
 
-      sut.left.inport.hello();
+      sut.left.in_port.hello();
       new System.Threading.Thread (() =>
       {
-         sut.right.inport.hello ();
+         sut.right.in_port.hello ();
       }).Start();
     }
   }

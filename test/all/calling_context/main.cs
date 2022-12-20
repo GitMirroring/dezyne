@@ -34,11 +34,11 @@ class main
     dzn.Runtime runtime = new dzn.Runtime ();
     calling_context sut = new calling_context (locator.set (runtime));
     sut.dzn_meta.name = "sut";
-    sut.h.dzn_meta.requires.name = "h";
-    sut.w.dzn_meta.provides.name = "w";
+    sut.h.meta.require.name = "h";
+    sut.w.meta.provide.name = "w";
 
-    sut.w.inport.world = (ref int c, int i) => {
-      dzn.Runtime.traceIn (sut.w.dzn_meta, "world");
+    sut.w.in_port.world = (ref int c, int i) => {
+      dzn.Runtime.trace (sut.w.meta, "world");
       if (c == 0)
         c = 123;
       else
@@ -46,11 +46,11 @@ class main
         Debug.Assert (c == 123);
         c = 456;
       }
-      dzn.Runtime.traceOut (sut.w.dzn_meta, "return");
+      dzn.Runtime.trace_out (sut.w.meta, "return");
     };
 
     int cc = 0;
-    sut.h.inport.hello (ref cc, 123);
+    sut.h.in_port.hello (ref cc, 123);
     Debug.Assert (cc == 456);
   }
 }
