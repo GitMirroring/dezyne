@@ -91,6 +91,7 @@ HELLO_TESTS =					\
  %D%/hello_system_reply				\
  %D%/hello_two					\
  %D%/hello_usuk					\
+ %D%/helloworld					\
  %D%/illegal_component0				\
  %D%/illegal_interface_incomplete		\
  %D%/inline-functions				\
@@ -367,7 +368,6 @@ REGRESSION_TESTS =				\
  %D%/hellooutevent				\
  %D%/helloparam					\
  %D%/helloparams				\
- %D%/helloworld					\
  %D%/huge_interface				\
  %D%/huge_constraint				\
  %D%/illegal_blocking_race			\
