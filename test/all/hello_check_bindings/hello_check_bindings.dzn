@@ -35,7 +35,7 @@ interface ihello
   }
 }
 
-component hellocheckcompbindings
+component hello_check_bindings
 {
   provides ihello p;
   requires ihello r;

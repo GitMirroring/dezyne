@@ -306,6 +306,7 @@ REGRESSION_TESTS =				\
  %D%/generalized_integer_temporaries		\
  %D%/hello_blocking_asynchronous_sync_out	\
  %D%/hello_blocking_multiple_out		\
+ %D%/hello_check_bindings			\
  %D%/hello_choice_action			\
  %D%/hello_choice_reply				\
  %D%/hello_clash_port_variable			\
@@ -361,7 +362,6 @@ REGRESSION_TESTS =				\
  %D%/hello_tick					\
  %D%/hello_true_guard				\
  %D%/hello_unused_assign			\
- %D%/hellocheckcompbindings			\
  %D%/hellochecksystembindings			\
  %D%/hellofundata				\
  %D%/hellointbug				\
