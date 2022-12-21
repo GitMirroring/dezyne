@@ -362,7 +362,6 @@ REGRESSION_TESTS =				\
  %D%/hello_tick					\
  %D%/hello_true_guard				\
  %D%/hello_unused_assign			\
- %D%/hellochecksystembindings			\
  %D%/hellofundata				\
  %D%/hellointbug				\
  %D%/hellooutevent				\
@@ -445,6 +444,7 @@ REGRESSION_TESTS =				\
  %D%/sync_out_reply_binding			\
  %D%/sync_out_reply_enum			\
  %D%/system_bool_enum				\
+ %D%/system_check_bindings			\
  %D%/system_defer				\
  %D%/system_double_inevitable			\
  %D%/system_double_out				\

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
+// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 //
 // Code:
 
-#include "hellochecksystembindings.hh"
+#include "system_check_bindings.hh"
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
@@ -32,46 +33,46 @@ int main()
 {
   dzn::locator l;
   dzn::runtime rt;
-  l.set(rt);
+  l.set (rt);
 
-  hellochecksystembindings unbound_in_event(l);
+  system_check_bindings unbound_in_event (l);
   unbound_in_event.dzn_meta.name = "unbound_in_event";
   unbound_in_event.p.out.world = []{ };
   try
   {
-    unbound_in_event.check_bindings();
+    unbound_in_event.check_bindings ();
   }
-  catch(const dzn::binding_error& e)
+  catch (const dzn::binding_error& e)
   {
     std::string expected_event = "unbound_in_event.comp.r.in.hello";
-    std::string actual_error(e.what());
-    assert(actual_error.find(expected_event) != std::string::npos);
+    std::string actual_error (e.what ());
+    assert (actual_error.find (expected_event) != std::string::npos);
   }
 
-  hellochecksystembindings unbound_out_event(l);
+  system_check_bindings unbound_out_event (l);
   unbound_out_event.dzn_meta.name = "unbound_out_event";
   unbound_out_event.r.in.hello = []{ };
   try
   {
-    unbound_out_event.check_bindings();
+    unbound_out_event.check_bindings ();
   }
-  catch(const dzn::binding_error& e)
+  catch (const dzn::binding_error& e)
   {
     std::string expected_event = "unbound_out_event.comp.p.out.world";
-    std::string actual_error(e.what());
-    assert(actual_error.find(expected_event) != std::string::npos);
+    std::string actual_error (e.what ());
+    assert (actual_error.find (expected_event) != std::string::npos);
   }
 
-  hellochecksystembindings no_unbound_events(l);
+  system_check_bindings no_unbound_events (l);
   no_unbound_events.dzn_meta.name = "no_unbound_events";
   no_unbound_events.p.out.world = []{ };
   no_unbound_events.r.in.hello = []{ };
   try
   {
-    no_unbound_events.check_bindings();
+    no_unbound_events.check_bindings ();
   }
-  catch(const dzn::binding_error& e)
+  catch (const dzn::binding_error& e)
   {
-    assert(false);
+    assert (false);
   }
 }

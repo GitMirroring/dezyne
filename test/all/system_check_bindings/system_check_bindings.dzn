@@ -51,7 +51,7 @@ component hellocheckcompbindings
   }
 }
 
-component hellochecksystembindings
+component system_check_bindings
 {
   provides ihello p;
   requires ihello r;
