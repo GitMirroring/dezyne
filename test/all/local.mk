@@ -404,6 +404,7 @@ REGRESSION_TESTS =				\
  %D%/name.space					\
  %D%/no_return					\
  %D%/param_shadow				\
+ %D%/port_shadow_interface			\
  %D%/pump_twice					\
  %D%/queue_size_four				\
  %D%/queuefull_component1			\
