@@ -37,16 +37,34 @@
             merge-alist2
             merge-alist-list
             pke
+            seq
             singleton?
             split-lists))
 
 (define (disjoin . predicates)
+  "Like OR but for predicates:
+  (filter (disjoin zero? odd?) '(0 1 2 3))
+ => '(0 1 3)
+"
   (lambda arguments
     (any (cut apply <> arguments) predicates)))
 
 (define (conjoin . predicates)
+  "Like AND but for predicates:
+  (find (conjoin even? (negate zero?)) '(0 1 2 3))
+ => '2
+"
   (lambda arguments
     (every (cut apply <> arguments) predicates)))
+
+(define (seq . procedures)
+  "Like COMPOSE but for PROCEDURES running in sequence on the same
+arguments:
+  (append-map (seq (cute 1+ <>) (cute * 3 <>)) '(0 1 2 ))
+ => (2 2 3 4 4 6)
+"
+  (lambda arguments
+    (map (cute apply <> arguments) procedures)))
 
 (define (singleton? list)
   (and (= 1 (length list)) (car list)))
