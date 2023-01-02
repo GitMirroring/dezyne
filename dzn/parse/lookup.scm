@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -71,12 +71,7 @@
        (and (pair? found)
             (let* ((found (match scope
                             (()
-                             (cons
-                              (or (any (compose (cute widen-to-imports <> name context)
-                                                tree:id* .name)
-                                       found)
-                                  (car found))
-                              context))
+                             (cons (car found) context))
                             ((scope tail ...)
                              (any (compose (cute search tail name <>)
                                            (cute tree->context <> context))

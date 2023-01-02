@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -190,12 +190,17 @@
 ;;;
 ;;; Lookup.
 ;;;
-(define (search-import scope name import)
+(define (search-import-unmemoized root scope name import)
   (let* ((file-name (.name import))
          (ast       (and file-name ((%file-name->ast) file-name))))
     (and ast (search-or-widen-context scope name ast))))
 
-(define (search scope name context)
+(define (search-import scope name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq search-import-unmemoized) root scope name context)))
+
+(define (search-unmemoized root
+                           scope name context)
   (let* ((global? (and (pair? scope) (equal? "/" (car scope))))
          (scope (if (not (and global? (is-a? context <root>))) scope
                     (filter (match-lambda ("/" #f) (o o)) scope)))
@@ -206,14 +211,16 @@
     (and (pair? found)
          (match scope
            (()
-            (or (any (compose (cute widen-to-imports <> name context)
-                              ast:id*)
-                     found)
-                (car found)))
+            (car found))
            ((scope tail ...)
             (any (cute search tail name <>) found))))))
 
-(define (widen-to-parent scope name context)
+(define (search scope name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq search-unmemoized) root scope name context)))
+
+(define (widen-to-parent-unmemoized root
+                                    scope name context)
   (let ((parent (ast:parent context <scope>)))
     (and parent
          (let* ((scope-name (and=> (as context <named>) .name))
@@ -221,17 +228,25 @@
            (or (search-or-widen-context scope name parent)
                (search-or-widen-context scope+ name parent))))))
 
-(define (widen-to-imports scope name context)
+(define (widen-to-parent scope name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq widen-to-parent-unmemoized) root scope name context)))
+
+(define (widen-to-imports-unmemoized root scope name context)
   (and context (is-a? context <root>)
        (let ((imports (ast:import* context)))
          (any (cute search-import scope name <>) imports))))
+
+(define (widen-to-imports scope name context)
+  (let ((root (or (as context <root>) (ast:parent context <root>))))
+    ((ast:pure-funcq widen-to-imports-unmemoized) root scope name context)))
 
 (define (search-or-widen-context scope name context)
   (or (search scope name context)
       (widen-to-parent scope name context)
       (widen-to-imports scope name context)))
 
-(define (ast:lookup-unmemoized root name context)
+(define-method (ast:lookup context name)
   "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a context? or
 null) and return its CONTEXT."
   (cond
@@ -249,13 +264,10 @@ null) and return its CONTEXT."
            (name scope (ast:name+scope name)))
       (search-or-widen-context scope name context)))))
 
-(define ast:lookup-memoized (ast:pure-funcq ast:lookup-unmemoized))
-(define-method (ast:lookup (context <ast>) name)
-  (let* ((context (or (as context <scope>) (ast:parent context <scope>)))
-         (root (or (as context <root>) (ast:parent context <root>))))
-    (ast:lookup-memoized root name context)))
 (define-method (ast:lookup name)
-  (ast:lookup name name))
+  (let* ((context (or (as name <scope>) (ast:parent name <scope>)))
+         (root (or (as context <root>) (ast:parent context <root>))))
+    (ast:lookup name context)))
 
 (define-method (ast:lookup-variable (o <ast>) name statements)
   (define (name? o) (and (equal? (.name o) name) o))
