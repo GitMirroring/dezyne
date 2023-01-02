@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2014, 2017, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -149,8 +149,7 @@
             `(,(wfc-error o (format #f "undefined component `~a'" (type-name (.type.name o))))))
            ((not (is-a? component <component-model>))
             `(,(wfc-error o (format #f "component expected, found: `~a ~a'" (ast-name component) (type-name component)))))
-           (else '()))))
-  )
+           (else '())))))
 
 (define-method (wfc (o <type>))
   (re-definition o))
@@ -358,13 +357,13 @@
                         (if (is-a? model <interface>) (ast:return-types model)
                             (ast:return-types-provides model)))
                        (%model-blocking? (model-blocking? model)))
-          (append
-           (append-map wfc (ast:type* o))
-           (append-map wfc (ast:port* o))
-           (append-map wfc (ast:variable* o))
-           (append-map (cute wfc model <>) (ast:variable* o))
-           (append-map wfc (ast:function* o))
-           (wfc (.statement o)))))))
+          (let ((variables (ast:variable* o)))
+            (append
+             (append-map wfc (ast:type* o))
+             (append-map wfc variables)
+             (append-map (cute wfc model <>) variables)
+             (append-map wfc (ast:function* o))
+             (wfc (.statement o))))))))
 
 (define-method (wfc (o <variable>))
   (append
@@ -506,11 +505,6 @@
   (append
    (action o)
    (call-context o)))
-
-(define-method (wfc (o <action-or-call>))
-  (append
-   (call-context o)
-   '()))
 
 (define-method (wfc (o <assign>))
   (append
@@ -1214,8 +1208,6 @@
 
 (define-method (call-context (o <ast>))
   (let* ((p (.parent o))
-         (grand-parent (.parent p))
-         (great-grand-parent (.parent grand-parent))
          (class (ast-name (class-of o))))
     (cond
      ((and (is-a? o <action>) (not (.event o)))

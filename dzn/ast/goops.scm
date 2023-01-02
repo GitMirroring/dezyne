@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -128,7 +128,6 @@
            .variables
            .working-directory
 
-           <action-or-call>
            <action>
            <and>
            <argument>
@@ -564,9 +563,6 @@
   (statement))
 
 (define-ast <defer-end> (<imperative>))
-
-(define-ast <action-or-call> (<named> <imperative> <unary>)
-  (arguments #:init-form (make <arguments-node>)))
 
 (define-ast <assign> (<imperative>)
   (variable.name)
