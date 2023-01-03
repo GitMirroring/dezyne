@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2015, 2016, 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
@@ -390,11 +390,10 @@ namespace dzn
     debug.rdbuf() && debug << "[" << self->id << "] entered context" << std::endl;
     if (debug.rdbuf())
     {
-      debug.rdbuf() && debug << "routines: ";
-      if(debug.rdbuf())
-        for (auto& coroutine: coroutines)
+      debug << "routines: ";
+      for (auto& coroutine: coroutines)
           debug << coroutine.id << " ";
-      debug.rdbuf() && debug << std::endl;
+      debug << std::endl;
     }
     remove_finished_coroutines(coroutines);
     runtime.reset_skip_block(component);

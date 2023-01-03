@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2020, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2020, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -108,7 +108,7 @@ public:
         }
       }
       catch(const forced_unwind&) {
-        debug << "ignoring forced_unwind" << std::endl;
+        debug.rdbuf() && debug << "ignoring forced_unwind" << std::endl;
       }
   }))
   {
