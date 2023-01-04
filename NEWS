@@ -11,6 +11,12 @@
     parameter could shadow an event method.
   - Simulation of an interface with a subint event type now works
     correctly.
+  - In the C++ runtime, a bug was fixed where a debug stream disabled
+    with a nullptr streambuf could be used.
+  - Using an enum or data type defined in an imported interface that is
+    otherwise unused, is now supported.  As a consequence, code must be
+    generated for all files now, i.e., also for files that only define
+    types or use dollars.
 
 * Changes in 2.16.2 since 2.16.1
 ** Language
@@ -893,7 +899,7 @@
 
 * legalese
 
-Copyright © 2017,2018,2019,2020,2021,2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2017,2018,2019,2020,2021,2022,2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2017,2018,2019,2020,2021 Rutger van Beusekom <rutger@dezyne.org>
 Copyright © 2018,2019 Rob Wieringa <rma.wieringa@gmail.com>
 
