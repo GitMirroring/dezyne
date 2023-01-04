@@ -78,8 +78,7 @@ Alternatively, Dezyne can be installed using GNU Guix:
   guix install dezyne
 
 NEWS
-
-* Changes in 2.17.0 since 2.16.2
+* Changes in 2.17.0 since 2.16.3
 ** Language
   - A component's behavior is now implicitly constrained by the behavior
     of its provides interfaces.
@@ -89,9 +88,15 @@ NEWS
   - Support for `dzn.async' ports has been removed.
 ** Parser
   - A new transformation has been added: `tag-imperative-blocks'.
-  - Reduced wellformedness checking overhead by about 50%.
+  - Reduced well-formedness checking overhead by about 50%.
+  - The behavior of imported components is no longer checked for
+    well-formedness.
+  - Defining an event in an interface and not using it in its behavior is
+    now reported as a well-formedness error.
 ** Verification
   - The verifier now checks for unreachable code.
+  - As a result of the unreachable code check, two identical on
+    statements are now reported as having an overlapping guard.
   - The verifier has a new option `-C,--no-constraint' to disable
     the constraining fo a component's behavior.
   - The verifier has a new option '-D,--non-non-compliance' to report a
@@ -107,8 +112,23 @@ NEWS
     void pointers for component instances.
   - The C++ code generator now uses C++11 style enums, instead of struct
     scoped C style enums.
+  - The return type of the enum to_string function has been changed from
+    std::string to char const*.
+  - The enum stream operator << has been templatized to allow
+    overloading for character type and traits.
 ** Noteworthy bug fixes
   - Some longstanding bugs have been fixed in relation to
     + Extending nested namespaces in imports,
     + Referencing partially named identifiers,
     by a full rewrite of the lookup algorithm.
+  - The C++ code generator no longer generates redundant enum string
+    conversion functions.
+  - The C++ code generator now supports imported foreign components.
+  - The C# code generator now supports foreign components returning a
+    enum that is defined in an interface.
+  - The experimental C code generator no longer generates duplicate enum
+    string conversion functions.
+  - The experimental C code generator now supports a foreign component at the
+    top of a system.
+  - The well-formedness check no longer crashes on a binary expression
+    with a data constant.
