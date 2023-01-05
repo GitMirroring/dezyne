@@ -1,0 +1,12 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: fail
+test/all/unreachable_multiple_triggers/unreachable_multiple_triggers.dzn:34:28: error: code will never be executed
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: unreachable_multiple_triggers: check: deterministic: ok
+verify: unreachable_multiple_triggers: check: illegal: ok
+verify: unreachable_multiple_triggers: check: deadlock: ok
+verify: unreachable_multiple_triggers: check: unreachable: fail
+test/all/unreachable_multiple_triggers/unreachable_multiple_triggers.dzn:47:34: error: code will never be executed
+verify: unreachable_multiple_triggers: check: livelock: ok
+verify: unreachable_multiple_triggers: check: compliance: ok

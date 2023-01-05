@@ -35,7 +35,7 @@ interface ihello
   }
 }
 
-component unreachable_shared
+component unreachable_multiple_triggers
 {
   provides ihello h;
   requires ihello w0;
