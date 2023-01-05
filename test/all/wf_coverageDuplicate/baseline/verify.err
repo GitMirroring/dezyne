@@ -1,0 +1,2 @@
+test/all/wf_coverageDuplicate/wf_coverageDuplicate.dzn:39:32: error: duplicate trigger `h.cruel' in on
+test/all/wf_coverageDuplicate/wf_coverageDuplicate.dzn:39:8: info: previous `h.cruel' trigger here

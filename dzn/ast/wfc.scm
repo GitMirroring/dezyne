@@ -189,17 +189,27 @@
   (re-definition o))
 
 (define-method (wfc (o <enum>))
+  (define (fields-unique fields)
+    (if (null? fields) '()
+        (let* ((field (car fields))
+               (dupe (find (cut equal? <> field) (cdr fields)))
+               (errors (if (not dupe) '()
+                           `(,(wfc-error
+                               o
+                               (format #f "duplicate enum field `~a' in enum `~a'"
+                                       field (type-name (.name o))))))))
+          (append errors (fields-unique (cdr fields))))))
   (append
    (re-definition o)
-   (let loop ((fields (ast:field* o)) (result '()))
-     (if (null? fields) result
-         (let* ((field (car fields))
-                (wf (if (find (cut equal? <> field) (cdr fields))
-                        `(,(wfc-error o (format #f "duplicate enum field `~a' in enum `~a'" field (type-name (.name o)))))
-                        '())))
-           (loop (cdr fields) (append wf result)))))
-   (if (and (ast:parent o <model>) (ast:name-equal? (.name (ast:parent o <model>)) (.name o)))
-       `(,(wfc-error o (format #f "enum `~a' must not have the same name as the model it is defined in" (type-name (.name o)))))
+   (fields-unique (ast:field* o))
+   (if (and (ast:parent o <model>)
+            (ast:name-equal? (.name (ast:parent o <model>)) (.name o)))
+       `(,(wfc-error
+           o
+           (format
+            #f
+            "enum `~a' must not have the same name as the model it is defined in"
+            (type-name (.name o)))))
        '())
    '()))
 
@@ -406,10 +416,12 @@
 
 (define-method (wfc (model <model>) (o <variable>))
   (if (ast:name-equal? (.name model) (.name o))
-      `(,(wfc-error o
-                    (format #f
-                            "variable `~a' must not have the same name as the model it is defined in"
-                            (.name o))))
+      `(,(wfc-error
+          o
+          (format
+           #f
+           "variable `~a' must not have the same name as the model it is defined in"
+           (.name o))))
       '()))
 
 (define-method (wfc (o <function>))
@@ -520,11 +532,27 @@
        (if parent `(,(wfc-error o "nested on used")
                     ,(wfc-info parent "within on here"))
            '()))))
-  (append
-   (on o)
-   (append-map wfc (ast:trigger* o))
-   (if (is-a? (.statement o) <statement>) (wfc (.statement o))
-       `(,(wfc-error o "statement expected")))))
+  (define (triggers-unique triggers)
+    (if (null? triggers) '()
+        (let* ((trigger (car triggers))
+               (dupe (find (cute ast:equal? <> trigger) (cdr triggers)))
+               (errors (if (not dupe) '()
+                           `(,(wfc-error
+                               dupe
+                               (format #f "duplicate trigger `~a' in on"
+                                       (trigger->string trigger)))
+                             ,(wfc-info
+                               trigger
+                               (format #f "previous `~a' trigger here"
+                                       (trigger->string trigger)))))))
+          (append errors (triggers-unique (cdr triggers))))))
+  (let ((triggers (ast:trigger* o)))
+    (append
+     (on o)
+     (triggers-unique triggers)
+     (append-map wfc triggers)
+     (if (is-a? (.statement o) <statement>) (wfc (.statement o))
+         `(,(wfc-error o "statement expected"))))))
 
 (define-method (wfc (o <imperative>))
   '())
@@ -608,8 +636,6 @@
 
 (define-method (reply-without-port (o <reply>))
   "pre: (not (.port.name o))"
-  (define (trigger->string o)
-    (format #f "~a.~a" (.port.name o) (.event.name o)))
   (let ((model (ast:parent o <model>))
         (on (ast:parent o <on>)))
     (cond ((or (not (is-a? model <component>))
@@ -850,6 +876,9 @@
 
 (define (single-quote string)
   (format #f "`~a'" string))
+
+(define (trigger->string o)
+  (format #f "~a.~a" (.port.name o) (.event.name o)))
 
 (define-method (tail-recursion (o <call>))
   (let ((function (ast:parent o <function>)))

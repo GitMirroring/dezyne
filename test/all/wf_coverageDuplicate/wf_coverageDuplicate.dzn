@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,18 +21,21 @@
 //
 // Code:
 
-interface Sensor {
-  in void activate();
-  in void deactivate();
+interface ihello
+{
+  in void hello ();
+  in void cruel ();
   behavior {
-    on activate: { }
-    on deactivate: { }
-  }
-}
-component wf_coverageDuplicate {
-  provides Sensor sensor;
-  behavior {
-    on sensor.activate(), sensor.deactivate(), sensor.activate(): { }
+    on hello: {}
+    on cruel: {}
   }
 }
 
+component wf_coverageDuplicate
+{
+  provides ihello h;
+  behavior
+  {
+    on h.cruel (), h.hello (), h.cruel(): {}
+  }
+}
