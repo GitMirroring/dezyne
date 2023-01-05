@@ -1996,6 +1996,31 @@ This avoids the need to repeat the state and guarding from the interface
 in the component.  An example of how this may reduce the behavior
 specification of a component is the component @ref{proxy}.
 
+@subsection Shared interface variables
+
+Dezyne version 2.18.0 introduces shared interface variables.
+
+Before 2.18.0, for a component to access an interface state variable, it
+was necessary to create a `get-value' action in the interface and invoke
+the action in the component.  To use an interface's variable value in a
+component's guard, the value needed to be copied to a component
+variable.
+
+Now, an interface variable can be accessed directly from the port by
+@code{port}.@code{variable}.
+
+@quotation Note
+Access is limited to reading only, assignments from the component
+behavior are prohibited.  Also, variables from ports marked
+@code{external} cannot be accessed.
+@end quotation
+
+@quotation Note
+Shared interface variables are not inspected by @code{defer}.  As a
+consequence a component variable that changes state is required to
+cancel a @code{defer}, see @ref{Component Defer} for more information.
+@end quotation
+
 @node Error Handling and Recovery
 @section Error Handling and Recovery
 
@@ -3895,7 +3920,8 @@ data type is defined as follows:
 @cindex data-expression
 @example
 extern          ::= "extern" identifier data-expression ";"
-data-expression ::= "$" (!"$")* "$"
+data-expression ::= "$" (!"$")* "$" | data-variable
+data-variable   ::= identifier | port "." identifier
 @end example
 
 The @code{data-expression} is a type expression in the target
@@ -3940,8 +3966,10 @@ bool-expression ::= bool-literal
                      | "(" bool-expression ")"
                      | bool-expression bool-operator bool-expression
                      | int-expression comparison-operator int-expression
+bool-variable   ::= identifier | port "." identifier
 bool-literal    ::= "false" | "true"
 field-test      ::= enum-variable "." enum-field
+enum-variable   ::= identifier | port "." identifier
 bool-operator   ::= "==" | "!=" | "&&" | "||"
 comparison-operator
                 ::= "==" | "!=" | "<" | "<=" | ">" | ">="
@@ -3958,6 +3986,7 @@ enum-expression ::= enum-literal
                      | action
                      | call
 enum-literal    ::= enum "." field
+enum-variable   ::= identifier | port "." identifier
 @end example
 
 where @code{action} and @code{call} are of the correct @code{enum} type.
@@ -3967,15 +3996,16 @@ where @code{action} and @code{call} are of the correct @code{enum} type.
 @cindex int-expression
 @cindex integer-expression
 @example
-int-expression ::= int-literal
-                     | subint-variable
-                     | action
-                     | call
-                     | "-" int-expression
-                     | "(" int-expression ")"
-                     | int-expression int-operator int-expression
-int-literal    ::= "-"? [0-9]+
-int-operator   ::= "+" | "-"
+int-expression  ::= int-literal
+                      | subint-variable
+                      | action
+                      | call
+                      | "-" int-expression
+                      | "(" int-expression ")"
+                      | int-expression int-operator int-expression
+subint-variable ::= identifier | port "." identifier
+int-literal     ::= "-"? [0-9]+
+int-operator    ::= "+" | "-"
 @end example
 
 where @code{action} and @code{call} are of a @code{subint} type.
