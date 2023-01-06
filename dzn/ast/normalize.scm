@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -772,7 +772,8 @@ to prevent unintended shadowing
     (($ <interface>)
      (clone o
             #:types (purge-data (.types o))
-            #:events (purge-data (.events o))))
+            #:events (purge-data (.events o))
+            #:behavior (purge-data (.behavior o))))
     (($ <component>)
      (clone o #:behavior (purge-data (.behavior o))))
     ((? (is? <ast>)) (tree-map purge-data o))
