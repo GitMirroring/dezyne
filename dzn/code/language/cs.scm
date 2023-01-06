@@ -242,10 +242,14 @@
     (if (is-a? type <void>) '()
         o)))
 
-(define (cs:non-primitive o)
-  (if (or (is-a? (ast:type o) <enum>)
-          (is-a? (ast:type o) <interface>)) o
-          '()))
+(define-method (cs:non-primitive (o <top>))
+  #f)
+
+(define-method (cs:non-primitive (o <enum>))
+  o)
+
+(define-method (cs:non-primitive (o <model>))
+  o)
 
 (define-method (code:data* (o <data>))
   o)
