@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
@@ -82,10 +82,19 @@
   '())
 
 (define-method (wfc (o <interface>))
+  (define (data-variable o)
+    (let ((type (.type o)))
+     (if (not (is-a? type <extern>)) '()
+         `(,(wfc-error
+             o
+             (format #f "data variable in interface not supported: `~a'"
+                     (.name o)))))))
   (append
    (re-definition o)
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))
+   (if (not (.behavior o)) '()
+       (append-map data-variable (ast:member* o)))
    (if (pair? (ast:event* o)) '()
        `(,(wfc-error o "interface must define an event")))
    (if (.behavior o) (wfc (.behavior o))

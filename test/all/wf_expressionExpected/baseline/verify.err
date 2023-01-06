@@ -1,3 +1,5 @@
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:31:5: error: data variable in interface not supported: `j'
+test/all/wf_expressionExpected/wf_expressionExpected.dzn:32:5: error: data variable in interface not supported: `k'
 test/all/wf_expressionExpected/wf_expressionExpected.dzn:33:6: error: <bool> expression expected
 test/all/wf_expressionExpected/wf_expressionExpected.dzn:34:6: error: <bool> expression expected
 test/all/wf_expressionExpected/wf_expressionExpected.dzn:36:11: error: <bool> expression expected
