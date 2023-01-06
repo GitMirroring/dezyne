@@ -6,4 +6,4 @@ test/all/deadlock_optional_out_only/deadlock_optional_out_only.dzn:28:3: error: 
 test/all/deadlock_optional_out_only/deadlock_optional_out_only.dzn:28:3: error: deadlock
 (trail "<deadlock>")
 (labels "optional")
-(eligible "optional")
+(eligible "client.world" "sut.world")

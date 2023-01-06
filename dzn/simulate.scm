@@ -61,19 +61,9 @@
 ;;;
 ;;; Deadlock helpers.
 ;;;
-(define-method (event-traces-alist (pc <program-counter>))
 
-  (define (event-traces-alist pc)
-    (define (event->label-traces pc event)
-      (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
-             (pc (reset-replies pc))
-             (traces (parameterize ((%exploring? #t)
-                                    (%liveness? 'component))
-                       (run-to-completion*-context-switch pc event))))
-        (cons event traces)))
-    (let ((labels (labels pc)))
-      (map (cute event->label-traces pc <>) labels)))
 
+(define (interfaces-event-traces-alist pc)
   (define (provides-event->label-traces pc event)
     (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
            (pc (reset-replies pc))
@@ -119,14 +109,26 @@
                                     (modeling-names interface))))))
       (map (cute add-port port <>) alist)))
 
-  (define (interfaces-event-traces-alist pc)
-    (let* ((boundary (filter runtime:boundary-port? (%instances)))
-           (traces (append-map (cute port->label-traces pc <>) boundary))
-           (fake-traces (list (list pc)))
-           (defer-traces (map (cute cons <> fake-traces) (defer-labels pc)))
-           (return-traces (map (cute cons <> fake-traces) (return-labels pc)))
-           (rtc-traces (map (cute cons <> fake-traces) (rtc-labels pc))))
-      (append traces defer-traces return-traces rtc-traces)))
+  (let* ((boundary (filter runtime:boundary-port? (%instances)))
+         (traces (append-map (cute port->label-traces pc <>) boundary))
+         (fake-traces (list (list pc)))
+         (defer-traces (map (cute cons <> fake-traces) (defer-labels pc)))
+         (return-traces (map (cute cons <> fake-traces) (return-labels pc)))
+         (rtc-traces (map (cute cons <> fake-traces) (rtc-labels pc))))
+    (append traces defer-traces return-traces rtc-traces)))
+
+(define-method (event-traces-alist (pc <program-counter>))
+
+  (define (event-traces-alist pc)
+    (define (event->label-traces pc event)
+      (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
+             (pc (reset-replies pc))
+             (traces (parameterize ((%exploring? #t)
+                                    (%liveness? 'component))
+                       (run-to-completion*-context-switch pc event))))
+        (cons event traces)))
+    (let ((labels (labels pc)))
+      (map (cute event->label-traces pc <>) labels)))
 
   (cond
    ((is-a? (%sut) <runtime:port>)
@@ -148,6 +150,20 @@
 
 (define-method (eligible-labels event-traces-alist)
   (let* ((eligible-traces
+          (filter (match-lambda
+                    ((event (pcs tails ...) ...)
+                     (find (disjoin (is-status? <end-of-trail>)
+                                    (is-status? <livelock-error>)
+                                    (negate .status)) pcs)))
+                  event-traces-alist))
+         (labels (map car eligible-traces))
+         (labels (delete-duplicates labels))
+         (labels (sort labels string<)))
+    labels))
+
+(define-method (eligible-labels (pc <program-counter>))
+  (let* ((event-traces-alist (interfaces-event-traces-alist pc))
+         (eligible-traces
           (filter (match-lambda
                     ((event (pcs tails ...) ...)
                      (find (disjoin (is-status? <end-of-trail>)
@@ -207,6 +223,7 @@ TRACES."
                       (if (or (is-a? model <system>) (is-a? model <foreign>)) model
                           (.behavior model))))))
       (if (and error
+               (pair? event-traces-alist)
                (not (is-a? error <implicit-illegal-error>))
                (not (is-a? error <end-of-trail>)))
           pc
@@ -218,31 +235,29 @@ TRACES."
                 ((event traces ...)
                  (cons event (filter (negate optional-trace?) traces))))
               event-traces-alist)))
-    (and
-     (pair? event-traces-alist)
-     (let* ((pcs-alist (map
-                        (match-lambda
-                          ((event traces ...)
-                           (cons event (map car traces))))
-                        event-traces-alist))
-            (valid-pcs-alist
-             (map
-              (match-lambda
-                ((event pcs ...)
-                 (cons event (filter (disjoin (is-status? <end-of-trail>)
-                                              (is-status? <livelock-error>)
-                                              (negate .status))
-                                     pcs))))
-              pcs-alist))
-            (valid-pcs (append-map cdr valid-pcs-alist)))
-       (and (null? valid-pcs)
-            (let* ((traces (assoc-ref event-traces-alist event))
-                   (traces (if (pair? traces) traces (list (list pc))))
-                   (traces (map (cute rewrite-trace-head mark-deadlock <>)
-                                traces)))
-              (if (is-a? (%sut) <runtime:port>) traces
-                  (append-map (cute check-provides-compliance pc #f <>)
-                              traces))))))))
+    (let* ((pcs-alist (map
+                       (match-lambda
+                         ((event traces ...)
+                          (cons event (map car traces))))
+                       event-traces-alist))
+           (valid-pcs-alist
+            (map
+             (match-lambda
+               ((event pcs ...)
+                (cons event (filter (disjoin (is-status? <end-of-trail>)
+                                             (is-status? <livelock-error>)
+                                             (negate .status))
+                                    pcs))))
+             pcs-alist))
+           (valid-pcs (append-map cdr valid-pcs-alist)))
+      (and (null? valid-pcs)
+           (let* ((traces (assoc-ref event-traces-alist event))
+                  (traces (if (pair? traces) traces (list (list pc))))
+                  (traces (map (cute rewrite-trace-head mark-deadlock <>)
+                               traces)))
+             (if (is-a? (%sut) <runtime:port>) traces
+                 (append-map (cute check-provides-compliance pc #f <>)
+                             traces)))))))
 
 (define (check-interface-determinism traces)
   "Determine wether TRACES contain unobservably nonterministic traces,
@@ -447,9 +462,9 @@ final REPORT and return exit status."
                     (map car traces)))
            (pc (car pcs))
            (event pc ((%next-input) pc))
-           (event-traces-alist (event-traces-alist pcs))
-           (eligible (eligible-labels event-traces-alist))
+           (eligible (delete-duplicates (append-map eligible-labels pcs)))
            (eligible (labels-filter-blocked-ports traces eligible))
+           (event-traces-alist (event-traces-alist pcs))
            (deadlock-traces (check-deadlock pc event-traces-alist event)))
       (or (and deadlock-traces
                (pair? (.blocked pc))
@@ -657,7 +672,7 @@ status."
              (any (cute refusals-report from-pcs <> <>) from-pcs list-of-traces))
         (let* ((eligible
                 (and deadlock-check?
-                     (eligible-labels (event-traces-alist pcs))))
+                     (delete-duplicates (append-map eligible-labels pcs))))
                (eligible (and eligible
                               (labels-filter-blocked-ports traces eligible))))
           (report traces
@@ -736,7 +751,7 @@ status."
                 (when deadlock-check?
                   (let* ((pc (car from-pcs))
                          (event-traces-alist (event-traces-alist pc))
-                         (eligible (eligible-labels event-traces-alist)))
+                         (eligible (eligible-labels pc)))
                     (show-eligible eligible))))
               (let* ((event pc ((%next-input) (car from-pcs)))
                      (traces (map (cute rewrite-trace-head drop-event <>) traces))
