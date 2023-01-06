@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -617,6 +617,8 @@ RTC-LTS->LTS."
   "Entry-point for dzn explore --state-diagram."
   (let* ((root (vm:normalize ast))
          (model (ast:get-model root (ast:dotted-name model))))
+    (when (> (dzn:debugity) 1)
+      (ast:pretty-print root (current-error-port)))
     (parameterize ((%compliance-check? #f)
                    (%debug? (> (dzn:debugity) 0))
                    (%exploring? #t)
@@ -639,10 +641,13 @@ RTC-LTS->LTS."
                                       (state-diagram->json
                                        state-diagram (.working-directory root)))
               (display (state-diagram->dot state-diagram (pc->hash pc)))))))))
+
 (define* (lts ast #:key model queue-size)
   "Entry-point for dzn explore --lts."
   (let* ((root (vm:normalize ast))
          (model (ast:get-model root (ast:dotted-name model))))
+    (when (> (dzn:debugity) 1)
+      (ast:pretty-print root (current-error-port)))
     (parameterize ((%compliance-check? #f)
                    (%debug? (> (dzn:debugity) 0))
                    (%exploring? #t)
