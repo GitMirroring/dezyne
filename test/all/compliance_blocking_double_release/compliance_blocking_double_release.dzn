@@ -2,7 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,10 +32,20 @@ interface ihello
   }
 }
 
+interface icruel
+{
+  in void hello ();
+  out void cruel ();
+  behavior
+  {
+    on hello: {cruel; cruel;}
+  }
+}
+
 component compliance_blocking_double_release
 {
   provides blocking ihello block0;
-  provides blocking ihello block1;
+  provides blocking icruel block1;
   provides blocking ihello release;
   provides blocking ihello dummy;
 
@@ -45,7 +55,7 @@ component compliance_blocking_double_release
     bool blocked1 = false;
 
     blocking on block0.hello (): blocked0 = true;
-    blocking on block1.hello (): blocked1 = true;
+    blocking on block1.hello (): {block1.cruel (); block1.cruel (); blocked1 = true;}
 
     on release.hello ():
     {

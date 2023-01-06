@@ -1,11 +1,11 @@
-(header ((block0) ihello provides) ((block1) ihello provides) ((release) ihello provides) ((dummy) ihello provides) ((sut) compliance_blocking_double_release component))
+(header ((block0) ihello provides) ((block1) icruel provides) ((release) ihello provides) ((dummy) ihello provides) ((sut) compliance_blocking_double_release component))
 (state ((block0)) ((block1)) ((release)) ((dummy)) ((sut) (blocked0 . false) (blocked1 . false)))
-test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:42:3: error: non-compliance
+test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:52:3: error: non-compliance
 <external>.block0.hello -> ...
 ... -> sut.block0.hello
 <non-compliance>
 (state ((block0)) ((block1)) ((release)) ((dummy)) ((sut) (blocked0 . false) (blocked1 . false)))
-test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:42:3: error: non-compliance
+test/all/compliance_blocking_double_release/compliance_blocking_double_release.dzn:52:3: error: non-compliance
 (trail "block0.hello" "<non-compliance>")
 (labels "block0.hello" "block1.hello" "release.hello" "dummy.hello")
 (eligible)

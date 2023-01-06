@@ -181,6 +181,7 @@ REGRESSION_TESTS =				\
  %D%/complex_member				\
  %D%/complex_not				\
  %D%/complex_or					\
+ %D%/compliance_blocking_double_release		\
  %D%/compliance_blocking_function		\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_out			\
@@ -569,7 +570,6 @@ PARSER_TESTS =					\
  %D%/undefined/var
 
 UNSTABLE_TESTS =				\
- %D%/compliance_blocking_double_release		\
  %D%/illegal_external_nonsynchronous		\
  %D%/livelock_synchronous_illegal		\
  %D%/queuefull_external_sync
