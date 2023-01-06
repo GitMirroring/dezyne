@@ -1,7 +1,7 @@
 #! /bin/sh
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 # Copyright © 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
 #
@@ -36,7 +36,7 @@ GUILE_LOAD_PATH="$abs_top_builddir:$abs_top_srcdir:$abs_top_srcdir/runtime/schem
 LD_LIBRARY_PATH="$abs_top_builddir${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
 export GUILE_LOAD_COMPILED_PATH GUILE_LOAD_PATH LD_LIBRARY_PATH
 
-NODE=@NODE@
+NODE=${NODE-@NODE@}
 export NODE
 
 PATH="$abs_top_builddir/bin:$abs_top_srcdir/test/bin${PATH:+:}$PATH"
