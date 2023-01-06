@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -661,8 +661,13 @@
        (clone pc #:statement #f))
       (($ <defer-qout>)
        (let* ((p (parent p <compound>))
-              (pc (if (not p) pc (pop-locals pc (filter (is? <variable>) (ast:statement* p))))))
-        (clone pc #:statement #f)))
+              (pc (if (not p) pc
+                      (let* ((variables (get-variables pc))
+                             (model (parent o <model>))
+                             (members (ast:member* model))
+                             (locals (drop-right variables (length members))))
+                        (pop-locals pc locals)))))
+         (clone pc #:statement #f)))
       (_
        '()))))
 
