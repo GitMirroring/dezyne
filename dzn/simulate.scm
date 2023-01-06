@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -133,7 +133,7 @@
     (event-traces-alist pc))
    ((is-a? (%sut) <runtime:component>)
     (let* ((interface (interfaces-event-traces-alist pc))
-           (interface-eligible (map car interface))
+           (interface-eligible (eligible-labels interface))
            (component (event-traces-alist pc)))
       (filter (compose (cute member <> interface-eligible) car)
               component)))
