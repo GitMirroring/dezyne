@@ -36,10 +36,9 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.17
+** Release 2.18
   - Pass regression test
     + Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
-      + test/all/compliance_blocking_double_release
       + test/all/illegal_external_nonsynchronous
       + test/all/livelock_synchronous_illegal
       + test/all/queuefull_external_sync
@@ -59,27 +58,16 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + enable lts for queuefull_component0, queuefull_component1,
       queuefull_external_sync, blocking_queuefull,
       blocking_queuefull_reply
-  - Implicit interface constraints
-    + Finish and merge wip-constraint
-      + wip <- wip-unreachable <- wip-integer
-        <- wip-async <- wip-ast <- wip-lookup <- wip-constraint
-    + Increase regression test coverage
-      - hello_proxy_nondet
-      - constrained_alarm
-      - ... need more tests!!!
-    + Document it!
-    + Add CSP alphabetized parallel support (weak illegals, modules)
-    + Refactor makreel with alphabetized parallel
-
-** Release 2.18
   - shared state
     + Finish and merge wip-shared-state
-    + Increase regression test coverage
-      - hello_proxy_nondet
-      - constrained_alarm
-      - ... need more tests!!!
-    + Document it!
-    + Cleanup c++ spek
+    + Finish and merge wip-scmackerel
+      + else illegal
+      + cs: shared state
+      + c++, cs: remove port duplication in code?
+      + Use hash table for interface state?
+      + Refactor semantics: aspect-oriented
+      + Add CSP alphabetized parallel support (weak illegals, modules)
+      + Refactor makreel with alphabetized parallel
   - refactor node/parent
     + Finish and merge wip-parent
 
@@ -180,6 +168,23 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - shared state
+    + Increase regression test coverage
+      - hello_proxy_nondet
+      - constrained_alarm
+      - ... need more tests!!!
+    + Document it!
+  - Implicit interface constraints
+    + Finish and merge wip-constraint
+      + wip <- wip-unreachable <- wip-integer
+        <- wip-async <- wip-ast <- wip-lookup <- wip-constraint
+    + Increase regression test coverage
+      - hello_proxy_nondet
+      - constrained_alarm
+      - ... need more tests!!!
+    + Document it!
+  - Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
+    + test/all/compliance_blocking_double_release
   - Finish and merge wip-unreachable
   - Finish and merge wip-integer
   - Finish and merge wip-lookup
