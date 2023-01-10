@@ -488,7 +488,7 @@
 ;;;
 ;;; Shared state.
 ;;;
-(define-method (code:shared-lts (o <interface>))
+(define-method (code:shared-lts-unmemoized (o <interface>))
   (let* ((debug (getenv "DZN_DEBUG_TEMPLATE"))
          (foo (unsetenv "DZN_DEBUG_TEMPLATE"))
          (debugity (dzn:debugity))
@@ -505,6 +505,9 @@
     (when debug
       (setenv "DZN_DEBUG_TEMPLATE" debug))
     rtc-lts))
+
+(define code:shared-lts
+  (ast:perfect-funcq code:shared-lts-unmemoized))
 
 (define-method (code:shared (o <event>))
   (define (trigger? o)
