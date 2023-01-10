@@ -230,9 +230,10 @@ to current-output-port."
 ;;;
 ;;; Entry points.
 ;;;
-(define (interface->constraint-lts root model)
+(define (interface->constraint-lts-unmemoized model)
   "Return constraining LTS from MODEL."
-  (let* ((aut (verify-pipeline "maut-weak-trace+hide" root model))
+  (let* ((root (ast:parent model <root>))
+         (aut (verify-pipeline "maut-weak-trace+hide" root model))
          (debugity (dzn:debugity))
          (lts (aut-text->lts aut)))
     (when (> debugity 0)
@@ -247,9 +248,12 @@ to current-output-port."
                 (string-split aut #\newline)))
     lts))
 
+(define (interface->constraint-lts o)
+  ((ast:perfect-funcq interface->constraint-lts-unmemoized) o))
+
 (define (interface->constraint root model)
   "Return constraint process as mCRL2 string from MODEL."
-  (let* ((lts (interface->constraint-lts root model))
+  (let* ((lts (interface->constraint-lts model))
          (debugity (dzn:debugity)))
     (let ((makreel (with-output-to-string
                      (cute lts->makreel model lts))))
