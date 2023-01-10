@@ -349,7 +349,7 @@ std::basic_ostream<Char, Traits> &")
 ;;;
 ;;; Interface.
 ;;;
-(define-method (interface->statements (o <interface>))
+(define-method (interface->statements-unmemoized (o <interface>))
   (define (event->slot event)
     (let ((type (code:type-name (ast:type event)))
           (formals (code:formal* event)))
@@ -430,6 +430,9 @@ std::basic_ostream<Char, Traits> &")
       ,@enum-to-string
       ,@to-enum)))
 
+(define-method (interface->statements (o <interface>))
+  ((ast:perfect-funcq interface->statements-unmemoized) o))
+
 (define-method (model->header-statements (o <interface>))
   (c++:include-guard o (interface->statements o)))
 
@@ -440,7 +443,7 @@ std::basic_ostream<Char, Traits> &")
 ;;;
 ;;; Component.
 ;;;
-(define-method (component-model->statements (o <component-model>))
+(define-method (component-model->statements-unmemoized (o <component-model>))
   (define (provides->member port)
     (variable
      (type (code:type-name (.type port)))
@@ -632,6 +635,9 @@ std::basic_ostream<Char, Traits> &")
               ,@(map (cute function->method component <>) (ast:function* o)))))))
     (code:->namespace o component)))
 
+(define-method (component-model->statements (o <component-model>))
+  ((ast:perfect-funcq component-model->statements-unmemoized) o))
+
 (define-method (model->header-statements (o <component>))
   (let ((interface-includes (code:interface-include* o)))
     (c++:include-guard
@@ -667,7 +673,7 @@ std::basic_ostream<Char, Traits> &")
 ;;;
 ;;; System.
 ;;;
-(define-method (system->statements (o <system>))
+(define-method (system->statements-unmemoized (o <system>))
   (let* ((injected-instances (code:injected-instance* o))
          (injected? (pair? injected-instances)))
     (define (port->pairing port)
@@ -806,6 +812,9 @@ std::basic_ostream<Char, Traits> &")
                     ,@(map code:binding->connect bindings))))))))))
       (code:->namespace o system))))
 
+(define-method (system->statements (o <system>))
+  ((ast:perfect-funcq system->statements-unmemoized) o))
+
 (define-method (model->header-statements (o <system>))
   (let* ((component-includes (code:component-include* o))
          (injected? (pair? (code:injected-instance* o)))
@@ -822,7 +831,7 @@ std::basic_ostream<Char, Traits> &")
 ;;;
 ;;; Shell.
 ;;;
-(define-method (shell-system->statements (o <shell-system>))
+(define-method (shell-system->statements-unmemoized (o <shell-system>))
   (let* ((injected-instances (code:injected-instance* o))
          (injected? (pair? injected-instances)))
     (define (provides->member port)
@@ -1011,6 +1020,9 @@ std::basic_ostream<Char, Traits> &")
                     ,@(append-map instance->assignments instances)
                     ,@(map code:binding->connect bindings))))))))))
       (code:->namespace o shell))))
+
+(define-method (shell-system->statements (o <system>))
+  ((ast:perfect-funcq shell-system->statements-unmemoized) o))
 
 (define-method (model->header-statements (o <shell-system>))
   (let* ((component-includes (code:component-include* o))
