@@ -511,18 +511,8 @@
 ;;;
 ;;; Constraint
 ;;;
-(define (makreel:constraint-unmemoized o)
-  (let ((root (ast:parent o <root>)))
-    (interface->constraint root o)))
-
-(define makreel:constraint
-  (let ((cache-alist '()))
-    (lambda (o)
-      (let ((key (makreel:unticked-dotted-name o)))
-        (or (assoc-ref cache-alist key)
-            (let ((result (makreel:constraint-unmemoized o)))
-              (set! cache-alist (acons key result cache-alist))
-              result))))))
+(define (makreel:constraint o)
+  (interface->constraint o))
 
 
 ;;;
