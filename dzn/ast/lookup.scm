@@ -31,6 +31,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast accessor)
@@ -50,6 +51,7 @@
             ast:int
             ast:void
             ast:lookup
+            ast:perfect-funcq
             ast:pure-funcq
             ast:unique-import*))
 
@@ -174,7 +176,7 @@
 (define funcq-buffer (@@ (ice-9 poe) funcq-buffer))
 (define not-found (list 'not-found))
 
-(define (ast:pure-funcq base-func)
+(define ((ast:funcq funcq-memo) base-func)
   (define (name->symbol o)
     (match o
       ((? string?) (string->symbol o))
@@ -183,15 +185,14 @@
   (lambda args
     (let* ((key (cons base-func (map (compose name->symbol ast:unwrap) args)))
            (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
-      (if (not (eq? cached not-found))
-	  (begin
-	    (funcq-buffer key)
-	    cached)
-
+      (funcq-buffer key)
+      (if (not (eq? cached not-found)) cached
 	  (let ((val (apply base-func args)))
-	    (funcq-buffer key)
 	    (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
 	    val)))))
+
+(define ast:pure-funcq (ast:funcq funcq-memo))
+(define ast:perfect-funcq (ast:funcq (make-hash-table 32)))
 
 
 ;;;

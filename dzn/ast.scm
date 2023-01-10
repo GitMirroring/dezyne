@@ -138,6 +138,7 @@
                ast:name
                ast:parent
                ast:path
+               ast:perfect-funcq
                ast:pure-funcq
 
                ast:argument*
