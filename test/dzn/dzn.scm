@@ -3,7 +3,7 @@
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -322,7 +322,9 @@ output, and standard error as three values."
                      ,@(code-options file-name)
                      ,dzn-name) input)
                 (zero? status))
-              (let* ((dzn-files (list-files file-name ".+\\.*dzn*$"))
+              (let* ((dzn-files (append (list-files file-name ".+\\.*dzn*$")
+                                        (if (not (directory-exists? in-lang)) '()
+                                            (list-files in-lang ".+\\.*dzn*$"))))
                      (extra-dzn-files (filter
                                        (negate (cute equal? <> dzn-name))
                                        dzn-files)))

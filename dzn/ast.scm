@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -176,7 +176,7 @@
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
 (define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))
-(define-method (ast:import* (o <root>)) (filter (is? <import>) (ast:top* o)))
+(define-method (ast:import* (o <root>)) (delete-duplicates (filter (is? <import>) (ast:top* o)) ast:equal?))
 (define-method (ast:statement* (o <compound>)) (.elements o))
 (define-method (ast:statement* (o <declarative-compound>)) (.elements o))
 (define-method (ast:event* (o <events>)) (.elements o))

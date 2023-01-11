@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -28,16 +28,23 @@
 ;;;
 ;;; Entry points
 ;;;
-
 (define-templates header)
 (define-templates source)
 (define-templates model code:model double-newline-infix)
 
 
 ;;;
+;;; Top
+;;;
+(define-templates header-data code:data*)
+(define-templates import-include ast:import*)
+(define-templates interface-include code:interface-include)
+(define-templates component-include code:component-include)
+
+
+;;;
 ;;; Names
 ;;;
-
 (define-templates file-name code:file-name file-name-infix)
 (define-templates function-type code:function-type)
 (define-templates port-name code:port-name)
@@ -182,10 +189,3 @@
 (define-templates main-event-map-valued-in code:return-values event-map-prefix)
 (define-templates main-event-map-flush ast:requires-port* event-map-prefix)
 (define-templates main-event-map-match-return code:main-event-map-match-return)
-
-
-;;;
-;;; Misc
-;;;
-(define-templates interface-include code:interface-include)
-(define-templates component-include code:component-include)
