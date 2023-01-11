@@ -447,7 +447,8 @@ REGRESSION_TESTS =				\
  %D%/unreachable_interface	 		\
  %D%/unreachable_shared				\
  %D%/unused_assign				\
- %D%/unused_function
+ %D%/unused_function				\
+ %D%/unused_interface_type
 
 if have_cxx_exception_wrappers
 REGRESSION_TESTS +=				\
