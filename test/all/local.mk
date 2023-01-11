@@ -464,7 +464,8 @@ REGRESSION_TESTS =				\
  %D%/system_reply_bool				\
  %D%/system_reply_enum				\
  %D%/unused_assign				\
- %D%/unused_function
+ %D%/unused_function				\
+ %D%/unused_interface_type
 
 if have_cxx_exception_wrappers
 REGRESSION_TESTS +=				\
