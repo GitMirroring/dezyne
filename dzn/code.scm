@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
@@ -64,6 +64,7 @@
             code:class-member?
             code:component-include
             code:component-port
+            code:data*
             code:declarative-or-imperative
             code:default-true
             code:defer-condition
@@ -208,6 +209,9 @@
 
 (define-method (code:file-name (o <foreign>))
   (ast:full-name o))
+
+(define-method (code:file-name (o <import>))
+  (basename (.name o) ".dzn"))
 
 (define-method (code:file-name (o <ast>))
   (basename (ast:source-file o) ".dzn"))
@@ -521,6 +525,9 @@
 (define-method (code:variable-name (o <argument>))
   o)
 
+(define-method (code:data* (o <root>))
+  (filter (negate ast:imported?) (ast:data* o)))
+
 
 ;;;
 ;;; Enum
@@ -556,13 +563,12 @@
   (filter (is? <enum>) (ast:type* (.behavior o))))
 
 (define-method (code:global-enum-definer (o <root>))
-  (filter (is? <enum>) (ast:type* o)))
+  (filter (conjoin (is? <enum>)
+                   (negate ast:imported?))
+          (ast:type* o)))
 
 (define-method (code:global-enum-definer (o <model>))
   (filter (is? <enum>) (ast:type* (ast:parent o <root>))))
-
-(define-method (code:global-enum-definer (o <root>))
-  (filter (is? <enum>) (ast:type* o)))
 
 (define-method (code:enum-literal (o <enum-literal>))
   (append (code:type-name (.type o)) (list (.field o))))
