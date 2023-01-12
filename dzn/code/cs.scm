@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -56,11 +56,6 @@
       (clone (make <otherwise-guard> #:expression (.expression o) #:statement (.statement o))
              #:parent (.parent o))
       o))
-
-(define-method (cs:global-enum-definer (o <root>))
-  (filter (conjoin (is? <enum>)
-                   (compose (cut equal? (ast:source-file o) <>) (cut ast:source-file <>)))
-          (ast:type* o)))
 
 (define-method (cs:statement (o <compound>))
   (let ((elements (ast:statement* o)))
@@ -269,10 +264,11 @@
           (is-a? (ast:type o) <interface>)) o
           '()))
 
-(define (cs:data o)
-  (cond ((is-a? o <root>) (filter (is? <data>) (.elements o)))
-        ((is-a? o <data>) o)
-        (else '())))
+(define-method (code:data* (o <data>))
+  o)
+
+(define-method (code:data* (o <top>))
+  #f)
 
 (define (cs:om ast)
   ((compose

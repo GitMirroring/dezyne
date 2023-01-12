@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -28,8 +28,8 @@
 ;;;
 (define-templates model cs:model)
 (define-templates global-type-name)
-(define-templates data cs:data)
-(define-templates global-enum-definer cs:global-enum-definer)
+(define-templates data code:data*)
+(define-templates global-enum-definer code:global-enum-definer)
 
 
 ;;;
