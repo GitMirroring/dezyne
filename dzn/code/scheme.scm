@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
@@ -88,14 +88,19 @@
     (scheme:sanitize-module-name
      (string-join (append namespace (list base-name)) " "))))
 
+(define-method (scheme:name (o <enum>))
+  (string-join (scheme:enum-name o) ":"))
+
 (define-method (scheme:names (o <interface>))
-  (let* ((name (scheme:class-name o))
+  (let* ((enums (code:enum-definer o))
+         (enums (map scheme:name enums))
+         (name (scheme:class-name o))
          (classes (map string->class-name
                        (list name
                              (string-append name ".in")
                              (string-append name ".out"))))
          (accessors (map (compose string->accessor .name) (ast:event* o))))
-    (append classes accessors)))
+    (append enums classes accessors)))
 
 (define-method (scheme:names (o <component-model>))
   (let* ((name (scheme:class-name o))
@@ -120,11 +125,14 @@
     (delete-duplicates (append-map scheme:names imported-models) string=?)))
 
 (define-method (scheme:exported-names (o <root>))
-  (let ((models (append (filter (conjoin (negate ast:imported?)
-                                         (negate (is? <foreign>)))
-                                (ast:model* o))
-                        (code:used-foreigns o))))
-    (delete-duplicates (append-map scheme:names models) string=?)))
+  (let* ((models (append (filter (conjoin (negate ast:imported?)
+                                          (negate (is? <foreign>)))
+                                 (ast:model* o))
+                         (code:used-foreigns o)))
+         (enums (code:global-enum-definer o))
+         (names (append (append-map scheme:names models)
+                        (map scheme:name enums))))
+    (delete-duplicates names string=?)))
 
 (define-method (scheme:export (o <root>))
   (let ((imports (scheme:imported-names o))
