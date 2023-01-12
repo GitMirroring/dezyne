@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
-;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -85,7 +85,6 @@
 (define-templates functions-declarations code:functions)
 (define-templates functions code:functions)
 
-(define-templates header-data (lambda (o) (filter (is? <data>) (.elements o))))
 (define-templates event-function-ptr)
 
 
