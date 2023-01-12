@@ -3,7 +3,7 @@
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -96,7 +96,11 @@
    (lambda (scope name context)
      (and context (is-a? (.tree context) 'root)
           (let* ((root (.tree context))
-                 (imports (tree:import* root)))
+                 (imports (tree:import* root))
+                 (imports (delete-duplicates
+                           imports
+                           (lambda (a b) (equal? (.file-name a)
+                                                 (.file-name b))))))
             (any (cute search-import scope name <>) imports))))))
 
 (define (search-or-widen-context scope name context)
