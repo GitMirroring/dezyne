@@ -1,1 +1,2 @@
+test/all/wf_interfaceMustDefineBehavior/wf_interfaceMustDefineBehavior.dzn:26:3: error: event `enable' is not used in behavior of interface `Sensor'
 test/all/wf_interfaceMustDefineBehavior/wf_interfaceMustDefineBehavior.dzn:25:1: error: interface must define a behavior

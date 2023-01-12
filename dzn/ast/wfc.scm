@@ -81,6 +81,21 @@
 (define-method (wfc (o <model>))
   '())
 
+(define-method (unused-event (o <event>))
+  (let* ((interface (ast:parent o <interface>))
+         (behavior (.behavior interface))
+         (found (tree-collect
+                 (conjoin (disjoin (is? <trigger>)
+                                   (is? <action>))
+                          (compose (cute ast:equal? o <>) .event))
+                 behavior)))
+    (if (pair? found) '()
+        `(,(wfc-error
+            o
+            (format #f "event `~a' is not used in behavior of interface `~a'"
+                    (ast:name o)
+                    (ast:name interface)))))))
+
 (define-method (wfc (o <interface>))
   (define (data-variable o)
     (let ((type (.type o)))
@@ -90,6 +105,7 @@
              (format #f "data variable in interface not supported: `~a'"
                      (.name o)))))))
   (append
+   (append-map unused-event (ast:event* o))
    (re-definition o)
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))

@@ -1,2 +1,4 @@
+interface-without-behavior.dzn:3:3: error: event `hello' is not used in
+    behavior of interface `interface_without_behavior'
 interface-without-behavior.dzn:1:1: error: interface must define a
     behavior
