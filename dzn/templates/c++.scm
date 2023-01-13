@@ -77,12 +77,13 @@
 ;;;
 ;;; Enums
 ;;;
-(define-templates enum-to-string c++:enum->string)
-(define-templates string-to-enum c++:enum->string)
+(define-templates model-enum-to-string c++:enum->string)
 (define-templates enum-field-to-string c++:enum-field->string)
 (define-templates enum-field-type c++:enum-field-type type-infix)
 (define-templates enum-literal c++:enum-literal type-infix)
-(define-templates string-to-enum c++:string->enum)
+(define-templates enum-to-string identity)
+(define-templates string-to-enum identity)
+(define-templates string-to-enum-field c++:string->enum-field*)
 
 
 ;;;

@@ -25,8 +25,7 @@ struct #x:model-name : public dzn::component
 };
  #x:close-namespace
 
- #x:enum-to-string
- #x:string-to-enum
+ #x:model-enum-to-string
 
 #x:endif
 /********************************** COMPONENT *********************************/

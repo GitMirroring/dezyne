@@ -1,10 +1,7 @@
-##ifndef STRING_TO_ENUM_#x:enum-name
-##define STRING_TO_ENUM_#x:enum-name  1
 inline #x:type-name  to_#x:enum-name(std::string s)
 {
   static std::map<std::string, #x:type-name > m = {
-    #x:string-to-enum
+    #x:string-to-enum-field
   };
   return m.at(s);
 }
-##endif // STRING_TO_ENUM_#x:enum-name

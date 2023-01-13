@@ -11,4 +11,6 @@ enum struct #ast:name
 
 #x:enum-to-string
 
+#x:string-to-enum
+
 ##endif // ENUM_#x:enum-name

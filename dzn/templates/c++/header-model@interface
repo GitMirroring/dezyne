@@ -35,8 +35,7 @@ inline void connect (#x:model-name & provided, #x:model-name & required)
 }
  #x:close-namespace
 
- #x:enum-to-string
- #x:string-to-enum
+ #x:model-enum-to-string
 
 #x:endif
 /********************************** INTERFACE *********************************/
