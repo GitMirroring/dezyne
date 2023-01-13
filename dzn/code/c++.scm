@@ -53,7 +53,7 @@
             c++:enum-literal
             c++:formal-type
             c++:model
-            c++:string->enum
+            c++:string->enum-field*
             c++:type-name
             c++:type-ref))
 
@@ -73,14 +73,12 @@
 
 (define-method (c++:enum-field->string (o <enum>))
   (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
-(define-method (c++:string->enum (o <model>))
-  (filter (is? <enum>) (ast:type* o)))
-(define-method (c++:string->enum (o <enum>))
+
+(define-method (c++:string->enum-field* (o <enum>))
   (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
 
 (define-method (c++:enum->string (o <interface>))
-  (filter (is? <enum>) (append (ast:type* (parent o <root>))
-                                (ast:type* o))))
+  (filter (is? <enum>) (ast:type* o)))
 
 (define-method (c++:type-name o)
   (let* ((type (or (as o <model>) (as o <type>) (ast:type o))))

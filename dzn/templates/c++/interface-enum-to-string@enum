@@ -1,1 +1,8 @@
-enum-to-string@enum
+##ifndef ENUM_TO_STRING_#x:enum-name
+##define ENUM_TO_STRING_#x:enum-name  1
+
+#x:enum-to-string
+
+#x:string-to-enum
+
+##endif // ENUM_TO_STRING_#x:enum-name

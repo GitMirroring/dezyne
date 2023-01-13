@@ -11,4 +11,8 @@ struct #ast:name
 };
  #x:close-namespace
 
+#x:enum-to-string
+
+#x:string-to-enum
+
 ##endif // ENUM_#x:enum-name
