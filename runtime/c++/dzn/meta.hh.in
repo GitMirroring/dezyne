@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
@@ -31,11 +31,6 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
-
-inline std::string to_string()
-{
-  return "return-meta";
-}
 
 namespace dzn
 {
