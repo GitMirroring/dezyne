@@ -1,6 +1,6 @@
 ##ifndef ENUM_TO_STRING_#x:enum-name
 ##define ENUM_TO_STRING_#x:enum-name  1
-inline std::string to_string(#x:type-name  v)
+inline char const* to_cstr (#x:type-name  v)
 {
   switch(v)
   {
@@ -8,8 +8,14 @@ inline std::string to_string(#x:type-name  v)
   }
   return "";
 }
-inline std::ostream& operator << (std::ostream& os, #x:type-name  v)
+inline std::string to_string (#x:type-name  v)
 {
-  return os << to_string(v);
+  return to_cstr(v);
+}
+template <typename Char, typename Traits>
+inline std::basic_ostream<Char, Traits> &
+operator << (std::basic_ostream<Char, Traits>& os, #x:type-name  v)
+{
+  return os << to_cstr (v);
 }
 ##endif // ENUM_TO_STRING_#x:enum-name
