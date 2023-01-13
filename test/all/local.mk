@@ -449,7 +449,8 @@ REGRESSION_TESTS =				\
  %D%/unused_assign				\
  %D%/unused_event				\
  %D%/unused_function				\
- %D%/unused_interface_type
+ %D%/unused_interface_type			\
+ %D%/wostream
 
 if have_cxx_exception_wrappers
 REGRESSION_TESTS +=				\
