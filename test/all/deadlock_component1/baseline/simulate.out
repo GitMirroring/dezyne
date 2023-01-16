@@ -1,15 +1,15 @@
 (header ((i) I provides) ((sut) deadlock_component1 component))
-(state ((i)) ((sut) (s . States:S0)))
+(state ((i) (idle . true)) ((sut) (s . States:S0)))
 <external>.i.e -> ...
 ... -> sut.i.e
 ... <- sut.i.return
 <external>.i.return <- ...
-(state ((i)) ((sut) (s . States:S1)))
+(state ((i) (idle . false)) ((sut) (s . States:S1)))
 (trail "i.e" "i.return")
-test/all/deadlock_component1/deadlock_component1.dzn:41:3: error: deadlock
+test/all/deadlock_component1/deadlock_component1.dzn:46:3: error: deadlock
 <deadlock>
-(state ((i)) ((sut) (s . States:S1)))
-test/all/deadlock_component1/deadlock_component1.dzn:41:3: error: deadlock
+(state ((i) (idle . false)) ((sut) (s . States:S1)))
+test/all/deadlock_component1/deadlock_component1.dzn:46:3: error: deadlock
 (trail "<deadlock>")
 (labels "i.e")
-(eligible "i.e")
+(eligible)

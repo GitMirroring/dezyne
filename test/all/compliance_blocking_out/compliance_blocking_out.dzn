@@ -2,7 +2,7 @@
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,11 +33,12 @@ interface ihello
 {
   in void hello ();
   out void world ();
-  out void planet ();
+  out void cruel ();
 
   behavior
   {
     on hello: world;
+    on optional: cruel;
   }
 }
 
@@ -48,7 +49,7 @@ component compliance_blocking_out
   behavior
   {
     bool blocked = false;
-    blocking on h.hello (): {blocked=true;h.planet ();}
+    blocking on h.hello (): {blocked=true;h.cruel ();}
     [blocked] on w.world (): {blocked=false;h.reply ();}
     [!blocked] on w.world (): {}
   }

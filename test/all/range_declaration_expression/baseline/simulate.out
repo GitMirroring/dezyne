@@ -1,11 +1,11 @@
 (header ((p) I provides) ((sut) range_declaration_expression component) ((r) II requires))
 (state ((p)) ((sut)) ((r)))
-test/all/range_declaration_expression/range_declaration_expression.dzn:53:18: error: range-error: invalid value `5' for variable `n'
+test/all/range_declaration_expression/range_declaration_expression.dzn:54:18: error: range-error: invalid value `5' for variable `n'
 <external>.p.e -> ...
 ... -> sut.p.e
 <range-error>
 (state ((p)) ((sut) (n . 5)) ((r)))
-test/all/range_declaration_expression/range_declaration_expression.dzn:53:18: error: range-error: invalid value `5' for variable `n'
+test/all/range_declaration_expression/range_declaration_expression.dzn:54:18: error: range-error: invalid value `5' for variable `n'
 (trail "p.e" "<range-error>")
 (labels "p.e" "r.add")
 (eligible)

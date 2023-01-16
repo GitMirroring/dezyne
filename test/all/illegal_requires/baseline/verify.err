@@ -1,5 +1,6 @@
 verify: ihello: check: deadlock: ok
-verify: ihello: check: unreachable: ok
+verify: ihello: check: unreachable: fail
+test/all/illegal_requires/illegal_requires.dzn:32:23: error: code will never be executed
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: illegal_requires: check: deterministic: ok

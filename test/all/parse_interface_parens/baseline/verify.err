@@ -1,1 +1,1 @@
-test/all/parse_interface_parens/parse_interface_parens.dzn:31:15: error: undefined function call: "world"
+test/all/parse_interface_parens/parse_interface_parens.dzn:33:15: error: undefined function call: "world"

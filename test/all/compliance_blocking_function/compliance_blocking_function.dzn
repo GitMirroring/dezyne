@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,11 +26,13 @@
 interface ihello
 {
   in void hello ();
+  in void bye ();
   out void cruel ();
 
   behavior
   {
     on hello: {}
+    on bye: cruel;
   }
 }
 
@@ -46,5 +49,6 @@ component compliance_blocking_function
       h.reply ();
     }
     blocking on h.hello (): f ();
+    on h.bye(): h.cruel();
   }
 }

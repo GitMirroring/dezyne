@@ -2,17 +2,17 @@ test/all/wf_undefined/wf_undefined.dzn:26:17: error: unknown type name `xxint'
 test/all/wf_undefined/wf_undefined.dzn:27:18: error: unknown type name `xxxint'
 test/all/wf_undefined/wf_undefined.dzn:29:5: error: unknown type name `yint'
 test/all/wf_undefined/wf_undefined.dzn:31:7: error: unknown type name `zint'
-test/all/wf_undefined/wf_undefined.dzn:39:6: error: unknown type name `EE'
-test/all/wf_undefined/wf_undefined.dzn:42:13: error: no field `EN4' in enum `I1'; expected: `EN1', `EN2', `EN3'
-test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
-test/all/wf_undefined/wf_undefined.dzn:43:5: error: unknown type name `ENN'
-test/all/wf_undefined/wf_undefined.dzn:45:12: error: no field `EN5' in enum `I1'; expected: `EN1', `EN2', `EN3'
-test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
-test/all/wf_undefined/wf_undefined.dzn:46:7: error: unknown type name `ENN'
-test/all/wf_undefined/wf_undefined.dzn:48:13: error: no field `EN0' in enum `I1'; expected: `EN1', `EN2', `EN3'
-test/all/wf_undefined/wf_undefined.dzn:38:3: info: enum defined here
-test/all/wf_undefined/wf_undefined.dzn:69:3: error: undefined interface `I3'
-test/all/wf_undefined/wf_undefined.dzn:71:3: error: undefined interface `I4'
-test/all/wf_undefined/wf_undefined.dzn:94:3: error: undefined interface `I3'
-test/all/wf_undefined/wf_undefined.dzn:96:3: error: undefined interface `I4'
-test/all/wf_undefined/wf_undefined.dzn:99:5: error: undefined component `C2'
+test/all/wf_undefined/wf_undefined.dzn:40:6: error: unknown type name `EE'
+test/all/wf_undefined/wf_undefined.dzn:43:13: error: no field `EN4' in enum `I1'; expected: `EN1', `EN2', `EN3'
+test/all/wf_undefined/wf_undefined.dzn:39:3: info: enum defined here
+test/all/wf_undefined/wf_undefined.dzn:44:5: error: unknown type name `ENN'
+test/all/wf_undefined/wf_undefined.dzn:46:12: error: no field `EN5' in enum `I1'; expected: `EN1', `EN2', `EN3'
+test/all/wf_undefined/wf_undefined.dzn:39:3: info: enum defined here
+test/all/wf_undefined/wf_undefined.dzn:47:7: error: unknown type name `ENN'
+test/all/wf_undefined/wf_undefined.dzn:49:13: error: no field `EN0' in enum `I1'; expected: `EN1', `EN2', `EN3'
+test/all/wf_undefined/wf_undefined.dzn:39:3: info: enum defined here
+test/all/wf_undefined/wf_undefined.dzn:72:3: error: undefined interface `I3'
+test/all/wf_undefined/wf_undefined.dzn:74:3: error: undefined interface `I4'
+test/all/wf_undefined/wf_undefined.dzn:97:3: error: undefined interface `I3'
+test/all/wf_undefined/wf_undefined.dzn:99:3: error: undefined interface `I4'
+test/all/wf_undefined/wf_undefined.dzn:102:5: error: undefined component `C2'

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,6 +29,6 @@ interface wf_dataInoutInOutEvent {
   out void callback(inout xint val);
 
   behavior {
-    on evt: {}
+    on evt: callback;
   }
 }

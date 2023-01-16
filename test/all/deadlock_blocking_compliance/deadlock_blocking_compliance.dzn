@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,7 +32,8 @@ interface ihello
   {
     bool idle = true;
 
-    on hello:;
+    [idle]on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
   }
 }
 

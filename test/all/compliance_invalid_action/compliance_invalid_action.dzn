@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,7 +30,7 @@ interface ihello
 
   behavior
   {
-    on hello: world;
+    on hello: cruel;
     on inevitable: world;
   }
 }
@@ -44,5 +44,6 @@ component compliance_invalid_action
   {
     on h.hello(): w.hello();
     on w.world(): h.cruel();
+    on w.cruel(): h.cruel();
   }
 }

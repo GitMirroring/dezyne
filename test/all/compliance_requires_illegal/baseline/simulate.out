@@ -1,13 +1,13 @@
 (header ((h) ihello provides) ((sut) compliance_requires_illegal component) ((w) ihello requires))
 (state ((h)) ((sut)) ((w)))
-test/all/compliance_requires_illegal/compliance_requires_illegal.dzn:30:3: error: illegal
+test/all/compliance_requires_illegal/compliance_requires_illegal.dzn:31:3: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.cruel -> ...
 ... -> <external>.w.cruel
 <illegal>
 (state ((h)) ((sut)) ((w)))
-test/all/compliance_requires_illegal/compliance_requires_illegal.dzn:30:3: error: illegal
+test/all/compliance_requires_illegal/compliance_requires_illegal.dzn:31:3: error: illegal
 (trail "h.hello" "w.cruel" "<illegal>")
 (labels "h.hello" "h.cruel")
 (eligible)

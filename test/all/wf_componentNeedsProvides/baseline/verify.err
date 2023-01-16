@@ -1,1 +1,1 @@
-test/all/wf_componentNeedsProvides/wf_componentNeedsProvides.dzn:34:1: error: component with behavior must define a provides port
+test/all/wf_componentNeedsProvides/wf_componentNeedsProvides.dzn:36:1: error: component with behavior must define a provides port

@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -56,6 +57,7 @@ interface iworld
     [i == 1] on hello: {i=i+1; reply (false);}
     [i == 2] on hello: {i=i+1; reply (true);}
     [i == 3] on hello: {i=0; reply (true);}
+    on cruel, crash: illegal;
   }
 }
 

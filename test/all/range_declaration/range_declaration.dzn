@@ -39,7 +39,7 @@ interface II
 
   behavior
   {
-    on e: {}
+    on e: add;
   }
 }
 

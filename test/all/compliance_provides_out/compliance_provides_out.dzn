@@ -2,6 +2,7 @@
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,11 +27,12 @@ interface i
 {
   in void hello();
   out void world();
-  out void planet();
+  out void cruel();
 
   behavior
   {
     on hello: world;
+    on optional: cruel;
   }
 }
 
@@ -39,6 +41,6 @@ component compliance_provides_out
   provides i p;
   behavior
   {
-    on p.hello(): p.planet();
+    on p.hello(): p.cruel();
   }
 }

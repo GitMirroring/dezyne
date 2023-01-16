@@ -1,1 +1,1 @@
-test/all/wf_outEventNonVoidReturn/wf_outEventNonVoidReturn.dzn:27:3: error: out-event `triggered' must be void, found `Sensor.Value'
+test/all/wf_outEventNonVoidReturn/wf_outEventNonVoidReturn.dzn:28:3: error: out-event `triggered' must be void, found `Sensor.Value'

@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,6 +31,7 @@ interface ihello
   behavior
   {
     on hello: {}
+    on optional: cruel;
   }
 }
 

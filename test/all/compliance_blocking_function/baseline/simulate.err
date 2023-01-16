@@ -1,3 +1,3 @@
-test/all/compliance_blocking_function/compliance_blocking_function.dzn:45:7: error: non-compliance
-test/all/compliance_blocking_function/compliance_blocking_function.dzn:45:7: component performs: h.cruel
-test/all/compliance_blocking_function/compliance_blocking_function.dzn:32:5: port expects: return
+test/all/compliance_blocking_function/compliance_blocking_function.dzn:48:7: error: non-compliance
+test/all/compliance_blocking_function/compliance_blocking_function.dzn:48:7: component performs: h.cruel
+test/all/compliance_blocking_function/compliance_blocking_function.dzn:34:5: port expects: return

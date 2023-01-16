@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,8 +27,8 @@ interface Sensor {
   in void deactivate();
   out void deactivated();
   behavior {
-    on activate: { deactivate; }
-    on deactivate: {}
+    on activate: deactivate;
+    on deactivate: deactivated;
   }
 }
 
@@ -39,4 +40,3 @@ component SensorComp {
     on sensor1.activate(): { sensor2.deactivated(); }
   }
 }
-

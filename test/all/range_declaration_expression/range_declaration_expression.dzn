@@ -2,6 +2,7 @@
 //
 // Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -39,7 +40,7 @@ interface II
 
   behavior
   {
-    on e: {}
+    on e: add;
   }
 }
 

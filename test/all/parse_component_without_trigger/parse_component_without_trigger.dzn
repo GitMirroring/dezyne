@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,7 +21,10 @@
 interface iworld
 {
   out void world();
-  behavior {}
+  behavior
+  {
+    on optional: world;
+  }
 }
 
 component component_provides_without_trigger
@@ -32,7 +36,10 @@ component component_provides_without_trigger
 interface ihello
 {
   in void hello();
-  behavior {}
+  behavior
+  {
+    on hello: {}
+  }
 }
 
 component component_requires_without_trigger

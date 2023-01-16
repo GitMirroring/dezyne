@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,7 +21,7 @@
 interface port_type
 {
   in void hello ();
-  behavior {}
+  behavior {on hello:;}
 }
 
 component hello

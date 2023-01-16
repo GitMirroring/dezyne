@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,11 +25,13 @@
 interface ihello
 {
   in void hello();
+  in void bye();
   out void world();
 
   behavior
   {
     on hello: {}
+    on bye: world;
   }
 }
 
@@ -41,6 +43,7 @@ component compliance_optional
   behavior
   {
     on h.hello(): w.hello();
+    on h.bye(): h.world();
     on w.world(): h.world();
   }
 }

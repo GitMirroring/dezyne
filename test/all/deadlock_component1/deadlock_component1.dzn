@@ -27,9 +27,14 @@ interface I
 
   behavior
   {
-    [true]
+    bool idle = true;
+    [idle]
     {
-      on e: {}
+      on e: idle = false;
+    }
+    [!idle]
+    {
+      on e: illegal;
     }
   }
 }

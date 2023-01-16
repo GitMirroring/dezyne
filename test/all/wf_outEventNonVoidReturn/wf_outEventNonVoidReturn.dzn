@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,6 +27,6 @@ interface Sensor {
   in void enable();
   out Value triggered();
   behavior {
-    on enable: {}
+    on enable: Value v = triggered;
   }
 }

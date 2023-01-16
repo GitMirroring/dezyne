@@ -1,6 +1,7 @@
 model: range_expression
 p.e
 r.e
+r.add
 r.return
 p.return
 p.e

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2020, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
@@ -30,6 +30,7 @@ interface I0 {
     on hello: {
       zint z = $0$;
     }
+    on optional: world;
   }
 }
 
@@ -47,6 +48,7 @@ interface I1 {
       // em = EN.EN2; // reported by peg parser
       reply(EN.EN0);
     }
+    on optional: world;
   }
 }
 
@@ -55,6 +57,7 @@ interface I2 {
   in void hello();
   out void world();
   behavior {
+    on hello: {}
     // on hello: { mundo; } // reported by peg parser
     // on hola: {} // reported by peg parser
     on inevitable: world;

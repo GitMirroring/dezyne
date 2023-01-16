@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,6 +32,7 @@ interface ihello
   behavior
   {
     on hello: {/*reset;*/inc;add;inc;add;reply (1);}
+    on optional: reset;
   }
 }
 

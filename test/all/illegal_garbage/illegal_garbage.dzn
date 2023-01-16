@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,10 +28,12 @@
 interface ihello
 {
   in void hello ();
-  in void world ();
+  out void world ();
   behavior
   {
-    on hello: {}
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
   }
 }
 
@@ -41,6 +44,6 @@ component illegal_garbage
 
   behavior
   {
-    on h.hello (): w.world ();
+    on h.hello (): w.hello ();
   }
 }
