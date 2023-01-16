@@ -1,0 +1,2 @@
+test/all/unused_event/unused_event.dzn:27:3: error: event `cruel' is not used in behavior of interface `unused_event'
+test/all/unused_event/unused_event.dzn:28:3: error: event `sad' is not used in behavior of interface `unused_event'
