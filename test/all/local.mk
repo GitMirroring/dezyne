@@ -216,6 +216,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_requires_illegal		\
  %D%/compliance_single_to_multiple		\
  %D%/compliance_sync_action			\
+ %D%/compliance_system_hello_world		\
  %D%/compliance_system_provides_bool		\
  %D%/component_modeling_loop			\
  %D%/compound.space				\
