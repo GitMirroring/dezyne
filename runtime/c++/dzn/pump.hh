@@ -27,6 +27,7 @@
 #define DZN_PUMP_HH
 
 #include <dzn/coroutine.hh>
+#include <dzn/meta.hh>
 
 #include <condition_variable>
 #include <functional>
