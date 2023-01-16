@@ -47,7 +47,8 @@
             .variable
 
             ast:lookup
-            ast:pure-funcq))
+            ast:pure-funcq
+            ast:unique-import*))
 
 ;;;
 ;;; TODO: Lazy import, lazy well-formedness check.
@@ -128,6 +129,9 @@
 
 (define-method (ast:declaration* (o <enum>))
   (ast:field* o))
+
+(define-method (ast:unique-import* (o <root>))
+  (delete-duplicates (ast:import* o) ast:equal?))
 
 
 ;;;
@@ -234,7 +238,7 @@
 
 (define (widen-to-imports-unmemoized root scope name context)
   (and context (is-a? context <root>)
-       (let ((imports (ast:import* context)))
+       (let ((imports (ast:unique-import* context)))
          (any (cute search-import scope name <>) imports))))
 
 (define (widen-to-imports scope name context)
