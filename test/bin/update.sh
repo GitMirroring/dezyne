@@ -70,7 +70,7 @@ if $simulate; then
     flags=$(grep -Eo 'simulate-flags \([^)]*)' $dir/META | cut -d'(' -f 2 | tr -d '()"')
 
     mkdir -p $dir/baseline/simulate
-    ./pre-inst-env dzn simulate --format=$format $flags $dir/$base.dzn < $dir/trace     \
+    ./pre-inst-env dzn simulate --strict --format=$format $flags $dir/$base.dzn < $dir/trace     \
         > $dir/baseline/simulate.out                                                 \
         2> $dir/baseline/simulate.err
 fi
