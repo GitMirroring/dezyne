@@ -153,6 +153,7 @@ format."
                   (_
                    (cons pc (loop (cdr trace) port-trace pc))))))
              ((and (not (is-a? (%sut) <runtime:port>))
+                   instance
                    (eq? pc-instance instance)
                    (is-a? statement <trigger-return>)
                    (.port.name statement))
@@ -436,7 +437,8 @@ Return a list of traces, possibly marked with <compliance-error>."
                      (other-port-instance (runtime:other-port port-instance))
                      (instance (.container other-port-instance))
                      (component-acceptance
-                      (if (and component-acceptance (is-a? (%sut) <runtime:system>))
+                      (if (and component-acceptance
+                               (is-a? instance <runtime:system>))
                           (trigger->system-trigger instance component-acceptance)
                           component-acceptance))
                      (port-acceptances (make <acceptances>
@@ -560,6 +562,8 @@ port return."
 ;;TODO split check from determine provides trace(s) from pc and event
 ;;to avoid doing the determination work for every trace in traces
 (define-method (check-provides-compliance* (pc <program-counter>) event traces)
+  "Helper to call CHECK-PROVIDES-COMPLIANCE+ on for empty set of
+TRACES."
   (cond
    ((null? traces)
     (check-provides-compliance pc event '()))

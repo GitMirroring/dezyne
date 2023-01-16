@@ -320,7 +320,7 @@
            (ast:requires? (.ast instance)))
       (list (enqueue pc o other-instance (q-trigger))))
      ((is-a? other-instance <runtime:component>)
-      (list (enqueue pc o  other-instance (q-trigger))))
+      (list (enqueue pc o other-instance (q-trigger))))
      ((runtime:boundary-port? other-port)
       (list pc)))))
 
