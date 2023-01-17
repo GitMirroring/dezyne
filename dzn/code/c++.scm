@@ -48,6 +48,7 @@
             c++:enum-field-type
             c++:enum-literal
             c++:formal-type
+            c++:include-guard
             c++:model
             c++:string->enum-field*
             c++:type-name
@@ -126,6 +127,12 @@
   (let ((model (ast:parent o <model>)))
     (if (null? (code:injected-bindings model)) '()
         o)))
+
+(define-method (c++:include-guard (o <model>))
+  o)
+
+(define-method (c++:include-guard (o <instance>))
+  (.type o))
 
 (define-templates-macro define-templates c++)
 (include-from-path "dzn/templates/dzn.scm")

@@ -29,9 +29,9 @@
 ;;; Top
 ;;;
 (define-templates header-model c++:model)
-(define-templates include-guard)
+(define-templates include-guard c++:include-guard)
 (define-templates pump-include code:pump?)
-(define-templates endif)
+(define-templates endif c++:include-guard)
 
 
 ;;;

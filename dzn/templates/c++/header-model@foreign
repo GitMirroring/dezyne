@@ -37,5 +37,8 @@ struct #x:model-name : public dzn::component
 };
 }
  #x:close-namespace
+
+##include "#x:file-name .hh"
+
 #x:endif
 /***********************************  FOREIGN  **********************************/

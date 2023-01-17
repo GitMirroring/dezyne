@@ -208,7 +208,8 @@
   (code:file-name (.type o)))
 
 (define-method (code:file-name (o <foreign>))
-  (ast:full-name o))
+  (if (ast:imported? o) (next-method)
+      (ast:full-name o)))
 
 (define-method (code:file-name (o <import>))
   (basename (.name o) ".dzn"))
