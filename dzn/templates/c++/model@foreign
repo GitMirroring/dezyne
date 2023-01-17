@@ -1,0 +1,14 @@
+ #x:open-namespace
+namespace skel {
+#x:model-name ::#x:model-name (const dzn::locator& dzn_locator)
+: #x:meta
+, dzn_rt(dzn_locator.get<dzn::runtime>())
+, dzn_locator(dzn_locator)
+ #x:injected-member-initializer
+ #x:provides-member-initializer
+ #x:requires-member-initializer
+{
+ #x:foreign-event-slot
+}
+}
+ #x:close-namespace

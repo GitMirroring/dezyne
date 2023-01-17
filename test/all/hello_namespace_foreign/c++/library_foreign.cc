@@ -2,6 +2,7 @@
 //
 // Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -19,6 +20,9 @@
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include "library_foreign.hh"
+
+#include <dzn/locator.hh>
+#include <dzn/runtime.hh>
 
 namespace library {
 

@@ -80,5 +80,5 @@
 
 (define-method (code-util:generate-source? (o <root>))
   (find (conjoin (negate ast:imported?)
-                 (disjoin (is? <component>) (is? <system>)))
+                 (disjoin (is? <component>) (is? <foreign>) (is? <system>)))
         (ast:model* o)))
