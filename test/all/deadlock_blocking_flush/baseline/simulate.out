@@ -14,10 +14,10 @@ sut.w.world <- ...
 <external>.h.world <- ...
 (state ((h)) ((sut)) ((w)))
 (trail "h.hello" "w.hello" "w.world" "w.return" "h.world")
-test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:43:3: error: deadlock
+test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:42:3: error: deadlock
 <deadlock>
 (state ((h)) ((sut)) ((w)))
-test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:43:3: error: deadlock
+test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:42:3: error: deadlock
 (trail "<deadlock>")
-(labels "h.hello" "w.world" "w.cruel")
+(labels "h.hello" "w.world")
 (eligible)

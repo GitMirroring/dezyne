@@ -2,6 +2,7 @@
 //
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,7 +34,6 @@ subint int {-1..1};
 interface ihello
 {
   in void hello();
-  out void world();
 
   behavior
   {

@@ -1,1 +1,1 @@
-test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:43:3: error: deadlock
+test/all/deadlock_blocking_flush/deadlock_blocking_flush.dzn:42:3: error: deadlock

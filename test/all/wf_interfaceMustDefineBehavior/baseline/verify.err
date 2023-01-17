@@ -1,1 +1,1 @@
-test/all/wf_interfaceMustDefineBehavior/wf_interfaceMustDefineBehavior.dzn:24:1: error: interface must define a behavior
+test/all/wf_interfaceMustDefineBehavior/wf_interfaceMustDefineBehavior.dzn:25:1: error: interface must define a behavior

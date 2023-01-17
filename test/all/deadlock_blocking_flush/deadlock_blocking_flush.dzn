@@ -27,7 +27,6 @@ interface ihello
   in void hello();
 
   out void world();
-  out void cruel();
 
   behavior
   {

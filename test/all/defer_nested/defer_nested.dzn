@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,7 +25,6 @@ interface ihello
 {
   in void hello();
   out void world();
-  out void bye();
   behavior
   {
     bool idle = true;
