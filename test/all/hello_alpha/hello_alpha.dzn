@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -23,32 +23,28 @@
 //
 // Code:
 
-extern xint $int$;
+extern int $int$;
 
-interface i
+interface ihello
 {
-  in void e();
-  out void f();
-  out void g(xint a);
+  in void hello();
+  out void world(int a);
 
   behavior
   {
-    on e: g;
+    on hello: world;
   }
 }
 
 component hello_alpha
 {
-  provides i p;
-  requires i r;
+  provides ihello h;
+  requires ihello w;
 
   behavior
   {
-    xint a;
-    {
-      on p.e(): r.e();
-      on r.f: illegal;
-      on r.g(x): { a = x; p.g(a);}
-    }
+    int a;
+    on h.hello(): w.hello();
+    on w.world(x): { a = x; h.world(a); }
   }
 }
