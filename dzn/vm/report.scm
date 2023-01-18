@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -125,7 +125,9 @@
     (or (and (eq? o (%sut))
              (not modeling?))
         (and (%modeling?)
-             modeling?))))
+             modeling?)
+        (and (is-a? (.container o) <runtime:foreign>)
+             (runtime:boundary-port? (runtime:other-port o))))))
 
 (define-method (pc-event? (o <runtime:component>) (trigger <trigger>))
   (let ((port (.port trigger)))
@@ -184,6 +186,11 @@
 (define-method (trace-name (o <runtime:instance>))
   (cond ((is-a? (%sut) <runtime:port>) #f)
         ((null? (runtime:instance->path o)) "sut")
+        ((and (is-a? o <runtime:port>)
+              (is-a? (.container o) <runtime:foreign>)
+              (runtime:boundary-port?
+               (runtime:other-port o)))
+         (.name (.ast (runtime:other-port o))))
         (else (string-join (runtime:instance->path o) "."))))
 
 (define-method (pc->event (o <program-counter>))
@@ -212,7 +219,7 @@
   (cons trigger
         (if (is-a? (%sut) <runtime:port>)
             (format #f "~a" (.event.name trigger))
-            (format #f "~a.~a" (.name (.ast o)) (.event.name trigger)))))
+            (format #f "~a.~a" (trace-name o) (.event.name trigger)))))
 
 (define-method (pc->event (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
   (cons trigger
