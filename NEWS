@@ -5,6 +5,29 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.16.4 since 2.16.3
+** Commands
+  - The different queue sizes: component, defer, external can now be set
+    individually using `--queue-size', `--queue-defer' and
+    `--queue-size-external'.  The defaults are respectively: 3, 2 and 1.
+** Noteworthy bug fixes
+  - A bug was fixed in the type name lookup of a formal parameter
+    binding (a <- b).
+  - The C# code generator now supports foreign components returning a
+    enum that is defined in an interface.
+  - The C++ code generator now supports imported foreign componenents.
+  - The well-formedness check no longer crashes on a binary expression
+    with a data constant.
+  - A bug was fixed in the verifier that could lead to a false positive
+    for models that have a blocking skip race.
+  - The well-formedness check now reports declarative statements inside
+    a function as being incorrect.
+  - A bug was fixed in the verifier for reporting queue-full cases for
+    an external port.  As a result, queue-full is now reported during
+    the illegal check and not as part of the deadlock check.
+  - The `dzn simulate now exits gracefully when no dezyne model is
+    found.
+
 * Changes in 2.16.3 since 2.16.2
 ** Noteworthy bug fixes
   - A bug was fixed in the C++ and C# code generators where a data
