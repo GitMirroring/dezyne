@@ -1,1 +1,1 @@
-#x:process-id  = (tag(#x:makreel:line-column) . #x:process-identifier #x:process-haakjes) + #x:continuation;
+#x:process-id  = tag(#x:makreel:line-column) . #x:continuation;

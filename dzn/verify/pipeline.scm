@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -66,12 +66,12 @@
 ;;;
 
 (define (interface-taus model)
-  (let ((alphabet '("inevitable" "optional")))
+  (let ((alphabet '("inevitable" "optional" "tag")))
     (string-join alphabet ",")))
 
 (define (component-taus model)
   (let ((ports (ast:requires-port* model)))
-    (string-join (map makreel:.name ports) ",")))
+    (string-join (cons "tag" (map makreel:.name ports)) ",")))
 
 (define (component-exclude-taus model)
   (let ((ports (ast:requires-port* model)))

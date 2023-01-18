@@ -1,8 +1,7 @@
 model: livelock_component
 h.hello
-w.hello
 <loop>
+w.hello
 w.world
 w.return
-w.hello
 <livelock>

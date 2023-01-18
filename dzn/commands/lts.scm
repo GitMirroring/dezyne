@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -187,9 +187,8 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                                        "No unreachable code found."
                                        (assert-unreachable lts-hide unreachable)))
           (when failures?
-            (let ((lts (remove-tag-edges
-                        (if exclude-illegal? (remove-illegal lts-failures)
-                            lts-failures))))
+            (let ((lts (if exclude-illegal? (remove-illegal lts-failures)
+                           lts-failures)))
               (when single-line?
                 (format #t "failures:"))
               (display-lts lts #:separator output-separator)))))))))

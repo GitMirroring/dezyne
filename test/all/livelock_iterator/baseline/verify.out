@@ -1,7 +1,6 @@
 model: livelock_iterator
 iter.map
-list.next
 <loop>
-list.true
 list.next
+list.true
 <livelock>

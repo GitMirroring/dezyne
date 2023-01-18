@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -77,8 +77,7 @@
             node?
             node-edges
             node-state
-            remove-illegal
-            remove-tag-edges))
+            remove-illegal))
 
 ;;; TODO:
 ;;; * functional style
@@ -410,26 +409,17 @@
 ;;;
 ;;; Deadlock.
 ;;;
-(define (remove-info-edges lts)
-  (define (info-edge? edge)
-    (or (string-prefix? "<state>" (edge-label edge))
-        (string-prefix? "tag(" (edge-label edge))))
-  (define (remove-info node)
-    (let ((edges (filter (negate info-edge?) (node-edges node))))
+(define (remove-state-edges lts)
+  (define (state-edge? edge)
+    (string-prefix? "<state>" (edge-label edge)))
+  (define (remove-state node)
+    (let ((edges (filter (negate state-edge?) (node-edges node))))
       (set-field node (node-edges) edges)))
-  (vector-map-one remove-info lts))
-
-(define (remove-tag-edges lts)
-  (define (tag-edge? edge)
-    (string-prefix? "tag(" (edge-label edge)))
-  (define (remove-tag node)
-    (let ((edges (filter (negate tag-edge?) (node-edges node))))
-      (set-field node (node-edges) edges)))
-  (vector-map-one remove-tag lts))
+  (vector-map-one remove-state lts))
 
 (define (deadlock-nodes lts)
   "States without outgoing edges"
-  (let* ((lts (remove-info-edges lts))
+  (let* ((lts (remove-state-edges lts))
          (lts (trim-queue-full lts))
          (lts (annotate-exclude lts (list %<declarative-illegal>))))
     (define (edges? state)
@@ -699,7 +689,7 @@ from LABELS."
            (lts (aut-text->lts text #:pred? #t))
            (lts (vector-map-one convert-node lts))
            (lts (if illegal? lts (remove-illegal lts)))
-           (lts (remove-info-edges lts))
+           (lts (remove-state-edges lts))
            (initial (initial lts))
            (base (string-append model ".trace"))
            (dir (cond ((equal? out "-") #f)

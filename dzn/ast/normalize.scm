@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2020, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -1335,7 +1335,7 @@ code check."
         (location (.parent o))))
   (define (add-tag o)
     (match o
-      (($ <illegal>)
+      ((? declarative-illegal?)
        o)
       (($ <compound>)
        (let ((tag (make <tag> #:location (location o))))
