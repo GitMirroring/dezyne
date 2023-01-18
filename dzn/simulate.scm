@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -102,6 +102,9 @@ format."
          (port-instance (and=> (find .instance port-trace) .instance))
          (other-port (runtime:other-port port-instance))
          (instance (.container other-port))
+         (foreign? (is-a? instance <runtime:foreign>))
+         (instance (if (not foreign?) instance
+                       other-port))
          (trace-index (or (and=> (list-index
                                   (conjoin
                                    (compose (is? <initial-compound>) .statement)
@@ -152,7 +155,8 @@ format."
              ((and (not (is-a? (%sut) <runtime:port>))
                    (eq? pc-instance instance)
                    (is-a? statement <trigger-return>)
-                   (.port.name statement))
+                   (or (.port.name statement)
+                       foreign?))
               (let* ((port (.port statement))
                      (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
                                  (runtime:port pc-instance port)))
@@ -403,8 +407,14 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (pair? trace))
               (%debug "  exit 4\n")
               (list trace))
+             ((let* ((port-instance (any .instance trace))
+                     (container (and=> port-instance .container)))
+                (is-a? container <runtime:foreign>))
+               (%debug "  exit 5\n")
+              (map (cute zip trigger trace <>)
+                   (append port-traces non-compliances)))
              ((%compliance-check?)
-              (%debug "  exit 5\n")
+              (%debug "  exit 6\n")
               (let* ((port-acceptances (map first-non-match non-compliances))
                      (port-acceptances (delete-duplicates port-acceptances port-acceptance-equal?))
                      (component-acceptance
@@ -442,7 +452,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                            (trace (cons pc tail)))
                       (list (zip trigger trace (car non-compliances)))))))
              (else
-              (%debug "  exit 6\n")
+              (%debug "  exit 7\n")
               (let* ((port-trace (car non-compliances))
                      (port-state (get-state (last port-trace)))
                      (port-trace

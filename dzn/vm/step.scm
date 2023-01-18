@@ -127,7 +127,12 @@
         pc)))))
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:foreign>) (trigger <trigger>))
-  (make-implicit-illegal pc trigger))
+  (let* ((port (.port trigger))
+         (r:port (runtime:port instance port))
+         (r:other-port (runtime:other-port r:port))
+         (trigger (clone trigger #:port.name #f))
+         (trigger (clone trigger #:parent (.type (.ast r:other-port)))))
+    (begin-step pc r:other-port trigger)))
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
   (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
