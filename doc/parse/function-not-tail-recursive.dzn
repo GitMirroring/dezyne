@@ -12,5 +12,6 @@ interface function_not_tail_recursive
         b = true;
       }
     }
+    on hello: f ();
   }
 }

@@ -1,7 +1,7 @@
 interface iworld
 {
   out void world ();
-  behavior {}
+  behavior {on optional:world;}
 }
 
 component component_provides_without_trigger

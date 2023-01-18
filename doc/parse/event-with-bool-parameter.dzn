@@ -2,5 +2,5 @@ extern int $int$;
 interface event_with_bool_porameter
 {
   in void hello (bool b);
-  behavior {}
+  behavior {on hello:{}}
 }

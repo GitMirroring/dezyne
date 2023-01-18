@@ -2,7 +2,7 @@ interface ihello
 {
   in void hello ();
   out void world ();
-  behavior {}
+  behavior {on hello:world;}
 }
 
 component component_action_used_as_trigger

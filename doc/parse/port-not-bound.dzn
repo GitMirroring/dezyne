@@ -1,7 +1,7 @@
 interface ihello
 {
-  in bool hello ();
-  behavior {}
+  in void hello ();
+  behavior {on hello:{}}
 }
 
 component port_not_bound

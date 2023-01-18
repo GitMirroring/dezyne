@@ -5,5 +5,6 @@ interface assign_outside_on
   {
     bool b = true;
     [true] b = false;
+    on hello: {}
   }
 }

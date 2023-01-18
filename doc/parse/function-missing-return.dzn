@@ -3,6 +3,7 @@ interface ihello
   in void hello ();
   behavior
   {
+    on hello: {}
   }
 }
 

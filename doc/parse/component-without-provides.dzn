@@ -1,7 +1,7 @@
 interface iworld
 {
   in void hello ();
-  behavior {}
+  behavior {on hello:{}}
 }
 
 component component_without_provides
