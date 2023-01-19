@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -132,6 +132,13 @@
   (let ((root (ast:parent o <root>)))
     (c:get-all-enums root)))
 
+(define-method (c:get-all-local-enums (o <root>))
+  (filter (negate ast:imported?) (c:get-all-enums o)))
+
+(define-method (c:get-all-local-enums (o <ast>))
+  (let ((root (ast:parent o <root>)))
+    (c:get-all-local-enums root)))
+
 (define-method (c:enum-printed-name (o <enum-field>))
   (ast:name (.type o)))
 
@@ -253,6 +260,17 @@
                  (is? <foreign>))
         (ast:model* o)))
 
+(define-method (c:generate-source? (o <root>))
+  (find (conjoin (negate ast:imported?)
+                 (disjoin (is? <component>)
+                          (is? <enum>)
+                          (conjoin (is? <interface>)
+                                   (compose
+                                    pair?
+                                    code:enum-definer))
+                          (is? <system>)))
+        (ast:model* o)))
+
 
 ;;;
 ;;; Entry points.
@@ -268,7 +286,7 @@
           (file-name (code-util:root-file-name root dir ".h")))
       (code-util:dump root generator #:file-name file-name))
 
-    (when (or (code-util:generate-source? root)
+    (when (or (c:generate-source? root)
               (c:generate-foreign-skel? root))
       (let ((generator (code-util:indenter (cute x:source root)))
             (file-name (code-util:root-file-name root dir ".c")))

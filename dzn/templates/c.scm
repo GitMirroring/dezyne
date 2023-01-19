@@ -93,7 +93,7 @@
 ;;;
 (define-templates enum-field-switch-case c:get-enum-fields-of-enum)
 (define-templates enum-field-else-if c:get-enum-fields-of-enum)
-(define-templates source-enum-string-function-definition c:get-all-enums)
+(define-templates source-enum-string-function-definition c:get-all-local-enums)
 (define-templates header-enum-string-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
 (define-templates source-enum-string-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
 (define-templates global-enum-wrapper (lambda (o) (if (pair? (c:get-all-enums o)) o '())))
