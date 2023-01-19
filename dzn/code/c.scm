@@ -271,6 +271,13 @@
                           (is? <system>)))
         (ast:model* o)))
 
+(define-method (c:connect-instance-name-right (o <binding>))
+  (let* ((end-point (.right o))
+         (instance (.instance end-point))
+         (name (.name instance)))
+    (if (not (is-a? (.type instance) <foreign>)) name
+        (string-append name ".base"))))
+
 
 ;;;
 ;;; Entry points.

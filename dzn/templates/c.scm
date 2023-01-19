@@ -116,7 +116,7 @@
 (define-templates binding-requires c:binding-requires)
 (define-templates connect-port-name-right (compose .port.name .right))
 (define-templates connect-port-name-left (compose .port.name .left))
-(define-templates connect-instance-name-right (compose .instance.name .right))
+(define-templates connect-instance-name-right c:connect-instance-name-right)
 (define-templates connect-instance-name-left (compose .instance.name .left))
 (define-templates port-declaration ast:port*)
 (define-templates system-port-declaration ast:port*)
