@@ -3,7 +3,7 @@
 // Copyright © 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -177,7 +177,7 @@ namespace dzn
     auto operator()(L&& event) -> decltype(event())
     {
       auto value = component->dzn_rt.handle(component, event, coroutine_id(component->dzn_locator));
-      reply = ::to_string(value);
+      reply = to_string(value);
       return value;
     }
     ~call_helper()
