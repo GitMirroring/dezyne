@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -1023,6 +1023,16 @@
   (if (is-a? o <named>)
       (append (ast:full-name (parent (.parent o) <scope>)) (list (ast:name o)))
       (ast:full-name (parent (.parent o) <scope>))))
+
+(define-method (ast:full-name (o <declaration>))
+  (let ((scope (parent o <scope>)))
+    (cond
+     ((not scope)
+      #f)
+     ((is-a? o <named>)
+      (append (ast:full-name scope) (list (ast:name o))))
+     (else
+      (ast:full-name scope)))))
 
 (define-method (ast:full-name (o <root>))
   '())
