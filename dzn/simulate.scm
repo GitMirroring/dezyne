@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -61,8 +61,6 @@
 ;;;
 ;;; Deadlock helpers.
 ;;;
-
-
 (define (interfaces-event-traces-alist pc)
   (define (provides-event->label-traces pc event)
     (let* ((pc (clone pc #:instance #f #:statement #f #:trail '()))
@@ -162,7 +160,7 @@
     labels))
 
 (define-method (eligible-labels (pc <program-counter>))
-  (let* ((event-traces-alist (interfaces-event-traces-alist pc))
+  (let* ((event-traces-alist (event-traces-alist pc))
          (eligible-traces
           (filter (match-lambda
                     ((event (pcs tails ...) ...)

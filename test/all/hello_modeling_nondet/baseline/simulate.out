@@ -12,4 +12,4 @@
 (trail "world")
 (state ((client)) ((sut) (idle . false)))
 (labels "hello" "inevitable" "optional")
-(eligible "sut.bye" "sut.cruel" "sut.world")
+(eligible "inevitable" "optional")
