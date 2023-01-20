@@ -67,6 +67,12 @@ if test "x$have_guile_readline" != "xyes"; then
   AC_MSG_ERROR([Guile readline support is missing; please install it.])
 fi
 
+dnl Check for SCMackerel.
+GUILE_MODULE_AVAILABLE([have_scmackerel], [(scmackerel processes)])
+if test "x$have_scmackerel" != "xyes"; then
+  AC_MSG_ERROR([SCMackerel is missing; please install it.])
+fi
+
 AC_PATH_PROG([HELP2MAN], [help2man])
 AM_CONDITIONAL([have_help2man], [test -n "$HELP2MAN"])
 AC_PATH_PROGS([PERL5], [perl5 perl])
