@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -250,7 +250,7 @@
       (widen-to-parent scope name context)
       (widen-to-imports scope name context)))
 
-(define-method (ast:lookup context name)
+(define (ast:lookup-unmemoized root context name)
   "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a context? or
 null) and return its CONTEXT."
   (cond
@@ -268,10 +268,13 @@ null) and return its CONTEXT."
            (name scope (ast:name+scope name)))
       (search-or-widen-context scope name context)))))
 
-(define-method (ast:lookup name)
-  (let* ((context (or (as name <scope>) (ast:parent name <scope>)))
+(define ast:lookup-memoized (ast:pure-funcq ast:lookup-unmemoized))
+(define-method (ast:lookup (context <ast>) name)
+  (let* ((context (or (as context <scope>) (ast:parent context <scope>)))
          (root (or (as context <root>) (ast:parent context <root>))))
-    (ast:lookup name context)))
+    (ast:lookup-memoized root context name)))
+(define-method (ast:lookup name)
+  (ast:lookup name name))
 
 (define-method (ast:lookup-variable (o <ast>) name statements)
   (define (name? o) (and (equal? (.name o) name) o))
