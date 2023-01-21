@@ -81,20 +81,31 @@
 (define-method (wfc (o <model>))
   '())
 
-(define-method (unused-event (o <event>))
-  (let* ((interface (ast:parent o <interface>))
-         (behavior (.behavior interface))
-         (found (tree-collect
-                 (conjoin (disjoin (is? <trigger>)
-                                   (is? <action>))
-                          (compose (cute ast:equal? o <>) .event))
-                 behavior)))
-    (if (pair? found) '()
-        `(,(wfc-error
-            o
-            (format #f "event `~a' is not used in behavior of interface `~a'"
-                    (ast:name o)
-                    (ast:name interface)))))))
+(define-method (unused-events (o <interface>))
+  (define (report-unused event)
+    (wfc-error
+     event
+     (format #f "event `~a' is not used in behavior of interface `~a'"
+             (ast:name event)
+             (ast:name o))))
+  (let* ((events (ast:event* o))
+         (behavior (.behavior o))
+         (triggers/actions (tree-collect-filter
+                            (disjoin (is? <behavior>)
+                                     (is? <declarative>)
+                                     (is? <triggers>)
+                                     (is? <functions>)
+                                     (is? <function>)
+                                     (is? <statement>)
+                                     (is? <trigger>)
+                                     (is? <action>)
+                                     (is? <expression>))
+                            (disjoin (is? <trigger>)
+                                     (is? <action>))
+                            behavior))
+         (used-events (map .event triggers/actions))
+         (unused (lset-difference ast:equal? events used-events)))
+    (map report-unused unused)))
 
 (define-method (wfc (o <interface>))
   (define (data-variable o)
@@ -105,7 +116,7 @@
              (format #f "data variable in interface not supported: `~a'"
                      (.name o)))))))
   (append
-   (append-map unused-event (ast:event* o))
+   (unused-events o)
    (re-definition o)
    (append-map wfc (ast:type* o))
    (append-map wfc (ast:event* o))
