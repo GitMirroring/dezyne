@@ -116,13 +116,17 @@ NEWS
     std::string to char const*.
   - The enum stream operator << has been templatized to allow
     overloading for character type and traits.
+  - The C++ code generator no longer generates redundant enum string
+    conversion functions.
+  - The C++ code generator now places the foreign skeleton constructor
+    into its own compilation unit.  This assures compilation with
+    non-redundantly generated new style enums regardless of import
+    ordering.
 ** Noteworthy bug fixes
   - Some longstanding bugs have been fixed in relation to
     + Extending nested namespaces in imports,
     + Referencing partially named identifiers,
     by a full rewrite of the lookup algorithm.
-  - The C++ code generator no longer generates redundant enum string
-    conversion functions.
   - The C++ code generator now supports imported foreign components.
   - The C# code generator now supports foreign components returning a
     enum that is defined in an interface.
