@@ -390,6 +390,7 @@ REGRESSION_TESTS =				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
+ %D%/no_return					\
  %D%/param_shadow				\
  %D%/pump_twice					\
  %D%/queue_size_four				\
