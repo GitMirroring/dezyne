@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2016, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2017, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2017, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -34,7 +34,11 @@
 #include <typeinfo>
 
 namespace dzn {
-  struct illegal_handler {std::function<void()> illegal = [] {assert(!"illegal");};};
+  struct illegal_handler
+  {
+    std::function<void()> illegal = [] {assert(!"illegal");};
+    [[noreturn]] void handle() { illegal(); std::abort(); }
+  };
 
   struct locator
   {
