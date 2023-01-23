@@ -1,7 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
-# Copyright © 2016, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+# Copyright © 2016, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
@@ -42,7 +42,8 @@ CCACHE:=$(shell type -p ccache)
 CXX:=$(CCACHE) g++
 WARN_FLAGS=					\
  -Wall						\
- -Wextra
+ -Wextra					\
+ -Werror
 NOWARN_FLAGS=					\
  -Wno-unused-variable				\
  -Wno-unused-parameter				\
