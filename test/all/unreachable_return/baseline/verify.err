@@ -1,0 +1,12 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: unreachable_return: check: deterministic: ok
+verify: unreachable_return: check: illegal: ok
+verify: unreachable_return: check: deadlock: ok
+verify: unreachable_return: check: unreachable: fail
+test/all/unreachable_return/unreachable_return.dzn:44:7: error: code will never be executed
+test/all/unreachable_return/unreachable_return.dzn:49:7: error: code will never be executed
+verify: unreachable_return: check: livelock: ok
+verify: unreachable_return: check: compliance: ok
