@@ -1417,9 +1417,48 @@ code check."
               (tag (make <tag> #:location location)))
          (make <compound> #:elements (list tag o) #:location location)))))
 
+  (define (tag-return-continuation o)
+    (match o
+      (($ <compound>)
+       (let ((statements
+              (let loop ((statements (ast:statement* o)))
+                (match statements
+                  (()
+                   '())
+                  (((and ($ <return>) return) statement rest ...)
+                   (let* ((location (location statement))
+                          (tag (make <tag> #:location location)))
+                     (cons* return tag (loop (cons statement rest)))))
+                  (((and ($ <if>) if-statement) statement rest ...) (=> failure)
+                   (define (continue-to-statement? return)
+                     (let ((continuation (car (ast:continuation* return))))
+                       (ast:eq? continuation statement)))
+                   (let* ((returns (tree-collect-filter (is? <statement>)
+                                                        (is? <return>)
+                                                        if-statement))
+                          (returns (filter continue-to-statement?
+                                           returns)))
+                     (if (null? returns) (failure)
+                         (let* ((location (location statement))
+                                (tag (make <tag> #:location location)))
+                           (cons* if-statement
+                                  tag
+                                  (loop (cons statement rest)))))))
+                  (((and ($ <if>) statement) rest ...)
+                   (let* ((then (tag-return-continuation (.then statement)))
+                          (else (tag-return-continuation (.else statement)))
+                          (statement (clone statement #:then then #:else else)))
+                     (cons statement (loop rest))))
+                  ((statement rest ...)
+                   (cons (tag-return-continuation statement)
+                         (loop rest)))))))
+         (clone o #:elements statements)))
+      (statement statement)))
+
   (match o
     (($ <function>)
      (let* ((statement (.statement o))
+            (statement (tag-return-continuation statement))
             (statement (add-tag (tag-imperative-blocks statement))))
        (clone o #:statement statement)))
     (($ <defer>)
