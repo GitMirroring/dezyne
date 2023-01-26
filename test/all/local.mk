@@ -419,6 +419,7 @@ REGRESSION_TESTS =				\
  %D%/space.import_interface_shadow		\
  %D%/space.interface_shadow			\
  %D%/space.space				\
+ %D%/space.wostream				\
  %D%/state_deadlock				\
  %D%/step_state					\
  %D%/stress_comment				\
