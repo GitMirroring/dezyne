@@ -5,12 +5,43 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.2 since 2.17.1
+** Code
+  - The experimental C code generator now supports out-parameters.
+** Commands
+  - The different queue sizes: component, defer, external can now be set
+    individually using `--queue-size', `--queue-defer' and
+    `--queue-size-external'.  The defaults are respectively: 3, 2 and 1.
+** Verification
+  - The error on failing the determinism check is no longer ambiguous by
+    removing "due to overlapping guards" from the message.
+** Simulate
+  - The error on failing the determinism check is no longer ambiguous by
+    removing "due to overlapping guards" from the message.
+** Noteworthy bug fixes
+  - A bug was fixed in the type name lookup of a formal parameter
+    binding (a <- b).
+  - A bug was fixed in generalized integer expressions of form `a-b-c'.
+  - A bug was fixed in the normalization involving implicit temporaries
+    that would crash the verifier on constructs like g (f ($0$)).
+  - A bug was fixed in the verifier that could lead to a false positive
+    for models that have a blocking skip race.
+  - The verifier no longer hangs attempting to create a witness for a
+    livelock in a non-deterministic interface.
+  - The well-formedness check now reports declarative statements inside
+    a function as being incorrect.
+  - A bug was fixed in the verifier for reporting queue-full cases for
+    an external port.  As a result, queue-full is now reported during
+    the illegal check and not as part of the deadlock check.
+  - The `dzn simulate now exits gracefully when no dezyne model is
+    found.
+
 * Changes in 2.17.1 since 2.17.0
 ** Code
   - The C++ code generator now places the enum stream operator `<<' in
     the same namespace as its type to be resolved through ADL.
   - The C++ code generator and runtime now place all std::string
-    conversion functions are in the dzn namespace.
+    conversion functions in the dzn namespace.
   - The C++ code generator and runtime now use a illegal handler
     `handle' function annotated with `noreturn'.
 
