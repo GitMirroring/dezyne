@@ -1,1 +1,1 @@
-, #x:formal-data-type  #.name
+#x:formal-data-type  #x:c:ptr #.name

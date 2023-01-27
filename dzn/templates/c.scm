@@ -49,17 +49,22 @@
 (define-templates trigger-reply c:enum-trigger-void)
 
 (define-templates port-type c:get-trigger-port-type type-infix)
-(define-templates formal-data-type c:formal-data-type)
+(define-templates formal-data-type c:formal-data-type null-infix)
 
 
 ;;;
 ;;; Formals, parameters, arguments
 ;;;
-(define-templates c-comma c:comma)
-(define-templates closure-struct-args code:arguments)
+(define-templates c-comma c:comma null-infix)
+(define-templates c-arguments c:arguments argument-grammar)
+(define-templates c:address/deref c:address/deref)
+(define-templates c:deref c:deref)
+(define-templates c:ptr c:ptr)
+(define-templates c:self c:self)
+(define-templates closure-struct-args code:arguments type-infix)
 (define-templates method-parameters code:arguments formal-grammar)
 (define-templates helper-function-arguments code:arguments argument-grammar)
-(define-templates closure-variable-definition code:arguments argument-grammar)
+(define-templates closure-variable-definition code:arguments)
 
 (define-templates closure-struct c:get-incoming-triggers-from-model)
 (define-templates helper-in-trigger-prototype c:get-incoming-triggers-from-model)
@@ -145,7 +150,7 @@
 (define-templates type-name c:type-name name-infix)
 (define-templates type-name-different c:type-name-different name-infix)
 (define-templates function-return-type (compose c:type-name .type .signature) name-infix)
-(define-templates formals ast:formal*)
+(define-templates formals ast:formal* comma-prefix)
 (define-templates in-event-definer ast:in-event*)
 (define-templates out-event-definer ast:out-event*)
 (define-templates include-guard)

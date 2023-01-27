@@ -65,7 +65,7 @@
   (c:name (ast:parent (.event o) <interface>)))
 
 (define-method (c:comma (o <list>))
-  (if (null? o) "" ","))
+  (if (null? o) "" ", "))
 
 (define-method (c:comma (o <action>))
   (c:comma (ast:argument* o)))
@@ -76,11 +76,99 @@
 (define-method (c:comma (o <trigger>))
   (c:comma (ast:formal* o)))
 
+(define-method (c:arguments (o <trigger>))
+  (define (formal->argument f)
+    (let ((argument (make <argument>
+                      #:name (.name f)
+                      #:type.name (.type.name f)
+                      #:direction (.direction f)
+                      #:expression f)))
+      (clone argument #:parent (.parent f))))
+  (map formal->argument
+       (code:add-calling-context-argument (ast:formal* o))))
+
+(define-method (c:address/deref (o <top>))
+  "")
+
+(define-method (c:address/deref (o <argument>))
+  (let ((variable (.variable o))
+        (formal (ast:argument->formal o)))
+    (cond ((and (is-a? variable <formal>)
+                (not (ast:in? variable))
+                (ast:in? formal))
+           "")
+          ((and (or (is-a? variable <variable>)
+                    (and (is-a? variable <formal>)
+                         (ast:in? variable)))
+                (not (ast:in? formal)))
+           "&")
+          (else
+           ""))))
+
+(define-method (c:address/deref (o <variable>))
+  (let ((variable o)
+        (formal (ast:argument->formal o)))
+    (cond  ((and (not formal)
+                (not (ast:in? o)))
+           "*")
+          ((not formal)
+           "")
+          ((and (is-a? variable <formal>)
+                (not (ast:in? variable))
+                (ast:in? formal))
+           "")
+          ((and (or (is-a? variable <variable>)
+                    (and (is-a? variable <formal>)
+                         (ast:in? variable)))
+                (not (ast:in? formal)))
+           "&")
+          (else
+           ""))))
+
+(define-method (c:address/deref (o <formal>))
+  (let ((formal (ast:argument->formal o)))
+    (cond ((and (not formal)
+                (not (ast:in? o)))
+           "*")
+          ((not formal)
+           "")
+          ((and (not (ast:in? o))
+                (ast:in? formal))
+           "*")
+          ((and (ast:in? o)
+                (not (ast:in? formal)))
+           "&")
+          (else
+           ""))))
+
+(define-method (c:deref (o <top>))
+  "")
+
+(define-method (c:deref (o <formal>))
+  (if (not (ast:in? o)) "*" ""))
+
+(define-method (c:deref (o <out-formal>))
+  "*")
+
+(define-method (c:deref (o <var>))
+  (let ((variable (.variable o)))
+    (if (and (is-a? variable <formal>) (not (ast:in? variable))) "*"
+        "")))
+
+(define-method (c:ptr (o <formal>))
+  (if (not (eq? 'in (.direction o))) "*" ""))
+
+(define-method (c:ptr (o <argument>))
+  "")
+
+(define-method (c:self (o <variable>))
+  (if (ast:member? o) "self->" ""))
+
 (define-method (c:extract-variables-with-respect-to-enums (o <ast>))
   (let* ((non-literals (filter (lambda (u) (not (is-a? (.expression u) <literal>))) (ast:variable* o)))
          (literals (filter (lambda (u) (is-a? (.expression u) <literal>)) (ast:variable* o)))
          (filtered-literals (filter (lambda (u) (not (equal? ((compose .value .expression) u) "void"))) literals)))
-     (append non-literals filtered-literals)))
+    (append non-literals filtered-literals)))
 
 
 (define-method (c:formal-data-type (o <formal>))
@@ -90,6 +178,9 @@
      (($ <subint>) (c:range-type (.type o)))
      (($ <extern>) (list ((compose .value .value .type) o)))
      (_ (ast:name type)))))
+
+(define-method (c:formal-data-type (o <argument>))
+  (c:formal-data-type (.expression o)))
 
 ;; bidning stuff
 (define-method (c:binding-instance (o <end-point>))
@@ -217,9 +308,6 @@
     (match type
       (($ <enum>) "uint8_t")
       (($ <subint>) (c:range-type (ast:type o)))
-      (($ <extern>) (if (string= "int" ((compose ast:name .type) o))
-                        "int16_t"
-                        ((compose .value .type) o)))
       (_ (code:type-name o)))))
 
 (define-method (c:range-type (o <subint>))

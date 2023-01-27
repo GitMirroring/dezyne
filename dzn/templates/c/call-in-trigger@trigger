@@ -5,7 +5,7 @@ static #x:type-name  #x:model-parent-name _#.port.name _#.event.name _#.event.di
 ##endif /* DZN_TRACING */
   self_ = port->meta.provides.address;
   runtime_start(&self_->dzn_info);
-  #x:model-parent-name _#.port.name _#.event.name(self_#x:c-comma #x:code-arguments);
+  #x:model-parent-name _#.port.name _#.event.name(self_#x:c-comma #x:c-arguments);
   runtime_finish(&self_->dzn_info);
 ##if DZN_TRACING
   runtime_trace_out(&port->meta, #x:to-string);
