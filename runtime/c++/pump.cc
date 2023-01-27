@@ -3,7 +3,7 @@
 // Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2015, 2016, 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2017, 2019, 2020, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -440,7 +440,7 @@ namespace dzn
 
     debug.rdbuf() && debug << "[" << blocked->id << "] unblock" << std::endl;
 
-    switch_context.emplace_back([&runtime,blocked,port,this] {
+    switch_context.emplace_back([blocked,this] {
       auto self = find_self(this->coroutines);
       debug.rdbuf() && debug << "setting unblocked to port "
                              << blocked->port << std::endl;
