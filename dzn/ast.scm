@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -588,16 +588,29 @@
   o)
 
 (define-method (ast:argument->formal (o <expression>))
-  (let* ((call (ast:parent o <call>))
-         (arguments (ast:argument* call))
-         (index (list-index (cut ast:eq? o <>) arguments))
-         (formals ((compose ast:formal* .function) call)))
-    (list-ref formals index)))
+  (let ((action/call (or (ast:parent o <action>)
+                         (ast:parent o <call>))))
+    (and action/call
+         (let* ((arguments (ast:argument* action/call))
+                (index (list-index (compose (cute eq? (.node o) <>) .node)
+                                   arguments))
+                (event/function ((if (is-a? action/call <action>) .event
+                                     .function)
+                                 action/call))
+                (formals (ast:formal* event/function)))
+           (list-ref formals index)))))
+
+(define-method (ast:argument->formal (o <argument>))
+  (ast:argument->formal (.expression o)))
 
 (define-method (ast:formal->index (o <formal>))
   (let* ((formals (.elements (ast:parent o <formals>)))
-         (index (list-index (cut ast:eq? o <>) formals)))
+         (index (list-index (compose (cute eq? (.node o) <>) .node)
+                            formals)))
     index))
+
+(define-method (ast:formal->index (o <argument>))
+  (ast:formal->index (.expression o)))
 
 (define-method (ast:defer-variable* (o <defer>))
   (if (not (.arguments o)) (ast:member* (ast:parent o <model>))

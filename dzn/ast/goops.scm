@@ -635,7 +635,8 @@
 
 (define-ast <argument> (<named> <unary>)
   (type.name)
-  (direction))
+  (direction)
+  (expression))
 
 (define-ast <enum-field> (<ast>)
   (type.name)

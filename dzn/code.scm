@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -308,8 +308,20 @@
 (define-method (code:variable-name (o <formal>))
   (make-out-formal o))
 
-(define-method (code:variable-name (o <ast>))
+(define-method (code:variable-name (o <top>))
+  o)
+
+(define-method (code:variable-name (o <assign>))
   ((compose code:variable-name .variable) o))
+
+(define-method (code:variable-name (o <field-test>))
+  ((compose code:variable-name .variable) o))
+
+(define-method (code:variable-name (o <var>))
+  ((compose code:variable-name .variable) o))
+
+(define-method (code:variable-name (o <argument>))
+  o)
 
 (define-method (code:upcase-model-name (o <model>))
   (map string-upcase (ast:full-name o)))
@@ -499,24 +511,31 @@
                              (map .name (ast:formal* formals))
                              (ast:formal* event)))))))
 
-(define-method (code:variable->argument (o <variable>) (f <formal>))
-  (if (or (code:class-member? o)
-          (eq? (.direction f) 'in)) o
-          (clone (make <argument> #:name (.name o) #:type.name (.type.name f) #:direction (.direction f))
-                 #:parent (.parent o))))
+(define-method (code:variable->argument (o <expression>) (v <variable>) (f <formal>))
+  (if (or (code:class-member? v) (eq? (.direction f) 'in)) v
+      (let ((argument (make <argument>
+                        #:name (.name v)
+                        #:type.name (.type.name f)
+                        #:direction (.direction f)
+                        #:expression o)))
+        (clone argument #:parent (.parent o)))))
+
+(define-method (code:variable->argument (o <expression>) (v <formal>) (f <formal>))
+  (if (eq? (.direction f) 'in) v
+      (let ((argument (make <argument>
+                        #:name (.name v)
+                        #:type.name (.type.name v)
+                        #:direction (.direction v)
+                        #:expression o)))
+        (clone argument #:parent (.parent o)))))
 
 (define-method (code:variable->argument (o <var>) (f <formal>))
-  (code:variable->argument (.variable o) f))
+  (code:variable->argument o (.variable o) f))
 
 (define-method (code:variable->argument (o <formal>) (f <formal>))
-  (if (eq? (.direction f) 'in) o
-      (clone (make <argument> #:name (.name o) #:type.name (.type.name o) #:direction (.direction o))
-             #:parent (.parent o))))
+  (code:variable->argument o o f))
 
 (define-method (code:variable->argument o f)
-  o)
-
-(define-method (code:variable-name (o <argument>))
   o)
 
 (define-method (code:data* (o <root>))

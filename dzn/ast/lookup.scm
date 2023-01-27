@@ -390,6 +390,9 @@ null) and return its CONTEXT."
 (define-method (.variable (o <formal-binding>))
   (and=> (.variable.name o) (cut ast:lookup-variable (.parent o) <>)))
 
+(define-method (.variable (o <argument>))
+  (and=> (.name o) (cut ast:lookup-variable o <>)))
+
 (define-method (.variable (o <var>))
   (and=> (.name o) (cut ast:lookup-variable o <>)))
 
