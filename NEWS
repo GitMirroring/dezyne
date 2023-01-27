@@ -5,6 +5,15 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.1 since 2.17.0
+** Code
+  - The C++ code generator now places the enum stream operator `<<' in
+    the same namespace as its type to be resolved through ADL.
+  - The C++ code generator and runtime now place all std::string
+    conversion functions are in the dzn namespace.
+  - The C++ code generator and runtime now use a illegal handler
+    `handle' function annotated with `noreturn'.
+
 * Changes in 2.17.0 since 2.16.3
 ** Language
   - A component's behavior is now implicitly constrained by the behavior
@@ -41,7 +50,7 @@
     scoped C style enums.
   - The return type of the enum to_string function has been changed from
     std::string to char const*.
-  - The enum stream operator << has been templatized to allow
+  - The enum stream operator `<<' has been templatized to allow
     overloading for character type and traits.
   - The C++ code generator no longer generates redundant enum
     declarations and corresponding string conversion functions.
@@ -959,7 +968,7 @@
 * legalese
 
 Copyright © 2017,2018,2019,2020,2021,2022,2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-Copyright © 2017,2018,2019,2020,2021 Rutger van Beusekom <rutger@dezyne.org>
+Copyright © 2017,2018,2019,2020,2021,2022,2023 Rutger van Beusekom <rutger@dezyne.org>
 Copyright © 2018,2019 Rob Wieringa <rma.wieringa@gmail.com>
 
   Copying and distribution of this file, with or without modification,
