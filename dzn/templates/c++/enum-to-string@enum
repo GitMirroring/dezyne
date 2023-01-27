@@ -1,20 +1,26 @@
-inline char const* to_cstr (#x:type-name  v)
+namespace dzn
 {
-  switch(v)
+  inline char const* to_cstr (#x:type-name  v)
   {
-    #x:enum-field-to-string
+    switch(v)
+    {
+      #x:enum-field-to-string
+    }
+    return "";
   }
-  return "";
+  inline std::string to_string (#x:type-name  v)
+  {
+    return to_cstr (v);
+  }
 }
 
-inline std::string to_string (#x:type-name  v)
-{
-  return to_cstr (v);
-}
+ #x:open-namespace
 
 template <typename Char, typename Traits>
 inline std::basic_ostream<Char, Traits> &
 operator << (std::basic_ostream<Char, Traits>& os, #x:type-name  v)
 {
-  return os << to_cstr (v);
+  return os << dzn::to_cstr (v);
 }
+
+ #x:close-namespace

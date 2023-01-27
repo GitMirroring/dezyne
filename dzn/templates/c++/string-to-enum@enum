@@ -1,7 +1,10 @@
-inline #x:type-name  to_#x:enum-name(std::string s)
+namespace dzn
 {
-  static std::map<std::string, #x:type-name > m = {
-    #x:string-to-enum-field
-  };
-  return m.at(s);
+  inline #x:type-name  to_#x:enum-name(std::string s)
+  {
+    static std::map<std::string, #x:type-name > m = {
+      #x:string-to-enum-field
+    };
+    return m.at(s);
+  }
 }

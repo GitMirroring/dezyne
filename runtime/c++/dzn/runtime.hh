@@ -42,11 +42,14 @@
 #define DZN_STATE_TRACING 0
 #endif
 
-inline std::string to_string(bool b){return b ? "true" : "false";}
-inline std::string to_string(int i){return std::to_string(i);}
-
 namespace dzn
 {
+  inline std::string to_string(bool b){return b ? "true" : "false";}
+  inline std::string to_string(int i){return std::to_string(i);}
+  inline void to_void(const std::string&){}
+  inline int to_int(std::string s){return std::stoi (s);}
+  inline bool to_bool(std::string s){return s == "true";}
+
   extern std::ostream debug;
 
   inline std::string component_to_string(dzn::component* c)

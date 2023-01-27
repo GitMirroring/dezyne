@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -31,9 +31,6 @@
 #include <queue>
 #include <string>
 #include <vector>
-
-int to_int(std::string s){return std::stoi (s);}
-bool to_bool(std::string s){return s == "true";}
 
 bool is_reply(const std::string& s)
 {
@@ -94,7 +91,7 @@ int main()
     const std::string& tmp = trace[event];
     dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     ++event;
-    return to_bool(tmp.substr(tmp.rfind('.')+1));
+    return dzn::to_bool(tmp.substr(tmp.rfind('.')+1));
   };
   sut.r.in.hello_int = [&] {
     std::lock_guard<std::mutex> lock(mutex);
@@ -104,7 +101,7 @@ int main()
     const std::string& tmp = trace[event];
     dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     ++event;
-    return to_int(tmp.substr(tmp.rfind('.')+1));
+    return dzn::to_int(tmp.substr(tmp.rfind('.')+1));
   };
   sut.r.in.hello_enum = [&](int,int&) {
     std::lock_guard<std::mutex> lock(mutex);
@@ -114,7 +111,7 @@ int main()
     const std::string& tmp = trace[event];
     dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     ++event;
-    return to_Enum(tmp.substr(tmp.rfind('.')+1));
+    return dzn::to_Enum(tmp.substr(tmp.rfind('.')+1));
   };
 
   std::queue<std::future<void>> sync;
