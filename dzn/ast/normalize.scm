@@ -1209,7 +1209,7 @@ add-explicit-temporaries transformation for splitting argument lists."
 
   (define (replace-argument o old new)
     (define (replace o)
-      (if (eq? (.node o) (.node old)) new
+      (if (ast:node-eq? o old) new
           o))
     (let* ((arguments (ast:argument* o))
            (arguments (map replace arguments))

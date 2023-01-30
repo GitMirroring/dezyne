@@ -36,14 +36,22 @@
   #:export (ast:eq?
             ast:equal?
             ast:empty-namespace?
-            ast:name-equal?))
+            ast:name-equal?
+            ast:node-eq?))
 
+;;;
+;;; ast:node-eq?
+;;;
+(define-method (ast:node-eq? (a <ast>) (b <ast>))
+  (eq? (.node a) (.node b)))
+
+
 ;;;
 ;;; ast:eq?
 ;;;
 (define-method (ast:eq? (a <ast>) (b <ast>))
   (or (eq? a b)
-      (and (eq? (.node a) (.node b))
+      (and (ast:node-eq? a b)
            (ast:eq? (.parent a) (.parent b)))))
 
 (define-method (ast:eq? (a <ast>) b)
@@ -99,7 +107,7 @@
        (ast:equal? (cdr a) (cdr b))))
 
 (define-method (ast:equal? (a <ast>) (b <ast>))
-  (eq? (.node a) (.node b)))
+  (ast:node-eq? a b))
 
 (define-method (ast:equal? (a <declaration>) (b <declaration>))
   (and (eq? (class-of a) (class-of b))

@@ -140,6 +140,7 @@
                ast:path
                ast:perfect-funcq
                ast:pure-funcq
+               ast:node-eq?
 
                ast:argument*
                ast:binding*

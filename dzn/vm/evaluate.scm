@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -37,7 +37,7 @@
             true?))
 
 (define-method (expr:equal? (left <enum-literal>) (right <enum-literal>))
-  (and (eq? (.node (.type left)) (.node (.type right)))
+  (and (ast:node-eq? (.type left) (.type right))
        (equal? (.field left) (.field right))))
 
 (define-method (expr:equal? (left <literal>) (right <literal>))
