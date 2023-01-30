@@ -736,6 +736,8 @@ to prevent unintended shadowing
 (define (purge-data o)
   "Remove every `extern' data variable and reference."
   (match o
+    (($ <out-bindings>)
+     (clone o #:elements '()))
     ((? (is? <ast-list>))
      (clone o #:elements (filter-map purge-data (.elements o))))
     (($ <data>)
