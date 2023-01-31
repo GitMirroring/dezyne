@@ -1,0 +1,64 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+component generalized_integer
+{
+  provides ihello h;
+  requires ihello w;
+  behavior
+  {
+    subint int {-100..100};
+    int a = 1;
+    int b = 4;
+    int c = 16;
+    void check (int val, int exp)
+    {
+      w.hello ();
+      if (val!=exp) illegal;
+    }
+    on h.hello ():
+    {
+      int v0_0 =  a+b;   check (v0_0,   5);
+      int v0_1 =  a-b;   check (v0_1,  -3);
+      int v1_0 = -a+b;   check (v1_0,   3);
+      int v1_1 = -a-b;   check (v1_1,  -5);
+      int v2_0 =  a+b+c; check (v2_0,  21);
+      int v2_1 =  a+b-c; check (v2_1, -11);
+      int v2_2 =  a-b+c; check (v2_2,  13);
+      int v2_3 =  a-b-c; check (v2_3, -19);
+      int v3_0 = -a+b+c; check (v3_0,  19);
+      int v3_1 = -a+b-c; check (v3_1, -13);
+      int v3_2 = -a-b+c; check (v3_2,  11);
+      int v3_3 = -a-b-c; check (v3_3, -21);
+    }
+  }
+}

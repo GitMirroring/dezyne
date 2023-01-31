@@ -2,7 +2,7 @@
 #
 # Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-# Copyright © 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
+# Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 #
@@ -295,6 +295,7 @@ REGRESSION_TESTS =				\
  %D%/function_out_state				\
  %D%/function_reply_early_return		\
  %D%/guard_expressions				\
+ %D%/generalized_integer			\
  %D%/hello_blocking_asynchronous_sync_out	\
  %D%/hello_blocking_multiple_out		\
  %D%/hello_choice_action			\
