@@ -319,6 +319,7 @@ REGRESSION_TESTS =				\
  %D%/function_reply_early_return		\
  %D%/guard_expressions				\
  %D%/generalized_integer			\
+ %D%/generalized_integer_temporaries		\
  %D%/hello_blocking_asynchronous_sync_out	\
  %D%/hello_blocking_multiple_out		\
  %D%/hello_choice_action			\

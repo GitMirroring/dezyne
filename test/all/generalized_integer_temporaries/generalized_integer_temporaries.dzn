@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,16 +31,16 @@ interface ihello
   }
 }
 
-component generalized_integer
+component generalized_integer_temporaries
 {
   provides ihello h;
   requires ihello w;
   behavior
   {
     subint int {-100..100};
-    int a = 1;
-    int b = 4;
-    int c = 16;
+    int a () {return 1;}
+    int b () {return 4;}
+    int c () {return 16;}
     void check (int val, int exp)
     {
       w.hello ();
@@ -47,18 +48,18 @@ component generalized_integer
     }
     on h.hello ():
     {
-      int v0_0 =    a+b;      check (v0_0,   5);
-      int v0_1 =    a-b;      check (v0_1,  -3);
-      int v1_0 = (0-a)+b;     check (v1_0,   3);
-      int v1_1 = (0-a)-b;     check (v1_1,  -5);
-      int v2_0 =   (a+b)+c;   check (v2_0,  21);
-      int v2_1 =   (a+b)-c;   check (v2_1, -11);
-      int v2_2 =   (a-b)+c;   check (v2_2,  13);
-      int v2_3 =   (a-b)-c;   check (v2_3, -19);
-      int v3_0 = (0-a)+(b+c); check (v3_0,  19);
-      int v3_1 = (0-a)+(b-c); check (v3_1, -13);
-      int v3_2 = (0-a)-(b-c); check (v3_2,  11);
-      int v3_3 = (0-a)-(b+c); check (v3_3, -21);
+      int v0_0 =    a () + b ();           check (v0_0,   5);
+      int v0_1 =    a () - b ();           check (v0_1,  -3);
+      int v1_0 = (0-a ()) + b ();          check (v1_0,   3);
+      int v1_1 = (0-a ()) - b ();          check (v1_1,  -5);
+      int v2_0 =   (a () + b ()) + c ();   check (v2_0,  21);
+      int v2_1 =   (a () + b ()) - c ();   check (v2_1, -11);
+      int v2_2 =   (a () - b ()) + c ();   check (v2_2,  13);
+      int v2_3 =   (a () - b ()) - c ();   check (v2_3, -19);
+      int v3_0 = (0-a ()) + (b () + c ()); check (v3_0,  19);
+      int v3_1 = (0-a ()) + (b () - c ()); check (v3_1, -13);
+      int v3_2 = (0-a ()) - (b () - c ()); check (v3_2,  11);
+      int v3_3 = (0-a ()) - (b () + c ()); check (v3_3, -21);
     }
   }
 }
