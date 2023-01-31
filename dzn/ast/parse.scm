@@ -633,6 +633,8 @@ to the AST element."
 
     (define (tree->expression o)
       (match o
+        ((left0 "-" (left1 "-" right1)) (make <minus-node> #:left (make <minus-node> #:left (helper left0) #:right (helper left1)) #:right (helper right1)))
+        ((left0 "-" (left1 "+" right1)) (make <plus-node>  #:left (make <minus-node> #:left (helper left0) #:right (helper left1)) #:right (helper right1)))
         ((left "||" right) (make <or-node> #:left (helper left) #:right (helper right)))
         ((left "&&" right) (make <and-node> #:left (helper left) #:right (helper right)))
         ((left "+" right) (make <plus-node> #:left (helper left) #:right (helper right)))
