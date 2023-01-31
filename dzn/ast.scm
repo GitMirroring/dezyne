@@ -618,7 +618,8 @@
                                      .function)
                                  action/call))
                 (formals (ast:formal* event/function)))
-           (list-ref formals index)))))
+           (and index
+                (list-ref formals index))))))
 
 (define-method (ast:argument->formal (o <argument>))
   (ast:argument->formal (.expression o)))

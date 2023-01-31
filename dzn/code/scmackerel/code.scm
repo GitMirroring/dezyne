@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -35,8 +35,10 @@
   #:export (ast->code
             ast->expression
             code:binding->connect
+            code:enum->enum
             code:enum->enum-struct
             code:->formal
+            code:caption
             code:generated-comment
             code:member->variable
             code:version-comment
@@ -56,6 +58,11 @@
 
 (define (code:version-comment)
   (comment* (simple-format #f "// version ~a\n" %package-version)))
+
+(define-method (code:enum->enum (o <enum>))
+  (enum
+   (name (ast:name o))
+   (fields (map (cute string-append name "_" <>) (ast:field* o)))))
 
 (define-method (code:enum->enum-struct (o <enum>))
   (enum-struct

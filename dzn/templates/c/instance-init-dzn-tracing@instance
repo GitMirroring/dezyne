@@ -1,3 +1,0 @@
-dzn_meta_#.name .name  = "#.name ";
-dzn_meta_#.name .parent = &self->dzn_meta;
-#x:type-name _init (&self->#.name , dzn_locator, &dzn_meta_#.name );

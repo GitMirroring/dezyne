@@ -32,7 +32,7 @@ struct world
 {
   world_skel base;
   /* space for variables */
-  iworld_Result reply__iworld_Result;
+  iworld_Result dzn_reply_iworld_Result;
   /* end of space */
 };
 

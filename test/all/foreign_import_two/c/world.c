@@ -42,7 +42,7 @@ world_init (world* self, dzn_locator* dzn_locator
                     );
 }
 
-uint8_t
+iworld_Result
 world_w_world (world* self)
 {
   return iworld_Result_Ok;

@@ -1,1 +1,0 @@
-(int (*) (char*)) dzn_string_to__#x:name , (char* (*) (int)) dzn_#x:name _to_string);

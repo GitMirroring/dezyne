@@ -36,12 +36,6 @@ else
 dist_noinst_DATA += %D%/c++-exception-wrappers.scm
 endif
 
-if have_c99
-dist_nocompile_%C%_scm_DATA += %D%/c.scm
-else
-dist_noinst_DATA += %D%/c.scm
-endif
-
 if have_javascript
 dist_nocompile_%C%_scm_DATA += %D%/javascript.scm
 else
@@ -63,9 +57,12 @@ dist_%C%_makreel_DATA =				\
  %D%/makreel/defer.mcrl2			\
  %D%/makreel/process-dependencies.dot
 
+dzn_templates_cdir = $(pkgdatadir)/templates/c
+dist_%C%_c_DATA =				\
+ %D%/c/main.c
+
 EXTRA_DIST +=					\
  %D%/README					\
- %D%/c						\
  %D%/c++-exception-wrappers			\
  %D%/dot					\
  %D%/javascript					\

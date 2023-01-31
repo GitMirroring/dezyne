@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -37,6 +37,12 @@ if have_cs
 dist_%C%_scm_DATA += %D%/cs.scm
 else
 dist_noinst_DATA += %D%/cs.scm
+endif
+
+if have_c99
+dist_nocompile_%C%_scm_DATA += %D%/c.scm
+else
+dist_noinst_DATA += %D%/c.scm
 endif
 
 %C%_scmdir = $(guilemoduledir)/%D%

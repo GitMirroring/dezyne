@@ -1,4 +1,0 @@
-  c = malloc(sizeof (dzn_closure));
-  c->function = (void (*))m->#.port.name ->#.event.direction .#.event.name;
-  c->argument = m->#.port.name;
-  dzn_map_put (e, "#.port.name .#.event.name ", c);

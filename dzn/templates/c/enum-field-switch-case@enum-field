@@ -1,3 +1,0 @@
-case #x:name _#.field :
-     return "#c:enum-printed-name :#.field ";
-     break;

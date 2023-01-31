@@ -1,4 +1,0 @@
-  self->#.name ->meta.provides.name = "#.name ";
-  self->#.name ->meta.provides.meta = &self->dzn_meta;
-  self->#.name ->meta.requires.name = "";
-  self->#.name ->meta.requires.meta = 0;

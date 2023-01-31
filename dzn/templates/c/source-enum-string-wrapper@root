@@ -1,5 +1,0 @@
-##if DZN_TRACING
-
-#x:source-enum-string-function-definition
-
-##endif /* DZN_TRACING */

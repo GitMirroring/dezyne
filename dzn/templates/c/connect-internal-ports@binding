@@ -1,4 +1,0 @@
-self->#x:binding-provides ->out = self->#x:binding-requires ->out;
-self->#x:binding-requires ->in = self->#x:binding-provides ->in;
-self->#x:binding-provides ->meta.requires = self->#x:binding-requires ->meta.requires;
-self->#x:binding-requires ->meta.provides = self->#x:binding-provides ->meta.provides;

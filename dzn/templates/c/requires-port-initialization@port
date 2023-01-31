@@ -1,3 +1,0 @@
-  self->#.name  = &self->#.name _;
-  self->#.name ->meta.requires.component = self;
-  self->#.name ->meta.provides.component = 0;

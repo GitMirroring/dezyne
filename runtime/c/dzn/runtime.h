@@ -76,9 +76,9 @@ void dzn_runtime_finish (dzn_runtime_info* info);
 
 #if DZN_TRACING
 char* dzn_bool_to_string (bool b);
-bool dzn_string_to__bool (char *s);
+bool dzn_string_to_bool (char *s);
 char* dzn_int_to_string (int i);
-int dzn_string_to__int (char *s);
+int dzn_string_to_int (char *s);
 char* dzn_runtime_path (dzn_meta const* m, char* p);
 void dzn_runtime_trace (dzn_port_meta const* mt, char const* e);
 void dzn_runtime_trace_out (dzn_port_meta const* mt, char const* e);

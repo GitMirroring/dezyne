@@ -1,6 +1,0 @@
-static void
-#x:model-parent-name _#x:enum-name #x:closure-struct-args _helper (void* arguments)
-{
-  #x:model-parent-name _#x:enum-name #x:closure-struct-args  *a = arguments;
-  a->f (a->self#x:c-comma #x:helper-function-arguments);
-}

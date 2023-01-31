@@ -1,1 +1,0 @@
-(int (*) (char*)) dzn_string_to__#x:type-name-different , (char* (*) (int)) dzn_#x:type-name-different _to_string);

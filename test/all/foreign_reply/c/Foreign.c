@@ -44,6 +44,6 @@ Foreign_init (Foreign* self, dzn_locator* dzn_locator
 bool
 Foreign_w_world (Foreign* self)
 {
-  self->reply__bool = true;
-  return self->reply__bool;
+  self->dzn_reply_bool = true;
+  return self->dzn_reply_bool;
 }

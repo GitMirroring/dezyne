@@ -247,7 +247,7 @@ dzn_bool_to_string (bool b)
 }
 
 bool
-dzn_string_to__bool (char *s)
+dzn_string_to_bool (char *s)
 {
   size_t length;
   bool reply;
@@ -265,7 +265,7 @@ dzn_int_to_string (int i)
 }
 
 int
-dzn_string_to__int (char* s)
+dzn_string_to_int (char* s)
 {
   char *endptr;
   long int val = strtol (s,&endptr,0);

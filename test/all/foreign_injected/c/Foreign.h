@@ -31,7 +31,7 @@ struct Foreign
 {
   Foreign_skel base;
   /* space for variables */
-  bool reply__bool;
+  bool dzn_reply_bool;
   /* end of space */
 };
 

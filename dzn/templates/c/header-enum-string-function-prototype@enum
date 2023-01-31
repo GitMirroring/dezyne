@@ -1,2 +1,0 @@
-uint8_t dzn_string_to__#x:name  (char* s);
-char const* dzn_#x:name _to_string (uint8_t  v);

@@ -1,6 +1,0 @@
-#x:method
-{
-  (void)self;
-  #x:expand-on
-  #x:return
-}

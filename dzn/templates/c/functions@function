@@ -1,6 +1,0 @@
-static #x:function-return-type
-#x:model-parent-name _#.name  (#x:model-parent-name * self#x:formals)
-{
-  (void)self;
-  #x:statement
-}
