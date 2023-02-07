@@ -200,6 +200,7 @@ REGRESSION_TESTS =				\
  %D%/complex_and				\
  %D%/complex_arguments				\
  %D%/complex_assign				\
+ %D%/complex_data				\
  %D%/complex_expressions			\
  %D%/complex_int				\
  %D%/complex_member				\
