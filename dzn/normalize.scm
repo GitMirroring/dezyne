@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -732,14 +732,16 @@ to prevent unintended shadowing
      o)
     ((? (is? <ast-list>))
      (clone o #:elements (filter-map purge-data (.elements o))))
-    (($ <data>) #f)
+    (($ <data>)
+     #f)
     (($ <action>)
      (clone o #:arguments (make <arguments>)))
-
+    (($ <call>)
+     (clone o #:arguments (purge-data (.arguments o))))
     (($ <trigger>)
      (clone o #:formals (make <formals>)))
-
-    (($ <extern>) #f)
+    (($ <extern>)
+     #f)
     (($ <assign>)
      (let* ((variable (.variable o))
             (type (and variable (.type variable))))
@@ -748,18 +750,16 @@ to prevent unintended shadowing
     (($ <formal>)
      (let ((type (.type o)))
        (and type (not (is-a? type <extern>)) o)))
-    (($ <call>) (clone o #:arguments (make <arguments> #:elements (filter (negate is-data?) (ast:argument* o)))))
     (($ <variable>)
      (let ((type (.type o)))
        (and type (not (is-a? type <extern>))
             (clone o #:expression (purge-data (.expression o))))))
-
     (($ <var>)
      (let* ((variable (.variable o))
             (type (and variable (.type variable))))
        (and type (not (is-a? type <extern>)) o)))
-
-    ((and ($ <return>) (= .expression ($ <data-expr>))) (clone o #:expression #f))
+    ((and ($ <return>) (= .expression ($ <data-expr>)))
+     (clone o #:expression #f))
     ((? (is? <ast>)) (tree-map purge-data o))
     (_ o)))
 
