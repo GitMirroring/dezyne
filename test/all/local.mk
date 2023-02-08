@@ -435,6 +435,7 @@ REGRESSION_TESTS =				\
  %D%/shared_double_inevitable			\
  %D%/shared_enum				\
  %D%/shared_field_test				\
+ %D%/shared_out_sync_requires			\
  %D%/shared_requires				\
  %D%/shared_variable				\
  %D%/shell_injected				\

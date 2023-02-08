@@ -1,0 +1,74 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  out void cruel ();
+
+  behavior
+  {
+    bool echo_world = true;
+
+    [echo_world] on hello: {echo_world = false; world;}
+    [!echo_world] on hello: {echo_world = true; cruel;}
+  }
+}
+
+component shared_out_sync_requires
+{
+  provides ihello h;
+  requires ihello w;
+
+  behavior
+  {
+    bool echo_world = true;
+    bool w_echo_world = true;
+
+    void dzn_assert (bool c)
+    {
+      if (!c) illegal;
+    }
+
+    void check ()
+    {
+      dzn_assert (w_echo_world == w.echo_world);
+    }
+
+    [echo_world] on h.hello ():
+    {
+      echo_world = false;
+      w.hello (); w_echo_world = false;
+      check ();
+    }
+    [!echo_world] on h.hello ():
+    {
+      echo_world = true;
+      w.hello (); w_echo_world = true;
+      check ();
+    }
+    on w.world (): {h.world (); check ();}
+    on w.cruel (): {h.cruel (); check ();}
+  }
+}
