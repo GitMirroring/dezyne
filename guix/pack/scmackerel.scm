@@ -1,5 +1,5 @@
 ;;; SCMackerel --- A GNU Guile front-end for mCRL2
-;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of SCMackerel.
 ;;;
@@ -31,14 +31,14 @@
 (define-public scmackerel
   (package
     (name "scmackerel")
-    (version #!scmackerel!# "0.2.1")
+    (version #!scmackerel!# "0.2.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://dezyne.org/download/scmackerel/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!scmackerel!# "1r2b2k8w0iwgmz9z7ysx38cc8l6mli3rb9sksrsv5imgcjwcm31p"))))
+        (base32 #!scmackerel!# "06pnp7r5z5qhk9pc4p3jnvcb4s51v6jv2851zzsq951xxify94x4"))))
     (inputs (list bash-minimal
                   guile-3.0-latest
                   guile-readline
