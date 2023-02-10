@@ -40,6 +40,7 @@
   #:use-module (dzn vm goops)
 
   #:export (%calling-context
+            %no-constraint?
             %no-unreachable?
             %shell
             code
@@ -118,6 +119,9 @@
 
 ;; The calling-context to insert.
 (define %calling-context (make-parameter #f))
+
+;; Should interface constraints be omitted?
+(define %no-constraint? (make-parameter #f))
 
 ;; Should unreachable-code tags be omitted?
 (define %no-unreachable? (make-parameter #f))

@@ -3822,6 +3822,16 @@
           component-constrained-allow
           component-constrained)))
 
+(define-method (unconstrained-processes (o <component>))
+  (list
+   (comment* "% actually unconstrained")
+   (process
+     (name "component_constrained")
+     (statement
+      (block
+       (process "component_semantics")
+       (events (list %constrained-illegal-action)))))))
+
 (define-method (model->scmackerel (o <component>))
   (makreel:proc-list (.behavior o))
   (parameterize ((%model-name (makreel:full-name o)))
@@ -3848,11 +3858,14 @@
                 (component-q-processes o)))
            (semantics-processes (component-semantics-processes o))
            (interface-constraint-processes
-            (append-map interface-constraint-processes provides-interfaces))
+            (if (%no-constraint?) '()
+                (append-map interface-constraint-processes provides-interfaces)))
            (provides-constraint-processes
-            (append-map provides-constraint-processes provides))
+            (if (%no-constraint?) '()
+                (append-map provides-constraint-processes provides)))
            (constraint-processes
-            (constraint-processes o))
+            (if (%no-constraint?) (unconstrained-processes o)
+                (constraint-processes o)))
            (static-defer-processes
             (file-comments "defer.mcrl2"))
            (component-processes (component-processes o))

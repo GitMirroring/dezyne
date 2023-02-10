@@ -118,12 +118,14 @@ Languages: ~a
                                                     (%queue-size-defer)))
          (queue-size-external (command-line:get-number 'queue-size
                                                        (%queue-size-external)))
+         (no-constraint? (command-line:get 'no-constraint))
          (no-unreachable? (command-line:get 'no-unreachable))
          (shell (option-ref options 'shell #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
          (ast (parse parse-options file-name)))
     (parameterize ((%calling-context calling-context)
+                   (%no-constraint? no-constraint?)
                    (%locations? locations?)
                    (%no-unreachable? no-unreachable?)
                    (%queue-size queue-size)

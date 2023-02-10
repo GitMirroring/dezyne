@@ -106,12 +106,14 @@ Check DZN-FILE for verification errors in Dezyne models
                                  #:backtrace? debug?
                                  #:file-name file-name)))
          (no-unreachable? (command-line:get 'no-unreachable))
+         (no-constraint? (command-line:get 'no-constraint))
          (queue-size (option-ref options 'queue-size (%queue-size)))
          (queue-size-defer (option-ref options 'queue-size-defer
                                        (%queue-size-defer)))
          (queue-size-external (option-ref options 'queue-size-external
                                           (%queue-size-external))))
-    (parameterize ((%no-unreachable? no-unreachable?)
+    (parameterize ((%no-constraint? no-constraint?)
+                   (%no-unreachable? no-unreachable?)
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
