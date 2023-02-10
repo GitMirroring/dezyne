@@ -120,10 +120,7 @@ Languages: ~a
                                                        (%queue-size-external)))
          (no-constraint? (command-line:get 'no-constraint))
          (no-unreachable? (command-line:get 'no-unreachable))
-         (shell (option-ref options 'shell #f))
-         ;; Parse --model=MODEL cuts MODEL from AST; avoid that
-         (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
-         (ast (parse parse-options file-name)))
+         (shell (option-ref options 'shell #f)))
     (parameterize ((%calling-context calling-context)
                    (%no-constraint? no-constraint?)
                    (%locations? locations?)
@@ -132,10 +129,14 @@ Languages: ~a
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external)
                    (%shell shell))
-      (code ast
-            #:calling-context calling-context
-            #:dir dir
-            #:model model
-            #:language language
-            #:locations? locations?
-            #:shell shell))))
+      ;; Parse --model=MODEL cuts MODEL from AST; avoid that
+      (let* ((parse-options (filter (compose not (cut eq? <> 'model) car)
+                                    options))
+             (ast (parse parse-options file-name)))
+       (code ast
+             #:calling-context calling-context
+             #:dir dir
+             #:model model
+             #:language language
+             #:locations? locations?
+             #:shell shell)))))

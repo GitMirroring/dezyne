@@ -31,6 +31,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
+  #:use-module (dzn code)
   #:use-module (dzn misc)
 
   #:export (ast:wfc
@@ -413,6 +414,25 @@
   (append
    (re-definition o)
    (assign o)))
+
+(define-method (wfc-constraint (o <variable>) (port <port>))
+  (if (not (%no-constraint?)) '()
+      `(,(wfc-error
+          o
+          (format #f "using shared variable `~a.~a' with --no-constraint"
+                  (.name port)
+                  (.name o))))))
+
+(define-method (wfc-constraint (o <top>) (port <top>))
+  '())
+
+(define-method (wfc-constraint (o <shared-variable>))
+  (wfc-constraint o (.port o)))
+
+(define-method (wfc (o <shared-variable>))
+  (append
+   (next-method)
+   (wfc-constraint o)))
 
 (define-method (wfc (model <model>) (o <variable>))
   (if (ast:name-equal? (.name model) (.name o))
@@ -843,6 +863,11 @@
              ,(wfc-info type "enum defined here")))
           (else '()))))
 
+(define-method (wfc (o <shared-field-test>))
+  (append
+   (next-method)
+   (wfc-constraint (.variable o) (.port o))))
+
 (define-method (wfc (o <otherwise>)) '())
 
 (define-method (wfc (o <var>))
@@ -855,6 +880,11 @@
      (cond ((not variable)
             `(,(wfc-error o (format #f "undefined variable `~a'" (.name o)))))
            (else '())))))
+
+(define-method (wfc (o <shared-var>))
+  (append
+   (next-method)
+   (wfc-constraint (.variable o) (.port o))))
 
 (define-method (wfc (o <undefined>))
   `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))

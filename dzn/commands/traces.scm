@@ -153,7 +153,6 @@ Generate exhaustive set of traces for Dezyne model
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
-         (ast (parse options file-name))
          (model-name (option-ref options 'model #f))
          (queue-size (option-ref options 'queue-size (%queue-size)))
          (queue-size-defer (option-ref options 'queue-size-defer
@@ -166,7 +165,8 @@ Generate exhaustive set of traces for Dezyne model
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
-      (let* ((root (makreel:om ast))
+      (let* ((ast (parse options file-name))
+             (root (makreel:om ast))
              (models (ast:model* root))
              (components-interfaces
               (append

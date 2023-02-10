@@ -100,11 +100,6 @@ Check DZN-FILE for verification errors in Dezyne models
          (debug? (dzn:command-line:get 'debug #f))
          (out (option-ref options 'out #f))
          (model-name (option-ref options 'model #f))
-         (ast (parse options file-name))
-         (model (and model-name (call-with-handle-exceptions
-                                 (lambda _ (ast:get-model ast model-name))
-                                 #:backtrace? debug?
-                                 #:file-name file-name)))
          (no-unreachable? (command-line:get 'no-unreachable))
          (no-constraint? (command-line:get 'no-constraint))
          (queue-size (option-ref options 'queue-size (%queue-size)))
@@ -117,7 +112,13 @@ Check DZN-FILE for verification errors in Dezyne models
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
-      (let ((root (makreel:om ast)))
+
+      (let* ((ast (parse options file-name))
+             (model (and model-name (call-with-handle-exceptions
+                                     (lambda _ (ast:get-model ast model-name))
+                                     #:backtrace? debug?
+                                     #:file-name file-name)))
+             (root (makreel:om ast)))
         (when (and=> model ast:imported?)
           (let ((name (ast:dotted-name model)))
             (format (current-error-port)
