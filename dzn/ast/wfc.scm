@@ -416,12 +416,20 @@
    (assign o)))
 
 (define-method (wfc-constraint (o <variable>) (port <port>))
-  (if (not (%no-constraint?)) '()
-      `(,(wfc-error
-          o
-          (format #f "using shared variable `~a.~a' with --no-constraint"
-                  (.name port)
-                  (.name o))))))
+  (append
+   (if (not (%no-constraint?)) '()
+       `(,(wfc-error
+           o
+           (format #f "using shared variable `~a.~a' with --no-constraint"
+                   (.name port)
+                   (.name o)))))
+   (if (not (ast:external? port)) '()
+       `(,(wfc-error
+           o
+           (format #f "using shared variable `~a.~a' with external port `~a'"
+                   (.name port)
+                   (.name o)
+                   (.name port)))))))
 
 (define-method (wfc-constraint (o <top>) (port <top>))
   '())
