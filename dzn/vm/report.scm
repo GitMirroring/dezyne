@@ -34,7 +34,6 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
-  #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn trace)
   #:use-module (dzn vm ast)

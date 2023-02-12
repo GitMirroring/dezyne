@@ -31,7 +31,6 @@
   #:use-module (dzn vm ast)
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm goops)
-  #:use-module (dzn vm normalize)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
   #:export (%liveness?

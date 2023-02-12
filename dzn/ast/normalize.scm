@@ -33,12 +33,9 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 pretty-print)
-  #:use-module (ice-9 receive)
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
-  #:use-module (dzn command-line)
   #:use-module (dzn misc)
 
   #:export (%normalize:short-circuit?
@@ -548,12 +545,14 @@ guarded occurrences."
   (define ((trigger-equal? trigger) triple)
     (let ((t ((compose car ast:trigger* triple-on) triple)))
       (and (equal? (.port.name t) (.port.name trigger)) (equal? (.event.name t) (.event.name trigger)))))
-  (let* ((sorted-triples (let loop ((triples triples))
-                           (if (null? triples) '()
-                               (let ((trigger ((compose car ast:trigger* triple-on car) triples)))
-                                 (receive (shared rest)
-                                     (partition (trigger-equal? trigger) triples)
-                                   (cons shared (loop rest)))))))
+  (let* ((sorted-triples
+          (let loop ((triples triples))
+            (if (null? triples) '()
+                (let* ((trigger ((compose car ast:trigger* triple-on car)
+                                 triples))
+                       (shared rest
+                               (partition (trigger-equal? trigger) triples)))
+                  (cons shared (loop rest))))))
          (ons (map
                (lambda (triples)
                  (let* ((on ((compose triple-on car) triples))

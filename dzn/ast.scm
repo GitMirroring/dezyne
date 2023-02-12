@@ -31,9 +31,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
-  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 poe)
   #:use-module (ice-9 q)
 
   #:use-module (dzn ast accessor)
@@ -41,7 +39,6 @@
   #:use-module (dzn ast equal)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)
-  #:use-module (dzn command-line)
   #:use-module (dzn misc)
 
   #:export (ast:argument->formal

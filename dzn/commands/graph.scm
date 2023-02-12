@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -28,7 +28,6 @@
 
   #:use-module (ice-9 getopt-long)
 
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn command-line)

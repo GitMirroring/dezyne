@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -19,13 +19,7 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn indent)
-  #:use-module (ice-9 optargs)
-  #:use-module (ice-9 pretty-print)
-
-  #:use-module (srfi srfi-1)
   #:use-module (ice-9 rdelim)
-  #:use-module (dzn command-line)
-  #:use-module (dzn misc)
 
   #:export (indent))
 

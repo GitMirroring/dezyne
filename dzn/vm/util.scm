@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
@@ -32,9 +32,7 @@
   #:use-module (ice-9 string-fun)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast serialize)
   #:use-module (dzn ast)
-  #:use-module (dzn command-line)
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)

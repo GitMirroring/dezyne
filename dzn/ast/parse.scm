@@ -32,17 +32,13 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
-  #:use-module (ice-9 curried-definitions)
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast silence)
   #:use-module (dzn ast util)
   #:use-module (dzn ast)
-  #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn parse)
   #:export (parse-tree->ast))
 
 (define* (parse-tree->ast o #:key string (file-name "<stdin>") working-directory)

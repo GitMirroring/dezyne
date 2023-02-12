@@ -29,7 +29,6 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
@@ -43,7 +42,6 @@
   #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:use-module (dzn pipe)
-  #:use-module (dzn shell-util)
 
   #:export (verification:formats
             verification:partial

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,9 +25,7 @@
 
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 string-fun)
 
-  #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -30,9 +30,7 @@
   #:use-module (system repl error-handling)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module (dzn config)
   #:use-module (dzn command-line)
-  #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:export (main
             parse-opts

@@ -4,7 +4,7 @@
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -30,12 +30,8 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 hash-table)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 poe)
-  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 receive)
-  #:use-module (ice-9 textual-ports)
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)

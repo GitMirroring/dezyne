@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -31,7 +31,6 @@
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
   #:use-module (dzn simulate)
-  #:use-module (dzn trace)
 
   #:export (parse-opts
             main))

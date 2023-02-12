@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
-;;; Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -35,8 +35,6 @@
   #:use-module (ice-9 regex)
 
   #:use-module (dzn lts)
-  #:use-module (dzn misc)
-  #:use-module (dzn command-line)
 
   #:export (main))
 

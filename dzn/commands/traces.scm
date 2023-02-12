@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
@@ -37,10 +37,8 @@
   #:use-module (dzn code makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
-  #:use-module (dzn config)
   #:use-module (dzn lts)
   #:use-module (dzn misc)
-  #:use-module (dzn parse)
   #:use-module (dzn shell-util)
   #:use-module (dzn verify pipeline)
 

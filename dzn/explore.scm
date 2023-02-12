@@ -29,19 +29,15 @@
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn code makreel)
   #:use-module (dzn misc)
-  #:use-module (dzn vm ast)
   #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm normalize)
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
   #:use-module (dzn vm runtime)
-  #:use-module (dzn vm step)
   #:use-module (dzn vm util)
 
   #:export (lts

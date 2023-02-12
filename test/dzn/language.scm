@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -30,13 +30,14 @@
 ;;; Code:
 
 (define-module (test dzn language)
-  #:use-module (dzn commands language)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
   #:use-module (srfi srfi-71)
-  #:use-module (dzn misc)
+
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 rdelim)
+
+  #:use-module (dzn commands language)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse complete)

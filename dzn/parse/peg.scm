@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -27,9 +27,6 @@
 (define-module (dzn parse peg)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 rdelim)
 
   #:use-module (dzn peg)
 

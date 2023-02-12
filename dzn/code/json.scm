@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -34,9 +34,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
-  #:use-module (dzn code)
   #:use-module (dzn command-line)
-  #:use-module (dzn misc)
   #:use-module (dzn templates)
 
   #:export (json:get-fields

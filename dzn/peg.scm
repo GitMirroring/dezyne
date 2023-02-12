@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2019 Rob Wieringa <rob@dezyne.org>
-;;; Copyright © 2018, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -28,7 +28,6 @@
   ;; peg-sexp-compile.
   #:use-module (dzn peg simplify-tree)
   #:use-module (dzn peg using-parsers)
-  #:use-module (dzn peg cache)
 
   #:re-export (define-peg-pattern
                define-peg-string-patterns

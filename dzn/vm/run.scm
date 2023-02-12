@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -30,8 +30,6 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
-  #:use-module (dzn parse)
-  #:use-module (dzn vm ast)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm report)
   #:use-module (dzn vm runtime)

@@ -30,7 +30,6 @@
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn vm ast)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)

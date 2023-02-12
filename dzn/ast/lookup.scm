@@ -37,7 +37,6 @@
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
-  #:use-module (dzn misc)
 
   #:export (.event
             .event.direction

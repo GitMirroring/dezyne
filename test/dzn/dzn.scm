@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -28,11 +28,12 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+
   #:use-module (ice-9 match)
-  #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 receive)
   #:use-module (ice-9 regex)
+
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn pipe)

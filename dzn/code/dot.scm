@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -24,10 +24,8 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
-  #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn templates)
-  #:use-module (dzn vm ast)
   #:use-module (dzn vm runtime)
   #:export (dependency-diagram
             system-diagram))

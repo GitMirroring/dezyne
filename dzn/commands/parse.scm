@@ -30,19 +30,15 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 regex)
 
   #:use-module (dzn ast serialize)
 
   #:use-module (dzn ast display)
-  #:use-module (dzn ast wfc)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn misc)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse tree)
   #:use-module (dzn parse)
-  #:use-module (dzn shell-util)
 
   #:export (parse
             parse-opts

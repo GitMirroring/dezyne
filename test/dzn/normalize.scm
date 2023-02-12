@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -34,8 +34,7 @@
   #:use-module (test dzn automake)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
-  #:use-module (dzn ast)
-  #:use-module (dzn misc))
+  #:use-module (dzn ast))
 
 (define simplify-expression (@@ (dzn ast normalize) simplify-expression))
 

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -28,7 +28,6 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
-  #:use-module (dzn config)
   #:use-module (dzn code)
   #:use-module (dzn shell-util)
   #:use-module (dzn command-line)

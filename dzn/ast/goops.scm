@@ -31,7 +31,6 @@
 
   #:use-module (system foreign)
   #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 match)
 
   #:use-module ((oop goops)
                 #:renamer (lambda (x)

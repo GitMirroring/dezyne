@@ -27,7 +27,6 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
-  #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)

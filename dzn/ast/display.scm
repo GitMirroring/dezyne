@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2022, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
@@ -27,7 +27,6 @@
 (define-module (dzn ast display)
   #:use-module (srfi srfi-26)
 
-  #:use-module (ice-9 rdelim)
   #:use-module (ice-9 pretty-print)
   #:use-module ((oop goops)
                 #:select (class-slots slot-definition-name slot-ref))
