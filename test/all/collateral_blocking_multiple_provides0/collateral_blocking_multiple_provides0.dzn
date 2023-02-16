@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -71,20 +71,13 @@ component multiple_provides
     enum Side {None, Left, Right, LeftRight, RightLeft};
     Side side = Side.None;
 
-    blocking on left.hello(): {
-      [side.None] {side = Side.Left; r.hello();}
-      [side.Right] {side = Side.RightLeft; r.hello();}
+    [side.None]
+    {
+      blocking on left.hello(): {side = Side.Left; r.hello();}
+      blocking on right.hello(): {r.hello(); side = Side.Right;}
     }
-    blocking on right.hello(): {
-      [side.None] {r.hello(); side = Side.Right;}
-      [side.Left] {r.hello(); side = Side.LeftRight;}
-    }
-
     [side.Left] on r.world(): {side = Side.None; left.reply();}
-    [side.LeftRight] on r.world(): {side = Side.Right; left.reply();}
-
     [side.Right] on r.world(): {side = Side.None; right.reply();}
-    [side.RightLeft] on r.world(): {side = Side.Left; right.reply();}
   }
 }
 
