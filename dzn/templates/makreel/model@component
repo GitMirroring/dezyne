@@ -252,7 +252,7 @@ semantics_provides_unblocked_switch_context(reply: reply_values, switch: require
  ;
 
 semantics_provides_blocking(blocking: Set(provides_ports), released: List(provides_ports), reply: reply_values)
-= (blocking - list2set(released) != {}) -> #x:makreel:model-name end . (semantics_blocked_rtc() + semantics_provides_skip_blocked())
+= (blocking - list2set(released) != {}) -> #x:makreel:model-name end . (queue_empty . (semantics_blocked_rtc() + semantics_provides_skip_blocked()) + queue_not_empty . semantics_provides_skip_blocked())
 + (blocking - list2set(released) == {}) -> #x:makreel:model-name end . (queue_empty . (semantics_provides_skip_blocked() + (#x:reordered) . async_not_pending . #x:semantics-provides-blocking-defer) + queue_not_empty . semantics_provides_skip_blocked())
  #x:semantics-provides-blocking-provides
  #x:semantics-provides-blocking-requires
