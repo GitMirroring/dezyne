@@ -37,6 +37,7 @@
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
+  #:use-module (dzn misc)
 
   #:export (.event
             .event.direction
@@ -418,8 +419,9 @@ null) and return its CONTEXT."
   (let* ((on (ast:parent o <on>))
          (trigger (car (ast:trigger* on)))
          (event (.event trigger))
-         (index (list-index (cute ast:eq? o <>) (reverse (.elements (.parent o))))))
-    (and event (list-ref (reverse (ast:formal* event)) index))))
+         (index (list-index (cute ast:eq? o <>) (reverse (.elements (.parent o)))))
+         (formals (ast:formal* event)))
+    (and event (< index (length formals)) (list-ref (reverse formals) index))))
 
 (define-method (.type (o <formal>))
   (let* ((type-name (.type.name o))
