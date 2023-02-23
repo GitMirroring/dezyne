@@ -1417,8 +1417,9 @@
   (let* ((on (parent o <on>))
          (trigger (car (ast:trigger* on)))
          (event (.event trigger))
-         (index (list-index (cut ast:equal? o <>) (reverse (.elements (.parent o))))))
-    (and event (list-ref (reverse (ast:formal* event)) index))))
+         (index (list-index (cut ast:equal? o <>) (reverse (.elements (.parent o)))))
+         (formals (ast:formal* event)))
+    (and event (< index (length formals)) (list-ref (reverse formals) index))))
 
 (define-method (.type (o <formal>))
   (let* ((type-name (.type.name o))
