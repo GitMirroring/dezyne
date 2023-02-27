@@ -5,7 +5,7 @@
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
-;;; Copyright © 2019, 2020, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2019, 2020, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -1094,8 +1094,9 @@
 
 (define-method (ast:declarative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (or (and (null? statements) (is-a? (.parent o) <behavior>))
-        (and (pair? statements) ((compose ast:declarative? car) statements)))))
+    (and (not (is-a? (.parent o) <function>))
+         (or (and (null? statements) (is-a? (.parent o) <behavior>))
+             (and (pair? statements) ((compose ast:declarative? car) statements))))))
 
 (define-method (ast:imperative? (o <imperative>))
   #t)
@@ -1105,7 +1106,8 @@
 
 (define-method (ast:imperative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (or (and (null? statements) (not (is-a? (.parent o) <behavior>)))
+    (or (is-a? (.parent o) <function>)
+        (and (null? statements) (not (is-a? (.parent o) <behavior>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
