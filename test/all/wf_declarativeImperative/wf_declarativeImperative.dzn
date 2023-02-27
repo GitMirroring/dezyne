@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,6 +28,9 @@ interface Sensor {
   out void deactivated();
   behavior {
     bool b= true;
+    void func() {
+      [b] {}
+    }
     on activate: {
       b = false;
       [b] b = false;
@@ -34,4 +38,3 @@ interface Sensor {
     on deactivate: {}
   }
 }
-
