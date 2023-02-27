@@ -340,15 +340,14 @@
             (trace-it (edge-from parent) (cons parent edges)))))
     (trace-it state '())))
 
-(define (tau-loop loop-entry-state lts)
-  "Loop of events leading from LOOP-ENTRY-STATE back to LOOP-ENTRY-STATE"
+(define (tau-loop state lts)
+  "Loop of events leading from STATE back to STATE"
   (define (loop-edges trace state)
-    (let* ((predecessor-edge (node-cycle (vector-ref lts state)))
-           (predecessor-state (edge-from predecessor-edge))
-           (predecessor-node (vector-ref lts predecessor-state)))
-      (if (eq? predecessor-state loop-entry-state) (cons predecessor-edge trace)
-          (loop-edges (cons predecessor-edge trace) predecessor-state))))
-  (loop-edges '()  loop-entry-state))
+    (let* ((edge (node-cycle (vector-ref lts state)))
+           (state (edge-from edge)))
+      (if (find (compose (cute eq? <> state) edge-from) trace) trace
+          (loop-edges (cons edge trace) state))))
+  (loop-edges '() state))
 
 (define (assert-livelock lts)
   "Trace to entry point of first livelock or #f if no tau loops found"
