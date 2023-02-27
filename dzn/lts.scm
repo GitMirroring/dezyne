@@ -384,25 +384,6 @@
   (let ((lts (annotate-exclude lts (list %<declarative-illegal> %<illegal>))))
     (vector-map-one exclude lts)))
 
-(define (trim-queue-full lts)
-  (define (reset-exclude node)
-    (set-field node (node-color) #f))
-  (define (exclude-queue-full node)
-    (let ((edges (if (node-exclude? node) '()
-                     (node-edges node))))
-      (set-field node (node-edges) edges)))
-  (define (set-exclude-queue-full lts i node)
-    (let* ((edges (node-edges node))
-           (edge (find (compose (cute eq? <> %<queue-full>) edge-label) edges)))
-      (when edge
-        (let* ((i (edge-to edge))
-               (node (vector-ref lts i))
-               (node (set-field node (node-color) #t)))
-          (vector-set! lts i node)))))
-  (let ((lts (vector-map-one reset-exclude lts)))
-    (vector-for-each (cute set-exclude-queue-full lts <> <>) lts)
-    (vector-map-one exclude-queue-full lts)))
-
 
 ;;;
 ;;; Deadlock.
@@ -418,7 +399,6 @@
 (define (deadlock-nodes lts)
   "States without outgoing edges"
   (let* ((lts (remove-state-edges lts))
-         (lts (trim-queue-full lts))
          (lts (annotate-exclude lts (list %<declarative-illegal>))))
     (define (edges? state)
       (let ((node (vector-ref lts state)))

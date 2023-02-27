@@ -67,7 +67,7 @@ prune_deferred(defer_state, []) = [];
 proc
 
 defer_queue (l: List (DeferContext))
- = (##l == QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . queue_full . delta)
+ = (##l == QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . queue_full . Illegal)
  + (##l < QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . defer_queue(l = l <| dc))
  + (l != []) -> defer_qout(locals(head(l))) . defer_queue(l = tail(l))
  + sum s : State . defer_skip(s) . defer_queue (prune_deferred (s,l))

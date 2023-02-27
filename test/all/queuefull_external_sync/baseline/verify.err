@@ -1,12 +1,15 @@
 verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: iworld: check: deadlock: ok
+verify: iworld: check: unreachable: ok
 verify: iworld: check: livelock: ok
 verify: iworld: check: deterministic: ok
 verify: queuefull_external_sync: check: deterministic: ok
-verify: queuefull_external_sync: check: illegal: ok
-verify: queuefull_external_sync: check: deadlock: fail
+verify: queuefull_external_sync: check: illegal: fail
 error: queue full in model queuefull_external_sync
+verify: queuefull_external_sync: check: deadlock: ok
+verify: queuefull_external_sync: check: unreachable: skip
 verify: queuefull_external_sync: check: livelock: ok
 verify: queuefull_external_sync: check: compliance: skip

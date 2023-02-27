@@ -7,9 +7,9 @@ verify: iblock: check: unreachable: ok
 verify: iblock: check: livelock: ok
 verify: iblock: check: deterministic: ok
 verify: blocking_queuefull: check: deterministic: ok
-verify: blocking_queuefull: check: illegal: ok
-verify: blocking_queuefull: check: deadlock: fail
+verify: blocking_queuefull: check: illegal: fail
 error: queue full in model blocking_queuefull
+verify: blocking_queuefull: check: deadlock: ok
 verify: blocking_queuefull: check: unreachable: skip
 verify: blocking_queuefull: check: livelock: ok
 verify: blocking_queuefull: check: compliance: skip

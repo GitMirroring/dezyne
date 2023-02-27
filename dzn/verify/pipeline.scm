@@ -534,13 +534,23 @@ init for MODEL unless INIT."
                            (last (drop-right trace 1))))
          (last (and last-el (string->symbol last-el)))
          (error (case assert
-                  ((deadlock) (cond
-                               ((member last '(<range-error> <type-error> <missing-reply> <second-reply>)) last)
-                               ((find (cut equal? "<queue-full>" <>) trace) '<queue-full>)
-                               (else assert)))
-                  ((compliance) 'non-compliance)
-                  ((deterministic) 'non-deterministic)
-                  (else assert)))
+                  ((deadlock)
+                   (let ((keep-error?
+                          (member last '(<missing-reply>
+                                         <second-reply>
+                                         <range-error>
+                                         <type-error>))))
+                    (if keep-error? last
+                        assert)))
+                  ((illegal)
+                   (if (equal? last '<queue-full>) last
+                       assert))
+                  ((compliance)
+                   'non-compliance)
+                  ((deterministic)
+                   'non-deterministic)
+                  (else
+                   assert)))
          (message (case error
                     ((illegal) (format #f "illegal action performed in model ~a" model-name))
                     ((non-deterministic)
