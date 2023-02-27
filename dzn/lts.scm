@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -403,15 +403,14 @@ states. Stable state has no outgoing tau edges.)"
             (trace-it (edge-start-state parent) (cons parent edges)))))
     (trace-it state '())))
 
-(define (tau-loop loop-entry-state nodes)
-  "Loop of events leading from LOOP-ENTRY-STATE back to LOOP-ENTRY-STATE"
+(define (tau-loop state lts)
+  "Loop of events leading from STATE back to STATE"
   (define (loop-edges trace state)
-    (let* ((predecessor-edge (node-cycle (vector-ref nodes state)))
-           (predecessor-state (edge-start-state predecessor-edge))
-           (predecessor-node (vector-ref nodes predecessor-state)))
-     (if (equal? predecessor-state loop-entry-state) (cons predecessor-edge trace)
-         (loop-edges (cons predecessor-edge trace) predecessor-state))))
-  (loop-edges '()  loop-entry-state))
+    (let* ((edge (node-cycle (vector-ref lts state)))
+           (state (edge-start-state edge)))
+      (if (find (compose (cute eq? <> state) edge-start-state) trace) trace
+          (loop-edges (cons edge trace) state))))
+  (loop-edges '() state))
 
 (define (assert-livelock nodes)
   "Trace to entry point of first livelock or #f if no tau loops found"
