@@ -2,8 +2,8 @@ verify: ihello: check: deadlock: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: queuefull_component0: check: deterministic: ok
-verify: queuefull_component0: check: illegal: ok
-verify: queuefull_component0: check: deadlock: fail
+verify: queuefull_component0: check: illegal: fail
 error: queue full in model queuefull_component0
+verify: queuefull_component0: check: deadlock: ok
 verify: queuefull_component0: check: livelock: ok
 verify: queuefull_component0: check: compliance: skip

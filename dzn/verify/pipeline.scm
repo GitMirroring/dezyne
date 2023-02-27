@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2021, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -477,13 +477,23 @@ init for MODEL unless INIT."
                            (last (drop-right trace 1))))
          (last (and last-el (string->symbol last-el)))
          (error (case assert
-                  ((deadlock) (cond
-                               ((member last '(<range-error> <type-error> <missing-reply> <second-reply>)) last)
-                               ((find (cut equal? "<queue-full>" <>) trace) '<queue-full>)
-                               (else assert)))
-                  ((compliance) 'non-compliance)
-                  ((deterministic) 'non-deterministic)
-                  (else assert)))
+                  ((deadlock)
+                   (let ((keep-error?
+                          (member last '(<missing-reply>
+                                         <second-reply>
+                                         <range-error>
+                                         <type-error>))))
+                    (if keep-error? last
+                        assert)))
+                  ((illegal)
+                   (if (equal? last '<queue-full>) last
+                       assert))
+                  ((compliance)
+                   'non-compliance)
+                  ((deterministic)
+                   'non-deterministic)
+                  (else
+                   assert)))
          (message (case error
                     ((illegal) (format #f "illegal action performed in model ~a" model-name))
                     ((non-deterministic)

@@ -5,8 +5,8 @@ verify: iblock: check: deadlock: ok
 verify: iblock: check: livelock: ok
 verify: iblock: check: deterministic: ok
 verify: blocking_queuefull_reply: check: deterministic: ok
-verify: blocking_queuefull_reply: check: illegal: ok
-verify: blocking_queuefull_reply: check: deadlock: fail
+verify: blocking_queuefull_reply: check: illegal: fail
 error: queue full in model blocking_queuefull_reply
+verify: blocking_queuefull_reply: check: deadlock: ok
 verify: blocking_queuefull_reply: check: livelock: ok
 verify: blocking_queuefull_reply: check: compliance: skip

@@ -5,8 +5,8 @@ verify: iworld: check: deadlock: ok
 verify: iworld: check: livelock: ok
 verify: iworld: check: deterministic: ok
 verify: queuefull_component1: check: deterministic: ok
-verify: queuefull_component1: check: illegal: ok
-verify: queuefull_component1: check: deadlock: fail
+verify: queuefull_component1: check: illegal: fail
 error: queue full in model queuefull_component1
+verify: queuefull_component1: check: deadlock: ok
 verify: queuefull_component1: check: livelock: ok
 verify: queuefull_component1: check: compliance: skip
