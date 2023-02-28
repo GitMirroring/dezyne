@@ -388,6 +388,7 @@ REGRESSION_TESTS =				\
  %D%/interface_int				\
  %D%/interface_missing_reply			\
  %D%/label_instance_mismatch			\
+ %D%/livelock_nondet				\
  %D%/livelock_iterator				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
