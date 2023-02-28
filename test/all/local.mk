@@ -426,6 +426,7 @@ REGRESSION_TESTS =				\
  %D%/queue_size_four				\
  %D%/queuefull_component1			\
  %D%/queuefull_external				\
+ %D%/queuefull_external2			\
  %D%/range_action				\
  %D%/range_argument				\
  %D%/range_assign				\

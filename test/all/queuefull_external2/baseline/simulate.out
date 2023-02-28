@@ -1,0 +1,5 @@
+(header ((h) ihello provides) ((sut) queuefull_external2 component) ((w) ihello requires))
+(state ((h) (idle . true)) ((sut) (idle . true)) ((w) (idle . true)))
+(state ((h) (idle . true)) ((sut) (idle . true)) ((w) (idle . true)))
+(labels "h.hello" "h.bye" "w.world")
+(eligible "h.hello")
