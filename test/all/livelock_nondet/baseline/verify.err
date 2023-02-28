@@ -1,0 +1,5 @@
+verify: livelock_nondet: check: deadlock: ok
+verify: livelock_nondet: check: livelock: fail
+error: livelock in model livelock_nondet
+verify: livelock_nondet: check: deterministic: fail
+error: interface livelock_nondet is unobservably non-deterministic

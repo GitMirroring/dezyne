@@ -413,6 +413,7 @@ REGRESSION_TESTS =				\
  %D%/livelock_async_cancel			\
  %D%/livelock_async_choice			\
  %D%/livelock_iterator				\
+ %D%/livelock_nondet				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\
  %D%/livelock_unfold				\
