@@ -489,6 +489,18 @@ RTC-LTS->STATE-DIAGRAM."
 
    ((from label to)
      ...))"
+
+  (define (fix-queue-full-trace trace)
+    (let* ((pc (car trace))
+           (status (.status pc)))
+      (if (not (is-a? status <queue-full-error>)) trace
+          (let* ((statement (.statement pc))
+                 (illegal (make <illegal-error>
+                            #:message "illegal"
+                            #:ast statement))
+                 (illegal-pc (clone pc #:status illegal)))
+            (cons illegal-pc trace)))))
+
   (define (fix-missing-reply-trace trace)
     (match trace
       (((and ($ <program-counter>) (? (is-status? <missing-reply-error>)) error)
@@ -509,6 +521,7 @@ numbers"
     "From a run-to-completion transition PC,TRACE, generate one LTS
 triple per label in the trail of the transition."
     (let* ((trace (fix-missing-reply-trace trace))
+           (trace (fix-queue-full-trace trace))
            (labels (parameterize ((%modeling? #t))
                      (map cdr (trace->trail trace))))
            (labels (if (null? labels) '("tau") labels))
