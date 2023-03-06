@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -26,10 +26,10 @@
 #ifndef HELLO_H
 #define HELLO_H
 
-typedef struct hello_t hello;
-typedef struct hello_skel_t hello_skel;
+typedef struct hello hello;
 
-struct hello_t {
+struct hello
+{
   hello_skel base;
   /* space for variables */
 

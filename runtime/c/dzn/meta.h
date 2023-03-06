@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 //
 // This file is part of dzn-runtime.
@@ -28,29 +28,31 @@
 
 #include <dzn/config.h>
 
-
 #if DZN_TRACING
-typedef struct dzn_meta_t dzn_meta;
-struct dzn_meta_t{
+typedef struct dzn_meta dzn_meta;
+struct dzn_meta
+{
   char const* name;
   dzn_meta const* parent;
 };
 #endif /* DZN_TRACING */
 
-
-typedef struct dzn_port_meta_t dzn_port_meta;
-struct dzn_port_meta_t{
-  struct {
-    void* address;
-#if DZN_TRACING
-    char const* port;
+typedef struct dzn_port_meta dzn_port_meta;
+struct dzn_port_meta
+{
+  struct
+  {
+    void* component;
+#if 1 //DZN_TRACING
+    char const* name;
     dzn_meta const* meta;
 #endif /* DZN_TRACING */
   } provides;
-  struct {
-    void* address;
-#if DZN_TRACING
-    char const* port;
+  struct
+  {
+    void* component;
+#if 1 //DZN_TRACING
+    char const* name;
     dzn_meta const* meta;
 #endif /* DZN_TRACING */
   } requires;

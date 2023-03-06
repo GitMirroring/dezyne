@@ -25,17 +25,17 @@
 #include <foreign_multiple_provides.h>
 
 /* call "name-of-foreign"_skel_init as follows:
-   foreign_skel_init(&(self->base), dezyne_locator, dzn_meta); */
+   foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
 void
-Foreign_init (Foreign* self, locator* dezyne_locator
-#if DZN_TRACING
+Foreign_init (Foreign* self, dzn_locator* dzn_locator
+#if 1 //DZN_TRACING
                   , dzn_meta* dzn_meta
 #endif /* !DZN_TRACING */
 )
 {
-  Foreign_skel_init(&(self->base), dezyne_locator
-#if DZN_TRACING
+  Foreign_skel_init (&(self->base), dzn_locator
+#if 1 //DZN_TRACING
                     , dzn_meta
 #endif /* !DZN_TRACING */
                     );

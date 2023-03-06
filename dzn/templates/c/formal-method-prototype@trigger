@@ -1,1 +1,2 @@
-#x:type-name  #x:model-parent-name _#.port.name _#.event.name(#x:model-parent-name * self#x:c-comma #x:method-parameters);
+#x:type-name  #x:model-parent-name _#.port.name _#.event.name  (#x:model-parent-name * self#x:c-comma #x:method-parameters);
+static #x:type-name  #x:model-parent-name _#.port.name _#.event.name _#.event.direction  (#x:port-type * port#x:c-comma #x:method-parameters);

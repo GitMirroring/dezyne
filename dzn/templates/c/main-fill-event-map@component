@@ -1,17 +1,18 @@
-void fill_event_map(#x:name * m, map* e) {
-     closure *c;
-     args_flush* args;
+void
+fill_event_map (#x:name * m, dzn_map* e)
+{
+  dzn_closure* c;
+  flush_arguments* flush_args;
 
-     component *comp = malloc(sizeof (component));
-     comp->dzn_info.performs_flush = global_flush_p;
+  dzn_component* comp = malloc (sizeof (dzn_component));
+  comp->dzn_info.performs_flush = global_flush_p;
 ##if DZN_TRACING
-     comp->meta.parent = 0;
-     comp->meta.name = "<external>";
+  comp->dzn_meta.parent = 0;
+  comp->dzn_meta.name = "<external>";
 ##endif /* DZN_TRACING */
 
-     #x:out-trigger-initialization
-     #x:port-initialization-provides
-     #x:port-initialization-requires
-     #x:in-trigger-initialization
-
+  #x:out-trigger-initialization
+  #x:port-initialization-provides
+  #x:port-initialization-requires
+  #x:in-trigger-initialization
 }

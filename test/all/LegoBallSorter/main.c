@@ -35,14 +35,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct {
-	void (*f)(void*);
-	void *self;
+typedef struct
+{
+  void (*f)(void*);
+  void *self;
 } closure;
 
-typedef struct {
-	runtime_info* info;
-	char* name;
+typedef struct
+{
+  dzn_runtime_info* info;
+  char* name;
 } args_flush;
 
 map* global_event_map;
@@ -79,7 +81,7 @@ char* consume_synchronous_out_events(char* prefix, char* event, map* event_map) 
 		void *p = 0;
 		if (map_get(event_map, s, &p)) break;
 		closure *c = p;
-		c->f(c->self);
+		c->f(c->args);
 		free(s);
 	}
 	return s ? s : "";
@@ -100,7 +102,7 @@ void log_out(char* prefix, char* event, map* event_map) {
 void log_flush(void* args) {
 	args_flush* a = args;
 	fprintf(stderr, "%s.<flush>\n", a->name);
-	runtime_flush(a->info);
+	dzn_runtime_flush(a->info);
 }
 
 int log_valued(char* prefix, char* event, map* event_map, int (*string_to_value)(char*), char* (*value_to_string)(int))
@@ -482,15 +484,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	m->brick4_s2->in.detect = LegoBallSorter_log_event_brick4_s2_in_detect;
 	m->brick4_s3->in.detect = LegoBallSorter_log_event_brick4_s3_in_detect;
 
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "ctrl";
-	c->self = args;
+	c->args = args;
 
-	m->ctrl->meta.requires.port = "ctrl";
-	m->ctrl->meta.requires.address = comp;
+	m->ctrl->meta.requires.name = "ctrl";
+	m->ctrl->meta.requires.component = comp;
 	m->ctrl->meta.requires.meta = &comp->dzn_meta;
 
 	{
@@ -500,15 +502,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	}
 	map_put(e, "ctrl.<flush>", c);
 
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick1_aA";
-	c->self = args;
+	c->args = args;
 
-	m->brick1_aA->meta.provides.port = "brick1_aA";
-	m->brick1_aA->meta.provides.address = comp;
+	m->brick1_aA->meta.provides.name = "brick1_aA";
+	m->brick1_aA->meta.provides.component = comp;
 	m->brick1_aA->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -517,15 +519,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick1_aA.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick1_aB";
-	c->self = args;
+	c->args = args;
 
-	m->brick1_aB->meta.provides.port = "brick1_aB";
-	m->brick1_aB->meta.provides.address = comp;
+	m->brick1_aB->meta.provides.name = "brick1_aB";
+	m->brick1_aB->meta.provides.component = comp;
 	m->brick1_aB->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -534,15 +536,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick1_aB.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick1_aC";
-	c->self = args;
+	c->args = args;
 
-	m->brick1_aC->meta.provides.port = "brick1_aC";
-	m->brick1_aC->meta.provides.address = comp;
+	m->brick1_aC->meta.provides.name = "brick1_aC";
+	m->brick1_aC->meta.provides.component = comp;
 	m->brick1_aC->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -551,15 +553,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick1_aC.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick1_s1";
-	c->self = args;
+	c->args = args;
 
-	m->brick1_s1->meta.provides.port = "brick1_s1";
-	m->brick1_s1->meta.provides.address = comp;
+	m->brick1_s1->meta.provides.name = "brick1_s1";
+	m->brick1_s1->meta.provides.component = comp;
 	m->brick1_s1->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -568,15 +570,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick1_s1.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick1_s2";
-	c->self = args;
+	c->args = args;
 
-	m->brick1_s2->meta.provides.port = "brick1_s2";
-	m->brick1_s2->meta.provides.address = comp;
+	m->brick1_s2->meta.provides.name = "brick1_s2";
+	m->brick1_s2->meta.provides.component = comp;
 	m->brick1_s2->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -585,15 +587,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick1_s2.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick1_s3";
-	c->self = args;
+	c->args = args;
 
-	m->brick1_s3->meta.provides.port = "brick1_s3";
-	m->brick1_s3->meta.provides.address = comp;
+	m->brick1_s3->meta.provides.name = "brick1_s3";
+	m->brick1_s3->meta.provides.component = comp;
 	m->brick1_s3->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -602,15 +604,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick1_s3.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick1_s4";
-	c->self = args;
+	c->args = args;
 
-	m->brick1_s4->meta.provides.port = "brick1_s4";
-	m->brick1_s4->meta.provides.address = comp;
+	m->brick1_s4->meta.provides.name = "brick1_s4";
+	m->brick1_s4->meta.provides.component = comp;
 	m->brick1_s4->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -619,15 +621,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick1_s4.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick2_aA";
-	c->self = args;
+	c->args = args;
 
-	m->brick2_aA->meta.provides.port = "brick2_aA";
-	m->brick2_aA->meta.provides.address = comp;
+	m->brick2_aA->meta.provides.name = "brick2_aA";
+	m->brick2_aA->meta.provides.component = comp;
 	m->brick2_aA->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -636,15 +638,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick2_aA.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick2_aB";
-	c->self = args;
+	c->args = args;
 
-	m->brick2_aB->meta.provides.port = "brick2_aB";
-	m->brick2_aB->meta.provides.address = comp;
+	m->brick2_aB->meta.provides.name = "brick2_aB";
+	m->brick2_aB->meta.provides.component = comp;
 	m->brick2_aB->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -653,15 +655,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick2_aB.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick2_s2";
-	c->self = args;
+	c->args = args;
 
-	m->brick2_s2->meta.provides.port = "brick2_s2";
-	m->brick2_s2->meta.provides.address = comp;
+	m->brick2_s2->meta.provides.name = "brick2_s2";
+	m->brick2_s2->meta.provides.component = comp;
 	m->brick2_s2->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -670,15 +672,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick2_s2.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick2_s3";
-	c->self = args;
+	c->args = args;
 
-	m->brick2_s3->meta.provides.port = "brick2_s3";
-	m->brick2_s3->meta.provides.address = comp;
+	m->brick2_s3->meta.provides.name = "brick2_s3";
+	m->brick2_s3->meta.provides.component = comp;
 	m->brick2_s3->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -687,15 +689,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick2_s3.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick2_s4";
-	c->self = args;
+	c->args = args;
 
-	m->brick2_s4->meta.provides.port = "brick2_s4";
-	m->brick2_s4->meta.provides.address = comp;
+	m->brick2_s4->meta.provides.name = "brick2_s4";
+	m->brick2_s4->meta.provides.component = comp;
 	m->brick2_s4->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -704,15 +706,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick2_s4.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick3_aA";
-	c->self = args;
+	c->args = args;
 
-	m->brick3_aA->meta.provides.port = "brick3_aA";
-	m->brick3_aA->meta.provides.address = comp;
+	m->brick3_aA->meta.provides.name = "brick3_aA";
+	m->brick3_aA->meta.provides.component = comp;
 	m->brick3_aA->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -721,15 +723,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick3_aA.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick3_aC";
-	c->self = args;
+	c->args = args;
 
-	m->brick3_aC->meta.provides.port = "brick3_aC";
-	m->brick3_aC->meta.provides.address = comp;
+	m->brick3_aC->meta.provides.name = "brick3_aC";
+	m->brick3_aC->meta.provides.component = comp;
 	m->brick3_aC->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -738,15 +740,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick3_aC.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick3_s1";
-	c->self = args;
+	c->args = args;
 
-	m->brick3_s1->meta.provides.port = "brick3_s1";
-	m->brick3_s1->meta.provides.address = comp;
+	m->brick3_s1->meta.provides.name = "brick3_s1";
+	m->brick3_s1->meta.provides.component = comp;
 	m->brick3_s1->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -755,15 +757,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick3_s1.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick3_s2";
-	c->self = args;
+	c->args = args;
 
-	m->brick3_s2->meta.provides.port = "brick3_s2";
-	m->brick3_s2->meta.provides.address = comp;
+	m->brick3_s2->meta.provides.name = "brick3_s2";
+	m->brick3_s2->meta.provides.component = comp;
 	m->brick3_s2->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -772,15 +774,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick3_s2.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick3_s3";
-	c->self = args;
+	c->args = args;
 
-	m->brick3_s3->meta.provides.port = "brick3_s3";
-	m->brick3_s3->meta.provides.address = comp;
+	m->brick3_s3->meta.provides.name = "brick3_s3";
+	m->brick3_s3->meta.provides.component = comp;
 	m->brick3_s3->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -789,15 +791,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick3_s3.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick4_aA";
-	c->self = args;
+	c->args = args;
 
-	m->brick4_aA->meta.provides.port = "brick4_aA";
-	m->brick4_aA->meta.provides.address = comp;
+	m->brick4_aA->meta.provides.name = "brick4_aA";
+	m->brick4_aA->meta.provides.component = comp;
 	m->brick4_aA->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -806,15 +808,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick4_aA.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick4_aB";
-	c->self = args;
+	c->args = args;
 
-	m->brick4_aB->meta.provides.port = "brick4_aB";
-	m->brick4_aB->meta.provides.address = comp;
+	m->brick4_aB->meta.provides.name = "brick4_aB";
+	m->brick4_aB->meta.provides.component = comp;
 	m->brick4_aB->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -823,15 +825,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick4_aB.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick4_aC";
-	c->self = args;
+	c->args = args;
 
-	m->brick4_aC->meta.provides.port = "brick4_aC";
-	m->brick4_aC->meta.provides.address = comp;
+	m->brick4_aC->meta.provides.name = "brick4_aC";
+	m->brick4_aC->meta.provides.component = comp;
 	m->brick4_aC->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -840,15 +842,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick4_aC.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick4_s1";
-	c->self = args;
+	c->args = args;
 
-	m->brick4_s1->meta.provides.port = "brick4_s1";
-	m->brick4_s1->meta.provides.address = comp;
+	m->brick4_s1->meta.provides.name = "brick4_s1";
+	m->brick4_s1->meta.provides.component = comp;
 	m->brick4_s1->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -857,15 +859,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick4_s1.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick4_s2";
-	c->self = args;
+	c->args = args;
 
-	m->brick4_s2->meta.provides.port = "brick4_s2";
-	m->brick4_s2->meta.provides.address = comp;
+	m->brick4_s2->meta.provides.name = "brick4_s2";
+	m->brick4_s2->meta.provides.component = comp;
 	m->brick4_s2->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -874,15 +876,15 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 		}
 	}
 	map_put(e, "brick4_s2.<flush>", c);
-	c = malloc(sizeof (closure));
-	c->f = log_flush;
+	c = malloc(sizeof (dzn_closure));
+	c->function = log_flush;
 	args = malloc(sizeof(args_flush));
 	args->info = &comp->dzn_info;
 	args->name = "brick4_s3";
-	c->self = args;
+	c->args = args;
 
-	m->brick4_s3->meta.provides.port = "brick4_s3";
-	m->brick4_s3->meta.provides.address = comp;
+	m->brick4_s3->meta.provides.name = "brick4_s3";
+	m->brick4_s3->meta.provides.component = comp;
 	m->brick4_s3->meta.provides.meta = &comp->dzn_meta;
 
 	{
@@ -892,17 +894,17 @@ void LegoBallSorter_fill_event_map(LegoBallSorter* m, map* e) {
 	}
 	map_put(e, "brick4_s3.<flush>", c);
 
-	c = malloc(sizeof (closure));
-	c->f = (void (*))m->ctrl->in.calibrate;
-	c->self = m->ctrl;
+	c = malloc(sizeof (dzn_closure));
+	c->function = (void (*))m->ctrl->in.calibrate;
+	c->args = m->ctrl;
 	map_put(e, "ctrl.calibrate", c);
-	c = malloc(sizeof (closure));
-	c->f = (void (*))m->ctrl->in.stop;
-	c->self = m->ctrl;
+	c = malloc(sizeof (dzn_closure));
+	c->function = (void (*))m->ctrl->in.stop;
+	c->args = m->ctrl;
 	map_put(e, "ctrl.stop", c);
-	c = malloc(sizeof (closure));
-	c->f = (void (*))m->ctrl->in.operate;
-	c->self = m->ctrl;
+	c = malloc(sizeof (dzn_closure));
+	c->function = (void (*))m->ctrl->in.operate;
+	c->args = m->ctrl;
 	map_put(e, "ctrl.operate", c);
 
 }
@@ -913,15 +915,15 @@ void illegal_print() {
 
 int main(int argc, char** argv) {
 	global_flush_p = argc > 1 && !strcmp(argv[1], "--flush");
-	runtime dezyne_runtime;
-	runtime_init(&dezyne_runtime);
-	locator dezyne_locator;
-	locator_init(&dezyne_locator, &dezyne_runtime);
-	dezyne_locator.illegal = illegal_print;
+	dzn_runtime dzn_runtime;
+	dzn_runtime_init(&dzn_runtime);
+	dzn_locator dzn_locator;
+	dzn_locator_init(&dzn_locator, &dzn_runtime);
+	dzn_locator.illegal = illegal_print;
 
 	LegoBallSorter sut;
 	dzn_meta_t mt = {"sut", 0};
-	LegoBallSorter_init(&sut, &dezyne_locator, &mt);
+	LegoBallSorter_init(&sut, &dzn_locator, &mt);
 
 	map event_map;
 	map_init(&event_map);
@@ -932,8 +934,8 @@ int main(int argc, char** argv) {
 	while ((line = read_line()) != 0) {
 		void *p = 0;
 		if (!map_get(&event_map, line, &p)) {
-			closure *c = p;
-			c->f(c->self);
+			dzn_closure *c = p;
+			c->f(c->args);
 		}
 		free(line);
 	}

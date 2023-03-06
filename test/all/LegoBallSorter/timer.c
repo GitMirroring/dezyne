@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -30,12 +30,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct {
-	dzn_meta_t dzn_meta;
-	runtime_info dzn_info;
-	itimer port_;
-	itimer* port;
-	itimer_impl* pimpl;
+typedef struct
+{
+  dzn_meta_t dzn_meta;
+  dzn_runtime_info dzn_info;
+  itimer port_;
+  itimer* port;
+  itimer_impl* pimpl;
 } timer_help;
 
 typedef struct {int size;void (*f)(itimer*);timer_help* self;} args_port_timeout;
@@ -75,36 +76,36 @@ static void port_cancel(timer_help* self) {
 }
 
 static void call_in_port_create(itimer* port,Integer ms) {
-	runtime_trace_in(&port->meta, "create");
-	args_port_create a = {sizeof(args_port_create), port_create, port->meta.provides.address,ms};
-	runtime_event(helper_port_create, &a);
-	runtime_trace_out(&port->meta, "return");
+	dzn_runtime_trace_in(&port->meta, "create");
+	args_port_create a = {sizeof(args_port_create), port_create, port->meta.provides.component,ms};
+	dzn_runtime_event(helper_port_create, &a);
+	dzn_runtime_trace_out(&port->meta, "return");
 }
 static void call_in_port_cancel(itimer* port) {
-	runtime_trace_in(&port->meta, "cancel");
-	args_port_cancel a = {sizeof(args_port_cancel), port_cancel, port->meta.provides.address};
-	runtime_event(helper_port_cancel, &a);
-	runtime_trace_out(&port->meta, "return");
+	dzn_runtime_trace_in(&port->meta, "cancel");
+	args_port_cancel a = {sizeof(args_port_cancel), port_cancel, port->meta.provides.component};
+	dzn_runtime_event (helper_port_cancel, &a);
+	dzn_runtime_trace_out(&port->meta, "return");
 }
 
-void timer_init (timer* self, locator* dezyne_locator, dzn_meta_t *m) {
+void timer_init (timer* self, locator* dzn_locator, dzn_meta_t *m) {
 	timer_help* help = malloc (sizeof (timer_help));
-	runtime_info_init(&help->dzn_info, dezyne_locator);
+	dzn_runtime_info_init(&help->dzn_info, dzn_locator);
 	memcpy(&help->dzn_meta, m, sizeof(dzn_meta_t));
 
 	help->port = &self->port_;
 	help->port->in.create = call_in_port_create;
 	help->port->in.cancel = call_in_port_cancel;
-	help->port->meta.provides.port= "port";
-	help->port->meta.provides.address = help;
+	help->port->meta.provides.name= "port";
+	help->port->meta.provides.component = help;
         help->port->meta.provides.meta = &help->dzn_meta;
-	help->port->meta.requires.port = "";
-	help->port->meta.requires.address = 0;
+	help->port->meta.requires.name = "";
+	help->port->meta.requires.component = 0;
         help->port->meta.requires.meta = 0;
         self->port = help->port;
 
-        itimer_impl* (*f)(locator* loc) = locator_get (dezyne_locator, "timer.create");
-        locator *tmp = locator_clone (dezyne_locator);
+        itimer_impl* (*f)(dzn_locator* loc) = dzn_locator_get (dzn_locator, "timer.create");
+        dzn_locator *tmp = dzn_locator_clone (dzn_locator);
         locator_set (tmp, "timer.port", self->port);
         help->pimpl = f (tmp);
 }

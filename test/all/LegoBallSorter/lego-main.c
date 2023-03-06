@@ -45,15 +45,15 @@ timer_impl_cancel (itimer_impl* self)
 
 int main(int argc, char** argv)
 {
-  runtime dezyne_runtime;
-  runtime_init (&dezyne_runtime);
+  dzn_runtime dzn_runtime;
+  dzn_runtime_init (&dzn_runtime);
 
-  locator dezyne_locator;
-  locator_init (&dezyne_locator, &dezyne_runtime);
+  dzn_locator dzn_locator;
+  dzn_locator_init (&dzn_locator, &dzn_runtime);
 
   LegoBallSorter sut;
   dzn_meta_t m = {"sut", 0};
-  LegoBallSorter_init(&sut, &dezyne_locator, &m);
+  LegoBallSorter_init(&sut, &dzn_locator, &m);
   sut.ctrl->out.name = "ctrl";
   sut.ctrl->out.self = &sut;
 }

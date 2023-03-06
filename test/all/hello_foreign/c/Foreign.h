@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,10 +25,10 @@
 #ifndef FOREIGN_H
 #define FOREIGN_H
 
-typedef struct Foreign_t Foreign;
-typedef struct Foreign_skel_t Foreign_skel;
+typedef struct Foreign Foreign;
 
-struct Foreign_t {
+struct Foreign
+{
   Foreign_skel base;
   /* space for variables */
 

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -26,21 +26,23 @@
 #include <hello_foreign.h>
 
 /* call "name-of-foreign"_skel_init as follows:
-   foreign_skel_init(&(self->base), dezyne_locator, dzn_meta); */
+   foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
-void hello_init(hello* self, locator* dezyne_locator
-#if DZN_TRACING
+void
+hello_init (hello* self, dzn_locator* dzn_locator
+#if 1 //DZN_TRACING
                   , dzn_meta* dzn_meta
 #endif /* !DZN_TRACING */
 )
 {
-  hello_skel_init(&(self->base), dezyne_locator
-#if DZN_TRACING
+  hello_skel_init (&(self->base), dzn_locator
+#if 1 //DZN_TRACING
                     , dzn_meta
 #endif /* !DZN_TRACING */
                     );
 }
 
-void hello_h_hello(hello* self)
+void
+hello_h_hello (hello* self)
 {
 }

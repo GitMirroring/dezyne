@@ -1,5 +1,6 @@
-typedef struct #x:model-parent-name _#x:enum-name #x:closure-struct-args _t #x:model-parent-name _#x:enum-name #x:closure-struct-args;
-struct #x:model-parent-name _#x:enum-name #x:closure-struct-args _t {
+typedef struct #x:model-parent-name _#x:enum-name #x:closure-struct-args  #x:model-parent-name _#x:enum-name #x:closure-struct-args;
+struct #x:model-parent-name _#x:enum-name #x:closure-struct-args
+{
   size_t size;
   #x:type-name (*f)(#x:model-parent-name * self #x:c-comma #x:method-parameters);
   #x:model-parent-name * self;

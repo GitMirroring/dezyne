@@ -1,18 +1,16 @@
-void #x:name _init(#x:name * self, locator* dezyne_locator
-##if DZN_TRACING
-, dzn_meta *meta
-##endif /* DZN_TRACING */
-) {
-        runtime_info_init(&self->dzn_info, dezyne_locator);
-        self->dzn_info.performs_flush = true;
-        #x:variable-member-initialization
-        #x:provides-port-initialization
-        #x:requires-port-initialization
-        #x:trigger-initialization
+void
+#x:name _init (#x:name * self, dzn_locator* dzn_locator, dzn_meta* dzn_meta)
+{
+  dzn_runtime_info_init (&self->dzn_info, dzn_locator);
+  self->dzn_info.performs_flush = true;
+  #x:variable-member-initialization
+  #x:provides-port-initialization
+  #x:requires-port-initialization
+  #x:trigger-initialization
 
 ##if DZN_TRACING
-        memcpy(&self->meta, meta, sizeof(dzn_meta));
-        #x:provides-event-tracing-initialization
-        #x:requires-event-tracing-initialization
+  memcpy (&self->dzn_meta, dzn_meta, sizeof (self->dzn_meta));
+  #x:provides-event-tracing-initialization
+  #x:requires-event-tracing-initialization
 ##endif /*DZN_TRACING*/
 }

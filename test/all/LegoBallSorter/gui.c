@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -75,8 +75,8 @@ gtk_motor_new (char const* name, int home, int end)
     = gtk_adjustment_new (0.0, GTK_MOTOR_MIN, GTK_MOTOR_MAX, 1.0, 0.0, 0.0);
   self->button = (GtkSpinButton*)gtk_spin_button_new (adjustment, 1.0, 0);
 
-  self->meta.name = name;
-  self->meta.parent = 0;
+  self->dzn_meta.name = name;
+  self->dzn_meta.parent = 0;
 
   self->home = home;
   self->end = end;
@@ -131,8 +131,8 @@ gtk_sensor_new (char const* name)
 {
   GtkSensor* self = (GtkSensor*)malloc (sizeof (GtkSensor));
   self->button = (GtkCheckButton*)gtk_check_button_new_with_label (name);
-  self->meta.name = name;
-  self->meta.parent = 0;
+  self->dzn_meta.name = name;
+  self->dzn_meta.parent = 0;
   return self;
 }
 
@@ -452,8 +452,8 @@ timer_impl_init (timer_impl* self, locator* loc)
 
   //self->connection = 0xdeadbeef;
   self->connection = 12345;
-  self->port = locator_get (loc, "timer.port");
-  self->lego = locator_get (loc, "lego");
+  self->port = dzn_locator_get (loc, "timer.port");
+  self->lego = dzn_locator_get (loc, "lego");
 }
 
 bool
@@ -485,7 +485,7 @@ timer_impl_cancel (itimer_impl* self)
 }
 
 timer_impl*
-create_timer_impl (locator* loc)
+create_timer_impl (dzn_locator* loc)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   timer_impl *t = (timer_impl*)malloc (sizeof (timer_impl));
@@ -531,20 +531,20 @@ main (int argc, char** argv)
 {
   gtk_init (&argc, &argv);
 
-  runtime dezyne_runtime;
-  runtime_init (&dezyne_runtime);
+  dzn_runtime dezyne_runtime;
+  dzn_runtime_init (&dezyne_runtime);
 
-  locator dezyne_locator;
-  locator_init (&dezyne_locator, &dezyne_runtime);
+  dzn_locator dzn_locator;
+  locator_init (&dzn_locator, &dezyne_runtime);
 
   GtkLego* lego = gtk_lego_new ();
 
   LegoBallSorter sut;
   dzn_meta_t m = {"sut", 0};
-  locator_set (&dezyne_locator, "lego", lego);
-  locator_set (&dezyne_locator, "timer.create", create_timer_impl);
+  locator_set (&dzn_locator, "lego", lego);
+  locator_set (&dzn_locator, "timer.create", create_timer_impl);
 
-  LegoBallSorter_init (&sut, &dezyne_locator, &m);
+  LegoBallSorter_init (&sut, &dzn_locator, &m);
 
   g_signal_connect (lego->window, "delete-event", G_CALLBACK (gtk_main_quit), 0);
   g_signal_connect (lego->window, "destroy", G_CALLBACK (gtk_main_quit), 0);
@@ -601,10 +601,10 @@ imotor_in_move (imotor* self, uint8_t power, int32_t position)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  runtime_trace_in (&self->meta, "move");
-  GtkMotor *g = self->meta.provides.address;
+  dzn_runtime_trace_in (&self->dzn_meta, "move");
+  GtkMotor *g = self->dzn_meta.provides.component;
   g->target = position;
-  runtime_trace_out (&self->meta, "return");
+  dzn_runtime_trace_out (&self->dzn_meta, "return");
 #endif
 }
 
@@ -613,7 +613,7 @@ imotor_in_run (imotor* self, uint8_t power, bool invert)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  GtkMotor *g = self->meta.provides.address;
+  GtkMotor *g = self->dzn_meta.provides.component;
   g->target = invert ? GTK_MOTOR_MIN : GTK_MOTOR_MAX;
 #endif
 }
@@ -622,7 +622,7 @@ void
 imotor_in_stop (imotor* self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  GtkMotor *g = self->meta.provides.address;
+  GtkMotor *g = self->dzn_meta.provides.component;
   g->target = gtk_motor_get_value (g);
 }
 
@@ -630,7 +630,7 @@ void
 imotor_in_coast (imotor* self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  GtkMotor *g = self->meta.provides.address;
+  GtkMotor *g = self->dzn_meta.provides.component;
   g->target = gtk_motor_get_value (g);
 }
 
@@ -638,7 +638,7 @@ void
 imotor_in_zero (imotor* self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  GtkMotor *g = self->meta.provides.address;
+  GtkMotor *g = self->dzn_meta.provides.component;
   int current = gtk_motor_get_value (g);
   g->home -= current;
   g->end -= current;
@@ -651,7 +651,7 @@ imotor_in_position (imotor* self, int32_t* position)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  GtkMotor *g = self->meta.provides.address;
+  GtkMotor *g = self->dzn_meta.provides.component;
   *position = gtk_motor_get_value (g);
 #else
   *position = 0;
@@ -663,7 +663,7 @@ imotor_in_at (imotor* self, int32_t position)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  GtkMotor *g = self->meta.provides.address;
+  GtkMotor *g = self->dzn_meta.provides.component;
   return abs (position - gtk_motor_get_value (g)) <= 2
     ? imotor_result_t_yes : imotor_result_t_no;
 #else
@@ -677,8 +677,8 @@ imotor_connect (imotor* m, GtkMotor* g)
   //fprintf (stderr, "%s\n", __FUNCTION__);
 
 
-  m->meta.provides.port = "imotor";
-  m->meta.provides.address = g;
+  m->meta.provides.name = "imotor";
+  m->meta.provides.component = g;
 
   m->in.move = imotor_in_move;
   m->in.run = imotor_in_run;
@@ -694,12 +694,12 @@ itouch_in_detect (itouch* self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  GtkSensor *t = (GtkSensor*)self->meta.provides.address;
-  runtime_trace_in (&self->meta, "detect");
+  GtkSensor *t = (GtkSensor*)self->dzn_meta.provides.component;
+  runtime_trace_in (&self->dzn_meta, "detect");
   int r = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (t->button))
     ? itouch_status_pressed
     : itouch_status_released;
-  runtime_trace_out (&self->meta, r == itouch_status_pressed ? "status_pressed" : "status_released");
+  dzn_runtime_trace_out (&self->dzn_meta, r == itouch_status_pressed ? "status_pressed" : "status_released");
   return r;
 #else
   return 0;
@@ -711,8 +711,8 @@ itouch_connect (itouch* t, GtkSensor* s)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 
-  t->meta.provides.port = "itouch";
-  t->meta.provides.address  = s;
+  t->meta.provides.name = "itouch";
+  t->meta.provides.component  = s;
   t->in.detect = itouch_in_detect;
 }
 
@@ -720,7 +720,7 @@ void
 ilight_in_turnon (ilight* self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  GtkSensor* s = (GtkSensor*)self->meta.provides.address;
+  GtkSensor* s = (GtkSensor*)self->dzn_meta.provides.component;
   gtk_widget_set_sensitive (GTK_WIDGET (s->button), true);
 }
 
@@ -728,7 +728,7 @@ void
 ilight_in_turnoff (ilight* self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  GtkSensor* s = (GtkSensor*)self->meta.provides.address;
+  GtkSensor* s = (GtkSensor*)self->dzn_meta.provides.component;
   gtk_widget_set_sensitive (GTK_WIDGET (s->button), false);
 }
 
@@ -737,7 +737,7 @@ ilight_in_detect (ilight* self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  GtkSensor* s = (GtkSensor*)self->meta.provides.address;
+  GtkSensor* s = (GtkSensor*)self->dzn_meta.provides.component;
   return gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (s->button))
     ? ilight_status_accept : ilight_status_reject;
 #else
@@ -750,8 +750,8 @@ ilight_connect (ilight* l, GtkSensor* s)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 
-  l->meta.provides.port = "ilight";
-  l->meta.provides.address = s;
+  l->meta.provides.name = "ilight";
+  l->meta.provides.component = s;
 
   l->in.turnon = ilight_in_turnon;
   l->in.turnoff = ilight_in_turnoff;

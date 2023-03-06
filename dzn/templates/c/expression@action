@@ -1,1 +1,1 @@
-self->#.port.name ->#.event.direction .#.event.name(self->#.port.name #x:c-comma #x:code-arguments)
+self->#.port.name ->#.event.direction .#.event.name  (self->#.port.name #x:c-comma #x:code-arguments)

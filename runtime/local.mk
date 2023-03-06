@@ -26,7 +26,6 @@
 if have_c99
 runtime_c_dzndir = $(pkgdatadir)/runtime/c/dzn
 dist_runtime_c_dzn_DATA =			\
- %D%/c/dzn/boolc90.h				\
  %D%/c/dzn/closure.h				\
  %D%/c/dzn/config.h				\
  %D%/c/dzn/locator.h				\
@@ -35,7 +34,6 @@ dist_runtime_c_dzn_DATA =			\
  %D%/c/dzn/meta.h				\
  %D%/c/dzn/pair.h				\
  %D%/c/dzn/queue.h				\
- %D%/c/dzn/runloc.h				\
  %D%/c/dzn/runtime.h
 
 runtime_cdir = $(pkgdatadir)/runtime/c

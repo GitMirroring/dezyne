@@ -135,7 +135,6 @@
 (define-templates main-header)
 (define-templates main-includes)
 (define-templates main-fill-event-map)
-(define-templates main-illegal-print)
 (define-templates main-content)
 
 (define-templates port-initialization-provides ast:provides-port*)

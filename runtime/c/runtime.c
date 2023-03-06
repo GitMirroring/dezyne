@@ -1,5 +1,5 @@
 // dzn-runtime -- Dezyne runtime library
-// Copyright © 2015, 2016, 2019, 2022 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2019, 2022, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2015 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2015, 2016 Rutger van Beusekom <rutger@dezyne.org>
@@ -34,253 +34,241 @@
 #include <dzn/closure.h>
 #include <dzn/locator.h>
 #include <dzn/queue.h>
-#include <dzn/runloc.h>
-
 
 void
-runtime_illegal_handler(void)
+dzn_runtime_illegal_handler (void)
 {
-  assert(!"illegal");
+  assert (!"illegal");
 }
-
-
-void dzn_illegal(const runtime_info* info)
-{
-  info->lc->illegal();
-}
-
 
 void
-runtime_info_init (runtime_info* info, locator* loc)
+dzn_illegal (dzn_runtime_info const* info)
 {
-  info->lc = loc;
+  info->locator->illegal ();
+}
+
+void
+dzn_runtime_info_init (dzn_runtime_info* info, dzn_locator* locator)
+{
+  info->locator = locator;
   info->handling = false;
   info->performs_flush = false;
   info->deferred = 0;
-  queue_init(&info->q);
+  dzn_queue_init (&info->q);
 }
 
-static void runtime_handle_event (runtime_info* info, void (*event)(void* void_args), void* args);
+static void dzn_runtime_handle_event (dzn_runtime_info* info, void (*event) (void*), void* argument);
 
 void
-runtime_flush (runtime_info* info)
+dzn_runtime_flush (dzn_runtime_info* info)
 {
-  queue* q;
+  dzn_queue* q;
 #if DZN_DYNAMIC_QUEUES
   dzn_closure* c;
 #else /* !DZN_DYNAMIC_QUEUES */
   dzn_closure c;
 #endif /* !DZN_DYNAMIC_QUEUES */
-  while (info != 0)
-  {
-  q = &info->q;
-  while (queue_empty (q)== false)
-  {
+  while (info)
+    {
+      q = &info->q;
+      while (dzn_queue_empty (q) == false)
+        {
 #if DZN_DYNAMIC_QUEUES
-    c = queue_pop (q);
-    runtime_handle_event (info, c->func, c->args);
-    dzn_free (c->args);
-    dzn_free (c);
+          c = dzn_queue_pop (q);
+          dzn_runtime_handle_event (info, c->function, c->argument);
+          dzn_free (c->argument);
+          dzn_free (c);
 #else /* !DZN_DYNAMIC_QUEUES */
-    c = *(dzn_closure*)queue_pop (q);
-    runtime_handle_event (info, c.func, c.args);
+          c = * (dzn_closure*)dzn_queue_pop (q);
+          dzn_runtime_handle_event (info, c.function, c.argument);
 #endif /* !DZN_DYNAMIC_QUEUES */
-  }
-  if (info->deferred != 0)
-  {
-    runtime_info* tgt = info->deferred;
-    info->deferred = 0;
-    if ((tgt != 0) && (tgt->handling == 0u))
-    {
-      info = tgt;
+        }
+      if (info->deferred)
+        {
+          dzn_runtime_info* tgt = info->deferred;
+          info->deferred = 0;
+          if (tgt && !tgt->handling)
+            info = tgt;
+        }
+      else
+        break;
     }
-  }
-  else
-    {
-      break;
-    }
-
-  }
 }
 
 void
-runtime_defer (void* vsrc, void* vtgt, void (*event)(void* void_args), void* args)
+dzn_runtime_defer (void* vsrc, void* vtgt, void (*event) (void*), void* argument)
 {
 #if DZN_DYNAMIC_QUEUES
   dzn_closure *c;
 #else /* !DZN_DYNAMIC_QUEUES */
   dzn_closure c;
 #endif /* !DZN_DYNAMIC_QUEUES */
-  arguments *a;
-  component* csrc = vsrc;
-  component* ctgt = vtgt;
-  runtime_info* src = (csrc!=0)?&csrc->dzn_info:0;
-  runtime_info* tgt = (ctgt!=0)?&ctgt->dzn_info:0;
-  if ((!((src != 0) && (src->performs_flush != 0u))) && (tgt->handling == 0u))
-  {
-    runtime_handle_event (tgt, event, args);
-  }
+  dzn_arguments *a;
+  dzn_component* csrc = vsrc;
+  dzn_component* ctgt = vtgt;
+  dzn_runtime_info* src = csrc ? &csrc->dzn_info : 0;
+  dzn_runtime_info* tgt = ctgt ? &ctgt->dzn_info : 0;
+  if (!(src && src->performs_flush) && !tgt->handling)
+    dzn_runtime_handle_event (tgt, event, argument);
   else
-  {
+    {
 #if DZN_DYNAMIC_QUEUES
       c = (dzn_closure*) dzn_malloc (sizeof (dzn_closure));
-      c->func = event;
-      a = args;
-      c->args = dzn_malloc ((size_t)a->size);
-      memcpy (c->args, a,(size_t)a->size);
-      queue_push (&tgt->q, c);
+      c->function = event;
+      a = argument;
+      c->argument = dzn_malloc ((size_t)a->size);
+      memcpy (c->argument, a, (size_t)a->size);
+      dzn_queue_push (&tgt->q, c);
 #else /* !DZN_DYNAMIC_QUEUES */
       c.func = event;
-      a = args;
-      assert(a->size <= DZN_MAX_ARGS_SIZE);
-      memcpy(&c.args, a, (size_t)a->size);
-      queue_push (&tgt->q, &c);
+      a = argument;
+      assert (a->size <= DZN_MAX_ARGUMENT_SIZE);
+      memcpy (&c.argument, a, (size_t)a->size);
+      dzn_queue_push (&tgt->q, &c);
 #endif /* !DZN_DYNAMIC_QUEUES */
-      if (src != 0)
-      {
+      if (src)
         src->deferred = tgt;
-      }
-  }
+    }
 }
 
 static void
-runtime_handle_event (runtime_info* info, void (*event)(void* void_args), void* args)
+dzn_runtime_handle_event (dzn_runtime_info* info, void (*event) (void*), void* argument)
 {
-  runtime_start(info);
-  event(args);
-  runtime_finish(info);
+  dzn_runtime_start (info);
+  event (argument);
+  dzn_runtime_finish (info);
 }
 
 void
-runtime_event (void (*event)(void* void_args), void* args)
+dzn_runtime_event (void (*event) (void*), void* argument)
 {
-  arguments* a = args;
-  component* c = a->self;
-  runtime_handle_event (&c->dzn_info, event, args);
+  dzn_arguments* a = argument;
+  dzn_component* c = a->self;
+  dzn_runtime_handle_event (&c->dzn_info, event, argument);
 }
 
 void
-runtime_start (runtime_info* info)
+dzn_runtime_start (dzn_runtime_info* info)
 {
-  if (info->handling==0u)
-  {
+  if (!info->handling)
     info->handling = true;
-  }
   else
-  {
-    assert(!"component already handling an event");
-  }
+    assert (!"component already handling an event");
 }
 
 void
-runtime_finish (runtime_info* info)
+dzn_runtime_finish (dzn_runtime_info* info)
 {
-    info->handling = false;
-    runtime_flush (info);
+  info->handling = false;
+  dzn_runtime_flush (info);
 }
 
 #if DZN_TRACING
 char*
-runtime_path (dzn_meta const* m, char* p)
+dzn_runtime_path (dzn_meta const* m, char* p)
 {
   char buf[1024] = "";
-  strcpy (buf, (m!=0) ? m->name : "<external>");
+  strcpy (buf, m ? m->name : "<external>");
 
-  if (*p != (char)0) {
-    strcat (buf, ".");
-    strcat (buf, p);
-  }
+  if (*p != (char)0)
+    {
+      strcat (buf, ".");
+      strcat (buf, p);
+    }
   strcpy (p, buf);
 
-  return ((m==0) || (m->parent==0)) ? p : runtime_path(m->parent, p);
+  return (!m || !m->parent) ? p : dzn_runtime_path (m->parent, p);
 }
 
 void
-runtime_trace (dzn_port_meta const* mt, char const* e)
+dzn_runtime_trace (dzn_port_meta const* meta, char const* e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
-  strcpy(pbuf, mt->provides.port);
-  strcpy(rbuf, mt->requires.port);
+  strcpy (pbuf, meta->provides.name);
+  strcpy (rbuf, meta->requires.name);
   fprintf (stderr, "%s.%s -> %s.%s\n",
-           runtime_path (mt->requires.meta, rbuf), e,
-           runtime_path (mt->provides.meta, pbuf), e);
+           dzn_runtime_path (meta->requires.meta, rbuf), e,
+           dzn_runtime_path (meta->provides.meta, pbuf), e);
 }
 
 void
-runtime_trace_out (dzn_port_meta const* mt, char const* e)
+dzn_runtime_trace_out (dzn_port_meta const* meta, char const* e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
-  strcpy(pbuf, mt->provides.port);
-  strcpy(rbuf, mt->requires.port);
+  strcpy (pbuf, meta->provides.name);
+  strcpy (rbuf, meta->requires.name);
   fprintf (stderr, "%s.%s <- %s.%s\n",
-           runtime_path (mt->requires.meta, rbuf), e,
-           runtime_path (mt->provides.meta, pbuf), e);
+           dzn_runtime_path (meta->requires.meta, rbuf), e,
+           dzn_runtime_path (meta->provides.meta, pbuf), e);
 }
 
 void
-runtime_trace_qin (dzn_port_meta const* mt, char const* e)
+dzn_runtime_trace_qin (dzn_port_meta const* meta, char const* e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
-  if (!mt->requires.meta)
-  {
-    runtime_trace_out (mt, e);
-    return;
-  }
-  strcpy(pbuf, mt->provides.port);
-  strcpy(rbuf, mt->requires.port);
-  fprintf (stderr, "%s.%s <- %s.%s\n",
-           runtime_path (mt->requires.meta, rbuf), "<q>",
-           runtime_path (mt->provides.meta, pbuf), e);
-}
-
-void
-runtime_trace_qout (dzn_port_meta const* mt, char const* e)
-{
-  char pbuf[1024] = "";
-  char rbuf[1024] = "";
-  if (!mt->requires.meta)
+  if (!meta->requires.meta)
+    {
+      dzn_runtime_trace_out (meta, e);
       return;
-  strcpy(pbuf, mt->provides.port);
-  strcpy(rbuf, mt->requires.port);
+    }
+  strcpy (pbuf, meta->provides.name);
+  strcpy (rbuf, meta->requires.name);
   fprintf (stderr, "%s.%s <- %s.%s\n",
-           runtime_path (mt->requires.meta, rbuf), e,
-           runtime_path (mt->provides.meta, pbuf), "<q>");
+           dzn_runtime_path (meta->requires.meta, rbuf), "<q>",
+           dzn_runtime_path (meta->provides.meta, pbuf), e);
+}
+
+void
+dzn_runtime_trace_qout (dzn_port_meta const* meta, char const* e)
+{
+  char pbuf[1024] = "";
+  char rbuf[1024] = "";
+  if (!meta->requires.meta)
+    return;
+  strcpy (pbuf, meta->provides.name);
+  strcpy (rbuf, meta->requires.name);
+  fprintf (stderr, "%s.%s <- %s.%s\n",
+           dzn_runtime_path (meta->requires.meta, rbuf), e,
+           dzn_runtime_path (meta->provides.meta, pbuf), "<q>");
 }
 
 char*
-_bool_to_string (bool b)
+dzn_bool_to_string (bool b)
 {
   char* return_string;
-  if (b==1u) {return_string = "true";} else {return_string = "false";}
+  if (b == 1)
+    return_string = "true";
+  else
+    return_string = "false";
   return return_string;
 }
 
 bool
-string_to__bool (char *s)
+dzn_string_to__bool (char *s)
 {
   size_t length;
   bool reply;
-  length = strlen("false");
-  reply = (bool) strncmp(s, "false", length);
+  length = strlen ("false");
+  reply = (bool) strncmp (s, "false", length);
   return reply;
 }
 
 char*
-_int_to_string (int i)
+dzn_int_to_string (int i)
 {
-  static char buffy[(size_t)((sizeof (i) * 2u) + 1u)];
+  static char buffy[ (size_t) ((sizeof (i) * 2) + 1)];
   sprintf (buffy, "%d", i);
   return buffy;
 }
 
 int
-string_to__int (char* s)
+dzn_string_to__int (char* s)
 {
   char *endptr;
-  long int val = strtol(s,&endptr,0);
+  long int val = strtol (s,&endptr,0);
   return (endptr != s) ? (int) val : INT_MAX;
 }
 

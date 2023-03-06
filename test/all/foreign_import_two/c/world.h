@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -26,10 +26,10 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-typedef struct world_t world;
-typedef struct world_skel_t world_skel;
+typedef struct world world;
 
-struct world_t {
+struct world
+{
   world_skel base;
   /* space for variables */
   iworld_Result reply__iworld_Result;

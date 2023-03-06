@@ -4,10 +4,10 @@
  #x:call-in-trigger-prototype
  #x:call-out-trigger-prototype
 
+ #x:initialize
  #x:functions
  #x:methods
  #x:call-in-trigger
  #x:call-out-trigger
 
- #x:initialize
 /********************************** COMPONENT *********************************/

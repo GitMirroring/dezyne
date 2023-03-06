@@ -95,8 +95,9 @@
          (code:provides+requires-end-point binding)))
     (call (name "connect")
           (arguments
-           (list (member* (code:end-point->string provides))
-                 (member* (code:end-point->string requires)))))))
+           (list
+            (member* (%member-prefix) (code:end-point->string provides))
+            (member* (%member-prefix) (code:end-point->string requires)))))))
 
 
 ;;;

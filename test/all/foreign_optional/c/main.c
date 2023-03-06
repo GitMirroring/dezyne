@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2019, 2021 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2021, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,26 +26,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-void world(iworld* self)
+void
+world (iworld* self)
 {
-  (void)self;
-  fprintf(stderr, "<external>.h.world <- sut.c.h.world\n");
+ (void)self;
+  fprintf (stderr, "<external>.h.world <- sut.c.h.world\n");
 }
 
-int main()
+int
+main ()
 {
-  while (getchar() != EOF);
+  while (getchar () != EOF);
 
-  locator loc;
-  locator_init(&loc);
+  dzn_locator locator;
+  dzn_locator_init (&locator);
 
   foreign_optional sut;
   sut.h = &sut.h_;
-  sut.h->meta.provides.address = &sut;
-  sut.h->meta.requires.address = 0;
+  sut.h->meta.provides.component = &sut;
+  sut.h->meta.requires.component = 0;
   sut.f.base.w = &sut.f.base.w_;
   dzn_meta meta = {"sut", 0};
-  foreign_optional_init(&sut, &loc, &meta);
+  foreign_optional_init (&sut, &loc, &meta);
   sut.c.h->out.world = &world;
 
   // FIXME

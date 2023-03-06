@@ -1,11 +1,13 @@
-static #x:type-name  #x:model-parent-name _#.port.name _#.event.name _out(#x:port-type * port#x:formals) {
-  #x:model-parent-name _#x:enum-name #x:closure-struct-args  closure_struct_obj;
+static #x:type-name
+#x:model-parent-name _#.port.name _#.event.name _out (#x:port-type * port#x:formals)
+{
+  #x:model-parent-name _#x:enum-name #x:closure-struct-args  dzn_c;
 ##if DZN_TRACING
-  runtime_trace_out (&port->meta, "#.event.name ");
+  dzn_runtime_trace_out (&port->meta, "#.event.name ");
 ##endif /* DZN_TRACING */
-  closure_struct_obj.size = sizeof(#x:model-parent-name _#x:enum-name #x:closure-struct-args);
-  closure_struct_obj.f = &#x:model-parent-name _#.port.name _#.event.name;
-  closure_struct_obj.self = port->meta.requires.address;
+  dzn_c.size = sizeof (#x:model-parent-name _#x:enum-name #x:closure-struct-args);
+  dzn_c.f = &#x:model-parent-name _#.port.name _#.event.name;
+  dzn_c.self = port->meta.requires.component;
   #x:formal-handler
-  runtime_defer(port->meta.provides.address, port->meta.requires.address, (void (*)(void* void_args))&#x:model-parent-name _#x:enum-name #x:closure-struct-args _helper, &closure_struct_obj);
+  dzn_runtime_defer (port->meta.provides.component, port->meta.requires.component, (void (*)(void*)) &#x:model-parent-name _#x:enum-name #x:closure-struct-args _helper, &dzn_c);
 }

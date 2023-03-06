@@ -3,21 +3,16 @@
 
 #x:component-include
 
-typedef struct #x:name _t #x:name ;
+typedef struct #x:name  #x:name ;
 
-struct #x:name _t {
-##if DZN_TRACING
-  dzn_meta meta;
-##endif /* DZN_TRACING */
+struct #x:name
+{
+  dzn_meta dzn_meta;
   #x:instance-declaration
   #x:system-port-declaration
 };
 
-void #x:name _init(#x:name * self, locator* dezyne_locator
-##if DZN_TRACING
-, dzn_meta* meta
-##endif /* !DZN_TRACING */
-);
+void #x:name _init (#x:name * self, dzn_locator* dzn_locator, dzn_meta* dzn_meta_dzn);
 
 ##endif /*#x:namespace-upcase _H*/
 /**********************************  SYSTEM   *********************************/

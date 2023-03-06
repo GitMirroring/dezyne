@@ -1,19 +1,10 @@
 /**********************************  SYSTEM   *********************************/
-void  #x:name _init(#x:name * self, locator* dezyne_locator
-##if DZN_TRACING
-, dzn_meta* meta
-##endif /* DZN_TRACING */
-) {
-##if DZN_TRACING
+void
+#x:name _init (#x:name * self, dzn_locator* dzn_locator, dzn_meta* dzn_meta_dzn)
+{
+  self->dzn_meta = *dzn_meta_dzn;
   #x:instance-declare-dzn-tracing
-##endif /* DZN_TRACING */
-
-##if DZN_TRACING
   #x:instance-init-dzn-tracing
-  self->meta = *meta;
-##else /* ! DZN_TRACING */
-  #x:instance-init
-##endif /* DZN_TRACING */
   #x:system-port-connect
   #x:connect-internal-ports
 }

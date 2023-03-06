@@ -1,5 +1,5 @@
 // dzn-runtime -- Dezyne runtime library
-// Copyright © 2015, 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2015 Paul Hoogendijk <paul@dezyne.org>
@@ -32,62 +32,60 @@
 #endif
 
 void
-queue_init(queue* self)
+dzn_queue_init (dzn_queue* self)
 {
 #if DZN_DYNAMIC_QUEUES
   self->head = 0;
   self->tail = 0;
-  self->size = 0u;
+  self->size = 0;
 #else /* !DZN_DYNAMIC_QUEUES */
   self->head = self->element;
   self->tail = self->element;
-  self->size = 0u;
+  self->size = 0;
 #endif /* !DZN_DYNAMIC_QUEUES */
 }
 
 bool
-queue_empty (const queue* self)
+dzn_queue_empty (dzn_queue const* self)
 {
-  return (queue_size (self) == 0u) ? true : false;
+  return (!dzn_queue_size (self)) ? true : false;
 }
 
 uint8_t
-queue_size (const queue* self)
+dzn_queue_size (dzn_queue const* self)
 {
   return self->size;
 }
 
 void
-queue_push (queue* self, void* e)
+dzn_queue_push (dzn_queue* self, void* e)
 {
 #if DZN_DYNAMIC_QUEUES
-  Node* n = (Node*) dzn_malloc (sizeof (Node));
+  dzn_node* n = (dzn_node*) dzn_malloc (sizeof (dzn_node));
   n->item = e;
   n->next = 0;
 
-  if (self->head==0) {
+  if (!self->head)
     self->head = n;
-  } else {
+  else
     self->tail->next = n;
-  }
   self->tail = n;
   self->size++;
 #else /* !DZN_DYNAMIC_QUEUES */
-  *(self->tail) = *((Node*)e);
+  *(self->tail) = *((dzn_node*)e);
   self->tail++;
-  if ((self->tail - self->element) == DZN_QUEUE_SIZE) {
+  if ((self->tail - self->element) == DZN_QUEUE_SIZE)
     self->tail = self->element;
-  }
   self->size++;
   assert (self->size <= DZN_QUEUE_SIZE);
 #endif /* !DZN_DYNAMIC_QUEUES */
 }
 
 void*
-queue_pop (queue* self)
+dzn_queue_pop (dzn_queue* self)
 {
 #if DZN_DYNAMIC_QUEUES
-  Node* head;
+  dzn_node* head;
   void* item;
   assert ((int8_t)self->size);
   head = self->head;
@@ -97,20 +95,19 @@ queue_pop (queue* self)
   dzn_free (head);
   return item;
 #else /* !DZN_DYNAMIC_QUEUES */
-  Node* res;
+  dzn_node* res;
   assert (self->size);
   res = self->head;
   self->head++;
-  if ((self->head - self->element) == DZN_QUEUE_SIZE) {
+  if ((self->head - self->element) == DZN_QUEUE_SIZE)
     self->head = self->element;
-  }
   self->size--;
   return res;
 #endif /* !DZN_DYNAMIC_QUEUES */
 }
 
 void*
-queue_front (const queue* self)
+dzn_queue_front (dzn_queue const* self)
 {
 #if DZN_DYNAMIC_QUEUES
   return self->head->item;
@@ -119,26 +116,26 @@ queue_front (const queue* self)
 #endif /* !DZN_DYNAMIC_QUEUES */
 }
 
-#ifdef QUEUE_TEST
+#ifdef DZN_QUEUE_TEST
 #include <stdio.h>
 int
 main (void)
 {
-  queue q = {0};
+  dzn_queue q = {0};
   int8_t a = 1;
   int8_t b = 2;
   int8_t c = 3;
-  queue_push (&q, &a);
-  printf ("queue_pop a: %d\n", *(int*)queue_pop (&q));
-  queue_push (&q, &a);
-  queue_push (&q, &b);
-  queue_push (&q, &c);
-  printf ("queue_pop c: %d\n", *(int*)queue_pop (&q));
-  printf ("queue_pop b: %d\n", *(int*)queue_pop (&q));
-  printf ("queue_pop a: %d\n", *(int*)queue_pop (&q));
+  dzn_queue_push (&q, &a);
+  printf ("queue_pop a: %d\n", *(int*)dzn_queue_pop (&q));
+  dzn_queue_push (&q, &a);
+  dzn_queue_push (&q, &b);
+  dzn_queue_push (&q, &c);
+  printf ("queue_pop c: %d\n", *(int*)dzn_queue_pop (&q));
+  printf ("queue_pop b: %d\n", *(int*)dzn_queue_pop (&q));
+  printf ("queue_pop a: %d\n", *(int*)dzn_queue_pop (&q));
 
   /* expect assert
-     queue_pop (&q); */
+     dzn_queue_pop (&q); */
   return 0;
 }
-#endif /* QUEUE_TEST */
+#endif /* DZN_QUEUE_TEST */

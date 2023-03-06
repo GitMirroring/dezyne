@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,26 +28,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void f(itop* self)
+void
+f (itop* self)
 {
   (void)self;
   fprintf(stderr, "sut.m.t.f -> <external>.t.f\n");
 }
 
-int main()
+int
+main ()
 {
-  while (getchar() != EOF);
+  while (getchar () != EOF);
 
-  locator l;
-  locator_init(&l);
+  dzn_locator locator;
+  dzn_locator_init (&locator);
 
   hello_injected sut;
-  dzn_meta mt = {"sut", 0};
-  hello_injected_init(&sut, &l, &mt);
-  sut.t->meta.requires.port = "t";
-  sut.t->meta.requires.address = 0;
+  dzn_meta meta = {"sut", 0};
+  hello_injected_init (&sut, &locator, &meta);
+  sut.t->meta.requires.name = "t";
+  sut.t->meta.requires.component = 0;
   sut.t->out.f = f;
 
-  sut.t->in.e(sut.t);
+  sut.t->in.e (sut.t);
   return 0;
 }

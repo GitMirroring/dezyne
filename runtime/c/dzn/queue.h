@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rob@dezyne.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
@@ -28,36 +28,40 @@
 #define DZN_QUEUE_H
 
 #include <dzn/config.h>
-#include <dzn/boolc90.h>
-#if DZN_DYNAMIC_QUEUES==0
+
+#include <stdbool.h>
+#include <stdint.h>
+#if !DZN_DYNAMIC_QUEUES
 #include <dzn/closure.h>
 #endif
 
-typedef struct Node_t Node;
-struct Node_t {
+typedef struct dzn_node dzn_node;
+struct dzn_node
+{
 #if DZN_DYNAMIC_QUEUES
-    void* item;
-    Node* next;
+  void* item;
+  dzn_node* next;
 #else /* !DZN_DYNAMIC_QUEUES */
-    dzn_closure item;
+  dzn_closure item;
 #endif /* !DZN_DYNAMIC_QUEUES */
 };
 
-typedef struct queue_t queue;
-struct queue_t{
-    Node* head;
-    Node* tail;
-    uint8_t size;
-#if DZN_DYNAMIC_QUEUES==0
-    Node element[DZN_QUEUE_SIZE];
+typedef struct dzn_queue dzn_queue;
+struct dzn_queue
+{
+  dzn_node* head;
+  dzn_node* tail;
+  uint8_t size;
+#if !DZN_DYNAMIC_QUEUES
+  dzn_node element[DZN_QUEUE_SIZE];
 #endif /* !DZN_DYNAMIC_QUEUES */
 };
 
-void queue_init(queue* self);
-bool queue_empty (const queue* self);
-void queue_push (queue* self, void* e);
-uint8_t queue_size (const queue* self);
-void* queue_front (const queue* self);
-void* queue_pop (queue* self);
+void dzn_queue_init (dzn_queue* self);
+bool dzn_queue_empty (dzn_queue const* self);
+void dzn_queue_push (dzn_queue* self, void* e);
+uint8_t dzn_queue_size (dzn_queue const* self);
+void* dzn_queue_front (dzn_queue const* self);
+void* dzn_queue_pop (dzn_queue* self);
 
 #endif /* DZN_QUEUE_H */

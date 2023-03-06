@@ -1,5 +1,5 @@
 // dzn-runtime -- Dezyne runtime library
-// Copyright © 2015, 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -22,46 +22,54 @@
 //
 // Code:
 
-#include <dzn/runloc.h>
 #include <dzn/locator.h>
 #include <dzn/map.h>
 #include <dzn/runtime.h>
-
 
 #if DZN_LOCATOR_SERVICES
 #include <stdlib.h>
 #endif /* DZN_LOCATOR_SERVICES */
 
-void locator_init(locator* self) {
-  self->illegal = &runtime_illegal_handler;
+void
+dzn_locator_init (dzn_locator* self)
+{
+  self->illegal = &dzn_runtime_illegal_handler;
 #if DZN_LOCATOR_SERVICES
-  map_init (&self->services);
+  dzn_map_init (&self->services);
 #endif
 }
 
 #if DZN_LOCATOR_SERVICES
-int32_t map_copy(map_element* elt, void* dst) {
-  map* m = dst;
-  return map_put (m, elt->key, elt->data);
+int32_t
+dzn_map_copy (dzn_map_element* elt, void* dst)
+{
+  dzn_map* m = dst;
+  return dzn_map_put (m, elt->key, elt->data);
 }
 
-void* locator_get(locator* self, char_t* key) {
+void*
+dzn_locator_get (dzn_locator* self, char* key)
+{
   void* p = 0;
-  map_get (&self->services, key, &p);
+  dzn_map_get (&self->services, key, &p);
   return p;
 }
 
-locator* locator_set(locator* self, char_t* key,  void* value) {
-  map_put (&self->services, key, value);
+dzn_locator*
+dzn_locator_set (dzn_locator* self, char* key, void* value)
+{
+  dzn_map_put (&self->services, key, value);
   return self;
 }
 #endif /* DZN_LOCATOR_SERVICES */
 
-locator* locator_clone(locator* self) {
+dzn_locator*
+dzn_locator_clone (dzn_locator* self)
+{
 #if DZN_LOCATOR_SERVICES
-  locator* clone = dzn_malloc(sizeof(locator));
-  map_init (&clone->services);
-  map_iterate(&self->services, &map_copy, &clone->services);
+  dzn_locator* clone = dzn_malloc (sizeof (dzn_locator));
+  dzn_map_init (&clone->services);
+  dzn_map_iterate (&self->services, &dzn_map_copy, &clone->services);
   return clone;
 #else /* !DZN_LOCATOR_SERVICES */
   return self;

@@ -33,7 +33,7 @@
 #define DZN_TINY 0
 #endif
 
-#if (DZN_TINY == 0)
+#if !DZN_TINY
 
 #ifndef DZN_TRACING
 #define DZN_TRACING 1
@@ -70,8 +70,8 @@
 #endif /* DZN_MISRA_C_2004 */
 
 
-#if DZN_DYNAMIC_QUEUES==0
-#define DZN_MAX_ARGS_SIZE 24
+#if !DZN_DYNAMIC_QUEUES
+#define DZN_MAX_ARGUMENT_SIZE 24
 #define DZN_QUEUE_SIZE 7
 #endif /* !DZN_DYNAMIC_QUEUES */
 

@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2013 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rob@dezyne.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
@@ -28,16 +28,29 @@
 #define DZN_LOCATOR_H
 
 #include <dzn/config.h>
-#include <dzn/boolc90.h>
-#include <dzn/runloc.h>
 #include <dzn/mem.h>
 
-void locator_init(locator* self);
-locator* locator_clone(locator* self);
+#include <stdbool.h>
+
 #if DZN_LOCATOR_SERVICES
-int32_t map_copy(map_element* elt, void* dst);
-void* locator_get(locator* self, char_t* key);
-locator* locator_set(locator* self, char_t* key, void* value);
+#include <dzn/map.h>
+#endif /* !DZN_LOCATOR_SERVICES */
+
+typedef struct dzn_locator dzn_locator;
+struct dzn_locator
+{
+  void (*illegal)(void);
+#if DZN_LOCATOR_SERVICES
+  dzn_map services;
+#endif /* DZN_LOCATOR_SERVICES */
+};
+
+void dzn_locator_init (dzn_locator* self);
+dzn_locator* dzn_locator_clone (dzn_locator* self);
+#if DZN_LOCATOR_SERVICES
+int32_t dzn_map_copy (dzn_map_element* elt, void* dst);
+void* dzn_locator_get (dzn_locator* self, char* key);
+dzn_locator* dzn_locator_set (dzn_locator* self, char* key, void* value);
 #endif /* DZN_LOCATOR_SERVICES */
 
 #endif /* DZN_LOCATOR_H */

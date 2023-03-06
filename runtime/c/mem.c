@@ -4,7 +4,7 @@
 // Copyright © 2016 Rob Wieringa <rob@dezyne.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -29,30 +29,29 @@
 #include <assert.h>
 
 #if (DZN_MISRA_C_2004==1)
-#define MAX_SIZE 1048576
-static uint8_t dzn_memory_array[MAX_SIZE];
-static uint8_t* current_address = dzn_memory_array;
-
+#define DZN_MAX_SIZE 1048576
+static uint8_t dzn_memory_array[DZN_MAX_SIZE];
+static uint8_t* dzn_current_address = dzn_memory_array;
 
 void*
 dzn_calloc (size_t n, size_t size)
 {
   uint8_t* res;
-  assert(MAX_SIZE + dzn_memory_array - current_address >= n * size);
-  res = current_address;
+  assert(DZN_MAX_SIZE + dzn_memory_array - dzn_current_address >= n * size);
+  res = dzn_current_address;
 
-  current_address = &dzn_memory_array[n*size];
+  dzn_current_address = &dzn_memory_array[n*size];
   return res;
 }
 
 void*
-dzn_malloc(size_t size)
+dzn_malloc (size_t size)
 {
-  return dzn_calloc((size_t) 1, size);
+  return dzn_calloc ((size_t) 1, size);
 }
 
 void
-dzn_free(void* ptr)
+dzn_free (void* ptr)
 {
   /*no freeing, automated */
   return;
@@ -66,23 +65,21 @@ void*
 dzn_calloc (size_t n, size_t size)
 {
   void* res;
-  res = calloc(n, size);
+  res = calloc (n, size);
   if (res==(void*)0)
-  {
-      assert (0);
-  }
+    assert (0);
   return res;
 }
 
 void*
-dzn_malloc(size_t size)
+dzn_malloc (size_t size)
 {
-  return dzn_calloc(1, size);
+  return dzn_calloc (1, size);
 }
 
 void
-dzn_free(void* ptr)
+dzn_free (void* ptr)
 {
-  free(ptr);
+  free (ptr);
 }
 #endif /* DZN_MISRA_C_2004 */

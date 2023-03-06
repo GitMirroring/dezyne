@@ -1,14 +1,15 @@
-static #x:type-name  #x:model-parent-name _#.port.name _#.event.name _#.event.direction(#x:port-type * port#x:formals) {
-  #x:model-parent-name * self_;
+static #x:type-name
+#x:model-parent-name _#.port.name _#.event.name _#.event.direction  (#x:port-type * port#x:formals)
+{
+  #x:model-parent-name * self = port->meta.provides.component;
 ##if DZN_TRACING
-  runtime_trace(&port->meta, "#.event.name ");
+  dzn_runtime_trace (&port->meta, "#.event.name ");
 ##endif /* DZN_TRACING */
-  self_ = port->meta.provides.address;
-  runtime_start(&self_->dzn_info);
-  #x:model-parent-name _#.port.name _#.event.name(self_#x:c-comma #x:c-arguments);
-  runtime_finish(&self_->dzn_info);
+  dzn_runtime_start (&self->dzn_info);
+  #x:model-parent-name _#.port.name _#.event.name (self#x:c-comma #x:c-arguments);
+  dzn_runtime_finish (&self->dzn_info);
 ##if DZN_TRACING
-  runtime_trace_out(&port->meta, #x:to-string);
+  dzn_runtime_trace_out (&port->meta, #x:to-string);
 ##endif /* DZN_TRACING */
   #x:trigger-reply
 }

@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rob@dezyne.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 //
@@ -26,8 +26,9 @@
 #ifndef DZN_PAIR_H
 #define DZN_PAIR_H
 
-typedef struct pair_t pair;
-struct pair_t{
+typedef struct dzn_pair dzn_pair;
+struct dzn_pair
+{
   void* first;
   void* second;
 };

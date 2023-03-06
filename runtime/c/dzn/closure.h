@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rob@dezyne.org>
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
@@ -29,13 +29,14 @@
 
 #include <dzn/config.h>
 
-typedef struct dzn_closure_t dzn_closure;
-struct dzn_closure_t{
-  void (*func)(void* void_args);
+typedef struct dzn_closure dzn_closure;
+struct dzn_closure
+{
+  void (*function)(void* argument);
 #if DZN_DYNAMIC_QUEUES
-  void *args;
+  void *argument;
 #else /* !DZN_DYNAMIC_QUEUES */
-  char args[DZN_MAX_ARGS_SIZE];
+  char argument[DZN_MAX_ARGUMENT_SIZE];
 #endif /* !DZN_DYNAMIC_QUEUES */
 };
 

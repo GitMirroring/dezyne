@@ -1,39 +1,36 @@
-/* start of main */
-int main(int argc, char** argv) {
-  locator dezyne_locator;
+int
+main (int argc, char const* argv[])
+{
+  dzn_locator dzn_locator;
 ##if DZN_TRACING
-  dzn_meta mt;
+  dzn_meta meta;
 ##endif /* DZN_TRACING */
-  map event_map;
+  dzn_map event_map;
   char* line;
-  global_flush_p = (argc > 1) && (strcmp(argv[1], "--flush")==0);
-  locator_init(&dezyne_locator);
-  dezyne_locator.illegal = &illegal_print;
+  global_flush_p = getopt (argc, argv, "--flush");
+  dzn_locator_init (&dzn_locator);
+  dzn_locator.illegal = &illegal_print;
 
   #x:name  sut;
 ##if DZN_TRACING
-  mt.name = "sut";
-  mt.parent = 0;
+  meta.name = "sut";
+  meta.parent = 0;
 ##endif /* DZN_TRACING */
-  #x:name _init(&sut, &dezyne_locator
-##if DZN_TRACING
-, &mt
-##endif /* DZN_TRACING */
-);
+  #x:name _init (&sut, &dzn_locator, &meta);
 
-  map_init(&event_map);
+  dzn_map_init (&event_map);
   global_event_map = &event_map;
-  fill_event_map(&sut, &event_map);
+  fill_event_map (&sut, &event_map);
 
-
-  while ( (line = read_line()) != 0) {
-    void *p = 0;
-    if (!map_get(&event_map, line, &p)) {
-      closure *c = p;
-      c->f(c->self);
+  while ((line = read_line ()) != 0)
+  {
+    void* p = 0;
+    if (!dzn_map_get (&event_map, line, &p))
+    {
+      dzn_closure* c = p;
+      c->function (c->argument);
     }
-    free(line);
+    free (line);
   }
   return 0;
 }
-/* end of main */

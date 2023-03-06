@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Filip Toman <filip.toman@verum.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,10 +25,10 @@
 #ifndef LIBRARY_FOREIGN_H
 #define LIBRARY_FOREIGN_H
 
-typedef struct library_foreign_t library_foreign;
-typedef struct library_foreign_skel_t library_foreign_skel;
+typedef struct library_foreign library_foreign;
 
-struct library_foreign_t {
+struct library_foreign
+{
   library_foreign_skel base;
   /* space for variables */
 
