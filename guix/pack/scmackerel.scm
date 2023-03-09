@@ -31,14 +31,14 @@
 (define-public scmackerel
   (package
     (name "scmackerel")
-    (version #!scmackerel!# "0.2.2")
+    (version #!scmackerel!# "0.3.3")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://dezyne.org/download/scmackerel/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!scmackerel!# "06pnp7r5z5qhk9pc4p3jnvcb4s51v6jv2851zzsq951xxify94x4"))))
+        (base32 #!scmackerel!# "1fp2g286cdr7ja4nghg1xs0f5j1g53kw539m2qx80252g98q1iwk"))))
     (inputs (list bash-minimal
                   guile-3.0-latest
                   guile-readline
@@ -64,6 +64,6 @@
     (synopsis "Programming language with verifyable formal semantics")
     (description "SCMackerel is a library for GNU Guile for creating
 abstract syntax trees (ASTs) for @url{https://mcrl2.org,mCRL2} and other
-languages, such as C++, based on GNU Guix records.")
+languages, such as C, C++, and C#, based on GNU Guix records.")
     (home-page "https://dezyne.org")
     (license (list license:gpl3+))))
