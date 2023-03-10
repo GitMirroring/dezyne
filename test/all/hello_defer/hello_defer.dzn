@@ -42,7 +42,6 @@ component hello_defer
 
   behavior
   {
-    bool idle = true;
-    [idle] on h.hello (t): {idle = false; defer {idle = true; h.world(t);}}
+    on h.hello (t): defer h.world(t);
   }
 }
