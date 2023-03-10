@@ -189,12 +189,20 @@
                                .type)))
             (ast:instance* o))))
 
-(define-method (code:pump? (o <component>))
+(define-method (code:pump? (o <component-model>))
   (and (pair? (tree-collect (disjoin (is? <blocking>)
                                      (is? <defer>)
                                      (is? <blocking-compound>))
                             o))
        o))
+
+(define-method (code:pump? (o <system>))
+  (let* ((components (ast:component-model* o))
+         (components (filter (negate (cute ast:eq? <> o)) components)))
+    (any code:pump? components)))
+
+(define-method (code:pump? (o <shell-system>))
+  #t)
 
 (define-method (code:pump? (o <root>))
   (let ((components (filter (conjoin (negate ast:imported?) (is? <component>))

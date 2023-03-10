@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
@@ -28,11 +28,14 @@ runtime_c_dzndir = $(pkgdatadir)/runtime/c/dzn
 dist_runtime_c_dzn_DATA =			\
  %D%/c/dzn/closure.h				\
  %D%/c/dzn/config.h				\
+ %D%/c/dzn/coroutine.h				\
+ %D%/c/dzn/list.h				\
  %D%/c/dzn/locator.h				\
  %D%/c/dzn/map.h				\
  %D%/c/dzn/mem.h				\
  %D%/c/dzn/meta.h				\
  %D%/c/dzn/pair.h				\
+ %D%/c/dzn/pump.h				\
  %D%/c/dzn/queue.h				\
  %D%/c/dzn/runtime.h
 
@@ -40,9 +43,12 @@ dist_noinst_DATA = %D%/c/dzn/config.h.in
 
 runtime_cdir = $(pkgdatadir)/runtime/c
 dist_runtime_c_DATA =				\
+ %D%/c/coroutine.c				\
+ %D%/c/list.c					\
  %D%/c/locator.c				\
  %D%/c/map.c					\
  %D%/c/mem.c					\
+ %D%/c/pump.c					\
  %D%/c/queue.c					\
  %D%/c/runtime.c
 endif

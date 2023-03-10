@@ -201,6 +201,19 @@
 (define-method (c:statement* (o <compound>))
   (ast:statement* o))
 
+;; XXX FIXME: introduce <block> statement instead of
+;; <blocking-compound>, like VM?
+(define-method (c:statement* (o <blocking-compound>))
+  (let* ((port-name (.port.name o))
+         (block (call (name "dzn_port_block")
+                      (arguments
+                       (list "(dzn_component*) self"
+                             (string-append
+                              "(dzn_interface*) "
+                              (%member-prefix)
+                              port-name))))))
+    `(,@(ast:statement* o)
+      ,block)))
 (define (c:binding->connect binding)
   (let* ((provides
           requires
@@ -245,6 +258,11 @@
       (if* (ast->expression expression)
            (ast->code statement))))))
 
+;;; imperative
+(define-method (ast->code (o <blocking-compound>))
+  (let ((statements (c:statement* o)))
+    (compound* (map ast->code statements)))) ;;; XXX new compound*
+
 (define-method (ast->code (o <action>))
   (let* ((action-name (c:event-name o))
          (arguments (code:argument* o))
@@ -277,6 +295,30 @@
     (if* (ast->expression (.expression o))
          (ast->code then)
          (and=> else ast->code))))
+
+(define-method (ast->code (o <reply>))
+  (let ((p (.parent o)))
+    (cond
+     ((or (is-a? p <guard>) (is-a? p <if>))
+      (ast->code (code:wrap-compound o)))
+     (else
+      (let* ((type (ast:type o))
+             (reply-port (.port o))
+             (port-name (.name reply-port))
+             (out-binding (string-append (%member-prefix)
+                                         (code:out-binding (.port o)))))
+        (statements*
+         `(,@(if (is-a? type <void>) '()
+                 `(,(assign* (member* (%member-prefix) (code:reply-var type))
+                             (ast->expression (.expression o)))))
+           ,@(if (not (code:port-release? o)) '()
+                 `(,(call (name "dzn_port_release")
+                          (arguments
+                           (list "(dzn_component*) self"
+                                 (string-append
+                                  "(dzn_interface*) "
+                                  (%member-prefix)
+                                  (.port.name o))))))))))))))
 
 (define-method (ast->code (o <illegal>))
   (statement* "dzn_illegal (&self->dzn_info)"))
@@ -1006,7 +1048,8 @@
 
 (define-method (main (o <component-model>))
   (let ((model-name (code:type-name o))
-        (flush-string (simple-format #f "~s" "--flush")))
+        (flush-string (simple-format #f "~s" "--flush"))
+        (pump? (code:pump? o)))
     (function
      (name "main")
      (formals (list (formal (type "int") (name "argc"))
@@ -1023,6 +1066,13 @@
                          (arguments `("argc" "argv" ,flush-string))))
          ,(call (name "dzn_locator_init") (arguments '("&dzn_locator")))
          ,(assign* "dzn_locator.illegal" "&illegal_print")
+         ,@(if (not pump?) '()
+               `(,(variable (type "dzn_pump") (name "pump"))
+                 ,(call (name "dzn_pump_init") (arguments '("&pump")))
+                 ,(call (name "dzn_locator_set")
+                        (arguments `("&dzn_locator"
+                                     ,(simple-format #f "~s" "pump")
+                                     "&pump")))))
          ,(variable (type model-name) (name "sut"))
          ,@(c:tracing-guard
             (list
@@ -1043,11 +1093,13 @@
             (if* (not* (call (name "dzn_map_get")
                              (arguments '("&event_map" "line" "&p"))))
                  (compound*
-                  (variable (type "dzn_closure*") (name "c")
-                            (expression "p"))
-                  (call (name "c->function")
-                        (arguments '("c->argument")))
-                  (call (name "free") (arguments '("line")))))))
+                  `(,(variable (type "dzn_closure*") (name "c")
+                               (expression "p"))
+                    ,@(if (not pump?) `(,(call (name "c->function")
+                                               (arguments '("c->argument"))))
+                          `(,(call (name "dzn_pump_run")
+                                   (arguments '("&pump" "c")))))
+                    ,(call (name "free") (arguments '("line"))))))))
          ,(return* 0)))))))
 
 
@@ -1110,6 +1162,8 @@
                       ,(cpp-system-include* "dzn/locator.h")
                       ,(cpp-system-include* "dzn/map.h")
                       ,(cpp-system-include* "dzn/runtime.h")
+                      ,@(if (not (code:pump? o)) '()
+                            `(,(cpp-system-include* "dzn/pump.h")))
 
                       ,@(file-comments "main.c")
                       ,@(main-log-out-trigger o)

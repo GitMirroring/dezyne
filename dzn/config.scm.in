@@ -122,7 +122,7 @@ There is NO WARRANTY, to the extent permitted by law.
 (define %libpth "@LIBPTH@")
 (define %have-libpth "@HAVE_LIBPTH@")
 (define %feature-alist
-  '(("block" . ("c++" "cs" "scheme"))
+  '(("block" . ("c" "c++" "cs" "scheme"))
     ("calling_context" . ("c++" "cs" "scheme"))
     ("collateral" . ("c++" "cs" "scheme"))
     ("defer" . ("c++" "cs" "scheme"))

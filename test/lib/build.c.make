@@ -40,6 +40,7 @@ SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CC:=$(CCACHE) gcc
 CFLAGS=--std=c99 -g -O0
+LDFLAGS=$(LIBPTH)
 # Tiny: all/Tiny
 #CFLAGS=--std=c99 -g -DDZN_TINY=1
 #CFLAGS=--std=c99 -Os -DDZN_TINY=1

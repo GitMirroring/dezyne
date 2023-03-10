@@ -56,6 +56,12 @@ struct dzn_runtime_info
   dzn_queue q;
 };
 
+typedef struct dzn_interface dzn_interface;
+struct dzn_interface
+{
+  dzn_port_meta meta;
+};
+
 typedef struct dzn_component dzn_component;
 struct dzn_component
 {

@@ -118,3 +118,13 @@ getopt (int argc, char const* argv[], char* option)
 {
   return (argc > 1) && (strcmp (argv[1], option) == 0);
 }
+
+dzn_closure*
+next_event ()
+{
+  char* s = read_line ();
+  if (!s) return 0;
+  void *p = 0;
+  dzn_map_get (global_event_map, s, &p);
+  return p;
+}
