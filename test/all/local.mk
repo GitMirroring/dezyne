@@ -139,7 +139,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_function_reply2			\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\
- %D%/blocking_local				\
  %D%/blocking_multiple_provides0		\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
@@ -153,6 +152,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
  %D%/blocking_shell				\
+ %D%/blocking_skip				\
  %D%/blocking_skip_race				\
  %D%/blocking_sync_asynchronous_out		\
  %D%/blocking_system				\
