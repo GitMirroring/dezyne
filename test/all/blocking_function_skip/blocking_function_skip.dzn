@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,7 +33,7 @@ interface ihello
   }
 }
 
-component blocking_function
+component blocking_function_skip
 {
   provides blocking ihello h;
   requires ihello w;

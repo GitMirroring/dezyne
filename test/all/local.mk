@@ -134,9 +134,9 @@ REGRESSION_TESTS =				\
  %D%/blocking_cancel_race_bool			\
  %D%/blocking_double_release			\
  %D%/blocking_external				\
- %D%/blocking_function				\
  %D%/blocking_function_reply			\
  %D%/blocking_function_reply2			\
+ %D%/blocking_function_skip			\
  %D%/blocking_if_reply				\
  %D%/blocking_imperative			\
  %D%/blocking_multiple_provides0		\
