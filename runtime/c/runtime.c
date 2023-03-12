@@ -32,7 +32,9 @@
 
 #include <dzn/mem.h>
 #include <dzn/closure.h>
+#include <dzn/coroutine.h>
 #include <dzn/locator.h>
+#include <dzn/pump.h>
 #include <dzn/queue.h>
 
 void
@@ -51,7 +53,7 @@ void
 dzn_runtime_info_init (dzn_runtime_info* info, dzn_locator* locator)
 {
   info->locator = locator;
-  info->handling = false;
+  info->handling = 0;
   info->performs_flush = false;
   info->deferred = 0;
   dzn_queue_init (&info->q);
@@ -147,11 +149,24 @@ dzn_runtime_event (void (*event) (void*), void* argument)
   dzn_runtime_handle_event (&c->dzn_info, event, argument);
 }
 
+#if HAVE_LIBPTH
+void
+dzn_runtime_call_in (dzn_component* component, dzn_interface* port)
+{
+  if (component->dzn_info.handling || dzn_port_blocked_p (component, port))
+    dzn_collateral_block (component, port);
+}
+#endif
+
 void
 dzn_runtime_start (dzn_runtime_info* info)
 {
   if (!info->handling)
-    info->handling = true;
+#if HAVE_LIBPTH
+    info->handling = dzn_coroutine_id () || -1;
+#else
+    info->handling = -1;
+#endif
   else
     assert (!"component already handling an event");
 }
@@ -159,7 +174,7 @@ dzn_runtime_start (dzn_runtime_info* info)
 void
 dzn_runtime_finish (dzn_runtime_info* info)
 {
-  info->handling = false;
+  info->handling = 0;
   dzn_runtime_flush (info);
 }
 

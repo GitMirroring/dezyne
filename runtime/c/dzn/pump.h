@@ -34,20 +34,26 @@ struct dzn_pump
 {
   int id;
   dzn_list* blocked;
+  dzn_list* collateral;
   dzn_list* q;
   dzn_list* released;
   dzn_coroutine invoking;
+  long invoking_id;
 };
 
 void dzn_pump_init (dzn_pump* self);
 void dzn_pump_run (dzn_pump* self, dzn_closure* event);
 void dzn_pump_block (dzn_pump* self, dzn_interface* port);
 void dzn_pump_release (dzn_pump* self, dzn_interface* port);
+bool dzn_pump_port_blocked_p (dzn_pump* pump, dzn_interface* port);
+void dzn_pump_collateral_block (dzn_pump* pump, dzn_interface* port, long id);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Runtime
 void dzn_port_block (dzn_component* component, dzn_interface* port);
 void dzn_port_release (dzn_component* component, dzn_interface* port);
+bool dzn_port_blocked_p (dzn_component* component, dzn_interface* port);
+void dzn_collateral_block (dzn_component* component, dzn_interface* port);
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif /* DZN_PUMP_H */

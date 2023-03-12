@@ -37,7 +37,7 @@
 #endif
 
 static pth_key_t id_key;
-static pth_key_t port_key;
+static pth_key_t data_key;
 
 int
 dzn_coroutine_init ()
@@ -46,7 +46,7 @@ dzn_coroutine_init ()
     return -1;
   if (!pth_key_create (&id_key, 0))
     return -1;
-  if (!pth_key_create (&port_key, 0))
+  if (!pth_key_create (&data_key, 0))
     return -1;
   if (!dzn_coroutine_set_id (-1))
     return -1;
@@ -83,16 +83,16 @@ dzn_coroutine_set_id (long id)
   return pth_key_setdata (id_key, (void*)id);
 }
 
-dzn_interface*
-dzn_coroutine_port ()
+void*
+dzn_coroutine_data ()
 {
-  return pth_key_getdata (port_key);
+  return pth_key_getdata (data_key);
 }
 
 int
-dzn_coroutine_set_port (dzn_interface* port)
+dzn_coroutine_set_data (void* data)
 {
-  return pth_key_setdata (port_key, port);
+  return pth_key_setdata (data_key, data);
 }
 
 #if DZN_COROUTINE_TEST

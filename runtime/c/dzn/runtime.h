@@ -50,7 +50,7 @@ typedef struct dzn_runtime_info dzn_runtime_info;
 struct dzn_runtime_info
 {
   dzn_locator* locator;
-  bool handling;
+  long handling;
   bool performs_flush;
   dzn_runtime_info* deferred;
   dzn_queue q;
@@ -77,6 +77,7 @@ void dzn_runtime_info_init (dzn_runtime_info* info, dzn_locator* locator);
 void dzn_runtime_flush (dzn_runtime_info* info);
 void dzn_runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* argument);
 void dzn_runtime_event (void (*event)(void*), void* argument);
+void dzn_runtime_call_in (dzn_component* component, dzn_interface* port);
 void dzn_runtime_start (dzn_runtime_info* info);
 void dzn_runtime_finish (dzn_runtime_info* info);
 

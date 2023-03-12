@@ -124,12 +124,12 @@ There is NO WARRANTY, to the extent permitted by law.
 (define %feature-alist
   '(("block" . ("c" "c++" "cs" "scheme"))
     ("calling_context" . ("c++" "cs" "scheme"))
-    ("collateral" . ("c++" "cs" "scheme"))
+    ("collateral" . ("c" "c++" "cs" "scheme"))
     ("defer" . ("c++" "cs" "scheme"))
     ("flush" . ("c" "c++" "cs" "scheme"))
     ("inject" . ("c++" "cs" "javacsript" "scheme"))
     ("shared" . ("c++"))
-    ("shell" . ("c++" "cs" "scheme"))
+    ("shell" . ("c" "c++" "cs" "scheme"))
     ("space" . ("c" "c++" "cs" "javascript" "scheme"))))
 
 

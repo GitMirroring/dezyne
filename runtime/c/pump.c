@@ -40,6 +40,7 @@ struct port_coroutine
 {
   dzn_interface* port;
   dzn_coroutine coroutine;
+  long id;
 };
 
 static port_coroutine*
@@ -48,6 +49,7 @@ port_coroutine_create (dzn_interface* port, dzn_coroutine coroutine)
   port_coroutine* p = (port_coroutine*)malloc (sizeof (port_coroutine));
   p->port = port;
   p->coroutine = coroutine;
+  p->id = dzn_coroutine_id ();
   return p;
 }
 
@@ -55,7 +57,14 @@ static int
 port_predicate (void* data)
 {
   port_coroutine* p = data;
-  return p->port == dzn_coroutine_port ();
+  return p->port == dzn_coroutine_data ();
+}
+
+static int
+id_predicate (void* data)
+{
+  port_coroutine* p = data;
+  return p->id == (long)dzn_coroutine_data ();
 }
 
 void
@@ -88,7 +97,7 @@ handler (void* data)
   if (!dzn_coroutine_id ())
     dzn_coroutine_set_id (self->id);
   long id = dzn_coroutine_id ();
-  debug ("[%ld] handler count=%ld\n", id, self->id);
+  debug ("[%ld] handler yield to: %ld\n", id, self->invoking_id);
   dzn_coroutine_yield_to (self->invoking);
   debug ("[%ld] handler: done\n", id);
 }
@@ -103,11 +112,22 @@ pump_process_released (dzn_pump* self)
       port_coroutine* p = self->released->data;
       char const* name = p->port->meta.provides.name;
       dzn_coroutine c = p->coroutine;
-      free (p);
+      long c_id = p->id;
       dzn_list* rest = self->released->next;
       free (self->released);
       self->released = rest;
-      debug ("[%ld] yield to released: %s\n", id, name);
+      dzn_coroutine_set_data (p->port);
+      free (p);
+      p = dzn_list_find_predicate (self->collateral, port_predicate);
+      while (p)
+        {
+          dzn_coroutine c = p->coroutine;
+          debug ("[%ld] collateral release: %ld %s\n", id, p->id, name);
+          pump_enqueue (self, &self->released, p);
+          self->collateral = dzn_list_delete (self->collateral, p);
+          p = dzn_list_find_predicate (self->collateral, port_predicate);
+        }
+      debug ("[%ld] yield to released: %ld %s\n", id, c_id, name);
       dzn_coroutine_yield_to (c);
     }
   handler (self);
@@ -117,11 +137,10 @@ static void*
 worker (void* data)
 {
   dzn_pump* self = (dzn_pump*)data;
-  if (!dzn_coroutine_id ())
-    dzn_coroutine_set_id (self->id);
+  dzn_coroutine_set_id (self->id || -1);
 
   long id = dzn_coroutine_id ();
-  debug ("[%ld] worker count=%ld\n", id, self->id);
+  debug ("[%ld] worker\n", id);
   if (self->q)
     {
       dzn_closure* event = self->q->data;
@@ -139,6 +158,7 @@ dzn_pump_run (dzn_pump* self, dzn_closure* event)
   debug ("[%ld] dzn_pump_run\n", dzn_coroutine_id ());
   pump_enqueue (self, &self->q, event);
   self->invoking = dzn_coroutine_self ();
+  self->invoking_id = dzn_coroutine_id ();
   dzn_coroutine coroutine = pump_create_coroutine (self, worker);
   dzn_coroutine_yield_to (coroutine);
   pump_process_released (self);
@@ -149,7 +169,7 @@ dzn_pump_block (dzn_pump* self, dzn_interface* port)
 {
   char const* name = port->meta.provides.name;
   debug ("[%ld] dzn_pump_block: %s\n", dzn_coroutine_id (), name);
-  dzn_coroutine_set_port (port);
+  dzn_coroutine_set_data (port);
   port_coroutine* p = dzn_list_find_predicate (self->released, port_predicate);
   if (p)
     {
@@ -163,7 +183,7 @@ dzn_pump_block (dzn_pump* self, dzn_interface* port)
   pump_enqueue (self, &self->blocked, p);
   dzn_coroutine coroutine = pump_create_coroutine (self, handler);
   dzn_coroutine_yield_to (coroutine);
-  dzn_coroutine_set_port (port);
+  dzn_coroutine_set_data (port);
   p = dzn_list_find_predicate (self->blocked, port_predicate);
   if (p)
     {
@@ -178,7 +198,7 @@ dzn_pump_release (dzn_pump* self, dzn_interface* port)
 {
   char const* name = port->meta.provides.name;
   debug ("[%ld] dzn_pump_release: %s\n", dzn_coroutine_id (), name);
-  dzn_coroutine_set_port (port);
+  dzn_coroutine_set_data (port);
   port_coroutine* p = dzn_list_find_predicate (self->blocked, port_predicate);
   if (!p)
     p = port_coroutine_create (port, dzn_coroutine_self ());
@@ -186,8 +206,47 @@ dzn_pump_release (dzn_pump* self, dzn_interface* port)
   debug ("[%ld] dzn_pump_release continue: %s\n", dzn_coroutine_id (), name);
 }
 
+bool
+dzn_pump_port_blocked_p (dzn_pump* self, dzn_interface* port)
+{
+  // char const* name = port->meta.provides.name;
+  // debug ("[%ld] dzn_pump_port_blocked_p: %s\n", dzn_coroutine_id (), name);
+  dzn_coroutine_set_data (port);
+  port_coroutine* p = dzn_list_find_predicate (self->blocked, port_predicate);
+  return p;
+}
+
+void
+dzn_pump_collateral_block (dzn_pump* self, dzn_interface* port, long id)
+{
+  char const* name = port->meta.provides.name;
+  debug ("[%ld] dzn_pump_collateral_block: %s\n", dzn_coroutine_id (), name);
+
+  dzn_coroutine_set_data ((void*)id);
+  port_coroutine* p = dzn_list_find_predicate (self->blocked, id_predicate);
+  if (!p)
+    p = dzn_list_find_predicate (self->collateral, id_predicate);
+  if (!p)
+    {
+      debug ("[%ld] FIXME collateral with id=%ld not found\n", dzn_coroutine_id (), id);
+      assert (!"collateral not found");
+    }
+
+  p = port_coroutine_create (p->port, dzn_coroutine_self ());
+  pump_enqueue (self, &self->collateral, p);
+
+  dzn_coroutine coroutine = pump_create_coroutine (self, handler);
+  dzn_coroutine_yield_to (coroutine);
+
+  debug ("[%ld] dzn_pump_collateral_block continue: %s\n", dzn_coroutine_id (), name);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Runtime
+
+#undef debug
+#define debug(...)
+
 void
 dzn_port_block (dzn_component* component, dzn_interface* port)
 {
@@ -208,6 +267,26 @@ dzn_port_release (dzn_component* component, dzn_interface* port)
   dzn_pump* pump = dzn_locator_get (locator, "pump");
   if (pump)
     dzn_pump_release (pump, port);
+}
+
+bool
+dzn_port_blocked_p (dzn_component* component, dzn_interface* port)
+{
+  debug ("dzn_port_blocked_p: %s\n", port->meta.provides.name);
+  dzn_locator* locator = component->dzn_info.locator;
+  dzn_pump* pump = dzn_locator_get (locator, "pump");
+  if (pump)
+    dzn_pump_port_blocked_p (pump, port);
+}
+
+void
+dzn_collateral_block (dzn_component* component, dzn_interface* port)
+{
+  debug ("dzn_collateral_block: %s\n", port->meta.provides.name);
+  dzn_locator* locator = component->dzn_info.locator;
+  dzn_pump* pump = dzn_locator_get (locator, "pump");
+  if (pump)
+    dzn_pump_collateral_block (pump, port, component->dzn_info.handling);
 }
 ////////////////////////////////////////////////////////////////////////////////
 #endif // HAVE_LIBPTH

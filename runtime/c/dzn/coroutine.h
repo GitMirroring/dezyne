@@ -41,7 +41,7 @@ int dzn_coroutine_yield_to (dzn_coroutine coroutine);
 
 long dzn_coroutine_id ();
 int dzn_coroutine_set_id (long id);
-dzn_interface* dzn_coroutine_port ();
-int dzn_coroutine_set_port (dzn_interface* port);
+void* dzn_coroutine_data ();
+int dzn_coroutine_set_data (void* data);
 
 #endif /* DZN_COROUTINE_H */

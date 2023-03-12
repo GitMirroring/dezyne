@@ -537,7 +537,9 @@
            (interface (c:type-name (.type port)))
            (event-name (.event.name trigger))
            (self-info (if (is-a? o <foreign>) "&self->base.dzn_info"
-                          "&self->dzn_info")))
+                          "&self->dzn_info"))
+           (root (ast:parent o <root>))
+           (pump? (code:pump? root)))
       (list
        (method
         (struct component)
@@ -557,6 +559,10 @@
           `(,(variable (type (pointer* (struct-name component)))
                        (name "self")
                        (expression "port->meta.provides.component"))
+            ,@(if (not pump?) '()
+                  `(,(call (name "dzn_runtime_call_in")
+                           (arguments '("(dzn_component*) self"
+                                        "(dzn_interface*) port")))))
             ,@(c:tracing-guard
                (call (name "dzn_runtime_trace")
                      (arguments
