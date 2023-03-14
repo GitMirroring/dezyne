@@ -254,10 +254,11 @@ to current-output-port."
 (define (interface->constraint model)
   "Return constraint process as mCRL2 string from MODEL."
   (let* ((lts (interface->constraint-lts model))
-         (debugity (dzn:debugity)))
+         (debug? (> (dzn:debugity) 2)))
+    (when debug?
+      (display "makreel:\n" (current-error-port)))
     (let ((makreel (with-output-to-string
                      (cute lts->makreel model lts))))
-      (when (> debugity 2)
-        (display "makreel:\n" (current-error-port))
+      (when debug?
         (display makreel (current-error-port)))
       makreel)))
