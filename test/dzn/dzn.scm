@@ -258,6 +258,9 @@ output, and standard error as three values."
                 "flush")
            (feature? "inject")
            (feature? "shared")
+           (or (feature? "shell")
+               (and (thread-safe-shell? file-name)
+                    "shell"))
            (feature? "space"))))
 
 (define (features-missing file-name language)

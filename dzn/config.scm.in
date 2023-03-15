@@ -129,6 +129,7 @@ There is NO WARRANTY, to the extent permitted by law.
     ("flush" . ("c" "c++" "cs" "scheme"))
     ("inject" . ("c++" "cs" "javacsript" "scheme"))
     ("shared" . ("c++"))
+    ("shell" . ("c++" "cs" "scheme"))
     ("space" . ("c" "c++" "cs" "javascript" "scheme"))))
 
 
