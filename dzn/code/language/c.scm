@@ -43,6 +43,10 @@
   #:export (c:base-type-name
             c:closure-name
             c:closure-triggers
+            c:defer-arguments-name
+            c:defer-name
+            c:defer-predicate-name
+            c:defer*
             c:end-point->string
             c:event-slot-call-name
             c:enum*
@@ -121,6 +125,44 @@
                        ".base")
                    "."
                    (.port.name o))))
+
+(define-method (c:defer* (o <model>))
+  (let ((behavior (.behavior o)))
+    (c:defer* behavior)))
+
+(define-method (c:defer* (o <foreign>))
+  '())
+
+(define-method (c:defer* (o <behavior>))
+  (let* ((statement (.statement o))
+         (functions (ast:function* o))
+         (statements (cons statement (map .statement functions))))
+    (append-map
+     (cute tree-collect-filter (disjoin (is? <statement>)
+                                        (is? <functions>)
+                                        (is? <function>))
+           (is? <defer>)
+           <>)
+     statements)))
+
+(define-method (c:defer* (o <ast>))
+  (c:defer* (ast:parent <behavior> o)))
+
+(define-method (c:defer-arguments-name (o <model>))
+  (string-append "dzn_defer_arguments_" (c:type-name o)))
+
+(define-method (c:defer-arguments-name (o <ast>))
+  (c:defer-arguments-name (ast:parent o <model>)))
+
+(define-method (c:defer-name (o <defer>))
+  (let* ((model (ast:parent o <model>))
+         (model-name (c:type-name model))
+         (defers (c:defer* model))
+         (index (list-index (cute ast:eq? <> o) defers)))
+    (simple-format #f "dzn_defer~a_~a" index model-name)))
+
+(define-method (c:defer-predicate-name (o <defer>))
+  (string-append (c:defer-name o) "_predicate"))
 
 
 ;;;

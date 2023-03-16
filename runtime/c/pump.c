@@ -53,6 +53,24 @@ port_coroutine_create (dzn_interface* port, dzn_coroutine coroutine)
   return p;
 }
 
+typedef struct deferred deferred;
+struct deferred
+{
+  dzn_component* component;
+  dzn_closure* predicate;
+  dzn_closure* defer;
+};
+
+static deferred*
+deferred_create (dzn_component* component, dzn_closure* predicate, dzn_closure* defer)
+{
+  deferred* d = (deferred*)malloc (sizeof (deferred));
+  d->component = component;
+  d->predicate = predicate;
+  d->defer = defer;
+  return d;
+}
+
 static int
 port_predicate (void* data)
 {
@@ -88,6 +106,20 @@ pump_enqueue (dzn_pump* self, dzn_list** list, void* data)
 {
   (void)self;
   *list = dzn_list_append (*list, dzn_list_data (data));
+}
+
+void
+dzn_pump_defer (dzn_pump* self, dzn_component* component, dzn_closure* predicate, dzn_closure* defer)
+{
+  deferred* d = deferred_create (component, predicate, defer);
+  pump_enqueue (self, &self->deferred, d);
+}
+
+static void
+pump_flush_defer (dzn_pump* self)
+{
+  while (self->deferred)
+    dzn_pump_run_defer (self);
 }
 
 static void*
@@ -162,6 +194,67 @@ dzn_pump_run (dzn_pump* self, dzn_closure* event)
   dzn_coroutine coroutine = pump_create_coroutine (self, worker);
   dzn_coroutine_yield_to (coroutine);
   pump_process_released (self);
+}
+
+void
+dzn_pump_finalize (dzn_pump* self)
+{
+  pump_flush_defer (self);
+}
+
+void
+dzn_pump_prune_deferred (dzn_pump* self)
+{
+  debug ("[%ld] prune deferred\n", dzn_coroutine_id ());
+  dzn_list* head = self->deferred;
+  while (head)
+    {
+      deferred* d = head->data;
+      dzn_closure* p = d->predicate;
+      bool (*predicate) (void*) = (bool (*) (void*)) p->function;
+      if (predicate (p->argument))
+        break;
+      self->deferred = head->next;
+      free (p);
+      free (d);
+      free (head);
+      head = self->deferred;
+    }
+  while (head && head->next)
+    {
+      dzn_list* next = head->next;
+      deferred* d = next->data;
+      dzn_closure* p = d->predicate;
+      bool (*predicate) (void*) = (bool (*) (void*)) p->function;
+      if (!predicate (p->argument))
+        {
+          free (p);
+          free (d);
+          free (head);
+        }
+      head = next;
+    }
+}
+
+void
+dzn_pump_run_defer (dzn_pump* self)
+{
+  dzn_pump_prune_deferred (self);
+  if (self->deferred)
+    {
+      debug ("[%ld] run defer\n", dzn_coroutine_id ());
+      deferred* d = self->deferred->data;
+      dzn_closure* defer = d->defer;
+      dzn_list* rest = self->deferred->next;
+      free (self->deferred);
+      self->deferred = rest;
+      d->component->dzn_info.handling = dzn_coroutine_id ();
+      defer->function (defer->argument);
+      d->component->dzn_info.handling = 0;
+      dzn_runtime_flush (&d->component->dzn_info);
+      free (defer);
+      free (d);
+    }
 }
 
 void
@@ -287,6 +380,26 @@ dzn_collateral_block (dzn_component* component, dzn_interface* port)
   dzn_pump* pump = dzn_locator_get (locator, "pump");
   if (pump)
     dzn_pump_collateral_block (pump, port, component->dzn_info.handling);
+}
+
+void
+dzn_defer (dzn_component* component, dzn_closure* predicate, dzn_closure* defer)
+{
+  debug ("dzn_defer\n")
+  dzn_locator* locator = component->dzn_info.locator;
+  dzn_pump* pump = dzn_locator_get (locator, "pump");
+  if (pump)
+    dzn_pump_defer (pump, component, predicate, defer);
+}
+
+void
+dzn_prune_deferred (dzn_component* component)
+{
+  debug ("dzn_defer\n")
+  dzn_locator* locator = component->dzn_info.locator;
+  dzn_pump* pump = dzn_locator_get (locator, "pump");
+  if (pump)
+    dzn_pump_prune_deferred (pump);
 }
 ////////////////////////////////////////////////////////////////////////////////
 #endif // HAVE_LIBPTH

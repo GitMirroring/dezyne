@@ -296,6 +296,42 @@
          (ast->code then)
          (and=> else ast->code))))
 
+(define-method (ast->code (o <defer>))
+  (define (argument-assign variable)
+    (let* ((name (if (string? variable) variable
+                     (.name variable)))
+           (var (if (ast:member? variable) (member* name)
+                    name)))
+      (assign* (string-append "dzn_arguments->" name) var)))
+  (let* ((variables (ast:defer-variable* o))
+         (locals (code:capture-local o))
+         (model (ast:parent o <model>))
+         (model-name (c:type-name model))
+         (name (c:defer-name o))
+         (arguments-type (c:defer-arguments-name o))
+         (predicate-type (c:defer-predicate-name o))
+         (malloc-closure (c:malloc "dzn_closure")))
+    (compound*
+     `(,(variable (type "dzn_closure*") (name "dzn_predicate")
+                  (expression malloc-closure))
+       ,(assign* "dzn_predicate->function"
+                 (string-append "(void (*)(void *)) "
+                                predicate-type))
+       ,(variable (type (pointer* arguments-type)) (name "dzn_arguments")
+                  (expression (c:malloc arguments-type)))
+       ,(argument-assign "self")
+       ,@(map argument-assign variables)
+       ,@(map argument-assign locals)
+       ,(assign* "dzn_predicate->argument" "dzn_arguments")
+       ,(variable (type "dzn_closure*") (name "dzn_defer_closure")
+                  (expression malloc-closure))
+       ,(assign* "dzn_defer_closure->function" name)
+       ,(assign* "dzn_defer_closure->argument" "dzn_arguments")
+       ,(call (name "dzn_defer")
+              (arguments '("(dzn_component*) self"
+                           "dzn_predicate"
+                           "dzn_defer_closure")))))))
+
 (define-method (ast->code (o <reply>))
   (let ((p (.parent o)))
     (cond
@@ -578,6 +614,9 @@
                                     arguments)))
             ,(call (name "dzn_runtime_finish")
                    (arguments (list self-info)))
+            ,@(if (not (code:pump? o)) '()
+                  `(,(call (name "dzn_prune_deferred")
+                           (arguments '("(dzn_component*) self")))))
             ,@(c:tracing-guard
                (call
                 (name "dzn_runtime_trace_out")
@@ -655,14 +694,17 @@
             ,(assign* "dzn_c.self" "self")
             ,@(let ((formals (code:formal* trigger)))
                 (map formal->assign formals (iota (length formals))))
-            ,(call (name "dzn_runtime_defer")
+            ,(call (name "dzn_runtime_enqueue")
                    (arguments
                     `("port->meta.provides.component"
                       "self"
                       ,(string-append
                         "(void (*)(void*)) "
                         (c:ref (c:closure-name trigger)))
-                      "&dzn_c"))))))))))
+                      "&dzn_c")))
+            ,@(if (not (code:pump? o)) '()
+                  `(,(call (name "dzn_prune_deferred")
+                           (arguments '("(dzn_component*) self"))))))))))))
   (define (function->method component function)
     (let* ((type (code:type-name (ast:type function)))
            (name (.name function))
@@ -714,6 +756,80 @@
                              (expression "argument"))
                    (call (name "closure->function")
                          (arguments '("closure->self")))))))))
+  (define (defer-arguments-struct)
+    (define argument-variable
+      (match-lambda*
+        ((type name)
+         (variable (type type) (name name)
+                   (expression (string-append "dzn_capture->" name))))
+        ((variable)
+         (argument-variable (c:type-name (.type variable))
+                            (.name variable)))))
+    (let* ((model-name (c:type-name o))
+           (arguments-type (c:defer-arguments-name o))
+           (variables (ast:variable* o))
+           (defers (c:defer* o))
+           (locals (append-map code:capture-local defers))
+           (locals (delete-duplicates locals
+                                      (lambda (a b)
+                                        (equal? (.name a) (.name b))))))
+      (list
+       (typedef* (string-append "struct " arguments-type) arguments-type)
+       (struct
+        (name arguments-type)
+        (members `(,(argument-variable (pointer* model-name) "self")
+                   ,@(map argument-variable variables)
+                   ,@(map argument-variable locals)))))))
+  (define (defer->helper-functions defer)
+    (define argument-variable
+      (match-lambda*
+        ((type name)
+         (variable (type type) (name name)
+                   (expression (string-append "dzn_capture->" name))))
+        ((variable)
+         (argument-variable (c:type-name (.type variable))
+                            (.name variable)))))
+    (define (variable->equality o)
+      (equal* (ast->expression o) (.name o)))
+    (let* ((name (c:defer-name defer))
+           (variables (ast:defer-variable* defer))
+           (locals (code:capture-local defer))
+           (model (ast:parent defer <model>))
+           (model-name (c:type-name model))
+           (arguments-type (c:defer-arguments-name o))
+           (predicate-type (c:defer-predicate-name defer))
+           (equality (code:defer-equality* defer))
+           (condition (if (not (code:defer-condition defer)) "true"
+                          (and*
+                           (map variable->equality equality))))
+           (statement (.statement defer))
+           (statements (if (not (is-a? statement <compound>)) (list statement)
+                           (ast:statement* statement)))
+           (statements (map ast->code statements)))
+      (list
+       (function (type "static bool")
+                 (name (c:defer-predicate-name defer))
+                 (formals (list (formal (type "void*") (name "argument"))))
+                 (statement
+                  (compound*
+                   `(,(variable (type (pointer* arguments-type))
+                                (name "dzn_capture")
+                                (expression "argument"))
+                     ,(argument-variable (pointer* model-name) "self")
+                     ,@(map argument-variable variables)
+                     ,(return* condition)))))
+       (function (type "static void")
+                 (name name)
+                 (formals (list (formal (type "void*") (name "argument"))))
+                 (statement
+                  (compound*
+                   `(,(variable (type (pointer* arguments-type))
+                                (name "dzn_capture")
+                                (expression "argument"))
+                     ,(argument-variable (pointer* model-name) "self")
+                     ,@(map argument-variable variables)
+                     ,@(map argument-variable locals)
+                     ,@statements)))))))
   (let* ((enums (filter (is? <enum>) (code:enum* o)))
          (closure-triggers (c:closure-triggers o))
          (component
@@ -773,11 +889,14 @@
             ,@(append-map provides->inits (ast:provides-port* o))
             ,@(map in-trigger->init (ast:in-triggers o))
             ,@(append-map requires->inits (ast:requires-port* o))))))
+      ,@(append-map defer->helper-functions (c:defer* o))
       ,@(map (cute function->method base <>) (ast:function* o))
       ,@(append-map (cute provides-trigger->method base <>)
                     (ast:provides-in-triggers o))
       ,@(append-map (cute requires-trigger->method base <>)
-                    (ast:requires-out-triggers o)))))
+                    (ast:requires-out-triggers o))
+      ,@(if (is-a? o <foreign>) '()
+            (defer-arguments-struct)))))
 
 (define-method (component-model->statements (o <component-model>))
   ((ast:perfect-funcq component-model->statements-unmemoized) o))
@@ -1029,14 +1148,26 @@
                 (c:log-event-type-cast trigger)
                 " "
                 (c:log-event-name trigger)))))
-  (let ((external-string (simple-format #f "~s" "<external>")))
+  (define (defer->init)
+    (let ((defer-string (simple-format #f "~s" "<defer>"))
+          (pump-string (simple-format #f "~s" "pump")))
+      `(,(assign* "c" (c:malloc "dzn_closure"))
+        ,(assign* "c->function" "(void (*) (void*)) dzn_pump_run_defer")
+        ,(assign* "c->argument" "pump")
+        ,(call (name "dzn_map_put")
+               (arguments (list "e" defer-string "c"))))))
+  (let ((external-string (simple-format #f "~s" "<external>"))
+        (pump? (code:pump? o)))
     (function
      (type "void")
      (name "fill_event_map")
-     (formals (list (formal (type (pointer* (code:type-name o)))
-                            (name "m"))
-                    (formal (type "dzn_map*")
-                            (name "e"))))
+     (formals `(,(formal (type (pointer* (code:type-name o)))
+                         (name "m"))
+                ,(formal (type "dzn_map*")
+                         (name "e"))
+                ,@(if (not pump?) '()
+                      `(,(formal (type "dzn_pump*")
+                                 (name "pump"))))))
      (statement
       (compound*
        `(,(variable (type "dzn_closure*") (name "c"))
@@ -1050,7 +1181,9 @@
               ,@(map out-trigger->init (ast:out-triggers o))))
          ,@(append-map provides->init (ast:provides-port* o))
          ,@(append-map requires->init (ast:requires-port* o))
-         ,@(append-map in-trigger->init (ast:in-triggers o))))))))
+         ,@(append-map in-trigger->init (ast:in-triggers o))
+         ,@(if (not (code:pump? o)) '()
+               (defer->init))))))))
 
 (define-method (main (o <component-model>))
   (let ((model-name (code:type-name o))
@@ -1089,7 +1222,9 @@
          ,(call (name "dzn_map_init") (arguments '("&event_map")))
          ,(assign* "global_event_map" "&event_map")
          ,(call (name "fill_event_map")
-                (arguments '("&sut" "&event_map")))
+                (arguments `("&sut" "&event_map"
+                             ,@(if (not pump?) '()
+                                   '("&pump")))))
          ,(while*
            (not-equal*
             (group* (assign* "line" (call (name "read_line"))))
@@ -1106,6 +1241,9 @@
                           `(,(call (name "dzn_pump_run")
                                    (arguments '("&pump" "c")))))
                     ,(call (name "free") (arguments '("line"))))))))
+         ,@(if (not pump?) '()
+               `(,(call (name "dzn_pump_finalize")
+                        (arguments '("&pump")))))
          ,(return* 0)))))))
 
 
@@ -1142,7 +1280,8 @@
                       ,(cpp-system-include* "dzn/locator.h")
                       ,(cpp-system-include* "dzn/runtime.h")
                       ,@(if (not (code:pump? o)) '()
-                            (list (cpp-system-include* "dzn/pump.h")))
+                            (list (cpp-system-include* "dzn/pump.h")
+                                  (cpp-system-include* "stdlib.h")))
                       ,@(c:tracing-guard
                          (cpp-system-include* "string.h"))
                       ,@(root->statements o)

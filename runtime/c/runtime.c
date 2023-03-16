@@ -98,7 +98,7 @@ dzn_runtime_flush (dzn_runtime_info* info)
 }
 
 void
-dzn_runtime_defer (void* vsrc, void* vtgt, void (*event) (void*), void* argument)
+dzn_runtime_enqueue (void* vsrc, void* vtgt, void (*event) (void*), void* argument)
 {
 #if DZN_DYNAMIC_QUEUES
   dzn_closure *c;

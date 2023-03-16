@@ -75,7 +75,7 @@ void dzn_runtime_illegal_handler (void);
 void dzn_illegal (dzn_runtime_info const* info);
 void dzn_runtime_info_init (dzn_runtime_info* info, dzn_locator* locator);
 void dzn_runtime_flush (dzn_runtime_info* info);
-void dzn_runtime_defer (void* vsrc, void* vtgt, void (*event)(void*), void* argument);
+void dzn_runtime_enqueue (void* vsrc, void* vtgt, void (*event)(void*), void* argument);
 void dzn_runtime_event (void (*event)(void*), void* argument);
 void dzn_runtime_call_in (dzn_component* component, dzn_interface* port);
 void dzn_runtime_start (dzn_runtime_info* info);
