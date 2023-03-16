@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -107,7 +107,7 @@
   (string-split (string-trim-both "@languages@") #\space))
 
 (define %copyright-info
-  "Copyright (C) 2014-2022 the Dezyne authors
+  "Copyright (C) 2014-2023 the Dezyne authors
 ")
 
 (define %license-info
