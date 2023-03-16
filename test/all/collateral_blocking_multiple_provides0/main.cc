@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -31,13 +31,19 @@
 #include <dzn/runtime.hh>
 #include <dzn/pump.hh>
 
-int
-main (int argc, char* argv[])
+static bool
+getopt (int argc, char const* argv[], std::string option)
 {
-  if (argv + argc != std::find_if (argv + 1,
-                                   argv + argc,
-                                   [] (char const* s)
-                                   {return s == std::string ("--debug");}))
+  return argv + argc != std::find_if (argv + 1, argv + argc, [&option] (char const* s)
+  {
+    return s == option;
+  });
+}
+
+int
+main (int argc, char const* argv[])
+{
+  if (getopt (argc, argv, "--debug"))
     dzn::debug.rdbuf (std::clog.rdbuf ());
 
   dzn::locator locator;
