@@ -123,7 +123,7 @@ There is NO WARRANTY, to the extent permitted by law.
 (define %have-libpth "@HAVE_LIBPTH@")
 (define %feature-alist
   '(("block" . ("c" "c++" "cs" "scheme"))
-    ("calling_context" . ("c++" "cs" "scheme"))
+    ("calling_context" . ("c" "c++" "cs" "scheme"))
     ("collateral" . ("c" "c++" "cs" "scheme"))
     ("defer" . ("c" "c++" "cs" "scheme"))
     ("flush" . ("c" "c++" "cs" "scheme"))
