@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Filip Toman <filip.toman@verum.com>
-// Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,28 +21,24 @@
 //
 // Code:
 
-#include <injected_foreign.h>
-
-/* call "name-of-foreign"_skel_init as follows:
-   foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
+#include <shell_injected.h>
 
 void
-Foreign_init (Foreign* self, dzn_locator* dzn_locator
+Logger_init (Logger* self, dzn_locator* dzn_locator
 #if 1 //DZN_TRACING
-, dzn_meta* dzn_meta
+                   , dzn_meta* dzn_meta
 #endif /* !DZN_TRACING */
 )
 {
-  Foreign_skel_init (&(self->base), dzn_locator
+  Logger_skel_init (&(self->base), dzn_locator
 #if 1 //DZN_TRACING
-, dzn_meta
+                     , dzn_meta
 #endif /* !DZN_TRACING */
-);
+                     );
+  self->hello = 20;
 }
 
-bool
-Foreign_w_hello (Foreign* self)
+void
+Logger_log_log (Logger* self, char* m)
 {
-  self->dzn_reply_bool = true;
-  return self->dzn_reply_bool;
 }

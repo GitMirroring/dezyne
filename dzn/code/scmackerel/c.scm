@@ -226,6 +226,32 @@
             (member* (%member-prefix) (c:end-point->string provides))
             (member* (%member-prefix) (c:end-point->string requires)))))))
 
+(define (c:injected-binding->connect binding)
+  (let* ((provides
+          requires
+          (code:provides+requires-end-point binding))
+         (port (.port provides))
+         (interface (.type port))
+         (model (ast:parent binding <model>))
+         (instances (code:instance* model)))
+    (define (port->connect instance port)
+      (call (name (string-append (c:type-name interface) "_connect"))
+            (arguments
+             (list
+              (member* (c:end-point->string provides))
+              (member* (string-append
+                        (.name instance)
+                        (if (not (is-a? (.type instance) <foreign>)) ""
+                            ".base")
+                        "."
+                        (.name port)))))))
+    (define (instance->connect instance)
+      (let* ((component (.type instance))
+             (ports (ast:injected-port* component))
+             (ports (filter (compose (cute ast:eq? <> interface) .type) ports)))
+        (map (cute port->connect instance <>) ports)))
+    (append-map instance->connect instances)))
+
 (define-method (c:malloc o)
   (call (name "malloc")
         (arguments
@@ -990,7 +1016,9 @@
                                "."
                                (.port.name other-end))))))
   (let* ((instances (code:instance* o))
+         (injected-instances (code:injected-instance* o))
          (bindings (code:component-binding* o))
+         (injected-bindings (code:injected-binding* o))
          (system
           (struct
            (name (c:type-name o))
@@ -1000,6 +1028,7 @@
                 (expression "*dzn_meta_dzn")
                 (name "dzn_meta"))
               ,@(map instance->member instances)
+              ,@(map instance->member injected-instances)
               ,@(map provides->member (ast:provides-port* o))
               ,@(map requires->member (ast:requires-port* o)))))))
     `(,(c:typedef o)
@@ -1013,9 +1042,11 @@
         (statement
          (compound*
           `(,@(append-map instance->assignments instances)
+            ,@(append-map instance->assignments injected-instances)
             ,@(map port->assignment (ast:provides-port* o))
             ,@(map port->assignment (ast:requires-port* o))
-            ,@(map c:binding->connect bindings))))))))
+            ,@(map c:binding->connect bindings)
+            ,@(append-map c:injected-binding->connect injected-bindings))))))))
 
 (define-method (system->statements (o <system>))
   ((ast:perfect-funcq system->statements-unmemoized) o))

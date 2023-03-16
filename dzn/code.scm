@@ -692,7 +692,7 @@
          (left-port (.port left))
          (right (.right o))
          (right-port (.port right)))
-    (if (ast:provides? left-port) (values left right)
+    (if (and left-port (ast:provides? left-port)) (values left right)
         (values right left))))
 
 (define-method (code:provides-end-point (o <binding>))
