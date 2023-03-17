@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -35,6 +35,7 @@
   #:use-module (gnu packages guile)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages pth)
   #:use-module (pack scmackerel))
 
 (define %source-dir (getcwd))
@@ -61,6 +62,7 @@
                   guile-json-4
                   guile-readline
                   mcrl2-minimal
+                  pth
                   scmackerel
                   sed))
     (native-inputs (list guile-3.0-latest pkg-config))
