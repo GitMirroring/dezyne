@@ -119,6 +119,8 @@ This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 ")
 
+(define %libpth "@LIBPTH@")
+(define %have-libpth "@HAVE_LIBPTH@")
 (define %feature-alist
   '(("block" . ("c++" "cs" "scheme"))
     ("calling_context" . ("c++" "cs" "scheme"))

@@ -36,6 +36,8 @@ dist_runtime_c_dzn_DATA =			\
  %D%/c/dzn/queue.h				\
  %D%/c/dzn/runtime.h
 
+dist_noinst_DATA = %D%/c/dzn/config.h.in
+
 runtime_cdir = $(pkgdatadir)/runtime/c
 dist_runtime_c_DATA =				\
  %D%/c/locator.c				\

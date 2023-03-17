@@ -52,6 +52,7 @@ stamp-vti
 /doc/version.texi
 /dzn/config.scm
 /pre-inst-env
+/runtime/c/dzn/config.h
 /runtime/c++/dzn/meta.hh
 /libtool
 Makefile

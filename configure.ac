@@ -188,11 +188,16 @@ have_cxx11=false
 ;;
 esac
 
+AC_CHECK_HEADERS([pth.h])
+AC_LIB_HAVE_LINKFLAGS([pth],[],[#include <pth.h>], [pth_init ();])
 case ,${enable_languages}, in
   *,c,*)
 if test "x$courageous" = xno; then
     AC_MSG_ERROR([`c' is not a supported language.
 See "Porting" in the manual, or try `--with-courage'.])
+fi
+if test "x$HAVE_LIBPTH" != "xyes" -a x$cross_compiling = xno; then
+    AC_MSG_ERROR([GNU Pth is required, please install it.])
 fi
 if test "x$CC99" = x -a x$cross_compiling = xno; then
     AC_MSG_ERROR([language c enabled, but no C99 compiler was found])
@@ -260,6 +265,8 @@ esac
 AM_CONDITIONAL([have_cxx_exception_wrappers], [test "x$have_cxx_exception_wrappers" = xtrue])
 
 # Output
+AUTOHEADER=true
+AC_CONFIG_HEADERS([runtime/c/dzn/config.h])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
                 [chmod +x pre-inst-env])

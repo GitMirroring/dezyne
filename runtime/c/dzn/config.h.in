@@ -27,6 +27,11 @@
 #ifndef DZN_CONFIG_H
 #define DZN_CONFIG_H
 
+#ifndef HAVE_LIBPTH
+/* Define if you have the libpth library. */
+#undef HAVE_LIBPTH
+#endif
+
 /* to activate MISRA C configuration, define DZN_TINY and DZN_MISRA_C_2004 to be equal to 1 */
 
 #ifndef DZN_TINY
