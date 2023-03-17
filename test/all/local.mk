@@ -161,6 +161,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system4				\
  %D%/blocking_system_diamond			\
  %D%/calling_context				\
+ %D%/clash_port_variable			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_double_release		\
@@ -309,7 +310,6 @@ REGRESSION_TESTS =				\
  %D%/hello_check_bindings			\
  %D%/hello_choice_action			\
  %D%/hello_choice_reply				\
- %D%/hello_clash_port_variable			\
  %D%/hello_complete_action			\
  %D%/hello_complete_reply			\
  %D%/hello_enum_function			\

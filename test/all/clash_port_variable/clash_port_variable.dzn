@@ -35,7 +35,7 @@ interface IPort
   }
 }
 
-component hello_clash_port_variable
+component clash_port_variable
 {
   provides IPort p;
   requires IPort r;
