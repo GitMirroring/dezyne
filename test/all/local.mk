@@ -161,6 +161,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system4				\
  %D%/blocking_system_diamond			\
  %D%/calling_context				\
+ %D%/clash_event_name				\
  %D%/clash_port_variable			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
