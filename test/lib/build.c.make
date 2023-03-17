@@ -22,11 +22,12 @@
 #
 # Code:
 
+include config.make
+
 .PHONY: default test
 
 default: $(OUT)/test
 
-DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.c.make,$(MAKEFILE_LIST)))../../)
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
@@ -43,13 +44,13 @@ CFLAGS=--std=c99 -g -O0
 #CFLAGS=--std=c99 -g -DDZN_TINY=1
 #CFLAGS=--std=c99 -Os -DDZN_TINY=1
 
-CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(OUT)/../.. -I$(OUT)/../../c -I$(IN) -I$(DEVELOPMENT)/runtime/c
+CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(OUT)/../.. -I$(OUT)/../../c -I$(IN) -I$(abs_top_srcdir)/runtime/c
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
 endif
 
-$(OUT)/%.o: $(DEVELOPMENT)/runtime/c/%.c
+$(OUT)/%.o: $(abs_top_srcdir)/runtime/c/%.c
 	mkdir -p $(dir $@)
 	$(COMPILE.c) -o $@ $<
 
@@ -63,8 +64,8 @@ $(OUT)/%.o: $(IN)/c/%.c
 
 $(foreach f, $(wildcard $(IN)/c/*.c), $(eval $(OUT)/test: $(patsubst $(IN)/c/%.c, $(OUT)/%.o, $(f))))
 
-RUNTIME_SOURCES := $(wildcard $(DEVELOPMENT)/runtime/c/*.c)
-RUNTIME_O := $(RUNTIME_SOURCES:$(DEVELOPMENT)/runtime/c/%.c=$(OUT)/%.o)
+RUNTIME_SOURCES := $(wildcard $(abs_top_srcdir)/runtime/c/*.c)
+RUNTIME_O := $(RUNTIME_SOURCES:$(abs_top_srcdir)/runtime/c/%.c=$(OUT)/%.o)
 
 $(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c))
 $(OUT)/test: $(patsubst $(OUT)/%.c, $(OUT)/%.o,  $(wildcard $(OUT)/*.c))

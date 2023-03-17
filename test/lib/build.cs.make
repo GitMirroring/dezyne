@@ -22,6 +22,8 @@
 #
 # Code:
 
+include config.make
+
 define MONO_SCRIPT
 #! $(SHELL)
 mono --debug $$(dirname $$0)/test.exe "$$@"
@@ -34,10 +36,8 @@ $(OUT)/test: $(OUT)/test.exe
 	echo "$$MONO_SCRIPT" > $@
 	chmod +x $@
 
-DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.cs.make,$(MAKEFILE_LIST)))../../)
-
 IN_SOURCES := $(wildcard $(IN)/*.cs) $(wildcard $(IN)/cs/*.cs)
-RUNTIME_SOURCES := $(wildcard $(DEVELOPMENT)/runtime/cs/dzn/*.cs)
+RUNTIME_SOURCES := $(wildcard $(abs_top_srcdir)/runtime/cs/dzn/*.cs)
 OUT_SOURCES := $(wildcard $(OUT)/*cs)
 ifneq ($(filter %/container.cs,$(IN_SOURCES)),)
 RUNTIME_SOURCES := $(filter-out %/container.cs,$(RUNTIME_SOURCES))

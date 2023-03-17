@@ -43,6 +43,7 @@ stamp-vti
 /m4
 /bin/dzn
 /config.log
+/config.make
 /config.status
 /configure
 /doc/dezyne.info

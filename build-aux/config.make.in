@@ -1,7 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
-# Copyright © 2016, 2019, 2020, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -22,22 +21,7 @@
 #
 # Code:
 
-include config.make
-
-ifeq ($(MAIN),)
-MAIN:=$(OUT)/main.js
-endif
-
-default: $(OUT)/test
-
-$(info IN:$(IN))
-$(info OUT:$(OUT))
-$(info DIR:$(DIR))
-$(OUT)/test: $(MAIN)
-	cp $(MAIN) $(OUT)/test
-	mkdir -p $(OUT)/dzn
-	ln -fs $(abs_top_srcdir)/runtime/javascript/dzn/* $(OUT)/dzn/
-	if test -f $(IN)/main.js; then cp -f $(IN)/main.js $@; fi
-	if test -f $(IN)/javascript/main.js; then cp -f $(IN)/javascript/main.js $@; fi
-	sed -i -e 's,#!.*,#! $(NODE),' $@
-	chmod +x $@
+abs_top_builddir = @abs_top_builddir@
+abs_top_srcdir = @abs_top_srcdir@
+HAVE_LIBPTH = @HAVE_LIBPTH@
+LIBPTH = @LIBPTH@

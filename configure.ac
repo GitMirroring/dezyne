@@ -267,6 +267,7 @@ AM_CONDITIONAL([have_cxx_exception_wrappers], [test "x$have_cxx_exception_wrappe
 # Output
 AUTOHEADER=true
 AC_CONFIG_HEADERS([runtime/c/dzn/config.h])
+AC_CONFIG_FILES([config.make:build-aux/config.make.in])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
                 [chmod +x pre-inst-env])

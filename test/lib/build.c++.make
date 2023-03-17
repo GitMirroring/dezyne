@@ -24,11 +24,12 @@
 #
 # Code:
 
+include config.make
+
 .PHONY: default test
 
 default: $(OUT)/test
 
-DEVELOPMENT:=$(shell readlink -f $(dir $(filter %/build.c++.make,$(MAKEFILE_LIST)))../../)
 define CHECKPARAM
 ifeq ($(origin $(1)), undefined)
 $$(error $(1) undefined)
@@ -52,7 +53,7 @@ NOWARN_FLAGS=					\
  -Wno-unused-but-set-variable
 CXXFLAGS=-g -std=c++14 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread $(WARN_FLAGS)
 # FIXME: handwritten code, versioned?  $(IN)/../.. or ?
-CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(DEVELOPMENT)/runtime/c++ -D DZN_VERSION_ASSERT=1
+CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(abs_top_srcdir)/runtime/c++ -D DZN_VERSION_ASSERT=1
 GLOBALS_H=$(wildcard $(IN)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
@@ -62,7 +63,7 @@ ifneq ($(CALLING_CONTEXT_HH),)
 CPPFLAGS:=$(CPPFLAGS) -include $(CALLING_CONTEXT_HH)
 endif
 
-$(OUT)/%.o: $(DEVELOPMENT)/runtime/c++/%.cc
+$(OUT)/%.o: $(abs_top_srcdir)/runtime/c++/%.cc
 	mkdir -p $(dir $@)
 	$(COMPILE.cc) -o $@ $<
 
