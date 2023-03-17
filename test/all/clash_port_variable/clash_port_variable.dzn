@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,12 +24,14 @@
 
 subint number {0..1};
 
-interface IPort
+interface ihello
 {
-  in void i();
-  out void o();
-  behavior {
+  in void i ();
+  out void o ();
+  behavior
+  {
     number r = 0;
+    bool meta = false;
     on i: {}
     on optional: o;
   }
@@ -37,12 +39,12 @@ interface IPort
 
 component clash_port_variable
 {
-  provides IPort p;
-  requires IPort r;
+  provides ihello p;
+  requires ihello r;
 
   behavior
   {
-    on p.i(): {}
-    on r.o(): {}
+    on p.i (): {}
+    on r.o (): {}
   }
 }
