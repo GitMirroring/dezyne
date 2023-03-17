@@ -44,6 +44,7 @@
             c:closure-name
             c:closure-triggers
             c:end-point->string
+            c:event-slot-call-name
             c:enum*
             c:event-name
             c:ref
@@ -96,13 +97,18 @@
   (ast:equal? ((compose .signature .event) a)
               ((compose .signature .event) b)))
 
+(define-method (c:event-slot-call-name (base <string>) (trigger <trigger>))
+  (string-join
+   (list "dzn" (code:direction trigger) base (code:event-slot-name trigger))
+   "_"))
+
 (define-method (c:closure-name (o <trigger>))
   (let* ((model (ast:parent o <model>))
          (model-name (c:type-name model))
          (formals (ast:formal* o))
          (types (map .type formals))
          (types (map code:type->string types)))
-    (string-join (cons* model-name "void" types) "_")))
+    (string-join (cons* "dzn" model-name "void" types) "_")))
 
 (define-method (c:closure-triggers (o <component-model>))
   (let ((triggers (ast:requires-out-triggers o)))

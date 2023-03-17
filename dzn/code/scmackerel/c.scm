@@ -95,14 +95,6 @@
   (let ((name (c:type-name o)))
     (typedef* (string-append "struct " name) name)))
 
-(define-method (c:event-slot-call-name struct (trigger <trigger>))
-  ;; FIXME: named like a method, but isn't
-  (string-append (struct-name struct)
-                 "_"
-                 (code:event-slot-name trigger)
-                 "_"
-                 (code:direction trigger)))
-
 (define-method (c:log-event-name (o <trigger>))
   (let* ((port-name (.port.name o))
          (event-name (.event.name o))
@@ -476,10 +468,7 @@
            (direction (code:direction trigger))
            (base-name (c:base-type-name o)))
       (assign* (string-append p "->" direction "." event-name)
-               (string-append "&" base-name
-                              "_" port-name
-                              "_" event-name
-                              "_" direction))))
+               (c:event-slot-call-name base-name trigger))))
   (define (type->reply-variable o)
     (variable
      (type (code:type-name o))
@@ -517,7 +506,7 @@
         (statement statement))
        (function
         (type (string-append "static " (code:type-name type)))
-        (name (c:event-slot-call-name component trigger))
+        (name (c:event-slot-call-name (struct-name component) trigger))
         (formals (cons (formal (type (pointer* interface))
                                (name "port"))
                        formals))
@@ -577,7 +566,8 @@
            (interface (c:type-name (.type port)))
            (event-name (.event.name trigger))
            (component-name (struct-name component))
-           (closure-name (c:closure-name trigger)))
+           (closure-name (c:closure-name trigger))
+           (closure-type-name (string-append closure-name "_closure")))
       (list
        (method
         (struct component)
@@ -586,7 +576,7 @@
         (statement statement))
        (function
         (type "static void")
-        (name (c:event-slot-call-name component trigger))
+        (name (c:event-slot-call-name (struct-name component) trigger))
         (formals `(,(formal (type (pointer* interface))
                             (name "port"))
                    ,@(map formal->a-formal formals)))
@@ -595,7 +585,7 @@
           `(,(variable (type (pointer* (struct-name component)))
                        (name "self")
                        (expression "port->meta.requires.component"))
-            ,(variable (type closure-name)
+            ,(variable (type closure-type-name)
                        (name "dzn_c"))
             ,@(c:tracing-guard
                (call
@@ -603,8 +593,9 @@
                 (arguments
                  (list "&port->meta"
                        (simple-format #f "~s" event-name)))))
-            ,(assign* "dzn_c.size" (call (name "sizeof")
-                                         (arguments (list closure-name))))
+            ,(assign* "dzn_c.size"
+                      (call (name "sizeof")
+                            (arguments (list closure-type-name))))
             ,(assign* "dzn_c.function"
                       (string-append
                        "(void(*)(" component-name "*)) "
@@ -622,8 +613,7 @@
                       "self"
                       ,(string-append
                         "(void (*)(void*)) "
-                        (c:ref (c:closure-name trigger))
-                        "_helper")
+                        (c:ref (c:closure-name trigger)))
                       "&dzn_c"))))))))))
   (define (function->method component function)
     (let* ((type (code:type-name (ast:type function)))
@@ -647,13 +637,14 @@
     (define (formal->variable formal i)
       (variable (type "int")
                 (name (simple-format #f "_~a" i))))
-    (let ((component-name (c:type-name o))
-          (closure-name (c:closure-name signature))
-          (formals (ast:formal* signature)))
+    (let* ((component-name (c:type-name o))
+           (closure-name (c:closure-name signature))
+           (closure-type-name (string-append closure-name "_closure"))
+           (formals (ast:formal* signature)))
       (list
-       (typedef* (string-append "struct " closure-name) closure-name)
+       (typedef* (string-append "struct " closure-type-name) closure-type-name)
        (struct
-        (name closure-name)
+        (name closure-type-name)
         (members
          `(,(variable (type "size_t")
                       (name "size"))
@@ -666,15 +657,15 @@
            ,(variable (type (pointer* component-name)) (name "self"))
            ,@(map formal->variable formals (iota (length formals))))))
        (function (type "static void")
-                 (name (string-append closure-name "_helper"))
+                 (name closure-name)
                  (formals (list (formal (type "void*") (name "argument"))))
                  (statement
                   (compound*
-                   (variable (type (pointer* closure-name))
-                             (name "helper")
+                   (variable (type (pointer* closure-type-name))
+                             (name "closure")
                              (expression "argument"))
-                   (call (name "helper->function")
-                         (arguments '("helper->self")))))))))
+                   (call (name "closure->function")
+                         (arguments '("closure->self")))))))))
   (let* ((enums (filter (is? <enum>) (code:enum* o)))
          (closure-triggers (c:closure-triggers o))
          (component
