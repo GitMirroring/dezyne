@@ -868,12 +868,13 @@ status."
                  pcs)))
 
 (define* (filter-root root #:key model-name)
-  (let* ((model (ast:get-model root model-name))
-         (models (ast:model* model))
-         (root (tree-filter (disjoin (is? <interface>)
-                                     (negate (is? <model>))
-                                     (cute member <> models ast:eq?)) root)))
-    root))
+  (let ((model (ast:get-model root model-name)))
+    (if (not model) root
+        (let* ((models (ast:model* model))
+               (root (tree-filter (disjoin (is? <interface>)
+                                           (negate (is? <model>))
+                                           (cute member <> models ast:eq?)) root)))
+          root))))
 
 
 ;;;
@@ -962,10 +963,15 @@ DEADLOCK-CHECK?, run check-deadlock at EOT.  If QUEUE-FULL-CHECK?, run
 external queue-full-check at EOT.  If REFUSALS-CHECK?, run
 refusals-check at EOT."
   (let* ((root (filter-root root #:model-name model-name))
-         (root (vm:normalize root)))
+         (root (vm:normalize root))
+         (model (ast:get-model root model-name)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
-    (let* ((sut (runtime:get-sut root (ast:get-model root model-name)))
+    (unless model
+      (let ((file-name (ast:source-file root)))
+       (format (current-error-port) "~a: No dezyne model found.\n" file-name))
+      (exit EXIT_OTHER_FAILURE))
+    (let* ((sut (runtime:get-sut root model))
            (instances (runtime:create-instances sut)))
       (parameterize ((%debug? (> (dzn:debugity) 0)))
         (simulate** sut instances trail
