@@ -53,7 +53,8 @@
             peg:handle-syntax-error
             string->ast
             string->parse-tree
-            string->fall-back-parse-tree))
+            string->fall-back-parse-tree
+            format-display-syntax-error))
 
 (define (peg:line-number string pos)
   (1+ (string-count string #\newline 0 pos)))
@@ -169,6 +170,14 @@ it to the ERROR-COLLECTOR procedure."
   (lambda (str line-number col-number error-type error)
     (let ((message (peg:syntax-error->message (cadar error) str (caar error))))
       (error-collector error-type message line-number col-number))))
+
+(define (format-display-syntax-error file-name)
+  "Return a procedure that to format GNU style error message for
+FILE-NAME."
+  (lambda (str line-number col-number error-type error)
+    (let ((message (peg:syntax-error->message (cadar error) str (caar error))))
+      (format (current-error-port) "~a:~a:~a: ~a\n"
+              file-name line-number col-number message))))
 
 (define* (string->parse-tree string #:key (file-name "-") (content-alist '()))
   (let ((fall-back? (%peg:fall-back?)))

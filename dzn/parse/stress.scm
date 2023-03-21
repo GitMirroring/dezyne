@@ -146,8 +146,7 @@ completed, such as removal of BEHAVIOR, SYSTEM and type definitions."
                        (parameterize
                            ((%peg:locations? #t)
                             (%peg:skip? peg:skip-parse)
-                            (%peg:fall-back? #t)
-                            (%peg:error (const #f)))
+                            (%peg:fall-back? #t))
                          (string->parse-tree str))
                        offset)))
         (complete (.tree context) context (1+ offset)))))

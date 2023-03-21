@@ -423,10 +423,7 @@ and collects it using procedure (%peg:error)."
                          (error "Bad peg form" nm #'args
                                 "Not one of" (map car peg-compiler-alist)))))))
 
-;; By default this implementation is used by:
-;; dzn parse --fall-back
-(define %peg:error (make-parameter (lambda (str line-number col-number error-type error)
-                                     (format (current-error-port) "~a: ~s\n" error-type (second (car error))))))
+(define %peg:error (make-parameter (const #f)))
 (define %peg:debug? (make-parameter #f))
 (define %peg:locations? (make-parameter #f))
 (define %peg:skip? (make-parameter (lambda (str strlen at) `(,at ()))))

@@ -89,7 +89,8 @@ Parse a Dezyne file and produce an AST
          (fall-back? (command-line:get 'fall-back))
          (transform (dzn:multi-opt 'transform)))
     (parameterize ((%locations? locations?)
-                   (%peg:fall-back? fall-back?))
+                   (%peg:fall-back? fall-back?)
+                   (%peg:error (format-display-syntax-error file-name)))
       (let ((ast (file->ast file-name
                             #:debug? debug?
                             #:imports imports

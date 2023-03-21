@@ -47,13 +47,6 @@
         (value (proc value))
         (else #f)))
 
-(define (locus file-name line col str)
-  (if (not (string? str)) (format #f "~a:~a:~a:" file-name line col)
-      (let ((l (+ line (string-count str #\newline)))
-            (c (- (string-length str) (or (string-rindex str #\newline) 0))))
-        (if (= line l) (format #f "~a:~a:~a-~a:" file-name line col c)
-            (format #f "~a:~a:~a-~a:~a:" file-name line col l c)))))
-
 (define (parse-opts args)
   (let* ((option-spec
           '((complete (single-char #\c))
@@ -119,18 +112,14 @@ Dezyne language tool for completion and lookup information
     (define (file-name->text file-name)
       (let ((file-name (search-path imports file-name)))
         (with-input-from-file file-name read-string)))
-    (define (handle-error str line-number col-number error-type error)
-      (when (< (caar error) (1- (string-length str)))
-        (format (current-error-port) "~a ~a\n"
-                (locus file-name line-number col-number error-type)
-                error)))
     (let* ((input (file-name->text file-name))
            (parse-result (parameterize
                              ((%peg:debug? (> (dzn:debugity) 0))
                               (%peg:locations? #t)
                               (%peg:skip? peg:skip-parse)
                               (%peg:fall-back? #t)
-                              (%peg:error handle-error))
+                              (%peg:error (format-display-syntax-error
+                                           file-name)))
                            (cons (string-length input)
                                  (string->parse-tree input #:file-name file-name))))
            (offset (or (and+pred=> (option-ref options 'offset #f) string->number)
