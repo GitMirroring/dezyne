@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -41,6 +41,9 @@
             %package-name
             %package-version
             %prefix
+            %queue-size
+            %queue-size-defer
+            %queue-size-external
             %template-dir
             %test-dir
             %version-major
@@ -103,9 +106,6 @@
   (if (mingw?) "dzn.cmd"
       (string-append %bindir "/dzn")))
 
-(define %default-languages
-  (string-split (string-trim-both "@languages@") #\space))
-
 (define %copyright-info
   "Copyright (C) 2014-2023 the Dezyne authors
 ")
@@ -125,3 +125,19 @@ There is NO WARRANTY, to the extent permitted by law.
     ("flush" . ("c++" "cs" "scheme"))
     ("inject" . ("c++" "cs" "javacsript" "scheme"))
     ("space" . ("c" "c++" "cs" "javascript" "scheme"))))
+
+
+;;;
+;;; Defaults.
+;;;
+(define %default-languages
+  (string-split (string-trim-both "@languages@") #\space))
+
+;;; The component queue.
+(define %queue-size (make-parameter 3))
+
+;;; The defer queue.
+(define %queue-size-defer (make-parameter 2))
+
+;;; The external queue.
+(define %queue-size-external (make-parameter 1))

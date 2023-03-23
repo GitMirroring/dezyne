@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -33,6 +33,7 @@
   #:use-module (dzn explore)
   #:use-module (dzn ast)
   #:use-module (dzn code)
+  #:use-module (dzn config)
   #:use-module (dzn parse)
   #:use-module (dzn commands parse)
   #:use-module (dzn vm normalize)
@@ -49,6 +50,8 @@
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
             (queue-size (single-char #\q) (value #t))
+            (queue-size-defer (value #t))
+            (queue-size-external (value #t))
             (remove (single-char #\R) (value #t))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
@@ -70,6 +73,10 @@ Generate graph from a Dezyne model
   -L, --locations        include locations in graph
   -m, --model=MODEL      produce graph for MODEL
   -q, --queue-size=SIZE  use queue size=SIZE for exploration [3]
+      --queue-size-defer=SIZE
+                         use defer queue size=SIZE for verification [2]
+      --queue-size-external=SIZE
+                         use external queue size=SIZE for verification [1]
   -R, --remove=VARS      remove state from nodes VARS {ports,extended}
                            implies --backend=state
 
@@ -107,7 +114,11 @@ Generate graph from a Dezyne model
                  #:backtrace? debug?
                  #:file-name file-name))
          (language (option-ref options 'format "dot"))
-         (queue-size (command-line:get-number 'queue-size 3)))
+         (queue-size (command-line:get-number 'queue-size (%queue-size)))
+         (queue-size-defer (command-line:get-number 'queue-size-defer
+                                                    (%queue-size-defer)))
+         (queue-size-external (command-line:get-number 'queue-size-external
+                                                       (%queue-size-external))))
     (when (and hide
                (not (member hide '("actions" "labels" "returns"))))
       (format (current-error-port) "graph: hide ~a ignored\n" hide))
@@ -121,11 +132,17 @@ Generate graph from a Dezyne model
                              #:ast-> 'dependency-diagram
                              #:model model
                              #:language language))
-          (lts? (lts root #:model model #:queue-size queue-size))
+          (lts? (lts root
+                     #:model model
+                     #:queue-size queue-size
+                     #:queue-size-defer queue-size-defer
+                     #:queue-size-external queue-size-external))
           (state? (state-diagram root
                                  #:format language
                                  #:model model
                                  #:queue-size queue-size
+                                 #:queue-size-defer queue-size-defer
+                                 #:queue-size-external queue-size-external
                                  #:ports? ports?
                                  #:extended? extended?
                                  #:actions? actions?

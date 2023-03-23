@@ -13,12 +13,17 @@
 @set OPENPGP-SIGNING-KEY-ID 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 @set OPENPGP-SIGNING-KEY-URL https://savannah.gnu.org/people/viewgpg.php?user_id=4348
 
+@c Default queue sizes
+@set queue-size 3
+@set queue-size-defer 2
+@set queue-size-external 1
+
 @c Base URL for downloads.
 @set BASE-URL https://dezyne.org/download/dezyne
 
 @copying
 Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
-Copyright @copyright{} 2014, 2020, 2021, 2022 Rutger van Beusekom@*
+Copyright @copyright{} 2014, 2020, 2021, 2022, 2023 Rutger van Beusekom@*
 Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
 Copyright @copyright{} 2014, 2016, 2019, 2020, 2021, 2022 Jan Nieuwenhuizen@*
@@ -1813,8 +1818,9 @@ specified.  Upon violation the following error is reported:
 a Dezyne component has a queue where notification events are stored
 before they are processed.  During verification it is checked that that
 this queue does not overflow, i.e., that it remains non-blocking.  The
-queue size can be specified for verification with the
-@option{--queue-size} option.  The default queue size is @code{3}.
+component queue size can be specified for verification with the
+@option{--queue-size} option.  The default queue size is
+@code{@value{queue-size}}.
 
 Upon violation, the following error is reported
 @example
@@ -2661,9 +2667,19 @@ Write output to directory @var{dir} (use @code{-} for standard output).
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
-When generating @code{mCRL2} code, use queue size @var{size} for
-verification, the default is @code{3}.  For other language backends,
-this options is ignored.
+When generating @code{mCRL2} code, use component queue size @var{size}
+for verification, the default is @code{@value{queue-size}}.  For other
+language backends, this options is ignored.
+
+@item --queue-size-defer=@var{size}
+When generating @code{mCRL2} code, use defer queue size @var{size} for
+verification, the default is @code{@value{queue-size-defer}}.  For other
+language backends, this options is ignored.
+
+@item --queue-size-external=@var{size}
+When generating @code{mCRL2} code, use extternal queue size @var{size}
+for verification, the default is @code{@value{queue-size-external}}.
+For other language backends, this options is ignored.
 
 @item --shell=@var{model}
 @itemx -s @var{model}
@@ -2739,7 +2755,16 @@ Generate graph for model @var{model}.  The default is to use the most
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
-Use queue size @var{size} for exploration, the default is @code{3}.
+Use component queue size @var{size} for exploration, the default is
+@code{@value{queue-size}}.
+
+@item --queue-size-defer=@var{size}
+Use defer queue size @var{size} for exploration, the default is
+@code{@value{queue-size-defer}}.
+
+@item --queue-size-external=@var{size}
+Use external queue size @var{size} for exploration, the default is
+@code{@value{queue-size-external}}.
 
 @item --remove=@var{vars}
 @itemx -R @var{vars}
@@ -3039,7 +3064,16 @@ the end of the trail (EOT).
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
-Use queue size @var{size} for simulation, the default is @code{3}.
+Use component queue size @var{size} for simulation, the default is
+@code{@value{queue-size}}.
+
+@item --queue-size-defer=@var{size}
+Use defer queue size @var{size} for simulation, the default is
+@code{@value{queue-size-defer}}.
+
+@item --queue-size-external=@var{size}
+Use external queue size @var{size} for simulation, the default is
+@code{@value{queue-size-external}}.
 
 @item --strict
 @itemx -s
@@ -3209,7 +3243,16 @@ Write trace files to directory @var{dir}.
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
-Use queue size @var{size} for generation, the default is @code{3}.
+Use component queue size @var{size} for generation, the default is
+@code{@value{queue-size}}.
+
+@item --queue-size-defer=@var{size}
+Use defer queue size @var{size} for trace generation, the default is
+@code{@value{queue-size-defer}}.
+
+@item --queue-size-external=@var{size}
+Use external queue size @var{size} for trace generation, the default is
+@code{@value{queue-size-external}}.
 
 @item --traces
 @itemx -t
@@ -3279,7 +3322,16 @@ use on the command line.
 
 @item --queue-size=@var{size}
 @itemx -q @var{size}
-Use queue size @var{size} for verification, the default is @code{3}.
+Use component queue size @var{size} for verification, the default is
+@code{@value{queue-size}}.
+
+@item --queue-size-defer=@var{size}
+Use defer queue size @var{size} for verification, the default is
+@code{@value{queue-size-defer}}.
+
+@item --queue-size-external=@var{size}
+Use external queue size @var{size} for verification, the default is
+@code{@value{queue-size-external}}.
 
 @end table
 

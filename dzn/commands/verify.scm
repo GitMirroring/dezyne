@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017 Henk Katerberg <hank@mudball.nl>
@@ -51,7 +51,9 @@
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
             (out (value #t))
-            (queue-size (single-char #\q) (value #t))))
+            (queue-size (single-char #\q) (value #t))
+            (queue-size-defer (value #t))
+            (queue-size-external (value #t))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
@@ -71,8 +73,12 @@ Check DZN-FILE for verification errors in Dezyne models
   -I, --import=DIR+           add DIR to import path
   -m, --model=MODEL           restrict verification to model MODEL
       --out=FORMAT            produce output FORMAT (use \"help\" for a list)
-  -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
-")
+  -q, --queue-size=SIZE       use queue size=SIZE for verification [~a]
+      --queue-size-defer=SIZE
+                              use defer queue size=SIZE for verification [~a]
+      --queue-size-external=SIZE
+                              use external queue size=SIZE for verification [~a]
+" (%queue-size) (%queue-size-defer) (%queue-size-external))
 	(exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
@@ -90,17 +96,25 @@ Check DZN-FILE for verification errors in Dezyne models
                                  (lambda _ (ast:get-model ast model-name))
                                  #:backtrace? debug?
                                  #:file-name file-name)))
-         (root (makreel:om ast)))
-    (cond (out
-           (let ((formats (verification:formats)))
-             (unless (member out formats)
-               (format #t "formats:~a\n" (string-join (verification:formats) "\n  " 'prefix))
-               (exit EXIT_OTHER_FAILURE))
-             (let* ((model (call-with-handle-exceptions
-                            (lambda _ (ast:get-model ast model-name))
-                            #:backtrace? debug?
-                            #:file-name file-name))
-                    (model-name (ast:dotted-name model)))
-               (verification:partial root model-name #:out out))))
-          (else
-           (exit (verification:verify options root #:all? all? #:model-name model-name))))))
+         (root (makreel:om ast))
+         (queue-size (option-ref options 'queue-size (%queue-size)))
+         (queue-size-defer (option-ref options 'queue-size-defer
+                                       (%queue-size-defer)))
+         (queue-size-external (option-ref options 'queue-size-external
+                                          (%queue-size-external))))
+    (parameterize ((%queue-size queue-size)
+                   (%queue-size-defer queue-size-defer)
+                   (%queue-size-external queue-size-external))
+      (cond (out
+             (let ((formats (verification:formats)))
+               (unless (member out formats)
+                 (format #t "formats:~a\n" (string-join (verification:formats) "\n  " 'prefix))
+                 (exit EXIT_OTHER_FAILURE))
+               (let* ((model (call-with-handle-exceptions
+                              (lambda _ (ast:get-model ast model-name))
+                              #:backtrace? debug?
+                              #:file-name file-name))
+                      (model-name (ast:dotted-name model)))
+                 (verification:partial root model-name #:out out))))
+            (else
+             (exit (verification:verify options root #:all? all? #:model-name model-name)))))))

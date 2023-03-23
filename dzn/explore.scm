@@ -1,8 +1,8 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -33,6 +33,7 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
   #:use-module (dzn ast)
+  #:use-module (dzn config)
   #:use-module (dzn display)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)
@@ -556,12 +557,15 @@ RTC-LTS->LTS."
 ;;; Entry points.
 ;;;
 
-(define* (state-diagram root #:key format model queue-size
+(define* (state-diagram root #:key format model
+                        queue-size queue-size-defer queue-size-external
                         ports? extended? actions? labels? returns?)
   "Entry-point for dzn explore --state-diagram."
   (parameterize ((%debug? (> (dzn:debugity) 0))
                  (%exploring? #t)
                  (%queue-size queue-size)
+                 (%queue-size-defer queue-size-defer)
+                 (%queue-size-external queue-size-external)
                  (%sut (runtime:get-sut root model)))
     (parameterize ((%instances (runtime:create-instances (%sut))))
       (let* ((pc (make-pc))
@@ -581,11 +585,13 @@ RTC-LTS->LTS."
                                      state-diagram (.working-directory root)))
             (display (state-diagram->dot state-diagram (pc->hash pc))))))))
 
-(define* (lts root #:key model queue-size)
+(define* (lts root #:key model queue-size queue-size-defer queue-size-external)
   "Entry-point for dzn explore --lts."
   (parameterize ((%debug? (> (dzn:debugity) 0))
                  (%exploring? #t)
                  (%queue-size queue-size)
+                 (%queue-size-defer queue-size-defer)
+                 (%queue-size-external queue-size-external)
                  (%sut (runtime:get-sut root model)))
     (parameterize ((%instances (runtime:create-instances (%sut))))
       (let* ((pc (make-pc))

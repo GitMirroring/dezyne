@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2017, 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -58,7 +58,9 @@
             (traces (single-char #\t))
             (model (single-char #\m) (value #t))
             (output (single-char #\o) (value #t))
-            (queue-size (single-char #\q) (value #t))))
+            (queue-size (single-char #\q) (value #t))
+            (queue-size-defer (value #t))
+            (queue-size-external (value #t))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
@@ -77,8 +79,12 @@ Generate exhaustive set of traces for Dezyne model
   -m, --model=MODEL           generate traces for model MODEL
   -o, --output=DIR            write lts,traces in directory DIR
   -t, --traces                also generate traces (default)
-  -q, --queue-size=SIZE       use queue size=SIZE for generation
-")
+  -q, --queue-size=SIZE       use queue size=SIZE for generation [~a]
+      --queue-size-defer=SIZE
+                              use defer queue size=SIZE for verification [~a]
+      --queue-size-external=SIZE
+                              use external queue size=SIZE for verification [~a]
+" (%queue-size) (%queue-size-defer) (%queue-size-external))
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
@@ -150,9 +156,17 @@ Generate exhaustive set of traces for Dezyne model
          (file-name (car files))
          (ast (parse options file-name))
          (root (makreel:om ast))
-         (model-name (option-ref options 'model #f)))
+         (model-name (option-ref options 'model #f))
+         (queue-size (option-ref options 'queue-size (%queue-size)))
+         (queue-size-defer (option-ref options 'queue-size-defer
+                                       (%queue-size-defer)))
+         (queue-size-external (option-ref options 'queue-size-external
+                                          (%queue-size-external))))
     (define (named? o)
       (equal? (makreel:unticked-dotted-name o) model-name))
+    (parameterize ((%queue-size queue-size)
+                   (%queue-size-defer queue-size-defer)
+                   (%queue-size-external queue-size-external))
     (let* ((models (ast:model* root))
            (components-interfaces (append (filter (conjoin (is? <component>) .behavior) models)
                                           (filter (is? <interface>) models)))
@@ -161,4 +175,4 @@ Generate exhaustive set of traces for Dezyne model
       (cond ((and model-name (not model)) (error "no such model:" model-name))
             ((is-a? model <system>) #t) ;; silently no traces
             ((and model-name (or (is-a? model <foreign>) (not (.behavior model)))) (error "no model with behavior:" model-name))
-            (model (model->traces options root model file-name))))))
+            (model (model->traces options root model file-name)))))))

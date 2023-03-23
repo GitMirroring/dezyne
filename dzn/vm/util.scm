@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -43,7 +43,6 @@
   #:export (%debug
             %debug?
             %next-input
-            %queue-size
             %startup-info
             %strict?
 
@@ -154,9 +153,6 @@
 (define-syntax-rule (%debug fmt arg ...)
   (when (%debug?)
     (format (current-error-port) fmt arg ...)))
-
-;;; The size of the component queues and external queues.
-(define %queue-size (make-parameter 3))
 
 ;; Is the input trail to be matched exactly?
 (define %strict? (make-parameter #f))
@@ -855,7 +851,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((external-q (.external-q pc))
          (instance (.instance pc))
          (q (or (assoc-ref external-q instance) '())))
-    (if (= (length q) (%queue-size))
+    (if (= (length q) (%queue-size-external))
         (let ((error (make <queue-full-error> #:ast ast #:instance instance
                            #:message "queue-full")))
           (clone pc #:status error))

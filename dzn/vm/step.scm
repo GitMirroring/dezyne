@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -29,6 +29,7 @@
   #:use-module (dzn goops)
 
   #:use-module (dzn ast)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn vm ast)
   #:use-module (dzn vm evaluate)
@@ -159,7 +160,7 @@
 
 (define-method (step (pc <program-counter>) (o <defer>))
   (let* ((defer (.defer pc)))
-    (if (= (length defer) (%queue-size))
+    (if (= (length defer) (%queue-size-defer))
         (let ((error (make <queue-full-error>
                        #:ast o
                        #:instance (.instance pc)

@@ -42,6 +42,7 @@
 
   #:use-module (dzn ast)
   #:use-module (dzn code dzn)
+  #:use-module (dzn config)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
   #:use-module (dzn vm goops)
@@ -49,7 +50,6 @@
   #:export (<port-pair>
            .other
             %calling-context
-            %queue-size
             %shell
             code
             code:add-calling-context
@@ -126,9 +126,6 @@
 
 ;; The calling-context to insert.
 (define %calling-context (make-parameter #f))
-
-;; The size of the queue.
-(define %queue-size (make-parameter #f))
 
 ;; The name of the thread-safe shell.
 (define %shell (make-parameter #f))
@@ -799,7 +796,7 @@
 ;;; Entry point.
 ;;;
 (define* (code ast #:key (ast-> 'ast->) calling-context dir language locations?
-               model queue-size shell)
+               model shell)
   (let* ((module (resolve-module `(dzn code ,(string->symbol language))))
          (ast-> (false-if-exception (module-ref module ast->))))
     (unless ast->
@@ -807,6 +804,5 @@
       (exit EXIT_OTHER_FAILURE))
     (parameterize ((%calling-context calling-context)
                    (%locations? locations?)
-                   (%queue-size queue-size)
                    (%shell shell))
       (ast-> ast #:dir dir #:model model))))
