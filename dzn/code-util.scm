@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -28,6 +29,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn command-line)
   #:use-module (dzn indent)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
@@ -54,14 +56,30 @@
   (let ((base (basename (ast:source-file root) ".dzn")))
     (code-util:file-name base dir ext)))
 
+(define (code-util:handle-exceptions file-name)
+  (lambda (key . args)
+    (case key
+      ((system-error)
+       (let ((errno (system-error-errno (cons key args))))
+         (format (current-error-port) "~a: ~a\n"
+                 (strerror errno) file-name))
+       (exit EXIT_FAILURE))
+      (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
+                    file-name key args)
+            (exit EXIT_FAILURE)))))
+
 (define* (code-util:dump root generate #:key file-name)
-  (cond
-   ((equal? file-name "-")
-    (generate))
-   (else
-    (mkdir-p (dirname file-name))
-    (with-output-to-file file-name
-      generate))))
+  (let ((debug? (dzn:command-line:get 'debug #f)))
+    (cond
+      ((equal? file-name "-")
+        (generate))
+      (else
+        (catch (if debug? 'none #t)
+          (lambda ()
+            (mkdir-p (dirname file-name))
+            (with-output-to-file file-name
+              generate))
+          (code-util:handle-exceptions file-name))))))
 
 (define-method (code-util:base-name (o <foreign>))
   (string-join (ast:full-name o) "_"))
