@@ -2,7 +2,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+# Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -64,15 +64,15 @@ echo "** indirect_blocking_out"
 echo
 echo "** external_multiple_out1"
 
-./pre-inst-env dzn simulate test/all/external_multiple_out1/external_multiple_out1.dzn -t p.e,r.e,r.return,p.return,r.a,p.a,r.b,p.b | ./pre-inst-env dzn trace --format=diagram
+./pre-inst-env dzn simulate --queue-size-external=3 test/all/external_multiple_out1/external_multiple_out1.dzn -t p.e,r.e,r.return,p.return,r.a,p.a,r.b,p.b | ./pre-inst-env dzn trace --format=diagram
 
 echo
 echo "** external_multiple_out2"
-./pre-inst-env dzn simulate test/all/external_multiple_out2/external_multiple_out2.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
+./pre-inst-env dzn simulate --queue-size-external=3 test/all/external_multiple_out2/external_multiple_out2.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
 
 echo
 echo "** external_multiple_out3"
-./pre-inst-env dzn simulate test/all/external_multiple_out3/external_multiple_out3.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
+./pre-inst-env dzn simulate --queue-size-external=3 test/all/external_multiple_out3/external_multiple_out3.dzn -t p.e,r.e,r.return,p.return,r.a,r.b,p.a,p.b  | ./pre-inst-env dzn trace --format=diagram
 
 echo
 echo "** indirect_blocking_multiple_external_out"

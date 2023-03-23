@@ -174,6 +174,16 @@ output, and standard error as three values."
     (and alist
          (and=> (assq-ref alist 'queue-size) car))))
 
+(define (queue-size-defer file-name)
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'queue-size-defer) car))))
+
+(define (queue-size-external file-name)
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'queue-size-external) car))))
+
 (define (flush? file-name)
   (get-meta-flag file-name 'flush))
 
@@ -290,11 +300,19 @@ output, and standard error as three values."
          (includes (append-map (cute list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
+         (queue-size-defer (queue-size-defer file-name))
+         (queue-size-external (queue-size-external file-name))
          (command
           `("dzn" "--verbose" "verify"
             ,@includes
             "--all"
-            ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+            ,@(if (not queue-size) '()
+                  `("-q" ,(number->string queue-size)))
+            ,@(if (not queue-size-defer) '()
+                  `("--queue-size-defer" ,(number->string queue-size-defer)))
+            ,@(if (not queue-size-external) '()
+                  `("--queue-size-external"
+                    ,(number->string queue-size-external)))
             ,@(if (model-unset? file-name) '() `("-m" ,model))
             ,dzn-name)))
     (or (skip? file-name "verify")
@@ -365,6 +383,8 @@ output, and standard error as three values."
          (includes (append-map (cute list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
+         (queue-size-defer (queue-size-defer file-name))
+         (queue-size-external (queue-size-external file-name))
          (language "traces")
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
@@ -380,7 +400,13 @@ output, and standard error as three values."
                "-o" ,out-lang
                ,@(if (null? handwritten-traces) '("--traces") '())
                ,@(if (flush? file-name) '("--flush") '())
-               ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+               ,@(if (not queue-size) '()
+                     `("-q" ,(number->string queue-size)))
+               ,@(if (not queue-size-defer) '()
+                     `("--queue-size-defer" ,(number->string queue-size-defer)))
+               ,@(if (not queue-size-external) '()
+                     `("--queue-size-external" ,(number->string
+                                                 queue-size-external)))
                "--lts"
                ,dzn-name)
              input)
@@ -609,6 +635,8 @@ are weak-bisim equivalent"
          (input (filter-<flush> input))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
+         (queue-size-defer (queue-size-defer file-name))
+         (queue-size-external (queue-size-external file-name))
          ;; FIXME: METAs `model' is used for component/system tricksery
          (model base-name)
          (baseline? (file-exists? (string-append baseline ".out")))
@@ -618,7 +646,14 @@ are weak-bisim equivalent"
     (receive (status stdout stderr)
         (observe `("dzn" "simulate"
                    ,@includes
-                   ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                   ,@(if (not queue-size) '()
+                         `("-q" ,(number->string queue-size)))
+                   ,@(if (not queue-size-defer) '()
+                         `("--queue-size-defer"
+                           ,(number->string queue-size-defer)))
+                   ,@(if (not queue-size-external) '()
+                         `("--queue-size-external"
+                           ,(number->string queue-size-external)))
                    "--format" ,trace-format
                    ,@(if (non-strict? file-name) '() '("--strict"))
                    ,@(simulate-flags file-name)
@@ -675,6 +710,8 @@ are weak-bisim equivalent"
          (includes (append-map (cute list "-I" <>) includes))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
+         (queue-size-defer (queue-size-defer file-name))
+         (queue-size-external (queue-size-external file-name))
          (language "lts")
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
@@ -688,7 +725,13 @@ are weak-bisim equivalent"
             (observe
              `("dzn" "graph" "--backend=lts"
                ,@includes
-               ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+               ,@(if (not queue-size) '()
+                     `("-q" ,(number->string queue-size)))
+               ,@(if (not queue-size-defer) '()
+                     `("--queue-size-defer" ,(number->string queue-size-defer)))
+               ,@(if (not queue-size-external) '()
+                     `("--queue-size-external"
+                       ,(number->string queue-size-external)))
                "-m" ,model
                ,dzn-name)
              input)

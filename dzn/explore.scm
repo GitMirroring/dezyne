@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -31,6 +31,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
@@ -620,7 +621,8 @@ RTC-LTS->LTS."
 ;;;
 ;;; Entry points.
 ;;;
-(define* (state-diagram ast #:key format model queue-size
+(define* (state-diagram ast #:key format model
+                        queue-size queue-size-defer queue-size-external
                         ports? extended? actions? labels? returns?)
   "Entry-point for dzn explore --state-diagram."
   (let* ((root (vm:normalize ast))
@@ -631,6 +633,8 @@ RTC-LTS->LTS."
                    (%debug? (> (dzn:debugity) 0))
                    (%exploring? #t)
                    (%queue-size queue-size)
+                   (%queue-size-defer queue-size-defer)
+                   (%queue-size-external queue-size-external)
                    (%sut (runtime:get-sut root model)))
       (parameterize ((%instances (runtime:create-instances (%sut))))
         (let* ((pc (make-pc))
@@ -650,7 +654,7 @@ RTC-LTS->LTS."
                                        state-diagram (.working-directory root)))
               (display (state-diagram->dot state-diagram (pc->hash pc)))))))))
 
-(define* (lts ast #:key model queue-size)
+(define* (lts ast #:key model queue-size queue-size-defer queue-size-external)
   "Entry-point for dzn explore --lts."
   (let* ((root (vm:normalize ast))
          (model (ast:get-model root (ast:dotted-name model))))
@@ -660,6 +664,8 @@ RTC-LTS->LTS."
                    (%debug? (> (dzn:debugity) 0))
                    (%exploring? #t)
                    (%queue-size queue-size)
+                   (%queue-size-defer queue-size-defer)
+                   (%queue-size-external queue-size-external)
                    (%sut (runtime:get-sut root model)))
       (parameterize ((%instances (runtime:create-instances (%sut))))
         (let* ((pc (make-pc))

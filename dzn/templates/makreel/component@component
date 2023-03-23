@@ -22,6 +22,8 @@ defer_skip': State;
 map
 
 QueueLength : Nat;
+DeferQueueLength : Nat;
+ExternalQueueLength : Nat;
 
 list2set : List(provides_ports) -> Set(provides_ports);
 
@@ -35,6 +37,8 @@ var p, car: provides_ports;
 eqn
 
 QueueLength = #x:makreel:queue-length;
+DeferQueueLength = #x:makreel:defer-queue-length;
+ExternalQueueLength = #x:makreel:external-queue-length;
 
 l == [] -> list2set(l) = {};
 l != [] -> list2set(l) = {head(l)} + list2set(tail(l));
@@ -67,8 +71,8 @@ prune_deferred(defer_state, []) = [];
 proc
 
 defer_queue (l: List (DeferContext))
- = (##l == QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . queue_full . Illegal)
- + (##l < QueueLength) -> (sum dc: DeferContext . defer_qin(dc) . defer_queue(l = l <| dc))
+ = (##l == DeferQueueLength) -> (sum dc: DeferContext . defer_qin(dc) . queue_full . Illegal)
+ + (##l < DeferQueueLength) -> (sum dc: DeferContext . defer_qin(dc) . defer_queue(l = l <| dc))
  + (l != []) -> defer_qout(locals(head(l))) . defer_queue(l = tail(l))
  + sum s : State . defer_skip(s) . defer_queue (prune_deferred (s,l))
  ;

@@ -32,6 +32,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
+  #:use-module (dzn config)
   #:use-module (dzn explore)
   #:use-module (dzn misc)
   #:use-module (dzn parse)
@@ -915,8 +916,11 @@ status."
                    #:key compliance-check? deadlock-check?
                    interface-determinism-check? interface-livelock-check?
                    queue-full-check? refusals-check?
-                   model-name queue-size strict? trace trail
-                   internal? locations? state? verbose?)
+                   model-name
+                   (queue-size (%queue-size))
+                   (queue-size-defer (%queue-size-defer))
+                   (queue-size-external (%queue-size-external))
+                   strict? trace trail internal? locations? state? verbose?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  If STRICT?, the trail must include
 all observable events.  If COMPLIANCE-CHECK?, report compliance errors.
@@ -943,6 +947,8 @@ refusals-check at EOT."
                #:refusals-check? refusals-check?
                #:model-name model-name
                #:queue-size queue-size
+               #:queue-size-defer queue-size-defer
+               #:queue-size-external queue-size-external
                #:strict? strict?
                #:trace trace
                #:internal? internal?
@@ -953,9 +959,11 @@ refusals-check at EOT."
 (define* (simulate* root trail
                     #:key compliance-check? deadlock-check?
                     interface-determinism-check? interface-livelock-check?
-                    queue-full-check? refusals-check?
-                    model-name queue-size strict? trace
-                    internal? locations? state? verbose?)
+                    (queue-size (%queue-size))
+                    (queue-size-defer (%queue-size-defer))
+                    (queue-size-external (%queue-size-external))
+                    queue-full-check? refusals-check? model-name
+                    strict? trace internal? locations? state? verbose?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  If STRICT?, the trail must include all observable
 events.  If COMPLIANCE-CHECK?, report compliance errors.  If
@@ -980,8 +988,10 @@ refusals-check at EOT."
                     #:interface-determinism-check? interface-determinism-check?
                     #:interface-livelock-check? interface-livelock-check?
                     #:queue-full-check? queue-full-check?
-                    #:refusals-check? refusals-check?
                     #:queue-size queue-size
+                    #:queue-size-defer queue-size-defer
+                    #:queue-size-external queue-size-external
+                    #:refusals-check? refusals-check?
                     #:strict? strict?
                     #:trace trace
                     #:internal? internal?
@@ -992,15 +1002,19 @@ refusals-check at EOT."
 (define* (simulate** sut instances trail
                      #:key compliance-check? deadlock-check?
                      interface-determinism-check? interface-livelock-check?
+                     (queue-size (%queue-size))
+                     (queue-size-defer (%queue-size-defer))
+                     (queue-size-external (%queue-size-external))
                      queue-full-check? refusals-check?
-                     queue-size strict? trace
-                     internal? locations? state? verbose?)
+                     strict? trace internal? locations? state? verbose?)
   "Entry point for simulate library, much like simulate*.  This
 procedure allows reuse with the same root, SUT and INSTANCES, allowing
 memoizations to work."
   (parameterize ((%compliance-check? compliance-check?)
                  (%instances instances)
-                 (%queue-size (or queue-size 3))
+                 (%queue-size queue-size)
+                 (%queue-size-defer queue-size-defer)
+                 (%queue-size-external queue-size-external)
                  (%strict? strict?)
                  (%sut sut))
     (run-trail trail

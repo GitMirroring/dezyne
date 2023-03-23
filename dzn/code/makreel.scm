@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul@dezyne.org>
@@ -512,6 +512,12 @@
 
 (define-method (makreel:queue-length (o <component>))
   (%queue-size))
+
+(define-method (makreel:defer-queue-length (o <component>))
+  (%queue-size-defer))
+
+(define-method (makreel:external-queue-length (o <component>))
+  (%queue-size-external))
 
 (define-method (makreel:event-act (o <component>))
   (append
@@ -1100,13 +1106,10 @@
 ;;; Entry points.
 ;;;
 (define (root-> o)
-  (let ((queue-size (or (%queue-size)
-                        (command-line:get-number 'queue-size 3))))
-    (parameterize ((%queue-size queue-size)
-                   (%id-alist '())
-                   (%next-alist '()))
-      (x:source o)
-      (newline))))
+  (parameterize ((%id-alist '())
+                 (%next-alist '()))
+    (x:source o)
+    (newline)))
 
 (define* (ast-> ast #:key dir model)
   (let ((root (makreel:om ast))

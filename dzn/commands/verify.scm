@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017 Henk Katerberg <hank@mudball.nl>
@@ -37,6 +37,7 @@
   #:use-module (dzn code makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
+  #:use-module (dzn config)
   #:use-module (dzn parse)
   #:use-module (dzn verify pipeline)
   #:export (parse-opts
@@ -54,7 +55,9 @@
             (no-non-compliance (single-char #\D))
             (no-unreachable (single-char #\U))
             (out (value #t))
-            (queue-size (single-char #\q) (value #t))))
+            (queue-size (single-char #\q) (value #t))
+            (queue-size-defer (value #t))
+            (queue-size-external (value #t))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
 	 (files (option-ref options '() '()))
@@ -69,18 +72,22 @@
 Usage: dzn verify [OPTION]... DZN-FILE
 Check DZN-FILE for verification errors in Dezyne models
 
-  -a, --all                   keep going after first error
-  -C, --no-constraint         do not use a constraining process
-  -D, --no-non-compliance     report deadlock upon non-compliance
-  -h, --help                  display this help and exit
-  -I, --import=DIR+           add DIR to import path
-  -j, --jitty                 run lps2lts with --rewriter=jittyc
-  -m, --model=MODEL           restrict verification to model MODEL
-      --no-interfaces         skip interface verification
-      --out=FORMAT            produce output FORMAT (use \"help\" for a list)
-  -U, --no-unreachable        skip the unreachable code check
-  -q, --queue-size=SIZE       use queue size=SIZE for verification [3]
-")
+  -a, --all                keep going after first error
+  -C, --no-constraint      do not use a constraining process
+  -D, --no-non-compliance  report deadlock upon non-compliance
+  -h, --help               display this help and exit
+  -I, --import=DIR+        add DIR to import path
+  -j, --jitty              run lps2lts with --rewriter=jittyc
+  -m, --model=MODEL        restrict verification to model MODEL
+      --no-interfaces      skip interface verification
+      --out=FORMAT         produce output FORMAT (use \"help\" for a list)
+  -U, --no-unreachable     skip the unreachable code check
+  -q, --queue-size=SIZE    use queue size=SIZE for verification [~a]
+      --queue-size-defer=SIZE
+                           use defer queue size=SIZE for verification [~a]
+      --queue-size-external=SIZE
+                           use external queue size=SIZE for verification [~a]
+" (%queue-size) (%queue-size-defer) (%queue-size-external))
 	(exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
@@ -98,8 +105,16 @@ Check DZN-FILE for verification errors in Dezyne models
                                  (lambda _ (ast:get-model ast model-name))
                                  #:backtrace? debug?
                                  #:file-name file-name)))
-         (no-unreachable? (command-line:get 'no-unreachable)))
-    (parameterize ((%no-unreachable? no-unreachable?))
+         (no-unreachable? (command-line:get 'no-unreachable))
+         (queue-size (option-ref options 'queue-size (%queue-size)))
+         (queue-size-defer (option-ref options 'queue-size-defer
+                                       (%queue-size-defer)))
+         (queue-size-external (option-ref options 'queue-size-external
+                                          (%queue-size-external))))
+    (parameterize ((%no-unreachable? no-unreachable?)
+                   (%queue-size queue-size)
+                   (%queue-size-defer queue-size-defer)
+                   (%queue-size-external queue-size-external))
       (let ((root (makreel:om ast)))
         (when (and=> model ast:imported?)
           (let ((name (ast:dotted-name model)))

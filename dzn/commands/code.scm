@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -29,6 +29,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
   #:use-module (dzn code)
+  #:use-module (dzn config)
   #:use-module (dzn shell-util)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
@@ -64,6 +65,8 @@
             (no-unreachable (single-char #\U))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))
+            (queue-size-defer (value #t))
+            (queue-size-external (value #t))
             (shell (single-char #\s) (value #t))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
@@ -86,12 +89,18 @@ Generate code for Dezyne models in DZN-FILE
   -L, --locations             prepend locations to output trace
   -m, --model=MODEL           generate main for MODEL
   -o, --output=DIR            write output to DIR (use - for stdout)
-  -q, --queue-size=SIZE       use queue size SIZE
+  -q, --queue-size=SIZE       use queue size SIZE [~a]
+      --queue-size-defer=SIZE
+                              use queue size=SIZE [~a] for defer
+      --queue-size-external=SIZE
+                              use queue size=SIZE [~a] for external
   -s, --shell=MODEL           generate thread safe system shell for MODEL
   -U, --no-unreachable        do not generate unreachable code tags
 
 Languages: ~a
-" %default-language (string-join %languages ", "))
+" %default-language
+(%queue-size) (%queue-size-defer) (%queue-size-external)
+(string-join %languages ", "))
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
@@ -104,7 +113,11 @@ Languages: ~a
          (language (option-ref options 'language %default-language))
          (locations? (option-ref options 'locations #f))
          (model (option-ref options 'model #f))
-         (queue-size (command-line:get-number 'queue-size 3))
+         (queue-size (command-line:get-number 'queue-size (%queue-size)))
+         (queue-size-defer (command-line:get-number 'queue-size
+                                                    (%queue-size-defer)))
+         (queue-size-external (command-line:get-number 'queue-size
+                                                       (%queue-size-external)))
          (no-unreachable? (command-line:get 'no-unreachable))
          (shell (option-ref options 'shell #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
@@ -114,12 +127,13 @@ Languages: ~a
                    (%locations? locations?)
                    (%no-unreachable? no-unreachable?)
                    (%queue-size queue-size)
+                   (%queue-size-defer queue-size-defer)
+                   (%queue-size-external queue-size-external)
                    (%shell shell))
-    (code ast
-          #:calling-context calling-context
-          #:dir dir
-          #:model model
-          #:language language
-          #:locations? locations?
-          #:shell shell
-          #:queue-size queue-size))))
+      (code ast
+            #:calling-context calling-context
+            #:dir dir
+            #:model model
+            #:language language
+            #:locations? locations?
+            #:shell shell))))

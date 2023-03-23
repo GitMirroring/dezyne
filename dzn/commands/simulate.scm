@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -30,6 +30,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
+  #:use-module (dzn config)
   #:use-module (dzn simulate)
 
   #:export (parse-opts
@@ -50,6 +51,8 @@
             (no-queue-full (single-char #\Q))
             (no-refusals (single-char #\R))
             (queue-size (single-char #\q) (value #t))
+            (queue-size-defer (value #t))
+            (queue-size-external (value #t))
             (state (single-char #\s))
             (strict (single-char #\s))
             (trail (single-char #\t) (value #t))
@@ -79,13 +82,17 @@ Simulate a Dezyne model
                          skip interface RTC determinism check
       --no-interface-livelock
                          skip interface livelock check at EOT
-  -q, --queue-size=SIZE  use queue size=SIZE for simulation [3]
+  -q, --queue-size=SIZE  use queue size=SIZE for simulation [~a]
+      --queue-size-defer=SIZE
+                         use queue size=SIZE for simulation [~a]
+      --queue-size-external=SIZE
+                         use queue size=SIZE for simulation [~a]
       --state            show state after every action, trigger
   -s, --strict           use strict matching of trail
   -t, --trail=TRAIL      use trail=TRAIL [read from stdin]
   -v, --verbose          show non-communication steps in trace,
                            implies --format=trace --locations
-")
+" (%queue-size) (%queue-size-defer) (%queue-size-external))
           (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
@@ -106,6 +113,8 @@ Simulate a Dezyne model
          (no-queue-full? (option-ref options 'no-queue-full #f))
          (no-refusals? (option-ref options 'no-refusals #f))
          (queue-size (command-line:get-number 'queue-size 3))
+         (queue-size-defer (command-line:get-number 'queue-size-defer 2))
+         (queue-size-external (command-line:get-number 'queue-size-external 1))
          (state? (command-line:get 'state #f))
          (strict? (command-line:get 'strict #f))
          (verbose? (command-line:get 'verbose #f))
@@ -126,6 +135,8 @@ Simulate a Dezyne model
                            #:internal? internal?
                            #:locations? locations?
                            #:queue-size queue-size
+                           #:queue-size-defer queue-size-defer
+                           #:queue-size-external queue-size-external
                            #:state? state?
                            #:strict? strict?
                            #:trace trace
