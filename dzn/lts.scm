@@ -635,9 +635,9 @@ from LABELS."
               (trace-close ext-trace (edge-to close-edge))))))
 
     (define (trace-log trace count)
-      (let ((file-name (format #f "~a~a.~a" (or dir "") base count)))
+      (let ((file-name (simple-format #f "~a~a.~a" (or dir "") base count)))
         (when verbose?
-          (format (current-error-port) "~a\n" file-name))
+          (simple-format (current-error-port) "~a\n" file-name))
         (let ((port (if dir (open-output-file file-name)
                         (current-output-port))))
           (display (string-join trace "\n" 'suffix) port))))
@@ -702,7 +702,7 @@ from LABELS."
            (base (string-append model ".trace"))
            (dir (cond ((equal? out "-") #f)
                       ((equal? out "") "./")
-                      (else (format #f "~a/" out)))))
+                      (else (simple-format #f "~a/" out)))))
       (generate-traces initial lts provides-ports provides-in dir base
                        #:verbose? verbose?))))
 
@@ -836,12 +836,12 @@ from LABELS."
        (equal-length?
         (cdr tree))
        (match?
-        (format (current-error-port)
-                "input: ~a\nparse error: at offset: ~a\n~s\n"
-                label end tree)
+        (simple-format (current-error-port)
+                       "input: ~a\nparse error: at offset: ~a\n~s\n"
+                       label end tree)
         #f)
        (else
-        (format (current-error-port) "parse error: no match\n")
+        (simple-format (current-error-port) "parse error: no match\n")
         #f)))))
 
 (define (cleanup-error e)
@@ -853,7 +853,7 @@ from LABELS."
       (string-join (map helper parameters) ",")))
   (define (helper tree)
     (match tree
-      (('parse-error parse-error) (format (current-error-port) "parse error:~s\n" tree) parse-error)
+      (('parse-error parse-error) (simple-format (current-error-port) "parse error:~s\n" tree) parse-error)
       (('defer-qout label) "<defer>")
       (('error error) (cleanup-error error))
       (('error ('identifier port) error) (cleanup-error error))
@@ -892,10 +892,11 @@ from LABELS."
        (define (drop-prefix o)
          (if (and prefix (string-prefix? prefix o)) (substring o prefix-length)
              o))
-       (format #f "\"~a\""
-               (drop-prefix (cleanup-label (symbol->string label)
-                                           #:illegal? illegal?
-                                           #:internal? internal?)))))))
+       (simple-format
+        #f "\"~a\""
+        (drop-prefix (cleanup-label (symbol->string label)
+                                    #:illegal? illegal?
+                                    #:internal? internal?)))))))
 
 
 ;;;
