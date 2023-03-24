@@ -921,22 +921,22 @@ from LABELS."
         (loop (read-line input-port 'concat))))))
 
 (define* (display-lts lts #:key (separator "\n") (port (current-output-port)))
-  (let* ((edges (append-map node-edges (vector->list lts)))
-         (header (format #f "des (~a,~a,~a)"
-                         (initial lts)
-                         (length edges)
-                         (vector-length lts)))
-         (lines (map
-                 (lambda (e)
-                   ;; format has a significant performance impact on
-                   ;; large LTSs.
-                   (string-append
-                    "("
-                    (number->string (edge-from e)) ","
-                    "\"" (edge-label e) "\","
-                    (number->string (edge-to e))
-                    ")"))
-                 edges))
-         (lines (cons header lines))
-         (text (string-join lines separator)))
-    (display text port)))
+  (define (display-edge edge)
+    (display
+     (string-append
+      "("
+      (number->string (edge-from edge))
+      ",\""
+      (edge-label edge)
+      "\","
+      (number->string (edge-to edge))
+      ")"
+      separator)
+     port))
+  (let ((edges (append-map node-edges (vector->list lts))))
+    (simple-format port "des (~a,~a,~a)~a"
+                   (initial lts)
+                   (length edges)
+                   (vector-length lts)
+                   separator)
+    (for-each display-edge edges)))
