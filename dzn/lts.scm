@@ -159,7 +159,7 @@
 
 (define (edge-canonical-label edge)
   (let ((label (edge-label edge)))
-    (if (string-prefix? "<state>" label) %<state> label)))
+    (if (string-contains label %<state>) %<state> label)))
 
 (define-immutable-record-type <node>
   (make-node state edges pred initial? color parent distance cycle)
@@ -391,7 +391,7 @@
 ;;;
 (define (remove-state-edges lts)
   (define (state-edge? edge)
-    (string-prefix? "<state>" (edge-label edge)))
+    (string-prefix? %<state> (edge-label edge)))
   (define (remove-state node)
     (let ((edges (filter (negate state-edge?) (node-edges node))))
       (set-field node (node-edges) edges)))
