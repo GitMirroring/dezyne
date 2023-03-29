@@ -84,7 +84,7 @@
   (ast:id* (.name o)))
 
 (define-method (ast:declaration* (o <root>))
-  (filter (cut is-a? <> <declaration>) (ast:top* o)))
+  (filter (cute is-a? <> <declaration>) (ast:top* o)))
 
 (define-method (ast:declaration* (o <ast>))
   (list o))
@@ -95,7 +95,7 @@
                                                    (ast:parent o <root>))))
          (namespaces (filter (compose (cute equal? <> full-name) ast:full-name)
                              namespaces)))
-    (filter (cut is-a? <> <declaration>)
+    (filter (cute is-a? <> <declaration>)
             (append-map ast:top* namespaces))))
 
 (define-method (ast:declaration* (o <interface>))
@@ -403,19 +403,19 @@ null) and return its CONTEXT."
   (and (.function.name o) (ast:lookup o (.function.name o))))
 
 (define-method (.variable (o <assign>))
-  (and=> (.variable.name o) (cut ast:lookup-variable o <>)))
+  (and=> (.variable.name o) (cute ast:lookup-variable o <>)))
 
 (define-method (.variable (o <field-test>))
-  (and=> (.variable.name o) (cut ast:lookup-variable o <>)))
+  (and=> (.variable.name o) (cute ast:lookup-variable o <>)))
 
 (define-method (.variable (o <formal-binding>))
-  (and=> (.variable.name o) (cut ast:lookup-variable (.parent o) <>)))
+  (and=> (.variable.name o) (cute ast:lookup-variable (.parent o) <>)))
 
 (define-method (.variable (o <argument>))
-  (and=> (.name o) (cut ast:lookup-variable o <>)))
+  (and=> (.name o) (cute ast:lookup-variable o <>)))
 
 (define-method (.variable (o <var>))
-  (and=> (.name o) (cut ast:lookup-variable o <>)))
+  (and=> (.name o) (cute ast:lookup-variable o <>)))
 
 (define-method (.variable (o <shared-var>))
   (and=> (.name o)
