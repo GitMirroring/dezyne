@@ -38,10 +38,10 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
+  #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code scmackerel makreel)
   #:use-module (dzn code)
-  #:use-module (dzn code scmackerel makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn verify constraint)
@@ -469,6 +469,79 @@
                     (cons statement (loop (cdr statements) names)))))))
     ((? (is? <ast>))
      (tree-map (tick-names- names) o))
+    (_ o)))
+
+(define* (makreel:add-action-reply o)
+  (define* (add-action-reply o)
+    (match o
+      ((and ($ <action>) (? ast:requires?) (? ast:blocking?))
+       (make <compound> #:elements (add-action-reply (list o))))
+      ((and (or ($ <assign>) ($ <variable>))
+            (= .expression
+               (and ($ <action>) (? ast:requires?) (? ast:blocking?))))
+       (make <compound> #:elements (add-action-reply (list o))))
+      (($ <compound>)
+       (clone o #:elements (add-action-reply (ast:statement* o))))
+      (((and defer ($ <defer>)) rest ...)
+       (let* ((statement (add-action-reply (.statement defer)))
+              (defer (clone defer
+                            #:statement statement)))
+         (cons defer (add-action-reply rest))))
+      (((and statement ($ <if>)) rest ...)
+       (let* ((then (add-action-reply (.then statement)))
+              (else (add-action-reply (.else statement)))
+              (statement (clone statement
+                                #:then then
+                                #:else else)))
+         (cons statement (add-action-reply rest))))
+      (((and statement ($ <action>)
+             (? ast:requires?) (? ast:blocking?))
+        rest ...)
+       (let ((action-reply (make <action-reply>
+                             #:action statement
+                             #:port.name (.port.name statement)
+                             #:event.name (.event.name statement))))
+         (cons* statement action-reply (add-action-reply rest))))
+      (((and statement (or ($ <assign>) ($ <variable>))
+             (= .expression
+                (and ($ <action>) (? ast:requires?) (? ast:blocking?))))
+        rest ...)
+       (let* ((action (.expression statement))
+              (name (if (is-a? statement <variable>) (.name statement)
+                        (.variable.name statement)))
+              (action-reply (make <action-reply>
+                              #:action action
+                              #:port.name (.port.name action)
+                              #:event.name (.event.name action)
+                              #:variable.name name)))
+         (cons* statement action-reply (add-action-reply rest))))
+      ((statement rest ...)
+       (cons statement (add-action-reply rest)))
+      (_
+       o)))
+
+  (match o
+    (($ <blocking>)
+     (clone o #:statement (makreel:add-action-reply (.statement o))))
+    (($ <on>)
+     (clone o #:statement (makreel:add-action-reply (.statement o))))
+    (($ <guard>)
+     (clone o #:statement (makreel:add-action-reply (.statement o))))
+    ((and (? ast:imperative?) ($ <compound>))
+     (let ((elements (add-action-reply (ast:statement* o))))
+       (clone o #:elements elements)))
+    (($ <behavior>)
+     (clone o
+            #:statement (makreel:add-action-reply (.statement o))
+            #:functions (makreel:add-action-reply (.functions o))))
+    ((? (%normalize:short-circuit?))
+     o)
+    (($ <component>)
+     (clone o #:behavior (makreel:add-action-reply (.behavior o))))
+    (($ <interface>)
+     o)
+    ((? (is? <ast>))
+     (tree-map makreel:add-action-reply o))
     (_ o)))
 
 (define (makreel:mark-tail-call o)
