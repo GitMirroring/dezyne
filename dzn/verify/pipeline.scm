@@ -129,7 +129,10 @@ actions."
          (taus (delete-duplicates
                 (append-map events-trigger/action
                             (append out-triggers in-actions))))
-         (taus (append (list "tag" "<defer>") taus)))
+         (state-taus (map (compose (cute string-append <> ".<state>")
+                                   makreel:.name)
+                          (ast:port* model)))
+         (taus `("tag" "<defer>" ,@state-taus ,@taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)
@@ -239,6 +242,11 @@ actions."
          (root (options-root options)))
     (cute display (verify-pipeline "aut-dpweak-bisim" root model))))
 
+(define (in-out:dzn->aut-cached options)
+  (let* ((model (options-model options))
+         (root (options-root options)))
+    (cute display (verify-pipeline "aut" root model))))
+
 (define (in-out:mcrl2->lps options)
   (let ((debug? (dzn:command-line:get 'debug)))
     `("mcrl22lps" ,@(if debug? '() '("--quiet")) "--binary")))
@@ -262,12 +270,12 @@ actions."
   (let* ((model (options-model options))
          (name (makreel:full-name model))
          (taus (if (not (is-a? model <interface>)) '()
-                   `(,(format #f "--tau=optional,inevitable,tag,~aflush"
-                              name)))))
+                   `(,(format #f "--tau=optional,inevitable,tag,~aflush" name)))))
     `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
-(define in-out:aut->aut-dpweak-bisim
-  '("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut"))
+(define (in-out:aut->aut-dpweak-bisim options)
+  (let ((model (options-model options)))
+    `("ltsconvert" "--quiet" "-edpweak-bisim" "--in=aut" "--out=aut")))
 
 (define (in-out:maut->aut options)
   (let* ((model (options-model options))
@@ -342,15 +350,15 @@ actions."
     (("lpsparelm"               "maut")                    . ,in-out:lps->aut)
     (("maut"                    "aut")                     . ,in-out:maut->aut)
     (("maut"                    "maut-weak-trace")         . ,in-out:aut->aut-weak-trace)
-    (("maut"                    "maut-dpweak-bisim")       . ,in-out:aut->aut-dpweak-bisim)
+    (("aut"                     "aut-dpweak-bisim")        . ,in-out:aut->aut-dpweak-bisim)
     (("maut-weak-trace"         "aut-weak-trace")          . ,in-out:maut->aut)
     (("aut-weak-trace"          "aut-weak-trace+hide")     . ,in-out:lts-hide-internal-labels)
     (("maut-weak-trace"         "maut-weak-trace+hide")    . ,in-out:lts-hide-internal-labels)
-    (("maut-dpweak-bisim"       "aut-dpweak-bisim")        . ,in-out:maut->aut)
     (("aut-dpweak-bisim"        "aut-failures")            . ,in-out:aut->aut-failures)
+    (("dzn"                     "aut-cached")              . ,in-out:dzn->aut-cached)
     (("dzn"                     "aut-dpweak-bisim-cached") . ,in-out:dzn->aut-dpweak-bisim-cached)
     (("aut-dpweak-bisim-cached" "verify-interface")        . ,in-out:aut->verify-interface)
-    (("aut-dpweak-bisim-cached" "aut-weak-trace-cached")   . ,in-out:aut->aut-weak-trace)
+    (("aut-cached"              "aut-weak-trace-cached")   . ,in-out:aut->aut-weak-trace)
     (("aut-weak-trace-cached"   "verify-interface-nondet") . ,in-out:aut->verify-interface-nondet)
     (("aut-dpweak-bisim"        "verify-component")        . ,in-out:aut->verify-component)
     (("dzn"                     "aut+provides-aut")        . ,in-out:dzn->aut+provides-aut)

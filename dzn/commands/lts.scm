@@ -157,23 +157,24 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                        (with-input-from-port (current-input-port) read-string)
                        (with-input-from-file file-name read-string)))
              (lts (aut-text->lts text))
-             (lts-hide (lts-hide lts tau exclude-tau)))
+             (lts-hide (lts-hide lts tau exclude-tau))
+             (lts-hide-state (lts-hide-state (remove-state-loops lts-hide))))
         (when illegal?
           (report-result "illegal"
                          "LTS contains illegal events"
                          "LTS contains no illegal events"
-                         (assert-illegal lts-hide)))
+                         (assert-illegal lts-hide-state)))
         (when livelock?
           (report-result "livelock"
                          "tau loop found:"
                          "No tau loop found."
-                         (assert-livelock lts-hide)))
+                         (assert-livelock lts-hide-state)))
         (when deterministic-labels
           (report-result "deterministic"
                          "LTS is non-deterministic"
                          "LTS is deterministic"
                          (assert-nondeterministic lts-hide deterministic-labels)))
-        (let ((lts-failures (add-failures lts-hide)))
+        (let ((lts-failures (add-failures lts-hide-state)))
           (when deadlock?
             (report-result "deadlock"
                            "deadlock found:"
@@ -183,7 +184,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
             (report-result-unreachable "unreachable"
                                        "unreachable code found:"
                                        "No unreachable code found."
-                                       (assert-unreachable lts-hide unreachable)))
+                                       (assert-unreachable lts-hide-state unreachable)))
           (when failures?
             (let ((lts (if exclude-illegal? (remove-illegal lts-failures)
                            lts-failures)))

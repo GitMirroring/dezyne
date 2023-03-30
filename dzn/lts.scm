@@ -49,6 +49,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 
+  #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn peg)
   #:export (%<declarative-illegal>
@@ -73,11 +74,13 @@
             lts->rtc-lts
             lts->traces
             lts-hide
+            lts-hide-state
             make-shared-string
             node?
             node-edges
             node-state
-            remove-illegal))
+            remove-illegal
+            remove-state-loops))
 
 ;;; TODO:
 ;;; * functional style
@@ -237,11 +240,11 @@
   (let ((tau (map make-shared-string tau))
         (exclude-tau (map make-shared-string exclude-tau)))
     (define (set-edge-tau edge)
-      (let ((tau? (and (or (memq (edge-label edge) tau)
+      (let ((tau? (and (not (memq (edge-label edge) exclude-tau))
+                       (or (memq (edge-label edge) tau)
                            (find (cut string-prefix? <> (edge-label edge))
                                  (append (map (cute string-append <> ".") tau)
                                          (map (cute string-append <> "(") tau))))
-                       (not (memq (edge-label edge) exclude-tau))
                        #t)))
         (set-field edge (edge-tau?) tau?)))
     (define (set-edge-taus node)
@@ -357,10 +360,43 @@
                                 (trace lts (car livelock-nodes))))
          (loop-entry-node (and loop-entry-trace (car livelock-nodes)))
          (loop-trace (and loop-entry-node (tau-loop loop-entry-node lts))))
-    (if (null? livelock-nodes) #f
-        (append (or loop-entry-trace '())
-                (list (make-edge-loop))
-                (or loop-trace '())))))
+    (remove-state
+     (and (pair? livelock-nodes)
+          (append (or loop-entry-trace '())
+                  (list (make-edge-loop))
+                  (or loop-trace '()))))))
+
+
+;;;
+;;; State
+;;;
+
+(define (lts-hide-state lts)
+  (define (set-state-edge-tau edge)
+    (if (not (string-contains (edge-label edge) %<state>)) edge
+        (set-field edge (edge-label) %tau)))
+  (define (set-state-edge-taus node)
+    (let ((edges (map set-state-edge-tau (node-edges node))))
+      (set-field node (node-edges) edges)))
+  (vector-map-one set-state-edge-taus lts))
+
+(define (remove-state-loops lts)
+  (define (state-edge? edge)
+    (and (string-contains (edge-label edge) %<state>)
+         (= (edge-from edge) (edge-to edge))))
+  (define (remove-state node)
+    (let ((edges (filter (negate state-edge?) (node-edges node))))
+      (set-field node (node-edges) edges)))
+  (vector-map-one remove-state lts))
+
+(define (remove-state trace)
+  (and trace
+       (filter
+        (compose
+         not
+         (cute string-contains <> %<state>)
+         (cute edge-label <>))
+        trace)))
 
 
 ;;;
@@ -389,17 +425,10 @@
 ;;;
 ;;; Deadlock.
 ;;;
-(define (remove-state-edges lts)
-  (define (state-edge? edge)
-    (string-prefix? %<state> (edge-label edge)))
-  (define (remove-state node)
-    (let ((edges (filter (negate state-edge?) (node-edges node))))
-      (set-field node (node-edges) edges)))
-  (vector-map-one remove-state lts))
 
 (define (deadlock-nodes lts)
   "States without outgoing edges"
-  (let* ((lts (remove-state-edges lts))
+  (let* ((lts (remove-state-loops lts))
          (lts (annotate-exclude lts (list %<declarative-illegal>))))
     (define (edges? state)
       (let ((node (vector-ref lts state)))
@@ -416,7 +445,7 @@
   (let* ((deadlock-nodes (deadlock-nodes lts))
          (deadlock-trace (and (pair? deadlock-nodes)
                               (trace lts (car deadlock-nodes)))))
-    deadlock-trace))
+    (remove-state deadlock-trace)))
 
 (define (assert-unreachable lts tags)
   "Return any TAGS that are not present in LTS."
@@ -439,8 +468,9 @@
   "Trace to nodes without outgoing edges or #f if no deadlock found"
   (let* ((illegal-nodes (illegal-nodes lts))
          (illegal-trace (and (not (null? illegal-nodes)) (trace lts (car illegal-nodes)))))
-    (if (null? illegal-nodes) #f
-        illegal-trace)))
+    (remove-state
+     (if (null? illegal-nodes) #f
+         illegal-trace))))
 
 (define (nondeterministic-nodes lts labels)
   "Return states from LTS with multiple outgoing edges with same label
@@ -473,7 +503,7 @@ from LABELS."
                                       (append (trace lts nondeterministic-node)
                                               (if (equal? (edge-canonical-label nondeterministic-witness) %<state>) '()
                                                   (list nondeterministic-witness))))))
-    nondeterministic-trace))
+    (remove-state nondeterministic-trace)))
 
 
 ;;;
@@ -668,7 +698,6 @@ from LABELS."
            (lts (aut-text->lts text #:pred? #t))
            (lts (vector-map-one convert-node lts))
            (lts (if illegal? lts (remove-illegal lts)))
-           (lts (remove-state-edges lts))
            (initial (initial lts))
            (base (string-append model ".trace"))
            (dir (cond ((equal? out "-") #f)
@@ -749,14 +778,14 @@ from LABELS."
      blocking           <-- port-scope* identifier tick port- 'blocking'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      tau-reply          <-- port-name tick tau-reply-literal lpar scope* reply-value rpar
-     state              <-- port-name tick state-literal lpar state-arguments rpar
-     state-arguments    <-- port-name tick variables-literal (lpar state-argument (comma state-argument)* rpar)
+     state              <-- port-name tick state-literal lpar port-name tick state-arguments rpar
+     state-arguments    <-- void-literal / variables-literal (lpar state-argument (comma state-argument)* rpar)
      state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
      tag                <   tag-literal lpar int comma int rpar
      port-              <   'port_'
      port-name          <-  port-scope* identifier
-     port-scope         <   scope !(internal-literal / queue-direction / direction / reply-literal / tau-reply-literal / state-literal / variables-literal / port-? 'queue_full' / port-? 'flush' / port- 'blocking')
+     port-scope         <   scope !(void / void-literal / internal-literal / queue-direction / direction / reply-literal / tau-reply-literal / state-literal / variables-literal / port-? 'queue_full' / port-? 'flush' / port- 'blocking')
      event-name         <-  identifier
      reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
      bool-literal       <   'Bool'
@@ -795,19 +824,25 @@ from LABELS."
      rpar               <   [)]
      comma              <   [,][ ]*
      identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ / !direction [a-zA-Z_][a-zA-Z0-9_]*")
-  (let* ((match (match-pattern tree label))
-         (end (peg:end match))
-         (tree (peg:tree match)))
-    (if (eq? (string-length label) end)
-        (if (symbol? tree) '()
-            (cdr tree))
-        (if match
-            (begin
-              (format (current-error-port) "input: ~a\nparse error: at offset: ~a\n~s\n" label end tree)
-              #f)
-            (begin
-              (format (current-error-port) "parse error: no match\n")
-              #f)))))
+  (parameterize ((%peg:debug? (< 2 (dzn:debugity))))
+    (let* ((match? (match-pattern tree label))
+           (end (peg:end match?))
+           (tree (peg:tree match?))
+           (equal-length? (eq? (string-length label) end)))
+      (cond
+       ((and equal-length?
+             (symbol? tree))
+        '())
+       (equal-length?
+        (cdr tree))
+       (match?
+        (format (current-error-port)
+                "input: ~a\nparse error: at offset: ~a\n~s\n"
+                label end tree)
+        #f)
+       (else
+        (format (current-error-port) "parse error: no match\n")
+        #f)))))
 
 (define (cleanup-error e)
   (string-append "<" (string-map (lambda (c) (if (eq? c #\_) #\- c)) e) ">"))
@@ -835,8 +870,10 @@ from LABELS."
       (('reply ('identifier port) ('enum-literal scope ... ('identifier name) ('identifier field))) (string-append port "." name ":" field))
       (('reply ('identifier port) ('enum-literal (scope ... ('identifier name)) ('identifier field))) (string-append port "." name ":" field))
       (('return return) (and internal? "return"))
-      (('state ('identifier port) parameters) (string-append port ".<state>(" (helper-params parameters) ")"))
-      (('state ('identifier port)) (string-append port ".<state>"))
+      (('state ('identifier port) parameters) (string-append port "." %<state> (helper-params parameters) ")"))
+      (('state ('identifier port)) (string-append port "." %<state>))
+      (('state ('identifier port) ... 'state-arguments) (string-append (car port) "." %<state>))
+      (('state ('identifier port) ('identifier interface) ('state-arguments arguments ..1)) (string-append port "." %<state> "(" (helper arguments) ")"))
       (('state-arguments ('identifier interface) arguments) (helper arguments))
       ((('state-argument value) ..1) (string-join (map helper value) ","))
       (('state-argument value) (helper value))

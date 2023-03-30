@@ -139,6 +139,9 @@
   (and (ast:requires? o)
        (ast:blocking? o)))
 
+(define-method (makreel:switch-context? (o <action-reply>))
+  #t)
+
 (define-method (makreel:full-name (o <named>))
   (string-join (ast:full-name o) ""))
 
@@ -572,6 +575,7 @@
 (define (makreel:om ast)
   (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
     (let ((root ((compose
+                  makreel:add-action-reply
                   makreel:add-shared-variables
                   makreel:mark-tail-call
                   add-function-return
