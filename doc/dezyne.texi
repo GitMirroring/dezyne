@@ -1817,11 +1817,18 @@ error: component <name> is non-compliant with interface(s)\
 
 @item determinism
 Components in Dezyne are required to be deterministic.  The most common
-cause of non-determinism in a component is overlapping guards, i.e., in
-one state, for an event two different imperative statements are
-specified.  Upon violation the following error is reported:
+cause of non-determinism in a component is the ambiguous declaration of
+an event, often due to overlapping guards, i.e., in one state, for an
+event two different imperative statements are specified.  Upon violation
+the following error is reported:
 
-@code{error: component <name> is non-deterministic due to overlapping guards}
+@code{error: component <name> is non-deterministic}
+
+The event trace will indicate where and under which condition (state)
+the ambiguity occurs in the component behavior. Simulation of the
+corresponding event trace can be used to determine the exact location of
+the error in the input.
+
 @item queue full
 a Dezyne component has a queue where notification events are stored
 before they are processed.  During verification it is checked that that
