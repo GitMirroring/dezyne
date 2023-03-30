@@ -51,6 +51,7 @@
             ast:int
             ast:void
             ast:lookup
+            ast:lookup-variable
             ast:perfect-funcq
             ast:pure-funcq
             ast:unique-import*))
