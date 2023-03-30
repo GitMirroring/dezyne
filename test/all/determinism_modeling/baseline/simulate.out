@@ -1,11 +1,11 @@
 (header ((client) determinism_modeling provides) ((sut) determinism_modeling interface))
 (state ((client)) ((sut) (state . State:idle)))
-test/all/determinism_modeling/determinism_modeling.dzn:38:12: error: interface is unobservably non-deterministic
-test/all/determinism_modeling/determinism_modeling.dzn:37:12: error: interface is unobservably non-deterministic
+test/all/determinism_modeling/determinism_modeling.dzn:38:12: error: interface "determinism_modeling" is unobservably non-deterministic
+test/all/determinism_modeling/determinism_modeling.dzn:37:12: error: interface "determinism_modeling" is unobservably non-deterministic
 <non-deterministic>
 (state ((client)) ((sut) (state . State:idle)))
-test/all/determinism_modeling/determinism_modeling.dzn:38:12: error: interface is unobservably non-deterministic
-test/all/determinism_modeling/determinism_modeling.dzn:37:12: error: interface is unobservably non-deterministic
+test/all/determinism_modeling/determinism_modeling.dzn:38:12: error: interface "determinism_modeling" is unobservably non-deterministic
+test/all/determinism_modeling/determinism_modeling.dzn:37:12: error: interface "determinism_modeling" is unobservably non-deterministic
 (trail "<non-deterministic>")
 (labels "hello" "inevitable")
 (eligible)

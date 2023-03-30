@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -782,9 +782,14 @@ intermediate steps such as assignments, function calls, replies,
                                 (or (and=> (.ast (.status pc)) location-prefix)
                                     (location-prefix ast)))
                               pcs))
-              (message (if (is-a? (ast:parent ast <model>) <component>)
-                           "component is non-deterministic due to overlapping guards"
-                           "interface is unobservably non-deterministic")))
+              (model (ast:parent ast <model>))
+              (message (if (is-a? model <component>)
+                           (simple-format
+                            #f "component ~s is non-deterministic"
+                            (ast:dotted-name model))
+                           (simple-format
+                            #f "interface ~s is unobservably non-deterministic"
+                            (ast:dotted-name model)))))
          (string-join
           (map (cut format #f "~aerror: ~a\n" <> message) locations) "")))
       (($ <queue-full-error>)

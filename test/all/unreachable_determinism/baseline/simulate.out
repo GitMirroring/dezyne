@@ -1,13 +1,13 @@
 (header ((h) ihello provides) ((sut) unreachable_determinism component))
 (state ((h)) ((sut) (s . status:A)))
-test/all/unreachable_determinism/unreachable_determinism.dzn:43:26: error: component is non-deterministic due to overlapping guards
-test/all/unreachable_determinism/unreachable_determinism.dzn:45:20: error: component is non-deterministic due to overlapping guards
+test/all/unreachable_determinism/unreachable_determinism.dzn:43:26: error: component "unreachable_determinism" is non-deterministic
+test/all/unreachable_determinism/unreachable_determinism.dzn:45:20: error: component "unreachable_determinism" is non-deterministic
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <non-deterministic>
 (state ((h)) ((sut) (s . status:A)))
-test/all/unreachable_determinism/unreachable_determinism.dzn:43:26: error: component is non-deterministic due to overlapping guards
-test/all/unreachable_determinism/unreachable_determinism.dzn:45:20: error: component is non-deterministic due to overlapping guards
+test/all/unreachable_determinism/unreachable_determinism.dzn:43:26: error: component "unreachable_determinism" is non-deterministic
+test/all/unreachable_determinism/unreachable_determinism.dzn:45:20: error: component "unreachable_determinism" is non-deterministic
 (trail "h.hello" "<non-deterministic>")
 (labels "h.hello")
 (eligible)

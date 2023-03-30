@@ -1,2 +1,2 @@
-test/all/determinism_modeling/determinism_modeling.dzn:38:12: error: interface is unobservably non-deterministic
-test/all/determinism_modeling/determinism_modeling.dzn:37:12: error: interface is unobservably non-deterministic
+test/all/determinism_modeling/determinism_modeling.dzn:38:12: error: interface "determinism_modeling" is unobservably non-deterministic
+test/all/determinism_modeling/determinism_modeling.dzn:37:12: error: interface "determinism_modeling" is unobservably non-deterministic

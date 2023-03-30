@@ -1,15 +1,15 @@
 (header ((h) ihello provides) ((sut) determinism_out component) ((w) ihello requires))
 (state ((h)) ((sut)) ((w)))
-test/all/determinism_out/determinism_out.dzn:44:19: error: component is non-deterministic due to overlapping guards
-test/all/determinism_out/determinism_out.dzn:45:19: error: component is non-deterministic due to overlapping guards
+test/all/determinism_out/determinism_out.dzn:44:19: error: component "determinism_out" is non-deterministic
+test/all/determinism_out/determinism_out.dzn:45:19: error: component "determinism_out" is non-deterministic
 ... <- <external>.w.world
 sut.<q> <- ...
 ... <- sut.<q>
 sut.w.world <- ...
 <non-deterministic>
 (state ((h)) ((sut)) ((w)))
-test/all/determinism_out/determinism_out.dzn:44:19: error: component is non-deterministic due to overlapping guards
-test/all/determinism_out/determinism_out.dzn:45:19: error: component is non-deterministic due to overlapping guards
+test/all/determinism_out/determinism_out.dzn:44:19: error: component "determinism_out" is non-deterministic
+test/all/determinism_out/determinism_out.dzn:45:19: error: component "determinism_out" is non-deterministic
 (trail "w.world" "<non-deterministic>")
 (labels "h.hello" "w.world")
 (eligible)

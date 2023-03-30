@@ -1,13 +1,13 @@
 (header ((i) I provides) ((sut) determinism0 component) ((ii) I requires))
 (state ((i)) ((sut)) ((ii)))
-test/all/determinism0/determinism0.dzn:40:14: error: component is non-deterministic due to overlapping guards
-test/all/determinism0/determinism0.dzn:41:14: error: component is non-deterministic due to overlapping guards
+test/all/determinism0/determinism0.dzn:40:14: error: component "determinism0" is non-deterministic
+test/all/determinism0/determinism0.dzn:41:14: error: component "determinism0" is non-deterministic
 <external>.i.e -> ...
 ... -> sut.i.e
 <non-deterministic>
 (state ((i)) ((sut)) ((ii)))
-test/all/determinism0/determinism0.dzn:40:14: error: component is non-deterministic due to overlapping guards
-test/all/determinism0/determinism0.dzn:41:14: error: component is non-deterministic due to overlapping guards
+test/all/determinism0/determinism0.dzn:40:14: error: component "determinism0" is non-deterministic
+test/all/determinism0/determinism0.dzn:41:14: error: component "determinism0" is non-deterministic
 (trail "i.e" "<non-deterministic>")
 (labels "i.e")
 (eligible)
