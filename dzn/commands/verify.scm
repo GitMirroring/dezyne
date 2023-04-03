@@ -48,7 +48,6 @@
           '((all (single-char #\a))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
-            (jitty (single-char #\j))
             (model (single-char #\m) (value #t))
             (no-constraint (single-char #\C))
             (no-interfaces)
@@ -77,7 +76,6 @@ Check DZN-FILE for verification errors in Dezyne models
   -D, --no-non-compliance  report deadlock upon non-compliance
   -h, --help               display this help and exit
   -I, --import=DIR+        add DIR to import path
-  -j, --jitty              run lps2lts with --rewriter=jittyc
   -m, --model=MODEL        restrict verification to model MODEL
       --no-interfaces      skip interface verification
       --out=FORMAT         produce output FORMAT (use \"help\" for a list)

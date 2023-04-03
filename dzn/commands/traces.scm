@@ -53,7 +53,6 @@
             (help (single-char #\h))
             (illegal (single-char #\i))
             (import (single-char #\I) (value #t))
-            (jitty (single-char #\j))
             (lts (single-char #\l))
             (traces (single-char #\t))
             (model (single-char #\m) (value #t))
@@ -78,7 +77,6 @@ Generate exhaustive set of traces for Dezyne model
   -f, --flush                 include <flush> events in trace
   -h, --help                  display this help and exit
   -i, --illegal               include traces that lead to an illegal
-  -j, --jitty                 pass to lps2lts, for LARGE models
   -I, --import=DIR+           add DIR to import path
   -l, --lts                   also generate LTS
   -m, --model=MODEL           generate traces for model MODEL
@@ -104,9 +102,7 @@ Generate exhaustive set of traces for Dezyne model
     text))
 
 (define (model->lts root model file-name)
-  (let* ((jitty? (command-line:get 'jitty))
-         (lts (verify-pipeline (if jitty? "aut-weak-trace-jitty"
-                                   "aut-weak-trace")
+  (let* ((lts (verify-pipeline "aut-weak-trace"
                                root model))
          (lts (lts-hide-internal-labels lts)))
     (when (string-null? (string-trim-right lts))

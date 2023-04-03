@@ -3297,14 +3297,6 @@ Include traces that lead to an illegal.
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
 
-@item --jitty
-@itemx -j
-Run @command{lts2lps} with @option{--rewriter=jittyc}.  The
-@code{jittyc} rewriter can be much faster but it adds a performance
-penalty of a couple of minutes and it needs a functional compilation
-environment.  For @emph{large} models this may result in better
-performance.
-
 @item --lts
 @itemx -l
 Instead of generating trace files, generate an @var{lts} in Aldebaran
@@ -3372,11 +3364,6 @@ Display help on invoking @command{dzn verify}, and then exit.
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
-
-@item --jitty
-@itemx -j
-Run @command{lts2lps} with @option{--jitty}.  For @emph{large} models
-this may result in better performance.
 
 @item --model=@var{model}
 @itemx -m @var{model}
