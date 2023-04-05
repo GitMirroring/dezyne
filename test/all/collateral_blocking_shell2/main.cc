@@ -42,7 +42,7 @@ main ()
   locator.set (runtime);
   collateral_blocking_shell2 sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.w.meta.provide.name = "w";
+  sut.w.dzn_meta.provide.name = "w";
 
   std::future<void> f1, f2;
   sut.w.in.hello = [&]

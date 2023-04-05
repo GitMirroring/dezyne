@@ -43,7 +43,7 @@ int main()
   data_full sut(l);
 
   sut.dzn_meta.name = "sut";
-  sut.port.meta.require.name = "port";
+  sut.port.dzn_meta.require.name = "port";
 
   sut.port.out.a0 = [&]{
     std::cout << "port.a0()" << std::endl;

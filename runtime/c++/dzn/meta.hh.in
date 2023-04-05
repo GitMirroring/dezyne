@@ -65,8 +65,8 @@ int const version_patch = @VERSION_PATCH@;
     template <typename Port>
     void* other(Port& port)
     {
-      return (&port == port.meta.provide.port)
-        ? port.meta.require.port : port.meta.provide.port;
+      return (&port == port.dzn_meta.provide.port)
+        ? port.dzn_meta.require.port : port.dzn_meta.provide.port;
     }
   }
 

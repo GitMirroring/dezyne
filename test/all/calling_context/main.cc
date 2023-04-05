@@ -39,13 +39,13 @@ main ()
 
   calling_context sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
-  sut.h.meta.require.name = "h";
-  sut.w.meta.provide.name = "w";
+  sut.h.dzn_meta.require.name = "h";
+  sut.w.dzn_meta.provide.name = "w";
 
   sut.w.in.world = [&](int& cc, int i)
   {
     (void)i;
-    if (cc == 0){cc = 123;} else {assert(cc == 123); cc = 456;}
+    if (cc == 0) {cc = 123;} else {assert(cc == 123); cc = 456;}
   };
 
   int cc = 0;

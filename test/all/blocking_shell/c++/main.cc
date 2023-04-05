@@ -48,8 +48,8 @@ int main()
   dzn::runtime runtime;
   blocking_shell sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
-  sut.p.meta.require.name = "p";
-  sut.r.meta.provide.name = "r";
+  sut.p.dzn_meta.require.name = "p";
+  sut.r.dzn_meta.provide.name = "r";
 
   int output = 0;
   std::map<std::string, std::function<void()>> provides = {

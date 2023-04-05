@@ -37,8 +37,8 @@ main ()
 
   foreign_requires sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.c.w0.meta.provide.name = "w0";
-  sut.c.w1.meta.provide.name = "w1";
+  sut.c.w0.dzn_meta.provide.name = "w0";
+  sut.c.w1.dzn_meta.provide.name = "w1";
 
   sut.w0.in.hello = sut.w0.out.world;
   sut.w1.in.hello = sut.w1.out.world;

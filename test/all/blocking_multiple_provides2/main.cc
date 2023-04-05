@@ -43,8 +43,8 @@ int main ()
   locator.set(pump);
 
   sut.dzn_meta.name = "sut";
-  sut.w_left.meta.provide.name = "w_left";
-  sut.w_right.meta.provide.name = "w_right";
+  sut.w_left.dzn_meta.provide.name = "w_left";
+  sut.w_right.dzn_meta.provide.name = "w_right";
 
   sut.w_left.in.hello = [&]
   {

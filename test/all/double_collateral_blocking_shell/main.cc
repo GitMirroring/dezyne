@@ -39,8 +39,8 @@ int main()
   dzn::runtime runtime;
   double_collateral_blocking_shell sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
-  sut.la.meta.provide.name = "la";
-  sut.ra.meta.provide.name = "ra";
+  sut.la.dzn_meta.provide.name = "la";
+  sut.ra.dzn_meta.provide.name = "ra";
 
   bool toggle = true;
   sut.la.in.ping = [&]{

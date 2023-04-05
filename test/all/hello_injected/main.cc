@@ -41,8 +41,8 @@ int main()
 
   hello_injected sut(l);
   sut.dzn_meta.name = "sut";
-  sut.t.meta.require.name = "t";
-  sut.t.meta.require.component = 0;
+  sut.t.dzn_meta.require.name = "t";
+  sut.t.dzn_meta.require.component = 0;
   sut.t.out.f = [] () {};
 
   dzn::check_bindings(sut);

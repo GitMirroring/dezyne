@@ -45,7 +45,7 @@ main (int argc, char* argv[])
   locator.set (runtime);
   collateral_blocking_multiple_provides0 sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.r.meta.provide.name = "r";
+  sut.r.dzn_meta.provide.name = "r";
 
   sut.r.in.hello = [&]
   {

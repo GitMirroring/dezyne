@@ -37,10 +37,10 @@ main ()
   dzn::locator locator;
   collateral_blocking_reorder_parallel sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.eleft.meta.provide.name = "eleft";
-  sut.eright.meta.provide.name = "eright";
-  sut.rleft.meta.provide.name = "rleft";
-  sut.rright.meta.provide.name = "rright";
+  sut.eleft.dzn_meta.provide.name = "eleft";
+  sut.eright.dzn_meta.provide.name = "eright";
+  sut.rleft.dzn_meta.provide.name = "rleft";
+  sut.rright.dzn_meta.provide.name = "rright";
 
   bool once_left = true;
 

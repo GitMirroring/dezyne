@@ -56,17 +56,17 @@ main ()
 
   sut.dzn_meta.name = "sut";
 
-  sut.left.meta.require.name = "left";
-  sut.left.meta.require.port = &sut.left;
+  sut.left.dzn_meta.require.name = "left";
+  sut.left.dzn_meta.require.port = &sut.left;
 
-  sut.middle.meta.require.name = "middle";
-  sut.middle.meta.require.port = &sut.middle;
+  sut.middle.dzn_meta.require.name = "middle";
+  sut.middle.dzn_meta.require.port = &sut.middle;
 
-  sut.right.meta.require.name = "right";
-  sut.right.meta.require.port = &sut.right;
+  sut.right.dzn_meta.require.name = "right";
+  sut.right.dzn_meta.require.port = &sut.right;
 
-  sut.r.meta.provide.name = "r";
-  sut.r.meta.provide.port = &sut.r;
+  sut.r.dzn_meta.provide.name = "r";
+  sut.r.dzn_meta.provide.port = &sut.r;
 
   sut.r.in.hello = [&] {};
 

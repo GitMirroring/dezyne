@@ -53,14 +53,14 @@ main ()
   collateral_blocking_bridges sut (locator);
   sut.dzn_meta.name = "sut";
 
-  sut.top_w.meta.provide.name = "top_w";
-  sut.top_w.meta.provide.port = &sut.top_w;
+  sut.top_w.dzn_meta.provide.name = "top_w";
+  sut.top_w.dzn_meta.provide.port = &sut.top_w;
 
-  sut.middle_w.meta.provide.name = "middle_w";
-  sut.middle_w.meta.provide.port = &sut.middle_w;
+  sut.middle_w.dzn_meta.provide.name = "middle_w";
+  sut.middle_w.dzn_meta.provide.port = &sut.middle_w;
 
-  sut.bottom_w.meta.provide.name = "bottom_w";
-  sut.bottom_w.meta.provide.port = &sut.bottom_w;
+  sut.bottom_w.dzn_meta.provide.name = "bottom_w";
+  sut.bottom_w.dzn_meta.provide.port = &sut.bottom_w;
 
   sut.top_w.in.hello = [&] {};
   sut.middle_w.in.hello = [&] {};

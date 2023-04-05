@@ -34,8 +34,8 @@ int main()
 
   exception_wrappersWrapper sut(l.set(r));
   sut.impl.dzn_meta.name = "sut";
-  sut.impl.h.meta.require.name = "h";
-  sut.impl.w.meta.provide.name = "w";
+  sut.impl.h.dzn_meta.require.name = "h";
+  sut.impl.w.dzn_meta.provide.name = "w";
 
   sut.w.in.hello = [] {throw std::logic_error("foo");};
   sut.h.out.world = [] {throw std::logic_error("bar");};

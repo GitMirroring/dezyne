@@ -60,11 +60,11 @@ main (int argc, char **argv)
 
   sut.dzn_meta.name = "sut";
 
-  sut.h.meta.require.name = "h";
-  sut.h.meta.require.port = &sut.h;
+  sut.h.dzn_meta.require.name = "h";
+  sut.h.dzn_meta.require.port = &sut.h;
 
-  sut.w.meta.provide.name = "w";
-  sut.w.meta.provide.port = &sut.w;
+  sut.w.dzn_meta.provide.name = "w";
+  sut.w.dzn_meta.provide.port = &sut.w;
 
   sut.w.in.hello = [&] {};
 

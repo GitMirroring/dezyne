@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
     C c;
 
     c.sut.dzn_meta.name = "sut";
-    c.sut.ctrl.meta.requires = {"ctrl",0};
+    c.sut.ctrl.dzn_meta.requires = {"ctrl",0};
 
     c.sut.ctrl.out.calibrated = []{std::cout << "LegoBallSorter.calibrated" << std::endl;};
     c.sut.ctrl.out.finished = []{std::cout << "LegoBallSorter.finished" << std::endl;};
@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
 
 void connect(imotor& m, lego::USB::Device* brick, std::uint8_t port)
 {
-  m.meta.provides = {"imotor",&m};
+  m.dzn_meta.provides = {"imotor",&m};
 
   m.in.move     = [=] (std::int8_t power, std::int32_t position) {
     std::int32_t delta = position - brick->get_position(port);
@@ -216,7 +216,7 @@ void connect(imotor& m, lego::USB::Device* brick, std::uint8_t port)
 }
 void connect(ilight& l, lego::USB::Device* brick, std::uint8_t port)
 {
-  l.meta.provides = {"ilight",&l};
+  l.dzn_meta.provides = {"ilight",&l};
 
   l.in.turnon  = [=] {brick->set_input_mode(port, 0x05, 0x80);};
   l.in.turnoff = [=] {brick->set_input_mode(port, 0x06, 0x80);};
@@ -226,7 +226,7 @@ void connect(ilight& l, lego::USB::Device* brick, std::uint8_t port)
 }
 void connect(itouch& t, lego::USB::Device* brick, std::uint8_t port)
 {
-  t.meta.provides = {"itouch",&t};
+  t.dzn_meta.provides = {"itouch",&t};
 
   brick->set_input_mode(port, 0x01, 0x20);
   t.in.detect  = [=] {return brick->get_input_values(port) == 1 ?

@@ -57,8 +57,8 @@ main (int argc, char **argv)
 
   sut.dzn_meta.name = "sut";
 
-  sut.h.meta.require.name = "h";
-  sut.h.meta.require.port = &sut.h;
+  sut.h.dzn_meta.require.name = "h";
+  sut.h.dzn_meta.require.port = &sut.h;
 
   sut.h.out.world = [&] (int) {};
 

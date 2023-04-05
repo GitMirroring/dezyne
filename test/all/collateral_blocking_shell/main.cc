@@ -42,8 +42,8 @@ main ()
   locator.set (runtime);
   collateral_blocking_shell sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.w0.meta.provide.name = "w0";
-  sut.w1.meta.provide.name = "w1";
+  sut.w0.dzn_meta.provide.name = "w0";
+  sut.w1.dzn_meta.provide.name = "w1";
 
   bool cruel = false;
   sut.w0.in.hello = [&]

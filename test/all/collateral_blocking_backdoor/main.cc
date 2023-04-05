@@ -41,8 +41,8 @@ main ()
   locator.set (runtime);
   collateral_blocking_backdoor sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.w.meta.provide.name = "w";
-  sut.w.meta.provide.port = &sut.w;
+  sut.w.dzn_meta.provide.name = "w";
+  sut.w.dzn_meta.provide.port = &sut.w;
 
   sut.w.in.hello = [&] {};
 

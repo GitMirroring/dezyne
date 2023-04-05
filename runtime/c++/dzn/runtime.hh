@@ -171,8 +171,8 @@ namespace dzn
     , os(l.template get<typename std::ostream>())
     , reply("return")
     {
-      if(!qout) trace (os, port.meta, event_name);
-      else trace_qout(os, port.meta, event_name);
+      if(!qout) trace (os, port.dzn_meta, event_name);
+      else trace_qout(os, port.dzn_meta, event_name);
     }
     template <typename E, typename = typename std::enable_if<std::is_void<typename std::result_of<E()>::type>::value>::type>
     void operator()(E&& event)
@@ -193,7 +193,7 @@ namespace dzn
     }
     ~trace_wrapper()
     {
-      if(!qout) trace_out(os, port.meta, reply.c_str());
+      if(!qout) trace_out(os, port.dzn_meta, reply.c_str());
     }
   };
 
@@ -260,8 +260,8 @@ namespace dzn
   void wrap_out(C* component, P& port, E event, char const* name)
   {
     auto& os = component->dzn_locator.template get<typename std::ostream>();
-    trace_qin(os, port.meta, name);
-    component->dzn_runtime.enqueue(port.meta.provide.component, component,
+    trace_qin(os, port.dzn_meta, name);
+    component->dzn_runtime.enqueue(port.dzn_meta.provide.component, component,
                                    [component, &port, event, name] {
                                      event();
                                    }, coroutine_id(component->dzn_locator));
@@ -279,7 +279,7 @@ namespace dzn
   {
     if (p.dzn_peer) return e ();
     auto& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_qin(os, p.meta, name);
+    trace_qin(os, p.dzn_meta, name);
     return trace_wrapper<P>(c->dzn_locator, p, name, true)(e);
   }
 

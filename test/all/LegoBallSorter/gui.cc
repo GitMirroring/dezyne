@@ -380,7 +380,7 @@ int main(int argc, char* argv[])
     lego.button_stop.signal_clicked ().connect (sut.ctrl.in.stop);
 
     sut.dzn_meta.name = "sut";
-    sut.ctrl.meta.requires = {"ctrl",&sut};
+    sut.ctrl.dzn_meta.requires = {"ctrl",&sut};
 
     sut.ctrl.out.calibrated = []{std::cout << "LegoBallSorter.calibrated" << std::endl;};
     sut.ctrl.out.finished = []{std::cout << "LegoBallSorter.finished" << std::endl;};
@@ -434,13 +434,13 @@ namespace gui {
 
 void connect(imotor& m, Motor& g)
 {
-  m.meta.provides = {"imotor",&g.meta};
+  m.dzn_meta.provides = {"imotor",&g.dzn_meta};
 
   m.in.move     = [&] (std::int8_t power, std::int32_t position) {
 #if !SHORT_CIRCUIT
-    dzn::trace_in (std::clog, m.meta, "move");
+    dzn::trace_in (std::clog, m.dzn_meta, "move");
     g.target = position;
-    dzn::trace_out (std::clog, m.meta, "return");
+    dzn::trace_out (std::clog, m.dzn_meta, "return");
 #endif
   };
   m.in.run      = [&] (std::int8_t power, bool invert) {
@@ -460,15 +460,15 @@ void connect(imotor& m, Motor& g)
 
 void connect(itouch& t, Sensor& s)
 {
-  t.meta.provides = {"itouch",&s.meta};
+  t.dzn_meta.provides = {"itouch",&s.dzn_meta};
 
 #if !SHORT_CIRCUIT
   t.in.detect  = [&] {
-    dzn::trace_in (std::clog, t.meta, "detect");
+    dzn::trace_in (std::clog, t.dzn_meta, "detect");
     auto r = s.get_active()
       ? itouch::status::pressed
       : itouch::status::released;
-    dzn::trace_out (std::clog, t.meta, r == itouch::status::pressed ? "status_pressed" : "status_released");
+    dzn::trace_out (std::clog, t.dzn_meta, r == itouch::status::pressed ? "status_pressed" : "status_released");
     return r;
   };
 #else
@@ -478,7 +478,7 @@ void connect(itouch& t, Sensor& s)
 
 void connect(ilight& l, Sensor& s)
 {
-  l.meta.provides = {"ilight",&s.meta};
+  l.dzn_meta.provides = {"ilight",&s.dzn_meta};
   l.in.turnon  = [&] {s.set_sensitive(true);};
   l.in.turnoff = [&] {s.set_sensitive(false);};
 #if !SHORT_CIRCUIT

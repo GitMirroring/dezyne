@@ -40,8 +40,8 @@ main ()
 
   collateral_blocking_reorder sut(loc);
   sut.dzn_meta.name = "sut";
-  sut.r.meta.provide.name = "r";
-  sut.e.meta.provide.name = "e";
+  sut.r.dzn_meta.provide.name = "r";
+  sut.e.dzn_meta.provide.name = "e";
 
   bool once = true;
 

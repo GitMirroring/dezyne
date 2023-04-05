@@ -54,17 +54,17 @@ main ()
 
   sut.dzn_meta.name = "sut";
 
-  sut.block0.meta.require.name = "block0";
-  sut.block0.meta.require.port = &sut.block0;
+  sut.block0.dzn_meta.require.name = "block0";
+  sut.block0.dzn_meta.require.port = &sut.block0;
 
-  sut.block1.meta.require.name = "block1";
-  sut.block1.meta.require.port = &sut.block1;
+  sut.block1.dzn_meta.require.name = "block1";
+  sut.block1.dzn_meta.require.port = &sut.block1;
 
-  sut.release.meta.require.name = "release";
-  sut.release.meta.require.port = &sut.release;
+  sut.release.dzn_meta.require.name = "release";
+  sut.release.dzn_meta.require.port = &sut.release;
 
-  sut.w.meta.provide.name = "w";
-  sut.w.meta.provide.port = &sut.w;
+  sut.w.dzn_meta.provide.name = "w";
+  sut.w.dzn_meta.provide.port = &sut.w;
 
   sut.w.in.hello = [&] {};
   sut.w.in.cruel = [&] {};

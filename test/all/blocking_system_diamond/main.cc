@@ -41,8 +41,8 @@ main ()
   locator.set (runtime);
   blocking_system_diamond sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.r_left.meta.provide.name = "r_left";
-  sut.r_right.meta.provide.name = "r_right";
+  sut.r_left.dzn_meta.provide.name = "r_left";
+  sut.r_right.dzn_meta.provide.name = "r_right";
 
   sut.r_left.in.hello = [&] () {};
   sut.r_right.in.hello = [&] () {};
