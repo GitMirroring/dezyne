@@ -51,8 +51,7 @@
 ;;;
 (define-method (ast:eq? (a <ast>) (b <ast>))
   (or (eq? a b)
-      (and (ast:node-eq? a b)
-           (ast:eq? (.parent a) (.parent b)))))
+      (ast:node-eq? a b)))
 
 (define-method (ast:eq? (a <ast>) b)
   #f)
