@@ -456,7 +456,7 @@
       (make-triple on
                    (triple-guard t)
                    (and provides? (triple-blocking? t))
-                   (triple-statement t))))
+                   (deep-clone (triple-statement t)))))
   (define (split-triple-on t)
     (let* ((on (triple-on t))
            (triggers (ast:trigger* on))
