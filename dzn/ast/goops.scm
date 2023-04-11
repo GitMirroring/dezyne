@@ -65,7 +65,6 @@
                define-class
                define-generic
                define-method
-               deep-clone
                is-a?
                make))
 

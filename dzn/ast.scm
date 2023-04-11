@@ -166,6 +166,7 @@
                as
                ast-name
                clone
+               deep-clone
                drop-<>
                is?
                tree-collect
