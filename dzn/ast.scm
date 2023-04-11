@@ -735,13 +735,14 @@
 
 (define-method (ast:location o) #f)
 
-(define (ast:location->string o)
-  (let ((location (ast:location o)))
-    (and location
-         (format #f "~a:~a:~a"
-                 (.file-name location)
-                 (.line location)
-                 (.column location)))))
+(define-method (ast:location->string (o <top>))
+  #f)
+
+(define-method (ast:location->string (o <location>))
+  (format #f "~a:~a:~a" (.file-name o) (.line o) (.column o)))
+
+(define-method (ast:location->string (o <ast>))
+  (ast:location->string (ast:location o)))
 
 (define-method (ast:base-name (o <ast>))
   (basename (ast:source-file o) ".dzn"))
