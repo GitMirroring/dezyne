@@ -137,7 +137,7 @@
 
 (define-method (makreel:process-formals (o <ast>))
   (let* ((parameters (makreel:process-parameters o))
-         (continuations calls (makreel:call-continuations o))
+         (continuations calls (makreel:call-continuation* o))
          (return? (member o continuations ast:eq?))
          (return? (list-index (cute ast:eq? <> o) continuations))
          (call (and=> return? (cute list-ref calls <>)))
@@ -462,7 +462,7 @@
     (lambda (o)
       (or
        (assq-ref cache o)
-       (let* ((returns (makreel:call-continuations o))
+       (let* ((returns (makreel:call-continuation* o))
               (returns (delete-duplicates returns ast:eq?))
               (result
                (type (name (model-prefix "stack" o))
@@ -510,7 +510,7 @@
     (lambda (o)
       (or
        (assq-ref cache o)
-       (let* ((returns (makreel:call-continuations o))
+       (let* ((returns (makreel:call-continuation* o))
               (returns (delete-duplicates returns ast:eq?)))
          (and (pair? returns)
               (let ((result
@@ -1632,7 +1632,7 @@
   (define (variable->local v)
     (let ((name (.name v)))
       (simple-format #f "~a=~a (s)" name (variable-prefix "local" v))))
-  (let ((returns calls (makreel:call-continuations o)))
+  (let ((returns calls (makreel:call-continuation* o)))
     (if (null? returns) '()
         (list
          (process

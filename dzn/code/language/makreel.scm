@@ -49,7 +49,7 @@
   #:export (%model-name
             makreel:.name
             makreel:arguments
-            makreel:call-continuations
+            makreel:call-continuation*
             makreel:called-function*
             makreel:constraint
             makreel:defer*
@@ -255,7 +255,7 @@
                 (cut make <enum-literal> #:type.name (.name o) #:field <>))
        (ast:field* o)))
 
-(define-method (makreel:call-continuations (o <behavior>))
+(define-method (makreel:call-continuation*-unmemoized (o <behavior>))
   (let* ((calls (tree-collect (disjoin
                                (is? <call>)
                                (conjoin
@@ -270,16 +270,21 @@
                                   (cute member <> called ast:eq?))
                          (cute ast:parent <> <function>))
                         calls)))
-    (values (map (compose car ast:continuation*) calls)
-            calls)))
+    (cons (map (compose car ast:continuation*) calls)
+          calls)))
 
-(define-method (makreel:call-continuations (o <model>))
+(define-method (makreel:call-continuation* (o <behavior>))
+  (match ((ast:perfect-funcq makreel:call-continuation*-unmemoized) o)
+    ((continuations . calls)
+     (values continuations calls))))
+
+(define-method (makreel:call-continuation* (o <model>))
   (let ((behavior (.behavior o)))
-    (makreel:call-continuations behavior)))
+    (makreel:call-continuation* behavior)))
 
-(define-method (makreel:call-continuations (o <ast>))
+(define-method (makreel:call-continuation* (o <ast>))
   (let ((behavior (ast:parent o <behavior>)))
-    (makreel:call-continuations behavior)))
+    (makreel:call-continuation* behavior)))
 
 (define-method (makreel:stack-empty? (o <call>))
   (or (is-a? o <defer>)
