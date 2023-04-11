@@ -131,8 +131,6 @@
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
 (define-method (ast:port* (o <behavior>)) ((compose ast:port* .ports) o))
 (define-method (ast:statement* (o <behavior>)) ((compose ast:statement* .statement) o))
-(define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
-(define-method (ast:variable* (o <model>)) ((compose ast:variable* .behavior) o))
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
 (define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))
 (define-method (ast:type* (o <behavior>)) ((compose ast:type* .types) o))
