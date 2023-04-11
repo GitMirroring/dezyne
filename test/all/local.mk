@@ -89,6 +89,7 @@ HELLO_TESTS =					\
  %D%/hello_shared				\
  %D%/hello_system				\
  %D%/hello_system_reply				\
+ %D%/hello_trigger_list				\
  %D%/hello_two					\
  %D%/hello_usuk					\
  %D%/helloworld					\
