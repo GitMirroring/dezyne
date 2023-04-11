@@ -125,8 +125,11 @@
   (let ((parameters (makreel:process-parameters o)))
     (map .name parameters)))
 
-(define-method (makreel:defer* (o <ast>))
+(define-method (makreel:defer*-unmemoized (o <ast>))
   (tree-collect (is? <defer>) o))
+
+(define makreel:defer*
+  (ast:perfect-funcq makreel:defer*-unmemoized))
 
 (define-method (makreel:defer-skip? (o <model>))
   (and (is-a? o <component>)
