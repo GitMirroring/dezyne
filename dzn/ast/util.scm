@@ -41,6 +41,7 @@
             ast-name
             clone
             clone-base
+            deep-clone
             drop-<>
             is?
             tree-collect
@@ -150,6 +151,29 @@
       (apply clone-base-ast (cons o setters))
       (clone-base-ast o #:node (apply clone-base-node
                                       (cons (.node o) setters)))))
+
+(define-method (deep-clone (o <ast-node>))
+  (define (make-pair name)
+    (list (symbol->keyword name)
+          (deep-clone (slot-ref o name))))
+  (let* ((class (class-of o))
+         (slots (class-slots class))
+         (names (map slot-definition-name slots))
+         (names (filter (negate (cute eq? <> 'parent)) names))
+         (paired-members (map make-pair names)))
+    (apply make (cons class (apply append paired-members)))))
+
+(define-method (deep-clone (o <top>))
+  o)
+
+(define-method (deep-clone (o <pair>))
+  (cons (deep-clone (car o))
+        (deep-clone (cdr o))))
+
+(define-method (deep-clone (o <ast>))
+  ((@@ (dzn ast goops) make-wrapper)
+   (deep-clone (ast:unwrap o))
+   (.parent o)))
 
 (define-method (drop-<> (o <string>))
   (string-drop (string-drop-right o 1) 1))
