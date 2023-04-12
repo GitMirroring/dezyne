@@ -1942,7 +1942,7 @@
           interface-internal
           interface)))
 
-(define-method (interface->scmackerel (o <interface>))
+(define-method (interface->scmackerel-unmemoized (o <interface>))
   (let* ((model-name (ast:dotted-name o))
          (behavior (.behavior o))
          (enums (filter (is? <enum>) (append (ast:type* o)
@@ -1973,6 +1973,9 @@
                   ,@(if (not returns-type) '()
                         (list returns-type)))))
     (scmackerel (types types) (processes processes))))
+
+(define interface->scmackerel
+  (ast:perfect-funcq interface->scmackerel-unmemoized))
 
 (define-method (model->scmackerel (o <interface>))
   (makreel:proc-list (.behavior o))
