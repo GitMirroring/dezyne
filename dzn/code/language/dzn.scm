@@ -344,7 +344,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-ast-join (ast:type* o) port)
   (print-ast-join (ast:variable* o) port)
   (print-ast-join (ast:function* o) port)
-  (print-ast-join (ast:statement* o) port)
+  (print-ast-join (ast:statement* (.statement o)) port)
   (print-brace-close port))
 
 (define-method (print-ast (o <function>) port)
