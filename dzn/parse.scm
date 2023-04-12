@@ -199,12 +199,15 @@ FILE-NAME."
                    (%peg:locations? #t)
                    (%peg:skip? peg:skip-parse)
                    (%peg:debug? (> (dzn:debugity) 3)))
-      ;; in case of fall-back, try a regular parse first
+      ;; In case of fall-back, try a regular parse first
       (catch 'syntax-error
-        parse
+        (lambda () (values (parse) #f))
         (lambda (key . args)
-          (if fall-back? (parameterize ((%peg:fall-back? #t)) (parse))
-              (apply (peg:handle-syntax-error file-name string #:content-alist content-alist) key args)))))))
+          (if fall-back? (parameterize ((%peg:fall-back? #t))
+                           ((lambda () (values (parse) #t))))
+              (apply (peg:handle-syntax-error file-name string
+                                              #:content-alist content-alist)
+                     key args)))))))
 
 (define (string->fall-back-parse-tree text content-alist
                                       file-name error-collector)
@@ -223,16 +226,33 @@ FILE-NAME."
 
 parse CONTENT and return
 
-   '((FILE-NAME . PARSE-TREE)
-     (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...)
+'(((FILE-NAME . PARSE-TREE)
+  (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...) . PARSE-FAILED?)
 "
-  (map (match-lambda
-         ((file-name . content)
-          (cons file-name (string->parse-tree
-                           content
-                           #:file-name file-name
-                           #:content-alist alist))))
-       alist))
+  (define* (parse-filter alist #:key (filter-failed? #f))
+    (map (match-lambda
+           ((file-name . content)
+            (let ((parse-tree
+                   parse-failed?
+                   (string->parse-tree content
+                                       #:file-name file-name
+                                       #:content-alist alist)))
+              (if (and parse-failed? filter-failed?)
+                  (cons (cons file-name '()) parse-failed?)
+                  (cons (cons file-name parse-tree) parse-failed?)))))
+         alist))
+
+  (define (get-parse-status tree-status-alist)
+    (and (pair? tree-status-alist)
+         (or (cdar tree-status-alist)
+             (get-parse-status (cdr tree-status-alist)))))
+
+  (let* ((parse-tree-status-alist (parse-filter alist #:filter-failed? #t))
+         (parse-failed? (get-parse-status parse-tree-status-alist))
+         (parse-tree-alist (filter (compose pair? cdar)
+                                   parse-tree-status-alist))
+         (parse-tree-alist (map car parse-tree-alist)))
+    (values parse-tree-alist parse-failed?)))
 
 (define* (parse-tree-alist->ast alist #:key (content-alist '())
                                 (working-directory (getcwd)))
@@ -242,7 +262,6 @@ parse CONTENT and return
      (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...)
 
 using CONTENT-ALIST to transform locations."
-
   (define (expand-imports ast-alist)
     (let ((file (car ast-alist))
           (imports (cdr ast-alist)))
@@ -274,22 +293,27 @@ using CONTENT-ALIST to transform locations."
   "Parse FILE-NAME and return an ast.  When PARSE-TREE?, return the
 parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
 @var{debug?}, handle exceptions."
-
   (define (helper)
     (if (equal? file-name "-") (string->ast (read-string)
                                             #:parse-tree? parse-tree?
                                             #:skip-wfc? skip-wfc?
                                             #:transform transform)
-        (let* ((content-alist dir (file+import-content-alist file-name #:imports imports))
-               (parse-tree-alist (parse-file+import-content-alist content-alist)))
-          (if parse-tree? parse-tree-alist
+        (let* ((content-alist
+                dir
+                (file+import-content-alist file-name #:imports imports))
+               (parse-tree-alist
+                parse-failed?
+                (parse-file+import-content-alist content-alist))
+               (skip-ast? (or parse-tree? (null? parse-tree-alist))))
+          (if skip-ast? (values parse-tree-alist parse-failed?)
               (let* ((ast (parse-tree-alist->ast parse-tree-alist
                                                  #:content-alist content-alist
                                                  #:working-directory dir))
                      (ast (if skip-wfc? ast
                               (ast:wfc ast)))
                      (transform (map string->transformation transform)))
-                ((apply compose identity (reverse transform)) ast))))))
+                (values ((apply compose identity (reverse transform)) ast)
+                        parse-failed?))))))
 
   (catch (if debug? 'none #t)
     helper
@@ -340,15 +364,18 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
   "Parse STRING and return an ast.  When PARSE-TREE?, return the parse
 trees.  When SKIP-WFC? skip the well-formedness checks."
   (let* ((content-alist dir (string->file+import-content-alist string))
-         (parse-tree-alist (parse-file+import-content-alist content-alist)))
-    (if parse-tree? parse-tree-alist
+         (parse-tree-alist parse-failed? (parse-file+import-content-alist
+                                          content-alist))
+         (skip-ast? (or parse-tree? (null? parse-tree-alist))))
+    (if skip-ast? (values parse-tree-alist parse-failed?)
         (let* ((ast (parse-tree-alist->ast parse-tree-alist
                                            #:content-alist content-alist
                                            #:working-directory dir))
                (ast (if skip-wfc? ast
                         (ast:wfc ast)))
                (transform (map string->transformation transform)))
-          ((apply compose identity (reverse transform)) ast)))))
+          (values ((apply compose identity (reverse transform)) ast)
+                  parse-failed?)))))
 
 (define (string->file+import-content-alist string)
   "Split possibly pre-processed STRING at preprocessing markers

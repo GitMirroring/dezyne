@@ -27,12 +27,12 @@
 (define-module (dzn commands parse)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
 
   #:use-module (dzn ast serialize)
-
   #:use-module (dzn ast display)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
@@ -91,17 +91,19 @@ Parse a Dezyne file and produce an AST
     (parameterize ((%locations? locations?)
                    (%peg:fall-back? fall-back?)
                    (%peg:error (format-display-syntax-error file-name)))
-      (let ((ast (file->ast file-name
-                            #:debug? debug?
-                            #:imports imports
-                            #:parse-tree? parse-tree?
-                            #:skip-wfc? skip-wfc?
-                            #:transform transform)))
-        (if (not model-name) ast
-            (call-with-handle-exceptions
-             (lambda _ (ast:filter-model ast (ast:get-model ast model-name)))
-             #:backtrace? debug?
-             #:file-name file-name))))))
+      (let* ((ast parse-failed? (file->ast file-name
+                                           #:debug? debug?
+                                           #:imports imports
+                                           #:parse-tree? parse-tree?
+                                           #:skip-wfc? skip-wfc?
+                                           #:transform transform))
+             (ast (if (not model-name) ast
+                      (call-with-handle-exceptions
+                       (lambda _
+                         (ast:filter-model ast (ast:get-model ast model-name)))
+                       #:backtrace? debug?
+                       #:file-name file-name))))
+        (values ast parse-failed?)))))
 
 (define (preprocess options file-name)
   (let* ((imports (command-line:get 'import))
@@ -138,7 +140,7 @@ Parse a Dezyne file and produce an AST
            (display (preprocess options file-name)))
           (list-models? (list-models file-name))
           (else
-           (let ((ast (parse options file-name)))
+           (let ((ast parse-failed? (parse options file-name)))
              (if (option-ref options 'output #f)
                  (let* ((file-name (option-ref options 'output "-"))
                         (locations? (command-line:get 'locations))
@@ -151,4 +153,7 @@ Parse a Dezyne file and produce an AST
                    (if (equal? file-name "-") (display output)
                        (with-output-to-file file-name (cut display output))))
                  (when (dzn:command-line:get 'verbose)
-                   (display "parse: no errors found\n"))))))))
+                   (if parse-failed? (display "parse: errors found\n")
+                       (display "parse: no errors found\n"))))
+             (when parse-failed?
+               (exit EXIT_FAILURE)))))))
