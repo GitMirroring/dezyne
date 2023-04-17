@@ -4,6 +4,7 @@
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -169,6 +170,12 @@ output, and standard error as three values."
          (and=> (assq-ref alist flag)
                 (cute equal? <> '(#t))))))
 
+(define (fall-back? file-name)
+  (get-meta-flag file-name 'fall-back))
+
+(define (flush? file-name)
+  (get-meta-flag file-name 'flush))
+
 (define (queue-size file-name)
   (let ((alist (get-meta file-name)))
     (and alist
@@ -183,9 +190,6 @@ output, and standard error as three values."
   (let ((alist (get-meta file-name)))
     (and alist
          (and=> (assq-ref alist 'queue-size-external) car))))
-
-(define (flush? file-name)
-  (get-meta-flag file-name 'flush))
 
 (define (thread-pool? file-name)
   (get-meta-flag file-name 'thead-pool))
@@ -298,23 +302,28 @@ output, and standard error as three values."
                              '())))
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
+         (fall-back? (fall-back? file-name))
          (model (or (model? file-name) base-name))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
          (command
-          `("dzn" "--verbose" "verify"
-            ,@includes
-            "--all"
-            ,@(if (not queue-size) '()
-                  `("-q" ,(number->string queue-size)))
-            ,@(if (not queue-size-defer) '()
-                  `("--queue-size-defer" ,(number->string queue-size-defer)))
-            ,@(if (not queue-size-external) '()
-                  `("--queue-size-external"
-                    ,(number->string queue-size-external)))
-            ,@(if (model-unset? file-name) '() `("-m" ,model))
-            ,dzn-name)))
+          (if fall-back?
+              `("dzn" "--verbose" "parse" "--fall-back"
+                ,@includes
+                ,dzn-name)
+              `("dzn" "--verbose" "verify"
+                ,@includes
+                "--all"
+                ,@(if (not queue-size) '()
+                      `("-q" ,(number->string queue-size)))
+                ,@(if (not queue-size-defer) '()
+                      `("--queue-size-defer" ,(number->string queue-size-defer)))
+                ,@(if (not queue-size-external) '()
+                      `("--queue-size-external"
+                        ,(number->string queue-size-external)))
+                ,@(if (model-unset? file-name) '() `("-m" ,model))
+                ,dzn-name))))
     (or (skip? file-name "verify")
         (run-baseline file-name command
                       #:language "verify"))))

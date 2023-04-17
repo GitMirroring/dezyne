@@ -2,6 +2,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -26,6 +27,7 @@
 
 verify=false
 simulate=false
+parse=false
 if [ $1 = verify ]; then
     verify=true
     shift
@@ -36,9 +38,24 @@ if [ $1 = simulate ]; then
     shift
 fi
 
+if [ $1 = parse ]; then
+    parse=true
+    shift
+fi
 dir=$1
 echo $dir;
 base=$(basename $dir)
+
+if $parse; then
+    fall_back=$(grep -Eo 'fall-back #t' $dir/META | cut -d' ' -f 2 | tr -d '"')
+    if [ "$fall_back" = '#t' ]; then
+        fall_back=--fall-back
+    fi
+    mkdir -p $dir/baseline/verify
+    ./pre-inst-env dzn -v parse $fall_back $dir/$base.dzn     \
+        > $dir/baseline/verify.out                                   \
+        2> $dir/baseline/verify.err
+fi
 
 if $verify; then
     model=$(grep -Eo '[(]model [^)]*' $dir/META | cut -d' ' -f 2 | tr -d '"')
