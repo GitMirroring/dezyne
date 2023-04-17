@@ -6994,8 +6994,9 @@ In addition, Dezyne uses the following formatting for @code{if}
 
 @cindex indentation, of code
 @cindex formatting, of code
-If you do not use Emacs, please make sure to let your editor knows these
-rules.
+If you do not use Emacs, please make sure to let your editor knows the
+proper indentation rules, or use the @file{build-aux/indent.scm} script
+to fix the indentation.
 
 @node Submitting Patches
 @section Submitting Patches
