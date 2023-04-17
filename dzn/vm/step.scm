@@ -657,7 +657,7 @@
       (($ <function>)
        (let* ((formals (ast:formal* parent))
               (pc (pop-locals pc formals)))
-        (pop-pc pc)))
+         (pop-pc pc)))
       (_
        (function-return pc parent)))))
 

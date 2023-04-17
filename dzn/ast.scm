@@ -267,7 +267,7 @@
   (ast:optional? (.event o)))
 
 (define-method (ast:optional? (o <interface>))
- (pair? (ast:optional* o)))
+  (pair? (ast:optional* o)))
 
 (define-method (ast:blocking? (o <port>))
   (and (.blocking? o) o))
@@ -514,13 +514,13 @@
    (ast:out-triggers-in-events o)))
 
 (define-method (ast:optional* (o <ast>))
-   (match o
-     (($ <interface>) ((compose ast:optional* .behavior) o))
-     (($ <component>) '())
-     (($ <behavior>) (append-map ast:optional* (ast:statement* o)))
-     (($ <guard>) ((compose ast:optional* .statement) o))
-     (($ <on>) (filter (cut equal? "optional" <>) (map .event.name (ast:trigger* o))))
-     ((? (disjoin (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
+  (match o
+    (($ <interface>) ((compose ast:optional* .behavior) o))
+    (($ <component>) '())
+    (($ <behavior>) (append-map ast:optional* (ast:statement* o)))
+    (($ <guard>) ((compose ast:optional* .statement) o))
+    (($ <on>) (filter (cut equal? "optional" <>) (map .event.name (ast:trigger* o))))
+    ((? (disjoin (is? <declarative-compound>) (is? <compound>))) (append-map ast:optional* (ast:statement* o)))))
 
 (define-method (ast:type (o <action>))
   ((compose ast:type .event) o))
@@ -546,7 +546,7 @@
     ((? number?) (make <int>))
     (_ (make <void>))))
 (define-method (ast:type (o <literal>))
-(ast:literal-value->type (.value o)))
+  (ast:literal-value->type (.value o)))
 (define-method (ast:type (o <port>))
   (.type o))
 (define-method (ast:type (o <instance>))
@@ -654,7 +654,7 @@
   (let* ((ports (ast:provides-port* component))
          (interfaces (filter-map ast:type ports))
          (types (append-map ast:return-types interfaces)))
-   (delete-duplicates types ast:eq?)))
+    (delete-duplicates types ast:eq?)))
 
 (define-method (ast:values (o <type>) void)
   (cond
@@ -662,8 +662,8 @@
     (if void (list void) '()))
    ((as o <enum>)
     (let ((type (make <scope.name> #:ids (ast:full-name o))))
-     (map (cute make <enum-literal> #:type.name type #:field <>)
-          (ast:field* o))))
+      (map (cute make <enum-literal> #:type.name type #:field <>)
+           (ast:field* o))))
    ((as o <bool>)
     (map (cute make <literal> #:value <>) '("false" "true")))
    ((as o <subint>)
@@ -884,7 +884,7 @@ to bottom."
   o)
 
 (define-method (topological-sort (dag <list>) key)
-"Sort DAG topologically using function KEY, where DAG looks like
+  "Sort DAG topologically using function KEY, where DAG looks like
 
 @lisp
 ((a child-a-0 child a-1 ...)

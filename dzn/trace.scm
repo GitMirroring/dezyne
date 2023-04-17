@@ -42,15 +42,15 @@
 (define (trace-parse ascii)
   (define (-sexp- str len pos)
     (and (< pos len) (eq? #\( (string-ref str pos))
-     (catch #t
-       (lambda ()
-         (with-input-from-string (substring str pos len)
-           (lambda () (let* ((sexp (read))
-                             (end (+ pos (ftell (current-input-port)))))
-                        (list end (substring str pos end))))))
-       (lambda (key . args)
-         (warn 'sexp-parse-failed: key args)
-         #f))))
+         (catch #t
+           (lambda ()
+             (with-input-from-string (substring str pos len)
+               (lambda () (let* ((sexp (read))
+                                 (end (+ pos (ftell (current-input-port)))))
+                            (list end (substring str pos end))))))
+           (lambda (key . args)
+             (warn 'sexp-parse-failed: key args)
+             #f))))
   (define-peg-pattern sexp all -sexp-)
 
   (define-peg-string-patterns
@@ -709,8 +709,8 @@ ws               <   [ \t]
                                 (string-append
                                  (location-prefix communication #:from? #t)
                                  (substring life-line 0 (max 0 (1+ right-margin)))
-                                event
-                                (substring life-line (+ right-margin 2)))
+                                 event
+                                 (substring life-line (+ right-margin 2)))
                                 (string-append
                                  (location-prefix communication #:from? #f)
                                  (substring life-line 0 (max 0 (1+ right-margin)))

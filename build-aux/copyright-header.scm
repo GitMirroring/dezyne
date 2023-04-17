@@ -3,7 +3,7 @@
 !#
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -177,6 +177,7 @@ All rights reserved.
                          "git log -i --author='~a' --author='~a' \\
   --pretty=format:'Commit:  %H%nAuthor:  %aN <%aE>%nDate:    %ad%nMessage: %s%n' '~a' \\
 | recsel -i -e '!(Message ~~ \"copyright\")
+             && !(Message ~~ \"indent.scm\")
              && !(Message ~~ \"dezyne.org\")
              && !(Message ~~ \"Verum-Dezyne\")
              && !(Message ~~ \"email\")' \\
@@ -294,10 +295,10 @@ All rights reserved.
 (define (main args)
   (setenv "GIT_COMMIT" "HEAD")
   (match (command-line)
-      ((copyright-header)
-       (let* ((files (string-split (gulp-pipe "git ls-tree -r --name-only $GIT_COMMIT") #\newline))
-              (files (filter (negate skip?) files)))
-         (for-each fix-header files)))
-      ((copyright-header files ...)
-       (let ((files (filter (negate skip?) files)))
-         (for-each fix-header files)))))
+    ((copyright-header)
+     (let* ((files (string-split (gulp-pipe "git ls-tree -r --name-only $GIT_COMMIT") #\newline))
+            (files (filter (negate skip?) files)))
+       (for-each fix-header files)))
+    ((copyright-header files ...)
+     (let ((files (filter (negate skip?) files)))
+       (for-each fix-header files)))))

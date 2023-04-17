@@ -277,11 +277,11 @@
        (map .name ((compose ast:requires-port* .type .ast) o))))
 
 (define* (runtime:find-instance name #:key container boundary?)
-    (find (lambda (i)
-            (and (runtime:container-eq? (.container i) container)
-                 (equal? (.name (.ast i)) name)
-                 (equal? (.boundary? i) boundary?)))
-          (%instances)))
+  (find (lambda (i)
+          (and (runtime:container-eq? (.container i) container)
+               (equal? (.name (.ast i)) name)
+               (equal? (.boundary? i) boundary?)))
+        (%instances)))
 
 (define-method (ast:sorted-instance* (o <system>))
   (define (end-point-direction? end-point direction instance)
@@ -346,10 +346,10 @@
 
   (define (injected-instances instances)
     (filter (conjoin (is? <runtime:port>)
-                                   (compose ast:injected? .ast)
-                                   (negate runtime:boundary-port?)
-                                   (negate runtime:other-port))
-                          instances))
+                     (compose ast:injected? .ast)
+                     (negate runtime:boundary-port?)
+                     (negate runtime:other-port))
+            instances))
 
   (define (make-injected-boundary port)
     (make <runtime:port>

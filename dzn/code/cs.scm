@@ -141,11 +141,11 @@
               args))))
 
 (define (expression+formal->argument a f)
-         (if (not (is-a? a <named>)) a
-             (make <argument>
-               #:name (.name a)
-               #:type.name (.type.name f)
-               #:direction (.direction f))))
+  (if (not (is-a? a <named>)) a
+      (make <argument>
+        #:name (.name a)
+        #:type.name (.type.name f)
+        #:direction (.direction f))))
 
 (define-method (cs:arguments (o <call>))
   (map expression+formal->argument
@@ -190,7 +190,7 @@
 (define-method (cs:formal-bindings (o <trigger>))
   (let ((on (or (ast:parent o <on>)
                 (let ((trigger (car (tree-collect (cute ast:equal? o <>)
-                                                   (ast:parent o <behavior>)))))
+                                                  (ast:parent o <behavior>)))))
                   (ast:parent trigger <on>)))))
     (cs:formal-bindings on)))
 
@@ -226,9 +226,9 @@
         o)))
 
 (define (cs:return-statement o)
- (let ((type (return-type o)))
-   (if (is-a? type <void>) '()
-       o)))
+  (let ((type (return-type o)))
+    (if (is-a? type <void>) '()
+        o)))
 
 (define (cs:return-temporary-assign o)
   (let ((type (return-type o)))

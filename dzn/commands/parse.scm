@@ -76,7 +76,7 @@ Parse a Dezyne file and produce an AST
   -t, --parse-tree       write PEG parse tree
   -o, --output=FILE      write AST to FILE (\"-\" for standard output)
 ")
-          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
+        (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
 (define (parse options file-name)

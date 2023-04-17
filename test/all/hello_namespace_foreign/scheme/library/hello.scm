@@ -22,19 +22,19 @@
   #:use-module (dzn runtime)
   #:duplicates (merge-generics)
   #:export (<library:ihello>
-    <library:ihello.in>
-    <library:ihello.out>
-    .hello
-    .goodbye
-    <library:hello>
-    .h
-    .w
-    .b
-    <library:iworld>
-    <library:iworld.in>
-    <library:iworld.out>
-    .world
-    .howdy))
+            <library:ihello.in>
+            <library:ihello.out>
+            .hello
+            .goodbye
+            <library:hello>
+            .h
+            .w
+            .b
+            <library:iworld>
+            <library:iworld.in>
+            <library:iworld.out>
+            .world
+            .howdy))
 
 (define true #t)
 (define false #f)
@@ -68,47 +68,47 @@
 (define-method (initialize (o <library:hello>) args)
   (next-method o (cons* #:flushes? #t args))
   (set! (.h o)
-    (make <library:ihello>
-      #:in (make <library:ihello.in>
-        #:name "h"
-        #:self o
-        #:hello (lambda args
-          (call-in o
-            (lambda _
-              (apply h-hello (cons o args))
-              (dzn:flush o)
-              *unspecified*)
-            `(,(.h o) "hello"))))
-      #:out (make <library:ihello.out>)))
+        (make <library:ihello>
+          #:in (make <library:ihello.in>
+                 #:name "h"
+                 #:self o
+                 #:hello (lambda args
+                           (call-in o
+                                    (lambda _
+                                      (apply h-hello (cons o args))
+                                      (dzn:flush o)
+                                      *unspecified*)
+                                    `(,(.h o) "hello"))))
+          #:out (make <library:ihello.out>)))
   (set! (.w o)
-    (make <library:iworld>
-      #:in (make <library:iworld.in>)
-      #:out (make <library:iworld.out>
-        #:name "w"
-        #:self o
-        #:howdy (lambda args
-          (call-out o
-            (lambda _
-              (apply w-howdy (cons o args))
-              (dzn:flush o)
-              *unspecified*)
-            `(,(.w o) "howdy")))))))
+        (make <library:iworld>
+          #:in (make <library:iworld.in>)
+          #:out (make <library:iworld.out>
+                  #:name "w"
+                  #:self o
+                  #:howdy (lambda args
+                            (call-out o
+                                      (lambda _
+                                        (apply w-howdy (cons o args))
+                                        (dzn:flush o)
+                                        *unspecified*)
+                                      `(,(.w o) "howdy")))))))
 
 (define-method (h-hello (o <library:hello>))
   (cond (true
-      (let ()
-        *unspecified*
-        (set! (.b o) false)
-        (action o .w .in .world )))
-    (false
-      (((compose .illegal .runtime) o)))))
+         (let ()
+           *unspecified*
+           (set! (.b o) false)
+           (action o .w .in .world )))
+        (false
+         (((compose .illegal .runtime) o)))))
 
 (define-method (w-howdy (o <library:hello>))
   (cond ((not (.b o))
-      (let ()
-        *unspecified*
-        (set! (.b o) true)
-        (action o .h .out .goodbye )))
-    ((.b o)
-      (((compose .illegal .runtime) o)))
-    (else ((compose .illegal .runtime) o))))
+         (let ()
+           *unspecified*
+           (set! (.b o) true)
+           (action o .h .out .goodbye )))
+        ((.b o)
+         (((compose .illegal .runtime) o)))
+        (else ((compose .illegal .runtime) o))))

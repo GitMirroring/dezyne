@@ -79,10 +79,10 @@
   (and (pair? (.ids a)) (pair? (.ids b)) (ast:name-equal? (ast:name a) (ast:name b))))
 
 (define-method (ast:name-equal? (a <named>) (b <string>))
-    (ast:name-equal? (.name a) b))
+  (ast:name-equal? (.name a) b))
 
 (define-method (ast:name-equal? (b <string>) (a <named>))
-    (ast:name-equal? a b))
+  (ast:name-equal? a b))
 
 (define-method (ast:name-equal? a b)
   #f)
@@ -103,7 +103,7 @@
 
 (define-method (ast:equal? (a <declaration>) (b <declaration>))
   (and (eq? (class-of a) (class-of b))
-   (equal? (ast:full-name a) (ast:full-name b))))
+       (equal? (ast:full-name a) (ast:full-name b))))
 
 (define-method (ast:equal? (a <named>) (b <named>))
   (ast:equal? (.name a) (.name b)))

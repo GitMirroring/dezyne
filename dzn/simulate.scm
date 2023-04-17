@@ -717,14 +717,14 @@ status."
                        trace))
                (port-index
                 (list-index
-                       (conjoin
-                        (compose (is? <runtime:port>) .instance)
-                        (compose (is? <initial-compound>) .statement))
-                       trace)))
+                 (conjoin
+                  (compose (is? <runtime:port>) .instance)
+                  (compose (is? <initial-compound>) .statement))
+                 trace)))
           (if (not port-index) (values trace '())
-               ;; PORT-INDEX: port <initial-compound>
-               ;; PORT-INDEX+1: port rtc
-               ;; PORT-INDEX+2: EOT or start of continuation
+              ;; PORT-INDEX: port <initial-compound>
+              ;; PORT-INDEX+1: port rtc
+              ;; PORT-INDEX+2: EOT or start of continuation
               (let ((port-index (min (+ port-index 2) (length trace))))
                 (split-at trace port-index))))))
 
@@ -977,7 +977,7 @@ refusals-check at EOT."
       (ast:pretty-print root (current-error-port)))
     (unless model
       (let ((file-name (ast:source-file root)))
-       (format (current-error-port) "~a: No dezyne model found.\n" file-name))
+        (format (current-error-port) "~a: No dezyne model found.\n" file-name))
       (exit EXIT_OTHER_FAILURE))
     (let* ((sut (runtime:get-sut root model))
            (instances (runtime:create-instances sut)))

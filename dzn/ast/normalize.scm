@@ -324,7 +324,7 @@
          (expression (simplify-expression expression)))
     (if (or (is-a? expression <unary>)
             (is-a? expression <field-test>)) expression
-        (clone o #:expression expression))))
+            (clone o #:expression expression))))
 
 (define-method (simplify-expression (o <expression>))
   o)
@@ -839,7 +839,7 @@ to prevent unintended shadowing
   (match o
     (($ <defer>)
      (let ((statement (add-defer-end (.statement o))))
-      (clone o #:statement (add-end statement))))
+       (clone o #:statement (add-end statement))))
     (($ <blocking>)
      (clone o #:statement (add-defer-end (.statement o))))
     (($ <on>)
@@ -880,7 +880,7 @@ to prevent unintended shadowing
     (($ <guard>) (clone o #:statement (add-reply-port (.statement o) port block?)))
     (($ <compound>) (clone o #:elements (map (cut add-reply-port <> port block?) (ast:statement* o))))
     (($ <behavior>) (clone o #:statement (add-reply-port (.statement o) port block?)
-                            #:functions (add-reply-port (.functions o) port block?)))
+                           #:functions (add-reply-port (.functions o) port block?)))
     ((? (%normalize:short-circuit?)) o)
     (($ <component>) (clone o #:behavior (add-reply-port (.behavior o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
     (($ <interface>) o)
@@ -1127,7 +1127,7 @@ expressions explicit."
 (define (add-determinism-temporaries o)
   "Make evaluation order of noisy expressions deterministic by adding
 explitic temporaries."
-    (parameterize ((%noisy-ordering? #t))
+  (parameterize ((%noisy-ordering? #t))
     (add-explicit-temporaries o)))
 
 (define (split-complex-expressions o)

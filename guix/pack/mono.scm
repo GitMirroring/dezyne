@@ -62,8 +62,8 @@
          (add-after 'unpack 'make-reproducible
            (lambda _
              (substitute* "mono/mini/Makefile.in"
-              (("build_date = [^;]*;")
-               "build_date = (void*) 0;"))
+               (("build_date = [^;]*;")
+                "build_date = (void*) 0;"))
              #t))
          (add-after 'unpack 'set-env
            (lambda _ ;;* (#:key inputs #:allow-other-keys)
@@ -76,8 +76,8 @@
            (lambda _
              ;; makedev is in <sys/sysmacros.h> now.  Include it.
              (substitute* "mono/io-layer/processes.c"
-              (("#ifdef HAVE_SYS_MKDEV_H") "#if 1")
-              (("sys/mkdev.h") "sys/sysmacros.h"))
+               (("#ifdef HAVE_SYS_MKDEV_H") "#if 1")
+               (("sys/mkdev.h") "sys/sysmacros.h"))
              #t))
          (add-after 'unpack 'patch-tests
            (lambda _  ;;* (#:key inputs #:allow-other-keys)

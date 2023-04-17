@@ -103,10 +103,10 @@
   (set! (.components (.runtime o)) (append (.components (.runtime o)) (list o))))
 
 (define-class <dzn:component> (<dzn:component-model>)
- (handling? #:accessor .handling? #:init-value #f #:init-keyword #:handling?)
- (flushes? #:accessor .flushes? #:init-value #f #:init-keyword #:flushes?)
- (deferred? #:accessor .deferred? #:init-value #f #:init-keyword #:deferred?)
- (dzn-q #:accessor .dzn-q #:init-form (make-q) #:init-keyword #:dzn-q))
+  (handling? #:accessor .handling? #:init-value #f #:init-keyword #:handling?)
+  (flushes? #:accessor .flushes? #:init-value #f #:init-keyword #:flushes?)
+  (deferred? #:accessor .deferred? #:init-value #f #:init-keyword #:deferred?)
+  (dzn-q #:accessor .dzn-q #:init-form (make-q) #:init-keyword #:dzn-q))
 
 (define-class <dzn:system> (<dzn:component-model>))
 
@@ -143,8 +143,8 @@
 
 (define (dzn:path o)
   (let* ((path (let loop ((o o))
-                (if (not o) '()
-                    (cons o (loop (.parent o))))))
+                 (if (not o) '()
+                     (cons o (loop (.parent o))))))
          (path (reverse path)))
     (cons (dzn:type-name (car path)) (map .name (cdr path)))))
 
@@ -244,9 +244,9 @@
   (let ((log (dzn:get (.locator o) <procedure> "trace")))
     (apply dzn:trace-qin (cons log m))
     (enqueue (.self (.in (car m))) o
-      (lambda _
-        (apply dzn:trace-qout (cons log m))
-        (f)))
+             (lambda _
+               (apply dzn:trace-qout (cons log m))
+               (f)))
     (dzn:prune-deferred o)))
 
 (define* (path o #:optional (p ""))
@@ -256,7 +256,7 @@
                                      (not (string-null? p))) "." "") p)))
     (cond
      ((not o) (string-append "<external>" (if (string-null? p) "" ".") p))
-    ((is-a? o <dzn:port>) (path (.self o) pp))
+     ((is-a? o <dzn:port>) (path (.self o) pp))
      ((and (is-a? o <dzn:model>) (.parent o)) (path (.parent o) pp))
      (else pp))))
 

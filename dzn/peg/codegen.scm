@@ -77,28 +77,28 @@ return EXP."
 (define (cg-generic-ret accum name body-uneval at)
   ;; name, body-uneval and at are syntax
   #`(let ((body #,body-uneval))
-     #,(cond
-        ((and (eq? accum 'all) name)
-         #`(list #,at
-                 (cond
-                  ((not (list? body)) (list '#,name body))
-                  ((null? body) '#,name)
-                  ((symbol? (car body)) (list '#,name body))
-                  (else (cons '#,name body)))))
-        ((eq? accum 'name)
-         #`(list #,at '#,name))
-        ((eq? accum 'body)
-         #`(list #,at
-                 (cond
-                  ((single? body) (car body))
-                  (else body))))
-        ((eq? accum 'none)
-         #`(list #,at '()))
-        (else
-         (begin
-           (pretty-print `(cg-generic-ret-error ,accum ,name ,body-uneval ,at))
-           (pretty-print "Defaulting to accum of none.\n")
-           #`(list #,at '()))))))
+      #,(cond
+         ((and (eq? accum 'all) name)
+          #`(list #,at
+                  (cond
+                   ((not (list? body)) (list '#,name body))
+                   ((null? body) '#,name)
+                   ((symbol? (car body)) (list '#,name body))
+                   (else (cons '#,name body)))))
+         ((eq? accum 'name)
+          #`(list #,at '#,name))
+         ((eq? accum 'body)
+          #`(list #,at
+                  (cond
+                   ((single? body) (car body))
+                   (else body))))
+         ((eq? accum 'none)
+          #`(list #,at '()))
+         (else
+          (begin
+            (pretty-print `(cg-generic-ret-error ,accum ,name ,body-uneval ,at))
+            (pretty-print "Defaulting to accum of none.\n")
+            #`(list #,at '()))))))
 
 ;; The short name makes the formatting below much easier to read.
 (define cggr cg-generic-ret)
@@ -224,8 +224,8 @@ return EXP."
 (define (partial-match kernel sym)
   (lambda (str strlen at)
     (catch 'syntax-error
-           (lambda _ (kernel str strlen at))
-           (lambda (key . args) (and (< at (caar args)) (car args))))))
+      (lambda _ (kernel str strlen at))
+      (lambda (key . args) (and (< at (caar args)) (car args))))))
 
 ;; Top-level function builder for AND.  Reduces to a call to CG-AND-INT.
 (define (cg-and clauses accum)
@@ -324,8 +324,8 @@ return EXP."
                    (lp new-end count)
                    (let ((success #,#t))
                      #,#`(and success
-                                 #,(cggr (baf accum) 'cg-body
-                                         #'(reverse body) #'new-end)))))))))))
+                              #,(cggr (baf accum) 'cg-body
+                                      #'(reverse body) #'new-end)))))))))))
 
 (define (cg-followed-by args accum)
   (syntax-case args ()
@@ -363,8 +363,8 @@ return EXP."
                    (lp new-end count)
                    (let ((success #,#'(= count 1)))
                      #,#`(if success
-                                #f
-                                #,(cggr (baf accum) 'cg-body #''() #'at)))))))))))
+                             #f
+                             #,(cggr (baf accum) 'cg-body #''() #'at)))))))))))
 
 (define (cg-expect-int clauses accum str strlen at)
   (syntax-case clauses ()
@@ -402,9 +402,9 @@ return EXP."
     (peg-any
      (cg-peg-any (baf accum)))
     (sym (identifier? #'sym) ;; nonterminal
-     #'sym)
+         #'sym)
     (str (string? (syntax->datum #'str)) ;; literal string
-     (cg-string (syntax->datum #'str) (baf accum)))
+         (cg-string (syntax->datum #'str) (baf accum)))
     ((name . args) (let* ((nm (syntax->datum #'name))
                           (entry (assq-ref peg-compiler-alist nm)))
                      (if entry

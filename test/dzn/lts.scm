@@ -109,17 +109,17 @@
 
 (define (test:lts-hide)
   (and (equal?
-         (lts-edges
-           (make-lts 0
-                     2
-                     (list (make-edge 0 "aap" 1 #:tau? #t)
-                     (make-edge 1 "return" 0))))
-         (lts-edges
-           (lts-hide (make-lts 0
-                               2
-                               (list (make-edge 0 "aap" 1)
-                                     (make-edge 1 "return" 0)))
-                     '("aap") '())))
+        (lts-edges
+         (make-lts 0
+                   2
+                   (list (make-edge 0 "aap" 1 #:tau? #t)
+                         (make-edge 1 "return" 0))))
+        (lts-edges
+         (lts-hide (make-lts 0
+                             2
+                             (list (make-edge 0 "aap" 1)
+                                   (make-edge 1 "return" 0)))
+                   '("aap") '())))
        (equal? (make-lts 0
                          2
                          (list (make-edge 0 "aap(0)" 1 #:tau? #t)
@@ -156,7 +156,7 @@
                  (lts-tau-loops lts)))
        (equal? '(5)
                (let ((lts (lts-hide (aut-file->lts "test/lts/double-entry.aut")
-                                      '("listIt'return" "listIt'event" "ListIt'flush") '())))
+                                    '("listIt'return" "listIt'event" "ListIt'flush") '())))
                  (lts-tau-loops lts)))))
 
 (test-assert (test:lts-tau-loops))

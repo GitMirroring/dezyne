@@ -112,7 +112,7 @@
          (models (filter (negate
                           (disjoin (is? <type>) (is? <namespace>)
                                    ast:imported?))
-                      models))
+                         models))
          (models (ast:topological-model-sort models))
          (models (map code:annotate-shells models)))
     models))

@@ -41,8 +41,8 @@
 
 (define (pipe->fdes)
   (let ((p (pipe)))
-   (cons (port->fdes (car p))
-         (port->fdes (cdr p)))))
+    (cons (port->fdes (car p))
+          (port->fdes (cdr p)))))
 
 (define* (pipeline commands #:key output-port)
   "Execute a pipeline of COMMANDS, feeding INPUT to the first command.
@@ -128,7 +128,7 @@ program and its arguments as strings.  Return two values: #f, and a sum
 of the output stati of the pipeline COMMANDS."
   (define (pipeline-with-input commands input)
     (let ((output-port input-port pids
-             (pipeline commands #:output-port (current-output-port))))
+                       (pipeline commands #:output-port (current-output-port))))
       (display input output-port)
       (close output-port)
       (false-if-exception (close input-port))

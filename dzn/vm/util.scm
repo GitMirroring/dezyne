@@ -249,7 +249,7 @@
                                    ((string-prefix? command ",show w")
                                     (display %warranty-info)))))))
 (define %help-info
-"Help Commands:
+  "Help Commands:
 
  ,help                    This help.
  ,quit                    Quit this session
@@ -882,7 +882,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
         (let ((error (make <queue-full-error> #:ast ast  #:instance instance
                            #:message "queue-full")))
           (clone pc #:status error))
-     (set-deferred (set-state pc (clone state #:q (append q (list trigger)))) instance))))
+        (set-deferred (set-state pc (clone state #:q (append q (list trigger)))) instance))))
 
 (define-method (dequeue (pc <program-counter>))
   (let* ((state (get-state pc))
@@ -1014,8 +1014,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (set-state pc (clone (get-state pc instance) #:reply '())))
 
 (define-method (reset-reply (pc <program-counter>) (instance <runtime:instance>) (port <string>))
-(let ((reply (.reply (get-state pc instance))))
-  (set-state pc (clone (get-state pc instance) #:reply (alist-delete port reply)))))
+  (let ((reply (.reply (get-state pc instance))))
+    (set-state pc (clone (get-state pc instance) #:reply (alist-delete port reply)))))
 
 (define-method (reset-reply (pc <program-counter>) (port <string>))
   (reset-reply pc (.instance pc) port))
@@ -1103,7 +1103,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (pc (set-state pc state))
          (error (range-error variable value)))
     (if (not error) pc
-     (clone pc #:status error))))
+        (clone pc #:status error))))
 
 (define-method (assign (pc <program-counter>) (variable <variable>) (e <expression>))
   (next-method))
@@ -1555,7 +1555,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (pc (make <program-counter> #:id id #:state system-state #:trail trail))
          (pc (if (null? errors) pc
                  (clone pc #:status (car errors)))))
-  pc))
+    pc))
 
 (define-method (make-implicit-illegal (pc <program-counter>) (o <ast>))
   (let ((illegal (make <implicit-illegal-error> #:ast o #:message "illegal")))

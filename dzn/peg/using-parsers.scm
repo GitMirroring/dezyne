@@ -22,8 +22,8 @@
   #:use-module (dzn peg cache)
   #:use-module (srfi srfi-9)
   #:export (match-pattern define-peg-pattern search-for-pattern
-            prec make-prec peg:start peg:end peg:string
-            peg:tree peg:substring peg-record?))
+                          prec make-prec peg:start peg:end peg:string
+                          peg:tree peg:substring peg-record?))
 
 (define-record-type prec
   (make-prec start end string tree)

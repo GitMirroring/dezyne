@@ -132,10 +132,10 @@
           (string-append "%% no cache hit found: \n" intf)))))
 
 (define-method (x:interface-proc-memo (o <interface>))
- (makreel:interface-proc-memo o))
+  (makreel:interface-proc-memo o))
 
 (define-method (x:interface-proc-memo (o <component>))
- (string-join (map makreel:interface-proc-memo (makreel:interface* o)) "\n"))
+  (string-join (map makreel:interface-proc-memo (makreel:interface* o)) "\n"))
 
 (define (mcrl2:process-identifier o)
   (let* ((model-key ((compose .id (cute ast:parent <> <model>)) o))
@@ -265,7 +265,7 @@
     (($ <call>) (let ((continuation ((compose car makreel:continuation) o)))
                   (if (and (is-a? continuation <return>)
                            (is-a? (ast:type (.expression continuation)) <void>)) (clone o #:last? #t)
-                      o)))
+                           o)))
     (($ <expression>) o)
     (($ <location>) o)
     ((? (is? <ast>)) (tree-map makreel:mark-tail-call o))
@@ -362,21 +362,21 @@
 
 (define-method (enum-sort-global-public (o <root>))
   (filter (is? <enum>)
-    (append
-      (ast:type* o)
-      (append-map ast:type* (filter (is? <interface>) (ast:model* o))))))
+          (append
+           (ast:type* o)
+           (append-map ast:type* (filter (is? <interface>) (ast:model* o))))))
 
 (define-method (makreel:enum-sort (o <interface>))
   (append
-    (enum-sort-global-public (ast:parent o <root>))
-    (filter (is? <enum>) (ast:type* (.behavior o)))))
+   (enum-sort-global-public (ast:parent o <root>))
+   (filter (is? <enum>) (ast:type* (.behavior o)))))
 
 (define-method (makreel:enum-sort (o <component>))
   (append
-    (enum-sort-global-public (ast:parent o <root>))
-    (append-map
-      (lambda (o) (filter (is? <enum>) (ast:type* (.behavior o))))
-      (append (list o) (makreel:interface* o)))))
+   (enum-sort-global-public (ast:parent o <root>))
+   (append-map
+    (lambda (o) (filter (is? <enum>) (ast:type* (.behavior o))))
+    (append (list o) (makreel:interface* o)))))
 
 (define-method (makreel:reply-type-eq? (a <subint>) (b <subint>))
   #t)
@@ -429,13 +429,13 @@
 
 (define (reachable-calls-unmemoized root o)
   (let* ((calls (tree-collect-filter
-                  (disjoin (is? <behavior>) (is? <declarative>) (is? <functions>) (is? <function>) (is? <statement>))
-                  (is? <call>) o))
+                 (disjoin (is? <behavior>) (is? <declarative>) (is? <functions>) (is? <function>) (is? <statement>))
+                 (is? <call>) o))
          (calls (reachable calls)))
     calls))
 
 (define (reachable-calls o)
- ((ast:pure-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
+  ((ast:pure-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
 
 (define-method (no-tail-call (o <call>))
   (not (.last? o)))
@@ -560,8 +560,8 @@
         (if (is-a? model <interface>) model
             (begin
               (let ((trigger (and=> (ast:parent o <on>) (compose car ast:trigger*))))
-               (if (and trigger (ast:provides? trigger)) ((compose .port) trigger)
-                   ((compose car ast:provides-port*) model))))))))
+                (if (and trigger (ast:provides? trigger)) ((compose .port) trigger)
+                    ((compose car ast:provides-port*) model))))))))
 
 (define-method (makreel:event-prefix (o <port>))
   o)
@@ -630,13 +630,13 @@
   (let ((expression (.expression o)))
     (if (or (is-a? expression <action>)
             (is-a? expression <call>)) expression
-        o)))
+            o)))
 
 (define-method (makreel:proc-variable (o <variable>))
   (let ((expression (.expression o)))
     (if (or (is-a? expression <action>)
             (is-a? expression <call>)) expression
-        o)))
+            o)))
 
 (define-method (makreel:else-proc (o <if>))
   (or (.else o) '()))
@@ -709,8 +709,8 @@
 
 (define-method (makreel:variable-parameter (o <ast>))
   (let ((v (match o
-               (($ <variable>) o)
-               (($ <assign>) (.variable o)))))
+             (($ <variable>) o)
+             (($ <assign>) (.variable o)))))
     (if (find (cut ast:eq? v <>) ((compose variables-in-scope car makreel:continuation) o)) o
         '())))
 
@@ -759,7 +759,7 @@
 (define-method (makreel:the-end (o <ast>))
   (and (ast:parent o <component>)
        (ast:eq? o (.statement (ast:parent o <behavior>)))
-        o))
+       o))
 
 (define-method (makreel:continuation (o <ast>))
   (define (statement-continuation o)
@@ -909,12 +909,12 @@
 
 (define-method (ast:port-type-name (o <reply>)) ;; FIXME: return AST (interface/port) rather than string
   (let ((interface
-            (or (and=> (.port o) .type)
-                (let ((model (ast:parent o <model>)))
-                  (if (is-a? model <interface>) model
-                      (let ((trigger (and=> (ast:parent o <on>) (compose car ast:trigger*))))
-                        (if (and trigger (ast:provides? trigger)) ((compose .type .port) trigger)
-                            ((compose .type car ast:provides-port*) model))))))))
+         (or (and=> (.port o) .type)
+             (let ((model (ast:parent o <model>)))
+               (if (is-a? model <interface>) model
+                   (let ((trigger (and=> (ast:parent o <on>) (compose car ast:trigger*))))
+                     (if (and trigger (ast:provides? trigger)) ((compose .type .port) trigger)
+                         ((compose .type car ast:provides-port*) model))))))))
     (makreel:model-name interface)))
 
 (define-method (ast:port-type-name (o <assign>))
@@ -1005,7 +1005,7 @@
         (locals (makreel:locals o))
         (return-value (if (and (or (is-a? o <assign>) (is-a? o <variable>))
                                (is-a? (.expression o) <call>)) (list (ast:type o))
-                          '())))
+                               '())))
     (if f (append locals (list f)
                   return-value)
         (append locals return-value))))
@@ -1061,7 +1061,7 @@
 (define-method (makreel:constraint-continuation-illegal (o <on>))
   (and (is-a? (ast:parent o <model>) <component>)
        (ast:provides? (car (ast:trigger* o)))
-        o))
+       o))
 
 (define-method (makreel:constraint-component-illegal (o <on>))
   (and (not (is-a? (ast:parent o <model>) <interface>))

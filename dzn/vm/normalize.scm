@@ -108,8 +108,8 @@
     (($ <guard>) (clone o #:statement (set-blocking-reply-port (.statement o) port block?)))
     (($ <compound>) (clone o #:elements (map (cut set-blocking-reply-port <> port block?) (ast:statement* o))))
     (($ <behavior>) (clone o #:statement (set-blocking-reply-port (.statement o) port block?)
-                            ;; FIXME #t??
-                            #:functions (set-blocking-reply-port (.functions o) port #t)))
+                           ;; FIXME #t??
+                           #:functions (set-blocking-reply-port (.functions o) port #t)))
     (($ <component>) (clone o #:behavior (set-blocking-reply-port (.behavior o) (if (= 1 (length (ast:provides-port* o))) (car (ast:provides-port* o)) #f) block?)))
     (($ <system>) o)
     (($ <foreign>) o)

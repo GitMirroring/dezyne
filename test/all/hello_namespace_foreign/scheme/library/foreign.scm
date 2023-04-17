@@ -27,8 +27,8 @@
   #:use-module (library hello)
   #:duplicates (merge-generics)
   #:export (
-    <library:foreign>
-    w-world)
+            <library:foreign>
+            w-world)
   #:re-export (.w))
 
 (define-class <library:foreign> (<dzn:component>)
@@ -38,17 +38,17 @@
 (define-method (initialize (o <library:foreign>) args)
   (next-method)
   (set! (.w o)
-    (make <library:iworld>
-      #:in (make <library:iworld.in>
-        #:name "w"
-        #:self o
-        #:world (lambda args
-                  (call-in o
-                           (lambda _
-                             (apply w-world (cons o args))
-                             (dzn:flush o))
-                           `(,(.w o) "world"))))
-      #:out (make <library:iworld.out>))))
+        (make <library:iworld>
+          #:in (make <library:iworld.in>
+                 #:name "w"
+                 #:self o
+                 #:world (lambda args
+                           (call-in o
+                                    (lambda _
+                                      (apply w-world (cons o args))
+                                      (dzn:flush o))
+                                    `(,(.w o) "world"))))
+          #:out (make <library:iworld.out>))))
 
 (define-method (w-world (o <library:foreign>))
   #t)

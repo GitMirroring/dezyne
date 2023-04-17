@@ -109,7 +109,7 @@ Use \"dzn COMMAND --help\" for command-specific information.
                 (if verbose? (string-join
                               (map string.doc->string transformations)
                               "\n" 'prefix)
-                  "Use dzn --help --verbose to list transformations.")))
+                    "Use dzn --help --verbose to list transformations.")))
       (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS)))
     options))
 

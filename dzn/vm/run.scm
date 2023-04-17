@@ -301,18 +301,18 @@ program-counters produced by taking a step."
               (and (is-a? statement  <action>)
                    (and=> (trace->trail orig-pc) cdr))
               input)
-     (cond ((.status pc)
-            pc)
-           ((or (and (%strict?) input)
-                (and input
-                     (is-a? statement <trigger-return>)
-                     (blocked-on-boundary? orig-pc)))
-            (let ((error (make <match-error> #:ast statement #:input input
-                               #:message "match")))
-              (clone pc #:status error)))
-           (else
-            (clone pc #:status (make <postponed-match> #:ast statement
-                                     #:input input))))))
+      (cond ((.status pc)
+             pc)
+            ((or (and (%strict?) input)
+                 (and input
+                      (is-a? statement <trigger-return>)
+                      (blocked-on-boundary? orig-pc)))
+             (let ((error (make <match-error> #:ast statement #:input input
+                                #:message "match")))
+               (clone pc #:status error)))
+            (else
+             (clone pc #:status (make <postponed-match> #:ast statement
+                                      #:input input))))))
 
   (define (blocked-collaterally? orig-pc pc)
     (match (.collateral pc)

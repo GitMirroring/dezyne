@@ -27,16 +27,16 @@
 (define-method (initialize (o <dzn:timer>) args)
   (next-method)
   (set! (.port o)
-    (make <dzn:itimer>
-       :in (make <dzn:itimer.in>
-              :name 'port
-              :self o
-              :create (lambda (. args) (call-in o (lambda () (apply port-create (cons o args))) `(,(.port o) create)))
-              :cancel (lambda (. args) (call-in o (lambda () (apply port-cancel (cons o args))) `(,(.port o) cancel))))
-       :out (make <dzn:itimer.out>))))
+        (make <dzn:itimer>
+          :in (make <dzn:itimer.in>
+                :name 'port
+                :self o
+                :create (lambda (. args) (call-in o (lambda () (apply port-create (cons o args))) `(,(.port o) create)))
+                :cancel (lambda (. args) (call-in o (lambda () (apply port-cancel (cons o args))) `(,(.port o) cancel))))
+          :out (make <dzn:itimer.out>))))
 
 (define-method (port-create (o <dzn:timer>) ms)
-    #t)
+  #t)
 
 (define-method (port-cancel (o <dzn:timer>) )
-    #t)
+  #t)

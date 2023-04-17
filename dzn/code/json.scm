@@ -53,12 +53,12 @@
          (names (if (%locations?)
                     names
                     (filter (negate (cut eq? <> 'location)) names))))
-  (filter-map (lambda (name)
-                (let* ((value (slot-ref o name))
-                       (list? (or (null? value) (pair? value))))
-                  (and value (make (if list? <json:fieldlist> <json:field>)
-                               #:name name #:value value))))
-              names)))
+    (filter-map (lambda (name)
+                  (let* ((value (slot-ref o name))
+                         (list? (or (null? value) (pair? value))))
+                    (and value (make (if list? <json:fieldlist> <json:field>)
+                                 #:name name #:value value))))
+                names)))
 
 (define (nodot o)
   (string-map (lambda (c) (if (eq? c #\.) #\_ c)) o))

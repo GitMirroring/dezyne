@@ -39,7 +39,7 @@
   #:use-module (dzn vm goops)
 
   #:export (<port-pair>
-           .other
+            .other
             %calling-context
             %no-unreachable?
             %shell
@@ -421,7 +421,7 @@
 (define-method (code:defer-condition (o <defer>))
   (if (not (or (and=> (.arguments o)(compose null? .elements))
                (null? (ast:variable* (ast:parent o <component>))))) o
-      '()))
+               '()))
 
 (define-method (code:capture-local (o <defer>))
   (let* ((references (tree-collect (disjoin(is? <assign>)

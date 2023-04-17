@@ -37,7 +37,7 @@
 
 ;; Grammar for PEGs in PEG grammar.
 (define peg-as-peg
-"grammar <-- (nonterminal ('<--' / '<-' / '<') sp pattern)+
+  "grammar <-- (nonterminal ('<--' / '<-' / '<') sp pattern)+
 pattern <-- alternative (SLASH sp alternative)*
 alternative <-- ([!&]? sp suffix)+
 suffix <-- primary ([*+?] sp)*
@@ -61,7 +61,7 @@ RB < ']'
        (let* ((matchf (compile-peg-pattern #'pat (syntax->datum #'accum)))
               (accumsym (syntax->datum #'accum))
               (syn (wrap-parser-for-users x matchf accumsym #'sym)))
-           #`(define sym #,syn))))))
+         #`(define sym #,syn))))))
 
 (define-sexp-parser peg-grammar all
   (+ (and peg-nonterminal (or "<--" "<-" "<") peg-sp peg-pattern)))
@@ -137,11 +137,11 @@ RB < ']'
          (nonterm-name (datum->syntax for-syntax
                                       (string->symbol (cadr nonterm)))))
     #`(define-peg-pattern #,nonterm-name
-       #,(cond
-          ((string=? grabber "<--") (datum->syntax for-syntax 'all))
-          ((string=? grabber "<-") (datum->syntax for-syntax 'body))
-          (else (datum->syntax for-syntax 'none)))
-       #,(compressor (peg-pattern->defn pattern for-syntax) for-syntax))))
+        #,(cond
+           ((string=? grabber "<--") (datum->syntax for-syntax 'all))
+           ((string=? grabber "<-") (datum->syntax for-syntax 'body))
+           (else (datum->syntax for-syntax 'none)))
+        #,(compressor (peg-pattern->defn pattern for-syntax) for-syntax))))
 
 ;; lst has format ('peg-pattern ...).
 ;; After the context-flatten, (cdr lst) has format
@@ -159,34 +159,34 @@ RB < ']'
 (define (peg-alternative->defn lst for-syntax)
   #`(and #,@(map (lambda (x) (peg-body->defn x for-syntax))
                  (context-flatten (lambda (x) (or (string? (car x))
-                                             (eq? (car x) 'peg-suffix)))
+                                                  (eq? (car x) 'peg-suffix)))
                                   (cdr lst)))))
 
 ;; lst has the format either
 ;;   ("!" ('peg-suffix ...)), ("&" ('peg-suffix ...)), or
 ;;     ('peg-suffix ...).
 (define (peg-body->defn lst for-syntax)
-    (cond
-      ((equal? (car lst) "&")
-       #`(followed-by #,(peg-suffix->defn (cadr lst) for-syntax)))
-      ((equal? (car lst) "!")
-       #`(not-followed-by #,(peg-suffix->defn (cadr lst) for-syntax)))
-      ((eq? (car lst) 'peg-suffix)
-       (peg-suffix->defn lst for-syntax))
-      (else `(peg-parse-body-fail ,lst))))
+  (cond
+   ((equal? (car lst) "&")
+    #`(followed-by #,(peg-suffix->defn (cadr lst) for-syntax)))
+   ((equal? (car lst) "!")
+    #`(not-followed-by #,(peg-suffix->defn (cadr lst) for-syntax)))
+   ((eq? (car lst) 'peg-suffix)
+    (peg-suffix->defn lst for-syntax))
+   (else `(peg-parse-body-fail ,lst))))
 
 ;; lst has format ('peg-suffix <peg-primary> (? (/ "*" "?" "+")))
 (define (peg-suffix->defn lst for-syntax)
   (let ((inner-defn (peg-primary->defn (cadr lst) for-syntax)))
     (cond
-      ((null? (cddr lst))
-       inner-defn)
-      ((equal? (caddr lst) "*")
-       #`(* #,inner-defn))
-      ((equal? (caddr lst) "?")
-       #`(? #,inner-defn))
-      ((equal? (caddr lst) "+")
-       #`(+ #,inner-defn)))))
+     ((null? (cddr lst))
+      inner-defn)
+     ((equal? (caddr lst) "*")
+      #`(* #,inner-defn))
+     ((equal? (caddr lst) "?")
+      #`(? #,inner-defn))
+     ((equal? (caddr lst) "+")
+      #`(+ #,inner-defn)))))
 
 ;; Parse a primary.
 (define (peg-primary->defn lst for-syntax)
@@ -196,25 +196,25 @@ RB < ']'
 
 (define (peg-secondary->defn lst for-syntax)
   (let ((el (cadr lst)))
-  (cond
-   ((list? el)
     (cond
-     ((eq? (car el) 'peg-literal)
-      (peg-literal->defn el for-syntax))
-     ((eq? (car el) 'peg-charclass)
-      (peg-charclass->defn el for-syntax))
-     ((eq? (car el) 'peg-nonterminal)
-      (datum->syntax for-syntax (string->symbol (cadr el))))))
-   ((string? el)
-    (cond
-     ((equal? el "(")
-      (peg-pattern->defn (caddr lst) for-syntax))
-     ((equal? el ".")
-      (datum->syntax for-syntax 'peg-any))
+     ((list? el)
+      (cond
+       ((eq? (car el) 'peg-literal)
+        (peg-literal->defn el for-syntax))
+       ((eq? (car el) 'peg-charclass)
+        (peg-charclass->defn el for-syntax))
+       ((eq? (car el) 'peg-nonterminal)
+        (datum->syntax for-syntax (string->symbol (cadr el))))))
+     ((string? el)
+      (cond
+       ((equal? el "(")
+        (peg-pattern->defn (caddr lst) for-syntax))
+       ((equal? el ".")
+        (datum->syntax for-syntax 'peg-any))
+       (else (datum->syntax for-syntax
+                            `(peg-parse-any unknown-string ,lst)))))
      (else (datum->syntax for-syntax
-                          `(peg-parse-any unknown-string ,lst)))))
-   (else (datum->syntax for-syntax
-                        `(peg-parse-any unknown-el ,lst))))))
+                          `(peg-parse-any unknown-el ,lst))))))
 
 ;; Trims characters off the front and end of STR.
 ;; (trim-1chars "'ab'") -> "ab"
@@ -274,6 +274,6 @@ RB < ']'
           (peg:tree (match-pattern peg-pattern string)) #'str-stx)
          #'str-stx)
         (if (eq? accum 'all) 'body accum))))
-     (else (error "Bad embedded PEG string" args))))
+    (else (error "Bad embedded PEG string" args))))
 
 (add-peg-compiler! 'peg peg-string-compile)

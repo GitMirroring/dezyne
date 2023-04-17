@@ -49,7 +49,7 @@
                    (action sut .release .in .hello))))
             ("block.hello\nw.hello\nw.return\nrelease.hello\nw.hello\nw.return\nrelease.return\nblock.return"
              . (,(cute action sut .block .in .hello)
-                 ,(cute action sut .release .in .hello)))
+                ,(cute action sut .release .in .hello)))
             ("block.hello\nw.hello\nw.return\nw.world\nblock.return"
              .
              (,(cute action sut .block .in .hello)

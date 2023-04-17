@@ -85,11 +85,11 @@
 (define (trace-equal? a b)
   (let ((pc-a (car a))
         (pc-b (car b)))
-   (and (rtc-program-counter-equal? pc-a pc-b)
-        (ast:eq? (and=> (.previous pc-a) .statement)
-                 (and=> (.previous pc-b) .statement))
-        (equal? (trace->string-trail a)
-                (trace->string-trail b)))))
+    (and (rtc-program-counter-equal? pc-a pc-b)
+         (ast:eq? (and=> (.previous pc-a) .statement)
+                  (and=> (.previous pc-b) .statement))
+         (equal? (trace->string-trail a)
+                 (trace->string-trail b)))))
 
 (define (debug:lts->alist pc->state-number lts)
   (define (entry->pair from pc+traces)
@@ -171,8 +171,8 @@
          (let* ((r:port (runtime:port o port))
                 (r:other-port (and r:port (runtime:other-port r:port))))
            (or (eq? r:port r:other-port) ;The other port is injected, no
-                                         ;chance to find our way back
-                                         ;and use ast:injected?
+                                        ;chance to find our way back
+                                        ;and use ast:injected?
                (and r:other-port
                     (runtime:boundary-port? r:other-port)
                     (ast:provides? r:other-port)))))))
@@ -270,8 +270,8 @@
           (let* ((r:port (runtime:port o port))
                  (r:other-port (and r:port (runtime:other-port r:port))))
             (if (eq? r:port r:other-port) ;The other port is injected,
-                                          ;no chance to find our way back
-                                          ;and use ast:injected?
+                                        ;no chance to find our way back
+                                        ;and use ast:injected?
                 (format #f "~a.~a" (trace-name r:port) (.event.name return))
                 (let ((value (.event.name return)))
                   (format #f "~a.~a" (trace-name r:other-port) value)))))))

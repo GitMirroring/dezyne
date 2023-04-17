@@ -565,10 +565,10 @@ RTC-LTS->STATE-DIAGRAM."
                   (or (any (compose (is? <runtime:component>) .instance) trace)
                       (any (compose (is? <runtime:port>) .instance) trace)))
                  (return (list-index
-                         (conjoin (negate (is-status? <missing-reply-error>))
-                                  (compose (cute eq? <> instance) .instance)
-                                  (compose (is? <trigger-return>) .statement))
-                         trace)))
+                          (conjoin (negate (is-status? <missing-reply-error>))
+                                   (compose (cute eq? <> instance) .instance)
+                                   (compose (is? <trigger-return>) .statement))
+                          trace)))
             (cons pc (drop trace (1+ return)))))))
 
   (define (trail->state-numbers pc trail to)

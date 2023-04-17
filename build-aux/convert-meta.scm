@@ -79,8 +79,8 @@
 
 (define (main args)
   (match (command-line)
-      ((convert-meta)
-       (let ((files (string-split (gulp-pipe "git ls-files '*META*'") #\newline)))
-         (for-each json->scm files)))
-      ((convert-meta files ...)
-       (for-each json->scm files))))
+    ((convert-meta)
+     (let ((files (string-split (gulp-pipe "git ls-files '*META*'") #\newline)))
+       (for-each json->scm files)))
+    ((convert-meta files ...)
+     (for-each json->scm files))))

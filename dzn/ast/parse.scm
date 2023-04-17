@@ -616,7 +616,7 @@ to the AST element."
          (let* ((right (helper expression))
                 (zero (make <literal-node> #:value 0))
                 (left (clone zero #:location (.location right))))
-          (make <minus-node> #:left left #:right right)))
+           (make <minus-node> #:left left #:right right)))
         (('not expression) (make <not-node> #:expression (helper expression)))
 
         (('literal "true") (make <literal-node> #:value "true"))
@@ -669,7 +669,7 @@ to the AST element."
 (define-method (annotate-functions (o <behavior-node>))
   (let* ((o (set-recursive (make <behavior> #:node o)))
          (o (set-noisy o)))
-   (.node o)))
+    (.node o)))
 
 (define-method (make-namespaces (o <ast>))
   o)

@@ -113,13 +113,13 @@ PREDICATE is a string, filter files using string-match using PREDICATE."
 (define-syntax-rule (with-directory-excursion dir body ...)
   "Run BODY with DIR as the process's current directory."
   (let ((init (getcwd)))
-   (dynamic-wind
-     (lambda ()
-       (chdir dir))
-     (lambda ()
-       body ...)
-     (lambda ()
-       (chdir init)))))
+    (dynamic-wind
+        (lambda ()
+          (chdir dir))
+        (lambda ()
+          body ...)
+        (lambda ()
+          (chdir init)))))
 
 (define* (delete-file-recursively dir
                                   #:key follow-mounts?)
@@ -282,28 +282,28 @@ PROC as (PROC LINE MATCHES); PROC must return the line that will be written as
 a substitution of the original line.  Be careful about using '$' to match the
 end of a line; by itself it won't match the terminating newline of a line."
   (let ((rx+proc  (map (match-lambda
-                        (((? regexp? pattern) . proc)
-                         (cons pattern proc))
-                        ((pattern . proc)
-                         (cons (make-regexp pattern regexp/extended)
-                               proc)))
+                         (((? regexp? pattern) . proc)
+                          (cons pattern proc))
+                         ((pattern . proc)
+                          (cons (make-regexp pattern regexp/extended)
+                                proc)))
                        pattern+procs)))
     (with-atomic-file-replacement file
-      (lambda (in out)
-        (let loop ((line (read-line in 'concat)))
-          (if (eof-object? line)
-              #t
-              (let ((line (fold (lambda (r+p line)
-                                  (match r+p
-                                    ((regexp . proc)
-                                     (match (list-matches regexp line)
-                                       ((and m+ (_ _ ...))
-                                        (proc line m+))
-                                       (_ line)))))
-                                line
-                                rx+proc)))
-                (display line out)
-                (loop (read-line in 'concat)))))))))
+                                  (lambda (in out)
+                                    (let loop ((line (read-line in 'concat)))
+                                      (if (eof-object? line)
+                                          #t
+                                          (let ((line (fold (lambda (r+p line)
+                                                              (match r+p
+                                                                ((regexp . proc)
+                                                                 (match (list-matches regexp line)
+                                                                   ((and m+ (_ _ ...))
+                                                                    (proc line m+))
+                                                                   (_ line)))))
+                                                            line
+                                                            rx+proc)))
+                                            (display line out)
+                                            (loop (read-line in 'concat)))))))))
 
 
 (define-syntax let-matches
@@ -362,12 +362,12 @@ match the terminating newline of a line."
                                (string-concatenate-reverse r)))
                             ((m . rest)
                              (let-matches 0 m (match-var ...)
-                               (loop rest
-                                     (match:end m)
-                                     (cons*
-                                      (begin body ...)
-                                      (substring l o (match:start m))
-                                      r))))))))
+                                          (loop rest
+                                                (match:end m)
+                                                (cons*
+                                                 (begin body ...)
+                                                 (substring l o (match:start m))
+                                                 r))))))))
                 ...)))
 
        (match file

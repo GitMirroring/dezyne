@@ -93,7 +93,7 @@ Simulate a Dezyne model
   -v, --verbose          show non-communication steps in trace,
                            implies --format=trace --locations
 " (%queue-size) (%queue-size-defer) (%queue-size-external))
-          (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
+        (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
 (define (main args)

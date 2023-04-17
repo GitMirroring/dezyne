@@ -290,10 +290,10 @@ actions."
          (exclude-taus (if (is-a? model <interface>) ""
                            (component-exclude-taus model))))
     (append
-      (if (string-null? taus) '()
-          (list (string-append "--tau=" taus)))
-      (if (string-null? exclude-taus) '()
-          (list (string-append "--exclude-tau=" exclude-taus))))))
+     (if (string-null? taus) '()
+         (list (string-append "--tau=" taus)))
+     (if (string-null? exclude-taus) '()
+         (list (string-append "--exclude-tau=" exclude-taus))))))
 
 (define (in-out:aut->verify-interface options)
   (let* ((taus (model-taus options))
@@ -435,9 +435,9 @@ to (current-output-port)."
          (commands (reverse (fold (prepare options) '() commands))))
     (when (dzn:command-line:get 'debug)
       (let ((commands (pretty-verify-pipeline commands out root model)))
-       (if (equal? out "aut-dpweak-bisim")
-           (format (current-error-port) "~a\\\n  | " commands)
-           (format (current-error-port) "~a\n" commands))))
+        (if (equal? out "aut-dpweak-bisim")
+            (format (current-error-port) "~a\\\n  | " commands)
+            (format (current-error-port) "~a\n" commands))))
     (let* ((pipeline (if stdout? pipeline->port pipeline->string))
            (result status (pipeline commands)))
       (values result status))))
@@ -490,11 +490,11 @@ init for MODEL unless INIT."
 
 (define (get-lts result)
   (let ((line (get-line 'failures result)))
-   (match line
-     (("failures" lts)
-      (semi->newline lts))
-     (_
-      (throw 'programming-error (format #f "no failures lts: ~s, line: ~s\n" line result))))))
+    (match line
+      (("failures" lts)
+       (semi->newline lts))
+      (_
+       (throw 'programming-error (format #f "no failures lts: ~s, line: ~s\n" line result))))))
 
 (define (get-trace key result)
   (let ((assert (get-line key result)))
@@ -540,8 +540,8 @@ init for MODEL unless INIT."
                                          <second-reply>
                                          <range-error>
                                          <type-error>))))
-                    (if keep-error? last
-                        assert)))
+                     (if keep-error? last
+                         assert)))
                   ((illegal)
                    (if (equal? last '<queue-full>) last
                        assert))

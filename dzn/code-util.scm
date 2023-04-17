@@ -71,15 +71,15 @@
 (define* (code-util:dump root generate #:key file-name)
   (let ((debug? (dzn:command-line:get 'debug #f)))
     (cond
-      ((equal? file-name "-")
-        (generate))
-      (else
-        (catch (if debug? 'none #t)
-          (lambda ()
-            (mkdir-p (dirname file-name))
-            (with-output-to-file file-name
-              generate))
-          (code-util:handle-exceptions file-name))))))
+     ((equal? file-name "-")
+      (generate))
+     (else
+      (catch (if debug? 'none #t)
+        (lambda ()
+          (mkdir-p (dirname file-name))
+          (with-output-to-file file-name
+            generate))
+        (code-util:handle-exceptions file-name))))))
 
 (define-method (code-util:base-name (o <foreign>))
   (string-join (ast:full-name o) "_"))

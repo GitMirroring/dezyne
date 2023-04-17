@@ -108,7 +108,7 @@
                                  (ast:port* o))
                             (if (or (is-a? o <foreign>)
                                     (not (.behavior o))) '()
-                                (map (compose string->accessor .name) (ast:variable* o))))))
+                                    (map (compose string->accessor .name) (ast:variable* o))))))
     (append classes accessors)))
 
 (define-method (scheme:names (o <system>))

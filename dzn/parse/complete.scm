@@ -188,8 +188,8 @@
                         o 'trigger #:event-predicate event-predicate))))
     (sort (append (if (and (null? statements) trigger-complete?) '("illegal")
                       '())
-           triggers)
-     string<)))
+                  triggers)
+          string<)))
 
 (define* (complete:action-names o #:key (event-predicate identity))
   (cond ((slot o 'component) (complete:port-event-names o 'action #:event-predicate event-predicate))
@@ -476,9 +476,9 @@
                                     (cute string-append dir "/" <>))))))))
 
 (define (strip-prefix prefix string)
-           (if (and (string? string) (string-prefix? prefix string))
-               (substring string (string-length prefix))
-               string))
+  (if (and (string? string) (string-prefix? prefix string))
+      (substring string (string-length prefix))
+      string))
 
 (define* (complete:imports o context #:key (imports '()))
   (let* ((file-name (.file-name o))

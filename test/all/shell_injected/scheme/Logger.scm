@@ -37,12 +37,16 @@
 (define-method (initialize (o <Logger>) args)
   (next-method o (cons* #:flushes? #t args))
   (set! (.log o)
-    (make <ILogger>
-      #:in (make <ILogger.in>
-        #:name "log"
-        #:self o
-        #:log (lambda args (call-in o (lambda _ (apply log-log (cons o args))) `(,(.log o) "log"))))
-      #:out (make <ILogger.out>))))
+        (make <ILogger>
+          #:in (make <ILogger.in>
+                 #:name "log"
+                 #:self o
+                 #:log (lambda args
+                         (call-in o
+                                  (lambda _
+                                    (apply log-log (cons o args)))
+                                  `(,(.log o) "log"))))
+          #:out (make <ILogger.out>))))
 
 (define-method (log-log (o <Logger>) m)
   *unspecified*)

@@ -181,7 +181,7 @@
                                                (type (and at ((compose string->symbol
                                                                        (cut string-drop <> (1+ at))) sep))))
                                           (cons type (read-sep sep)))) sep-files)))
-                             '()))
+                          '()))
                (grammars (append grammars '((#f . ("\n" infix)))))
                (grammars (datum->syntax x grammars)))
           #`(begin

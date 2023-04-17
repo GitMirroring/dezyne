@@ -182,7 +182,7 @@ completed, such as removal of BEHAVIOR, SYSTEM and type definitions."
               (len (cond
                     ;; whitespace dangling parameter list
                     ((and ;;(equal? expect "reply")
-                          (string-match "^( *\\([^()]*\\))" (substring str (+ offset len))))
+                      (string-match "^( *\\([^()]*\\))" (substring str (+ offset len))))
                      =>
                      (lambda (m)
                        (+ len (string-length (match:substring m 1)))))

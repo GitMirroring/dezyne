@@ -56,7 +56,7 @@
     (when (pair? errors)
       (apply throw 'well-formedness-error messages))
     (when (pair? messages)
-       (for-each wfc:report-message messages)))
+      (for-each wfc:report-message messages)))
   o)
 
 (define-method (wfc:report-message (o <message>))
@@ -109,11 +109,11 @@
 (define-method (wfc (o <interface>))
   (define (data-variable o)
     (let ((type (.type o)))
-     (if (not (is-a? type <extern>)) '()
-         `(,(wfc-error
-             o
-             (format #f "data variable in interface not supported: `~a'"
-                     (.name o)))))))
+      (if (not (is-a? type <extern>)) '()
+          `(,(wfc-error
+              o
+              (format #f "data variable in interface not supported: `~a'"
+                      (.name o)))))))
   (append
    (unused-events o)
    (re-definition o)
@@ -865,12 +865,12 @@
                (continuation (and continuation
                                   (not (ast:eq? continuation (.statement (ast:parent o <function>))))
                                   continuation)))
-              (cond ((is-a? continuation <return>)
-                     `(,(wfc-error o "cannot use valued function in recursion")
-                       ,(wfc-info continuation "statement after call")))
-                    (continuation `(,(wfc-error o "cannot use statement after recursive call")
-                                    ,(wfc-info continuation "statement after call")))
-                    (else '()))))))
+          (cond ((is-a? continuation <return>)
+                 `(,(wfc-error o "cannot use valued function in recursion")
+                   ,(wfc-info continuation "statement after call")))
+                (continuation `(,(wfc-error o "cannot use statement after recursive call")
+                                ,(wfc-info continuation "statement after call")))
+                (else '()))))))
 
 (define-method (mixing-declarative-imperative (o <compound>))
   (if (ast:declarative? o)
@@ -910,8 +910,8 @@
           (not (equal? (ast:full-name o) (ast:full-name previous)))) '()
           `(,(wfc-error o (format #f "identifier `~a' defined before"
                                   (ast:name o)))
-        ,(wfc-info previous (format #f "previous `~a' definition here"
-                                    (ast:name previous))))))
+            ,(wfc-info previous (format #f "previous `~a' definition here"
+                                        (ast:name previous))))))
 
 (define-method (assign (o <ast>))
   (or (as (wfc (.expression o)) <pair>)
@@ -1032,10 +1032,10 @@
                                (let* ((component (if (.instance.name o) (.type (.instance o))
                                                      (ast:parent o <system>)))
                                       (cname (type-name (.name component))))
-                                      `(,(wfc-error o (format #f "undefined port `~a' for `~a'" (.port.name o) cname))
-                                        ,(wfc-info component (format #f "`~a' defined here" cname)))))))))
+                                 `(,(wfc-error o (format #f "undefined port `~a' for `~a'" (.port.name o) cname))
+                                   ,(wfc-info component (format #f "`~a' defined here" cname)))))))))
     (append instance-error port-error))
-)
+  )
 
 (define-method (binding-declaration (o <binding>))
   (append (binding-declaration (.left o)) (binding-declaration (.right o))))
@@ -1133,15 +1133,15 @@
         (blocking-implementation? (or (model-blocking? o)
                                       (find .blocking? (ast:requires-port* o)))))
     (cond
-      ((and blocking-implementation? non-blocking-provides?)
-        `(,(wfc-error o "all provides ports should be defined as blocking")
-          ,(wfc-info non-blocking-provides?
-                    (format #f "non-blocking provides port `~a' define here"
-                            (.name non-blocking-provides?)))))
-      ((and (is-a? o <component>) (not blocking-implementation?) blocking-provides?)
-        `(,(wfc-error blocking-provides? (format #f "superfluous blocking annotation on provides port `~a'"
-                                                 (.name blocking-provides?)))))
-      (else '()))))
+     ((and blocking-implementation? non-blocking-provides?)
+      `(,(wfc-error o "all provides ports should be defined as blocking")
+        ,(wfc-info non-blocking-provides?
+                   (format #f "non-blocking provides port `~a' define here"
+                           (.name non-blocking-provides?)))))
+     ((and (is-a? o <component>) (not blocking-implementation?) blocking-provides?)
+      `(,(wfc-error blocking-provides? (format #f "superfluous blocking annotation on provides port `~a'"
+                                               (.name blocking-provides?)))))
+     (else '()))))
 
 (define-method (double-bindings (o <system>))
   (append-map double-bindings (ast:binding* o)))
@@ -1158,12 +1158,12 @@
         (xleft (.left x))
         (xright (.right x)))
     (if (or (ast:wildcard? (.port.name xleft))
-                  (ast:wildcard? (.port.name xright))
-                  (ast:eq? o x)) '()
-                  (append (double-bindings left xleft)
-                          (double-bindings left xright)
-                          (double-bindings right xleft)
-                          (double-bindings right xright)))))
+            (ast:wildcard? (.port.name xright))
+            (ast:eq? o x)) '()
+            (append (double-bindings left xleft)
+                    (double-bindings left xright)
+                    (double-bindings right xleft)
+                    (double-bindings right xright)))))
 
 (define-method (double-bindings (o <end-point>) (x <end-point>))
   (cond ((or (ast:wildcard? (.port.name o)) (ast:wildcard? (.port.name x))) '())
