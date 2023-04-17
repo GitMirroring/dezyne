@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -103,7 +104,6 @@ Dezyne language tool for completion and lookup information
          (help? (option-ref options 'help #f))
          (lookup? (option-ref options 'lookup #f))
          (stress? (option-ref options 'stress #f))
-         (errors '())
          (parse-alist '()))
 
     (define (resolve-file file-name)
@@ -119,14 +119,11 @@ Dezyne language tool for completion and lookup information
     (define (file-name->text file-name)
       (let ((file-name (search-path imports file-name)))
         (with-input-from-file file-name read-string)))
-    (define (handle-error pos str error)
-      (when (< pos (1- (string-length str)))
-        (set! errors (cons errors (list pos str error)))
-        (let ((line (1+ (string-count str #\newline 0 pos)))
-              (col (- pos (or (string-rindex str #\newline 0 pos) 0))))
-          (format (current-error-port) "~a ~a\n"
-                  (locus file-name line col (second error))
-                  error))))
+    (define (handle-error str line-number col-number error-type error)
+      (when (< (caar error) (1- (string-length str)))
+        (format (current-error-port) "~a ~a\n"
+                (locus file-name line-number col-number error-type)
+                error)))
     (let* ((input (file-name->text file-name))
            (parse-result (parameterize
                              ((%peg:debug? (> (dzn:debugity) 0))

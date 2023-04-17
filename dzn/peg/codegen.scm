@@ -3,6 +3,7 @@
 ;;; Copyright © 2011 Free Software Foundation, Inc.
 ;;; Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Lesser General Public
@@ -190,11 +191,21 @@ return EXP."
 ;;operator / is naturally not combined with the use of #
 ;;operators '(! &) may be considered later, since they may prove useful as asserts
 
-(define (format-error missing str strlen)
+(define (format-error error str)
+  "Return procedure with two parameters (FROM TO) that formats parser
+exception ERROR (offset . error) according using the source text in STR
+and collects it using procedure (%peg:error)."
+  (define (get-error-type from to)
+    (if (< from to)
+        'expected
+        'error))
   (lambda (from to)
-    ((%peg:error) from str
-     (if (< from to) (list 'skipped (substring str from (min strlen (1+ to))))
-         (list 'missing missing)))))
+    (let* ((error-type (get-error-type from to))
+           (error-pos (caar error))
+           (line-number (1+ (string-count str #\newline 0 error-pos)))
+           (col-number (- error-pos
+                          (or (string-rindex str #\newline 0 error-pos) -1))))
+      ((%peg:error) str line-number col-number error-type error))))
 
 (define* (fall-back-skip kernel #:optional sequence?)
   (if (not (%peg:fall-back?)) kernel
@@ -204,7 +215,7 @@ return EXP."
             (kernel str strlen start))
           (lambda (key . args)
             (let* ((expected (cadar args))
-                   (format-error (format-error expected str strlen)))
+                   (format-error (format-error args str)))
               (let loop ((at start))
                 (cond ((or (= at strlen)
                            ;; TODO: decide what to do; inspecting at might not be enough?!!
@@ -412,10 +423,10 @@ return EXP."
                          (error "Bad peg form" nm #'args
                                 "Not one of" (map car peg-compiler-alist)))))))
 
-;; Packages the results of a parser
-
-(define %peg:error (make-parameter (lambda (pos str error)
-                                     (format (current-error-port) "~a: ~s\n" (first error) (second error)))))
+;; By default this implementation is used by:
+;; dzn parse --fall-back
+(define %peg:error (make-parameter (lambda (str line-number col-number error-type error)
+                                     (format (current-error-port) "~a: ~s\n" error-type (second (car error))))))
 (define %peg:debug? (make-parameter #f))
 (define %peg:locations? (make-parameter #f))
 (define %peg:skip? (make-parameter (lambda (str strlen at) `(,at ()))))

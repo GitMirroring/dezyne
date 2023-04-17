@@ -4,6 +4,7 @@
 ;;; Copyright © 2018, 2019, 202, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -51,7 +52,8 @@
             call-with-handle-exceptions
             peg:handle-syntax-error
             string->ast
-            string->parse-tree))
+            string->parse-tree
+            string->fall-back-parse-tree))
 
 (define (peg:line-number string pos)
   (1+ (string-count string #\newline 0 pos)))
@@ -92,12 +94,17 @@
   (display (peg:imported-from->message content-alist file-name) (current-error-port))
   (display (peg:message file-name string pos "error" message) (current-error-port)))
 
-(define (peg:syntax-error->message e)
+(define (peg:syntax-error->message e string pos)
   (define (unknown-identifier? e)
     (match e
       (('not-followed-by 'unknown-identifier) #t)
       ((symbol items ...) (any unknown-identifier? items))
       (_ #f)))
+
+  (define (name string pos)
+    (let ((m (string-match "[a-zA-Z_][a-zA-Z_0-9]*" (substring string pos))))
+      (or (match:substring m)
+          "")))
 
   (define (error->string e)
     (match e
@@ -108,7 +115,7 @@
       ('dq-string "double quoted string")
       ('compound-name "name or dotted name")
       ('BRACE-OPEN "{")
-      ('BRACE-OPEN "}")
+      ('BRACE-CLOSE "}")
       ('SEMICOLON ";")
       ('COMMA "comma")
       ('COLON ":")
@@ -125,14 +132,14 @@
       ((? string?) e)))
 
   (let ((message (error->string e)))
-    (if (not (unknown-identifier? e))  message
-        (string-append "unknown identifier; " message))))
+    (if (not (unknown-identifier? e)) (string-append "`" message "' expected")
+        (string-append "undefined identifier `" (name string pos) "'"))))
 
 (define* (peg:handle-syntax-error file-name string #:key (content-alist '()))
   (lambda (key . args)
     (unless (or (null? args) (null? (car args)))
       (let* ((pos (caar args))
-             (message (format #f "`~a' expected" (peg:syntax-error->message (cadar args)))))
+             (message (peg:syntax-error->message (cadar args) string pos)))
         (peg:error-message content-alist file-name string pos message)))
     (apply throw key args)))
 
@@ -155,6 +162,13 @@ such unnamed lists."
       (_
        tree)))
   (map helper tree))
+
+(define (format-capture-syntax-error error-collector)
+  "Return a procedure that generates a human-readable message and passes
+it to the ERROR-COLLECTOR procedure."
+  (lambda (str line-number col-number error-type error)
+    (let ((message (peg:syntax-error->message (cadar error) str (caar error))))
+      (error-collector error-type message line-number col-number))))
 
 (define* (string->parse-tree string #:key (file-name "-") (content-alist '()))
   (let ((fall-back? (%peg:fall-back?)))
@@ -182,6 +196,15 @@ such unnamed lists."
         (lambda (key . args)
           (if fall-back? (parameterize ((%peg:fall-back? #t)) (parse))
               (apply (peg:handle-syntax-error file-name string #:content-alist content-alist) key args)))))))
+
+(define (string->fall-back-parse-tree text content-alist
+                                      file-name error-collector)
+  "Wrapper for running string->parse-tree in fall-back mode only."
+  (parameterize ((%peg:fall-back? #t)
+                 (%peg:error (format-capture-syntax-error error-collector)))
+    (string->parse-tree text
+                        #:content-alist content-alist
+                        #:file-name file-name)))
 
 (define (parse-file+import-content-alist alist)
   "From ALIST of form
