@@ -1,0 +1,2 @@
+test/all/parse_fall_back_out_binding/parse_fall_back_out_binding.dzn:40:26: error: formal binding `i' is not a data member variable
+test/all/parse_fall_back_out_binding/parse_fall_back_out_binding.dzn:41:26: error: formal binding `b' is not a data member variable

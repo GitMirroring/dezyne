@@ -1,0 +1,3 @@
+test/all/parse_fall_back_import_path/parse_fall_back_import_path.dzn:27:2: `import, dollars, type, namespace, interface, component, EOF' expected
+test/all/parse_fall_back_import_path/component.dzn:24:3: error: undefined interface `I'
+test/all/parse_fall_back_import_path/parse_fall_back_import_path.dzn:26:5: error: port `i' of type `I' not bound

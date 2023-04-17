@@ -1,0 +1,6 @@
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:11: `comma' expected
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:11: `PAREN-CLOSE' expected
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:11: `;' expected
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:12: `}' expected
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:12: `function, variable, declarative-statement, type, }' expected
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:44:4: `import, dollars, type, namespace, interface, component, EOF' expected

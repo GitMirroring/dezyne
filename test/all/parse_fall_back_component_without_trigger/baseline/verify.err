@@ -1,0 +1,3 @@
+test/all/parse_fall_back_component_without_trigger/parse_fall_back_component_without_trigger.dzn:29:1: error: component with behavior must have a trigger
+test/all/parse_fall_back_component_without_trigger/parse_fall_back_component_without_trigger.dzn:44:1: error: component with behavior must define a provides port
+test/all/parse_fall_back_component_without_trigger/parse_fall_back_component_without_trigger.dzn:44:1: error: component with behavior must have a trigger

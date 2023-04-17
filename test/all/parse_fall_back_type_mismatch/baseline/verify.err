@@ -1,0 +1,7 @@
+test/all/parse_fall_back_type_mismatch/parse_fall_back_type_mismatch.dzn:36:5: error: data variable in interface not supported: `y'
+test/all/parse_fall_back_type_mismatch/parse_fall_back_type_mismatch.dzn:33:5: error: type mismatch: expected `bool', found: `parse_type_mismatch.e'
+test/all/parse_fall_back_type_mismatch/parse_fall_back_type_mismatch.dzn:34:5: error: type mismatch: expected `parse_type_mismatch.f', found: `parse_type_mismatch.e'
+test/all/parse_fall_back_type_mismatch/parse_fall_back_type_mismatch.dzn:35:5: error: uninitialized variable `z'
+test/all/parse_fall_back_type_mismatch/parse_fall_back_type_mismatch.dzn:37:20: error: no field `t' in enum `parse_type_mismatch'; expected: `f', `w'
+test/all/parse_fall_back_type_mismatch/parse_fall_back_type_mismatch.dzn:32:5: info: enum defined here
+test/all/parse_fall_back_type_mismatch/parse_fall_back_type_mismatch.dzn:38:6: error: type mismatch: expected enum, found: `bool'

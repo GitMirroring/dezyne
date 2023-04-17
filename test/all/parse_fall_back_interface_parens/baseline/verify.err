@@ -1,0 +1,1 @@
+test/all/parse_fall_back_interface_parens/parse_fall_back_interface_parens.dzn:32:15: error: undefined function call: "world"

@@ -1,0 +1,4 @@
+test/all/parse_fall_back_port_qualifier/parse_fall_back_port_qualifier.dzn:32:3: error: provides port `h1' cannot be external
+test/all/parse_fall_back_port_qualifier/parse_fall_back_port_qualifier.dzn:33:3: error: provides port `h2' cannot be injected
+test/all/parse_fall_back_port_qualifier/parse_fall_back_port_qualifier.dzn:34:3: error: provides port `h3' cannot be external
+test/all/parse_fall_back_port_qualifier/parse_fall_back_port_qualifier.dzn:34:3: error: provides port `h3' cannot be injected

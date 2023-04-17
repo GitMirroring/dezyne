@@ -5,6 +5,7 @@
 # Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
+# Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 #
 # This file is part of Dezyne.
 #
@@ -496,6 +497,28 @@ PARSER_TESTS =					\
  %D%/parse_on_without_statement			\
  %D%/parse_out_binding				\
  %D%/parse_out_binding_argument			\
+ %D%/parse_fall_back_assign_void                \
+ %D%/parse_fall_back_component_without_trigger  \
+ %D%/parse_fall_back_defer                      \
+ %D%/parse_fall_back_duplicate_definition       \
+ %D%/parse_fall_back_formal_shadow_type         \
+ %D%/parse_fall_back_import_both                \
+ %D%/parse_fall_back_import_path 		\
+ %D%/parse_fall_back_import_self 		\
+ %D%/parse_fall_back_import_twice 		\
+ %D%/parse_fall_back_interface_parens 		\
+ %D%/parse_fall_back_missing_event 		\
+ %D%/parse_fall_back_mixing_imperative 		\
+ %D%/parse_fall_back_non_existent_import 	\
+ %D%/parse_fall_back_on_without_statement 	\
+ %D%/parse_fall_back_out_binding 		\
+ %D%/parse_fall_back_out_binding_argument 	\
+ %D%/parse_fall_back_port_qualifier 		\
+ %D%/parse_fall_back_preprocessed_foo 		\
+ %D%/parse_fall_back_preprocessed_imported_bar 	\
+ %D%/parse_fall_back_preprocessed_imported_baz 	\
+ %D%/parse_fall_back_syntax 			\
+ %D%/parse_fall_back_type_mismatch 		\
  %D%/parse_parameter_mismatch			\
  %D%/parse_peg_locations			\
  %D%/parse_preprocessed_foo			\

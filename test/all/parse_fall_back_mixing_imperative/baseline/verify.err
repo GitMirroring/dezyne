@@ -1,0 +1,3 @@
+test/all/parse_fall_back_mixing_imperative/parse_fall_back_mixing_imperative.dzn:34:7: error: imperative statement expected
+test/all/parse_fall_back_mixing_imperative/parse_fall_back_mixing_imperative.dzn:39:7: error: imperative statement expected
+test/all/parse_fall_back_mixing_imperative/parse_fall_back_mixing_imperative.dzn:39:7: error: statement expected
