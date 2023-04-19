@@ -4,6 +4,7 @@ w.hello
 w.return
 h.return
 h.bye
+<external>.w.cruel
 w.bye
 w.return
 h.return

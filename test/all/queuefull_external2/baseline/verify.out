@@ -2,4 +2,8 @@ model: queuefull_external2
 h.hello
 w.hello
 w.return
+<external>.w.world
+<external>.w.world
+<external>.w.world
+<external>.w.world
 <queue-full>

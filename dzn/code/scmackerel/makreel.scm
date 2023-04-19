@@ -109,6 +109,10 @@
     (_
      (string-append (makreel:full-name model) str))))
 
+(define* (ext-prefix str #:optional port)
+  ;; XXX FIXME: port-constructor?
+  (string-append (or (and=> port .name) (%port-name)) "ext_" str))
+
 (define* (port-prefix str #:optional port)
   ;; XXX FIXME: port-constructor?
   (string-append (or (and=> port .name) (%port-name)) "port_" str))
@@ -776,6 +780,20 @@
                  (sm:action
                   (inherit (%out-action (.type o)))
                   (prefix (port-prefix "qin" o)))))))
+         (set! cache (acons o result cache))
+         result)))))
+
+(define %qin-ext-action
+  (let ((cache '()))
+    (lambda (o)
+      (or
+       (assq-ref cache o)
+       (let ((result
+              (match o
+                (($ <port>)
+                 (sm:action
+                  (inherit (%out-action (.type o)))
+                  (prefix (ext-prefix "qin" o)))))))
          (set! cache (acons o result cache))
          result)))))
 
@@ -2695,7 +2713,7 @@
               (process external-allow)
               (events (list
                        (sm:rename-event (from (sm:transpose-tick (%qin-action o)))
-                                        (to (%tau-event-action interface)))
+                                        (to (%qin-ext-action o)))
                        (sm:rename-event (from (%qout-action o))
                                         (to (%out-action o))))))))))
     (list
@@ -2816,6 +2834,7 @@
                        (append-map
                         (lambda (p)
                           (list
+                           (%qin-ext-action p)
                            (%in-action p)
                            (%reply-action p)
                            (%internal-action p)
@@ -3861,6 +3880,7 @@
                               (append-map
                                (lambda (p)
                                  (list
+                                  (%qin-ext-action p)
                                   (%qin-action p)
                                   (%flush-action p)
                                   (%port-queue-full-action p)

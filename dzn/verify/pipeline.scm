@@ -129,10 +129,13 @@ actions."
          (taus (delete-duplicates
                 (append-map events-trigger/action
                             (append out-triggers in-actions))))
+         (external-taus (delete-duplicates
+                         (map (cute string-append "<external>." <>)
+                              (append-map events-trigger/action out-triggers))))
          (state-taus (map (compose (cute string-append <> ".<state>")
                                    makreel:.name)
                           (ast:port* model)))
-         (taus `("tag" "<defer>" ,@state-taus ,@taus)))
+         (taus `("tag" "<defer>" ,@state-taus ,@taus ,@external-taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)

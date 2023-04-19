@@ -296,6 +296,11 @@ output, and standard error as three values."
                 language
                 (string-join missing ", " 'infix)))))
 
+(define (filter-<external> string)
+  (let* ((lines (string-split string #\newline))
+         (events (filter (negate (cute string-contains <> "<external>")) lines)))
+    (string-join events "\n")))
+
 (define (filter-<flush> string)
   (let* ((lines (string-split string #\newline))
          (events (filter (negate (cute string-contains <> "<flush>")) lines)))
@@ -647,6 +652,7 @@ are weak-bisim equivalent"
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (input (with-input-from-file trace read-string))
+         (input (filter-<external> input))
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
          (test (string-append out-lang "/test"))
@@ -698,6 +704,7 @@ are weak-bisim equivalent"
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
          (input (filter-<flush> input))
+         (input (filter-<external> input))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
@@ -813,6 +820,9 @@ are weak-bisim equivalent"
                           ;; XXX skip: "probably a system"
                           (format (current-error-port) "skip compare: ~s\n" makreel-lts-file))
                      (let* ((makreel-lts (with-input-from-file makreel-lts-file read-string))
+                            (externals (list-matches "\"(<external>[^\"]*)\"" makreel-lts))
+                            (externals (map (cute match:substring <> 1) externals))
+                            (externals (delete-duplicates externals))
                             (flushes (list-matches "\"([^\"]*<flush>)\"" makreel-lts))
                             (flushes (map (cute match:substring <> 1) flushes))
                             (flushes (delete-duplicates flushes))
@@ -820,7 +830,7 @@ are weak-bisim equivalent"
                             (blocking (map (cute match:substring <> 1) blocking))
                             (blocking (delete-duplicates blocking))
                             (modeling (append modeling '("inevitable" "optional")))
-                            (taus (append taus flushes blocking))
+                            (taus (append taus externals flushes blocking))
                             (taus+modeling (append taus modeling)))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))

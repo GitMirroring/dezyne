@@ -1,0 +1,28 @@
+interface ihello
+{
+  in void hello();
+  out void cruel();
+  out void world();
+  behavior
+  {
+    on hello: {cruel; world;}
+  }
+}
+
+component helloworld
+{
+  provides blocking ihello h;
+  requires external ihello w1;
+  requires external ihello w2;
+  behavior
+  {
+    bool done = true;
+    blocking on h.hello(): {done = false; w1.hello(); w2.hello();}
+    on w1.cruel(), w2.cruel(): {}
+    [!done] on w1.world(), w2.world(): done = true;
+    [done] on w1.world(), w2.world(): {h.cruel(); h.world(); h.reply();}
+
+  }
+}
+
+//2 external sources will never end up simultaneously inside the component queue

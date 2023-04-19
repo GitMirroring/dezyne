@@ -1,6 +1,7 @@
 model: compliance_external
 h.hello
 w.hello
+<external>.w.world
 w.return
 h.return
 h.hello

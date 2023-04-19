@@ -748,8 +748,9 @@ from LABELS."
 ;;;
 (define (parse-label label)
   (define-peg-string-patterns
-    "tree               <-- event / modeling / defer-qout / tag / reply / state / tau-void / tau-reply / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
+    "tree               <-- external-qin / event / modeling / defer-qout / tag / reply / state / tau-void / tau-reply / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
+     external-qin       <-- port-name tick ext-qin lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
      queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
@@ -764,6 +765,7 @@ from LABELS."
      state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
      tag                <   tag-literal lpar int comma int rpar
+     ext-qin            <   'ext_qin'
      port-              <   'port_'
      port-name          <-  port-scope* identifier
      port-scope         <   scope !(void / void-literal / internal-literal / queue-direction / direction / reply-literal / tau-reply-literal / state-literal / variables-literal / port-? 'queue_full' / port-? 'flush' / port- 'blocking')
@@ -780,7 +782,7 @@ from LABELS."
      enum-literal       <-- (enum tick)* enum-field
      enum               <-  identifier
      enum-field         <-  identifier
-     direction          <   (port-? 'in' / port-? 'out' / port- 'qin') !identifier
+     direction          <   (ext-qin / port-? 'in' / port-? 'out' / port- 'qin') !identifier
      defer-qout         <-- 'defer_qout' paren-arguments
      paren-arguments    <   lpar ((!(lpar / rpar) .)* paren-arguments*)* rpar
      queue-direction    <-- port-? 'qout'
@@ -836,6 +838,7 @@ from LABELS."
     (match tree
       (('parse-error parse-error) (simple-format (current-error-port) "parse error:~s\n" tree) parse-error)
       (('defer-qout label) "<defer>")
+      (('external-qin ('identifier port) ('identifier event)) (string-append "<external>." port "." event))
       (('error error) (cleanup-error error))
       (('error ('identifier port) error) (cleanup-error error))
       (('event ('identifier port) ('identifier event)) (string-append port "." event))

@@ -1,7 +1,9 @@
 p.e
 q.e
+<external>.q.a
 q.return
 r.e
+<external>.r.a
 r.return
 p.return
 q.a
