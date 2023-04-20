@@ -59,8 +59,11 @@
 ;;; Trail (a.k.a. events, named event trace)
 ;;;
 
+;; Show external events on trail?
+(define %external? (make-parameter #f))
+
 ;; Show modeling events on trail?
-(define %modeling? (make-parameter #F))
+(define %modeling? (make-parameter #f))
 
 (define (display-trails traces)
   (when (pair? traces)
@@ -162,7 +165,9 @@
   (or (ast:in? action)
       (is-a? (%sut) <runtime:port>)
       (and (ast:requires? o)
-           (not (ast:external? o)))))
+           (not (ast:external? o)))
+      (and (%external?)
+           (ast:external? o))))
 
 (define-method (pc-event? (o <runtime:component>) (action <action>))
   (let* ((port (.port action))
@@ -248,12 +253,16 @@
 
 (define-method (pc->event (o <runtime:port>) (action <action>))
   (cons action
-        (if (ast:out? action)
-            (format #f "~a~a" (or (and=> (trace-name o)
-                                         (cute format #f "~a." <>))
-                                  "")
-                    (trigger->string action))
-            (format #f "~a" (trigger->string action)))))
+        (let ((external (if (and (%external?) (ast:external? o)) "<external>."
+                            "")))
+          (if (ast:out? action)
+              (format #f "~a~a~a"
+                      external
+                      (or (and=> (trace-name o)
+                                 (cute format #f "~a." <>))
+                          "")
+                      (trigger->string action))
+              (format #f "~a" (trigger->string action))))))
 
 (define-method (pc->event (o <runtime:component>) (action <action>))
   (cons action
@@ -398,8 +407,9 @@
 (define-method (pc-arrow? (o <runtime:port>) (action <action>))
   (or (ast:in? action)
       (is-a? (%sut) <runtime:port>)
-      (not (and (ast:requires? o)
-                (ast:external? o)))))
+      (and (ast:requires? o)
+           (not (ast:external? o)))
+      (%external?)))
 
 (define-method (pc-arrow? (o <runtime:component>) (action <action>))
   #t)
@@ -709,6 +719,24 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (q-in (make <q-in> #:trigger trigger #:location (.location trigger)))
                    (q-in (clone q-in #:parent (.ast deferred)))
                    (q-pc (clone pc #:instance deferred #:statement q-in)))
+              (loop (cdr trace) (cons* pc q-pc result))))
+           ((and next
+                 (is-a? statement <action>)
+                 (ast:out? statement)
+                 (is-a? pc-instance <runtime:port>)
+                 (ast:requires? pc-instance)
+                 (ast:external? pc-instance)
+                 (> (length (external-triggers next))
+                    (length (external-triggers pc))))
+            (let* ((port (.port statement))
+                   (r:other-port (runtime:other-port pc-instance))
+                   (r:other-instance (.container r:other-port))
+                   (action (clone statement #:port.name #f))
+                   (x trigger (dequeue-external next pc-instance))
+                   (location (.location trigger))
+                   (q-in (make <q-in> #:trigger trigger #:location location))
+                   (q-in (clone q-in #:parent (.ast r:other-instance)))
+                   (q-pc (clone next #:instance r:other-instance #:statement q-in)))
               (loop (cdr trace) (cons* pc q-pc result))))
            ((and (is-a? statement <action>)
                  (ast:out? statement)
@@ -1071,23 +1099,29 @@ value of the trail."
       (display initial-message)
       (display initial-message (current-error-port)))
 
-    (cond ((null? traces))
-          ((equal? trace-format "event")
-           (display-trail trace))
-          ((equal? trace-format "trace")
-           (display-trace trace
-                          #:locations? locations? #:state? state? #:verbose? verbose?))
-          ((equal? trace-format "diagram")
-           (let ((split-arrows
-                  (with-output-to-string
-                    (lambda _
-                      (serialize-header (.state pc) (current-output-port))
-                      (newline)
-                      (serialize (.state pc) (current-output-port))
-                      (newline)
-                      (display-trace trace
-                                     #:locations? locations? #:state? state? #:verbose? verbose?)))))
-             (display (trace:format-trace split-arrows #:format "diagram" #:internal? internal?)))))
+    (parameterize ((%external? #t))
+      (cond
+       ((null? traces))
+       ((equal? trace-format "event")
+        (display-trail trace))
+       ((equal? trace-format "trace")
+        (display-trace trace
+                       #:locations? locations? #:state? state? #:verbose? verbose?))
+       ((equal? trace-format "diagram")
+        (let ((split-arrows
+               (with-output-to-string
+                 (lambda _
+                   (serialize-header (.state pc) (current-output-port))
+                   (newline)
+                   (serialize (.state pc) (current-output-port))
+                   (newline)
+                   (display-trace trace
+                                  #:locations? locations?
+                                  #:state? state?
+                                  #:verbose? verbose?)))))
+          (display (trace:format-trace split-arrows
+                                       #:format "diagram"
+                                       #:internal? internal?))))))
 
     (when (and pc
                (not (equal? trace-format "diagram")))

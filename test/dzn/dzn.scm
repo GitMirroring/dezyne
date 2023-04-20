@@ -732,7 +732,8 @@ are weak-bisim equivalent"
 
       (cond ((and (zero? status) (not baseline?))
              (let* ((input (filter-state input))
-                    (trail (filter-state stdout)))
+                    (trail (filter-<external> stdout))
+                    (trail (filter-state trail)))
                (and
                 (receive (status stdout stderr)
                     (observe `("bash" "-c"
