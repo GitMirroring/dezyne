@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -45,6 +45,8 @@
   ((geiser-active-implementations . (guile))
    (eval
     .
+    (unless (boundp 'geiser-guile-load-path)
+      (defvar geiser-guile-load-path '()))
     (progn
       (defun prefix-dir-locals-dir (elt)
         (let* ((root-dir (locate-dominating-file buffer-file-name
