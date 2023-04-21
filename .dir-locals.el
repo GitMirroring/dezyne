@@ -59,6 +59,9 @@
         #'prefix-dir-locals-dir
         '(".")))))
 
+   ;; Fixup for non-Guix Emacsen
+   (eval . (put 'match 'scheme-indent-function 1))
+
    ;; Guix
    (eval . (put 'modify-phases 'scheme-indent-function 1))
    (eval . (put 'replace 'scheme-indent-function 1))
