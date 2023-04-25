@@ -45,9 +45,9 @@
   ((geiser-active-implementations . (guile))
    (eval
     .
-    (unless (boundp 'geiser-guile-load-path)
-      (defvar geiser-guile-load-path '()))
     (progn
+      (unless (boundp 'geiser-guile-load-path)
+        (defvar geiser-guile-load-path '()))
       (defun prefix-dir-locals-dir (elt)
         (let* ((root-dir (locate-dominating-file buffer-file-name
                                                  ".dir-locals.el"))
