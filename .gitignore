@@ -90,3 +90,6 @@ Makefile.in
 /test/all/parse_preprocessed_foo/parse_preprocessed_foo.dzn
 /test/all/parse_preprocessed_imported_bar/parse_preprocessed_imported_bar.dzn
 /test/all/parse_preprocessed_imported_baz/parse_preprocessed_imported_baz.dzn
+/test/all/parse_fall_back_preprocessed_foo/parse_fall_back_preprocessed_foo.dzn
+/test/all/parse_fall_back_preprocessed_imported_bar/parse_fall_back_preprocessed_imported_bar.dzn
+/test/all/parse_fall_back_preprocessed_imported_baz/parse_fall_back_preprocessed_imported_baz.dzn
