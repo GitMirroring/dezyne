@@ -55,7 +55,6 @@ main ()
       {
         std::thread ([&]
         {
-          std::clog << "cruel\n";
           sut.h.in.cruel ();
         }).detach();
       }
@@ -63,9 +62,7 @@ main ()
     std::thread ([&]
     {
       std::this_thread::sleep_for (std::chrono::milliseconds (50));
-      std::clog << "world0\n";
       sut.w0.out.world ();
-      std::clog << "world1\n";
       sut.w1.out.world ();
     }).detach();
   };
