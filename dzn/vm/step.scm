@@ -32,9 +32,11 @@
   #:use-module (dzn vm ast)
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm goops)
+  #:use-module (dzn vm report)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
   #:export (%liveness?
+            %strict-external?
             begin-step
             step))
 
@@ -46,6 +48,9 @@
 
 ;; Are we running the "liveness" check?
 (define %liveness? (make-parameter #f))
+
+;; Do we have <external> events on the trail?
+(define %strict-external? (make-parameter #f))
 
 ;;;
 ;;; A ’step’ run starts by inserting an EVENT (’coin’) in BEGIN-STEP.
@@ -279,7 +284,8 @@
     (cond
      ((and (runtime:boundary-port? other-port)
            (ast:requires? other-port)
-           (ast:external? other-port))
+           (ast:external? other-port)
+           (not (%strict-external?)))
       (let* ((run-external-modeling (@ (dzn vm run) run-external-modeling))
              (silent-traces (run-external-modeling pc other-instance))
              (silent-pcs (map car silent-traces))
@@ -324,7 +330,24 @@
      ((and (is-a? instance <runtime:port>)
            (ast:requires? (.ast instance))
            (ast:external? (.ast instance)))
-      (list (enqueue-external pc o (q-trigger))))
+      (let* ((input new-pc (if (not (interactive?)) ((%next-input) pc)
+                               (values #f pc)))
+             (component (.container other-port))
+             (observable (parameterize ((%external? #t)
+                                        (%sut component))
+                           (and=> (trace->trail orig-pc) cdr)))
+             (match? (equal? input observable))
+             (pc (if match? new-pc pc))
+             (pc (cond ((or match? (not (%strict-external?)))
+                        (enqueue-external pc o (q-trigger)))
+                       (else
+                        (let ((error (make <match-error>
+                                       #:ast o
+                                       #:instance r:port
+                                       #:input input
+                                       #:message "match")))
+                          (clone pc #:status error))))))
+        (list pc)))
      ((is-a? (%sut) <runtime:port>)
       (list pc))
      ((and (is-a? instance <runtime:port>)

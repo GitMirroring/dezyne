@@ -66,6 +66,7 @@
             enqueue
             enqueue-external
             external-trigger?
+            <external>-trigger?
             external-trigger-in-q?
             flush
             get-handling
@@ -75,6 +76,7 @@
             graft-locals
             in-event?
             instance-rtc-trigger
+            interactive?
             is-status?
             label->string
             label?
@@ -127,6 +129,7 @@
             string->trigger
             string->value
             trace-head:eq?
+            trigger->action
             trigger->component-trigger
             trigger-in-q?
             trigger->system-trigger
@@ -164,6 +167,9 @@
 ;;; Input, labels
 ;;;
 
+(define (interactive?)
+  (isatty? (current-input-port)))
+
 (define (read-input-file)
   (define (helper x)
     (if (eof-object? x) '()
@@ -184,7 +190,8 @@
                                  (conjoin
                                   (cute string-prefix? "<" <>)
                                   (negate
-                                   (cute equal? <> "<defer>")))))
+                                   (cute equal? <> "<defer>"))
+                                  (negate <external>-trigger?))))
                         trail))
          (loop (and loop-index (call-with-values
                                    (cute split-at trail loop-index)
@@ -445,6 +452,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (($ <trigger-return>)
      (let ((prefix (or (and=> (.port.name o) (cute string-append <> ".")) "")))
        (string-append prefix (label->string (.event.name o)))))
+    ((? (is? <behavior>))
+     #f)
     ((? (is? <model>))
      #f)
     ((? string?)
@@ -548,6 +557,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
            #:port.name (and (not (.boundary? o)) (.name (.ast o)))
            #:event.name (.event.name action)
            #:location (.location action))
+         #:parent (.type (.ast (if (runtime:boundary-port? o) o
+                                   (.container o))))))
+
+(define-method (trigger->action (o <runtime:port>) (trigger <trigger>))
+  (clone (make <action>
+           #:port.name (and (not (.boundary? o)) (.name (.ast o)))
+           #:event.name (.event.name trigger)
+           #:location (.location trigger))
          #:parent (.type (.ast (if (runtime:boundary-port? o) o
                                    (.container o))))))
 
@@ -1519,6 +1536,11 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (and (requires-trigger? event)
        (let ((port (and=> (string->trigger event) .port)))
          (and port (ast:requires? port) (ast:external? port)))))
+
+(define-method (<external>-trigger? event)
+  (and (string? event)
+       (string-prefix? "<external>." event)
+       (substring event (string-length "<external>."))))
 
 (define-method (external-trigger-in-q? (pc <program-counter>) event)
   (and (requires-trigger? event)

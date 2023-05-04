@@ -362,13 +362,33 @@ or false."
                                           #:input event)))
                             (%debug "<match-error>: ~a\n" event)
                             (list (list (clone pc #:status error))))))
-              (traces (map (cute append <> pc+blocked-trace) traces)))
+              (traces (map (cute append <> pc+blocked-trace) traces))
+              (no-match? (find (compose
+                                (conjoin (is? <match-error>)
+                                         (disjoin
+                                          .instance
+                                          (compose <external>-trigger? .input)))
+                                .status
+                                car)
+                               traces))
+              (illegal? (find (compose
+                               (disjoin
+                                (is? <illegal>)
+                                (is? <declarative-illegal>))
+                               .status
+                               car)
+                              traces))
+              (skip-compliance? (or (not (%compliance-check?))
+                                    (and no-match?
+                                         (%strict-external?))
+                                    illegal?)))
          (if (is-a? (%sut) <runtime:port>) traces
              (let* ((cpc (if (requires-trigger? event) pc
                              (last pc+blocked-trace)))
                     (cpc (reset-replies cpc))
                     (cpc (clone cpc #:instance #f)))
-               (check-provides-compliance* cpc event traces)))))
+               (parameterize ((%compliance-check? (not skip-compliance?)))
+                 (check-provides-compliance* cpc event traces))))))
       ((? (const (and (pair? (.defer pc)) (not (%strict?)))))
        (let* ((traces (flush-defer pc))
               (traces (if (null? blocked-trace) traces
@@ -1016,6 +1036,8 @@ memoizations to work."
                  (%queue-size-defer queue-size-defer)
                  (%queue-size-external queue-size-external)
                  (%strict? strict?)
+                 (%strict-external? (and strict?
+                                         (find <external>-trigger? trail)))
                  (%sut sut))
     (run-trail trail
                #:deadlock-check? deadlock-check?

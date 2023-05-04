@@ -174,6 +174,7 @@
   (input))
 
 (define-ast <match-error> (<error>)
+  (instance)
   (input)
   (message))
 

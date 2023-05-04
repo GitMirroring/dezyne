@@ -704,7 +704,6 @@ are weak-bisim equivalent"
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
          (input (filter-<flush> input))
-         (input (filter-<external> input))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
@@ -732,8 +731,7 @@ are weak-bisim equivalent"
 
       (cond ((and (zero? status) (not baseline?))
              (let* ((input (filter-state input))
-                    (trail (filter-<external> stdout))
-                    (trail (filter-state trail)))
+                    (trail (filter-state stdout)))
                (and
                 (receive (status stdout stderr)
                     (observe `("bash" "-c"

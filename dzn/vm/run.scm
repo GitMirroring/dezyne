@@ -45,7 +45,6 @@
             filter-implicit-illegal-only
             filter-match-error
             flush-defer
-            interactive?
             livelock?
             mark-livelock-error
             run-defer-event
@@ -305,8 +304,35 @@ prefix."
                                 (cute - (length trace) <> 1))))
               index))))))
 
-(define (interactive?)
-  (isatty? (current-input-port)))
+(define (run-<external>-trigger trace)
+  "Return a list of traces or NIL by running run-external-modeling if
+TRAIL starts with a <external> qin event."
+  (let* ((pc (car trace))
+         (o (.statement pc))
+         (observable? (or (is-a? o <action>)
+                          (is-a? o <q-out>)
+                          (is-a? o <trigger-return>)))
+         (observable
+          (and observable?
+               (parameterize ((%external? (%strict-external?)))
+                 (and=> (trace->trail pc) cdr))))
+         (input x (if (and observable (not (interactive?)))
+                      ((%next-input) pc)
+                      (values #f pc)))
+         (traces (list trace)))
+    (if (not (<external>-trigger? input)) traces
+        (let* ((event (<external>-trigger? input))
+               (trigger (string->trigger event))
+               (port (.port trigger))
+               (instance (.instance pc))
+               (port
+                (if (is-a? instance <runtime:port>) instance
+                    (let ((r:port (runtime:port instance port)))
+                      (runtime:other-port r:port))))
+               (trace (cdr trace))
+               (external (run-external-modeling pc event)))
+          (if (null? external) traces
+              (map (cute append <> trace) external))))))
 
 (define-method (extend-trace (trace <list>))
   "Return a list of traces, produced by appending TRACE to each of the
@@ -363,7 +389,10 @@ program-counters produced by taking a step."
                     (observable? (or (is-a? o <action>)
                                      (is-a? o <q-out>)
                                      (is-a? o <trigger-return>)))
-                    (observable (and observable? (and=> (trace->trail pc) cdr)))
+                    (observable
+                     (and observable?
+                          (parameterize ((%external? (%strict-external?)))
+                            (and=> (trace->trail pc) cdr))))
                     (pcs (step pc o))
                     (trace (if (any (disjoin
                                      (conjoin (is-status? <second-reply-error>)
@@ -375,6 +404,41 @@ program-counters produced by taking a step."
                     (input pc (if (and observable (not (interactive?)))
                                   ((%next-input) pc)
                                   (values #f pc)))
+                    (instance (.instance pc))
+                    (input
+                     pcs
+                     pc
+                     tail
+                     (if (or (equal? input observable)
+                             (not (<external>-trigger? input))) (values input pcs pc '())
+                             (let* ((event (<external>-trigger? input))
+                                    (trigger (string->trigger event))
+                                    (port (.port trigger))
+                                    (port
+                                     (if (is-a? instance <runtime:port>) instance
+                                         (let ((r:port (runtime:port instance port)))
+                                           (runtime:other-port r:port))))
+                                    (epc (car pcs))
+                                    (trail (.trail pc))
+                                    (epcs (map (cute clone <> #:trail trail) pcs))
+                                    (external-traces
+                                     (append-map
+                                      (cute run-external-modeling <> port)
+                                      epcs))
+                                    (external-pcs (map car external-traces)))
+                               (if (null? external-pcs) (values input pcs pc '())
+                                   (let* ((event (<external>-trigger? input))
+                                          (trigger (string->trigger event))
+                                          (port (.port trigger))
+                                          (r:port (runtime:port (%sut) port))
+                                          (r:other-port (runtime:other-port r:port))
+                                          (action (trigger->action r:other-port trigger))
+                                          (action-pc (clone pc #:instance r:other-port #:statement action))
+                                          (orig-pc pc)
+                                          (pc (car epcs))
+                                          (input pc ((%next-input) pc))
+                                          (trail (.trail pc)))
+                                     (values input pcs pc (list action-pc orig-pc action-pc action-pc)))))))
                     (pcs (cond ((%exploring?)
                                 pcs)
                                ((not observable)
@@ -394,7 +458,8 @@ program-counters produced by taking a step."
                                 (runtime:port instance (.port o))))
                               (and (is-a? o <flush-return>)
                                    (.trigger o)))))
-                    (traces (map (cut cons <> trace) pcs))
+                    (traces (map (cute cons <> tail) pcs))
+                    (traces (map (cut append <> trace) traces))
                     (traces (if (not internal-compliance?) traces
                                 (internal-check-compliance pc trace traces)))
                     (update? (and
@@ -408,7 +473,8 @@ program-counters produced by taking a step."
                                        (cut update-other-state <> instance
                                             #:direction? ast:requires?)
                                        <>)
-                                 traces))))
+                                 traces)))
+                    (traces (append-map run-<external>-trigger traces)))
                (cond
                 ((ast:declarative? o)
                  (let ((declarative
@@ -676,7 +742,10 @@ until RTC?."
 (define-method (run-external-modeling (pc <program-counter>) (port <runtime:port>))
   (define (update-state pc port-pc)
     (let ((pc (set-state pc (get-state port-pc port))))
-      (clone pc #:external-q (.external-q port-pc) #:status (.status port-pc))))
+      (clone pc
+             #:external-q (.external-q port-pc)
+             #:status (.status port-pc)
+             #:trail (.trail port-pc))))
   (%debug "run-external-modeling... ~s\n" (name port))
   (let* ((r:other-port (runtime:other-port port))
          (external? (and (ast:requires? r:other-port)
@@ -685,43 +754,66 @@ until RTC?."
         (let ((modeling-names (modeling-names port)))
           (if (null? modeling-names) '()
               (let* ((previous (.previous pc))
-                     (ipc (clone pc #:trigger #f #:previous #f #:instance #f
-                                 #:trail '() #:statement #f))
-                     (traces (parameterize ((%sut port)
-                                            (%liveness? 'component)
-                                            (%exploring? #t)
-                                            (%strict? #f))
-                               (append-map (cute run-to-completion ipc <>) modeling-names)))
+                     (ipc (clone pc
+                                 #:instance #f
+                                 #:previous #f
+                                 #:statement #f
+                                 #:trigger #f))
+                     (traces (parameterize
+                                 ((%sut port)
+                                  (%liveness? 'component)
+                                  (%exploring? #t)
+                                  (%strict? (%strict-external?)))
+                               (append-map (cute run-to-completion ipc <>)
+                                           modeling-names)))
                      (traces (filter (compose
-                                      (disjoin not (is? <queue-full-error>))
+                                      (disjoin
+                                       not
+                                       (conjoin
+                                        (const (%strict-external?))
+                                        (is? <match-error>))
+                                       (is? <queue-full-error>))
                                       .status car)
                                      traces)))
-                (map (cute rewrite-trace-head (cute update-state pc <>) <>) traces)))))))
+                (map (cute rewrite-trace-head (cute update-state pc <>) <>)
+                     traces)))))))
+
+(define-method (run-external-modeling trace (port <runtime:port>))
+  (extend-trace trace (cute run-external-modeling <> port)))
 
 (define-method (run-external-modeling (pc <program-counter>))
   (let* ((ports (filter (conjoin runtime:boundary-port?
                                  ast:external? ast:requires?)
-                        (%instances))))
-    (append-map (cute run-external-modeling pc <>) ports)))
+                        (%instances)))
+         (traces (append-map (cute run-external-modeling pc <>) ports)))
+    traces))
 
 (define-method (run-external-modeling (pc <program-counter>) event)
   (define (event-executed? port-instance trace)
     (let ((status (.status (car trace)))
-          (trail (map cdr (trace->trail trace))))
+          (trail (map cdr (parameterize ((%external? #t))
+                            (trace->trail trace)))))
       (or (is-a? status <queue-full-error>)
+          (and (pair? trail)
+               (equal? event (<external>-trigger? (car trail))))
           (let* ((pc (car trace))
                  (pc trigger (dequeue-external pc port-instance)))
             (and trigger
                  (let ((trigger (trigger->component-trigger port-instance
                                                             trigger)))
                    (equal? (trigger->string trigger) event)))))))
-  (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
+  (let* ((sut (if (not (is-a? (%sut) <runtime:port>)) (%sut)
+                  (.container (runtime:other-port (%sut)))))
+         (component ((compose .type .ast) sut))
+         (trigger (parameterize ((%sut sut))
+                    (string->trigger event)))
+         (trigger (clone trigger #:parent component))
          (port-name (.port.name trigger))
-         (port-instance (runtime:port-name->instance port-name))
+         (port-instance (parameterize ((%sut sut))
+                          (runtime:port-name->instance port-name)))
          (traces (run-external-modeling pc port-instance))
          (traces (filter (cute event-executed? port-instance <>) traces)))
-    (map car traces)))
+    traces))
 
 (define-method (run-interface (pc <program-counter>) (event <string>))
   (define (event-executed? trace)
@@ -913,14 +1005,24 @@ until RTC?."
   (cond
    ((is-a? (%sut) <runtime:port>)
     (run-interface pc event))
+   ((<external>-trigger? event)
+    (let* ((trail (.trail pc))
+           (trail (cons event trail))
+           (pc (clone pc #:trail trail))
+           (event (<external>-trigger? event))
+           (traces (run-external-modeling pc event)))
+      traces))
    ((external-trigger-in-q? pc event)
     (let ((pc (clone pc #:trail (cons event (.trail pc)))))
       (run-external pc event)))
    ((and (external-trigger? event)
          (trigger-in-q? pc event))
     (run-requires-flush pc event))
-   ((external-trigger? event)
-    (let* ((pcs (cons pc (run-external-modeling pc event)))
+   ((and (not (%strict-external?))
+         (external-trigger? event))
+    (let* ((traces (run-external-modeling pc event))
+           (pcs (map car traces))
+           (pcs (cons pc pcs))
            (traces (append-map (cute run-external <> event) pcs)))
       (append-map (cute run-requires-flush <> event) traces)))
    ((requires-trigger? event)
@@ -930,10 +1032,13 @@ until RTC?."
                              (run-defer-event pc event))))
       (append
        defer-traces
-       (let* ((pcs (cons pc (run-external-modeling pc event)))
+       (let* ((trace (list pc))
+              (traces (if (%strict-external?) (list trace)
+                          (run-external-modeling pc event)))
+              (pcs (map car traces))
+              (pcs (cons pc pcs))
               (port (.port (string->trigger event)))
-              (blocked-port (and=> (blocked-on-boundary? pc event)
-                                   .ast))
+              (blocked-port (and=> (blocked-on-boundary? pc event) .ast))
               (traces (append-map (cute run-requires <> event) pcs)))
          (if (or (not port) (not (ast:eq? port blocked-port))) traces
              (filter (negate modeling?) traces))))))

@@ -41,7 +41,8 @@
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
   #:use-module (dzn ast wfc)
-  #:export (%modeling?
+  #:export (%external?
+            %modeling?
             debug:lts->alist
             display-trace-n
             display-trails
@@ -253,16 +254,21 @@
 
 (define-method (pc->event (o <runtime:port>) (action <action>))
   (cons action
-        (let ((external (if (and (%external?) (ast:external? o)) "<external>."
-                            "")))
+        (let* ((external (if (and (%external?) (ast:external? o)) "<external>."
+                             ""))
+               (r:other-port (runtime:other-port o))
+               (sut (or (and (%external?)
+                             (and=> r:other-port .container))
+                        (%sut))))
           (if (ast:out? action)
               (format #f "~a~a~a"
                       external
-                      (or (and=> (trace-name o)
-                                 (cute format #f "~a." <>))
+                      (or (and=>
+                           (parameterize ((%sut sut)) (trace-name o))
+                           (cute format #f "~a." <>))
                           "")
                       (trigger->string action))
-              (format #f "~a" (trigger->string action))))))
+              (format #f ".~a" (trigger->string action))))))
 
 (define-method (pc->event (o <runtime:component>) (action <action>))
   (cons action
@@ -1047,7 +1053,7 @@ intermediate steps such as assignments, function calls, replies,
       ((and (? (is? <match-error>)) (= .ast #f))
        (let ((location (location-prefix #f)))
          (format #f "~aerror: no match; got input `~s'\n" location (.input status))))
-      ((and (? (is? <match-error>)) (= .ast ast))
+      ((and (? (is? <match-error>)) (= .ast ast) (= .instance #f))
        (let ((location (location-prefix ast))
              (label (label->string ast)))
          (if label
@@ -1055,6 +1061,13 @@ intermediate steps such as assignments, function calls, replies,
                      location label (.input status))
              (format #f "~aerror: no match; got input `~s'\n"
                      location (.input status)))))
+      ((and (? (is? <match-error>)) (= .ast ast) (= .instance instance))
+       (let* ((location (location-prefix ast))
+              (label (label->string ast))
+              (name ( runtime:dotted-name instance))
+              (label (string-append "<external>." name "." label)))
+         (format #f "~aerror: no match; at `~s', got input `~s'\n"
+                 location label (.input status))))
       ((and ($ <end-of-trail> ) (and (= .ast ast)))
        (and ast
             (let* ((instance (.instance (car pcs)))
