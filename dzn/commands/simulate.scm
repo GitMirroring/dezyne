@@ -112,9 +112,11 @@ Simulate a Dezyne model
           (option-ref options 'no-interface-livelock #f))
          (no-queue-full? (option-ref options 'no-queue-full #f))
          (no-refusals? (option-ref options 'no-refusals #f))
-         (queue-size (command-line:get-number 'queue-size 3))
-         (queue-size-defer (command-line:get-number 'queue-size-defer 2))
-         (queue-size-external (command-line:get-number 'queue-size-external 1))
+         (queue-size (command-line:get-number 'queue-size (%queue-size)))
+         (queue-size-defer (command-line:get-number 'queue-size-defer
+                                                    (%queue-size-defer)))
+         (queue-size-external (command-line:get-number 'queue-size-external
+                                                       (%queue-size-external)))
          (state? (command-line:get 'state #f))
          (strict? (command-line:get 'strict #f))
          (verbose? (command-line:get 'verbose #f))
