@@ -2,6 +2,7 @@ p.e
 sut.logger.log.log
 sut.logger.log.return
 r.e
+<external>.r.f
 r.return
 sut.watchdog.w.set
 sut.watchdog.w.return

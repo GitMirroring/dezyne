@@ -1,8 +1,10 @@
 p.hello
 r_left.hello
+<external>.r_left.world
 r_left.return
 r_left.world
 r_right.hello
+<external>.r_right.world
 r_right.return
 r_right.world
 p.return

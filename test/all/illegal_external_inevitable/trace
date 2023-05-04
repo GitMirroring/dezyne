@@ -2,6 +2,7 @@ h.hello
 w.hello
 w.return
 h.return
+<external>.w.world
 h.bye
 w.bye
 w.return

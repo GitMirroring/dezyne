@@ -1,10 +1,12 @@
 left.hello
 w.hello
+<external>.w.world
 w.return
 right.hello
 w.world
 left.return
 w.hello
+<external>.w.world
 w.return
 w.world
 right.return
