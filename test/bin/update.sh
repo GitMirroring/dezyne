@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 #
 # This file is part of Dezyne.
@@ -51,7 +51,7 @@ if $parse; then
     if [ "$fall_back" = '#t' ]; then
         fall_back=--fall-back
     fi
-    mkdir -p $dir/baseline/verify
+    mkdir -p $dir/baseline
     ./pre-inst-env dzn -v parse $fall_back $dir/$base.dzn     \
         > $dir/baseline/verify.out                                   \
         2> $dir/baseline/verify.err
@@ -72,10 +72,15 @@ if $verify; then
     else
         determinism=
     fi
+    queue_size_external=$(grep -Eo '[(]queue-size-external [^)]*' $dir/META | cut -d' ' -f 2 | tr -d '"')
+    if [ -n "$queue_size_external" ]; then
+        queue_size_external="--queue-size-external=$queue_size_external"
+    fi
 
-    mkdir -p $dir/baseline/verify
-    ./pre-inst-env dzn -v verify -a $model $determinism $dir/$base.dzn  \
-        > $dir/baseline/verify.out                                   \
+    mkdir -p $dir/baseline
+    ./pre-inst-env dzn -v verify -a $model $determinism \
+        $queue_size_external $dir/$base.dzn             \
+        > $dir/baseline/verify.out                      \
         2> $dir/baseline/verify.err
 fi
 
@@ -85,10 +90,15 @@ if $simulate; then
         format="trace"
     fi
     flags=$(grep -Eo 'simulate-flags \([^)]*)' $dir/META | cut -d'(' -f 2 | tr -d '()"')
+    queue_size_external=$(grep -Eo '[(]queue-size-external [^)]*' $dir/META | cut -d' ' -f 2 | tr -d '"')
+    if [ -n "$queue_size_external" ]; then
+        queue_size_external="--queue-size-external $queue_size_external"
+    fi
 
-    mkdir -p $dir/baseline/simulate
-    ./pre-inst-env dzn simulate --strict --format=$format $flags $dir/$base.dzn < $dir/trace     \
-        > $dir/baseline/simulate.out                                                 \
+    mkdir -p $dir/baseline
+    ./pre-inst-env dzn simulate --strict --format=$format       \
+        $flags $queue_size_external $dir/$base.dzn < $dir/trace \
+        > $dir/baseline/simulate.out                            \
         2> $dir/baseline/simulate.err
 fi
 
