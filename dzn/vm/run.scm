@@ -428,7 +428,7 @@ PC until RTC?."
              (observe-pc (cadr trace))
              (trail (.trail pc))
              (input (.input (.status pc)))
-             (drop-event? (equal? input (observable observe-pc)))
+             (drop-event? (and (pair? trail) (equal? input (observable observe-pc))))
              (trail (if drop-event? (cdr trail) trail))
              (trace (rewrite-trace-head (cut clone <> #:status #f #:trail trail) trace)))
         trace))
