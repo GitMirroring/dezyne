@@ -1,2 +1,3 @@
 test/all/undefined/component/enum_as_action/enum_as_action.dzn:40:36: error: event `Bool' not defined for port `h'
 test/all/undefined/component/enum_as_action/enum_as_action.dzn:37:3: info: port `h' defined here
+test/all/undefined/component/enum_as_action/enum_as_action.dzn:40:36: error: undefined event `Bool'

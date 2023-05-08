@@ -1247,7 +1247,7 @@
     (cond
      ((and (is-a? o <action>) (not (.event o)))
       (let ((name (.event.name o)))
-        `(,(wfc-error o (format #f "undefined identifier `~a'" name)))))
+        `(,(wfc-error o (format #f "undefined event `~a'" name)))))
      ((and (ast:parent o <variable>)
            (ast:member? (ast:parent o <variable>)))
       (let ((class (if (equal? class "var") "variable reference" class)))

@@ -353,8 +353,9 @@ null) and return its CONTEXT."
   (let* ((port-name (.port.name o))
          (port (.port o))
          (interface (if port (.type port)
-                        (ast:parent o <interface>))))
-    (ast:lookup interface (.event.name o))))
+                        (ast:parent o <interface>)))
+         (event (ast:lookup interface (.event.name o))))
+    (as event <event>)))
 
 (define-method (.event (o <trigger>))
   (let* ((port-name (.port.name o))
@@ -367,8 +368,10 @@ null) and return its CONTEXT."
           ((and (not port-name)
                 (equal? (.event.name o) "optional"))
            (clone (ast:optional) #:parent interface))
-          (else (and interface
-                     (ast:lookup interface (.event.name o)))))))
+          (else (and
+                 interface
+                 (let ((event (ast:lookup interface (.event.name o))))
+                   (as event <event>)))))))
 
 (define-method (.event.direction (o <action>))
   ((compose .direction .event) o))
