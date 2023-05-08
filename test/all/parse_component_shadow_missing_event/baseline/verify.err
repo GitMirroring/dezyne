@@ -1,0 +1,4 @@
+test/all/parse_component_shadow_missing_event/parse_component_shadow_missing_event.dzn:26:3: error: event `hello' is not used in behavior of interface `ihello'
+test/all/parse_component_shadow_missing_event/parse_component_shadow_missing_event.dzn:24:1: error: interface must define a behavior
+test/all/parse_component_shadow_missing_event/parse_component_shadow_missing_event.dzn:35:8: error: event `cruel' not defined for port `h'
+test/all/parse_component_shadow_missing_event/parse_component_shadow_missing_event.dzn:31:3: info: port `h' defined here
