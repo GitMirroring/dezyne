@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -35,13 +35,17 @@ function main () {
   loc.set(pump);
   var rt = new dzn.runtime(function() {console.error('illegal');process.exit(1);});
   var sut = new dzn.foreign_requires(loc.set(rt), {name:'sut'});
+  sut.c.w0._dzn.meta.provides.name = "w0";
+  sut.c.w1._dzn.meta.provides.name = "w1";
 
   sut.c.w0.in.hello = function () {
     console.error ('<external>.w0.hello -> sut.c.h.hello');
+    sut.c.w0.out.world ();
     console.error ('<external>.w0.return -> sut.c.h.return');
   };
   sut.c.w1.in.hello = function () {
     console.error ('<external>.w1.hello -> sut.c.h.hello');
+    sut.c.w1.out.world ();
     console.error ('<external>.w1.return -> sut.c.h.return');
   };
   sut.f.w0.out.world ();

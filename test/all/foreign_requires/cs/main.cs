@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,12 +32,16 @@ class main {
     locator.set(runtime);
 
     var sut = new foreign_requires (locator, "sut");
+    sut.w0.meta.provide.name = "w0";
+    sut.w1.meta.provide.name = "w1";
     sut.c.w0.in_port.hello = () => {
         System.Console.Error.WriteLine("<external>.w0.hello -> sut.c.w0.world");
+        sut.c.w0.out_port.world ();
         System.Console.Error.WriteLine("<external>.w0.return <- sut.c.w0.return");
     };
     sut.c.w1.in_port.hello = () => {
         System.Console.Error.WriteLine("<external>.w1.hello -> sut.c.w1.world");
+        sut.c.w1.out_port.world ();
         System.Console.Error.WriteLine("<external>.w1.return <- sut.c.w1.return");
     };
     sut.f.w0_world ();

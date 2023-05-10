@@ -1,8 +1,10 @@
 sut.f.w0.hello
 w0.hello
+w0.world
 w0.return
 sut.f.w0.return
 sut.f.w1.hello
 w1.hello
+w1.world
 w1.return
 sut.f.w1.return

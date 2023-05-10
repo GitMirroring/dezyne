@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,13 +37,19 @@ main ()
 
   foreign_requires sut (locator);
   sut.dzn_meta.name = "sut";
+  sut.c.w0.meta.provide.name = "w0";
+  sut.c.w1.meta.provide.name = "w1";
 
-  sut.c.w0.in.hello = [] {
+  sut.c.w0.in.hello = [&]
+  {
     std::clog << "<external>.w0.hello -> sut.c.w0.hello\n";
+    sut.w0.out.world ();
     std::clog << "<external>.w0.return <- sut.c.w0.return\n";
   };
-  sut.c.w1.in.hello = [] {
+  sut.c.w1.in.hello = [&]
+  {
     std::clog << "<external>.w1.hello -> sut.c.w1.hello\n";
+    sut.w1.out.world ();
     std::clog << "<external>.w1.return <- sut.c.w1.return\n";
   };
   sut.f.w0_world ();

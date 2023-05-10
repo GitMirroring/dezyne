@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -36,13 +36,17 @@
          (runtime (make <dzn:runtime> #:illegal print-illegal))
          (locator (dzn:set! locator runtime))
          (sut (make <foreign_requires> #:locator locator #:name "sut")))
+    (set! (.name (.in (.w0 (.c sut)))) "w0")
+    (set! (.name (.in (.w1 (.c sut)))) "w1")
     (set! (.hello (.in (.w0 (.c sut))))
           (lambda _
             (display  "<external>.w0.hello -> sut.c.w0.hello\n" (current-error-port))
+            (action (.c sut) .w0 .out .world)
             (display  "<external>.w0.return <- sut.c.w0.return\n" (current-error-port))))
     (set! (.hello (.in (.w1 (.c sut))))
           (lambda _
             (display  "<external>.w1.hello -> sut.c.w1.hello\n" (current-error-port))
+            (action (.c sut) .w1 .out .world)
             (display  "<external>.w1.return <- sut.c.w1.return\n" (current-error-port))))
     (w0-world (.f sut))
     (w1-world (.f sut))))
