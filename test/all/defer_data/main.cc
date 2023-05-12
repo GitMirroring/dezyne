@@ -60,10 +60,7 @@ main (int argc, char **argv)
   sut.h.meta.require.name = "h";
   sut.h.meta.require.port = &sut.h;
 
-  sut.h.out.world = [&] (int)
-  {
-    dzn::trace (std::clog, sut.h.meta, "world");
-  };
+  sut.h.out.world = [&] (int) {};
 
   std::string trace = read ();
   if (0);

@@ -40,19 +40,17 @@ main (int argc, char* argv[])
                                    {return s == std::string ("--debug");}))
     dzn::debug.rdbuf (std::clog.rdbuf ());
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set (rt);
-  collateral_blocking_multiple_provides0 sut (loc);
+  dzn::locator locator;
+  dzn::runtime runtime;
+  locator.set (runtime);
+  collateral_blocking_multiple_provides0 sut (locator);
   sut.dzn_meta.name = "sut";
   sut.r.meta.provide.name = "r";
 
   sut.r.in.hello = [&]
   {
-    dzn::trace(std::clog, sut.r.meta, "hello");
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     sut.r.out.world();
-    dzn::trace_out(std::clog, sut.r.meta, "return");
   };
 
   std::thread t([&]{

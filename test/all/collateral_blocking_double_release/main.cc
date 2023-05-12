@@ -66,17 +66,8 @@ main ()
   sut.w.meta.provide.name = "w";
   sut.w.meta.provide.port = &sut.w;
 
-  sut.w.in.hello = [&]
-  {
-    dzn::trace (std::clog, sut.w.meta, "hello");
-    dzn::trace_out (std::clog, sut.w.meta, "return");
-  };
-
-  sut.w.in.cruel = [&]
-  {
-    dzn::trace (std::clog, sut.w.meta, "cruel");
-    dzn::trace_out (std::clog, sut.w.meta, "return");
-  };
+  sut.w.in.hello = [&] {};
+  sut.w.in.cruel = [&] {};
 
   // Let's just pick one trace
   std::string trace = read ();

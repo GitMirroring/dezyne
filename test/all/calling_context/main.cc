@@ -42,12 +42,10 @@ main ()
   sut.h.meta.require.name = "h";
   sut.w.meta.provide.name = "w";
 
-  sut.w.in.world = [&](int& cc, int i){
+  sut.w.in.world = [&](int& cc, int i)
+  {
     (void)i;
-    //std::clog << "cc=" << cc << ", i=" << i << std::endl;
-    dzn::trace (std::clog, sut.w.meta,"world");
-    if(cc == 0){cc = 123;} else {assert(cc == 123); cc = 456;}
-    dzn::trace_out (std::clog, sut.w.meta,"return"); // std::clog << std::endl;
+    if (cc == 0){cc = 123;} else {assert(cc == 123); cc = 456;}
   };
 
   int cc = 0;

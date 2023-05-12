@@ -31,37 +31,6 @@
 #include <cassert>
 #include <iostream>
 
-void a0()
-{
-  std::cout << "port.a0()" << std::endl;
-  std::clog << "sut.p.bottom.a0 -> <external>.port.a0" << std::endl;
-}
-
-void a(int i)
-{
-  std::cout << "a(" << i << ")" << std::endl;
-  std::clog << "sut.p.bottom.a -> <external>.port.a" << std::endl;
-}
-
-void aa(int i, int j)
-{
-  std::cout << "aa(" << i << "," << j << ")" << std::endl;
-  std::clog << "sut.p.bottom.aa -> <external>.port.aa" << std::endl;
-  assert(j == 123);
-}
-
-void a6(int i0, int i1, int i2, int i3, int i4, int i5)
-{
-  std::cout << "a6(" << i0 << "," << i1 << "," << i2 << "," << i3 << "," << i4 << "," << i5 << ")" << std::endl;
-  std::clog << "sut.p.bottom.a6 -> <external>.port.a6" << std::endl;
-  assert(i0 == 0);
-  assert(i1 == 1);
-  assert(i2 == 2);
-  assert(i3 == 3);
-  assert(i4 == 4);
-  assert(i5 == 5);
-}
-
 int main()
 {
   std::string str;
@@ -76,10 +45,29 @@ int main()
   sut.dzn_meta.name = "sut";
   sut.port.meta.require.name = "port";
 
-  sut.port.out.a0 = a0;
-  sut.port.out.a = a;
-  sut.port.out.aa = aa;
-  sut.port.out.a6 = a6;
+  sut.port.out.a0 = [&]{
+    std::cout << "port.a0()" << std::endl;
+  };
+  sut.port.out.a = [&](int i)
+  {
+    std::cout << "a(" << i << ")" << std::endl;
+  };
+  sut.port.out.aa = [&](int i, int j)
+  {
+    std::cout << "aa(" << i << "," << j << ")" << std::endl;
+    assert(j == 123);
+  };
+  sut.port.out.a6 = [&](int i0, int i1, int i2, int i3, int i4, int i5)
+  {
+    std::cout << "a6(" << i0 << "," << i1 << "," << i2
+              << "," << i3 << "," << i4 << "," << i5 << ")" << std::endl;
+    assert(i0 == 0);
+    assert(i1 == 1);
+    assert(i2 == 2);
+    assert(i3 == 3);
+    assert(i4 == 4);
+    assert(i5 == 5);
+  };
 
   dzn::check_bindings(sut);
   dzn::dump_tree(sut);

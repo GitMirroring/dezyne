@@ -44,11 +44,7 @@ main ()
   sut.w.meta.provide.name = "w";
   sut.w.meta.provide.port = &sut.w;
 
-  sut.w.in.hello = [&]
-  {
-    dzn::trace (std::clog, sut.w.meta, "hello");
-    dzn::trace_out (std::clog, sut.w.meta, "return");
-  };
+  sut.w.in.hello = [&] {};
 
   // 1: run through left top to bottom and block
   auto f0 = std::async (std::launch::async, sut.left.in.hello);

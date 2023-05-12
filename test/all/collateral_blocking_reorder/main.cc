@@ -40,25 +40,19 @@ main ()
 
   collateral_blocking_reorder sut(loc);
   sut.dzn_meta.name = "sut";
-  sut.r.meta.require.name = "r";
-  sut.e.meta.require.name = "e";
+  sut.r.meta.provide.name = "r";
+  sut.e.meta.provide.name = "e";
 
   bool once = true;
 
   sut.r.in.hello = [&]
   {
-    std::clog << "sut.block.r.hello -> <external>.r.hello" << std::endl;
     std::thread([&]{
       if(once) {once = false; sut.e.out.world();}
       sut.r.out.world();
     }).detach();
-    std::clog << "sut.block.r.return <- <external>.r.return" << std::endl;
   };
-  sut.e.in.hello = [&]
-  {
-    std::clog << "sut.proxy.e.hello -> <external>.e.hello" << std::endl;
-    std::clog << "sut.proxy.e.return <- <external>.e.return" << std::endl;
-  };
+  sut.e.in.hello = [&] {};
 
   sut.p.in.hello ();
 

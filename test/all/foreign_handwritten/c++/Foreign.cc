@@ -32,10 +32,10 @@ Foreign::Foreign(const dzn::locator& dzn_locator)
   dzn_meta.require = {};
   w.in.world = [&] ()
   {
-    return dzn::call_in(this, [=] ()
+    return dzn::wrap_in(this, this->w, [=] ()
     {
       return w_world();
-    }, this->w, "world");
+    }, "world");
   };
 }
 

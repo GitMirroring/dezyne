@@ -39,14 +39,11 @@ int main()
   dzn::runtime runtime;
   collateral_blocking_multiple_provides sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
-  sut.world.meta.require.name = "world";
-  sut.world.meta.require.port = &sut.world;
+  sut.world.meta.provide.name = "world";
 
   sut.world.in.hello = [&]{
-    std::clog << "sut.world.hello -> <external>.world.hello" << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     sut.world.out.world();
-    std::clog << "sut.world.return <- <external>.world.return" << std::endl;
   };
 
   sut.left.in.hello();
@@ -54,7 +51,6 @@ int main()
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
   sut.left.in.hello();
   auto f2 = std::async(std::launch::async, [&]{sut.right.in.hello();});
-
 
   f1.wait();
   f2.wait();

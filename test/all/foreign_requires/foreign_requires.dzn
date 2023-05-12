@@ -66,11 +66,11 @@ component foreign_requires
 
   system
     {
-      hello c;
-      c.h0 <=> f.w0;
-      c.h1 <=> f.w1;
       h <=> f.h;
       Foreign f;
+      f.w0 <=> c.h0;
+      f.w1 <=> c.h1;
+      hello c;
       c.w0 <=> w0;
       c.w1 <=> w1;
     }

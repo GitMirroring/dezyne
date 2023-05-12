@@ -30,11 +30,6 @@
 
 #include <iostream>
 
-void f()
-{
-  std::clog << "sut.m.t.f -> <external>.t.f" << std::endl;
-}
-
 int main()
 {
   std::string str;
@@ -48,7 +43,7 @@ int main()
   sut.dzn_meta.name = "sut";
   sut.t.meta.require.name = "t";
   sut.t.meta.require.component = 0;
-  sut.t.out.f = f;
+  sut.t.out.f = [] () {};
 
   dzn::check_bindings(sut);
   dzn::dump_tree(sut);

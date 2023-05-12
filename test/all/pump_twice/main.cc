@@ -37,7 +37,7 @@ int main()
     pump_twice sut(locator.set(runtime).set(pump));
     sut.dzn_meta.name = "sut";
     sut.h.meta.require.name = "h";
-    sut.h.out.world = [&]{dzn::trace_out(std::clog,sut.h.meta,"world");};
+    sut.h.out.world = [&]{};
     dzn::shell(pump, [&]{sut.h.in.hello();});
     pump.wait();
   }

@@ -47,10 +47,10 @@ main ()
 {
   dzn::debug.rdbuf(std::clog.rdbuf());
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set (rt);
-  collateral_blocking_bridges sut (loc);
+  dzn::locator locator;
+  dzn::runtime runtime;
+  locator.set (runtime);
+  collateral_blocking_bridges sut (locator);
   sut.dzn_meta.name = "sut";
 
   sut.top_w.meta.provide.name = "top_w";
@@ -62,21 +62,9 @@ main ()
   sut.bottom_w.meta.provide.name = "bottom_w";
   sut.bottom_w.meta.provide.port = &sut.bottom_w;
 
-  sut.top_w.in.hello = [&]
-  {
-    dzn::trace(std::clog, sut.top_w.meta, "hello");
-    dzn::trace_out(std::clog, sut.top_w.meta, "return");
-  };
-  sut.middle_w.in.hello = [&]
-  {
-    dzn::trace(std::clog, sut.middle_w.meta, "hello");
-    dzn::trace_out(std::clog, sut.middle_w.meta, "return");
-  };
-  sut.bottom_w.in.hello = [&]
-  {
-    dzn::trace(std::clog, sut.bottom_w.meta, "hello");
-    dzn::trace_out(std::clog, sut.bottom_w.meta, "return");
-  };
+  sut.top_w.in.hello = [&] {};
+  sut.middle_w.in.hello = [&] {};
+  sut.bottom_w.in.hello = [&] {};
 
   auto f = std::async(std::launch::async, sut.h.in.hello); // 1: run through top to middle and block
   std::this_thread::sleep_for(std::chrono::milliseconds(100));

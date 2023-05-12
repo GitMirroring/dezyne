@@ -66,16 +66,12 @@ main (int argc, char **argv)
 
   sut.w.in.hello = [&]
   {
-    dzn::trace (std::clog, sut.w.meta, "hello");
     sut.w.out.world ();
-    dzn::trace_out (std::clog, sut.w.meta, "return");
   };
 
   sut.w.in.hello_void = [&]
   {
-    dzn::trace (std::clog, sut.w.meta, "hello_void");
     sut.w.out.world_void ();
-    dzn::trace_out (std::clog, sut.w.meta, "return");
   };
 
   std::string trace = read ();

@@ -66,11 +66,7 @@ main (int argc, char **argv)
   sut.w.meta.provide.name = "w";
   sut.w.meta.provide.port = &sut.w;
 
-  sut.w.in.hello = [&]
-  {
-    dzn::trace (std::clog, sut.w.meta, "hello");
-    dzn::trace_out (std::clog, sut.w.meta, "return");
-  };
+  sut.w.in.hello = [&] {};
 
   std::string trace = read ();
   if (0);

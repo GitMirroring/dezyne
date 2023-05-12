@@ -37,25 +37,20 @@ main ()
 {
   std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set (rt);
-  collateral_blocking_shell sut (loc);
+  dzn::locator locator;
+  dzn::runtime runtime;
+  locator.set (runtime);
+  collateral_blocking_shell sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.w0.meta.require.name = "w0";
-  sut.w0.meta.require.port = &sut.w0;
-  sut.w1.meta.require.name = "w1";
-  sut.w1.meta.require.port = &sut.w1;
+  sut.w0.meta.provide.name = "w0";
+  sut.w1.meta.provide.name = "w1";
 
   bool cruel = false;
   sut.w0.in.hello = [&]
   {
-    std::clog << "sut.blocked.w0.hello -> <external>.w0.hello\n";
-    std::clog << "<external>.w0.return <- sut.blocked.w0.return\n";
   };
   sut.w1.in.hello = [&]
   {
-    std::clog << "sut.blocked.w1.hello -> <external>.w1.hello\n";
     if (cruel)
       {
         std::thread ([&]
@@ -73,7 +68,6 @@ main ()
       std::clog << "world1\n";
       sut.w1.out.world ();
     }).detach();
-    std::clog << "<external>.w1.return <- sut.blocked.w1.return\n";
   };
 
   std::clog << "hello happy\n";

@@ -40,18 +40,8 @@ main ()
   sut.c.w0.meta.provide.name = "w0";
   sut.c.w1.meta.provide.name = "w1";
 
-  sut.c.w0.in.hello = [&]
-  {
-    std::clog << "<external>.w0.hello -> sut.c.w0.hello\n";
-    sut.w0.out.world ();
-    std::clog << "<external>.w0.return <- sut.c.w0.return\n";
-  };
-  sut.c.w1.in.hello = [&]
-  {
-    std::clog << "<external>.w1.hello -> sut.c.w1.hello\n";
-    sut.w1.out.world ();
-    std::clog << "<external>.w1.return <- sut.c.w1.return\n";
-  };
+  sut.w0.in.hello = sut.w0.out.world;
+  sut.w1.in.hello = sut.w1.out.world;
   sut.f.w0_world ();
   sut.f.w1_world ();
 }

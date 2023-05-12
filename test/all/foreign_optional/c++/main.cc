@@ -39,6 +39,6 @@ main ()
   foreign_optional sut(l);
   sut.dzn_meta.name = "sut";
 
-  sut.c.h.out.world = [] {std::clog << "<external>.h.world <- sut.c.h.world\n";};
+  sut.c.h.out.world = [] {};
   sut.f.w_hello ();
 }

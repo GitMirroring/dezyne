@@ -37,36 +37,31 @@ main ()
 {
   std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
-  dzn::locator loc;
-  dzn::runtime rt;
-  loc.set (rt);
-  collateral_blocking_shell2 sut (loc);
+  dzn::locator locator;
+  dzn::runtime runtime;
+  locator.set (runtime);
+  collateral_blocking_shell2 sut (locator);
   sut.dzn_meta.name = "sut";
   sut.w.meta.provide.name = "w";
 
   std::future<void> f1, f2;
   sut.w.in.hello = [&]
   {
-    dzn::trace(std::clog, sut.w.meta, "hello");
     f1 = std::async (std::launch::async, [&]
     {
       std::this_thread::sleep_for (std::chrono::milliseconds (50));
-      std::clog << "cruel\n";
       sut.h.in.cruel ();
     });
     f2 = std::async (std::launch::async, [&]
     {
       std::this_thread::sleep_for (std::chrono::milliseconds (100));
-      std::clog << "world\n";
       sut.w.out.world ();
     });
-    dzn::trace_out(std::clog, sut.w.meta, "return");
   };
 
-  sut.w.in.cruel = [&]{
-    dzn::trace(std::clog, sut.w.meta, "cruel");
+  sut.w.in.cruel = [&]
+  {
     sut.w.out.bye();
-    dzn::trace_out(std::clog, sut.w.meta, "return");
   };
 
   sut.h.in.hello ();

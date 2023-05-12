@@ -42,20 +42,10 @@ main ()
   blocking_system_diamond sut (locator);
   sut.dzn_meta.name = "sut";
   sut.r_left.meta.provide.name = "r_left";
-  sut.r_left.meta.provide.port = &sut.r_left;
   sut.r_right.meta.provide.name = "r_right";
-  sut.r_right.meta.provide.port = &sut.r_right;
 
-  sut.r_left.in.hello = [&]
-  {
-    dzn::trace (std::clog, sut.r_left.meta, "hello");
-    dzn::trace_out (std::clog, sut.r_left.meta, "return");
-  };
-  sut.r_right.in.hello = [&]
-  {
-    dzn::trace (std::clog, sut.r_right.meta, "hello");
-    dzn::trace_out (std::clog, sut.r_right.meta, "return");
-  };
+  sut.r_left.in.hello = [&] () {};
+  sut.r_right.in.hello = [&] () {};
 
   // 1: run through left to bottom and block
   auto f = std::async (std::launch::async, sut.p.in.hello);

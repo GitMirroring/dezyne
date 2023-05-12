@@ -39,23 +39,17 @@ int main()
   dzn::runtime runtime;
   double_collateral_blocking_shell sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
-  sut.la.meta.require.name = "la";
-  sut.la.meta.require.port = &sut.la;
-  sut.ra.meta.require.name = "ra";
-  sut.ra.meta.require.port = &sut.ra;
+  sut.la.meta.provide.name = "la";
+  sut.ra.meta.provide.name = "ra";
 
   bool toggle = true;
   sut.la.in.ping = [&]{
-    std::clog << "sut.lbp.async.ping -> <external>.la.ping" << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(toggle ? 200 : 100));
     sut.la.out.pong();
-    std::clog << "sut.lbp.async.return <- <external>.la.return" << std::endl;
   };
   sut.ra.in.ping = [&]{
-    std::clog << "sut.rbp.async.ping -> <external>.ra.ping" << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(toggle ? 200 : 100));
     sut.ra.out.pong();
-    std::clog << "sut.rbp.async.return <- <external>.ra.return" << std::endl;
   };
 
   for(size_t i = 0; i < 2; ++i) {

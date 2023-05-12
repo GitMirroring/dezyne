@@ -219,6 +219,34 @@ std::basic_ostream<Char, Traits> &")
   (let ((statements (c++:statement* o)))
     (compound* (map ast->code statements)))) ;;; XXX new compound*
 
+(define-method (ast->code (o <action>))
+  (let* ((event (.event o))
+         (formals (code:formal* (.event o)))
+         (event-name (.event.name o))
+         (action-name (code:event-name o))
+         (arguments (code:argument* o))
+         (arguments (map ast->expression arguments)))
+    (call (name (simple-format #f "dzn::call_~a" (.direction event)))
+          (arguments
+           `("this"
+             ,(.port.name o)
+             ,(simple-format #f "~s" event-name)
+             ,(function
+               (captures '("&"))
+               (statement
+                (compound*
+                 (return*
+                  (call (name action-name)
+                        (arguments arguments)))))))))))
+
+(define-method (ast->code (o <assign>))
+  (let* ((variable (.variable o))
+         (var (ast->expression variable))
+         (expression (.expression o))
+         (action? (is-a? expression <action>)))
+    (if (not action?) (assign* var (ast->expression expression))
+        (assign* var (ast->code expression)))))
+
 (define-method (ast->code (o <defer>))
   (define (variable->defer-variable o)
     (variable
@@ -357,7 +385,10 @@ std::basic_ostream<Char, Traits> &")
                         (struct
                          (members
                           (map event->slot (ast:out-event* o)))))
-                       (name "out"))))))
+                       (name "out"))
+             (variable (type (string-append name "*"))
+                       (name "dzn_peer")
+                       (expression ""))))))
          (interface& (string-append (code:type-name o) "&"))
          (interface
           (struct
@@ -389,7 +420,9 @@ std::basic_ostream<Char, Traits> &")
              (assign* "provided.out" "required.out")
              (assign* "required.in" "provided.in")
              (assign* "provided.meta.require" "required.meta.require")
-             (assign* "required.meta.provide" "provided.meta.provide")))))
+             (assign* "required.meta.provide" "provided.meta.provide")
+             (assign* "provided.dzn_peer" "&required")
+             (assign* "required.dzn_peer" "&provided")))))
          (enum-to-string (append-map c++:enum->to-string public-enums))
          (to-enum (append-map c++:enum->to-enum public-enums)))
     `(,@(code:->namespace o interface)
@@ -461,9 +494,10 @@ std::basic_ostream<Char, Traits> &")
                        (arguments arguments)))
            (call-in/out
             (call
-             (name (string-append "dzn::call_" (code:direction event)))
+             (name (string-append "dzn::wrap_" (code:direction event)))
              (arguments
               `("this"
+                ,(member* port-name)
                 ,(function
                   (captures (cons* "=" (map c++:ref out-arguments)))
                   (statement
@@ -472,29 +506,27 @@ std::basic_ostream<Char, Traits> &")
                              (ast:injected-port* o))
                       ,(if (or (not typed?) (not (is-a? o <foreign>))) call-slot
                            (assign* reply-var call-slot))
-                      ,@(if (ast:out? event) '()
-                            `(,(call-method
-                                (name "dzn_runtime.flush")
+                      ,@(if
+                         (ast:out? event) '()
+                         `(,@(if
+                              (is-a? o <foreign>) '()
+                              `(,(call
+                                  (name "this->dzn_runtime.flush")
                                 (arguments
                                  '("this"
                                    "dzn::coroutine_id (this->dzn_locator)")))
-                              ,@(if (is-a? o <foreign>) '()
-                                    (list
-                                     (if* this-out-binding
-                                          (call-method (name out-binding)))
-                                     (assign* this-out-binding "nullptr")))
+                                ,(if* out-binding (call (name out-binding)))
+                                ,(assign* out-binding "nullptr")))
                               ,(return (expression reply-var))))))))
-                ,(member* port-name)
                 ,event-name-string)))))
       (assign*
        (code:event-name trigger)
        (function
-        (captures '("&"))
+        (captures '("this"))
         (formals formals)
         (statement
          (compound*
-          (if (not typed?) call-in/out
-              (return* call-in/out))))))))
+          (return* call-in/out)))))))
   (define (trigger->method component trigger)
     (let* ((trigger
             statement
@@ -638,6 +670,16 @@ std::basic_ostream<Char, Traits> &")
 (define-method (system->statements (o <system>))
   (let* ((injected-instances (code:injected-instance* o))
          (injected? (pair? injected-instances)))
+    (define (port->pairing port)
+      (let ((other-end (ast:other-end-point port))
+            (port-string (simple-format #f "~s" (.name port))))
+        (assign*
+         (string-append (.instance.name other-end)
+                        "."
+                        (.port.name other-end)
+                        (if (ast:provides? port) ".meta.require.name"
+                            ".meta.provide.name"))
+         port-string)))
     (define (provides->member port)
       (let* ((other-end (ast:other-end-point port)))
         (variable
@@ -755,7 +797,9 @@ std::basic_ostream<Char, Traits> &")
                                        (name "locator"))))
                 (statement
                  (compound*
-                  `(,(requires->assignment (ast:requires-port* o))
+                  `(,@(map port->pairing (ast:provides-port* o))
+                    ,@(map port->pairing (ast:requires-port* o))
+                    ,(requires->assignment (ast:requires-port* o))
                     ,(children->assignment (ast:instance* o))
                     ,@(append-map instance->assignments injected-instances)
                     ,@(append-map instance->assignments instances)
@@ -1007,10 +1051,6 @@ std::basic_ostream<Char, Traits> &")
              (formals formals)
              (statement
               (compound*
-               (call (name "dzn::trace")
-                     (arguments
-                      (list "std::clog" meta
-                            (simple-format #f "~s" event))))
                (call (name "c.match")
                      (arguments
                       (list (simple-format #f "~s" port-event))))
@@ -1027,9 +1067,6 @@ std::basic_ostream<Char, Traits> &")
                          (expression "tmp.rfind ('.')+1"))
                (assign (variable "tmp")
                        (expression "tmp.substr (pos)"))
-               (call (name "dzn::trace_out")
-                     (arguments
-                      (list "std::clog" meta "tmp.c_str ()")))
                (return* (return-expression trigger)))))))
       (assign (variable (string-append "c.system." (code:event-name trigger)))
               (expression function))))
@@ -1044,37 +1081,7 @@ std::basic_ostream<Char, Traits> &")
            (flush-string (simple-format #f "~s" flush-event))
            (formals (code:formal* trigger))
            (formals (map (cute clone <> #:name #f) formals))
-           (formals (map c++:->formal formals))
-           (call-out
-            (call
-             (name "dzn::call_out")
-             (arguments
-              `("&c"
-                ,(function
-                  (captures '("&"))
-                  (statement
-                   (compound*
-                    (if* "c.dzn_runtime.performs_flush (&c)"
-                         (call
-                          (name "c.dzn_runtime.queue (&c).push")
-                          (arguments
-                           (list
-                            (function
-                             (captures '("&"))
-                             (statement
-                              (compound*
-                               (if* "c.dzn_runtime.queue (&c).empty ()"
-                                    (compound*
-                                     (statement*
-                                      (simple-format
-                                       #f "std::clog << ~s << std::endl"
-                                       flush-event))
-                                     (call
-                                      (name "c.match")
-                                      (arguments
-                                       (list flush-string)))))))))))))))
-                ,system-port
-                ,(simple-format #f "~s" event))))))
+           (formals (map c++:->formal formals)))
       (assign (variable (string-append "c.system." (code:event-name trigger)))
               (expression
                (function
@@ -1084,8 +1091,7 @@ std::basic_ostream<Char, Traits> &")
                  (compound*
                   (call (name "c.match")
                         (arguments
-                         (list (simple-format #f "~s" port-event))))
-                  (return* call-out))))))))
+                         (list (simple-format #f "~s" port-event)))))))))))
   (function
    (type "static void")
    (name "connect_ports")
@@ -1143,8 +1149,7 @@ std::basic_ostream<Char, Traits> &")
         (captures '("&"))
         (statement
          (compound*
-          `(
-            ,(call (name "c.match")
+          `(,(call (name "c.match")
                    (arguments (list port-event-string)))
             ,@(map formal->variable out-formals)
             ,(call (name (string-append "c.system." (code:event-name trigger)))
@@ -1266,6 +1271,7 @@ std::basic_ostream<Char, Traits> &")
             (map void-requires-in->init (code:requires-in-void-returns o))
             (map valued-in->init (code:return-values o))
             (map out->init (ast:requires-out-triggers o))
+            (map flush->init (ast:provides-port* o))
             (map flush->init (ast:requires-port* o)))))))))))))
 
 (define-method (main-getopt)

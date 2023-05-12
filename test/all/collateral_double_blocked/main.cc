@@ -68,11 +68,7 @@ main ()
   sut.r.meta.provide.name = "r";
   sut.r.meta.provide.port = &sut.r;
 
-  sut.r.in.hello = [&]
-  {
-    dzn::trace (std::clog, sut.r.meta, "hello");
-    dzn::trace_out (std::clog, sut.r.meta, "return");
-  };
+  sut.r.in.hello = [&] {};
 
   // Let's pick just one trace of the 8 traces...
   std::string trace = read ();

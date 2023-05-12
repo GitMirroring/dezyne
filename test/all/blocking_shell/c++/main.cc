@@ -72,50 +72,44 @@ int main()
   sut.p.out.world = [&](int) {
     assert(trace[event] == "p.world");
     ++event;
-    dzn::trace_qin(std::clog, sut.p.meta, "world");
   };
   sut.r.in.hello_void = [&] {
     std::lock_guard<std::mutex> lock(mutex);
     assert(trace[event] == "r.hello_void");
     ++event;
-    dzn::trace(std::clog, sut.r.meta, "hello_void");
-    const std::string& tmp = trace[event];
     ++event;
-    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
   };
   sut.r.in.hello_bool = [&] {
+    std::cout << "hiero 2" << std::endl;
     std::lock_guard<std::mutex> lock(mutex);
     assert(trace[event] == "r.hello_bool");
     ++event;
-    dzn::trace(std::clog, sut.r.meta, "hello_bool");
     const std::string& tmp = trace[event];
-    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     ++event;
-    return dzn::to_bool(tmp.substr(tmp.rfind('.')+1));
+    const auto& result = tmp.substr(tmp.rfind('.')+1);
+    std::cout << "main reply " << result << std::endl;
+    return dzn::to_bool(result);
   };
   sut.r.in.hello_int = [&] {
     std::lock_guard<std::mutex> lock(mutex);
     assert(trace[event] == "r.hello_int");
     ++event;
-    dzn::trace(std::clog, sut.r.meta, "hello_int");
     const std::string& tmp = trace[event];
-    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     ++event;
-    return dzn::to_int(tmp.substr(tmp.rfind('.')+1));
+    const auto& result = tmp.substr(tmp.rfind('.')+1);
+    return dzn::to_int(result);
   };
   sut.r.in.hello_enum = [&](int,int&) {
     std::lock_guard<std::mutex> lock(mutex);
     assert(trace[event] == "r.hello_enum");
     ++event;
-    dzn::trace(std::clog, sut.r.meta, "hello_enum");
     const std::string& tmp = trace[event];
-    dzn::trace_out(std::clog, sut.r.meta, tmp.substr(tmp.rfind('.')+1).c_str());
     ++event;
-    return dzn::to_Enum(tmp.substr(tmp.rfind('.')+1));
+    const auto& result = tmp.substr(tmp.rfind('.')+1);
+    return dzn::to_Enum(result);
   };
 
   std::queue<std::future<void>> sync;
-
 
   std::copy(std::istream_iterator<std::string>(std::cin),
             std::istream_iterator<std::string>(),

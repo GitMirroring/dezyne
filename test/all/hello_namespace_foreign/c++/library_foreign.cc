@@ -32,10 +32,10 @@ namespace library {
   , dzn_locator(dzn_locator)
   , w({{"w",&w,this,&dzn_meta},{"",0,0,0}})
   {
-    w.in.world = [&](){return dzn::call_in(this,[=]{
+    w.in.world = [&](){return dzn::wrap_in(this, this->w, [=]{
       w_world();
       this->dzn_runtime.flush(this);
-    }, this->w, "world");};
+    }, "world");};
   }
   void foreign::w_world()
   {

@@ -156,84 +156,142 @@ namespace dzn
     runtime();
   };
 
-  template <typename C, typename P>
-  struct call_helper
+  template <typename P>
+  struct trace_wrapper
   {
-    C* component;
+    P& port;
+    char const* event_name;
+    bool qout;
     std::ostream& os;
-    const dzn::port::meta& meta;
-    const char* event;
     std::string reply;
-    call_helper(C* c, P& port, const char* event)
-    : component(c)
-    , os(c->dzn_locator.template get<typename std::ostream>())
-    , meta(port.meta)
-    , event(event)
+    trace_wrapper(const dzn::locator& l, P& port, char const* event_name, bool qout = false)
+    : port(port)
+    , event_name(event_name)
+    , qout(qout)
+    , os(l.template get<typename std::ostream>())
     , reply("return")
     {
-      if(component->dzn_runtime.handling(component) ||
-         port_blocked_p(component->dzn_locator, &port))
-        collateral_block(component->dzn_locator, component);
-
-      component->dzn_runtime.reset_skip_block(component);
-      trace(os, meta, event);
-#if DZN_STATE_TRACING
-      os << *component << std::endl;
-#endif
+      if(!qout) trace (os, port.meta, event_name);
+      else trace_qout(os, port.meta, event_name);
     }
-    template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-    void operator()(L&& event)
+    template <typename E, typename = typename std::enable_if<std::is_void<typename std::result_of<E()>::type>::value>::type>
+    void operator()(E&& event)
     {
-      component->dzn_runtime.handle(component, event, coroutine_id(component->dzn_locator));
+      event();
     }
-    template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-    auto operator()(L&& event) -> decltype(event())
+    template <typename E, typename = typename std::enable_if<!std::is_void<typename std::result_of<E()>::type>::value>::type>
+    auto operator()(E&& event) -> decltype(event())
     {
-      auto value = component->dzn_runtime.handle(component, event, coroutine_id(component->dzn_locator));
-      reply = to_string(value);
+      return handle_reply(event);
+    }
+    template <typename E>
+    auto handle_reply(E&& event) -> decltype(event())
+    {
+      auto value = event();
+      reply = to_string (value);
       return value;
     }
-    ~call_helper()
+    ~trace_wrapper()
     {
-      trace_out(os, meta, reply.c_str());
+      if(!qout) trace_out(os, port.meta, reply.c_str());
+    }
+  };
+
+  template <typename C, typename P>
+  struct runtime_wrapper
+  {
+    C* component;
+    runtime_wrapper(C* component, P& port, bool qout = false)
+    : component(component)
+    {
+      if(!qout) {
+        if (component->dzn_runtime.handling(component)
+            || port_blocked_p (component->dzn_locator, &port)) {
+          collateral_block (component->dzn_locator, component);
+        }
+
+        component->dzn_runtime.reset_skip_block (component);
+      }
 #if DZN_STATE_TRACING
-      os << *c << std::endl;
+      this->os << *component << std::endl;
+#endif
+    }
+    template <typename E, typename = typename std::enable_if<std::is_void<typename std::result_of<E()>::type>::value>::type>
+    void operator()(E&& event)
+    {
+      component->dzn_runtime.handle (component, event, coroutine_id(component->dzn_locator));
+    }
+    template <typename E, typename = typename std::enable_if<!std::is_void<typename std::result_of<E()>::type>::value>::type>
+    auto operator()(E&& event) -> decltype(event())
+    {
+      return component->dzn_runtime.handle (component, event, coroutine_id(component->dzn_locator));
+    }
+    ~runtime_wrapper()
+    {
+#if DZN_STATE_TRACING
+      this->os << *component << std::endl;
 #endif
       prune_deferred(component->dzn_locator);
       component->dzn_runtime.handling(component) = 0;
     }
   };
 
-  template <typename C, typename P, typename L>
-  auto call_in(C* component, L&& event, P& port, const char* event_name) -> decltype(event())
+  template <typename C, typename P>
+  struct wrapper: public runtime_wrapper<C,P>, public trace_wrapper<P>
   {
-    call_helper<C,P> helper(component, port, event_name);
-    return helper(event);
+    wrapper(C* component, P& port, char const* event_name, bool qout = false)
+      : runtime_wrapper<C,P>(component, port, qout)
+      , trace_wrapper<P>(component->dzn_locator, port, event_name, qout)
+    {}
+    template <typename E>
+    auto operator()(E e) -> decltype(e())
+    {
+      return runtime_wrapper<C,P>::operator()([&]{return trace_wrapper<P>::operator()(e);});
+    }
+  };
+
+  template <typename C, typename P, typename E>
+  auto wrap_in(C* component, P& port, const E& event, char const* name) -> decltype(event())
+  {
+    return wrapper<C,P> (component, port, name) (event);
   }
 
-  template <typename C, typename P, typename L>
-  void call_out(C* component, L&& event, P& port, const char* event_name)
+  template <typename C, typename P, typename E>
+  void wrap_out(C* component, P& port, E event, char const* name)
   {
     auto& os = component->dzn_locator.template get<typename std::ostream>();
-    trace_qin(os, port.meta, event_name);
-#if DZN_STATE_TRACING
-    os << *component << std::endl;
-#endif
+    trace_qin(os, port.meta, name);
     component->dzn_runtime.enqueue(port.meta.provide.component, component,
-                              [&os,component,event,&port,event_name]{
-      trace_qout(os, port.meta, event_name);
-      event();
-    }, coroutine_id(component->dzn_locator));
+                                   [component, &port, event, name] {
+                                     event();
+                                   }, coroutine_id(component->dzn_locator));
     prune_deferred(component->dzn_locator);
   }
+
   template <typename C, typename P, typename E>
-  void defer(C* component, P&& predicate, E&& event)
+  auto call_in(C* c, P& p, char const* name, E const& e) -> decltype(e())
+  {
+    return p.dzn_peer ? e () : trace_wrapper<P> (c->dzn_locator, p, name) (e);
+  }
+
+  template <typename C, typename P, typename E>
+  void call_out(C* c, P& p, char const* name, E const& e)
+  {
+    if (p.dzn_peer) return e ();
+    auto& os = c->dzn_locator.template get<typename std::ostream>();
+    trace_qin(os, p.meta, name);
+    return trace_wrapper<P>(c->dzn_locator, p, name, true)(e);
+  }
+
+  template <typename C, typename P, typename E>
+  void defer(C* component, P&& predicate, E const& event)
   {
     defer(component->dzn_locator, std::function<bool()>(predicate),
           std::function<void(size_t)>([=](size_t coroutine_id){
             component->dzn_runtime.handling(component) = coroutine_id;
             event();
             component->dzn_runtime.flush(component);
+            component->dzn_runtime.handling(component) = 0;
           }));
   }
 }

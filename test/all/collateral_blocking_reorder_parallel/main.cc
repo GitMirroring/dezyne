@@ -34,44 +34,32 @@ int
 main ()
 {
   //dzn::debug.rdbuf(std::clog.rdbuf());
-  dzn::locator loc;
-  collateral_blocking_reorder_parallel sut (loc);
+  dzn::locator locator;
+  collateral_blocking_reorder_parallel sut (locator);
   sut.dzn_meta.name = "sut";
-  sut.eleft.meta.require.name = "eleft";
-  sut.eright.meta.require.name = "eright";
-  sut.rleft.meta.require.name = "rleft";
-  sut.rright.meta.require.name = "rright";
+  sut.eleft.meta.provide.name = "eleft";
+  sut.eright.meta.provide.name = "eright";
+  sut.rleft.meta.provide.name = "rleft";
+  sut.rright.meta.provide.name = "rright";
 
   bool once_left = true;
 
-  sut.eleft.in.hello = [&]
-  {
-    std::clog << "sut.left.e.hello -> <external>.eleft.hello\n";
-    std::clog << "sut.left.e.return <- <external>.eleft.return\n";
-  };
-  sut.eright.in.hello = [&]
-  {
-    std::clog << "sut.right.e.hello -> <external>.eright.hello\n";
-    std::clog << "sut.right.e.return <- <external>.eright.return\n";
-  };
+  sut.eleft.in.hello = [&] {};
+  sut.eright.in.hello = [&] {};
 
   sut.rleft.in.hello = [&]
   {
-    std::clog << "sut.left.r.hello -> <external>.rleft.hello\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     if(once_left) {once_left = false; sut.eleft.out.world();}
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     sut.rleft.out.world();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    std::clog << "sut.left.r.return <- <external>.rleft.return\n";
   };
   sut.rright.in.hello = [&]
   {
-    std::clog << "sut.right.r.hello -> <external>.rright.hello\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     sut.rright.out.world();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    std::clog << "sut.right.r.return <- <external>.rright.return\n";
   };
 
   std::thread t([&]{

@@ -43,14 +43,13 @@ int main ()
   locator.set(pump);
 
   sut.dzn_meta.name = "sut";
+  sut.r.meta.provide.name = "r";
 
   sut.r.in.hello = [&]
   {
-    std::clog << "sut.mp.r.hello -> <external>.r.hello\n";
     sut.mp.r.out.world (); //side step going through pump, since we are
                            //already executing on the pump and the
                            //interface of r is synchronous
-    std::clog << "sut.mp.r.return -> <external>.r.return\n";
   };
 
   sut.left.in.hello ();

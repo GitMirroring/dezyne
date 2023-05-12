@@ -43,6 +43,8 @@ int main ()
   locator.set(pump);
 
   sut.dzn_meta.name = "sut";
+  sut.w_left.meta.provide.name = "w_left";
+  sut.w_right.meta.provide.name = "w_right";
 
   sut.w_left.in.hello = [&]
   {
@@ -50,18 +52,14 @@ int main ()
       std::this_thread::sleep_for (std::chrono::milliseconds (100));
       sut.w_left.out.world ();
     }).detach();
-    std::clog << "sut.bmp.w_left.hello -> <external>.w_left.hello\n";
-    std::clog << "sut.bmp.w_left.return -> <external>.w_left.return\n";
   };
 
   sut.w_right.in.hello = [&]
   {
-    std::clog << "sut.bmp.w_right.hello -> <external>.w_right.hello\n";
     std::thread ([&]{
       std::this_thread::sleep_for (std::chrono::milliseconds (150));
       sut.w_right.out.world ();
     }).detach();
-    std::clog << "sut.bmp.w_right.return -> <external>.w_right.return\n";
   };
 
   std::thread([&]{
