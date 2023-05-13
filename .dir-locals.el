@@ -40,6 +40,16 @@
 
  (java-mode . ((c-basic-offset 2)))
 
+ (c-mode . ((c-file-style . "gnu")))
+
+ (c++-mode
+  .
+  ((c-file-style . "gnu")
+   (eval
+    .
+    (setq c-offsets-alist `((innamespace 0)
+                            ,@c-offsets-alist)))))
+
  (scheme-mode
   .
   ((geiser-active-implementations . (guile))
