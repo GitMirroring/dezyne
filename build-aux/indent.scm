@@ -39,7 +39,7 @@ exec guile -L ${0%/*} -e '(indent)' -s "$0" "$@"
 
 (define EXIT_OTHER_FAILURE 2)
 
-(define* (emacs-indent file)
+(define (emacs-indent-scm file)
   (system*
    "emacs"
    "--batch"
@@ -59,8 +59,72 @@ exec guile -L ${0%/*} -e '(indent)' -s "$0" "$@"
     (save-buffer)))"
            file)))
 
+(define (emacs-indent-c++ file)
+  (system*
+   "emacs"
+   "--batch"
+   "--no-init-file"
+   "--eval"
+   (format #f "
+(let ((error nil)
+      (version-control nil))
+  (setq enable-local-eval :all)
+  (setq enable-local-variables :all)
+  (load-library \"cc-mode\")
+  (dir-locals-read-from-dir \".\")
+  (find-file ~s)
+  (c++-mode)
+  (indent-region (point-min) (point-max))
+  (delete-trailing-whitespace)
+  (when (buffer-modified-p (current-buffer))
+    (save-buffer)))"
+           file)))
+
+(define (indent-c file)
+  ;; Although we try to keep code < 80 columns when reviewing patches,
+  ;; have indent be lenient wrt line length.
+  (system* "indent"
+           "--no-tabs"
+           "--line-length" "110"
+           "--honour-newlines"
+           "--break-before-boolean-operator"
+           file))
+
+(define (indent-c++ file)
+  ;; Not using indent, which is more GNU correct but still has trouble
+  ;; handling C++
+  (system* "astyle"
+           "--options=none"
+           "--quiet"
+           "-n"
+           "--style=gnu"
+           "--indent=spaces=2"
+           "--break-return-type"
+           "--align-pointer=name"
+           "--max-instatement-indent=60"
+           "--indent-cases"
+           "--pad-oper"
+           "--keep-one-line-blocks"
+           "--pad-first-paren-out"
+           file)
+  (system* "sed" "-i"
+           ;; FIXUP for astyle --pad-first-paren-out missing foo() => foo ()
+           "-e" "s, *(), (),g"
+           ;; FIXUP for astyle --align-reference=type
+           "-e" "s,\\([!)]\\) *&&,\\1 \\&\\&,g"
+           file)
+  (emacs-indent-c++ file))
+
 (define (indent-file file)
-  (false-if-exception (emacs-indent file)))
+  (cond
+   ((string-suffix? ".scm" file)
+    (false-if-exception (emacs-indent-scm file)))
+   ((or (string-suffix? ".hh" file)
+        (string-suffix? ".cc" file))
+    (false-if-exception (indent-c++ file)))
+   ((or (string-suffix? ".h" file)
+        (string-suffix? ".c" file))
+    (false-if-exception (indent-c++ file)))))
 
 (define (parse-opts args)
   (let* ((option-spec
