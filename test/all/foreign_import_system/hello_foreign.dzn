@@ -26,15 +26,15 @@ import iworld.dzn;
 
 interface ihello
 {
-  in void hello();
+  in bool hello();
   out void goodbye();
 
   behavior
   {
     bool b = true;
     [b] {
-      on hello: {}
-      on hello: b = false;
+      on hello: reply(b);
+      on hello: {b = false; reply(b);}
     }
     [!b] on optional: {b = true; goodbye;}
   }
@@ -48,7 +48,7 @@ component hello
   behavior
   {
     bool b = true;
-    on h.hello(): {b = false; w.world();}
+    on h.hello(): {b = false; w.world(); reply(b);}
     [!b] on w.howdy(): {b = true; h.goodbye();}
   }
 }
