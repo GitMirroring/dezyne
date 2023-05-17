@@ -51,6 +51,7 @@
             ast:namespace*
             ast:namespace-recursive*
             ast:port*
+            ast:shared*
             ast:statement*
             ast:top*
             ast:trigger*
@@ -93,6 +94,7 @@
 (define-method (ast:member* (o <behavior>)) (ast:variable* o))
 (define-method (ast:member* (o <model>)) ((compose ast:member* .behavior) o))
 (define-method (ast:namespace* (o <namespace>)) (filter (is? <namespace>) (ast:top* o)))
+(define-method (ast:shared* (o <behavior>)) (filter (is? <shared-variable>) (ast:variable* o)))
 (define-method (ast:trigger* (o <triggers>)) (.elements o))
 (define-method (ast:type* (o <types>)) (.elements o))
 (define-method (ast:variable* (o <variables>)) (.elements o))
@@ -132,6 +134,7 @@
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
 (define-method (ast:port* (o <behavior>)) ((compose ast:port* .ports) o))
 (define-method (ast:statement* (o <behavior>)) ((compose ast:statement* .statement) o))
+(define-method (ast:shared* (o <model>)) ((compose ast:shared* .behavior) o))
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
 (define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))
 (define-method (ast:type* (o <behavior>)) ((compose ast:type* .types) o))

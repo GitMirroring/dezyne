@@ -153,6 +153,7 @@
                ast:model*
                ast:namespace*
                ast:port*
+               ast:shared*
                ast:statement*
                ast:top*
                ast:trigger*
