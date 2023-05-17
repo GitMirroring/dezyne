@@ -25,21 +25,21 @@
 #include <hello_foreign_file.h>
 
 void
-stranger_init (stranger* self, dzn_locator* dzn_locator
+stranger_init (stranger *self, dzn_locator *dzn_locator
 #if 1 //DZN_TRACING
-                   , dzn_meta* dzn_meta
+               , dzn_meta *dzn_meta
 #endif /* !DZN_TRACING */
-)
+              )
 {
-  stranger_skel_init (&(self->base), dzn_locator
+  stranger_skel_init (& (self->base), dzn_locator
 #if 1 //DZN_TRACING
-                     , dzn_meta
+                      , dzn_meta
 #endif /* !DZN_TRACING */
                      );
   self->hello = 20;
 }
 
 void
-stranger_w_world (stranger* self)
+stranger_w_world (stranger *self)
 {
 }

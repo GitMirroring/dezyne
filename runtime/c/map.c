@@ -44,9 +44,9 @@
  * Return an empty map, or NULL on failure.
  */
 void
-dzn_map_init (dzn_map* self)
+dzn_map_init (dzn_map *self)
 {
-  self->data = (dzn_map_element*) dzn_calloc ((size_t)INITIAL_SIZE, sizeof (dzn_map_element));
+  self->data = (dzn_map_element *) dzn_calloc ((size_t)INITIAL_SIZE, sizeof (dzn_map_element));
   assert (self->data);
   self->table_size = (size_t)INITIAL_SIZE;
   self->size = 0;
@@ -95,7 +95,8 @@ dzn_map_init (dzn_map* self)
 /*                                                                        */
 /* ***********************************************************************/
 
-static uint32_t crc32_tab[] = {
+static uint32_t crc32_tab[] =
+{
   0x00000000LU, 0x77073096LU, 0xee0e612cLU, 0x990951baLU, 0x076dc419LU,
   0x706af48fLU, 0xe963a535LU, 0x9e6495a3LU, 0x0edb8832LU, 0x79dcb8a4LU,
   0xe0d5e91eLU, 0x97d2d988LU, 0x09b64c2bLU, 0x7eb17cbdLU, 0xe7b82d07LU,
@@ -160,7 +161,7 @@ static uint32_t crc32 (const char *s, const uint32_t len)
 
   crc32val = 0;
   for (i = 0;  i < len;  i ++)
-    crc32val = crc32_tab[ (crc32val ^ (uint32_t)s[i]) & 0xffu]^ (crc32val >> 8);
+    crc32val = crc32_tab[ (crc32val ^ (uint32_t)s[i]) & 0xffu] ^ (crc32val >> 8);
   return crc32val;
 }
 
@@ -168,7 +169,7 @@ static uint32_t crc32 (const char *s, const uint32_t len)
  * Hashing function for a string
  */
 uint32_t
-dzn_map_hash_int (dzn_map const* self, char const* keystring)
+dzn_map_hash_int (dzn_map const *self, char const *keystring)
 {
   uint32_t key = crc32 (keystring, (uint32_t)strlen (keystring));
 
@@ -192,7 +193,7 @@ dzn_map_hash_int (dzn_map const* self, char const* keystring)
  * to store the point to the item, or MAP_FULL.
  */
 int32_t
-dzn_map_hash (dzn_map const* self, char const* key)
+dzn_map_hash (dzn_map const *self, char const *key)
 {
   uint32_t curr;
   uint8_t i;
@@ -201,7 +202,7 @@ dzn_map_hash (dzn_map const* self, char const* key)
 
 
   /* If full, return immediately */
-  if (self->size >= (self->table_size/2))
+  if (self->size >= (self->table_size / 2))
     map_hash_response = DZN_MAP_FULL;
   else
     {
@@ -214,14 +215,14 @@ dzn_map_hash (dzn_map const* self, char const* key)
             map_hash_response = (int32_t) curr;
           else
             {
-              strcmp_result = !strcmp (self->data[curr].key,key) ? true : false;
+              strcmp_result = !strcmp (self->data[curr].key, key) ? true : false;
               if ((self->data[curr].in_use == true) && strcmp_result)
                 map_hash_response = (int32_t) curr;
             }
           if (map_hash_response == (int32_t) curr)
             break;
 
-          if (i == ((uint8_t)MAX_CHAIN_LENGTH-1))
+          if (i == ((uint8_t)MAX_CHAIN_LENGTH - 1))
             map_hash_response = DZN_MAP_FULL;
           else
             curr = (curr + 1) % (uint32_t)self->table_size;
@@ -234,15 +235,15 @@ dzn_map_hash (dzn_map const* self, char const* key)
  * Doubles the size of the map, and rehashes all the elements
  */
 int32_t
-dzn_map_rehash (dzn_map* self)
+dzn_map_rehash (dzn_map *self)
 {
   uint16_t i;
   size_t old_size;
-  dzn_map_element* curr;
+  dzn_map_element *curr;
   int32_t map_rehash_response = (int32_t)INT_MIN;
 
   /* Setup the new elements */
-  dzn_map_element* temp = (dzn_map_element *)dzn_calloc (2 * (size_t)self->table_size, sizeof (dzn_map_element));
+  dzn_map_element *temp = (dzn_map_element *)dzn_calloc (2 * (size_t)self->table_size, sizeof (dzn_map_element));
   if (!temp)
     map_rehash_response = DZN_MAP_OMEM;
   else
@@ -284,7 +285,7 @@ dzn_map_rehash (dzn_map* self)
  * Add a pointer to the map with some key
  */
 int32_t
-dzn_map_put (dzn_map* self, char* key, void* value)
+dzn_map_put (dzn_map *self, char *key, void *value)
 {
   int32_t index;
   int32_t map_put_response = INT_MIN;
@@ -315,7 +316,7 @@ dzn_map_put (dzn_map* self, char* key, void* value)
  * Get your pointer out of the map with a key
  */
 int32_t
-dzn_map_get (dzn_map const* self, char const* key, void* *arg)
+dzn_map_get (dzn_map const *self, char const *key, void * *arg)
 {
   uint32_t curr;
   uint8_t i;
@@ -330,7 +331,7 @@ dzn_map_get (dzn_map const* self, char const* key, void* *arg)
       bool in_use = self->data[curr].in_use;
       if (in_use == true)
         {
-          if (!strcmp (self->data[curr].key,key))
+          if (!strcmp (self->data[curr].key, key))
             {
               *arg = (self->data[curr].data);
               map_get_response = DZN_MAP_OK;
@@ -353,7 +354,7 @@ dzn_map_get (dzn_map const* self, char const* key, void* *arg)
  * argument and the map element is the second.
  */
 int32_t
-dzn_map_iterate (dzn_map* self, dzn_map_f f, void* item)
+dzn_map_iterate (dzn_map *self, dzn_map_f f, void *item)
 {
   uint16_t i;
   int32_t map_iterate_response;
@@ -363,11 +364,11 @@ dzn_map_iterate (dzn_map* self, dzn_map_f f, void* item)
   else
     {
       /* Linear probing */
-      for (i = 0; i <self->table_size; i++)
+      for (i = 0; i < self->table_size; i++)
         {
           if (self->data[i].in_use != false)
             {
-              void* data = &self->data[i];
+              void *data = &self->data[i];
               int32_t status = f (data, item);
               if (status != DZN_MAP_OK)
                 {
@@ -389,7 +390,7 @@ dzn_map_iterate (dzn_map* self, dzn_map_f f, void* item)
  * Remove an element with that key from the map
  */
 int32_t
-dzn_map_remove (dzn_map* self, char const* key)
+dzn_map_remove (dzn_map *self, char const *key)
 {
   uint8_t i;
   uint32_t curr;
@@ -418,7 +419,7 @@ dzn_map_remove (dzn_map* self, char const* key)
             }
         }
       curr = (curr + 1) % (uint32_t) self->table_size;
-      if (i == ((uint8_t)MAX_CHAIN_LENGTH-1))
+      if (i == ((uint8_t)MAX_CHAIN_LENGTH - 1))
         /* Data not found */
         map_remove_return_val = DZN_MAP_MISSING;
     }
@@ -428,7 +429,7 @@ dzn_map_remove (dzn_map* self, char const* key)
 
 /* Deallocate the map */
 void
-dzn_map_free (dzn_map* self)
+dzn_map_free (dzn_map *self)
 {
   dzn_free (self->data);
   dzn_free (self);
@@ -436,7 +437,7 @@ dzn_map_free (dzn_map* self)
 
 /* Return the length of the map */
 uint8_t
-dzn_map_length (dzn_map const* self)
+dzn_map_length (dzn_map const *self)
 {
   return (self != NULL) ? (uint8_t)self->size : 0;
 }
@@ -461,18 +462,18 @@ struct data_struct
 };
 
 int
-main (char* argv, int argc)
+main (char *argv, int argc)
 {
   int index;
   int error;
   dzn_map test_map;
   char key_string[KEY_MAX_LENGTH];
-  data_struct* value;
+  data_struct *value;
 
   test_map = dzn_map_new ();
 
   /* First, populate the hash map with ascending values */
-  for (index=0; index<KEY_COUNT; index+=1)
+  for (index = 0; index < KEY_COUNT; index += 1)
     {
       /* Store the key string along side the numerical value so we can free it later */
       value = malloc (sizeof (data_struct));
@@ -484,11 +485,11 @@ main (char* argv, int argc)
     }
 
   /* Now, check all of the expected values are there */
-  for (index=0; index<KEY_COUNT; index+=1)
+  for (index = 0; index < KEY_COUNT; index += 1)
     {
       snprintf (key_string, KEY_MAX_LENGTH, "%s%d", KEY_PREFIX, index);
 
-      error = dzn_map_get (test_map, key_string, (void**) (&value));
+      error = dzn_map_get (test_map, key_string, (void **) (&value));
 
       /* Make sure the value was both found and the correct number */
       assert (error == DZN_MAP_OK);
@@ -498,17 +499,17 @@ main (char* argv, int argc)
   /* Make sure that a value that wasn't in the map can't be found */
   snprintf (key_string, KEY_MAX_LENGTH, "%s%d", KEY_PREFIX, KEY_COUNT);
 
-  error = dzn_map_get (test_map, key_string, (void**) (&value));
+  error = dzn_map_get (test_map, key_string, (void **) (&value));
 
   /* Make sure the value was not found */
   assert (error == DZN_MAP_MISSING);
 
   /* Free all of the values we allocated and remove them from the map */
-  for (index=0; index<KEY_COUNT; index+=1)
+  for (index = 0; index < KEY_COUNT; index += 1)
     {
       snprintf (key_string, KEY_MAX_LENGTH, "%s%d", KEY_PREFIX, index);
 
-      error = dzn_map_get (test_map, key_string, (void**) (&value));
+      error = dzn_map_get (test_map, key_string, (void **) (&value));
       assert (error == DZN_MAP_OK);
 
       error = dzn_map_remove (test_map, key_string);

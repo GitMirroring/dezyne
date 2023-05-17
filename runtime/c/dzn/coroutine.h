@@ -32,16 +32,16 @@ typedef int dzn_coroutine;
 #endif
 
 typedef struct dzn_interface dzn_interface;
-typedef void* (*dzn_coroutine_function) (void*);
+typedef void * (*dzn_coroutine_function) (void *);
 
 int dzn_coroutine_init ();
 dzn_coroutine dzn_coroutine_self ();
-dzn_coroutine dzn_coroutine_create (dzn_coroutine_function function, void* data);
+dzn_coroutine dzn_coroutine_create (dzn_coroutine_function function, void *data);
 int dzn_coroutine_yield_to (dzn_coroutine coroutine);
 
 long dzn_coroutine_id ();
 int dzn_coroutine_set_id (long id);
-void* dzn_coroutine_data ();
-int dzn_coroutine_set_data (void* data);
+void *dzn_coroutine_data ();
+int dzn_coroutine_set_data (void *data);
 
 #endif /* DZN_COROUTINE_H */

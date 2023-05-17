@@ -28,20 +28,20 @@
    foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
 void
-library_foreign_init (library_foreign* self, dzn_locator* dzn_locator
+library_foreign_init (library_foreign *self, dzn_locator *dzn_locator
 #if 1 //DZN_TRACING
-                  , dzn_meta* dzn_meta
+                      , dzn_meta *dzn_meta
 #endif /* !DZN_TRACING */
-)
+                     )
 {
-  library_foreign_skel_init (&(self->base), dzn_locator
+  library_foreign_skel_init (& (self->base), dzn_locator
 #if 1 //DZN_TRACING
-                    , dzn_meta
+                             , dzn_meta
 #endif /* !DZN_TRACING */
-                    );
+                            );
 }
 
 void
-library_foreign_w_world (library_foreign* self)
+library_foreign_w_world (library_foreign *self)
 {
 }

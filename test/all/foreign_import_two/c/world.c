@@ -29,21 +29,21 @@
    foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
 void
-world_init (world* self, dzn_locator* dzn_locator
+world_init (world *self, dzn_locator *dzn_locator
 #if 1 //DZN_TRACING
-                  , dzn_meta* dzn_meta
+            , dzn_meta *dzn_meta
 #endif /* !DZN_TRACING */
-)
+           )
 {
-  world_skel_init (&(self->base), dzn_locator
+  world_skel_init (& (self->base), dzn_locator
 #if 1 //DZN_TRACING
-                    , dzn_meta
+                   , dzn_meta
 #endif /* !DZN_TRACING */
-                    );
+                  );
 }
 
 iworld_Result
-world_w_world (world* self)
+world_w_world (world *self)
 {
   return iworld_Result_Ok;
 }

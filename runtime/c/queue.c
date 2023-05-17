@@ -32,7 +32,7 @@
 #endif
 
 void
-dzn_queue_init (dzn_queue* self)
+dzn_queue_init (dzn_queue *self)
 {
 #if DZN_DYNAMIC_QUEUES
   self->head = 0;
@@ -46,22 +46,22 @@ dzn_queue_init (dzn_queue* self)
 }
 
 bool
-dzn_queue_empty (dzn_queue const* self)
+dzn_queue_empty (dzn_queue const *self)
 {
   return (!dzn_queue_size (self)) ? true : false;
 }
 
 uint8_t
-dzn_queue_size (dzn_queue const* self)
+dzn_queue_size (dzn_queue const *self)
 {
   return self->size;
 }
 
 void
-dzn_queue_push (dzn_queue* self, void* e)
+dzn_queue_push (dzn_queue *self, void *e)
 {
 #if DZN_DYNAMIC_QUEUES
-  dzn_node* n = (dzn_node*) dzn_malloc (sizeof (dzn_node));
+  dzn_node *n = (dzn_node *) dzn_malloc (sizeof (dzn_node));
   n->item = e;
   n->next = 0;
 
@@ -72,7 +72,7 @@ dzn_queue_push (dzn_queue* self, void* e)
   self->tail = n;
   self->size++;
 #else /* !DZN_DYNAMIC_QUEUES */
-  *(self->tail) = *((dzn_node*)e);
+  * (self->tail) = * ((dzn_node *)e);
   self->tail++;
   if ((self->tail - self->element) == DZN_QUEUE_SIZE)
     self->tail = self->element;
@@ -81,12 +81,12 @@ dzn_queue_push (dzn_queue* self, void* e)
 #endif /* !DZN_DYNAMIC_QUEUES */
 }
 
-void*
-dzn_queue_pop (dzn_queue* self)
+void *
+dzn_queue_pop (dzn_queue *self)
 {
 #if DZN_DYNAMIC_QUEUES
-  dzn_node* head;
-  void* item;
+  dzn_node *head;
+  void *item;
   assert ((int8_t)self->size);
   head = self->head;
   item = head->item;
@@ -95,7 +95,7 @@ dzn_queue_pop (dzn_queue* self)
   dzn_free (head);
   return item;
 #else /* !DZN_DYNAMIC_QUEUES */
-  dzn_node* res;
+  dzn_node *res;
   assert (self->size);
   res = self->head;
   self->head++;
@@ -106,8 +106,8 @@ dzn_queue_pop (dzn_queue* self)
 #endif /* !DZN_DYNAMIC_QUEUES */
 }
 
-void*
-dzn_queue_front (dzn_queue const* self)
+void *
+dzn_queue_front (dzn_queue const *self)
 {
 #if DZN_DYNAMIC_QUEUES
   return self->head->item;
@@ -126,13 +126,13 @@ main (void)
   int8_t b = 2;
   int8_t c = 3;
   dzn_queue_push (&q, &a);
-  printf ("queue_pop a: %d\n", *(int*)dzn_queue_pop (&q));
+  printf ("queue_pop a: %d\n", * (int *)dzn_queue_pop (&q));
   dzn_queue_push (&q, &a);
   dzn_queue_push (&q, &b);
   dzn_queue_push (&q, &c);
-  printf ("queue_pop c: %d\n", *(int*)dzn_queue_pop (&q));
-  printf ("queue_pop b: %d\n", *(int*)dzn_queue_pop (&q));
-  printf ("queue_pop a: %d\n", *(int*)dzn_queue_pop (&q));
+  printf ("queue_pop c: %d\n", * (int *)dzn_queue_pop (&q));
+  printf ("queue_pop b: %d\n", * (int *)dzn_queue_pop (&q));
+  printf ("queue_pop a: %d\n", * (int *)dzn_queue_pop (&q));
 
   /* expect assert
      dzn_queue_pop (&q); */

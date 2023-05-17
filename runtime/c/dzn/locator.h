@@ -39,18 +39,18 @@
 typedef struct dzn_locator dzn_locator;
 struct dzn_locator
 {
-  void (*illegal)(void);
+  void (*illegal) (void);
 #if DZN_LOCATOR_SERVICES
   dzn_map services;
 #endif /* DZN_LOCATOR_SERVICES */
 };
 
-void dzn_locator_init (dzn_locator* self);
-dzn_locator* dzn_locator_clone (dzn_locator* self);
+void dzn_locator_init (dzn_locator *self);
+dzn_locator *dzn_locator_clone (dzn_locator *self);
 #if DZN_LOCATOR_SERVICES
-int32_t dzn_map_copy (dzn_map_element* elt, void* dst);
-void* dzn_locator_get (dzn_locator* self, char* key);
-dzn_locator* dzn_locator_set (dzn_locator* self, char* key, void* value);
+int32_t dzn_map_copy (dzn_map_element *elt, void *dst);
+void *dzn_locator_get (dzn_locator *self, char *key);
+dzn_locator *dzn_locator_set (dzn_locator *self, char *key, void *value);
 #endif /* DZN_LOCATOR_SERVICES */
 
 #endif /* DZN_LOCATOR_H */

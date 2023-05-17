@@ -60,7 +60,7 @@ dzn_coroutine_self ()
 }
 
 dzn_coroutine
-dzn_coroutine_create (dzn_coroutine_function function, void* data)
+dzn_coroutine_create (dzn_coroutine_function function, void *data)
 {
   return pth_spawn (0, function, data);
 }
@@ -80,17 +80,17 @@ dzn_coroutine_id ()
 int
 dzn_coroutine_set_id (long id)
 {
-  return pth_key_setdata (id_key, (void*)id);
+  return pth_key_setdata (id_key, (void *)id);
 }
 
-void*
+void *
 dzn_coroutine_data ()
 {
   return pth_key_getdata (data_key);
 }
 
 int
-dzn_coroutine_set_data (void* data)
+dzn_coroutine_set_data (void *data)
 {
   return pth_key_setdata (data_key, data);
 }
@@ -109,7 +109,7 @@ struct pump
 };
 
 dzn_coroutine
-pump_create_coroutine (pump* self, dzn_coroutine_function function)
+pump_create_coroutine (pump *self, dzn_coroutine_function function)
 {
   if (!self->id)
     dzn_coroutine_init ();
@@ -119,7 +119,7 @@ pump_create_coroutine (pump* self, dzn_coroutine_function function)
 }
 
 int
-pump_get_id (pump* self, dzn_coroutine coroutine)
+pump_get_id (pump *self, dzn_coroutine coroutine)
 {
   for (int i = 0; i < self->id; i++)
     if (self->coroutines[i] == coroutine)
@@ -128,18 +128,18 @@ pump_get_id (pump* self, dzn_coroutine coroutine)
 }
 
 int
-pump_yield_to (pump* self, dzn_coroutine coroutine)
+pump_yield_to (pump *self, dzn_coroutine coroutine)
 {
-  (void*) self;
+  (void *) self;
   return dzn_coroutine_yield_to (coroutine);
 }
 
-void*
-worker (void* data)
+void *
+worker (void *data)
 {
   debug ("worker, data=%p\n", data);
   dzn_coroutine self = dzn_coroutine_self ();
-  pump* pump = data;
+  pump *pump = data;
   debug (" CANARY=%s\n", pump->canary);
 
   if (!dzn_coroutine_id ())
@@ -149,7 +149,7 @@ worker (void* data)
   long id = dzn_coroutine_id ();
   debug ("WORKER ID: %ld\n", (long)pth_key_getdata (id_key));
 
-  dzn_coroutine* coroutines;
+  dzn_coroutine *coroutines;
   switch (id)
     {
     case 1:

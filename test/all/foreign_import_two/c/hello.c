@@ -29,20 +29,20 @@
    foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
 void
-hello_init (hello* self, dzn_locator* dzn_locator
+hello_init (hello *self, dzn_locator *dzn_locator
 #if 1 //DZN_TRACING
-                  , dzn_meta* dzn_meta
+            , dzn_meta *dzn_meta
 #endif /* !DZN_TRACING */
-)
+           )
 {
-  hello_skel_init (&(self->base), dzn_locator
+  hello_skel_init (& (self->base), dzn_locator
 #if 1 //DZN_TRACING
-                    , dzn_meta
+                   , dzn_meta
 #endif /* !DZN_TRACING */
-                    );
+                  );
 }
 
 void
-hello_h_hello (hello* self)
+hello_h_hello (hello *self)
 {
 }

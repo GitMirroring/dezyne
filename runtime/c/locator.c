@@ -31,7 +31,7 @@
 #endif /* DZN_LOCATOR_SERVICES */
 
 void
-dzn_locator_init (dzn_locator* self)
+dzn_locator_init (dzn_locator *self)
 {
   self->illegal = &dzn_runtime_illegal_handler;
 #if DZN_LOCATOR_SERVICES
@@ -41,33 +41,33 @@ dzn_locator_init (dzn_locator* self)
 
 #if DZN_LOCATOR_SERVICES
 int32_t
-dzn_map_copy (dzn_map_element* elt, void* dst)
+dzn_map_copy (dzn_map_element *elt, void *dst)
 {
-  dzn_map* m = dst;
+  dzn_map *m = dst;
   return dzn_map_put (m, elt->key, elt->data);
 }
 
-void*
-dzn_locator_get (dzn_locator* self, char* key)
+void *
+dzn_locator_get (dzn_locator *self, char *key)
 {
-  void* p = 0;
+  void *p = 0;
   dzn_map_get (&self->services, key, &p);
   return p;
 }
 
-dzn_locator*
-dzn_locator_set (dzn_locator* self, char* key, void* value)
+dzn_locator *
+dzn_locator_set (dzn_locator *self, char *key, void *value)
 {
   dzn_map_put (&self->services, key, value);
   return self;
 }
 #endif /* DZN_LOCATOR_SERVICES */
 
-dzn_locator*
-dzn_locator_clone (dzn_locator* self)
+dzn_locator *
+dzn_locator_clone (dzn_locator *self)
 {
 #if DZN_LOCATOR_SERVICES
-  dzn_locator* clone = dzn_malloc (sizeof (dzn_locator));
+  dzn_locator *clone = dzn_malloc (sizeof (dzn_locator));
   dzn_map_init (&clone->services);
   dzn_map_iterate (&self->services, &dzn_map_copy, &clone->services);
   return clone;

@@ -27,17 +27,17 @@ typedef struct dzn_list dzn_list;
 struct dzn_list
 {
   void *data;
-  dzn_list* next;
+  dzn_list *next;
 };
 
-typedef int (*dzn_predicate) (void*);
+typedef int (*dzn_predicate) (void *);
 
-dzn_list* dzn_list_cons (void* data, dzn_list* self);
-dzn_list* dzn_list_data (void* data);
-dzn_list* dzn_list_append (dzn_list* self, dzn_list* list);
-int dzn_list_length (dzn_list* self);
-void* dzn_list_find (dzn_list* self, void* data);
-void* dzn_list_find_predicate (dzn_list* self, dzn_predicate predicate);
-void* dzn_list_delete (dzn_list* self, void* data);
+dzn_list *dzn_list_cons (void *data, dzn_list *self);
+dzn_list *dzn_list_data (void *data);
+dzn_list *dzn_list_append (dzn_list *self, dzn_list *list);
+int dzn_list_length (dzn_list *self);
+void *dzn_list_find (dzn_list *self, void *data);
+void *dzn_list_find_predicate (dzn_list *self, dzn_predicate predicate);
+void *dzn_list_delete (dzn_list *self, void *data);
 
 #endif /* DZN_LIST_H */

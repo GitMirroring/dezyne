@@ -33,27 +33,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-char*
+char *
 read_line ()
 {
-  char* line = 0;
+  char *line = 0;
   size_t size;
   int getline_result = getline (&line, &size, stdin);
   if (getline_result != -1)
-  {
-    size_t line_length = strlen (line);
-    if ((line_length > 1) && (line[line_length-1] == '\n'))
-      line[line_length-1] = '\0';
-    return line;
-  }
+    {
+      size_t line_length = strlen (line);
+      if ((line_length > 1) && (line[line_length - 1] == '\n'))
+        line[line_length - 1] = '\0';
+      return line;
+    }
   return 0;
 }
 
-char*
+char *
 read_trace ()
 {
   static char trace[1024];
-  char* line = read_line ();
+  char *line = read_line ();
   while (line)
     {
       strcat (trace, line);
@@ -65,7 +65,7 @@ read_trace ()
 }
 
 void
-sut_h_out_world (ihello* port)
+sut_h_out_world (ihello *port)
 {
   dzn_runtime_trace (&port->meta, "world");
 }
@@ -86,28 +86,28 @@ main ()
   sut.h->meta.requires.name = "h";
   sut.h->out.world = sut_h_out_world;
 
-  dzn_closure sut_h_in_hello = {(void (*)(void *)) sut.h->in.hello, sut.h};
-  dzn_closure sut_h_in_hi = {(void (*)(void *)) sut.h->in.hi, sut.h};
-  dzn_closure sut_h_in_cruel = {(void (*)(void *)) sut.h->in.cruel, sut.h};
+  dzn_closure sut_h_in_hello = { (void (*) (void *)) sut.h->in.hello, sut.h};
+  dzn_closure sut_h_in_hi = { (void (*) (void *)) sut.h->in.hi, sut.h};
+  dzn_closure sut_h_in_cruel = { (void (*) (void *)) sut.h->in.cruel, sut.h};
 
-  char* trace = read_trace ();
+  char *trace = read_trace ();
   if (0);
   // trace
   else if (!strcmp (trace, "h.hello\nh.return\nh.hi\nh.return\n<defer>\nh.world"))
-  {
-    dzn_pump_run (&pump, &sut_h_in_hello); // 0
-    dzn_pump_run (&pump, &sut_h_in_hi);  // 0
-  }
+    {
+      dzn_pump_run (&pump, &sut_h_in_hello); // 0
+      dzn_pump_run (&pump, &sut_h_in_hi);  // 0
+    }
   else if (!strcmp (trace, "h.hello\nh.return\nh.cruel\nh.return\n<defer>\nh.world"))
-  {
-    dzn_pump_run (&pump, &sut_h_in_hello); // 0
-    dzn_pump_run (&pump, &sut_h_in_cruel); // 1
-  }
+    {
+      dzn_pump_run (&pump, &sut_h_in_hello); // 0
+      dzn_pump_run (&pump, &sut_h_in_cruel); // 1
+    }
   else
-  {
-    fprintf (stderr, "missing trace\n");
-    return 1;
-  }
+    {
+      fprintf (stderr, "missing trace\n");
+      return 1;
+    }
 
   dzn_pump_finalize (&pump);
 

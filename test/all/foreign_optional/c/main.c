@@ -27,9 +27,9 @@
 #include <string.h>
 
 void
-world (iworld* self)
+world (iworld *self)
 {
- (void)self;
+  (void)self;
   fprintf (stderr, "<external>.h.world <- sut.c.h.world\n");
 }
 

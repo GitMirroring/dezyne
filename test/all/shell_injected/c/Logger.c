@@ -24,21 +24,21 @@
 #include <shell_injected.h>
 
 void
-Logger_init (Logger* self, dzn_locator* dzn_locator
+Logger_init (Logger *self, dzn_locator *dzn_locator
 #if 1 //DZN_TRACING
-                   , dzn_meta* dzn_meta
+             , dzn_meta *dzn_meta
 #endif /* !DZN_TRACING */
-)
+            )
 {
-  Logger_skel_init (&(self->base), dzn_locator
+  Logger_skel_init (& (self->base), dzn_locator
 #if 1 //DZN_TRACING
-                     , dzn_meta
+                    , dzn_meta
 #endif /* !DZN_TRACING */
-                     );
+                   );
   self->hello = 20;
 }
 
 void
-Logger_log_log (Logger* self, char* m)
+Logger_log_log (Logger *self, char *m)
 {
 }

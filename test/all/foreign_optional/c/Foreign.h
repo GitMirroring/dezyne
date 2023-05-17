@@ -35,6 +35,6 @@ struct Foreign
   /* end of space */
 };
 
-void w_hello_Foreign (Foreign* self);
+void w_hello_Foreign (Foreign *self);
 
 #endif /* FOREIGN_H */

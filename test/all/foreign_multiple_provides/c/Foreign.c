@@ -28,27 +28,27 @@
    foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
 void
-Foreign_init (Foreign* self, dzn_locator* dzn_locator
+Foreign_init (Foreign *self, dzn_locator *dzn_locator
 #if 1 //DZN_TRACING
-                  , dzn_meta* dzn_meta
+              , dzn_meta *dzn_meta
 #endif /* !DZN_TRACING */
-)
+             )
 {
-  Foreign_skel_init (&(self->base), dzn_locator
+  Foreign_skel_init (& (self->base), dzn_locator
 #if 1 //DZN_TRACING
-                    , dzn_meta
+                     , dzn_meta
 #endif /* !DZN_TRACING */
                     );
 }
 
 void
-Foreign_h0_hello (Foreign* self)
+Foreign_h0_hello (Foreign *self)
 {
   self->base.h0->out.world (self->base.h0);
 }
 
 void
-Foreign_h1_hello (Foreign* self)
+Foreign_h1_hello (Foreign *self)
 {
   self->base.h1->out.world (self->base.h1);
 }

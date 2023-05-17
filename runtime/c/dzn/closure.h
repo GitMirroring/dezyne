@@ -32,7 +32,7 @@
 typedef struct dzn_closure dzn_closure;
 struct dzn_closure
 {
-  void (*function)(void* argument);
+  void (*function) (void *argument);
 #if DZN_DYNAMIC_QUEUES
   void *argument;
 #else /* !DZN_DYNAMIC_QUEUES */

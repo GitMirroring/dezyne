@@ -28,21 +28,21 @@
    foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
 void
-Foreign_init (Foreign* self, dzn_locator* dzn_locator
+Foreign_init (Foreign *self, dzn_locator *dzn_locator
 #if 1 //DZN_TRACING
-, dzn_meta* dzn_meta
+              , dzn_meta *dzn_meta
 #endif /* !DZN_TRACING */
-)
+             )
 {
-  Foreign_skel_init (&(self->base), dzn_locator
+  Foreign_skel_init (& (self->base), dzn_locator
 #if 1 //DZN_TRACING
-, dzn_meta
+                     , dzn_meta
 #endif /* !DZN_TRACING */
-);
+                    );
 }
 
 bool
-Foreign_w_world (Foreign* self)
+Foreign_w_world (Foreign *self)
 {
   self->dzn_reply_bool = true;
   return self->dzn_reply_bool;

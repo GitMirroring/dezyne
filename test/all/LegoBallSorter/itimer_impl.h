@@ -27,21 +27,24 @@
 
 typedef struct itimer_impl itimer_impl;
 
-struct itimer_impl{
-	struct {
-		char const* name;
-		void* self;
-		void (*create)(itimer_impl* self,uint32_t ms);
-		void (*cancel)(itimer_impl* self);
+struct itimer_impl
+{
+  struct
+  {
+    char const *name;
+    void *self;
+    void (*create) (itimer_impl *self, uint32_t ms);
+    void (*cancel) (itimer_impl *self);
 
-	} in;
+  } in;
 
-	struct {
-		char const* name;
-		void* self;
-		void (*timeout) (itimer_impl* self);
+  struct
+  {
+    char const *name;
+    void *self;
+    void (*timeout) (itimer_impl *self);
 
-	} out;
+  } out;
 
 };
 

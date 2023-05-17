@@ -44,13 +44,13 @@ dzn_runtime_illegal_handler (void)
 }
 
 void
-dzn_illegal (dzn_runtime_info const* info)
+dzn_illegal (dzn_runtime_info const *info)
 {
   info->locator->illegal ();
 }
 
 void
-dzn_runtime_info_init (dzn_runtime_info* info, dzn_locator* locator)
+dzn_runtime_info_init (dzn_runtime_info *info, dzn_locator *locator)
 {
   info->locator = locator;
   info->handling = 0;
@@ -59,14 +59,14 @@ dzn_runtime_info_init (dzn_runtime_info* info, dzn_locator* locator)
   dzn_queue_init (&info->q);
 }
 
-static void dzn_runtime_handle_event (dzn_runtime_info* info, void (*event) (void*), void* argument);
+static void dzn_runtime_handle_event (dzn_runtime_info *info, void (*event) (void *), void *argument);
 
 void
-dzn_runtime_flush (dzn_runtime_info* info)
+dzn_runtime_flush (dzn_runtime_info *info)
 {
-  dzn_queue* q;
+  dzn_queue *q;
 #if DZN_DYNAMIC_QUEUES
-  dzn_closure* c;
+  dzn_closure *c;
 #else /* !DZN_DYNAMIC_QUEUES */
   dzn_closure c;
 #endif /* !DZN_DYNAMIC_QUEUES */
@@ -81,13 +81,13 @@ dzn_runtime_flush (dzn_runtime_info* info)
           dzn_free (c->argument);
           dzn_free (c);
 #else /* !DZN_DYNAMIC_QUEUES */
-          c = * (dzn_closure*)dzn_queue_pop (q);
+          c = * (dzn_closure *)dzn_queue_pop (q);
           dzn_runtime_handle_event (info, c.function, c.argument);
 #endif /* !DZN_DYNAMIC_QUEUES */
         }
       if (info->deferred)
         {
-          dzn_runtime_info* tgt = info->deferred;
+          dzn_runtime_info *tgt = info->deferred;
           info->deferred = 0;
           if (tgt && !tgt->handling)
             info = tgt;
@@ -98,7 +98,7 @@ dzn_runtime_flush (dzn_runtime_info* info)
 }
 
 void
-dzn_runtime_enqueue (void* vsrc, void* vtgt, void (*event) (void*), void* argument)
+dzn_runtime_enqueue (void *vsrc, void *vtgt, void (*event) (void *), void *argument)
 {
 #if DZN_DYNAMIC_QUEUES
   dzn_closure *c;
@@ -106,16 +106,16 @@ dzn_runtime_enqueue (void* vsrc, void* vtgt, void (*event) (void*), void* argume
   dzn_closure c;
 #endif /* !DZN_DYNAMIC_QUEUES */
   dzn_arguments *a;
-  dzn_component* csrc = vsrc;
-  dzn_component* ctgt = vtgt;
-  dzn_runtime_info* src = csrc ? &csrc->dzn_info : 0;
-  dzn_runtime_info* tgt = ctgt ? &ctgt->dzn_info : 0;
-  if (!(src && src->performs_flush) && !tgt->handling)
+  dzn_component *csrc = vsrc;
+  dzn_component *ctgt = vtgt;
+  dzn_runtime_info *src = csrc ? &csrc->dzn_info : 0;
+  dzn_runtime_info *tgt = ctgt ? &ctgt->dzn_info : 0;
+  if (! (src && src->performs_flush) && !tgt->handling)
     dzn_runtime_handle_event (tgt, event, argument);
   else
     {
 #if DZN_DYNAMIC_QUEUES
-      c = (dzn_closure*) dzn_malloc (sizeof (dzn_closure));
+      c = (dzn_closure *) dzn_malloc (sizeof (dzn_closure));
       c->function = event;
       a = argument;
       c->argument = dzn_malloc ((size_t)a->size);
@@ -134,7 +134,7 @@ dzn_runtime_enqueue (void* vsrc, void* vtgt, void (*event) (void*), void* argume
 }
 
 static void
-dzn_runtime_handle_event (dzn_runtime_info* info, void (*event) (void*), void* argument)
+dzn_runtime_handle_event (dzn_runtime_info *info, void (*event) (void *), void *argument)
 {
   dzn_runtime_start (info);
   event (argument);
@@ -142,16 +142,16 @@ dzn_runtime_handle_event (dzn_runtime_info* info, void (*event) (void*), void* a
 }
 
 void
-dzn_runtime_event (void (*event) (void*), void* argument)
+dzn_runtime_event (void (*event) (void *), void *argument)
 {
-  dzn_arguments* a = argument;
-  dzn_component* c = a->self;
+  dzn_arguments *a = argument;
+  dzn_component *c = a->self;
   dzn_runtime_handle_event (&c->dzn_info, event, argument);
 }
 
 #if HAVE_LIBPTH
 void
-dzn_runtime_call_in (dzn_component* component, dzn_interface* port)
+dzn_runtime_call_in (dzn_component *component, dzn_interface *port)
 {
   if (component->dzn_info.handling || dzn_port_blocked_p (component, port))
     dzn_collateral_block (component, port);
@@ -159,7 +159,7 @@ dzn_runtime_call_in (dzn_component* component, dzn_interface* port)
 #endif
 
 void
-dzn_runtime_start (dzn_runtime_info* info)
+dzn_runtime_start (dzn_runtime_info *info)
 {
   if (!info->handling)
 #if HAVE_LIBPTH
@@ -172,15 +172,15 @@ dzn_runtime_start (dzn_runtime_info* info)
 }
 
 void
-dzn_runtime_finish (dzn_runtime_info* info)
+dzn_runtime_finish (dzn_runtime_info *info)
 {
   info->handling = 0;
   dzn_runtime_flush (info);
 }
 
 #if DZN_TRACING
-char*
-dzn_runtime_path (dzn_meta const* m, char* p)
+char *
+dzn_runtime_path (dzn_meta const *m, char *p)
 {
   char buf[1024] = "";
   strcpy (buf, m ? m->name : "<external>");
@@ -196,7 +196,7 @@ dzn_runtime_path (dzn_meta const* m, char* p)
 }
 
 void
-dzn_runtime_trace (dzn_port_meta const* meta, char const* e)
+dzn_runtime_trace (dzn_port_meta const *meta, char const *e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
@@ -208,7 +208,7 @@ dzn_runtime_trace (dzn_port_meta const* meta, char const* e)
 }
 
 void
-dzn_runtime_trace_out (dzn_port_meta const* meta, char const* e)
+dzn_runtime_trace_out (dzn_port_meta const *meta, char const *e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
@@ -220,7 +220,7 @@ dzn_runtime_trace_out (dzn_port_meta const* meta, char const* e)
 }
 
 void
-dzn_runtime_trace_qin (dzn_port_meta const* meta, char const* e)
+dzn_runtime_trace_qin (dzn_port_meta const *meta, char const *e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
@@ -237,7 +237,7 @@ dzn_runtime_trace_qin (dzn_port_meta const* meta, char const* e)
 }
 
 void
-dzn_runtime_trace_qout (dzn_port_meta const* meta, char const* e)
+dzn_runtime_trace_qout (dzn_port_meta const *meta, char const *e)
 {
   char pbuf[1024] = "";
   char rbuf[1024] = "";
@@ -250,10 +250,10 @@ dzn_runtime_trace_qout (dzn_port_meta const* meta, char const* e)
            dzn_runtime_path (meta->provides.meta, pbuf), "<q>");
 }
 
-char*
+char *
 dzn_bool_to_string (bool b)
 {
-  char* return_string;
+  char *return_string;
   if (b == 1)
     return_string = "true";
   else
@@ -271,7 +271,7 @@ dzn_string_to_bool (char *s)
   return reply;
 }
 
-char*
+char *
 dzn_int_to_string (int i)
 {
   static char buffy[ (size_t) ((sizeof (i) * 2) + 1)];
@@ -280,10 +280,10 @@ dzn_int_to_string (int i)
 }
 
 int
-dzn_string_to_int (char* s)
+dzn_string_to_int (char *s)
 {
   char *endptr;
-  long int val = strtol (s,&endptr,0);
+  long int val = strtol (s, &endptr, 0);
   return (endptr != s) ? (int) val : INT_MAX;
 }
 

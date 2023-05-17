@@ -32,8 +32,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-void  dzn_free (void* ptr);
-void* dzn_calloc (size_t n, size_t size);
-void* dzn_malloc (size_t size);
+void  dzn_free (void *ptr);
+void *dzn_calloc (size_t n, size_t size);
+void *dzn_malloc (size_t size);
 
 #endif /* DZN_MEM_H */

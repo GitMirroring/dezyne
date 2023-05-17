@@ -33,27 +33,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-char*
+char *
 read_line ()
 {
-  char* line = 0;
+  char *line = 0;
   size_t size;
   int getline_result = getline (&line, &size, stdin);
   if (getline_result != -1)
-  {
-    size_t line_length = strlen (line);
-    if ((line_length > 1) && (line[line_length-1] == '\n'))
-      line[line_length-1] = '\0';
-    return line;
-  }
+    {
+      size_t line_length = strlen (line);
+      if ((line_length > 1) && (line[line_length - 1] == '\n'))
+        line[line_length - 1] = '\0';
+      return line;
+    }
   return 0;
 }
 
-char*
+char *
 read_trace ()
 {
   static char trace[1024];
-  char* line = read_line ();
+  char *line = read_line ();
   while (line)
     {
       strcat (trace, line);
@@ -65,7 +65,7 @@ read_trace ()
 }
 
 void
-sut_w_in_world (iworld* port, int* cc, int i)
+sut_w_in_world (iworld *port, int *cc, int i)
 {
   (void)i;
   dzn_runtime_trace (&port->meta, "world");

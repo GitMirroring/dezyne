@@ -32,8 +32,8 @@
 typedef struct dzn_meta dzn_meta;
 struct dzn_meta
 {
-  char const* name;
-  dzn_meta const* parent;
+  char const *name;
+  dzn_meta const *parent;
 };
 #endif /* DZN_TRACING */
 
@@ -42,18 +42,18 @@ struct dzn_port_meta
 {
   struct
   {
-    void* component;
+    void *component;
 #if 1 //DZN_TRACING
-    char const* name;
-    dzn_meta const* meta;
+    char const *name;
+    dzn_meta const *meta;
 #endif /* DZN_TRACING */
   } provides;
   struct
   {
-    void* component;
+    void *component;
 #if 1 //DZN_TRACING
-    char const* name;
-    dzn_meta const* meta;
+    char const *name;
+    dzn_meta const *meta;
 #endif /* DZN_TRACING */
   } requires;
 };

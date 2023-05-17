@@ -27,12 +27,12 @@
    Foreign_skel_init(&(self->base), dzn_locator, dzn_meta); */
 
 void
-Foreign_init (Foreign* self, dzn_locator* dzn_locator, dzn_meta* meta)
+Foreign_init (Foreign *self, dzn_locator *dzn_locator, dzn_meta *meta)
 {
-  Foreign_skel_init(&(self->base), dzn_locator, meta);
+  Foreign_skel_init (& (self->base), dzn_locator, meta);
 }
 
 void
-Foreign_w_world (Foreign* self)
+Foreign_w_world (Foreign *self)
 {
 }

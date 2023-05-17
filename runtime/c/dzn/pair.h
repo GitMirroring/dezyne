@@ -29,8 +29,8 @@
 typedef struct dzn_pair dzn_pair;
 struct dzn_pair
 {
-  void* first;
-  void* second;
+  void *first;
+  void *second;
 };
 
 #endif /* DZN_PAIR_H */

@@ -23,17 +23,17 @@
 #include <dzn/list.h>
 #include <stdlib.h>
 
-static dzn_list*
-dzn_list_create (dzn_list* next, void* data)
+static dzn_list *
+dzn_list_create (dzn_list *next, void *data)
 {
-  dzn_list* cell = malloc (sizeof (dzn_list));
+  dzn_list *cell = malloc (sizeof (dzn_list));
   cell->data = data;
   cell->next = next;
   return cell;
 }
 
-static dzn_list*
-find_cell (dzn_list* self, void* data)
+static dzn_list *
+find_cell (dzn_list *self, void *data)
 {
   while (self)
     {
@@ -44,8 +44,8 @@ find_cell (dzn_list* self, void* data)
   return 0;
 }
 
-static dzn_list*
-find_cell_predicate (dzn_list* self, dzn_predicate predicate)
+static dzn_list *
+find_cell_predicate (dzn_list *self, dzn_predicate predicate)
 {
   while (self)
     {
@@ -56,24 +56,24 @@ find_cell_predicate (dzn_list* self, dzn_predicate predicate)
   return 0;
 }
 
-dzn_list*
-dzn_list_cons (void* data, dzn_list* self)
+dzn_list *
+dzn_list_cons (void *data, dzn_list *self)
 {
   return dzn_list_create (self, data);
 }
 
-dzn_list*
-dzn_list_data (void* data)
+dzn_list *
+dzn_list_data (void *data)
 {
   return dzn_list_create (0, data);
 }
 
-dzn_list*
-dzn_list_append (dzn_list* self, dzn_list* list)
+dzn_list *
+dzn_list_append (dzn_list *self, dzn_list *list)
 {
   if (!self)
     return list;
-  dzn_list* head = self;
+  dzn_list *head = self;
   while (head && head->next)
     head = head->next;
   head->next = list;
@@ -81,7 +81,7 @@ dzn_list_append (dzn_list* self, dzn_list* list)
 }
 
 int
-dzn_list_length (dzn_list* self)
+dzn_list_length (dzn_list *self)
 {
   int length = 0;
   while (self)
@@ -92,28 +92,28 @@ dzn_list_length (dzn_list* self)
   return length;
 }
 
-void*
-dzn_list_find (dzn_list* self, void* data)
+void *
+dzn_list_find (dzn_list *self, void *data)
 {
-  dzn_list* cell = find_cell (self, data);
+  dzn_list *cell = find_cell (self, data);
   if (cell)
     return cell->data;
   return 0;
 }
 
-void*
-dzn_list_find_predicate (dzn_list* self, dzn_predicate predicate)
+void *
+dzn_list_find_predicate (dzn_list *self, dzn_predicate predicate)
 {
-  dzn_list* cell = find_cell_predicate (self, predicate);
+  dzn_list *cell = find_cell_predicate (self, predicate);
   if (cell)
     return cell->data;
   return 0;
 }
 
-void*
-dzn_list_delete (dzn_list* self, void* data)
+void *
+dzn_list_delete (dzn_list *self, void *data)
 {
-  dzn_list* head = self;
+  dzn_list *head = self;
   if (head && head->data == data)
     {
       self = head->next;
@@ -124,7 +124,7 @@ dzn_list_delete (dzn_list* self, void* data)
     {
       if (head->next && head->next->data == data)
         {
-          dzn_list* cell = head->next;
+          dzn_list *cell = head->next;
           head->next = cell->next;
           free (cell);
           return self;
@@ -148,9 +148,9 @@ dzn_list_delete (dzn_list* self, void* data)
 #endif
 
 void
-print_list (dzn_list* self)
+print_list (dzn_list *self)
 {
-  dzn_list* head = self;
+  dzn_list *head = self;
   while (head)
     {
       if (head != self)
@@ -164,20 +164,20 @@ print_list (dzn_list* self)
 int
 main ()
 {
-  dzn_list* lst = dzn_list_cons ((void*)1, 0);
+  dzn_list *lst = dzn_list_cons ((void *)1, 0);
   print_list (lst);
-  lst = dzn_list_cons ((void*)2, lst);
+  lst = dzn_list_cons ((void *)2, lst);
   print_list (lst);
-  lst = dzn_list_cons ((void*)3, lst);
+  lst = dzn_list_cons ((void *)3, lst);
   print_list (lst);
   debug ("length: %d\n", dzn_list_length (lst));
-  dzn_list* found = dzn_list_find (lst, (void*)1);
+  dzn_list *found = dzn_list_find (lst, (void *)1);
   debug ("found: %p\n", found);
-  lst = dzn_list_delete (lst, (void*)1);
+  lst = dzn_list_delete (lst, (void *)1);
   debug ("deleted 1\n");
   print_list (lst);
   debug ("length: %d\n", dzn_list_length (lst));
-  lst = dzn_list_delete (lst, (void*)3);
+  lst = dzn_list_delete (lst, (void *)3);
   debug ("deleted 3\n");
   print_list (lst);
   debug ("length: %d\n", dzn_list_length (lst));

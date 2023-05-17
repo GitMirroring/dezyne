@@ -39,8 +39,8 @@ typedef struct dzn_node dzn_node;
 struct dzn_node
 {
 #if DZN_DYNAMIC_QUEUES
-  void* item;
-  dzn_node* next;
+  void *item;
+  dzn_node *next;
 #else /* !DZN_DYNAMIC_QUEUES */
   dzn_closure item;
 #endif /* !DZN_DYNAMIC_QUEUES */
@@ -49,19 +49,19 @@ struct dzn_node
 typedef struct dzn_queue dzn_queue;
 struct dzn_queue
 {
-  dzn_node* head;
-  dzn_node* tail;
+  dzn_node *head;
+  dzn_node *tail;
   uint8_t size;
 #if !DZN_DYNAMIC_QUEUES
   dzn_node element[DZN_QUEUE_SIZE];
 #endif /* !DZN_DYNAMIC_QUEUES */
 };
 
-void dzn_queue_init (dzn_queue* self);
-bool dzn_queue_empty (dzn_queue const* self);
-void dzn_queue_push (dzn_queue* self, void* e);
-uint8_t dzn_queue_size (dzn_queue const* self);
-void* dzn_queue_front (dzn_queue const* self);
-void* dzn_queue_pop (dzn_queue* self);
+void dzn_queue_init (dzn_queue *self);
+bool dzn_queue_empty (dzn_queue const *self);
+void dzn_queue_push (dzn_queue *self, void *e);
+uint8_t dzn_queue_size (dzn_queue const *self);
+void *dzn_queue_front (dzn_queue const *self);
+void *dzn_queue_pop (dzn_queue *self);
 
 #endif /* DZN_QUEUE_H */

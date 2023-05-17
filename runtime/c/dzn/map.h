@@ -47,9 +47,9 @@
 typedef struct dzn_map_element dzn_map_element;
 struct dzn_map_element
 {
-  char* key;
+  char *key;
   bool in_use;
-  void* data;
+  void *data;
 };
 
 /* A map has some maximum size and current size,
@@ -62,9 +62,9 @@ struct dzn_map
   dzn_map_element *data;
 };
 
-typedef int32_t (*dzn_map_f)(dzn_map_element* map_el, void* argument);
+typedef int32_t (*dzn_map_f) (dzn_map_element *map_el, void *argument);
 
-extern void dzn_map_init (dzn_map* self);
+extern void dzn_map_init (dzn_map *self);
 
 /*
  * Iteratively call f with argument (item, data) for
@@ -73,39 +73,39 @@ extern void dzn_map_init (dzn_map* self);
  * than MAP_OK the traversal is terminated. f must
  * not reenter any map functions, or deadlock may arise.
  */
-extern int32_t dzn_map_iterate (dzn_map* self, dzn_map_f f, void* item);
+extern int32_t dzn_map_iterate (dzn_map *self, dzn_map_f f, void *item);
 
 /*
  * Add an element to the map. Return MAP_OK or MAP_OMEM.
  */
-extern int32_t dzn_map_put (dzn_map* self, char* key, void* value);
+extern int32_t dzn_map_put (dzn_map *self, char *key, void *value);
 
 /*
  * Get an element from the map. Return MAP_OK or MAP_MISSING.
  */
-extern int32_t dzn_map_get (dzn_map const* self, char const* key, void* *arg);
+extern int32_t dzn_map_get (dzn_map const *self, char const *key, void * *arg);
 
 /*
  * Remove an element from the map. Return MAP_OK or MAP_MISSING.
  */
-extern int32_t dzn_map_remove (dzn_map* self, char const* key);
+extern int32_t dzn_map_remove (dzn_map *self, char const *key);
 
 
 /*
  * Free the map
  */
-extern void dzn_map_free (dzn_map* self);
+extern void dzn_map_free (dzn_map *self);
 
 /*
  * Get the current size of a map
  */
 
 /* added 4 extra prototypes */
-extern uint8_t dzn_map_length (dzn_map const* self);
+extern uint8_t dzn_map_length (dzn_map const *self);
 
-extern int32_t dzn_map_rehash (dzn_map* self);
+extern int32_t dzn_map_rehash (dzn_map *self);
 
-extern int32_t dzn_map_hash (dzn_map const* self, char const* key);
+extern int32_t dzn_map_hash (dzn_map const *self, char const *key);
 
-extern uint32_t dzn_map_hash_int (dzn_map const* self, char const* keystring);
+extern uint32_t dzn_map_hash_int (dzn_map const *self, char const *keystring);
 #endif /* DZN_MAP_H */

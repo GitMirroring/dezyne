@@ -57,7 +57,7 @@ gettime ()
 typedef struct
 {
   dzn_meta_t meta;
-  GtkSpinButton* button;
+  GtkSpinButton *button;
 
   int home;
   int end;
@@ -67,13 +67,13 @@ typedef struct
 
 } GtkMotor;
 
-GtkMotor*
-gtk_motor_new (char const* name, int home, int end)
+GtkMotor *
+gtk_motor_new (char const *name, int home, int end)
 {
-  GtkMotor* self = (GtkMotor*)malloc (sizeof (GtkMotor));
-  GtkAdjustment* adjustment
+  GtkMotor *self = (GtkMotor *)malloc (sizeof (GtkMotor));
+  GtkAdjustment *adjustment
     = gtk_adjustment_new (0.0, GTK_MOTOR_MIN, GTK_MOTOR_MAX, 1.0, 0.0, 0.0);
-  self->button = (GtkSpinButton*)gtk_spin_button_new (adjustment, 1.0, 0);
+  self->button = (GtkSpinButton *)gtk_spin_button_new (adjustment, 1.0, 0);
 
   self->dzn_meta.name = name;
   self->dzn_meta.parent = 0;
@@ -93,13 +93,13 @@ sign (int i)
 }
 
 int
-gtk_motor_get_value (GtkMotor* self)
+gtk_motor_get_value (GtkMotor *self)
 {
   return gtk_spin_button_get_value_as_int (self->button);
 }
 
 void
-gtk_motor_set_value (GtkMotor* self, int v)
+gtk_motor_set_value (GtkMotor *self, int v)
 {
   gtk_spin_button_set_value (self->button, v);
 }
@@ -107,14 +107,14 @@ gtk_motor_set_value (GtkMotor* self, int v)
 typedef struct GtkLego GtkLego;
 
 void
-gtk_motor_update (GtkMotor* self, GtkLego* lego, void (*f)(GtkLego*, int))
+gtk_motor_update (GtkMotor *self, GtkLego *lego, void (*f) (GtkLego *, int))
 {
   unsigned long now = gettime ();
   int ms = now - self->last_update;
   int position = sign (self->target)
-    * min (abs (gtk_motor_get_value (self)
-                + sign (self->target) * self->velocity * ms),
-           abs (self->target));
+                 * min (abs (gtk_motor_get_value (self)
+                             + sign (self->target) * self->velocity * ms),
+                        abs (self->target));
   f (lego, position);
   gtk_motor_set_value (self, position);
   self->last_update = now;
@@ -123,14 +123,14 @@ gtk_motor_update (GtkMotor* self, GtkLego* lego, void (*f)(GtkLego*, int))
 typedef struct
 {
   dzn_meta_t meta;
-  GtkCheckButton* button;
+  GtkCheckButton *button;
 } GtkSensor;
 
-GtkSensor*
-gtk_sensor_new (char const* name)
+GtkSensor *
+gtk_sensor_new (char const *name)
 {
-  GtkSensor* self = (GtkSensor*)malloc (sizeof (GtkSensor));
-  self->button = (GtkCheckButton*)gtk_check_button_new_with_label (name);
+  GtkSensor *self = (GtkSensor *)malloc (sizeof (GtkSensor));
+  self->button = (GtkCheckButton *)gtk_check_button_new_with_label (name);
   self->dzn_meta.name = name;
   self->dzn_meta.parent = 0;
   return self;
@@ -138,139 +138,139 @@ gtk_sensor_new (char const* name)
 
 struct GtkLego
 {
-  GtkWindow*     window;
+  GtkWindow     *window;
 
-  GtkBox*        box_lego;
+  GtkBox        *box_lego;
 
-  GtkBox*        box_buttons;
-  GtkButton*     button_calibrate;
-  GtkButton*     button_operate;
-  GtkButton*     button_stop;
+  GtkBox        *box_buttons;
+  GtkButton     *button_calibrate;
+  GtkButton     *button_operate;
+  GtkButton     *button_stop;
 
-  GtkBox*        box_input;
-  GtkBox*        box_output;
-  GtkBox*        box_stage;
-  GtkBox*        box_stage_x;
-  GtkBox*        box_stage_y;
-  GtkBox*        box_robot;
-  GtkBox*        box_truck;
-  GtkBox*        box_trolley;
-  GtkBox*        box_hoist;
-  GtkBox*        box_gripper;
+  GtkBox        *box_input;
+  GtkBox        *box_output;
+  GtkBox        *box_stage;
+  GtkBox        *box_stage_x;
+  GtkBox        *box_stage_y;
+  GtkBox        *box_robot;
+  GtkBox        *box_truck;
+  GtkBox        *box_trolley;
+  GtkBox        *box_hoist;
+  GtkBox        *box_gripper;
 
   // input
-  GtkFrame*      frame_input;
-  GtkMotor*      motor_input_feeder;
-  GtkMotor*      motor_input_feedport;
+  GtkFrame      *frame_input;
+  GtkMotor      *motor_input_feeder;
+  GtkMotor      *motor_input_feedport;
 
-  GtkSensor*     sensor_input_feeder;
-  GtkSensor*     sensor_input_feedport;
+  GtkSensor     *sensor_input_feeder;
+  GtkSensor     *sensor_input_feedport;
 
   // output
-  GtkFrame*      frame_output;
-  GtkMotor*      motor_output_reject_track;
-  GtkMotor*      motor_output_accept_track;
+  GtkFrame      *frame_output;
+  GtkMotor      *motor_output_reject_track;
+  GtkMotor      *motor_output_accept_track;
 
-  GtkSensor*     sensor_output_reject;
-  GtkSensor*     sensor_output_accept;
+  GtkSensor     *sensor_output_reject;
+  GtkSensor     *sensor_output_accept;
 
   // light
-  GtkSensor*     sensor_light;
+  GtkSensor     *sensor_light;
 
   // stage
-  GtkFrame*      frame_stage;
-  GtkFrame*      frame_stage_x;
-  GtkMotor*      motor_stage_x;
+  GtkFrame      *frame_stage;
+  GtkFrame      *frame_stage_x;
+  GtkMotor      *motor_stage_x;
 
-  GtkSensor*     sensor_stage_x_home;
-  GtkSensor*     sensor_stage_x_end;
+  GtkSensor     *sensor_stage_x_home;
+  GtkSensor     *sensor_stage_x_end;
 
-  GtkFrame*      frame_stage_y;
-  GtkMotor*      motor_stage_y;
+  GtkFrame      *frame_stage_y;
+  GtkMotor      *motor_stage_y;
 
-  GtkSensor*     sensor_stage_y_home;
-  GtkSensor*     sensor_stage_y_end;
+  GtkSensor     *sensor_stage_y_home;
+  GtkSensor     *sensor_stage_y_end;
 
   // robot
-  GtkFrame*      frame_robot;
+  GtkFrame      *frame_robot;
   // truck
-  GtkFrame*      frame_truck;
-  GtkMotor*      motor_truck;    //robot x axis, moves trolley
+  GtkFrame      *frame_truck;
+  GtkMotor      *motor_truck;    //robot x axis, moves trolley
 
-  GtkSensor*     sensor_truck_home;
+  GtkSensor     *sensor_truck_home;
 
   // trolley
-  GtkFrame*      frame_trolley;
-  GtkMotor*      motor_trolley;  //robot y axis, moves hoist
-  GtkSensor*     sensor_trolley_end;
+  GtkFrame      *frame_trolley;
+  GtkMotor      *motor_trolley;  //robot y axis, moves hoist
+  GtkSensor     *sensor_trolley_end;
 
   // hoist
-  GtkFrame*      frame_hoist;
-  GtkMotor*      motor_hoist;    //robot z axis, moves gripper up and down
-  GtkSensor*     sensor_hoist_end;
+  GtkFrame      *frame_hoist;
+  GtkMotor      *motor_hoist;    //robot z axis, moves gripper up and down
+  GtkSensor     *sensor_hoist_end;
 
   // gripper
-  GtkFrame*      frame_gripper;
-  GtkMotor*      motor_gripper;  //robot r axis, opens and closes gripper
-  GtkSensor*     sensor_gripper_end;
+  GtkFrame      *frame_gripper;
+  GtkMotor      *motor_gripper;  //robot r axis, opens and closes gripper
+  GtkSensor     *sensor_gripper_end;
 };
 
-GtkLego*
+GtkLego *
 gtk_lego_new ()
 {
-  GtkLego* self = (GtkLego*)malloc (sizeof (GtkLego));
+  GtkLego *self = (GtkLego *)malloc (sizeof (GtkLego));
 
-  self->window = (GtkWindow*)gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  self->window = (GtkWindow *)gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-  self->box_lego = (GtkBox*)gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
-  self->box_buttons = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
-  self->button_calibrate = (GtkButton*)gtk_button_new_with_label ("calibrate");
-  self->button_operate = (GtkButton*)gtk_button_new_with_label ("operate");
-  self->button_stop = (GtkButton*)gtk_button_new_with_label ("stop");
-  self->box_input = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-  self->box_output = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-  self->box_stage = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-  self->box_stage_x = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
-  self->box_stage_y = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
-  self->box_robot = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
-  self->box_truck = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
-  self->box_trolley = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
-  self->box_hoist = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
-  self->box_gripper = (GtkBox*)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
-  self->frame_input = (GtkFrame*)gtk_frame_new ("input");
-  self->motor_input_feeder = (GtkMotor*)gtk_motor_new ("ext:input_feeder", 0, 400);
-  self->motor_input_feedport = (GtkMotor*)gtk_motor_new ("ext:input_feedport", 0, 0);
-  self->sensor_input_feeder = (GtkSensor*)gtk_sensor_new ("ext:feeder");
-  self->sensor_input_feedport = (GtkSensor*)gtk_sensor_new ("ext:feedport");
-  self->frame_output = (GtkFrame*)gtk_frame_new ("output");
-  self->motor_output_reject_track = (GtkMotor*)gtk_motor_new ("ext:output_reject_track", 0, 0);
-  self->motor_output_accept_track = (GtkMotor*)gtk_motor_new ("ext:output_accept_track", 0, 0);
-  self->sensor_output_reject = (GtkSensor*)gtk_sensor_new ("ext:reject");
-  self->sensor_output_accept = (GtkSensor*)gtk_sensor_new ("ext:accept");
-  self->sensor_light = (GtkSensor*)gtk_sensor_new ("ext:light");
-  self->frame_stage = (GtkFrame*)gtk_frame_new ("stage");
-  self->frame_stage_x = (GtkFrame*)gtk_frame_new ("x");
-  self->motor_stage_x = (GtkMotor*)gtk_motor_new ("ext:stage_x",-100,500);
-  self->sensor_stage_x_home = (GtkSensor*)gtk_sensor_new ("ext:home");
-  self->sensor_stage_x_end = (GtkSensor*)gtk_sensor_new ("ext:end");
-  self->frame_stage_y = (GtkFrame*)gtk_frame_new ("y");
-  self->motor_stage_y = (GtkMotor*)gtk_motor_new ("ext:stage_y",-250, 250);
-  self->sensor_stage_y_home = (GtkSensor*)gtk_sensor_new ("ext:home");
-  self->sensor_stage_y_end = (GtkSensor*)gtk_sensor_new ("ext:end");
-  self->frame_robot = (GtkFrame*)gtk_frame_new ("robot");
-  self->frame_truck = (GtkFrame*)gtk_frame_new ("truck");
-  self->motor_truck = (GtkMotor*)gtk_motor_new ("ext:truck",-200, 1000);
-  self->sensor_truck_home = (GtkSensor*)gtk_sensor_new ("ext:home");
+  self->box_lego = (GtkBox *)gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
+  self->box_buttons = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
+  self->button_calibrate = (GtkButton *)gtk_button_new_with_label ("calibrate");
+  self->button_operate = (GtkButton *)gtk_button_new_with_label ("operate");
+  self->button_stop = (GtkButton *)gtk_button_new_with_label ("stop");
+  self->box_input = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
+  self->box_output = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
+  self->box_stage = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
+  self->box_stage_x = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
+  self->box_stage_y = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
+  self->box_robot = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
+  self->box_truck = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
+  self->box_trolley = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
+  self->box_hoist = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
+  self->box_gripper = (GtkBox *)gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
+  self->frame_input = (GtkFrame *)gtk_frame_new ("input");
+  self->motor_input_feeder = (GtkMotor *)gtk_motor_new ("ext:input_feeder", 0, 400);
+  self->motor_input_feedport = (GtkMotor *)gtk_motor_new ("ext:input_feedport", 0, 0);
+  self->sensor_input_feeder = (GtkSensor *)gtk_sensor_new ("ext:feeder");
+  self->sensor_input_feedport = (GtkSensor *)gtk_sensor_new ("ext:feedport");
+  self->frame_output = (GtkFrame *)gtk_frame_new ("output");
+  self->motor_output_reject_track = (GtkMotor *)gtk_motor_new ("ext:output_reject_track", 0, 0);
+  self->motor_output_accept_track = (GtkMotor *)gtk_motor_new ("ext:output_accept_track", 0, 0);
+  self->sensor_output_reject = (GtkSensor *)gtk_sensor_new ("ext:reject");
+  self->sensor_output_accept = (GtkSensor *)gtk_sensor_new ("ext:accept");
+  self->sensor_light = (GtkSensor *)gtk_sensor_new ("ext:light");
+  self->frame_stage = (GtkFrame *)gtk_frame_new ("stage");
+  self->frame_stage_x = (GtkFrame *)gtk_frame_new ("x");
+  self->motor_stage_x = (GtkMotor *)gtk_motor_new ("ext:stage_x", -100, 500);
+  self->sensor_stage_x_home = (GtkSensor *)gtk_sensor_new ("ext:home");
+  self->sensor_stage_x_end = (GtkSensor *)gtk_sensor_new ("ext:end");
+  self->frame_stage_y = (GtkFrame *)gtk_frame_new ("y");
+  self->motor_stage_y = (GtkMotor *)gtk_motor_new ("ext:stage_y", -250, 250);
+  self->sensor_stage_y_home = (GtkSensor *)gtk_sensor_new ("ext:home");
+  self->sensor_stage_y_end = (GtkSensor *)gtk_sensor_new ("ext:end");
+  self->frame_robot = (GtkFrame *)gtk_frame_new ("robot");
+  self->frame_truck = (GtkFrame *)gtk_frame_new ("truck");
+  self->motor_truck = (GtkMotor *)gtk_motor_new ("ext:truck", -200, 1000);
+  self->sensor_truck_home = (GtkSensor *)gtk_sensor_new ("ext:home");
   //    self->sensor_truck_end = (GtkSensor*)gtk_sensor_new ("end");
-  self->frame_trolley = (GtkFrame*)gtk_frame_new ("trolley");
-  self->motor_trolley = (GtkMotor*)gtk_motor_new ("ext:trolley",0, 800);
-  self->sensor_trolley_end = (GtkSensor*)gtk_sensor_new ("ext:end");
-  self->frame_hoist = (GtkFrame*)gtk_frame_new ("hoist");
-  self->motor_hoist = (GtkMotor*)gtk_motor_new ("ext:hoist",0, 400);
-  self->sensor_hoist_end = (GtkSensor*)gtk_sensor_new ("ext:end");
-  self->frame_gripper = (GtkFrame*)gtk_frame_new ("gripper");
-  self->motor_gripper = (GtkMotor*)gtk_motor_new ("ext:gripper",0, -468);
-  self->sensor_gripper_end = (GtkSensor*)gtk_sensor_new ("ext:end");
+  self->frame_trolley = (GtkFrame *)gtk_frame_new ("trolley");
+  self->motor_trolley = (GtkMotor *)gtk_motor_new ("ext:trolley", 0, 800);
+  self->sensor_trolley_end = (GtkSensor *)gtk_sensor_new ("ext:end");
+  self->frame_hoist = (GtkFrame *)gtk_frame_new ("hoist");
+  self->motor_hoist = (GtkMotor *)gtk_motor_new ("ext:hoist", 0, 400);
+  self->sensor_hoist_end = (GtkSensor *)gtk_sensor_new ("ext:end");
+  self->frame_gripper = (GtkFrame *)gtk_frame_new ("gripper");
+  self->motor_gripper = (GtkMotor *)gtk_motor_new ("ext:gripper", 0, -468);
+  self->sensor_gripper_end = (GtkSensor *)gtk_sensor_new ("ext:end");
 
   gtk_widget_set_sensitive (GTK_WIDGET (self->sensor_light->button), false);
 
@@ -348,58 +348,58 @@ gtk_lego_new ()
 }
 
 void
-dummy_update (GtkLego* self, int position)
+dummy_update (GtkLego *self, int position)
 {
 }
 
 void
-sensor_input_feeder_set_active (GtkLego* self, int position)
+sensor_input_feeder_set_active (GtkLego *self, int position)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_input_feeder->button),
-                               position >= self->motor_input_feeder->end);
+                                position >= self->motor_input_feeder->end);
 }
 
 void
-sensor_stage_x_set_active (GtkLego* self, int position)
+sensor_stage_x_set_active (GtkLego *self, int position)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_stage_x_home->button), position <= self->motor_stage_x->home);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_stage_x_end->button), position >= self->motor_stage_x->end);
 }
 
 void
-sensor_stage_y_set_active (GtkLego* self, int position)
+sensor_stage_y_set_active (GtkLego *self, int position)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_stage_y_home->button), position <= self->motor_stage_y->home);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_stage_y_end->button), position >= self->motor_stage_y->end);
 }
 
 void
-sensor_truck_set_active (GtkLego* self, int position)
+sensor_truck_set_active (GtkLego *self, int position)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_truck_home->button), position <= self->motor_truck->home);
   //gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_truck_end->button), position >= self->motor_truck->end);
 }
 
 void
-sensor_trolley_set_active (GtkLego* self, int position)
+sensor_trolley_set_active (GtkLego *self, int position)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_trolley_end->button), position >= self->motor_trolley->end);
 }
 
 void
-sensor_hoist_set_active (GtkLego* self, int position)
+sensor_hoist_set_active (GtkLego *self, int position)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_hoist_end->button), position >= self->motor_hoist->end);
 }
 
 void
-sensor_gripper_set_active (GtkLego* self, int position)
+sensor_gripper_set_active (GtkLego *self, int position)
 {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->sensor_gripper_end->button), position >= self->motor_gripper->end);
 }
 
 void
-gtk_lego_update (GtkLego* self)
+gtk_lego_update (GtkLego *self)
 {
   gtk_motor_update (self->motor_input_feeder, self, sensor_input_feeder_set_active);
   gtk_motor_update (self->motor_input_feedport, self, dummy_update);
@@ -413,35 +413,37 @@ gtk_lego_update (GtkLego* self)
   gtk_motor_update (self->motor_gripper, self, sensor_gripper_set_active);
 }
 
-void imotor_connect (imotor*, GtkMotor*);
-void itouch_connect (itouch*, GtkSensor*);
-void ilight_connect (ilight*, GtkSensor*);
+void imotor_connect (imotor *, GtkMotor *);
+void itouch_connect (itouch *, GtkSensor *);
+void ilight_connect (ilight *, GtkSensor *);
 
 typedef struct
 {
   //: public itimer_impl
-  struct {
-    char const* name;
-    void* self;
-    void (*create)(itimer_impl* self,uint32_t ms);
-    void (*cancel)(itimer_impl* self);
+  struct
+  {
+    char const *name;
+    void *self;
+    void (*create) (itimer_impl *self, uint32_t ms);
+    void (*cancel) (itimer_impl *self);
 
   } in;
 
-  struct {
-    char const* name;
-    void* self;
-    void (*timeout) (itimer_impl* self);
+  struct
+  {
+    char const *name;
+    void *self;
+    void (*timeout) (itimer_impl *self);
 
   } out;
 
   guint connection;
-  itimer* port;
-  GtkLego* lego;
+  itimer *port;
+  GtkLego *lego;
 } timer_impl;
 
 void
-timer_impl_init (timer_impl* self, locator* loc)
+timer_impl_init (timer_impl *self, locator *loc)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 
@@ -457,7 +459,7 @@ timer_impl_init (timer_impl* self, locator* loc)
 }
 
 bool
-timer_impl_stupid_member (timer_impl* self)
+timer_impl_stupid_member (timer_impl *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   //fprintf (stderr, "%p: %d\n", self, self->connection);
@@ -467,28 +469,28 @@ timer_impl_stupid_member (timer_impl* self)
 }
 
 void
-timer_impl_create (itimer_impl* self, int ms)
+timer_impl_create (itimer_impl *self, int ms)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  timer_impl* t = (timer_impl*)self;
+  timer_impl *t = (timer_impl *)self;
   t->connection = g_timeout_add (ms, (GSourceFunc)timer_impl_stupid_member, (gpointer)self);
   //fprintf (stderr, "%p: %d\n", t, t->connection);
 }
 
 void
-timer_impl_cancel (itimer_impl* self)
+timer_impl_cancel (itimer_impl *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  timer_impl* t = (timer_impl*)self;
+  timer_impl *t = (timer_impl *)self;
   //fprintf (stderr, "%p: %d\n", t, t->connection);
   g_source_remove (t->connection);
 }
 
-timer_impl*
-create_timer_impl (dzn_locator* loc)
+timer_impl *
+create_timer_impl (dzn_locator *loc)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  timer_impl *t = (timer_impl*)malloc (sizeof (timer_impl));
+  timer_impl *t = (timer_impl *)malloc (sizeof (timer_impl));
   timer_impl_init (t, loc);
   return t;
 }
@@ -506,28 +508,28 @@ legoballsorter_finished ()
 }
 
 void
-calibrate_clicked (GtkWidget* w, LegoBallSorter* self)
+calibrate_clicked (GtkWidget *w, LegoBallSorter *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   self->ctrl->in.calibrate (self->ctrl);
 }
 
 void
-operate_clicked (GtkWidget* w, LegoBallSorter* self)
+operate_clicked (GtkWidget *w, LegoBallSorter *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   self->ctrl->in.operate (self->ctrl);
 }
 
 void
-stop_clicked (GtkWidget* w, LegoBallSorter* self)
+stop_clicked (GtkWidget *w, LegoBallSorter *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   self->ctrl->in.stop (self->ctrl);
 }
 
 int
-main (int argc, char** argv)
+main (int argc, char **argv)
 {
   gtk_init (&argc, &argv);
 
@@ -537,7 +539,7 @@ main (int argc, char** argv)
   dzn_locator dzn_locator;
   locator_init (&dzn_locator, &dezyne_runtime);
 
-  GtkLego* lego = gtk_lego_new ();
+  GtkLego *lego = gtk_lego_new ();
 
   LegoBallSorter sut;
   dzn_meta_t m = {"sut", 0};
@@ -597,7 +599,7 @@ main (int argc, char** argv)
 //#define SHORT_CIRCUIT 1
 
 void
-imotor_in_move (imotor* self, uint8_t power, int32_t position)
+imotor_in_move (imotor *self, uint8_t power, int32_t position)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
@@ -609,7 +611,7 @@ imotor_in_move (imotor* self, uint8_t power, int32_t position)
 }
 
 void
-imotor_in_run (imotor* self, uint8_t power, bool invert)
+imotor_in_run (imotor *self, uint8_t power, bool invert)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
@@ -619,7 +621,7 @@ imotor_in_run (imotor* self, uint8_t power, bool invert)
 }
 
 void
-imotor_in_stop (imotor* self)
+imotor_in_stop (imotor *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   GtkMotor *g = self->dzn_meta.provides.component;
@@ -627,7 +629,7 @@ imotor_in_stop (imotor* self)
 }
 
 void
-imotor_in_coast (imotor* self)
+imotor_in_coast (imotor *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   GtkMotor *g = self->dzn_meta.provides.component;
@@ -635,7 +637,7 @@ imotor_in_coast (imotor* self)
 }
 
 void
-imotor_in_zero (imotor* self)
+imotor_in_zero (imotor *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
   GtkMotor *g = self->dzn_meta.provides.component;
@@ -647,7 +649,7 @@ imotor_in_zero (imotor* self)
 }
 
 void
-imotor_in_position (imotor* self, int32_t* position)
+imotor_in_position (imotor *self, int32_t *position)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
@@ -659,20 +661,20 @@ imotor_in_position (imotor* self, int32_t* position)
 }
 
 int
-imotor_in_at (imotor* self, int32_t position)
+imotor_in_at (imotor *self, int32_t position)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
   GtkMotor *g = self->dzn_meta.provides.component;
   return abs (position - gtk_motor_get_value (g)) <= 2
-    ? imotor_result_t_yes : imotor_result_t_no;
+         ? imotor_result_t_yes : imotor_result_t_no;
 #else
   return 0;
 #endif
 }
 
 void
-imotor_connect (imotor* m, GtkMotor* g)
+imotor_connect (imotor *m, GtkMotor *g)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 
@@ -690,15 +692,15 @@ imotor_connect (imotor* m, GtkMotor* g)
 }
 
 int
-itouch_in_detect (itouch* self)
+itouch_in_detect (itouch *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  GtkSensor *t = (GtkSensor*)self->dzn_meta.provides.component;
+  GtkSensor *t = (GtkSensor *)self->dzn_meta.provides.component;
   runtime_trace_in (&self->dzn_meta, "detect");
   int r = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (t->button))
-    ? itouch_status_pressed
-    : itouch_status_released;
+          ? itouch_status_pressed
+          : itouch_status_released;
   dzn_runtime_trace_out (&self->dzn_meta, r == itouch_status_pressed ? "status_pressed" : "status_released");
   return r;
 #else
@@ -707,7 +709,7 @@ itouch_in_detect (itouch* self)
 }
 
 void
-itouch_connect (itouch* t, GtkSensor* s)
+itouch_connect (itouch *t, GtkSensor *s)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 
@@ -717,36 +719,36 @@ itouch_connect (itouch* t, GtkSensor* s)
 }
 
 void
-ilight_in_turnon (ilight* self)
+ilight_in_turnon (ilight *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  GtkSensor* s = (GtkSensor*)self->dzn_meta.provides.component;
+  GtkSensor *s = (GtkSensor *)self->dzn_meta.provides.component;
   gtk_widget_set_sensitive (GTK_WIDGET (s->button), true);
 }
 
 void
-ilight_in_turnoff (ilight* self)
+ilight_in_turnoff (ilight *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
-  GtkSensor* s = (GtkSensor*)self->dzn_meta.provides.component;
+  GtkSensor *s = (GtkSensor *)self->dzn_meta.provides.component;
   gtk_widget_set_sensitive (GTK_WIDGET (s->button), false);
 }
 
 int
-ilight_in_detect (ilight* self)
+ilight_in_detect (ilight *self)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 #if !SHORT_CIRCUIT
-  GtkSensor* s = (GtkSensor*)self->dzn_meta.provides.component;
+  GtkSensor *s = (GtkSensor *)self->dzn_meta.provides.component;
   return gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (s->button))
-    ? ilight_status_accept : ilight_status_reject;
+         ? ilight_status_accept : ilight_status_reject;
 #else
   return 0;
 #endif
 }
 
 void
-ilight_connect (ilight* l, GtkSensor* s)
+ilight_connect (ilight *l, GtkSensor *s)
 {
   //fprintf (stderr, "%s\n", __FUNCTION__);
 

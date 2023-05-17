@@ -32,18 +32,18 @@
 #include <dzn/locator.h>
 
 void
-timer_impl_create (itimer_impl* self, int ms)
+timer_impl_create (itimer_impl *self, int ms)
 {
   fprintf (stderr, "%s\n", __FUNCTION__);
 }
 
 void
-timer_impl_cancel (itimer_impl* self)
+timer_impl_cancel (itimer_impl *self)
 {
   fprintf (stderr, "%s\n", __FUNCTION__);
 }
 
-int main(int argc, char** argv)
+int main (int argc, char **argv)
 {
   dzn_runtime dzn_runtime;
   dzn_runtime_init (&dzn_runtime);
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
   LegoBallSorter sut;
   dzn_meta_t m = {"sut", 0};
-  LegoBallSorter_init(&sut, &dzn_locator, &m);
+  LegoBallSorter_init (&sut, &dzn_locator, &m);
   sut.ctrl->out.name = "ctrl";
   sut.ctrl->out.self = &sut;
 }

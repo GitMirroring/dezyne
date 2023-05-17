@@ -29,10 +29,10 @@
 #include <stdlib.h>
 
 void
-f (itop* self)
+f (itop *self)
 {
   (void)self;
-  fprintf(stderr, "sut.m.t.f -> <external>.t.f\n");
+  fprintf (stderr, "sut.m.t.f -> <external>.t.f\n");
 }
 
 int

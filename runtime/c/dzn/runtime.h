@@ -42,17 +42,17 @@ typedef struct dzn_arguments dzn_arguments;
 struct dzn_arguments
 {
   size_t size;
-  void (*f)(void* argument);
-  void* self;
+  void (*f) (void *argument);
+  void *self;
 };
 
 typedef struct dzn_runtime_info dzn_runtime_info;
 struct dzn_runtime_info
 {
-  dzn_locator* locator;
+  dzn_locator *locator;
   long handling;
   bool performs_flush;
-  dzn_runtime_info* deferred;
+  dzn_runtime_info *deferred;
   dzn_queue q;
 };
 
@@ -72,25 +72,25 @@ struct dzn_component
 };
 
 void dzn_runtime_illegal_handler (void);
-void dzn_illegal (dzn_runtime_info const* info);
-void dzn_runtime_info_init (dzn_runtime_info* info, dzn_locator* locator);
-void dzn_runtime_flush (dzn_runtime_info* info);
-void dzn_runtime_enqueue (void* vsrc, void* vtgt, void (*event)(void*), void* argument);
-void dzn_runtime_event (void (*event)(void*), void* argument);
-void dzn_runtime_call_in (dzn_component* component, dzn_interface* port);
-void dzn_runtime_start (dzn_runtime_info* info);
-void dzn_runtime_finish (dzn_runtime_info* info);
+void dzn_illegal (dzn_runtime_info const *info);
+void dzn_runtime_info_init (dzn_runtime_info *info, dzn_locator *locator);
+void dzn_runtime_flush (dzn_runtime_info *info);
+void dzn_runtime_enqueue (void *vsrc, void *vtgt, void (*event) (void *), void *argument);
+void dzn_runtime_event (void (*event) (void *), void *argument);
+void dzn_runtime_call_in (dzn_component *component, dzn_interface *port);
+void dzn_runtime_start (dzn_runtime_info *info);
+void dzn_runtime_finish (dzn_runtime_info *info);
 
 #if DZN_TRACING
-char* dzn_bool_to_string (bool b);
+char *dzn_bool_to_string (bool b);
 bool dzn_string_to_bool (char *s);
-char* dzn_int_to_string (int i);
+char *dzn_int_to_string (int i);
 int dzn_string_to_int (char *s);
-char* dzn_runtime_path (dzn_meta const* m, char* p);
-void dzn_runtime_trace (dzn_port_meta const* mt, char const* e);
-void dzn_runtime_trace_out (dzn_port_meta const* mt, char const* e);
-void dzn_runtime_trace_qin (dzn_port_meta const* mt, char const* e);
-void dzn_runtime_trace_qout (dzn_port_meta const* mt, char const* e);
+char *dzn_runtime_path (dzn_meta const *m, char *p);
+void dzn_runtime_trace (dzn_port_meta const *mt, char const *e);
+void dzn_runtime_trace_out (dzn_port_meta const *mt, char const *e);
+void dzn_runtime_trace_qin (dzn_port_meta const *mt, char const *e);
+void dzn_runtime_trace_qout (dzn_port_meta const *mt, char const *e);
 #endif /* !DZN_TRACING */
 
 #endif /* DZN_RUNTIME_H */

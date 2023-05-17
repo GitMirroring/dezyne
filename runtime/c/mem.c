@@ -31,27 +31,27 @@
 #if (DZN_MISRA_C_2004==1)
 #define DZN_MAX_SIZE 1048576
 static uint8_t dzn_memory_array[DZN_MAX_SIZE];
-static uint8_t* dzn_current_address = dzn_memory_array;
+static uint8_t *dzn_current_address = dzn_memory_array;
 
-void*
+void *
 dzn_calloc (size_t n, size_t size)
 {
-  uint8_t* res;
-  assert(DZN_MAX_SIZE + dzn_memory_array - dzn_current_address >= n * size);
+  uint8_t *res;
+  assert (DZN_MAX_SIZE + dzn_memory_array - dzn_current_address >= n * size);
   res = dzn_current_address;
 
-  dzn_current_address = &dzn_memory_array[n*size];
+  dzn_current_address = &dzn_memory_array[n * size];
   return res;
 }
 
-void*
+void *
 dzn_malloc (size_t size)
 {
   return dzn_calloc ((size_t) 1, size);
 }
 
 void
-dzn_free (void* ptr)
+dzn_free (void *ptr)
 {
   /*no freeing, automated */
   return;
@@ -61,24 +61,24 @@ dzn_free (void* ptr)
 #include <stdlib.h>
 #include <stdio.h>
 
-void*
+void *
 dzn_calloc (size_t n, size_t size)
 {
-  void* res;
+  void *res;
   res = calloc (n, size);
-  if (res==(void*)0)
+  if (res == (void *)0)
     assert (0);
   return res;
 }
 
-void*
+void *
 dzn_malloc (size_t size)
 {
   return dzn_calloc (1, size);
 }
 
 void
-dzn_free (void* ptr)
+dzn_free (void *ptr)
 {
   free (ptr);
 }
