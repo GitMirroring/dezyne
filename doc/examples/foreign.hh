@@ -3,8 +3,8 @@
 
 struct foreign: public skel::foreign
 {
-  foreign (const dzn::locator& locator)
-  : skel::foreign (locator)
+  foreign (const dzn::locator &locator)
+    : skel::foreign (locator)
   {}
   void p_hello ()
   {

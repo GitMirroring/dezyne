@@ -35,22 +35,23 @@ main ()
   dzn::locator locator;
   dzn::runtime runtime;
 
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max());
+  std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
-  calling_context sut(locator.set(runtime));
+  calling_context sut (locator.set (runtime));
   sut.dzn_meta.name = "sut";
   sut.h.dzn_meta.require.name = "h";
   sut.w.dzn_meta.provide.name = "w";
 
-  sut.w.in.world = [&](int& cc, int i)
+  sut.w.in.world = [&] (int &cc, int i)
   {
     (void)i;
-    if (cc == 0) {cc = 123;} else {assert(cc == 123); cc = 456;}
+    if (cc == 0) {cc = 123;}
+    else {assert (cc == 123); cc = 456;}
   };
 
   int cc = 0;
 
-  sut.h.in.hello(cc, 123);
+  sut.h.in.hello (cc, 123);
 
-  assert(cc == 456);
+  assert (cc == 456);
 }

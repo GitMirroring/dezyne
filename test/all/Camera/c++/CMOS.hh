@@ -22,8 +22,8 @@
 
 struct CMOS: public skel::CMOS
 {
-  CMOS(const dzn::locator& l)
-  : skel::CMOS(l)
+  CMOS (const dzn::locator &l)
+    : skel::CMOS (l)
   {}
   virtual void port_prepare () {std::clog << "sut.acquisition.sensor.port.prepare\n";};
   virtual void port_acquire () {std::clog << "sut.acquisition.sensor.port.acquire\n";};

@@ -29,8 +29,8 @@
 #else
 namespace std
 {
-  typedef unsigned char uint8_t;
-  typedef int int32_t;
+typedef unsigned char uint8_t;
+typedef int int32_t;
 }
 #endif
 
@@ -46,7 +46,7 @@ typedef std::int32_t Integer;
 
 struct config_scope
 {
-  static int get(const std::string& key);
+  static int get (const std::string &key);
 };
 
 extern config_scope config;

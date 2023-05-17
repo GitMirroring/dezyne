@@ -29,7 +29,7 @@
 int
 main ()
 {
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max());
+  std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
   dzn::locator locator;
   dzn::runtime runtime;

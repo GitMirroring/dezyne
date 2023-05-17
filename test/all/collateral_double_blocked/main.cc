@@ -52,7 +52,7 @@ main ()
   locator.set (runtime);
   collateral_double_blocked sut (locator);
   dzn::pump pump;
-  locator.set(pump);
+  locator.set (pump);
 
   sut.dzn_meta.name = "sut";
 
@@ -75,22 +75,22 @@ main ()
   if (0);
   // trace
   else if (trace == "left.hello\nr.hello\nr.return\nmiddle.hello\nleft.return\nr.world\nmiddle.return")
-  {
-    pump (sut.left.in.hello);
-    pump (sut.middle.in.hello);
-    pump (sut.r.out.world);
-  }
+    {
+      pump (sut.left.in.hello);
+      pump (sut.middle.in.hello);
+      pump (sut.r.out.world);
+    }
   else if (trace == "middle.hello\nr.hello\nr.return\nleft.hello\nmiddle.return\nr.world\nleft.return")
-  {
-    pump (sut.middle.in.hello);
-    pump (sut.left.in.hello);
-    pump (sut.r.out.world);
-  }
+    {
+      pump (sut.middle.in.hello);
+      pump (sut.left.in.hello);
+      pump (sut.r.out.world);
+    }
   else
-  {
-    std::clog << "missing trace" << std::endl;
-    return 1;
-  }
+    {
+      std::clog << "missing trace" << std::endl;
+      return 1;
+    }
 
   pump.wait ();
 

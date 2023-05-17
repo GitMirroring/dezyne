@@ -27,19 +27,20 @@
 
 #include "foreign_timer.hh"
 
-namespace dzn {
-  struct locator;
+namespace dzn
+{
+struct locator;
 }
 
 struct timer: public skel::timer
 {
-  const dzn::locator& locator;
+  const dzn::locator &locator;
   size_t id;
   static size_t s_id;
 
-  timer(const dzn::locator&);
-  void port_create(int);
-  void port_cancel();
+  timer (const dzn::locator &);
+  void port_create (int);
+  void port_cancel ();
 };
 
 #endif

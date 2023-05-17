@@ -29,8 +29,8 @@
 
 struct stranger: public skel::stranger
 {
-  stranger(const dzn::locator&);
-  void w_world();
+  stranger (const dzn::locator &);
+  void w_world ();
 };
 
 #endif // STRANGER_HH

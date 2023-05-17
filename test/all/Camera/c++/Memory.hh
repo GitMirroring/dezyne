@@ -22,8 +22,8 @@
 
 struct Memory: public skel::Memory
 {
-  Memory(const dzn::locator& l)
-  : skel::Memory(l)
+  Memory (const dzn::locator &l)
+    : skel::Memory (l)
   {}
   virtual void port_store () {std::clog << "store\n";}
 };

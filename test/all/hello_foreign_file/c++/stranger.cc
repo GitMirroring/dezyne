@@ -24,11 +24,11 @@
 
 #include "stranger.hh"
 
-stranger::stranger(const dzn::locator& l)
-: skel::stranger(l)
+stranger::stranger (const dzn::locator &l)
+  : skel::stranger (l)
 {}
 
-void stranger::w_world()
+void stranger::w_world ()
 {
   return;
 }

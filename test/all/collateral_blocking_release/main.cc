@@ -52,7 +52,7 @@ main ()
   locator.set (runtime);
   collateral_blocking_release sut (locator);
   dzn::pump pump;
-  locator.set(pump);
+  locator.set (pump);
 
   sut.dzn_meta.name = "sut";
 
@@ -71,22 +71,22 @@ main ()
   if (0);
   // trace
   else if (trace == "block.hello\nw.hello\nw.return\nrelease.hello\nw.hello\nw.return\nrelease.return\nrelease.hello\nrelease.return\nblock.return")
-  {
-    pump (sut.block.in.hello);
-    pump ([&] {sut.release.in.hello (); sut.release.in.hello ();});
-  }
+    {
+      pump (sut.block.in.hello);
+      pump ([&] {sut.release.in.hello (); sut.release.in.hello ();});
+    }
   else if (trace == "block.hello\nw.hello\nw.return\nw.world\nblock.return")
-  {
-    pump (sut.block.in.hello);
-    pump (sut.w.out.world);
-  }
+    {
+      pump (sut.block.in.hello);
+      pump (sut.w.out.world);
+    }
   else if (trace == "release.hello\nrelease.return")
     pump (sut.release.in.hello);
   else
-  {
-    std::clog << "missing trace" << std::endl;
-    return 1;
-  }
+    {
+      std::clog << "missing trace" << std::endl;
+      return 1;
+    }
 
   pump.wait ();
 

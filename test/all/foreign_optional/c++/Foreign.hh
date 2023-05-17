@@ -27,12 +27,13 @@
 
 struct Foreign: public skel::Foreign
 {
-  Foreign(const dzn::locator& l)
-  : skel::Foreign(l)
+  Foreign (const dzn::locator &l)
+    : skel::Foreign (l)
   {}
-  void w_hello(){
+  void w_hello ()
+  {
     std::clog << "sut.f.w.world\n";
-    w.out.world();
+    w.out.world ();
   }
 };
 

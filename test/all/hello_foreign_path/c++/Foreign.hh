@@ -25,8 +25,8 @@
 
 struct Foreign: public skel::Foreign
 {
-  Foreign(const dzn::locator&);
-  void w_world();
+  Foreign (const dzn::locator &);
+  void w_world ();
 };
 
 #endif // FOREIGN_HH

@@ -50,7 +50,7 @@ main ()
   locator.set (runtime);
   collateral_blocking_double_release sut (locator);
   dzn::pump pump;
-  locator.set(pump);
+  locator.set (pump);
 
   sut.dzn_meta.name = "sut";
 
@@ -74,29 +74,29 @@ main ()
   if (0);
   // trace
   else if (trace == "block1.hello\nw.hello\nw.return\nrelease.hello\nw.cruel\nw.return\nrelease.return\nblock0.hello\nw.hello\nw.return\nblock1.return\nrelease.hello\nw.cruel\nw.return\nrelease.return\nblock0.return")
-  {
-    pump ([&] {sut.block1.in.hello (); sut.release.in.hello ();});
-    pump ([&] {sut.release.in.hello (); sut.block0.in.hello ();});
-  }
+    {
+      pump ([&] {sut.block1.in.hello (); sut.release.in.hello ();});
+      pump ([&] {sut.release.in.hello (); sut.block0.in.hello ();});
+    }
   else if (trace == "block0.hello\nw.hello\nw.return\nblock1.hello\nw.hello\nw.return\nw.world\nw.cruel\nw.return\nblock0.return\nblock1.return")
-  {
-    pump ([&] {sut.block0.in.hello ();});
-    pump ([&] {sut.block1.in.hello ();});
-    pump ([&] {sut.w.out.world ();});
-  }
+    {
+      pump ([&] {sut.block0.in.hello ();});
+      pump ([&] {sut.block1.in.hello ();});
+      pump ([&] {sut.w.out.world ();});
+    }
   else if (trace == "block0.hello\nw.hello\nw.return\nblock1.hello\nw.hello\nw.return\nrelease.hello\nw.cruel\nw.return\nrelease.return\nblock0.return\nblock1.return")
-  {
-    pump ([&] {sut.block0.in.hello ();});
-    pump ([&] {sut.block1.in.hello ();});
-    pump ([&] {sut.release.in.hello ();});
-  }
+    {
+      pump ([&] {sut.block0.in.hello ();});
+      pump ([&] {sut.block1.in.hello ();});
+      pump ([&] {sut.release.in.hello ();});
+    }
   else
-  {
-    std::clog << "missing trace" << std::endl;
-    return 1;
-  }
+    {
+      std::clog << "missing trace" << std::endl;
+      return 1;
+    }
 
-  pump.wait();
+  pump.wait ();
 
   return 0;
 }

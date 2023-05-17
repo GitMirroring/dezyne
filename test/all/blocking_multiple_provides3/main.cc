@@ -40,7 +40,7 @@ int main ()
   dzn::runtime runtime;
   blocking_multiple_provides3 sut (locator.set (runtime));
   dzn::pump pump;
-  locator.set(pump);
+  locator.set (pump);
 
   sut.dzn_meta.name = "sut";
   sut.r.dzn_meta.provide.name = "r";
@@ -48,8 +48,8 @@ int main ()
   sut.r.in.hello = [&]
   {
     sut.mp.r.out.world (); //side step going through pump, since we are
-                           //already executing on the pump and the
-                           //interface of r is synchronous
+    //already executing on the pump and the
+    //interface of r is synchronous
   };
 
   sut.left.in.hello ();

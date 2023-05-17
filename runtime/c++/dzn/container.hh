@@ -40,92 +40,92 @@
 
 namespace dzn
 {
-  template <typename System, typename Function>
-  struct container: public component
+template <typename System, typename Function>
+struct container: public component
+{
+  dzn::meta dzn_meta;
+  dzn::locator dzn_locator;
+  dzn::runtime dzn_runtime;
+  System system;
+
+  std::map<std::string, Function> lookup;
+  std::queue<std::string> trail;
+  std::mutex mutex;
+  std::condition_variable condition;
+  dzn::pump pump;
+
+  friend std::ostream &operator << (std::ostream &os, container<System, Function> &)
   {
-    dzn::meta dzn_meta;
-    dzn::locator dzn_locator;
-    dzn::runtime dzn_runtime;
-    System system;
+    return os;
+  }
 
-    std::map<std::string, Function> lookup;
-    std::queue<std::string> trail;
-    std::mutex mutex;
-    std::condition_variable condition;
-    dzn::pump pump;
+  container (bool flush, dzn::locator &&l = dzn::locator{})
+    : dzn_meta{"<external>", "container", 0, {}, {&system.dzn_meta}, {[this]{dzn::check_bindings (system);}}}
+    , dzn_locator (std::forward<dzn::locator> (l))
+    , dzn_runtime ()
+    , system (dzn_locator.set (dzn_runtime).set (pump))
+    , pump ()
+  {
+    dzn_locator.get<illegal_handler> ().illegal = [] (const char *msg = "") {std::clog << "illegal: " << msg << std::endl; std::exit (0);};
+    dzn_runtime.performs_flush (this) = flush;
+    system.dzn_meta.name = "sut";
+  }
+  ~container ()
+  {
+    std::unique_lock<std::mutex> lock (mutex);
+    condition.wait (lock, [this] {return trail.empty ();});
+    dzn::pump *p = system.dzn_locator.template try_get<dzn::pump> (); // only shells have a pump
+    //resolve the race condition between the shell pump dtor and the container pump dtor
+    if (p && p != &pump) pump ([p] {p->stop ();});
+    pump.wait ();
+  }
+  void perform (const std::string &str)
+  {
+    if (std::count (str.begin (), str.end (), '.') > 1
+        || str == "<defer>")
+      return;
 
-    friend std::ostream& operator << (std::ostream& os, container<System,Function>&)
-    {
-      return os;
-    }
+    auto it = lookup.find (str);
+    if (it != lookup.end ())
+      pump (it->second);
 
-    container(bool flush, dzn::locator&& l = dzn::locator{})
-    : dzn_meta{"<external>","container",0,{},{&system.dzn_meta},{[this]{dzn::check_bindings (system);}}}
-    , dzn_locator(std::forward<dzn::locator>(l))
-    , dzn_runtime()
-    , system(dzn_locator.set(dzn_runtime).set(pump))
-    , pump()
-    {
-      dzn_locator.get<illegal_handler>().illegal = [](const char* msg = ""){std::clog << "illegal: " << msg << std::endl; std::exit(0);};
-      dzn_runtime.performs_flush(this) = flush;
-      system.dzn_meta.name = "sut";
-    }
-    ~container()
-    {
-      std::unique_lock<std::mutex> lock(mutex);
-      condition.wait(lock, [this]{return trail.empty();});
-      dzn::pump* p = system.dzn_locator.template try_get<dzn::pump>(); // only shells have a pump
-      //resolve the race condition between the shell pump dtor and the container pump dtor
-      if(p && p != &pump) pump([p] {p->stop();});
-      pump.wait();
-    }
-    void perform(const std::string& str)
-    {
-      if (std::count(str.begin(), str.end(), '.') > 1
-          || str == "<defer>")
-        return;
-
-      auto it = lookup.find(str);
-      if(it != lookup.end())
-        pump(it->second);
-
-      std::unique_lock<std::mutex> lock(mutex);
-      trail.push(str);
-      condition.notify_one();
-    }
-    void operator()(std::map<std::string, Function>&& lookup)
-    {
-      this->lookup = std::move(lookup);
-      pump.pause();
-      std::string str;
-      while(std::getline (std::cin, str))
+    std::unique_lock<std::mutex> lock (mutex);
+    trail.push (str);
+    condition.notify_one ();
+  }
+  void operator () (std::map<std::string, Function> &&lookup)
+  {
+    this->lookup = std::move (lookup);
+    pump.pause ();
+    std::string str;
+    while (std::getline (std::cin, str))
       {
-        if(str.find("<flush>") != std::string::npos
-           || str == "<defer>")
-          pump.flush();
-        perform(str);
+        if (str.find ("<flush>") != std::string::npos
+            || str == "<defer>")
+          pump.flush ();
+        perform (str);
       }
-      pump.resume();
-    }
-    void match(const std::string& perform)
-    {
-      std::string expect = trail_expect();
-      if(expect != perform)
-        throw std::runtime_error("unmatched expectation: trail expects: \"" + expect
-                                 + "\" behavior expects: \"" + perform + "\"");
-    }
-    std::string trail_expect()
-    {
-      std::unique_lock<std::mutex> lock(mutex);
-      condition.wait_for(lock, std::chrono::seconds(10),
-                         [this]{return trail.size();});
-      std::string expect = trail.front();
-      trail.pop();
-      if (trail.empty())
-        condition.notify_one();
-      return expect;
-    }
-  };
+    pump.resume ();
+  }
+  void match (const std::string &perform)
+  {
+    std::string expect = trail_expect ();
+    if (expect != perform)
+      throw std::runtime_error ("unmatched expectation: trail expects: \"" + expect
+                                + "\" behavior expects: \"" + perform + "\"");
+  }
+  std::string trail_expect ()
+  {
+    std::unique_lock<std::mutex> lock (mutex);
+    condition.wait_for (lock, std::chrono::seconds (10),
+                        [this] {return trail.size ();});
+    std::string expect = trail.front ();
+    trail.pop ();
+    if (trail.empty ())
+      condition.notify_one ();
+    return expect;
+  }
+};
 }
 
 #endif //DZN_CONTAINER_HH

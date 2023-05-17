@@ -22,8 +22,8 @@
 
 struct Lens: public skel::Lens
 {
-  Lens(const dzn::locator& l)
-  : skel::Lens(l)
+  Lens (const dzn::locator &l)
+    : skel::Lens (l)
   {}
   virtual void port_forward () {std::clog << "sut.optics.focus.lens.port.forward\n";}
   virtual void port_backward () {std::clog << "sut.optics.focus.lens.port.backward\n";}

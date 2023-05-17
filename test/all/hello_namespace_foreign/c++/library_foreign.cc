@@ -24,25 +24,29 @@
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
 
-namespace library {
+namespace library
+{
 
-  foreign::foreign(const dzn::locator& dzn_locator)
-  : dzn_meta{"","foreign",0,{},{},{[this]{w.dzn_check_bindings();}}}
-  , dzn_runtime(dzn_locator.get<dzn::runtime>())
-  , dzn_locator(dzn_locator)
-  , w({{"w",&w,this,&dzn_meta},{"",0,0,0}})
+foreign::foreign (const dzn::locator &dzn_locator)
+  : dzn_meta{"", "foreign", 0, {}, {}, {[this]{w.dzn_check_bindings ();}}}
+, dzn_runtime (dzn_locator.get<dzn::runtime> ())
+, dzn_locator (dzn_locator)
+, w ({{"w", &w, this, &dzn_meta}, {"", 0, 0, 0}})
+{
+  w.in.world = [&] ()
   {
-    w.in.world = [&](){return dzn::wrap_in(this, this->w, [=]
+    return dzn::wrap_in (this, this->w, [ = ]
     {
-      w_world();
-      this->dzn_runtime.flush(this);
-    }, "world");};
-  }
-  void foreign::w_world()
-  {
-  }
-  void foreign::dzn_check_bindings() const
-  {
-    dzn::check_bindings(&dzn_meta);
-  }
+      w_world ();
+      this->dzn_runtime.flush (this);
+    }, "world");
+  };
+}
+void foreign::w_world ()
+{
+}
+void foreign::dzn_check_bindings () const
+{
+  dzn::check_bindings (&dzn_meta);
+}
 };

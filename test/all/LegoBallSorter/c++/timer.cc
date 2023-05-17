@@ -29,16 +29,16 @@
 
 size_t timer::s_id = 0;
 
-timer::timer(const dzn::locator& l)
-: locator(l)
-, skel::timer(l)
-, id(s_id++)
+timer::timer (const dzn::locator &l)
+  : locator (l)
+  , skel::timer (l)
+  , id (s_id++)
 {}
-void timer::port_create(int ms)
+void timer::port_create (int ms)
 {
-  locator.get<dzn::pump>().handle(id, ms, port.out.timeout);
+  locator.get<dzn::pump> ().handle (id, ms, port.out.timeout);
 }
-void timer::port_cancel()
+void timer::port_cancel ()
 {
-  locator.get<dzn::pump>().remove(id);
+  locator.get<dzn::pump> ().remove (id);
 }

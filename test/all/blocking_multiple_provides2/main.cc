@@ -40,7 +40,7 @@ int main ()
   dzn::runtime runtime;
   blocking_multiple_provides2 sut (locator.set (runtime));
   dzn::pump pump;
-  locator.set(pump);
+  locator.set (pump);
 
   sut.dzn_meta.name = "sut";
   sut.w_left.dzn_meta.provide.name = "w_left";
@@ -51,7 +51,7 @@ int main ()
     std::thread ([&]{
       std::this_thread::sleep_for (std::chrono::milliseconds (100));
       sut.w_left.out.world ();
-    }).detach();
+    }).detach ();
   };
 
   sut.w_right.in.hello = [&]
@@ -59,12 +59,13 @@ int main ()
     std::thread ([&]{
       std::this_thread::sleep_for (std::chrono::milliseconds (150));
       sut.w_right.out.world ();
-    }).detach();
+    }).detach ();
   };
 
-  std::thread([&]{
+  std::thread ([&]
+  {
     sut.h_left.in.hello ();
-  }).detach();
+  }).detach ();
   std::this_thread::sleep_for (std::chrono::milliseconds (50));
   sut.h_right.in.hello ();
 }

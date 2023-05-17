@@ -54,183 +54,193 @@ constexpr std::uint8_t PORT2 = 1;
 constexpr std::uint8_t PORT3 = 2;
 constexpr std::uint8_t PORT4 = 3;
 
-void connect(imotor& m, lego::USB::Device* brick, std::uint8_t port);
-void connect(itouch& t, lego::USB::Device* brick, std::uint8_t port);
-void connect(ilight& l, lego::USB::Device* brick, std::uint8_t port);
+void connect (imotor &m, lego::USB::Device *brick, std::uint8_t port);
+void connect (itouch &t, lego::USB::Device *brick, std::uint8_t port);
+void connect (ilight &l, lego::USB::Device *brick, std::uint8_t port);
 
-lego::USB* usb_ptr = nullptr;
+lego::USB *usb_ptr = nullptr;
 
-void signal_handler(int sig)
+void signal_handler (int sig)
 {
-  if(usb_ptr)
-  {
-    for(auto& device: usb_ptr->devices)
+  if (usb_ptr)
     {
-      for(auto i = 0; i <= 2; ++i) device.coast(i);
-      for(auto i = 0; i <= 3; ++i) device.set_input_mode(i, 0, 0);
+      for (auto &device : usb_ptr->devices)
+        {
+          for (auto i = 0; i <= 2; ++i) device.coast (i);
+          for (auto i = 0; i <= 3; ++i) device.set_input_mode (i, 0, 0);
+        }
     }
-  }
-  signal(sig, SIG_DFL);
-  std::abort();
+  signal (sig, SIG_DFL);
+  std::abort ();
 }
 
-int main(int argc, char* argv[])
+int main (int argc, char *argv[])
 {
-  signal(SIGINT, signal_handler);
-  signal(SIGABRT, signal_handler);
-  signal(SIGSEGV, signal_handler);
+  signal (SIGINT, signal_handler);
+  signal (SIGABRT, signal_handler);
+  signal (SIGSEGV, signal_handler);
 
   try
-  {
-    lego::USB lego_usb;
-    usb_ptr = &lego_usb;
-
-    // utility to name bricks
-    for(int i = 1; i < argc; ++i)
     {
-      std::cout << "naming BRICK #" << i << " " << argv[i] << std::endl;
-      std::cout << "hit enter to continue or CTRL-C to stop" << std::endl;
-      std::cin.get();
-      lego_usb.devices.at(i-1).set_name(argv[i]);
-    }
-    if(argc > 1) return 0;
+      lego::USB lego_usb;
+      usb_ptr = &lego_usb;
 
-    // discover bricks by name
-    std::map<std::string, lego::USB::Device*> bricks;
-    for(auto& device: lego_usb.devices)
-    {
-      auto name = device.get_name();
-      auto version = device.get_version();
-      std::cout << "discovered: " << name << " at: " << &device
-                << " protocol version: " << std::get<0>(version) << "." << std::get<1>(version)
-                << " firmware version: " << std::get<2>(version) << "." << std::get<3>(version) << std::endl;
-      bricks[name] = &device;
-    }
+      // utility to name bricks
+      for (int i = 1; i < argc; ++i)
+        {
+          std::cout << "naming BRICK #" << i << " " << argv[i] << std::endl;
+          std::cout << "hit enter to continue or CTRL-C to stop" << std::endl;
+          std::cin.get ();
+          lego_usb.devices.at (i - 1).set_name (argv[i]);
+        }
+      if (argc > 1) return 0;
 
-    if (bricks.size () != 4)
+      // discover bricks by name
+      std::map<std::string, lego::USB::Device *> bricks;
+      for (auto &device : lego_usb.devices)
+        {
+          auto name = device.get_name ();
+          auto version = device.get_version ();
+          std::cout << "discovered: " << name << " at: " << &device
+                    << " protocol version: " << std::get<0> (version) << "." << std::get<1> (version)
+                    << " firmware version: " << std::get<2> (version) << "." << std::get<3> (version) << std::endl;
+          bricks[name] = &device;
+        }
+
+      if (bricks.size () != 4)
+        {
+          std::cerr << "bricks found: " << bricks.size () << ", expected: 4" << std::endl;
+          std::cerr << "exiting" << std::endl;
+          exit (2);
+        }
+
+
+      struct C
       {
-        std::cerr << "bricks found: " << bricks.size () << ", expected: 4" << std::endl;
-        std::cerr << "exiting" << std::endl;
-        exit (2);
-      }
+        dzn::locator loc;
+        dzn::runtime rt;
+        LegoBallSorter sut;
+        dzn::pump pump;
+
+        C ()
+          : sut (loc.set (rt).set (pump))
+          , pump ()
+        {}
+      };
+      C c;
+
+      c.sut.dzn_meta.name = "sut";
+      c.sut.ctrl.dzn_meta.requires = {"ctrl", 0};
+
+      c.sut.ctrl.out.calibrated = [] {std::cout << "LegoBallSorter.calibrated" << std::endl;};
+      c.sut.ctrl.out.finished = [] {std::cout << "LegoBallSorter.finished" << std::endl;};
+
+      connect (c.sut.brick1_aA, bricks.at ("INPUT"), PORTA);
+      connect (c.sut.brick1_aB, bricks.at ("INPUT"), PORTB);
+      connect (c.sut.brick1_aC, bricks.at ("INPUT"), PORTC);
+
+      connect (c.sut.brick1_s1, bricks.at ("INPUT"), PORT1);
+      connect (c.sut.brick1_s2, bricks.at ("INPUT"), PORT2);
+      connect (c.sut.brick1_s3, bricks.at ("INPUT"), PORT3);
+      connect (c.sut.brick1_s4, bricks.at ("INPUT"), PORT4);
 
 
-    struct C {
-      dzn::locator loc;
-      dzn::runtime rt;
-      LegoBallSorter sut;
-      dzn::pump pump;
+      connect (c.sut.brick2_aA, bricks.at ("OUTPUT"), PORTA);
+      connect (c.sut.brick2_aB, bricks.at ("OUTPUT"), PORTB);
 
-      C()
-      : sut(loc.set(rt).set(pump))
-      , pump()
-      {}
-    };
-    C c;
-
-    c.sut.dzn_meta.name = "sut";
-    c.sut.ctrl.dzn_meta.requires = {"ctrl",0};
-
-    c.sut.ctrl.out.calibrated = []{std::cout << "LegoBallSorter.calibrated" << std::endl;};
-    c.sut.ctrl.out.finished = []{std::cout << "LegoBallSorter.finished" << std::endl;};
-
-    connect(c.sut.brick1_aA, bricks.at("INPUT"), PORTA);
-    connect(c.sut.brick1_aB, bricks.at("INPUT"), PORTB);
-    connect(c.sut.brick1_aC, bricks.at("INPUT"), PORTC);
-
-    connect(c.sut.brick1_s1, bricks.at("INPUT"), PORT1);
-    connect(c.sut.brick1_s2, bricks.at("INPUT"), PORT2);
-    connect(c.sut.brick1_s3, bricks.at("INPUT"), PORT3);
-    connect(c.sut.brick1_s4, bricks.at("INPUT"), PORT4);
+      //connect(c.sut.brick2_s1, bricks.at("OUTPUT"), PORT1);
+      connect (c.sut.brick2_s2, bricks.at ("OUTPUT"), PORT2);
+      connect (c.sut.brick2_s3, bricks.at ("OUTPUT"), PORT3);
+      connect (c.sut.brick2_s4, bricks.at ("OUTPUT"), PORT4);
 
 
-    connect(c.sut.brick2_aA, bricks.at("OUTPUT"), PORTA);
-    connect(c.sut.brick2_aB, bricks.at("OUTPUT"), PORTB);
+      connect (c.sut.brick3_aA, bricks.at ("STAGE"), PORTA);
+      connect (c.sut.brick3_aC, bricks.at ("STAGE"), PORTC);
 
-    //connect(c.sut.brick2_s1, bricks.at("OUTPUT"), PORT1);
-    connect(c.sut.brick2_s2, bricks.at("OUTPUT"), PORT2);
-    connect(c.sut.brick2_s3, bricks.at("OUTPUT"), PORT3);
-    connect(c.sut.brick2_s4, bricks.at("OUTPUT"), PORT4);
-
-
-    connect(c.sut.brick3_aA, bricks.at("STAGE"), PORTA);
-    connect(c.sut.brick3_aC, bricks.at("STAGE"), PORTC);
-
-    connect(c.sut.brick3_s1, bricks.at("STAGE"), PORT1);
-    connect(c.sut.brick3_s2, bricks.at("STAGE"), PORT2);
-    connect(c.sut.brick3_s3, bricks.at("STAGE"), PORT3);
+      connect (c.sut.brick3_s1, bricks.at ("STAGE"), PORT1);
+      connect (c.sut.brick3_s2, bricks.at ("STAGE"), PORT2);
+      connect (c.sut.brick3_s3, bricks.at ("STAGE"), PORT3);
 
 
-    connect(c.sut.brick4_aA, bricks.at("ROBOT"), PORTA);
-    connect(c.sut.brick4_aB, bricks.at("ROBOT"), PORTB);
-    connect(c.sut.brick4_aC, bricks.at("ROBOT"), PORTC);
+      connect (c.sut.brick4_aA, bricks.at ("ROBOT"), PORTA);
+      connect (c.sut.brick4_aB, bricks.at ("ROBOT"), PORTB);
+      connect (c.sut.brick4_aC, bricks.at ("ROBOT"), PORTC);
 
-    connect(c.sut.brick4_s1, bricks.at("ROBOT"), PORT1);
-    connect(c.sut.brick4_s2, bricks.at("ROBOT"), PORT2);
-    connect(c.sut.brick4_s3, bricks.at("ROBOT"), PORT3);
+      connect (c.sut.brick4_s1, bricks.at ("ROBOT"), PORT1);
+      connect (c.sut.brick4_s2, bricks.at ("ROBOT"), PORT2);
+      connect (c.sut.brick4_s3, bricks.at ("ROBOT"), PORT3);
 
-    dzn::check_bindings (c.sut);
+      dzn::check_bindings (c.sut);
 
-    dzn::apply(&c.sut.dzn_meta, [](const dzn::meta* m){
+      dzn::apply (&c.sut.dzn_meta, [] (const dzn::meta * m)
+      {
         std::clog << m->parent << " " << m << " " << m->name << " " << m->rank << std::endl;
       });
 
-    // run the event loop
+      // run the event loop
 
-    std::string s;
-    bool stop = false;
-    while(not stop && std::getline(std::cin, s)) {
-      if(s.empty()) continue;
-      if(s[0] == 'c') dzn::shell(c.pump, c.sut.ctrl.in.calibrate);
-      if(s[0] == 'o') dzn::shell(c.pump, c.sut.ctrl.in.operate);
-      if(s[0] == 's') dzn::shell(c.pump, c.sut.ctrl.in.stop);
-      if(s[0] == 'q') stop = true;
+      std::string s;
+      bool stop = false;
+      while (not stop && std::getline (std::cin, s))
+        {
+          if (s.empty ()) continue;
+          if (s[0] == 'c') dzn::shell (c.pump, c.sut.ctrl.in.calibrate);
+          if (s[0] == 'o') dzn::shell (c.pump, c.sut.ctrl.in.operate);
+          if (s[0] == 's') dzn::shell (c.pump, c.sut.ctrl.in.stop);
+          if (s[0] == 'q') stop = true;
+        }
     }
-  }
-  catch(const std::exception& e)
+  catch (const std::exception &e)
+    {
+      std::clog << "oops: " << e.what () << std::endl;
+      return 1;
+    }
+}
+
+void connect (imotor &m, lego::USB::Device *brick, std::uint8_t port)
+{
+  m.dzn_meta.provides = {"imotor", &m};
+
+  m.in.move     = [ = ] (std::int8_t power, std::int32_t position)
   {
-    std::clog << "oops: " << e.what() << std::endl;
-    return 1;
-  }
-}
-
-void connect(imotor& m, lego::USB::Device* brick, std::uint8_t port)
-{
-  m.dzn_meta.provides = {"imotor",&m};
-
-  m.in.move     = [=] (std::int8_t power, std::int32_t position) {
-    std::int32_t delta = position - brick->get_position(port);
+    std::int32_t delta = position - brick->get_position (port);
     auto sign = delta < 0 ? -1 : 1;
-    brick->move(port, sign * power, true, std::abs(delta));
+    brick->move (port, sign * power, true, std::abs (delta));
   };
-  m.in.run      = [=] (std::int8_t power, bool invert) {
-    brick->move(port, invert ? -power : power, false, 0);
+  m.in.run      = [ = ] (std::int8_t power, bool invert)
+  {
+    brick->move (port, invert ? -power : power, false, 0);
   };
-  m.in.stop     = [=] {brick->stop(port);};
-  m.in.coast    = [=] {brick->coast(port);};
-  m.in.zero     = [=] {brick->zero(port);};
-  m.in.position = [=] (std::int32_t& position){position = brick->get_position(port);};
-  m.in.at       = [=] (std::int32_t position){return brick->at(port, position) ?
-                                              imotor::result_t::yes :
-                                              imotor::result_t::no;};
+  m.in.stop     = [ = ] {brick->stop (port);};
+  m.in.coast    = [ = ] {brick->coast (port);};
+  m.in.zero     = [ = ] {brick->zero (port);};
+  m.in.position = [ = ] (std::int32_t &position) {position = brick->get_position (port);};
+  m.in.at       = [ = ] (std::int32_t position)
+  {
+    return brick->at (port, position) ?
+           imotor::result_t::yes :
+           imotor::result_t::no;
+  };
 }
-void connect(ilight& l, lego::USB::Device* brick, std::uint8_t port)
+void connect (ilight &l, lego::USB::Device *brick, std::uint8_t port)
 {
-  l.dzn_meta.provides = {"ilight",&l};
+  l.dzn_meta.provides = {"ilight", &l};
 
-  l.in.turnon  = [=] {brick->set_input_mode(port, 0x05, 0x80);};
-  l.in.turnoff = [=] {brick->set_input_mode(port, 0x06, 0x80);};
-  l.in.detect  = [=] {return brick->get_input_values(port) < 42 ?
-                      ilight::status::accept :
-                      ilight::status::reject;};
+  l.in.turnon  = [ = ] {brick->set_input_mode (port, 0x05, 0x80);};
+  l.in.turnoff = [ = ] {brick->set_input_mode (port, 0x06, 0x80);};
+  l.in.detect  = [ = ] {return brick->get_input_values (port) < 42 ?
+                               ilight::status::accept :
+                               ilight::status::reject;
+                       };
 }
-void connect(itouch& t, lego::USB::Device* brick, std::uint8_t port)
+void connect (itouch &t, lego::USB::Device *brick, std::uint8_t port)
 {
-  t.dzn_meta.provides = {"itouch",&t};
+  t.dzn_meta.provides = {"itouch", &t};
 
-  brick->set_input_mode(port, 0x01, 0x20);
-  t.in.detect  = [=] {return brick->get_input_values(port) == 1 ?
-                      itouch::status::pressed :
-                      itouch::status::released;};
+  brick->set_input_mode (port, 0x01, 0x20);
+  t.in.detect  = [ = ] {return brick->get_input_values (port) == 1 ?
+                               itouch::status::pressed :
+                               itouch::status::released;
+                       };
 }
 #endif // __cplusplus >= 201103L

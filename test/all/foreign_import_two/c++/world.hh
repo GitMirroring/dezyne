@@ -23,6 +23,6 @@
 
 struct world: public skel::world
 {
-  world(const dzn::locator& l): skel::world(l) {}
-  iworld::Result w_world(){return iworld::Result::Ok;}
+  world (const dzn::locator &l): skel::world (l) {}
+  iworld::Result w_world () {return iworld::Result::Ok;}
 };

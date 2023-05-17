@@ -27,10 +27,10 @@
 
 struct Foreign: public skel::Foreign
 {
-  Foreign(const dzn::locator& l)
-  : skel::Foreign(l)
+  Foreign (const dzn::locator &l)
+    : skel::Foreign (l)
   {}
-  void w_world(){}
+  void w_world () {}
 };
 
 #endif // FOREIGN_HH

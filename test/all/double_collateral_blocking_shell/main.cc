@@ -30,40 +30,47 @@
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
 
-int main()
+int main ()
 {
   std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
-  //dzn::debug.rdbuf(std::clog.rdbuf());
+  //dzn::debug.rdbuf(std::clog.rdbuf ());
   dzn::locator locator;
   dzn::runtime runtime;
-  double_collateral_blocking_shell sut(locator.set(runtime));
+  double_collateral_blocking_shell sut (locator.set (runtime));
   sut.dzn_meta.name = "sut";
   sut.la.dzn_meta.provide.name = "la";
   sut.ra.dzn_meta.provide.name = "ra";
 
   bool toggle = true;
-  sut.la.in.ping = [&]{
-    std::this_thread::sleep_for(std::chrono::milliseconds(toggle ? 200 : 100));
-    sut.la.out.pong();
+  sut.la.in.ping = [&]
+  {
+    std::this_thread::sleep_for (std::chrono::milliseconds (toggle ? 200 : 100));
+    sut.la.out.pong ();
   };
-  sut.ra.in.ping = [&]{
-    std::this_thread::sleep_for(std::chrono::milliseconds(toggle ? 200 : 100));
-    sut.ra.out.pong();
+  sut.ra.in.ping = [&]
+  {
+    std::this_thread::sleep_for (std::chrono::milliseconds (toggle ? 200 : 100));
+    sut.ra.out.pong ();
   };
 
-  for(size_t i = 0; i < 2; ++i) {
-    auto f1 = std::async(std::launch::async, [&]{
-      sut.right.in.hello();});
-    auto f2 = std::async(std::launch::async, [&]{
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      sut.left.in.hello();});
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    sut.left.in.hello();
+  for (size_t i = 0; i < 2; ++i)
+    {
+      auto f1 = std::async (std::launch::async, [&]
+      {
+        sut.right.in.hello ();
+      });
+      auto f2 = std::async (std::launch::async, [&]
+      {
+        std::this_thread::sleep_for (std::chrono::milliseconds (100));
+        sut.left.in.hello ();
+      });
+      std::this_thread::sleep_for (std::chrono::milliseconds (50));
+      sut.left.in.hello ();
 
-    f1.wait();
-    f2.wait();
+      f1.wait ();
+      f2.wait ();
 
-    toggle = !toggle;
-  }
+      toggle = !toggle;
+    }
 }

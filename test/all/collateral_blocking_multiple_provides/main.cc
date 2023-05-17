@@ -31,27 +31,28 @@
 #include <dzn/runtime.hh>
 #include <dzn/pump.hh>
 
-int main()
+int main ()
 {
   std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
   dzn::locator locator;
   dzn::runtime runtime;
-  collateral_blocking_multiple_provides sut(locator.set(runtime));
+  collateral_blocking_multiple_provides sut (locator.set (runtime));
   sut.dzn_meta.name = "sut";
   sut.world.dzn_meta.provide.name = "world";
 
-  sut.world.in.hello = [&]{
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    sut.world.out.world();
+  sut.world.in.hello = [&]
+  {
+    std::this_thread::sleep_for (std::chrono::milliseconds (200));
+    sut.world.out.world ();
   };
 
-  sut.left.in.hello();
-  auto f1 = std::async(std::launch::async, [&]{sut.right.in.hello();});
-  std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  sut.left.in.hello();
-  auto f2 = std::async(std::launch::async, [&]{sut.right.in.hello();});
+  sut.left.in.hello ();
+  auto f1 = std::async (std::launch::async, [&] {sut.right.in.hello ();});
+  std::this_thread::sleep_for (std::chrono::milliseconds (50));
+  sut.left.in.hello ();
+  auto f2 = std::async (std::launch::async, [&] {sut.right.in.hello ();});
 
-  f1.wait();
-  f2.wait();
+  f1.wait ();
+  f2.wait ();
 }

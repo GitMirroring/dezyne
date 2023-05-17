@@ -27,23 +27,26 @@
 #include <iostream>
 #include <stdexcept>
 
-int main()
+int main ()
 {
   dzn::runtime r;
   dzn::locator l;
 
-  exception_wrappersWrapper sut(l.set(r));
+  exception_wrappersWrapper sut (l.set (r));
   sut.impl.dzn_meta.name = "sut";
   sut.impl.h.dzn_meta.require.name = "h";
   sut.impl.w.dzn_meta.provide.name = "w";
 
-  sut.w.in.hello = [] {throw std::logic_error("foo");};
-  sut.h.out.world = [] {throw std::logic_error("bar");};
+  sut.w.in.hello = [] {throw std::logic_error ("foo");};
+  sut.h.out.world = [] {throw std::logic_error ("bar");};
 
-  try {
-    sut.h.in.hello();
-  } catch (const std::exception& e) {
-    std::clog << "exception." << e.what() << std::endl;
-  }
-  sut.w.out.world();
+  try
+    {
+      sut.h.in.hello ();
+    }
+  catch (const std::exception &e)
+    {
+      std::clog << "exception." << e.what () << std::endl;
+    }
+  sut.w.out.world ();
 }

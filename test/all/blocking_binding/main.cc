@@ -43,16 +43,16 @@ read ()
 }
 
 static bool
-getopt (int argc, char const* argv[], std::string option)
+getopt (int argc, char const *argv[], std::string option)
 {
-  return argv + argc != std::find_if (argv + 1, argv + argc, [&option] (char const* s)
+  return argv + argc != std::find_if (argv + 1, argv + argc, [&option] (char const * s)
   {
     return s == option;
   });
 }
 
 int
-main (int argc, char const* argv[])
+main (int argc, char const *argv[])
 {
   if (getopt (argc, argv, "--debug"))
     dzn::debug.rdbuf (std::clog.rdbuf ());
@@ -62,7 +62,7 @@ main (int argc, char const* argv[])
   locator.set (runtime);
   blocking_binding sut (locator);
   dzn::pump pump;
-  locator.set(pump);
+  locator.set (pump);
 
   sut.dzn_meta.name = "sut";
 
@@ -78,19 +78,20 @@ main (int argc, char const* argv[])
   if (0);
   // trace
   else if (trace == "h.hello\nw.hello\nw.return\nw.world\nh.return")
-  {
-    int v = 0;
-    pump ([&] {
-      sut.h.in.hello (v);
-      assert (v == 456);
-    });
-    pump ([&] {sut.w.out.world ();});
-  }
+    {
+      int v = 0;
+      pump ([&]
+      {
+        sut.h.in.hello (v);
+        assert (v == 456);
+      });
+      pump ([&] {sut.w.out.world ();});
+    }
   else
-  {
-    std::clog << "missing trace" << std::endl;
-    return 1;
-  }
+    {
+      std::clog << "missing trace" << std::endl;
+      return 1;
+    }
 
   pump.wait ();
 

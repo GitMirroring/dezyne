@@ -31,125 +31,125 @@
 
 namespace dzn
 {
-  namespace thread
+namespace thread
+{
+class task;
+class pool
+{
+  class task;
+  friend class task;
+  std::vector<std::shared_ptr<const task> > tasks_;
+  std::queue<task *> idle_tasks_;
+  std::condition_variable con_;
+  std::mutex mut_;
+public:
+  pool () {}
+  ~pool ()
   {
-    class task;
-    class pool
-    {
-      class task;
-      friend class task;
-      std::vector<std::shared_ptr<const task> > tasks_;
-      std::queue<task*> idle_tasks_;
-      std::condition_variable con_;
-      std::mutex mut_;
-    public:
-      pool() {}
-      ~pool()
+    std::unique_lock<std::mutex> lock (mut_);
+    while (! (idle_tasks_.size () == tasks_.size ()))
       {
-	std::unique_lock<std::mutex> lock(mut_);
-	while(!(idle_tasks_.size() == tasks_.size()))
-	{
-	  con_.wait(lock);
-	}
+        con_.wait (lock);
       }
-      std::future<void> defer(const std::function<void()>& work)
-      {
-	std::unique_lock<std::mutex> lock(mut_);
-	if(idle_tasks_.empty())
-	{
-	  task* pt = new task(*this);
-	  tasks_.push_back(std::shared_ptr<const task>(pt));
-	  return pt->assign(work);
-	}
-	else
-	{
-          std::future<void> fut = idle_tasks_.front()->assign(work);
-	  idle_tasks_.pop();
-          return fut;
-	}
-      }
-      size_t capacity() const
-      {
-	return tasks_.size();
-      }
-    private:
-      pool& operator = (const pool&);
-      pool(const pool&);
-
-      void idle(task* t)
-      {
-	std::unique_lock<std::mutex> lock(mut_);
-	idle_tasks_.push(t);
-	if(idle_tasks_.size() == tasks_.size()) { con_.notify_one(); };
-      }
-      class task
-      {
-	pool& pool_;
-	bool running_;
-	std::function<void()> work_;
-        std::promise<void> promise_;
-	std::mutex mut_;
-	std::condition_variable con_;
-	std::thread thread_;
-      public:
-	task(pool& p)
-	  : pool_(p)
-	  , running_(true)
-	  , work_()
-	  , mut_()
-	  , con_()
-	  , thread_(std::bind(&task::worker, self()))
-	{}
-	~task()
-	{
-	  std::unique_lock<std::mutex> lock(mut_);
-	  running_ = false;
-	  con_.notify_one();
-	  lock.unlock();
-	  thread_.join();
-	}
-	task* self() { return this; }
-        std::future<void> assign(std::function<void()> work)
-	{
-	  std::unique_lock<std::mutex> lock(mut_);
-	  assert(!work_);
-	  work_.swap(work);
-          promise_ = std::promise<void>();
-	  con_.notify_one();
-          return promise_.get_future();
-	}
-	void worker()
-	{
-	  std::unique_lock<std::mutex> lock(mut_);
-	  do
-	  {
-	    while(running_ && !work_)
-	    {
-	      con_.wait(lock);
-	    }
-	    if(work_)
-	    {
-	      std::function<void()> work;
-	      work_.swap(work);
-	      lock.unlock();
-	      work();
-              promise_.set_value();
-	      pool_.idle(this);
-	      lock.lock();
-	    }
-	  }
-	  while(running_);
-	}
-      private:
-	task(const task&);
-	task& operator = (const task&);
-      };
-    };
-
-    std::future<void> defer(const std::function<void()>& work)
-    {
-      static thread::pool tp;
-      return tp.defer(work);
-    }
   }
+  std::future<void> defer (const std::function<void ()> &work)
+  {
+    std::unique_lock<std::mutex> lock (mut_);
+    if (idle_tasks_.empty ())
+      {
+        task *pt = new task (*this);
+        tasks_.push_back (std::shared_ptr<const task> (pt));
+        return pt->assign (work);
+      }
+    else
+      {
+        std::future<void> fut = idle_tasks_.front ()->assign (work);
+        idle_tasks_.pop ();
+        return fut;
+      }
+  }
+  size_t capacity () const
+  {
+    return tasks_.size ();
+  }
+private:
+  pool &operator = (const pool &);
+  pool (const pool &);
+
+  void idle (task *t)
+  {
+    std::unique_lock<std::mutex> lock (mut_);
+    idle_tasks_.push (t);
+    if (idle_tasks_.size () == tasks_.size ()) { con_.notify_one (); };
+  }
+  class task
+  {
+    pool &pool_;
+    bool running_;
+    std::function<void ()> work_;
+    std::promise<void> promise_;
+    std::mutex mut_;
+    std::condition_variable con_;
+    std::thread thread_;
+  public:
+    task (pool &p)
+      : pool_ (p)
+      , running_ (true)
+      , work_ ()
+      , mut_ ()
+      , con_ ()
+      , thread_ (std::bind (&task::worker, self ()))
+    {}
+    ~task ()
+    {
+      std::unique_lock<std::mutex> lock (mut_);
+      running_ = false;
+      con_.notify_one ();
+      lock.unlock ();
+      thread_.join ();
+    }
+    task *self () { return this; }
+    std::future<void> assign (std::function<void ()> work)
+    {
+      std::unique_lock<std::mutex> lock (mut_);
+      assert (!work_);
+      work_.swap (work);
+      promise_ = std::promise<void> ();
+      con_.notify_one ();
+      return promise_.get_future ();
+    }
+    void worker ()
+    {
+      std::unique_lock<std::mutex> lock (mut_);
+      do
+        {
+          while (running_ && !work_)
+            {
+              con_.wait (lock);
+            }
+          if (work_)
+            {
+              std::function<void ()> work;
+              work_.swap (work);
+              lock.unlock ();
+              work ();
+              promise_.set_value ();
+              pool_.idle (this);
+              lock.lock ();
+            }
+        }
+      while (running_);
+    }
+  private:
+    task (const task &);
+    task &operator = (const task &);
+  };
+};
+
+std::future<void> defer (const std::function<void ()> &work)
+{
+  static thread::pool tp;
+  return tp.defer (work);
+}
+}
 }

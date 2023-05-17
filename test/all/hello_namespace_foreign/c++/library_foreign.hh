@@ -22,23 +22,24 @@
 
 #include "hello.hh"
 
-namespace library {
+namespace library
+{
 
-  struct foreign: public dzn::component
+struct foreign: public dzn::component
+{
+  dzn::meta dzn_meta;
+  dzn::runtime &dzn_runtime;
+  dzn::locator const &dzn_locator;
+  ::library::iworld w;
+  foreign (const dzn::locator &);
+  void dzn_check_bindings () const;
+  friend std::ostream &operator << (std::ostream &os, foreign const &)
   {
-    dzn::meta dzn_meta;
-    dzn::runtime& dzn_runtime;
-    dzn::locator const& dzn_locator;
-    ::library::iworld w;
-    foreign(const dzn::locator&);
-    void dzn_check_bindings() const;
-    friend std::ostream& operator << (std::ostream& os, foreign const&)
-    {
-      return os << "[" << "]" ;
-    }
-    private:
-    void w_world();
-  };
+    return os << "[" << "]" ;
+  }
+private:
+  void w_world ();
+};
 };
 
 #endif // LIBRARY_FOREIGN_HH

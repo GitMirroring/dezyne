@@ -23,6 +23,6 @@
 
 struct hello: public skel::hello
 {
-  hello(const dzn::locator& l): skel::hello(l) {}
-  void h_hello(){}
+  hello (const dzn::locator &l): skel::hello (l) {}
+  void h_hello () {}
 };

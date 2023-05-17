@@ -43,7 +43,7 @@ operator<< (lookup_blocker, lookup_blocker);
 namespace space
 {
 int
-test (space::wostream& w)
+test (space::wostream &w)
 {
   std::wostringstream wos;
   wos << w.h.in.hello () << std::endl;

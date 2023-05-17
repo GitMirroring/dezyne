@@ -35,61 +35,62 @@
 namespace dzn
 {
 #if HAVE_BOOST_COROUTINE
-  typedef boost::coroutines::symmetric_coroutine<void>::call_type context;
-  typedef boost::coroutines::symmetric_coroutine<void>::yield_type yield;
-  typedef boost::coroutines::detail::forced_unwind forced_unwind;
+typedef boost::coroutines::symmetric_coroutine<void>::call_type context;
+typedef boost::coroutines::symmetric_coroutine<void>::yield_type yield;
+typedef boost::coroutines::detail::forced_unwind forced_unwind;
 #else
-  typedef context::forced_unwind forced_unwind;
-  typedef std::function<void(dzn::context&)> yield;
+typedef context::forced_unwind forced_unwind;
+typedef std::function<void (dzn::context &)> yield;
 #endif
 
-  struct coroutine
+struct coroutine
+{
+  size_t id;
+  dzn::context context;
+  dzn::yield yield;
+  void *component;
+  void *port;
+  bool finished;
+  bool skip_block;
+  template <typename Worker>
+  coroutine (size_t id, Worker &&worker)
+    : id (id)
+    , context ([this, worker] (dzn::yield & yield)
+    {
+      this->yield = std::move (yield);
+      worker ();
+    })
+    , port ()
+    , finished ()
+    , skip_block ()
+  {}
+  coroutine ()
+    : id (0)
+    , context ()
+    , port ()
+    , finished ()
+    , skip_block ()
+  {}
+  void yield_to (dzn::coroutine &c)
   {
-    size_t id;
-    dzn::context context;
-    dzn::yield yield;
-    void* component;
-    void* port;
-    bool finished;
-    bool skip_block;
-    template <typename Worker>
-    coroutine(size_t id, Worker&& worker)
-    : id(id)
-    , context([this, worker](dzn::yield& yield){
-        this->yield = std::move(yield);
-        worker();
-      })
-    , port()
-    , finished()
-    , skip_block()
-    {}
-    coroutine()
-    : id(0)
-    , context()
-    , port()
-    , finished()
-    , skip_block()
-    {}
-    void yield_to(dzn::coroutine& c)
-    {
-      this->yield(c.context);
-    }
+    this->yield (c.context);
+  }
 #if HAVE_BOOST_COROUTINE
-    void call(dzn::coroutine&)
-    {
-      this->context();
-    }
-    void release(){}
+  void call (dzn::coroutine &)
+  {
+    this->context ();
+  }
+  void release () {}
 #else //!HAVE_BOOST_COROUTINE
-    void call(dzn::coroutine& c)
-    {
-      this->context.call(c.context);
-    }
-    void release()
-    {
-      this->context.release();
-    }
+  void call (dzn::coroutine &c)
+  {
+    this->context.call (c.context);
+  }
+  void release ()
+  {
+    this->context.release ();
+  }
 #endif // !HAVE_BOOST_COROUTINE
-  };
+};
 }
 #endif //DZN_COROUTINE_HH

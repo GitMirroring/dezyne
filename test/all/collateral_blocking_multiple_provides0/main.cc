@@ -32,16 +32,16 @@
 #include <dzn/pump.hh>
 
 static bool
-getopt (int argc, char const* argv[], std::string option)
+getopt (int argc, char const *argv[], std::string option)
 {
-  return argv + argc != std::find_if (argv + 1, argv + argc, [&option] (char const* s)
+  return argv + argc != std::find_if (argv + 1, argv + argc, [&option] (char const * s)
   {
     return s == option;
   });
 }
 
 int
-main (int argc, char const* argv[])
+main (int argc, char const *argv[])
 {
   if (getopt (argc, argv, "--debug"))
     dzn::debug.rdbuf (std::clog.rdbuf ());
@@ -55,18 +55,19 @@ main (int argc, char const* argv[])
 
   sut.r.in.hello = [&]
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for (std::chrono::milliseconds (200));
     sut.r.out.world();
   };
 
-  std::thread t([&]{
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::thread t([&]
+  {
+    std::this_thread::sleep_for (std::chrono::milliseconds (100));
     sut.right.in.hello ();
   });
 
   sut.left.in.hello ();
 
-  t.join();
+  t.join ();
 
   return 0;
 }

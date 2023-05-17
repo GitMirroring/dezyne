@@ -24,8 +24,8 @@
 class Logger: public skel::Logger
 {
 public:
-  Logger(const dzn::locator& l)
-  : skel::Logger(l)
+  Logger (const dzn::locator &l)
+    : skel::Logger (l)
   {}
-  void log_log(std::string){}
+  void log_log (std::string) {}
 };

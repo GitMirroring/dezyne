@@ -23,11 +23,11 @@
 
 #include "hello_foreign_path.hh"
 
-Foreign::Foreign(const dzn::locator& l)
-: skel::Foreign(l)
+Foreign::Foreign (const dzn::locator &l)
+  : skel::Foreign (l)
 {}
 
-void Foreign::w_world()
+void Foreign::w_world ()
 {
   return;
 }

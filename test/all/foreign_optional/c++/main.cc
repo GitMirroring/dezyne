@@ -30,13 +30,13 @@
 int
 main ()
 {
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max());
+  std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
   dzn::locator l;
   dzn::runtime rt;
-  l.set(rt);
+  l.set (rt);
 
-  foreign_optional sut(l);
+  foreign_optional sut (l);
   sut.dzn_meta.name = "sut";
 
   sut.c.h.out.world = [] {};

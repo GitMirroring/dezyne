@@ -27,18 +27,18 @@
 #include <dzn/pump.hh>
 #include <dzn/runtime.hh>
 
-int main()
+int main ()
 {
-  for(size_t i = 0; i < 2; ++i)
-  {
-    dzn::locator locator;
-    dzn::runtime runtime;
-    dzn::pump pump;
-    pump_twice sut(locator.set(runtime).set(pump));
-    sut.dzn_meta.name = "sut";
-    sut.h.dzn_meta.require.name = "h";
-    sut.h.out.world = [&]{};
-    dzn::shell(pump, [&]{sut.h.in.hello();});
-    pump.wait();
-  }
+  for (size_t i = 0; i < 2; ++i)
+    {
+      dzn::locator locator;
+      dzn::runtime runtime;
+      dzn::pump pump;
+      pump_twice sut (locator.set (runtime).set (pump));
+      sut.dzn_meta.name = "sut";
+      sut.h.dzn_meta.require.name = "h";
+      sut.h.out.world = [&] {};
+      dzn::shell (pump, [&] {sut.h.in.hello ();});
+      pump.wait ();
+    }
 }

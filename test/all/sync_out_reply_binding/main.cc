@@ -43,16 +43,16 @@ read ()
 }
 
 static bool
-getopt (int argc, char const* argv[], std::string option)
+getopt (int argc, char const *argv[], std::string option)
 {
-  return argv + argc != std::find_if (argv + 1, argv + argc, [&option] (char const* s)
+  return argv + argc != std::find_if (argv + 1, argv + argc, [&option] (char const * s)
   {
     return s == option;
   });
 }
 
 int
-main (int argc, char const* argv[])
+main (int argc, char const *argv[])
 {
   if (getopt (argc, argv, "--debug"))
     dzn::debug.rdbuf (std::clog.rdbuf ());
@@ -84,22 +84,22 @@ main (int argc, char const* argv[])
   if (0);
   // trace
   else if (trace == "h.hello\nw.hello\nw.world\nw.return\nh.true")
-  {
-    int v = 0;
-    sut.h.in.hello (v);
-    assert (v == 456);
-  }
+    {
+      int v = 0;
+      sut.h.in.hello (v);
+      assert (v == 456);
+    }
   else if (trace == "h.hello_void\nw.hello_void\nw.world_void\nw.return\nh.return")
-  {
-    int v = 0;
-    sut.h.in.hello_void (v);
-    assert (v == 456);
-  }
+    {
+      int v = 0;
+      sut.h.in.hello_void (v);
+      assert (v == 456);
+    }
   else
-  {
-    std::clog << "missing trace" << std::endl;
-    return 1;
-  }
+    {
+      std::clog << "missing trace" << std::endl;
+      return 1;
+    }
 
   return 0;
 }

@@ -61,13 +61,13 @@ main ()
 
   sut.w.in.cruel = [&]
   {
-    sut.w.out.bye();
+    sut.w.out.bye ();
   };
 
   sut.h.in.hello ();
 
-  f1.wait();
-  f2.wait();
+  f1.wait ();
+  f2.wait ();
 
   return 0;
 }

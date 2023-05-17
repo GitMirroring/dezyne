@@ -36,14 +36,17 @@
 struct exception_context
 {
   std::queue<std::exception_ptr> qe;
-  void operator()(){
-    if(qe.size())
-      std::rethrow_exception(qe.front());
+  void operator () ()
+  {
+    if (qe.size ())
+      std::rethrow_exception (qe.front ());
   }
-  void extend(const std::exception_ptr e) {
-    qe.push(e);
+  void extend (const std::exception_ptr e)
+  {
+    qe.push (e);
   }
-  static void report(const std::exception& e) {
-    std::clog << "exception." << e.what() << std::endl;
+  static void report (const std::exception &e)
+  {
+    std::clog << "exception." << e.what () << std::endl;
   }
 };

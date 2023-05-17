@@ -32,15 +32,16 @@
 struct Foreign: public dzn::component
 {
   dzn::meta dzn_meta;
-  dzn::runtime& dzn_runtime;
-  dzn::locator const& dzn_locator;
+  dzn::runtime &dzn_runtime;
+  dzn::locator const &dzn_locator;
   ::iworld w;
-  Foreign(const dzn::locator&);
-  friend std::ostream& operator << (std::ostream& os, const Foreign&)  {
+  Foreign (const dzn::locator &);
+  friend std::ostream &operator << (std::ostream &os, const Foreign &)
+  {
     return os;
   }
-  private:
-  void w_world();
+private:
+  void w_world ();
 };
 
 #endif // FOREIGN_HH

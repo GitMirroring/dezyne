@@ -38,7 +38,7 @@ main ()
   dzn::runtime rt;
   loc.set (rt);
 
-  collateral_blocking_reorder sut(loc);
+  collateral_blocking_reorder sut (loc);
   sut.dzn_meta.name = "sut";
   sut.r.dzn_meta.provide.name = "r";
   sut.e.dzn_meta.provide.name = "e";
@@ -47,15 +47,15 @@ main ()
 
   sut.r.in.hello = [&]
   {
-    std::thread([&]{
-      if(once) {once = false; sut.e.out.world();}
-      sut.r.out.world();
-    }).detach();
+    std::thread ([&]{
+      if (once) {once = false; sut.e.out.world ();}
+      sut.r.out.world ();
+    }).detach ();
   };
   sut.e.in.hello = [&] {};
 
   sut.p.in.hello ();
 
-  dzn::pump& pump = sut.dzn_locator.get<dzn::pump>();
+  dzn::pump &pump = sut.dzn_locator.get<dzn::pump> ();
   pump.wait ();
 }

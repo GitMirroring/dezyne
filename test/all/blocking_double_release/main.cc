@@ -39,14 +39,14 @@ main ()
   blocking_double_release sut (loc);
   sut.dzn_meta.name = "sut";
 
-  auto f0 = std::async(std::launch::async, sut.block0.in.hello);
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  auto f1 = std::async(std::launch::async, sut.block1.in.hello);
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  sut.release.in.hello();
+  auto f0 = std::async (std::launch::async, sut.block0.in.hello);
+  std::this_thread::sleep_for (std::chrono::milliseconds (100));
+  auto f1 = std::async (std::launch::async, sut.block1.in.hello);
+  std::this_thread::sleep_for (std::chrono::milliseconds (100));
+  sut.release.in.hello ();
 
-  f0.wait();
-  f1.wait();
+  f0.wait ();
+  f1.wait ();
 
   return 0;
 }

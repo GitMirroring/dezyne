@@ -26,8 +26,8 @@
 
 struct itimer_impl
 {
-  void virtual create(int ms) = 0;
-  void virtual cancel() = 0;
+  void virtual create (int ms) = 0;
+  void virtual cancel () = 0;
 };
 
 
