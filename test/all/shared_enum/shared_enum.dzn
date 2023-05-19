@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,14 +24,15 @@
 
 interface ihello
 {
-  enum S {A,B};
-  in S hello ();
+  enum R {A,B};
+  in R hello ();
 
   behavior
   {
-    bool idle = true;
+    enum S {A,B};
     S s = S.A;
-    on hello: {reply (s); if(s.A) s = S.B; else s = S.A;}
+    [s.A] on hello: {s = S.B; reply(R.A);}
+    [s.B] on hello: {s = S.A; reply(R.B);}
   }
 }
 
@@ -40,6 +42,8 @@ component shared_enum
 
   behavior
   {
-    on h.hello (): reply (h.s);
+    on h.hello ():
+      if (h.s.A) reply (ihello.R.A);
+      else reply (ihello.R.B);
   }
 }

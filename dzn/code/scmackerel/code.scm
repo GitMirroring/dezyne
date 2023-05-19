@@ -312,14 +312,13 @@
          (enum-literal (make <enum-literal>
                          #:type.name type-name
                          #:field (.field o)))
-         (enum-literal (clone enum-literal #:parent (.parent o)))
+         (enum-literal (clone enum-literal #:parent o))
          (name (.name variable))
          (port-name (.port.name o))
          (var (make <shared-var> #:name name #:port.name port-name))
          (expression (make <equal>
                        #:left var
-                       #:right enum-literal))
-         (expression (clone expression)))
+                       #:right enum-literal)))
     (ast->expression expression)))
 
 (define-method (ast->expression (o <shared-var>))

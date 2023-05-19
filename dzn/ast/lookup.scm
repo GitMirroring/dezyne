@@ -500,12 +500,13 @@ null) and return its CONTEXT."
     (ast:lookup ((compose .behavior .type .port) o) type-name)))
 
 (define-method (.type (o <enum-literal>))
-  (let ((parent (.parent o))
-        (type-name (.type.name o)))
-    (cond (((disjoin (is? <shared-field-test>)
-                     (is? <shared-variable>)) parent)
-           (or (ast:lookup (ast:parent o <behavior>) type-name)
-               (ast:lookup ((compose .behavior .type .port) parent) type-name)))
+  (let* ((parent (or (ast:parent o <shared-field-test>)
+                     (ast:parent o <shared-variable>)))
+         (type-name (.type.name o)))
+    (cond (parent
+           (let ((type-name (last (.ids type-name))))
+             (or (ast:lookup (ast:parent o <behavior>) type-name)
+                 (ast:lookup ((compose .behavior .type .port) parent) type-name))))
           (else
            (or (ast:parent o <enum>)
                (ast:lookup o type-name))))))
