@@ -34,7 +34,12 @@
          (read-char port)
          (cons c (loop))))))))
 
-(define* (indent #:key (width 2) (open #\{) (close #\}) (no-indent "#") (port (current-input-port)))
+(define* (indent #:key
+                 (width 2)
+                 (open #\{) (close #\})
+                 (gnu? #t)
+                 (no-indent "#")
+                 (port (current-input-port)))
   (let ((delims (list->string `(#\newline ,open ,close))))
     (let loop ((level 0) (last 'start))
       (define* (space #:optional (c level))
@@ -91,8 +96,11 @@
             ((close)
              (display leading-space)))
           (display string)
+          (when (and gnu? (> level 0) (eq? c #\{))
+            (space width))
           (display c)
-          (loop (+ level width) #f))
+          (loop (+ level width
+                         (if (and gnu? (> level 0) (eq? c #\{)) width 0)) #f))
          ((eq? c close)
           (case last
             ((newline)
@@ -106,4 +114,6 @@
              (display leading-space)))
           (display string)
           (display c)
-          (loop (- level width) 'close)))))))
+          (loop (- level width
+                   (if (and gnu? (> level width) (eq? c #\})) width 0))
+                'close)))))))

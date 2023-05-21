@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -41,11 +41,15 @@
             code:root-file-name
             code:source-file-name))
 
-(define* (code:indenter thunk #:key (width 2) (open #\{) (close #\}) (no-indent "#"))
+(define* (code:indenter thunk #:key (width 2) (open #\{) (close #\})
+                        (no-indent "#") (gnu? #t))
   (define (pipe producer consumer)
     (with-input-from-string (with-output-to-string producer) consumer))
   (cute pipe thunk
-        (cute indent #:width width #:open open #:close close #:no-indent no-indent)))
+        (cute indent
+              #:width width #:open open #:close close
+              #:no-indent no-indent
+              #:gnu? gnu?)))
 
 (define (code:source-file-name base dir ext)
   (cond ((equal? dir "-") "-")

@@ -546,5 +546,5 @@ and \"POST\" 'post in GRAMMAR."
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
   (let ((file-name (code:root-file-name root dir ".dzn"))
-        (generator (code:indenter (cute print-ast root))))
+        (generator (code:indenter (cute print-ast root) #:gnu? #f)))
     (code:dump root generator #:file-name file-name)))
