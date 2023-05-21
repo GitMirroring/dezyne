@@ -36,7 +36,7 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.18
+** Release 2.19
   - Pass regression test
     + Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
       + test/all/illegal_external_nonsynchronous
@@ -58,27 +58,17 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + enable lts for queuefull_component0, queuefull_component1,
       queuefull_external_sync, blocking_queuefull,
       blocking_queuefull_reply
-  - shared state
-    + Finish and merge wip-shared-state
-    + Finish and merge wip-scmackerel
-      + else illegal
-      + cs: shared state
-      + c++, cs: remove port duplication in code?
-      + Use hash table for interface state?
-      + Refactor semantics: aspect-oriented
-      + Add CSP alphabetized parallel support (weak illegals, modules)
-      + Refactor makreel with alphabetized parallel
-  - refactor node/parent
-    + Finish and merge wip-parent
-  - Distinguish component, defer and external queue full errors.
-  - Provide user with external queue full debug ability.
-  - Prefer reporting shorter compliance traces over longer illegal
-    traces (prefix any with compliance)
-
-** Release 2.19
   - Finish and merge wip-stitch
     + Cleanup dzn/lts.scm!
   - replace dzn traces with dzn test, i.e. LTS-based testing
+  - refactor node/parent
+    + Finish and merge wip-parent
+  - Prefer reporting shorter compliance traces over longer illegal
+    traces (prefix any with compliance)
+  - Use shared state from provides ports for defer. This requires
+    something like postponing the defer_qin to capture the shared state
+    at the run to completion. Currently the reply reorder seems/is the
+    problem.
 
 ** Release 2.20
   - Module
@@ -92,8 +82,9 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Data
     + Support global functions (with ports?)
     + Deprecate injected, replace with global functions
-    + data behavior (data interfaces, data shims)
-    + structured state types
+    + Data behavior (data interfaces, data shims)
+    + Structured state types
+    + C: Support data with dzn_pump_run
 
 ** Release 2.22
   - Hierarchical behaviors (sub machines)
@@ -172,6 +163,18 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Review and finish Scheme support
 
 * DONE
+  - shared state
+    + Finish and merge wip-shared-state
+    + Finish and merge wip-scmackerel
+      + else illegal
+      + cs: shared state
+      + c++, cs: remove port duplication in code?
+      + Use hash table for interface state?
+      + Refactor semantics: aspect-oriented
+      + Add CSP alphabetized parallel support (weak illegals, modules)
+      + Refactor makreel with alphabetized parallel
+  - Distinguish component, defer and external queue full errors.
+  - Provide user with external queue full debug ability.
   - shared state
     + Increase regression test coverage
       - hello_proxy_nondet
