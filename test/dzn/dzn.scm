@@ -819,9 +819,6 @@ are weak-bisim equivalent"
                           ;; XXX skip: "probably a system"
                           (format (current-error-port) "skip compare: ~s\n" makreel-lts-file))
                      (let* ((makreel-lts (with-input-from-file makreel-lts-file read-string))
-                            (externals (list-matches "\"(<external>[^\"]*)\"" makreel-lts))
-                            (externals (map (cute match:substring <> 1) externals))
-                            (externals (delete-duplicates externals))
                             (flushes (list-matches "\"([^\"]*<flush>)\"" makreel-lts))
                             (flushes (map (cute match:substring <> 1) flushes))
                             (flushes (delete-duplicates flushes))
@@ -829,7 +826,7 @@ are weak-bisim equivalent"
                             (blocking (map (cute match:substring <> 1) blocking))
                             (blocking (delete-duplicates blocking))
                             (modeling (append modeling '("inevitable" "optional")))
-                            (taus (append taus externals flushes blocking))
+                            (taus (append taus flushes blocking))
                             (taus+modeling (append taus modeling)))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
