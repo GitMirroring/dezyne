@@ -35,7 +35,8 @@
   #:use-module (dzn vm report)
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm util)
-  #:export (%liveness?
+  #:export (%exploring?
+            %liveness?
             %strict-external?
             begin-step
             step))
@@ -45,6 +46,9 @@
 ;;; ’step’ implements single stepping the Dezyne vm.
 ;;;
 ;;; Code:
+
+;; Are we running "explore"?
+(define %exploring? (make-parameter #f))
 
 ;; Are we running the "liveness" check?
 (define %liveness? (make-parameter #f))
@@ -283,6 +287,7 @@
          (pc (continuation pc o)))
     (cond
      ((and (runtime:boundary-port? other-port)
+           (not (%exploring?))
            (ast:requires? other-port)
            (ast:external? other-port)
            (not (%strict-external?)))

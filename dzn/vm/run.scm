@@ -36,8 +36,7 @@
   #:use-module (dzn vm runtime)
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
-  #:export (%exploring?
-            extend-trace
+  #:export (extend-trace
             filter-compliance-error
             filter-error
             filter-illegal+implicit-illegal
@@ -65,9 +64,6 @@
 ;;; above 'step'.
 ;;;
 ;;; Code:
-
-;; Are we running "explore"?
-(define %exploring? (make-parameter #f))
 
 ;;;
 ;;; Trace utilities
@@ -316,9 +312,12 @@ TRAIL starts with a <external> qin event."
           (and observable?
                (parameterize ((%external? (%strict-external?)))
                  (and=> (trace->trail pc) cdr))))
-         (input x (if (and observable (not (interactive?)))
-                      ((%next-input) pc)
-                      (values #f pc)))
+         (input x (cond ((%exploring?)
+                         (values observable pc))
+                        ((and observable (not (interactive?)))
+                         ((%next-input) pc))
+                        (else
+                         (values #f pc))))
          (traces (list trace)))
     (if (not (<external>-trigger? input)) traces
         (let* ((event (<external>-trigger? input))
@@ -474,7 +473,17 @@ program-counters produced by taking a step."
                                             #:direction? ast:requires?)
                                        <>)
                                  traces)))
-                    (traces (append-map run-<external>-trigger traces)))
+                    (traces (append-map run-<external>-trigger traces))
+                    (run-external-modeling? (and (%exploring?)
+                                                 (is-a? o <trigger-return>)
+                                                 (is-a? instance <runtime:port>)
+                                                 (ast:external? instance)))
+                    (traces (if (not run-external-modeling?) traces
+                                (append
+                                 traces
+                                 (append-map (cute run-external-modeling <>
+                                                   instance)
+                                             traces)))))
                (cond
                 ((ast:declarative? o)
                  (let ((declarative

@@ -34,6 +34,7 @@
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
   #:use-module (dzn vm runtime)
+  #:use-module (dzn vm step)
   #:use-module (dzn vm util)
 
   #:export (%compliance-check?

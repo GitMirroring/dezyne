@@ -39,6 +39,7 @@
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
   #:use-module (dzn vm runtime)
+  #:use-module (dzn vm step)
   #:use-module (dzn vm util)
 
   #:export (lts
@@ -74,6 +75,13 @@
      ((eq? event 'defer)
       (if (null? (.defer pc)) '()
           (run-defer-event pc event)))
+     ((<external>-trigger? event)
+      (let* ((trail (.trail pc))
+             (trail (cons event trail))
+             (pc (clone pc #:trail trail))
+             (event (<external>-trigger? event))
+             (traces (run-external-modeling pc event)))
+        traces))
      ((eq? event 'external)
       (process-external pc))
      ((is-a? (%sut) <runtime:port>)
@@ -242,6 +250,16 @@ that PC has one more collaterally blocked coroutine on the same port."
                (else
                 (loop (cdr labels) (append new traces))))))))
 
+    (define (<external>-labels)
+      (define (<external>-events port)
+        (let* ((interface (.type port))
+               (events (map .name (ast:out-event* interface))))
+          (map (cute string-append "<external>." (.name port) "." <>)
+               events)))
+      (let* ((component (runtime:%sut-model))
+             (ports (filter ast:external? (ast:requires-port* component))))
+        (append-map <external>-events ports)))
+
     (hash-set! state-number-table "<illegal>" 0)
     (let loop ((pc pc))
       (let ((from (pc->state-number pc)))
@@ -250,6 +268,8 @@ that PC has one more collaterally blocked coroutine on the same port."
           (let* ((labels (labels pc))
                  (labels (if (is-a? (%sut) <runtime:port>) labels
                              (cons* 'defer 'external labels)))
+                 (labels (if (is-a? (%sut) <runtime:port>) labels
+                             (append labels (<external>-labels))))
                  (traces (run-labels pc labels)))
             (when (or (is-a? (%sut) <runtime:port>)
                       (any pair? traces))
@@ -670,6 +690,8 @@ RTC-LTS->LTS."
     (parameterize ((%compliance-check? #f)
                    (%debug? (> (dzn:debugity) 0))
                    (%exploring? #t)
+                   (%external? (and (is-a? model <component>)
+                                    (find ast:external? (ast:requires-port* model))))
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external)

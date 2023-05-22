@@ -2,6 +2,8 @@
 (state ((p)) ((sut)) ((r)))
 test/all/queuefull_external/queuefull_external.dzn:40:20: error: queue-full in component "ii"
 ... <- <external>.r.cb
+sut.<q> <- ...
+... <- <external>.r.cb
 <queue-full>
 (state ((p)) ((sut)) ((r)))
 test/all/queuefull_external/queuefull_external.dzn:40:20: error: queue-full in component "ii"
