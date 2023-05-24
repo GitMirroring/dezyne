@@ -5,6 +5,30 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.18.0 since 2.17.3
+** Language
+  - A component can now directly refer to the state values of its ports
+    from an expression (guard, if, assignment).
+** Code
+  - C++ implements directly referring to the state values of its port.
+  - The code generator backends for C++, C#, and C have been rewritten
+    based on [[https://gitlab.com/janneke/scmackerel][SCMackerel]].
+  - The experimental C code generator now supports blocking and defer,
+    strictly single-threaded, using [[https://www.gnu.org/software/pth/][GNU Portable Threads]].
+  - The C++ and C runtime and code generator now use a more consistent
+    coding style [[https://www.gnu.org/prep/standards/html_node/Formatting.html][GNU Coding Standards]].
+  - The C++ code generator and runtime now adds the source code location
+    of an illegal.
+  - The C++ generated code no longer adds `check_bindings' and
+    `dump_tree' member functions to components; Use runtime functions
+    `dzn::check_bindings' and `dzn::dump_tree' instead.
+** Noteworthy bug fixes
+  - Event names can now overlap with toplevel names.
+  - For C++, it is no longer necessary to add tracing to events
+    implemented in handwritten code, the runtime now takes care of this.
+  - The `dzn_' prefix is used more consistently in generated code to
+    avoid possible clashes with user defined names.
+
 * Changes in 2.17.3 since 2.17.2
 ** Noteworthy bug fixes
   - Event names can now overlap with toplevel names.
