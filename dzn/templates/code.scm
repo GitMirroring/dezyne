@@ -79,7 +79,6 @@
 (define-templates reply-member-initializer code:reply-types)
 
 (define-templates injected-require-initializer ast:injected-port*)
-(define-templates injected-port-require-override ast:injected-port*)
 
 (define-templates event-slot ast:void-in-triggers)
 (define-templates flush (lambda (o) (if (ast:in? o) o '())))

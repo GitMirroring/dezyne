@@ -1,1 +1,1 @@
-provides-port-declare@port
+  ::#x:port-type &  #.name;
