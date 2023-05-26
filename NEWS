@@ -5,6 +5,16 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.3 since 2.17.2
+** Noteworthy bug fixes
+  - Event names can now overlap with toplevel names.
+  - In C++ the ability added in 2.17.1 to inject ports of foreign
+    components lead to a data race in tracing when the foreign port is
+    shared across multiple thread safe shell threads.  This is now
+    fixed.  However, the tracing of foreign interaction is incorrect
+    for all but the last constructed client.  The only way to correct
+    this is to offer a port per client on the foreign component.
+
 * Changes in 2.17.2 since 2.17.1
 ** Code
   - The experimental C code generator now supports out-parameters.
@@ -33,8 +43,8 @@
   - A bug was fixed in the verifier for reporting queue-full cases for
     an external port.  As a result, queue-full is now reported during
     the illegal check and not as part of the deadlock check.
-  - The `dzn simulate now exits gracefully when no dezyne model is
-    found.
+  - The `dzn simulate` command now exits gracefully when no dezyne
+    model is found.
 
 * Changes in 2.17.1 since 2.17.0
 ** Code
