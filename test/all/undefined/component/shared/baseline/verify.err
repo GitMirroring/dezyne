@@ -1,0 +1,7 @@
+test/all/undefined/component/shared/shared.dzn:41:6: error: undefined variable `foo'
+test/all/undefined/component/shared/shared.dzn:42:6: error: type mismatch: expected enum, found: `bool'
+test/all/undefined/component/shared/shared.dzn:43:6: error: undefined identifier `foo'
+test/all/undefined/component/shared/shared.dzn:44:29: error: undefined variable `foo'
+test/all/undefined/component/shared/shared.dzn:45:41: error: undefined variable `foo'
+test/all/undefined/component/shared/shared.dzn:46:24: error: undefined variable `foo'
+test/all/undefined/component/shared/shared.dzn:47:27: error: undefined variable `foo'
