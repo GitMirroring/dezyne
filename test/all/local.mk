@@ -626,6 +626,7 @@ PARSER_TESTS =					\
  %D%/undefined/if				\
  %D%/undefined/interface/action			\
  %D%/undefined/interface/function		\
+ %D%/undefined/interface/shared			\
  %D%/undefined/interface/trigger		\
  %D%/undefined/var
 

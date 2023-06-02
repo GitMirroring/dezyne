@@ -1,0 +1,9 @@
+test/all/undefined/interface/shared/shared.dzn:31:6: error: type mismatch: expected enum, found: `bool'
+test/all/undefined/interface/shared/shared.dzn:32:6: error: undefined identifier `w'
+test/all/undefined/interface/shared/shared.dzn:33:6: error: undefined identifier `foo'
+test/all/undefined/interface/shared/shared.dzn:34:24: error: type mismatch: expected enum, found: `bool'
+test/all/undefined/interface/shared/shared.dzn:35:36: error: type mismatch: expected enum, found: `bool'
+test/all/undefined/interface/shared/shared.dzn:36:19: error: type mismatch: expected enum, found: `bool'
+test/all/undefined/interface/shared/shared.dzn:37:22: error: type mismatch: expected enum, found: `bool'
+test/all/undefined/interface/shared/shared.dzn:37:15: error: type mismatch: expected `void', found: `bool'
+test/all/undefined/interface/shared/shared.dzn:26:3: info: event defined here
