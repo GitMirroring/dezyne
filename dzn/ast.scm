@@ -304,19 +304,19 @@
   (and (eq? (.direction o) 'provides) o))
 
 (define-method (ast:provides? (o <trigger>))
-  (and (.port.name o) ((compose ast:provides? .port) o)))
+  (and=> (as (.port o) <port>) ast:provides?))
 
 (define-method (ast:provides? (o <action>))
-  (and (.port.name o) ((compose ast:provides? .port) o)))
+  (and=> (as (.port o) <port>) ast:provides?))
 
 (define-method (ast:requires? (o <port>))
   (and (eq? (.direction o) 'requires) o))
 
 (define-method (ast:requires? (o <trigger>))
-  (and (.port.name o) ((compose ast:requires? .port) o)))
+  (and=> (as (.port o) <port>) ast:requires?))
 
 (define-method (ast:requires? (o <action>))
-  (and (.port.name o) ((compose ast:requires? .port) o)))
+  (and=> (as (.port o) <port>) ast:requires?))
 
 (define-method (ast:wildcard? (o <string>))
   (equal? o "*"))

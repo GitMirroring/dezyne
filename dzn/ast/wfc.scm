@@ -437,8 +437,14 @@
 (define-method (wfc-constraint (o <shared-variable>))
   (wfc-constraint o (.port o)))
 
+(define-method (wfc-port (o <ast>))
+  (let ((port (.port o)))
+    (if (is-a? port <port>) '()
+        `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))))
+
 (define-method (wfc (o <shared-variable>))
   (append
+   (wfc-port o)
    (next-method)
    (wfc-constraint o)))
 
@@ -653,7 +659,7 @@
   (let ((port (.port o))
         (on (ast:parent o <on>)))
     (cond ((not port)
-           `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
+           (wfc-port o))
           ((not (is-a? (.type port) <interface>)) '()) ; reported before
           ((ast:requires? port)
            `(,(wfc-error o (format #f "cannot use requires port `~a' in reply"
@@ -729,7 +735,7 @@
         (model (ast:parent o <model>)))
     (append
      (cond ((and (is-a? model <component>) (not port))
-            `(,(wfc-error o (format #f "undefined port `~a'" (.port.name o)))))
+            (wfc-port o))
            ((and (is-a? model <component>) (not (is-a? port <port>)))
             `(,(wfc-error o (format #f "`~a' is not a port" (.port.name o)))
               ,(wfc-info (.port o) (format #f "`~a' declared here" (.port.name o)))))
@@ -874,6 +880,7 @@
 (define-method (wfc (o <shared-field-test>))
   (append
    (next-method)
+   (wfc-port o)
    (wfc-constraint (.variable o) (.port o))))
 
 (define-method (wfc (o <otherwise>)) '())
@@ -892,6 +899,7 @@
 (define-method (wfc (o <shared-var>))
   (append
    (next-method)
+   (wfc-port o)
    (wfc-constraint (.variable o) (.port o))))
 
 (define-method (wfc (o <undefined>))

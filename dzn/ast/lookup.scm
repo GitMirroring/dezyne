@@ -418,19 +418,30 @@ null) and return its CONTEXT."
 (define-method (.variable (o <var>))
   (and=> (.name o) (cute ast:lookup-variable o <>)))
 
+(define-method (lookup-shared-variable (port <port>) (name <string>))
+  (let ((interface (.type port)))
+    (and (as interface <interface>)
+         (let ((behavior (.behavior interface)))
+           (and (as behavior <behavior>)
+                (ast:lookup-variable behavior name))))))
+
 (define-method (.variable (o <shared-var>))
-  (and=> (.name o)
-         (disjoin
-          (compose (cute ast:lookup-variable (ast:parent o <behavior>) <>)
-                   (cute string-append (.port.name o) <>))
-          (cute ast:lookup-variable ((compose .behavior .type .port) o) <>))))
+  (let ((name (.name o)))
+    (and name
+         (let ((port (.port o)))
+           (and (as port <port>)
+                (or (let ((port+name (string-append (.name port) name)))
+                      (ast:lookup-variable (ast:parent o <behavior>) port+name))
+                 (lookup-shared-variable port name)))))))
 
 (define-method (.variable (o <shared-field-test>))
-  (and=> (.variable.name o)
-         (disjoin
-          (compose (cute ast:lookup-variable (ast:parent o <behavior>) <>)
-                   (cute string-append (.port.name o) <>))
-          (cute ast:lookup-variable ((compose .behavior .type .port) o) <>))))
+  (let ((name (.variable.name o)))
+    (and name
+         (let ((port (.port o)))
+           (and (as port <port>)
+                (or (let ((port+name (string-append (.name port) name)))
+                      (ast:lookup-variable (ast:parent o <behavior>) port+name))
+                    (lookup-shared-variable port name)))))))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))
