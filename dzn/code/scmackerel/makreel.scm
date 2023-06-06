@@ -830,6 +830,25 @@
          (set! cache (acons o result cache))
          result)))))
 
+(define %external-modeling-action
+  (let ((cache '()))
+    (lambda (o)
+      (or
+       (assq-ref cache o)
+       (let ((result
+              (match o
+                (($ <interface>)
+                 (sm:action (prefix (model-prefix "external_modeling" o))
+                            (event
+                             (sm:event (constructor (model-prefix "modeling" o))
+                                       (type (%events o))))))
+                (($ <port>)
+                 (sm:action
+                  (inherit (%internal-action (.type o)))
+                  (prefix (port-prefix "external_modeling" o)))))))
+         (set! cache (acons o result cache))
+         result)))))
+
 (define %flush-action
   (let ((cache '()))
     (lambda (o)
@@ -2660,7 +2679,7 @@
               (process (port-prefix "port" o))
               (events (list
                        (sm:rename-event (from (%internal-action o))
-                                        (to (%tau-modeling-action interface)))
+                                        (to (%external-modeling-action o)))
                        (sm:rename-event (from (%end-action o))
                                         (to %tau-void-action))
                        (sm:rename-event (from (%flush-action o))
@@ -2696,8 +2715,8 @@
                             %illegal-action
                             %tag-action
                             %tau-void-action
-                            (%tau-modeling-action interface)
                             (%tau-reply-action interface)
+                            (%external-modeling-action o)
                             (%in-action o)
                             (%qout-action o)
                             (%reply-action o)
@@ -2835,6 +2854,11 @@
                         (lambda (p)
                           (list
                            (%qin-ext-action p)
+                           (%external-modeling-action p)))
+                        (filter ast:external? requires))
+                       (append-map
+                        (lambda (p)
+                          (list
                            (%in-action p)
                            (%reply-action p)
                            (%internal-action p)
@@ -3788,20 +3812,20 @@
           component-semantics-allow
           component-semantics)))
 
-(define-method (component-processes (o <component>))
+(define-method (component-assembly-processes (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (component-parallel
-          (sm:process (name "component_parallel")
+         (component-assembly-parallel
+          (sm:process (name "component_assembly_parallel")
                       (statement
                        (sm:parallel* (sm:goto (name "component_constrained"))
                                      (sm:goto (name "req_and_queue"))))))
-         (component-comm
+         (component-assembly-comm
           (sm:process
-            (name "component_comm")
+            (name "component_assembly_comm")
             (statement
              (sm:comm
-              (process component-parallel)
+              (process component-assembly-parallel)
               (events
                (cons*
                 (sm:comm-event (from (sm:multi-event
@@ -3837,12 +3861,12 @@
                                            (list (%state-action p)))))))
                   (filter (negate ast:external?) requires)))))))))
          (interfaces (ast:interface* o))
-         (component-allow
+         (component-assembly-allow
           (sm:process
-            (name "component_allow")
+            (name "component_assembly_allow")
             (statement
              (sm:allow
-              (process component-comm)
+              (process component-assembly-comm)
               (events (cons* %constrained-legal-action
                              %declarative-illegal-action
                              %defer-end-action
@@ -3881,6 +3905,11 @@
                                (lambda (p)
                                  (list
                                   (%qin-ext-action p)
+                                  (%external-modeling-action p)))
+                               (filter ast:external? requires))
+                              (append-map
+                               (lambda (p)
+                                 (list
                                   (%qin-action p)
                                   (%flush-action p)
                                   (%port-queue-full-action p)
@@ -3888,20 +3917,20 @@
                                requires)
                               (filter-map (conjoin ast:external? %state-action)
                                           requires))))))))
-         (component-rename
+         (component-assembly-rename
           (sm:process
-            (name "component_rename")
+            (name "component_assembly_rename")
             (statement
              (sm:rename
-              (process component-allow)
+              (process component-assembly-allow)
               (events
-               (sm:comm-events (sm:process-statement component-comm)))))))
-         (component
+               (sm:comm-events (sm:process-statement component-assembly-comm)))))))
+         (component-assembly
           (sm:process
-            (name "component")
+            (name "component_assembly")
             (statement
              (sm:hide
-              (process component-rename)
+              (process component-assembly-rename)
               (events (cons* %constrained-legal-action
                              %defer-end-action
                              (%defer-skip-action o)
@@ -3926,11 +3955,143 @@
                                   (%end-action p)
                                   (%switch-context-action p)))
                                requires)))))))))
-    (list component-parallel
-          component-comm
-          component-allow
-          component-rename
-          component)))
+    (list component-assembly-parallel
+          component-assembly-comm
+          component-assembly-allow
+          component-assembly-rename
+          component-assembly)))
+
+(define-method (component-external-or-illegal-processes (o <component>))
+  (let* ((interfaces (ast:interface* o))
+         (provides (ast:provides-port* o))
+         (requires (ast:requires-port* o))
+         (external (filter ast:external? requires))
+         (external-or-illegal
+          (sm:process (name "external_or_illegal")
+                      (statement
+                       (sm:union*
+                        `(,(sm:goto (name "Declarative_Illegal"))
+                          ,@(map (lambda (port)
+                                   (sm:sequence*
+                                    (sm:sum (type (%modeling (.type port)))
+                                            (statement
+                                             (sm:invoke (%external-modeling-action port))))
+                                    (sm:sum (type (%actions (.type port)))
+                                            (statement
+                                             (sm:invoke (%qin-ext-action port) #:keep-constructor? #t)))
+                                    (sm:goto (name "external_or_illegal"))))
+                                 external)
+                          ,@(map (lambda (port)
+                                   (sm:sequence*
+                                    (sm:sum (type (%actions (.type port)))
+                                            (statement
+                                             (sm:invoke (%qin-ext-action port) #:keep-constructor? #t)))
+                                    (sm:goto (name "external_or_illegal"))))
+                                 external))))))
+         (component-parallel
+          (sm:process (name "component_parallel")
+                      (statement
+                       (sm:parallel* (sm:goto (name "component_assembly"))
+                                     (sm:goto (name "external_or_illegal"))))))
+         (component-comm
+          (sm:process
+            (name "component_comm")
+            (statement
+             (sm:comm
+              (process component-parallel)
+              (events
+               (cons*
+                (sm:comm-event (from (sm:multi-event
+                                      (events
+                                       (list %declarative-illegal-action)))))
+                (append-map
+                 (lambda (p)
+                   (list
+                    (sm:comm-event (from (sm:multi-event
+                                          (events
+                                           (list (%external-modeling-action p))))))
+                    (sm:comm-event (from (sm:multi-event
+                                          (events
+                                           (list (%qin-ext-action p))))))))
+                 external)))))))
+         (component-allow
+          (sm:process
+            (name "component_allow")
+            (statement
+             (sm:allow
+              (process component-comm)
+              (events (cons* %constrained-legal-action
+                             %defer-end-action
+                             (%defer-qout-action o)
+                             (%defer-skip-action o)
+                             %illegal-action
+                             %missing-reply-action
+                             %queue-full-action
+                             %range-error-action
+                             %recurse-action
+                             %return-action
+                             %second-reply-action
+                             %tag-action
+                             %tau-void-action
+                             (%end-action o)
+                             (append
+                              (append-map
+                               (lambda (i)
+                                 (list
+                                  (%tau-event-action i)
+                                  (%tau-modeling-action i)
+                                  (%tau-reply-action i)))
+                               interfaces)
+                              (append-map
+                               (lambda (p)
+                                 (list
+                                  (%blocking-action p)
+                                  (%in-action p)
+                                  (%out-action p)
+                                  (%reply-action p)
+                                  (%flush-action p)))
+                               provides)
+                              (append-map
+                               (lambda (p)
+                                 (list
+                                  (%in-action p)
+                                  (%internal-action p)
+                                  (%end-action p)
+                                  (%reply-action p)
+                                  (%out-action p)
+                                  (%qout-action p)
+                                  (%qin-action p)
+                                  (%flush-action p)
+                                  (%port-queue-full-action p)
+                                  (%switch-context-action p)))
+                               requires))))))))
+         (component-rename
+          (sm:process (name "component_rename")
+                      (statement
+                       (sm:rename
+                        (process component-allow)
+                        (events
+                         (sm:comm-events (sm:process-statement component-comm)))))))
+         (component
+          (if (null? external) (sm:process
+                                 (name "component")
+                                 (statement (sm:goto (name "component_rename"))))
+              (sm:process (name "component")
+                          (statement
+                           (sm:hide
+                            (process component-rename)
+                            (events
+                             (map
+                              (cute %external-modeling-action <>)
+                              external))))))))
+    (list
+     (sm:comment* (makreel:caption "external-or-illegal"))
+     external-or-illegal
+     component-parallel
+     component-comm
+     component-allow
+     component-rename
+     component)))
 
 (define-method (interface-constraint-processes (o <interface>))
   (let ((constraint (makreel:constraint o)))
@@ -4169,14 +4330,15 @@
                 (constraint-processes o)))
            (static-defer-processes
             (file-comments "defer.mcrl2"))
-           (component-processes (component-processes o))
+           (component-assembly-processes (component-assembly-processes o))
+           (component-external-or-illegal-processes (component-external-or-illegal-processes o))
            (return-type (%return-type o))
            (returns-type (%returns-type o))
            (processes `(,(makreel:caption "PORT PROCESSES")
                         ,@port-processes
                         ,(makreel:caption "PROVIDES")
                         ,@provides-processes
-                        ,(makreel:caption "COMPONENT")
+                        ,(makreel:caption "COMPONENT BEHAVIOR")
                         ,@static-defer-processes
                         ,@behavior-processes
                         ,(makreel:caption "FUNCTIONS")
@@ -4200,7 +4362,9 @@
                         ,(makreel:caption "COMPONENT CONSTRAINED")
                         ,@constraint-processes
                         ,(makreel:caption "COMPONENT ASSEMBLY")
-                        ,@component-processes))
+                        ,@component-assembly-processes
+                        ,(makreel:caption "COMPONENT")
+                        ,@component-external-or-illegal-processes))
            (provides-ports-type
             (sm:type (name "provides_ports")
                      (entities (cons* %no-port-predicate
