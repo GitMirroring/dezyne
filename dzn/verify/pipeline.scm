@@ -69,7 +69,7 @@
 
 (define (component-taus model)
   (let ((ports (ast:requires-port* model)))
-    (string-join (cons "tag" (map makreel:.name ports)) ",")))
+    (string-join (cons* "<external>" "tag" (map makreel:.name ports)) ",")))
 
 (define (component-exclude-taus model)
   (let ((ports (ast:requires-port* model)))
