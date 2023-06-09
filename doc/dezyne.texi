@@ -2482,7 +2482,7 @@ File SYS.cc:
 @example
 #include "SYS.hh"
 SYS::SYS (dzn::locator const& locator)
-: dzn_meta@{"","SYS",0,@{additionalbhv.dzn_meta@},@{@}@}
+: dzn_meta@{"","SYS",0,@{&bhv.dzn_meta@},@{@}@}
 , dzn_locator (locator.clone ().set (dzn_runtime).set (dzn_pump))
 , bhv(dzn_locator)
 , pp (bhv.pp)
@@ -2497,7 +2497,7 @@ SYS::SYS (dzn::locator const& locator)
   @};
   bhv.pp.out.o = std::ref (pp.out.o);
   bhv.rp.in.iv = std::ref (rp.in.iv);
-  bhv.dzn_meta.parent = additionaldzn_meta;
+  bhv.dzn_meta.parent = &dzn_meta;
   bhv.dzn_meta.name = "bhv";
 @}
 @end example
