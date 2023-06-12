@@ -135,6 +135,7 @@ namespace dzn
       flush(t, coroutine_id(t->dzn_locator));
     }
     void flush(dzn::component*, size_t);
+    bool async(dzn::component*, dzn::component*);
     void enqueue(dzn::component*, dzn::component*, const std::function<void()>&, size_t);
     template <typename F, typename = typename std::enable_if<std::is_void<typename std::result_of<F()>::type>::value>::type>
     void handle(dzn::component* component, F&& f, size_t coroutine_id)
@@ -157,22 +158,25 @@ namespace dzn
   };
 
   template <typename P>
-  struct trace_wrapper
+  struct share_trace_wrapper
   {
+    const dzn::locator& locator;
     P& port;
     char const* event_name;
-    bool qout;
-    std::ostream& os;
     std::string reply;
-    trace_wrapper(const dzn::locator& l, P& port, char const* event_name, bool qout = false)
-    : port(port)
+    std::ostream& os;
+    bool qout;
+    share_trace_wrapper(const dzn::locator& l, P& port, char const* event_name, bool qout = false)
+    : locator(l)
+    , port(port)
     , event_name(event_name)
-    , qout(qout)
-    , os(l.template get<typename std::ostream>())
     , reply("return")
+    , os(l.template get<typename std::ostream>())
+    , qout(qout)
     {
-      if(!qout) trace (os, port.dzn_meta, event_name);
-      else trace_qout(os, port.dzn_meta, event_name);
+      if(!qout) {
+        trace (os, port.dzn_meta, event_name);
+      } else trace_qout(os, port.dzn_meta, event_name);
     }
     template <typename E, typename = typename std::enable_if<std::is_void<typename std::result_of<E()>::type>::value>::type>
     void operator()(E&& event)
@@ -191,9 +195,11 @@ namespace dzn
       reply = to_string (value);
       return value;
     }
-    ~trace_wrapper()
+    ~share_trace_wrapper()
     {
-      if(!qout) trace_out(os, port.dzn_meta, reply.c_str());
+      if(!qout) {
+        trace_out(os, port.dzn_meta, reply.c_str());
+      }
     }
   };
 
@@ -237,16 +243,16 @@ namespace dzn
   };
 
   template <typename C, typename P>
-  struct wrapper: public runtime_wrapper<C,P>, public trace_wrapper<P>
+  struct wrapper: public runtime_wrapper<C,P>, public share_trace_wrapper<P>
   {
     wrapper(C* component, P& port, char const* event_name, bool qout = false)
       : runtime_wrapper<C,P>(component, port, qout)
-      , trace_wrapper<P>(component->dzn_locator, port, event_name, qout)
+      , share_trace_wrapper<P>(component->dzn_locator, port, event_name, qout)
     {}
     template <typename E>
     auto operator()(E e) -> decltype(e())
     {
-      return runtime_wrapper<C,P>::operator()([&]{return trace_wrapper<P>::operator()(e);});
+      return runtime_wrapper<C,P>::operator()([&]{return share_trace_wrapper<P>::operator()(e);});
     }
   };
 
@@ -269,22 +275,22 @@ namespace dzn
   }
 
   template <typename C, typename P, typename E>
-  auto call_in(C* c, P& p, char const* name, E const& e) -> decltype(e())
+  auto call_in(C* component, P& port, const char* name, const E& event) -> decltype(event())
   {
-    return p.dzn_peer ? e () : trace_wrapper<P> (c->dzn_locator, p, name) (e);
+    return port.dzn_peer ? event() : share_trace_wrapper<P>(component->dzn_locator, port, name)(event);
   }
 
   template <typename C, typename P, typename E>
-  void call_out(C* c, P& p, char const* name, E const& e)
+  void call_out(C* component, P& port, const char* name, const E& event)
   {
-    if (p.dzn_peer) return e ();
-    auto& os = c->dzn_locator.template get<typename std::ostream>();
-    trace_qin(os, p.dzn_meta, name);
-    return trace_wrapper<P>(c->dzn_locator, p, name, true)(e);
+    if(port.dzn_peer) return  event();
+    auto& os = component->dzn_locator.template get<typename std::ostream>();
+    trace_qin(os, port.dzn_meta, name);
+    return share_trace_wrapper<P>(component->dzn_locator, port, name, true)(event);
   }
 
   template <typename C, typename P, typename E>
-  void defer(C* component, P&& predicate, E const& event)
+  void defer(C* component, P&& predicate, const E& event)
   {
     defer(component->dzn_locator, std::function<bool()>(predicate),
           std::function<void(size_t)>([=](size_t coroutine_id){

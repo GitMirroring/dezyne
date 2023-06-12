@@ -139,11 +139,14 @@ namespace dzn
       }
     }
   }
-
+  bool runtime::async(dzn::component* source, dzn::component* target)
+  {
+    return !(source && performs_flush(source)) && !handling(target);
+  }
   void runtime::enqueue(dzn::component* source, dzn::component* target,
                         const std::function<void()>& event, size_t coroutine_id)
   {
-    if(!(source && performs_flush(source)) && !handling(target))
+    if(async(source, target))
     {
       handle(target, event, coroutine_id);
       flush(target, coroutine_id);
