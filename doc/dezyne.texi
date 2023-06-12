@@ -889,7 +889,7 @@ $ g++ -I runtime/c++ hello-world.cc main.cc \
 
 When running this executable and feeding it the trail, we get
 @example
-echo 'p.hello p.world p.return' | ./a.out
+echo -e 'p.hello\np.world\np.return' | ./a.out
 <external>.p.hello -> sut.p.hello
 <external>.p.world <- sut.p.world
 <external>.p.return <- sut.p.return
