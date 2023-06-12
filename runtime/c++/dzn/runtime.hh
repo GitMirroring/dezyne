@@ -300,5 +300,29 @@ namespace dzn
             component->dzn_runtime.handling(component) = 0;
           }));
   }
+  //largest 64 bit prime; chance of collision ~5e-20
+  constexpr size_t hash_modulo = 18446744073709551557u;
+  //unmemoized constexpr hash (https://cp-algorithms.com/string/string-hashing.html)
+  constexpr size_t hash(const char* s, size_t h = 0)
+  {
+    constexpr size_t p = 53;
+    size_t pow = 1;
+    h *= p;
+    while (*s) {
+      pow = pow * p;
+      h = (h + (*s++ - 47) * pow % hash_modulo) % hash_modulo;
+    }
+    return h;
+  }
+  constexpr size_t hash(const std::initializer_list<const char*>& r, size_t h = 0)
+  {
+    for(auto& s : r) h = hash(s, h) % hash_modulo;
+    return h;
+  }
+  inline size_t hash(const std::vector<const char*>& r, size_t h = 0)
+  {
+    for(auto& s : r) h = hash(s, h) % hash_modulo;
+    return h;
+  }
 }
 #endif //DZN_RUNTIME_HH
