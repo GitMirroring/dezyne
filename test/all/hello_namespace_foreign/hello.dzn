@@ -26,24 +26,12 @@ namespace library
 {
   interface ihello
     {
-     in void hello();
-     out void goodbye();
+      in void hello();
 
-     behavior
-     {
-       bool b = true;
-       [b] {
-         on hello: {}
-         on hello: b = false;
-       }
-       [!b] on optional: {b = true; goodbye;}
-     }
-    }
-
-  component foreign
-    {
-      provides iworld w;
-      // behavior {}
+      behavior
+      {
+        on hello: {}
+      }
     }
 
   component hello
@@ -53,22 +41,23 @@ namespace library
 
       behavior
         {
-          bool b = true;
-          on h.hello(): {b = false; w.world();}
-          [!b] on w.howdy(): {b = true; h.goodbye();}
+          on h.hello(): w.world();
         }
+    }
+
+  component foreign
+    {
+      provides iworld w;
+      // behavior {}
     }
 
   interface iworld
     {
       in void world();
-      out void howdy();
 
       behavior
         {
-          bool b = true;
-          on world: b = false;
-          [!b] on optional: {b = true; howdy;}
+          on world: {}
         }
     }
 }

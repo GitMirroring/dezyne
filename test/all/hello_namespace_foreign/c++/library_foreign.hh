@@ -29,7 +29,6 @@ namespace library {
     dzn::meta dzn_meta;
     dzn::runtime& dzn_runtime;
     dzn::locator const& dzn_locator;
-    std::function<void ()> out_w;
     ::library::iworld w;
     foreign(const dzn::locator&);
     void dzn_check_bindings() const;
