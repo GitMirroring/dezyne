@@ -35,6 +35,8 @@
             .assign
             .other
             .prefix
+            .skip
+            .state
             code:shared-value*)
   #:re-export (.event.name
                .from
@@ -89,10 +91,11 @@
 (define-ast <shared-transition> (<ast>)
   (from)
   (prefix)
-  (to))
+  (to)
+  (skip #:init-value #f))
 
 (define-ast <shared-state> (<ast>)
-  (from)
+  (state)
   (assign))
 
 (define-ast <shared-value> (<expression>)

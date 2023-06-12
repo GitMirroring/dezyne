@@ -97,14 +97,15 @@
             (name (.name o)))))
 
 (define (code:binding->connect binding)
-  (let ((provides
-         requires
-         (code:provides+requires-end-point binding)))
+  (let* ((provides
+          requires
+          (code:provides+requires-end-point binding)))
     (call (name "connect")
-          (arguments
-           (list
-            (member* (%member-prefix) (code:end-point->string provides))
-            (member* (%member-prefix) (code:end-point->string requires)))))))
+          (arguments (list
+                      (simple-format #f "~a~a"
+                                     (%member-prefix) (code:end-point->string provides))
+                      (simple-format #f "~a~a"
+                                     (%member-prefix) (code:end-point->string requires)))))))
 
 
 ;;;
@@ -258,9 +259,6 @@
 (define-method (ast->expression (o <not>))
   (not* (ast->expression (.expression o))))
 
-(define-method (ast->expression (o <var>))
-  (.name o))
-
 (define-method (ast->expression (o <type>))
   (code:type-name o))
 
@@ -306,3 +304,30 @@
                        #:right enum-literal))
          (expression (clone expression)))
     (ast->expression expression)))
+
+(define-method (ast->expression (o <shared-field-test>))
+  (let* ((variable (.variable o))
+         (type (.type variable))
+         (type-name (make <scope.name> #:ids (ast:full-name type)))
+         (enum-literal (make <enum-literal>
+                         #:type.name type-name
+                         #:field (.field o)))
+         (enum-literal (clone enum-literal #:parent (.parent o)))
+         (name (.name variable))
+         (port-name (.port.name o))
+         (var (make <shared-var> #:name name #:port.name port-name))
+         (expression (make <equal>
+                       #:left var
+                       #:right enum-literal))
+         (expression (clone expression)))
+    (ast->expression expression)))
+
+(define-method (ast->expression (o <shared-var>))
+  (let ((lst (ast:full-name o)))
+    (string-join lst (%name-infix))))
+
+(define-method (ast->expression (o <shared-variable>))
+  (let* ((name (ast:full-name o))
+         (name (string-join name (%name-infix))))
+    (if (ast:member? o) (member* (%member-prefix) name)
+        name)))

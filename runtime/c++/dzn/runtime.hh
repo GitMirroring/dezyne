@@ -176,6 +176,8 @@ namespace dzn
     {
       if(!qout) {
         trace (os, port.dzn_meta, event_name);
+        port.dzn_event (event_name);
+        port.dzn_busy = true;
       } else trace_qout(os, port.dzn_meta, event_name);
     }
     template <typename E, typename = typename std::enable_if<std::is_void<typename std::result_of<E()>::type>::value>::type>
@@ -199,6 +201,9 @@ namespace dzn
     {
       if(!qout) {
         trace_out(os, port.dzn_meta, reply.c_str());
+        port.dzn_event (reply.c_str());
+        port.dzn_busy = false;
+        port.dzn_update_state (locator);
       }
     }
   };
@@ -267,6 +272,8 @@ namespace dzn
   {
     auto& os = component->dzn_locator.template get<typename std::ostream>();
     trace_qin(os, port.dzn_meta, name);
+    port.dzn_event (name);
+    if(!port.dzn_busy) port.dzn_update_state (component->dzn_locator);
     component->dzn_runtime.enqueue(port.dzn_meta.provide.component, component,
                                    [component, &port, event, name] {
                                      event();
@@ -286,6 +293,8 @@ namespace dzn
     if(port.dzn_peer) return  event();
     auto& os = component->dzn_locator.template get<typename std::ostream>();
     trace_qin(os, port.dzn_meta, name);
+    port.dzn_event (name);
+    if(!port.dzn_busy) port.dzn_update_state (component->dzn_locator);
     return share_trace_wrapper<P>(component->dzn_locator, port, name, true)(event);
   }
 
