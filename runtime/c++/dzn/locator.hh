@@ -36,8 +36,16 @@
 namespace dzn {
   struct illegal_handler
   {
-    std::function<void()> illegal = [] {assert(!"illegal");};
-    [[noreturn]] void handle() { illegal(); std::abort(); }
+    std::function<void(char const*)> illegal = [] (char const* msg = "")
+    {
+      std::cout << "illegal at: " << msg << std::endl;
+      assert (!"illegal");
+    };
+    [[noreturn]] void handle (char const* msg="")
+    {
+      illegal (msg);
+      std::abort ();
+    }
   };
 
   struct locator
