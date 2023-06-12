@@ -33,6 +33,7 @@
   #:use-module (dzn code scmackerel code)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code language c++)
+  #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:export (c++:call-check-bindings
             c++:event-method
@@ -559,102 +560,105 @@ std::basic_ostream<Char, Traits> &")
             (struct
              (inherit interface)
              (methods
-              (cons*
-               (constructor (struct interface)
-                            (formals (list (formal (type "dzn::port::meta const&")
-                                                   (name "m"))))
-                            (statement (compound* (call (name "debug")
-                                                        (arguments (list "\"ctor\""))))))
-               (destructor (struct interface)
-                           (type "virtual")
-                           (statement "= default;"))
-               (method
-                (struct interface) (type "void") (name "debug")
-                (formals (list (formal (type "std::string&&") (name "label"))))
-                (statement
-                 (compound*
-                  (variable (type "std::string")
-                            (name "tmp")
-                            (expression
-                             (conditional*
-                              "this->dzn_meta.provide.component"
-                              (call (name "dzn::path")
-                                    (arguments '("this->dzn_meta.provide.meta")))
-                              (call (name "dzn::path")
-                                    (arguments '("this->dzn_meta.require.meta"))))))
-                  (statement* "std::cout << tmp << \".\";")
-                  (assign* "tmp"
-                           (conditional*
-                            (call (name "this->dzn_meta.provide.name.size")
-                                  (arguments '()))
-                            "this->dzn_meta.provide.name"
-                            "this->dzn_meta.require.name"))
-                  (statement* "std::cout << tmp << \" \" << label << \": \" << dzn_state << \" prefix: \"")
-                  (call (name "std::copy")
-                        (arguments
-                         (list
-                          (call (name "dzn_prefix.begin")
-                                (arguments '()))
-                          (call (name "dzn_prefix.end")
-                                (arguments '()))
-                          (call (name "std::ostream_iterator<std::string>")
-                                (arguments '("std::cout" "\",\""))))))
-                  (statement* "std::cout << std::endl"))))
-               (method
-                (struct interface) (type "void") (name "dzn_event")
-                (formals (list (formal (type "char const*") (name "event"))))
-                (statement
-                 (compound*
-                  `(,(if* "dzn_external" (return*))
-                    ,(call (name "dzn_prefix.push_back")
-                           (arguments '("event")))
-                    ,(call (name "dzn_sync"))
-                    ,(call (name "debug") (arguments '("\"dzn_event\"")))))))
-               (method
-                (struct interface) (type "void") (name "dzn_update_state")
-                (formals (list (formal (type "dzn::locator const&")
-                                       (name "locator"))))
-                (statement
-                 (compound*
-                  `(,(if* "dzn_external" (return*))
-                    ,(call (name "debug") (arguments '("\"update_state\"")))
-                    ,(switch
-                      (expression
-                       (call
-                        (name "dzn::hash")
-                        (arguments `("dzn_prefix" "dzn_state"))))
-                      (cases
-                       `(,@(map (cute event->switch-case <>
-                                      interface-shared)
-                                transitions)
-                         ,(switch-case
-                           (label "default")
-                           (statement
-                            (statement* "locator.get<dzn::illegal_handler> ().handle (LOCATION)"))))))
-                    ,(call (name "dzn_prefix.clear"))
-                    ,(call (name "dzn_sync"))))))
-               (method
-                (struct interface) (type "void") (name "dzn_sync")
-                (statement
-                 (compound*
-                  (if* (and* (not-equal* "this->dzn_peer" "nullptr")
-                             (not-equal* "this->dzn_peer" "this"))
-                       (compound*
-                        `(,(call (name "debug") (arguments '("\"sync\"")))
-                          ,(assign* "dzn_peer->dzn_prefix" "this->dzn_prefix")
-                          ,(assign* "dzn_peer->dzn_state" "this->dzn_state")
-                          ,(assign* "dzn_peer->dzn_busy" "this->dzn_busy")
-                          ,@(map (compose synchronize->member) (ast:member* o))))))))
-               (method
-                (struct interface) (type "void") (name "dzn_check_bindings")
-                (statement
-                 (compound*
-                  (append
-                   (map event->check-binding (ast:in-event* o))
-                   (map event->check-binding (ast:out-event* o))))))
-               ;;(map event->update-method (ast:event* o))
-               '()
-               ))))
+              `(,(constructor (struct interface)
+                              (formals (list (formal (type "dzn::port::meta const&")
+                                                     (name "m"))))
+                              (statement
+                               (compound*
+                                (if (= (dzn:debugity) 0) '()
+                                    (call (name "debug")
+                                          (arguments (list "\"ctor\"")))))))
+                ,(destructor (struct interface)
+                             (type "virtual")
+                             (statement "= default;"))
+                ,@(if (= (dzn:debugity) 0) '()
+                      `(,(method
+                          (struct interface) (type "void") (name "debug")
+                          (formals (list (formal (type "std::string&&") (name "label"))))
+                          (statement
+                           (compound*
+                            (variable (type "std::string")
+                                      (name "tmp")
+                                      (expression
+                                       (conditional*
+                                        "this->dzn_meta.provide.component"
+                                        (call (name "dzn::path")
+                                              (arguments '("this->dzn_meta.provide.meta")))
+                                        (call (name "dzn::path")
+                                              (arguments '("this->dzn_meta.require.meta"))))))
+                            (statement* "std::cout << tmp << \".\";")
+                            (assign* "tmp"
+                                     (conditional*
+                                      (call (name "this->dzn_meta.provide.name.size")
+                                            (arguments '()))
+                                      "this->dzn_meta.provide.name"
+                                      "this->dzn_meta.require.name"))
+                            (statement* "std::cout << tmp << \" \" << label << \": \" << dzn_state << \" prefix: \"")
+                            (call (name "std::copy")
+                                  (arguments
+                                   (list
+                                    (call (name "dzn_prefix.begin")
+                                          (arguments '()))
+                                    (call (name "dzn_prefix.end")
+                                          (arguments '()))
+                                    (call (name "std::ostream_iterator<std::string>")
+                                          (arguments '("std::cout" "\",\""))))))
+                            (statement* "std::cout << std::endl"))))))
+                ,(method
+                  (struct interface) (type "void") (name "dzn_event")
+                  (formals (list (formal (type "char const*") (name "event"))))
+                  (statement
+                   (compound*
+                    `(,(if* "dzn_external" (return*))
+                      ,(call (name "dzn_prefix.push_back")
+                             (arguments '("event")))
+                      ,(call (name "dzn_sync"))
+                      ,@(if (= (dzn:debugity) 0) '()
+                            `(,(call (name "debug") (arguments '("\"dzn_event\"")))))))))
+                ,(method
+                  (struct interface) (type "void") (name "dzn_update_state")
+                  (formals (list (formal (type "dzn::locator const&")
+                                         (name "locator"))))
+                  (statement
+                   (compound*
+                    `(,(if* "dzn_external" (return*))
+                      ,@(if (= (dzn:debugity) 0) '()
+                            `(,(call (name "debug") (arguments '("\"update_state\"")))))
+                      ,(switch
+                        (expression
+                         (call
+                          (name "dzn::hash")
+                          (arguments `("dzn_prefix" "dzn_state"))))
+                        (cases
+                         `(,@(map (cute event->switch-case <>
+                                        interface-shared)
+                                  transitions)
+                           ,(switch-case
+                             (label "default")
+                             (statement
+                              (statement* "locator.get<dzn::illegal_handler> ().handle (LOCATION)"))))))
+                      ,(call (name "dzn_prefix.clear"))
+                      ,(call (name "dzn_sync"))))))
+                ,(method
+                  (struct interface) (type "void") (name "dzn_sync")
+                  (statement
+                   (compound*
+                    (if* (and* (not-equal* "this->dzn_peer" "nullptr")
+                               (not-equal* "this->dzn_peer" "this"))
+                         (compound*
+                          `(,@(if (= (dzn:debugity) 0) '()
+                                  `(,(call (name "debug") (arguments '("\"sync\"")))))
+                            ,(assign* "dzn_peer->dzn_prefix" "this->dzn_prefix")
+                            ,(assign* "dzn_peer->dzn_state" "this->dzn_state")
+                            ,(assign* "dzn_peer->dzn_busy" "this->dzn_busy")
+                            ,@(map (compose synchronize->member) (ast:member* o))))))))
+                ,(method
+                  (struct interface) (type "void") (name "dzn_check_bindings")
+                  (statement
+                   (compound*
+                    (append
+                     (map event->check-binding (ast:in-event* o))
+                     (map event->check-binding (ast:out-event* o))))))))))
            (connect
             (function
              (name "connect")
