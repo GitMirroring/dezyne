@@ -424,6 +424,7 @@ REGRESSION_TESTS =				\
  %D%/second_reply_sync				\
  %D%/second_reply_blocking			\
  %D%/shared_assign				\
+ %D%/shared_defer				\
  %D%/shared_enum				\
  %D%/shared_field_test				\
  %D%/shared_requires				\
