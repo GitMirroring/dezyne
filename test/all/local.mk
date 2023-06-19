@@ -64,6 +64,7 @@ HELLO_TESTS =					\
  %D%/hello_function				\
  %D%/hello_function_argument			\
  %D%/hello_function_assign			\
+ %D%/hello_function_enum			\
  %D%/hello_function_variable			\
  %D%/hello_guard				\
  %D%/hello_if					\
