@@ -32,6 +32,7 @@
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
   #:use-module (dzn code)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
 
   #:export (ast:wfc
@@ -417,6 +418,13 @@
 
 (define-method (wfc-constraint (o <variable>) (port <port>))
   (append
+   (if (feature-supported? "shared") '()
+       `(,(wfc-error
+           o
+           (format #f "using shared variable `~a.~a' with language ~s is not supported"
+                   (.name port)
+                   (.name o)
+                   (%language)))))
    (if (not (%no-constraint?)) '()
        `(,(wfc-error
            o
@@ -528,7 +536,14 @@
              `(,(wfc-error o "nested blocking used")
                ,(wfc-info (ast:parent o <blocking>) "within blocking here")))
             (else '()))))
-  (append (blocking o) (wfc (.statement o))))
+  (append
+   (if (feature-supported? "block") '()
+       `(,(wfc-error
+           o
+           (format #f "use of `blocking' with language ~s is not supported"
+                   (%language)))))
+   (blocking o)
+   (wfc (.statement o))))
 
 (define (wfc-defer-argument var)
   (if (is-a? var <undefined>)
@@ -555,6 +570,11 @@
 (define-method (wfc (o <defer>))
   (let ((arguments (ast:argument* o)))
     (append
+     (if (feature-supported? "defer") '()
+         `(,(wfc-error
+             o
+             (format #f "use of `blocking' with language ~s is not supported"
+                     (%language)))))
      (if (not arguments) '()
          (append-map wfc-defer-argument arguments))
      (wfc (.statement o)))))
@@ -919,6 +939,10 @@
   (if (find (compose (cute ast:equal? (.function.name o) <>) .name)
             (ast:function* (ast:parent o <behavior>))) '()
             `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
+
+(define (feature-supported? feature)
+  (or (equal? (%language) "makreel")
+      (member (%language) (assoc-ref %feature-alist feature))))
 
 (define (single-quote string)
   (format #f "`~a'" string))

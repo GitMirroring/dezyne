@@ -123,6 +123,7 @@ Languages: ~a
          (shell (option-ref options 'shell #f)))
     (parameterize ((%calling-context calling-context)
                    (%no-constraint? no-constraint?)
+                   (%language language)
                    (%locations? locations?)
                    (%no-unreachable? no-unreachable?)
                    (%queue-size queue-size)
