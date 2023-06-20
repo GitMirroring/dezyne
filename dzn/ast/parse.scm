@@ -69,6 +69,20 @@
   (define (column-number line pos)
     (1+ (- pos (car (vector-ref newlines (1- line))))))
 
+  (define (debug-location ast)
+    "Usage (pke (debug-locatation o)) while constructing AST"
+    (define (print-location o)
+      (match o
+        (('location pos end)
+         (let* ((line (line-number pos))
+                (column (1- (column-number line pos)))
+                (end-line (line-number end))
+                (end-column (column-number end-line end)))
+           (simple-format #f "~a: ~a:~a-~a:~a\n" ast line column end-line end-column)))
+        ((type children ...) (map print-location children))
+        (_ o)))
+    (print-location ast))
+
   (define (file-helper o file-name start-pos)
 
     (define (make-interface name types-and-events behavior comment)
