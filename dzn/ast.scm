@@ -677,6 +677,9 @@
          (types (append-map ast:return-types interfaces)))
     (delete-duplicates types ast:eq?)))
 
+(define-method (ast:values (o <type>))
+  (ast:values o #f))
+
 (define-method (ast:values (o <type>) void)
   (cond
    ((as o <void>)
@@ -694,15 +697,19 @@
    ((as o <int>)
     (list (make <literal> #:value 0)))))
 
-(define-method (ast:values (o <type>))
-  (ast:values o #f))
-
-(define-method (ast:default-value (o <type>))
-  (match (ast:values o)
-    ((default rest ...) default)))
+(define-method (ast:values (o <variable>))
+  "Enum values include their type.name, the scope.name part of the
+type.name is determined by the context referring to the type, hence the
+overload for variable."
+  (cond
+   ((as (ast:type o) <enum>)
+    (map (cute make <enum-literal> #:type.name (.type.name o) #:field <>)
+         (ast:field* (ast:type o))))
+   (else (ast:values (ast:type o)))))
 
 (define-method (ast:default-value (o <ast>))
-  (ast:default-value (ast:type o)))
+  (match (ast:values o)
+    ((default rest ...) default)))
 
 (define-method (ast:return-values (o <event>) void)
   (let ((type ((compose .type .signature) o)))
