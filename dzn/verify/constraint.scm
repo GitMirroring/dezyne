@@ -114,11 +114,18 @@ to current-output-port."
         (($ <int>) (string-append name "Int"))
         (($ <enum>) (full-name o)))))
 
+  (define (root-scope-enum value)
+    (if (not (is-a? value <enum-literal>)) value
+        (let* ((enum (.type value))
+               (type-name (make <scope.name> #:ids (ast:full-name enum))))
+          (clone value #:type.name type-name))))
+
   (define (model-replies)
     (let* ((values (append-map
                     (cute ast:return-values <> (make <literal>))
                     (ast:in-event* model)))
            (values (delete-duplicates values ast:equal?))
+           (values (map root-scope-enum values))
            (root (ast:parent model <root>))
            (values (map (cute clone <> #:parent root) values))
            (types (map ast:type values))
