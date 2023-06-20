@@ -225,7 +225,7 @@ imperative-statement <- variable / assign / if-statement / illegal /
   interface-action <-- is-event
 
   action-or-call <- (action / call) SEMICOLON#
-    action <-- is-port DOT# name# arguments
+    action <-- is-port DOT name# arguments
     call <-- name arguments
       arguments <-- PAREN-OPEN (argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
         argument <-- expression
@@ -251,11 +251,11 @@ or-expression <- and-expression OR or-expression# / and-expression
 and-expression <- compare-expression AND and-expression# / compare-expression
 compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
 plus-min-expression <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
-not-expression <- minus / not / group / dollars / (action / shared-field-test / shared-var / !var !is-port enum-literal / literal / call / var !DOT / interface-action / field-test / unknown-identifier)
+not-expression <- minus / not / group / dollars / literal / !(is-port / var) enum-literal / field-test / action / shared-field-test / shared-var / call / var / interface-action / unknown-identifier
 not <-- NOT not-expression#
 minus <-- UMINUS not-expression#
 enum-literal <-- global? scope name
-field-test <-- !is-port var DOT# name#
+field-test <-- var DOT name#
 shared-var <-- is-port DOT name#
 shared-field-test <-- is-port DOT !is-port name DOT name#
 literal <-- NUMBER / FALSE / TRUE
