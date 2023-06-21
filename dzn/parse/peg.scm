@@ -47,11 +47,18 @@
 (define-skip-parser peg-line all
   (and "//" (* (and (not-followed-by peg-eol) peg-any))
        (expect (or "\n" "\r\n" peg-eof))))
-(define-skip-parser peg-block-strict all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (expect "*/")))
-(define-skip-parser peg-skip all (* (or peg-ws peg-eol peg-line peg-block-strict)))
+(define-skip-parser peg-block-strict all
+  (and "/*"
+       (* (or peg-block (and (not-followed-by "*/") peg-any)))
+       (expect "*/")))
+(define-skip-parser peg-skip all
+  (* (or peg-ws peg-eol peg-line peg-block-strict)))
 
-(define-skip-parser peg-block all (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any))) (or "*/" peg-eof)))
-(define-skip-parser peg-import-skip all (* (or peg-ws peg-eol peg-line peg-block)))
+(define-skip-parser peg-block all
+  (and "/*" (* (or peg-block (and (not-followed-by "*/") peg-any)))
+       (or "*/" peg-eof)))
+(define-skip-parser peg-import-skip all
+  (* (or peg-ws peg-eol peg-line peg-block)))
 
 (define (peg:imports string)
   (define-peg-string-patterns
@@ -77,7 +84,8 @@ SKIP < !IMPORT . 'import'*")
   (define (-event-name- str len pos)
     (let ((res (name str len pos)))
       (when res
-        (set! interface-events (cons (substring str pos (car res)) interface-events)))
+        (set! interface-events (cons (substring str pos (car res))
+                                     interface-events)))
       res))
   (define-peg-pattern event-name all -event-name-)
 
@@ -111,13 +119,15 @@ SKIP < !IMPORT . 'import'*")
   (define (-enter-frame- str len pos)
     (when (%peg:debug?)
       (format (current-error-port) "push: ~a\n" variable-stack))
-    (set! variable-stack (cons (if (null? variable-stack) '() (car variable-stack))
+    (set! variable-stack (cons (if (null? variable-stack) '()
+                                   (car variable-stack))
                                variable-stack))
     (list pos '()))
   (define-skip-parser enter-frame none -enter-frame-)
 
   (define (-exit-frame- str len pos)
-    (set! variable-stack (if (null? variable-stack) '()  (cdr variable-stack)))
+    (set! variable-stack (if (null? variable-stack) '()
+                             (cdr variable-stack)))
     (when (%peg:debug?)
       (format (current-error-port) "pop: ~a\n" variable-stack))
     (list pos '()))
@@ -128,7 +138,9 @@ SKIP < !IMPORT . 'import'*")
           (top (if (null? variable-stack) '() (car variable-stack)))
           (bottom (if (null? variable-stack) '() (cdr variable-stack))))
       (when res
-        (set! variable-stack (cons (cons (substring str pos (car res)) top) bottom)))
+        (set! variable-stack (cons (cons (substring str pos (car res))
+                                         top)
+                                   bottom)))
       res))
   (define-peg-pattern add-var body -add-var-)
 
@@ -145,16 +157,19 @@ SKIP < !IMPORT . 'import'*")
     (parameterize ((%peg:skip? (lambda (str strlen at) `(,at ()))))
       (dollars- str len pos)))
 
-  ;; TODO: come up with lexical scope construct (see spirit), i.e. disable skip parser locally
+  ;; TODO: come up with lexical scope construct (see spirit),
+  ;; i.e. disable skip parser locally
   (define-peg-pattern dollars all dollars-no-skip)
 
   (define-peg-string-patterns
-    "root <-- (import / dollars / type / namespace / interface / component / EOF)#*
-
-dollars- <- DOLLAR (!DOLLAR .)* DOLLAR#
+    "root <-- (import / dollars / type
+               / namespace / interface / component
+               / EOF)#*
 
 import <-- IMPORT file-name SEMICOLON#
   file-name <- (!SEMICOLON .)+
+
+dollars- <- DOLLAR (!DOLLAR .)* DOLLAR#
 
 type <- enum / int / extern
   enum <-- ENUM compound-name# BRACE-OPEN# fields# BRACE-CLOSE# SEMICOLON#
@@ -170,13 +185,17 @@ type <- enum / int / extern
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
   namespace-root <-- (type / namespace / interface / component / &BRACE-CLOSE)#*
 
-interface <-- INTERFACE reset-event-names reset-port-names compound-name# BRACE-OPEN# types-and-events# (behavior / &BRACE-CLOSE)# BRACE-CLOSE#
+interface <-- INTERFACE reset-event-names reset-port-names compound-name#
+              BRACE-OPEN# types-and-events# (behavior / &BRACE-CLOSE)#
+              BRACE-CLOSE#
 
   types-and-events <-- (type / event / &behavior / &BRACE-CLOSE)#*
-    event <-- direction type-name# event-name# enter-frame formals# exit-frame SEMICOLON#
+    event <-- direction type-name# event-name#
+              enter-frame formals# exit-frame SEMICOLON#
       direction <-- IN / OUT
 
-component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-OPEN# ports# body# BRACE-CLOSE#
+component <-- COMPONENT reset-port-names reset-event-names compound-name#
+              BRACE-OPEN# ports# body# BRACE-CLOSE#
   body <- behavior / system / &BRACE-CLOSE
     system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
       instances-and-bindings <-- (instance / binding)*
@@ -185,7 +204,8 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
           end-point <-- compound-name (DOT ASTERISK)? / ASTERISK
 
   ports <-- (port / &BEHAVIOR / &SYSTEM / &BRACE-CLOSE)#*
-    port <-- port-direction port-qualifiers? compound-name# formals? port-name# SEMICOLON#
+    port <-- port-direction port-qualifiers? compound-name# formals?
+             port-name# SEMICOLON#
       port-direction <- provides / requires
       port-qualifiers <-- (blocking-q / external / injected / &compound-name)*
       formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
@@ -194,31 +214,45 @@ component <-- COMPONENT reset-port-names reset-event-names compound-name# BRACE-
 type-name <-- compound-name / BOOL / VOID
 
 behavior <-- BEHAVIOR (name)? behavior-compound
-  behavior-compound <-- BRACE-OPEN# enter-frame behavior-statements BRACE-CLOSE# exit-frame
-    behavior-statements <-- (function / variable / declarative-statement / type / &BRACE-CLOSE)#*
-      function <-- type-name name &(formals BRACE-OPEN) enter-frame formals compound# exit-frame
+
+  behavior-compound
+    <-- BRACE-OPEN# enter-frame behavior-statements BRACE-CLOSE# exit-frame
+
+    behavior-statements
+       <-- (function / variable / declarative-statement / type / &BRACE-CLOSE)#*
+
+      function
+         <-- type-name name &(formals BRACE-OPEN)
+             enter-frame formals compound# exit-frame
 
 declarative-statement <- on / blocking / guard / compound
-  on <-- ON (illegal-triggers COLON illegal /
-             enter-frame triggers# COLON# (statement / !unknown-identifier)# exit-frame)
+  on <-- ON (illegal-triggers COLON illegal
+             / enter-frame triggers# COLON# (statement / !unknown-identifier)#
+             exit-frame)
 
     illegal-triggers <-- (illegal-trigger (&COLON / COMMA)#)+
       illegal-trigger <-- is-port DOT# name# trigger-formals? / is-event
 
     triggers <-- ((trigger / !unknown-identifier) (&COLON / COMMA)#)#+
-      trigger <-- is-port DOT# name# trigger-formals# / OPTIONAL / INEVITABLE / is-event
-        trigger-formals <-- PAREN-OPEN (trigger-formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
+      trigger <-- is-port DOT# name# trigger-formals#
+                  / OPTIONAL / INEVITABLE / is-event
+        trigger-formals <-- PAREN-OPEN (trigger-formal (&PAREN-CLOSE / COMMA#))*
+                            PAREN-CLOSE#
           trigger-formal <-- add-var (LEFT-ARROW var)?
 
-  guard <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
+  guard
+    <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
 
-compound <-- BRACE-OPEN enter-frame (statement / !unknown-identifier)#* BRACE-CLOSE# exit-frame
-  statement <- (declarative-statement / imperative-statement / !unknown-identifier)#
+compound
+   <-- BRACE-OPEN enter-frame (statement / !unknown-identifier)#*
+       BRACE-CLOSE# exit-frame
 
-imperative-statement <- variable / assign / if-statement / illegal /
-                        return / skip-statement / compound /
-                        reply / defer / action-or-call /
-                        interface-action SEMICOLON#
+  statement
+     <- (declarative-statement / imperative-statement / !unknown-identifier)#
+
+imperative-statement
+  <- variable / assign / if-statement / illegal / return / skip-statement
+     / compound / reply / defer / action-or-call / interface-action SEMICOLON#
 
   defer <-- DEFER arguments? imperative-statement
 
@@ -238,20 +272,39 @@ imperative-statement <- variable / assign / if-statement / illegal /
 
   assign <-- var ASSIGN expression# SEMICOLON#
 
-  if-statement <-- IF PAREN-OPEN# expression# PAREN-CLOSE# imperative-statement# (ELSE imperative-statement#)?
+  if-statement <-- IF PAREN-OPEN# expression# PAREN-CLOSE# imperative-statement#
+                   (ELSE imperative-statement#)?
 
-  reply <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE# SEMICOLON#
+  reply
+    <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE# SEMICOLON#
 
-  return <-- RETURN expression? SEMICOLON#
+  return
+    <-- RETURN expression? SEMICOLON#
 
-  variable <-- type-name add-var (ASSIGN expression#)? SEMICOLON#
+  variable
+    <-- type-name add-var (ASSIGN expression#)? SEMICOLON#
 
-expression <-- or-expression
-or-expression <- and-expression OR or-expression# / and-expression
-and-expression <- compare-expression AND and-expression# / compare-expression
-compare-expression <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression# / plus-min-expression
-plus-min-expression <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
-not-expression <- minus / not / group / dollars / literal / !(is-port / var) enum-literal / field-test / action / shared-field-test / shared-var / call / var / interface-action / unknown-identifier
+expression
+  <-- or-expression
+
+or-expression
+  <- and-expression OR or-expression# / and-expression
+
+and-expression
+  <- compare-expression AND and-expression# / compare-expression
+
+compare-expression
+  <- plus-min-expression !LEFT-ARROW COMPARE plus-min-expression#
+     / plus-min-expression
+
+plus-min-expression
+  <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
+
+not-expression
+  <- minus / not / group / dollars / literal / !(is-port / var) enum-literal
+     / field-test / action / shared-field-test / shared-var / call / var
+     / interface-action / unknown-identifier
+
 not <-- NOT not-expression#
 minus <-- UMINUS not-expression#
 enum-literal <-- global? scope name
@@ -310,8 +363,8 @@ PLUS                <-  '+'
 MINUS               <-  '-'
 NOT                 <   '!'
 EOF                 <   !.
-COMPARE             <-  EQUAL / NOT-EQUAL / LESS-EQUAL / LESS / GREATER-EQUAL / GREATER
-
+COMPARE             <-  EQUAL / NOT-EQUAL / LESS-EQUAL / LESS
+                        / GREATER-EQUAL / GREATER
 BEHAVIOR            <  'behavior' ![a-zA-Z_0-9] / 'behaviour' ![a-zA-Z_0-9]
 BLOCKING            <  'blocking' ![a-zA-Z_0-9]
 BOOL                <- 'bool' ![a-zA-Z_0-9]
