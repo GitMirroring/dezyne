@@ -199,11 +199,15 @@ dist_man_MANS =					\
  doc/dzn-trace.1				\
  doc/dzn-verify.1
 
-doc/dzn.1:
+command_go = dzn/config.go dzn/script.go $(dzn_commands_go_DATA)
+
+if have_help2man
+doc/dzn.1: bin/dzn $(command_go)
 	./pre-inst-env help2man --output=$@ bin/dzn
 
-doc/dzn-%.1:
+doc/dzn-%.1: bin/dzn $(command_go)
 	./pre-inst-env help2man --output=$@ --version-string=$(PACKAGE_VERSION) "bin/dzn $*"
+endif
 
 MAKEINFO_HTML_OPTIONS =									\
  --css-ref=https://www.gnu.org/software/gnulib/manual.css				\
