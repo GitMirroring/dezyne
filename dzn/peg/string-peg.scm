@@ -47,7 +47,7 @@ literal <-- ['] (!['] .)* ['] sp
 charclass <-- LB (!']' (CCrange / CCsingle))* RB sp
 CCrange <-- . '-' .
 CCsingle <-- .
-nonterminal <-- [a-zA-Z0-9-]+ sp
+nonterminal <-- [a-zA-Z0-9-=]+ sp
 sp < [ \t\n]*
 SLASH < '/'
 LB < '['
@@ -91,7 +91,7 @@ RB < ']'
 (define-sexp-parser charclass-range all (and peg-any "-" peg-any))
 (define-sexp-parser charclass-single all peg-any)
 (define-sexp-parser peg-nonterminal all
-  (and (+ (or (range #\a #\z) (range #\A #\Z) (range #\0 #\9) "-")) peg-sp))
+  (and (+ (or (range #\a #\z) (range #\A #\Z) (range #\0 #\9) "-" "=")) peg-sp))
 (define-sexp-parser peg-sp none
   (* (or " " "\t" "\n")))
 
