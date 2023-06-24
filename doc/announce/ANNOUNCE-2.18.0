@@ -1,0 +1,91 @@
+
+Subject: dezyne-2.18.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are happy to announce Dezyne 2.18 which introduces shared interface
+state.
+
+Before 2.18.0, if a component needed to act on the state of one or more
+of its interfaces, it would need to implement a mirror of that state
+using component state variable(s).
+
+Now the boolean state state `bool b' of provides port `p' can be
+accessed directly using `p.b'.  This access is read-only.
+
+See also the [[https://dezyne.org/documentation.html][Dezyne documentation]].
+
+We will evaluate your reports and track them via the
+[[https://gitlab.com/groups/dezyne/-/issues][Gitlab dezyne-issues
+project]], see our [[https://dezyne.org/bugreport][guide to writing
+helpful bug reports]].
+
+What's next?
+
+In the next releases we like to see better external queue-in debugging
+information and verification with system scope for automatically
+exploring possible traces in a system.
+
+Future
+
+Looking beyond the next releases: Module-specifications and
+data-interfaces.  Hierarchical behaviors.  Support for Module Based
+Testing.
+
+Enjoy!
+The Dezyne developers.
+
+Download
+
+  git clone git://git.savannah.nongnu.org/dezyne.git
+
+Here are the compressed sources and a GPG detached signature[*]:
+  https://dezyne.org/download/dezyne/dezyne-2.18.0.tar.gz
+  https://dezyne.org/download/dezyne/dezyne-2.18.0.tar.gz.sig
+
+Here are the SHA1 and SHA256 checksums:
+
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.18.0.tar.gz
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.18.0.tar.gz
+
+[*] Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify dezyne-2.18.0.tar.gz.sig
+
+If that command fails because you don't have the required public key,
+then run this command to import it:
+
+  gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+and rerun the 'gpg --verify' command.
+
+Alternatively, Dezyne can be installed using GNU Guix:
+  guix pull
+  guix install dezyne
+
+NEWS
+* Changes in 2.18.0 since 2.17.3
+** Language
+  - A component can now directly refer to the state values of its ports
+    from an expression (guard, if, assignment).
+** Code
+  - C++ implements directly referring to the state values of its port.
+  - The code generator backends for C++, C#, and C have been rewritten
+    based on [[https://gitlab.com/janneke/scmackerel][SCMackerel]].
+  - The experimental C code generator now supports blocking and defer,
+    strictly single-threaded, using [[https://www.gnu.org/software/pth/][GNU Portable Threads]].
+  - The C++ and C runtime and code generator now use a more consistent
+    coding style [[https://www.gnu.org/prep/standards/html_node/Formatting.html][GNU Coding Standards]].
+  - The C++ code generator and runtime now adds the source code location
+    of an illegal.
+  - The C++ generated code no longer adds `check_bindings' and
+    `dump_tree' member functions to components; Use runtime functions
+    `dzn::check_bindings' and `dzn::dump_tree' instead.
+** Noteworthy bug fixes
+  - Event names can now overlap with toplevel names.
+  - For C++, it is no longer necessary to add tracing to events
+    implemented in handwritten code, the runtime now takes care of this.
+  - The `dzn_' prefix is used more consistently in generated code to
+    avoid possible clashes with user defined names.
