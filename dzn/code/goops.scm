@@ -28,11 +28,21 @@
   #:use-module (dzn ast lookup)
   #:export (<action-reply>
             <port-pair>
+            <shared-state>
+            <shared-transition>
+            <shared-value>
             .action
-            .other)
+            .assign
+            .other
+            .prefix
+            code:shared-value*)
   #:re-export (.event.name
+               .from
+               .to
                .port
-               .port.name))
+               .port.name
+               .value
+               ast:statement*))
 
 ;;;
 ;;; Ast extension.
@@ -74,8 +84,30 @@
 
 
 ;;;
+;;; Shared-state.
+;;;
+(define-ast <shared-transition> (<ast>)
+  (from)
+  (prefix)
+  (to))
+
+(define-ast <shared-state> (<ast>)
+  (from)
+  (assign))
+
+(define-ast <shared-value> (<expression>)
+  (value))
+
+
+;;;
 ;;; Accessors
 ;;;
+(define-method (code:shared-value* (o <shared-transition>))
+  (ast:statement* (.prefix o)))
+
+(define-method (ast:statement* (o <shared-state>))
+  (ast:statement* (.assign o)))
+
 (define-method (.event.name (o <assign>))
   (and=> (as (.expression o) <action>) .event.name))
 
@@ -87,3 +119,17 @@
 
 (define-method (.port.name (o <variable>))
   (and=> (as (.expression o) <action>) .port.name))
+
+
+;;;
+;;; Utility.
+;;;
+
+(define-method (ast:equal? (a <shared-transition>) (b <shared-transition>))
+  (and
+   (equal? (.from a) (.from b))
+   (equal? (.to a) (.to b))
+   (ast:equal? (.prefix a) (.prefix b))))
+
+(define-method (ast:equal? (a <shared-value>) (b <shared-value>))
+  (ast:equal? (.value a) (.value b)))
