@@ -38,6 +38,10 @@ GUILE_PROGS
 GUILE_SITE_DIR
 GUILE_FLAGS
 
+if test "x$GUILD" = "x"; then
+   AC_MSG_ERROR(['guild' binary not found; please check your Guile installation.])
+fi
+
 #GUILE_SITE_DIR
 guilemoduledir="${datarootdir}/guile/site/$GUILE_EFFECTIVE_VERSION"
 guileobjectdir="${libdir}/guile/$GUILE_EFFECTIVE_VERSION/site-ccache"
