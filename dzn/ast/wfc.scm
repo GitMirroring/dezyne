@@ -925,7 +925,14 @@
 (define-method (wfc (o <undefined>))
   `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
 
-(define-method (wfc (o <data>)) '())
+(define-method (wfc (o <data>))
+  (if (or (equal? (%language) "makreel") (not (unspecified? (.value o)))) '()
+      `(,(wfc-error o (simple-format #f "Unspecified dollar escaped data")))))
+
+(define-method (wfc (o <extern>))
+  (append
+   (next-method)
+   (wfc (.value o))))
 
 (define-method (wfc (o <ast>))
   ;;  (warn 'wfc:--------------UNCOVERED-------------- o)

@@ -32,6 +32,7 @@
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
+  #:use-module (dzn code)
   #:use-module (dzn config)
   #:use-module (dzn explore)
   #:use-module (dzn parse)
@@ -106,7 +107,8 @@ Generate graph from a Dezyne model
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cute eq? <> 'model) car))
                                 options))
-         (ast (parse parse-options file-name))
+         (ast (parameterize ((%language "makreel"))
+                (parse parse-options file-name)))
          (model (call-with-handle-exceptions
                  (lambda _ (ast:get-model ast model-name))
                  #:backtrace? debug?

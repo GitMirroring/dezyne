@@ -30,6 +30,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
+  #:use-module (dzn code)
   #:use-module (dzn config)
   #:use-module (dzn simulate)
 
@@ -103,7 +104,8 @@ Simulate a Dezyne model
          (model-name (option-ref options 'model #f))
          ;; Parse --model=MODEL cuts MODEL from AST; avoid that
          (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
-         (ast (parse parse-options file-name))
+         (ast (parameterize ((%language "makreel"))
+                (parse parse-options file-name)))
          (no-compliance? (option-ref options 'no-compliance #f))
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (no-interface-determinism?

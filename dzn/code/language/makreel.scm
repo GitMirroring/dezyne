@@ -101,7 +101,8 @@
          (root' (tree-filter (disjoin (negate (is? <component>))
                                       (cut ast:eq? <> model))
                              root)))
-    (parameterize ((%model-name model-name))
+    (parameterize ((%language "makreel")
+                   (%model-name model-name))
       (root-> root'))))
 
 (define (makreel:unticked-dotted-name o)
@@ -664,6 +665,7 @@
   (parameterize ((%id-alist '())
                  (%next-alist '())
 
+                 (%language "makreel")
                  (%member-prefix #f)
                  (%name-infix "")
                  (%type-infix "")
