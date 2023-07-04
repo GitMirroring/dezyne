@@ -28,6 +28,8 @@
     implemented in handwritten code, the runtime now takes care of this.
   - The `dzn_' prefix is used more consistently in generated code to
     avoid possible clashes with user defined names.
+  - When generating executable code, using an empty dollar expression
+    ($$) now raises a well-formedness error.
 
 * Changes in 2.17.3 since 2.17.2
 ** Noteworthy bug fixes
