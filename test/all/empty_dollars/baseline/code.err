@@ -1,0 +1,3 @@
+test/all/empty_dollars/empty_dollars.dzn:27:15: error: Unspecified dollar escaped data
+test/all/empty_dollars/empty_dollars.dzn:43:31: error: Unspecified dollar escaped data
+test/all/empty_dollars/empty_dollars.dzn:44:31: error: Unspecified dollar escaped data
