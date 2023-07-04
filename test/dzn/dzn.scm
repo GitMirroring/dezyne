@@ -241,6 +241,10 @@ output, and standard error as three values."
       (file-exists? (string-append file-name "/baseline/simulate.out"))
       (file-exists? (string-append file-name "/baseline/simulate.err"))))
 
+(define (code-error? file-name)
+  (or (file-exists? (string-append file-name "/baseline/code.out"))
+      (file-exists? (string-append file-name "/baseline/code.err"))))
+
 (define (features file-name)
   (define (feature? feature)
     (and (string-contains file-name feature) feature))
@@ -348,21 +352,25 @@ output, and standard error as three values."
               (out-lang (string-append out "/" language))
               (model (or (model? file-name) base-name))
               ;; FIXME: METAs `model' is used for component/system tricksery
-              (model base-name))
+              (model base-name)
+              (command
+               `("dzn" "code"
+                 ,@includes
+                 "-l" ,language
+                 "-o" ,out-lang
+                 "-m" ,model
+                 ,@(if (thread-safe-shell? file-name) `("-s" ,base-name) '())
+                 ,@(code-options file-name)
+                 ,dzn-name)))
          (or (error-model? file-name)
              (skip? file-name "code" language (string-append language ":code"))
              (feature-skip? file-name language)
+             (and (code-error? file-name)
+                  (run-baseline file-name command
+                                #:language "code"))
              (and
               (receive (status stdout stderr)
-                  (observe
-                   `("dzn" "code"
-                     ,@includes
-                     "-l" ,language
-                     "-o" ,out-lang
-                     "-m" ,model
-                     ,@(if (thread-safe-shell? file-name) `("-s" ,base-name) '())
-                     ,@(code-options file-name)
-                     ,dzn-name) input)
+                  (observe command input)
                 (zero? status))
               (let* ((dzn-files (append (list-files file-name ".+\\.*dzn*$")
                                         (if (not (directory-exists? in-lang)) '()
@@ -379,9 +387,11 @@ output, and standard error as three values."
                           ,dzn-file) input)
                      (zero? status)))
                  extra-dzn-files)))))
-       (run-build file-name language)
-       (let ((traces (find-files file-name ".*trace.*$")))
-         (and-map (cute run-execute file-name language <>) traces))))
+       (or (code-error? file-name)
+           (run-build file-name language))
+       (or (code-error? file-name)
+           (let ((traces (find-files file-name ".*trace.*$")))
+             (and-map (cute run-execute file-name language <>) traces)))))
 
 (define (run-traces file-name)
   (format #t "** stage: traces\n")
