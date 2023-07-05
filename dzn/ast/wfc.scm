@@ -216,10 +216,12 @@
    '()))
 
 (define-method (wfc (o <subint>))
-  (append (re-definition o)
-          (let ((range (.range o)))
-            (if (<= (.from range) (.to range)) '()
-                `(,(wfc-error o (format #f "subint `~a' has empty range" (type-name (.name o)))))))))
+  (append
+   (re-definition o)
+   (let ((range (.range o)))
+     (if (<= (.from range) (.to range)) '()
+         `(,(wfc-error o (format #f "subint `~a' has empty range"
+                                 (type-name (.name o)))))))))
 
 (define-method (wfc (o <port>))
   (append
