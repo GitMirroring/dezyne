@@ -339,7 +339,9 @@
           (string-join (ast:full-name type) (%type-infix)))))))
 
 (define-method (code:type-name (o <data>))
-  (.value o))
+  (let ((value (.value o)))
+    (if (unspecified? value) "unspecified"
+        value)))
 
 (define-method (code:type-name (o <enum>))
   (string-append
