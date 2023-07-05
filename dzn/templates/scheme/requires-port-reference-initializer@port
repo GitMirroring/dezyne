@@ -1,1 +1,1 @@
-(set! (.in (.#.name  o)) (make <#x:type-name .in>))
+(set! (.in (.#.name  o)) (make <#x:instance->type-name .in>))

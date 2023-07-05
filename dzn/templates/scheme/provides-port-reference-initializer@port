@@ -1,1 +1,1 @@
-(set! (.out (.#.name  o)) (make <#x:type-name .out>))
+(set! (.out (.#.name  o)) (make <#x:instance->type-name .out>))

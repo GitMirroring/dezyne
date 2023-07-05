@@ -326,26 +326,20 @@
 (define-method (code:out-binding (o <port>))
   (string-append "dzn_out_" (.name o)))
 
-(define-method (code:type-name o)
-  (let ((type (or (as o <model>) (as o <type>) (ast:type o))))
-    (match type
-      (($ <bool>) "bool")
-      (($ <data>) (.value type))
-      (($ <int>) "int")
-      (($ <subint>) "int")
-      (($ <void>) "void")
-      (_ (string-append
-          (%type-prefix)
-          (string-join (ast:full-name type) (%type-infix)))))))
+(define-method (code:type-name (o <ast>))
+  (match o
+    (($ <bool>) "bool")
+    (($ <int>) "int")
+    (($ <subint>) "int")
+    (($ <void>) "void")
+    (_ (string-append
+        (%type-prefix)
+        (string-join (ast:full-name o) (%type-infix))))))
 
 (define-method (code:type-name (o <data>))
   (let ((value (.value o)))
     (if (unspecified? value) "unspecified"
         value)))
-
-(define-method (code:type-name (o <enum>))
-  (string-append
-   (%type-prefix) (string-join (ast:full-name o) (%type-infix))))
 
 (define-method (code:type-name (o <event>))
   ((compose code:type-name .type .signature) o))
@@ -358,11 +352,6 @@
 
 (define-method (code:type-name (o <extern>))
   (code:type-name (.value o)))
-
-(define-method (code:type-name (o <model>))
-  (string-append
-   (%type-prefix)
-   (string-join (ast:full-name o) (%type-infix))))
 
 (define-method (code:type-name (o <formal>))
   (code:type-name (.type o)))

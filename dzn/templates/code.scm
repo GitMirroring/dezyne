@@ -51,6 +51,7 @@
 (define-templates port-type code:port-type type-infix)
 (define-templates reply-type code:reply-type name-infix)
 (define-templates type-name code:type-name type-infix)
+(define-templates instance->type-name (compose code:type-name ast:type) type-infix)
 (define-templates upcase-model-name code:upcase-model-name name-infix)
 (define-templates variable-name code:variable-name)
 
