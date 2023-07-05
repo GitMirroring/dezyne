@@ -360,11 +360,10 @@
                                 (trace lts (car livelock-nodes))))
          (loop-entry-node (and loop-entry-trace (car livelock-nodes)))
          (loop-trace (and loop-entry-node (tau-loop loop-entry-node lts))))
-    (remove-state
-     (and (pair? livelock-nodes)
-          (append (or loop-entry-trace '())
-                  (list (make-edge-loop))
-                  (or loop-trace '()))))))
+    (and (pair? livelock-nodes)
+         (append (or loop-entry-trace '())
+                 (list (make-edge-loop))
+                 (or loop-trace '())))))
 
 
 ;;;
@@ -388,15 +387,6 @@
     (let ((edges (filter (negate state-edge?) (node-edges node))))
       (set-field node (node-edges) edges)))
   (vector-map-one remove-state lts))
-
-(define (remove-state trace)
-  (and trace
-       (filter
-        (compose
-         not
-         (cute string-contains <> %<state>)
-         (cute edge-label <>))
-        trace)))
 
 
 ;;;
@@ -445,7 +435,7 @@
   (let* ((deadlock-nodes (deadlock-nodes lts))
          (deadlock-trace (and (pair? deadlock-nodes)
                               (trace lts (car deadlock-nodes)))))
-    (remove-state deadlock-trace)))
+    deadlock-trace))
 
 (define (assert-unreachable lts tags)
   "Return any TAGS that are not present in LTS."
@@ -468,9 +458,8 @@
   "Trace to nodes without outgoing edges or #f if no deadlock found"
   (let* ((illegal-nodes (illegal-nodes lts))
          (illegal-trace (and (not (null? illegal-nodes)) (trace lts (car illegal-nodes)))))
-    (remove-state
-     (if (null? illegal-nodes) #f
-         illegal-trace))))
+    (if (null? illegal-nodes) #f
+        illegal-trace)))
 
 (define (nondeterministic-nodes lts labels)
   "Return states from LTS with multiple outgoing edges with same label
@@ -503,7 +492,7 @@ from LABELS."
                                       (append (trace lts nondeterministic-node)
                                               (if (equal? (edge-canonical-label nondeterministic-witness) %<state>) '()
                                                   (list nondeterministic-witness))))))
-    (remove-state nondeterministic-trace)))
+    nondeterministic-trace))
 
 
 ;;;

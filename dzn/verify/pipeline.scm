@@ -150,11 +150,9 @@ actions."
   (let ((trace (string-map (lambda (c) (if (eq? c #\newline) #\; c)) trace)))
     (string-join
      (filter (lambda (event)
-               (and (not (member event '("inevitable" "optional" "tau")))
-                    (not (string-contains event ".qout."))
-                    (not (string-contains event ".<blocking>"))
-                    (not (string-contains event "tag("))
-                    (not (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
+               (not (or (member event '("inevitable" "optional" "tau"))
+                        (find (cute string-contains event <>) '(".qout." ".<blocking>" "tag(" "<state>"))
+                        (find (cute string-suffix? <> event) '(".optional" ".inevitable")))))
              (string-split trace #\;))
      "\n")))
 
