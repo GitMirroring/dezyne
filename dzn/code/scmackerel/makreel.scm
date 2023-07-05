@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -2115,6 +2115,13 @@
           interface-internal
           interface)))
 
+(define-method (interface-types->scmackerel (o <interface>))
+  (let* ((behavior (.behavior o))
+         (enums (filter (is? <enum>) (append (ast:type* o)
+                                             (ast:type* behavior))))
+         (enums (map enum->scmackerel enums)))
+    (scmackerel (types enums))))
+
 (define-method (interface->scmackerel-unmemoized (o <interface>))
   (let* ((model-name (ast:dotted-name o))
          (behavior (.behavior o))
@@ -4184,12 +4191,23 @@
 ;;;
 (define (root->scmackerel root)
   (let* ((models (ast:model* root))
-         (interfaces (filter (is? <interface>) models))
          (component (find (is? <component>) models))
+         (interfaces (if component (filter (is? <interface>) models)
+                         (filter (conjoin (is? <interface>)
+                                          (compose (cute equal? (%model-name) <>)
+                                                   ast:dotted-name))
+                                 models)))
+         (types-scm
+          (map
+           interface-types->scmackerel
+           (filter (conjoin (is? <interface>)
+                            (compose not (cute equal? (%model-name) <>)
+                                     ast:dotted-name))
+                   models)))
          (interface-scm (map model->scmackerel interfaces))
-         (scm (fold merge-scmackerels
-                    (car interface-scm)
-                    (cdr interface-scm)))
+         (scm (reduce merge-scmackerels
+                      (scmackerel)
+                      (append types-scm interface-scm)))
          (component-scm (and=> component model->scmackerel))
          (scm (if (not component-scm) scm
                   (merge-scmackerels component-scm scm)))
