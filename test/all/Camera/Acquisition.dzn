@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -68,7 +68,6 @@ interface IAcquisition
   in void acquire();
 
   out void image();
-  out void focus();
 
   behavior
   {
