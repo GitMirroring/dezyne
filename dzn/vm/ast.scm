@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -31,8 +31,7 @@
   #:export (ast:acceptance*
             ast:label*
             ast:statement
-            ast:trigger-equal?
-            ast:valued?)
+            ast:trigger-equal?)
   #:re-export (.port
                ast:external?
                ast:equal?
@@ -64,9 +63,6 @@
 (define-method (ast:trigger-equal? (a <trigger>) (b <trigger>))
   (and (equal? (.port.name a) (.port.name b))
        (equal? (.event.name a) (.event.name b))))
-
-(define-method (ast:valued? (o <trigger>))
-  (ast:valued-in-triggers))
 
 (define-method (ast:blocking? (o <runtime:port>))
   (ast:blocking? (.ast o)))
