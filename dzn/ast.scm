@@ -59,6 +59,7 @@
             ast:full-scope
             ast:get-model
             ast:graph-cyclic?
+            ast:illegal?
             ast:imperative?
             ast:imported?
             ast:in-event*
@@ -197,6 +198,13 @@
     (and (not (is-a? (.parent o) <function>))
          (or (and (null? statements) (is-a? (.parent o) <behavior>))
              (and (pair? statements) ((compose ast:declarative? car) statements))))))
+
+(define (ast:illegal? o)
+  (match o
+    (($ <declarative-illegal>) o)
+    (($ <illegal>) o)
+    ((and ($ <compound>) (= ast:statement* (s))) (ast:illegal? s))
+    (_ #f)))
 
 (define-method (ast:imperative? (o <imperative>))
   #t)

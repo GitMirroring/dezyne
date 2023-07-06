@@ -354,14 +354,6 @@
                   triples)))
     (make <declarative-compound> #:elements st)))
 
-(define (declarative-illegal? o)
-  (match o
-    (($ <illegal>) o)
-    (($ <declarative-illegal>) o)
-    ((and ($ <compound>) (= ast:statement* (? null?))) #f)
-    (($ <compound>) (declarative-illegal? ((compose car ast:statement*) o)))
-    (_ #f)))
-
 (define ((triples:fix-empty-interface model) triples)
   (if (and (is-a? model <interface>) (null? triples))
       (let* ((on (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "inevitable")))))
@@ -399,7 +391,7 @@
 (define (triples:mark-the-end triples)
   (define (mark-the-end t)
     (let* ((on (triple-on t))
-           (illegal? (declarative-illegal? (triple-statement t)))
+           (illegal? (ast:illegal? (triple-statement t)))
            (blocking? (triple-blocking? t))
            (valued-trigger? (ast:typed? ((compose car ast:trigger*) on))))
       (cond
@@ -440,17 +432,12 @@
     (make-triple (triple-on t) (triple-guard t) (triple-blocking? t) statement)))
 
 (define ((triples:declarative-illegals model) triples)
-  (define (illegal? o)
-    (match o
-      (($ <illegal>) o)
-      ((and ($ <compound>) (= ast:statement* (statement))) (illegal? statement))
-      (_ #f)))
   (define (foo t)
     (let* ((on (triple-on t))
            (trigger ((compose car ast:trigger*) on))
            (provides? (and=> (.port trigger) ast:provides?))
            (statement (triple-statement t)))
-      (if (and (or (is-a? model <interface>) provides?) (illegal? statement)) (make-triple on (triple-guard t) (triple-blocking? t) (make <declarative-illegal>))
+      (if (and (or (is-a? model <interface>) provides?) (ast:illegal? statement)) (make-triple on (triple-guard t) (triple-blocking? t) (make <declarative-illegal>))
           t)))
   (map foo triples))
 
@@ -1410,7 +1397,7 @@ code check."
         (location (.parent o))))
   (define (add-tag o)
     (match o
-      ((? declarative-illegal?)
+      ((? ast:illegal?)
        o)
       (($ <compound>)
        (let ((tag (make <tag> #:location (location o))))
