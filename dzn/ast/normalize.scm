@@ -65,26 +65,6 @@
 ;; Should transformation stop here?
 (define %normalize:short-circuit? (make-parameter (const #f)))
 
-;; A prefix is a normalized combination of the declarative statements
-;; that ... the imperative statement.  It is a triple that combines
-;; "guard", "on", and "blocking" leading to the statement.
-(define-immutable-record-type <triple>
-  (make-triple on guard blocking? statement)
-  triple?
-  (on triple-on)
-  (guard triple-guard)
-  (blocking? triple-blocking?)
-  (statement triple-statement))
-
-(define (write-triple triple port)
-  "Write TRIPLE on PORT."
-  (display "#<triple " port)
-  (format port "on: ~a" (triple-on triple))
-  (format port "guard: ~a" (triple-guard triple))
-  (format port "blocking?: ~a" (triple-blocking? triple))
-  (format port "statement: ~a" (triple-statement triple))
-  (format port " >"))
-
 
 ;;;
 ;;; Utilities and predicates.
@@ -373,15 +353,37 @@ requires the introduction of temporaries for function calls."
          (statement (make <on> #:triggers triggers #:statement statement)))
     (clone guard #:statement statement)))
 
-;;; REMOVEME
-(define-method (canonical-on->triple (o <canonical-on>))
-  (let* ((blocking (.blocking o))
-         (guard (.guard o))
-         (trigger (.trigger o))
+(define (sort-canonical-ons ons)
+  (match ons
+    (() '())
+    ((on rest ...)
+     (let* ((trigger (.trigger on))
+            (shared rest (partition
+                          (compose (cute ast:equal? <> trigger) .trigger)
+                          ons)))
+       (cons shared (sort-canonical-ons rest))))))
+
+(define* (canonical-ons->on ons #:key otherwise?)
+  (define (canonical-on->guard on)
+    (let* ((statement (.statement on))
+           (blocking (.blocking on))
+           (statement (if blocking (clone blocking #:statement statement)
+                          statement))
+           (guard (.guard on)))
+      (clone guard #:statement statement)))
+  (let* ((on (car ons))
+         (guards (map canonical-on->guard ons))
+         (otherwise (make <guard>
+                      #:expression (make <otherwise>)
+                      #:statement (make <illegal>)))
+         (true-guard? (find (compose ast:literal-true? .expression) guards))
+         (otherwise? (and otherwise? (not true-guard?)))
+         (guards (if (not otherwise?) guards
+                     `(,@guards ,otherwise)))
+         (trigger (.trigger on))
          (triggers (make <triggers> #:elements (list trigger)))
-         (statement (.statement o))
-         (on (make <on> #:statement statement #:triggers triggers)))
-    (make-triple on guard blocking statement)))
+         (on (make <on> #:triggers triggers)))
+    (clone on #:statement (make <compound> #:elements guards))))
 
 
 ;;;
@@ -576,50 +578,17 @@ guarded occurrences."
     (_
      o)))
 
-(define* (triples:->on-guard* triples #:key otherwise?)
-  (define ((trigger-equal? trigger) triple)
-    (let ((t ((compose car ast:trigger* triple-on) triple)))
-      (and (equal? (.port.name t) (.port.name trigger)) (equal? (.event.name t) (.event.name trigger)))))
-  (let* ((sorted-triples
-          (let loop ((triples triples))
-            (if (null? triples) '()
-                (let* ((trigger ((compose car ast:trigger* triple-on car)
-                                 triples))
-                       (shared rest
-                               (partition (trigger-equal? trigger) triples)))
-                  (cons shared (loop rest))))))
-         (ons (map
-               (lambda (triples)
-                 (let* ((on ((compose triple-on car) triples))
-                        (guards (map (lambda (t)
-                                       (let* ((statement (triple-statement t))
-                                              (blocking (triple-blocking? t))
-                                              (statement (if blocking (clone blocking #:statement statement)
-                                                             statement)))
-                                         (clone (triple-guard t) #:statement statement)))
-                                     triples))
-                        ;; code need <otherwise>
-                        (otherwise (list (make <guard> #:expression (make <otherwise>) #:statement (make <illegal>))))
-                        (otherwise? (and otherwise?
-                                         (not (find (compose ast:literal-true? .expression) guards))))
-                        (guards (if otherwise? (append guards otherwise)
-                                    guards)))
-                   ;; FIXME: up code to use <declarative-compound>
-                   ;;(clone on #:statement (make <declarative-compound> #:elements guards))
-                   (clone on #:statement (make <compound> #:elements guards))))
-               sorted-triples)))
-    ons))
-
 (define (normalize:event o)
   "Merge all occurrences of a trigger into a single unguarded `on',
 i.e., pushing guards into the body of the trigger."
   (match o
     (($ <behavior>)
-     (clone o #:statement
+     (clone o
+            #:statement
             ((compose
               (cute make <compound> #:elements <>)
-              triples:->on-guard*
-              (cute map canonical-on->triple <>)
+              (cute map canonical-ons->on <>)
+              sort-canonical-ons
               (cute map (cute group-expressions <>
                               (list <and> <field-test> <or>))
                     <>)
@@ -645,8 +614,8 @@ i.e., pushing guards into the body of the trigger."
               #:statement
               ((compose
                 (cute make <compound> #:elements <>)
-                (cut triples:->on-guard* <> #:otherwise? #t)
-                (cute map canonical-on->triple <>)
+                (cute map (cut canonical-ons->on <> #:otherwise? #t) <>)
+                sort-canonical-ons
                 (cute map (cute group-expressions <>
                                 (list <and> <field-test> <or>))
                       <>)
