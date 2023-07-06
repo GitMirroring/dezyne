@@ -41,7 +41,8 @@
   #:use-module (dzn ast util)
   #:use-module (dzn misc)
 
-  #:export (ast:argument->formal
+  #:export (ast:add-statement
+            ast:argument->formal
             ast:base-name
             ast:blocking?
             ast:continuation*
@@ -1108,3 +1109,12 @@ call steps over the function and returns the next statement."
           (ast:previous-statement p))
          (_ #f)))
       (_ #f))))
+
+(define-method (ast:add-statement (o <compound>) statement)
+  (clone o #:elements `(,@(.elements o) ,statement)))
+
+(define-method (ast:add-statement (o <statement>) statement)
+  (make <compound>
+    #:elements (list o statement)
+    #:location (.location o)))
+
