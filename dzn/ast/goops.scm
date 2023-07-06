@@ -548,7 +548,6 @@
 
 (define-ast <behavior> (<scope> <declaration>)
   (types #:init-form (make <types-node>))
-  (ports #:init-form (make <ports-node>))
   (variables #:init-form (make <variables-node>))
   (functions #:init-form (make <functions-node>))
   (statement #:init-form (make <compound-node>)))

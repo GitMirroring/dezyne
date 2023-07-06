@@ -386,8 +386,8 @@
        (fold (lambda (field method o)
                (clone o field ((compose (tick-names- names) method) o)))
              o
-             (list #:types #:ports #:variables #:functions #:statement)
-             (list .types .ports .variables .functions .statement))))
+             (list #:types #:variables #:functions #:statement)
+             (list .types .variables .functions .statement))))
     (($ <var>)
      (clone o #:name ((compose (append-tick names) .name) o)))
     (($ <shared-var>)

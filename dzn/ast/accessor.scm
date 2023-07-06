@@ -135,7 +135,6 @@
 (define-method (ast:member* (o <foreign>)) '())
 (define-method (ast:member* (o <system>)) '())
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
-(define-method (ast:port* (o <behavior>)) ((compose ast:port* .ports) o))
 (define-method (ast:shared* (o <model>)) ((compose ast:shared* .behavior) o))
 (define-method (ast:statement* (o <behavior>)) (list (.statement o)))
 (define-method (ast:statement* (o <blocking>)) (list (.statement o)))

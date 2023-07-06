@@ -109,7 +109,7 @@
   (append (ast:port* o) (ast:instance* o)))
 
 (define-method (ast:declaration* (o <behavior>))
-  (append (ast:type* o) (ast:function* o) (ast:variable* o) (ast:port* o)))
+  (append (ast:type* o) (ast:function* o) (ast:variable* o)))
 
 (define-method (ast:declaration* (o <defer>))
   (tree-collect (is? <variable>) o))
