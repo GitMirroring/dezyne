@@ -1,0 +1,2 @@
+typed-out-event.dzn:3:3: error: out-event `world' must be void, found
+    `bool'

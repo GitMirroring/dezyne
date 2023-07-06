@@ -1,4 +1,4 @@
-interface valued_out_event
+interface typed_out_event
 {
   out bool world ();
   behavior {on optional:bool b = world;}

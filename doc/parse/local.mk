@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -70,7 +70,7 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/requires-reply-needs-provides-port.dzn	\
  %D%/return-outside-function.dzn		\
  %D%/second-otherwise.dzn			\
- %D%/valued-out-event.dzn
+ %D%/typed-out-event.dzn
 
 EXTRA_DIST += $(DEZYNE_PARSE_EXAMPLES)
 dezyne_TEXINFOS += $(DEZYNE_PARSE_EXAMPLES:%.dzn=%.texi)

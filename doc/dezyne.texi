@@ -225,7 +225,7 @@ Imperative Statements
 * Empty Statement::             When a trigger has no effect, or there is nothing to do.
 * If::                          Imperative decisions.
 * Illegal::                     Specifying what is not allowed.
-* Reply::                       Determining the reply for a valued trigger.
+* Reply::                       Determining the reply for a typed trigger.
 * Return::                      Returning from a function.
 * Variable::                    Defining a local variable.
 
@@ -1738,7 +1738,7 @@ error: integer range error in model <name>
 @end example
 
 @item type error
-A trigger of a valued (i.e., non-@code{void}) event must reply a value
+A trigger of a typed (i.e., non-@code{void}) event must reply a value
 of the type of the event.
 
 Upon violation, the following error is reported
@@ -4069,7 +4069,7 @@ A void in-event called @code{e} with an empty parameter list:
 in void e ();
 @end example
 
-a valued in-event called @code{e2}:
+a typed in-event called @code{e2}:
 
 @example
 in enum_type e2 ();
@@ -4311,7 +4311,7 @@ guarded trigger occurs (see also @xref{Declarative Statements}).
 * Empty Statement::             When a trigger has no effect, or there is nothing to do.
 * If::                          Imperative decisions.
 * Illegal::                     Specifying what is not allowed.
-* Reply::                       Determining the reply for a valued trigger.
+* Reply::                       Determining the reply for a typed trigger.
 * Return::                      Returning from a function.
 * Variable::                    Defining a local variable.
 @end menu
@@ -4441,7 +4441,7 @@ else
   cruel;
 @end example
 
-Since 2.14.0, a valued @code{call} may be used in an
+Since 2.14.0, a typed @code{call} may be used in an
 @code{if}-expression.
 
 For example:
@@ -4503,7 +4503,7 @@ still available for backwards compatibility.
 @node Reply
 @subsubsection @code{reply}
 
-Define the value to be returned at the end of an @code{on} with a valued
+Define the value to be returned at the end of an @code{on} with a typed
 trigger.
 
 @example
@@ -5141,7 +5141,7 @@ and @code{event-name} is the name of an event defined in the interface
 associated with the port.
 
 Note that the @code{event} in an @code{action} statement must be of type
-@code{void}.  For a valued @code{action} the @code{reply} value may not
+@code{void}.  For a typed @code{action} the @code{reply} value may not
 be ignored.  A variable definition or an @code{assign} are the
 appropriate ways to handle a @code{reply} value:
 
@@ -5191,7 +5191,7 @@ For example:
 if (error) illegal;
 @end example
 
-Since 2.14.0, one valued @code{action} or valued @code{call} may be used
+Since 2.14.0, one typed @code{action} or typed @code{call} may be used
 in an @code{if}-expression.
 
 Since 2.16.0, arbitrarily complex expressions may be used.
@@ -5249,12 +5249,12 @@ in the branch of an @code{if} as any other imperative statement
 @node Component Reply
 @subsubsection Component @code{reply}
 
-A valued trigger event requires an appropriate return value in its
+A typed trigger event requires an appropriate return value in its
 response handling, the @code{reply} only determines the value not the
 moment of returning it:
 
 @example
-  reply (valued_expression);
+  reply (typed_expression);
 @end example
 
 @code{reply} is also used to release a blocked call (@xref{Blocking}),
@@ -5881,14 +5881,14 @@ This results in the following error message:
 Only @code{in}-events can have a non-@code{void} type.
 
 @example
-@verbatiminclude parse/valued-out-event.dzn
+@verbatiminclude parse/typed-out-event.dzn
 @end example
 
 @noindent
 This results in the following error message:
 
 @example
-@verbatiminclude parse/valued-out-event.texi
+@verbatiminclude parse/typed-out-event.texi
 @end example
 
 @node Component with behavior must have a trigger
@@ -6277,7 +6277,7 @@ This results in the following error message:
 @node Well-formedness -- Reply
 @section Well-formedness -- Reply
 
-A @code{reply} is required in the handling of a valued (i.e.
+A @code{reply} is required in the handling of a typed (i.e.
 non-@code{void}) trigger.  It is also required in case a @code{trigger}
 (which in this case might be @code{void}) is used in @code{blocking}
 mode; in that case the occurrence of the reply might be postponed.  In
@@ -6328,7 +6328,7 @@ This results in the following error message:
 @node Well-formedness -- Valued Actions and Calls
 @section Well-formedness -- Valued Actions and Calls
 
-Both @code{action}s and function @code{call}s can be valued, and as such
+Both @code{action}s and function @code{call}s can be typed, and as such
 are considered to be expressions.  They can only be called are from the
 imperative statement.  The reason is that @code{action}s and function
 @code{calls} (at least the functions that contain @code{action}s) cause
@@ -6381,7 +6381,7 @@ This results in the following error message:
 @node Action value discarded
 @subsection @code{action} value discarded
 
-A valued Action is called without using its return value.
+A typed Action is called without using its return value.
 
 @example
 @verbatiminclude parse/action-discard-value.dzn
@@ -6397,7 +6397,7 @@ This results in the following error message:
 @node Call value discarded
 @subsection @code{call} value discarded
 
-A valued function is called without using its return value.
+A typed function is called without using its return value.
 
 @example
 @verbatiminclude parse/call-discard-value.dzn
@@ -6446,7 +6446,7 @@ A function body can only contain imperative statements, including
 @code{action}s.  See the sections on 'Mixing' and 'Direction' above,
 
 @item
-A valued function is required to have an explicit return,
+A typed function is required to have an explicit return,
 
 @item
 A return is only allowed in a function body,
@@ -6465,7 +6465,7 @@ A recursive function is required to be tail recursive.
 @node Missing return
 @subsection Missing @code{return}
 
-A valued function should return a value using the @code{return}
+A typed function should return a value using the @code{return}
 statement.  An error is issued when a return is not guaranteed.  An
 example:
 
