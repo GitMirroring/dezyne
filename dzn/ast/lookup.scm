@@ -319,7 +319,7 @@ null) and return its CONTEXT."
      (name? o))
     (($ <formal-binding>)
      (name? o))
-    (($ <on>)
+    ((or ($ <on>) ($ <canonical-on>))
      (or (find (cute ast:lookup-variable <> name statements)
                (append-map ast:formal* (ast:trigger* o)))
          (ast:lookup-variable (.parent o) name statements)))

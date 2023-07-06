@@ -74,6 +74,7 @@
  .ast
  .behavior
  .bindings
+ .blocking
  .blocking?
  .called?
  .column
@@ -94,6 +95,7 @@
  .from
  .function.name
  .functions
+ .guard
  .ids
  .injected?
  .instances
@@ -143,6 +145,7 @@
  <bool-expr>
  <bool>
  <call>
+ <canonical-on>
  <comment>
  <component-model>
  <component>
@@ -612,6 +615,12 @@
 
 (define-ast <on> (<declarative>)
   (triggers #:init-form (make <triggers-node>))
+  (statement))
+
+(define-ast <canonical-on> (<declarative>)
+  (blocking)
+  (guard)
+  (trigger)
   (statement))
 
 (define-ast <reply> (<imperative>)

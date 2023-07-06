@@ -148,6 +148,7 @@
 (define-method (ast:statement* (o <if>)) `(,(.then o) ,@(if (.else o) (list (.else o)) '())))
 (define-method (ast:statement* (o <statement>)) '())
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
+(define-method (ast:trigger* (o <canonical-on>)) (list (.trigger o)))
 (define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))
 (define-method (ast:type* (o <behavior>)) ((compose ast:type* .types) o))
 (define-method (ast:variable* (o <behavior>)) ((compose ast:variable* .variables) o))
