@@ -406,55 +406,33 @@ requires the introduction of temporaries for function calls."
   (append (append-map (cut add-illegals model triples <>) (ast:in-triggers model))
           (filter (compose ast:modeling? car ast:trigger* triple-on) triples)))
 
-(define (triples:mark-the-end triples)
-  (define (mark-the-end t)
-    (let* ((on (triple-on t))
-           (illegal? (ast:illegal? (triple-statement t)))
-           (blocking? (triple-blocking? t))
-           (typed-trigger? (ast:typed? ((compose car ast:trigger*) on))))
-      (cond
-       (illegal?
-        t)
-       ((or typed-trigger? blocking?)
-        (add-the-end t))
-       (else
-        (let* ((trigger ((compose car ast:trigger*) on))
-               (port ((compose .port car ast:trigger*) on))
-               (provides? (and port (ast:provides? port)))
-               (model (ast:parent on <model>))
-               (statement (triple-statement t))
-               (reply?
-                (or (and (is-a? model <interface>)
-                         (not (ast:modeling? trigger)))
-                    (and provides?
-                         (null? (tree-collect
-                                 (conjoin
-                                  (is? <reply>)
-                                  (disjoin (negate .port)
-                                           (compose (cute ast:eq? port <>)
-                                                    .port)))
-                                 statement)))))
-               (reply (if reply? (list (make <reply>)) '()))
-               (elements (if (is-a? statement <compound>)
-                             (ast:statement* statement)
-                             (list statement)))
-               (elements (append elements reply))
-               (statement (make <compound> #:elements elements))
-               (t (make-triple on
-                               (triple-guard t)
-                               (triple-blocking? t)
-                               statement)))
-          (add-the-end t))))))
-  (map mark-the-end triples))
+(define-method (add-the-end (o <canonical-on>))
+  (let ((statement (.statement o)))
+    (if (ast:illegal? statement) o
+        (let ((statement (ast:add-statement statement (make <the-end>))))
+          (clone o #:statement statement)))))
 
-(define (add-the-end t)
-  (let* ((statement (triple-statement t))
-         (elements (if (is-a? statement <compound>)
-                       (ast:statement* statement)
-                       (list statement)))
-         (elements (append elements (list (make <the-end>))))
-         (statement (make <compound> #:elements elements)))
-    (make-triple (triple-on t) (triple-guard t) (triple-blocking? t) statement)))
+(define-method (add-void-reply (o <canonical-on>))
+  (let* ((trigger (.trigger o))
+         (port (.port trigger))
+         (statement (.statement o))
+         (provides? (and port (ast:provides? port)))
+         (model (ast:parent o <model>))
+         (reply? (and (not (ast:typed? trigger))
+                      (not (.blocking o))
+                      (or (and (is-a? model <interface>)
+                               (not (ast:modeling? trigger)))
+                          (and provides?
+                               (null? (tree-collect
+                                       (conjoin
+                                        (is? <reply>)
+                                        (disjoin (negate .port)
+                                                 (compose (cute ast:eq? port <>)
+                                                          .port)))
+                                       statement)))))))
+    (if (not reply?) o
+        (let ((statement (ast:add-statement* (.statement o) (make <reply>))))
+          (clone o #:statement statement)))))
 
 (define-method (illegal->declarative-illegal (o <canonical-on>))
   (let ((declarative? (and (ast:illegal? (.statement o))
@@ -537,8 +515,9 @@ guarded occurrences."
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
               (triples:add-illegals (ast:parent o <model>))
-              triples:mark-the-end
               (cute map canonical-on->triple <>)
+              (cute map add-the-end <>)
+              (cute map add-void-reply <>)
               (cute map illegal->declarative-illegal <>)
               statement->canonical-on
               remove-invariant
