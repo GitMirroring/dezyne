@@ -456,15 +456,12 @@ requires the introduction of temporaries for function calls."
          (statement (make <compound> #:elements elements)))
     (make-triple (triple-on t) (triple-guard t) (triple-blocking? t) statement)))
 
-(define ((triples:declarative-illegals model) triples)
-  (define (foo t)
-    (let* ((on (triple-on t))
-           (trigger ((compose car ast:trigger*) on))
-           (provides? (and=> (.port trigger) ast:provides?))
-           (statement (triple-statement t)))
-      (if (and (or (is-a? model <interface>) provides?) (ast:illegal? statement)) (make-triple on (triple-guard t) (triple-blocking? t) (make <declarative-illegal>))
-          t)))
-  (map foo triples))
+(define-method (illegal->declarative-illegal (o <canonical-on>))
+  (let ((declarative? (and (ast:illegal? (.statement o))
+                           (or (is-a? (ast:parent o <model>) <interface>)
+                               (ast:provides? (.trigger o))))))
+    (if (not declarative?) o
+        (clone o #:statement (make <declarative-illegal>)))))
 
 (define (remove-invariant o)
   "Remove invariants from behavior."
@@ -541,8 +538,8 @@ guarded occurrences."
               triples:simplify-guard
               (triples:add-illegals (ast:parent o <model>))
               triples:mark-the-end
-              (triples:declarative-illegals (ast:parent o <model>))
               (cute map canonical-on->triple <>)
+              (cute map illegal->declarative-illegal <>)
               statement->canonical-on
               remove-invariant
               .statement
