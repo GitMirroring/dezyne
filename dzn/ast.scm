@@ -531,8 +531,9 @@
 
 (define-method (ast:in-triggers (o <interface>))
   (map (lambda (event)
-         (let ((formals (ast:rescope ((compose .formals .signature) event) o)))
-           (make <trigger> #:event.name (.name event) #:formals formals)))
+         (let* ((formals (ast:rescope ((compose .formals .signature) event) o))
+                (trigger (make <trigger> #:event.name (.name event) #:formals formals)))
+           (clone trigger #:parent (.behavior o))))
        (filter ast:in? (ast:event* o))))
 
 (define-method (ast:out-triggers (o <component-model>))
