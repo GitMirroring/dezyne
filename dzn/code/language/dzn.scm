@@ -408,6 +408,19 @@ and \"POST\" 'post in GRAMMAR."
       (display " " port))
     (print-ast statement port)))
 
+(define-method (print-ast (o <canonical-on>) port)
+  (let* ((blocking (.blocking o))
+         (guard (.guard o))
+         (trigger (.trigger o))
+         (triggers (make <triggers> #:elements (list trigger)))
+         (statement (.statement o))
+         (statement (make <on> #:statement statement #:triggers triggers))
+         (statement (if (not blocking) statement
+                        (clone guard #:statement statement)))
+         (statement (if (not blocking) statement
+                        (clone blocking #:statement statement))))
+    (print-ast statement port)))
+
 (define-method (print-ast (o <trigger>) port)
   (let ((event-name (.event.name o))
         (port-name (.port.name o)))
