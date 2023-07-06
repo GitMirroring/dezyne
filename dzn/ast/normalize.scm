@@ -393,11 +393,11 @@
     (let* ((on (triple-on t))
            (illegal? (ast:illegal? (triple-statement t)))
            (blocking? (triple-blocking? t))
-           (valued-trigger? (ast:typed? ((compose car ast:trigger*) on))))
+           (typed-trigger? (ast:typed? ((compose car ast:trigger*) on))))
       (cond
        (illegal?
         t)
-       ((or valued-trigger? blocking?)
+       ((or typed-trigger? blocking?)
         (add-the-end t))
        (else
         (let* ((event ((compose .event car ast:trigger*) on))

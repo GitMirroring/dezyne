@@ -498,7 +498,7 @@
         (list pc))))))
 
 (define-method (step (pc <program-counter>) (o <trigger-return>))
-  (define (valued-reply? pc o)
+  (define (typed-reply? pc o)
     ;;FIXME: simplify
     (let ((instance (.instance pc))
           (port (.port (.trigger pc))))
@@ -522,7 +522,7 @@
 
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (cond
-   ((valued-reply? pc o)
+   ((typed-reply? pc o)
     (let* ((trigger (.trigger pc))
            (type (ast:type trigger))
            (typed? (ast:typed? type))

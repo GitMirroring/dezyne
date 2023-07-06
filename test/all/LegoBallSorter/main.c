@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2022 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2022, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -115,7 +115,7 @@ void log_flush (void *args)
   dzn_runtime_flush (a->info);
 }
 
-int log_valued (char *prefix, char *event, map *event_map, int (*string_to_value) (char *), char * (*value_to_string) (int))
+int log_typed (char *prefix, char *event, map *event_map, int (*string_to_value) (char *), char * (*value_to_string) (int))
 {
   fprintf (stderr, "%s%s\n", prefix, event);
   if (relaxed) return 0;
@@ -177,7 +177,7 @@ void LegoBallSorter_log_event_brick1_aA_in_position (imotor *m)
 int LegoBallSorter_log_event_brick1_aA_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick1_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick1_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 void LegoBallSorter_log_event_brick1_aB_in_move (imotor *m)
 {
@@ -212,7 +212,7 @@ void LegoBallSorter_log_event_brick1_aB_in_position (imotor *m)
 int LegoBallSorter_log_event_brick1_aB_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick1_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick1_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 void LegoBallSorter_log_event_brick1_aC_in_move (imotor *m)
 {
@@ -247,27 +247,27 @@ void LegoBallSorter_log_event_brick1_aC_in_position (imotor *m)
 int LegoBallSorter_log_event_brick1_aC_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick1_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick1_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 int LegoBallSorter_log_event_brick1_s1_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick1_s1.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick1_s1.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick1_s2_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick1_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick1_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick1_s3_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick1_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick1_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick1_s4_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick1_s4.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick1_s4.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 void LegoBallSorter_log_event_brick2_aA_in_move (imotor *m)
 {
@@ -302,7 +302,7 @@ void LegoBallSorter_log_event_brick2_aA_in_position (imotor *m)
 int LegoBallSorter_log_event_brick2_aA_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick2_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick2_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 void LegoBallSorter_log_event_brick2_aB_in_move (imotor *m)
 {
@@ -337,22 +337,22 @@ void LegoBallSorter_log_event_brick2_aB_in_position (imotor *m)
 int LegoBallSorter_log_event_brick2_aB_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick2_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick2_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 int LegoBallSorter_log_event_brick2_s2_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick2_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick2_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick2_s3_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick2_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick2_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick2_s4_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick2_s4.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick2_s4.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 void LegoBallSorter_log_event_brick3_aA_in_move (imotor *m)
 {
@@ -387,7 +387,7 @@ void LegoBallSorter_log_event_brick3_aA_in_position (imotor *m)
 int LegoBallSorter_log_event_brick3_aA_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick3_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick3_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 void LegoBallSorter_log_event_brick3_aC_in_move (imotor *m)
 {
@@ -422,7 +422,7 @@ void LegoBallSorter_log_event_brick3_aC_in_position (imotor *m)
 int LegoBallSorter_log_event_brick3_aC_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick3_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick3_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 void LegoBallSorter_log_event_brick3_s1_in_turnon (ilight *m)
 {
@@ -437,17 +437,17 @@ void LegoBallSorter_log_event_brick3_s1_in_turnoff (ilight *m)
 int LegoBallSorter_log_event_brick3_s1_in_detect (ilight *m)
 {
   (void)m;
-  return log_valued ("brick3_s1.", "detect", global_event_map, string_to_ilight_status, ilight_status_to_string);
+  return log_typed ("brick3_s1.", "detect", global_event_map, string_to_ilight_status, ilight_status_to_string);
 }
 int LegoBallSorter_log_event_brick3_s2_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick3_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick3_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick3_s3_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick3_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick3_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 void LegoBallSorter_log_event_brick4_aA_in_move (imotor *m)
 {
@@ -482,7 +482,7 @@ void LegoBallSorter_log_event_brick4_aA_in_position (imotor *m)
 int LegoBallSorter_log_event_brick4_aA_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick4_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick4_aA.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 void LegoBallSorter_log_event_brick4_aB_in_move (imotor *m)
 {
@@ -517,7 +517,7 @@ void LegoBallSorter_log_event_brick4_aB_in_position (imotor *m)
 int LegoBallSorter_log_event_brick4_aB_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick4_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick4_aB.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 void LegoBallSorter_log_event_brick4_aC_in_move (imotor *m)
 {
@@ -552,22 +552,22 @@ void LegoBallSorter_log_event_brick4_aC_in_position (imotor *m)
 int LegoBallSorter_log_event_brick4_aC_in_at (imotor *m)
 {
   (void)m;
-  return log_valued ("brick4_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
+  return log_typed ("brick4_aC.", "at", global_event_map, string_to_imotor_result_t, imotor_result_t_to_string);
 }
 int LegoBallSorter_log_event_brick4_s1_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick4_s1.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick4_s1.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick4_s2_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick4_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick4_s2.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 int LegoBallSorter_log_event_brick4_s3_in_detect (itouch *m)
 {
   (void)m;
-  return log_valued ("brick4_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
+  return log_typed ("brick4_s3.", "detect", global_event_map, string_to_itouch_status, itouch_status_to_string);
 }
 
 void LegoBallSorter_fill_event_map (LegoBallSorter *m, map *e)

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -90,7 +90,7 @@ function type_helper(value, type) {
   return value;
 }
 
-function log_valued(prefix, event, event_map) {
+function log_typed(prefix, event, event_map) {
   console.error('<external>.' +  prefix + event + ' -> ' + 'sut.' + prefix + event);
   if (relaxed) return 0;
   var s = consume_synchronous_out_events(prefix, event, event_map);

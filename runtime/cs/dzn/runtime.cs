@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 // Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
@@ -176,15 +176,15 @@ namespace dzn
                         }
                 }
         }
-        public R valued_helper<R>(Component c, Func<R> f, int coroutine_id) where R : struct, IComparable, IConvertible
+        public R typed_helper<R>(Component c, Func<R> f, int coroutine_id) where R : struct, IComparable, IConvertible
         {
-            if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
+            if (states[c].handling != 0) throw new RuntimeException("a typed event cannot be deferred");
             states[c].handling = coroutine_id;
             return f();
         }
         public void handle(Object c, Action f, int coroutine_id)
         {
-            if (states[c].handling != 0) throw new RuntimeException("a valued event cannot be deferred");
+            if (states[c].handling != 0) throw new RuntimeException("a typed event cannot be deferred");
             states[c].handling = coroutine_id;
             f();
         }
@@ -223,7 +223,7 @@ namespace dzn
             }
             dzn.port.Meta m = (dzn.port.Meta) p.GetType().GetField("meta").GetValue(p);
             trace(m, e);
-            R r = valued_helper(c, f, dzn.pump.coroutine_id(c.dzn_locator));
+            R r = typed_helper(c, f, dzn.pump.coroutine_id(c.dzn_locator));
             String s;
             if (r.GetType().Equals(typeof(bool)))
                 s = (bool)Convert.ChangeType(r, typeof(bool)) ? "true" : "false";

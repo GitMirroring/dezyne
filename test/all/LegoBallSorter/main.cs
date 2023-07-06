@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2023 Janneke  Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -103,7 +103,7 @@ class main {
     return null;
   }
 
-  static R log_valued<R>(String prefix, String e, EventMap event_map, String event_prefix) where R: struct, IComparable, IConvertible, IFormattable {
+  static R log_typed<R>(String prefix, String e, EventMap event_map, String event_prefix) where R: struct, IComparable, IConvertible, IFormattable {
     System.Console.Error.WriteLine(prefix + e);
     if (relaxed) {
       R[] values = (R[])Enum.GetValues(typeof(R));
@@ -132,85 +132,85 @@ class main {
     m.brick1_aA.in_port.coast = () => {log_in("brick1_aA.", "coast", e);};
     m.brick1_aA.in_port.zero = () => {log_in("brick1_aA.", "zero", e);};
     m.brick1_aA.in_port.position = (out Integer pos) => {pos = 0; log_in("brick1_aA.", "position", e);};
-    m.brick1_aA.in_port.at = (Integer pos) => {pos = 0; return log_valued<imotor.result_t>("brick1_aA.", "at", e, "brick1_aA.result_t_");};
+    m.brick1_aA.in_port.at = (Integer pos) => {pos = 0; return log_typed<imotor.result_t>("brick1_aA.", "at", e, "brick1_aA.result_t_");};
     m.brick1_aB.in_port.move = (Byte power, Integer position) => {log_in("brick1_aB.", "move", e);};
     m.brick1_aB.in_port.run = (Byte power, Boolean invert) => {log_in("brick1_aB.", "run", e);};
     m.brick1_aB.in_port.stop = () => {log_in("brick1_aB.", "stop", e);};
     m.brick1_aB.in_port.coast = () => {log_in("brick1_aB.", "coast", e);};
     m.brick1_aB.in_port.zero = () => {log_in("brick1_aB.", "zero", e);};
     m.brick1_aB.in_port.position = (out Integer pos) => {pos = 0; log_in("brick1_aB.", "position", e);};
-    m.brick1_aB.in_port.at = (Integer pos) => {pos = 0; return log_valued<imotor.result_t>("brick1_aB.", "at", e, "brick1_aB.result_t_");};
+    m.brick1_aB.in_port.at = (Integer pos) => {pos = 0; return log_typed<imotor.result_t>("brick1_aB.", "at", e, "brick1_aB.result_t_");};
     m.brick1_aC.in_port.move = (Byte power, Integer position) => {log_in("brick1_aC.", "move", e);};
     m.brick1_aC.in_port.run = (Byte power, Boolean invert) => {log_in("brick1_aC.", "run", e);};
     m.brick1_aC.in_port.stop = () => {log_in("brick1_aC.", "stop", e);};
     m.brick1_aC.in_port.coast = () => {log_in("brick1_aC.", "coast", e);};
     m.brick1_aC.in_port.zero = () => {log_in("brick1_aC.", "zero", e);};
     m.brick1_aC.in_port.position = (out Integer pos) => {pos = 0; log_in("brick1_aC.", "position", e);};
-    m.brick1_aC.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick1_aC.", "at", e, "brick1_aC.result_t_");};
-    m.brick1_s1.in_port.detect = () => {return log_valued<itouch.status>("brick1_s1.", "detect", e, "brick1_s1.status_");};
-    m.brick1_s2.in_port.detect = () => {return log_valued<itouch.status>("brick1_s2.", "detect", e, "brick1_s2.status_");};
-    m.brick1_s3.in_port.detect = () => {return log_valued<itouch.status>("brick1_s3.", "detect", e, "brick1_s3.status_");};
-    m.brick1_s4.in_port.detect = () => {return log_valued<itouch.status>("brick1_s4.", "detect", e, "brick1_s4.status_");};
+    m.brick1_aC.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick1_aC.", "at", e, "brick1_aC.result_t_");};
+    m.brick1_s1.in_port.detect = () => {return log_typed<itouch.status>("brick1_s1.", "detect", e, "brick1_s1.status_");};
+    m.brick1_s2.in_port.detect = () => {return log_typed<itouch.status>("brick1_s2.", "detect", e, "brick1_s2.status_");};
+    m.brick1_s3.in_port.detect = () => {return log_typed<itouch.status>("brick1_s3.", "detect", e, "brick1_s3.status_");};
+    m.brick1_s4.in_port.detect = () => {return log_typed<itouch.status>("brick1_s4.", "detect", e, "brick1_s4.status_");};
     m.brick2_aA.in_port.move = (Byte power, Integer position) => {log_in("brick2_aA.", "move", e);};
     m.brick2_aA.in_port.run = (Byte power, Boolean invert) => {log_in("brick2_aA.", "run", e);};
     m.brick2_aA.in_port.stop = () => {log_in("brick2_aA.", "stop", e);};
     m.brick2_aA.in_port.coast = () => {log_in("brick2_aA.", "coast", e);};
     m.brick2_aA.in_port.zero = () => {log_in("brick2_aA.", "zero", e);};
     m.brick2_aA.in_port.position = (out Integer pos) => {pos = 0; log_in("brick2_aA.", "position", e);};
-    m.brick2_aA.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick2_aA.", "at", e, "brick2_aA.result_t_");};
+    m.brick2_aA.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick2_aA.", "at", e, "brick2_aA.result_t_");};
     m.brick2_aB.in_port.move = (Byte power, Integer position) => {log_in("brick2_aB.", "move", e);};
     m.brick2_aB.in_port.run = (Byte power, Boolean invert) => {log_in("brick2_aB.", "run", e);};
     m.brick2_aB.in_port.stop = () => {log_in("brick2_aB.", "stop", e);};
     m.brick2_aB.in_port.coast = () => {log_in("brick2_aB.", "coast", e);};
     m.brick2_aB.in_port.zero = () => {log_in("brick2_aB.", "zero", e);};
     m.brick2_aB.in_port.position = (out Integer pos) => {pos = 0; log_in("brick2_aB.", "position", e);};
-    m.brick2_aB.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick2_aB.", "at", e, "brick2_aB.result_t_");};
-    m.brick2_s2.in_port.detect = () => {return log_valued<itouch.status>("brick2_s2.", "detect", e, "brick2_s2.status_");};
-    m.brick2_s3.in_port.detect = () => {return log_valued<itouch.status>("brick2_s3.", "detect", e, "brick2_s3.status_");};
-    m.brick2_s4.in_port.detect = () => {return log_valued<itouch.status>("brick2_s4.", "detect", e, "brick2_s4.status_");};
+    m.brick2_aB.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick2_aB.", "at", e, "brick2_aB.result_t_");};
+    m.brick2_s2.in_port.detect = () => {return log_typed<itouch.status>("brick2_s2.", "detect", e, "brick2_s2.status_");};
+    m.brick2_s3.in_port.detect = () => {return log_typed<itouch.status>("brick2_s3.", "detect", e, "brick2_s3.status_");};
+    m.brick2_s4.in_port.detect = () => {return log_typed<itouch.status>("brick2_s4.", "detect", e, "brick2_s4.status_");};
     m.brick3_aA.in_port.move = (Byte power, Integer position) => {log_in("brick3_aA.", "move", e);};
     m.brick3_aA.in_port.run = (Byte power, Boolean invert) => {log_in("brick3_aA.", "run", e);};
     m.brick3_aA.in_port.stop = () => {log_in("brick3_aA.", "stop", e);};
     m.brick3_aA.in_port.coast = () => {log_in("brick3_aA.", "coast", e);};
     m.brick3_aA.in_port.zero = () => {log_in("brick3_aA.", "zero", e);};
     m.brick3_aA.in_port.position = (out Integer pos) => {pos = 0; log_in("brick3_aA.", "position", e);};
-    m.brick3_aA.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick3_aA.", "at", e, "brick3_aA.result_t_");};
+    m.brick3_aA.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick3_aA.", "at", e, "brick3_aA.result_t_");};
     m.brick3_aC.in_port.move = (Byte power, Integer position) => {log_in("brick3_aC.", "move", e);};
     m.brick3_aC.in_port.run = (Byte power, Boolean invert) => {log_in("brick3_aC.", "run", e);};
     m.brick3_aC.in_port.stop = () => {log_in("brick3_aC.", "stop", e);};
     m.brick3_aC.in_port.coast = () => {log_in("brick3_aC.", "coast", e);};
     m.brick3_aC.in_port.zero = () => {log_in("brick3_aC.", "zero", e);};
     m.brick3_aC.in_port.position = (out Integer pos) => {pos = 0; log_in("brick3_aC.", "position", e);};
-    m.brick3_aC.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick3_aC.", "at", e, "brick3_aC.result_t_");};
+    m.brick3_aC.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick3_aC.", "at", e, "brick3_aC.result_t_");};
     m.brick3_s1.in_port.turnon = () => {log_in("brick3_s1.", "turnon", e);};
     m.brick3_s1.in_port.turnoff = () => {log_in("brick3_s1.", "turnoff", e);};
-    m.brick3_s1.in_port.detect = () => {return log_valued<ilight.status>("brick3_s1.", "detect", e, "brick3_s1.status_");};
-    m.brick3_s2.in_port.detect = () => {return log_valued<itouch.status>("brick3_s2.", "detect", e, "brick3_s2.status_");};
-    m.brick3_s3.in_port.detect = () => {return log_valued<itouch.status>("brick3_s3.", "detect", e, "brick3_s3.status_");};
+    m.brick3_s1.in_port.detect = () => {return log_typed<ilight.status>("brick3_s1.", "detect", e, "brick3_s1.status_");};
+    m.brick3_s2.in_port.detect = () => {return log_typed<itouch.status>("brick3_s2.", "detect", e, "brick3_s2.status_");};
+    m.brick3_s3.in_port.detect = () => {return log_typed<itouch.status>("brick3_s3.", "detect", e, "brick3_s3.status_");};
     m.brick4_aA.in_port.move = (Byte power, Integer position) => {log_in("brick4_aA.", "move", e);};
     m.brick4_aA.in_port.run = (Byte power, Boolean invert) => {log_in("brick4_aA.", "run", e);};
     m.brick4_aA.in_port.stop = () => {log_in("brick4_aA.", "stop", e);};
     m.brick4_aA.in_port.coast = () => {log_in("brick4_aA.", "coast", e);};
     m.brick4_aA.in_port.zero = () => {log_in("brick4_aA.", "zero", e);};
     m.brick4_aA.in_port.position = (out Integer pos) => {pos = 0; log_in("brick4_aA.", "position", e);};
-    m.brick4_aA.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick4_aA.", "at", e, "brick4_aA.result_t_");};
+    m.brick4_aA.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick4_aA.", "at", e, "brick4_aA.result_t_");};
     m.brick4_aB.in_port.move = (Byte power, Integer position) => {log_in("brick4_aB.", "move", e);};
     m.brick4_aB.in_port.run = (Byte power, Boolean invert) => {log_in("brick4_aB.", "run", e);};
     m.brick4_aB.in_port.stop = () => {log_in("brick4_aB.", "stop", e);};
     m.brick4_aB.in_port.coast = () => {log_in("brick4_aB.", "coast", e);};
     m.brick4_aB.in_port.zero = () => {log_in("brick4_aB.", "zero", e);};
     m.brick4_aB.in_port.position = (out Integer pos) => {pos = 0; log_in("brick4_aB.", "position", e);};
-    m.brick4_aB.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick4_aB.", "at", e, "brick4_aB.result_t_");};
+    m.brick4_aB.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick4_aB.", "at", e, "brick4_aB.result_t_");};
     m.brick4_aC.in_port.move = (Byte power, Integer position) => {log_in("brick4_aC.", "move", e);};
     m.brick4_aC.in_port.run = (Byte power, Boolean invert) => {log_in("brick4_aC.", "run", e);};
     m.brick4_aC.in_port.stop = () => {log_in("brick4_aC.", "stop", e);};
     m.brick4_aC.in_port.coast = () => {log_in("brick4_aC.", "coast", e);};
     m.brick4_aC.in_port.zero = () => {log_in("brick4_aC.", "zero", e);};
     m.brick4_aC.in_port.position = (out Integer pos) => {pos = 0; log_in("brick4_aC.", "position", e);};
-    m.brick4_aC.in_port.at = (Integer pos) => {return log_valued<imotor.result_t>("brick4_aC.", "at", e, "brick4_aC.result_t_");};
-    m.brick4_s1.in_port.detect = () => {return log_valued<itouch.status>("brick4_s1.", "detect", e, "brick4_s1.status_");};
-    m.brick4_s2.in_port.detect = () => {return log_valued<itouch.status>("brick4_s2.", "detect", e, "brick4_s2.status_");};
-    m.brick4_s3.in_port.detect = () => {return log_valued<itouch.status>("brick4_s3.", "detect", e, "brick4_s3.status_");};
+    m.brick4_aC.in_port.at = (Integer pos) => {return log_typed<imotor.result_t>("brick4_aC.", "at", e, "brick4_aC.result_t_");};
+    m.brick4_s1.in_port.detect = () => {return log_typed<itouch.status>("brick4_s1.", "detect", e, "brick4_s1.status_");};
+    m.brick4_s2.in_port.detect = () => {return log_typed<itouch.status>("brick4_s2.", "detect", e, "brick4_s2.status_");};
+    m.brick4_s3.in_port.detect = () => {return log_typed<itouch.status>("brick4_s3.", "detect", e, "brick4_s3.status_");};
 
     e.Add("ctrl.calibrate", () => {m.ctrl.in_port.calibrate();});
     e.Add("ctrl.stop", () => {m.ctrl.in_port.stop();});

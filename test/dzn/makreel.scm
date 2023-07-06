@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -59,7 +59,7 @@
          (call (car (tree-collect (is? <call>) ast))))
     (not (.last? call))))
 
-(test-assert "non tail-call valued"
+(test-assert "non tail-call typed"
   (let* ((ast (string->ast "interface i {in void e();behavior {void f () {bool b = g ();} bool g () {return true;} on e: {}}}"))
          (ast (makreel:om ast))
          (call (car (tree-collect (is? <call>) ast))))

@@ -84,7 +84,7 @@ log_flush (void *argument)
 }
 
 int
-log_valued (char *prefix, char *event, dzn_map *event_map, int (*string_to_value) (char *string_val), char * (*value_to_string) (int int_val))
+log_typed (char *prefix, char *event, dzn_map *event_map, int (*string_to_value) (char *string_val), char * (*value_to_string) (int int_val))
 {
   char *s;
   int r;

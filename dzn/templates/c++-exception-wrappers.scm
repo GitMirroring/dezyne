@@ -51,9 +51,9 @@
 (define-templates port-wrapper ast:port* newline-infix)
 (define-templates wrapped-port-inst ast:port* newline-infix)
 
-(define-templates valued-event-wrapper c++ew:valued-event?)
-(define-templates valued-event-return c++ew:valued-event?)
-(define-templates valued-requires-in-return c++ew:valued-event?)
+(define-templates typed-event-wrapper c++ew:typed-event?)
+(define-templates typed-event-return c++ew:typed-event?)
+(define-templates typed-requires-in-return c++ew:typed-event?)
 (define-templates ew-trigger-type-base c++ew:trigger-type-base type-infix)
 (define-templates file-name-upcase c++ew:file-name-upcase)
 

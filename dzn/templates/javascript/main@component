@@ -71,7 +71,7 @@ function type_helper(value, type) {
   return value;
 }
 
-function log_valued(prefix, event, event_map) {
+function log_typed(prefix, event, event_map) {
   console.error('<external>.' +  prefix + event + ' -> ' + 'sut.' + prefix + event);
   if (relaxed) return 0;
   var s = consume_synchronous_out_events(prefix, event, event_map);
@@ -90,7 +90,7 @@ function #x:model-name _fill_event_map(m)
   var e = {
           'illegal': function () {console.error ('illegal'); process.exit (0);}
           #x:main-event-map-void
-          #x:main-event-map-valued
+          #x:main-event-map-typed
           #x:main-event-map-flush
           };
 
@@ -103,7 +103,7 @@ function #x:model-name _fill_event_map(m)
   #x:main-requires-port-init
 
   #x:main-port-connect-in-void
-  #x:main-port-connect-in-valued
+  #x:main-port-connect-in-typed
   #x:main-port-connect-out
 
   return e;

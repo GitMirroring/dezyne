@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Janneke  Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -61,7 +61,7 @@
       (($ <subint>) (.from (.range type)))
       (($ <enum>) (append (code:type-name type) (list (last (ast:field* type))))))))
 
-(define-method (c++ew:valued-event? (o <trigger>))
+(define-method (c++ew:typed-event? (o <trigger>))
   (if (not (is-a? ((compose .type .signature .event) o) <void>))
       o
       ""))

@@ -56,7 +56,7 @@
         ((eq? type 'bool) (equal? value "true"))
         (else (string->symbol value))))
 
-(define (log-valued port event event-alist)
+(define (log-typed port event event-alist)
   (dzn:trace stderr port event)
   (if (not relaxed?)
       (let* ((prefix (string-append (.name (.in port)) "."))
@@ -78,7 +78,7 @@
          (pump (dzn:get (.locator o) <dzn:pump>))
          (c (make <dzn:component> ##:locator (.locator o) ##:flushes? flush?))
          (e `(#x:main-event-map-void
-              #x:main-event-map-valued
+              #x:main-event-map-typed
               #x:main-event-map-flush
               (<defer> . ,(cute dzn:run-defer pump)))))
 
@@ -91,7 +91,7 @@
       #x:main-requires-flush-init)
 
     #x:main-port-connect-in-void
-    #x:main-port-connect-in-valued
+    #x:main-port-connect-in-typed
     #x:main-port-connect-out
   e))
 

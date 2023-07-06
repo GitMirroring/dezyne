@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -82,7 +82,7 @@ void log_out (std::string prefix, std::string event, event_map &event_map)
 }
 
 template <typename R>
-R log_valued (std::string prefix, std::string event, event_map &event_map, R (*string_to_value) (std::string), std::string (*value_to_string) (R))
+R log_typed (std::string prefix, std::string event, event_map &event_map, R (*string_to_value) (std::string), std::string (*value_to_string) (R))
 {
   std::clog << prefix << event << std::endl;
   if (relaxed) return (R)0;
@@ -109,85 +109,85 @@ void fill_event_map (LegoBallSorter &m, event_map &e)
   m.brick1_aA.in.coast = [&] () {log_in ("brick1_aA.", "coast", e);};
   m.brick1_aA.in.zero = [&] () {log_in ("brick1_aA.", "zero", e);};
   m.brick1_aA.in.position = [&] (Integer & pos) {log_in ("brick1_aA.", "position", e);};
-  m.brick1_aA.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick1_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick1_aA.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick1_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
   m.brick1_aB.in.move = [&] (Byte power, Integer position) {log_in ("brick1_aB.", "move", e);};
   m.brick1_aB.in.run = [&] (Byte power, Boolean invert) {log_in ("brick1_aB.", "run", e);};
   m.brick1_aB.in.stop = [&] () {log_in ("brick1_aB.", "stop", e);};
   m.brick1_aB.in.coast = [&] () {log_in ("brick1_aB.", "coast", e);};
   m.brick1_aB.in.zero = [&] () {log_in ("brick1_aB.", "zero", e);};
   m.brick1_aB.in.position = [&] (Integer & pos) {log_in ("brick1_aB.", "position", e);};
-  m.brick1_aB.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick1_aB.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick1_aB.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick1_aB.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
   m.brick1_aC.in.move = [&] (Byte power, Integer position) {log_in ("brick1_aC.", "move", e);};
   m.brick1_aC.in.run = [&] (Byte power, Boolean invert) {log_in ("brick1_aC.", "run", e);};
   m.brick1_aC.in.stop = [&] () {log_in ("brick1_aC.", "stop", e);};
   m.brick1_aC.in.coast = [&] () {log_in ("brick1_aC.", "coast", e);};
   m.brick1_aC.in.zero = [&] () {log_in ("brick1_aC.", "zero", e);};
   m.brick1_aC.in.position = [&] (Integer & pos) {log_in ("brick1_aC.", "position", e);};
-  m.brick1_aC.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick1_aC.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
-  m.brick1_s1.in.detect = [&] () {return log_valued<itouch::status::type> ("brick1_s1.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick1_s2.in.detect = [&] () {return log_valued<itouch::status::type> ("brick1_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick1_s3.in.detect = [&] () {return log_valued<itouch::status::type> ("brick1_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick1_s4.in.detect = [&] () {return log_valued<itouch::status::type> ("brick1_s4.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick1_aC.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick1_aC.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick1_s1.in.detect = [&] () {return log_typed<itouch::status::type> ("brick1_s1.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick1_s2.in.detect = [&] () {return log_typed<itouch::status::type> ("brick1_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick1_s3.in.detect = [&] () {return log_typed<itouch::status::type> ("brick1_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick1_s4.in.detect = [&] () {return log_typed<itouch::status::type> ("brick1_s4.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
   m.brick2_aA.in.move = [&] (Byte power, Integer position) {log_in ("brick2_aA.", "move", e);};
   m.brick2_aA.in.run = [&] (Byte power, Boolean invert) {log_in ("brick2_aA.", "run", e);};
   m.brick2_aA.in.stop = [&] () {log_in ("brick2_aA.", "stop", e);};
   m.brick2_aA.in.coast = [&] () {log_in ("brick2_aA.", "coast", e);};
   m.brick2_aA.in.zero = [&] () {log_in ("brick2_aA.", "zero", e);};
   m.brick2_aA.in.position = [&] (Integer & pos) {log_in ("brick2_aA.", "position", e);};
-  m.brick2_aA.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick2_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick2_aA.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick2_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
   m.brick2_aB.in.move = [&] (Byte power, Integer position) {log_in ("brick2_aB.", "move", e);};
   m.brick2_aB.in.run = [&] (Byte power, Boolean invert) {log_in ("brick2_aB.", "run", e);};
   m.brick2_aB.in.stop = [&] () {log_in ("brick2_aB.", "stop", e);};
   m.brick2_aB.in.coast = [&] () {log_in ("brick2_aB.", "coast", e);};
   m.brick2_aB.in.zero = [&] () {log_in ("brick2_aB.", "zero", e);};
   m.brick2_aB.in.position = [&] (Integer & pos) {log_in ("brick2_aB.", "position", e);};
-  m.brick2_aB.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick2_aB.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
-  m.brick2_s2.in.detect = [&] () {return log_valued<itouch::status::type> ("brick2_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick2_s3.in.detect = [&] () {return log_valued<itouch::status::type> ("brick2_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick2_s4.in.detect = [&] () {return log_valued<itouch::status::type> ("brick2_s4.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick2_aB.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick2_aB.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick2_s2.in.detect = [&] () {return log_typed<itouch::status::type> ("brick2_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick2_s3.in.detect = [&] () {return log_typed<itouch::status::type> ("brick2_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick2_s4.in.detect = [&] () {return log_typed<itouch::status::type> ("brick2_s4.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
   m.brick3_aA.in.move = [&] (Byte power, Integer position) {log_in ("brick3_aA.", "move", e);};
   m.brick3_aA.in.run = [&] (Byte power, Boolean invert) {log_in ("brick3_aA.", "run", e);};
   m.brick3_aA.in.stop = [&] () {log_in ("brick3_aA.", "stop", e);};
   m.brick3_aA.in.coast = [&] () {log_in ("brick3_aA.", "coast", e);};
   m.brick3_aA.in.zero = [&] () {log_in ("brick3_aA.", "zero", e);};
   m.brick3_aA.in.position = [&] (Integer & pos) {log_in ("brick3_aA.", "position", e);};
-  m.brick3_aA.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick3_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick3_aA.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick3_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
   m.brick3_aC.in.move = [&] (Byte power, Integer position) {log_in ("brick3_aC.", "move", e);};
   m.brick3_aC.in.run = [&] (Byte power, Boolean invert) {log_in ("brick3_aC.", "run", e);};
   m.brick3_aC.in.stop = [&] () {log_in ("brick3_aC.", "stop", e);};
   m.brick3_aC.in.coast = [&] () {log_in ("brick3_aC.", "coast", e);};
   m.brick3_aC.in.zero = [&] () {log_in ("brick3_aC.", "zero", e);};
   m.brick3_aC.in.position = [&] (Integer & pos) {log_in ("brick3_aC.", "position", e);};
-  m.brick3_aC.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick3_aC.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick3_aC.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick3_aC.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
   m.brick3_s1.in.turnon = [&] () {log_in ("brick3_s1.", "turnon", e);};
   m.brick3_s1.in.turnoff = [&] () {log_in ("brick3_s1.", "turnoff", e);};
-  m.brick3_s1.in.detect = [&] () {return log_valued<ilight::status::type> ("brick3_s1.", "detect", e, to_ilight_status, static_cast<std::string (*) (ilight::status::type)> (to_string));};
-  m.brick3_s2.in.detect = [&] () {return log_valued<itouch::status::type> ("brick3_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick3_s3.in.detect = [&] () {return log_valued<itouch::status::type> ("brick3_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick3_s1.in.detect = [&] () {return log_typed<ilight::status::type> ("brick3_s1.", "detect", e, to_ilight_status, static_cast<std::string (*) (ilight::status::type)> (to_string));};
+  m.brick3_s2.in.detect = [&] () {return log_typed<itouch::status::type> ("brick3_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick3_s3.in.detect = [&] () {return log_typed<itouch::status::type> ("brick3_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
   m.brick4_aA.in.move = [&] (Byte power, Integer position) {log_in ("brick4_aA.", "move", e);};
   m.brick4_aA.in.run = [&] (Byte power, Boolean invert) {log_in ("brick4_aA.", "run", e);};
   m.brick4_aA.in.stop = [&] () {log_in ("brick4_aA.", "stop", e);};
   m.brick4_aA.in.coast = [&] () {log_in ("brick4_aA.", "coast", e);};
   m.brick4_aA.in.zero = [&] () {log_in ("brick4_aA.", "zero", e);};
   m.brick4_aA.in.position = [&] (Integer & pos) {log_in ("brick4_aA.", "position", e);};
-  m.brick4_aA.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick4_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick4_aA.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick4_aA.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
   m.brick4_aB.in.move = [&] (Byte power, Integer position) {log_in ("brick4_aB.", "move", e);};
   m.brick4_aB.in.run = [&] (Byte power, Boolean invert) {log_in ("brick4_aB.", "run", e);};
   m.brick4_aB.in.stop = [&] () {log_in ("brick4_aB.", "stop", e);};
   m.brick4_aB.in.coast = [&] () {log_in ("brick4_aB.", "coast", e);};
   m.brick4_aB.in.zero = [&] () {log_in ("brick4_aB.", "zero", e);};
   m.brick4_aB.in.position = [&] (Integer & pos) {log_in ("brick4_aB.", "position", e);};
-  m.brick4_aB.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick4_aB.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick4_aB.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick4_aB.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
   m.brick4_aC.in.move = [&] (Byte power, Integer position) {log_in ("brick4_aC.", "move", e);};
   m.brick4_aC.in.run = [&] (Byte power, Boolean invert) {log_in ("brick4_aC.", "run", e);};
   m.brick4_aC.in.stop = [&] () {log_in ("brick4_aC.", "stop", e);};
   m.brick4_aC.in.coast = [&] () {log_in ("brick4_aC.", "coast", e);};
   m.brick4_aC.in.zero = [&] () {log_in ("brick4_aC.", "zero", e);};
   m.brick4_aC.in.position = [&] (Integer & pos) {log_in ("brick4_aC.", "position", e);};
-  m.brick4_aC.in.at = [&] (Integer pos) {return log_valued<imotor::result_t::type> ("brick4_aC.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
-  m.brick4_s1.in.detect = [&] () {return log_valued<itouch::status::type> ("brick4_s1.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick4_s2.in.detect = [&] () {return log_valued<itouch::status::type> ("brick4_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
-  m.brick4_s3.in.detect = [&] () {return log_valued<itouch::status::type> ("brick4_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick4_aC.in.at = [&] (Integer pos) {return log_typed<imotor::result_t::type> ("brick4_aC.", "at", e, to_imotor_result_t, static_cast<std::string (*) (imotor::result_t::type)> (to_string));};
+  m.brick4_s1.in.detect = [&] () {return log_typed<itouch::status::type> ("brick4_s1.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick4_s2.in.detect = [&] () {return log_typed<itouch::status::type> ("brick4_s2.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
+  m.brick4_s3.in.detect = [&] () {return log_typed<itouch::status::type> ("brick4_s3.", "detect", e, to_itouch_status, static_cast<std::string (*) (itouch::status::type)> (to_string));};
 
   e["ctrl.calibrate"] = m.ctrl.in.calibrate;
   e["ctrl.stop"] = m.ctrl.in.stop;

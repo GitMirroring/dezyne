@@ -971,7 +971,7 @@
                (continuation (and (not (ast:eq? continuation statement))
                                   continuation)))
           (cond (assign
-                 `(,(wfc-error o "cannot use valued function in recursion")
+                 `(,(wfc-error o "cannot use typed function in recursion")
                    ,(wfc-info assign "statement after call")))
                 (continuation
                  `(,(wfc-error o "cannot use statement after recursive call")

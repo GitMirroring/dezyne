@@ -1088,7 +1088,7 @@
         (cond
          (typed?
           (return*
-           (call (name "log_valued")
+           (call (name "log_typed")
                  (arguments
                   `(,@arguments
                     ,(string-append

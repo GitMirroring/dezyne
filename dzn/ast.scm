@@ -85,12 +85,12 @@
             ast:out-triggers
             ast:out-triggers-in-events
             ast:out-triggers-out-events
-            ast:out-triggers-valued-in-events
             ast:out-triggers-void-in-events
+            ast:out-triggers-typed-in-events
             ast:out?
             ast:previous-statement
             ast:provides-in-triggers
-            ast:provides-in-valued-triggers
+            ast:provides-in-typed-triggers
             ast:provides-in-void-triggers
             ast:provides-out-triggers
             ast:provides-port
@@ -115,9 +115,9 @@
             ast:type
             ast:typed?
             ast:value
-            ast:valued-in-triggers
             ast:values
             ast:void-in-triggers
+            ast:typed-in-triggers
             ast:wildcard?)
   #:re-export (.direction
                .event
@@ -482,7 +482,7 @@
   (filter (compose (is? <void>) .type .signature .event)
           (ast:provides-in-triggers o)))
 
-(define-method (ast:provides-in-valued-triggers (o <component-model>))
+(define-method (ast:provides-in-typed-triggers (o <component-model>))
   (filter (compose (negate (is? <void>)) .type .signature .event)
           (ast:provides-in-triggers o)))
 
@@ -516,7 +516,7 @@
    (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
    (ast:in-triggers o)))
 
-(define-method (ast:valued-in-triggers (o <component-model>))
+(define-method (ast:typed-in-triggers (o <component-model>))
   (filter
    (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
    (ast:in-triggers o)))
@@ -535,7 +535,7 @@
    (compose (is? <void>) .type .signature .event)
    (ast:out-triggers-in-events o)))
 
-(define-method (ast:out-triggers-valued-in-events (o <component-model>))
+(define-method (ast:out-triggers-typed-in-events (o <component-model>))
   (filter
    (compose not (is? <void>) .type .signature .event)
    (ast:out-triggers-in-events o)))

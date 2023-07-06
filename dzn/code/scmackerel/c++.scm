@@ -1475,7 +1475,7 @@ std::basic_ostream<Char, Traits> &")
                    (arguments arguments))
             ,(call (name "c.match")
                    (arguments (list port-return-string))))))))))
-  (define (valued-provides-in->init trigger)
+  (define (typed-provides-in->init trigger)
     (let* ((port (.port.name trigger))
            (event (.event.name trigger))
            (port-event (simple-format #f "~a.~a" port event))
@@ -1519,7 +1519,7 @@ std::basic_ostream<Char, Traits> &")
                  (list "c.dzn_locator"
                        "&c.system"
                        (string-append "&" system-port))))))))))
-  (define (valued-in->init port-pair) ;; FIXME: get rid of port-pair?
+  (define (typed-in->init port-pair) ;; FIXME: get rid of port-pair?
     (let* ((port (.port port-pair))
            (other (.other port-pair))
            (port-other (simple-format #f "~a.~a" port other)))
@@ -1586,9 +1586,9 @@ std::basic_ostream<Char, Traits> &")
            "{\"error\", []{std::clog << \"sut.error -> sut.error\" << std::endl; std::exit (0);}}"
            (append
             (map void-provides-in->init (ast:provides-in-void-triggers o))
-            (map valued-provides-in->init (ast:provides-in-valued-triggers o))
+            (map typed-provides-in->init (ast:provides-in-typed-triggers o))
             (map void-requires-in->init (code:requires-in-void-returns o))
-            (map valued-in->init (code:return-values o))
+            (map typed-in->init (code:return-values o))
             (map out->init (ast:requires-out-triggers o))
             (map flush->init (ast:requires-port* o))
             (map flush->init (ast:provides-port* o)))))))))))))
