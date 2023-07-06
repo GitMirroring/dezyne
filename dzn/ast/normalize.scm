@@ -380,31 +380,35 @@ requires the introduction of temporaries for function calls."
          (on (make <on> #:statement statement #:triggers triggers)))
     (make-triple on guard blocking statement)))
 
-(define (trigger-equal? a b)
-  (and (equal? (.port.name a) (.port.name b))
-       (equal? (.event.name a) (.event.name b))))
+(define (make-declarative-illegal/illegal trigger)
+  (make (cond ((or (ast:parent trigger <interface>)
+                   (ast:provides? trigger))
+               <declarative-illegal>)
+              (else
+               <illegal>))))
 
-(define (add-illegals model triples trigger)
-  (let* ((triples (filter (lambda (t) (trigger-equal? ((compose car ast:trigger* triple-on) t) trigger)) triples))
-         (on (clone (make <on> #:triggers (make <triggers> #:elements (list trigger))) #:parent (.parent trigger)))
-         (behavior (.behavior model))
-         (guard (and-not-guards (map triple-guard triples)))
-         (guard (clone guard #:parent behavior))
+(define* (implicit-illegal->explicit-illegal
+          trigger ons #:key (make-illegal (const (make <illegal>))))
+  (let* ((ons (filter (compose (cute ast:equal? <> trigger) .trigger) ons))
+         (guard (and-not-guards (map .guard ons)))
          (guard (simplify-guard guard)))
-    (if (ast:literal-false? (.expression guard)) triples
+    (if (ast:literal-false? (.expression guard)) ons
         (let* ((provides? (and=> (.port trigger) ast:provides?))
-               (statement (make (cond (provides?
-                                       <declarative-illegal>)
-                                      ((is-a? model <interface>)
-                                       <declarative-illegal>)
-                                      (else
-                                       <illegal>))))
-               (illegal-triple (make-triple on guard #f statement)))
-          (append triples (list illegal-triple))))))
+               (on (make <canonical-on>
+                     #:guard guard
+                     #:trigger trigger
+                     #:statement (make-illegal trigger))))
+          (append ons (list on))))))
 
-(define ((triples:add-illegals model) triples)
-  (append (append-map (cut add-illegals model triples <>) (ast:in-triggers model))
-          (filter (compose ast:modeling? car ast:trigger* triple-on) triples)))
+(define* (implicit-illegals->explicit-illegals
+          model ons #:key (make-illegal (const (make <illegal>))))
+  (let ((modeling (filter (compose ast:modeling? .trigger) ons))
+        (triggers (ast:in-triggers model)))
+    (append
+     (append-map (cut implicit-illegal->explicit-illegal <> ons
+                      #:make-illegal make-illegal)
+                 triggers)
+     modeling)))
 
 (define-method (add-the-end (o <canonical-on>))
   (let ((statement (.statement o)))
@@ -509,23 +513,26 @@ guarded occurrences."
 (define (normalize:state+illegals o)
   (match o
     (($ <behavior>)
-     (clone o #:statement
-            ((compose
-              triples:->compound-guard-on
-              (cute triples:group-expressions <> (list <and> <field-test> <or>))
-              triples:simplify-guard
-              (triples:add-illegals (ast:parent o <model>))
-              (cute map canonical-on->triple <>)
-              (cute map add-the-end <>)
-              (cute map add-void-reply <>)
-              (cute map illegal->declarative-illegal <>)
-              statement->canonical-on
-              remove-invariant
-              .statement
-              ) o)
-            #:functions
-            (group-expressions (.functions o) (list <and> <field-test> <or>))
-            #:invariant (make-behavior-invariant o)))
+     (let ((model (ast:parent o <model>)))
+       (clone o
+              #:statement
+              ((compose
+                triples:->compound-guard-on
+                (cute triples:group-expressions <> (list <and> <field-test> <or>))
+                triples:simplify-guard
+                (cute map canonical-on->triple <>)
+                (cut implicit-illegals->explicit-illegals model <>
+                     #:make-illegal make-declarative-illegal/illegal)
+                (cute map add-the-end <>)
+                (cute map add-void-reply <>)
+                (cute map illegal->declarative-illegal <>)
+                statement->canonical-on
+                remove-invariant
+                .statement
+                ) o)
+              #:functions
+              (group-expressions (.functions o) (list <and> <field-test> <or>))
+              #:invariant (make-behavior-invariant o))))
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
@@ -595,20 +602,22 @@ i.e., pushing guards into the body of the trigger."
 (define (normalize:event+illegals o)
   (match o
     (($ <behavior>)
-     (clone o #:statement
-            ((compose
-              (cute make <compound> #:elements <>)
-              (cut triples:->on-guard* <> #:otherwise? #t)
-              (cute triples:group-expressions <> (list <and> <field-test> <or>))
-              triples:simplify-guard
-              (rewrite-formals-and-locals (ast:parent o <model>))
-              (triples:add-illegals (ast:parent o <model>))
-              (cute map canonical-on->triple <>)
-              statement->canonical-on
-              .statement
-              ) o)
-            #:functions
-            (group-expressions (.functions o) (list <and> <field-test> <or>))))
+     (let ((model (ast:parent o <model>)))
+       (clone o
+              #:statement
+              ((compose
+                (cute make <compound> #:elements <>)
+                (cut triples:->on-guard* <> #:otherwise? #t)
+                (cute triples:group-expressions <> (list <and> <field-test> <or>))
+                triples:simplify-guard
+                (rewrite-formals-and-locals model)
+                (cute map canonical-on->triple <>)
+                (cute implicit-illegals->explicit-illegals model <>)
+                statement->canonical-on
+                .statement
+                ) o)
+              #:functions
+              (group-expressions (.functions o) (list <and> <field-test> <or>)))))
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
