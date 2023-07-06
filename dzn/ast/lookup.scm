@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -103,7 +103,7 @@
   (append (ast:port* o) (ast:instance* o)))
 
 (define-method (ast:declaration* (o <behavior>))
-  (append (ast:type* o) (ast:function* o) (ast:variable* o) (ast:port* o)))
+  (append (ast:type* o) (ast:function* o) (ast:variable* o)))
 
 (define-method (ast:declaration* (o <defer>))
   (tree-collect (is? <variable>) o))

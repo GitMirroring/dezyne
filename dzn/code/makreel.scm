@@ -4,7 +4,7 @@
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -206,8 +206,8 @@
        (fold (lambda (field method o)
                (clone o field ((compose (tick-names- names) method) o)))
              o
-             (list #:types #:ports #:variables #:functions #:statement)
-             (list .types .ports .variables .functions .statement))))
+             (list #:types #:variables #:functions #:statement)
+             (list .types .variables .functions .statement))))
     (($ <var>) (clone o #:name ((compose (append-tick names) .name) o)))
     (($ <field-test>) (clone o #:variable.name ((compose (append-tick names) .variable.name) o)))
     (($ <formal>) (clone o #:name ((compose (append-tick names) .name) o)
@@ -522,8 +522,7 @@
 (define-method (makreel:event-act (o <component>))
   (append
    (makreel:interface* o)
-   (ast:port* o)
-   (ast:port* (.behavior o))))
+   (ast:port* o)))
 
 (define-method (makreel:event-act-provides (o <port>))
   (or (ast:provides? o) '()))

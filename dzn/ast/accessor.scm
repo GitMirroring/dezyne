@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -129,7 +129,6 @@
 (define-method (ast:function* (o <behavior>)) ((compose ast:function* .functions) o))
 (define-method (ast:instance* (o <system>)) ((compose ast:instance* .instances) o))
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
-(define-method (ast:port* (o <behavior>)) ((compose ast:port* .ports) o))
 (define-method (ast:statement* (o <behavior>)) ((compose ast:statement* .statement) o))
 (define-method (ast:trigger* (o <on>)) ((compose ast:trigger* .triggers) o))
 (define-method (ast:type* (o <interface>)) ((compose ast:type* .types) o))

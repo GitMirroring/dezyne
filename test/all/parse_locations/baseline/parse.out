@@ -116,7 +116,6 @@
            (offset . 906)
            (length . 37))))
        (types ("types"))
-       (ports ("ports"))
        (variables ("variables"))
        (functions ("functions"))
        (statement
@@ -236,7 +235,6 @@
            (offset . 906)
            (length . 63))))
        (types ("types"))
-       (ports ("ports"))
        (variables ("variables"))
        (functions
          ("functions"
