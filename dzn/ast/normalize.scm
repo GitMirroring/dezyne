@@ -354,14 +354,6 @@
                   triples)))
     (make <declarative-compound> #:elements st)))
 
-(define ((triples:fix-empty-interface model) triples)
-  (if (and (is-a? model <interface>) (null? triples))
-      (let* ((on (make <on> #:triggers (make <triggers> #:elements (list (make <trigger> #:event.name "inevitable")))))
-             (guard (make <guard> #:expression (make <literal> #:value "false")))
-             (statement (make <compound> #:elements (list (make <illegal>)))))
-        (list (make-triple on guard #f statement)))
-      triples))
-
 (define (trigger-equal? a b)
   (and (equal? (.port.name a) (.port.name b))
        (equal? (.event.name a) (.event.name b))))
@@ -475,14 +467,6 @@
                    (conjoin (is? <ast>) (disjoin ast:declarative? (compose ast:declarative? .parent)))
                    ast:imperative? o))))
 
-(define (triples:on-compound triples)
-  (define (foo t)
-    (let* ((statement (triple-statement t))
-           (statement (if (is-a? statement <compound>) statement
-                          (make <compound> #:elements (list statement)))))
-      (make-triple (triple-on t) (triple-guard t) (triple-blocking? t) statement)))
-  (map foo triples))
-
 (define (normalize:state o)
   "Push guards up, thereby splitting the body of a trigger into multiple
 guarded occurrences."
@@ -494,7 +478,6 @@ guarded occurrences."
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              (triples:fix-empty-interface (ast:parent o <model>))
               triples:split-multiple-on
               triples:->triples
               .statement
@@ -516,7 +499,6 @@ guarded occurrences."
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              (triples:fix-empty-interface (ast:parent o <model>))
               (triples:add-illegals (ast:parent o <model>))
               triples:mark-the-end
               (triples:declarative-illegals (ast:parent o <model>))
@@ -721,9 +703,6 @@ to prevent unintended shadowing
            (triple-blocking? t)
            ((rename mapping) (triple-statement t))))))
   (map foo triples))
-
-(define-method (is-data? (o <ast>))
-  (or (is-a? o <data>) (and (is-a? o <var>) (is-a? ((compose .type .variable) o) <extern>))))
 
 (define (purge-data o)
   "Remove every `extern' data variable and reference."
