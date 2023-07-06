@@ -517,9 +517,7 @@
    (ast:in-triggers o)))
 
 (define-method (ast:typed-in-triggers (o <component-model>))
-  (filter
-   (lambda (t) (not (is-a? ((compose .type .signature .event) t) <void>)))
-   (ast:in-triggers o)))
+  (filter ast:typed? (ast:in-triggers o)))
 
 (define-method (trigger-in-event? (o <trigger>))
   ((compose ast:in? .event) o))
