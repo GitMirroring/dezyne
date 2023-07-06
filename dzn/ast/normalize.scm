@@ -345,6 +345,41 @@ requires the introduction of temporaries for function calls."
                   triples)))
     (make <declarative-compound> #:elements st)))
 
+(define-method (statement->canonical-on (o <compound>))
+  (define (imperative->canonical-ons imperative)
+    (let* ((path (ast:path imperative (compose (is? <behavior>) .parent)))
+           (blocking (find (is? <blocking>) path))
+           (guards (filter (is? <guard>) path))
+           (expression (and-expressions (map .expression guards)))
+           (guard (make <guard> #:expression expression))
+           (on (find (is? <on>) path))
+           (triggers (ast:trigger* on)))
+      (define (make-on trigger)
+        (let ((canonical-on (make <canonical-on>
+                              #:blocking (and (ast:provides? trigger) blocking)
+                              #:guard guard
+                              #:trigger trigger
+                              #:statement imperative)))
+          (clone canonical-on #:parent (.parent on))))
+      (map make-on triggers)))
+  (if (null? (ast:statement* o)) '()
+      (let ((imperatives (tree-collect-filter
+                          (conjoin (is? <ast>)
+                                   (disjoin ast:declarative?
+                                            (compose ast:declarative? .parent)))
+                          ast:imperative?
+                          o)))
+        (append-map imperative->canonical-ons imperatives))))
+
+(define-method (canonical-on->triple (o <canonical-on>))
+  (let* ((blocking (.blocking o))
+         (guard (.guard o))
+         (trigger (.trigger o))
+         (triggers (make <triggers> #:elements (list trigger)))
+         (statement (.statement o))
+         (on (make <on> #:statement statement #:triggers triggers)))
+    (make-triple on guard blocking statement)))
+
 (define (trigger-equal? a b)
   (and (equal? (.port.name a) (.port.name b))
        (equal? (.event.name a) (.event.name b))))
@@ -431,40 +466,6 @@ requires the introduction of temporaries for function calls."
           t)))
   (map foo triples))
 
-(define (triples:split-multiple-on triples)
-  (define (on->triple t on)
-    (let* ((trigger ((compose car ast:trigger*) on))
-           (provides? (and=> (.port trigger) ast:provides?)))
-      (make-triple on
-                   (triple-guard t)
-                   (and provides? (triple-blocking? t))
-                   (deep-clone (triple-statement t)))))
-  (define (split-triple-on t)
-    (let* ((on (triple-on t))
-           (triggers (ast:trigger* on))
-           (ons (if (= (length triggers) 1) (list on)
-                    (map (compose
-                          (cut clone on #:triggers <>)
-                          (cut make <triggers> #:elements <>)
-                          list)
-                         triggers))))
-      (map (cute on->triple t <>) ons)))
-  (append-map split-triple-on triples))
-
-(define (triples:->triples o)
-  (define (triple o)
-    (let* ((path (ast:path o (lambda (p) (is-a? (.parent p) <behavior>))))
-           (guards (filter (is? <guard>) path))
-           (expression (and-expressions (map .expression guards))))
-      (make-triple (find (is? <on>) path)
-                   (make <guard> #:expression expression)
-                   (find (is? <blocking>) path)
-                   o)))
-  (if (and (is-a? o <compound>) (null? (ast:statement* o))) '()
-      (map triple (tree-collect-filter
-                   (conjoin (is? <ast>) (disjoin ast:declarative? (compose ast:declarative? .parent)))
-                   ast:imperative? o))))
-
 (define (remove-invariant o)
   "Remove invariants from behavior."
   (match o
@@ -515,8 +516,8 @@ guarded occurrences."
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              triples:split-multiple-on
-              triples:->triples
+              (cute map canonical-on->triple <>)
+              statement->canonical-on
               remove-invariant
               .statement
               ) o)
@@ -541,8 +542,8 @@ guarded occurrences."
               (triples:add-illegals (ast:parent o <model>))
               triples:mark-the-end
               (triples:declarative-illegals (ast:parent o <model>))
-              triples:split-multiple-on
-              triples:->triples
+              (cute map canonical-on->triple <>)
+              statement->canonical-on
               remove-invariant
               .statement
               ) o)
@@ -602,8 +603,8 @@ i.e., pushing guards into the body of the trigger."
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
               (rewrite-formals-and-locals (ast:parent o <model>))
-              triples:split-multiple-on
-              triples:->triples
+              (cute map canonical-on->triple <>)
+              statement->canonical-on
               .statement
               ) o)
             #:functions
@@ -626,8 +627,8 @@ i.e., pushing guards into the body of the trigger."
               triples:simplify-guard
               (rewrite-formals-and-locals (ast:parent o <model>))
               (triples:add-illegals (ast:parent o <model>))
-              triples:split-multiple-on
-              triples:->triples
+              (cute map canonical-on->triple <>)
+              statement->canonical-on
               .statement
               ) o)
             #:functions
@@ -1451,7 +1452,8 @@ expressions explicit."
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              triples:->triples
+              (cute map canonical-on->triple <>)
+              statement->canonical-on
               .statement
               ) o)))
     ((? (%normalize:short-circuit?))
