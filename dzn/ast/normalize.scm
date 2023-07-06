@@ -521,8 +521,10 @@ guarded occurrences."
             #:statement
             ((compose
               triples:->compound-guard-on
-              (cute triples:group-expressions <> (list <and> <field-test> <or>))
               (cute map canonical-on->triple <>)
+              (cute map (cute group-expressions <>
+                              (list <and> <field-test> <or>))
+                    <>)
               (cute map simplify-guard <>)
               statement->canonical-on
               remove-invariant
@@ -546,8 +548,10 @@ guarded occurrences."
               #:statement
               ((compose
                 triples:->compound-guard-on
-                (cute triples:group-expressions <> (list <and> <field-test> <or>))
                 (cute map canonical-on->triple <>)
+                (cute map (cute group-expressions <>
+                                (list <and> <field-test> <or>))
+                      <>)
                 (cute map simplify-guard <>)
                 (cut implicit-illegals->explicit-illegals model <>
                      #:make-illegal make-declarative-illegal/illegal)
@@ -611,8 +615,10 @@ i.e., pushing guards into the body of the trigger."
             ((compose
               (cute make <compound> #:elements <>)
               triples:->on-guard*
-              (cute triples:group-expressions <> (list <and> <field-test> <or>))
               (cute map canonical-on->triple <>)
+              (cute map (cute group-expressions <>
+                              (list <and> <field-test> <or>))
+                    <>)
               (cute map simplify-guard <>)
               (cute map alpha-rename <>)
               statement->canonical-on
@@ -636,8 +642,10 @@ i.e., pushing guards into the body of the trigger."
               ((compose
                 (cute make <compound> #:elements <>)
                 (cut triples:->on-guard* <> #:otherwise? #t)
-                (cute triples:group-expressions <> (list <and> <field-test> <or>))
                 (cute map canonical-on->triple <>)
+                (cute map (cute group-expressions <>
+                                (list <and> <field-test> <or>))
+                      <>)
                 (cute map simplify-guard <>)
                 (cute map alpha-rename <>)
                 (cute implicit-illegals->explicit-illegals model <>)
@@ -842,15 +850,6 @@ to prevent unintended shadowing
      (clone o #:behavior (purge-data (.behavior o))))
     ((? (is? <ast>)) (tree-map purge-data o))
     (_ o)))
-
-(define* (triples:group-expressions triples #:optional (group (list)))
-  (map (lambda (t)
-         (make-triple
-          (triple-on t)
-          (group-expressions (triple-guard t) group)
-          (triple-blocking? t)
-          (group-expressions (triple-statement t) group)))
-       triples))
 
 (define (add-function-return o)
   "For each void function make implicit returns explicit."
@@ -1443,6 +1442,10 @@ expressions explicit."
                                              (? (is? <field-test>))))))
      (let ((expression (tree-map (cute group-expressions <> group) expression)))
        (clone o #:expression (make <group> #:expression expression))))
+    (($ <canonical-on>)
+     (let* ((guard (group-expressions (.guard o) group))
+            (statement (group-expressions (.statement o) group)))
+       (clone o #:guard guard #:statement statement)))
     (($ <function>)
      (clone o #:statement (group-expressions (.statement o) group)))
     (($ <behavior>)
@@ -1455,7 +1458,8 @@ expressions explicit."
      (clone o #:behavior (group-expressions (.behavior o) group)))
     (($ <component>)
      (clone o #:behavior (group-expressions (.behavior o) group)))
-    ((? (is? <ast>)) (tree-map (cute group-expressions <> group) o))
+    ((? (is? <ast>))
+     (tree-map (cute group-expressions <> group) o))
     (_ o)))
 
 (define (simplify-guard-expressions o)
@@ -1466,8 +1470,10 @@ expressions explicit."
             #:statement
             ((compose
               triples:->compound-guard-on
-              (cute triples:group-expressions <> (list <and> <field-test> <or>))
               (cute map canonical-on->triple <>)
+              (cute map (cute group-expressions <>
+                              (list <and> <field-test> <or>))
+                    <>)
               (cute map simplify-guard <>)
               statement->canonical-on
               .statement
