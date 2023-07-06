@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -550,12 +550,7 @@ std::basic_ostream<Char, Traits> &")
                                     (ast:equal? (.prefix a) (.prefix b)))))))
                  (append skip transitions))))))
 
-    (let* ((shared (code:shared-state o))
-           (events (ast:event* o))
-           (transitions (append-map event->transitions events))
-           (transitions (delete-duplicates transitions ast:equal?))
-           (interface-shared (reverse (code:shared-state o)))
-           (interface
+    (let* ((interface
             (struct
              (inherit interface)
              (methods
@@ -603,41 +598,58 @@ std::basic_ostream<Char, Traits> &")
                                     (call (name "std::ostream_iterator<std::string>")
                                           (arguments '("std::cout" "\",\""))))))
                             (statement* "std::cout << std::endl"))))))
-                ,(method
-                  (struct interface) (type "void") (name "dzn_event")
-                  (formals (list (formal (type "char const*") (name "event"))))
-                  (statement
-                   (compound*
-                    `(,(if* "dzn_external" (return*))
-                      ,(call (name "dzn_prefix.push_back")
-                             (arguments '("event")))
-                      ,(call (name "dzn_sync"))
-                      ,@(if (= (dzn:debugity) 0) '()
-                            `(,(call (name "debug") (arguments '("\"dzn_event\"")))))))))
-                ,(method
-                  (struct interface) (type "void") (name "dzn_update_state")
-                  (formals (list (formal (type "dzn::locator const&")
-                                         (name "locator"))))
-                  (statement
-                   (compound*
-                    `(,(if* "dzn_external" (return*))
-                      ,@(if (= (dzn:debugity) 0) '()
-                            `(,(call (name "debug") (arguments '("\"update_state\"")))))
-                      ,(switch
-                        (expression
-                         (call
-                          (name "dzn::hash")
-                          (arguments `("dzn_prefix" "dzn_state"))))
-                        (cases
-                         `(,@(map (cute event->switch-case <>
-                                        interface-shared)
-                                  transitions)
-                           ,(switch-case
-                             (label "default")
-                             (statement
-                              (statement* "locator.get<dzn::illegal_handler> ().handle (LOCATION)"))))))
-                      ,(call (name "dzn_prefix.clear"))
-                      ,(call (name "dzn_sync"))))))
+                ,@(if (%no-constraint?)
+                        `(,(method
+                            (struct interface) (type "void") (name "dzn_event")
+                            (formals (list (formal (type "char const*") (name "event"))))
+                            (statement
+                             (compound*)))
+                          ,(method
+                            (struct interface) (type "void") (name "dzn_update_state")
+                            (formals (list (formal (type "dzn::locator const&")
+                                                   (name "locator"))))
+                            (statement
+                             (compound*))))
+                      (let* ((shared (code:shared-state o))
+                             (events (ast:event* o))
+                             (transitions (append-map event->transitions events))
+                             (transitions (delete-duplicates transitions ast:equal?))
+                             (interface-shared (reverse (code:shared-state o))))
+                        `(,(method
+                            (struct interface) (type "void") (name "dzn_event")
+                            (formals (list (formal (type "char const*") (name "event"))))
+                            (statement
+                             (compound*
+                              `(,(if* "dzn_external" (return*))
+                                ,(call (name "dzn_prefix.push_back")
+                                       (arguments '("event")))
+                                ,(call (name "dzn_sync"))
+                                ,@(if (= (dzn:debugity) 0) '()
+                                      `(,(call (name "debug") (arguments '("\"dzn_event\"")))))))))
+                          ,(method
+                            (struct interface) (type "void") (name "dzn_update_state")
+                            (formals (list (formal (type "dzn::locator const&")
+                                                   (name "locator"))))
+                            (statement
+                             (compound*
+                              `(,(if* "dzn_external" (return*))
+                                ,@(if (= (dzn:debugity) 0) '()
+                                      `(,(call (name "debug") (arguments '("\"update_state\"")))))
+                                ,(switch
+                                  (expression
+                                   (call
+                                    (name "dzn::hash")
+                                    (arguments `("dzn_prefix" "dzn_state"))))
+                                  (cases
+                                   `(,@(map (cute event->switch-case <>
+                                                  interface-shared)
+                                            transitions)
+                                     ,(switch-case
+                                       (label "default")
+                                       (statement
+                                        (statement* "locator.get<dzn::illegal_handler> ().handle (LOCATION)"))))))
+                                ,(call (name "dzn_prefix.clear"))
+                                ,(call (name "dzn_sync")))))))))
                 ,(method
                   (struct interface) (type "void") (name "dzn_sync")
                   (statement
