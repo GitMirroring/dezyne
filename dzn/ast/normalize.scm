@@ -334,20 +334,8 @@ requires the introduction of temporaries for function calls."
 
 
 ;;;
-;;; Normalizations.
+;;; Canonical-on.
 ;;;
-(define (triples:->compound-guard-on triples)
-  (let* ((st (map (lambda (t)
-                    (let* ((on (triple-on t))
-                           (guard (triple-guard t))
-                           (statement (triple-statement t))
-                           (blocking (triple-blocking? t))
-                           (statement (if blocking (clone blocking #:statement statement)
-                                          statement)))
-                      (clone guard #:statement (clone on #:statement statement))))
-                  triples)))
-    (make <declarative-compound> #:elements st)))
-
 (define-method (statement->canonical-on (o <compound>))
   (define (imperative->canonical-ons imperative)
     (let* ((path (ast:path imperative (compose (is? <behavior>) .parent)))
@@ -374,6 +362,18 @@ requires the introduction of temporaries for function calls."
                           o)))
         (append-map imperative->canonical-ons imperatives))))
 
+(define-method (canonical-on->guard (o <canonical-on>))
+  (let* ((guard (.guard o))
+         (trigger (.trigger o))
+         (triggers (make <triggers> #:elements (list trigger)))
+         (blocking (.blocking o))
+         (statement (.statement o))
+         (statement (if (not blocking) statement
+                        (clone blocking #:statement statement)))
+         (statement (make <on> #:triggers triggers #:statement statement)))
+    (clone guard #:statement statement)))
+
+;;; REMOVEME
 (define-method (canonical-on->triple (o <canonical-on>))
   (let* ((blocking (.blocking o))
          (guard (.guard o))
@@ -383,6 +383,10 @@ requires the introduction of temporaries for function calls."
          (on (make <on> #:statement statement #:triggers triggers)))
     (make-triple on guard blocking statement)))
 
+
+;;;
+;;; Canonical-on normalizations.
+;;;
 (define (make-declarative-illegal/illegal trigger)
   (make (cond ((or (ast:parent trigger <interface>)
                    (ast:provides? trigger))
@@ -520,8 +524,8 @@ guarded occurrences."
      (clone o
             #:statement
             ((compose
-              triples:->compound-guard-on
-              (cute map canonical-on->triple <>)
+              (cute make <declarative-compound> #:elements <>)
+              (cute map canonical-on->guard <>)
               (cute map (cute group-expressions <>
                               (list <and> <field-test> <or>))
                     <>)
@@ -547,8 +551,8 @@ guarded occurrences."
        (clone o
               #:statement
               ((compose
-                triples:->compound-guard-on
-                (cute map canonical-on->triple <>)
+                (cute make <declarative-compound> #:elements <>)
+                (cute map canonical-on->guard <>)
                 (cute map (cute group-expressions <>
                                 (list <and> <field-test> <or>))
                       <>)
@@ -779,6 +783,10 @@ to prevent unintended shadowing
                #:trigger ((rename mapping) trigger)
                #:statement ((rename mapping) (.statement o))))))
 
+
+;;;
+;;; Root normalizations.
+;;;
 (define (purge-data o)
   "Remove every `extern' data variable and reference."
   (define (parent-location o)
@@ -1469,8 +1477,8 @@ expressions explicit."
      (clone o
             #:statement
             ((compose
-              triples:->compound-guard-on
-              (cute map canonical-on->triple <>)
+              (cute make <declarative-compound> #:elements <>)
+              (cute map canonical-on->guard <>)
               (cute map (cute group-expressions <>
                               (list <and> <field-test> <or>))
                     <>)
