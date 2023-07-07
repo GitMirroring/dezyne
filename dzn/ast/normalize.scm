@@ -610,8 +610,8 @@ i.e., pushing guards into the body of the trigger."
               triples:->on-guard*
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
               triples:simplify-guard
-              (rewrite-formals-and-locals (ast:parent o <model>))
               (cute map canonical-on->triple <>)
+              (cute map alpha-rename <>)
               statement->canonical-on
               .statement
               ) o)
@@ -635,8 +635,8 @@ i.e., pushing guards into the body of the trigger."
                 (cut triples:->on-guard* <> #:otherwise? #t)
                 (cute triples:group-expressions <> (list <and> <field-test> <or>))
                 triples:simplify-guard
-                (rewrite-formals-and-locals model)
                 (cute map canonical-on->triple <>)
+                (cute map alpha-rename <>)
                 (cute implicit-illegals->explicit-illegals model <>)
                 statement->canonical-on
                 .statement
@@ -650,7 +650,7 @@ i.e., pushing guards into the body of the trigger."
     (_
      o)))
 
-(define ((rewrite-formals-and-locals model) triples)
+(define-method (alpha-rename (o <canonical-on>))
   "Rewrite names of formals and locals for event-first normalization.
 
 Event-first normalization groups all guarded event handling blocks for a
@@ -678,83 +678,95 @@ to prevent unintended shadowing
 
   (define ((rename mapping) o)
     (define (formal-or-local? o)
-      (or (is-a? o <formal>) (and (is-a? o <variable>) (not (is-a? (.parent o) <variables>)))))
+      (or (is-a? o <formal>)
+          (and (is-a? o <variable>)
+               (not (is-a? (.parent o) <variables>)))))
     (define (rename-string o)
       (or (assoc-ref mapping o) o))
     (match o
-      ((and ($ <trigger>) (? (compose null? ast:formal*))) o)
+      ((and ($ <trigger>) (? (compose null? ast:formal*)))
+       o)
       (($ <trigger>)
-       (clone o #:formals (clone (.formals o) #:elements (map (rename mapping) (ast:formal* o)))))
-      (($ <action>) (clone o #:arguments ((rename mapping) (.arguments o))))
-      (($ <arguments>) (clone o #:elements (map (rename mapping) (ast:argument* o))))
+       (let ((elements (map (rename mapping) (ast:formal* o))))
+         (clone o #:formals (clone (.formals o) #:elements elements))))
+      (($ <action>)
+       (clone o #:arguments ((rename mapping) (.arguments o))))
+      (($ <arguments>)
+       (clone o #:elements (map (rename mapping) (ast:argument* o))))
       (($ <var>)
-       (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.name o)))
-           o))
+       (if (not (formal-or-local? (.variable o))) o
+           (clone o #:name (rename-string (.name o)))))
       (($ <assign>)
        (let ((expression ((rename mapping) (.expression o)))
-             (name (if (formal-or-local? (.variable o)) (rename-string (.variable.name o))
-                       (.variable.name o))))
+             (name (if (not (formal-or-local? (.variable o))) (.variable.name o)
+                       (rename-string (.variable.name o)))))
          (clone o #:variable.name name #:expression expression)))
       (($ <variable>)
        (let ((name (if (formal-or-local? o) (rename-string (.name o))
                        (.name o))))
          (clone o #:name name #:expression ((rename mapping) (.expression o)))))
-      (($ <field-test>) (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.variable.name o)))
-                            o))
-      (($ <formal>) (clone o #:name (rename-string (.name o))))
-      (($ <formal-binding>) (clone o #:name (rename-string (.name o))))
+      (($ <field-test>)
+       (if (not (formal-or-local? (.variable o))) o
+           (clone o #:name (rename-string (.variable.name o)))))
+      (($ <formal>)
+       (clone o #:name (rename-string (.name o))))
+      (($ <formal-binding>)
+       (clone o #:name (rename-string (.name o))))
       (($ <interface>)
        o)
       ((? (%normalize:short-circuit?))
        o)
-      ((? (is? <ast>)) (tree-map (rename mapping) o))
-      (_ o)))
+      ((? (is? <ast>))
+       (tree-map (rename mapping) o))
+      (_
+       o)))
 
-  (define (foo t)
-    (let* ((o (triple-on t))
-           (trigger ((compose car .elements .triggers) (triple-on t)))
-           (event (.event trigger))
-           (formals ((compose ast:formal* .signature) event))
-           (formals-ok? (or (pair? (ast:formal* trigger))
-                            (null? formals)))
-           (t (if formals-ok? t
-                  (let* ((formals (clone (.formals trigger) #:elements formals))
-                         (trigger (clone trigger #:formals formals))
-                         (triggers (clone (.triggers o)
-                                          #:elements (list trigger))))
-                    (make-triple (clone o #:triggers triggers)
-                                 (triple-guard t)
-                                 (triple-blocking? t)
-                                 (triple-statement t)))))
-           (trigger ((compose car .elements .triggers) (triple-on t)))
-           (trigger (if (pair? (ast:formal* trigger)) trigger
-                        (let* ((formals (ast:formal* event))
-                               (formals (clone (.formals trigger) #:elements formals)))
-                          (clone trigger #:formals formals))))
-           (formals (map .name ((compose .elements .formals .signature) event)))
-           (members (map .name (ast:variable* model)))
-           (locals (map .name (tree-collect (is? <variable>) (triple-statement t))))
-           (occupied members)
-           (fresh (letrec ((fresh (lambda (occupied name)
-                                    (if (member name occupied)
-                                        (fresh occupied (string-append name "x"))
-                                        name))))
-                    fresh)) ;; occupied name -> namex
-           (refresh (lambda (occupied names)
-                      (fold-right (lambda (name o)
-                                    (cons (fresh o name) o))
-                                  occupied names))) ;; occupied names -> (append namesx occupied)
-           (fresh-formals (list-head (refresh occupied formals) (length formals)))
-           (mapping (filter (negate pair-equal?) (map cons (map .name ((compose .elements .formals) trigger)) fresh-formals)))
-           (occupied (append (map cdr mapping) members))
-           (mapping (append (map cons locals (list-head (refresh occupied locals) (length locals))) mapping)))
-      (if (null? mapping) t
-          (make-triple
-           (clone o #:triggers (clone (.triggers o) #:elements (list ((rename mapping) trigger))))
-           (triple-guard t)
-           (triple-blocking? t)
-           ((rename mapping) (triple-statement t))))))
-  (map foo triples))
+  (let* ((trigger (.trigger o))
+         (event (.event trigger))
+         (formals ((compose ast:formal* .signature) event))
+         (formals-ok? (or (pair? (ast:formal* trigger))
+                          (null? formals)))
+         (o (if formals-ok? o
+                (let* ((formals (clone (.formals trigger) #:elements formals))
+                       (trigger (clone trigger #:formals formals)))
+                  (clone o #:trigger trigger))))
+         (trigger (.trigger o))
+         (trigger (if (pair? (ast:formal* trigger)) trigger
+                      (let* ((formals (ast:formal* event))
+                             (formals (clone (.formals trigger)
+                                             #:elements formals)))
+                        (clone trigger #:formals formals))))
+         (formals (map .name ((compose .elements .formals .signature) event)))
+         (model (ast:parent o <model>))
+         (members (map .name (ast:variable* model)))
+         (locals (map .name (tree-collect (is? <variable>) (.statement o))))
+         (occupied members)
+         (fresh (letrec ((fresh (lambda (occupied name)
+                                  (if (member name occupied)
+                                      (fresh occupied (string-append name "x"))
+                                      name))))
+                  fresh)) ;; occupied name -> namex
+         (refresh (lambda (occupied names)
+                    (fold-right (lambda (name o)
+                                  (cons (fresh o name) o))
+                                ;; occupied names -> (append namesx occupied)
+                                occupied names)))
+         (fresh-formals (list-head (refresh occupied formals) (length formals)))
+         (mapping (filter
+                   (negate pair-equal?)
+                   (map cons
+                        (map .name ((compose .elements .formals) trigger))
+                        fresh-formals)))
+         (occupied (append (map cdr mapping) members))
+         (mapping (append (map cons
+                               locals
+                               (list-head (refresh occupied locals)
+                                          (length locals)))
+                          mapping)))
+    (if (null? mapping) o
+        (clone o
+               #:trigger ((rename mapping) trigger)
+               #:statement ((rename mapping) (.statement o))))))
 
 (define (purge-data o)
   "Remove every `extern' data variable and reference."
