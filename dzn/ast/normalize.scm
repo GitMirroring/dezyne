@@ -329,6 +329,9 @@ requires the introduction of temporaries for function calls."
 (define-method (simplify-guard (o <guard>))
   (clone o #:expression (simplify-toplevel-expression (.expression o))))
 
+(define-method (simplify-guard (o <canonical-on>))
+  (clone o #:guard (simplify-guard (.guard o))))
+
 
 ;;;
 ;;; Normalizations.
@@ -519,8 +522,8 @@ guarded occurrences."
             ((compose
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
-              triples:simplify-guard
               (cute map canonical-on->triple <>)
+              (cute map simplify-guard <>)
               statement->canonical-on
               remove-invariant
               .statement
@@ -544,8 +547,8 @@ guarded occurrences."
               ((compose
                 triples:->compound-guard-on
                 (cute triples:group-expressions <> (list <and> <field-test> <or>))
-                triples:simplify-guard
                 (cute map canonical-on->triple <>)
+                (cute map simplify-guard <>)
                 (cut implicit-illegals->explicit-illegals model <>
                      #:make-illegal make-declarative-illegal/illegal)
                 (cute map add-the-end <>)
@@ -609,8 +612,8 @@ i.e., pushing guards into the body of the trigger."
               (cute make <compound> #:elements <>)
               triples:->on-guard*
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
-              triples:simplify-guard
               (cute map canonical-on->triple <>)
+              (cute map simplify-guard <>)
               (cute map alpha-rename <>)
               statement->canonical-on
               .statement
@@ -634,8 +637,8 @@ i.e., pushing guards into the body of the trigger."
                 (cute make <compound> #:elements <>)
                 (cut triples:->on-guard* <> #:otherwise? #t)
                 (cute triples:group-expressions <> (list <and> <field-test> <or>))
-                triples:simplify-guard
                 (cute map canonical-on->triple <>)
+                (cute map simplify-guard <>)
                 (cute map alpha-rename <>)
                 (cute implicit-illegals->explicit-illegals model <>)
                 statement->canonical-on
@@ -839,15 +842,6 @@ to prevent unintended shadowing
      (clone o #:behavior (purge-data (.behavior o))))
     ((? (is? <ast>)) (tree-map purge-data o))
     (_ o)))
-
-(define (triples:simplify-guard triples)
-  (map (lambda (t)
-         (make-triple
-          (triple-on t)
-          (simplify-guard (triple-guard t))
-          (triple-blocking? t)
-          (triple-statement t)))
-       triples))
 
 (define* (triples:group-expressions triples #:optional (group (list)))
   (map (lambda (t)
@@ -1473,8 +1467,8 @@ expressions explicit."
             ((compose
               triples:->compound-guard-on
               (cute triples:group-expressions <> (list <and> <field-test> <or>))
-              triples:simplify-guard
               (cute map canonical-on->triple <>)
+              (cute map simplify-guard <>)
               statement->canonical-on
               .statement
               ) o)))
