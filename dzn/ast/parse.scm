@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2023 Paul Hoogendijk <paul@dezyne.org>
@@ -373,9 +373,7 @@ to the AST element."
 
         (('compound body ...)
          (let ((body (helper body)))
-           (make (if (is-a? (car body) <declarative>) <declarative-compound-node>
-                     <compound-node>)
-             #:elements body)))
+           (make <compound-node> #:elements body)))
 
         (('on triggers)
          (make <on-node> #:comment comment #:triggers (helper triggers)))
