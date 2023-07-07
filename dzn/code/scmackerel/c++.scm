@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -472,6 +473,26 @@ std::basic_ostream<Char, Traits> &")
     (define (value->init value)
       (simple-format #f "~s" (.value value)))
 
+    (define (dzn:hash s h)
+      (let ((overflow 4294967296)
+            (b 47)
+            (p 79))
+        (car
+         (fold
+          (lambda (s h.pow)
+            (string-fold
+             (lambda (c h.pow)
+               (let* ((c (- (char->integer c) b))
+                      (h (car h.pow))
+                      (pow (cdr h.pow))
+                      (h (modulo
+                          (+ h (modulo (* c pow) overflow))
+                          overflow))
+                      (pow (modulo (* pow p) overflow)))
+                 (cons h pow)))
+             h.pow s))
+          (cons (* h p) 1) s))))
+
     (define (event->switch-case transition interface-shared)
       (let* ((prefix (.prefix transition))
              (prefix (ast:statement* prefix))
@@ -487,17 +508,20 @@ std::basic_ostream<Char, Traits> &")
                            (compose ast:statement* .assign)))
              (assignments (map ast->assign (or assignments '()))))
         (switch-case
-         (expression
-          (call (name "dzn::hash")
-                (arguments
-                 `(,initializer-list
-                   ,(.from transition)))))
+         (expression (string-append
+                      (number->string
+                       (dzn:hash (map .value prefix)
+                                 (.from transition)))
+                      "u"))
          (statement
           (statements*
-           (if (.skip transition) `(,(return*))
-               `(,(assign* "dzn_state" state)
-                 ,@assignments
-                 ,(break*))))))))
+           (cons (comment* (string-append
+                            "//" (number->string (.from transition))
+                            ":" (string-join (map .value prefix) ",")))
+                 (if (.skip transition) `(,(return*))
+                     `(,(assign* "dzn_state" state)
+                       ,@assignments
+                       ,(break*)))))))))
 
     (define (synchronize->member variable)
       (assign*
@@ -599,17 +623,17 @@ std::basic_ostream<Char, Traits> &")
                                           (arguments '("std::cout" "\",\""))))))
                             (statement* "std::cout << std::endl"))))))
                 ,@(if (%no-constraint?)
-                        `(,(method
-                            (struct interface) (type "void") (name "dzn_event")
-                            (formals (list (formal (type "char const*") (name "event"))))
-                            (statement
-                             (compound*)))
-                          ,(method
-                            (struct interface) (type "void") (name "dzn_update_state")
-                            (formals (list (formal (type "dzn::locator const&")
-                                                   (name "locator"))))
-                            (statement
-                             (compound*))))
+                      `(,(method
+                          (struct interface) (type "void") (name "dzn_event")
+                          (formals (list (formal (type "char const*") (name "event"))))
+                          (statement
+                           (compound*)))
+                        ,(method
+                          (struct interface) (type "void") (name "dzn_update_state")
+                          (formals (list (formal (type "dzn::locator const&")
+                                                 (name "locator"))))
+                          (statement
+                           (compound*))))
                       (let* ((shared (code:shared-state o))
                              (events (ast:event* o))
                              (transitions (append-map event->transitions events))

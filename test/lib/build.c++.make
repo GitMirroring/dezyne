@@ -51,7 +51,7 @@ NOWARN_FLAGS=					\
  -Wno-unused-variable				\
  -Wno-unused-parameter				\
  -Wno-unused-but-set-variable
-CXXFLAGS=-g -std=c++14 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread $(WARN_FLAGS)
+CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread $(WARN_FLAGS)
 # FIXME: handwritten code, versioned?  $(IN)/../.. or ?
 CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(abs_top_srcdir)/runtime/c++ -D DZN_VERSION_ASSERT=1
 GLOBALS_H=$(wildcard $(IN)/globals.h)

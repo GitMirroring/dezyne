@@ -31,6 +31,7 @@
 #include <dzn/locator.hh>
 #include <dzn/coroutine.hh>
 #include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <map>
 #include <queue>
@@ -319,29 +320,21 @@ void defer (C *component, P &&predicate, const E &event)
            component->dzn_runtime.handling (component) = 0;
          }));
 }
-//largest 64 bit prime; chance of collision ~5e-20
-constexpr size_t hash_modulo = 18446744073709551557u;
-//unmemoized constexpr hash (https://cp-algorithms.com/string/string-hashing.html)
-constexpr size_t hash (const char *s, size_t h = 0)
+//https://cp-algorithms.com/string/string-hashing.html
+inline std::uint32_t hash (const std::vector<char const *> &r, std::uint32_t h)
 {
-  constexpr size_t p = 53;
-  size_t pow = 1;
+  // numeric base for beginning of [0-9a-zA-Z] - 1, i.e. '0' = 48 - 1
+  constexpr std::uint32_t b = 47;
+  // smallest prime encompassing [0-9a-zA-Z] numerically
+  constexpr std::uint32_t p = 79;
+  std::uint32_t pow = 1;
   h *= p;
-  while (*s)
-    {
-      pow = pow * p;
-      h = (h + (*s++ - 47) * pow % hash_modulo) % hash_modulo;
-    }
-  return h;
-}
-constexpr size_t hash (const std::initializer_list<const char *> &r, size_t h = 0)
-{
-  for (auto &s : r) h = hash (s, h) % hash_modulo;
-  return h;
-}
-inline size_t hash (const std::vector<const char *> &r, size_t h = 0)
-{
-  for (auto &s : r) h = hash (s, h) % hash_modulo;
+  for (auto s : r)
+    while (*s)
+      {
+        h = h + (*s++ - b) * pow;
+        pow *= p;
+      }
   return h;
 }
 }
