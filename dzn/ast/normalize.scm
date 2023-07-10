@@ -835,8 +835,7 @@ to prevent unintended shadowing
             #:functions (extract-call (.functions o))
             #:statement (extract-call (.statement o))))
     (($ <defer>)
-     (let ((statement (extract-call (.statement o))))
-       (clone o #:statement (extract-call statement))))
+     (clone o #:statement (extract-call (.statement o))))
     (($ <blocking>)
      (clone o #:statement (extract-call (.statement o))))
     (($ <on>)
@@ -867,14 +866,9 @@ to prevent unintended shadowing
                       (append
                        statements
                        (loop rest))))
-                   (($ <if>)
-                    (cons (extract-call statement)
-                          (loop rest)))
-                   (($ <compound>)
-                    (cons (extract-call statement)
-                          (loop rest)))
                    (_
-                    (cons statement (loop rest)))))))))
+                    (cons (extract-call statement)
+                          (loop rest)))))))))
        (clone o #:elements statements)))
     ((? (%normalize:short-circuit?))
      o)
