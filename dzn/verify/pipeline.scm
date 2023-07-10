@@ -270,7 +270,7 @@ actions."
   (let* ((model (options-model options))
          (name (makreel:full-name model))
          (taus (if (not (is-a? model <interface>)) '()
-                   `(,(format #f "--tau=optional,inevitable,tag,~aflush" name)))))
+                   `(,(format #f "--tau=~aflush,~ainternal,tag" name name)))))
     `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
 (define (in-out:aut->aut-dpweak-bisim options)

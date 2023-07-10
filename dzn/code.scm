@@ -533,7 +533,7 @@
       (match labels
         (((and (? trigger?) trigger) tail ...)
          (string-contains trigger (string-append "in'" (.name o))))
-        (((? modeling?) (and (? action?) trigger) tail ...)
+        (((and (? action?) trigger) tail ...)
          (or (string-contains trigger (string-append "out'" (.name o)))
              (find (conjoin
                     action?

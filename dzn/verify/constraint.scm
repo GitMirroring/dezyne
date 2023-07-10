@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -48,12 +49,7 @@ to current-output-port."
       (_ #f)))
 
   (define (rtc? o)
-    (cond
-     ((node? o)
-      (any rtc? (node-edges o)))
-     ((edge? o)
-      (let ((label (edge-label o)))
-        (or (trigger? label) (modeling-event? label))))))
+    (any (compose state? edge-label) (node-edges o)))
 
   (define (next edge)
     (let ((next (vector-ref lts (edge-to edge))))
@@ -77,10 +73,6 @@ to current-output-port."
   (define (reply? o)
     (and (string? o)
          (string-contains o "'reply(")))
-
-  (define (modeling-event? o)
-    (and (string? o)
-         (string-contains o "'internal(")))
 
   (define (error? o)
     (and (string? o)
@@ -202,13 +194,7 @@ to current-output-port."
           (when first?
             (format #t "\n"))))
 
-      (define (strip-modeling transition transitions)
-        (let ((label (edge-label transition)))
-          (if (not (modeling-event? label)) (cons transition transitions)
-              (append (next transition) transitions))))
-
       (let* ((illegals transitions (partition transition-illegal? transitions))
-             (transitions (fold strip-modeling '() transitions))
              (top-actions (filter-map (compose action? edge-label) transitions))
              (actions (filter (negate (cute member <> top-actions)) actions))
              (any? (not (command-line:get 'no-non-compliance))))
@@ -224,7 +210,7 @@ to current-output-port."
       (let* ((transitions (node-edges node))
              (labels (map edge-label transitions)))
         (when (or (= i initial)
-                  (any (disjoin trigger? modeling-event?) labels))
+                  (any state? labels))
           (format #t "\nproc ~aconstraint~a\n = delta\n" name (node-state node))
           (when (pair? (node-edges node))
             (print-transitions transitions))

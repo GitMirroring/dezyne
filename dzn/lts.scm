@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -719,16 +719,12 @@ from LABELS."
         ("declarative_illegal" #t)
         (_ #f)))
 
-    (define (modeling? o)
+    (define (state? o)
       (and (string? o)
-           (string-contains o "'internal(")))
-
-    (define (trigger? o)
-      (and (string? o)
-           (string-contains o "'in(")))
+           (string-contains o "'state(")))
 
     (define (rtc? node)
-      (find (disjoin modeling? trigger?) (map edge-label (node-edges node))))
+      (find state? (map edge-label (node-edges node))))
 
     (define (extend trail label)
       (match label
