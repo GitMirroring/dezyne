@@ -269,6 +269,7 @@ REGRESSION_TESTS =				\
  %D%/defer_shadow				\
  %D%/defer_twice				\
  %D%/defer_twice_noisy				\
+ %D%/defer_typed_call				\
  %D%/determinism_deadlock			\
  %D%/determinism_modeling			\
  %D%/determinism_silent				\
