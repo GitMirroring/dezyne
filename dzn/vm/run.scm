@@ -708,6 +708,7 @@ until RTC?."
          (modeling-events (map (cute string-append port-name "." <>) modeling-names))
          (traces (append-map (cute run-to-completion pc <>) modeling-events))
          (traces (filter (cute event-executed? port-instance <>) traces))
+         (traces (filter-match-error traces))
          (errors (filter (compose .status car) traces)))
 
     (if (pair? errors) errors
