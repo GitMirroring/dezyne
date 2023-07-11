@@ -927,7 +927,11 @@ std::basic_ostream<Char, Traits> &")
                                  (statement (compound*)))))
               ,(protection* "private")
               ,@(map (cute trigger->method component <>) (ast:in-triggers o))
-              ,@(map (cute function->method component <>) (ast:function* o)))))))
+              ,@(map (cute function->method component <>) (ast:function* o))))))
+         (component (if (not (is-a? o <foreign>)) component
+                        (namespace
+                         (name "skel")
+                         (statements (list component))))))
     (code:->namespace o component)))
 
 (define-method (component-model->statements (o <component-model>))
@@ -948,21 +952,18 @@ std::basic_ostream<Char, Traits> &")
 ;;; Foreign.
 ;;;
 (define-method (model->foreign (o <foreign>))
-  (let ((foreign (component-model->statements o)))
-    (namespace
-     (name "skel")
-     (statements foreign))))
+  (component-model->statements o))
 
 (define-method (model->header-statements (o <foreign>))
   (let* ((interface-includes (code:interface-include* o))
          (statements `(,(cpp-system-include* "dzn/locator.hh")
                        ,(cpp-system-include* "dzn/runtime.hh")
                        ,@(map c++:file-name->include interface-includes)
-                       ,(model->foreign o))))
+                       ,@(model->foreign o))))
     (c++:include-guard o statements)))
 
 (define-method (model->statements (o <foreign>))
-  (list (model->foreign o)))
+  (model->foreign o))
 
 
 ;;;
