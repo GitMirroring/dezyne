@@ -817,6 +817,8 @@ to prevent unintended shadowing
     (_ o)))
 
 (define (extract-call o)
+  "Move typed function calls from variable initialization and assignment
+to a separate statement, for mCRL2."
   (define (extract-assign/variable-call o call)
     (let ((expression (make <literal> #:value "return_value")))
       (match o

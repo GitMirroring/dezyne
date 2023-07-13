@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -41,6 +41,7 @@
   #:re-export (add-function-return
                add-determinism-temporaries
                add-explicit-temporaries
+               extract-call
                normalize:compounds
                normalize:event
                normalize:state
