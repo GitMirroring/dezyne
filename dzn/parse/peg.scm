@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -172,20 +172,20 @@ import <-- IMPORT file-name SEMICOLON#
 dollars- <- DOLLAR (!DOLLAR .)* DOLLAR#
 
 type <- enum / int / extern
-  enum <-- ENUM compound-name# BRACE-OPEN# fields# BRACE-CLOSE# SEMICOLON#
+  enum <-- ENUM scoped-name# BRACE-OPEN# fields# BRACE-CLOSE# SEMICOLON#
     fields <-- (name (&BRACE-CLOSE / COMMA#))+
 
-  int <-- SUBINT compound-name# BRACE-OPEN# range# BRACE-CLOSE# SEMICOLON#
+  int <-- SUBINT scoped-name# BRACE-OPEN# range# BRACE-CLOSE# SEMICOLON#
     range <-- from DOTDOT# to
     from <-- NUMBER#
     to <-- NUMBER#
 
-  extern <-- EXTERN compound-name# dollars# SEMICOLON#
+  extern <-- EXTERN scoped-name# dollars# SEMICOLON#
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
   namespace-root <-- (type / namespace / interface / component / &BRACE-CLOSE)#*
 
-interface <-- INTERFACE reset-event-names reset-port-names compound-name#
+interface <-- INTERFACE reset-event-names reset-port-names scoped-name#
               BRACE-OPEN# types-and-events# (behavior / &BRACE-CLOSE)#
               BRACE-CLOSE#
 
@@ -194,7 +194,7 @@ interface <-- INTERFACE reset-event-names reset-port-names compound-name#
               enter-frame formals# exit-frame SEMICOLON#
       direction <-- IN / OUT
 
-component <-- COMPONENT reset-port-names reset-event-names compound-name#
+component <-- COMPONENT reset-port-names reset-event-names scoped-name#
               BRACE-OPEN# ports# body# BRACE-CLOSE#
   body <- behavior / system / &BRACE-CLOSE
     system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
@@ -315,6 +315,8 @@ literal <-- NUMBER / FALSE / TRUE
 group <-- PAREN-OPEN expression PAREN-CLOSE#
 
 name <-- identifier
+
+scoped-name <-- identifier
 
 compound-name <-- global? scope? name
 

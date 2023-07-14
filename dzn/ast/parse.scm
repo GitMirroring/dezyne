@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2023 Paul Hoogendijk <paul@dezyne.org>
@@ -419,6 +419,9 @@ to the AST element."
         (('compound-name global scope name)
          (make <scope.name-node> #:ids (append (helper global) (helper scope) (list (helper name)))))
 
+        (('scoped-name name)
+         (make <scope.name-node> #:ids (list (helper name))))
+
         (('scope name) (make-list? (helper name)))
         (('scope names ...) (helper names))
 
@@ -665,9 +668,8 @@ to the AST element."
 
     (helper o))
 
-  (let* ((root-node (file-helper o file-name 0))
-         (root (make <root> #:node root-node)))
-    (tree-map make-namespaces root)))
+  (let ((root-node (file-helper o file-name 0)))
+    (make <root> #:node root-node)))
 
 (define-method (set-recursive (o <behavior>))
   (define (mark-recursive f)
@@ -686,19 +688,3 @@ to the AST element."
   (let* ((o (set-recursive (make <behavior> #:node o)))
          (o (set-noisy o)))
     (.node o)))
-
-(define-method (make-namespaces (o <ast>))
-  o)
-
-(define-method (make-namespaces (o <model>))
-  (let ((scope (ast:scope o)))
-    (let loop ((scope scope))
-      (if (null? scope) o
-          (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope))))))))
-
-(define-method (make-namespaces (o <type>))
-  (if (ast:parent o <model>) o
-      (let ((scope (ast:scope o)))
-        (let loop ((scope scope))
-          (if (null? scope) o
-              (make <namespace> #:name (make <scope.name> #:ids (list (car scope))) #:elements (list (loop (cdr scope)))))))))
