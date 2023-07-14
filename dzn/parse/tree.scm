@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -121,6 +121,7 @@
             tree:file-name
             tree:location
             tree:name
+            tree:normalize
             tree:offset
             tree:scope+name
 
@@ -1057,6 +1058,25 @@ procedure)."
      (let ((slots (map (cute tree:add-file-name <> file-name) slots)))
        `(,type ,@slots)))
     (_ o)))
+
+(define (tree:scoped-name->compound-name o)
+  (match o
+    (('scoped-name name location)
+     `(compound-name (name ,name ,location) ,location))
+    (((and type (or 'root 'namespace 'namespace-root)) slots ...)
+     (let ((slots (map tree:scoped-name->compound-name slots)))
+       `(,type ,@slots)))
+    (((and type (or 'types-and-events 'behavior
+                    'behavior-compound 'behavior-statements)) slots ...)
+     (let ((slots (map tree:scoped-name->compound-name slots)))
+       `(,type ,@slots)))
+    ((and (type slots ...) (or (? tree:model?) (? tree:type?)))
+     (let ((slots (map tree:scoped-name->compound-name slots)))
+       `(,type ,@slots)))
+    (_ o)))
+
+(define (tree:normalize o)
+  (tree:scoped-name->compound-name o))
 
 
 ;;;

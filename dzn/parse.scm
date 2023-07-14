@@ -43,6 +43,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn parse peg)
+  #:use-module (dzn parse tree)
   #:use-module (dzn ast wfc)
 
   #:export (file->ast
@@ -189,7 +190,8 @@ FILE-NAME."
                                        `((file-name ,file-name (location 0 0))))
                                ,@tree))))
              (parse-tree (if (%peg:fall-back?) (peg:flatten-tree parse-tree)
-                             parse-tree)))
+                             parse-tree))
+             (parse-tree (tree:normalize parse-tree)))
         (when (> (dzn:debugity) 2)
           (format (current-error-port) "parse-tree: ~a\n" file-name)
           (pretty-print parse-tree (current-error-port)))
