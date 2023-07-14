@@ -241,45 +241,62 @@ actions."
     (cute display (verify-pipeline "aut-dpweak-bisim" root model))))
 
 (define (in-out:mcrl2->lps options)
-  (let ((debug? (dzn:command-line:get 'debug)))
-    `("mcrl22lps" ,@(if debug? '() '("--quiet")) "--binary")))
+  (let ((debug? (dzn:command-line:get 'debug))
+        (timings? (dzn:command-line:get 'timings)))
+    `("mcrl22lps" ,@(if timings? '("--timings") (if debug? '() '("--quiet")))
+      "--binary")))
 
-(define in-out:lps->lpsconstelm
-  '("lpsconstelm" "--quiet" "--remove-singleton-sorts" "--remove-trivial-summands"))
+(define (in-out:lps->lpsconstelm options)
+  (let ((timings? (dzn:command-line:get 'timings)))
+    `("lpsconstelm" ,(if timings? "--timings" "--quiet")
+      "--remove-singleton-sorts" "--remove-trivial-summands")))
 
-(define in-out:lps->lpsparelm
-  '("lpsparelm"))
+(define (in-out:lps->lpsparelm options)
+  (let ((timings? (dzn:command-line:get 'timings)))
+    `("lpsparelm" ,(if timings? "--timings" "--quiet"))))
 
-(define in-out:lps->aut-jitty
-  '("lps2lts" "--quiet" "--cached" "--rewriter=jittyc" "--out=aut""--save-at-end" "-" "-"))
+(define (in-out:lps->aut-jitty)
+  (let ((timings? (dzn:command-line:get 'timings)))
+    `("lps2lts" ,(if timings? "--timings" "--quiet")
+      "--cached" "--rewriter=jittyc" "--out=aut""--save-at-end" "-" "-")))
 
-(define in-out:lps->aut
-  '("lps2lts" "--quiet" "--cached" "--out=aut""--save-at-end" "-" "-"))
+(define (in-out:lps->aut options)
+  (let ((timings? (dzn:command-line:get 'timings)))
+    `("lps2lts" ,(if timings? "--timings" "--quiet")
+      "--cached" "--out=aut""--save-at-end" "-" "-")))
 
 (define (in-out:aut->aut-weak-trace options)
   (let* ((model (options-model options))
+         (timings? (dzn:command-line:get 'timings))
          (taus (if (not (is-a? model <interface>)) '()
                    '("--tau=inevitable,optional,tag,<flush>"))))
-    `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
+    `("ltsconvert" ,(if timings? "--timings" "--quiet")
+      "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
 (define (in-out:lts-hide-internal-labels options)
   (let* ((model (options-model options))
          (name (makreel:model-name model))
+         (timings? (dzn:command-line:get 'timings))
          (taus (if (not (is-a? model <interface>)) '()
                    `(,(format #f "--tau=optional,inevitable,tag,~aflush,~astate"
                               name name)))))
-    `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
+    `("ltsconvert" ,(if timings? "--timings" "--quiet")
+      "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
 (define (in-out:lts-constraint options)
   (let* ((model (options-model options))
          (name (makreel:model-name model))
+         (timings? (dzn:command-line:get 'timings))
          (taus (if (not (is-a? model <interface>)) '()
                    `(,(format #f "--tau=~aflush,~ainternal,tag"
                               name name)))))
-    `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
+    `("ltsconvert" ,(if timings? "--timings" "--quiet")
+      "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
-(define in-out:aut->aut-dpweak-bisim
-  '("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut"))
+(define (in-out:aut->aut-dpweak-bisim options)
+  (let ((timings? (dzn:command-line:get 'timings)))
+    `("ltsconvert" ,(if timings? "--timings" "--quiet")
+      "-edpweak-bisim" "--in=aut" "--out=aut")))
 
 (define (in-out:maut->aut options)
   (let* ((model (options-model options))
@@ -339,10 +356,13 @@ actions."
 
 (define (in-out:aut+provides-aut->verify-compliance options)
   (let* ((model (options-model options))
+         (timings? (dzn:command-line:get 'timings))
          (taus (compliance-taus model))
          (taus (if (string-null? taus) '()
                    (list (string-append "--tau=" taus)))))
-    `("ltscompare" "--quiet" "--counter-example" "--structured-output" "-pweak-failures"
+    `("ltscompare"
+      ,(if timings? "--timings" "--quiet")
+      "--counter-example" "--structured-output" "-pweak-failures"
       ,@taus
       "--in1=aut" "--in2=aut" "-" "-")))
 
