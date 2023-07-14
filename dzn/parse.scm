@@ -39,6 +39,7 @@
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast parse)
+  #:use-module (dzn ast silence)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -303,6 +304,7 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
               (let* ((ast (parse-tree-alist->ast parse-tree-alist
                                                  #:content-alist content-alist
                                                  #:working-directory dir))
+                     (ast (silence:annotate-functions ast))
                      (ast (if skip-wfc? ast
                               (ast:wfc ast)))
                      (transform (map string->transformation transform)))
@@ -365,6 +367,7 @@ trees.  When SKIP-WFC? skip the well-formedness checks."
         (let* ((ast (parse-tree-alist->ast parse-tree-alist
                                            #:content-alist content-alist
                                            #:working-directory dir))
+               (ast (silence:annotate-functions ast))
                (ast (if skip-wfc? ast
                         (ast:wfc ast)))
                (transform (map string->transformation transform)))

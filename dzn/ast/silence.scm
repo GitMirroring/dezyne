@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -29,9 +29,10 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
-  #:export (mark-noisy))
+  #:export (silence:annotate-functions))
 
 (define-method (mark-noisy (o <behavior>))
   "Set <function>'s #:noisy? to true when it performs, or may perform an
@@ -124,3 +125,33 @@
                   (and (eq? b 'recursive) (eq? a 'silent)))) 'recursive)
         ((is-a? a <ast>) a)
         ((is-a? b <ast>) b)))
+
+(define-method (set-recursive (o <behavior>))
+  (define (mark-recursive f)
+    (if (ast:recursive? f) (clone f #:recursive? #t)
+        f))
+  (let* ((functions (.functions o))
+         (function-list (.elements functions))
+         (function-list (map mark-recursive function-list))
+         (functions (clone functions #:elements function-list)))
+    (clone o #:functions functions)))
+
+
+;;;
+;;; Entry point.
+;;;
+(define (silence:annotate-functions o)
+  (match o
+    (($ <behavior>)
+     (let ((o (set-recursive o)))
+       (mark-noisy o)))
+    ((? (%normalize:short-circuit?))
+     o)
+    (($ <interface>)
+     (clone o #:behavior (silence:annotate-functions (.behavior o))))
+    (($ <component>)
+     (clone o #:behavior (silence:annotate-functions (.behavior o))))
+    ((? (is? <ast>))
+     (tree-map silence:annotate-functions o))
+    (_
+     o)))

@@ -35,7 +35,6 @@
 
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast silence)
   #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
@@ -105,7 +104,7 @@
                            (_
                             events))))
              (events (make <events-node> #:elements events))
-             (behavior (and behavior (annotate-functions (helper behavior)))))
+             (behavior (and behavior (helper behavior))))
         (make <interface-node>
           #:name (helper name)
           #:comment comment
@@ -294,7 +293,7 @@ to the AST element."
            #:comment comment
            #:name (helper name)
            #:ports (helper ports)
-           #:behavior (annotate-functions (helper behavior))))
+           #:behavior (helper behavior)))
 
         (('component name ports ('system instances-and-bindings rest ...))
          (let* ((instances-and-bindings (helper instances-and-bindings))
@@ -670,21 +669,3 @@ to the AST element."
 
   (let ((root-node (file-helper o file-name 0)))
     (make <root> #:node root-node)))
-
-(define-method (set-recursive (o <behavior>))
-  (define (mark-recursive f)
-    (if (ast:recursive? f) (clone f #:recursive? #t)
-        f))
-  (let* ((functions (.functions o))
-         (function-list (.elements functions))
-         (function-list (map mark-recursive function-list))
-         (functions (clone functions #:elements function-list)))
-    (clone o #:functions functions)))
-
-(define-method (set-noisy (o <behavior>))
-  (mark-noisy o))
-
-(define-method (annotate-functions (o <behavior-node>))
-  (let* ((o (set-recursive (make <behavior> #:node o)))
-         (o (set-noisy o)))
-    (.node o)))
