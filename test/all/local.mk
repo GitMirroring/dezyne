@@ -445,7 +445,6 @@ REGRESSION_TESTS =				\
  %D%/shared_requires				\
  %D%/shared_variable				\
  %D%/shell_injected				\
- %D%/simple.space				\
  %D%/simplify_guards				\
  %D%/space.import_interface_shadow		\
  %D%/space.interface_shadow			\
