@@ -60,7 +60,7 @@
             (verbose (single-char #\v))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '()))
+         (files (option-ref options '() '()))
          (usage? (and (not help?) (null? files))))
     (when (or help? usage?)
       (let ((port (if usage? (current-error-port) (current-output-port))))

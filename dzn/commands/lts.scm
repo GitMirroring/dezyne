@@ -54,7 +54,7 @@
                         (tau (single-char #\t) (value #t))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '())))
+         (files (option-ref options '() '())))
     (when help?
       (format #t "\
 Usage: dzn lts [OPTION]... [FILE]...

@@ -188,9 +188,9 @@
            (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
       (funcq-buffer key)
       (if (not (eq? cached not-found)) cached
-	  (let ((val (apply base-func args)))
-	    (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
-	    val)))))
+          (let ((val (apply base-func args)))
+            (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
+            val)))))
 
 (define ast:pure-funcq (ast:funcq funcq-memo))
 (define ast:perfect-funcq (ast:funcq (make-hash-table 32)))
@@ -432,7 +432,7 @@ null) and return its CONTEXT."
            (and (as port <port>)
                 (or (let ((port+name (string-append (.name port) name)))
                       (ast:lookup-variable (ast:parent o <behavior>) port+name))
-                 (lookup-shared-variable port name)))))))
+                    (lookup-shared-variable port name)))))))
 
 (define-method (.variable (o <shared-field-test>))
   (let ((name (.variable.name o)))

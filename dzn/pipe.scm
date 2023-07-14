@@ -56,12 +56,12 @@ that port; return output-port, #f and pids."
     (match previous
       ((pfrom . pids)
        (let* ((to pfrom)
-	      (from pipe))
+              (from pipe))
          (cond ((procedure? proc)
                 (throw 'error "procedure inside pipeline" commands))
                (else
                 (let ((pid (piped-process (car proc) (cdr proc) from to)))
-	          (cons from (cons pid pids)))))))))
+                  (cons from (cons pid pids)))))))))
   (let* ((to (pipe->fdes))
          (pipes (map (lambda _ (pipe->fdes)) commands))
          (pipes (if (not output-port) pipes
@@ -69,7 +69,7 @@ that port; return output-port, #f and pids."
                       (((x . y) pipes ...)
                        (append pipes
                                `((,x . ,(port->fdes output-port))))))))
-	 (pipeline (fold command `(,to) pipes commands)))
+         (pipeline (fold command `(,to) pipes commands)))
     (match pipeline
       ((from . pids)
        (values (fdes->outport (cdr to))

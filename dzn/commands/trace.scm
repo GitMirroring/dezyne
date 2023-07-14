@@ -37,8 +37,8 @@
             (internal (single-char #\i))
             (locations (single-char #\L))
             (trace (single-char #\t) (value #t))))
-	 (options (getopt-long args option-spec))
-	 (help? (option-ref options 'help #f)))
+         (options (getopt-long args option-spec))
+         (help? (option-ref options 'help #f)))
     (when help?
       (format #t "\
 Usage: dzn trace [OPTION]... FILE

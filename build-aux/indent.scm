@@ -128,15 +128,15 @@ exec guile -L ${0%/*} -e '(indent)' -s "$0" "$@"
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((help (single-char #\h))
-	    (version (single-char #\V))))
-	 (options (getopt-long args option-spec
-		               #:stop-at-first-non-option #t))
-	 (verbose? (option-ref options 'verbose #f))
-	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) (null? files)))
-	 (version? (option-ref options 'version #f)))
+          '((help (single-char #\h))
+            (version (single-char #\V))))
+         (options (getopt-long args option-spec
+                               #:stop-at-first-non-option #t))
+         (verbose? (option-ref options 'verbose #f))
+         (help? (option-ref options 'help #f))
+         (files (option-ref options '() '()))
+         (usage? (and (not help?) (null? files)))
+         (version? (option-ref options 'version #f)))
     (when version?
       (format #t "indent.scm 0.0\n")
       (exit EXIT_SUCCESS))

@@ -39,19 +39,19 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-	  '((debug (single-char #\d))
+          '((debug (single-char #\d))
             (help (single-char #\h))
-	    (skip-wfc (single-char #\p))
-	    (transform (single-char #\t) (value #t))
-	    (verbose (single-char #\v))
-	    (version (single-char #\V))))
-	 (options (getopt-long args option-spec
-		               #:stop-at-first-non-option #t))
-	 (verbose? (option-ref options 'verbose #f))
-	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) (null? files)))
-	 (version? (option-ref options 'version #f)))
+            (skip-wfc (single-char #\p))
+            (transform (single-char #\t) (value #t))
+            (verbose (single-char #\v))
+            (version (single-char #\V))))
+         (options (getopt-long args option-spec
+                               #:stop-at-first-non-option #t))
+         (verbose? (option-ref options 'verbose #f))
+         (help? (option-ref options 'help #f))
+         (files (option-ref options '() '()))
+         (usage? (and (not help?) (null? files)))
+         (version? (option-ref options 'version #f)))
 
     (define (list-commands dir)
       (map (cut basename <> ".go")

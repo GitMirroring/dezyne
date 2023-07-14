@@ -57,11 +57,11 @@
             (queue-size (single-char #\q) (value #t))
             (queue-size-defer (value #t))
             (queue-size-external (value #t))))
-	 (options (getopt-long args option-spec))
-	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '()))
+         (options (getopt-long args option-spec))
+         (help? (option-ref options 'help #f))
+         (files (option-ref options '() '()))
          (out (option-ref options 'out #f))
-	 (usage? (and (not help?) (null? files))))
+         (usage? (and (not help?) (null? files))))
     (when (equal? out "help")
       (format #t "formats:~a\n" (string-join (verification:formats) "\n  " 'prefix))
       (exit EXIT_SUCCESS))
@@ -86,7 +86,7 @@ Check DZN-FILE for verification errors in Dezyne models
       --queue-size-external=SIZE
                            use external queue size=SIZE for verification [~a]
 " (%queue-size) (%queue-size-defer) (%queue-size-external))
-	(exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
+        (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
 (define (main args)

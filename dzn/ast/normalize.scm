@@ -248,9 +248,9 @@
           (match guards
             (()
              (make <literal> #:value "true"))
-	    ((guard)
+            ((guard)
              (make <not> #:expression (.expression guard)))
-	    ((h t ...)
+            ((h t ...)
              (let ((expressions (map (compose (cute make <not> #:expression <>)
                                               .expression)
                                      guards)))

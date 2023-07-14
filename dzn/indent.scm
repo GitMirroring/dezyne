@@ -100,7 +100,7 @@
             (space width))
           (display c)
           (loop (+ level width
-                         (if (and gnu? (> level 0) (eq? c #\{)) width 0)) #f))
+                   (if (and gnu? (> level 0) (eq? c #\{)) width 0)) #f))
          ((eq? c close)
           (case last
             ((newline)

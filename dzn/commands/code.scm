@@ -68,10 +68,10 @@
             (queue-size-defer (value #t))
             (queue-size-external (value #t))
             (shell (single-char #\s) (value #t))))
-	 (options (getopt-long args option-spec))
-	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) (null? files))))
+         (options (getopt-long args option-spec))
+         (help? (option-ref options 'help #f))
+         (files (option-ref options '() '()))
+         (usage? (and (not help?) (null? files))))
     (when (or help? usage?)
       (let ((port (if usage? (current-error-port) (current-output-port))))
         (format port "\
@@ -134,10 +134,10 @@ Languages: ~a
       (let* ((parse-options (filter (compose not (cut eq? <> 'model) car)
                                     options))
              (ast (parse parse-options file-name)))
-       (code ast
-             #:calling-context calling-context
-             #:dir dir
-             #:model model
-             #:language language
-             #:locations? locations?
-             #:shell shell)))))
+        (code ast
+              #:calling-context calling-context
+              #:dir dir
+              #:model model
+              #:language language
+              #:locations? locations?
+              #:shell shell)))))

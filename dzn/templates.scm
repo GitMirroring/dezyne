@@ -190,8 +190,8 @@
                   (define-method (#,tname (o <top>)) (throw 'missing-template-overload: (string-append "template: " (symbol->string '#,name) " for type: " (symbol->string (class-name (class-of o)))))))
               (define (#,xname #,o)
                 (let ((f (#,func #,o)))
-		  (when (getenv "DZN_DEBUG_TEMPLATE_ACCESSOR")
-		    (display "// ") (display '#,func) (newline))
+                  (when (getenv "DZN_DEBUG_TEMPLATE_ACCESSOR")
+                    (display "// ") (display '#,func) (newline))
                   (display-join #,tname '#,name #,dir f '#,grammars)))))))
 
     (syntax-case x ()
