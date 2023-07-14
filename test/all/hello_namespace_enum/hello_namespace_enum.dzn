@@ -2,7 +2,7 @@
 //
 // Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,21 +23,27 @@
 //
 // Code:
 
-enum NS.Result { OK, NOK };
+namespace space
+{
+  enum BOOL {FALSE, TRUE};
+}
 
-interface ihello_namespace_enum {
-  in NS.Result e();
-  behavior {
-    on e: reply(NS.Result.NOK);
+interface ihello
+{
+  in space.BOOL hello ();
+  behavior
+  {
+    on hello: reply (space.BOOL.TRUE);
   }
 }
 
 component hello_namespace_enum
 {
-  provides ihello_namespace_enum p;
-  requires ihello_namespace_enum q;
+  provides ihello h;
+  requires ihello w;
 
-  behavior {
-    on p.e(): {NS.Result r = q.e(); reply(r);}
+  behavior
+  {
+    on h.hello (): {space.BOOL b = w.hello (); reply (b);}
   }
 }

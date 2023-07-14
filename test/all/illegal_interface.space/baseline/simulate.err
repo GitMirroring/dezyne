@@ -1,1 +1,1 @@
-test/all/illegal_interface.space/illegal_interface.space.dzn:29:3: error: deadlock
+test/all/illegal_interface.space/illegal_interface.space.dzn:31:5: error: deadlock

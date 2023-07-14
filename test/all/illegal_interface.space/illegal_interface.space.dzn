@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,19 +21,22 @@
 //
 // Code:
 
-interface illegal_interface.space
+namespace illegal_interface
 {
-  in void hello();
-  in void world();
-
-  behavior
+  interface space
   {
-    bool idle = true;
-    [idle] {
-      on hello: idle = false;
-    }
-    [!idle] {
-      on hello, world: illegal;
-    }
+    in void hello();
+    in void world();
+
+    behavior
+    {
+      bool idle = true;
+      [idle] {
+        on hello: idle = false;
+      }
+      [!idle] {
+        on hello, world: illegal;
+      }
+      }
   }
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -48,19 +48,23 @@ namespace inner {
   }
 }
 
-interface foo.I {
-  enum Bool {F,T};
-  in Bool e();
-  out void a();
-  behavior {
-    on e: {a;reply (Bool.T);}
+namespace foo {
+  interface I {
+    enum Bool {F,T};
+    in Bool e();
+    out void a();
+    behavior {
+      on e: {a;reply (Bool.T);}
+    }
   }
 }
 
-component bar.c {
-  provides foo.I i;
-  behavior {
-    foo.I.Bool state = foo.I.Bool.T;
-    on i.e(): {i.a();reply (state);}
+namespace bar {
+  component c {
+    provides foo.I i;
+    behavior {
+      foo.I.Bool state = foo.I.Bool.T;
+      on i.e(): {i.a();reply (state);}
+    }
   }
 }

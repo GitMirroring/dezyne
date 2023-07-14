@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -35,7 +35,9 @@ namespace r {
     }
 }
 
-enum r.r.iworld.r {t,f};
+namespace r.r.iworld {
+  enum r {t,f};
+}
 
 interface ihello
 {

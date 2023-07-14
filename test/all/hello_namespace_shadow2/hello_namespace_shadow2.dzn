@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,31 +22,53 @@
 //
 // Code:
 
-interface n1.n2.n3.I {
-  enum Enum { N3 };
-  in void e3();
-  behavior { on e3: {} }
+namespace n1.n2.n3
+{
+  interface I
+  {
+    enum Enum { N3 };
+    in void e3();
+    behavior { on e3: {} }
+  }
 }
 
-enum n1.n2.n3.Enum { E3 };
-
-interface n1.n2.I {
-  enum Enum { N2 };
-  in void e2();
-  behavior { on e2: {} }
+namespace n1.n2.n3
+{
+  enum Enum { E3 };
 }
 
-enum n1.n2.Enum { E2 };
-
-interface n1.I {
-  enum Enum { N1 };
-  in void e1();
-  behavior { on e1: {} }
+namespace n1.n2
+{
+  interface I
+  {
+    enum Enum { N2 };
+    in void e2();
+    behavior { on e2: {} }
+  }
 }
 
-enum n1.Enum { E1 };
+namespace n1.n2
+{
+  enum Enum { E2 };
+}
 
-interface I {
+namespace n1
+{
+  interface I
+  {
+    enum Enum { N1 };
+    in void e1();
+    behavior { on e1: {} }
+  }
+}
+
+namespace n1
+{
+  enum Enum { E1 };
+}
+
+interface I
+{
   enum Enum { N0 };
   in void e0();
   behavior { on e0: {} }
@@ -54,39 +76,56 @@ interface I {
 
 enum Enum { E0 };
 
-component n1.n2.n3.C {
-  provides I p;
-  behavior {
-    I.Enum n = I.Enum.N3;
-    Enum e = Enum.E3;
-    on p.e3(): {}
+namespace n1.n2.n3
+{
+  component C
+  {
+    provides I p;
+    behavior
+    {
+      I.Enum n = I.Enum.N3;
+      Enum e = Enum.E3;
+      on p.e3(): {}
+    }
   }
 }
 
-component n1.n2.C {
-  provides I p;
-  behavior {
-    I.Enum n = I.Enum.N2;
-    Enum e = Enum.E2;
-    on p.e2(): {}
+namespace n1.n2
+{
+  component C
+  {
+    provides I p;
+    behavior
+    {
+      I.Enum n = I.Enum.N2;
+      Enum e = Enum.E2;
+      on p.e2(): {}
+    }
   }
 }
 
-component n1.C {
-  provides I p;
-  behavior {
-    I.Enum n = I.Enum.N1;
-    Enum e = Enum.E1;
-    on p.e1(): {}
+namespace n1
+{
+  component C
+  {
+    provides I p;
+    behavior
+    {
+      I.Enum n = I.Enum.N1;
+      Enum e = Enum.E1;
+      on p.e1(): {}
+    }
   }
 }
 
-component hello_namespace_shadow2 {
+component hello_namespace_shadow2
+{
   provides I p;
   requires n1.I r1;
   requires n1.n2.I r2;
   requires n1.n2.n3.I r3;
-  behavior {
+  behavior
+  {
     on p.e0(): {}
   }
 }
