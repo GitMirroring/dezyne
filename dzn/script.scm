@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
+;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -42,6 +43,7 @@
           '((debug (single-char #\d))
             (help (single-char #\h))
             (skip-wfc (single-char #\p))
+            (timings (single-char #\T))
             (transform (single-char #\t) (value #t))
             (verbose (single-char #\v))
             (version (single-char #\V))))
@@ -98,6 +100,7 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -v, --verbose          be more verbose, show progress
   -V, --version          display version
   -t, --transform=TRANS  use transformation TRANS
+  -T,--timings           show timings
 
 Commands:~a
 

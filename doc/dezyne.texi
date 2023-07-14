@@ -2638,6 +2638,10 @@ amount of time.  As the well-formedness check does not change a correct
 @code{AST} in any way, it can be safely skipped when parsing a
 previously checked and unmodified program (@xref{Invoking dzn parse}).
 
+@item --timings
+@itemx -T
+Show detailed Scheme and mCRL2 timing information.
+
 @item --transform=@var{trans}
 @itemx -c @var{trans}
 Apply transformation @var{trans} after parsing.  Use @command{dzn --help
