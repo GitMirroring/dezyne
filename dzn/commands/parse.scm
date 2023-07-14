@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -79,36 +79,43 @@ Parse a Dezyne file and produce an AST
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
-(define (parse options file-name)
+(define* (parse options file-name #:key (exit? #t))
   (let* ((debug? (dzn:command-line:get 'debug #f))
          (skip-wfc? (dzn:command-line:get 'skip-wfc #f))
          (imports (command-line:get 'import))
          (locations? (command-line:get 'locations))
          (model-name (option-ref options 'model #f))
-         (parse-tree? (command-line:get 'parse-tree))
          (fall-back? (command-line:get 'fall-back))
+         (parse-tree? (or fall-back?
+                          (command-line:get 'parse-tree)))
          (transform (dzn:multi-opt 'transform)))
     (parameterize ((%locations? locations?)
                    (%peg:fall-back? fall-back?)
                    (%peg:error (format-display-syntax-error file-name)))
-      (let* ((ast parse-failed? (file->ast file-name
-                                           #:debug? debug?
-                                           #:imports imports
-                                           #:parse-tree? parse-tree?
-                                           #:skip-wfc? skip-wfc?
-                                           #:transform transform))
-             (ast (if (not model-name) ast
-                      (call-with-handle-exceptions
-                       (lambda _
-                         (ast:filter-model ast (ast:get-model ast model-name)))
-                       #:backtrace? debug?
-                       #:file-name file-name))))
-        (values ast parse-failed?)))))
+      (let ((ast parse-failed? (file->ast file-name
+                                          #:debug? debug?
+                                          #:imports imports
+                                          #:parse-tree? parse-tree?
+                                          #:skip-wfc? skip-wfc?
+                                          #:transform transform)))
+        (when (and parse-failed? exit?)
+          (exit EXIT_FAILURE))
+        (let ((ast (if (not model-name) ast
+                       (call-with-handle-exceptions
+                        (lambda _
+                          (ast:filter-model ast (ast:get-model ast model-name)))
+                        #:backtrace? debug?
+                        #:file-name file-name))))
+          (values ast parse-failed?))))))
 
 (define (preprocess options file-name)
   (let* ((imports (command-line:get 'import))
          (debug? (dzn:command-line:get 'debug #f)))
-    (file->stream file-name #:debug? debug? #:imports imports)))
+    (call-with-handle-exceptions
+     (lambda _
+       (file->stream file-name #:imports imports))
+     #:backtrace? debug?
+     #:file-name file-name)))
 
 (define (list-models file-name)
   "For each model in FILE-NAME, print 'name type'."
@@ -140,8 +147,8 @@ Parse a Dezyne file and produce an AST
            (display (preprocess options file-name)))
           (list-models? (list-models file-name))
           (else
-           (let ((ast parse-failed? (parse options file-name)))
-             (if (option-ref options 'output #f)
+           (let ((ast parse-failed? (parse options file-name #:exit? #f)))
+             (if (and ast (option-ref options 'output #f))
                  (let* ((file-name (option-ref options 'output "-"))
                         (locations? (command-line:get 'locations))
                         (sexp (and (not debug?)

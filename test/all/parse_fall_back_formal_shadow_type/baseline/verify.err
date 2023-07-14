@@ -1,1 +1,0 @@
-test/all/parse_fall_back_formal_shadow_type/parse_fall_back_formal_shadow_type.dzn:28:17: error: formal parameter data must not have the same name as its type
