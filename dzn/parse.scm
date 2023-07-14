@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -204,7 +204,7 @@ FILE-NAME."
         (lambda () (values (parse) #f))
         (lambda (key . args)
           (if fall-back? (parameterize ((%peg:fall-back? #t))
-                           ((lambda () (values (parse) #t))))
+                           (values (parse) #t))
               (apply (peg:handle-syntax-error file-name string
                                               #:content-alist content-alist)
                      key args)))))))
