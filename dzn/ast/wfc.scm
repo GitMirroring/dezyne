@@ -1427,10 +1427,11 @@
 (define-method (cyclic-bindings (o <system>))
   (let* ((instances (ast:instance* o))
          (required-alist (map (cut requires-instances <> o) instances)))
-    (append-map (lambda (i) (if (find (cut ast:eq? i <>) (all-required i o required-alist))
-                                `(,(wfc-error i (format #f "instance `~a' is in a cyclic binding" (.name i))))
-                                '()))
-                instances)))
+    (define (check-instance i)
+      (if (not (find (cute ast:eq? <> i) (all-required i o required-alist))) '()
+          `(,(wfc-error
+              i (format #f "instance `~a' is in a cyclic binding" (.name i))))))
+    (append-map check-instance instances)))
 
 (define-method (wfc:provides-in-event* (o <component>))
   (let* ((ports (ast:provides-port* o))
