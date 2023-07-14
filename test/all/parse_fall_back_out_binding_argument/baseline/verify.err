@@ -4,3 +4,5 @@ test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argume
 test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:12: `}' expected
 test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:12: `function, variable, declarative-statement, type, }' expected
 test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:44:4: `import, dollars, type, namespace, interface, component, EOF' expected
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:31:1: error: all provides ports should be defined as blocking
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:33:3: info: non-blocking provides port `p' define here

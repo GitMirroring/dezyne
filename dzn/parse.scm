@@ -41,14 +41,13 @@
   #:use-module (dzn ast parse)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn parse peg)
+  #:use-module (dzn misc)
   #:use-module (dzn parse peg)
   #:use-module (dzn ast wfc)
 
   #:export (file->ast
             file->stream
             file+import-content-alist
-            parse:handle-exceptions
             call-with-handle-exceptions
             peg:handle-syntax-error
             string->ast
@@ -224,35 +223,28 @@ FILE-NAME."
    '((FILE-NAME . CONTENT)
      (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
 
-parse CONTENT and return
+parse CONTENT and return multiple values
 
-'(((FILE-NAME . PARSE-TREE)
-  (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...) . PARSE-FAILED?)
-"
-  (define* (parse-filter alist #:key (filter-failed? #f))
-    (map (match-lambda
-           ((file-name . content)
-            (let ((parse-tree
-                   parse-failed?
-                   (string->parse-tree content
-                                       #:file-name file-name
-                                       #:content-alist alist)))
-              (if (and parse-failed? filter-failed?)
-                  (cons (cons file-name '()) parse-failed?)
-                  (cons (cons file-name parse-tree) parse-failed?)))))
-         alist))
+'((FILE-NAME . PARSE-TREE)
+  (IMPORTED-FILE-NAME . IMPORTED-PARSE-TREE) ...)
 
-  (define (get-parse-status tree-status-alist)
-    (and (pair? tree-status-alist)
-         (or (cdar tree-status-alist)
-             (get-parse-status (cdr tree-status-alist)))))
++
 
-  (let* ((parse-tree-status-alist (parse-filter alist #:filter-failed? #t))
-         (parse-failed? (get-parse-status parse-tree-status-alist))
-         (parse-tree-alist (filter (compose pair? cdar)
-                                   parse-tree-status-alist))
-         (parse-tree-alist (map car parse-tree-alist)))
-    (values parse-tree-alist parse-failed?)))
+  #true if parsing of any CONTENT failed."
+
+  (let* ((parse-failed? #f)
+         (alist (map
+                 (match-lambda
+                   ((file-name . content)
+                    (let ((tree failed?
+                                (string->parse-tree content
+                                                    #:file-name file-name
+                                                    #:content-alist alist)))
+                      (when failed?
+                        (set! parse-failed? #t))
+                      (cons file-name tree))))
+                 alist)))
+    (values alist parse-failed?)))
 
 (define* (parse-tree-alist->ast alist #:key (content-alist '())
                                 (working-directory (getcwd)))
@@ -317,13 +309,15 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
 
   (catch (if debug? 'none #t)
     helper
-    (parse:handle-exceptions file-name)))
+    (lambda (key . args)
+      (apply (parse:handle-exceptions file-name) key args)
+      (values #f #t))))
 
 (define (parse:handle-exceptions file-name)
   (lambda (key . args)
     (case key
       ((syntax-error)
-       (exit EXIT_FAILURE))
+       #t)
       ((import-error)
        (match args
          ((file imports content-alist)
@@ -338,27 +332,25 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
                    (let loop ((from from))
                      (when from
                        (format (current-error-port) "imported from ~a\n" from)
-                       (loop (assoc-ref imported-from (basename from))))))))))
-       (exit EXIT_FAILURE))
+                       (loop (assoc-ref imported-from (basename from)))))))))))
       ((error)
-       (apply format (current-error-port) "~a:error:~a\n" file-name args)
-       (exit EXIT_FAILURE))
+       (apply format (current-error-port) "~a:error:~a\n" file-name args))
       ((well-formedness-error)
-       (for-each wfc:report-message args)
-       (exit EXIT_FAILURE))
+       (for-each wfc:report-message args))
       ((system-error)
        (let ((errno (system-error-errno (cons key args))))
          (format (current-error-port) "~a: ~a\n"
-                 (strerror errno) file-name))
-       (exit EXIT_FAILURE))
-      (else (format (current-error-port) "internal error: ~a: ~a: ~s\n"
-                    file-name key args)
-            (exit EXIT_FAILURE)))))
+                 (strerror errno) file-name)))
+      (else
+       (format (current-error-port) "internal error: ~a: ~a: ~s\n"
+               file-name key args)))))
 
 (define* (call-with-handle-exceptions thunk #:key backtrace? (file-name "-"))
   (catch (if backtrace? 'none #t)
     thunk
-    (parse:handle-exceptions file-name)))
+    (lambda (key . args)
+      (apply (parse:handle-exceptions file-name) key args)
+      (exit EXIT_FAILURE))))
 
 (define* (string->ast string #:key parse-tree? skip-wfc? (transform '()))
   "Parse STRING and return an ast.  When PARSE-TREE?, return the parse
@@ -413,35 +405,30 @@ and the working directory.
                                           (string-match imported-regexp string))))))))
           (values alist dir)))))
 
-(define* (file->stream file-name #:key debug? (imports '()))
+(define* (file->stream file-name #:key (imports '()))
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
 statements and return the expanded dezyne text, similar to @command{gcc
--E}.  Unless @var{debug?}, handle exceptions."
+-E}."
 
-  (define (helper)
-    (let* ((content-alist
-            dir
-            (if (equal? file-name "-") (string->file+import-content-alist (read-string))
-                (file+import-content-alist file-name #:imports imports)))
-           (file (car content-alist))
-           (imports (cdr content-alist)))
-      (string-join
-       (append
-        (match file
-          ((file-name . content)
-           (if (string-prefix? "#dir " content) (list content)
-               (list (format #f "#dir ~s" dir)
-                     (format #f "#file ~s" file-name)
-                     content))))
-        (append-map (match-lambda ((file-name . content)
-                                   (list (format #f "#imported ~s" file-name)
-                                         content)))
-                    imports))
-       "\n")))
-
-  (catch (if debug? 'none #t)
-    helper
-    (parse:handle-exceptions file-name)))
+  (let* ((content-alist
+          dir
+          (if (equal? file-name "-") (string->file+import-content-alist (read-string))
+              (file+import-content-alist file-name #:imports imports)))
+         (file (car content-alist))
+         (imports (cdr content-alist)))
+    (string-join
+     (append
+      (match file
+        ((file-name . content)
+         (if (string-prefix? "#dir " content) (list content)
+             (list (format #f "#dir ~s" dir)
+                   (format #f "#file ~s" file-name)
+                   content))))
+      (append-map (match-lambda ((file-name . content)
+                                 (list (format #f "#imported ~s" file-name)
+                                       content)))
+                  imports))
+     "\n")))
 
 (define* (file+import-content-alist file-name #:key (imports '()) (content-alist '()))
   "Recursively resolve imports starting with FILE-NAME and return two
