@@ -35,6 +35,8 @@
   #:use-module (dzn misc)
   #:use-module (dzn templates)
 
+  #:declarative? #f
+
   #:export (c++:capture-arguments
             c++:dzn-locator
             c++:enum->string

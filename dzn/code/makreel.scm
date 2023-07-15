@@ -46,6 +46,8 @@
   #:use-module (dzn templates)
   #:use-module (dzn verify constraint)
 
+  #:declarative? #f
+
   #:export (%model-name
             makreel:.name
             makreel:enum-fields

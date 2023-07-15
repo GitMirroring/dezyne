@@ -24,35 +24,73 @@
 ;;; Code:
 
 (define-module (dzn script)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+
+  #:use-module (system repl error-handling)
+
   #:use-module (ice-9 documentation)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
-  #:use-module (system repl error-handling)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn command-line)
+  #:use-module (dzn misc)
   #:use-module (dzn shell-util)
+  #:use-module (dzn timing)
+  #:use-module (dzn timing instrument)
+
+  #:declarative? #f ;for timing instrumentation
+
   #:export (main
             parse-opts
             script:command
             script:command-module))
 
+;; Procedures to instrument with display-duration
+;; the first entry also prints accumulated times.
+(define %time
+  `(((dzn script) run-command)
+    ((dzn parse) file+import-content-alist)
+    ((dzn parse) file->ast)
+    ((dzn parse) file->stream)
+    ((dzn parse) string->ast)
+    ((dzn ast normalize) normalize:event+illegals)
+    ((dzn ast normalize) normalize:state+illegals)
+    ((dzn code) code:normalize)
+    ((dzn code) code:normalize+determinism)
+    ((dzn code c++) ast->)
+    ((dzn code makreel) makreel:normalize)
+    ((dzn code makreel) ast->)
+    ((dzn ast wfc) wfc (,<root>))))
+
+;; Procedures to instrument with measure-duration.
+(define %measure
+  `(((dzn parse) parse-tree->ast)
+    ((dzn parse) string->parse-tree)
+    ((dzn code makreel) root->)
+    ((dzn ast accessor) ast:parent (,<ast> ,<class>))
+    ((dzn ast lookup) ast:lookup (,<ast> ,<top>))
+    ((dzn ast lookup) ast:lookup-variable (,<ast> ,<top>))))
+
 (define (parse-opts args)
   (let* ((option-spec
 	  '((debug (single-char #\d))
             (help (single-char #\h))
-	    (skip-wfc (single-char #\p))
-	    (transform (single-char #\t) (value #t))
-	    (verbose (single-char #\v))
-	    (version (single-char #\V))))
-	 (options (getopt-long args option-spec
-		               #:stop-at-first-non-option #t))
-	 (verbose? (option-ref options 'verbose #f))
-	 (help? (option-ref options 'help #f))
-	 (files (option-ref options '() '()))
-	 (usage? (and (not help?) (null? files)))
-	 (version? (option-ref options 'version #f)))
+            (repl (single-char #\R))
+            (skip-wfc (single-char #\p))
+            (timings (single-char #\T))
+            (transform (single-char #\t) (value #t))
+            (verbose (single-char #\v))
+            (version (single-char #\V))))
+         (options (getopt-long args option-spec
+                               #:stop-at-first-non-option #t))
+         (verbose? (option-ref options 'verbose #f))
+         (help? (option-ref options 'help #f))
+         (files (option-ref options '() '()))
+         (usage? (and (not help?) (null? files)))
+         (version? (option-ref options 'version #f)))
 
     (define (list-commands dir)
       (map (cut basename <> ".go")
@@ -126,9 +164,8 @@ Use \"dzn COMMAND --help\" for command-specific information.
   (let ((command (script:command #:options options)))
     (resolve-module `(dzn commands ,command))))
 
-(define (run-command args)
-  (let* ((options (parse-opts args))
-         (command (script:command #:options options))
+(define (run-command options)
+  (let* ((command (script:command #:options options))
          (module (script:command-module #:options options))
          (main (and module (false-if-exception (module-ref module 'main))))
          (command-args (command:command-line options)))
@@ -138,6 +175,10 @@ Use \"dzn COMMAND --help\" for command-specific information.
     (main command-args)))
 
 (define (main args)
-  (let ((repl? (getenv "DZN_REPL")))
-    (if repl? (call-with-error-handling (cute run-command args))
-        (run-command args))))
+  (let* ((options (parse-opts args))
+         (repl? (option-ref options 'repl #f))
+         (timings? (option-ref options 'timings #f)))
+    (when timings?
+      (instrument-timings %time %measure))
+    (if repl? (call-with-error-handling (cute run-command options))
+        (run-command options))))

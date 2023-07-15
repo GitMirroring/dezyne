@@ -38,6 +38,8 @@
   #:use-module (dzn misc)
   #:use-module (dzn vm goops)
 
+  #:declarative? #f
+
   #:export (<port-pair>
             .other
             %calling-context

@@ -45,6 +45,8 @@
   #:use-module (dzn parse peg)
   #:use-module (dzn ast wfc)
 
+  #:declarative? #f
+
   #:export (file->ast
             file->stream
             file+import-content-alist
