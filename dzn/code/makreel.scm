@@ -50,6 +50,9 @@
   #:use-module (dzn code dzn)
   #:use-module (dzn normalize)
   #:use-module (dzn templates)
+
+  #:declarative? #f
+
   #:export (%model-name
             makreel:.name
             makreel:enum-fields

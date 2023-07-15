@@ -41,10 +41,11 @@
   #:use-module (dzn code)
   #:use-module (dzn code-util)
   #:use-module (dzn indent)
-
   #:use-module (dzn ast)
-
   #:use-module (dzn templates)
+
+  #:declarative? #f
+
   #:export (c++:capture-arguments
             c++:dzn-locator
             c++:enum->string

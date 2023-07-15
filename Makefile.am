@@ -97,6 +97,7 @@ include runtime/local.mk
 include runtime/scheme/dzn/local.mk
 include dzn/verify/local.mk
 include dzn/templates/local.mk
+include dzn/timing/local.mk
 include emacs/local.mk
 
 GUILEC_FLAGS =					\

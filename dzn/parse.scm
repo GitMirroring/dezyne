@@ -46,6 +46,8 @@
   #:use-module ((oop goops) #:renamer (lambda (x) (if (member x '(<port> <foreign>)) (symbol-append 'goops: x) x)))
   #:use-module (dzn goops)
 
+  #:declarative? #f
+
   #:export (file->ast
             file->stream
             file+import-content-alist
