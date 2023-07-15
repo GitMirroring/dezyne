@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
@@ -24,24 +24,62 @@
 ;;; Code:
 
 (define-module (dzn script)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+
+  #:use-module (system repl error-handling)
+
   #:use-module (ice-9 documentation)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
-  #:use-module (system repl error-handling)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
+
+  #:use-module (dzn ast goops)
   #:use-module (dzn command-line)
+  #:use-module (dzn misc)
   #:use-module (dzn shell-util)
+  #:use-module (dzn timing)
+  #:use-module (dzn timing instrument)
+
+  #:declarative? #f ;for timing instrumentation
+
   #:export (main
             parse-opts
             script:command
             script:command-module))
 
+;; Procedures to instrument with display-duration
+;; the first entry also prints accumulated times.
+(define %time
+  `(((dzn script) run-command)
+    ((dzn parse) file+import-content-alist)
+    ((dzn parse) file->ast)
+    ((dzn parse) file->stream)
+    ((dzn parse) string->ast)
+    ((dzn ast normalize) normalize:event+illegals)
+    ((dzn ast normalize) normalize:state+illegals)
+    ((dzn code) code:normalize)
+    ((dzn code) code:normalize+determinism)
+    ((dzn code language c++) ast->)
+    ((dzn code language makreel) makreel:normalize)
+    ((dzn code scmackerel makreel) root->scmackerel)
+    ((dzn code scmackerel makreel) scmackerel:display)
+    ((dzn ast wfc) wfc (,<root>))))
+
+;; Procedures to instrument with measure-duration.
+(define %measure
+  `(((dzn parse) parse-tree->ast)
+    ((dzn parse) string->parse-tree)
+    ((dzn code language makreel) root->)
+    ((dzn ast accessor) ast:parent (,<ast> ,<class>))
+    ((dzn ast lookup) ast:lookup (,<ast> ,<top>))
+    ((dzn ast lookup) ast:lookup-variable (,<ast> ,<top>))))
+
 (define (parse-opts args)
   (let* ((option-spec
           '((debug (single-char #\d))
             (help (single-char #\h))
+            (repl (single-char #\R))
             (skip-wfc (single-char #\p))
             (timings (single-char #\T))
             (transform (single-char #\t) (value #t))
@@ -127,9 +165,8 @@ Use \"dzn COMMAND --help\" for command-specific information.
   (let ((command (script:command #:options options)))
     (resolve-module `(dzn commands ,command))))
 
-(define (run-command args)
-  (let* ((options (parse-opts args))
-         (command (script:command #:options options))
+(define (run-command options)
+  (let* ((command (script:command #:options options))
          (module (script:command-module #:options options))
          (main (and module (false-if-exception (module-ref module 'main))))
          (command-args (command:command-line options)))
@@ -139,6 +176,10 @@ Use \"dzn COMMAND --help\" for command-specific information.
     (main command-args)))
 
 (define (main args)
-  (let ((repl? (getenv "DZN_REPL")))
-    (if repl? (call-with-error-handling (cute run-command args))
-        (run-command args))))
+  (let* ((options (parse-opts args))
+         (repl? (option-ref options 'repl #f))
+         (timings? (option-ref options 'timings #f)))
+    (when timings?
+      (instrument-timings %time %measure))
+    (if repl? (call-with-error-handling (cute run-command options))
+        (run-command options))))

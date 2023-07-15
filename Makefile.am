@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 # Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -102,6 +102,7 @@ include runtime/local.mk
 include runtime/scheme/dzn/local.mk
 include dzn/verify/local.mk
 include dzn/templates/local.mk
+include dzn/timing/local.mk
 include emacs/local.mk
 
 GUILEC_FLAGS =					\

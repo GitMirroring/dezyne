@@ -43,6 +43,8 @@
   #:use-module (dzn config)
   #:use-module (dzn misc)
 
+  #:declarative? #f
+
   #:export (root->scmackerel
             scmackerel:display))
 

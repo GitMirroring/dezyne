@@ -43,6 +43,8 @@
   #:use-module (dzn verify constraint)
   #:use-module (dzn vm goops)
 
+  #:declarative? #f
+
   #:export (%calling-context
             %language
             %member-prefix

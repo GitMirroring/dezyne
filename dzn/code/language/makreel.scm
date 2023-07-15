@@ -46,6 +46,8 @@
   #:use-module (dzn misc)
   #:use-module (dzn verify constraint)
 
+  #:declarative? #f
+
   #:export (%model-name
             makreel:.name
             makreel:arguments
@@ -315,7 +317,8 @@
     (format #f "~a, ~a" (.line location) (.column location))))
 
 (define (makreel:process-identifier o)
-  (let* ((model-key ((compose .id (cute ast:parent <> <model>)) o))
+  (let* ((model (ast:parent o <model>))
+         (model-key (.id model))
          (path (ast:path o))
          (key (map .id path))
          (next (assq-ref (%next-alist) model-key))
