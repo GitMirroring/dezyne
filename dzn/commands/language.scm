@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -39,6 +39,7 @@
   #:use-module (dzn parse util)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse stress)
+  #:use-module (dzn peg util)
 
   #:export (main))
 
@@ -106,7 +107,7 @@ Dezyne language tool for completion and lookup information
           (let* ((file (resolve-file file-name))
                  (text (with-input-from-file file read-string))
                  (tree (parameterize ((%peg:fall-back? #t))
-                         (string->parse-tree text #:file-name file-name))))
+                         (parse:string->tree text #:file-name file-name))))
             (set! parse-alist (acons file-name tree parse-alist))
             tree)))
     (define (file-name->text file-name)
@@ -118,10 +119,10 @@ Dezyne language tool for completion and lookup information
                               (%peg:locations? #t)
                               (%peg:skip? peg:skip-parse)
                               (%peg:fall-back? #t)
-                              (%peg:error (format-display-syntax-error
+                              (%peg:error (peg:format-display-syntax-error
                                            file-name)))
                            (cons (string-length input)
-                                 (string->parse-tree input #:file-name file-name))))
+                                 (parse:string->tree input #:file-name file-name))))
            (offset (or (and+pred=> (option-ref options 'offset #f) string->number)
                        (and+pred=> (or (option-ref options 'line #f)
                                        (option-ref options 'point #f))

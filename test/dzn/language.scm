@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-;;; Copyright © 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -59,12 +59,12 @@
 (define (file-name->parse-tree file-name)
   (let ((text (file-name->text file-name)))
     (parameterize ((%peg:fall-back? #t))
-      (string->parse-tree text #:file-name file-name))))
+      (parse:string->tree text #:file-name file-name))))
 
 (define* (test-context #:key file-name text line (column 0) offset)
   (let* ((text   (or text (file-name->text file-name)))
          (root   (parameterize ((%peg:fall-back? #t))
-                   (string->parse-tree text #:file-name file-name)))
+                   (parse:string->tree text #:file-name file-name)))
          (offset (or offset
                      (and line (line-column->offset line column text))
                      (string-length text))))

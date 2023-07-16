@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -48,7 +48,7 @@ interface test
   }
 }
 ")
-       (ast (string->ast test))
+       (ast (parse:string->ast test))
        (functions (tree-collect (is? <function>) ast)))
   (test-equal "silent"
     '(#f)
@@ -72,7 +72,7 @@ interface test
   }
 }
 ")
-       (ast (string->ast test))
+       (ast (parse:string->ast test))
        (functions (tree-collect (is? <function>) ast)))
   (test-equal "silent if"
     '(#f)
@@ -94,7 +94,7 @@ interface test
   }
 }
 ")
-       (ast (string->ast test))
+       (ast (parse:string->ast test))
        (functions (tree-collect (is? <function>) ast)))
   (test-equal "silent recurse"
     '(#f)
@@ -115,7 +115,7 @@ interface test
   }
 }
 ")
-       (ast (string->ast test))
+       (ast (parse:string->ast test))
        (functions (tree-collect (is? <function>) ast)))
   (test-equal "noisy action"
     '(#t)
@@ -136,7 +136,7 @@ interface test
   }
 }
 ")
-       (ast (string->ast test))
+       (ast (parse:string->ast test))
        (functions (tree-collect (is? <function>) ast)))
   (test-equal "noisy assign"
     '(#t)
@@ -161,7 +161,7 @@ interface test
   }
 }
 ")
-       (ast (string->ast test))
+       (ast (parse:string->ast test))
        (functions (tree-collect (is? <function>) ast)))
   (test-equal "noisy if"
     '(#t)
@@ -192,7 +192,7 @@ interface test
   }
 }
 ")
-       (ast (string->ast test))
+       (ast (parse:string->ast test))
        (functions (tree-collect (is? <function>) ast)))
   (test-equal "mutual recurse"
     '(#t #t)

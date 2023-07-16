@@ -38,9 +38,9 @@
   #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
-  #:export (parse-tree->ast))
+  #:export (parse:tree->ast))
 
-(define* (parse-tree->ast o #:key string (file-name "<stdin>") working-directory)
+(define* (parse:tree->ast o #:key string (file-name "<stdin>") working-directory)
   "Return a root AST for parse-tree O."
   (define (make-list? o) (if (pair? o) o
                              (list o)))
