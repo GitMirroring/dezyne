@@ -43,7 +43,7 @@ interface iworld
   }
 }
 
-component function_out_state
+component parse_function_out_state
 {
   provides ihello h;
   requires iworld w;

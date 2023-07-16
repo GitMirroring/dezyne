@@ -306,7 +306,6 @@ REGRESSION_TESTS =				\
  %D%/foreign_requires				\
  %D%/formal_binding				\
  %D%/function_early_return			\
- %D%/function_out_state				\
  %D%/function_reply_early_return		\
  %D%/guard_expressions				\
  %D%/generalized_integer			\
@@ -543,6 +542,7 @@ PARSER_TESTS =					\
  %D%/parse_fall_back_preprocessed_imported_baz 	\
  %D%/parse_fall_back_syntax 			\
  %D%/parse_fall_back_type_mismatch 		\
+ %D%/parse_function_out_state			\
  %D%/parse_parameter_mismatch			\
  %D%/parse_peg_locations			\
  %D%/parse_preprocessed_foo			\
