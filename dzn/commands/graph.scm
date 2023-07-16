@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -109,7 +109,7 @@ Generate graph from a Dezyne model
                                 options))
          (ast (parameterize ((%language "makreel"))
                 (parse parse-options file-name)))
-         (model (call-with-handle-exceptions
+         (model (parse:call-with-handle-exceptions
                  (lambda _ (ast:get-model ast model-name))
                  #:backtrace? debug?
                  #:file-name file-name))

@@ -260,7 +260,7 @@ parse test/all/hello_interface/hello_interface.dzn -o-
   (working-directory . "<pwd>")))
 parse -o- test/all/hello_interface/hello_interface.dzn => 0
 parse --fall-back test/language/interface1.dzn
-parse --fall-back test/language/interface1.dzn => 1
+parse --fall-back test/language/interface1.dzn => 0
 parse --fall-back --parse-tree test/language/interface1.dzn
 (("test/language/interface1.dzn"
   root
@@ -268,7 +268,7 @@ parse --fall-back --parse-tree test/language/interface1.dzn
     "test/language/interface1.dzn"
     (location 0 0))
   (location 0 6)))
-parse --fall-back --parse-tree test/language/interface1.dzn => 1
+parse --fall-back --parse-tree test/language/interface1.dzn => 0
 --verbose parse parse --parse-tree test/language/interface1.dzn
 parse: errors found
 --verbose parse --parse-tree test/language/interface1.dzn => 1
@@ -287,7 +287,7 @@ parse: errors found
 parse test/language/interface1.dzn -o-
 parse -o- test/language/interface1.dzn => 1
 parse --fall-back test/all/parse_import_path/parse_import_path.dzn
-parse --fall-back test/all/parse_import_path/parse_import_path.dzn => 1
+parse --fall-back test/all/parse_import_path/parse_import_path.dzn => 0
 parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn
 (("test/all/parse_import_path/parse_import_path.dzn"
   root
@@ -370,7 +370,7 @@ parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn
     "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n"
     (location 0 859))
   (location 859 915)))
-parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn => 1
+parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn => 0
 --verbose parse parse --parse-tree test/all/parse_import_path/parse_import_path.dzn
 parse: errors found
 --verbose parse --parse-tree test/all/parse_import_path/parse_import_path.dzn => 1
