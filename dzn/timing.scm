@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -28,9 +29,12 @@
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
 
+  #:use-module (dzn misc)
+
   #:export (cute*
             display-duration
             display-runtime
+            display-nonzero-runtime
             measure-duration
             seconds-between-stamps))
 
@@ -41,25 +45,47 @@
   (syntax-rules ()
     ((_ exp)
      (let ((t1 (get-internal-run-time))
-           (result ((lambda () exp)))
+           (result ((lambda _ exp)))
            (t2 (get-internal-run-time)))
        (values result t1 t2)))
     ((_ variable exp)
      (let ((t1 (get-internal-run-time))
-           (result ((lambda () exp)))
+           (result ((lambda _ exp)))
            (t2 (get-internal-run-time)))
        (set! variable (+ variable (seconds-between-stamps t1 t2)))
+       (values result t1 t2)))
+    ((_ module name exp)
+     (let ((t1 (get-internal-run-time))
+           (result (call-with-values (lambda _ exp)
+                     (lambda args args)))
+           (t2 (get-internal-run-time)))
+       (module-set! module name
+                    (+ (module-ref module name)
+                       (seconds-between-stamps t1 t2)))
        (values result t1 t2)))))
 
 (define (display-runtime label s)
   (format (current-error-port) "~10,6fs: ~a\n" s label))
 
+(define (display-nonzero-runtime label s)
+  (unless (zero? s)
+    (format (current-error-port) "~10,6fs: ~a\n" s label)))
+
 (define-syntax display-duration
   (syntax-rules ()
     ((_ label exp)
-     (let ((result t1 t2 (measure-duration exp)))
-       (display-runtime label (seconds-between-stamps t1 t2))
-       result))))
+     (let ((t1 (get-internal-run-time)))
+       (catch #t
+         (lambda _
+           (let* ((result (call-with-values (lambda _ exp)
+                            (lambda args args)))
+                  (t2 (get-internal-run-time)))
+             (display-runtime label (seconds-between-stamps t1 t2))
+             (apply values result)))
+         (lambda args
+           (let ((t2 (get-internal-run-time)))
+             (display-runtime label (seconds-between-stamps t1 t2))
+             (apply throw args))))))))
 
 (define (cute* label f)
   (lambda args (display-duration label (apply f args))))
