@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -147,7 +147,7 @@ completed, such as removal of BEHAVIOR, SYSTEM and type definitions."
                            ((%peg:locations? #t)
                             (%peg:skip? peg:skip-parse)
                             (%peg:fall-back? #t))
-                         (string->parse-tree str))
+                         (parse:string->tree str))
                        offset)))
         (complete (.tree context) context (1+ offset)))))
    str offset))

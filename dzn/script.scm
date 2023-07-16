@@ -53,10 +53,11 @@
 ;; the first entry also prints accumulated times.
 (define %time
   `(((dzn script) run-command)
-    ((dzn parse) file+import-content-alist)
-    ((dzn parse) file->ast)
-    ((dzn parse) file->stream)
-    ((dzn parse) string->ast)
+    ((dzn parse) parse:file->content-alist)
+    ((dzn parse) parse:string->content-alist)
+    ((dzn parse) parse:content-alist->tree-alist)
+    ((dzn parse) parse:tree-alist->ast)
+    ((dzn parse) parse:file->tree-alist+content-alist)
     ((dzn ast normalize) normalize:event+illegals)
     ((dzn ast normalize) normalize:state+illegals)
     ((dzn code) code:normalize)
@@ -68,9 +69,9 @@
 
 ;; Procedures to instrument with measure-duration.
 (define %measure
-  `(((dzn parse) parse-tree->ast)
-    ((dzn parse) string->parse-tree)
-    ((dzn code language makreel) root->)
+  `(((dzn parse) parse:file->string)
+    ((dzn parse) parse:string->tree)
+    ((dzn parse) parse:tree->ast)
     ((dzn ast accessor) ast:parent (,<ast> ,<class>))
     ((dzn ast lookup) ast:lookup (,<ast> ,<top>))
     ((dzn ast lookup) ast:lookup-variable (,<ast> ,<top>))))

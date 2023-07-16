@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -909,7 +909,7 @@ status."
          (file-name (search-path
                      (cons "." (find-files (string-append %test-dir "/all") #:directories? #t))
                      file-name))
-         (root (file->ast file-name))
+         (root (parse:file->ast file-name))
          (root (vm:normalize root)))
     (%sut (runtime:get-sut root (ast:get-model root model-name)))
     (%instances (runtime:create-instances (%sut)))

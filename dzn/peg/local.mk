@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -26,7 +26,8 @@ dist_%C%_scm_DATA =				\
  %D%/simplify-tree.scm				\
  %D%/codegen.scm				\
  %D%/cache.scm					\
- %D%/using-parsers.scm
+ %D%/using-parsers.scm				\
+ %D%/util.scm
 
 dist_nocompile_%C%_scm_DATA =
 

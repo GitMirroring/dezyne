@@ -110,7 +110,7 @@ Generate graph from a Dezyne model
                                 options))
          (ast (parameterize ((%language "makreel"))
                 (parse parse-options file-name)))
-         (model (call-with-handle-exceptions
+         (model (parse:call-with-handle-exceptions
                  (lambda _ (ast:get-model ast model-name))
                  #:backtrace? debug?
                  #:file-name file-name))

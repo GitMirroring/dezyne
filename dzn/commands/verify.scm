@@ -112,7 +112,7 @@ Check DZN-FILE for verification errors in Dezyne models
                    (%queue-size-external queue-size-external))
 
       (let* ((ast (parse options file-name))
-             (model (and model-name (call-with-handle-exceptions
+             (model (and model-name (parse:call-with-handle-exceptions
                                      (lambda _ (ast:get-model ast model-name))
                                      #:backtrace? debug?
                                      #:file-name file-name)))
@@ -135,7 +135,7 @@ Check DZN-FILE for verification errors in Dezyne models
               (format #t "formats:~a\n" (string-join (verification:formats)
                                                      "\n  " 'prefix))
               (exit EXIT_OTHER_FAILURE))
-            (let* ((model (call-with-handle-exceptions
+            (let* ((model (parse:call-with-handle-exceptions
                            (lambda _ (ast:get-model ast model-name))
                            #:backtrace? debug?
                            #:file-name file-name))
