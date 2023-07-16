@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
@@ -58,7 +58,7 @@
 
   (code:foreign-conflict? root)
 
-  (let ((root (code:om+determinism root)))
+  (let ((root (code:normalize+determinism root)))
     (let ((generator (code:indenter (cute print-header-ast root)))
           (file-name (code:root-file-name root dir ".hh")))
       (code:dump root generator #:file-name file-name))

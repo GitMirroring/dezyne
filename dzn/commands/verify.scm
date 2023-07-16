@@ -117,7 +117,7 @@ Check DZN-FILE for verification errors in Dezyne models
                                      (lambda _ (ast:get-model ast model-name))
                                      #:backtrace? debug?
                                      #:file-name file-name)))
-             (root (makreel:om ast)))
+             (root (makreel:normalize ast)))
         (when (and=> model ast:imported?)
           (let ((name (ast:dotted-name model)))
             (format (current-error-port)

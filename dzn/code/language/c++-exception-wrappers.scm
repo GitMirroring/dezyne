@@ -3,6 +3,7 @@
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2022, 2023 Janneke  Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -114,7 +115,7 @@
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
 
-  (let ((root (code:om root)))
+  (let ((root (code:normalize root)))
     (let* ((generator (code:indenter (cute x:header root)))
            (base (basename (ast:source-file root) ".dzn"))
            (file-name (code:source-file-name base dir "_exception_forwarding.hh")))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -178,7 +178,7 @@
                  (%name-infix "_")
                  (%type-infix "_")
                  (%type-prefix ""))
-    (let ((root (code:om+determinism root)))
+    (let ((root (code:normalize+determinism root)))
       (let ((generator (code:indenter (cute print-header-ast root)))
             (file-name (code:root-file-name root dir ".h")))
         (code:dump root generator #:file-name file-name))

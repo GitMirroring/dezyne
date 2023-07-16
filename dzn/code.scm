@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -83,10 +83,10 @@
             code:member
             code:member-name
             code:model*
+            code:normalize
+            code:normalize+determinism
             code:number-argument
             code:number-formals
-            code:om
-            code:om+determinism
             code:on
             code:out-binding
             code:port-binding?
@@ -493,7 +493,7 @@
          (debugity (dzn:debugity))
          (model-name (ast:dotted-name o))
          (root (ast:parent o <root>))
-         (root' (makreel:om root))
+         (root' (makreel:normalize root))
          (interface' (makreel:get-model root' model-name))
          (lts (interface->constraint-lts interface'))
          (rtc-lts (lts->rtc-lts lts)))
@@ -744,7 +744,7 @@
                        #:bindings (.bindings o))))
           (clone shell #:parent (.parent o))))))
 
-(define (code:om- ast)
+(define (code:normalize- ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
       add-reply-port
@@ -754,17 +754,17 @@
       code:add-calling-context)
      ast)))
 
-(define (code:om ast)
-  (let ((root (code:om- ast)))
+(define (code:normalize ast)
+  (let ((root (code:normalize- ast)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     root))
 
-(define (code:om+determinism ast)
+(define (code:normalize+determinism ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     (let ((root ((compose
                   add-determinism-temporaries
-                  code:om-)
+                  code:normalize-)
                  ast)))
       (when (> (dzn:debugity) 1)
         (ast:pretty-print root (current-error-port)))

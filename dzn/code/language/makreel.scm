@@ -4,7 +4,7 @@
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -62,7 +62,7 @@
             makreel:locals
             makreel:model->makreel
             makreel:name
-            makreel:om
+            makreel:normalize
             makreel:process-parameters
             makreel:process-parens
             makreel:stack-empty?
@@ -568,7 +568,7 @@
     (_
      #f)))
 
-(define (makreel:om ast)
+(define (makreel:normalize ast)
   (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
     (let ((root ((compose
                   makreel:add-action-reply
@@ -668,7 +668,7 @@
     (root->scmackerel o)))
 
 (define* (ast-> ast #:key dir model)
-  (let ((root (makreel:om ast))
+  (let ((root (makreel:normalize ast))
         (init (command-line:get 'init)))
     (if model (makreel:model->makreel root (makreel:get-model root model))
         (root-> root))

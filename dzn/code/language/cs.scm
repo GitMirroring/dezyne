@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -98,7 +98,7 @@
 ;;;
 ;;; Normalizations.
 ;;;
-(define (cs:om ast)
+(define (cs:normalize ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
       add-reply-port
@@ -121,7 +121,7 @@
                  (%name-infix ".")
                  (%type-infix ".")
                  (%type-prefix "global::"))
-    (let ((root (cs:om root)))
+    (let ((root (cs:normalize root)))
       (let ((generator (code:indenter (cute print-code-ast root)))
             (file-name (code:root-file-name root dir ".cs")))
         (code:dump root generator #:file-name file-name))
