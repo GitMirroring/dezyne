@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
@@ -166,7 +166,7 @@ Generate exhaustive set of traces for Dezyne model
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
-      (let* ((root (makreel:om ast))
+      (let* ((root (makreel:normalize ast))
              (models (ast:model* root))
              (components-interfaces
               (append

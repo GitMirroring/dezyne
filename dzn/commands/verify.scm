@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -115,7 +115,7 @@ Check DZN-FILE for verification errors in Dezyne models
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
-      (let ((root (makreel:om ast)))
+      (let ((root (makreel:normalize ast)))
         (when (and=> model ast:imported?)
           (let ((name (ast:dotted-name model)))
             (format (current-error-port)

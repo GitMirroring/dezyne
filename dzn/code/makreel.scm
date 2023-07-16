@@ -55,7 +55,7 @@
             makreel:model->makreel
             makreel:model-name
             makreel:name
-            makreel:om
+            makreel:normalize
             makreel:reply-type-sort
             makreel:tick-names
             makreel:unticked-dotted-name
@@ -1083,7 +1083,7 @@
     (_
      #f)))
 
-(define (makreel:om ast)
+(define (makreel:normalize ast)
   (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
     (let ((root ((compose
                   makreel:mark-tail-call
@@ -1111,7 +1111,7 @@
     (newline)))
 
 (define* (ast-> ast #:key dir model)
-  (let ((root (makreel:om ast))
+  (let ((root (makreel:normalize ast))
         (init (command-line:get 'init)))
     (if model (makreel:model->makreel root (makreel:get-model root model))
         (root-> root))
