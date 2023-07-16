@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -96,7 +96,7 @@ Check DZN-FILE for verification errors in Dezyne models
                                  (lambda _ (ast:get-model ast model-name))
                                  #:backtrace? debug?
                                  #:file-name file-name)))
-         (root (makreel:om ast))
+         (root (makreel:normalize ast))
          (queue-size (option-ref options 'queue-size (%queue-size)))
          (queue-size-defer (option-ref options 'queue-size-defer
                                        (%queue-size-defer)))

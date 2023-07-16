@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2015, 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -109,7 +109,7 @@
 
   (code-util:foreign-conflict? root)
 
-  (let ((root (code:om root)))
+  (let ((root (code:normalize root)))
 
     (let ((generator (code-util:indenter (cute x:source root)))
           (file-name (code-util:root-file-name root dir ".js")))

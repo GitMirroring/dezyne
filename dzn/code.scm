@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -97,8 +97,8 @@
             code:model
             code:non-injected-bindings
             code:non-injected-instances
-            code:om
-            code:om+determinism
+            code:normalize
+            code:normalize+determinism
             code:ons
             code:out-argument
             code:port-bind?
@@ -759,7 +759,7 @@
                        (lambda (a b)
                          (ast:eq? (.port a) (.port b))))))
 
-(define (code:om ast)
+(define (code:normalize ast)
   (let ((root ((compose
                 add-reply-port
                 normalize:event+illegals
@@ -771,10 +771,10 @@
       (ast:pretty-print root (current-error-port)))
     root))
 
-(define (code:om+determinism ast)
+(define (code:normalize+determinism ast)
   ((compose
     add-determinism-temporaries
-    code:om)
+    code:normalize)
    ast))
 
 

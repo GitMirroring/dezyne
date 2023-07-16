@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
@@ -235,10 +235,10 @@
     ((? (is? <ast>)) (tree-map wrap-lonely-variable o))
     (_ o)))
 
-(define (scheme:om ast)
+(define (scheme:normalize ast)
   ((compose
     wrap-lonely-variable
-    code:om)
+    code:normalize)
    ast))
 
 (define-templates-macro define-templates scheme)
@@ -256,7 +256,7 @@
 
   (code-util:foreign-conflict? root)
 
-  (let ((root (scheme:om root))
+  (let ((root (scheme:normalize root))
         (indenter (cute code-util:indenter <>
                         #:open #\( #:close #\) #:no-indent "")))
 
