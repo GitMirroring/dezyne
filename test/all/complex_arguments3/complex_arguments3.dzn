@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,30 +23,20 @@
 interface ihello
 {
   in bool hello ();
-  in bool hey ();
-  in bool hi ();
-  in bool goodbye ();
-  in bool bye ();
-  in void sayonara ();
   out void one ();
   out void two ();
   out void three ();
   out void foo ();
-  out void bar ();
-  out void baz ();
+  in void cruel ();
 
   behavior
   {
     on hello: {one;foo;reply (true);}
-    on hey: {one;bar;reply (false);}
-    on hi: {one;foo;reply (true);}
-    on goodbye: {one;foo;reply (true);}
-    on bye: {one;bar;three;reply (true);}
-    on sayonara: {one;foo;two;foo;three;baz;}
+    on cruel: {two;three;}
   }
 }
 
-component complex_arguments
+component complex_arguments3
 {
   provides ihello h;
   behavior
@@ -56,39 +46,13 @@ component complex_arguments
     bool three () {h.three ();return true;}
 
     bool foo (bool x) {h.foo ();return !x;}
-    bool bar (bool x, bool y) {h.bar ();return x || y;}
-    void baz (bool x) {h.baz ();}
 
     on h.hello ():
-    {
-      bool x = foo (one () && two ());
-      reply (x);
-    }
-    on h.hey ():
-    {
-      bool x = false;
-      x = bar (x, one () && two ());
-      reply (x);
-    }
-    on h.hi ():
-    {
-      bool x = false;
-      x = foo (one ()) || three ();
-      reply (x);
-    }
-    on h.goodbye ():
     {
       bool x = false;
       x = foo (one () && two ()) || three ();
       reply (x);
     }
-    on h.bye ():
-    {
-      bool x = false;
-      x = bar (x, one () && two ()) || three ();
-      reply (x);
-    }
-    on h.sayonara ():
-      baz ((foo (one ()) && !foo (two ())) || !three ());
+    on h.cruel (): {bool b = two(); b = three ();}
   }
 }
