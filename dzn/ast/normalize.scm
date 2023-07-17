@@ -1139,13 +1139,6 @@ expressions explicit."
      (let* ((statement (.statement o))
             (statement (add-explicit-temporaries statement)))
        (clone o #:statement statement)))
-    (($ <defer>)
-     (let* ((statement (.statement o))
-            (split? (or (split-complex? statement) (add-temporary? statement))))
-       (if (not split?) o
-           (let* ((statement (split+add-temporaries statement))
-                  (statement (add-explicit-temporaries statement)))
-             (clone o #:statement statement)))))
     ((and ($ <compound>) (? ast:declarative?))
      (clone o #:elements (map add-explicit-temporaries (ast:statement* o))))
     (($ <compound>)
@@ -1192,15 +1185,6 @@ explitic temporaries."
 (define (split-complex-expressions o)
   "Split && and || into an if with a simple expression.  Depends on the
 add-explicit-temporaries transformation for splitting argument lists."
-
-  (define (replace-argument o old new)
-    (define (replace o)
-      (if (ast:node-eq? o old) new
-          o))
-    (let* ((arguments (ast:argument* o))
-           (arguments (map replace arguments))
-           (arguments (clone (.arguments o) #:elements arguments)))
-      (clone o #:arguments arguments)))
 
   (define* (split o #:key not-e)
     (let* ((expression (.expression o))
