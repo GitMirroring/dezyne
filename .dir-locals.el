@@ -52,7 +52,8 @@
 
  (scheme-mode
   .
-  ((geiser-active-implementations . (guile))
+  ((indent-tabs-mode . nil)
+   (geiser-active-implementations . (guile))
    (eval
     .
     (progn
