@@ -138,6 +138,7 @@ FEATURE_TESTS =					\
  %D%/hello_foreign				\
  %D%/hello_function				\
  %D%/hello_function_argument			\
+ %D%/hello_function_arguments			\
  %D%/hello_function_assign			\
  %D%/hello_function_enum			\
  %D%/hello_function_shared			\
