@@ -2403,10 +2403,6 @@
           provides-rename
           provides)))
 
-(define-method (requires-processes (o <component>))
-  (let* ((ports (ast:requires-port* o)))
-    '()))
-
 (define-method (component-defer-processes (o <component>))
   (let* ((ports (ast:port* o))
          (provides (ast:provides-port* o))
@@ -2635,7 +2631,6 @@
   (let* ((ports (ast:port* o))
          (interfaces (ast:interface* o))
          (requires (ast:requires-port* o))
-         (requires-interfaces (map .type requires))
          (component-queue
           (process
             (name "component_queue")
@@ -4062,7 +4057,6 @@
            (provides-interfaces (map .type provides))
            (provides-interfaces (delete-duplicates provides-interfaces ast:eq?))
            (provides-processes (provides-processes o))
-           (requires-processes (requires-processes o))
            (behavior (.behavior o))
            (enums (filter (is? <enum>) (ast:type* behavior)))
            (enums (map enum->scmackerel enums))
@@ -4095,8 +4089,6 @@
                         ,@port-processes
                         ,(makreel:caption "PROVIDES")
                         ,@provides-processes
-                        ,(makreel:caption "REQUIRES")
-                        ,@requires-processes
                         ,(makreel:caption "COMPONENT")
                         ,@static-defer-processes
                         ,@behavior-processes
