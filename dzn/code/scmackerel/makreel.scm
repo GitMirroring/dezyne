@@ -1452,6 +1452,7 @@
          (arguments (ast:argument* o))
          (expressions (map ast->expression arguments))
          (formals (ast:formal* function))
+         (formal-names (map .name formals))
          (types (map ast:type formals)))
     (process
       (name (statement->process-name o))
@@ -1466,10 +1467,9 @@
             (name (statement->process-name statement))
             (arguments
              (append
-              (map (lambda (a)
-                     (let ((formal (ast:argument->formal a)))
-                       (is* (.name formal) (ast->expression a))))
-                   arguments)
+              (map (lambda (f a) (is* f a))
+                   formal-names
+                   (map ast->expression arguments))
               (list
                (if (and (.last? o) (ast:parent o <function>)) "s=s"
                    (let* ((return (car (ast:continuation* o)))
