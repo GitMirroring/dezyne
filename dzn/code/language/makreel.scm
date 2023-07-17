@@ -665,7 +665,8 @@
                  (%name-infix "")
                  (%type-infix "")
                  (%type-prefix ""))
-    (root->scmackerel o)))
+    (let ((sm (root->scmackerel o)))
+      (scmackerel:display sm))))
 
 (define* (ast-> ast #:key dir model)
   (let ((root (makreel:normalize ast))

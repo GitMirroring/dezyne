@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -43,7 +43,8 @@
   #:use-module (dzn config)
   #:use-module (dzn misc)
 
-  #:export (root->scmackerel))
+  #:export (root->scmackerel
+            scmackerel:display))
 
 ;;;
 ;;; Helpers.
@@ -4223,18 +4224,20 @@
          (static-equations
           `(,(makreel:generated-comment root)
             ,@(if (not component) '()
-                  (file-comments "component.mcrl2"))))
-         (scm (scmackerel
-               (inherit scm)
-               (equations
-                (append static-equations
-                        (scmackerel-equations scm)
-                        enums))
-               (types
-                (append (scmackerel-types scm)
-                        enums))
-               (processes
-                (append illegal-processes
-                        (scmackerel-processes scm)
-                        (list (makreel:version-comment)))))))
-    (display scm)))
+                  (file-comments "component.mcrl2")))))
+    (scmackerel
+     (inherit scm)
+     (equations
+      (append static-equations
+              (scmackerel-equations scm)
+              enums))
+     (types
+      (append (scmackerel-types scm)
+              enums))
+     (processes
+      (append illegal-processes
+              (scmackerel-processes scm)
+              (list (makreel:version-comment)))))))
+
+(define (scmackerel:display scm)
+  (display scm))
