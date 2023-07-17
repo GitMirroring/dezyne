@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -316,6 +316,7 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <formal>) port)
   (display (.direction o) port)
+  (display " " port)
   (print-type (.type o) port)
   (display " " port)
   (display (.name o) port))
