@@ -454,6 +454,7 @@ REGRESSION_TESTS =				\
  %D%/system_reply_enum				\
  %D%/system_shared				\
  %D%/unreachable_constraint			\
+ %D%/unreachable_crosstalk			\
  %D%/unreachable_defer		 		\
  %D%/unreachable_determinism			\
  %D%/unreachable_function			\
