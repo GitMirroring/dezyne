@@ -490,9 +490,7 @@
 ;;; Shared state.
 ;;;
 (define-method (code:shared-lts-unmemoized (o <interface>))
-  (let* ((debug (getenv "DZN_DEBUG_TEMPLATE"))
-         (foo (unsetenv "DZN_DEBUG_TEMPLATE"))
-         (debugity (dzn:debugity))
+  (let* ((debugity (dzn:debugity))
          (model-name (ast:dotted-name o))
          (root (ast:parent o <root>))
          (root' (makreel:normalize root))
@@ -503,8 +501,6 @@
       (display "rtc-lts:\n" (current-error-port))
       (for-each (cute write-line <> (current-error-port))
                 (vector->list rtc-lts)))
-    (when debug
-      (setenv "DZN_DEBUG_TEMPLATE" debug))
     rtc-lts))
 
 (define code:shared-lts
