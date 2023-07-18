@@ -3,7 +3,7 @@
 ;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -270,6 +270,14 @@ actions."
                               name name)))))
     `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
 
+(define (in-out:lts-constraint options)
+  (let* ((model (options-model options))
+         (name (makreel:model-name model))
+         (taus (if (not (is-a? model <interface>)) '()
+                   `(,(format #f "--tau=~aflush,~ainternal,tag"
+                              name name)))))
+    `("ltsconvert" "-eweak-trace" ,@taus "--in=aut" "--out=aut")))
+
 (define in-out:aut->aut-dpweak-bisim
   '("ltsconvert" "-edpweak-bisim" "--in=aut" "--out=aut"))
 
@@ -354,6 +362,7 @@ actions."
     (("maut-weak-trace"         "aut-weak-trace")          . ,in-out:maut->aut)
     (("maut-weak-trace-jitty"   "aut-weak-trace-jitty")    . ,in-out:maut->aut)
     (("aut-weak-trace"          "aut-weak-trace+hide")     . ,in-out:lts-hide-internal-labels)
+    (("maut"                    "maut-constraint")         . ,in-out:lts-constraint)
     (("maut-weak-trace"         "maut-weak-trace+hide")    . ,in-out:lts-hide-internal-labels)
     (("maut-dpweak-bisim"       "aut-dpweak-bisim")        . ,in-out:maut->aut)
     (("maut-dpweak-bisim-jitty" "aut-dpweak-bisim-jitty")  . ,in-out:maut->aut)

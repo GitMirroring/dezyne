@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -47,12 +48,8 @@ to current-output-port."
       (_ #f)))
 
   (define (rtc? o)
-    (cond
-     ((node? o)
-      (any rtc? (node-edges o)))
-     ((edge? o)
-      (let ((label (edge-label o)))
-        (or (trigger? label) (modeling-event? label))))))
+    (any (compose state? edge-label)
+         (node-edges o)))
 
   (define (next edge)
     (let ((next (vector-ref lts (edge-to edge))))
@@ -87,7 +84,8 @@ to current-output-port."
 
   (define (state? o)
     (and (string? o)
-         (string-contains o "'state(")))
+         (or (string-contains o "'state(")
+             (string-suffix? "'state" o))))
 
   (define (full-name o)
     (apply string-append (ast:full-name o)))
@@ -216,7 +214,7 @@ to current-output-port."
       (let* ((transitions (node-edges node))
              (labels (map edge-label transitions)))
         (when (or (= i initial)
-                  (any (disjoin trigger? modeling-event?) labels))
+                  (any state? labels))
           (format #t "\n~aconstraint~a\n = delta\n" name (node-state node))
           (when (pair? (node-edges node))
             (print-transitions transitions))
@@ -231,7 +229,7 @@ to current-output-port."
 ;;;
 (define (interface->constraint root model)
   "Return constraint process as mCRL2 string from MODEL."
-  (let* ((aut (verify-pipeline "maut-weak-trace+hide" root model))
+  (let* ((aut (verify-pipeline "maut-constraint" root model))
          (debugity (dzn:debugity))
          (lts (aut-text->lts aut)))
     (when (> debugity 0)
