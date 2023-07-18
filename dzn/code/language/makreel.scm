@@ -572,6 +572,8 @@
      #f)))
 
 (define (makreel:normalize ast)
+  "Normalize:state, add explicit illegals, and other mCRL2-specific
+transformations."
   (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
     (let ((root ((compose
                   makreel:add-action-reply

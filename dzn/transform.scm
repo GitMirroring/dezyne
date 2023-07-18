@@ -33,6 +33,8 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
+  #:use-module (dzn code)
+  #:use-module (dzn code language makreel)
   #:use-module (dzn misc)
   #:use-module (dzn vm normalize)
 
@@ -41,7 +43,10 @@
   #:re-export (add-function-return
                add-determinism-temporaries
                add-explicit-temporaries
+               code:normalize
+               code:normalize+determinism
                extract-call
+               makreel:normalize
                normalize:compounds
                normalize:event
                normalize:state

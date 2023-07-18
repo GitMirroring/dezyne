@@ -757,12 +757,15 @@
      ast)))
 
 (define (code:normalize ast)
+  "Normalize:event, add explicit illegals, plus code-specific
+normalizations."
   (let ((root (code:normalize- ast)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     root))
 
 (define (code:normalize+determinism ast)
+  "Code:normalize, plus add-determinism-temporaries."
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     (let ((root ((compose
                   add-determinism-temporaries
