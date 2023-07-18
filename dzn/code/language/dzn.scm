@@ -35,6 +35,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
+  #:use-module (dzn code goops)
   #:use-module (dzn code util)
   #:use-module (dzn misc)
 
@@ -473,8 +474,8 @@ and \"POST\" 'post in GRAMMAR."
 (define-method (print-ast (o <defer>) port)
   (let ((statement (.statement o)))
     (display "defer" port)
-    (if (is-a? statement <compound>) (display "\n" port)
-        (display " " port))
+    (unless (is-a? statement <compound>)
+      (display " " port))
     (print-ast statement port)))
 
 ;;; expressions
@@ -526,6 +527,60 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <otherwise>) port)
   (display "otherwise" port))
+
+;;; synthesized <ast>s.
+(define-method (print-ast (o <action-reply>) port)
+  (let ((port-name (.port.name o)))
+    (cond
+     (port-name
+      (simple-format port "<action-reply ~a.~a>" port-name (.event.name o)))
+     (else
+      (simple-format port "<action-reply ~a>" (.event.name o))))
+    (when (dzn:statement? o)
+      (display ";\n" port))))
+
+(define-method (print-ast (o <declarative-illegal>) port)
+  (display "<declarative-illegal>;\n" port))
+
+(define-method (print-ast (o <defer-end>) port)
+  (display "<defer-end>;\n" port))
+
+(define-method (print-ast (o <out-bindings>) port)
+  (display "<out-bindings>" port)
+  (let ((formals (ast:formal* o)))
+    (cond
+     ((null? formals)
+      (display " {}\n" port))
+     (else
+      (print-newline port)
+      (print-brace-open port)
+      (print-ast-join formals port ";\n" 'suffix)
+      (print-brace-close port)
+      (print-newline port)))))
+
+(define-method (print-ast (o <shared-variable>) port)
+  (let* ((expression (.expression o))
+         (type (and=> expression ast:type)))
+    (display "<" port)
+    (print-type (.type o) port)
+    (cond ((and expression
+                (not (is-a? type <void>)))
+           (simple-format port " ~a.~a = " (.port.name o) (.name o))
+           (print-ast expression port)
+           (display ">;\n" port))
+          (else
+           (simple-format port " <~a>;\n" (.name o))))))
+
+(define-method (print-ast (o <skip>) port)
+  (display ";\n" port))
+
+(define-method (print-ast (o <tag>) port)
+  (let ((location (.location o)))
+    (simple-format port "<tag> (~a,~a);\n"
+                   (.line location) (.column location))))
+
+(define-method (print-ast (o <the-end>) port)
+  (display "<the-end>;\n" port))
 
 
 ;;;
