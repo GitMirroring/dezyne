@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
@@ -928,8 +928,11 @@
   `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
 
 (define-method (wfc (o <data>))
-  (if (or (equal? (%language) "makreel") (not (unspecified? (.value o)))) '()
-      `(,(wfc-error o (simple-format #f "Unspecified dollar escaped data")))))
+  (let* ((value (.value o))
+         (supported? (or (member (%language) '("dzn" "makreel"))
+                         (not (unspecified? value)))))
+    (if supported? '()
+        `(,(wfc-error o (simple-format #f "Unspecified dollar escaped data"))))))
 
 (define-method (wfc (o <extern>))
   (append
@@ -950,7 +953,7 @@
             `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
 
 (define (feature-supported? feature)
-  (or (equal? (%language) "makreel")
+  (or (member (%language) '("dzn" "makreel"))
       (member (%language) (assoc-ref %feature-alist feature))))
 
 (define (single-quote string)
