@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -76,7 +76,9 @@ to current-output-port."
 
   (define (error? o)
     (and (string? o)
-         (member o '("range_error"))))
+         (member o '("range_error"
+                     "missing_reply"
+                     "second_reply"))))
 
   (define (state? o)
     (and (string? o)
