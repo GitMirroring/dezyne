@@ -355,7 +355,8 @@
 
 (define (assert-livelock lts)
   "Trace to entry point of first livelock or #f if no tau loops found"
-  (let* ((livelock-nodes (lts-tau-loops lts))
+  (let* ((lts (remove-tag-loops lts))
+         (livelock-nodes (lts-tau-loops lts))
          (loop-entry-trace (and (pair? livelock-nodes)
                                 (trace lts (car livelock-nodes))))
          (loop-entry-node (and loop-entry-trace (car livelock-nodes)))
@@ -364,6 +365,20 @@
          (append (or loop-entry-trace '())
                  (list (make-edge-loop))
                  (or loop-trace '())))))
+
+
+;;;
+;;; Tag
+;;;
+
+(define (remove-tag-loops lts)
+  (define (tag-edge? edge)
+    (and (string-contains (edge-label edge) "tag(")
+         (= (edge-from edge) (edge-to edge))))
+  (define (remove-tag node)
+    (let ((edges (filter (negate tag-edge?) (node-edges node))))
+      (set-field node (node-edges) edges)))
+  (vector-map-one remove-tag lts))
 
 
 ;;;
@@ -432,7 +447,8 @@
 
 (define (assert-deadlock lts)
   "Trace to node without outgoing edges or #f if no deadlock found"
-  (let* ((deadlock-nodes (deadlock-nodes lts))
+  (let* ((lts (remove-tag-loops lts))
+         (deadlock-nodes (deadlock-nodes lts))
          (deadlock-trace (and (pair? deadlock-nodes)
                               (trace lts (car deadlock-nodes)))))
     deadlock-trace))

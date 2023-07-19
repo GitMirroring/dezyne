@@ -2,6 +2,4 @@ model: queuefull_external2
 h.hello
 w.hello
 w.return
-h.return
-h.hello
 <queue-full>

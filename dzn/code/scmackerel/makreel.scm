@@ -1290,9 +1290,12 @@
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
       (statement
-       (sequence*
-        (invoke %tag-action
-                (list (.line location) (.column location)))
+       (union*
+        (sequence*
+         (invoke %tag-action
+                 (list (.line location) (.column location)))
+         (goto (name name)
+               (arguments (makreel:process-parens o))))
         (goto (name (statement->process-name next))
               (arguments (makreel:process-parens next))))))))
 
@@ -2175,7 +2178,7 @@
     (let* ((interface (.type o))
            (rename
             (process
-              (name (port-prefix "_port"))
+              (name (port-prefix "_rename"))
               (statement
                (rename
                 (process (model-prefix "interface_internal"))
@@ -2193,8 +2196,16 @@
                          (rename-event (from (%state-action interface))
                                        (to (%state-action o)))
                          (rename-event (from (%flush-action interface))
-                                       (to (%flush-action o))))))))))
-      (list rename))))
+                                       (to (%flush-action o)))))))))
+           (block
+            (process
+              (name (port-prefix "_port"))
+              (statement
+               (block
+                (process (port-prefix "_rename"))
+                (events (list %tag-action)))))))
+      (list rename
+            block))))
 
 (define-method (provides-processes (o <component>))
   (let* ((ports (ast:port* o))
@@ -2726,7 +2737,6 @@
                       %queue-full-action
                       %queue-not-empty-action
                       %tau-void-action
-                      %tag-action
                       (append
                        (append-map
                         (lambda (i)

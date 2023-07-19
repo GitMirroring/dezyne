@@ -1,3 +1,4 @@
 model: compliance_provides_out
 p.hello
+p.cruel
 <non-compliance>
