@@ -448,6 +448,7 @@ REGRESSION_TESTS =				\
  %D%/foreign_trivial_proxied			\
  %D%/formal_binding				\
  %D%/function_early_return			\
+ %D%/function_if				\
  %D%/function_reply_early_return		\
  %D%/guard_expressions				\
  %D%/guard_predicates				\
