@@ -204,7 +204,12 @@ REGRESSION_TESTS =				\
  %D%/complex_int3				\
  %D%/complex_int4				\
  %D%/complex_member				\
- %D%/complex_not				\
+ %D%/complex_not0				\
+ %D%/complex_not1				\
+ %D%/complex_not2				\
+ %D%/complex_not3				\
+ %D%/complex_not4				\
+ %D%/complex_not5				\
  %D%/complex_or					\
  %D%/compliance_blocking_double_release		\
  %D%/compliance_blocking_function		\

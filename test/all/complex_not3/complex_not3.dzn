@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -18,69 +18,31 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
+// Commentary:
+//
+// Code:
+
 interface ihello
 {
   in bool hello ();
-  in bool hey ();
-  in bool hi ();
-  in bool goodbye ();
-  in bool bye ();
-  in bool sayonara ();
   out void one ();
-  out void two ();
 
   behavior
   {
     on hello: {one;reply (true);}
-    on hey: {one;two;reply (true);}
-    on hi: reply (true);
-    on goodbye: {one;reply (true);}
-    on bye: {one;reply (true);}
-    on sayonara: {one;reply (true);}
   }
 }
 
-component complex_not
+component complex_not3
 {
   provides ihello h;
   behavior
   {
     bool one () {h.one ();return false;}
-    bool two () {h.two ();return false;}
 
     on h.hello ():
-      if (true && !(one () && two ())) reply (true);
-      else illegal;
-
-    on h.hey ():
-      if (false || !(one () || two ())) reply (true);
-      else illegal;
-
-    on h.hi ():
-    {
-      bool b = true;
-      if (!(b == false) && true)
-        reply (true);
-      else
-        illegal;
-    }
-
-    on h.goodbye ():
     {
       reply ((!(one () == true) && true));
-    }
-
-    on h.bye ():
-    {
-      bool b = !one ();
-      reply (b);
-    }
-
-    on h.sayonara ():
-    {
-      bool b = true;
-      b = !one ();
-      reply (b);
     }
   }
 }
