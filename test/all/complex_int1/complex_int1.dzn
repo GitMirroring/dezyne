@@ -1,0 +1,55 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  subint int {0..1};
+  in int hello ();
+  out void dec ();
+  out void inc ();
+
+  behavior
+  {
+    on hello: {inc;dec;reply (0);}
+  }
+}
+
+component complex_int1
+{
+  provides ihello h;
+
+  behavior
+  {
+    subint int {-1..1};
+
+    int dec (int i) {h.dec ();return i-1;}
+    int inc (int i) {h.inc ();return i+1;}
+
+    on h.hello ():
+    {
+      int i = 0;
+      bool b = inc (i) == 1 && dec (i) == 1;
+      reply (0);
+    }
+  }
+}

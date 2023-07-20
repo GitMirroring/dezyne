@@ -198,7 +198,11 @@ REGRESSION_TESTS =				\
  %D%/complex_assign5				\
  %D%/complex_data				\
  %D%/complex_expressions			\
- %D%/complex_int				\
+ %D%/complex_int0				\
+ %D%/complex_int1				\
+ %D%/complex_int2				\
+ %D%/complex_int3				\
+ %D%/complex_int4				\
  %D%/complex_member				\
  %D%/complex_not				\
  %D%/complex_or					\
