@@ -190,7 +190,12 @@ REGRESSION_TESTS =				\
  %D%/complex_arguments3				\
  %D%/complex_arguments4				\
  %D%/complex_arguments5				\
- %D%/complex_assign				\
+ %D%/complex_assign0				\
+ %D%/complex_assign1				\
+ %D%/complex_assign2				\
+ %D%/complex_assign3				\
+ %D%/complex_assign4				\
+ %D%/complex_assign5				\
  %D%/complex_data				\
  %D%/complex_expressions			\
  %D%/complex_int				\
