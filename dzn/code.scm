@@ -168,8 +168,7 @@
                           (disjoin (is? <type>) (is? <namespace>)
                                    ast:imported?))
                          models))
-         (models (ast:topological-model-sort models))
-         (models (map code:annotate-shells models)))
+         (models (ast:topological-model-sort models)))
     models))
 
 (define-method (code:interface-include* (o <top>) source-file)
@@ -762,19 +761,26 @@
         (clone o #:elements (cons extern (ast:top* o))))))
 
 (define (code:annotate-shells o)
-  (let ((shell? (and (is-a? o <system>)
-                     (member (ast:dotted-name o) (%shell)))))
-    (if (not shell?) o
-        (let ((shell (make <shell-system>
-                       #:ports (.ports o)
-                       #:name (.name o)
-                       #:instances (.instances o)
-                       #:bindings (.bindings o))))
-          (clone shell #:parent (.parent o))))))
+  (match o
+    ((and ($ <system>)
+          (? (compose (cute member <> (%shell))
+                      ast:dotted-name)))
+     (let ((shell (make <shell-system>
+                    #:ports (.ports o)
+                    #:name (.name o)
+                    #:instances (.instances o)
+                    #:bindings (.bindings o))))
+       (clone shell #:parent (.parent o))))
+    ((? (%normalize:short-circuit?))
+     o)
+    ((? (is? <namespace>))
+     (tree-map code:annotate-shells o))
+    (_ o)))
 
 (define (code:normalize- ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
+      code:annotate-shells
       (add-explicit-temporaries #:call-only? #t)
       add-reply-port
       normalize:event+illegals

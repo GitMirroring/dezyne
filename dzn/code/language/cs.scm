@@ -103,6 +103,7 @@
 (define (cs:normalize ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
+      code:annotate-shells
       add-reply-port
       normalize:event+illegals
       remove-otherwise
