@@ -66,7 +66,7 @@
 
 (define-method (json:ast-name (o <top>))
   (let ((name (ast-name o)))
-    (nodot (string-drop-right name 5))))
+    (nodot name)))
 
 (define-method (json:name (o <json:field>))
   (nodot (symbol->string (.name o))))
