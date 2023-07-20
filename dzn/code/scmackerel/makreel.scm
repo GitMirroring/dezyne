@@ -825,6 +825,20 @@
          (set! cache (acons o result cache))
          result)))))
 
+(define-method (sum-state-action (port <port>))
+  (sum (type (%state (.type port)))
+       (var (port-prefix "s" port))
+       (statement
+        (invoke (%state-action port) var))))
+
+(define-method (sum-state-action (port <port>) continuation)
+  (sum (type (%state (.type port)))
+       (var (port-prefix "s" port))
+       (statement
+        (sequence*
+         (invoke (%state-action port) var)
+         continuation))))
+
 (define %switch-context-action
   (let ((cache '()))
     (lambda (o)
@@ -1095,7 +1109,32 @@
 (define-method (ast->process (model <component>) (o <behavior>) (next <ast>))
   (let* ((shared (ast:shared* o))
          (ports (filter (negate ast:external?) (ast:port* model)))
-         (defers (makreel:defer* o)))
+         (defers (makreel:defer* o))
+         (defers
+           (if (null? defers) defers
+               (list
+                (sum (type (%locals model))
+                     (statement
+                      (sequence*
+                       (invoke (%defer-qout-action model))
+                       (union*
+                        (map
+                         (lambda (d)
+                           (let* ((statement (.statement d))
+                                  (locals (makreel:locals statement)))
+                             (if* (invoke (%locals-predicate statement))
+                                  (goto (name (statement->process-name
+                                               (.statement d)))
+                                        (arguments
+                                         (map
+                                          (lambda (v)
+                                            (simple-format
+                                             #f
+                                             "~a=~a (i)"
+                                             (.name v)
+                                             (variable-prefix "locals" v)))
+                                          locals))))))
+                         defers)))))))))
     (process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
@@ -1103,74 +1142,25 @@
        (union*
         `(,@(map
              (lambda (port)
-               (sum (type (%state (.type port)))
-                    (var (port-prefix "s" port))
-                    (statement
-                     (sequence*
-                      (invoke (%state-action port) var)
-                      (union*
-                       `(,(goto (name (statement->process-name o))
-                                (arguments
-                                 (map
-                                  (lambda (v)
-                                    (let* ((p (.port v))
-                                           (interface (.type p)))
-                                      (simple-format
-                                       #f "~a=~a (~a)"
-                                       (makreel:full-name v)
-                                       (model-prefix (ast:name v) interface)
-                                       (port-prefix "s" p))))
-                                  (filter (compose (cute ast:eq? port <>) .port)
-                                          (ast:shared* model)))))
-                         ,@(if (null? defers) '()
-                               (list
-                                (sum (type (%locals model))
-                                     (statement
-                                      (sequence*
-                                       (invoke (%defer-qout-action model))
-                                       (union*
-                                        (map
-                                         (lambda (d)
-                                           (let* ((statement (.statement d))
-                                                  (locals (makreel:locals statement)))
-                                             (if* (invoke (%locals-predicate statement))
-                                                  (goto (name (statement->process-name
-                                                               (.statement d)))
-                                                        (arguments
-                                                         (map
-                                                          (lambda (v)
-                                                            (simple-format
-                                                             #f
-                                                             "~a=~a (i)"
-                                                             (.name v)
-                                                             (variable-prefix "locals" v)))
-                                                          locals))))))
-                                         defers)))))))))))))
-             ports)
-          ,@(if (null? defers) '()
-                (list
-                 (sum (type (%locals model))
-                      (statement
-                       (sequence*
-                        (invoke (%defer-qout-action model))
-                        (union*
-                         (map
-                          (lambda (d)
-                            (let* ((statement (.statement d))
-                                   (locals (makreel:locals statement)))
-                              (if* (invoke (%locals-predicate statement))
-                                   (goto (name (statement->process-name
-                                                (.statement d)))
-                                         (arguments
-                                          (map
-                                           (lambda (v)
-                                             (simple-format
-                                              #f
-                                              "~a=~a (i)"
-                                              (.name v)
-                                              (variable-prefix "locals" v)))
-                                           locals))))))
-                          defers)))))))
+               (sum-state-action
+                port
+                (union*
+                 `(,(goto (name (statement->process-name o))
+                          (arguments
+                           (map
+                            (lambda (v)
+                              (let* ((p (.port v))
+                                     (interface (.type p)))
+                                (simple-format
+                                 #f "~a=~a (~a)"
+                                 (makreel:full-name v)
+                                 (model-prefix (ast:name v) interface)
+                                 (port-prefix "s" p))))
+                            (filter (compose (cute ast:eq? port <>) .port)
+                                    (ast:shared* model)))))
+                   ,@defers))))
+             (map .port (ast:shared* model)))
+          ,@defers
           ,(goto (name (statement->process-name next))
                  (arguments (makreel:process-parens next)))))))))
 
@@ -1250,25 +1240,26 @@
                  (goto (name (statement->process-name next))
                        (arguments (makreel:process-parens next))))
                 (goto (name "Constrained_Illegal")))
-               (sum (type (%state (.type port)))
-                    (var (port-prefix "s" port))
-                    (statement
-                     (sequence*
-                      (invoke (%state-action port) var)
-                      (union*
-                       `(,(goto (name (statement->process-name next))
-                                (arguments
-                                 (map
-                                  (lambda (v)
-                                    (let* ((p (.port v))
-                                           (interface (.type p)))
-                                      (simple-format
-                                       #f "~a=~a (~a)"
-                                       (makreel:full-name v)
-                                       (model-prefix (ast:name v) interface)
-                                       (port-prefix "s" p))))
-                                  (filter (compose (cute ast:eq? port <>) .port)
-                                          (ast:shared* model)))))))))))))))))
+               (if (not (find (compose (cute ast:eq? port <>) .port)
+                              (ast:shared* model)))
+                   (goto (name (statement->process-name next))
+                         (arguments (makreel:process-parens next)))
+                   (sum-state-action
+                    port
+                    (union*
+                     `(,(goto (name (statement->process-name next))
+                              (arguments
+                               (map
+                                (lambda (v)
+                                  (let* ((p (.port v))
+                                         (interface (.type p)))
+                                    (simple-format
+                                     #f "~a=~a (~a)"
+                                     (makreel:full-name v)
+                                     (model-prefix (ast:name v) interface)
+                                     (port-prefix "s" p))))
+                                (filter (compose (cute ast:eq? port <>) .port)
+                                        (ast:shared* model))))))))))))))))
 
 (define-method (ast->process (model <model>) (o <declarative-illegal>) (next <ast>))
   (process
@@ -1331,11 +1322,13 @@
                              reply)
                        ,@(makreel:type->out-of-range-processes
                           variable-type "i"))))
-               ,@(if (ast:external? port) '()
-                     `(,(sum (type (%state interface))
-                             (var (port-prefix "s" port))
-                             (statement
-                              (invoke (%state-action port) var))))))))))))
+               ,@(if (or (ast:external? port)
+                         (not (find (compose (cute ast:eq? port <>) .port)
+                                    (ast:shared* model)))) '()
+                                    `(,(sum (type (%state interface))
+                                            (var (port-prefix "s" port))
+                                            (statement
+                                             (invoke (%state-action port) var))))))))))))
 
 (define-method (assign->sum (model <model>) (o <action>) (variable <formal>))
   (assign->sum model o (make <variable>
@@ -1363,20 +1356,21 @@
                   ,(if (or (not (and (is-a? model <component>) (ast:in? o)))
                            (ast:external? port))
                        (goto (name (statement->process-name next))
-                             (arguments
-                              (makreel:process-parens next)))
-                       (sequence*
-                        (sum (type (%state (.type port)))
-                             (var (port-prefix "s" port))
-                             (statement
-                              (invoke (%state-action port) var)))
-                        (goto (name (statement->process-name next))
-                              (arguments
-                               (cond ((or (ast:out? o)
-                                          (null? (ast:shared* model)))
-                                      (makreel:process-parens next))
-                                     (else
-                                      (makreel:shared-process-arguments o)))))))))))))))
+                             (arguments (makreel:process-parens next)))
+                       (if (not (find (compose (cute ast:eq? port <>) .port)
+                                      (ast:shared* model)))
+                           (goto (name (statement->process-name next))
+                                 (arguments
+                                  (makreel:process-parens next)))
+                           (sum-state-action
+                            port
+                            (goto (name (statement->process-name next))
+                                  (arguments
+                                   (cond ((or (ast:out? o)
+                                              (null? (ast:shared* model)))
+                                          (makreel:process-parens next))
+                                         (else
+                                          (makreel:shared-process-arguments o))))))))))))))))
 
 (define-method (ast->process (model <component>) (o <action-reply>) (next <ast>))
   (let* ((port (.port o))
@@ -1396,10 +1390,9 @@
                     (let* ((reply (make <reply> #:port.name (.name port)))
                            (reply (clone reply #:parent (.parent o))))
                       `(,(ast->action reply)
-                        ,(sum (type (%state (.type port)))
-                              (var (port-prefix "s" port))
-                              (statement
-                               (invoke (%state-action port) var))))))
+                        ,@(if (not (find (compose (cute ast:eq? port <>) .port)
+                                         (ast:shared* model))) '()
+                                         `(,(sum-state-action port))))))
               ,(if (or (not (and (is-a? model <component>) (ast:in? o)))
                        (ast:external? port))
                    (goto (name (statement->process-name next))
@@ -1433,21 +1426,19 @@
                                             (is*
                                              variable
                                              "i"))))))))))))
-          ,@(map (lambda (p)
-                   (sequence*
-                    (sum (type (%state (.type p)))
-                         (var (port-prefix "s" p))
-                         (statement
-                          (invoke (%state-action p) var)))
+          ,@(if (not (and (ast:requires? port)
+                          (find (compose (cute ast:eq? port <>) .port)
+                                (ast:shared* model))))
+                '()
+                `(,(sum-state-action
+                    port
                     (goto (name name)
                           (arguments
                            (cond ((or (ast:out? o)
                                       (null? (ast:shared* model)))
                                   (makreel:process-parens next))
                                  (else
-                                  (makreel:shared-process-arguments o)))))))
-                 (filter (negate (cute ast:eq? port <>))
-                         (ast:requires-port* model)))))))))
+                                  (makreel:shared-process-arguments o))))))))))))))
 
 (define-method (ast->process (model <model>) (o <call>) (next <ast>))
   (let* ((function (.function o))
@@ -2853,11 +2844,8 @@
   (let* ((provides (ast:provides-port* o))
          (provides-interfaces (map .type provides))
          (requires (ast:requires-port* o))
-         (shared (ast:shared* o))
-         (state (lset-intersection
-                 ast:eq?
-                 requires
-                 (map .port shared))))
+         (shared (map .port (ast:shared* o)))
+         (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (semantics-provides p name)
       (let ((interface (.type p)))
         (sum (type (%actions interface))
@@ -2886,12 +2874,7 @@
                    (list
                     (sequence*
                      `(,%queue-empty-action
-                       ,@(map (lambda (port)
-                                (sum (type (%state (.type port)))
-                                     (var (port-prefix "s" port))
-                                     (statement
-                                      (invoke (%state-action port) var))))
-                              (ast:provides-port* (ast:parent p <component>)))
+                       ,@(map sum-state-action shared-provides)
                        ,(goto (name name))))
                     (goto (name "semantics_async")
                           (arguments
@@ -2975,35 +2958,35 @@
                       (construct (%port-predicate p)
                                  "reply")))
              (sequence*
-              (invoke (%reply-reordered-action p)
-                      ;; FIXME constructor?
-                      (port-prefix "port (reply)" p))
-              (let ((port p))
-                (sum (type (%state (.type port)))
-                     (var (port-prefix "s" port))
-                     (statement
-                      (invoke (%state-action port) var))))
-              (union*
-               (goto (name "semantics_main"))
-               (sum (type (%locals o))
-                    (statement
-                     (sequence*
-                      (invoke (%defer-qout-action o))
-                      (goto
-                       (name "semantics_async")
-                       (arguments
-                        `("blocking={}"
-                          "released=[]"
-                          ,(is*
-                            "reply"
-                            (entity
-                             (name "replies")
-                             (formals
-                              (map
-                               (cute model-prefix
-                                     "nil" <>)
-                               provides-interfaces))))
-                          "port=no_port")))))))))))
+              `(,(invoke (%reply-reordered-action p)
+                         ;; FIXME constructor?
+                         (port-prefix "port (reply)" p))
+                ,@(let ((port p))
+                    (if (not (find (compose (cute ast:eq? port <>) .port)
+                                   (ast:shared* o)))
+                        '()
+                        `(,(sum-state-action port))))
+                ,(union*
+                  (goto (name "semantics_main"))
+                  (sum (type (%locals o))
+                       (statement
+                        (sequence*
+                         (invoke (%defer-qout-action o))
+                         (goto
+                          (name "semantics_async")
+                          (arguments
+                           `("blocking={}"
+                             "released=[]"
+                             ,(is*
+                               "reply"
+                               (entity
+                                (name "replies")
+                                (formals
+                                 (map
+                                  (cute model-prefix
+                                        "nil" <>)
+                                  provides-interfaces))))
+                             "port=no_port"))))))))))))
     (define (handle-qout name)
       (if (null? requires) '()
           (list
@@ -3062,21 +3045,21 @@
     (define (reordered p name)
       (let ((interface (.type p)))
         (sequence*
-         (if* (not*
-               (invoke (%nil-predicate interface)
-                       (construct (%port-predicate p)
-                                  "reply")))
-              (invoke (%reply-reordered-action p)
-                      ;; FIXME constructor?
-                      (port-prefix "port (reply)" p)))
-         (let ((port p))
-           (sum (type (%state (.type port)))
-                (var (port-prefix "s" port))
-                (statement
-                 (invoke (%state-action port) var))))
-         (union*
-          (goto (name "semantics_main"))
-          (defer-qout-actions-async o name)))))
+         `(,(if* (not*
+                  (invoke (%nil-predicate interface)
+                          (construct (%port-predicate p)
+                                     "reply")))
+                 (invoke (%reply-reordered-action p)
+                         ;; FIXME constructor?
+                         (port-prefix "port (reply)" p)))
+           ,@(let ((port p))
+               (if (not (find (compose (cute ast:eq? port <>) .port)
+                              (ast:shared* o)))
+                   '()
+                   `(,(sum-state-action port))))
+           ,(union*
+             (goto (name "semantics_main"))
+             (defer-qout-actions-async o name))))))
     (define (provides-reply p name)
       (let ((interface (.type p)))
         (sum (type (%replies interface))
@@ -3180,24 +3163,24 @@
                (%end-action o)
                (union*
                 `(,(sequence*
-                    %queue-empty-action
-                    (invoke (%reply-reordered-action p)
-                            (construct (%port-predicate p)
-                                       "reply"))
-                    (let ((port p))
-                      (sum (type (%state (.type port)))
-                           (var (port-prefix "s" port))
-                           (statement
-                            (invoke (%state-action port) var))))
-                    (union*
-                     (goto (name "semantics_main"))
-                     (sum (type (%locals o))
-                          (statement
-                           (sequence*
-                            (invoke (%defer-qout-action o))
-                            (goto (name "semantics_async")
-                                  (arguments '("blocking={}"
-                                               "port=no_port"))))))))
+                    `(,%queue-empty-action
+                      ,(invoke (%reply-reordered-action p)
+                               (construct (%port-predicate p)
+                                          "reply"))
+                      ,@(let ((port p))
+                          (if (not (find (compose (cute ast:eq? port <>) .port)
+                                         (ast:shared* o)))
+                              '()
+                              `(,(sum-state-action port))))
+                      ,(union*
+                        (goto (name "semantics_main"))
+                        (sum (type (%locals o))
+                             (statement
+                              (sequence*
+                               (invoke (%defer-qout-action o))
+                               (goto (name "semantics_async")
+                                     (arguments '("blocking={}"
+                                                  "port=no_port")))))))))
                   ,@(append-map (seq (cute switch-context-actions <> name)
                                      (cute qout-actions <> name))
                                 requires))))))))
@@ -3244,8 +3227,10 @@
                       (goto (name name) (arguments '())))))))))
 
 (define-method (semantics-blocked (o <component>))
-  (let ((provides (ast:provides-port* o))
-        (requires (ast:requires-port* o)))
+  (let* ((provides (ast:provides-port* o))
+         (requires (ast:requires-port* o))
+         (shared (map .port (ast:shared* o)))
+         (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (handle-queue-empty name)
       (sequence*
        %queue-empty-action
@@ -3310,12 +3295,7 @@
        (union*
         `(,(if* "blocking == {} && released == []"
                 (sequence*
-                 `(,@(map (lambda (port)
-                            (sum (type (%state (.type port)))
-                                 (var (port-prefix "s" port))
-                                 (statement
-                                  (invoke (%state-action port) var))))
-                          provides)
+                 `(,@(map sum-state-action shared-provides)
                    ,(union*
                      (goto (name "semantics_main"))
                      (defer-qout-actions-async o name)))))
@@ -3356,42 +3336,42 @@
                 (port-prefix "port" p)
                 "head (released)")))
              (sequence*
-              (invoke (%reply-reordered-action p)
-                      (construct (%port-predicate p)
-                                 "reply"))
-              (sum (type (%state (.type p)))
-                   (var (port-prefix "s" p))
-                   (statement
-                    (sequence*
-                     (invoke (%state-action p) var))))
-              (let ((arguments
-                     (list
-                      (is*
-                       "blocking"
-                       (minus*
-                        "blocking"
-                        (set* (port-prefix "port" p))))
-                      (simple-format
-                       #f
-                       "released=remove_port (~a, released)"
-                       (port-prefix "port" p))
-                      (is* "reply"
-                           (entity
-                            (name "replies")
-                            (formals
-                             (map
-                              (lambda (i)
-                                (if (ast:eq? i p) (model-prefix
-                                                   "nil" interface)
-                                    (port-prefix "port (reply)" i)))
-                              provides)))))))
-                (union*
-                 (goto (name name)
-                       (arguments (cons
-                                   "rtc=no_port"
-                                   arguments)))
-                 (goto (name "semantics_blocked_rtc")
-                       (arguments arguments))))))))
+              `(,(invoke (%reply-reordered-action p)
+                         (construct (%port-predicate p)
+                                    "reply"))
+                ,@(let ((port p))
+                    (if (not (find (compose (cute ast:eq? port <>) .port)
+                                   (ast:shared* o)))
+                        '()
+                        `(,(sum-state-action port))))
+                ,(let ((arguments
+                        (list
+                         (is*
+                          "blocking"
+                          (minus*
+                           "blocking"
+                           (set* (port-prefix "port" p))))
+                         (simple-format
+                          #f
+                          "released=remove_port (~a, released)"
+                          (port-prefix "port" p))
+                         (is* "reply"
+                              (entity
+                               (name "replies")
+                               (formals
+                                (map
+                                 (lambda (i)
+                                   (if (ast:eq? i p) (model-prefix
+                                                      "nil" interface)
+                                       (port-prefix "port (reply)" i)))
+                                 provides)))))))
+                   (union*
+                    (goto (name name)
+                          (arguments (cons
+                                      "rtc=no_port"
+                                      arguments)))
+                    (goto (name "semantics_blocked_rtc")
+                          (arguments arguments)))))))))
     (process
       (name "semantics_reply")
       (formals %blocked-formals)
@@ -3409,11 +3389,8 @@
 (define-method (semantics-blocked-main (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (shared (ast:shared* o))
-         (state (lset-intersection
-                 ast:eq?
-                 (ast:requires-port* o)
-                 (map .port shared))))
+         (shared (map .port (ast:shared* o)))
+         (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (blocked-main-provides p name)
       (let ((interface (.type p)))
         (if* (not* (in* (port-prefix "port" p) "blocking"))
@@ -3448,12 +3425,7 @@
        (union*
         (if* "blocking == {}"
              (sequence*
-              `(,@(map (lambda (port)
-                         (sum (type (%state (.type port)))
-                              (var (port-prefix "s" port))
-                              (statement
-                               (invoke (%state-action port) var))))
-                       provides)
+              `(,@(map sum-state-action shared-provides)
                 ,(union* (goto (name "semantics_main"))
                          (defer-qout-actions-async o name)))))
         (if* "blocking != {}"
@@ -3511,43 +3483,42 @@
        (goto (name "semantics_async_switch_context")
              (arguments
               (list (is* "switch" (port-prefix "port" p)))))))
-    (process
-      (name "semantics_async")
-      (formals `(,@%blocking-formals
-                 "port: provides_ports"))
-      (statement
-       (union*
-        `(,(sequence*
-            (%end-action o)
+    (let* ((provides (ast:provides-port* o))
+           (shared (map .port (ast:shared* o)))
+           (shared-provides (lset-intersection ast:eq? provides shared)))
+      (process
+        (name "semantics_async")
+        (formals `(,@%blocking-formals
+                   "port: provides_ports"))
+        (statement
+         (union*
+          `(,(sequence*
+              (%end-action o)
 
-            (union*
-             (sequence*
-              `(,%queue-empty-action
-                ,@(map (lambda (port)
-                         (sum (type (%state (.type port)))
-                              (var (port-prefix "s" port))
-                              (statement
-                               (invoke (%state-action port) var))))
-                       provides)
-                ,(union*
-                  `(,(if* (invoke %no-port-predicate "port")
-                          (union* (goto (name "semantics_main"))
-                                  (sequence*
-                                   (defer-qout-actions o name))))
-                    ,@(map (cute requires-flush <> name) provides)))))
-             (sequence* %queue-not-empty-action
-                        (goto (name name) (arguments '())))))
-          ,(sequence* %defer-end-action
-                      (goto (name name) (arguments '())))
-          ,@(map (cute out-actions+port=p <> name) provides)
-          ,@(append-map (seq (cute switch-context-actions+switch=p <> name)
-                             (cute qout-actions <> name))
-                        requires)))))))
+              (union*
+               (sequence*
+                `(,%queue-empty-action
+                  ,@(map sum-state-action shared-provides)
+                  ,(union*
+                    `(,(if* (invoke %no-port-predicate "port")
+                            (union* (goto (name "semantics_main"))
+                                    (sequence*
+                                     (defer-qout-actions o name))))
+                      ,@(map (cute requires-flush <> name) provides)))))
+               (sequence* %queue-not-empty-action
+                          (goto (name name) (arguments '())))))
+            ,(sequence* %defer-end-action
+                        (goto (name name) (arguments '())))
+            ,@(map (cute out-actions+port=p <> name) provides)
+            ,@(append-map (seq (cute switch-context-actions+switch=p <> name)
+                               (cute qout-actions <> name))
+                          requires))))))))
 
 (define-method (component-semantics-processes (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (shared (ast:shared* o))
+         (shared (map .port (ast:shared* o)))
+         (shared-requires (lset-intersection ast:eq? requires shared))
          (component-semantics-parallel
           (process (name "component_semantics_parallel")
                    (statement
@@ -3607,7 +3578,7 @@
                                        (events
                                         (list (%state-action p))))))))
                  ;;TODO simplify + filter non external?
-                 (lset-intersection ast:eq? requires (map .port shared)))))))))
+                 shared-requires)))))))
          (interfaces (ast:interface* o))
          (component-semantics-allow
           (process
@@ -3805,10 +3776,8 @@
                                   (%port-queue-full-action p)
                                   (%switch-context-action p)))
                                requires)
-                              (map
-                               (lambda (p)
-                                 (%state-action p))
-                               (filter ast:external? requires)))))))))
+                              (filter-map (conjoin ast:external? %state-action)
+                                          requires))))))))
          (component-rename
           (process
             (name "component_rename")
@@ -3840,10 +3809,7 @@
                                   (%tau-modeling-action i)
                                   (%tau-reply-action i)))
                                interfaces)
-                              (map
-                               (lambda (p)
-                                 (%state-action p))
-                               provides)
+                              (map %state-action provides)
                               (append-map
                                (lambda (p)
                                  (list
