@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -118,9 +118,9 @@
 ;;;
 (define-templates code-arguments code:arguments argument-grammar)
 (define-templates out-arguments code:out-argument out-argument-grammar)
-(define-templates formals code:formal* formal-grammar)
-(define-templates formals-anonymous code:formal* formal-grammar)
-(define-templates formals-type code:formal* formal-grammar)
+(define-templates formals ast:formal* formal-grammar)
+(define-templates formals-anonymous ast:formal* formal-grammar)
+(define-templates formals-type ast:formal* formal-grammar)
 
 
 ;;;

@@ -290,7 +290,7 @@
 
 (define-method (ast->code (o <action>))
   (let* ((action-name (c:event-name o))
-         (arguments (code:argument* o))
+         (arguments (ast:argument* o))
          (arguments (map ast->expression arguments))
          (port-name (.port.name o))
          (typed? (ast:typed? o)))
@@ -303,7 +303,7 @@
   (let* ((model (ast:parent o <model>))
          (model-name (c:type-name model))
          (name (string-append model-name "_" (.function.name o)))
-         (arguments (map ast->expression (code:argument* o)))
+         (arguments (map ast->expression (ast:argument* o)))
          (arguments (cons "self" arguments)))
     (sm:call
      (name name)
@@ -449,7 +449,7 @@
 (define-method (interface->sm:statements-unmemoized (o <interface>))
   (define (event->slot event)
     (let ((type (c:type-name (ast:type event)))
-          (formals (code:formal* event)))
+          (formals (ast:formal* event)))
       (sm:function
        (type type)
        (name (string-append "(*" (.name event) ")"))
@@ -587,7 +587,7 @@
                       (trigger (car (ast:trigger* on)))
                       (statement (.statement on)))
                  (values trigger (ast->code statement))))))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (arguments (map .name formals))
            (formals (map c:->formal formals))
            (typed? (ast:typed? trigger))
@@ -673,7 +673,7 @@
                       (trigger (car (ast:trigger* on)))
                       (statement (.statement on)))
                  (values trigger (ast->code statement))))))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (port (.port trigger))
            (interface (c:type-name (.type port)))
            (event-name (.event.name trigger))
@@ -717,7 +717,7 @@
                             "_"
                             (code:event-slot-name trigger)))))
             ,(sm:assign* "dzn_c.self" "self")
-            ,@(let ((formals (code:formal* trigger)))
+            ,@(let ((formals (ast:formal* trigger)))
                 (map formal->assign formals (iota (length formals))))
             ,(sm:call (name "dzn_runtime_enqueue")
                       (arguments
@@ -733,7 +733,7 @@
   (define (function->method component function)
     (let* ((type (code:type-name (ast:type function)))
            (name (.name function))
-           (formals (code:formal* function))
+           (formals (ast:formal* function))
            (statement (.statement function))
            (statement (ast->code statement)))
       (sm:method (struct component)
@@ -1172,7 +1172,7 @@
            (event (.event.name trigger))
            (port-event (simple-format #f "~a.~a" port event))
            (port-event-string (simple-format #f "~s" port-event))
-           (formals (code:formal* trigger)))
+           (formals (ast:formal* trigger)))
       (sm:assign* (string-append "m->" (c:event-name trigger))
                   (string-append
                    (c:log-event-type-cast trigger)

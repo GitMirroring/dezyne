@@ -62,10 +62,7 @@
             code
 
             code:add-calling-context
-            code:add-calling-context-argument
-            code:add-calling-context-formal
             code:annotate-shells
-            code:argument*
             code:blocking-requires-in-void-returns
             code:blocking-return-values
             code:blocking?
@@ -82,7 +79,6 @@
             code:event-slot-name
             code:file-name
             code:file-name->string
-            code:formal*
             code:injected-binding*
             code:injected-instance*
             code:instance*
@@ -392,59 +388,6 @@
   (let ((compound (make <compound> #:elements (list o))))
     (clone compound #:parent (.parent o))))
 
-
-;;;
-;;; Calling context.
-;;;
-(define-method (code:add-calling-context-formal (o <formals>))
-  (if (not (%calling-context)) o
-      (let* ((cc-formal (make <formal>
-                          #:name "dzn_cc"
-                          #:direction 'inout
-                          #:type.name (make <scope.name>
-                                        #:ids '("*calling-context*"))))
-             (cc-formal (clone cc-formal #:parent o))
-             (lst (cons cc-formal (ast:formal* o))))
-        (clone o #:elements lst))))
-
-(define-method (code:formal* (o <formals>))
-  (ast:formal* (code:add-calling-context-formal o)))
-
-(define-method (code:formal* (o <signature>))
-  (code:formal* (.formals o)))
-
-(define-method (code:formal* (o <function>))
-  (code:formal* (.signature o)))
-
-(define-method (code:formal* (o <event>))
-  (code:formal* (.signature o)))
-
-(define-method (code:formal* (o <action>))
-  (code:formal* (.event o)))
-
-(define-method (code:formal* (o <trigger>))
-  (code:formal* (.formals o)))
-
-(define-method (code:formal* (o <on>))
-  (code:formal*
-   (let* ((trigger ((compose car ast:trigger*) o))
-          (formals ((compose .formals .signature) trigger))
-          (event (.event trigger))
-          (elements (map (cute clone <> #:name <>)
-                         (ast:formal* event)
-                         (map .name (ast:formal* formals)))))
-     (clone formals #:elements elements))))
-
-(define (code:add-calling-context-argument arguments)
-  (if (%calling-context) (cons "dzn_cc" arguments)
-      arguments))
-
-(define-method (code:argument* (o <call>))
-  (code:add-calling-context-argument (ast:argument* o)))
-
-(define-method (code:argument* (o <action>))
-  (code:add-calling-context-argument (ast:argument* o)))
-
 (define-method (code:number-formals formals)
   (map (cute clone <> #:name <>)
        formals (iota (length formals))))
@@ -752,13 +695,37 @@
 ;;;
 ;;; Transform.
 ;;;
-(define-method (code:add-calling-context (o <root>))
+(define (code:add-calling-context o)
+  "Add extra parameter of type -c, --calling-context=TYPE for every event,
+and pass it as argument accordingly."
   (if (not (%calling-context)) o
-      (let* ((name (make <scope.name> #:ids '("*calling-context*")))
-             (extern (make <extern>
-                       #:name name
-                       #:value (%calling-context))))
-        (clone o #:elements (cons extern (ast:top* o))))))
+      (match o
+        (($ <arguments>)
+         (let* ((arguments (ast:argument* o))
+                (arguments (cons "dzn_cc" arguments)))
+           (clone o #:elements arguments)))
+        (($ <formals>)
+         (let* ((type-name (make <scope.name> #:ids '("*calling-context*")))
+                (cc-formal (make <formal>
+                             #:name "dzn_cc"
+                             #:direction 'inout
+                             #:type.name type-name))
+                (formals (cons cc-formal (ast:formal* o))))
+           (clone o #:elements formals)))
+        (($ <root>)
+         (let* ((name (make <scope.name> #:ids '("*calling-context*")))
+                (data (make <data> #:value (%calling-context)))
+                (extern (make <extern> #:name name #:value data))
+                (o (tree-map code:add-calling-context o)))
+           (clone o #:elements (cons extern (ast:top* o)))))
+        (($ <system>)
+         o)
+        ((? (%normalize:short-circuit?))
+         o)
+        ((? (is? <ast>))
+         (tree-map code:add-calling-context o))
+        (_
+         o))))
 
 (define (code:annotate-shells o)
   (match o
