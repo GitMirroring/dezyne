@@ -1,0 +1,76 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    on hello: world;
+  }
+}
+
+interface iiteration
+{
+  in void step ();
+  out void next ();
+  out void end ();
+  behavior
+  {
+    subint Count {0..1};
+    Count count = 0;
+    [count < 1] on step: {count = count + 1; next;}
+    on step: {count = 0; end;}
+  }
+}
+
+component list
+{
+  provides iiteration i;
+}
+
+component hello
+{
+  provides ihello h;
+  requires iiteration i;
+
+  behavior
+  {
+    on h.hello (): i.step ();
+    on i.next (): i.step ();
+    on i.end (): h.world ();
+  }
+}
+
+component iteration
+{
+  provides ihello h;
+  system
+  {
+    h <=> hello_.h;
+    hello hello_;
+    hello_.i <=> list_.i;
+    list list_;
+  }
+}
