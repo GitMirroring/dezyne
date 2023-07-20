@@ -83,7 +83,6 @@
   (display "(" port)
   (display (ast-name o) port)
   (ast port)
-  (ast port)
   (if (.node o) (display-slots (.node o) port))
   (display #\) port))
 

@@ -205,6 +205,11 @@
 (define-method (ast-name (o <top>))
   (ast-name (class-of o)))
 
+(define-method (ast-name (o <ast-node>))
+  (let* ((class (class-of o))
+         (name (symbol->string (drop-<> (class-name class)))))
+    (string-drop-right name 5)))
+
 (define (as o c)
   (and (is-a? o c) o))
 
