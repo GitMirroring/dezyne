@@ -399,7 +399,7 @@ std::basic_ostream<Char, Traits> &")
         (enums (code:enum* o)))
     (append
      (map c++:file-name->include imports)
-     (map .value (ast:data* o))
+     (map (compose (cute string-append <> "\n") .value) (ast:data* o))
      (append-map c++:enum->header-statements enums))))
 
 (define-method (root->statements (o <root>))
