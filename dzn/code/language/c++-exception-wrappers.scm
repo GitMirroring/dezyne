@@ -80,7 +80,7 @@
   (ast:formal* (.formals o)))
 
 (define-method (c++ew:formals (o <top>))
-  (code:formal* o))
+  (ast:formal* o))
 
 (define-method (c++ew:formal-names (o <trigger>))
   (map .name (ast:formal* o)))

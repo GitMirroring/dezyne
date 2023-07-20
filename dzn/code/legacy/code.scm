@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -289,9 +289,8 @@
 
 (define-method (code:arguments (o <ast>) (signature <signature>))
   (map code:variable->argument
-       (code:add-calling-context-argument (ast:argument* o))
-       (ast:formal* (code:add-calling-context-formal
-                     (.formals signature)))))
+       (ast:argument* o)
+       (ast:formal* signature)))
 
 (define-method (code:arguments (o <call>))
   (code:arguments o (.signature (.function o))))
@@ -300,10 +299,10 @@
   (code:arguments o (.signature (.event o))))
 
 (define-method (code:arguments (o <trigger>))
-  (code:formal* o))
+  (ast:argument* o))
 
 (define-method (code:out-argument (o <trigger>))
-  (filter (disjoin ast:out? ast:inout?) (code:formal* o)))
+  (filter (disjoin ast:out? ast:inout?) (ast:formal* o)))
 
 (define-method (code:variable->argument (o <expression>) (v <variable>) (f <formal>))
   (if (or (code:class-member? v) (eq? (.direction f) 'in)) v
