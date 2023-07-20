@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,14 +40,33 @@ component Foreign
   provides iworld w;
 }
 
+interface ilog
+{
+  in void log ();
+  behavior
+  {
+    on log: {}
+  }
+}
+
+component Log
+{
+  provides ilog log;
+  behavior
+  {
+    on log.log (): {}
+  }
+}
+
 component hello
 {
   provides ihello h;
   requires injected iworld w;
+  requires injected ilog l;
 
   behavior
   {
-    on h.hello (): bool b = w.hello ();
+    on h.hello (): {l.log(); bool b = w.hello ();}
   }
 }
 
@@ -61,5 +80,7 @@ component injected_foreign
     hello c;
     Foreign f;
     f.w <=> *;
+    Log log;
+    log.log <=> *;
   }
 }
