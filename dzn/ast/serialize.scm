@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -81,14 +81,10 @@
 (define-method (serialize (o <ast>) port)
   (serialize (.node o) port))
 
-(define (serialize-name o)
-  (if (string-suffix? "-node" o) (string-drop-right o 5)
-      o))
-
 (define-method (serialize (o <object>) port)
   (display "(" port)
   (display "(" port)
-  (serialize (serialize-name (ast-name o)) port)
+  (serialize (ast-name o) port)
   (serialize-slots o port)
   (display ")" port)
   (display ")" port))

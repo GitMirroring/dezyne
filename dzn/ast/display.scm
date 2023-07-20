@@ -41,6 +41,12 @@
 (define (ast port) (display #\* port))
 (define (ref port) (display #\@ port))
 
+(define-method (ast-name (o <ast-node>))
+  (let* ((class (class-of o))
+         (name (symbol->string (drop-<> (class-name class))))
+         (name (string-drop-right name 5)))
+    (string->symbol name)))
+
 (define-method (sdisplay (o <ast-node>) port)
   (display #\space port)
   (write o port))
@@ -82,7 +88,6 @@
 (define-method (write (o <ast>) port)
   (display "(" port)
   (display (ast-name o) port)
-  (ast port)
   (ast port)
   (if (.node o) (display-slots (.node o) port))
   (display #\) port))
