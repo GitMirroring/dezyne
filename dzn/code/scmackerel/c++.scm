@@ -1115,7 +1115,7 @@ std::basic_ostream<Char, Traits> &")
                                   (string-join
                                    (map binding->injected-initializer
                                         injected-bindings)
-                                   ".")))))))))
+                                   "")))))))))
                 ,@(map instance->member instances)
                 ,@(map provides->member (ast:provides-port* o))
                 ,@(map requires->member (ast:requires-port* o))))))
@@ -1332,7 +1332,7 @@ std::basic_ostream<Char, Traits> &")
                                   (string-join
                                    (map binding->injected-initializer
                                         injected-bindings)
-                                   ".")))))))))
+                                   "")))))))))
                 ,@(map instance->member instances)
                 ,@(map provides->member (ast:provides-port* o))
                 ,@(map requires->member (ast:requires-port* o))
