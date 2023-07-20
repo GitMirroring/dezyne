@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -176,7 +176,7 @@
 
 (define-method (ast->code (o <action>))
   (let* ((action-name (code:event-name o))
-         (arguments (code:argument* o))
+         (arguments (ast:argument* o))
          (arguments (map ast->expression arguments))
          (action (sm:call (name (string-append (%member-prefix) action-name))
                           (arguments arguments))))
@@ -209,7 +209,7 @@
 (define-method (ast->code (o <call>))
   (sm:call-method
    (name (.function.name o))
-   (arguments (map ast->expression (code:argument* o)))))
+   (arguments (map ast->expression (ast:argument* o)))))
 
 (define-method (ast->code (o <reply>))
   (let ((p (.parent o)))

@@ -35,10 +35,12 @@
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code language makreel)
+  #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn vm normalize)
 
-  #:export (inline-functions
+  #:export (add-calling-context
+            inline-functions
             normalize:compounds-wrap)
   #:re-export (add-function-return
                add-determinism-temporaries
@@ -57,6 +59,16 @@
                split-complex-expressions
                tag-imperative-blocks
                vm:normalize))
+
+(define (add-calling-context o)
+  "Add extra parameter of type -c, --calling-context=TYPE for every event,
+and pass it as argument accordingly."
+  (let ((calling-context (false-if-exception
+                          (command-line:get 'calling-context))))
+    (unless calling-context
+      (format (current-error-port) "warning: no -c,--calling-context set.\n"))
+    (parameterize ((%calling-context calling-context))
+      (code:add-calling-context o))))
 
 (define (normalize:compounds-wrap o)
   "Like normalize:compounds and wrap singleton top level imperative

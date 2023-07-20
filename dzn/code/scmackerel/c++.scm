@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -258,10 +258,10 @@ std::basic_ostream<Char, Traits> &")
 
 (define-method (ast->code (o <action>))
   (let* ((event (.event o))
-         (formals (code:formal* (.event o)))
+         (formals (ast:formal* (.event o)))
          (event-name (.event.name o))
          (action-name (code:event-name o))
-         (arguments (code:argument* o))
+         (arguments (ast:argument* o))
          (arguments (map c++:ast->expression arguments)))
     (sm:call (name (string-append (%member-prefix) action-name))
              (arguments arguments))))
@@ -430,7 +430,7 @@ std::basic_ostream<Char, Traits> &")
 (define-method (interface->sm:statements-unmemoized (o <interface>))
   (define (event->slot event)
     (let ((type (code:type-name (ast:type event)))
-          (formals (code:formal* event)))
+          (formals (ast:formal* event)))
       (sm:variable
        (type (simple-format #f "dzn::~a::event<~a>"
                             (code:direction event)
@@ -805,7 +805,7 @@ std::basic_ostream<Char, Traits> &")
            (direction (code:direction event))
            (event-name (.name event))
            (event-name-string (simple-format #f "~s" event-name))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (arguments (map .name formals))
            (in-formals (filter ast:in? formals))
            (in-arguments (map .name in-formals))
@@ -855,7 +855,7 @@ std::basic_ostream<Char, Traits> &")
                       (trigger (car (ast:trigger* on)))
                       (statement (.statement on)))
                  (values trigger (ast->code statement))))))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (return-type (ast:type trigger)))
       (sm:method (struct component)
                  (type (if (not (is-a? o <foreign>)) "void"
@@ -867,7 +867,7 @@ std::basic_ostream<Char, Traits> &")
   (define (function->method component function)
     (let* ((type (code:type-name (ast:type function)))
            (name (.name function))
-           (formals (code:formal* function))
+           (formals (ast:formal* function))
            (statement (.statement function))
            (statement (ast->code statement)))
       (sm:method (struct component)
@@ -891,7 +891,7 @@ std::basic_ostream<Char, Traits> &")
                       ports))))
   (define (out->method component trigger)
     (let* ((arguments (map c++:ast->expression
-                           (code:formal* trigger)))
+                           (ast:formal* trigger)))
            (lambda (sm:function
                     (captures `("this" ,@arguments))
                     (statement
@@ -904,6 +904,7 @@ std::basic_ostream<Char, Traits> &")
       (sm:method (struct component)
                  (type "void")
                  (name (code:event-slot-name trigger))
+<<<<<<< HEAD
                  (formals (map c++:->formal (code:formal* trigger)))
                  (statement
                   (sm:compound*
@@ -912,6 +913,20 @@ std::basic_ostream<Char, Traits> &")
                            (%member-prefix)
                            (code:event-name trigger)))
                     (arguments arguments)))))))
+=======
+                 (formals (map c++:->formal (ast:formal* trigger)))
+                 (statement (sm:compound*
+                             `(,(sm:call
+                                 (name "dzn::call_out")
+                                 (arguments `("this"
+                                              ,(string-append
+                                                (%member-prefix)
+                                                (.port.name trigger))
+                                              ,(simple-format
+                                                #f "~s"
+                                                (.event.name trigger))
+                                              ,lambda)))))))))
+>>>>>>> c4e3e61d14 (DRAFT code: Change code:add-calling-context into a regular normalization.)
   (let* ((enums (filter (is? <enum>) (code:enum* o)))
          (ports (ast:port* o))
          (check-bindings-list
@@ -1224,7 +1239,7 @@ std::basic_ostream<Char, Traits> &")
              (port-name (.name port))
              (event (.event trigger))
              (event-name (.name event))
-             (formals (code:formal* trigger))
+             (formals (ast:formal* trigger))
              (arguments (map .name formals))
              (in-formals (filter ast:in? formals))
              (in-arguments (map .name in-formals))
@@ -1263,7 +1278,7 @@ std::basic_ostream<Char, Traits> &")
              (event (.event trigger))
              (event-name (.name event))
              (direction (symbol->string (.direction event)))
-             (formals- (code:formal* trigger))
+             (formals- (ast:formal* trigger))
              (arguments (map .name formals-)))
         (sm:assign*
          (string-append ;;; XXX FIXME code:foo-name
@@ -1386,7 +1401,7 @@ std::basic_ostream<Char, Traits> &")
     (let* ((port (.port.name trigger))
            (event (.event.name trigger))
            (direction (ast:direction trigger))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (formals (map (cute clone <> #:name #f) formals))
            (formals (map c++:->formal formals))
            (system-port (string-append "c.system." port))
@@ -1427,7 +1442,7 @@ std::basic_ostream<Char, Traits> &")
            (port-event (simple-format #f "~a.~a" port event))
            (flush-event (simple-format #f "~a.<flush>" port))
            (flush-string (simple-format #f "~s" flush-event))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (formals (map (cute clone <> #:name #f) formals))
            (formals (map c++:->formal formals))
            (port (.port trigger)))
@@ -1483,7 +1498,7 @@ std::basic_ostream<Char, Traits> &")
   (define (void-provides-in->init trigger)
     (let* ((port (.port.name trigger))
            (event (.event.name trigger))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (formals (code:number-formals formals))
            (arguments (map code:number-argument formals))
            (out-formals (filter (negate ast:in?) formals))
@@ -1517,7 +1532,7 @@ std::basic_ostream<Char, Traits> &")
            (port-sm:return-string (simple-format #f "~s" port-return))
            (port-prefix (simple-format #f "~a." port))
            (event-slot (string-append "c.system." (code:event-name trigger)))
-           (formals (code:formal* trigger))
+           (formals (ast:formal* trigger))
            (invoke (sm:code->string (sm:call (name event-slot)
                                              (arguments (iota (length formals)))))))
       (sm:generalized-initializer-list*
@@ -1572,7 +1587,7 @@ std::basic_ostream<Char, Traits> &")
            (event (.event.name trigger))
            (port-event (simple-format #f "~a.~a" port event))
            (port-event-string (simple-format #f "~s" port-event))
-           (formals (code:formal* trigger)))
+           (formals (ast:formal* trigger)))
       (sm:generalized-initializer-list*
        port-event-string
        (sm:function
