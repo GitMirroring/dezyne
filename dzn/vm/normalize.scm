@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -193,6 +193,7 @@
 ;;;
 
 (define (vm:normalize root)
+  "Normalizations for the simulator: purge-data, add-explicit-temporaries, annotate-otherwise, transform-end-of-on, set-blocking-reply-port, add-function-return, normalize:compounds."
   ((compose
     (cut normalize:compounds <> #:wrap-imperative? #t)
     add-function-return
