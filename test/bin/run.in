@@ -38,6 +38,7 @@
 	    (language (single-char #\l) (value #t))
 	    (skip (single-char #\S) (value #t))
             (stage (single-char #\s) (value #t))
+            (timeout (single-char #\t) (value #t))
             (verbose (single-char #\v))))
 	 (options (getopt-long args option-spec))
 	 (help? (option-ref options 'help #f))
@@ -53,6 +54,7 @@ Run test TEST.
   -l, --language=LANG    run code test for LANG [~a]
   -S, --skip=STAGE       skip STAGE
   -s, --stage=STAGE      run STAGE
+  -t, --timeout=TIMEOUT  abort after TIMEOUT seconds
   -v, --verbose          be more verbose, show progress
 
 Examples:
@@ -95,6 +97,7 @@ Examples:
          (need-traces? (or (member "lts" stages)
                            (member "simulate" stages)
                            (member "code" stages)))
+         (timeout (option-ref options 'timeout #f))
          (stages (if need-traces? (cons "traces" stages)
                      stages))
          (stages (filter (negate (cute member <> skip)) stages))
@@ -107,8 +110,13 @@ Examples:
            (setenv "run_seen" "1")
            (unless (getenv "languages")
              (setenv "languages" (string-join languages)))
-           (exit (zero? (system* run file-name))))
+           (let* ((command (list run file-name))
+                  (command (if (not timeout) command
+                               `("timeout" ,timeout ,@command))))
+            (exit (zero? (apply system* command)))))
           (else
+           (when timeout
+             (alarm (string->number timeout)))
            (exit (run-test file-name languages #:stages stages))))))
 
 ;;; Local Variables:
