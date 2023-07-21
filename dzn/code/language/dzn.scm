@@ -287,7 +287,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-newline port))
 
 (define-method (print-ast (o <instance>) port)
-  (print-type (.type o) port)
+  (display (ast:name (.type o)) port)
   (display " " port)
   (display (.name o) port)
   (display ";\n" port))
