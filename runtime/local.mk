@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
@@ -39,7 +39,7 @@ dist_runtime_c_dzn_DATA =			\
  %D%/c/dzn/queue.h				\
  %D%/c/dzn/runtime.h
 
-dist_noinst_DATA = %D%/c/dzn/config.h.in
+dist_noinst_DATA += %D%/c/dzn/config.h.in
 
 runtime_cdir = $(pkgdatadir)/runtime/c
 dist_runtime_c_DATA =				\
