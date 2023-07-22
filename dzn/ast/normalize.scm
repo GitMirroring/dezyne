@@ -859,23 +859,12 @@ to a separate statement, for mCRL2."
     (_ o)))
 
 (define* (add-defer-end o)
-  (define* (add-end o #:key (loc o))
-    (match o
-      (($ <compound>)
-       (clone o #:elements (add-end (ast:statement* o) #:loc o)))
-      ((statement ... t)
-       (append o (list (make <defer-end> #:location (.location (.parent t))))))
-      ((statement ...)
-       (append o (list (make <defer-end> #:location (.location loc)))))
-      (_ (let* ((location (.location o))
-                (end (make <defer-end>)))
-           (make <compound>
-             #:elements (cons o (list end))
-             #:location location)))))
   (match o
     (($ <defer>)
-     (let ((statement (add-defer-end (.statement o))))
-       (clone o #:statement (add-end statement))))
+     (let* ((statement (add-defer-end (.statement o)))
+            (end (make <defer-end>))
+            (statement (ast:add-statement* statement end)))
+       (clone o #:statement statement)))
     (($ <blocking>)
      (clone o #:statement (add-defer-end (.statement o))))
     (($ <on>)

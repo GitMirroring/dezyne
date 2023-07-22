@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -42,6 +42,7 @@
   #:use-module (dzn misc)
 
   #:export (ast:add-statement
+            ast:add-statement*
             ast:argument->formal
             ast:base-name
             ast:blocking?
@@ -1107,3 +1108,21 @@ call steps over the function and returns the next statement."
 
 (define-method (ast:add-statement (o <statement>) statement)
   (make <compound> #:elements (list o statement)))
+
+(define* (ast:add-statement* o statement #:key (location o))
+  (match o
+    (($ <compound>)
+     (let* ((elements (ast:statement* o))
+            (elements (ast:add-statement* elements statement #:location o)))
+       (clone o #:elements elements)))
+    ((h ... t)
+     (append o (list (clone statement #:location (.location (.parent t))))))
+    ((h ...)
+     (append o (list (clone statement #:location (.location location)))))
+    (_
+     (let* ((location (.location o))
+            (statement (clone statement #:location location))
+            (compound (make <compound>
+                        #:elements (cons o (list statement))
+                        #:location location)))
+       (clone compound #:parent (.parent o))))))
