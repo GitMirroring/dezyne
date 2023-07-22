@@ -756,33 +756,22 @@ to prevent unintended shadowing
                                              .parent))))
     (tree-transform o data? data->skip-or-#f)))
 
-(define (add-void-function-return o)
+(define-method (add-void-function-return (o <root>))
   "Make implicit returns explicit for void functions."
   (define* (add-return o #:key (loc o))
     (match o
+      (($ <function>)
+       (clone o #:statement (add-return (.statement o) #:loc o)))
       (($ <compound>)
        (clone o #:elements (add-return (ast:statement* o) #:loc o)))
-      ((statement ... ($ <return>)) o)
-      ((statement ... t) (append o (list (make <return> #:location (.location (.parent t))))))
-      ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
-  (match o
-    (($ <behavior>)
-     (clone o #:functions (add-void-function-return (.functions o))))
-    (($ <functions>)
-     (clone o #:elements (map add-void-function-return (ast:function* o))))
-    (($ <function>)
-     (if (not (is-a? (ast:type o) <void>)) o
-         (clone o #:statement (add-return (.statement o)))))
-    ((? (%normalize:short-circuit?))
-     o)
-    (($ <interface>)
-     (clone o #:behavior (add-void-function-return (.behavior o))))
-    (($ <component>)
-     (clone o #:behavior (add-void-function-return (.behavior o))))
-    ((? (is? <ast>))
-     (tree-map add-void-function-return o))
-    (_
-     o)))
+      ((statement ... t)
+       (append o (list (make <return> #:location (.location (.parent t))))))
+      ((statement ...)
+       (append o (list (make <return> #:location (.location loc)))))))
+  (define void-function-with-implicit-return?
+    (conjoin (is? <function>)
+             (compose (is? <void>) ast:type)))
+  (tree-transform o void-function-with-implicit-return? add-return))
 
 (define (extract-call o)
   "Move typed function calls from variable initialization and assignment
