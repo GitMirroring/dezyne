@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -87,8 +87,11 @@
    (eval . (put 'with-directory-excursion 'scheme-indent-function 1))
 
    ;; SCMackerel
-   (eval . (put 'process 'scheme-indent-function 0))))
-   (eval . (put 'entity 'scheme-indent-function 0))
+   (eval . (put 'sm:process 'scheme-indent-function 0))
+   (eval . (put 'sm:mcrl2 'scheme-indent-function 0))
+   (eval . (put 'sm:code 'scheme-indent-function 0))
+   (eval . (put 'sm:header 'scheme-indent-function 0))
+   (eval . (put 'sm:struct 'scheme-indent-function 0))))
 
  (texinfo-mode    . ((indent-tabs-mode . nil)
                      (fill-column . 72))))
