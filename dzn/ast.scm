@@ -42,6 +42,7 @@
   #:use-module (dzn misc)
 
   #:export (ast:add-statement
+            ast:add-statement*
             ast:argument->formal
             ast:base-name
             ast:blocking?
@@ -1118,3 +1119,22 @@ call steps over the function and returns the next statement."
     #:elements (list o statement)
     #:location (.location o)))
 
+(define* (ast:add-statement* o statement #:key (location o))
+  (match o
+    (($ <compound>)
+     (let* ((elements (ast:statement* o))
+            (elements (ast:add-statement* elements statement #:location o)))
+       (clone o #:elements elements)))
+    ((h ... t)
+     (append o (list (clone statement #:location (.location (.parent t))))))
+    ((h ...)
+     (append o (list (clone statement #:location (.location location)))))
+    (_
+     (let* ((location (.location o))
+            (statement (clone statement #:location location))
+            (elements (if (is-a? o <skip>) (list statement)
+                          (list o statement)))
+            (compound (make <compound>
+                        #:elements elements
+                        #:location location)))
+       (clone compound #:parent (.parent o))))))
