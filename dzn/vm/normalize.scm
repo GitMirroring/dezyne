@@ -198,10 +198,10 @@
 ;;;
 
 (define (vm:normalize root)
-  "Normalizations for the simulator: purge-data, add-explicit-temporaries, annotate-otherwise, transform-end-of-on, set-blocking-reply-port, add-function-return, normalize:compounds."
+  "Normalizations for the simulator: purge-data, add-explicit-temporaries, annotate-otherwise, transform-end-of-on, set-blocking-reply-port, add-void-function-return, normalize:compounds."
   ((compose
     (with-root (cut normalize:compounds <> #:wrap-imperative? #t))
-    (with-root add-function-return)
+    (with-root add-void-function-return)
     (with-root set-blocking-reply-port)
     (with-root transform-end-of-on)
     (with-root (annotate-otherwise))

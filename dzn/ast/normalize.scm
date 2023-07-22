@@ -43,7 +43,7 @@
             add-defer-end
             add-determinism-temporaries
             add-explicit-temporaries
-            add-function-return
+            add-void-function-return
             add-reply-port
             binding-into-blocking
             extract-call
@@ -756,8 +756,8 @@ to prevent unintended shadowing
                                              .parent))))
     (tree-transform o data? data->skip-or-#f)))
 
-(define (add-function-return o)
-  "For each void function make implicit returns explicit."
+(define (add-void-function-return o)
+  "Make implicit returns explicit for void functions."
   (define* (add-return o #:key (loc o))
     (match o
       (($ <compound>)
@@ -767,20 +767,20 @@ to prevent unintended shadowing
       ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
   (match o
     (($ <behavior>)
-     (clone o #:functions (add-function-return (.functions o))))
+     (clone o #:functions (add-void-function-return (.functions o))))
     (($ <functions>)
-     (clone o #:elements (map add-function-return (ast:function* o))))
+     (clone o #:elements (map add-void-function-return (ast:function* o))))
     (($ <function>)
      (if (not (is-a? (ast:type o) <void>)) o
          (clone o #:statement (add-return (.statement o)))))
     ((? (%normalize:short-circuit?))
      o)
     (($ <interface>)
-     (clone o #:behavior (add-function-return (.behavior o))))
+     (clone o #:behavior (add-void-function-return (.behavior o))))
     (($ <component>)
-     (clone o #:behavior (add-function-return (.behavior o))))
+     (clone o #:behavior (add-void-function-return (.behavior o))))
     ((? (is? <ast>))
-     (tree-map add-function-return o))
+     (tree-map add-void-function-return o))
     (_
      o)))
 

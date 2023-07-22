@@ -607,7 +607,7 @@ transformations."
                   (with-root makreel:add-action-reply)
                   (with-root makreel:add-shared-variables)
                   (with-root makreel:mark-tail-call)
-                  (with-root add-function-return)
+                  (with-root add-void-function-return)
                   (with-root extract-call)
                   (with-root makreel:add-state-placeholder)
                   (with-root normalize:state+illegals)

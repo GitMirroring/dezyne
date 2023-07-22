@@ -42,7 +42,7 @@
   #:export (add-calling-context
             inline-functions
             normalize:compounds-wrap)
-  #:re-export (add-function-return
+  #:re-export (add-void-function-return
                add-determinism-temporaries
                add-explicit-temporaries
                code:normalize
