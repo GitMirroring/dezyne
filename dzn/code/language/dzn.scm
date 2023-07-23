@@ -128,7 +128,7 @@
              (not (eq? o (.expression parent))))
         (is-a? parent <on>)
         (and (is-a? parent <if>)
-             (not (ast:eq? o (.expression parent)))))))
+             (not (eq? o (.expression parent)))))))
 
 (define (print-ast-join lst port . grammar)
   "Like STRING-JOIN but PRINT-AST'ing to PORT, also allowing \"PRE\" 'pre

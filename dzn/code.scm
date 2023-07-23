@@ -210,7 +210,7 @@
 
 (define-method (code:pump? (o <system>))
   (let* ((components (ast:component-model* o))
-         (components (filter (negate (cute ast:eq? <> o)) components)))
+         (components (filter (negate (cute eq? <> o)) components)))
     (any code:pump? components)))
 
 (define-method (code:pump? (o <shell-system>))
@@ -252,7 +252,7 @@
   #t)
 
 (define-method (code:type-eq? a b)
-  (ast:eq? a b))
+  (eq? a b))
 
 (define (code:reply-types o)
   (let* ((types (ast:return-types o))
@@ -437,9 +437,8 @@ in code backends like c."
                                            (is? <var>))
                                    (.statement o)))
          (variables (map .variable references))
-         (local? (compose
-                  (cute ast:eq? <> o)
-                  (cute ast:parent <> <defer>))))
+         (local? (compose (cute eq? <> o)
+                          (cute ast:parent <> <defer>))))
     (filter (negate (disjoin ast:member? local?))
             variables)))
 

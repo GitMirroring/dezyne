@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -135,12 +136,12 @@ component hello
                     (graft action))))
 
         (test-assert "deep copy action"
-          (not (ast:eq? action
-                        (deep-copy action))))
+          (not (eq? action
+                    (deep-copy action))))
 
         (test-assert "deep copy compound"
-          (not (ast:eq? (car (ast:statement* compound))
-                        (car (ast:statement* (deep-copy compound))))))
+          (not (eq? (car (ast:statement* compound))
+                    (car (ast:statement* (deep-copy compound))))))
 
         (let* ((defer (make <defer> #:statement compound))
                (defer-copy (deep-copy* (.parent compound) defer)))

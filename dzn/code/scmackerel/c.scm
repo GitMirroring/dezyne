@@ -248,7 +248,7 @@
     (define (instance->connect instance)
       (let* ((component (.type instance))
              (ports (ast:injected-port* component))
-             (ports (filter (compose (cute ast:eq? <> interface) .type) ports)))
+             (ports (filter (compose (cute eq? <> interface) .type) ports)))
         (map (cute port->connect instance <>) ports)))
     (append-map instance->connect instances)))
 

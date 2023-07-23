@@ -75,7 +75,7 @@
 ;;; Utility.
 ;;;
 (define-method (ast:equal? (a <port-pair>) (b <port-pair>))
-  (and (ast:eq? (.port a) (.port b))
+  (and (eq? (.port a) (.port b))
        (equal? (.other a) (.other b))))
 
 (define-method (ast:equal? (a <shared-transition>) (b <shared-transition>))

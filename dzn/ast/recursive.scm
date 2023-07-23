@@ -48,7 +48,7 @@
                    o))
            (functions (map .function calls))
            (functions (filter (is? <function>) functions))
-           (functions (delete-duplicates functions ast:eq?)))
+           (functions (delete-duplicates functions eq?)))
       functions))
   (let ((called (called-functions o)))
     (define (mark-called? f)
