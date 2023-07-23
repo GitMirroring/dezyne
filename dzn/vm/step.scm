@@ -389,10 +389,10 @@
                   (blocking? (or (pair? (.blocked pc))
                                  (any (cute ast:parent <> <blocking>)
                                       statements)))
-                  (ports-eq? (ast:eq? reply-port trigger-port)))
+                  (ports-eq? (eq? reply-port trigger-port)))
              (and reply-port
                   (or blocking?
-                      (and (or (ast:eq? (and=> (rtc-trigger pc) .port) reply-port)
+                      (and (or (eq? (and=> (rtc-trigger pc) .port) reply-port)
                                (not (and=> (as trigger <q-trigger>) .modeling?)))
                            (or (ast:provides? (rtc-trigger pc))
                                (not (is-a? (ast:type value) <void>)))))
@@ -411,7 +411,7 @@
                     (null? (.blocked pc))
                     (not (ast:provides? (rtc-trigger pc)))
                     (is-a? (ast:type value) <void>)
-                    (or (ast:eq? (.port (rtc-trigger pc)) reply-port)
+                    (or (eq? (.port (rtc-trigger pc)) reply-port)
                         (not (and=> (as trigger <q-trigger>) .modeling?)))))
            (let* ((error (make <deadlock-error> #:ast o #:message "deadlock"))
                   (pc (clone pc #:status error)))
@@ -618,7 +618,7 @@
   (let ((p (.parent o)))
     (match p
       (($ <compound>)
-       (let ((next (and=> (member o (ast:statement* p) ast:eq?) cdr)))
+       (let ((next (and=> (memq o (ast:statement* p)) cdr)))
          (if (pair? next) (continuation pc next)
              (let ((pc (pop-locals pc (filter (is? <variable>) (ast:statement* p)))))
                (statement-continuation pc p)))))
@@ -654,7 +654,7 @@
   (let ((parent (.parent o)))
     (match parent
       (($ <compound>)
-       (let* ((statements (member o (reverse (ast:statement* parent)) ast:eq?))
+       (let* ((statements (memq o (reverse (ast:statement* parent))))
               (pc (pop-locals pc (filter (is? <variable>) statements))))
          (function-return pc parent)))
       ((? (is? <function>))

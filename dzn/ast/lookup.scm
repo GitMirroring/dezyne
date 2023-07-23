@@ -166,7 +166,7 @@
     (if (not compound) '()
         (let* ((statements (ast:statement* compound))
                (path (ast:path o)))
-          (take-while (negate (cute member <> path ast:eq?)) statements)))))
+          (take-while (negate (cute memq <> path)) statements)))))
 
 
 ;;;
@@ -467,7 +467,8 @@ null) and return its CONTEXT."
 (define-method (ast:event-formal (o <formal>))
   (let* ((trigger (ast:parent o <trigger>))
          (event (.event trigger))
-         (index (list-index (cute ast:eq? o <>) (reverse (.elements (.parent o)))))
+         (trigger-formals (ast:formal* (.parent o)))
+         (index (list-index (cute eq? o <>) (reverse trigger-formals)))
          (formals (if (not event) '() (ast:formal* event))))
     (and event (< index (length formals)) (list-ref (reverse formals) index))))
 
@@ -475,7 +476,8 @@ null) and return its CONTEXT."
   (let* ((on (ast:parent o <on>))
          (trigger (car (ast:trigger* on)))
          (event (.event trigger))
-         (index (list-index (cute ast:eq? o <>) (reverse (.elements (.parent o)))))
+         (trigger-formals (ast:formal* (.parent o)))
+         (index (list-index (cute eq? o <>) (reverse trigger-formals)))
          (formals (ast:formal* event)))
     (and event (< index (length formals)) (list-ref (reverse formals) index))))
 
@@ -487,7 +489,7 @@ null) and return its CONTEXT."
                     (and=> (ast:parent o <scope>) .parent))))
     (if type-name (ast:lookup scope type-name)
         (let ((formal (ast:event-formal o)))
-          (and formal (.type formal))))))
+          (and=> formal .type)))))
 
 (define-method (.direction (o <formal>))
   (let ((type-name (.type.name o)))

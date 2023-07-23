@@ -470,7 +470,7 @@ requires the introduction of temporaries for function calls."
                                        (conjoin
                                         (is? <reply>)
                                         (disjoin (negate .port)
-                                                 (compose (cute ast:eq? port <>)
+                                                 (compose (cute eq? port <>)
                                                           .port)))
                                        statement)))))))
     (if (not reply?) o
@@ -1192,7 +1192,7 @@ the same level."
      o)))
 
 (define (replace-expression old o var)
-  (cond ((ast:eq? old o)
+  (cond ((eq? old o)
          var)
         ((is-a? o <expression>)
          (tree-map (cute replace-expression old <> var) o))
@@ -1373,8 +1373,8 @@ add-explicit-temporaries transformation for splitting argument lists."
          (variable-expression (add-temporary? o))
          (type (ast:type variable-expression))
          (void? (is-a? type <void>))
-         (local-type? (ast:eq? (ast:parent type <model>)
-                               (ast:parent o <model>)))
+         (local-type? (eq? (ast:parent type <model>)
+                           (ast:parent o <model>)))
          (type-name (cond
                      ((is-a? type <subint>) (.name (ast:type (make <int>))))
                      (local-type? (.name type))

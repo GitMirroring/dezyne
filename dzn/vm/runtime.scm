@@ -259,7 +259,7 @@
                  (w (max (+ 1 maxw) (cdr winst)))
                  (all (if (= w (cdr winst)) all
                           (cons (cons (car winst) w)
-                                (alist-delete (car winst) all ast:eq?))))
+                                (alist-delete (car winst) all eq?))))
                  (stable (and (= w (cdr winst)) stable)))
             (loop all (cdr todo) stable))))))
 
