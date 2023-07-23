@@ -29,7 +29,6 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 getopt-long)
-  #:use-module (ice-9 poe)
 
   #:use-module (dzn ast)
   #:use-module (dzn ast ast)

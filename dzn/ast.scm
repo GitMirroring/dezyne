@@ -145,9 +145,7 @@
                ast:name
                ast:parent
                ast:path
-               ast:perfect-funcq
                ast:port-eq?
-               ast:pure-funcq
 
                ast:argument*
                ast:binding*

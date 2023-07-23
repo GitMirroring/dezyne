@@ -27,7 +27,6 @@
 (define-module (dzn parse stress)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
-  #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
   #:use-module (srfi srfi-1)
