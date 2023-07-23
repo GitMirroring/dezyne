@@ -147,9 +147,8 @@
                ast:parent
                ast:path
                ast:perfect-funcq
-               ast:pure-funcq
-               ast:node-eq?
                ast:port-eq?
+               ast:pure-funcq
 
                ast:argument*
                ast:binding*
