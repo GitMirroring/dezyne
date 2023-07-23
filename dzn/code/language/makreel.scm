@@ -104,7 +104,7 @@
 (define (makreel:model->makreel root model)
   (let* ((model-name (ast:dotted-name model))
          (root' (tree-filter (disjoin (negate (is? <component>))
-                                      (cut ast:eq? <> model))
+                                      (cute eq? <> model))
                              root)))
     (parameterize ((%language "makreel")
                    (%model-name model-name))
@@ -153,7 +153,7 @@
     (let loop ((nested nested) (direct direct))
       (let ((reached rest (partition
                            (lambda (call)
-                             (find (cut ast:eq? (ast:parent call <function>) <>)
+                             (find (cute eq? (ast:parent call <function>) <>)
                                    (map .function direct))) nested)))
         (let* ((reached (append reached direct)))
           (if (equal? direct reached) direct
@@ -201,7 +201,7 @@
   (if (is-a? o <behavior>) '()
       (let* ((p (.parent o)))
         (cond ((is-a? p <compound>)
-               (let ((pre (cdr (member o (reverse (ast:statement* p)) ast:eq?))))
+               (let ((pre (cdr (memq o (reverse (ast:statement* p))))))
                  (append (filter (is? <variable>) pre) (makreel:locals p))))
               ((is-a? p <defer>)
                (let ((model (ast:parent p <model>)))
@@ -269,7 +269,7 @@
          (called (makreel:called-function* o))
          (calls (filter (compose
                          (disjoin not
-                                  (cute member <> called ast:eq?))
+                                  (cute memq <> called))
                          (cute ast:parent <> <function>))
                         calls)))
     (cons (map (compose car ast:continuation*) calls)

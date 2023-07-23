@@ -817,7 +817,7 @@ init for MODEL unless INIT."
                                   (append interfaces component-interfaces))
                                  (multiple?
                                   (filter (negate ast:imported?) interfaces))))
-               (interfaces (delete-duplicates interfaces ast:eq?)))
+               (interfaces (delete-duplicates interfaces eq?)))
           (append interfaces components)))))
 
 

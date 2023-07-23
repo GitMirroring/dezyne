@@ -225,7 +225,7 @@ TRACE that has BLOCKED still set to this port."
      (let ((blocked-port (and (pair? blocked) (caar blocked)))
            (blocked-pc (and (pair? blocked) (cdar blocked))))
        (and
-        (not (ast:eq? statement (and=> blocked-pc .statement)))
+        (not (eq? statement (and=> blocked-pc .statement)))
         (or (and (is-a? (%sut) <runtime:system>)
                  (> (length (ast:provides-port* (runtime:%sut-model))) 1))
             (requires-modeling-armed? pc))
@@ -956,7 +956,7 @@ until RTC?."
               (blocked-port (and=> (blocked-on-boundary? pc event)
                                    .ast))
               (traces (append-map (cute run-requires <> event) pcs)))
-         (if (or (not port) (not (ast:eq? port blocked-port))) traces
+         (if (or (not port) (not (eq? port blocked-port))) traces
              (filter (negate modeling?) traces))))))
    ((provides-trigger? event)
     (if (blocked-on-boundary-provides? pc event) (illegal-trace pc)

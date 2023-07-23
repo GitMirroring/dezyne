@@ -102,8 +102,8 @@
   (let ((pc-a (car a))
         (pc-b (car b)))
     (and (rtc-program-counter-equal? pc-a pc-b)
-         (ast:eq? (and=> (.previous pc-a) .statement)
-                  (and=> (.previous pc-b) .statement))
+         (eq? (and=> (.previous pc-a) .statement)
+              (and=> (.previous pc-b) .statement))
          (equal? (trace->string-trail a)
                  (trace->string-trail b)))))
 
@@ -526,7 +526,7 @@
 (define-method (pc->arrow (o <runtime:port>) (return <trigger-return>))
   (cons return
         (let ((value (.event.name return)))
-          (cond ((ast:eq? o (%sut))
+          (cond ((eq? o (%sut))
                  (format #f "... <- ~a.~a" (runtime:instance->string o) value))
                 ((or (ast:provides? o)
                      (and (is-a? (%sut) <runtime:port>)
@@ -638,7 +638,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
 
   (define (injected-port-name component interface)
     (let* ((ports (filter ast:injected? (ast:port* component)))
-           (port (find (compose (cute ast:eq? <> interface) .type) ports)))
+           (port (find (compose (cute eq? <> interface) .type) ports)))
       (and=> port .name)))
 
   (let loop ((trace trace) (result '()))
@@ -807,7 +807,7 @@ the location of the executed <on>-statement."
                (trigger (.trigger pc))
                (model (and trigger (ast:parent trigger <model>)))
                (on (and=> (find (conjoin (compose (is? <on>) .statement)
-                                         (compose (cute ast:eq? <> model)
+                                         (compose (cute eq? <> model)
                                                   (cute ast:parent <> <model>)
                                                   .statement))
                                 trace)
