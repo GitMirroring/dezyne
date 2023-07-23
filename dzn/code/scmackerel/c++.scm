@@ -1056,7 +1056,7 @@ std::basic_ostream<Char, Traits> &")
                                      "."
                                      (.port.name other-end)))))))
     (define (injected-instance? instance)
-      (member instance injected-instances ast:eq?))
+      (memq instance injected-instances))
     (define (instance->member instance)
       (let ((local? (and injected?
                          (not (injected-instance? instance)))))
@@ -1196,7 +1196,7 @@ std::basic_ostream<Char, Traits> &")
          (expression
           "{}"))))
     (define (injected-instance? instance)
-      (member instance injected-instances ast:eq?))
+      (memq instance injected-instances))
     (define (instance->member instance)
       (let ((local? (and injected?
                          (not (injected-instance? instance)))))

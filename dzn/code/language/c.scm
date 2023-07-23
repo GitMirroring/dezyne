@@ -160,7 +160,7 @@
   (let* ((model (ast:parent o <model>))
          (model-name (c:type-name model))
          (defers (c:defer* model))
-         (index (list-index (cute ast:eq? <> o) defers)))
+         (index (list-index (cute eq? <> o) defers)))
     (simple-format #f "dzn_defer~a_~a" index model-name)))
 
 (define-method (c:defer-predicate-name (o <defer>))

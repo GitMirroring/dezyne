@@ -172,8 +172,8 @@
 (define-method (makreel:process-formals (o <ast>))
   (let* ((parameters (makreel:process-parameters o))
          (continuations calls (makreel:call-continuation* o))
-         (return? (member o continuations ast:eq?))
-         (return? (list-index (cute ast:eq? <> o) continuations))
+         (return? (memq o continuations))
+         (return? (list-index (cute eq? <> o) continuations))
          (call (and=> return? (cute list-ref calls <>)))
          (return? (and call
                        (not (is-a? (ast:type call) <void>))))
@@ -215,7 +215,7 @@
 (define-method (makreel:shared-process-arguments (o <action>))
   (let* ((port (.port o))
          (behavior (ast:parent o <behavior>))
-         (shared (filter (compose (cute ast:eq? <> port) .port)
+         (shared (filter (compose (cute eq? <> port) .port)
                          (ast:shared* behavior)))
          (interface (.type port)))
     (map (lambda (s)
@@ -403,7 +403,7 @@
                 (($ <interface>)
                  (let* ((in-types (map ast:type (ast:in-event* o)))
                         (reply-enums (filter (is? <enum>) in-types))
-                        (reply-enums (delete-duplicates reply-enums ast:eq?))
+                        (reply-enums (delete-duplicates reply-enums eq?))
                         (void? (find (is? <void>) in-types))
                         (bool? (find (is? <bool>) in-types))
                         (int? (find (is? <int>) in-types)))
@@ -453,7 +453,7 @@
          (and
           (pair? return-types)
           (let* ((return-enums (filter (is? <enum>) return-types))
-                 (return-enums (delete-duplicates return-enums ast:eq?))
+                 (return-enums (delete-duplicates return-enums eq?))
                  (void? (find (is? <void>) return-types))
                  (bool? (find (is? <bool>) return-types))
                  (int? (find (is? <int>) return-types))
@@ -505,7 +505,7 @@
       (or
        (assq-ref cache o)
        (let* ((returns (makreel:call-continuation* o))
-              (returns (delete-duplicates returns ast:eq?))
+              (returns (delete-duplicates returns eq?))
               (result
                (sm:type (name (model-prefix "stack" o))
                         (entities
@@ -552,7 +552,7 @@
       (or
        (assq-ref cache o)
        (let* ((returns (makreel:call-continuation* o))
-              (returns (delete-duplicates returns ast:eq?)))
+              (returns (delete-duplicates returns eq?)))
          (and (pair? returns)
               (let ((result
                      (sm:type (name (model-prefix "returns" o))
@@ -1219,7 +1219,7 @@
                                     (makreel:full-name v)
                                     (model-prefix (ast:name v) interface)
                                     (port-prefix "s" p))))
-                               (filter (compose (cute ast:eq? port <>) .port)
+                               (filter (compose (cute eq? port <>) .port)
                                        (ast:shared* model)))))
                    ,@defers))))
              (map .port (ast:shared* model)))
@@ -1311,7 +1311,7 @@
                  (sm:goto (name (statement->process-name next))
                           (arguments (makreel:process-parens next))))
                 (sm:goto (name "Constrained_Illegal")))
-               (if (not (find (compose (cute ast:eq? port <>) .port)
+               (if (not (find (compose (cute eq? port <>) .port)
                               (ast:shared* model)))
                    (sm:goto (name (statement->process-name next))
                             (arguments (makreel:process-parens next)))
@@ -1329,7 +1329,7 @@
                                         (makreel:full-name v)
                                         (model-prefix (ast:name v) interface)
                                         (port-prefix "s" p))))
-                                   (filter (compose (cute ast:eq? port <>) .port)
+                                   (filter (compose (cute eq? port <>) .port)
                                            (ast:shared* model))))))))))))))))
 
 (define-method (ast->process (model <model>) (o <declarative-illegal>) (next <ast>))
@@ -1374,7 +1374,7 @@
          (action-type (ast:type o))
          (variable-type (ast:type variable))
          (shared (ast:shared* model))
-         (shared? (find (compose (cute ast:eq? <> port) .port) shared)))
+         (shared? (find (compose (cute eq? <> port) .port) shared)))
     (sm:sum (type (makreel:reply-type o))
             (statement
              (let* ((reply (make <reply>
@@ -1391,7 +1391,7 @@
                           ,@(makreel:type->out-of-range-processes
                              variable-type "i"))))
                   ,@(if (or (ast:external? port)
-                            (not (find (compose (cute ast:eq? port <>) .port)
+                            (not (find (compose (cute eq? port <>) .port)
                                        (ast:shared* model)))) '()
                                        `(,(sum-state-action port))))))))))
 
@@ -1439,7 +1439,7 @@
                   ,(cond ((and=> port ast:external?)
                           (sm:goto (name (statement->process-name next))
                                    (arguments (makreel:process-parens next))))
-                         ((find (compose (cute ast:eq? port <>) .port)
+                         ((find (compose (cute eq? port <>) .port)
                                 (ast:shared* model))
                           (sum-state-action
                            port
@@ -1475,7 +1475,7 @@
                            (reply (make <reply> #:port.name port-name))
                            (reply (graft parent reply)))
                       `(,(ast->action reply)
-                        ,@(if (not (find (compose (cute ast:eq? port <>) .port)
+                        ,@(if (not (find (compose (cute eq? port <>) .port)
                                          (ast:shared* model))) '()
                                          `(,(sum-state-action port))))))
               ,(if (or (not (and (is-a? model <component>) (ast:in? o)))
@@ -1512,7 +1512,7 @@
                                                 variable
                                                 "i"))))))))))))
           ,@(if (not (and (ast:requires? port)
-                          (find (compose (cute ast:eq? port <>) .port)
+                          (find (compose (cute eq? port <>) .port)
                                 (ast:shared* model))))
                 '()
                 `(,(sum-state-action
@@ -2428,7 +2428,7 @@
                                    (sm:multi-event (events
                                                     (list (%end-action p))))))))
                 provides))))))
-         (provides-interfaces (delete-duplicates (map .type provides) ast:eq?))
+         (provides-interfaces (delete-duplicates (map .type provides) eq?))
          (provides-allow
           (sm:process
             (name "provides_allow")
@@ -2463,7 +2463,7 @@
                                                (to %tau-void-action)))
                             provides)
                        (sm:comm-events (sm:process-statement provides-comm))))))))
-         (interfaces (delete-duplicates (map .type ports) ast:eq?))
+         (interfaces (delete-duplicates (map .type ports) eq?))
          (provides
           (sm:process
             (name "provides")
@@ -2519,7 +2519,7 @@
                                                       (list (%defer-qout-action o))))))
                 (sm:comm-event (from (sm:multi-event (events
                                                       (list (%defer-skip-action o))))))))))))
-         (interfaces (delete-duplicates (map .type ports) ast:eq?))
+         (interfaces (delete-duplicates (map .type ports) eq?))
          (component-defer-allow
           (sm:process
             (name "component_defer_allow")
@@ -2928,7 +2928,7 @@
          (provides-interfaces (map .type provides))
          (requires (ast:requires-port* o))
          (shared (map .port (ast:shared* o)))
-         (shared-provides (lset-intersection ast:eq? provides shared)))
+         (shared-provides (lset-intersection eq? provides shared)))
     (define (semantics-provides p name)
       (let ((interface (.type p)))
         (sm:sum (type (%actions interface))
@@ -3015,7 +3015,7 @@
                                         (formals
                                          (map
                                           (lambda (i)
-                                            (if (ast:eq? i p) "i"
+                                            (if (eq? i p) "i"
                                                 (port-prefix "port (reply)"
                                                              i)))
                                           provides)))))))
@@ -3045,7 +3045,7 @@
                                ;; FIXME constructor?
                                (port-prefix "port (reply)" p))
                    ,@(let ((port p))
-                       (if (not (find (compose (cute ast:eq? port <>) .port)
+                       (if (not (find (compose (cute eq? port <>) .port)
                                       (ast:shared* o)))
                            '()
                            `(,(sum-state-action port))))
@@ -3136,7 +3136,7 @@
                                ;; FIXME constructor?
                                (port-prefix "port (reply)" p)))
            ,@(let ((port p))
-               (if (not (find (compose (cute ast:eq? port <>) .port)
+               (if (not (find (compose (cute eq? port <>) .port)
                               (ast:shared* o)))
                    '()
                    `(,(sum-state-action port))))
@@ -3165,7 +3165,7 @@
                                (formals
                                 (map
                                  (lambda (i)
-                                   (if (ast:eq? i p) "i"
+                                   (if (eq? i p) "i"
                                        (port-prefix "port (reply)" i)))
                                  provides))))))))))))
     ;; at the end of the component behavior =>
@@ -3234,7 +3234,7 @@
                                 (formals
                                  (map
                                   (lambda (i)
-                                    (if (ast:eq? i p) "i"
+                                    (if (eq? i p) "i"
                                         (port-prefix "port (reply)" i)))
                                   provides))))))))))
          (sm:if* (simple-format
@@ -3251,7 +3251,7 @@
                                      (sm:construct (%port-predicate p)
                                                    "reply"))
                          ,@(let ((port p))
-                             (if (not (find (compose (cute ast:eq? port <>) .port)
+                             (if (not (find (compose (cute eq? port <>) .port)
                                             (ast:shared* o)))
                                  '()
                                  `(,(sum-state-action port))))
@@ -3313,7 +3313,7 @@
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
          (shared (map .port (ast:shared* o)))
-         (shared-provides (lset-intersection ast:eq? provides shared)))
+         (shared-provides (lset-intersection eq? provides shared)))
     (define (handle-queue-empty name)
       (sm:sequence*
        %queue-empty-action
@@ -3345,7 +3345,7 @@
                                                  (formals
                                                   (map
                                                    (lambda (i)
-                                                     (if (ast:eq? i p) "i"
+                                                     (if (eq? i p) "i"
                                                          (port-prefix "port (reply)" i)))
                                                    provides))))))))))
                 (sm:sum (type (%replies interface))
@@ -3423,7 +3423,7 @@
                                (sm:construct (%port-predicate p)
                                              "reply"))
                    ,@(let ((port p))
-                       (if (not (find (compose (cute ast:eq? port <>) .port)
+                       (if (not (find (compose (cute eq? port <>) .port)
                                       (ast:shared* o)))
                            '()
                            `(,(sum-state-action port))))
@@ -3444,8 +3444,8 @@
                                      (formals
                                       (map
                                        (lambda (i)
-                                         (if (ast:eq? i p) (model-prefix
-                                                            "nil" interface)
+                                         (if (eq? i p) (model-prefix
+                                                        "nil" interface)
                                              (port-prefix "port (reply)" i)))
                                        provides)))))))
                       (sm:union*
@@ -3473,7 +3473,7 @@
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
          (shared (map .port (ast:shared* o)))
-         (shared-provides (lset-intersection ast:eq? provides shared)))
+         (shared-provides (lset-intersection eq? provides shared)))
     (define (blocked-main-provides p name)
       (let ((interface (.type p)))
         (sm:if* (sm:not* (sm:in* (port-prefix "port" p) "blocking"))
@@ -3554,7 +3554,7 @@
                 (statement
                  (sm:sequence*
                   (sm:invoke (%out-action p) #:keep-constructor? #t)
-                  (if (not (find (compose (cute ast:eq? p <>) .port)
+                  (if (not (find (compose (cute eq? p <>) .port)
                                       (ast:shared* o)))
                       (sm:goto (name name)
                                (arguments
@@ -3576,7 +3576,7 @@
                  (list (sm:is* "switch" (port-prefix "port" p)))))))
     (let* ((provides (ast:provides-port* o))
            (shared (map .port (ast:shared* o)))
-           (shared-provides (lset-intersection ast:eq? provides shared)))
+           (shared-provides (lset-intersection eq? provides shared)))
       (sm:process
         (name "semantics_async")
         (formals `(,@%blocking-formals
@@ -3609,7 +3609,7 @@
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
          (shared (map .port (ast:shared* o)))
-         (shared-requires (lset-intersection ast:eq? requires shared))
+         (shared-requires (lset-intersection eq? requires shared))
          (component-semantics-parallel
           (sm:process (name "component_semantics_parallel")
                       (statement
@@ -4036,7 +4036,7 @@
                                            (list (%state-action p))))))))
                  provides)))))))
          (provides-interfaces (map .type provides))
-         (provides-interfaces (delete-duplicates provides-interfaces ast:eq?))
+         (provides-interfaces (delete-duplicates provides-interfaces eq?))
          (interfaces (ast:interface* o))
          (component-constrained-allow
           (sm:process
@@ -4124,7 +4124,7 @@
            (port-processes (append-map port-processes ports))
            (provides (ast:provides-port* o))
            (provides-interfaces (map .type provides))
-           (provides-interfaces (delete-duplicates provides-interfaces ast:eq?))
+           (provides-interfaces (delete-duplicates provides-interfaces eq?))
            (provides-processes (provides-processes o))
            (behavior (.behavior o))
            (enums (filter (is? <enum>) (ast:type* behavior)))

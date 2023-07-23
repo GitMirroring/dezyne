@@ -217,7 +217,7 @@
 
   (define (statement-equal? . statements)
     (and (pair? statements)
-         (not (find (negate (cute ast:eq? (car statements) <>)) statements))))
+         (not (find (negate (cute eq? (car statements) <>)) statements))))
 
   (when traces
     (let* ((traces (map reverse traces))
@@ -1592,7 +1592,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (rtc-program-counter-equal? (a <program-counter>) (b <program-counter>))
   (and (ast:equal? (.status a) (.status b))
-       (ast:eq? (.statement a) (.statement b))
+       (eq? (.statement a) (.statement b))
        (equal? (serialize (.state a)) (serialize (.state b)))
        (equal? (.trail a) (.trail b))
        (ast:equal? (.blocked a) (.blocked b))
@@ -1609,7 +1609,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   #t)
 
 (define-method (pc:ast:equal? (a <top>) (b <top>))
-  (ast:eq? a b))
+  (eq? a b))
 
 (define-method (pc-equal? (a <program-counter>) (b <program-counter>))
   (and (eq? (.instance a) (.instance b))

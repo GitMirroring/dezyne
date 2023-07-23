@@ -33,27 +33,10 @@
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast goops)
 
-  #:export (ast:eq?
-            ast:equal?
+  #:export (ast:equal?
             ast:empty-namespace?
             ast:name-equal?))
 
-;;;
-;;; ast:eq?
-;;;
-(define-method (ast:eq? (a <ast>) (b <ast>))
-  (eq? a b))
-
-(define-method (ast:eq? (a <ast>) b)
-  #f)
-
-(define-method (ast:eq? a (b <ast>))
-  #f)
-
-(define-method (ast:eq? a b)
-  (eq? a b))
-
-
 ;;;
 ;;; ast:empty-namespace?
 ;;;
@@ -97,7 +80,7 @@
        (ast:equal? (cdr a) (cdr b))))
 
 (define-method (ast:equal? (a <ast>) (b <ast>))
-  (ast:eq? a b))
+  (eq? a b))
 
 (define-method (ast:equal? (a <declaration>) (b <declaration>))
   (and (eq? (class-of a) (class-of b))

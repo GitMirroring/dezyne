@@ -37,7 +37,7 @@
             true?))
 
 (define-method (expr:equal? (left <enum-literal>) (right <enum-literal>))
-  (and (ast:eq? (.type left) (.type right))
+  (and (eq? (.type left) (.type right))
        (equal? (.field left) (.field right))))
 
 (define-method (expr:equal? (left <literal>) (right <literal>))

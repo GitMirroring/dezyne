@@ -67,7 +67,7 @@ format."
            (equal? (.event.name a) (.event.name b)))))
 
   (define (port-pc-equal? a b)
-    (and (ast:eq? (.statement a) (.statement b))
+    (and (eq? (.statement a) (.statement b))
          (eq? (.instance a) (.instance b))))
 
   (define ((return-equal? r:port) a b)
@@ -188,7 +188,7 @@ format."
     (and (is-a? statement <action>)
          (let ((action-port (.port statement)))
            (and action-port
-                (not (ast:eq? action-port port))
+                (not (eq? action-port port))
                 (ast:provides? action-port))))))
 
 (define (check-provides-fork port trace)
@@ -596,7 +596,7 @@ on TRACE."
                                          cdr)
                                 sut-trail))
              (actions (filter (compose (conjoin (is? <action>)
-                                                (compose (cute ast:eq? <> port)
+                                                (compose (cute eq? <> port)
                                                          .port))
                                        .statement)
                               trace))

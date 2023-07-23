@@ -714,7 +714,7 @@ status."
                        (conjoin
                         (compose (cute eq? <> instance) .instance)
                         (compose (is? <initial-compound>) .statement)
-                        (compose (cute ast:eq? <> trigger) .trigger))
+                        (compose (cute eq? <> trigger) .trigger))
                        trace))
                (port-index
                 (list-index
@@ -875,7 +875,7 @@ status."
         (let ((models (ast:model** model)))
           (tree-filter (disjoin (is? <interface>)
                                 (negate (is? <model>))
-                                (cute member <> models ast:eq?))
+                                (cute memq <> models))
                        root)))))
 
 

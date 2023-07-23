@@ -139,7 +139,6 @@
                ast:int
                ast:void
 
-               ast:eq?
                ast:equal?
                ast:full-name
                ast:name
@@ -371,12 +370,12 @@
     (_ #t)))
 
 (define-method (ast:instance? (o <component-model>))
+  (define (instance? system)
+    (find (compose (cute eq? <> o) .type) (ast:instance* system)))
   (let* ((root (ast:parent o <root>))
          (models (ast:model** root))
          (systems (filter (is? <system>) models)))
-    (find (lambda (s)
-            (find (lambda (i) (ast:eq? (.type i) o)) (ast:instance* s)))
-          systems)))
+    (find instance? systems)))
 
 
 ;;;
@@ -676,11 +675,14 @@
 
 (define-method (ast:return-types (interface <interface>))
   "Return all event types used in INTERFACE."
-  (delete-duplicates (append-map ast:return-types (ast:event* interface)) ast:eq?))
+  (let ((return-types (append-map ast:return-types (ast:event* interface))))
+    (delete-duplicates return-types eq?)))
 
 (define-method (ast:return-types (component <component-model>))
   "Return all event types used in COMPONENT."
-  (delete-duplicates (append-map ast:return-types (filter-map ast:type (ast:port* component))) ast:eq?))
+  (let* ((interfaces (filter-map ast:type (ast:port* component)))
+         (return-types (append-map ast:return-types interfaces)))
+    (delete-duplicates return-types eq?)))
 
 (define-method (ast:return-types (o <event>))
   (list (ast:type o)))
@@ -693,7 +695,7 @@
   (let* ((ports (ast:provides-port* component))
          (interfaces (filter-map ast:type ports))
          (types (append-map ast:return-types interfaces)))
-    (delete-duplicates types ast:eq?)))
+    (delete-duplicates types eq?)))
 
 (define-method (ast:values (o <type>))
   (ast:values o #f))
@@ -793,7 +795,7 @@ overload for variable."
 
 (define-method (ast:interface* (o <component-model>))
   (let ((ports (ast:port* o)))
-    (delete-duplicates (map .type ports) ast:eq?)))
+    (delete-duplicates (map .type ports) eq?)))
 
 (define-method (ast:model** (o <interface>))
   (list o))
@@ -803,9 +805,9 @@ overload for variable."
 
 (define-method (ast:model** (o <system>))
   (let* ((components (ast:component-model* o))
-         (components (delete-duplicates components ast:eq?))
+         (components (delete-duplicates components eq?))
          (interfaces (append-map ast:interface* components))
-         (interfaces (delete-duplicates interfaces ast:eq?)))
+         (interfaces (delete-duplicates interfaces eq?)))
     (ast:topological-model-sort (append interfaces components))))
 
 (define-method (ast:instance-model* (o <system>))
@@ -832,7 +834,7 @@ overload for variable."
 (define-method (ast:filter-model (root <root>) (model <model>))
   (let ((models (ast:model** model)))
     (tree-filter (disjoin (negate (is? <component-model>))
-                          (cute member <> models ast:eq?))
+                          (cute memq <> models))
                  root)))
 
 
@@ -913,11 +915,11 @@ to bottom."
                 (port (.name o)))
            (cond ((and (not (.instance.name left))
                        (equal? (.port.name left) "*")
-                       (ast:eq? (.type (.port right)) (.type o)))
+                       (eq? (.type (.port right)) (.type o)))
                   right)
                  ((and (not (.instance.name right))
                        (equal? (.port.name right) "*")
-                       (ast:eq? (.type (.port left)) (.type o)))
+                       (eq? (.type (.port left)) (.type o)))
                   left)
                  ;; todo: try j.*
                  (else (loop (cdr bindings))))))))
@@ -1001,7 +1003,7 @@ to bottom."
                                             (map .type (ast:instance* o)))))
                           systems))
          (systems (topological-sort system-dag ast:name))
-         (systems (filter (cute member <> models ast:eq?) systems)))
+         (systems (filter (cute memq <> models) systems)))
     (append rest systems)))
 
 ;; This implements Tarjan's strongly connected components algorithm,
@@ -1062,7 +1064,7 @@ returns its statements, an <if> returns both the then and else cases, a
 call steps over the function and returns the next statement."
   (define (statement-continuation o)
     (let* ((p (.parent o))
-           (cont (cdr (member o (ast:statement* p) ast:eq?))))
+           (cont (cdr (memq o (ast:statement* p)))))
       (if (pair? cont) (list (car cont))
           (let ((grandparent (.parent p)))
             (match grandparent
@@ -1110,7 +1112,7 @@ call steps over the function and returns the next statement."
   (let ((p (.parent o)))
     (match p
       (($ <compound>)
-       (match (member o (reverse (ast:statement* p)) ast:eq?)
+       (match (memq o (reverse (ast:statement* p)))
          ((self previous rest ...) previous)
          ((self)
           (ast:previous-statement p))

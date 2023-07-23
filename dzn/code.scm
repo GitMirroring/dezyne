@@ -208,7 +208,7 @@
 
 (define-method (code:pump? (o <system>))
   (let* ((components (ast:component-model* o))
-         (components (filter (negate (cute ast:eq? <> o)) components)))
+         (components (filter (negate (cute eq? <> o)) components)))
     (any code:pump? components)))
 
 (define-method (code:pump? (o <shell-system>))
@@ -250,7 +250,7 @@
   #t)
 
 (define-method (code:type-eq? a b)
-  (ast:eq? a b))
+  (eq? a b))
 
 (define (code:reply-types o)
   (let* ((types (ast:return-types o))
@@ -432,9 +432,8 @@
                                            (is? <var>))
                                    (.statement o)))
          (variables (map .variable references))
-         (local? (compose
-                  (cute ast:eq? <> o)
-                  (cute ast:parent <> <defer>))))
+         (local? (compose (cute eq? <> o)
+                          (cute ast:parent <> <defer>))))
     (filter (negate (disjoin ast:member? local?))
             variables)))
 
@@ -675,14 +674,13 @@
                            (ast:requires-in-triggers o)))
          (pairs (append-map trigger->port-pairs triggers)))
     (delete-duplicates pairs (lambda (a b)
-                               (and (ast:eq? (.port a) (.port b))
+                               (and (eq? (.port a) (.port b))
                                     (equal? (.other a) (.other b)))))))
 
 (define-method (code:requires-in-void-returns (o <component-model>))
   (let ((triggers (ast:requires-in-void-triggers o)))
-    (delete-duplicates triggers
-                       (lambda (a b)
-                         (ast:eq? (.port a) (.port b))))))
+    (delete-duplicates triggers (lambda (a b)
+                                  (eq? (.port a) (.port b))))))
 
 
 ;;;

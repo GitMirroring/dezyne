@@ -514,9 +514,11 @@
   (define (otherwise o)
     (let ((compound (ast:parent o <compound>)))
       (if (not compound) '()
-          (let ((non-guards (filter (negate (is? <guard>)) (ast:statement* compound)))
-                (otherwises (filter (conjoin otherwise-guard? (negate (cut ast:eq? <> o)))
-                                    (member o (ast:statement* compound) ast:eq?))))
+          (let ((non-guards (filter (negate (is? <guard>))
+                                    (ast:statement* compound)))
+                (otherwises (filter (conjoin otherwise-guard?
+                                             (negate (cute eq? <> o)))
+                                    (memq o (ast:statement* compound)))))
             (append
              (if (pair? non-guards)
                  `(,(wfc-error o "cannot use otherwise guard with non-guard statements")
@@ -668,23 +670,30 @@
 (define-method (wfc (o <illegal>))
   (define (illegal o)
     (let ((model (ast:parent o <model>)))
-      (cond ((and (is-a? model <interface>) (ast:parent o <function>))
-             `(,(wfc-error o "cannot use illegal in function")))
-            ((and (is-a? model <interface>) (ast:parent o <if>))
-             `(,(wfc-error o "cannot use illegal in if-statement")))
-            ((let loop ((compound (.parent o)))
-               (and compound
-                    (is-a? compound <compound>)
-                    (ast:imperative? compound)
-                    (or (and (let ((statements (ast:statement* compound)))
-                               (and (> (length statements) 1)
-                                    `(,(wfc-error o "cannot use illegal with imperative statements")
-                                      ,(wfc-info (car (filter (negate (cut member <> (ast:path o) ast:eq?)) statements))
-                                                 "imperative statement here")))))
-                        (let ((parent (.parent compound)))
-                          (loop (or (as parent <compound>)
-                                    (ast:parent parent <compound>))))))))
-            (else '()))))
+      (cond
+       ((and (is-a? model <interface>) (ast:parent o <function>))
+        `(,(wfc-error o "cannot use illegal in function")))
+       ((and (is-a? model <interface>) (ast:parent o <if>))
+        `(,(wfc-error o "cannot use illegal in if-statement")))
+       ((let loop ((compound (.parent o)))
+          (and
+           compound
+           (is-a? compound <compound>)
+           (ast:imperative? compound)
+           (or
+            (and
+             (let ((statements (ast:statement* compound)))
+               (and (> (length statements) 1)
+                    (let* ((statements (filter (negate (cute memq <> (ast:path o)))
+                                               statements))
+                           (statement (car statements)))
+                      `(,(wfc-error
+                          o "cannot use illegal with imperative statements")
+                        ,(wfc-info statement "imperative statement here"))))))
+            (let ((parent (.parent compound)))
+              (loop (or (as parent <compound>)
+                        (ast:parent parent <compound>))))))))
+       (else '()))))
   (append
    (imperative-context o)
    (illegal o)))
@@ -771,7 +780,7 @@
                    `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
                                            (type-name function-type)
                                            (type-name return-type)))))
-                  ((not (ast:eq? last-statement-block o))
+                  ((not (eq? last-statement-block o))
                    `(,(wfc-error ((compose car ast:continuation*) o)
                                  (format #f "code will never be executed"))))
                   (else '())))))
@@ -1003,7 +1012,7 @@
                            (ast:parent o <variable>)))
                (continuation ((compose car ast:continuation*) o))
                (statement (.statement function))
-               (continuation (and (not (ast:eq? continuation statement))
+               (continuation (and (not (eq? continuation statement))
                                   (not (is-a? continuation <return>))
                                   continuation)))
           (cond
@@ -1050,7 +1059,7 @@
 
 (define (re-definition-error o previous)
   (let ((duplicate? (and previous
-                         (not (ast:eq? o previous))
+                         (not (eq? o previous))
                          (equal? (ast:full-name o) (ast:full-name previous)))))
     (if (not duplicate?) '()
         (let ((name (if (ast:parent (.parent o) <model>) (ast:name o)
@@ -1295,7 +1304,7 @@
 (define-method (double-bindings (o <binding>))
   (append
    (double-bindings (.left o) (.right o))
-   (let ((bindings (member o (ast:binding* (ast:parent o <system>)) ast:eq?)))
+   (let ((bindings (memq o (ast:binding* (ast:parent o <system>)))))
      (append-map (cute double-bindings o <>) bindings))))
 
 (define-method (double-bindings (o <binding>) (x <binding>))
@@ -1305,7 +1314,7 @@
         (xright (.right x)))
     (if (or (ast:wildcard? (.port.name xleft))
             (ast:wildcard? (.port.name xright))
-            (ast:eq? o x)) '()
+            (eq? o x)) '()
             (append (double-bindings left xleft)
                     (double-bindings left xright)
                     (double-bindings right xleft)
@@ -1350,7 +1359,7 @@
 
 (define-method (missing-return (o <function>))
   (define (function-body? s)
-    (ast:eq? s (.statement o)))
+    (eq? s (.statement o)))
   (define (step o continuation)
     (cond
      ((is-a? o <illegal>)
@@ -1375,10 +1384,10 @@
                  (rest (cdr statements))
                  (dupe (find (disjoin
                               (compose
-                               (cute ast:eq? <> parent-if)
+                               (cute eq? <> parent-if)
                                (cute as <> <if>))
                               (compose
-                               (cute ast:eq? <> parent-if)
+                               (cute eq? <> parent-if)
                                (cute ast:parent <> <if>)))
                              rest)))
             (if dupe (cons parent-if (loop (delete dupe rest)))
@@ -1386,7 +1395,7 @@
   (if (is-a? (ast:type o) <void>) '()
       (let* ((statements (run (.statement o)))
              (missing (filter (negate (is? <return>)) statements))
-             (missing (delete-duplicates missing ast:eq?))
+             (missing (delete-duplicates missing eq?))
              (missing (collapse-if missing)))
         (map (cute wfc-error <> "missing return") missing))))
 
@@ -1414,7 +1423,7 @@
                (is-a? p <guard>)
                (is-a? p <on>)
                (and (is-a? p <if>)
-                    (not (ast:eq? o (.expression p))))))
+                    (not (eq? o (.expression p))))))
       `(,(wfc-error o (format #f "~a value discarded" class))))
      (else
       '()))))
@@ -1462,16 +1471,16 @@
 (define-method (all-required (o <instance>) (s <system>) required-alist)
   (define (req i) (or (assq-ref required-alist i) '()))
   (define (all-req o found)
-    (if (find (cut ast:eq? o <>) found) found
+    (if (find (cute eq? o <>) found) found
         (let ((found (cons o found)))
-          (append-map (cut all-req <> found) (req o)))))
+          (append-map (cute all-req <> found) (req o)))))
   (append-map (lambda (r) (cons r (all-req r '()))) (req o)))
 
 (define-method (cyclic-bindings (o <system>))
   (let* ((instances (ast:instance* o))
          (required-alist (map (cut requires-instances <> o) instances)))
     (define (check-instance i)
-      (if (not (find (cute ast:eq? <> i) (all-required i o required-alist))) '()
+      (if (not (find (cute eq? <> i) (all-required i o required-alist))) '()
           `(,(wfc-error
               i (format #f "instance `~a' is in a cyclic binding" (.name i))))))
     (append-map check-instance instances)))
@@ -1480,7 +1489,7 @@
   (let* ((ports (ast:provides-port* o))
          (interfaces (map .type ports))
          (interfaces (filter (is? <interface>) interfaces))
-         (interfaces (delete-duplicates interfaces ast:eq?))
+         (interfaces (delete-duplicates interfaces eq?))
          (events (append-map ast:event* interfaces))
          (events (filter (is? <event>) events)))
     (filter ast:in? events)))
@@ -1489,7 +1498,7 @@
   (let* ((ports (ast:requires-port* o))
          (interfaces (map .type ports))
          (interfaces (filter (is? <interface>) interfaces))
-         (interfaces (delete-duplicates interfaces ast:eq?))
+         (interfaces (delete-duplicates interfaces eq?))
          (events (append-map ast:event* interfaces))
          (events (filter (is? <event>) events)))
     (filter ast:out? events)))

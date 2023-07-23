@@ -82,7 +82,7 @@
       (let* ((traces (run-requires pc event))
              (port (.port (string->trigger event)))
              (blocked-port (and=> (blocked-on-boundary? pc) .ast)))
-        (if (and port (ast:eq? port blocked-port)) '()
+        (if (and port (eq? port blocked-port)) '()
             traces)))
      ((provides-trigger? event)
       (if (blocked-on-boundary-provides? pc event) '()
