@@ -224,6 +224,14 @@
           (else
            (list continuation)))))
 
+(define-method (step (pc <program-counter>) (o <skip>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let* ((continuation (continuation pc o))
+         (statement (.statement continuation)))
+    (cond ((mark-liveness? pc statement))
+          (else
+           (list continuation)))))
+
 (define-method (step (pc <program-counter>) (o <if>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (if (true? (eval-expression pc (.expression o))) (list (continuation pc ((compose list .then) o)))
