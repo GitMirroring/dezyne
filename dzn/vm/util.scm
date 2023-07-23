@@ -530,7 +530,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (delete-duplicates (sort (map .event.name modeling) string=?))))
 
 (define-method (modeling-names (o <interface>))
-  ((ast:perfect-funcq modeling-names-unmemoized) o))
+  ((perfect-funcq modeling-names-unmemoized) o))
 
 (define-method (modeling-names (o <runtime:port>))
   (modeling-names ((compose .type .ast) o)))

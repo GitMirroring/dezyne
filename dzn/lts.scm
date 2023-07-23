@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -45,7 +45,6 @@
   #:use-module (srfi srfi-43)
 
   #:use-module (ice-9 match)
-  #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 

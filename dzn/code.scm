@@ -471,7 +471,7 @@
 
 (define (code:shared-lts o)
   (parameterize ((%context (%context)))
-    ((ast:perfect-funcq code:shared-lts-unmemoized) o)))
+    ((perfect-funcq code:shared-lts-unmemoized) o)))
 
 (define-method (code:shared (o <event>))
   "Return a list of transitions for event O from the interface LTS"

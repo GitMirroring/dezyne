@@ -241,7 +241,7 @@ to current-output-port."
     lts))
 
 (define (interface->constraint-lts o)
-  ((ast:perfect-funcq interface->constraint-lts-unmemoized) o))
+  ((perfect-funcq interface->constraint-lts-unmemoized) o))
 
 (define (interface->constraint model)
   "Return constraint process as mCRL2 string from MODEL."
