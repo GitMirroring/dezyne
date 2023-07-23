@@ -27,7 +27,6 @@
 
 (define-module (dzn parse tree)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 poe)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)

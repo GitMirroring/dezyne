@@ -138,7 +138,7 @@
                 o))
 
 (define makreel:defer*
-  (ast:perfect-funcq makreel:defer*-unmemoized))
+  (perfect-funcq makreel:defer*-unmemoized))
 
 (define-method (makreel:defer-skip? (o <model>))
   (and (is-a? o <component>)
@@ -181,7 +181,7 @@
     calls))
 
 (define (reachable-calls o)
-  ((ast:perfect-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
+  ((perfect-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
 
 (define-method (is-called? (o <function>))
   (let ((calls (reachable-calls (ast:parent o <behavior>))))
@@ -285,7 +285,7 @@
           calls)))
 
 (define-method (makreel:call-continuation* (o <behavior>))
-  (match ((ast:perfect-funcq makreel:call-continuation*-unmemoized) o)
+  (match ((perfect-funcq makreel:call-continuation*-unmemoized) o)
     ((continuations . calls)
      (values continuations calls))))
 
