@@ -33,7 +33,6 @@
   #:use-module (ice-9 documentation)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 poe)
 
   #:use-module (dzn ast ast)
   #:use-module (dzn command-line)
