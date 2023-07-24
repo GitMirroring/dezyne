@@ -1191,6 +1191,14 @@
      (goto (name (statement->process-name next))
            (arguments (makreel:process-parens next))))))
 
+(define-method (ast->process (model <model>) (o <skip>) (next <ast>))
+  (sm:process
+    (name (statement->process-name o))
+    (formals (makreel:process-formals o))
+    (statement
+     (sm:goto (name (statement->process-name next))
+              (arguments (makreel:process-parens next))))))
+
 (define-method (ast->process (model <model>) (o <guard>) (next <ast>))
   (process
     (name (statement->process-name o))
