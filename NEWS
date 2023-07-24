@@ -9,8 +9,21 @@
 ** Language
   - A component can now directly refer to the state values of its ports
     from an expression (guard, if, assignment).
+  - The undocumented feature of defining models and types using a name
+    with an inline dotted namespace has been removed.
+** Build
+  - The test runner now has a `--t,--timeout' option, using a 5min
+    default.
+** Parser
+  - The toplevel parser functions have been cleaned-up and refactored to
+    allow better showing of timings per stage.
+** Verification
+  - A new `-T,--timings' option now shows detailed timings for the
+    different stages like: parse, normalization and mCRL2.
 ** Code
   - C++ implements directly referring to the state values of its port.
+  - Lambda capture lists explicitly refer to `this' since C++20
+    deprecates the implicit capture for `='.
   - The code generator backends for C++, C#, and C have been rewritten
     based on [[https://gitlab.com/janneke/scmackerel][SCMackerel]].
   - The experimental C code generator now supports blocking and defer,
@@ -19,10 +32,25 @@
     coding style [[https://www.gnu.org/prep/standards/html_node/Formatting.html][GNU Coding Standards]].
   - The C++ code generator and runtime now adds the source code location
     of an illegal.
-  - The C++ generated code no longer adds `check_bindings' and
-    `dump_tree' member functions to components; Use runtime functions
+  - The C++ generated code no longer adds `check_bindings',
+    `dump_tree' functions to components; Use runtime functions
     `dzn::check_bindings' and `dzn::dump_tree' instead.
+  - The C++ generated code no longer generates global `connect'
+    functions; Use the runtime function `dzn::connect' instead.
+  - Setting the dzn_share_p boolean in a port to false, before it is
+    connected, allows disabling maintaining state sharing, as well as
+    strict illegal checking.  This is a (temporary) workaround for an
+    interface that is more restrive than its handwritten implementation.
+  - The pretty printer (code --language=dzn) now also supports most
+    synthesized AST elements which is especially useful in combination
+    with transformations (`-t,--transform').
 ** Noteworthy bug fixes
+  - A verification bug was fixed that would erroneously report a
+    deadlock for non-determinstic interface constraints.
+  - A verification bug was fixed to correctly report unreachable code
+    when interface and component imperative statement locations overlap.
+  - Running the parser in `-f,--fall-back' mode now shows a parse tree
+    again; a regression introduced in 2.17.2.
   - Event names can now overlap with toplevel names.
   - For C++, it is no longer necessary to add tracing to events
     implemented in handwritten code, the runtime now takes care of this.
@@ -30,6 +58,17 @@
     avoid possible clashes with user defined names.
   - When generating executable code, using an empty dollar expression
     ($$) now raises a well-formedness error.
+  - The verification no longer reports a false positive defer-induced
+    <queue-full> when using defer after a function call.
+  - A bug in the name resolver has been fixed that would lead to a
+    quadratic performance impact when looking up an undefined type.
+  - Use of the unreachable code check, which is enabled by default,
+    would add `tag (line, column)' arguments on the `dzn lts' command
+    line, making it more prone to hit the [[https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/command-line-string-limitation][arbitrary 8191 command-line
+    limit]]) when running `dzn verify' on a Windows desktop.  Tags have
+    been moved from the command-line to the verify pipeline; Note, the
+    limit on Windows remains for other user input derived information
+    communicated via the command-line.
 
 * Changes in 2.17.3 since 2.17.2
 ** Noteworthy bug fixes
