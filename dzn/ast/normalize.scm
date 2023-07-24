@@ -773,11 +773,13 @@ to prevent unintended shadowing
              (compose (is? <void>) ast:type)))
   (tree-transform o void-function-with-implicit-return? add-return))
 
-(define (extract-call o)
+
+(define-method (extract-call (o <root>))
   "Move typed function calls from variable initialization and assignment
 to a separate statement, for mCRL2."
-  (define (extract-assign/variable-call o call)
-    (let ((expression (make <literal> #:value "return_value")))
+  (define (extract-assign/variable-call o)
+    (let ((expression (make <literal> #:value "return_value"))
+          (call (.expression o)))
       (match o
         (($ <assign>)
          (let ((assign (clone o #:expression expression)))
@@ -790,56 +792,39 @@ to a separate statement, for mCRL2."
                                         #:variable.name (.name variable)
                                         #:expression expression))))
            (list variable call assign))))))
-  (match o
-    (($ <behavior>)
-     (clone o
-            #:functions (extract-call (.functions o))
-            #:statement (extract-call (.statement o))))
-    (($ <defer>)
-     (clone o #:statement (extract-call (.statement o))))
-    (($ <blocking>)
-     (clone o #:statement (extract-call (.statement o))))
-    (($ <on>)
-     (clone o #:statement (extract-call (.statement o))))
-    (($ <guard>)
-     (clone o #:statement (extract-call (.statement o))))
-    (($ <functions>)
-     (clone o #:elements (map extract-call (ast:function* o))))
-    ((and (or ($ <assign>)
-              ($ <variable>))
-          (= .expression (and ($ <call>) call)))
-     (let ((statements (extract-assign/variable-call o call)))
-       (graft (.parent o) (make <compound> #:elements statements))))
-    (($ <compound>)
-     (let ((statements
-            (let loop ((statements (ast:statement* o)))
-              (match statements
-                (()
-                 '())
-                ((statement rest ...)
-                 (match statement
-                   ((and (or ($ <assign>)
-                             ($ <variable>))
-                         (= .expression (and ($ <call>) call)))
-                    (let ((statements (extract-assign/variable-call
-                                       statement call)))
-                      (append
-                       statements
-                       (loop rest))))
-                   (_
-                    (cons (extract-call statement)
-                          (loop rest)))))))))
-       (clone o #:elements statements)))
-    ((? (%normalize:short-circuit?))
-     o)
-    (($ <interface>)
-     (clone o #:behavior (extract-call (.behavior o))))
-    (($ <component>)
-     (clone o #:behavior (extract-call (.behavior o))))
-    ((? (is? <ast>))
-     (tree-map extract-call o))
-    (_
-     o)))
+
+  (define (extract-call+compound o)
+    (let* ((statements (extract-assign/variable-call o))
+           (compound (make <compound> #:elements statements)))
+      (graft (.parent o) compound)))
+
+  (define (compound-extract-call o)
+    (let ((elements (append-map
+                     (lambda (o)
+                       (if (not (assign/variable-call? o)) (list o)
+                           (extract-assign/variable-call o)))
+                     (.elements o))))
+      (graft o #:elements elements)))
+
+  (define assign/variable-call?
+    (conjoin
+     (disjoin (is? <assign>)
+              (is? <variable>))
+     (compose (is? <call>) .expression)))
+
+  (define compound-call?
+    (conjoin (is? <compound>)
+             (compose (cute any assign/variable-call? <>)
+                      .elements)))
+
+  (define single-call?
+    (conjoin assign/variable-call?
+             (compose not (is? <compound>) .parent)))
+
+  (tree-transform
+   o
+   `((,single-call? . ,extract-call+compound)
+     (,compound-call? . ,compound-extract-call))))
 
 (define-method (add-defer-end (o <root>))
   (define (add-end o)
