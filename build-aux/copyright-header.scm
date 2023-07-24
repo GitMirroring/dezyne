@@ -3,7 +3,7 @@
 !#
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -29,6 +29,7 @@
 
 (use-modules (srfi srfi-1)
              (srfi srfi-26)
+             (srfi srfi-71)
              (ice-9 curried-definitions)
              (ice-9 popen)
              (ice-9 match)
@@ -146,15 +147,16 @@ All rights reserved.
   (let ((m (string-match "\\.(cc|cs|dzn|h|hh|js)(|.in)$" o)))
     (and=> m match:string)))
 
-(define (author-unique author)
+(define (canonicalize-author author)
   (cond
    ((string-prefix? "Henk Katerberg" author)
     "Henk Katerberg <hank@mudball.nl>")
-   ((or (string-prefix? "Jan Nieuwenhuizen" author)
+   ((or (string-prefix? "Janneke Nieuwenhuizen" author)
+        (string-prefix? "Jan Nieuwenhuizen" author)
         (string-prefix? "Jan (janneke) Nieuwenhuizen" author)
         (string-prefix? "Jan Nieuwenhuien" author)
         (string-prefix? "Jan (janneke) Nieuwenhuien" author))
-    "Jan (janneke) Nieuwenhuizen <janneke@gnu.org>")
+    "Janneke Nieuwenhuizen <janneke@gnu.org>")
    ((string-prefix? "Johri van Eerd" author)
     "Johri van Eerd <vaneerd.johri@gmail.com>")
    ((string-prefix? "Paul Hoogendijk" author)
@@ -167,14 +169,44 @@ All rights reserved.
    (else
     author)))
 
-(define (author-copyright-line file-name author)
+(define (author-equal? a b)
+  (equal? (canonicalize-author a) (canonicalize-author b)))
+
+(define (author->name+email author)
   (let* ((m (string-match "(.*) <(.*)>" author))
          (name (and=> m (cute match:substring <> 1)))
-         (email (and=> m (cute match:substring <> 2)))
-         (years (gulp-pipe
-                 ;; Get all commit years, filter-out copyright updates
-                 (format #f
-                         "git log -i --author='~a' --author='~a' \\
+         (email (and=> m (cute match:substring <> 2))))
+    (values name email)))
+
+(define (file-authors file-name)
+  (let ((text (gulp-pipe
+               (format #f
+                       "\
+grep -E 'Copyright © ([0-9, ]*[0-9]) ' ~a || echo"
+                       file-name))))
+    (string-split text #\newline)))
+
+(define (file-author-copyright-line file-name author)
+  (let ((name email (author->name+email author)))
+    (gulp-pipe (format #f "grep -Ei '(~a|~a)' ~a || echo" name email
+                       file-name))))
+
+(define (file-author-copyright-years file-name author)
+  (let* ((text (file-author-copyright-line file-name author))
+         (years (string-match "© ([0-9, ]*[0-9]) +" text))
+         (years (and=> years (cute match:substring <> 1)))
+         (years (and=> years (cute string-split <> #\,)))
+         (years (or (and years (map string-trim years)) '()))
+         (years (delete-duplicates years)))
+    (filter (negate string-null?) years)))
+
+(define (git:author-copyright-years file-name author)
+  (let* ((name email (author->name+email author))
+         (text (gulp-pipe
+                ;; Get all commit years, filter-out copyright updates
+                (format #f
+                        "\
+git log --regexp-ignore-case --author='~a' --author='~a'    \\
   --pretty=format:'Commit:  %H%nAuthor:  %aN <%aE>%nDate:    %ad%nMessage: %s%n' '~a' \\
 | recsel -i -e '!(Message ~~ \"copyright\")
              && !(Message ~~ \"indent.scm\")
@@ -183,47 +215,71 @@ All rights reserved.
              && !(Message ~~ \"email\")' \\
 | grep ^Date: \\
 | sed -r 's,.*(20[0-9][0-9]).*,\\1,'"
-                         name email file-name)))
-         (years (string-split years #\newline))
-         (years (filter (negate string-null?) years))
-         (copyright-line (gulp-pipe (format #f "grep -Ei '(~a|~a)' ~a || echo" name email file-name)))
-         (original-years (string-match "© ([0-9, ]*[0-9]) +" copyright-line))
-         (original-years (and=> original-years (cute match:substring <> 1)))
-         (original-years (and=> original-years (cute string-split <> #\,)))
-         (original-years (or (and original-years (map string-trim original-years)) '()))
-         (years (append years original-years))
+                        name email file-name)))
+         (lines (string-split text #\newline))
+         (lines (sort lines string<))
+         (years (delete-duplicates lines)))
+    (filter (negate string-null?) years)))
+
+(define (git:file-authors file-name)
+  (let ((text (gulp-pipe
+               ;; Get all commit years, filter-out copyright updates
+               (format #f
+                       "\
+git log --regexp-ignore-case \\
+  --pretty=format:'Commit:  %H%nAuthor:  %aN <%aE>%nDate:    %ad%nMessage: %s%n' '~a' \\
+| recsel -i -e '!(Message ~~ \"copyright\") && !(Message ~~ \"dezyne.org\") && !(Message ~~ \"email\")' \\
+| grep ^Author: \\
+| sed 's/^Author: *//'"
+                       file-name))))
+    (string-split text #\newline)))
+
+(define (git:commit-authors commit)
+  (let ((text (gulp-pipe
+               (format #f
+                       "\
+git show --pretty=format:'Author:  %aN <%aE>%n' --no-patch ~a \\
+| grep -iE '^(Author|Co-authored-by):' \\
+| sed -re 's,^(Author|Co-authored-by): *,,i'"
+                       commit))))
+    (string-split text #\newline)))
+
+(define (git:files-in-commit commit)
+  (let ((files (string-split
+                (gulp-pipe (format #f "git ls-tree -r --name-only ~a" commit))
+                #\newline)))
+    (filter (negate skip?) files)))
+
+(define* (author-copyright-line file-name author #:key update?)
+  (let* ((git-years (if (not update?) '()
+                        (git:author-copyright-years file-name author)))
+         (file-years (file-author-copyright-years file-name author))
+         (years (append git-years file-years))
          (years (sort years string<))
          (years (delete-duplicates years))
-         (years (string-join years ", ")))
+         (years (string-join years ", "))
+         (author (if (not update?) author
+                     (canonicalize-author author))))
     (format #f "Copyright © ~a ~a" years author)))
 
 (define (filter-author line)
   (let ((m (string-match "© ([0-9, ]*[0-9]) +(.*>)" line)))
     (and m (match:substring m 2))))
 
-(define (copyright-lines file-name)
-  (let* ((original-authors (gulp-pipe
-                            (format #f
-                                    "grep -E 'Copyright © ([0-9, ]*[0-9]) ' ~a || echo"
-                                    file-name)))
-         (original-authors (string-split original-authors #\newline))
-         (original-authors (filter-map filter-author original-authors))
-         (authors (gulp-pipe
-                   ;; Get all commit years, filter-out copyright updates
-                   (format #f
-                           "git log -i \\
-  --pretty=format:'Commit:  %H%nAuthor:  %aN <%aE>%nDate:    %ad%nMessage: %s%n' '~a' \\
-| recsel -i -e '!(Message ~~ \"copyright\") && !(Message ~~ \"dezyne.org\") && !(Message ~~ \"email\")' \\
-| grep ^Author: \\
-| sed 's/^Author: *//'"
-                           file-name)))
-         (authors (string-split authors #\newline))
-         (authors (append original-authors authors))
-         (authors (map author-unique authors))
-         (authors (delete-duplicates authors)))
-    (map (cute author-copyright-line file-name <>) authors)))
+(define* (copyright-lines file-name #:key commit hysterical?)
+  (let* ((file-authors (file-authors file-name))
+         (file-authors (filter-map filter-author file-authors))
+         (git-authors (if hysterical? (git:file-authors file-name)
+                          (git:commit-authors commit)))
+         (authors (append file-authors git-authors))
+         (authors (delete-duplicates authors author-equal?))
+         (update? (if hysterical? authors
+                      (map (cute member <> git-authors author-equal?) authors))))
+    (append (map (cute author-copyright-line file-name <> #:update? <>)
+                 authors
+                 update?))))
 
-(define (fix-header file-name)
+(define* (fix-header file-name #:key commit dry-run? hysterical?)
   (format (current-error-port) "~a..." file-name)
   (let* ((header (cond (%ide?
                         ide-header)
@@ -263,18 +319,20 @@ All rights reserved.
            (header-rest (cdr header-lines))
            (header-rest (filter (negate (cute string-contains <> "Copyright")) header-rest))
            (header-rest (string-join header-rest "\n"))
-           (copyright-lines (copyright-lines file-name))
+           (copyright-lines (copyright-lines file-name #:commit commit
+                                             #:hysterical? hysterical?))
            (copyright (string-join copyright-lines "\n"))
            (copyright (comment type copyright)))
-      (with-output-to-file file-name
-        (lambda _
-          (display pre-header)
-          (display header-identify)
-          (display (comment type ""))
-          (display copyright)
-          (display header-rest)
-          (display body)))
-      (newline (current-error-port)))))
+      (newline (current-error-port))
+      (if dry-run? (display copyright)
+          (with-output-to-file file-name
+            (lambda _
+              (display pre-header)
+              (display header-identify)
+              (display (comment type ""))
+              (display copyright)
+              (display header-rest)
+              (display body)))))))
 
 (define (skip? file-name)
   (or (symbolic-link? file-name)
@@ -293,12 +351,21 @@ All rights reserved.
                (script-file? file-name)))))
 
 (define (main args)
-  (setenv "GIT_COMMIT" "HEAD")
-  (match (command-line)
-    ((copyright-header)
-     (let* ((files (string-split (gulp-pipe "git ls-tree -r --name-only $GIT_COMMIT") #\newline))
-            (files (filter (negate skip?) files)))
-       (for-each fix-header files)))
-    ((copyright-header files ...)
-     (let ((files (filter (negate skip?) files)))
-       (for-each fix-header files)))))
+  (let ((commit "HEAD"))
+    (setenv "GIT_COMMIT" "HEAD")
+    (match (command-line)
+      ((copyright-header)
+       (let ((files (filter (negate skip?) files)))
+         (for-each fix-header files)))
+      ((copyright-header files ...)
+       (let* ((dry-run? (member "--dry-run" files))
+              (hysterical? (member "--hysterical" files))
+              (files (filter (negate (cute string-prefix? "--" <>)) files))
+              (files (if (pair? files) files
+                         (git:files-in-commit commit)))
+              (files (filter (negate skip?) files)))
+         (for-each (cute fix-header <>
+                         #:commit commit
+                         #:dry-run? dry-run?
+                         #:hysterical? hysterical?)
+                   files))))))
