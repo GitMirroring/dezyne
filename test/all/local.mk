@@ -234,6 +234,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_sync_action			\
  %D%/compliance_system_hello_world		\
  %D%/compliance_system_provides_bool		\
+ %D%/component_missing_reply			\
  %D%/component_modeling_loop			\
  %D%/compound.space				\
  %D%/constraint_modeling_nondet			\
@@ -410,7 +411,6 @@ REGRESSION_TESTS =				\
  %D%/livelock_synchronous			\
  %D%/livelock_unfold				\
  %D%/match_blocking_race			\
- %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
  %D%/no_return					\

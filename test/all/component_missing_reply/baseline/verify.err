@@ -1,0 +1,11 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: component_missing_reply: check: deterministic: ok
+verify: component_missing_reply: check: illegal: ok
+verify: component_missing_reply: check: deadlock: fail
+error: reply missing from model component_missing_reply
+verify: component_missing_reply: check: unreachable: skip
+verify: component_missing_reply: check: livelock: ok
+verify: component_missing_reply: check: compliance: skip

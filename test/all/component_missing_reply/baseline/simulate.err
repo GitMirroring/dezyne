@@ -1,0 +1,1 @@
+test/all/component_missing_reply/component_missing_reply.dzn:41:5: error: missing-reply: bool reply expected
