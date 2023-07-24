@@ -4202,10 +4202,12 @@
 (define (root->scmackerel root)
   (let* ((models (ast:model* root))
          (component (find (is? <component>) models))
+         (model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
          (interfaces (if component (filter (is? <interface>) models)
-                         (filter (conjoin (is? <interface>)
-                                          (compose (cute equal? (%model-name) <>)
-                                                   ast:dotted-name))
+                         (filter (conjoin
+                                  (is? <interface>)
+                                  (compose (cute equal? <> model-name)
+                                           ast:dotted-name))
                                  models)))
          (types-mcrl2
           (map
