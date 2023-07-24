@@ -43,10 +43,7 @@
 
             .id
             .operator
-            .variable.name
-
-            ast:inevitable
-            ast:optional)
+            .variable.name)
   #:re-export (<top>
                <class> <object>
                <applicable> <procedure>
@@ -216,9 +213,6 @@
 
 (define-ast <optional> (<modeling-event>))
 (define-method (.name (o <optional>)) "optional")
-
-(define (ast:inevitable) (make <inevitable>))
-(define (ast:optional) (make <optional>))
 
 (define-ast <instance> (<declaration> <declarative>)
   (type.name #:init-form (make <scope.name>)))
