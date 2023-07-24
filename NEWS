@@ -5,6 +5,29 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.4 since 2.17.3
+** Verification
+  - A new `-T,--timings' option showing detailed timings for the
+    different stages like: parsing, normalization and mCRL2 has been
+    backported from 2.18.
+** Code
+  - Lambda capture lists explicitly refer to `this' since C++20
+    deprecates the implicit capture for `='.
+** Noteworthy bug fixes
+  - A verification fix to avoid the erroneously reporting of a deadlock
+    for non-determinstic interface constraints has been backported from
+    2.18.
+  - A verification fix to correctly report unreachable code when
+    interface and component imperative statement locations overlap was
+    backported from 2.18.
+  - Running the parser in `-f,--fall-back' mode now shows a parse tree
+    again; a regression introduced in 2.17.2.
+  - The verification no longer reports a false positive defer-induced
+    <queue-full> when using defer after a function call.
+  - A fix for the name resolver that would lead to a quadratic
+    performance impact when looking up an undefined type was backported
+    from 2.18.
+
 * Changes in 2.17.3 since 2.17.2
 ** Noteworthy bug fixes
   - Event names can now overlap with toplevel names.
