@@ -1,5 +1,5 @@
 proc
-#.name _port = rename ({
+#.name _rename = rename ({
   #x:basic-type in -> #.name in
   , #x:basic-type out -> #.name out
   , #x:basic-type reply -> #.name reply
@@ -7,3 +7,6 @@ proc
   , #x:basic-type end -> #.name end
   #x:rename-flush-provides #x:rename-flush-requires
   }, #x:basic-type interface_internal);
+#.name _port = block ({
+    tag
+  }, #.name _rename);
