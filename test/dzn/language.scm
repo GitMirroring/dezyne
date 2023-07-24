@@ -907,7 +907,7 @@
 
 (test-equal "on->imported trigger-port"
   "import.dzn:7:23"
-  (test-lookup #:file-name "import.dzn" #:line 20  #:column 7
+  (test-lookup #:file-name "import.dzn" #:line 20 #:column 7
                #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "port->imported-interface"
