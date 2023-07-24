@@ -1,7 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019, 2020, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2020, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+# Copyright © 2020, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -23,6 +23,7 @@
 # Code:
 
 UNIT_TESTS =					\
+  %D%/ast.scm					\
   %D%/language.scm				\
   %D%/lts.scm					\
   %D%/makreel.scm				\
