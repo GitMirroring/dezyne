@@ -411,6 +411,7 @@ REGRESSION_TESTS =				\
  %D%/livelock_synchronous			\
  %D%/livelock_unfold				\
  %D%/match_blocking_race			\
+ %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
  %D%/no_return					\
