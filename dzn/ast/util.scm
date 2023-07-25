@@ -99,7 +99,7 @@ create a fresh clone, and #true if any slots need mutation."
 (define-method (clone (o <ast>) . keyword-values)
   (apply clone-top o keyword-values))
 
-(define-method (deep-copy (o <ast>))
+(define-method (deep-copy (o <object>))
   "Make a unique identical copy of O and of its children."
   (define (make-pair name)
     (list (symbol->keyword name)
