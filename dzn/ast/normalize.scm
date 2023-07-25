@@ -53,6 +53,7 @@
             normalize:state
             normalize:state+illegals
             purge-data
+            purge-data+add-defer-end
             remove-behavior
             remove-location
             remove-otherwise
@@ -736,6 +737,36 @@ to prevent unintended shadowing
 ;;;
 ;;; Root normalizations.
 ;;;
+
+(define-method (purge-data+add-defer-end (o <root>))
+  ;;purge-data
+  (define data?
+    (disjoin (is? <extern>)
+             (is? <data-expr>)
+             (conjoin (disjoin (is? <assign>)
+                               (is? <formal>)
+                               (is? <var>)
+                               (is? <variable>))
+                      (compose (is? <extern>) ast:type))))
+  (define (parent-location o)
+    (or (.location o)
+        (parent-location (.parent o))))
+  (define data->skip-or-#f
+    (conjoin (is? <statement>)
+             (compose not (is? <variables>) .parent)
+             (compose not (is? <compound>) .parent)
+             (compose (cute make <skip> #:location <>)
+                      parent-location
+                      .parent)))
+  ;;add-defer-end
+  (define (add-end o)
+    (let* ((end (graft o (make <defer-end>)))
+           (statement (ast:add-statement* (.statement o) end)))
+      (graft o #:statement statement)))
+
+  (tree-transform o `((,data? . ,data->skip-or-#f)
+                      (,(is? <defer>) . ,add-end))))
+
 (define-method (purge-data (o <root>))
   "Remove every `extern' data variable and reference."
   (define (parent-location o)
@@ -1349,6 +1380,57 @@ add-explicit-temporaries transformation for splitting argument lists."
      (tree-map simplify-guard-expressions o))
     (_
      o)))
+
+;; (define-method (tag-imperative-blocks (o <root>))
+;;   (define (location o)
+;;     (or (.location o)
+;;         (location (.parent o))))
+;;   (define (add-tag o)
+;;     (match o
+;;       ((? ast:illegal?)
+;;        o)
+;;       (($ <compound>)
+;;        (let ((tag (make <tag> #:location (location o))))
+;;          (graft o #:elements (cons tag (ast:statement* o)))))
+;;       (_
+;;        (let* ((location (location o))
+;;               (tag (make <tag> #:location location))
+;;               (elements (list tag o)))
+;;          (graft (.parent o) (make <compound>
+;;                               #:elements elements
+;;                               #:location location))))))
+
+;;   (define compound? (is? <compound>))
+;;   (define (compound:add-tag o)
+;;     (let ((tag (make <tag> #:location (location o))))
+;;       (graft o #:elements (cons tag (ast:statement* o)))))
+
+;;   (define other? (negate (disjoin (is? <compound>) ast:illegal?)))
+;;   (define (other:add-tag o)
+;;     (let* ((location (location o))
+;;            (tag (make <tag> #:location location))
+;;            (elements (list tag o)))
+;;       (graft (.parent o) (make <compound>
+;;                            #:elements elements
+;;                            #:location location))))
+
+
+;;   (define return?
+;;     (disjoin
+;;      (conjoin (is? <compound>)
+;;               (compose (cute any (disjoin (is? <return>) return?) <>)
+;;                        .elements))
+;;      (conjoin (is? <if>)
+;;               (disjoin (compose return? .then)
+;;                        (compose (and=> <> return?) .else)))))
+;;   (define (return:add-tag o)
+;;     (let* ((location (location o))
+;;            (tag (make <tag> #:location location)))
+;;       (list o tag)))
+
+;;   (tree-transform o `((,compound? . ,compound:add-tag)
+;;                       (,other? . ,other:add-tag)
+;;                       (,return? . ,compound:add-return-tag))))
 
 (define (tag-imperative-blocks o)
   "Mark imperative statement blocks with a unique tag for unreachable
