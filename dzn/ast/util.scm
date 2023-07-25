@@ -99,23 +99,20 @@ create a fresh clone, and #true if any slots need mutation."
 
 (define-method (deep-copy (o <object>))
   "Make a unique identical copy of O and of its children."
-  (define (make-pair name)
-    (list (symbol->keyword name)
-          (deep-copy (slot-ref o name))))
   (let* ((class (class-of o))
-         (slots (class-slots class))
-         (names (map slot-definition-name slots))
-         (paired-members (map make-pair names)))
-    (apply make class (apply append paired-members))))
+         (keyword-values (ast:keyword+child* o))
+         (keyword-copies (map (match-lambda
+                                ((keyword (values ...))
+                                 (list keyword (map deep-copy values)))
+                                ((keyword value)
+                                 (list keyword (deep-copy value))))
+                              keyword-values))
+         (keyword-copies (apply append keyword-copies)))
+    (apply make class keyword-copies)))
 
 (define-method (deep-copy (o <top>))
   "Do not copy objects without children."
   o)
-
-(define-method (deep-copy (o <pair>))
-  "Support lists"
-  (cons (deep-copy (car o))
-        (deep-copy (cdr o))))
 
 (define-method (deep-copy* (parent <ast>) (o <ast>))
   (let ((o (deep-copy o)))
