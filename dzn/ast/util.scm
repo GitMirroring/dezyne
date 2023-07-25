@@ -171,27 +171,20 @@ create a fresh clone, and #true if any slots need mutation."
   (or (any predicate o)
       (any (cute tree-find predicate <>) o)))
 
-
-(define-method (tree-map f o) o)
-
-(define-method (tree-map f (o <ast>))
-  (define (setters f names)
-    (zip (map symbol->keyword names)
-         (map (compose f (cute slot-ref o <>)) names)))
+(define-method (tree-map f (o <object>))
   (let* ((class (class-of o))
-         (slots (class-slots class))
-         (names (map slot-definition-name slots))
-         (changed (setters f names))
-         (original (setters identity names)))
-    (if (equal? original changed) o
-        (apply clone o (apply append changed)))))
+         (actual-keyword-values (ast:keyword+child* o))
+         (keyword-values (map (match-lambda
+                                ((keyword (values ...))
+                                 (list keyword (map f values)))
+                                ((keyword value)
+                                 (list keyword (f value))))
+                              actual-keyword-values))
+         (keyword-values (apply append keyword-values)))
+    (if (equal? keyword-values actual-keyword-values) o
+        (apply make class keyword-values))))
 
-(define-method (tree-map f (o <ast-list>))
-  (clone o #:elements (map f (.elements o))))
-(define-method (tree-map f (o <namespace>))
-  (clone o #:elements (map f (.elements o)) #:name (f (.name o))))
-(define-method (tree-map f (o <root>))
-  (clone o #:elements (map f (.elements o))))
+(define-method (tree-map f (o <top>)) o)
 
 (define-method (tree-filter f (o <ast>))
   (and (f o) o))
