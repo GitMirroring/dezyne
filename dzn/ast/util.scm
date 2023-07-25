@@ -32,8 +32,6 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
-  #:use-module ((oop goops)
-                #:select (class-slots slot-definition-name slot-ref))
 
   #:use-module (dzn ast ast)
   #:use-module (dzn ast accessor)
@@ -194,27 +192,16 @@ create a fresh clone, and #true if any slots need mutation."
 (define-method (tree-filter f (o <ast-list>))
   (clone o #:elements (map (cute tree-filter f <>) (filter f (.elements o)))))
 
-(define-method (tree-collect-filter filter-predicate predicate o)
-  (if (and (filter-predicate o) (predicate o)) (list o) '()))
-
-(define-method (tree-collect-filter filter-predicate predicate (o <ast>))
-  (if (not (filter-predicate o)) '()
-      (let* ((class (class-of o))
-             (slots (class-slots class))
-             (slot-names (map slot-definition-name slots))
-             (elements (filter-map (cute slot-ref o <>) slot-names))
-             (children (append-map
-                        (cute tree-collect-filter filter-predicate predicate <>)
-                        elements)))
-        (if (predicate o) (cons o children)
-            children))))
-
-(define-method (tree-collect-filter filter-predicate predicate (o <ast-list>))
+(define-method (tree-collect-filter filter-predicate predicate (o <object>))
   (if (not (filter-predicate o)) '()
       (let ((children (append-map
                        (cute tree-collect-filter filter-predicate predicate <>)
-                       (.elements o))))
-        (if (predicate o) (cons o children) children))))
+                       (ast:child* o))))
+        (if (predicate o) (cons o children)
+            children))))
+
+(define-method (tree-collect-filter filter-predicate predicate (o <top>))
+  (if (and (filter-predicate o) (predicate o)) (list o) '()))
 
 (define-method (tree-collect predicate o)
   (tree-collect-filter identity predicate o))
