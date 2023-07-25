@@ -86,8 +86,8 @@ Parse a Dezyne file and produce an AST
          (locations? (command-line:get 'locations))
          (model-name (option-ref options 'model #f))
          (fall-back? (command-line:get 'fall-back))
-         (parse-tree? (or fall-back?
-                          (command-line:get 'parse-tree)))
+         (parse-tree? (command-line:get 'parse-tree))
+         (parse-tree? (or parse-tree? fall-back?))
          (transform (dzn:multi-opt 'transform)))
     (parameterize ((%locations? locations?)
                    (%peg:fall-back? fall-back?)
