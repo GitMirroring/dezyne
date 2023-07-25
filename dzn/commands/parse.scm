@@ -110,29 +110,19 @@ Parse a Dezyne file and produce an AST
          (transform (dzn:multi-opt 'transform)))
     (parameterize ((%locations? locations?)
                    (%peg:error (peg:format-display-syntax-error file-name)))
-      (let ((ast parse-failed? (parse:file->ast file-name
-                                                #:debug? debug?
-                                                #:imports imports)))
-        (when (and parse-failed? exit?)
-          (exit EXIT_FAILURE))
-        (if (not ast) (values #f #t)
-            (let* ((ast (if skip-wfc? ast
-                            (parse:call-with-handle-exceptions
-                             (lambda _ (ast:wfc ast))
-                             #:backtrace? debug?
-                             #:exit? exit?
-                             #:file-name file-name)))
-                   (ast (if (not model-name) ast
-                            (parse:call-with-handle-exceptions
-                             (lambda _
-                               (let ((model (ast:get-model ast model-name)))
-                                 (ast:filter-model ast model)))
-                             #:backtrace? debug?
-                             #:exit? exit?
-                             #:file-name file-name)))
-                   (transform (map string->transformation transform))
-                   (ast ((apply compose identity (reverse transform)) ast)))
-              (values ast parse-failed?)))))))
+      (parse:call-with-handle-exceptions
+       (lambda _
+         (let* ((ast (parse:file->ast file-name #:imports imports))
+                (ast (if skip-wfc? ast
+                         (ast:wfc ast)))
+                (ast (if (not model-name) ast
+                         (let ((model (ast:get-model ast model-name)))
+                           (ast:filter-model ast model))))
+                (transform (map string->transformation transform)))
+           ((apply compose identity (reverse transform)) ast)))
+       #:backtrace? debug?
+       #:exit? exit?
+       #:file-name file-name))))
 
 (define (parse-tree options file-name)
   (let ((debug? (dzn:command-line:get 'debug #f))
@@ -140,15 +130,17 @@ Parse a Dezyne file and produce an AST
         (fall-back? (command-line:get 'fall-back)))
     (parameterize ((%peg:fall-back? fall-back?)
                    (%peg:error (peg:format-display-syntax-error file-name)))
-      (parse:file->tree-alist file-name #:debug? debug?
-                              #:imports imports))))
+      (parse:call-with-handle-exceptions
+       (lambda _ (parse:file->tree-alist file-name #:imports imports))
+       #:backtrace? debug?
+       #:exit? #f
+       #:file-name file-name))))
 
 (define (preprocess options file-name)
   (let ((debug? (dzn:command-line:get 'debug #f))
         (imports (command-line:get 'import)))
     (parse:call-with-handle-exceptions
-     (lambda _
-       (parse:file->stream file-name #:imports imports))
+     (lambda _ (parse:file->stream file-name #:imports imports))
      #:backtrace? debug?
      #:exit? #f
      #:file-name file-name)))
@@ -180,18 +172,20 @@ Parse a Dezyne file and produce an AST
          (debug? (dzn:command-line:get 'debug))
          (fall-back? (command-line:get 'fall-back))
          (output? (option-ref options 'output #f))
+         (output-file-name (option-ref options 'output "-"))
          (parse-tree? (command-line:get 'parse-tree))
          (preprocess? (option-ref options 'preprocess #f))
          (verbose? (dzn:command-line:get 'verbose)))
     (cond
      ((or parse-tree? fall-back?)
-      (let* ((tree parse-failed? (parse-tree options file-name))
-             (parse-failed? (and parse-failed? (not tree))))
-        (if (and output? tree) (pretty-print tree)
+      (let ((tree (parse-tree options file-name)))
+        (if (and tree output?)
+            (if (equal? output-file-name "-") (pretty-print tree)
+                (with-output-to-file file-name (cut pretty-print tree)))
             (when (and verbose? (not fall-back?))
-              (if parse-failed? (display "parse: errors found\n")
-                  (display "parse: no errors found\n"))))
-        (when parse-failed?
+              (if tree (display "parse: no errors found\n")
+                  (display "parse: errors found\n"))))
+        (unless tree
           (exit EXIT_FAILURE))))
      (preprocess?
       (let ((tree (preprocess options file-name)))
@@ -199,8 +193,7 @@ Parse a Dezyne file and produce an AST
             (exit EXIT_FAILURE))))
      (list-models? (list-models file-name))
      (else
-      (let* ((ast parse-failed? (parse options file-name #:exit? #f))
-             (parse-failed? (or parse-failed? (not ast))))
+      (let ((ast (parse options file-name #:exit? #f)))
         (if (and ast output?)
             (let* ((file-name (option-ref options 'output "-"))
                    (locations? (command-line:get 'locations))
@@ -213,7 +206,7 @@ Parse a Dezyne file and produce an AST
               (if (equal? file-name "-") (display output)
                   (with-output-to-file file-name (cut display output))))
             (when verbose?
-              (if parse-failed? (display "parse: errors found\n")
-                  (display "parse: no errors found\n"))))
-        (when parse-failed?
+              (if ast (display "parse: no errors found\n")
+                  (display "parse: errors found\n"))))
+        (unless ast
           (exit EXIT_FAILURE)))))))
