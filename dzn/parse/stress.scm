@@ -143,11 +143,9 @@ completed, such as removal of BEHAVIOR, SYSTEM and type definitions."
   ((pure-funcq
     (lambda (str offset)
       (let* ((context (complete:context
-                       (parameterize
-                           ((%peg:locations? #t)
-                            (%peg:skip? peg:skip-parse)
-                            (%peg:fall-back? #t))
-                         (parse:string->tree str))
+                       (parameterize ((%peg:locations? #t)
+                                      (%peg:skip? peg:skip-parse))
+                         (parse:string->tree* str))
                        offset)))
         (complete (.tree context) context (1+ offset)))))
    str offset))
