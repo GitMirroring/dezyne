@@ -70,14 +70,19 @@
 (define-method (ast:context? (o <top>))
   #f)
 
-(define-method (ast:child* (o <ast>))
+(define-method (ast:keyword+child* (o <object>))
   (let* ((class (class-of o))
          (slots (class-slots class))
-         (slot-names (map slot-definition-name slots)))
-    (map (cute slot-ref o <>) slot-names)))
+         (names (map slot-definition-name slots))
+         (keywords (map symbol->keyword names))
+         (children (map (cute slot-ref o <>) names)))
+    (zip keywords children)))
 
-(define-method (ast:child* (o <ast-list>)) (.elements o))
-(define-method (ast:child* (o <namespace>)) (cons (.name o) (.elements o)))
+(define-method (ast:child* (o <object>))
+  (append-map (match-lambda
+                ((keyword (children ...)) children)
+                ((keyword child) (list child)))
+              (ast:keyword+child* o)))
 
 (define-method (ast:memoize-context (o <ast>) context)
   "Fill context lookup table from O down."
