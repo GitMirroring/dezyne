@@ -4,7 +4,6 @@
 ;;; Copyright © 2018, 2019, 202, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -58,7 +57,8 @@
             parse:file->tree-alist
             parse:string->ast
             parse:string->fall-back-tree
-            parse:string->tree))
+            parse:string->tree
+            parse:string->tree*))
 
 ;;;
 ;;; Utilities.
@@ -106,9 +106,8 @@
     thunk
     (lambda (key . args)
       (apply (parse:handle-exceptions file-name) key args)
-      (when exit?
-        (exit EXIT_FAILURE))
-      (values #f #t))))
+      (and exit?
+           (exit EXIT_FAILURE)))))
 
 
 ;;;
@@ -222,138 +221,105 @@ specified in IMPORTS."
 ;;;
 ;;; Parse tree, tree-alist.
 ;;;
-(define* (parse:string->tree string #:key (content-alist '())
-                             (fall-back? (%peg:fall-back?))
-                             (file-name "-"))
-  "Parse @var{string} and return multiple values, a parse tree and #true if parse failed.
-  When @var{fall-back?}, try a regular parse first and upon failure
-return a fall-back tree."
-  (define (parse)
-    (let* ((tree (peg:parse string))
-           (tree (match tree
-                   (('root tree ...)
-                    `(root
-                         ,@(if (not file-name) '()
-                               `((file-name ,file-name (location 0 0))))
-                       ,@tree))))
-           (tree (if (%peg:fall-back?) (peg:flatten-tree tree)
-                     tree))
-           (tree (tree:normalize tree)))
-      (when (> (dzn:debugity) 2)
-        (format (current-error-port) "tree: ~a\n" file-name)
-        (pretty-print tree (current-error-port)))
-      tree))
-  ;; In case of fall-back, try a regular parse first
+(define* (parse:string->tree string #:key (content-alist '()) (file-name "-"))
+  "Parse @var{string} and return a parse tree, printing any syntax errors."
+  (parameterize ((%peg:locations? #t)
+                 (%peg:skip? peg:skip-parse)
+                 (%peg:debug? (> (dzn:debugity) 3)))
+    (catch 'syntax-error
+      (lambda _
+        (let* ((tree (peg:parse string))
+               (tree (match tree
+                       (('root tree ...)
+                        `(root
+                             ,@(if (not file-name) '()
+                                   `((file-name ,file-name (location 0 0))))
+                           ,@tree))))
+               (tree (if (%peg:fall-back?) (peg:flatten-tree tree)
+                         tree))
+               (tree (tree:normalize tree)))
+          (when (> (dzn:debugity) 2)
+            (format (current-error-port) "tree: ~a\n" file-name)
+            (pretty-print tree (current-error-port)))
+          tree))
+      (lambda (key . args)
+        (apply (peg:handle-syntax-error
+                file-name string #:content-alist content-alist)
+               key args)))))
+
+(define* (parse:string->tree* string #:key (content-alist '()) (file-name "-"))
+  "Parse @var{string} and return a parse tree, trying a regular parse
+first and upon failure return a fall-back tree.  Note that the
+fall-back tree may differ from the non-fall-back tree (even) if there
+are no errors."
+  ;; Attempt a regular parse first
   (parameterize ((%peg:fall-back? #f)
                  (%peg:locations? #t)
                  (%peg:skip? peg:skip-parse)
                  (%peg:debug? (> (dzn:debugity) 3)))
     (catch 'syntax-error
-      (lambda _ (values (parse) #f))
+      (lambda _
+        (parse:string->tree string
+                            #:content-alist content-alist
+                            #:file-name file-name))
       (lambda (key . args)
-        (if fall-back? (parameterize ((%peg:fall-back? #t))
-                         (values (parse) #t))
-            (apply (peg:handle-syntax-error
-                    file-name string #:content-alist content-alist)
-                   key args))))))
+        (parameterize ((%peg:fall-back? #t))
+          (parse:string->tree string
+                              #:content-alist content-alist
+                              #:file-name file-name))))))
 
-(define* (parse:file->tree file-name #:key debug?)
-  "Parse @var{file-name} using @var{content-alist} to resolve import files,
-and return multiple values, the @val{ast} and @code{#true} if parsing
-failed.  Unless @var{debug?}, handle exceptions."
-  (catch (if debug? 'none #t)
-    (lambda _
-      (let ((string (parse:file->string file-name)))
-        (parse:string->tree string #:file-name file-name)))
-    (lambda (key . args)
-      (apply (parse:handle-exceptions file-name) key args)
-      (values #f #t))))
-
-(define* (parse:string->fall-back-tree string #:key (file-name "-")
-                                       (error-collector (const '())))
-  ;; XXX FIXME, THIS IS A LIE, we always try regular parse first
-  "Wrapper for running parse:string->tree in fall-back mode only."
-  (parameterize ((%peg:fall-back? #t)
-                 (%peg:error (peg:format-capture-syntax-error error-collector)))
+(define (parse:file->tree file-name)
+  "Parse @var{file-name} using @var{content-alist} to resolve import
+files."
+  (let ((string (parse:file->string file-name)))
     (parse:string->tree string #:file-name file-name)))
 
-(define* (parse:string->tree-alist+content-alist string #:key (file-name "-"))
-  (let* ((content-alist dir (parse:string->content-alist string))
-         (tree-alist
-          parse-failed?
-          (parse:content-alist->tree-alist content-alist)))
-    (values tree-alist content-alist dir parse-failed?)))
-
-(define* (parse:content-alist->tree-alist content-alist #:key debug?)
+(define* (parse:content-alist->tree-alist content-alist)
   "From CONTENT-ALIST of form
 
    '((FILE-NAME . CONTENT)
      (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
 
-parse CONTENT and return multiple values
+parse CONTENT and return a TREE-ALIST of form
 
 '((FILE-NAME . TREE)
-  (IMPORTED-FILE-NAME . IMPORTED-TREE) ...)
+  (IMPORTED-FILE-NAME . IMPORTED-TREE) ...)"
 
-+
+  (define file+content->file+tree
+    (match-lambda
+      ((file-name . content)
+       (let ((tree (parse:string->tree content
+                                       #:file-name file-name
+                                       #:content-alist content-alist)))
+         (cons file-name tree)))))
+  (map file+content->file+tree content-alist))
 
-  #true if parsing of any CONTENT failed."
+(define* (parse:string->tree-alist+content-alist string #:key (file-name "-"))
+  (let* ((content-alist dir (parse:string->content-alist string))
+         (tree-alist (parse:content-alist->tree-alist content-alist)))
+    (values tree-alist content-alist dir)))
 
-  (let ((parse-failed? #f))
-    (define file+content->file+tree
-      (match-lambda
-        ((file-name . content)
-         (let ((tree failed?
-                     (parse:string->tree content
-                                         #:file-name file-name
-                                         #:content-alist content-alist)))
-           (when failed?
-             (set! parse-failed? #t))
-           (cons file-name tree)))))
-    (let ((tree-alist (map file+content->file+tree content-alist)))
-      (values tree-alist parse-failed?))))
-
-(define* (parse:file->tree-alist+content-alist file-name #:key debug?
-                                               (imports '()))
+(define* (parse:file->tree-alist+content-alist file-name #:key (imports '()))
   "Parse @var{file-name} using @var{imports} to resolve import files,
-and return four values, the @var{tree-alist}, the @var{content-alist},
-the @var{working-directory}, and @code{#true} if parsing failed.  Unless
-@var{debug?}, handle exceptions."
-  (catch (if debug? 'none #t)
-    (lambda _
-      (if (equal? file-name "-") (parse:string->tree-alist+content-alist
-                                  (parse:file->string file-name))
-          (let* ((content-alist
-                  dir
-                  (parse:file->content-alist file-name #:imports imports))
-                 (tree-alist
-                  parse-failed?
-                  (parse:content-alist->tree-alist content-alist
-                                                   #:debug? debug?)))
-            (values tree-alist content-alist dir parse-failed?))))
-    (lambda (key . args)
-      (apply (parse:handle-exceptions file-name) key args)
-      (values #f #f #f #t))))
+and return three values, the @var{tree-alist}, the
+@var{content-alist}, and the @var{working-directory}"
+  (if (equal? file-name "-") (parse:string->tree-alist+content-alist
+                              (parse:file->string file-name))
+      (let* ((content-alist
+              dir
+              (parse:file->content-alist file-name #:imports imports))
+             (tree-alist (parse:content-alist->tree-alist content-alist)))
+        (values tree-alist content-alist dir))))
 
-(define* (parse:file->tree-alist file-name #:key debug? (imports '()))
+(define* (parse:file->tree-alist file-name #:key (imports '()))
   "Parse @var{file-name} using @var{imports} to resolve import files,
-and return two values, the @var{tree-alist}, and @code{#true} if parsing
-failed.  Unless @var{debug?}, handle exceptions."
-  (catch (if debug? 'none #t)
-    (lambda _
-      (if (equal? file-name "-") (parse:string->tree-alist+content-alist
-                                  (parse:file->string file-name))
-          (let* ((content-alist
-                  dir
-                  (parse:file->content-alist file-name #:imports imports))
-                 (tree-alist
-                  parse-failed?
-                  (parse:content-alist->tree-alist content-alist
-                                                   #:debug? debug?)))
-            (values tree-alist parse-failed?))))
-    (lambda (key . args)
-      (apply (parse:handle-exceptions file-name) key args)
-      (values #f #t))))
+and the @var{tree-alist}."
+  (if (equal? file-name "-") (parse:string->tree-alist+content-alist
+                              (parse:file->string file-name))
+      (let ((content-alist
+             dir
+             (parse:file->content-alist file-name #:imports imports)))
+        (parse:content-alist->tree-alist content-alist))))
 
 
 ;;;
@@ -401,44 +367,24 @@ optionally using CONTENT-ALIST of form
          (ast (expand-imports ast-alist)))
     ast))
 
-(define* (parse:file->ast file-name #:key debug? (imports '()))
-  "Parse FILE-NAME and return an ast.  Unless @var{debug?}, handle
-exceptions."
-  (catch (if debug? 'none #t)
-    (lambda _
-      (let ((tree-alist
-             content-alist
-             dir
-             parse-failed? (parse:file->tree-alist+content-alist
-                            file-name
-                            #:debug? #t
-                            #:imports imports)))
-        ;; (pke "parse:file->ast" file-name)
-        ;; (pke "  content-alist" content-alist)
-        ;; (pke "  " file-name)
-        ;; (pke "parse:file->ast" file-name)
-        (if parse-failed? (values #f #t)
-            (let* ((ast (parse:tree-alist->ast tree-alist
-                                               #:content-alist content-alist
-                                               #:working-directory dir))
-                   (ast (parse:annotate-ast ast)))
-              (values ast parse-failed?)))))
-    (lambda (key . args)
-      (apply (parse:handle-exceptions file-name) key args)
-      (values #f #t))))
+(define* (parse:file->ast file-name #:key (imports '()))
+  "Parse FILE-NAME and return an ast."
+  (let* ((tree-alist content-alist dir (parse:file->tree-alist+content-alist
+                                        file-name #:imports imports))
+         (ast (parse:tree-alist->ast tree-alist
+                                     #:content-alist content-alist
+                                     #:working-directory dir)))
+    (parse:annotate-ast ast)))
 
 (define (parse:string->ast string)
   "Parse STRING and return an ast."
   (let* ((content-alist dir (parse:string->content-alist string))
-         (tree-alist parse-failed? (parse:content-alist->tree-alist
-                                    content-alist))
-         (skip-ast? (or parse-failed? (null? tree-alist))))
-    (if skip-ast? (values tree-alist parse-failed?)
-        (let* ((ast (parse:tree-alist->ast tree-alist
+         (tree-alist (parse:content-alist->tree-alist content-alist)))
+    (and (pair? tree-alist)
+         (let ((ast (parse:tree-alist->ast tree-alist
                                            #:content-alist content-alist
-                                           #:working-directory dir))
-               (ast (parse:annotate-ast ast)))
-          (values ast parse-failed?)))))
+                                           #:working-directory dir)))
+           (parse:annotate-ast ast)))))
 
 
 ;;;

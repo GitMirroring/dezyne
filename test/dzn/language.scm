@@ -58,13 +58,11 @@
 
 (define (file-name->parse-tree file-name)
   (let ((text (file-name->text file-name)))
-    (parameterize ((%peg:fall-back? #t))
-      (parse:string->tree text #:file-name file-name))))
+    (parse:string->tree* text #:file-name file-name)))
 
 (define* (test-context #:key file-name text line (column 0) offset)
   (let* ((text   (or text (file-name->text file-name)))
-         (root   (parameterize ((%peg:fall-back? #t))
-                   (parse:string->tree text #:file-name file-name)))
+         (root (parse:string->tree* text #:file-name file-name))
          (offset (or offset
                      (and line (line-column->offset line column text))
                      (string-length text))))
