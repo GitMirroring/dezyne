@@ -1,0 +1,123 @@
+parse --fall-back test/all/hello_interface/hello_interface.dzn
+parse --fall-back --parse-tree test/all/hello_interface/hello_interface.dzn
+--verbose parse parse --parse-tree test/all/hello_interface/hello_interface.dzn
+parse --parse-tree -o- test/all/hello_interface/hello_interface.dzn
+parse --preprocess test/all/hello_interface/hello_interface.dzn
+parse --preprocess test/all/hello_interface/hello_interface.dzn | --verbose parse -
+--verbose parse test/all/hello_interface/hello_interface.dzn
+parse test/all/hello_interface/hello_interface.dzn -o-
+parse --fall-back test/language/interface1.dzn
+test/language/interface1.dzn:1:1: `import, dollars, type, namespace, interface, component, EOF' expected
+parse --fall-back --parse-tree test/language/interface1.dzn
+test/language/interface1.dzn:1:1: `import, dollars, type, namespace, interface, component, EOF' expected
+--verbose parse parse --parse-tree test/language/interface1.dzn
+test/language/interface1.dzn:1:1: error
+interf
+^
+`import, dollars, type, namespace, interface, component, EOF' expected
+parse --parse-tree -o- test/language/interface1.dzn
+test/language/interface1.dzn:1:1: error
+interf
+^
+`import, dollars, type, namespace, interface, component, EOF' expected
+parse --preprocess test/language/interface1.dzn
+parse --preprocess test/language/interface1.dzn | --verbose parse -
+test/language/interface1.dzn:1:1: error
+interf
+^
+`import, dollars, type, namespace, interface, component, EOF' expected
+--verbose parse test/language/interface1.dzn
+test/language/interface1.dzn:1:1: error
+interf
+^
+`import, dollars, type, namespace, interface, component, EOF' expected
+parse test/language/interface1.dzn -o-
+test/language/interface1.dzn:1:1: error
+interf
+^
+`import, dollars, type, namespace, interface, component, EOF' expected
+parse --fall-back test/all/parse_import_path/parse_import_path.dzn
+test/all/parse_import_path/parse_import_path.dzn:27:2: `import, dollars, type, namespace, interface, component, EOF' expected
+parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn
+test/all/parse_import_path/parse_import_path.dzn:27:2: `import, dollars, type, namespace, interface, component, EOF' expected
+--verbose parse parse --parse-tree test/all/parse_import_path/parse_import_path.dzn
+In test/all/parse_import_path/interface.dzn:
+imported from test/all/parse_import_path/component.dzn:
+imported from test/all/parse_import_path/parse_import_path.dzn:
+
+test/all/parse_import_path/interface.dzn:27:2: error
+}
+ ^
+ `import, dollars, type, namespace, interface, component, EOF' expected
+parse --parse-tree -o- test/all/parse_import_path/parse_import_path.dzn
+In test/all/parse_import_path/interface.dzn:
+imported from test/all/parse_import_path/component.dzn:
+imported from test/all/parse_import_path/parse_import_path.dzn:
+
+test/all/parse_import_path/interface.dzn:27:2: error
+}
+ ^
+ `import, dollars, type, namespace, interface, component, EOF' expected
+parse --preprocess test/all/parse_import_path/parse_import_path.dzn
+parse --preprocess test/all/parse_import_path/parse_import_path.dzn | --verbose parse -
+In test/all/parse_import_path/interface.dzn:
+imported from test/all/parse_import_path/component.dzn:
+imported from test/all/parse_import_path/parse_import_path.dzn:
+
+test/all/parse_import_path/interface.dzn:27:2: error
+}
+ ^
+ `import, dollars, type, namespace, interface, component, EOF' expected
+--verbose parse test/all/parse_import_path/parse_import_path.dzn
+In test/all/parse_import_path/interface.dzn:
+imported from test/all/parse_import_path/component.dzn:
+imported from test/all/parse_import_path/parse_import_path.dzn:
+
+test/all/parse_import_path/interface.dzn:27:2: error
+}
+ ^
+ `import, dollars, type, namespace, interface, component, EOF' expected
+parse test/all/parse_import_path/parse_import_path.dzn -o-
+In test/all/parse_import_path/interface.dzn:
+imported from test/all/parse_import_path/component.dzn:
+imported from test/all/parse_import_path/parse_import_path.dzn:
+
+test/all/parse_import_path/interface.dzn:27:2: error
+}
+ ^
+ `import, dollars, type, namespace, interface, component, EOF' expected
+parse --fall-back test/all/parse_non_existent_import/parse_non_existent_import.dzn
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --fall-back --parse-tree test/all/parse_non_existent_import/parse_non_existent_import.dzn
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+--verbose parse parse --parse-tree test/all/parse_non_existent_import/parse_non_existent_import.dzn
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --parse-tree -o- test/all/parse_non_existent_import/parse_non_existent_import.dzn
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --preprocess test/all/parse_non_existent_import/parse_non_existent_import.dzn
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --preprocess test/all/parse_non_existent_import/parse_non_existent_import.dzn | --verbose parse -
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+--verbose parse test/all/parse_non_existent_import/parse_non_existent_import.dzn
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse test/all/parse_non_existent_import/parse_non_existent_import.dzn -o-
+No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
+imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --fall-back test/all/parse_assign_void/parse_assign_void.dzn
+parse --fall-back --parse-tree test/all/parse_assign_void/parse_assign_void.dzn
+--verbose parse parse --parse-tree test/all/parse_assign_void/parse_assign_void.dzn
+parse --parse-tree -o- test/all/parse_assign_void/parse_assign_void.dzn
+parse --preprocess test/all/parse_assign_void/parse_assign_void.dzn
+parse --preprocess test/all/parse_assign_void/parse_assign_void.dzn | --verbose parse -
+test/all/parse_assign_void/parse_assign_void.dzn:41:28: error: void value not ignored as it ought to be
+--verbose parse test/all/parse_assign_void/parse_assign_void.dzn
+test/all/parse_assign_void/parse_assign_void.dzn:41:28: error: void value not ignored as it ought to be
+parse test/all/parse_assign_void/parse_assign_void.dzn -o-
+test/all/parse_assign_void/parse_assign_void.dzn:41:28: error: void value not ignored as it ought to be

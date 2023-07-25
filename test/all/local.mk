@@ -498,6 +498,7 @@ EXTRA_DIST +=					\
 endif
 
 PARSER_TESTS =					\
+ %D%/parse-flags				\
  %D%/parse_assign_void				\
  %D%/parse_block_comment_import			\
  %D%/parse_call_before_var			\

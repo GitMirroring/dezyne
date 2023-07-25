@@ -1,0 +1,825 @@
+parse --fall-back test/all/hello_interface/hello_interface.dzn
+parse --fall-back test/all/hello_interface/hello_interface.dzn => 0
+parse --fall-back --parse-tree test/all/hello_interface/hello_interface.dzn
+(("test/all/hello_interface/hello_interface.dzn"
+  root
+  (file-name
+    "test/all/hello_interface/hello_interface.dzn"
+    (location 0 0))
+  (interface
+    (compound-name
+      (name "hello_interface" (location 955 970))
+      (location 955 970))
+    (types-and-events
+      (event (direction "in" (location 975 977))
+             (type-name
+               (compound-name
+                 (name "void" (location 978 982))
+                 (location 978 982))
+               (location 978 982))
+             (event-name
+               (name "hello" (location 983 988))
+               (location 983 988))
+             (formals (location 988 990))
+             (location 975 991))
+      (event (direction "out" (location 994 997))
+             (type-name
+               (compound-name
+                 (name "void" (location 998 1002))
+                 (location 998 1002))
+               (location 998 1002))
+             (event-name
+               (name "world" (location 1003 1008))
+               (location 1003 1008))
+             (formals (location 1008 1010))
+             (location 994 1011))
+      (location 975 1011))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "hello" (location 1035 1040))
+                  (location 1035 1040))
+                (location 1035 1040))
+              (interface-action
+                (name "world" (location 1042 1047))
+                (location 1042 1047))
+              (location 1032 1048))
+          (location 1032 1048))
+        (location 1026 1052))
+      (location 1015 1052))
+    (location 945 1054))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>\n// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n"
+    (location 0 945))
+  (location 945 1055)))
+parse --fall-back --parse-tree test/all/hello_interface/hello_interface.dzn => 0
+--verbose parse parse --parse-tree test/all/hello_interface/hello_interface.dzn
+(("test/all/hello_interface/hello_interface.dzn"
+  root
+  (file-name
+    "test/all/hello_interface/hello_interface.dzn"
+    (location 0 0))
+  (interface
+    (compound-name
+      (name "hello_interface" (location 955 970))
+      (location 955 970))
+    (types-and-events
+      (event (direction "in" (location 975 977))
+             (type-name
+               (compound-name
+                 (name "void" (location 978 982))
+                 (location 978 982))
+               (location 978 982))
+             (event-name
+               (name "hello" (location 983 988))
+               (location 983 988))
+             (formals (location 988 990))
+             (location 975 991))
+      (event (direction "out" (location 994 997))
+             (type-name
+               (compound-name
+                 (name "void" (location 998 1002))
+                 (location 998 1002))
+               (location 998 1002))
+             (event-name
+               (name "world" (location 1003 1008))
+               (location 1003 1008))
+             (formals (location 1008 1010))
+             (location 994 1011))
+      (location 975 1011))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "hello" (location 1035 1040))
+                  (location 1035 1040))
+                (location 1035 1040))
+              (interface-action
+                (name "world" (location 1042 1047))
+                (location 1042 1047))
+              (location 1032 1048))
+          (location 1032 1048))
+        (location 1026 1052))
+      (location 1015 1052))
+    (location 945 1054))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>\n// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n"
+    (location 0 945))
+  (location 945 1055)))
+--verbose parse --parse-tree test/all/hello_interface/hello_interface.dzn => 0
+parse --parse-tree -o- test/all/hello_interface/hello_interface.dzn
+(("test/all/hello_interface/hello_interface.dzn"
+  root
+  (file-name
+    "test/all/hello_interface/hello_interface.dzn"
+    (location 0 0))
+  (interface
+    (compound-name
+      (name "hello_interface" (location 955 970))
+      (location 955 970))
+    (types-and-events
+      (event (direction "in" (location 975 977))
+             (type-name
+               (compound-name
+                 (name "void" (location 978 982))
+                 (location 978 982))
+               (location 978 982))
+             (event-name
+               (name "hello" (location 983 988))
+               (location 983 988))
+             (formals (location 988 990))
+             (location 975 991))
+      (event (direction "out" (location 994 997))
+             (type-name
+               (compound-name
+                 (name "void" (location 998 1002))
+                 (location 998 1002))
+               (location 998 1002))
+             (event-name
+               (name "world" (location 1003 1008))
+               (location 1003 1008))
+             (formals (location 1008 1010))
+             (location 994 1011))
+      (location 975 1011))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "hello" (location 1035 1040))
+                  (location 1035 1040))
+                (location 1035 1040))
+              (interface-action
+                (name "world" (location 1042 1047))
+                (location 1042 1047))
+              (location 1032 1048))
+          (location 1032 1048))
+        (location 1026 1052))
+      (location 1015 1052))
+    (location 945 1054))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>\n// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n"
+    (location 0 945))
+  (location 945 1055)))
+parse --parse-tree -o- test/all/hello_interface/hello_interface.dzn => 0
+parse --preprocess test/all/hello_interface/hello_interface.dzn
+#dir "<pwd>"
+#file "test/all/hello_interface/hello_interface.dzn"
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface hello_interface
+{
+  in void hello();
+  out void world();
+
+  behavior
+  {
+    on hello: world;
+  }
+}
+parse --preprocess test/all/hello_interface/hello_interface.dzn => 0
+parse --preprocess test/all/hello_interface/hello_interface.dzn | --verbose parse -
+parse: no errors found
+parse --preprocess test/all/hello_interface/hello_interface.dzn | --verbose parse - => 0
+--verbose parse test/all/hello_interface/hello_interface.dzn
+parse: no errors found
+--verbose --parse test/all/hello_interface/hello_interface.dzn => 0
+parse test/all/hello_interface/hello_interface.dzn -o-
+(("root"
+  (comment
+    ("comment"
+     (string
+       .
+       "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>\n// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n")))
+  (("file-name"
+    (name .
+          "test/all/hello_interface/hello_interface.dzn")))
+  (("interface"
+    (name . hello_interface)
+    (types ("types"))
+    (events
+      ("events"
+       (("event"
+         (name . "hello")
+         (signature
+           ("signature"
+            (type.name . void)
+            (formals ("formals"))))
+         (direction . in)))
+       (("event"
+         (name . "world")
+         (signature
+           ("signature"
+            (type.name . void)
+            (formals ("formals"))))
+         (direction . out)))))
+    (behavior
+      ("behavior"
+       (types ("types"))
+       (variables ("variables"))
+       (functions ("functions"))
+       (statement
+         ("compound"
+          (("on"
+            (triggers
+              ("triggers"
+               (("trigger"
+                 (event.name . "hello")
+                 (formals ("formals"))))))
+            (statement
+              ("action"
+               (expression . *unspecified*)
+               (event.name . "world")
+               (arguments ("arguments"))))))))))))
+  (working-directory . "<pwd>")))
+parse -o- test/all/hello_interface/hello_interface.dzn => 0
+parse --fall-back test/language/interface1.dzn
+parse --fall-back test/language/interface1.dzn => 1
+parse --fall-back --parse-tree test/language/interface1.dzn
+(("test/language/interface1.dzn"
+  root
+  (file-name
+    "test/language/interface1.dzn"
+    (location 0 0))
+  (location 0 6)))
+parse --fall-back --parse-tree test/language/interface1.dzn => 1
+--verbose parse parse --parse-tree test/language/interface1.dzn
+parse: errors found
+--verbose parse --parse-tree test/language/interface1.dzn => 1
+parse --parse-tree -o- test/language/interface1.dzn
+parse --parse-tree -o- test/language/interface1.dzn => 1
+parse --preprocess test/language/interface1.dzn
+#dir "<pwd>"
+#file "test/language/interface1.dzn"
+interfparse --preprocess test/language/interface1.dzn => 0
+parse --preprocess test/language/interface1.dzn | --verbose parse -
+parse: errors found
+parse --preprocess test/language/interface1.dzn | --verbose parse - => 1
+--verbose parse test/language/interface1.dzn
+parse: errors found
+--verbose --parse test/language/interface1.dzn => 1
+parse test/language/interface1.dzn -o-
+parse -o- test/language/interface1.dzn => 1
+parse --fall-back test/all/parse_import_path/parse_import_path.dzn
+parse --fall-back test/all/parse_import_path/parse_import_path.dzn => 1
+parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn
+(("test/all/parse_import_path/parse_import_path.dzn"
+  root
+  (file-name
+    "test/all/parse_import_path/parse_import_path.dzn"
+    (location 0 0))
+  (import "component.dzn" (location 793 814))
+  (component
+    (compound-name
+      (name "S" (location 826 827))
+      (location 826 827))
+    (ports (location 832 832))
+    (system
+      (instances-and-bindings
+        (instance
+          (compound-name
+            (name "C" (location 847 848))
+            (location 847 848))
+          (name "c" (location 849 850))
+          (location 847 851))
+        (location 847 851))
+      (location 832 855))
+    (location 816 857))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n"
+    (location 0 793))
+  (location 793 858))
+ ("test/all/parse_import_path/component.dzn"
+  root
+  (file-name
+    "test/all/parse_import_path/component.dzn"
+    (location 0 0))
+  (import "interface.dzn" (location 793 814))
+  (component
+    (compound-name
+      (name "C" (location 826 827))
+      (location 826 827))
+    (ports (port (provides (location 832 840))
+                 (port-qualifiers (location 841 841))
+                 (compound-name
+                   (name "I" (location 841 842))
+                   (location 841 842))
+                 (name "i" (location 843 844))
+                 (location 832 845))
+           (location 832 845))
+    (location 816 847))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n"
+    (location 0 793))
+  (location 793 848))
+ ("test/all/parse_import_path/interface.dzn"
+  root
+  (file-name
+    "test/all/parse_import_path/interface.dzn"
+    (location 0 0))
+  (interface
+    (compound-name
+      (name "I" (location 869 870))
+      (location 869 870))
+    (types-and-events
+      (event (direction "in" (location 875 877))
+             (type-name
+               (compound-name
+                 (name "void" (location 878 882))
+                 (location 878 882))
+               (location 878 882))
+             (event-name
+               (name "e" (location 883 884))
+               (location 883 884))
+             (formals (location 884 886))
+             (location 875 887))
+      (location 875 887))
+    (behavior
+      (behavior-compound
+        (behavior-statements (location 905 905))
+        (location 901 906))
+      (location 890 906))
+    (location 859 908))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n"
+    (location 0 859))
+  (location 859 915)))
+parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn => 1
+--verbose parse parse --parse-tree test/all/parse_import_path/parse_import_path.dzn
+parse: errors found
+--verbose parse --parse-tree test/all/parse_import_path/parse_import_path.dzn => 1
+parse --parse-tree -o- test/all/parse_import_path/parse_import_path.dzn
+parse --parse-tree -o- test/all/parse_import_path/parse_import_path.dzn => 1
+parse --preprocess test/all/parse_import_path/parse_import_path.dzn
+#dir "<pwd>"
+#file "test/all/parse_import_path/parse_import_path.dzn"
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+import component.dzn;
+
+component S
+{
+  system
+  {
+    C c;
+  }
+}
+
+#imported "test/all/parse_import_path/component.dzn"
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+import interface.dzn;
+
+component C
+{
+  provides I i;
+}
+
+#imported "test/all/parse_import_path/interface.dzn"
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+interface I
+{
+  in void e();
+  behavior
+  {
+  }
+}
+
+typo
+parse --preprocess test/all/parse_import_path/parse_import_path.dzn => 0
+parse --preprocess test/all/parse_import_path/parse_import_path.dzn | --verbose parse -
+parse: errors found
+parse --preprocess test/all/parse_import_path/parse_import_path.dzn | --verbose parse - => 1
+--verbose parse test/all/parse_import_path/parse_import_path.dzn
+parse: errors found
+--verbose --parse test/all/parse_import_path/parse_import_path.dzn => 1
+parse test/all/parse_import_path/parse_import_path.dzn -o-
+parse -o- test/all/parse_import_path/parse_import_path.dzn => 1
+parse --fall-back test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --fall-back test/all/parse_non_existent_import/parse_non_existent_import.dzn => 1
+parse --fall-back --parse-tree test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --fall-back --parse-tree test/all/parse_non_existent_import/parse_non_existent_import.dzn => 1
+--verbose parse parse --parse-tree test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse: errors found
+--verbose parse --parse-tree test/all/parse_non_existent_import/parse_non_existent_import.dzn => 1
+parse --parse-tree -o- test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --parse-tree -o- test/all/parse_non_existent_import/parse_non_existent_import.dzn => 1
+parse --preprocess test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse --preprocess test/all/parse_non_existent_import/parse_non_existent_import.dzn => 1
+parse --preprocess test/all/parse_non_existent_import/parse_non_existent_import.dzn | --verbose parse -
+parse: no errors found
+parse --preprocess test/all/parse_non_existent_import/parse_non_existent_import.dzn | --verbose parse - => 1
+--verbose parse test/all/parse_non_existent_import/parse_non_existent_import.dzn
+parse: errors found
+--verbose --parse test/all/parse_non_existent_import/parse_non_existent_import.dzn => 1
+parse test/all/parse_non_existent_import/parse_non_existent_import.dzn -o-
+parse -o- test/all/parse_non_existent_import/parse_non_existent_import.dzn => 1
+parse --fall-back test/all/parse_assign_void/parse_assign_void.dzn
+parse --fall-back test/all/parse_assign_void/parse_assign_void.dzn => 0
+parse --fall-back --parse-tree test/all/parse_assign_void/parse_assign_void.dzn
+(("test/all/parse_assign_void/parse_assign_void.dzn"
+  root
+  (file-name
+    "test/all/parse_assign_void/parse_assign_void.dzn"
+    (location 0 0))
+  (interface
+    (compound-name
+      (name "ihello" (location 849 855))
+      (location 849 855))
+    (types-and-events
+      (event (direction "in" (location 860 862))
+             (type-name
+               (compound-name
+                 (name "void" (location 863 867))
+                 (location 863 867))
+               (location 863 867))
+             (event-name
+               (name "hello" (location 868 873))
+               (location 868 873))
+             (formals (location 873 875))
+             (location 860 876))
+      (location 860 876))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "hello" (location 900 905))
+                  (location 900 905))
+                (location 900 905))
+              (compound (location 907 909))
+              (location 897 909))
+          (location 897 909))
+        (location 891 913))
+      (location 880 913))
+    (location 839 915))
+  (component
+    (compound-name
+      (name "parse_assign_void" (location 927 944))
+      (location 927 944))
+    (ports (port (provides (location 949 957))
+                 (port-qualifiers (location 958 958))
+                 (compound-name
+                   (name "ihello" (location 958 964))
+                   (location 958 964))
+                 (name "h" (location 965 966))
+                 (location 949 967))
+           (port (requires (location 970 978))
+                 (port-qualifiers (location 979 979))
+                 (compound-name
+                   (name "ihello" (location 979 985))
+                   (location 979 985))
+                 (name "w" (location 986 987))
+                 (location 970 988))
+           (location 949 988))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "h" (location 1012 1013))
+                  (name "hello" (location 1014 1019))
+                  (trigger-formals (location 1019 1021))
+                  (location 1012 1021))
+                (location 1012 1021))
+              (variable
+                (type-name
+                  (compound-name
+                    (name "bool" (location 1023 1027))
+                    (location 1023 1027))
+                  (location 1023 1027))
+                (name "b" (location 1028 1029))
+                (expression
+                  (action
+                    (name "w" (location 1032 1033))
+                    (name "hello" (location 1034 1039))
+                    (arguments (location 1039 1041))
+                    (location 1032 1041))
+                  (location 1032 1041))
+                (location 1023 1042))
+              (location 1009 1042))
+          (location 1009 1042))
+        (location 1003 1046))
+      (location 992 1046))
+    (location 917 1048))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n"
+    (location 0 839))
+  (location 839 1049)))
+parse --fall-back --parse-tree test/all/parse_assign_void/parse_assign_void.dzn => 0
+--verbose parse parse --parse-tree test/all/parse_assign_void/parse_assign_void.dzn
+(("test/all/parse_assign_void/parse_assign_void.dzn"
+  root
+  (file-name
+    "test/all/parse_assign_void/parse_assign_void.dzn"
+    (location 0 0))
+  (interface
+    (compound-name
+      (name "ihello" (location 849 855))
+      (location 849 855))
+    (types-and-events
+      (event (direction "in" (location 860 862))
+             (type-name
+               (compound-name
+                 (name "void" (location 863 867))
+                 (location 863 867))
+               (location 863 867))
+             (event-name
+               (name "hello" (location 868 873))
+               (location 868 873))
+             (formals (location 873 875))
+             (location 860 876))
+      (location 860 876))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "hello" (location 900 905))
+                  (location 900 905))
+                (location 900 905))
+              (compound (location 907 909))
+              (location 897 909))
+          (location 897 909))
+        (location 891 913))
+      (location 880 913))
+    (location 839 915))
+  (component
+    (compound-name
+      (name "parse_assign_void" (location 927 944))
+      (location 927 944))
+    (ports (port (provides (location 949 957))
+                 (port-qualifiers (location 958 958))
+                 (compound-name
+                   (name "ihello" (location 958 964))
+                   (location 958 964))
+                 (name "h" (location 965 966))
+                 (location 949 967))
+           (port (requires (location 970 978))
+                 (port-qualifiers (location 979 979))
+                 (compound-name
+                   (name "ihello" (location 979 985))
+                   (location 979 985))
+                 (name "w" (location 986 987))
+                 (location 970 988))
+           (location 949 988))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "h" (location 1012 1013))
+                  (name "hello" (location 1014 1019))
+                  (trigger-formals (location 1019 1021))
+                  (location 1012 1021))
+                (location 1012 1021))
+              (variable
+                (type-name
+                  (compound-name
+                    (name "bool" (location 1023 1027))
+                    (location 1023 1027))
+                  (location 1023 1027))
+                (name "b" (location 1028 1029))
+                (expression
+                  (action
+                    (name "w" (location 1032 1033))
+                    (name "hello" (location 1034 1039))
+                    (arguments (location 1039 1041))
+                    (location 1032 1041))
+                  (location 1032 1041))
+                (location 1023 1042))
+              (location 1009 1042))
+          (location 1009 1042))
+        (location 1003 1046))
+      (location 992 1046))
+    (location 917 1048))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n"
+    (location 0 839))
+  (location 839 1049)))
+--verbose parse --parse-tree test/all/parse_assign_void/parse_assign_void.dzn => 0
+parse --parse-tree -o- test/all/parse_assign_void/parse_assign_void.dzn
+(("test/all/parse_assign_void/parse_assign_void.dzn"
+  root
+  (file-name
+    "test/all/parse_assign_void/parse_assign_void.dzn"
+    (location 0 0))
+  (interface
+    (compound-name
+      (name "ihello" (location 849 855))
+      (location 849 855))
+    (types-and-events
+      (event (direction "in" (location 860 862))
+             (type-name
+               (compound-name
+                 (name "void" (location 863 867))
+                 (location 863 867))
+               (location 863 867))
+             (event-name
+               (name "hello" (location 868 873))
+               (location 868 873))
+             (formals (location 873 875))
+             (location 860 876))
+      (location 860 876))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "hello" (location 900 905))
+                  (location 900 905))
+                (location 900 905))
+              (compound (location 907 909))
+              (location 897 909))
+          (location 897 909))
+        (location 891 913))
+      (location 880 913))
+    (location 839 915))
+  (component
+    (compound-name
+      (name "parse_assign_void" (location 927 944))
+      (location 927 944))
+    (ports (port (provides (location 949 957))
+                 (port-qualifiers (location 958 958))
+                 (compound-name
+                   (name "ihello" (location 958 964))
+                   (location 958 964))
+                 (name "h" (location 965 966))
+                 (location 949 967))
+           (port (requires (location 970 978))
+                 (port-qualifiers (location 979 979))
+                 (compound-name
+                   (name "ihello" (location 979 985))
+                   (location 979 985))
+                 (name "w" (location 986 987))
+                 (location 970 988))
+           (location 949 988))
+    (behavior
+      (behavior-compound
+        (behavior-statements
+          (on (triggers
+                (trigger
+                  (name "h" (location 1012 1013))
+                  (name "hello" (location 1014 1019))
+                  (trigger-formals (location 1019 1021))
+                  (location 1012 1021))
+                (location 1012 1021))
+              (variable
+                (type-name
+                  (compound-name
+                    (name "bool" (location 1023 1027))
+                    (location 1023 1027))
+                  (location 1023 1027))
+                (name "b" (location 1028 1029))
+                (expression
+                  (action
+                    (name "w" (location 1032 1033))
+                    (name "hello" (location 1034 1039))
+                    (arguments (location 1039 1041))
+                    (location 1032 1041))
+                  (location 1032 1041))
+                (location 1023 1042))
+              (location 1009 1042))
+          (location 1009 1042))
+        (location 1003 1046))
+      (location 992 1046))
+    (location 917 1048))
+  (comment
+    "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n// Commentary:\n//\n// Code:\n"
+    (location 0 839))
+  (location 839 1049)))
+parse --parse-tree -o- test/all/parse_assign_void/parse_assign_void.dzn => 0
+parse --preprocess test/all/parse_assign_void/parse_assign_void.dzn
+#dir "<pwd>"
+#file "test/all/parse_assign_void/parse_assign_void.dzn"
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+component parse_assign_void
+{
+  provides ihello h;
+  requires ihello w;
+
+  behavior
+  {
+    on h.hello(): bool b = w.hello();
+  }
+}
+parse --preprocess test/all/parse_assign_void/parse_assign_void.dzn => 0
+parse --preprocess test/all/parse_assign_void/parse_assign_void.dzn | --verbose parse -
+parse: errors found
+parse --preprocess test/all/parse_assign_void/parse_assign_void.dzn | --verbose parse - => 1
+--verbose parse test/all/parse_assign_void/parse_assign_void.dzn
+parse: errors found
+--verbose --parse test/all/parse_assign_void/parse_assign_void.dzn => 1
+parse test/all/parse_assign_void/parse_assign_void.dzn -o-
+parse -o- test/all/parse_assign_void/parse_assign_void.dzn => 1

@@ -37,7 +37,7 @@ Run all parser tests
 
 or
 
-    make check TESTS="$(find test/all -maxdepth 1 -type d -a '(' -name '*wf_*' -o -name 'parse_*' -o -path '*/undefined/*' ')' )"
+    make check TESTS="$(find test/all -maxdepth 1 -type d -a '(' -name '*wf_*' -o -name 'parse*' -o -path '*/undefined/*' ')' )"
 
 Run all blocking tests
 
@@ -102,7 +102,7 @@ make publish
 #+END_SRC
 
 * Legalese
-Copyright © 2019,2020,2021,2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2020,2021,2022,2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
