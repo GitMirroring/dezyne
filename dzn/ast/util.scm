@@ -52,20 +52,18 @@
             tree-find
             tree-map))
 
+(define ast:keyword+child* (@@ (dzn ast context) ast:keyword+child*))
+(define ast:child* (@@ (dzn ast context) ast:child*))
+
 ;;;
 ;;; Clone, graft.
 ;;;
 (define-method (keyword-values+mutate? (o <object>) . keyword-values)
   "Return multiple values; the full list of paired KEYWORD-VALUES to
 create a fresh clone, and #true if any slots need mutation."
-  (define (make-pair name)
-    (list (symbol->keyword name) (slot-ref o name)))
   (define (car-eq? a b)
     (eq? (car a) (car b)))
-  (let* ((class (class-of o))
-         (slots (class-slots class))
-         (names (map slot-definition-name slots))
-         (actual-keyword-values (map make-pair names))
+  (let* ((actual-keyword-values (ast:keyword+child* o))
          (keyword-values
           (fold (lambda (elem previous)
                   (if (or (null? previous) (pair? (car previous)))
