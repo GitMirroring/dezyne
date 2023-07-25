@@ -464,7 +464,7 @@ std::basic_ostream<Char, Traits> &")
                                 (members
                                  (map event->slot (ast:out-event* o)))))
                              (name "out"))
-               ,(sm:variable (type "bool") (name "dzn_external") (expression "false"))
+               ,(sm:variable (type "bool") (name "dzn_share_p") (expression "true"))
                ,(sm:variable (type "std::vector<char const*>") (name "dzn_prefix") (expression ""))
                ,(sm:variable (type "int") (name "dzn_state") (expression ""))
                ,(sm:variable (type (string-append name "*")) (name "dzn_peer") (expression ""))
@@ -662,7 +662,7 @@ std::basic_ostream<Char, Traits> &")
                              (formals (list (sm:formal (type "char const*") (name "event"))))
                              (statement
                               (sm:compound*
-                               `(,(sm:if* "dzn_external" (sm:return*))
+                               `(,(sm:if* (sm:not* "dzn_share_p") (sm:return*))
                                  ,(sm:call (name "dzn_prefix.push_back")
                                            (arguments '("event")))
                                  ,(sm:call (name "dzn_sync"))
@@ -674,7 +674,7 @@ std::basic_ostream<Char, Traits> &")
                                                        (name "locator"))))
                              (statement
                               (sm:compound*
-                               `(,(sm:if* "dzn_external" (sm:return*))
+                               `(,(sm:if* (sm:not* "dzn_share_p") (sm:return*))
                                  ,@(if (= (dzn:debugity) 0) '()
                                        `(,(sm:call (name "debug") (arguments '("\"update_state\"")))))
                                  ,(sm:switch
@@ -725,7 +725,8 @@ std::basic_ostream<Char, Traits> &")
                (sm:assign* "provided.dzn_meta.require" "required.dzn_meta.require")
                (sm:assign* "required.dzn_meta.provide" "provided.dzn_meta.provide")
                (sm:assign* "provided.dzn_peer" "&required")
-               (sm:assign* "required.dzn_peer" "&provided")))))
+               (sm:assign* "required.dzn_peer" "&provided")
+               (sm:assign* "provided.dzn_share_p" "required.dzn_share_p = provided.dzn_share_p && required.dzn_share_p")))))
            (sm:enum-to-string (append-map c++:enum->to-string public-enums))
            (to-enum (append-map c++:enum->to-enum public-enums)))
       `(,@(code:->namespace o interface)
@@ -763,8 +764,8 @@ std::basic_ostream<Char, Traits> &")
   (define (requires->external port)
     (sm:assign*
      (simple-format
-      #f "~a.dzn_external" (.name port))
-     "true"))
+      #f "~a.dzn_share_p" (.name port))
+     "false"))
   (define (injected->member port)
     (sm:variable
      (type (code:type-name (.type port)))
@@ -1184,8 +1185,8 @@ std::basic_ostream<Char, Traits> &")
     (define (port->external port)
       (sm:assign*
        (simple-format
-        #f "~a.dzn_external" (.name port))
-       "true"))
+        #f "~a.dzn_share_p" (.name port))
+       "false"))
     (define (provides->member port)
       (let* ((other-end (ast:other-end-point port)))
         (sm:variable

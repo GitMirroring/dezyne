@@ -26,10 +26,11 @@ struct list: public skel::list
   list(const dzn::locator& locator)
     : skel::list(locator)
     , count(0)
-  {}
+  {
+    i.dzn_share_p = false; // disable sharing state for this port
+  }
   void i_step()
   {
-    i.dzn_peer->dzn_state = 0;
     if (count++ < 2) i.out.next ();
     else
       {
