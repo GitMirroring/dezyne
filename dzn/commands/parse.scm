@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -40,9 +40,9 @@
   #:use-module (dzn ast wfc)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn parse peg)
-  #:use-module (dzn parse tree)
   #:use-module (dzn parse)
+  #:use-module (dzn parse peg)
+  #:use-module (dzn parse util)
   #:use-module (dzn peg util)
 
   #:export (parse
@@ -145,24 +145,16 @@ Parse a Dezyne file and produce an AST
      #:exit? #f
      #:file-name file-name)))
 
-(define (list-models file-name)
-  "For each model in FILE-NAME, print 'name type'."
+(define (display-models file-name)
   (let* ((debug? (dzn:command-line:get 'debug #f))
-         (text (with-input-from-file file-name read-string))
-         (tree (parse:call-with-handle-exceptions
-                (lambda _
-                  (parameterize ((%peg:fall-back? #t))
-                    (parse:string->tree text #:file-name file-name)))
-                #:backtrace? debug?
-                #:file-name file-name)))
-    (define (print-model context)
-      (let* ((model (find tree:model? context))
-             (type (cond ((is-a? model 'interface) 'interface)
-                         ((tree:component? model) 'component)
-                         ((tree:foreign? model) 'foreign)
-                         ((tree:system? model) 'system))))
-        (format #t "~a ~a\n" (context:dotted-name context) type)))
-    (for-each print-model (tree:list-model* tree))))
+         (models (parse:call-with-handle-exceptions
+                  (cute list-models-name+type file-name)
+                  #:backtrace? debug?
+                  #:file-name file-name)))
+    (for-each (match-lambda
+                ((model . type)
+                 (simple-format #t "~a ~a\n" model type)))
+              models)))
 
 (define (main args)
   (let* ((options (parse-opts args))
@@ -177,6 +169,8 @@ Parse a Dezyne file and produce an AST
          (preprocess? (option-ref options 'preprocess #f))
          (verbose? (dzn:command-line:get 'verbose)))
     (cond
+     (list-models?
+      (display-models file-name))
      ((or parse-tree? fall-back?)
       (let ((tree (parse-tree options file-name)))
         (if (and tree output?)
@@ -191,7 +185,6 @@ Parse a Dezyne file and produce an AST
       (let ((tree (preprocess options file-name)))
         (if tree (display tree)
             (exit EXIT_FAILURE))))
-     (list-models? (list-models file-name))
      (else
       (let ((ast (parse options file-name #:exit? #f)))
         (if (and ast output?)
