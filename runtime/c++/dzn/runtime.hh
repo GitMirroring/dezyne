@@ -73,6 +73,19 @@ inline void apply (const dzn::meta *m, const std::function<void (const dzn::meta
     }
 }
 
+template <typename Port>
+void connect (Port& provided, Port& required)
+{
+  provided.out = required.out;
+  required.in = provided.in;
+  provided.dzn_meta.require = required.dzn_meta.require;
+  required.dzn_meta.provide = provided.dzn_meta.provide;
+  provided.dzn_peer = &required;
+  required.dzn_peer = &provided;
+  provided.dzn_share_p = required.dzn_share_p
+    = provided.dzn_share_p && required.dzn_share_p;
+}
+
 inline void check_bindings (const dzn::meta *c)
 {
   apply (c, [] (const dzn::meta * m)

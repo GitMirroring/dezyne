@@ -96,16 +96,19 @@
     (sm:formal (type type)
                (name (.name o)))))
 
-(define (code:binding->connect binding)
+(define* (code:binding->connect binding #:key (name "connect"))
   (let* ((provides
           requires
           (code:provides+requires-end-point binding)))
-    (sm:call (name "connect")
-             (arguments (list
-                         (simple-format #f "~a~a"
-                                        (%member-prefix) (code:end-point->string provides))
-                         (simple-format #f "~a~a"
-                                        (%member-prefix) (code:end-point->string requires)))))))
+    (sm:call (name name)
+             (arguments
+              (list
+               (simple-format
+                #f "~a~a"
+                (%member-prefix) (code:end-point->string provides))
+               (simple-format
+                #f "~a~a"
+                (%member-prefix) (code:end-point->string requires)))))))
 
 
 ;;;

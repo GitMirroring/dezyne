@@ -220,6 +220,9 @@ std::basic_ostream<Char, Traits> &")
   (sm:call-method
    (name (code:shared-update-method o))))
 
+(define (c++:binding->connect binding)
+  (code:binding->connect binding #:name "dzn::connect"))
+
 
 ;;;
 ;;; Ast->code.
@@ -712,25 +715,9 @@ std::basic_ostream<Char, Traits> &")
                      (append
                       (map event->check-binding (ast:in-event* o))
                       (map event->check-binding (ast:out-event* o))))))))))
-           (connect
-            (sm:function
-             (name "connect")
-             (type "void")
-             (formals (list (sm:formal (type interface&) (name "provided"))
-                            (sm:formal (type interface&) (name "required"))))
-             (statement
-              (sm:compound*
-               (sm:assign* "provided.out" "required.out")
-               (sm:assign* "required.in" "provided.in")
-               (sm:assign* "provided.dzn_meta.require" "required.dzn_meta.require")
-               (sm:assign* "required.dzn_meta.provide" "provided.dzn_meta.provide")
-               (sm:assign* "provided.dzn_peer" "&required")
-               (sm:assign* "required.dzn_peer" "&provided")
-               (sm:assign* "provided.dzn_share_p" "required.dzn_share_p = provided.dzn_share_p && required.dzn_share_p")))))
            (sm:enum-to-string (append-map c++:enum->to-string public-enums))
            (to-enum (append-map c++:enum->to-enum public-enums)))
       `(,@(code:->namespace o interface)
-        ,connect
         ,@sm:enum-to-string
         ,@to-enum))))
 
@@ -1155,7 +1142,7 @@ std::basic_ostream<Char, Traits> &")
                      ,(children->assignment (ast:instance* o))
                      ,@(append-map instance->assignments injected-instances)
                      ,@(append-map instance->assignments instances)
-                     ,@(map code:binding->connect bindings)
+                     ,@(map c++:binding->connect bindings)
                      ,@(map trigger->event-slot (ast:provides-out-triggers o))
                      ,@(map trigger->event-slot (ast:requires-in-triggers o)))))))))))
       (code:->namespace o system))))
@@ -1380,7 +1367,7 @@ std::basic_ostream<Char, Traits> &")
                      ,@(map trigger->out-event-slot (ast:requires-in-triggers o))
                      ,@(append-map instance->assignments injected-instances)
                      ,@(append-map instance->assignments instances)
-                     ,@(map code:binding->connect bindings))))))))))
+                     ,@(map c++:binding->connect bindings))))))))))
       (code:->namespace o shell))))
 
 (define-method (shell-system->statements (o <system>))
