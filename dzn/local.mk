@@ -29,7 +29,6 @@ dist_%C%_scm_DATA =				\
  %D%/code.scm					\
  %D%/command-line.scm				\
  %D%/explore.scm				\
- %D%/indent.scm					\
  %D%/lts.scm					\
  %D%/misc.scm					\
  %D%/parse.scm					\

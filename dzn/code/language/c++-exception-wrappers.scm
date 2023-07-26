@@ -30,6 +30,8 @@
 
   #:use-module (ice-9 match)
 
+  #:use-module (scmackerel indent)
+
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
@@ -116,7 +118,7 @@
   "Entry point."
 
   (let ((root (code:normalize root)))
-    (let* ((generator (code:indenter (cute x:header root)))
+    (let* ((generator (sm:indenter (cute x:header root)))
            (base (basename (ast:source-file root) ".dzn"))
            (file-name (code:source-file-name base dir "_exception_forwarding.hh")))
       (code:dump root generator #:file-name file-name))))

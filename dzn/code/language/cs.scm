@@ -27,6 +27,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (scmackerel indent)
+
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
@@ -122,13 +124,13 @@
                  (%type-infix ".")
                  (%type-prefix "global::"))
     (let ((root (cs:normalize root)))
-      (let ((generator (code:indenter (cute print-code-ast root)))
+      (let ((generator (sm:indenter (cute print-code-ast root)))
             (file-name (code:root-file-name root dir ".cs")))
         (code:dump root generator #:file-name file-name))
 
       (when model
         (let ((model (ast:get-model root model)))
           (when (is-a? model <component-model>)
-            (let ((generator (code:indenter (cute print-main-ast model)))
+            (let ((generator (sm:indenter (cute print-main-ast model)))
                   (file-name (code:source-file-name "main" dir ".cs")))
               (code:dump root generator #:file-name file-name))))))))

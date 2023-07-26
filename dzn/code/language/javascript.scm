@@ -27,6 +27,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (scmackerel indent)
+
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
@@ -114,13 +116,13 @@
                  (%type-prefix ""))
     (let ((root (code:normalize root)))
 
-      (let ((generator (code:indenter (cute x:source root)))
+      (let ((generator (sm:indenter (cute x:source root)))
             (file-name (code:root-file-name root dir ".js")))
         (code:dump root generator #:file-name file-name))
 
       (when model
         (let ((model (ast:get-model root model)))
           (when (is-a? model <component-model>)
-            (let ((generator (code:indenter (cute x:main model)))
+            (let ((generator (sm:indenter (cute x:main model)))
                   (file-name (code:source-file-name "main" dir ".js")))
               (code:dump root generator #:file-name file-name))))))))

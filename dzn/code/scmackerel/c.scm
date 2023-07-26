@@ -37,7 +37,6 @@
   #:use-module (dzn code util)
   #:use-module (dzn command-line)
   #:use-module (dzn config)
-  #:use-module (dzn indent)
   #:use-module (dzn misc)
   #:export (c:statement*
             print-code-ast

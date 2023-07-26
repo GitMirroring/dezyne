@@ -31,6 +31,8 @@
 
   #:use-module (ice-9 match)
 
+  #:use-module (scmackerel indent)
+
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
@@ -38,7 +40,6 @@
   #:use-module (dzn code scmackerel c)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code util)
-  #:use-module (dzn indent)
   #:use-module (dzn misc)
   #:export (c:base-type-name
             c:closure-name
@@ -179,18 +180,18 @@
                  (%type-infix "_")
                  (%type-prefix ""))
     (let ((root (code:normalize+determinism root)))
-      (let ((generator (code:indenter (cute print-header-ast root)))
+      (let ((generator (sm:indenter (cute print-header-ast root)))
             (file-name (code:root-file-name root dir ".h")))
         (code:dump root generator #:file-name file-name))
 
       (when (c:generate-source? root)
-        (let ((generator (code:indenter (cute print-code-ast root)))
+        (let ((generator (sm:indenter (cute print-code-ast root)))
               (file-name (code:root-file-name root dir ".c")))
           (code:dump root generator #:file-name file-name)))
 
       (when model
         (let ((model (ast:get-model root model)))
           (when (is-a? model <component-model>)
-            (let ((generator (code:indenter (cute print-main-ast model)))
+            (let ((generator (sm:indenter (cute print-main-ast model)))
                   (file-name (code:source-file-name "main" dir ".c")))
               (code:dump root generator #:file-name file-name))))))))

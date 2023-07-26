@@ -31,6 +31,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 string-fun)
 
+  #:use-module (scmackerel indent)
+
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn ast normalize)
@@ -41,7 +43,6 @@
   #:use-module (dzn code legacy code)
   #:use-module (dzn code util)
   #:use-module (dzn config)
-  #:use-module (dzn indent)
   #:use-module (dzn misc)
   #:use-module (dzn templates))
 
@@ -267,8 +268,7 @@
   (parameterize ((%type-infix ":")
                  (%type-prefix ""))
     (let ((root (scheme:normalize root))
-          (indenter (cute code:indenter <>
-                          #:open #\( #:close #\) #:no-indent "")))
+          (indenter (cut sm:indenter <> #:open #\( #:close #\) #:no-indent "")))
 
       (let ((generator (indenter (cute x:source root)))
             (file-name (code:root-file-name root dir ".scm")))

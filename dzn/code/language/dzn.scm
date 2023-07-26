@@ -33,6 +33,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
 
+  #:use-module (scmackerel indent)
+
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code goops)
@@ -591,7 +593,7 @@ and \"POST\" 'post in GRAMMAR."
   (with-output-to-string (cute print-ast o)))
 
 (define-method (generator->string generator)
-  (with-output-to-string (code:indenter generator)))
+  (with-output-to-string (sm:indenter generator)))
 
 
 ;;;
@@ -603,5 +605,5 @@ and \"POST\" 'post in GRAMMAR."
 (define* (ast-> root #:key (dir ".") model)
   "Entry point."
   (let ((file-name (code:root-file-name root dir ".dzn"))
-        (generator (code:indenter (cute print-ast root) #:gnu? #f)))
+        (generator (sm:indenter (cute print-ast root) #:gnu? #f)))
     (code:dump root generator #:file-name file-name)))

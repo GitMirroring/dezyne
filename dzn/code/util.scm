@@ -30,26 +30,14 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
-  #:use-module (dzn indent)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
 
   #:export (code:dump
             code:foreign-conflict?
             code:generate-source?
-            code:indenter
             code:root-file-name
             code:source-file-name))
-
-(define* (code:indenter thunk #:key (width 2) (open #\{) (close #\})
-                        (no-indent "#") (gnu? #t))
-  (define (pipe producer consumer)
-    (with-input-from-string (with-output-to-string producer) consumer))
-  (cute pipe thunk
-        (cute indent
-              #:width width #:open open #:close close
-              #:no-indent no-indent
-              #:gnu? gnu?)))
 
 (define (code:source-file-name base dir ext)
   (cond ((equal? dir "-") "-")
