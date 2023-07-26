@@ -73,6 +73,13 @@ if test "x$have_scmackerel" != "xyes"; then
   AC_MSG_ERROR([SCMackerel is missing; please install it.])
 fi
 
+dnl Check for SCMackerel break*
+GUILE_MODULE_CHECK([have_scmackerel_break_star],
+   [(scmackerel code)], [(break*)], [has break*])
+if test "x$have_scmackerel_break_star" != "xyes"; then
+  AC_MSG_ERROR([SCMackerel's break? is missing; please use version 0.3.4.])
+fi
+
 AC_PATH_PROG([HELP2MAN], [help2man])
 AM_CONDITIONAL([have_help2man], [test -n "$HELP2MAN"])
 AC_PATH_PROGS([PERL5], [perl5 perl])
