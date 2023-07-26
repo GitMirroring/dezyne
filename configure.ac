@@ -73,11 +73,11 @@ if test "x$have_scmackerel" != "xyes"; then
   AC_MSG_ERROR([SCMackerel is missing; please install it.])
 fi
 
-dnl Check for SCMackerel sm:module->mcrl2
-GUILE_MODULE_CHECK([have_smackerel_sm_module_to_mcrl2],
-   [(scmackerel processes)], [sm:module->mcrl2], [has sm:module->mcrl2])
-if test "x$have_smackerel_sm_module_to_mcrl2" != "xyes"; then
-  AC_MSG_ERROR([SCMackerel's sm:module->mcrl2 is missing; please upgrade to 0.4.])
+dnl Check for SCMackerel sm:indent.
+GUILE_MODULE_CHECK([have_smackerel_sm_indent],
+   [(scmackerel indent)], [sm:indent], [has sm:indent])
+if test "x$have_smackerel_sm_indent" != "xyes"; then
+  AC_MSG_ERROR([SCMackerel's sm:indent is missing; please upgrade to 0.5.1.])
 fi
 
 AC_PATH_PROG([HELP2MAN], [help2man])
