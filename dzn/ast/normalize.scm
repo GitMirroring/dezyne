@@ -736,30 +736,25 @@ to prevent unintended shadowing
 ;;;
 ;;; Root normalizations.
 ;;;
-(define-method (purge-data (o <top>))
+(define-method (purge-data (o <root>))
   "Remove every `extern' data variable and reference."
-  (match o
-    (($ <system>)
-     o)
-    ((or ($ <root>) ($ <events>) ($ <behavior>))
-     (let* ((predicate
-             (disjoin (is? <extern>)
-                      (is? <data-expr>)
-                      (conjoin (disjoin (is? <assign>)
-                                        (is? <formal>)
-                                        (is? <var>)
-                                        (is? <variable>))
-                               (compose (is? <extern>) ast:type))))
-            (transform (lambda (o)
-                         (or (not (predicate o))
-                             (and (is-a? o <statement>)
-                                  (not (is-a? (.parent o) <variables>))
-                                  (make <skip>))))))
-       (tree-transform o predicate transform)))
-    ((? (is? <ast>))
-     (graft o (tree-map purge-data o)))
-    (_
-     o)))
+  (define (parent-location o)
+    (or (.location o)
+        (parent-location (.parent o))))
+  (let* ((data? (disjoin (is? <extern>)
+                         (is? <data-expr>)
+                         (conjoin (disjoin (is? <assign>)
+                                           (is? <formal>)
+                                           (is? <var>)
+                                           (is? <variable>))
+                                  (compose (is? <extern>) ast:type))))
+         (data->skip-or-#f (conjoin (is? <statement>)
+                                    (compose not (is? <variables>) .parent)
+                                    (compose not (is? <compound>) .parent)
+                                    (compose (cute make <skip> #:location <>)
+                                             parent-location
+                                             .parent))))
+    (tree-transform o data? data->skip-or-#f)))
 
 (define (add-function-return o)
   "For each void function make implicit returns explicit."
