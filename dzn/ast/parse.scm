@@ -186,6 +186,15 @@ to the AST element."
         ((h ...)
          (values (filter-map helper o) #f #f))
 
+        ('arguments
+         (values (make <arguments>) #f #f))
+
+        ('formals
+         (values (make <formals>) #f #f))
+
+        ('types-and-events
+         (values '() #f #f))
+
         (_
          (values o #f #f))))
 
@@ -249,8 +258,8 @@ to the AST element."
         (('interface name (and ('types-and-events x ...) types-and-events))
          (make-interface name types-and-events #f comment))
 
-        (('interface name (and ('behavior x ...) behavior comment))
-         (make-interface name '() behavior comment))
+        (('interface name (and ('behavior x ...) behavior))
+         (make-interface name '() behavior #f))
 
         (('interface name types-and-events behavior)
          (make-interface name types-and-events behavior comment))
@@ -343,6 +352,15 @@ to the AST element."
                 (direction-list? (pair? direction))
                 (type (helper type)))
            (make <port-node>
+             #:name (helper name)
+             #:type.name type
+             #:direction direction)))
+
+        (('port (direction 'port-qualifiers type name))
+         (let* ((direction (helper direction))
+                (direction-list? (pair? direction))
+                (type (helper type)))
+           (make <port>
              #:name (helper name)
              #:type.name type
              #:direction direction)))

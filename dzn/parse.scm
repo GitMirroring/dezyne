@@ -221,9 +221,10 @@ specified in IMPORTS."
 ;;;
 ;;; Parse tree, tree-alist.
 ;;;
-(define* (parse:string->tree string #:key (content-alist '()) (file-name "-"))
+(define* (parse:string->tree string #:key (content-alist '()) (file-name "-")
+                             (locations? (not (eq? (%peg:locations?) 'none))))
   "Parse @var{string} and return a parse tree, printing any syntax errors."
-  (parameterize ((%peg:locations? #t)
+  (parameterize ((%peg:locations? locations?)
                  (%peg:skip? peg:skip-parse)
                  (%peg:debug? (> (dzn:debugity) 3)))
     (catch 'syntax-error
