@@ -168,6 +168,18 @@ to the AST element."
          ;; FIXME: junking non-parsed STRING
          (values (tree->ast (cons type body)) #f #f))
 
+        ((or 'arguments ('arguments))
+         (values (make <arguments-node>) #f #f))
+
+        ((or 'formals ('formals))
+         (values (make <formals-node>) #f #f))
+
+        ((or 'trigger-formals ('trigger-formals))
+         (values (make <formals-node>) #f #f))
+
+        ((or 'types-and-events ('types-and-events))
+         (values '() #f #f))
+
         (((? symbol?) body ...)
          (values (tree->ast o) #f #f))
 
@@ -249,8 +261,8 @@ to the AST element."
         (('interface name (and ('types-and-events x ...) types-and-events))
          (make-interface name types-and-events #f comment))
 
-        (('interface name (and ('behavior x ...) behavior comment))
-         (make-interface name '() behavior comment))
+        (('interface name (and ('behavior x ...) behavior))
+         (make-interface name '() behavior #f))
 
         (('interface name types-and-events behavior)
          (make-interface name types-and-events behavior comment))
@@ -343,6 +355,15 @@ to the AST element."
                 (direction-list? (pair? direction))
                 (type (helper type)))
            (make <port-node>
+             #:name (helper name)
+             #:type.name type
+             #:direction direction)))
+
+        (('port (direction 'port-qualifiers type name))
+         (let* ((direction (helper direction))
+                (direction-list? (pair? direction))
+                (type (helper type)))
+           (make <port>
              #:name (helper name)
              #:type.name type
              #:direction direction)))
