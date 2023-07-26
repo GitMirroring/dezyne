@@ -248,23 +248,25 @@ the clone and the cloned root."
     (values kloon (tree-graft o kloon))))
 
 (define-method (tree-transform (o <ast>) predicate transform)
-  "Transform each element in tree O matching PREDICATE using TRANSFORM."
+  "Transform each element in tree O matching PREDICATE using TRANSFORM.
+Note that if TRANSFORM returns #false this effectively removes O from
+the tree."
   (define tree-transform-keyword-value
-    (match-lambda ((keyword value)
+    (match-lambda ((keyword (values ...))
+                   `(,keyword ,(filter-map
+                                (cute tree-transform <> predicate transform)
+                                values)))
+                  ((keyword value)
                    `(,keyword ,(tree-transform value predicate transform)))))
-  (let* ((class (class-of o))
-         (keyword-values (ast:keyword+child* o))
-         (keyword-values (append-map tree-transform-keyword-value
-                                     keyword-values))
-         (o (if (not (predicate o)) o
-                (transform o))))
-    (if (not (is-a? o class)) o
-        (apply make class keyword-values))))
+  (let ((transform? (predicate o)))
+    (if transform? (transform o)
+        (let* ((class (class-of o))
+               (keyword-values (ast:keyword+child* o))
+               (transformed-keyword-values
+                (map tree-transform-keyword-value keyword-values)))
+          (if (every eq? transformed-keyword-values keyword-values) o
+              (let ((keyword-values (apply append transformed-keyword-values)))
+                (apply make class keyword-values)))))))
 
 (define-method (tree-transform (o <top>) predicate transform)
   o)
-
-(define-method (tree-transform (o <ast-list>) predicate transform)
-  (let ((elements (filter-map (cute tree-transform <> predicate transform)
-                              (.elements o))))
-    (clone o #:elements elements)))
