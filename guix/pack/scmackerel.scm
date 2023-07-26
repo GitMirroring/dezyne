@@ -31,14 +31,14 @@
 (define-public scmackerel
   (package
     (name "scmackerel")
-    (version #!scmackerel!# "0.4")
+    (version #!scmackerel!# "0.5")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://dezyne.org/download/scmackerel/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!scmackerel!# "1p6chbdpgdl6d2jgyxlifr9bs0mkkxhhsw14n417pblfk1f2a4md"))))
+        (base32 #!scmackerel!# "0czpfa8s4vdhgjypikm0y6pr0hrlfha3kw7fcvms462nr246ya49"))))
     (inputs (list bash-minimal
                   guile-3.0-latest
                   guile-readline
