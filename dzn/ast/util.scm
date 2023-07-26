@@ -33,6 +33,8 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module ((oop goops)
+                #:select (class-slots slot-definition-name slot-ref))
 
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast context)
@@ -48,9 +50,11 @@
             graft*
             tree-collect
             tree-collect-filter
+            tree-graft
             tree-filter
             tree-find
-            tree-map))
+            tree-map
+            tree-transform))
 
 (define ast:keyword+child* (@@ (dzn ast context) ast:keyword+child*))
 (define ast:child* (@@ (dzn ast context) ast:child*))
@@ -210,9 +214,9 @@ create a fresh clone, and #true if any slots need mutation."
 (define-method (tree-collect predicate o)
   (tree-collect-filter identity predicate o))
 
-(define-method (clone+root (o <ast>) . keyword-values)
-  "clone o and its ancestors including root returning multiple values: the
-clone and the cloned root."
+(define-method (tree-graft (o <ast>) (kloon <ast>))
+  "XXX FIXME? Clone O and its ancestors including root returning
+multiple values: the clone and the cloned root."
   (define (replace orig kloon)
     (match-lambda
       ((keyword value)
@@ -233,7 +237,34 @@ clone and the cloned root."
               (keyword-values (apply append keyword-values)))
          `(,ancestor . ,(apply clone ancestor keyword-values))))))
   (let* ((context (.parent (ast:context o)))
-         (kloon (apply clone o keyword-values))
          (ancestor+root (fold clone-children `(,o . ,kloon) context))
          (root (match ancestor+root ((ancestor . root) root))))
-    (values kloon root)))
+    root))
+
+(define-method (clone+root (o <ast>) . keyword-values)
+  "Clone O and its ancestors including root and return multiple values:
+the clone and the cloned root."
+  (let ((kloon (apply clone o keyword-values)))
+    (values kloon (tree-graft o kloon))))
+
+(define-method (tree-transform (o <ast>) predicate transform)
+  "Transform each element in tree O matching PREDICATE using TRANSFORM."
+  (define tree-transform-keyword-value
+    (match-lambda ((keyword value)
+                   `(,keyword ,(tree-transform value predicate transform)))))
+  (let* ((class (class-of o))
+         (keyword-values (ast:keyword+child* o))
+         (keyword-values (append-map tree-transform-keyword-value
+                                     keyword-values))
+         (o (if (not (predicate o)) o
+                (transform o))))
+    (if (not (is-a? o class)) o
+        (apply make class keyword-values))))
+
+(define-method (tree-transform (o <top>) predicate transform)
+  o)
+
+(define-method (tree-transform (o <ast-list>) predicate transform)
+  (let ((elements (filter-map (cute tree-transform <> predicate transform)
+                              (.elements o))))
+    (clone o #:elements elements)))

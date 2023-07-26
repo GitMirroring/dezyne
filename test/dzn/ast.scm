@@ -39,6 +39,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)
+  #:use-module ((dzn ast) #:select (ast:type))
   #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg))
@@ -201,6 +202,21 @@ component hello
 
           (test-equal "context and kloon-context equal"
             context
-            kloon-context))))))
+            kloon-context))))
+
+    (let ((mini-root (parse:string->ast "\
+interface ihello {in void hello ();}"))
+          (data-root (parse:string->ast "\
+ extern int $int$; interface ihello {in void hello (int i);}")))
+      (parameterize ((%context (ast:memoize-context data-root)))
+        (test-equal "tree-transform"
+          mini-root
+          (tree-transform data-root
+                          (disjoin (is? <extern>)
+                                   (is? <data-expr>)
+                                   (conjoin (is? <formal>)
+                                            (compose (is? <extern>)
+                                                     ast:type)))
+                          (const #f)))))))
 
 (test-end)
