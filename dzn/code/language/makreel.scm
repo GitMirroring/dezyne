@@ -32,6 +32,8 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module ((oop goops)
+                #:select (class-slots slot-definition-name slot-ref))
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
@@ -106,6 +108,10 @@
 
 (define-method (makreel:name (o <named>))
   (untick (ast:name o)))
+
+(define-method (makreel:name (o <string>))
+  ;;FIXME: for enum field
+  (untick o))
 
 (define-method (makreel:get-model (o <root>) model-name)
   "Find model of MODEL-NAME in ROOT.  MODEL-NAME is unticked, ROOT is ticked."
@@ -398,8 +404,49 @@
                                                       (number->string depth)))))))
 
   (tree-transform o shadow? add-shadow))
+
+(define-method (makreel:tick-names (o <root>))
+  "To avoid name collision between input names and the internal names, as
+used by the code generator, we add a ' at the end of each name from the
+input.  All names related to the Dezyne language itself are considered
+internal, e.g. bool, in, interface, inevitable, provides, etc."
+
+  (define (tick o)
+    (match o
+      ((or "/" "bool" "void" "<int>" "optional" "inevitable") o)
+      ((? string?) (string-append o "'"))
+      (((? string?) ...) (map tick o))
+      (_ o)))
+
+  (define (tick-name-fields o)
+    (let* ((class (class-of o))
+           (slots (class-slots class))
+           (slot-names (map slot-definition-name slots))
+           (name-fields '(name
+                          ids
+                          event.name
+                          instance.name
+                          port.name
+                          function.name
+                          variable.name
+                          type.name
+                          field
+                          elements))
+           (tick-names (filter (cute member <> name-fields) slot-names)))
+      (if (or (null? name-fields)) o
+          (let ((values (map (cute slot-ref o <>) slot-names)))
+            (apply graft o
+                   (append-map
+                    (lambda (slot-name value)
+                      (list (symbol->keyword slot-name)
+                            (if (not (member slot-name tick-names)) value
+                                (tick value))))
+                    slot-names values))))))
+
+  (tree-transform o (negate (is? <root>)) tick-name-fields))
+
 (define %count (make-parameter 0))
-(define (makreel:tick-names o)
+(define (Xmakreel:tick-names o)
   (parameterize ((%count 0))
     ((tick-names- '()) o)))
 (define* ((tick-names- #:optional (names '())) o)
@@ -655,6 +702,8 @@
 transformations."
   (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
     (let ((root ((compose
+                  (with-root makreel:add-shadow-variables)
+                  (with-root makreel:tick-names)
                   (with-root makreel:add-action-reply)
                   (with-root makreel:add-shared-variables)
                   (with-root makreel:mark-tail-call)
@@ -662,7 +711,6 @@ transformations."
                   (with-root makreel:add-state-placeholder)
                   (with-root normalize:state+illegals)
                   (with-root remove-otherwise)
-                  (with-root makreel:tick-names)
                   (with-root extract-call)
                   (with-root add-explicit-temporaries)
                   ;;(with-root add-defer-end)

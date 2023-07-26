@@ -50,6 +50,7 @@
                extract-call
                makreel:add-shadow-variables
                makreel:normalize
+               makreel:tick-names
                normalize:compounds
                normalize:event
                normalize:state

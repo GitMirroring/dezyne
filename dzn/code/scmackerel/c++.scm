@@ -524,6 +524,8 @@ std::basic_ostream<Char, Traits> &")
           h.pow r))))
 
 
+    (define makreel:name (@ (dzn code language makreel) makreel:name))
+
     (define (event->sm:switch-case transition interface-shared)
       (let* ((prefix (edge-label transition))
              (initializer-list (sm:code->string

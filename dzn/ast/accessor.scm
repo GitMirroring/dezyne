@@ -240,9 +240,10 @@
   '())
 
 (define-method (ast:full-name (o <scope>))
-  (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
-      (append (ast:full-name (ast:parent o <scope>)) (list (ast:name o)))
-      (ast:full-name (ast:parent o <scope>))))
+  (let ((prefix (ast:full-name (ast:parent o <scope>))))
+    (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
+        (append prefix (list (ast:name o)))
+        prefix)))
 
 (define-method (ast:full-name (o <namespace>))
   (append (ast:full-name (ast:parent o <scope>)) (list (ast:name o))))

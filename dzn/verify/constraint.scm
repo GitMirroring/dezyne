@@ -96,6 +96,8 @@ to current-output-port."
 
   (define (value->string o)
     (match o
+      ((and ($ <literal>) (= .value (? (is? <void>))))
+       "void")
       (($ <enum-literal>)
        (string-append (full-name (.type.name o)) (.field o)))
       (_ (.value o))))

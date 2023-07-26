@@ -752,19 +752,19 @@ from LABELS."
   (define-peg-string-patterns
     "tree               <-- event / modeling / defer-qout / tag / reply / state / tau-void / tau-reply / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
-     event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
-     modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
-     queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
+     event              <-- port-name direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
+     modeling           <-- port-name internal-literal lpar scope* ('inevitable' / 'optional') rpar
+     queue              <-- port-name queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
      end                <   scope* ('end' / 'silent_end')
      return             <-- 'return'
-     flush              <-- port-scope* identifier tick flush-literal
-     blocking           <-- port-scope* identifier tick port- 'blocking'
-     reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
-     tau-reply          <-- port-name tick tau-reply-literal lpar scope* reply-value rpar
-     state              <-- port-name tick state-literal lpar port-name tick state-arguments rpar
+     flush              <-- port-scope* identifier flush-literal
+     blocking           <-- port-scope* identifier port- 'blocking'
+     reply              <-- port-name reply-literal lpar scope* reply-value rpar
+     tau-reply          <-- port-name tau-reply-literal lpar scope* reply-value rpar
+     state              <-- port-name state-literal lpar port-name state-arguments rpar
      state-arguments    <-- void-literal / variables-literal (lpar state-argument (comma state-argument)* rpar)
      state-argument     <-- bool / int / enum-literal
-     scope              <   identifier tick
+     scope              <   identifier
      tag                <   tag-literal lpar int comma int rpar
      port-              <   'port_'
      port-name          <-  port-scope* identifier
@@ -778,10 +778,7 @@ from LABELS."
      int                <-- '-'?[0-9]+
      void-literal       <   'Void'
      void               <-- 'void'
-     enum-name          <   identifier
-     enum-literal       <-- (enum tick)* enum-field
-     enum               <-  identifier
-     enum-field         <-  identifier
+     enum-literal       <-- identifier+
      direction          <   (port-? 'in' / port-? 'out' / port- 'qin') !identifier
      defer-qout         <-- 'defer_qout' paren-arguments
      paren-arguments    <   lpar ((!(lpar / rpar) .)* paren-arguments*)* rpar
@@ -797,7 +794,7 @@ from LABELS."
      tau-void           <   'tau_void'
      illegal            <-- 'illegal' / 'declarative_illegal' / 'constrained_illegal' / 'non_compliance'
      error              <--  queue-full / range-error / reply-error / missing-reply / second-reply
-     queue-full         <-  'queue_full' / port-name tick port- 'queue_full'
+     queue-full         <-  'queue_full' / port-name port- 'queue_full'
      range-error        <-  'range_error'
      reply-error        <-  'double_reply_error' / 'no_reply_error'
      missing-reply      <-  'missing_reply'
@@ -806,7 +803,7 @@ from LABELS."
      lpar               <   [(]
      rpar               <   [)]
      comma              <   [,][ ]*
-     identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ / !direction [a-zA-Z_][a-zA-Z0-9_]*")
+     identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ tick / !direction [a-zA-Z_][a-zA-Z0-9_]* tick")
   (parameterize ((%peg:debug? (< 2 (dzn:debugity))))
     (let* ((match? (match-pattern tree label))
            (end (peg:end match?))

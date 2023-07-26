@@ -85,7 +85,7 @@
     "Return the labels that may be used in an LTS for at the return of
 EVENT."
     (define (enum-literal->event o)
-      (string-append (makreel:name (.type o)) ":" (.field o)))
+      (string-append (makreel:name (.type o)) ":" (makreel:name (.field o))))
     (let ((type (ast:type event)))
       (match type
         (($ <bool>)
@@ -99,7 +99,7 @@ EVENT."
         (($ <void>)
          (if (ast:out? event) '()
              '("return"))))))
-  (let ((event-name (.name event)))
+  (let ((event-name (makreel:name event)))
     `("<flush>"
       ,event-name
       ,@(event-returns event)
@@ -141,7 +141,7 @@ actions."
       (string-append (makreel:name (.port trigger))
                      (if  (ast:out? trigger) ".qout."
                           ".")
-                     (.event.name trigger))))
+                     (makreel:name (.event trigger)))))
   (let* ((triggers (ast:in-triggers component))
          (alphabet (map trigger->event triggers)))
     (string-join alphabet ",")))

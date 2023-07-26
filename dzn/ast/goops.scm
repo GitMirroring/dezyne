@@ -194,8 +194,8 @@
   (from #:init-value 0)
   (to #:init-value 0))
 
-(define-ast <signature> (<locationed>)
-  (type.name #:init-form (make <scope.name> #:ids '("void")))
+(define-ast <signature> (<locationed>) ;; instance
+  (type.name #:init-form (make <void>))
   (formals #:init-form (make <formals>)))
 
 (define-ast <event> (<declaration>)
@@ -241,7 +241,7 @@
   (expression #:init-value *unspecified*))
 
 (define-ast <literal> (<unary>)
-  (value #:init-value "void"))
+  (value #:init-value (make <void>)))
 
 (define-ast <group> (<unary>))
 
