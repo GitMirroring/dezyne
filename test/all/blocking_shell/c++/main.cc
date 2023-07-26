@@ -85,7 +85,6 @@ int main ()
   };
   sut.r.in.hello_bool = [&]
   {
-    std::cout << "hiero 2" << std::endl;
     std::lock_guard<std::mutex> lock (mutex);
     assert (trace[event] == "r.hello_bool");
     ++event;
