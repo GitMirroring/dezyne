@@ -77,6 +77,7 @@
             code:function-type
             code:functions
             code:global-enum-definer
+            code:in-argument
             code:injected-bindings
             code:injected-instances
             code:injected-instances-system
@@ -479,6 +480,9 @@
 
 (define-method (code:arguments (o <trigger>))
   (code:formals o))
+
+(define-method (code:in-argument (o <trigger>))
+  (filter ast:in? (code:formals o)))
 
 (define-method (code:out-argument (o <trigger>))
   (filter (disjoin ast:out? ast:inout?) (code:formals o)))

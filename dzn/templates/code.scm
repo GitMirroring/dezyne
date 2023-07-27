@@ -116,6 +116,7 @@
 ;;; Formals, parameters, arguments
 ;;;
 (define-templates code-arguments code:arguments argument-grammar)
+(define-templates in-arguments code:in-argument in-argument-grammar)
 (define-templates out-arguments code:out-argument out-argument-grammar)
 (define-templates formals code:formals formal-grammar)
 (define-templates formals-anonymous code:formals formal-grammar)
