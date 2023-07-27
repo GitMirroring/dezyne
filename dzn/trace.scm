@@ -964,8 +964,7 @@ ws               <   [ \t]
         (let ((lifelines (map (cute instance->lifeline <> activities labels eligible) instances))
               (trail (steps->trail steps)))
           (scm->json-string
-           `((working-directory . ,(getcwd))
-             (trail     . ,(list->vector trail))
+           `((trail     . ,(list->vector trail))
              (lifelines . ,(list->vector (map lifeline->scm lifelines)))
              (events    . ,(list->vector (map lifeline-event->scm events)))
              (states    . ,(list->vector (map (cute lifeline-state->json-scm sut-name <>) states)))))))

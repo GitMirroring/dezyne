@@ -119,13 +119,11 @@
 
 (define* (parse:file->content-alist file-name #:key (imports '())
                                     (content-alist '()))
-  "Recursively resolve imports starting with FILE-NAME and return two values,
-an alist of form:
+  "Recursively resolve imports starting with FILE-NAME and return an alist
+of form:
 
    '((FILE-NAME . CONTENT)
      (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
-
-and the working directory.
 
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
@@ -158,30 +156,28 @@ specified in IMPORTS."
         (let* ((content-alist (acons file-name content content-alist))
                (file-names (resolve file-name imports
                                     (peg:imported-file-names content)
-                                    content-alist))
-               (content-alist
-                (let loop ((file-names file-names)
-                           (content-alist content-alist))
-                  (if (null? file-names) (reverse content-alist)
-                      (let* ((file-names (delete-duplicates
-                                          file-names
-                                          canonical-file-name=?))
-                             (file-names (lset-difference
-                                          canonical-file-name=?
-                                          file-names
-                                          (map car content-alist)))
-                             (alist (reverse (map read-file file-names)))
-                             (content-alist (append alist content-alist))
-                             (file-names
-                              (append-map
-                               (match-lambda
-                                 ((file-name . content)
-                                  (resolve file-name imports
-                                           (peg:imported-file-names content)
-                                           content-alist)))
-                               alist)))
-                        (loop file-names content-alist))))))
-          (values content-alist (getcwd))))))
+                                    content-alist)))
+          (let loop ((file-names file-names)
+                     (content-alist content-alist))
+            (if (null? file-names) (reverse content-alist)
+                (let* ((file-names (delete-duplicates
+                                    file-names
+                                    canonical-file-name=?))
+                       (file-names (lset-difference
+                                    canonical-file-name=?
+                                    file-names
+                                    (map car content-alist)))
+                       (alist (reverse (map read-file file-names)))
+                       (content-alist (append alist content-alist))
+                       (file-names
+                        (append-map
+                         (match-lambda
+                           ((file-name . content)
+                            (resolve file-name imports
+                                     (peg:imported-file-names content)
+                                     content-alist)))
+                         alist)))
+                  (loop file-names content-alist))))))))
 
 
 ;;;
@@ -263,20 +259,16 @@ parse CONTENT and return a TREE-ALIST of form
 
 (define* (parse:file->tree-alist+content-alist file-name #:key (imports '()))
   "Parse @var{file-name} using @var{imports} to resolve import files,
-and return three values, the @var{tree-alist}, the
-@var{content-alist}, and the @var{working-directory}"
-  (let* ((content-alist
-          dir
-          (parse:file->content-alist file-name #:imports imports))
+and return two values, the @var{tree-alist}, and the
+@var{content-alist}."
+  (let* ((content-alist (parse:file->content-alist file-name #:imports imports))
          (tree-alist (parse:content-alist->tree-alist content-alist)))
-    (values tree-alist content-alist dir)))
+    (values tree-alist content-alist)))
 
 (define* (parse:file->tree-alist file-name #:key (imports '()))
   "Parse @var{file-name} using @var{imports} to resolve import files,
 and the @var{tree-alist}."
-  (let ((content-alist
-         dir
-         (parse:file->content-alist file-name #:imports imports)))
+  (let ((content-alist (parse:file->content-alist file-name #:imports imports)))
     (parse:content-alist->tree-alist content-alist)))
 
 
@@ -289,8 +281,7 @@ and the @var{tree-alist}."
       (ast:pretty-print ast (current-error-port)))
     ast))
 
-(define* (parse:tree-alist->ast tree-alist #:key (content-alist '())
-                                (working-directory (getcwd)))
+(define* (parse:tree-alist->ast tree-alist #:key (content-alist '()))
   "Return an AST by merging TREE-ALIST of form
 
    '((FILE-NAME . TREE)
@@ -326,11 +317,9 @@ optionally using CONTENT-ALIST of form
 
 (define* (parse:file->ast file-name #:key (imports '()))
   "Parse FILE-NAME and return an ast."
-  (let* ((tree-alist content-alist dir (parse:file->tree-alist+content-alist
-                                        file-name #:imports imports))
-         (ast (parse:tree-alist->ast tree-alist
-                                     #:content-alist content-alist
-                                     #:working-directory dir)))
+  (let* ((tree-alist content-alist (parse:file->tree-alist+content-alist
+                                    file-name #:imports imports))
+         (ast (parse:tree-alist->ast tree-alist #:content-alist content-alist)))
     (parse:annotate-ast ast)))
 
 (define (parse:string->ast string)
@@ -338,19 +327,23 @@ optionally using CONTENT-ALIST of form
   (let* ((content-alist (parse:string->content-alist string))
          (tree-alist (parse:content-alist->tree-alist content-alist)))
     (and (pair? tree-alist)
-         (let ((ast (parse:tree-alist->ast tree-alist
-                                           #:content-alist content-alist
-                                           #:working-directory (getcwd))))
+         (let ((ast (parse:tree-alist->ast
+                     tree-alist #:content-alist content-alist)))
            (parse:annotate-ast ast)))))
 
 
 ;;;
 ;;; Stream / preprocess.
 ;;;
+(define (parse:file-match stream)
+  "Return preprocessor file match for STREAM."
+  (let ((file-regexp "#(file|imported) \"([^\"]*)\"\n"))
+    (string-match file-regexp stream)))
+
 (define (parse:preprocessed? stream)
-  "Return directory match when STREAM is a preprocessor stream."
-  (let ((preprocess-regex "^#dir \"([^\"]*)\"\n"))
-    (string-match preprocess-regex stream)))
+  (and=> (parse:file-match stream)
+         (compose (cute equal? <> "file")
+                  (cute match:substring <> 1))))
 
 (define* (parse:file->stream file-name #:key (imports '()))
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
@@ -363,16 +356,13 @@ statements and return the expanded dezyne text, similar to @command{gcc
        (list (format #f "#imported ~s" file-name)
              content))))
 
-  (let ((content-alist
-         dir
-         (parse:file->content-alist file-name #:imports imports)))
+  (let ((content-alist (parse:file->content-alist file-name #:imports imports)))
 
     (define file+content->stream-lines
       (match-lambda
         ((file-name . content)
          (if (parse:preprocessed? content) (list content)
-             (list (format #f "#dir ~s" dir)
-                   (format #f "#file ~s" file-name)
+             (list (format #f "#file ~s" file-name)
                    content)))))
 
     (let* ((file+content (car content-alist))
@@ -385,38 +375,25 @@ statements and return the expanded dezyne text, similar to @command{gcc
 (define (parse:stream->content-alist stream)
   "Split pre-processed string STREAM at preprocessing markers
 
-   #dir \"working directory\"
    #file \"file-name\"
    <content>
    #imported \"imported-file-name\"
    <imported-content>
    ...
 
-and return two values, an alist:
+and return an alist of form
 
    '((FILE-NAME . CONTENT)
-     (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...)
-
-and the working directory.
-"
-  (define (stream->dir+stream stream)
-    (let* ((m (parse:preprocessed? stream))
-           (dir (match:substring m 1))
-           (stream (substring stream (match:end m))))
-      (values dir stream)))
-
-  (define (file-match stream)
-    (let ((file-regexp "#(file|imported) \"([^\"]*)\"\n"))
-      (string-match file-regexp stream)))
+     (IMPORTED-FILE-NAME . IMPORTED-CONTENT) ...) "
 
   (define (stream->file-name+stream stream)
-    (let* ((m (file-match stream))
+    (let* ((m (parse:file-match stream))
            (file-name (match:substring m 2))
            (stream (substring stream (match:end m))))
       (values file-name stream)))
 
   (define (stream->content+stream stream)
-    (let* ((m (file-match stream))
+    (let* ((m (parse:file-match stream))
            (content (if (not m) stream
                         (substring stream 0 (1- (match:start m)))))
            (stream (if (not m) ""
@@ -425,12 +402,9 @@ and the working directory.
 
   (unless (parse:preprocessed? stream)
     (throw 'invalid-input "pre-processor stream expected, got" stream))
-  (let* ((dir stream (stream->dir+stream stream))
-         (alist
-          (let loop ((stream stream))
-            (if (string-null? stream) '()
-                (let* ((file-name stream (stream->file-name+stream stream))
-                       (content stream (stream->content+stream stream)))
-                  (cons `(,file-name . ,content)
-                        (loop stream)))))))
-    (values alist dir)))
+  (let loop ((stream stream))
+    (if (string-null? stream) '()
+        (let* ((file-name stream (stream->file-name+stream stream))
+               (content stream (stream->content+stream stream)))
+          (cons `(,file-name . ,content)
+                (loop stream))))))
