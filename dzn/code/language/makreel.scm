@@ -52,6 +52,7 @@
 
   #:export (%model-name
             makreel:.name
+            makreel:add-shadow-variables
             makreel:arguments
             makreel:call-continuation*
             makreel:called-function*
@@ -208,11 +209,11 @@
   (if (is-a? o <behavior>) '()
       (let* ((p (.parent o)))
         (cond ((is-a? p <compound>)
-               (let ((pre (cdr (memq o (reverse (ast:statement* p))))))
-                 (append (filter (is? <variable>) pre) (makreel:locals p))))
-              ((is-a? p <defer>)
-               (let ((model (ast:parent p <model>)))
-                 (makreel:locals p)))
+               (let* ((statements (reverse (ast:statement* p)))
+                      (prefix (or (and=> (memq o statements) cdr)
+                                  '())))
+                 (append (filter (is? <variable>) prefix)
+                         (makreel:locals p))))
               ((is-a? o <function>)
                ((compose ast:formal* .signature) o))
               (else
@@ -347,6 +348,45 @@
 ;;;
 ;;; Normalizations.
 ;;;
+(define-method (makreel:add-shadow-variables o)
+
+  ;; predicate shadow? =>
+  ;; given a fresh variable (in case of var => (.variable o)
+  ;; if its name is equal to any variables in scope
+  ;; it must be annotated by the number of variables that came before
+
+  (define (shadow? o)
+    (and (not (is-a? o <shared>))
+         (let ((variable? (is-a? o <variable>)))
+           (and ((disjoin (is? <variable>) (is? <var>) (is? <assign>)) o)
+                (let ((variable (if (is-a? o <variable>) o
+                                    (.variable o)))
+                      (variables-in-scope
+                       (filter (negate (is? <shared-variable>))
+                               (makreel:variables-in-scope o))))
+                  (member (.name variable)
+                          (map .name (filter (is? <variable>)
+                                             variables-in-scope))))))))
+
+  (define (add-shadow o)
+    (let* ((variable (if (is-a? o <variable>) o
+                         (.variable o)))
+           (variables (filter (negate (is? <shared-variable>))
+                              (makreel:variables-in-scope o)))
+           (variables (filter (conjoin
+                               (negate (is? <stack>))
+                               (negate (cute eq? variable <>))
+                               (compose (cute equal? (.name variable) <>)
+                                        .name))
+                              variables))
+           (depth (length variables)))
+      (if (= 0 depth) o
+          (if (not (is-a? o <assign>))
+              (graft o #:name (string-append (.name o) (number->string depth)))
+              (graft o #:variable.name (string-append (.variable.name o)
+                                                      (number->string depth)))))))
+
+  (tree-transform o shadow? add-shadow))
 (define %count (make-parameter 0))
 (define (makreel:tick-names o)
   (parameterize ((%count 0))

@@ -48,6 +48,7 @@
                code:normalize
                code:normalize+determinism
                extract-call
+               makreel:add-shadow-variables
                makreel:normalize
                normalize:compounds
                normalize:event

@@ -1170,8 +1170,7 @@
                   (arguments (makreel:process-parens o)))))))))
 
 (define-method (ast->process (model <component>) (o <behavior>) (next <ast>))
-  (let* ((shared (ast:shared* o))
-         (ports (filter (negate ast:external?) (ast:port* model)))
+  (let* ((ports (filter (negate ast:external?) (ast:port* model)))
          (defers (makreel:defer* o))
          (defers
            (if (null? defers) defers
