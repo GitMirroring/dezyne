@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -23,6 +23,5 @@ pwd
 dir=$1
 mkdir -p $dir/out
 test=test/all/complex_arguments0/complex_arguments0.dzn
-dzn code -l json -o- $test | sed -e "s,$PWD,<pwd>," > $dir/out/parse.out
-#diff -u <(fold --spaces $dir/baseline/parse.out) <(fold --spaces $dir/out/parse.out)
+dzn code -l json -o- $test > $dir/out/parse.out
 diff -u <(tr , '\n' < $dir/baseline/parse.out) <(tr , '\n' < $dir/out/parse.out)

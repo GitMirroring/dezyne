@@ -552,7 +552,7 @@ begin -> 1
 (define-method (state->scm (pc <program-counter>))
   (state->scm (.state pc)))
 
-(define* (state-diagram->json graph #:optional (working-directory "."))
+(define (state-diagram->json graph)
   "Return a diagram in P5 JSON format from GRAPH produced by
 RTC-LTS->STATE-DIAGRAM."
   (define (json-location trigger-location)
@@ -598,8 +598,7 @@ RTC-LTS->STATE-DIAGRAM."
          ((from pc x #f #f) #f))
        graph)
       ",\n")
-     "],\n"
-     (format #f "\"working-directory\":~s\n" working-directory)
+     "]\n"
      "}\n")))
 
 
@@ -717,9 +716,8 @@ RTC-LTS->LTS."
                                 #:returns? returns?
                                 #:self? (or extended? ports?)))
                (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
-          (if (equal? format "json") (display
-                                      (state-diagram->json
-                                       state-diagram (.working-directory root)))
+          (if (equal? format "json") (display (state-diagram->json
+                                               state-diagram))
               (display (state-diagram->dot state-diagram (pc->hash pc)))))))))
 
 (define* (lts ast #:key model queue-size queue-size-defer queue-size-external)

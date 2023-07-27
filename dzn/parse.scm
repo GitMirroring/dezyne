@@ -318,8 +318,7 @@ optionally using CONTENT-ALIST of form
          (cons file-name
                (parse:tree->ast tree
                                 #:string content
-                                #:file-name file-name
-                                #:working-directory working-directory))))))
+                                #:file-name file-name))))))
 
   (let* ((ast-alist (map file+tree->ast tree-alist))
          (ast (expand-imports ast-alist)))

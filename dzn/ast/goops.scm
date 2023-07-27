@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -123,7 +123,6 @@
  .value
  .variable.name
  .variables
- .working-directory
 
  <action>
  <and>
@@ -330,8 +329,7 @@
 
 (define-ast <namespace> (<scope> <ast-list> <declaration>))
 
-(define-ast <root> (<namespace>)
-  (working-directory))
+(define-ast <root> (<namespace>))
 
 (define-ast <scope.name> (<ast>)
   (ids #:init-form (list)))

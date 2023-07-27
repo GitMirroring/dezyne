@@ -40,7 +40,7 @@
   #:use-module (dzn misc)
   #:export (parse:tree->ast))
 
-(define* (parse:tree->ast o #:key string (file-name "<stdin>") working-directory)
+(define* (parse:tree->ast o #:key string (file-name "<stdin>"))
   "Return a root AST for parse-tree O."
   (define (make-list? o) (if (pair? o) o
                              (list o)))
@@ -609,7 +609,7 @@ to the AST element."
         (('return expression) (make <return-node> #:expression (helper expression)))
 
         (('root element)
-         (make <root-node> #:elements (make-list? (helper element)) #:working-directory working-directory))
+         (make <root-node> #:elements (make-list? (helper element))))
 
         (('file-name file-name) (make <file-name> #:name file-name))
 
@@ -628,7 +628,7 @@ to the AST element."
                             ((('file-command file-name location) rest ...)
                              (make <location-node> #:file-name file-name))
                             (_ #f))))
-           (make <root-node> #:elements lst #:location location #:working-directory working-directory)))
+           (make <root-node> #:elements lst #:location location)))
 
         (('system name ports instances bindings)
          (make <system-node>
