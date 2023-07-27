@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2022, 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -1471,7 +1471,7 @@
          (void-reply? (and (ast:in? o)
                            (is-a? (ast:type o) <void>))))
     (sm:process
-      (name (string-append (statement->process-name o)))
+      (name (statement->process-name o))
       (formals (makreel:process-formals o))
       (statement
        (sm:union*
