@@ -124,7 +124,6 @@
  .value
  .variable.name
  .variables
- .working-directory
 
  <action>
  <and>
@@ -331,8 +330,7 @@
 
 (define-ast <namespace> (<scope> <ast-list> <declaration>))
 
-(define-ast <root> (<namespace>)
-  (working-directory))
+(define-ast <root> (<namespace>))
 
 (define-ast <scope.name> (<ast>)
   (ids #:init-form (list)))

@@ -349,5 +349,4 @@
                       (end-line . 32)
                       (end-column . 29)
                       (offset . 962)
-                      (length . 2))))))))))))))))
-  (working-directory . ".")))
+                      (length . 2))))))))))))))))))
