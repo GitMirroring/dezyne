@@ -1462,7 +1462,7 @@
          (void-reply? (and (ast:in? o)
                            (is-a? (ast:type o) <void>))))
     (sm:process
-      (name (string-append (statement->process-name o)))
+      (name (statement->process-name o))
       (formals (makreel:process-formals o))
       (statement
        (sm:union*
