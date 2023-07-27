@@ -1,4 +1,3 @@
-#dir "."
 #file "hello_imported.dzn"
 // Dezyne --- Dezyne command line tools
 //

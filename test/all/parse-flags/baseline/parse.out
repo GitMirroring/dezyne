@@ -166,7 +166,6 @@ parse --parse-tree -o- test/all/hello_interface/hello_interface.dzn
   (location 945 1055)))
 parse --parse-tree -o- test/all/hello_interface/hello_interface.dzn => 0
 parse --preprocess test/all/hello_interface/hello_interface.dzn
-#dir "<pwd>"
 #file "test/all/hello_interface/hello_interface.dzn"
 // Dezyne --- Dezyne command line tools
 //
@@ -274,7 +273,6 @@ parse: errors found
 parse --parse-tree -o- test/language/interface1.dzn
 parse --parse-tree -o- test/language/interface1.dzn => 1
 parse --preprocess test/language/interface1.dzn
-#dir "<pwd>"
 #file "test/language/interface1.dzn"
 interfparse --preprocess test/language/interface1.dzn => 0
 parse --preprocess test/language/interface1.dzn | --verbose parse -
@@ -376,7 +374,6 @@ parse: errors found
 parse --parse-tree -o- test/all/parse_import_path/parse_import_path.dzn
 parse --parse-tree -o- test/all/parse_import_path/parse_import_path.dzn => 1
 parse --preprocess test/all/parse_import_path/parse_import_path.dzn
-#dir "<pwd>"
 #file "test/all/parse_import_path/parse_import_path.dzn"
 // Dezyne --- Dezyne command line tools
 //
@@ -768,7 +765,6 @@ parse --parse-tree -o- test/all/parse_assign_void/parse_assign_void.dzn
   (location 839 1049)))
 parse --parse-tree -o- test/all/parse_assign_void/parse_assign_void.dzn => 0
 parse --preprocess test/all/parse_assign_void/parse_assign_void.dzn
-#dir "<pwd>"
 #file "test/all/parse_assign_void/parse_assign_void.dzn"
 // Dezyne --- Dezyne command line tools
 //
