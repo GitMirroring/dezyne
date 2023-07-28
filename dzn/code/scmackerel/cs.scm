@@ -716,7 +716,7 @@
                                (string-join
                                 (map binding->injected-initializer
                                      injected-bindings)
-                                ".")))))
+                                "")))))
                     ,@(map injected->assignment injected-instances)
                     ,@(if (not injected?) '()
                           `(,@(map instance->assignment instances)
@@ -971,7 +971,7 @@
                                (string-join
                                 (map binding->injected-initializer
                                      injected-bindings)
-                                ".")))))
+                                "")))))
                     ,@(map injected->assignment injected-instances)
                     ,@(if (not injected?) '()
                           `(,@(map instance->assignment instances)))
