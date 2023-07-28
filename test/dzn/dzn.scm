@@ -496,15 +496,20 @@ are weak-bisim equivalent"
                   ,@(if queue-size `("-q" ,(number->string queue-size)) '())
                   ,dzn-name)
                 input)))
-          (with-output-to-file constrained (cute display stdout-constrained))
-          (with-output-to-file unconstrained (cute display stdout-unconstrained))
+          (with-output-to-file constrained
+            (cute display stdout-constrained))
+          (with-output-to-file unconstrained
+            (cute display stdout-unconstrained))
           (and (zero? status-constrained)
                (zero? status-unconstrained)
                (let ((status
                       stdout
                       stderr
                       (observe
-                       `("ltscompare" "--structured-output" "-eweak-bisim" "--tau=constrained_legal"
+                       `("ltscompare"
+                         "--structured-output"
+                         "-eweak-bisim"
+                         "--tau=constrained_legal"
                          ,constrained
                          ,unconstrained)
                        input)))
@@ -569,15 +574,20 @@ are weak-bisim equivalent"
                   ,@(if queue-size `("-q" ,(number->string queue-size)) '())
                   ,dzn-name)
                 input)))
-          (with-output-to-file constrained (cute display stdout-constrained))
-          (with-output-to-file no-compliance (cute display stdout-no-compliance))
+          (with-output-to-file constrained
+            (cute display stdout-constrained))
+          (with-output-to-file no-compliance
+            (cute display stdout-no-compliance))
           (and (zero? status-constrained)
                (zero? status-no-compliance)
                (let ((status
                       stdout
                       stderr
                       (observe
-                       `("ltscompare" "--structured-output" "-eweak-bisim" "--tau=constrained_legal"
+                       `("ltscompare"
+                         "--structured-output"
+                         "-eweak-bisim"
+                         "--tau=constrained_legal"
                          ,constrained
                          ,no-compliance)
                        input)))
