@@ -387,7 +387,7 @@ to the AST element."
          (make <error> #:message "empty declarative-compound"))
 
         (('skip-statement)
-         (make <compound>))
+         (make <skip>))
 
         (('compound)
          (make <compound>))
