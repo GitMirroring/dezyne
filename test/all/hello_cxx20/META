@@ -1,0 +1,3 @@
+;;; -*- scheme -*-
+((model "hello_data")
+ (skip ("verify" "simulate")))
