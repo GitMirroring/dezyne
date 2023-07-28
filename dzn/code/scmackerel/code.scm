@@ -118,6 +118,9 @@
 (define-method (ast->code (o <top>))
   o)
 
+(define-method (ast->code (o <object>))
+  (throw 'error "ast->code specialization missing for" o))
+
 (define-method (ast->code (o <guard>))
   (let ((expression (.expression o))
         (statement (.statement o)))
@@ -174,6 +177,9 @@
        (declarative-compound->code o))
       (_
        (sm:compound* (map ast->code statements))))))
+
+(define-method (ast->code (o <skip>))
+  (sm:statement*))
 
 (define-method (ast->code (o <action>))
   (let* ((action-name (code:event-name o))
