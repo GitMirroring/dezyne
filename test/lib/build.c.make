@@ -39,12 +39,9 @@ $(foreach i,IN OUT,$(eval $(call CHECKPARAM,$(i))))
 SHELL:=bash
 CCACHE:=$(shell type -p ccache)
 CC:=$(CCACHE) gcc
-CFLAGS=--std=c99 -g -O0
+DEPEND_CFLAGS = -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@'
+TEST_CFLAGS = $(DEPEND_CFLAGS)
 LDFLAGS=$(LIBPTH)
-# Tiny: all/Tiny
-#CFLAGS=--std=c99 -g -DDZN_TINY=1
-#CFLAGS=--std=c99 -Os -DDZN_TINY=1
-
 CPPFLAGS=-I$(OUT) -I$(OUT)/.. -I$(OUT)/../.. -I$(OUT)/../../c -I$(IN) -I$(abs_top_srcdir)/runtime/c
 GLOBALS_H=$(wildcard $(DIR)/globals.h)
 ifneq ($(GLOBALS_H),)
@@ -53,15 +50,15 @@ endif
 
 $(OUT)/%.o: $(abs_top_srcdir)/runtime/c/%.c
 	mkdir -p $(dir $@)
-	$(COMPILE.c) -o $@ $<
+	$(COMPILE.c) $(TEST_CFLAGS) -o $@ $<
 
 $(OUT)/%.o: $(IN)/%.c
 	mkdir -p $(dir $@)
-	$(COMPILE.c) -o $@ $<
+	$(COMPILE.c) $(TEST_CFLAGS) -o $@ $<
 
 $(OUT)/%.o: $(IN)/c/%.c
 	mkdir -p $(dir $@)
-	$(COMPILE.c) -o $@ $<
+	$(COMPILE.c) $(TEST_CFLAGS) -o $@ $<
 
 $(foreach f, $(wildcard $(IN)/c/*.c), $(eval $(OUT)/test: $(patsubst $(IN)/c/%.c, $(OUT)/%.o, $(f))))
 
@@ -72,6 +69,6 @@ $(OUT)/test: $(patsubst $(IN)/%.c, $(OUT)/%.o, $(wildcard $(IN)/*.c))
 $(OUT)/test: $(patsubst $(OUT)/%.c, $(OUT)/%.o,  $(wildcard $(OUT)/*.c))
 $(OUT)/test: $(RUNTIME_O)
 	mkdir -p $(dir $@)
-	$(LINK.c) -o $@ $^ $(LDFLAGS)
+	$(LINK.c) $(TEST_CFLAGS) -o $@ $^ $(LDFLAGS)
 
 -include $(patsubst $(IN)/%.c, $(OUT)/%.d, $(wildcard $(IN)/*.c))

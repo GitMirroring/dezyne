@@ -22,6 +22,7 @@ AC_INIT([Dezyne],
         [m4_esyscmd([build-aux/git-version-gen .tarball-version])],
         [bug-dezyne@nongnu.org],
         [dezyne])
+${CFLAGS="-g -O0 --std=c99"}
 ${CXXFLAGS="-g --std=c++11"}
 AC_CONFIG_SRCDIR([dzn/parse.scm])
 AC_CONFIG_AUX_DIR([build-aux])
