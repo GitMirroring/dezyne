@@ -23,5 +23,6 @@
 
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+CXXFLAGS ?= @CXXFLAGS@
 HAVE_LIBPTH = @HAVE_LIBPTH@
 LIBPTH = @LIBPTH@

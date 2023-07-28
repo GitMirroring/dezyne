@@ -51,7 +51,9 @@ NOWARN_FLAGS=					\
  -Wno-unused-variable				\
  -Wno-unused-parameter				\
  -Wno-unused-but-set-variable
-CXXFLAGS=-g -std=c++11 -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@' -pthread $(WARN_FLAGS)
+LIBPTHREAD = -pthread
+DEPEND_CXXFLAGS = -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@'
+TEST_CXXFLAGS = $(DEPEND_CXXFLAGS) $(LIBPTHREAD) $(WARN_FLAGS)
 # FIXME: handwritten code, versioned?  $(IN)/../.. or ?
 CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(abs_top_srcdir)/runtime/c++ -D DZN_VERSION_ASSERT=1
 GLOBALS_H=$(wildcard $(IN)/globals.h)
@@ -65,19 +67,19 @@ endif
 
 $(OUT)/%.o: $(abs_top_srcdir)/runtime/c++/%.cc
 	mkdir -p $(dir $@)
-	$(COMPILE.cc) -o $@ $<
+	$(COMPILE.cc) $(TEST_CXXFLAGS) -o $@ $<
 
 $(OUT)/%.o: $(IN)/%.cc
 	mkdir -p $(dir $@)
-	$(COMPILE.cc) -o $@ $<
+	$(COMPILE.cc) $(TEST_CXXFLAGS) -o $@ $<
 
 $(OUT)/%.o: $(IN)/c++/%.cc
 	mkdir -p $(dir $@)
-	$(COMPILE.cc) -o $@ $<
+	$(COMPILE.cc) $(TEST_CXXFLAGS) -o $@ $<
 
 $(OUT)/%.o: $(OUT)/%.cc
 	mkdir -p $(dir $@)
-	$(COMPILE.cc) $(NOWARN_FLAGS) -o $@ $<
+	$(COMPILE.cc) $(TEST_CXXFLAGS) $(NOWARN_FLAGS) -o $@ $<
 
 $(foreach f, $(wildcard $(IN)/c++/*.cc), $(eval $(OUT)/test: $(patsubst $(IN)/c++/%.cc, $(OUT)/%.o, $(f))))
 
@@ -87,6 +89,6 @@ $(OUT)/test: $(patsubst %.cc, %.o,$(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cpp, %.o,$(wildcard $(OUT)/*.cpp))
 $(OUT)/test: $(MAIN_O) $(OUT)/pump.o $(OUT)/runtime.o $(THREAD_POOL_O:%=$(OUT)/%)
 	mkdir -p $(dir $@)
-	$(LINK.cc) -o $@ $^ $(LDFLAGS)
+	$(LINK.cc) $(TEST_CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 -include $(patsubst $(IN)/%.cc, $(OUT)/%.d, $(wildcard $(IN)/*.cc))
