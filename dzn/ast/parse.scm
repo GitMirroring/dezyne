@@ -390,7 +390,7 @@ to the AST element."
          (make <error-node> #:message "empty declarative-compound"))
 
         (('skip-statement)
-         (make <compound-node>))
+         (make <skip-node>))
 
         (('compound)
          (make <compound-node>))

@@ -1,3 +1,2 @@
 mixing-declarative.dzn:9:7: error: declarative statement expected
 mixing-declarative.dzn:9:7: error: if outside on
-mixing-declarative.dzn:9:16: error: imperative compound outside on
