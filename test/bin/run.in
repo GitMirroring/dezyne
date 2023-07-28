@@ -70,6 +70,7 @@ Examples:
 
 (define (main args)
   (let* ((options (parse-opts args))
+         (args (cdr args))
          (file-name (match (option-ref options '() '("hello"))
                       ((file rest ...) file)))
          (file-name (cond ((string-suffix? ".dzn" file-name)
@@ -110,7 +111,7 @@ Examples:
            (setenv "run_seen" "1")
            (unless (getenv "languages")
              (setenv "languages" (string-join languages)))
-           (let* ((command (list run file-name))
+           (let* ((command `(,run ,file-name ,@args))
                   (command (if (not timeout) command
                                `("timeout" ,timeout ,@command))))
             (exit (zero? (apply system* command)))))
