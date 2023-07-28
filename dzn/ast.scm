@@ -1134,6 +1134,11 @@ call steps over the function and returns the next statement."
 (define-method (ast:add-statement (o <compound>) statement)
   (clone o #:elements `(,@(.elements o) ,statement)))
 
+(define-method (ast:add-statement (o <skip>) statement)
+  (make <compound>
+    #:elements (list statement)
+    #:location (.location o)))
+
 (define-method (ast:add-statement (o <statement>) statement)
   (make <compound>
     #:elements (list o statement)
