@@ -206,15 +206,21 @@ output, and standard error as three values."
         '())))
 
 (define (component? file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'component) car))))
+  (or (let ((alist (get-meta file-name)))
+        (and alist
+             (and=> (assq-ref alist 'component) car)))
+      (model? file-name)))
 
 (define (component-unset? file-name)
   (let ((alist (get-meta file-name)))
     (and alist
          (and=> (assq 'component alist)
                 (cute equal? <> '(component #f))))))
+
+(define (model? file-name)
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist 'model) car))))
 
 (define (trace-format file-name)
   (let ((alist (get-meta file-name)))
@@ -352,9 +358,7 @@ output, and standard error as three values."
               (includes (append-map (cute list "-I" <>) includes))
               (out (string-append file-name "/out"))
               (out-lang (string-append out "/" language))
-              (model (or (component? file-name) base-name))
-              ;; FIXME: METAs `model' is used for component/system tricksery
-              (model base-name)
+              (model (or (model? file-name) base-name))
               (command
                `("dzn" "code"
                  ,@includes
@@ -663,7 +667,7 @@ are weak-bisim equivalent"
                              '())))
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
-         (model (or (component? file-name) base-name))
+         (model (or (model? file-name) base-name))
          (language "simulate")
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
@@ -671,8 +675,6 @@ are weak-bisim equivalent"
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
-         ;; FIXME: METAs `model' is used for component/system tricksery
-         (model base-name)
          (baseline? (file-exists? (string-append baseline ".out")))
          (trace-format (cond ((trace-format file-name))
                              (baseline? "trace")
