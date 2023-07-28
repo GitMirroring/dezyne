@@ -1,2 +1,2 @@
 ;;; -*- scheme -*-
-((model "Blocked"))
+((component "Blocked"))

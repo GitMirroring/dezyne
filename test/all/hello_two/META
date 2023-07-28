@@ -1,2 +1,2 @@
 ;;; -*- scheme -*-
-((model #f))
+((component #f))

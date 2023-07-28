@@ -1,4 +1,4 @@
 ;;; -*- scheme -*-
 ((comment
    "execute will assert on failed check_bindings")
- (model "hellocheckcompbindings"))
+ (component "hellocheckcompbindings"))
