@@ -77,7 +77,9 @@
                                (not (eq? port ready-port)))
                              ps)))
               (chr (accs-cons! chr ready-port)
-                   (loop ps)))))))))
+                   (loop ps))))
+           (('() '() '())
+            (loop ps)))))))
 
 (define (observe command input)
   "Run COMMAND with INPUT, returning the exit status, standard
