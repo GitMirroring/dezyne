@@ -999,8 +999,7 @@
       '()))
 
 (define-method (makreel:stack-destructor (o <ast>))
-  (let ((f (and (not (is-a? o <defer>))
-                (not (ast:parent o <defer>))
+  (let ((f (and (not (ast:parent o <defer>))
                 (or (is-a? o <function>)
                     (ast:parent o <function>))))
         (locals (makreel:locals o))
