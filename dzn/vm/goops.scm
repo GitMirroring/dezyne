@@ -228,6 +228,9 @@
 (define-method (->sexp (o <literal>))
   ((compose ->sexp .value) o))
 
+(define-method (->sexp (o <void>))
+  (last (.ids (.name o))))
+
 (define-method (rtc? (pc <program-counter>))
   (or (.status pc)
       (not (.statement pc))))
