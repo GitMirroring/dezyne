@@ -1799,8 +1799,7 @@
               (lambda (c r)
                 (let* ((type (ast:type c))
                        (locals (makreel:locals r))
-                       (f (and (not (is-a? r <defer>))
-                               (not (ast:parent r <defer>))
+                       (f (and (not (ast:parent r <defer>))
                                (or (is-a? r <function>)
                                    (ast:parent r <function>))))
                        (arguments
