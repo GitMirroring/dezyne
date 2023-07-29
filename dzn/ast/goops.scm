@@ -117,7 +117,7 @@
 (define-ast <declaration> (<named>))
 (define-ast <scope> (<ast>))
 
-(define-ast <namespace> (<scope> <ast-list> <declaration>))
+(define-ast <namespace> (<declaration> <ast-list> <scope>))
 
 (define-ast <root> (<namespace>))
 
