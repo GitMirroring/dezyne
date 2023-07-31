@@ -90,8 +90,23 @@
 (define (untick o)
   (string-drop-right o 1))
 
-(define-method (makreel:.name (o <named>))
-  (untick (.name o)))
+(define-method (makreel:name (o <bool>))
+  (.name o))
+
+(define-method (makreel:name (o <void>))
+  (.name o))
+
+(define-method (makreel:name (o <int>))
+  (.name o))
+
+(define-method (makreel:name (o <literal>))
+  (.name o))
+
+(define-method (makreel:.name (o <named>))  ;; FIXME remove callers
+  (makreel:name o))
+
+(define-method (makreel:name (o <subint>))
+  (untick (ast:name o)))
 
 (define-method (makreel:name (o <named>))
   (untick (ast:name o)))
