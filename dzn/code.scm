@@ -470,8 +470,9 @@
 (define-method (code:shared (o <event>))
   "Return a list of transitions for event O from the interface LTS"
   (define (trigger? o)
-    (and=> (regexp-exec trigger-regexp o)
-           (cute match:substring <> 1)))
+    (and (string? o)
+         (and=> (regexp-exec trigger-regexp o)
+                (cute match:substring <> 1))))
   (define (action? o)
     (and=> (regexp-exec action-regexp o)
            (cute match:substring <> 1)))
