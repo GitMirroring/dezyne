@@ -268,10 +268,11 @@ tree."
             (map tree-transform-keyword-value keyword-values))
            (parent (.parent o))
            (o (if (every equal? keyword-values' keyword-values) o
-                  (let ((class (class-of o))
-                        (keyword-values (apply append keyword-values')))
-                    (if (is-a? o <root>) (apply make class keyword-values)
-                        (apply graft o keyword-values))))))
+                  (let* ((class (class-of o))
+                         (keyword-values (apply append keyword-values'))
+                         (o (apply make class keyword-values)))
+                    (if (is-a? o <root>) (ast:memoize-context* o)
+                        (ast:memoize-context* o parent))))))
       (fold (match-lambda*
               (((predicate . transform) o)
                (if (not (predicate o)) o

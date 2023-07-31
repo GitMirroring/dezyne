@@ -48,6 +48,7 @@
             ast:context?
             ast:keyword+child*
             ast:memoize-context
+            ast:memoize-context*
             ast:parent
             ast:path
             with-root))
@@ -97,6 +98,16 @@
     (ast:memoize-context root '())
     (hashq-set! (%context) 'root root)
     (%context)))
+
+(define-method (ast:memoize-context* (o <ast>) (parent <ast>))
+  "Add O to context lookup table"
+  (hashq-set! (%context) o (cons o (ast:context parent)))
+  o)
+
+(define-method (ast:memoize-context* (o <root>))
+  "Add O to context lookup table"
+  (hashq-set! (%context) o `(,o))
+  o)
 
 (define-method (ast:context (o <ast>))
   (hashq-ref (%context) o))
