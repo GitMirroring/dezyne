@@ -32,9 +32,8 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
-  #:use-module ((oop goops)
-                #:select (class-slots slot-definition-name slot-ref))
 
+  #:use-module (dzn ast context)
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
@@ -407,9 +406,10 @@
 
 (define-method (makreel:tick-names (o <root>))
   "To avoid name collision between input names and the internal names, as
-used by the code generator, we add a ' at the end of each name from the
-input.  All names related to the Dezyne language itself are considered
-internal, e.g. bool, in, interface, inevitable, provides, etc."
+used by the code generator, we add a tick (') at the end of each name
+from the input.  All names related to the Dezyne language itself are
+considered internal, e.g., bool, in, interface, inevitable, provides,
+etc."
 
   (define (tick o)
     (match o
@@ -418,30 +418,19 @@ internal, e.g. bool, in, interface, inevitable, provides, etc."
       (((? string?) ...) (map tick o))
       (_ o)))
 
+  (define tick-keyword-value
+    (match-lambda
+      ((keyword (values ...))
+       `(,keyword ,(map tick values)))
+      ((keyword value)
+       `(,keyword ,(tick value)))))
+
   (define (tick-name-fields o)
-    (let* ((class (class-of o))
-           (slots (class-slots class))
-           (slot-names (map slot-definition-name slots))
-           (name-fields '(name
-                          ids
-                          event.name
-                          instance.name
-                          port.name
-                          function.name
-                          variable.name
-                          type.name
-                          field
-                          elements))
-           (tick-names (filter (cute member <> name-fields) slot-names)))
-      (if (or (null? name-fields)) o
-          (let ((values (map (cute slot-ref o <>) slot-names)))
-            (apply graft o
-                   (append-map
-                    (lambda (slot-name value)
-                      (list (symbol->keyword slot-name)
-                            (if (not (member slot-name tick-names)) value
-                                (tick value))))
-                    slot-names values))))))
+    (let ((keywords-values (ast:name-keyword+child* o)))
+      (if (null? keywords-values) o
+          (let* ((keywords-values (map tick-keyword-value keywords-values))
+                 (keywords-values (apply append keywords-values)))
+            (apply graft o keywords-values)))))
 
   (tree-transform o (negate (is? <root>)) tick-name-fields))
 
