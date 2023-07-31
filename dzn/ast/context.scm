@@ -49,6 +49,7 @@
             ast:keyword+child*
             ast:memoize-context
             ast:memoize-context*
+            ast:name-keyword+child*
             ast:parent
             ast:path
             with-root))
@@ -78,6 +79,20 @@
          (keywords (map symbol->keyword names))
          (children (map (cute slot-ref o <>) names)))
     (zip keywords children)))
+
+(define-method (ast:name-keyword+child* (o <object>))
+  (let ((keyword-values (ast:keyword+child* o))
+        (name-fields '(#:elements
+                       #:event.name
+                       #:field
+                       #:function.name
+                       #:ids
+                       #:instance.name
+                       #:name
+                       #:port.name
+                       #:type.name
+                       #:variable.name)))
+    (filter (compose (cute memq <> name-fields) car) keyword-values)))
 
 (define-method (ast:child* (o <object>))
   (append-map (match-lambda
