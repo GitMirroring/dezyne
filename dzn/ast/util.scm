@@ -248,25 +248,35 @@ the clone and the cloned root."
     (values kloon (tree-graft o kloon))))
 
 (define-method (tree-transform (o <ast>) predicate transform)
-  "Transform each element in tree O matching PREDICATE using TRANSFORM.
-Note that if TRANSFORM returns #false this effectively removes O from
-the tree."
-  (define tree-transform-keyword-value
-    (match-lambda ((keyword (values ...))
-                   `(,keyword ,(filter-map
-                                (cute tree-transform <> predicate transform)
-                                values)))
-                  ((keyword value)
-                   `(,keyword ,(tree-transform value predicate transform)))))
-  (let ((transform? (predicate o)))
-    (if transform? (transform o)
-        (let* ((class (class-of o))
-               (keyword-values (ast:keyword+child* o))
-               (transformed-keyword-values
-                (map tree-transform-keyword-value keyword-values)))
-          (if (every eq? transformed-keyword-values keyword-values) o
-              (let ((keyword-values (apply append transformed-keyword-values)))
-                (apply make class keyword-values)))))))
+  (tree-transform o `((,predicate . ,transform))))
 
-(define-method (tree-transform (o <top>) predicate transform)
+(define-method (tree-transform (o <ast>) predicates+transforms)
+  "Transform each element in the tree matching PREDICATE using TRANSFORM.
+Note that TRANSFORM returning #f effectively removes o from the
+tree."
+  (define tree-transform-keyword-value
+    (match-lambda
+      ((keyword (values ...))
+       `(,keyword ,(filter-map
+                    (cute tree-transform <> predicates+transforms)
+                    values)))
+      ((keyword value)
+       `(,keyword ,(tree-transform value predicates+transforms)))))
+  (let ((tree-transform (cute tree-transform <> predicates+transforms)))
+    (let* ((keyword-values (ast:keyword+child* o))
+           (keyword-values'
+            (map tree-transform-keyword-value keyword-values))
+           (parent (.parent o))
+           (o (if (every equal? keyword-values' keyword-values) o
+                  (let ((class (class-of o))
+                        (keyword-values (apply append keyword-values')))
+                    (if (is-a? o <root>) (apply make class keyword-values)
+                        (apply graft o keyword-values))))))
+      (fold (match-lambda*
+              (((predicate . transform) o)
+               (if (not (predicate o)) o
+                   (transform o))))
+            o predicates+transforms))))
+
+(define-method (tree-transform (o <top>) predicates+transforms)
   o)

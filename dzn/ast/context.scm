@@ -43,10 +43,10 @@
   #:export (%root
             %context
             .parent
-
-            ast:context
+            ast:child*
             ast:context
             ast:context?
+            ast:keyword+child*
             ast:memoize-context
             ast:parent
             ast:path
