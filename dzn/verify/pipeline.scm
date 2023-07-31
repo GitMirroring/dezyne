@@ -69,13 +69,13 @@
 
 (define (component-taus model)
   (let ((ports (ast:requires-port* model)))
-    (string-join (cons "tag" (map makreel:.name ports)) ",")))
+    (string-join (cons "tag" (map makreel:name ports)) ",")))
 
 (define (component-exclude-taus model)
   (let ((ports (ast:requires-port* model)))
     (define (port-exclude-taus port)
       (let* ((interface (.type port))
-             (port-name (makreel:.name port)))
+             (port-name (makreel:name port)))
         (list (string-append port-name ".optional") (string-append port-name ".inevitable"))))
     (string-join (append-map port-exclude-taus ports) ",")))
 
@@ -111,7 +111,7 @@ EVENT."
 compliance check of MODEL: the requires-out triggers and requires-in
 actions."
   (define (events-trigger/action o)
-    (map (cute string-append (makreel:.name (.port o)) "." <>)
+    (map (cute string-append (makreel:name (.port o)) "." <>)
          (event-alphabet (.event o))))
   (let* ((behavior (.behavior model))
          (compound (.statement behavior))
@@ -130,7 +130,7 @@ actions."
                 (append-map events-trigger/action
                             (append out-triggers in-actions))))
          (state-taus (map (compose (cute string-append <> ".<state>")
-                                   makreel:.name)
+                                   makreel:name)
                           (ast:port* model)))
          (taus `("tag" "<defer>" ,@state-taus ,@taus)))
     (string-join taus ",")))
@@ -138,7 +138,7 @@ actions."
 (define (deterministic-labels component)
   (define (trigger->event trigger)
     (let ((port (.port trigger)))
-      (string-append (makreel:.name (.port trigger))
+      (string-append (makreel:name (.port trigger))
                      (if  (ast:out? trigger) ".qout."
                           ".")
                      (.event.name trigger))))

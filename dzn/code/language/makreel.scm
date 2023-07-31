@@ -51,7 +51,6 @@
   #:declarative? #f
 
   #:export (%model-name
-            makreel:.name
             makreel:add-shadow-variables
             makreel:arguments
             makreel:call-continuation*
@@ -101,9 +100,6 @@
 
 (define-method (makreel:name (o <literal>))
   (.name o))
-
-(define-method (makreel:.name (o <named>))  ;; FIXME remove callers
-  (makreel:name o))
 
 (define-method (makreel:name (o <subint>))
   (untick (ast:name o)))
