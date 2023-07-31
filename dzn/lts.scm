@@ -62,6 +62,7 @@
             aut-text->lts
             cleanup-aut
             cleanup-error
+            cleanup-lts
             display-lts
             edge-from
             edge-label
@@ -706,7 +707,8 @@ from LABELS."
 
     (define (state? o)
       (and (string? o)
-           (string-contains o "'state(")))
+           (or (string-contains o "<state>")
+               (string-contains o "'state("))))
 
     (define (rtc? node)
       (find state? (map edge-label (node-edges node))))
@@ -881,6 +883,16 @@ from LABELS."
 ;;;
 ;;; Entry points.
 ;;;
+(define* (cleanup-lts lts #:key (illegal? #t) (internal? #t) prefix)
+  (define (cleanup-edge edge)
+    (let* ((label (string->symbol (edge-label edge)))
+           (label (memoizing-cleanup-label label #:prefix prefix)))
+      (set-field edge (edge-label) label)))
+  (define (cleanup-node node)
+    (let ((edges (map cleanup-edge (node-edges node))))
+      (set-field node (node-edges) edges)))
+  (vector-map-one cleanup-node lts))
+
 (define* (cleanup-aut #:key file-name (illegal? #t) (internal? #t) prefix)
   (let ((input-port (if file-name (open-input-file file-name) (current-input-port)))
         (label-re (make-regexp "\"([^\"]*)\"")))
