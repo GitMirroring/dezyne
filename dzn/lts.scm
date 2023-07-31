@@ -873,11 +873,9 @@ from LABELS."
        (define (drop-prefix o)
          (if (and prefix (string-prefix? prefix o)) (substring o prefix-length)
              o))
-       (simple-format
-        #f "\"~a\""
-        (drop-prefix (cleanup-label (symbol->string label)
-                                    #:illegal? illegal?
-                                    #:internal? internal?)))))))
+       (drop-prefix (cleanup-label (symbol->string label)
+                                   #:illegal? illegal?
+                                   #:internal? internal?))))))
 
 
 ;;;
@@ -891,7 +889,8 @@ from LABELS."
         (let ((out-line (regexp-substitute/global
                          #f label-re line
                          'pre
-                         (compose (cute memoizing-cleanup-label <>
+                         (compose (cute simple-format #f "~s" <>)
+                                  (cute memoizing-cleanup-label <>
                                         #:illegal? illegal?
                                         #:internal? internal?
                                         #:prefix prefix)
