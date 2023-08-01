@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -24,10 +24,10 @@
 
 dist_%C%_scm_DATA =				\
  %D%/complete.scm				\
+ %D%/location.scm				\
  %D%/lookup.scm					\
  %D%/peg.scm					\
  %D%/stress.scm					\
- %D%/util.scm					\
  %D%/tree.scm
 
 dist_nocompile_%C%_scm_DATA =

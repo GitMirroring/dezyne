@@ -32,7 +32,7 @@
   #:use-module (ice-9 regex)
 
   #:use-module (dzn parse)
-  #:use-module (dzn parse util)
+  #:use-module (dzn parse location)
   #:use-module (dzn peg)
   #:use-module (dzn peg util)
   #:use-module (dzn misc)

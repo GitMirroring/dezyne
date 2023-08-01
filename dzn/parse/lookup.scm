@@ -34,8 +34,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
 
+  #:use-module (dzn parse location)
   #:use-module (dzn parse tree)
-  #:use-module (dzn parse util)
 
   #:export (.event
             .function
