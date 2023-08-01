@@ -401,6 +401,8 @@
       (simple-format #f "_~a" (.name o))))
 
 (define-method (code:on (o <trigger>))
+  "Replace code:on use with (ast:parent o <on>), once this works
+in code backends like c."
   (or (ast:parent o <on>)
       (let ((model (ast:parent o <model>)))
         (and (is-a? model <component>)
