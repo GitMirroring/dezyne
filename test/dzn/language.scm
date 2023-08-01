@@ -41,9 +41,9 @@
   #:use-module (dzn parse)
   #:use-module (dzn parse peg)
   #:use-module (dzn parse complete)
+  #:use-module (dzn parse location)
   #:use-module (dzn parse lookup)
   #:use-module (dzn parse tree)
-  #:use-module (dzn parse util)
   #:use-module (dzn shell-util)
   #:use-module (test dzn automake))
 

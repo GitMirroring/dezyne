@@ -3,7 +3,7 @@
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -34,8 +34,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
 
+  #:use-module (dzn parse location)
   #:use-module (dzn parse tree)
-  #:use-module (dzn parse util)
 
   #:export (.event
             .function
