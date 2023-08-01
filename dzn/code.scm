@@ -396,6 +396,7 @@
       (simple-format #f "_~a" (.name o))))
 
 (define-method (code:on (o <trigger>))
+  "TODO remove code:on and replace use with (ast:parent o <on>)."
   (or (ast:parent o <on>)
       (let ((model (ast:parent o <model>)))
         (and (is-a? model <component>)
