@@ -394,16 +394,41 @@ requires the introduction of temporaries for function calls."
          (guard (simplify-guard guard)))
     (if (ast:literal-false? (.expression guard)) ons
         (let* ((provides? (and=> (.port trigger) ast:provides?))
+               (model (ast:parent trigger <model>))
                (on (make <canonical-on>
                      #:guard guard
                      #:trigger trigger
-                     #:statement (make-illegal trigger))))
+                     #:statement (make-illegal trigger)))
+               (on (clone on #:parent model)))
           (append ons (list on))))))
+
+(define-method (model->triggers (o <interface>))
+  (define (event->trigger event)
+    (let ((trigger (make <trigger> #:event.name (.name event)
+                         #:location (.location o))))
+      (clone trigger #:parent (.parent event))))
+  (map event->trigger (ast:in-event* o)))
+
+(define-method (model->triggers (o <component-model>))
+  (define (port+event->trigger port event)
+    (let ((trigger (make <trigger>
+                     #:port.name (.name port)
+                     #:event.name (.name event)
+                     #:location (.location o))))
+      (clone trigger #:parent o)))
+  (define (port->triggers o)
+    (map (cute port+event->trigger o <>)
+         ((if (ast:provides? o) ast:in-event*
+              ast:out-event*)
+          (.type o))))
+  (append-map port->triggers (ast:port* o)))
 
 (define* (implicit-illegals->explicit-illegals
           model ons #:key (make-illegal (const (make <illegal>))))
+
+
   (let ((modeling (filter (compose ast:modeling? .trigger) ons))
-        (triggers (ast:in-triggers model)))
+        (triggers (model->triggers model)))
     (append
      (append-map (cut implicit-illegal->explicit-illegal <> ons
                       #:make-illegal make-illegal)
