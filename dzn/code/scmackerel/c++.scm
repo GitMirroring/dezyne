@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -818,6 +818,7 @@ std::basic_ostream<Char, Traits> &")
            (in-formals (filter ast:in? formals))
            (in-arguments (map .name in-formals))
            (formals (map c++:->formal formals))
+           (out-binding (code:out-binding port))
            (return-type (ast:type trigger))
            (type (code:type-name return-type))
            (typed? (ast:typed? trigger))
