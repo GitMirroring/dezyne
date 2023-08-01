@@ -525,6 +525,9 @@
 (define-method (ast:requires-out-triggers (o <component-model>))
   (component->triggers o ast:requires? ast:out?))
 
+(define-method (ast:in-triggers (o <component>))
+  (tree-collect (is? <trigger>) (.behavior o)))
+
 (define-method (ast:in-triggers (o <component-model>))
   (append (ast:provides-in-triggers o)
           (ast:requires-out-triggers o)))
