@@ -227,9 +227,12 @@
                                     scope name context)
   (let ((parent (ast:parent context <scope>)))
     (and parent
-         (let* ((scope-name (and=> (as context <named>) .name))
+         (let* ((scope-name (and=> (and (not (as context <function>))
+                                        (not (as context <component>))
+                                        (as context <named>))
+                                   .name))
                 (scope+ (if scope-name (cons scope-name scope) scope)))
-           (or (search-or-widen-context scope name parent)
+           (or (search scope name parent)
                (search-or-widen-context scope+ name parent))))))
 
 (define (widen-to-parent scope name context)
