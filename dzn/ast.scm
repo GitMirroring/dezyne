@@ -600,7 +600,7 @@
   (ast:type (.variable o)))
 (define-method (ast:type (o <variable>))
   (.type o))
-(define-method (ast:type (o <var>))
+(define-method (ast:type (o <reference>))
   (and=> (.variable o) .type))
 (define-method (ast:type (o <void>)) o)
 
@@ -663,7 +663,7 @@
     (cond ((as-p o <action>) => (compose .type .signature .event))
           ((as-p o <assign>) => (compose .type .variable))
           ((as-p o <arguments>) ((compose .type ast:argument->formal) o))
-          ((as-p o <var>) => (compose .type .variable))
+          ((as-p o <reference>) => (compose .type .variable))
           ((as-p o <variable>) => .type)
           ((as-p o <return>)
            => (compose .type .signature (cute ast:parent <> <function>)))

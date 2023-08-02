@@ -562,31 +562,31 @@
    (blocking o)
    (wfc (.statement o))))
 
-(define (wfc-defer-argument var)
-  (if (is-a? var <undefined>)
-      `(,(wfc-error var (format #f "undefined identifier `~a'" (.name var))))
-      (let* ((variable (.variable var))
-             (name (.variable.name var))
+(define (wfc-defer-argument reference)
+  (if (is-a? reference <undefined>)
+      `(,(wfc-error reference (format #f "undefined identifier `~a'" (.name reference))))
+      (let* ((variable (.variable reference))
+             (name (.variable.name reference))
              (type (and=> variable .type)))
         (cond
-         ((is-a? var <shared>)
+         ((is-a? reference <shared>)
           `(,(wfc-error
-              var
+              reference
               (format #f "cannot use interface variable `~a' as defer argument"
                       name))
             ,(wfc-info variable (format #f "variable `~a' defined here" name))))
          ((not (ast:member? variable))
-          `(,(wfc-error var (format
-                             #f
-                             "cannot use local variable `~a' as defer argument"
-                             name))
-            ,(wfc-info var (format #f "variable `~a' defined here" name))))
+          `(,(wfc-error reference (format
+                                   #f
+                                   "cannot use local variable `~a' as defer argument"
+                                   name))
+            ,(wfc-info reference (format #f "variable `~a' defined here" name))))
          ((is-a? type <extern>)
-          `(,(wfc-error var (format
-                             #f
-                             "cannot use data variable `~a' as defer argument"
-                             name))
-            ,(wfc-info var (format #f "variable `~a' defined here" name))))
+          `(,(wfc-error reference (format
+                                   #f
+                                   "cannot use data variable `~a' as defer argument"
+                                   name))
+            ,(wfc-info reference (format #f "variable `~a' defined here" name))))
          (else
           '())))))
 
@@ -946,7 +946,7 @@
 
 (define-method (wfc (o <otherwise>)) '())
 
-(define-method (wfc (o <var>))
+(define-method (wfc (o <reference>))
   (append
    (if (ast:member? (ast:parent o <variable>))
        (let ((class "variable reference"))
@@ -957,7 +957,7 @@
             `(,(wfc-error o (format #f "undefined variable `~a'" (.name o)))))
            (else '())))))
 
-(define-method (wfc (o <shared-var>))
+(define-method (wfc (o <shared-reference>))
   (append
    (next-method)
    (wfc-port o)
@@ -1408,7 +1408,7 @@
         `(,(wfc-error o (format #f "undefined event `~a'" name)))))
      ((and (ast:parent o <variable>)
            (ast:member? (ast:parent o <variable>)))
-      (let ((class (if (equal? class "var") "variable reference" class)))
+      (let ((class (if (equal? class "reference") "variable reference" class)))
         `(,(wfc-error o (format #f "~a in member variable initializer" class)))))
      ((and (not (ast:parent o <on>))
            (not (ast:parent o <function>))

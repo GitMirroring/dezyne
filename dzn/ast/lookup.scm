@@ -359,7 +359,7 @@ null) and return its CONTEXT."
         (ast:lookup component (.port.name o)))
       (ast:lookup o (.port.name o))))
 
-(define-method (.port (o <shared-var>))
+(define-method (.port (o <shared-reference>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
 (define-method (.port (o <shared-variable>))
@@ -425,7 +425,7 @@ null) and return its CONTEXT."
 (define-method (.variable (o <argument>))
   (and=> (.name o) (cute ast:lookup-variable o <>)))
 
-(define-method (.variable (o <var>))
+(define-method (.variable (o <reference>))
   (and=> (.name o) (cute ast:lookup-variable o <>)))
 
 (define-method (lookup-shared-variable (port <port>) (name <string>))
@@ -435,7 +435,7 @@ null) and return its CONTEXT."
            (and (as behavior <behavior>)
                 (ast:lookup-variable behavior name))))))
 
-(define-method (.variable (o <shared-var>))
+(define-method (.variable (o <shared-reference>))
   (let ((name (.name o)))
     (and name
          (let ((port (.port o)))

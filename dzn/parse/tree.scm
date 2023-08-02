@@ -77,6 +77,7 @@
             .ports
             .pos
             .range
+            .reference
             .right
             .scope
             .statement
@@ -87,7 +88,6 @@
             .triggers
             .type-name
             .value
-            .var
 
             tree->context
 
@@ -324,8 +324,8 @@ procedure)."
          (? (is? 'port))
          (? (is? 'instance))
          (? (is? 'interface))
+         (? (is? 'reference))
          (? (is? 'trigger-formal))
-         (? (is? 'var))
          (? (is? 'variable))
          (? (is? 'void)))
      (slot o 'name))
@@ -407,6 +407,10 @@ procedure)."
   (assert-type o 'int)
   (slot o 'range))
 
+(define (.reference o)
+  (assert-type o 'assign 'field-test)
+  (slot o 'reference))
+
 (define (.statement o)
   (assert-type o 'blocking 'guard 'on)
   (slot o tree:statement?))
@@ -477,10 +481,6 @@ procedure)."
     (('expression) #f)
     (('literal (? (is? 'location))) #f)
     (('literal literal (? (is? 'location))) literal)))
-
-(define (.var o)
-  (assert-type o 'assign 'field-test)
-  (slot o 'var))
 
 
 ;;;
@@ -573,6 +573,7 @@ procedure)."
      ports
      provides
      range
+     reference
      requires
      return
      root
@@ -586,7 +587,6 @@ procedure)."
      type-name
      types-and-events
      unknown-identifier
-     var
      void)))
 
 (define (tree? o)

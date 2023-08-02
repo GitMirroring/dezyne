@@ -84,7 +84,7 @@
       (($ <assign>) (.variable.name parent))
       (($ <variable>) (.name parent)))))
 
-(define-method (.variable.name (o <var>))
+(define-method (.variable.name (o <reference>))
   (.name o))
 
 (define-method (ast:argument* (o <arguments>)) (.elements o))
@@ -221,7 +221,7 @@
 (define-method (ast:full-name (o <shared-variable>))
   (cons (.port.name o) (list (.name o))))
 
-(define-method (ast:full-name (o <shared-var>))
+(define-method (ast:full-name (o <shared-reference>))
   (cons (.port.name o) (list (.name o))))
 
 (define-method (ast:full-name (o <declaration>))

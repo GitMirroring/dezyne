@@ -190,12 +190,12 @@
     action))
 
 (define-method (ast->code (o <assign>))
-  (let* ((var (ast->expression (.variable o)))
+  (let* ((reference (ast->expression (.variable o)))
          (expression (.expression o))
          (action? (is-a? expression <action>))
          (expression (if (not action?) (ast->expression expression)
                          (ast->code expression))))
-    (sm:assign* var expression)))
+    (sm:assign* reference expression)))
 
 (define-method (ast->code (o <variable>))
   (let ((expression (.expression o)))
@@ -299,7 +299,7 @@
 (define-method (ast->expression (o <otherwise>))
   (ast->code (make <illegal>)))
 
-(define-method (ast->expression (o <var>))
+(define-method (ast->expression (o <reference>))
   (let ((name (.name o)))
     (if (ast:member? (.variable o)) (sm:member* (%member-prefix) name)
         name)))
@@ -316,8 +316,8 @@
   (let* ((enum-literal (make <enum-literal>
                          #:type.name (.type.name (.variable o))
                          #:field (.field o)))
-         (var (make <var> #:name (.variable.name o)))
-         (expression (graft o (make <equal> #:left var #:right enum-literal))))
+         (reference (make <reference> #:name (.variable.name o)))
+         (expression (graft o (make <equal> #:left reference #:right enum-literal))))
     (ast->expression expression)))
 
 (define-method (ast->expression (o <shared-field-test>))
@@ -330,15 +330,15 @@
                          #:field (.field o)))
          (name (.name variable))
          (port-name (.port.name o))
-         (var (make <shared-var>
-                #:name name
-                #:port.name port-name))
+         (reference (make <shared-reference>
+                      #:name name
+                      #:port.name port-name))
          (expression (graft o (make <equal>
-                                #:left var
+                                #:left reference
                                 #:right enum-literal))))
     (ast->expression expression)))
 
-(define-method (ast->expression (o <shared-var>))
+(define-method (ast->expression (o <shared-reference>))
   (let ((lst (ast:full-name o)))
     (string-join lst (%name-infix))))
 

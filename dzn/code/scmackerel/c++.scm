@@ -268,11 +268,11 @@ std::basic_ostream<Char, Traits> &")
 
 (define-method (ast->code (o <assign>))
   (let* ((variable (.variable o))
-         (var (c++:ast->expression variable))
+         (reference (c++:ast->expression variable))
          (expression (.expression o))
          (action? (is-a? expression <action>)))
-    (if (not action?) (sm:assign* var (c++:ast->expression expression))
-        (sm:assign* var (ast->code expression)))))
+    (if (not action?) (sm:assign* reference (c++:ast->expression expression))
+        (sm:assign* reference (ast->code expression)))))
 
 (define-method (ast->code (o <defer>))
   (define (variable->defer-variable o)
@@ -381,7 +381,7 @@ std::basic_ostream<Char, Traits> &")
 (define-method (c++:ast->expression (o <group>))
   (sm:group* (c++:ast->expression (.expression o))))
 
-(define-method (c++:ast->expression (o <shared-var>))
+(define-method (c++:ast->expression (o <shared-reference>))
   (let ((lst (ast:full-name o)))
     (string-join lst (%name-infix))))
 
@@ -401,15 +401,15 @@ std::basic_ostream<Char, Traits> &")
                                   #:field (.field o))))
          (name (.name variable))
          (port-name (.port.name o))
-         (var (graft o (make <shared-var>
-                         #:name name
-                         #:port.name port-name)))
+         (reference (graft o (make <shared-reference>
+                               #:name name
+                               #:port.name port-name)))
          (expression (graft o (make <equal>
-                                #:left var
+                                #:left reference
                                 #:right enum-literal))))
     (c++:ast->expression expression)))
 
-(define-method (ast->expression (o <shared-var>))
+(define-method (ast->expression (o <shared-reference>))
   (let ((lst (ast:full-name o)))
     (string-join lst (%name-infix))))
 

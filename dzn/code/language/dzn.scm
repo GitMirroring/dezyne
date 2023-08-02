@@ -504,10 +504,10 @@ and \"POST\" 'post in GRAMMAR."
 (define-method (print-ast (o <literal>) port)
   (print-ast (.value o) port))
 
-(define-method (print-ast (o <var>) port)
+(define-method (print-ast (o <reference>) port)
   (display (.name o) port))
 
-(define-method (print-ast (o <shared-var>) port)
+(define-method (print-ast (o <shared-reference>) port)
   (let ((lst (ast:full-name o)))
     (display (string-join lst ".") port)))
 

@@ -834,32 +834,32 @@
   "lookup.dzn:77:17"
   (test-lookup #:file-name "lookup.dzn" #:line 79 #:column 12))
 
-(test-equal "var->enum variable"
+(test-equal "reference->enum variable"
   "lookup.dzn:34:6"
   (test-lookup #:file-name "lookup.dzn" #:line 35 #:column 26))
 
-(test-equal "var->int variable"
+(test-equal "reference->int variable"
   "int.dzn:8:8"
   (test-lookup #:file-name "int.dzn" #:line 9 #:column 5))
 
 ;;; component-{bool,data,enum,int}.dzn: Keep in sync.
-(test-equal "bool var->formal"
+(test-equal "bool reference->formal"
   "component-bool.dzn:69:19"
   (test-lookup #:file-name "component-bool.dzn" #:line 71 #:column 13))
 
-(test-equal "enum var->formal"
+(test-equal "enum reference->formal"
   "component-enum.dzn:69:19"
   (test-lookup #:file-name "component-enum.dzn" #:line 71 #:column 13))
 
-(test-equal "int var->formal"
+(test-equal "int reference->formal"
   "component-int.dzn:69:19"
   (test-lookup #:file-name "component-int.dzn" #:line 71 #:column 13))
 
-(test-equal "data var->formal"
+(test-equal "data reference->formal"
   "component-data.dzn:69:19"
   (test-lookup #:file-name "component-data.dzn" #:line 71 #:column 13))
 
-(test-equal "data var->formal"
+(test-equal "data reference->formal"
   "component-data.dzn:74:16"
   (test-lookup #:file-name "component-data.dzn" #:line 77 #:column 13))
 
@@ -875,7 +875,7 @@
   "int.dzn:1:7"
   (test-lookup #:file-name "int.dzn" #:line 8 #:column 4))
 
-(test-equal "field-test->var"
+(test-equal "field-test->reference"
   "enum.dzn:8:9"
   (test-lookup #:file-name "enum.dzn" #:line 9 #:column 5))
 

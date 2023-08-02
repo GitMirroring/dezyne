@@ -169,7 +169,7 @@
 (define-method (code:variable-name (o <field-test>))
   ((compose code:variable-name .variable) o))
 
-(define-method (code:variable-name (o <var>))
+(define-method (code:variable-name (o <reference>))
   ((compose code:variable-name .variable) o))
 
 (define-method (code:variable-name (o <argument>))
@@ -319,7 +319,7 @@
                  #:direction (.direction v)
                  #:expression o))))
 
-(define-method (code:variable->argument (o <var>) (f <formal>))
+(define-method (code:variable->argument (o <reference>) (f <formal>))
   (code:variable->argument o (.variable o) f))
 
 (define-method (code:variable->argument (o <formal>) (f <formal>))

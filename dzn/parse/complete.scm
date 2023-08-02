@@ -263,7 +263,7 @@
   (let ((type (or type
                   (and (is-a? (.tree context) 'assign) (.type context))
                   (and (is-a? (.tree context) 'variable) (.type context))
-                  (and=> (context:parent context 'var) .type)
+                  (and=> (context:parent context 'reference) .type)
                   (and=> (context:parent context 'variable) .type))))
     (if (not type) (complete:type-names context)
         (let* ((type-predicate (cute context:type-equal? <> (.tree type)))
@@ -662,7 +662,7 @@
      (complete:reply context))
     ((and (? (is? 'return)) (? (negate .expression)))
      (complete:return context))
-    ((? (is? 'var))
+    ((? (is? 'reference))
      (cond ((let* ((variable (.variable context))
                    (type (and=> variable .type))
                    (enum (and=> type .tree)))
@@ -703,8 +703,8 @@
            (else
             '())))
     ((? (is? 'field-test))
-     (cond ((let* ((var (.var o))
-                   (variable (.variable (cons var context)))
+     (cond ((let* ((reference (.reference o))
+                   (variable (.variable (cons reference context)))
                    (type (and=> variable .type)))
               (and (is-a? (.tree variable) 'variable)
                    (is-a? (.tree type) 'enum)
@@ -712,8 +712,8 @@
             =>
             (lambda (variable)
               (let* ((enum (.type variable))
-                     (var (.var o))
-                     (name (.name var)))
+                     (reference (.reference o))
+                     (name (.name reference)))
                 (complete:field-test-names (.tree enum) name))))
            ((context:parent context 'variable)
             =>

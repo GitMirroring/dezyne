@@ -367,14 +367,14 @@
 (define-method (makreel:add-shadow-variables o)
 
   ;; predicate shadow? =>
-  ;; given a fresh variable (in case of var => (.variable o)
+  ;; given a fresh variable (in case of reference => (.variable o)
   ;; if its name is equal to any variables in scope
   ;; it must be annotated by the number of variables that came before
 
   (define (shadow? o)
     (and (not (is-a? o <shared>))
          (let ((variable? (is-a? o <variable>)))
-           (and ((disjoin (is? <variable>) (is? <var>) (is? <assign>)) o)
+           (and ((disjoin (is? <variable>) (is? <reference>) (is? <assign>)) o)
                 (let ((variable (if (is-a? o <variable>) o
                                     (.variable o)))
                       (variables-in-scope
@@ -479,9 +479,9 @@ etc."
              o
              (list #:types #:variables #:functions #:statement)
              (list .types .variables .functions .statement))))
-    (($ <var>)
+    (($ <reference>)
      (clone o #:name ((compose (append-tick names) .name) o)))
-    (($ <shared-var>)
+    (($ <shared-reference>)
      (clone o #:port.name ((compose (append-tick names) .port.name) o)
             #:name ((compose (append-tick names) .name) o)))
     (($ <field-test>)
@@ -724,7 +724,7 @@ transformations."
 ;;;
 (define-method (makreel:shared* (o <behavior>))
   (delete-duplicates
-   (tree-collect (disjoin (is? <shared-var>)
+   (tree-collect (disjoin (is? <shared-reference>)
                           (is? <shared-field-test>)) o)
    (lambda (a b)
      (and
@@ -734,10 +734,10 @@ transformations."
               (.variable.name b))))))
 
 (define (makreel:add-shared-variables o)
-  (define (shared-var->shared-variable var)
-    (let ((variable (.variable var)))
+  (define (shared-reference->shared-variable reference)
+    (let ((variable (.variable reference)))
       (make <shared-variable>
-        #:port.name (.port.name var)
+        #:port.name (.port.name reference)
         #:name (.name variable)
         #:type.name (.type.name variable)
         #:expression (.expression variable))))
@@ -747,12 +747,12 @@ transformations."
      (let* ((behavior (ast:parent o <behavior>))
             (shared (makreel:shared* behavior))
             (shared (delete-duplicates shared ast:equal?))
-            (shared (map shared-var->shared-variable shared)))
+            (shared (map shared-reference->shared-variable shared)))
        (graft o #:elements (append (ast:variable* o) shared))))
     ((? (is? <ast>)) (tree-map makreel:add-shared-variables o))
     (_ o)))
 
-(define-method (makreel:shared-var* (o <behavior>))
+(define-method (makreel:shared-reference* (o <behavior>))
   (let ((shared (makreel:shared* o)))
     (delete-duplicates shared ast:equal?)))
 

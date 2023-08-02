@@ -101,7 +101,6 @@
             code:public-enum*
             code:pump?
             code:reply-types
-            code:type-eq?
             code:reply-var
             code:requires-end-point
             code:requires-in-void-returns
@@ -114,6 +113,7 @@
             code:shared-value
             code:short-circuit?
             code:type->string
+            code:type-eq?
             code:type-name
             code:wrap-compound
             code:variable->argument
@@ -429,7 +429,7 @@
   (let* ((references (tree-collect (disjoin(is? <assign>)
                                            (is? <argument>)
                                            (is? <field-test>)
-                                           (is? <var>))
+                                           (is? <reference>))
                                    (.statement o)))
          (variables (map .variable references))
          (local? (compose (cute eq? <> o)

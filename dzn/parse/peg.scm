@@ -133,7 +133,7 @@ SKIP < !IMPORT . 'import'*")
     (list pos '()))
   (define-skip-parser exit-frame none -exit-frame-)
 
-  (define (-add-var- str len pos)
+  (define (-add-reference- str len pos)
     (let ((res (name str len pos))
           (top (if (null? variable-stack) '() (car variable-stack)))
           (bottom (if (null? variable-stack) '() (cdr variable-stack))))
@@ -142,16 +142,16 @@ SKIP < !IMPORT . 'import'*")
                                          top)
                                    bottom)))
       res))
-  (define-peg-pattern add-var body -add-var-)
+  (define-peg-pattern add-reference body -add-reference-)
 
-  (define (-var- str len pos)
+  (define (-reference- str len pos)
     (let* ((res (name str len pos))
-           (var-name (and res (substring str pos (car res))))
+           (reference-name (and res (substring str pos (car res))))
            (top (if (null? variable-stack) '() (car variable-stack))))
-      (and var-name
-           (find (cut equal? var-name <>) top)
+      (and reference-name
+           (find (cut equal? reference-name <>) top)
            res)))
-  (define-peg-pattern var all -var-)
+  (define-peg-pattern reference all -reference-)
 
   (define (dollars-no-skip str len pos)
     (parameterize ((%peg:skip? (lambda (str strlen at) `(,at ()))))
@@ -209,7 +209,7 @@ component <-- COMPONENT reset-port-names reset-event-names scoped-name#
       port-direction <- provides / requires
       port-qualifiers <-- (blocking-q / external / injected / &compound-name)*
       formals <-- PAREN-OPEN (formal (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
-        formal <-- (INOUT / IN / OUT)? type-name add-var#
+        formal <-- (INOUT / IN / OUT)? type-name add-reference#
 
 type-name <-- compound-name / BOOL / VOID
 
@@ -238,7 +238,7 @@ declarative-statement <- on / blocking / guard / compound
                   / OPTIONAL / INEVITABLE / is-event
         trigger-formals <-- PAREN-OPEN (trigger-formal (&PAREN-CLOSE / COMMA#))*
                             PAREN-CLOSE#
-          trigger-formal <-- add-var (LEFT-ARROW var)?
+          trigger-formal <-- add-reference (LEFT-ARROW reference)?
 
   guard
     <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#
@@ -270,7 +270,7 @@ imperative-statement
 
   illegal <-- ILLEGAL SEMICOLON# / BRACE-OPEN ILLEGAL SEMICOLON# BRACE-CLOSE#
 
-  assign <-- var ASSIGN expression# SEMICOLON#
+  assign <-- reference ASSIGN expression# SEMICOLON#
 
   if-statement <-- IF PAREN-OPEN# expression# PAREN-CLOSE# imperative-statement#
                    (ELSE imperative-statement#)?
@@ -282,7 +282,7 @@ imperative-statement
     <-- RETURN expression? SEMICOLON#
 
   variable
-    <-- type-name add-var (ASSIGN expression#)? SEMICOLON#
+    <-- type-name add-reference (ASSIGN expression#)? SEMICOLON#
 
 expression
   <-- or-expression
@@ -301,15 +301,15 @@ plus-min-expression
   <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
 
 not-expression
-  <- minus / not / group / dollars / literal / !(is-port / var) enum-literal
-     / field-test / action / shared-field-test / shared-var / call / var
+  <- minus / not / group / dollars / literal / !(is-port / reference) enum-literal
+     / field-test / action / shared-field-test / shared-reference / call / reference
      / interface-action / unknown-identifier
 
 not <-- NOT not-expression#
 minus <-- UMINUS not-expression#
 enum-literal <-- global? scope name
-field-test <-- var DOT name#
-shared-var <-- is-port DOT name#
+field-test <-- reference DOT name#
+shared-reference <-- is-port DOT name#
 shared-field-test <-- is-port DOT !is-port name DOT name#
 literal <-- NUMBER / FALSE / TRUE
 group <-- PAREN-OPEN expression PAREN-CLOSE#

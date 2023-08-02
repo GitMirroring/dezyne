@@ -102,7 +102,7 @@ in NAMES."
                   (()
                    '())))))
          (graft o #:elements statements)))
-      (($ <var>)
+      (($ <reference>)
        (or (and=> (assq (.variable o) alist) cdr)
            o))
       ((? (is? <ast>))

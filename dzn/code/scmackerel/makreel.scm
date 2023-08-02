@@ -855,14 +855,14 @@
          result)))))
 
 (define-method (sum-state-action (port <port>))
-  (sm:sum (type (%state (.type port)))
-          (var (port-prefix "s" port))
+  (sm:sum (var (port-prefix "s" port))
+          (type (%state (.type port)))
           (statement
            (sm:invoke (%state-action port) var))))
 
 (define-method (sum-state-action (port <port>) continuation)
-  (sm:sum (type (%state (.type port)))
-          (var (port-prefix "s" port))
+  (sm:sum (var (port-prefix "s" port))
+          (type (%state (.type port)))
           (statement
            (sm:sequence*
             (sm:invoke (%state-action port) var)
@@ -1053,7 +1053,7 @@
 (define-method (makreel:ast->expression (o <group>))
   (sm:group* (makreel:ast->expression (.expression o))))
 
-(define-method (makreel:ast->expression (o <shared-var>))
+(define-method (makreel:ast->expression (o <shared-reference>))
   (string-append (.port.name o) "port_" (.name o)))
 
 (define-method (makreel:ast->expression (o <shared-variable>))
@@ -1068,9 +1068,11 @@
                                   #:field (.field o))))
          (name (.name variable))
          (port-name (.port.name o))
-         (var (make <shared-var> #:name name #:port.name port-name))
+         (reference (graft o (make <shared-reference>
+                               #:name name
+                               #:port.name port-name)))
          (expression (graft o (make <equal>
-                                #:left var
+                                #:left reference
                                 #:right enum-literal))))
     (makreel:ast->expression expression)))
 

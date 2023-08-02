@@ -297,10 +297,10 @@
     (if (is-a? type <void>) type
         (.expression o))))
 
-(define-method (dzn:expression (o <var>))
+(define-method (dzn:expression (o <reference>))
   (.variable o))
 
-(define-method (dzn:expression-expand (o <var>))
+(define-method (dzn:expression-expand (o <reference>))
   (.variable o))
 
 (define-method (dzn:expression-expand (o <field-test>))

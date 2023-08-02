@@ -45,7 +45,7 @@
 
 (let* ((false (make <literal> #:value "false"))
        (true (make <literal> #:value "true"))
-       (b (make <var> #:name "b"))
+       (b (make <reference> #:name "b"))
        (gb (make <group> #:expression b))
        (!b (make <not> #:expression b))
        (!!b (make <not> #:expression !b))

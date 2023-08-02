@@ -93,8 +93,8 @@
 
 (define-syntax *let*
   (syntax-rules ()
-    ((_ ((var val) ...) exp ...)
-     (let* ((var (display-duration 'var val)) ...)
+    ((_ ((name val) ...) exp ...)
+     (let* ((name (display-duration 'name val)) ...)
        (display-duration '*let* exp ...)))))
 
 (define-syntax *match*

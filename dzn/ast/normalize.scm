@@ -658,7 +658,7 @@ to prevent unintended shadowing
        (clone o #:arguments ((rename mapping) (.arguments o))))
       (($ <arguments>)
        (clone o #:elements (map (rename mapping) (ast:argument* o))))
-      (($ <var>)
+      (($ <reference>)
        (if (not (formal-or-local? (.variable o))) o
            (clone o #:name (rename-string (.name o)))))
       (($ <assign>)
@@ -745,7 +745,7 @@ to prevent unintended shadowing
              (is? <data-expr>)
              (conjoin (disjoin (is? <assign>)
                                (is? <formal>)
-                               (is? <var>)
+                               (is? <reference>)
                                (is? <variable>))
                       (compose (is? <extern>) ast:type))))
   (define (parent-location o)
@@ -776,7 +776,7 @@ to prevent unintended shadowing
                          (is? <data-expr>)
                          (conjoin (disjoin (is? <assign>)
                                            (is? <formal>)
-                                           (is? <var>)
+                                           (is? <reference>)
                                            (is? <variable>))
                                   (compose (is? <extern>) ast:type))))
          (data->skip-or-#f (conjoin (is? <statement>)
@@ -1059,13 +1059,13 @@ the same level."
   "Make implicit temporary values in action, call, if, reply, and return
 expressions explicit."
 
-  (define (replace-expression old o var)
+  (define (replace-expression old o reference)
     (cond ((eq? old o)
-           var)
+           reference)
           ((is-a? o <expression>)
-           (tree-map (cute replace-expression old <> var) o))
+           (tree-map (cute replace-expression old <> reference) o))
           ((is-a? o <arguments>)
-           (tree-map (cute replace-expression old <> var) o))
+           (tree-map (cute replace-expression old <> reference) o))
           (else
            o)))
 
@@ -1089,9 +1089,9 @@ expressions explicit."
                         #:type.name type-name
                         #:expression variable-expression
                         #:location location))
-           (var (make <var> #:name name #:location location))
+           (reference (make <reference> #:name name #:location location))
            (o (tree-map
-               (cute replace-expression variable-expression <> var)
+               (cute replace-expression variable-expression <> reference)
                o)))
       (graft parent (make <compound>
                       #:elements (list temporary o)

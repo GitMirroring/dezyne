@@ -278,14 +278,14 @@
 (define-ast <data> (<data-expr>)
   (value))
 
-(define-ast <var> (<named> <unary>))
+(define-ast <reference> (<named> <unary>))
 
 (define-ast <undefined> (<unary>)
   (name))
 
 (define-ast <shared> (<ast>))
 
-(define-ast <shared-var> (<shared> <var>)
+(define-ast <shared-reference> (<shared> <reference>)
   (port.name))
 
 (define-ast <variable> (<declaration> <imperative> <unary>)

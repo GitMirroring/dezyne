@@ -325,9 +325,9 @@
   (define (argument-assign variable)
     (let* ((name (if (string? variable) variable
                      (.name variable)))
-           (var (if (ast:member? variable) (sm:member* name)
-                    name)))
-      (sm:assign* (string-append "dzn_arguments->" name) var)))
+           (reference (if (ast:member? variable) (sm:member* name)
+                          name)))
+      (sm:assign* (string-append "dzn_arguments->" name) reference)))
   (let* ((variables (ast:defer-variable* o))
          (locals (code:capture-local o))
          (model (ast:parent o <model>))
@@ -387,7 +387,7 @@
 (define-method (ast->code (o <out-bindings>))
   (sm:statement*))
 
-(define-method (ast->expression (o <var>))
+(define-method (ast->expression (o <reference>))
   (let* ((name (.name o))
          (name (if (ast:member? (.variable o)) (string-append "self->" name)
                    name))

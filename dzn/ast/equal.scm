@@ -148,6 +148,10 @@
   (and (equal? (.port.name a) (.port.name b))
        (next-method)))
 
+(define-method (ast:equal? (a <shared-reference>) (b <shared-reference>))
+  (and (ast:equal? (.port.name a) (.port.name b))
+       (ast:equal? (.name a) (.name b))))
+
 (define-method (ast:equal? (a <compound>) (b <compound>))
   (ast:equal? (ast:statement* a)
               (ast:statement* b)))

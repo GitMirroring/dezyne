@@ -293,7 +293,7 @@ to the AST element."
         (('trigger-formals formal) (make <formals> #:elements (list (helper formal))))
         (('trigger-formals formals ...) (make <formals> #:elements (helper formals)))
         (('trigger-formal name) (make <formal> #:name (helper name)))
-        (('trigger-formal var-a ('var var-b _ ...)) (make <formal-binding> #:name (helper var-a) #:variable.name (helper var-b)))
+        (('trigger-formal reference-a ('reference reference-b _ ...)) (make <formal-binding> #:name (helper reference-a) #:variable.name (helper reference-b)))
 
         (('component name ports)
          (make <foreign>
@@ -470,9 +470,9 @@ to the AST element."
            #:event.name (helper event)
            #:arguments (helper arguments)))
 
-        (('assign var expression)
+        (('assign reference expression)
          (make <assign>
-           #:variable.name (.name (helper var))
+           #:variable.name (.name (helper reference))
            #:expression (helper expression)))
 
         (('behavior-statements statement ...)
@@ -539,7 +539,7 @@ to the AST element."
 
         (('dollars) (make <data> #:value *unspecified*))
 
-        (('field-test ('var name _ ...) field) (make <field-test> #:name (helper name) #:field (helper field)))
+        (('field-test ('reference name _ ...) field) (make <field-test> #:name (helper name) #:field (helper field)))
         (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test> #:name identifier #:field (helper field)))
 
         (('shared-field-test port.name name field) (make <shared-field-test> #:port.name (helper port.name) #:name (helper name) #:field (helper field)))
@@ -636,9 +636,9 @@ to the AST element."
 
         (('unknown-identifier name) (make <undefined> #:name (helper name)))
 
-        (('var name) (make <var> #:name (helper name)))
+        (('reference name) (make <reference> #:name (helper name)))
 
-        (('shared-var port.name name) (make <shared-var> #:port.name (helper port.name) #:name (helper name)))
+        (('shared-reference port.name name) (make <shared-reference> #:port.name (helper port.name) #:name (helper name)))
 
         (('variable type name)
          (make <variable> #:name (helper name) #:type.name (helper type) #:expression (make <literal>)))

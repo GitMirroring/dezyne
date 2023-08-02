@@ -140,7 +140,7 @@
 (define-method (ast->expression (name <string>) (formal <formal>))
   (cs:out-ref formal name))
 
-(define-method (ast->expression (o <var>) (formal <formal>))
+(define-method (ast->expression (o <reference>) (formal <formal>))
   (ast->expression (.name o) formal))
 
 (define-method (ast->code (o <action>))
