@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -71,8 +71,4 @@ for i in $TESTS; do
     echo "parse $i -o-" 1>&2
     dzn parse -o- $i | pretty2line
     echo "parse -o- $i => $?"
-done                                                            \
-    | sed -e "s,$PWD,<pwd>,"                                    \
-          -e '/./,+2{H;$!d};'                                   \
-          -e 'x;s/\((working-directory\)[ .\n]*/\1 . /g;'       \
-    | tail +2
+done
