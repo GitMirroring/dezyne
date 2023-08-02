@@ -354,7 +354,7 @@
              (event (.event ast))
              (formals (ast:formal* o)))
         (append
-         (map wfc formals)
+         (append-map wfc formals)
          (let ((formal-bindings (filter (is? <formal-binding>) formals)))
            (append-map wfc formal-bindings))
          (if (not event) '()
@@ -397,10 +397,12 @@
         `(,(wfc-error o (format #f "cannot use ~a-parameter on out-event `~a'" (.direction o) (.name event)))))
        (else '()))))))
 
-(define-method (wfc (o <formal-binding>))
+(define-method (wfc (o <formal-reference-binding>))
   (let ((variable (.variable o)))
     (if (is-a? (ast:type variable) <extern>) '()
-        `(,(wfc-error o (format #f "formal binding `~a' is not a data member variable" (.variable.name o)))))))
+        `(,(wfc-error
+            o (format #f "formal binding `~a' is not a data member variable"
+                      (.variable.name o)))))))
 
 (define-method (model-blocking? (o <model>))
   (and (is-a? o <component>)

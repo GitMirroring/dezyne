@@ -236,9 +236,9 @@ declarative-statement <- on / blocking / guard / compound
     triggers <-- ((trigger / !unknown-identifier) (&COLON / COMMA)#)#+
       trigger <-- is-port DOT# name# trigger-formals#
                   / OPTIONAL / INEVITABLE / is-event
-        trigger-formals <-- PAREN-OPEN (trigger-formal (&PAREN-CLOSE / COMMA#))*
+        trigger-formals <-- PAREN-OPEN (trigger-reference (&PAREN-CLOSE / COMMA#))*
                             PAREN-CLOSE#
-          trigger-formal <-- add-reference (LEFT-ARROW reference)?
+          trigger-reference <-- add-reference (LEFT-ARROW reference)?
 
   guard
     <-- BRACKET-OPEN (otherwise / expression)# BRACKET-CLOSE# statement#

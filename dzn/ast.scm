@@ -127,6 +127,7 @@
                .direction
                .event
                .event.direction
+               .formal
                .function
                .type
                .instance
@@ -576,6 +577,8 @@
 (define-method (ast:type (o <function>))
   ((compose ast:type .signature) o))
 (define-method (ast:type (o <formal>))
+  (.type o))
+(define-method (ast:type (o <formal-reference>))
   (.type o))
 (define-method (ast:type (o <int>)) o)
 (define-method (ast:literal-value->type o)

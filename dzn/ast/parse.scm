@@ -292,8 +292,8 @@ to the AST element."
 
         (('trigger-formals formal) (make <formals> #:elements (list (helper formal))))
         (('trigger-formals formals ...) (make <formals> #:elements (helper formals)))
-        (('trigger-formal name) (make <formal> #:name (helper name)))
-        (('trigger-formal reference-a ('reference reference-b _ ...)) (make <formal-binding> #:name (helper reference-a) #:variable.name (helper reference-b)))
+        (('trigger-reference name) (make <formal-reference> #:name (helper name)))
+        (('trigger-reference binding ('reference reference _ ...)) (make <formal-reference-binding> #:name (helper binding) #:variable.name (helper reference)))
 
         (('component name ports)
          (make <foreign>

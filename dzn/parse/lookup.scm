@@ -154,7 +154,7 @@ null) and return its CONTEXT."
         ((? (is? 'variable))
          (or (name? tree)
              (tree:lookup-reference name (context:parent context tree:statement?))))
-        ((? (is? 'trigger-formal))
+        ((? (is? 'trigger-reference))
          (or (name? tree)
              (tree:lookup-reference name (context:parent context tree:statement?))))
         ((? (cute parent <> 'variable))
@@ -264,7 +264,7 @@ null) and return its CONTEXT."
        (tree:lookup name context)))
 
 (define (resolve-reference o name context)
-  (assert-type o 'assign 'reference 'trigger-formal)
+  (assert-type o 'assign 'reference 'trigger-reference)
   (tree:lookup-reference name context))
 
 (define (resolve-enum-literal o name context)
@@ -360,7 +360,7 @@ null) and return its CONTEXT."
           => (cute resolve-action <> name context))
          ((parent context 'port)
           => (cute resolve-interface <> name context))
-         ((parent context 'trigger-formal)
+         ((parent context 'trigger-reference)
           => (cute resolve-reference <> name context))
          ((or (parent context 'illegal-trigger)
               (parent context 'trigger))

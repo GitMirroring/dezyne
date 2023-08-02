@@ -320,6 +320,11 @@
 (define-ast <formal-binding> (<formal>)
   (variable.name))
 
+(define-ast <formal-reference> (<declaration>))
+
+(define-ast <formal-reference-binding> (<formal-reference>)
+  (variable.name))
+
 (define-ast <component-model> (<model>)
   (ports #:init-form (make <ports>)))
 

@@ -74,7 +74,7 @@
 (define-templates injected dzn:injected)
 
 (define-templates trigger-signature (lambda (o) (if (not (.port.name o)) "" o)))
-(define-templates trigger-formal (lambda (o) (ast:formal* o)) formal-grammar)
+(define-templates trigger-reference (lambda (o) (ast:formal* o)) formal-grammar)
 (define-templates port-prefix dzn:port-prefix port-suffix)
 
 

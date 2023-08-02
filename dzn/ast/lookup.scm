@@ -42,6 +42,7 @@
 
   #:export (.event
             .event.direction
+            .formal
             .function
             .instance
             .type
@@ -315,6 +316,10 @@ null) and return its CONTEXT."
      (name? o))
     (($ <formal-binding>)
      (name? o))
+    (($ <formal-reference>)
+     (name? o))
+    (($ <formal-reference-binding>)
+     (name? o))
     ((or ($ <on>) ($ <canonical-on>))
      (or (find (cute ast:lookup-variable <> name statements)
                (append-map ast:formal* (ast:trigger* o)))
@@ -422,6 +427,9 @@ null) and return its CONTEXT."
 (define-method (.variable (o <formal-binding>))
   (and=> (.variable.name o) (cute ast:lookup-variable (.parent o) <>)))
 
+(define-method (.variable (o <formal-reference-binding>))
+  (and=> (.variable.name o) (cute ast:lookup-variable (.parent o) <>)))
+
 (define-method (.variable (o <argument>))
   (and=> (.name o) (cute ast:lookup-variable o <>)))
 
@@ -460,22 +468,24 @@ null) and return its CONTEXT."
   (or (ast:parent o <enum>)
       (ast:lookup o (.type.name o))))
 
-(define-method (ast:event-formal (o <formal>))
+(define-method (.formal (o <formal-reference>))
   (let* ((trigger (ast:parent o <trigger>))
          (event (.event trigger))
          (trigger-formals (ast:formal* (.parent o)))
          (index (list-index (cute eq? o <>) (reverse trigger-formals)))
-         (formals (if (not event) '() (ast:formal* event))))
-    (and event (< index (length formals)) (list-ref (reverse formals) index))))
+         (event-formals (if (not event) '() (ast:formal* event))))
+    (and event
+         (< index (length event-formals))
+         (list-ref (reverse event-formals) index))))
 
-(define-method (ast:event-formal (o <formal-binding>))
-  (let* ((on (ast:parent o <on>))
-         (trigger (car (ast:trigger* on)))
-         (event (.event trigger))
-         (trigger-formals (ast:formal* (.parent o)))
-         (index (list-index (cute eq? o <>) (reverse trigger-formals)))
-         (formals (ast:formal* event)))
-    (and event (< index (length formals)) (list-ref (reverse formals) index))))
+;; (define-method (.formal (o <formal-reference-binding>))
+;;   (let* ((on (ast:parent o <on>))
+;;          (trigger (car (ast:trigger* on)))
+;;          (event (.event trigger))
+;;          (trigger-formals (ast:formal* (.parent o)))
+;;          (index (list-index (cute eq? o <>) (reverse trigger-formals)))
+;;          (formals (ast:formal* event)))
+;;     (and event (< index (length formals)) (list-ref (reverse formals) index))))
 
 (define-method (.type (o <formal>))
   (let* ((type-name (.type.name o))
@@ -483,21 +493,19 @@ null) and return its CONTEXT."
                     (ast:parent o <statement>)
                     (ast:parent o <behavior>)
                     (and=> (ast:parent o <scope>) .parent))))
-    (if type-name (ast:lookup scope type-name)
-        (let ((formal (ast:event-formal o)))
-          (and=> formal .type)))))
+    (and=> type-name (cut ast:lookup scope <>))))
 
-(define-method (.direction (o <formal>))
-  (let ((type-name (.type.name o)))
-    (if type-name ((@ (oop goops) slot-ref) o 'direction)
-        (let ((formal (ast:event-formal o)))
-          (and formal (.direction formal))))))
+(define-method (.type (o <formal-reference>))
+  (let ((formal (.formal o)))
+    (and=> formal .type)))
 
-(define-method (.direction (o <formal-binding>))
-  (let ((type-name (.type.name o)))
-    (if type-name ((@ (oop goops) slot-ref) o 'direction)
-        (let ((formal (ast:event-formal o)))
-          (and formal (.direction formal))))))
+(define-method (.direction (o <formal-reference>))
+  (let ((formal (.formal o)))
+    (and formal (.direction formal))))
+
+;; (define-method (.direction (o <formal-reference-binding>))
+;;   (let ((formal (.formal o)))
+;;     (and formal (.direction formal))))
 
 (define-method (.type (o <instance>))
   (let ((name (.type.name o)))

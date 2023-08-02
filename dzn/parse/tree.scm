@@ -325,7 +325,7 @@ procedure)."
          (? (is? 'instance))
          (? (is? 'interface))
          (? (is? 'reference))
-         (? (is? 'trigger-formal))
+         (? (is? 'trigger-reference))
          (? (is? 'variable))
          (? (is? 'void)))
      (slot o 'name))
@@ -582,7 +582,7 @@ procedure)."
      to
      trigger
      trigger-formals
-     trigger-formal
+     trigger-reference
      triggers
      type-name
      types-and-events
@@ -870,7 +870,7 @@ procedure)."
     ((? (is? 'enum))
      (tree:declaration* (.fields o)))
     ((? (is? 'trigger-formals))
-     (slots o 'trigger-formal))
+     (slots o 'trigger-reference))
     ((? (is? 'instances-and-bindings))
      (slots o 'instance))
     ((? (is? 'trigger))
@@ -1021,7 +1021,7 @@ procedure)."
     ((? (is? 'formals)) (slots o 'formal))
     ((? (is? 'function)) (tree:formal* (slot o 'formals)))
     ((? (is? 'trigger)) (tree:formal* ( slot o 'trigger-formals)))
-    ((? (is? 'trigger-formals)) (slots o 'trigger-formal))
+    ((? (is? 'trigger-formals)) (slots o 'trigger-reference))
     (_ '())))
 
 (define (tree:trigger* o)

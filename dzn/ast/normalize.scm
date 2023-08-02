@@ -575,6 +575,7 @@ i.e., pushing guards into the body of the trigger."
                     <>)
               (with-behavior o (cute map simplify-guard <>))
               (cute map alpha-rename <>)
+              (with-behavior o (cute map formal-dereference <>))
               statement->canonical-on
               .statement
               ) o)
@@ -603,6 +604,7 @@ i.e., pushing guards into the body of the trigger."
                 (with-behavior o (cute map simplify-guard <>))
                 (cute map alpha-rename <>)
                 (cute implicit-illegals->explicit-illegals model <>)
+                (with-behavior o (cute map formal-dereference <>))
                 statement->canonical-on
                 .statement
                 ) o)
@@ -745,6 +747,7 @@ to prevent unintended shadowing
              (is? <data-expr>)
              (conjoin (disjoin (is? <assign>)
                                (is? <formal>)
+                               (is? <formal-reference>)
                                (is? <reference>)
                                (is? <variable>))
                       (compose (is? <extern>) ast:type))))
@@ -776,6 +779,7 @@ to prevent unintended shadowing
                          (is? <data-expr>)
                          (conjoin (disjoin (is? <assign>)
                                            (is? <formal>)
+                                           (is? <formal-reference>)
                                            (is? <reference>)
                                            (is? <variable>))
                                   (compose (is? <extern>) ast:type))))
@@ -863,6 +867,29 @@ to a separate statement, for mCRL2."
            (statement (ast:add-statement* (.statement o) end)))
       (graft o #:statement statement)))
   (tree-transform o (is? <defer>) add-end))
+
+(define (formal-dereference o)
+  (let ((model (ast:parent o <model>)))
+    (define (rescope o orig interface-formal)
+      (let* ((o (graft* (.parent interface-formal) o))
+             (o (ast:rescope o model)))
+        (graft* (.parent orig) o)))
+    (define (replace-formal-reference o)
+      (let* ((interface-formal (.formal o))
+             (formal (clone interface-formal #:name (.name o))))
+        (rescope formal o interface-formal)))
+    (define (replace-formal-reference-binding o)
+      (let* ((interface-formal (.formal o))
+             (formal (make <formal-binding>
+                       #:name (.name o)
+                       #:direction (.direction interface-formal)
+                       #:type.name (.type.name interface-formal)
+                       #:variable.name (.variable.name o))))
+        (rescope formal o interface-formal)))
+    (tree-transform
+     o
+     `((,(is? <formal-reference-binding>) . ,replace-formal-reference-binding)
+       (,(is? <formal-reference>) . ,replace-formal-reference)))))
 
 (define* (add-reply-port o #:optional (port #f) (block? #f))
   (match o
