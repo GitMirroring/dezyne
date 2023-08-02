@@ -178,13 +178,18 @@
 (define not-found (list 'not-found))
 
 (define ((ast:funcq funcq-memo) base-func)
-  (define (name->symbol o)
+  (define (object->key o)
+    "Return a stable, i.e., memoizable key for O."
     (match o
-      ((? string?) (string->symbol o))
-      (($ <scope.name-node>) (name->symbol (string-join (.ids o) ".")))
-      (_ o)))
+      ((? string?)                      ;name
+       (string->symbol o))
+      (((and (? string?) o) ..1)        ;scope
+       (string->symbol (string-join o ".")))
+      (($ <scope.name-node>)            ;name
+       (object->key (string-join (.ids o) ".")))
+      (_ o)))                           ;eq?-ness already stable.
   (lambda args
-    (let* ((key (cons base-func (map (compose name->symbol ast:unwrap) args)))
+    (let* ((key (cons base-func (map (compose object->key ast:unwrap) args)))
            (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
       (funcq-buffer key)
       (if (not (eq? cached not-found)) cached
@@ -232,7 +237,7 @@
                                     scope name context)
   (let ((parent (ast:parent context <scope>)))
     (and parent
-         (let* ((scope-name (and=> (as context <named>) .name))
+         (let* ((scope-name (and=> (as context <namespace>) .name))
                 (scope+ (if scope-name (cons scope-name scope) scope)))
            (or (search-or-widen-context scope name parent)
                (search-or-widen-context scope+ name parent))))))

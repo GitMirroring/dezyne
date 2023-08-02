@@ -289,7 +289,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-type (.type o) port)
   (display " " port)
   (display (.name o) port)
-  (display "\n" port))
+  (display ";\n" port))
 
 (define-method (print-ast (o <binding>) port)
   (print-ast (.left o) port)
