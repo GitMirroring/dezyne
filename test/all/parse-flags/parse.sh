@@ -67,8 +67,4 @@ for i in $TESTS; do
     echo "parse $i -o-" 1>&2
     dzn parse -o- $i
     echo "parse -o- $i => $?"
-done                                                            \
-    | sed -e "s,$PWD,<pwd>,"                                    \
-          -e '/./,+2{H;$!d};'                                   \
-          -e 'x;s/\((working-directory\)[ .\n]*/\1 . /g;'       \
-    | tail +2
+done
