@@ -1,0 +1,3 @@
+;;; -*- scheme -*-
+((skip ("javascript:execute" "scheme:build"))
+ (comment "nested namespace"))
