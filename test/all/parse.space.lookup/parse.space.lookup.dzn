@@ -1,0 +1,67 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Ensure extern, and interface name lookups from within a namespace.
+//
+// Code:
+
+import iworld.dzn;
+
+extern data2 $int$;
+
+interface icruel
+{
+  in void cruel ();
+  behavior
+  {
+    on cruel: {}
+  }
+}
+
+namespace parse
+{
+  extern data3 $float$;
+}
+
+namespace parse
+{
+  namespace space
+  {
+    interface ihello
+    {
+      in void hello (data1 d1, data2 d2);
+      behavior
+      {
+        on hello: {}
+      }
+    }
+    component lookup
+    {
+      provides ihello h;
+      requires iworld w;
+      requires icruel c;
+      behavior
+      {
+        on h.hello(d1,d2): {data3 d;}
+      }
+    }
+  }
+}
