@@ -242,7 +242,7 @@ std::basic_ostream<Char, Traits> &")
        (else
         (ast->code statement))))
      (else
-      (sm:if* (ast->expression expression)
+      (sm:if* (c++:ast->expression expression)
               (ast->code statement))))))
 
 ;;; imperative
@@ -256,7 +256,7 @@ std::basic_ostream<Char, Traits> &")
          (event-name (.event.name o))
          (action-name (code:event-name o))
          (arguments (code:argument* o))
-         (arguments (map ast->expression arguments)))
+         (arguments (map c++:ast->expression arguments)))
     (sm:call (name (simple-format #f "dzn::call_~a" (.direction event)))
              (arguments
               `("this"
@@ -272,10 +272,10 @@ std::basic_ostream<Char, Traits> &")
 
 (define-method (ast->code (o <assign>))
   (let* ((variable (.variable o))
-         (var (ast->expression variable))
+         (var (c++:ast->expression variable))
          (expression (.expression o))
          (action? (is-a? expression <action>)))
-    (if (not action?) (sm:assign* var (ast->expression expression))
+    (if (not action?) (sm:assign* var (c++:ast->expression expression))
         (sm:assign* var (ast->code expression)))))
 
 (define-method (ast->code (o <defer>))
@@ -285,7 +285,7 @@ std::basic_ostream<Char, Traits> &")
      (name (code:capture-name o))
      (expression (code:member-name o))))
   (define (variable->equality o)
-    (sm:equal* (ast->expression o)
+    (sm:equal* (c++:ast->expression o)
                (code:capture-name o)))
   (let* ((variables (ast:defer-variable* o))
          (locals (code:capture-local o))
@@ -330,7 +330,7 @@ std::basic_ostream<Char, Traits> &")
         (sm:statements*
          `(,@(if (is-a? type <void>) '()
                  `(,(sm:assign* (sm:member* (%member-prefix) (code:reply-var type))
-                                (ast->expression (.expression o)))))
+                                (c++:ast->expression (.expression o)))))
            ,(sm:if* out-binding (sm:call (name out-binding)))
            ,(sm:assign* out-binding "nullptr")
            ,@(if (not (code:port-release? o)) '()
@@ -362,8 +362,37 @@ std::basic_ostream<Char, Traits> &")
            (sm:compound*
             (map formal->assign formals))))))))
 
-;; FIXME: C&P from code.scm, to override makreel.scm override
-(define-method (ast->expression (o <shared-field-test>))
+
+;;;
+;;; c++:ast->expression
+;;;
+
+(define-method (c++:ast->expression (o <top>))
+  (ast->expression o))
+
+(define-method (c++:ast->expression (o <not>))
+  (sm:not* (c++:ast->expression (.expression o))))
+
+(define-method (c++:ast->expression (o <binary>))
+  (sm:expression
+   (operator (operator->string o))
+   (operands (list (c++:ast->expression (.left o))
+                   (c++:ast->expression (.right o))))))
+
+(define-method (c++:ast->expression (o <group>))
+  (sm:group* (c++:ast->expression (.expression o))))
+
+(define-method (c++:ast->expression (o <shared-var>))
+  (let ((lst (ast:full-name o)))
+    (string-join lst (%name-infix))))
+
+(define-method (c++:ast->expression (o <shared-variable>))
+  (let* ((name (ast:full-name o))
+         (name (string-join name (%name-infix))))
+    (if (ast:member? o) (sm:member* (%member-prefix) name)
+        name)))
+
+(define-method (c++:ast->expression (o <shared-field-test>))
   (let* ((variable (.variable o))
          (type (.type variable))
          (type-name (make <scope.name> #:ids (ast:full-name type)))
@@ -377,18 +406,7 @@ std::basic_ostream<Char, Traits> &")
          (expression (make <equal>
                        #:left var
                        #:right enum-literal)))
-    (ast->expression expression)))
-
-(define-method (ast->expression (o <shared-var>))
-  (let ((lst (ast:full-name o)))
-    (string-join lst (%name-infix))))
-
-(define-method (ast->expression (o <shared-variable>))
-  (let* ((name (ast:full-name o))
-         (name (string-join name (%name-infix))))
-    (if (ast:member? o) (sm:member* (%member-prefix) name)
-        name)))
-;; END FIXME
+    (c++:ast->expression expression)))
 
 
 ;;;

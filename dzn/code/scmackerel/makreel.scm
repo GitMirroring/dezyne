@@ -209,19 +209,19 @@
       (($ <void>)
        (model-prefix "void_return (void)" model))
       (($ <bool>)
-       (let ((expression (ast->expression expression)))
+       (let ((expression (makreel:ast->expression expression)))
          (model-prefix
           (simple-format #f "bool_return (~a)" expression)
           model)))
       (($ <enum>)
-       (let ((expression (ast->expression expression)))
+       (let ((expression (makreel:ast->expression expression)))
          (model-prefix
           (simple-format #f "~a_return (~a)"
                          (makreel:type->string type)
                          expression)
           model)))
       ((or ($ <int>) ($ <subint>))
-       (let ((expression (ast->expression expression)))
+       (let ((expression (makreel:ast->expression expression)))
          (model-prefix
           (simple-format #f "int_return (~a)" expression)
           model)))
@@ -684,7 +684,7 @@
        (assq-ref cache o)
        (let ((result
               (let* ((members (filter (negate (is? <shared-variable>)) (ast:variable* o)))
-                     (names (map ast->expression members)))
+                     (names (map makreel:ast->expression members)))
                 (sm:action (prefix "defer_skip")
                            (event
                             (sm:event (type (%state o))
@@ -1002,10 +1002,45 @@
 
 
 ;;;
-;;; Ast->expression.
+;;; makreel:ast->expression.
 ;;;
-(define-method (ast->expression (o <shared-var>))
+
+(define-method (makreel:ast->expression (o <top>))
+  (ast->expression o))
+
+(define-method (makreel:ast->expression (o <not>))
+  (sm:not* (makreel:ast->expression (.expression o))))
+
+(define-method (makreel:ast->expression (o <binary>))
+  (sm:expression
+   (operator (operator->string o))
+   (operands (list (makreel:ast->expression (.left o))
+                   (makreel:ast->expression (.right o))))))
+
+(define-method (makreel:ast->expression (o <group>))
+  (sm:group* (makreel:ast->expression (.expression o))))
+
+(define-method (makreel:ast->expression (o <shared-var>))
   (string-append (.port.name o) "port_" (.name o)))
+
+(define-method (makreel:ast->expression (o <shared-variable>))
+  (string-append (.port.name o) "port_" (.name o)))
+
+(define-method (makreel:ast->expression (o <shared-field-test>))
+  (let* ((variable (.variable o))
+         (type (.type variable))
+         (type-name (make <scope.name> #:ids (ast:full-name type)))
+         (enum-literal (make <enum-literal>
+                         #:type.name type-name
+                         #:field (.field o)))
+         (enum-literal (clone enum-literal #:parent o))
+         (name (.name variable))
+         (port-name (.port.name o))
+         (var (make <shared-var> #:name name #:port.name port-name))
+         (expression (make <equal>
+                       #:left var
+                       #:right enum-literal)))
+    (makreel:ast->expression expression)))
 
 
 ;;;
@@ -1053,7 +1088,7 @@
          (expression (.expression o))
          (type (ast:type expression))
          (prefix (model-prefix "reply" model))
-         (arguments (list (ast->expression expression))))
+         (arguments (list (makreel:ast->expression expression))))
     (match type
       (($ <bool>)
        (sm:action (prefix prefix)
@@ -1199,7 +1234,7 @@
   (sm:process
     (name (statement->process-name o))
     (formals (makreel:process-formals o))
-    (statement (sm:if* (ast->expression (.expression o))
+    (statement (sm:if* (makreel:ast->expression (.expression o))
                        (sm:goto (name (statement->process-name next))
                                 (arguments (makreel:process-parens next)))))))
 
@@ -1448,7 +1483,7 @@
   (let* ((function (.function o))
          (statement (.statement function))
          (arguments (ast:argument* o))
-         (expressions (map ast->expression arguments))
+         (expressions (map makreel:ast->expression arguments))
          (formals (ast:formal* function))
          (formal-names (map .name formals))
          (types (map ast:type formals)))
@@ -1467,7 +1502,7 @@
              (append
               (map (lambda (f a) (sm:is* f a))
                    formal-names
-                   (map ast->expression arguments))
+                   (map makreel:ast->expression arguments))
               (list
                (if (and (.last? o) (ast:parent o <function>)) "s=s"
                    (let* ((return (car (ast:continuation* o)))
@@ -1487,7 +1522,7 @@
   (let* ((function (ast:parent o <function>))
          (type (ast:type function))
          (expression (.expression o))
-         (expression (ast->expression expression)))
+         (expression (makreel:ast->expression expression)))
     (sm:process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
@@ -1507,7 +1542,7 @@
   (let* ((expression (.expression o))
          (action? (as expression <action>))
          (port (and=> action? .port))
-         (expression (ast->expression expression))
+         (expression (makreel:ast->expression expression))
          (type (and=> (.variable o) .type)))
     (sm:process
       (name (statement->process-name o))
@@ -1560,7 +1595,7 @@
   (let* ((expression (.expression o))
          (action? (as expression <action>))
          (port (and=> action? .port))
-         (expression (ast->expression expression))
+         (expression (makreel:ast->expression expression))
          (type (.type o)))
     (sm:process
       (name (statement->process-name o))
@@ -1640,7 +1675,7 @@
     (name (statement->process-name o))
     (formals (makreel:process-formals o))
     (statement
-     (sm:if* (ast->expression (.expression o))
+     (sm:if* (makreel:ast->expression (.expression o))
              (sm:goto (name (statement->process-name next))
                       (arguments (makreel:process-parens next)))))))
 
@@ -1651,7 +1686,7 @@
     (statement
      (match next
        ((then else)
-        (sm:if* (ast->expression (.expression o))
+        (sm:if* (makreel:ast->expression (.expression o))
                 (sm:goto (name (statement->process-name then))
                          (arguments (makreel:process-parens then)))
                 (sm:goto (name (statement->process-name else))
@@ -1661,9 +1696,9 @@
   (let* ((statement (.statement o))
          (id (makreel:process-identifier statement))
          (members (filter (negate (is? <shared-variable>)) (ast:member* model)))
-         (names (map ast->expression members))
+         (names (map makreel:ast->expression members))
          (locals (makreel:locals statement))
-         (local-names (map ast->expression locals)))
+         (local-names (map makreel:ast->expression locals)))
     (sm:process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
@@ -1889,7 +1924,7 @@
                                        (sm:goto (name name)
                                                 (arguments '()))))))))))
          (members (ast:variable* o))
-         (member-values (map (compose ast->expression .expression) members))
+         (member-values (map (compose makreel:ast->expression .expression) members))
          (member-types (map .type members))
          (interface-reordered-parallel
           (sm:process
@@ -2417,7 +2452,7 @@
          (member-types (map .type members))
          (member-values (and
                          (pair? members)
-                         (map (compose ast->expression .expression) members)))
+                         (map (compose makreel:ast->expression .expression) members)))
          (component-defer-parallel
           (sm:process (name "component_defer_parallel")
                       (statement

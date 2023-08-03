@@ -232,8 +232,16 @@
 
 
 ;;;
-;;; Ast->expression.
+;;; Ast->expression  -- Common ast to expression tranformations.
 ;;;
+
+;;; TODO: Deal with language overrides and code dupliciation, especially
+;;; in the face of recursion.  Current solution introduces a language
+;;; prefixed override for ast->expression, e.g., makreel:ast->expression
+;;; and specializes for <shared-*>.  However this also requires copying
+;;; and prefixing recursive version of ast->expression, e.g., <binary>,
+;;; <not>, <group>.
+
 (define-method (ast->expression (o <top>))
   o)
 
