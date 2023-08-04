@@ -73,7 +73,9 @@
 (define-method (cs:defer-variable* (o <defer>))
   (let* ((variables (ast:defer-variable* o))
          (depth (length (filter (is? <defer>) (ast:path o)))))
-    (map (cute make <capture-variable> #:name <> #:type.name <> #:depth depth)
+    (map (compose
+          (cute graft (.parent o) <>)
+          (cute make <capture-variable> #:name <> #:type.name <> #:depth depth))
          (map .name variables)
          (map .type.name variables))))
 
@@ -103,11 +105,11 @@
 (define (cs:normalize ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
-      code:annotate-shells
-      add-reply-port
-      normalize:event+illegals
-      remove-otherwise
-      code:add-calling-context)
+      (with-root code:annotate-shells)
+      (with-root add-reply-port)
+      (with-root normalize:event+illegals)
+      (with-root remove-otherwise)
+      (with-root code:add-calling-context))
      ast)))
 
 

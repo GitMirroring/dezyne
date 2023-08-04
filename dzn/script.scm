@@ -72,7 +72,9 @@
   `(((dzn parse) parse:file->string)
     ((dzn parse) parse:string->tree)
     ((dzn parse) parse:tree->ast)
-    ((dzn ast accessor) ast:parent (,<ast> ,<class>))
+    ((dzn ast context) ast:memoize-context (,<root>))
+    ((dzn ast context) ast:context (,<ast>))
+    ((dzn ast context) ast:parent (,<ast> ,<class>))
     ((dzn ast lookup) ast:lookup (,<ast> ,<top>))
     ((dzn ast lookup) ast:lookup-variable (,<ast> ,<top>))))
 

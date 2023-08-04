@@ -41,7 +41,7 @@
 (define (ast port) (display #\* port))
 (define (ref port) (display #\@ port))
 
-(define-method (sdisplay (o <ast-node>) port)
+(define-method (sdisplay (o <ast>) port)
   (display #\space port)
   (write o port))
 
@@ -49,7 +49,7 @@
   (display #\space port)
   (write o port))
 
-(define-method (sdisplay (o <location-node>) port)
+(define-method (sdisplay (o <location>) port)
   (when (%locations?)
     (next-method)))
 
@@ -72,18 +72,11 @@
                (else (sdisplay value port))))))
    (class-slots (class-of o))))
 
-(define-method (write (o <ast-node>) port)
-  (display "(" port)
-  (display (ast-name o) port)
-  (ast port)
-  (display-slots o port)
-  (display #\) port))
-
 (define-method (write (o <ast>) port)
   (display "(" port)
   (display (ast-name o) port)
   (ast port)
-  (if (.node o) (display-slots (.node o) port))
+  (display-slots o port)
   (display #\) port))
 
 (define ast:display write)

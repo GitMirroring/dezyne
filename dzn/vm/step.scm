@@ -131,8 +131,8 @@
   (let* ((port (.port trigger))
          (r:port (runtime:port instance port))
          (r:other-port (runtime:other-port r:port))
-         (trigger (clone trigger #:port.name #f))
-         (trigger (clone trigger #:parent (.type (.ast r:other-port)))))
+         (parent (.type (.ast r:other-port)))
+         (trigger (graft* parent trigger #:port.name #f)))
     (begin-step pc r:other-port trigger)))
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
@@ -319,14 +319,14 @@
     (define (q-trigger)
       (let* ((port-name (.name (.ast other-port)))
              (trigger (.trigger pc))
-             (q-trigger (make <q-trigger>
-                          #:event.name (.event.name o)
-                          #:port.name port-name
-                          #:modeling? (or (ast:modeling? trigger)
-                                          (and=> (as trigger <q-trigger>)
-                                                 .modeling?))
-                          #:location (.location o))))
-        (clone q-trigger #:parent (.type (.ast other-instance)))))
+             (parent (.type (.ast other-instance))))
+        (graft parent (make <q-trigger>
+                        #:event.name (.event.name o)
+                        #:port.name port-name
+                        #:modeling? (or (ast:modeling? trigger)
+                                        (and=> (as trigger <q-trigger>)
+                                               .modeling?))
+                        #:location (.location o)))))
 
     (cond
      ((and (is-a? instance <runtime:port>)
@@ -507,7 +507,7 @@
                        #:location (.location o)
                        #:port.name (.port.name (.trigger pc))
                        #:event.name value))
-             (return (clone return #:parent (.parent o)))
+             (return (graft (.parent o) return))
              (pc (clone pc #:statement return)))
         (list pc))))))
 

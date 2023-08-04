@@ -702,40 +702,41 @@ RTC-LTS->LTS."
                         queue-size queue-size-defer queue-size-external
                         ports? extended? actions? labels? returns?)
   "Entry-point for dzn explore --state-diagram."
-  (let* ((root (vm:normalize ast))
-         (model (ast:get-model root (ast:dotted-name model))))
+  (let* ((model-name (ast:dotted-name model))
+         (root (vm:normalize ast)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
-    (parameterize ((%compliance-check? #f)
-                   (%debug? (and (not (zero? (dzn:debugity)))
-                                 (dzn:debugity)))
-                   (%exploring? #t)
-                   (%queue-size queue-size)
-                   (%queue-size-defer queue-size-defer)
-                   (%queue-size-external queue-size-external)
-                   (%sut (runtime:get-sut root model)))
-      (parameterize ((%instances (runtime:create-instances (%sut))))
-        (let* ((pc (make-pc))
-               (lts pc->state-number state-count (pc->rtc-lts pc))
-               (size (1- (car state-count)))
-               (lts pc->state-number state-count
-                    (lts-remove lts size
-                                #:ports? (or ports? extended?)
-                                #:extended? extended?
-                                #:actions? actions?
-                                #:labels? labels?
-                                #:returns? returns?
-                                #:self? (or extended? ports?)))
-               (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
-          (if (equal? format "json") (display (state-diagram->json
-                                               state-diagram))
-              (display (state-diagram->dot state-diagram (pc->hash pc)))))))))
+    (let ((model (ast:get-model root model-name)))
+      (parameterize ((%compliance-check? #f)
+                     (%debug? (and (not (zero? (dzn:debugity)))
+                                   (dzn:debugity)))
+                     (%exploring? #t)
+                     (%queue-size queue-size)
+                     (%queue-size-defer queue-size-defer)
+                     (%queue-size-external queue-size-external)
+                     (%sut (runtime:get-sut root model)))
+        (parameterize ((%instances (runtime:create-instances (%sut))))
+          (let* ((pc (make-pc))
+                 (lts pc->state-number state-count (pc->rtc-lts pc))
+                 (size (1- (car state-count)))
+                 (lts pc->state-number state-count
+                      (lts-remove lts size
+                                  #:ports? (or ports? extended?)
+                                  #:extended? extended?
+                                  #:actions? actions?
+                                  #:labels? labels?
+                                  #:returns? returns?
+                                  #:self? (or extended? ports?)))
+                 (state-diagram (rtc-lts->state-diagram lts pc->state-number)))
+            (if (equal? format "json") (display (state-diagram->json
+                                                 state-diagram))
+                (display (state-diagram->dot state-diagram (pc->hash pc))))))))))
 
 (define* (lts ast #:key model queue-size queue-size-defer queue-size-external)
   "Entry-point for dzn explore --lts."
   (let* ((model-name (ast:dotted-name model))
          (root (vm:normalize ast))
-         (model (ast:get-model root (ast:dotted-name model))))
+         (model (ast:get-model root model-name)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     (parameterize ((%debug? (and (not (zero? (dzn:debugity)))

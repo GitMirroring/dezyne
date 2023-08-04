@@ -117,7 +117,8 @@ Generate graph from a Dezyne model
     (when (and remove
                (not (member remove '("ports" "extended"))))
       (format (current-error-port) "graph: remove ~a ignored\n" remove))
-    (parameterize ((%language "makreel"))
+    (parameterize ((%context (%context))
+                   (%language "makreel"))
       (let* ((ast (parse options file-name))
              (model (parse:call-with-handle-exceptions
                      (lambda _ (ast:get-model ast model-name))

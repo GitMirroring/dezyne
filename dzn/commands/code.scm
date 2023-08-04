@@ -27,6 +27,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
 
@@ -204,14 +205,15 @@ Languages: ~a
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external)
                    (%shell shell))
-      (for-each (cut file->code <>
-                     #:backtrace? debug?
-                     #:calling-context calling-context
-                     #:dir dir
-                     #:empty-files? empty-files?
-                     #:model model
-                     #:language language
-                     #:locations? locations?
-                     #:shell shell
-                     #:verbose? multiple?)
-                files))))
+      (parameterize ((%context (%context)))
+        (for-each (cut file->code <>
+                       #:backtrace? debug?
+                       #:calling-context calling-context
+                       #:dir dir
+                       #:empty-files? empty-files?
+                       #:model model
+                       #:language language
+                       #:locations? locations?
+                       #:shell shell
+                       #:verbose? multiple?)
+                  files)))))
