@@ -1,0 +1,112 @@
+interface ihmi
+{
+  in void enable ();
+  in void disable ();
+
+  in bool set ();
+  in bool resume ();
+  in void cancel ();
+
+  out void inactive ();
+
+  behavior
+  {
+    enum State {Disabled,Enabled,Active};
+    enum Setpoint {Unset,Set};
+
+    State state = State.Disabled;
+    Setpoint setpoint = Setpoint.Unset;
+
+    on disable: // always allow
+    {
+      state = State.Disabled;
+      setpoint = Setpoint.Unset; //forget about the previous setpoint
+    }
+
+    [!state.Disabled] on enable: {/* ignore when not disabled */}
+    [!state.Active] on cancel: {/* ignore when not active */}
+    [!state.Enabled] on set, resume: reply (false);
+
+    [state.Disabled] on enable: state = State.Enabled;
+    [state.Enabled] {
+      on set, resume: reply (false);
+      on set: {state = State.Active; setpoint = Setpoint.Set; reply (true);}
+      on resume: {
+        [setpoint.Set] {state = State.Active; reply (true);}
+        [setpoint.Unset] reply (false);
+      }
+    }
+    [state.Active]
+    {
+      // this may or may not happen
+      on inevitable: {state = State.Enabled; inactive;}
+      on cancel: state = State.Enabled;
+    }
+  }
+}
+
+// observe (brake and clutch) pedals
+interface ipedals
+{
+  in bool enable ();
+  in void disable ();
+  out void engage ();
+  out void disengage ();
+  behavior
+  {
+    bool monitor = false;
+    bool engaged = false;
+    [!monitor] {
+      on enable: {monitor = true; reply (engaged);}
+      on enable: {monitor = true; engaged = !engaged; reply (engaged);}
+    }
+    [monitor] {
+      on disable: {monitor = false; engaged = false;}
+      on optional: {
+        engaged = !engaged;
+        if (engaged) engage; else disengage;
+      }
+    }
+  }
+}
+
+// interface to the throttle actuator PID control
+interface ithrottle
+{
+  in void setpoint ();    // close loop and calculate actuator input
+  in void reset ();  // open loop
+  out void unset (); // sponaneous open loop
+
+  behavior
+  {
+    bool active = false;
+    on setpoint: active = true;
+    [active] {
+      on reset: active = false;
+      on optional: {active = false; unset;}
+    }
+  }
+}
+
+interface itimer
+{
+  in void start ();
+  out void timeout ();
+  in void cancel ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on start: idle = false;
+    [!idle] on inevitable: timeout;
+    on cancel: idle = true;
+  }
+}
+
+interface iassert
+{
+  out void assert ();
+  behavior
+  {
+    on inevitable: assert;
+  }
+}

@@ -2001,25 +2001,47 @@ specification of a component is the component @ref{proxy}.
 
 Dezyne version 2.18.0 introduces shared interface variables.
 
-Before 2.18.0, for a component to access an interface state variable, it
-was necessary to create a `get-value' action in the interface and invoke
-the action in the component.  To use an interface's variable value in a
-component's guard, the value needed to be copied to a component
-variable.
+Before 2.18.0, for a component to be able to act on the state of another
+component through a guard, if or reply expression, it was necessary to
+define and maintain a shadow copy of said state, either by inferring its
+value or explicitly retrieving it via an action.
 
-Now, an interface variable can be accessed directly from the port by
+Now, components on either side of an interface can use and share the
+value of their interface state variables by referring to them via their
+respective ports in any expression.
+
 @code{port}.@code{variable}.
 
 @quotation Note
 Access is limited to reading only, assignments from the component
 behavior are prohibited.  Also, variables from ports marked
-@code{external} cannot be accessed.
+@code{external} are inaccessible, due to the process delay between both
+sides of the interface.
 @end quotation
 
 @quotation Note
 Shared interface variables are not inspected by @code{defer}.  As a
-consequence a component variable that changes state is required to
-cancel a @code{defer}, see @ref{Component Defer} for more information.
+consequence an explicit component variable that changes state is
+required to cancel a @code{defer}, see @ref{Component Defer} for more
+information.
+@end quotation
+
+Shared interface state further enhances an existing Dezyne pattern,
+where an @code{assert} event combined with a predicate guarding an
+illegal is used to define a user defined functional property across
+multiple components.  An example of this is used by the
+@code{cruise_control} example below.  Here the cruise_control explicitly
+checks for unwanted acceleration due to not resetting the throttle or
+forgetting to stop the timer, as well as the converse property.
+
+@example
+@verbatiminclude examples/cruise-control-interfaces.dzn
+@verbatiminclude examples/cruise-control.dzn
+@end example
+
+@quotation Note
+This Dezyne pattern is intended to become a first class citizen in the
+Dezyne language when the Module model type is added.
 @end quotation
 
 @node Error Handling and Recovery
