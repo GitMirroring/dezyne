@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -28,6 +28,7 @@ UNIT_TESTS =					\
   %D%/lts.scm					\
   %D%/makreel.scm				\
   %D%/normalize.scm				\
+  %D%/serialize.scm				\
   %D%/silence.scm
 
 dist_%C%_scm_DATA =				\
