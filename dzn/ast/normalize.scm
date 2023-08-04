@@ -934,6 +934,7 @@ to a separate statement, for mCRL2."
     (match o
       ((and ($ <compound>) (? ast:declarative?))
        (clone o #:elements (map (passdown-formal-bindings formal-bindings) (ast:statement* o))))
+      (($ <declarative-illegal>) o)
       ((? ast:declarative?) (clone o #:statement ((passdown-formal-bindings formal-bindings) (.statement o))))
       (($ <compound>) (clone o #:elements (cons formal-bindings (ast:statement* o))))
       (_ (make <compound> #:elements (cons formal-bindings (list o))))))

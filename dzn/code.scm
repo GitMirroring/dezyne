@@ -750,9 +750,9 @@ and pass it as argument accordingly."
       code:annotate-shells
       (add-explicit-temporaries #:call-only? #t)
       add-reply-port
+      (binding-into-blocking)
       normalize:event+illegals
       remove-otherwise
-      (binding-into-blocking)
       code:add-calling-context)
      ast)))
 
