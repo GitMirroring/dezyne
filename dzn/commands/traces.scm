@@ -156,40 +156,43 @@ Generate exhaustive set of traces for Dezyne model
          (queue-size-external (option-ref options 'queue-size-external
                                           (%queue-size-external))))
     (define (named? o)
-      (equal? (makreel:unticked-dotted-name o) model-name))
-    (parameterize ((%language "makreel")
+      (equal? (ast:dotted-name o) model-name))
+    (parameterize ((%context (%context))
+                   (%language "makreel")
                    (%no-unreachable? #t)
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
       (let* ((ast (parse options file-name))
-             (root (makreel:normalize ast))
-             (models (ast:model** root))
+             (models (ast:model** ast))
              (components-interfaces
               (append
                (filter (conjoin (is? <component>) .behavior) models)
                (filter (is? <interface>) models)))
              (model (or (and model-name (find named? models))
                         (and (pair? components-interfaces)
-                             (car components-interfaces)))))
+                             (car components-interfaces))))
+             (model-name (ast:dotted-name model)))
         (when (and=> model ast:imported?)
           (let ((name (ast:dotted-name model)))
             (format (current-error-port)
                     "~a:error: cannot generate traces for imported model: ~a\n"
-                    (ast:source-file root)
+                    (ast:source-file ast)
                     name)
             (format (current-error-port)
                     "~a:info: ~a imported from here\n"
                     (ast:source-file model)
                     name))
           (exit EXIT_OTHER_FAILURE))
-        (cond ((and model-name (not model))
-               (error "no such model:" model-name))
-              ((is-a? model <system>) ;; silently no traces
-               #t)
-              ((and model-name
-                    (or (is-a? model <foreign>)
-                        (not (.behavior model))))
-               (error "no model with behavior:" model-name))
-              (model
-               (model->traces options root model)))))))
+        (let ((root (makreel:normalize ast)))
+          (cond ((and model-name (not model))
+                 (error "no such model:" model-name))
+                ((is-a? model <system>) ;silently no traces
+                 #t)
+                ((and model-name
+                      (or (is-a? model <foreign>)
+                          (not (.behavior model))))
+                 (error "no model with behavior:" model-name))
+                (model
+                 (let ((model (makreel:get-model root model-name)))
+                   (model->traces options root model)))))))))

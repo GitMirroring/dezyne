@@ -429,11 +429,12 @@
            (out-formals (filter (negate ast:in?) formals))
            (formals (map cs:->formal formals))
            (formal-bindings (filter (is? <formal-binding>) (ast:formal* trigger)))
-           (out-bindings (make <out-bindings>
-                           #:elements formal-bindings
-                           #:port (.port trigger)))
            (on (ast:parent trigger <on>))
-           (out-bindings (clone out-bindings #:parent on))
+           (parent (or (and=> on .statement)
+                       o))
+           (out-bindings (graft parent (make <out-bindings>
+                                         #:elements formal-bindings
+                                         #:port (.port trigger))))
            (out-binding (code:out-binding port))
            (this-out-binding (code:member out-binding))
            (type (ast:type trigger))

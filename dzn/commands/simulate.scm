@@ -28,6 +28,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn ast ast)
+  #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
   #:use-module (dzn code)
@@ -102,10 +103,6 @@ Simulate a Dezyne model
          (files (option-ref options '() '()))
          (file-name (car files))
          (model-name (option-ref options 'model #f))
-         ;; Parse --model=MODEL cuts MODEL from AST; avoid that
-         (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
-         (ast (parameterize ((%language "makreel"))
-                (parse parse-options file-name)))
          (no-compliance? (option-ref options 'no-compliance #f))
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (no-interface-determinism?
@@ -126,7 +123,8 @@ Simulate a Dezyne model
          (locations? (command-line:get 'locations verbose?))
          (trace (command-line:get 'format "trace"))
          (trail (option-ref options 'trail #f)))
-    (parameterize ((%language "makreel"))
+    (parameterize ((%context (%context))
+                   (%language "makreel"))
       (let* ((ast (parse options file-name))
              (status (simulate ast
                                #:model-name model-name

@@ -96,7 +96,7 @@ EVENT."
          (let* ((range (.range type))
                 (from (.from range)))
            (map number->string (iota (1+ (- (.to range) from)) from))))
-        (($  <void>)
+        (($ <void>)
          (if (ast:out? event) '()
              '("return"))))))
   (let ((event-name (.name event)))

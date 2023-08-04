@@ -50,7 +50,7 @@
 ;;;
 ;;; Code:
 
-(define (ast:wfc o)
+(define-method (ast:wfc (o <root>))
   (let* ((messages (wfc o))
          (errors (filter (is? <error>) messages))
          (messages (filter (is? <message>) messages)))
@@ -933,8 +933,7 @@
   (or (as (wfc o) <pair>)
       (let ((type (ast:type o)))
         (cond
-         ((and (not type)
-               (not (is-a? type <named>)))
+         ((not type)
           `(,(wfc-error o (format #f "typed expression expected `~a'" (ast-name o)))))
          ((not type)
           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
@@ -1392,9 +1391,12 @@
   (define (binding->end-points binding)
     `(,(.left binding) ,(.right binding)))
   (define (port->end-point port)
-    (make <end-point> #:location (.location port) #:port.name (.name port)))
+    (graft port (make <end-point>
+                  #:location (.location port)
+                  #:port.name (.name port))))
   (define (instance->end-point instance)
-    (map (compose (cute make <end-point>
+    (map (compose (cute graft instance <>)
+                  (cute make <end-point>
                         #:location (.location instance)
                         #:instance.name (.name instance)
                         #:port.name <>)
@@ -1526,10 +1528,10 @@
                                  instances))
          (right-instances (filter (lambda (i) (find (lambda (b) (equal? (.name i) (.instance.name (.left b)))) right-required-bindings))
                                   instances)))
-    (cons (.node o) (append left-instances right-instances))))
+    (cons o (append left-instances right-instances))))
 
 (define-method (all-required (o <instance>) (s <system>) required-alist)
-  (define (req i) (or (assq-ref required-alist (.node i)) '()))
+  (define (req i) (or (assq-ref required-alist i) '()))
   (define (all-req o found)
     (if (find (cut ast:eq? o <>) found) found
         (let ((found (cons o found)))

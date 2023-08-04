@@ -33,10 +33,12 @@
   #:use-module (ice-9 regex)
   #:use-module (ice-9 string-fun)
 
+  #:use-module (dzn ast context)
   #:use-module (dzn ast display)
   #:use-module (dzn ast ast)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast normalize)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn code ast)
   #:use-module (dzn code shared)
@@ -115,7 +117,11 @@
             code:short-circuit?
             code:type->string
             code:type-name
-            code:wrap-compound))
+            code:wrap-compound
+            code:variable->argument
+            string->enum-field)
+  #:re-export (.port
+               .port.name))
 
 ;;;
 ;;; Parameters.
@@ -389,12 +395,13 @@
        file-name))))
 
 (define-method (code:wrap-compound o)
-  (let ((compound (make <compound> #:elements (list o))))
-    (clone compound #:parent (.parent o))))
+  (graft (.parent o) (make <compound> #:elements (list o))))
 
 (define-method (code:number-formals formals)
-  (map (cute clone <> #:name <>)
-       formals (iota (length formals))))
+  (let ((parent (any .parent formals)))
+    (map (compose (cute graft parent <>)
+                  (cute clone <> #:name <>))
+         formals (iota (length formals)))))
 
 (define-method (code:number-argument (o <formal>))
   (if (ast:in? o) (.name o)
@@ -469,8 +476,9 @@ in code backends like c."
                 (vector->list lts)))
     lts))
 
-(define code:shared-lts
-  (ast:perfect-funcq code:shared-lts-unmemoized))
+(define (code:shared-lts o)
+  (parameterize ((%context (%context)))
+    ((ast:perfect-funcq code:shared-lts-unmemoized) o)))
 
 (define-method (code:shared (o <event>))
   "Return a list of transitions for event O from the interface LTS"
@@ -738,12 +746,12 @@ and pass it as argument accordingly."
     ((and ($ <system>)
           (? (compose (cute member <> (%shell))
                       ast:dotted-name)))
-     (let ((shell (make <shell-system>
-                    #:ports (.ports o)
-                    #:name (.name o)
-                    #:instances (.instances o)
-                    #:bindings (.bindings o))))
-       (clone shell #:parent (.parent o))))
+     (graft* (.parent o)
+             (make <shell-system>
+               #:ports (.ports o)
+               #:name (.name o)
+               #:instances (.instances o)
+               #:bindings (.bindings o))))
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <namespace>))
@@ -753,13 +761,13 @@ and pass it as argument accordingly."
 (define (code:normalize- ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
-      code:annotate-shells
-      add-reply-port
-      (binding-into-blocking)
-      normalize:event+illegals
-      remove-otherwise
-      code:add-calling-context
-      (add-explicit-temporaries #:call-only? #t))
+      (with-root code:annotate-shells)
+      (with-root add-reply-port)
+      (with-root (binding-into-blocking))
+      (with-root normalize:event+illegals)
+      (with-root remove-otherwise)
+      (with-root code:add-calling-context)
+      (with-root (add-explicit-temporaries #:call-only? #t)))
      ast)))
 
 (define (code:normalize ast)

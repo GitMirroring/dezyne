@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -34,6 +34,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast ast)
+  #:use-module (dzn ast context)
   #:use-module (dzn ast util)
   #:use-module (dzn misc)
 
@@ -64,10 +65,15 @@
             ast:full-name
             ast:name
             ast:name+scope
-            ast:parent
-            ast:path
             ast:scope)
-  #:re-export (.variable.name))
+  #:re-export (%root
+
+               .variable.name
+               .parent
+
+               ast:memoize-context
+               ast:parent
+               ast:path))
 
 ;;;
 ;;; Direct accessors.
@@ -187,8 +193,17 @@
         (append (ast:full-name (ast:parent o <scope>))
                 (list-head ids 1)))))
 
+(define-method (ast:full-name-extern (o <scope.name>))
+  (let ((ids (.ids o)))
+    (if (pair? (cdr ids)) ids
+        (append (ast:full-name (ast:parent o <scope>))
+                (list-head ids 1)))))
+
 (define-method (ast:full-name (o <named>))
-  (ast:full-name (.name o)))
+  (and=> (.name o) ast:full-name))
+
+(define-method (ast:full-name (o <extern>))
+  (and=> (.name o) ast:full-name-extern))
 
 (define-method (ast:full-name (o <bool>))
   '("bool"))
@@ -214,6 +229,8 @@
     (cond
      ((not scope)
       #f)
+     ((and (is-a? o <named>) (not (.name o)))
+      #f)
      ((is-a? o <named>)
       (append (ast:full-name scope) (list (ast:name o))))
      (else
@@ -232,23 +249,3 @@
 
 (define-method (ast:full-name (o <ast>))
   (ast:full-name (ast:parent o <scope>)))
-
-
-;;;
-;;; Algorithmic accessors.
-;;;
-(define-method (ast:path (o <ast>))
-  (ast:path o (negate identity)))
-
-(define-method (ast:path (o <ast>) stop?)
-  (unfold stop? identity .parent o))
-
-(define-method (ast:parent o (class <class>)) #f)
-(define-method (ast:parent (o <ast>) (class <class>))
-  (let ((parent (.parent o)))
-    (or (as parent class)
-        (ast:parent parent class))))
-(define-method (ast:parent (o <ast>) (predicate <applicable>))
-  (let loop ((o o))
-    (if (predicate o) o
-        (loop (.parent o)))))
