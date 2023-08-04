@@ -176,9 +176,9 @@
                as
                ast-name
                clone
+               constructor-name
                graft
                graft*
-               drop-<>
                is?
                tree-collect
                tree-collect-filter

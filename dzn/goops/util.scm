@@ -31,8 +31,16 @@
 (define-method (constructor-name (o <string>))
   (match:substring (string-match "^<(.*)>$" o) 1))
 
+(define %class->constructor-alist
+  `((and . -and-)
+    (if . -if-)
+    (not . -not-)
+    (or . -or-)))
+
 (define-method (constructor-name (o <symbol>))
-  (string->symbol (constructor-name (symbol->string o))))
+  (let ((name (string->symbol (constructor-name (symbol->string o)))))
+    (or (assq-ref %class->constructor-alist name)
+        name)))
 
 (define-method (constructor-name (o <class>))
   (constructor-name (class-name o)))

@@ -45,6 +45,12 @@
   #:re-export (class-name
                class-of))
 
+(define-method (drop-<> (o <string>))
+  (string-drop (string-drop-right o 1) 1))
+
+(define-method (drop-<> (o <symbol>))
+  (string->symbol (drop-<> (symbol->string o))))
+
 (eval-when (compile load expand)
   (define (template->tree file-name)
     (define-peg-string-patterns

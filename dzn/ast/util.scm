@@ -39,13 +39,13 @@
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast context)
   #:use-module (dzn ast goops)
+  #:use-module (dzn goops util)
   #:use-module (dzn misc)
 
   #:export (ast-name
             clone
             clone-top
             clone+root
-            drop-<>
             graft
             graft*
             tree-collect
@@ -54,7 +54,8 @@
             tree-filter
             tree-find
             tree-map
-            tree-transform))
+            tree-transform)
+  #:re-export (constructor-name))
 
 (define ast:keyword+child* (@@ (dzn ast context) ast:keyword+child*))
 (define ast:child* (@@ (dzn ast context) ast:child*))
@@ -143,14 +144,8 @@ create a fresh clone, and #true if any slots need mutation."
 ;;;
 ;;; Ast utilities.
 ;;;
-(define-method (drop-<> (o <string>))
-  (string-drop (string-drop-right o 1) 1))
-
-(define-method (drop-<> (o <symbol>))
-  (string->symbol (drop-<> (symbol->string o))))
-
 (define-method (ast-name (o <class>))
-  (symbol->string (drop-<> (class-name o))))
+  (symbol->string (constructor-name o)))
 
 (define-method (ast-name (o <top>))
   (ast-name (class-of o)))
