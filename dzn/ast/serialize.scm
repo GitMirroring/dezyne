@@ -37,27 +37,27 @@
 (define-method (serialize-slot (o <object>) name port)
   (let* ((value (slot-ref o name)))
     (when value
-      (cond ((eq? name 'elements)
-             (when (pair? value)
-               (for-each (lambda (x) (display " " port) (serialize x port) ) value)))
-            ((is-a? value <location-node>)
-             (display " (" port)
-             (serialize name port)
-             (serialize value port)
-             (display ")" port))
-            ((is-a? value <scope.name-node>)
-             (display " (" port)
-             (serialize name port)
-             (display " ." port)
-             (serialize value port)
-             (display ")" port))
-            (else
-             (display " (" port)
-             (serialize name port)
-             (when (not (null? value))
-               (display " . " port)
-               (serialize value port))
-             (display ")" port))))))
+      (cond((eq? name 'elements)
+            (when (pair? value)
+              (for-each (lambda (x) (display " " port) (serialize x port) ) value)))
+           ((is-a? value <location>)
+            (display " (" port)
+            (serialize name port)
+            (serialize value port)
+            (display ")" port))
+           ((is-a? value <scope.name>)
+            (display " (" port)
+            (serialize name port)
+            (display " ." port)
+            (serialize value port)
+            (display ")" port))
+           (else
+            (display " (" port)
+            (serialize name port)
+            (when (not (null? value))
+              (display " . " port)
+              (serialize value port))
+            (display ")" port))))))
 
 (define-method (serialize-slots (o <object>) port)
   (for-each
@@ -66,7 +66,7 @@
      (if (%locations?) slots
          (filter (negate (cut eq? <> 'location)) slots)))))
 
-(define-method (serialize (o <scope.name-node>) port)
+(define-method (serialize (o <scope.name>) port)
   (display " " port)
   (display (string-join (.ids o) ".") port))
 
@@ -78,13 +78,10 @@
 (define-method (serialize (o <string>) port)
   (write o port))
 
-(define-method (serialize (o <ast>) port)
-  (serialize (.node o) port))
-
 (define-method (serialize (o <object>) port)
   (display "(" port)
   (display "(" port)
-  (serialize (ast-name o) port)
+  (display (ast-name o) port)
   (serialize-slots o port)
   (display ")" port)
   (display ")" port))
@@ -101,9 +98,6 @@
     (display " . " port)
     (serialize (cdr o) port))
   (display ")" port))
-
-(define-method (serialize (o <root>) port)
-  (serialize (.node o) port))
 
 (define (ast:serialize ast)
   (with-input-from-string

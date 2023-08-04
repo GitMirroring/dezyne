@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -185,11 +185,11 @@
        (string->symbol o))
       (((and (? string?) o) ..1)        ;scope
        (string->symbol (string-join o ".")))
-      (($ <scope.name-node>)            ;name
+      (($ <scope.name>)                 ;name
        (object->key (string-join (.ids o) ".")))
       (_ o)))                           ;eq?-ness already stable.
   (lambda args
-    (let* ((key (cons base-func (map (compose object->key ast:unwrap) args)))
+    (let* ((key (cons base-func (map object->key args)))
            (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
       (funcq-buffer key)
       (if (not (eq? cached not-found)) cached
@@ -279,10 +279,10 @@ null) and return its CONTEXT."
       (search-or-widen-context scope name context)))))
 
 (define ast:lookup-memoized (ast:perfect-funcq ast:lookup-unmemoized))
-(define-method (ast:lookup (context <ast>) name)
-  (let* ((context (or (as context <scope>) (ast:parent context <scope>)))
-         (root (or (as context <root>) (ast:parent context <root>))))
-    (ast:lookup-memoized root context name)))
+(define-method (ast:lookup (o <ast>) name)
+  (let ((scope (or (as o <scope>) (ast:parent o <scope>)))
+        (root (or (as o <root>) (ast:parent o <root>))))
+    (ast:lookup-memoized root scope name)))
 (define-method (ast:lookup name)
   (ast:lookup name name))
 
@@ -389,10 +389,10 @@ null) and return its CONTEXT."
                         (ast:parent o <interface>))))
     (cond ((and (not port-name)
                 (equal? (.event.name o) "inevitable"))
-           (clone (ast:inevitable) #:parent interface))
+           (graft interface (make <inevitable>)))
           ((and (not port-name)
                 (equal? (.event.name o) "optional"))
-           (clone (ast:optional) #:parent interface))
+           (graft interface (make <optional>)))
           (else (and
                  interface
                  (let ((event (ast:lookup interface (.event.name o))))
@@ -408,7 +408,10 @@ null) and return its CONTEXT."
   (and (.function.name o) (ast:lookup model (.function.name o))))
 
 (define-method (.function (o <call>))
-  (and (.function.name o) (ast:lookup o (.function.name o))))
+  (and (.function.name o)
+       (ast:lookup
+        (and=> (ast:parent o <behavior>) .functions)
+        (.function.name o))))
 
 (define-method (.variable (o <assign>))
   (and=> (.variable.name o) (cute ast:lookup-variable o <>)))
@@ -484,7 +487,13 @@ null) and return its CONTEXT."
 
 (define-method (.direction (o <formal>))
   (let ((type-name (.type.name o)))
-    (if type-name (.direction (.node o))
+    (if type-name ((@ (oop goops) slot-ref) o 'direction)
+        (let ((formal (ast:event-formal o)))
+          (and formal (.direction formal))))))
+
+(define-method (.direction (o <formal-binding>))
+  (let ((type-name (.type.name o)))
+    (if type-name ((@ (oop goops) slot-ref) o 'direction)
         (let ((formal (ast:event-formal o)))
           (and formal (.direction formal))))))
 

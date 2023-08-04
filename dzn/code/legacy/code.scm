@@ -153,8 +153,8 @@
 
 (define (make-out-formal formal)
   (let* ((type (.type.name formal))
-         (out-formal (make <out-formal> #:name (.name formal) #:type.name type))
-         (out-formal (clone out-formal #:parent formal)))
+         (out-formal (graft formal (make <out-formal> #:name (.name formal)
+                                         #:type.name type))))
     (if (ast:in? formal) formal out-formal)))
 
 (define-method (code:variable-name (o <formal>))
@@ -226,10 +226,9 @@
 ;;;
 (define-method (code:expand-on (o <statement>))
   (if (and (is-a? o <guard>) (is-a? (.expression o) <otherwise>))
-      (clone (make <otherwise-guard>
-               #:expression (.expression o)
-               #:statement (.statement o))
-             #:parent (.parent o))
+      (graft o (make <otherwise-guard>
+                 #:expression (.expression o)
+                 #:statement (.statement o)))
       o))
 
 (define-method (code:expand-on (o <on>))
@@ -306,21 +305,19 @@
 
 (define-method (code:variable->argument (o <expression>) (v <variable>) (f <formal>))
   (if (or (code:class-member? v) (eq? (.direction f) 'in)) v
-      (let ((argument (make <argument>
-                        #:name (.name v)
-                        #:type.name (.type.name f)
-                        #:direction (.direction f)
-                        #:expression o)))
-        (clone argument #:parent (.parent o)))))
+      (graft o (make <argument>
+                 #:name (.name v)
+                 #:type.name (.type.name f)
+                 #:direction (.direction f)
+                 #:expression o))))
 
 (define-method (code:variable->argument (o <expression>) (v <formal>) (f <formal>))
   (if (eq? (.direction f) 'in) v
-      (let ((argument (make <argument>
-                        #:name (.name v)
-                        #:type.name (.type.name v)
-                        #:direction (.direction v)
-                        #:expression o)))
-        (clone argument #:parent (.parent o)))))
+      (graft o (make <argument>
+                 #:name (.name v)
+                 #:type.name (.type.name v)
+                 #:direction (.direction v)
+                 #:expression o))))
 
 (define-method (code:variable->argument (o <var>) (f <formal>))
   (code:variable->argument o (.variable o) f))
@@ -342,7 +339,10 @@
   (make <enum-field> #:type.name (.name enum) #:field o #:value i))
 
 (define-method (code:enum-field-definer (o <enum>))
-  (map (string->enum-field o) (ast:field* o) (iota (length (ast:field* o)))))
+  (let ((enum-fields (map (string->enum-field o)
+                          (ast:field* o)
+                          (iota (length (ast:field* o))))))
+    (map (cute graft* (.parent o) <>) enum-fields)))
 
 (define-method (code:enum-name (o <enum-field>))
   ((compose code:enum-name .type) o))

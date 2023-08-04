@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -27,8 +27,9 @@
   #:use-module (ice-9 hcons)
   #:use-module (ice-9 match)
 
-  #:use-module (dzn ast)
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast util)
+  #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
@@ -315,7 +316,7 @@ program-counters produced by taking a step."
   (define* ((mark-pc input orig-pc) pc)
     (let ((statement (.statement orig-pc)))
       (%debug "match fail, ast ~s ~a, input ~s\n" (name statement)
-              (and (is-a? statement  <action>)
+              (and (is-a? statement <action>)
                    (and=> (trace->trail orig-pc) cdr))
               input)
       (cond ((.status pc)
@@ -662,7 +663,7 @@ until RTC?."
 
 (define-method (run-silent (pc <program-counter>) event)
   (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
+         (trigger (graft* component (string->trigger event)))
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
          (traces (run-silent pc port-instance)))
@@ -716,7 +717,7 @@ until RTC?."
                                                             trigger)))
                    (equal? (trigger->string trigger) event)))))))
   (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
+         (trigger (graft* component (string->trigger event)))
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
          (traces (run-external-modeling pc port-instance))
@@ -751,7 +752,7 @@ until RTC?."
 (define-method (run-requires-flush (pc <program-counter>) event)
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (string->trigger event))
-         (trigger (clone trigger #:parent component))
+         (trigger (graft* component trigger))
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
          (component-port (runtime:other-port port-instance))
@@ -784,7 +785,7 @@ until RTC?."
   (%debug "run-requires... ~s\n" event)
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (string->trigger event))
-         (trigger (clone trigger #:parent component))
+         (trigger (graft* component trigger))
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
          (interface ((compose .type .ast) port-instance))
@@ -821,7 +822,7 @@ until RTC?."
                (defer-qout (make <defer-qout>
                              #:statement statement
                              #:location (.location statement)))
-               (defer-qout (clone defer-qout #:parent (.parent statement)))
+               (defer-qout (graft* (.parent statement) defer-qout))
                (pc (clone pc
                           #:defer (cdr defer)
                           #:running-defer? instance
@@ -869,14 +870,15 @@ until RTC?."
     (define (q-trigger q-trigger)
       (let* ((port-name (.name (.ast other-port)))
              (trigger (.trigger pc))
-             (q-trigger (make <q-trigger>
-                          #:event.name (.event.name q-trigger)
-                          #:port.name port-name
-                          #:location (.location q-trigger))))
-        (clone q-trigger #:parent (.type (.ast other-instance)))))
+             (parent (.type (.ast other-instance))))
+        (graft parent (make <q-trigger>
+                        #:event.name (.event.name q-trigger)
+                        #:port.name port-name
+                        #:location (.location q-trigger)))))
     (let* ((pc trigger (dequeue-external pc instance))
            (q-in (make <q-in> #:trigger trigger))
            (q-in (clone q-in #:location (.location trigger)))
+           (q-in (graft (.parent trigger) q-in))
            (pc (push-pc pc other-instance q-in))
            (q-trigger (q-trigger trigger))
            (pc (enqueue pc trigger other-instance q-trigger))

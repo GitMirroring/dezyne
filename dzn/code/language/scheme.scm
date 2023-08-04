@@ -246,7 +246,7 @@
 (define (scheme:normalize ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
-      wrap-lonely-variable
+      (with-root wrap-lonely-variable)
       code:normalize)
      ast)))
 
@@ -269,7 +269,6 @@
                  (%type-prefix ""))
     (let ((root (scheme:normalize root))
           (indenter (cut sm:indenter <> #:open #\( #:close #\) #:no-indent "")))
-
       (let ((generator (indenter (cute x:source root)))
             (file-name (code:root-file-name root dir ".scm")))
         (code:dump generator #:file-name file-name))

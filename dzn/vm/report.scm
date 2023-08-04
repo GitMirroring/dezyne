@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -32,6 +32,7 @@
   #:use-module (ice-9 rdelim)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn code language dzn)
   #:use-module (dzn misc)
@@ -284,7 +285,8 @@
     (cons q-out (trigger->string trigger))))
 
 (define-method (pc->event (pc <program-counter>) (o <trigger-return>))
-  (pc->event (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
+  (let ((o (graft o #:event.name (format #f "~a" (.event.name o)))))
+    (pc->event (.instance pc) o)))
 
 (define-method (pc->event (o <runtime:port>) (return <trigger-return>))
   (cons return
@@ -342,7 +344,8 @@
             (format #f "~a.~a" (trace-name r:port) (.event.name action)))))))
 
 (define-method (pc->component-event (pc <program-counter>) (o <trigger-return>))
-  (pc->component-event (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
+  (let ((o (graft o #:event.name (format #f "~a" (.event.name o)))))
+    (pc->component-event (.instance pc) o)))
 
 (define-method (pc->component-event (o <runtime:component>) (return <trigger-return>))
   (cons return
@@ -520,7 +523,8 @@
           (format #f "~a.~a <- ..." (runtime:instance->string r:port) (.event.name trigger)))))
 
 (define-method (pc->arrow (pc <program-counter>) (o <trigger-return>))
-  (pc->arrow (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
+  (let ((o (graft o #:event.name (format #f "~a" (.event.name o)))))
+    (pc->arrow (.instance pc) o)))
 
 (define-method (pc->arrow (o <runtime:port>) (return <trigger-return>))
   (cons return
@@ -661,9 +665,9 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (interface (.type port))
                    (trigger (.trigger pc))
                    (trigger (make <synth-trigger> #:event.name (.event.name trigger)))
-                   (trigger (clone trigger #:parent interface))
+                   (trigger (graft* interface trigger))
                    (initial-compound (make <initial-compound>))
-                   (initial-compound (clone initial-compound #:parent interface))
+                   (initial-compound (graft interface initial-compound))
                    (trigger-pc (clone pc
                                       #:trigger trigger
                                       #:statement initial-compound)))
@@ -692,10 +696,9 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
             (let* ((port (.port statement))
                    (r:port (runtime:port pc-instance port))
                    (r:other-port (and r:port (runtime:other-port r:port)))
-                   (action (clone statement #:port.name #f))
                    (other-port (.ast r:other-port))
                    (other-interface (.type other-port))
-                   (action (clone action #:parent other-interface))
+                   (action (graft* other-interface statement #:port.name #f))
                    (action-pc (clone pc #:instance r:other-port #:statement action)))
               (loop (cdr trace) (cons* pc action-pc result))))
            ((and next
@@ -706,8 +709,9 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                  (pair? (.q (get-state next (.deferred (get-state next))))))
             (let* ((deferred (.deferred (get-state next)))
                    (trigger (car (.q (get-state next deferred))))
-                   (q-in (make <q-in> #:trigger trigger #:location (.location trigger)))
-                   (q-in (clone q-in #:parent (.ast deferred)))
+                   (location (.location trigger))
+                   (q-in (make <q-in> #:trigger trigger #:location location))
+                   (q-in (graft (.ast deferred) q-in))
                    (q-pc (clone pc #:instance deferred #:statement q-in)))
               (loop (cdr trace) (cons* pc q-pc result))))
            ((and (is-a? statement <action>)
@@ -725,10 +729,9 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (r:port (runtime:port pc-instance port))
                    (r:other-port (and r:port (runtime:other-port r:port)))
                    (interface (.type port))
-                   (action (clone statement
-                                  #:port.name #f
-                                  #:location (.location statement)))
-                   (action (clone action #:parent interface))
+                   (action (graft* interface statement
+                                   #:port.name #f
+                                   #:location (.location statement)))
                    (action-pc (clone pc
                                      #:instance r:other-port
                                      #:statement action)))
@@ -742,8 +745,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (other-port (.ast r:other-port))
                    (other-interface (.type other-port))
                    (trigger (clone trigger #:port.name #f))
-                   (qin (clone statement #:trigger trigger))
-                   (qin (clone qin #:parent other-interface))
+                   (qin (graft* other-interface statement #:trigger trigger))
                    (qin-pc (clone pc #:instance r:other-port #:statement qin)))
               (loop (cdr trace) (cons* qin-pc pc result))))
            ((and (is-a? statement <q-out>)
@@ -752,7 +754,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (port (.port trigger))
                    (r:port (runtime:port pc-instance port))
                    (r:other-port (and r:port (runtime:other-port r:port)))
-                   (q-trigger (clone trigger #:port.name #f))
+                   (q-trigger (graft trigger #:port.name #f))
                    (on (find (conjoin
                               (compose (is? <on>) .statement)
                               (compose (cute eq? <> pc-instance) .instance))
@@ -760,10 +762,10 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (on (and on (.statement on)))
                    (location (if on (.location on) (.location statement)))
                    (pc (clone pc #:statement (clone statement #:location location)))
-                   (q-out (clone statement #:trigger q-trigger #:location location))
                    (other-port (.ast r:other-port))
                    (other-interface (.type other-port))
-                   (q-out (clone q-out #:parent other-interface))
+                   (q-out (graft* other-interface statement
+                                  #:trigger q-trigger #:location location))
                    (q-pc (clone pc #:instance r:other-port #:statement q-out)))
               (loop (cdr trace) (cons* q-pc pc result))))
            ((and next
@@ -791,10 +793,9 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (port-name (if (or (not r:other-port) (eq? r:port r:other-port)) (injected-port-name component interface)
                                   (.name (.ast r:other-port))))
                    (action (and r:other-port (any (cute action-matches? (.container r:other-port) <>) trace)))
-                   (return (clone statement
-                                  #:port.name port-name
-                                  #:location (.location (or action statement))))
-                   (return (clone return #:parent component))
+                   (return (graft* component statement
+                                   #:port.name port-name
+                                   #:location (.location (or action statement))))
                    (return-pc (clone pc #:instance next-instance #:statement return)))
               (loop (cdr trace) (cons* pc return-pc result))))
            (else
@@ -817,8 +818,9 @@ the location of the executed <on>-statement."
                (triggers (and on (ast:trigger* on)))
                (on-trigger (and triggers
                                 (find (cute ast:equal? <> trigger) triggers)))
+               (parent (and trigger (.parent trigger)))
                (trigger (and trigger on-trigger
-                             (clone trigger #:location (.location on-trigger))))
+                             (graft trigger #:location (.location on-trigger))))
                (pc (if (not trigger) pc (clone pc #:trigger trigger))))
           (cons pc (loop (cdr trace)))))))
 

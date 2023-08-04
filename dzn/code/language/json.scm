@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -49,7 +49,7 @@
 
 (define-class <json:fieldlist> (<json:field>))
 
-(define-method (json:get-fields (o <ast-node>))
+(define-method (json:get-fields (o <ast>))
   (let* ((names (map slot-definition-name (class-slots (class-of o))))
          (names (if (%locations?)
                     names
@@ -71,15 +71,8 @@
 (define-method (json:name (o <json:field>))
   (nodot (symbol->string (.name o))))
 
-(define-method (json:get-fields (o <ast>))
-  (json:get-fields (.node o)))
-
-
-(define-method (json:elements (o <ast-list-node>))
-  (map json:value (.elements o)))
-
 (define-method (json:elements (o <ast-list>))
-  (json:elements (.node o)))
+  (map json:value (.elements o)))
 
 (define (unspecified? x) (eq? x *unspecified*))
 
@@ -106,7 +99,7 @@
                    (ast:filter-model root model)))
          (root (if (%locations?) root (remove-location root)))
          (file-name (code:root-file-name root dir ".json"))
-         (generate (cute x:source (.node root))))
+         (generate (cute x:source root)))
     (code:dump generate #:file-name file-name)))
 
 (define* (ast-> ast #:key dir model)

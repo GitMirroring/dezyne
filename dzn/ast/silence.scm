@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -30,6 +30,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:export (silence:annotate-functions))

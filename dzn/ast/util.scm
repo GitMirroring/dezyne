@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -29,22 +29,23 @@
 (define-module (dzn ast util)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
-  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 match)
   #:use-module ((oop goops)
-                #:select (class-slots slot-definition-getter
-                                      slot-definition-name slot-ref))
+                #:select (class-slots slot-definition-name slot-ref))
 
+  #:use-module (dzn ast accessor)
+  #:use-module (dzn ast context)
   #:use-module (dzn ast goops)
   #:use-module (dzn misc)
 
-  #:export (as
-            ast-name
+  #:export (ast-name
             clone
-            clone-base
-            deep-clone
+            clone-top
             drop-<>
-            is?
+            graft
+            graft*
             tree-collect
             tree-collect-filter
             tree-filter
@@ -52,7 +53,112 @@
             tree-map))
 
 ;;;
-;;; Utilities.
+;;; Clone, graft.
+;;;
+(define-method (keyword-values+mutate? (o <object>) . keyword-values)
+  "Return multiple values; the full list of paired KEYWORD-VALUES to
+create a fresh clone, and #true if any slots need mutation."
+  (define (make-pair name)
+    (list (symbol->keyword name) (slot-ref o name)))
+  (define (car-eq? a b)
+    (eq? (car a) (car b)))
+  (let* ((class (class-of o))
+         (slots (class-slots class))
+         (names (map slot-definition-name slots))
+         (actual-keyword-values (map make-pair names))
+         (keyword-values
+          (fold (lambda (elem previous)
+                  (if (or (null? previous) (pair? (car previous)))
+                      (cons elem previous)
+                      (cons (list (car previous) elem) (cdr previous))))
+                '()
+                keyword-values))
+         (invalid (lset-difference equal?
+                                   (map car keyword-values)
+                                   (map car actual-keyword-values)))
+         (mutate (lset-difference equal?
+                                  keyword-values
+                                  actual-keyword-values))
+         (missing (lset-difference car-eq?
+                                   actual-keyword-values
+                                   keyword-values))
+         (keyword-values (append missing keyword-values)))
+    (when (pair? invalid)
+      (let ((slots (map car actual-keyword-values)))
+        (error (format #f "invalid keyword arguments in ~a: ~a; slots = ~a\n"
+                       o invalid slots))))
+    (values keyword-values (pair? mutate))))
+
+(define-method (clone-top (o <object>) . keyword-values)
+  "Return fresh clone of O, mutating slots from KEYWORD-VALUES."
+  (let ((paired-keyword-values
+         (apply keyword-values+mutate? o keyword-values))
+        (class (class-of o)))
+    (apply make class (apply append paired-keyword-values))))
+
+(define-method (clone (o <ast>) . keyword-values)
+  (apply clone-top o keyword-values))
+
+(define-method (deep-copy (o <ast>))
+  "Make a unique identical copy of O and of its children."
+  (define (make-pair name)
+    (list (symbol->keyword name)
+          (deep-copy (slot-ref o name))))
+  (let* ((class (class-of o))
+         (slots (class-slots class))
+         (names (map slot-definition-name slots))
+         (paired-members (map make-pair names)))
+    (apply make class (apply append paired-members))))
+
+(define-method (deep-copy (o <top>))
+  "Do not copy objects without children."
+  o)
+
+(define-method (deep-copy (o <pair>))
+  "Support lists"
+  (cons (deep-copy (car o))
+        (deep-copy (cdr o))))
+
+(define-method (deep-copy* (parent <ast>) (o <ast>))
+  (let ((o (deep-copy o)))
+    (ast:memoize-context o (ast:context parent))
+    o))
+
+(define-method (deep-copy* (parent <ast>) (o <top>))
+  "Do not copy, nor memoize non-<ast> objects without children."
+  o)
+
+(define-method (graft (parent <ast>) (o <ast>))
+  (deep-copy* parent o))
+
+(define-method (graft (o <ast>) . keyword-values)
+  (let ((parent (.parent o)))
+    (unless parent
+      (apply throw 'no-parent "graft without parent" o keyword-values))
+    (deep-copy* parent (apply clone o keyword-values))))
+
+(define-method (graft* (parent <ast>) (o <ast>) . keyword-values)
+  (deep-copy* parent (apply clone o keyword-values)))
+
+
+;;;
+;;; Ast utilities.
+;;;
+(define-method (drop-<> (o <string>))
+  (string-drop (string-drop-right o 1) 1))
+
+(define-method (drop-<> (o <symbol>))
+  (string->symbol (drop-<> (symbol->string o))))
+
+(define-method (ast-name (o <class>))
+  (symbol->string (drop-<> (class-name o))))
+
+(define-method (ast-name (o <top>))
+  (ast-name (class-of o)))
+
+
+;;;
+;;; Tree utilities.
 ;;;
 (define-method (tree-find (predicate <applicable>) (o <top>))
   "Breadth first search of a tree element under O matching PREDICATE"
@@ -76,17 +182,16 @@
 (define-method (tree-map f o) o)
 
 (define-method (tree-map f (o <ast>))
-  (define (setters f names getters)
+  (define (setters f names)
     (zip (map symbol->keyword names)
-         (map (lambda (g) ((compose f g) o)) getters)))
-  (let* ((class (class-of (.node o)))
+         (map (compose f (cute slot-ref o <>)) names)))
+  (let* ((class (class-of o))
          (slots (class-slots class))
          (names (map slot-definition-name slots))
-         (getters (map slot-definition-getter slots))
-         (changed (setters f names getters))
-         (original (setters identity names getters)))
+         (changed (setters f names))
+         (original (setters identity names)))
     (if (equal? original changed) o
-        (apply clone (cons o (apply append changed))))))
+        (apply clone o (apply append changed)))))
 
 (define-method (tree-map f (o <ast-list>))
   (clone o #:elements (map f (.elements o))))
@@ -105,14 +210,13 @@
 
 (define-method (tree-collect-filter filter-predicate predicate (o <ast>))
   (if (not (filter-predicate o)) '()
-      (let* ((class (class-of (.node o)))
+      (let* ((class (class-of o))
              (slots (class-slots class))
-             (getters (map slot-definition-getter slots))
-             (children
-              (append-map
-               (lambda (g)
-                 (tree-collect-filter filter-predicate predicate (g o)))
-               getters)))
+             (slot-names (map slot-definition-name slots))
+             (elements (filter-map (cute slot-ref o <>) slot-names))
+             (children (append-map
+                        (cute tree-collect-filter filter-predicate predicate <>)
+                        elements)))
         (if (predicate o) (cons o children)
             children))))
 
@@ -125,90 +229,3 @@
 
 (define-method (tree-collect predicate o)
   (tree-collect-filter identity predicate o))
-
-(define-method (clone-base o . setters)
-  (define (make-pair name)
-    (list (symbol->keyword name) (slot-ref o name)))
-  (define (car-eq? a b)
-    (eq? (car a) (car b)))
-  (let* ((class (class-of o))
-         (slots (class-slots class))
-         (names (map slot-definition-name slots))
-         (paired-members (map make-pair names))
-         (paired-setters
-          (fold (lambda (elem previous)
-                  (if (or (null? previous) (pair? (car previous)))
-                      (cons elem previous)
-                      (cons (list (car previous) elem) (cdr previous))))
-                '()
-                setters))
-         (wrong (lset-difference equal?
-                                 (map car paired-setters)
-                                 (map car paired-members)))
-         (changed (lset-difference equal? paired-setters paired-members))
-         (unchanged (lset-difference car-eq? paired-members changed)))
-    (when (pair? wrong)
-      (error (format #f "WRONG SETTERS FOUND in ~a: ~a; names = ~a\n"
-                     o wrong names)))
-    (apply make (cons class (apply append (append unchanged changed))))))
-
-(define-method (clone-base-unwrap o . setters)
-  (let ((setters (if (memq #:parent setters) setters
-                     (map ast:unwrap setters))))
-    (apply clone-base (cons o setters))))
-
-(define-method (clone-base-node (o <ast-node>) . setters)
-  (apply clone-base-unwrap (cons o setters)))
-
-(define-method (clone-base-ast (o <ast>) . setters)
-  (apply clone-base-unwrap (cons o setters)))
-
-(define-method (clone (o <ast-node>) . setters)
-  (apply clone-base-node (cons o setters)))
-
-(define-method (clone (o <ast>) . setters)
-  (if (or (memq #:node setters) (memq #:parent setters))
-      (apply clone-base-ast (cons o setters))
-      (clone-base-ast o #:node (apply clone-base-node
-                                      (cons (.node o) setters)))))
-
-(define-method (deep-clone (o <ast-node>))
-  (define (make-pair name)
-    (list (symbol->keyword name)
-          (deep-clone (slot-ref o name))))
-  (let* ((class (class-of o))
-         (slots (class-slots class))
-         (names (map slot-definition-name slots))
-         (names (filter (negate (cute eq? <> 'parent)) names))
-         (paired-members (map make-pair names)))
-    (apply make (cons class (apply append paired-members)))))
-
-(define-method (deep-clone (o <top>))
-  o)
-
-(define-method (deep-clone (o <pair>))
-  (cons (deep-clone (car o))
-        (deep-clone (cdr o))))
-
-(define-method (deep-clone (o <ast>))
-  ((@@ (dzn ast goops) make-wrapper)
-   (deep-clone (ast:unwrap o))
-   (.parent o)))
-
-(define-method (drop-<> (o <string>))
-  (string-drop (string-drop-right o 1) 1))
-
-(define-method (drop-<> (o <symbol>))
-  (string->symbol (drop-<> (symbol->string o))))
-
-(define-method (ast-name (o <class>))
-  (symbol->string (drop-<> (class-name o))))
-
-(define-method (ast-name (o <top>))
-  (ast-name (class-of o)))
-
-(define (as o c)
-  (and (is-a? o c) o))
-
-(define ((is? class) o)
-  (and (is-a? o class) o))

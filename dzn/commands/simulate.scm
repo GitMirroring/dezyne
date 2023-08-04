@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -28,6 +28,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
   #:use-module (dzn code)
@@ -102,10 +103,6 @@ Simulate a Dezyne model
          (files (option-ref options '() '()))
          (file-name (car files))
          (model-name (option-ref options 'model #f))
-         ;; Parse --model=MODEL cuts MODEL from AST; avoid that
-         (parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
-         (ast (parameterize ((%language "makreel"))
-                (parse parse-options file-name)))
          (no-compliance? (option-ref options 'no-compliance #f))
          (no-deadlock? (option-ref options 'no-deadlock #f))
          (no-interface-determinism?
@@ -125,26 +122,32 @@ Simulate a Dezyne model
          (internal? (command-line:get 'internal #f))
          (locations? (command-line:get 'locations verbose?))
          (trace (command-line:get 'format "trace"))
-         (trail (option-ref options 'trail #f))
-         (status (simulate ast
-                           #:model-name model-name
-                           #:compliance-check? (not no-compliance?)
-                           #:deadlock-check? (not no-deadlock?)
-                           #:interface-determinism-check?
-                           (not no-interface-determinism?)
-                           #:interface-livelock-check?
-                           (not no-interface-livelock?)
-                           #:queue-full-check? (not no-queue-full?)
-                           #:refusals-check? (not no-refusals?)
-                           #:internal? internal?
-                           #:locations? locations?
-                           #:queue-size queue-size
-                           #:queue-size-defer queue-size-defer
-                           #:queue-size-external queue-size-external
-                           #:state? state?
-                           #:strict? strict?
-                           #:trace trace
-                           #:trail trail
-                           #:verbose? verbose?)))
-    (when (is-a? status <error>)
-      (exit EXIT_FAILURE))))
+         (trail (option-ref options 'trail #f)))
+    (parameterize ((%context (%context))
+                   (%language "makreel"))
+      ;; Parse --model=MODEL cuts MODEL from AST; avoid that
+      (let* ((parse-options (filter (negate (compose (cut eq? <> 'model) car))
+                                    options))
+             (ast (parse parse-options file-name))
+             (status (simulate ast
+                               #:model-name model-name
+                               #:compliance-check? (not no-compliance?)
+                               #:deadlock-check? (not no-deadlock?)
+                               #:interface-determinism-check?
+                               (not no-interface-determinism?)
+                               #:interface-livelock-check?
+                               (not no-interface-livelock?)
+                               #:queue-full-check? (not no-queue-full?)
+                               #:refusals-check? (not no-refusals?)
+                               #:internal? internal?
+                               #:locations? locations?
+                               #:queue-size queue-size
+                               #:queue-size-defer queue-size-defer
+                               #:queue-size-external queue-size-external
+                               #:state? state?
+                               #:strict? strict?
+                               #:trace trace
+                               #:trail trail
+                               #:verbose? verbose?)))
+        (when (is-a? status <error>)
+          (exit EXIT_FAILURE))))))

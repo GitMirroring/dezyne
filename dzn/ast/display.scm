@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2022, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
@@ -41,13 +41,7 @@
 (define (ast port) (display #\* port))
 (define (ref port) (display #\@ port))
 
-(define-method (ast-name (o <ast-node>))
-  (let* ((class (class-of o))
-         (name (symbol->string (drop-<> (class-name class))))
-         (name (string-drop-right name 5)))
-    (string->symbol name)))
-
-(define-method (sdisplay (o <ast-node>) port)
+(define-method (sdisplay (o <ast>) port)
   (display #\space port)
   (write o port))
 
@@ -55,7 +49,7 @@
   (display #\space port)
   (write o port))
 
-(define-method (sdisplay (o <location-node>) port)
+(define-method (sdisplay (o <location>) port)
   (when (%locations?)
     (next-method)))
 
@@ -78,18 +72,11 @@
                (else (sdisplay value port))))))
    (class-slots (class-of o))))
 
-(define-method (write (o <ast-node>) port)
-  (display "(" port)
-  (display (ast-name o) port)
-  (ast port)
-  (display-slots o port)
-  (display #\) port))
-
 (define-method (write (o <ast>) port)
   (display "(" port)
   (display (ast-name o) port)
   (ast port)
-  (if (.node o) (display-slots (.node o) port))
+  (display-slots o port)
   (display #\) port))
 
 (define ast:display write)

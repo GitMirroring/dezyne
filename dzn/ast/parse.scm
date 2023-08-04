@@ -91,25 +91,25 @@ where start-<n> is the position of newline."
     (define (make-interface name types-and-events behavior comment)
       (let* ((types-and-events (helper types-and-events))
              (comments-t/e types-and-events
-                           (partition (is? <comment-node>) types-and-events))
+                           (partition (is? <comment>) types-and-events))
              (comment-t/e (and=> (as comments-t/e <pair>) car))
-             (types events (partition (is? <type-node>) types-and-events))
+             (types events (partition (is? <type>) types-and-events))
              (types? (pair? types))
              (types (match types
                       ((type tail ...)
                        (cons (clone type #:comment comment-t/e) tail))
                       (_
                        types)))
-             (types (make <types-node> #:elements types))
+             (types (make <types> #:elements types))
              (events (if types? events
                          (match events
                            ((event tail ...)
                             (cons (clone event #:comment comment-t/e) tail))
                            (_
                             events))))
-             (events (make <events-node> #:elements events))
+             (events (make <events> #:elements events))
              (behavior (and behavior (helper behavior))))
-        (make <interface-node>
+        (make <interface>
           #:name (helper name)
           #:comment comment
           #:types types
@@ -133,7 +133,7 @@ where start-<n> is the position of newline."
 
     (define (helper o)
       (let* ((ast location comment (strip o))
-             (ast (if (and comment (is-a? ast <root-node>))
+             (ast (if (and comment (is-a? ast <root>))
                       (clone ast #:comment comment)
                       ast)))
         (values ast location comment)))
@@ -145,7 +145,7 @@ to the AST element."
         (((and (? symbol?) type) body ... (and ('location pos end) location))
          (let* ((ast x comment (strip (cons type body)))
                 (location (and location (tree->ast location)))
-                (ast (if (and location (is-a? ast <locationed-node>))
+                (ast (if (and location (is-a? ast <locationed>))
                          (clone ast #:location location)
                          ast)))
            (values ast location comment)))
@@ -153,11 +153,11 @@ to the AST element."
         (((and (? symbol?) type) body ... (and ('comment c ...) comment))
          (let* ((comment (strip comment))
                 (ast (tree->ast (cons type body) comment)))
-           (cond ((is-a? ast <locationed-node>)
+           (cond ((is-a? ast <locationed>)
                   (clone ast #:comment comment))
                  ((is-a? ast <pair>)
                   (cons comment ast))
-                 ((is-a? ast <ast-list-node>)
+                 ((is-a? ast <ast-list>)
                   (comment-ast-list ast comment))
                  (else
                   ast))
@@ -202,27 +202,27 @@ to the AST element."
       (match o
 
         (('comment comment)
-         (make <comment-node> #:string comment))
+         (make <comment> #:string comment))
 
         (('elements elements ...)
          (helper elements))
 
         (('import name)
-         (make <import-node> #:name (helper name)))
+         (make <import> #:name (helper name)))
 
         (('namespace name root)
          (let* ((name location comment (helper name))
                 (ids (.ids name))
                 (elements (helper root)))
            (define (wrap-namespace name result)
-             (let ((name (make <scope.name-node>
+             (let ((name (make <scope.name>
                            #:ids (list name)
                            #:comment comment
                            #:location location))
                    (elements (or (as result <null>)
                                  (as result <pair>)
                                  (list result))))
-               (make <namespace-node>
+               (make <namespace>
                  #:name name
                  #:elements elements)))
            (fold-right wrap-namespace elements ids)))
@@ -231,27 +231,27 @@ to the AST element."
          (map helper elements))
 
         (('enum name fields)
-         (make <enum-node> #:name (helper name) #:fields (helper fields)))
+         (make <enum> #:name (helper name) #:fields (helper fields)))
 
         (('fields names ...)
-         (make <fields-node> #:elements (helper names)))
+         (make <fields> #:elements (helper names)))
 
         (('int name range)
-         (make <subint-node> #:name (helper name) #:range (helper range)))
+         (make <subint> #:name (helper name) #:range (helper range)))
 
-        (('range from to) (make <range-node> #:from (helper from) #:to (helper to)))
+        (('range from to) (make <range> #:from (helper from) #:to (helper to)))
 
         (('from string) (string->number string))
         (('to string) (string->number string))
 
         (('extern name)
-         (make <extern-node> #:name (helper name)))
+         (make <extern> #:name (helper name)))
 
         (('extern name data)
-         (make <extern-node> #:name (helper name) #:value (helper data)))
+         (make <extern> #:name (helper name) #:value (helper data)))
 
         (('interface name)
-         (make <interface-node>
+         (make <interface>
            #:name (helper name)
            #:comment comment))
 
@@ -269,40 +269,40 @@ to the AST element."
 
         (('event direction type name formals)
          (let* ((type location comment (helper type))
-                (signature (make <signature-node>
+                (signature (make <signature>
                              #:type.name type
                              #:formals (helper formals)
                              #:location location)))
-           (make <event-node>
+           (make <event>
              #:name (helper name)
              #:signature signature
              #:direction (helper direction))))
 
-        (('formals formal) (make <formals-node> #:elements (list (helper formal))))
-        (('formals formals ...) (make <formals-node> #:elements (helper formals)))
+        (('formals formal) (make <formals> #:elements (list (helper formal))))
+        (('formals formals ...) (make <formals> #:elements (helper formals)))
         (('formal name)
-         (make <formal-node> #:name (helper name)))
+         (make <formal> #:name (helper name)))
 
         (('formal type name)
-         (make <formal-node> #:name (helper name) #:type.name (helper type)))
+         (make <formal> #:name (helper name) #:type.name (helper type)))
 
         (('formal direction type name)
-         (make <formal-node> #:name (helper name) #:type.name (helper type) #:direction (helper direction)))
+         (make <formal> #:name (helper name) #:type.name (helper type) #:direction (helper direction)))
 
 
-        (('trigger-formals formal) (make <formals-node> #:elements (list (helper formal))))
-        (('trigger-formals formals ...) (make <formals-node> #:elements (helper formals)))
-        (('trigger-formal name) (make <formal-node> #:name (helper name)))
-        (('trigger-formal var-a ('var var-b _ ...)) (make <formal-binding-node> #:name (helper var-a) #:variable.name (helper var-b)))
+        (('trigger-formals formal) (make <formals> #:elements (list (helper formal))))
+        (('trigger-formals formals ...) (make <formals> #:elements (helper formals)))
+        (('trigger-formal name) (make <formal> #:name (helper name)))
+        (('trigger-formal var-a ('var var-b _ ...)) (make <formal-binding> #:name (helper var-a) #:variable.name (helper var-b)))
 
         (('component name ports)
-         (make <foreign-node>
+         (make <foreign>
            #:comment comment
            #:name (helper name)
            #:ports (helper ports)))
 
         (('component name ports (and ('behavior elements ...) behavior))
-         (make <component-node>
+         (make <component>
            #:comment comment
            #:name (helper name)
            #:ports (helper ports)
@@ -311,47 +311,47 @@ to the AST element."
         (('component name ports ('system instances-and-bindings rest ...))
          (let* ((instances-and-bindings (helper instances-and-bindings))
                 (instances
-                 bindings (partition (is? <instance-node>) instances-and-bindings)))
-           (make <system-node>
+                 bindings (partition (is? <instance>) instances-and-bindings)))
+           (make <system>
              #:comment comment
              #:name (helper name)
              #:ports (helper ports)
-             #:instances (make <instances-node> #:elements instances)
-             #:bindings (make <bindings-node> #:elements bindings))))
+             #:instances (make <instances> #:elements instances)
+             #:bindings (make <bindings> #:elements bindings))))
 
         (('instances-and-bindings instances-and-bindings ...)
          (helper instances-and-bindings))
 
         (('instance type name)
-         (make <instance-node> #:name (helper name) #:type.name (helper type)))
+         (make <instance> #:name (helper name) #:type.name (helper type)))
 
         (('binding left right)
-         (make <binding-node> #:left (helper left) #:right (helper right)))
+         (make <binding> #:left (helper left) #:right (helper right)))
 
         (('end-point "*")
-         (make <end-point-node> #:port.name "*"))
+         (make <end-point> #:port.name "*"))
 
         (('end-point name "*")
          (let* ((name (helper name))
                 (ids (.ids name))
                 (instance (and (pair? (cdr ids)) (car ids))))
-           (make <end-point-node> #:instance instance #:port.name "*")))
+           (make <end-point> #:instance instance #:port.name "*")))
 
         (('end-point name)
          (let* ((name (helper name))
                 (ids (.ids name))
                 (instance (and (pair? (cdr ids)) (car ids)))
                 (port (if (pair? (cdr ids)) (cadr ids) (car ids))))
-           (make <end-point-node> #:instance.name instance #:port.name port)))
+           (make <end-point> #:instance.name instance #:port.name port)))
 
-        ('ports (make <ports-node>))
-        (('ports ports ...) (make <ports-node> #:elements (helper ports)))
+        ('ports (make <ports>))
+        (('ports ports ...) (make <ports> #:elements (helper ports)))
 
         (('port direction type name)
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
                 (type (helper type)))
-           (make <port-node>
+           (make <port>
              #:name (helper name)
              #:type.name type
              #:direction direction)))
@@ -369,7 +369,7 @@ to the AST element."
          (let* ((direction (helper direction))
                 (direction-list? (pair? direction))
                 (type (helper type)))
-           (make <port-node>
+           (make <port>
              #:name (helper name)
              #:type.name type
              #:direction direction
@@ -384,23 +384,23 @@ to the AST element."
         (('injected) 'injected)
 
         (('declarative-compound 'behavior-statement-list)
-         (make <error-node> #:message "empty declarative-compound"))
+         (make <error> #:message "empty declarative-compound"))
 
         (('skip-statement)
-         (make <compound-node>))
+         (make <compound>))
 
         (('compound)
-         (make <compound-node>))
+         (make <compound>))
 
         (('compound body ...)
          (let ((body (helper body)))
-           (make <compound-node> #:elements body)))
+           (make <compound> #:elements body)))
 
         (('on triggers)
-         (make <on-node> #:comment comment #:triggers (helper triggers)))
+         (make <on> #:comment comment #:triggers (helper triggers)))
 
         (('on triggers statement)
-         (make <on-node>
+         (make <on>
            #:comment comment
            #:triggers (helper triggers)
            #:statement (helper statement)))
@@ -409,39 +409,39 @@ to the AST element."
          (helper action-or-call))
 
         (('triggers triggers ...)
-         (make <triggers-node> #:elements (helper triggers)))
+         (make <triggers> #:elements (helper triggers)))
 
         (('illegal-triggers triggers ...)
-         (make <triggers-node> #:elements (helper triggers)))
+         (make <triggers> #:elements (helper triggers)))
 
         (('trigger event-name)
-         (make <trigger-node> #:event.name (helper event-name)))
+         (make <trigger> #:event.name (helper event-name)))
 
         (('trigger port-name event-name formals)
-         (make <trigger-node> #:event.name (helper event-name) #:port.name (helper port-name) #:formals (helper formals)))
+         (make <trigger> #:event.name (helper event-name) #:port.name (helper port-name) #:formals (helper formals)))
 
         (('illegal-trigger event-name)
-         (make <trigger-node> #:event.name (helper event-name)))
+         (make <trigger> #:event.name (helper event-name)))
 
         (('illegal-trigger port-name event-name formals)
-         (make <trigger-node> #:event.name (helper event-name) #:port.name (helper port-name) #:formals (helper formals)))
+         (make <trigger> #:event.name (helper event-name) #:port.name (helper port-name) #:formals (helper formals)))
 
         (('illegal-trigger port-name event-name)
-         (make <trigger-node> #:event.name (helper event-name) #:port.name (helper port-name)))
+         (make <trigger> #:event.name (helper event-name) #:port.name (helper port-name)))
 
         (('direction direction) (helper direction))
 
         (('compound-name name)
-         (make <scope.name-node> #:ids (list (helper name))))
+         (make <scope.name> #:ids (list (helper name))))
 
         (('compound-name scope name)
-         (make <scope.name-node> #:ids (append (helper scope) (list (helper name)))))
+         (make <scope.name> #:ids (append (helper scope) (list (helper name)))))
 
         (('compound-name global scope name)
-         (make <scope.name-node> #:ids (append (helper global) (helper scope) (list (helper name)))))
+         (make <scope.name> #:ids (append (helper global) (helper scope) (list (helper name)))))
 
         (('scoped-name name)
-         (make <scope.name-node> #:ids (list (helper name))))
+         (make <scope.name> #:ids (list (helper name))))
 
         (('scope name) (make-list? (helper name)))
         (('scope names ...) (helper names))
@@ -453,25 +453,25 @@ to the AST element."
         (('event-name name) (helper name))
 
         (('interface-action event)
-         (make <action-node>
+         (make <action>
            #:event.name (helper event)))
 
         (('illegal)
-         (make <illegal-node>))
+         (make <illegal>))
 
         (('action port event)
-         (make <action-node>
+         (make <action>
            #:port.name (helper port)
            #:event.name (helper event)))
 
         (('action port event arguments)
-         (make <action-node>
+         (make <action>
            #:port.name (helper port)
            #:event.name (helper event)
            #:arguments (helper arguments)))
 
         (('assign var expression)
-         (make <assign-node>
+         (make <assign>
            #:variable.name (.name (helper var))
            #:expression (helper expression)))
 
@@ -484,125 +484,125 @@ to the AST element."
               statements))))
 
         (('behavior-compound statement)
-         (make <compound-node> #:elements (helper statement)))
+         (make <compound> #:elements (helper statement)))
 
         (('behavior compound)
          (let ((compound (helper compound)))
-           (make <behavior-node>
-             #:types (make <types-node> #:elements (filter (is? <type-node>) (.elements compound)))
-             #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
-             #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
-             #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
-             #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <port-node>)) (negate (is? <variable-node>))) (.elements compound))))))
+           (make <behavior>
+             #:types (make <types> #:elements (filter (is? <type>) (.elements compound)))
+             #:ports (make <ports> #:elements (filter (is? <port>) (.elements compound)))
+             #:variables (make <variables> #:elements (filter (is? <variable>) (.elements compound)))
+             #:functions (make <functions> #:elements (filter (is? <function>) (.elements compound)))
+             #:statement (clone compound #:elements (filter (conjoin (is? <statement>) (negate (is? <port>)) (negate (is? <variable>))) (.elements compound))))))
 
         (('behavior name compound)
          (let ((compound (helper compound)))
-           (make <behavior-node>
-             #:types (make <types-node> #:elements (filter (is? <type-node>) (.elements compound)))
-             #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
-             #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
-             #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
-             #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <port-node>)) (negate (is? <variable-node>))) (.elements compound))))))
+           (make <behavior>
+             #:types (make <types> #:elements (filter (is? <type>) (.elements compound)))
+             #:ports (make <ports> #:elements (filter (is? <port>) (.elements compound)))
+             #:variables (make <variables> #:elements (filter (is? <variable>) (.elements compound)))
+             #:functions (make <functions> #:elements (filter (is? <function>) (.elements compound)))
+             #:statement (clone compound #:elements (filter (conjoin (is? <statement>) (negate (is? <port>)) (negate (is? <variable>))) (.elements compound))))))
 
-        (('blocking statement) (make <blocking-node> #:statement (helper statement)))
+        (('blocking statement) (make <blocking> #:statement (helper statement)))
 
-        (('interface-call function) (make <call-node> #:function.name (helper function)))
-        (('call function) (make <call-node> #:function.name (helper function)))
+        (('interface-call function) (make <call> #:function.name (helper function)))
+        (('call function) (make <call> #:function.name (helper function)))
 
         (('call function arguments)
-         (make <call-node>
+         (make <call>
            #:function.name (helper function)
            #:arguments (helper arguments)))
 
         (('defer statement)
-         (make <defer-node>
+         (make <defer>
            #:statement (helper statement)))
 
         (('defer arguments statement)
-         (make <defer-node>
+         (make <defer>
            #:arguments (helper arguments)
            #:statement (helper statement)))
 
-        (('arguments argument) (make <arguments-node> #:elements (list(helper argument))))
-        (('arguments argument ...) (make <arguments-node> #:elements (helper argument)))
+        (('arguments argument) (make <arguments> #:elements (list(helper argument))))
+        (('arguments argument ...) (make <arguments> #:elements (helper argument)))
         (('argument expression) (helper expression))
 
         (('foreign name body ...)
-         (make <foreign-node>
+         (make <foreign>
            #:name (helper name)
            #:ports (helper (or (assoc 'ports body) '(ports)))))
 
         (('compound statements ...)
-         (make <compound-node> #:elements (helper statements)))
+         (make <compound> #:elements (helper statements)))
 
-        (('dollars value) (make <data-node> #:value (helper value)))
+        (('dollars value) (make <data> #:value (helper value)))
 
-        (('dollars) (make <data-node> #:value *unspecified*))
+        (('dollars) (make <data> #:value *unspecified*))
 
-        (('field-test ('var name _ ...) field) (make <field-test-node> #:name (helper name) #:field (helper field)))
-        (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:name identifier #:field (helper field)))
+        (('field-test ('var name _ ...) field) (make <field-test> #:name (helper name) #:field (helper field)))
+        (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test> #:name identifier #:field (helper field)))
 
-        (('shared-field-test port.name name field) (make <shared-field-test-node> #:port.name (helper port.name) #:name (helper name) #:field (helper field)))
+        (('shared-field-test port.name name field) (make <shared-field-test> #:port.name (helper port.name) #:name (helper name) #:field (helper field)))
 
         (('function type name formals statement)
          (let* ((type location comment (helper type))
-                (signature (make <signature-node>
+                (signature (make <signature>
                              #:type.name type
                              #:formals (helper formals)
                              #:location location)))
-           (make <function-node>
+           (make <function>
              #:name (helper name)
              #:signature signature
              #:statement (helper statement))))
 
         (('functions functions ...)
-         (make <functions-node> #:elements (helper functions)))
+         (make <functions> #:elements (helper functions)))
 
         (('guard expression)
-         (make <guard-node>
+         (make <guard>
            #:comment comment
            #:expression (helper expression)))
 
         (('guard expression statement)
-         (make <guard-node>
+         (make <guard>
            #:comment comment
            #:expression (helper expression)
            #:statement (helper statement)))
 
         (('if-statement expression then)
-         (make <if-node>
+         (make <if>
            #:expression (helper expression)
            #:then (helper then)))
 
         (('if-statement expression then else)
-         (make <if-node>
+         (make <if>
            #:expression (helper expression)
            #:then (helper then)
            #:else (helper else)))
 
         (('enum-literal type field)
          (let ((type (helper type)))
-           (make <enum-literal-node> #:type.name (make <scope.name-node> #:ids type) #:field (helper field))))
+           (make <enum-literal> #:type.name (make <scope.name> #:ids type) #:field (helper field))))
 
         (('enum-literal global type field)
          (let ((type (append (helper global) (helper type))))
-           (make <enum-literal-node> #:type.name (make <scope.name-node> #:ids type) #:field (helper field))))
+           (make <enum-literal> #:type.name (make <scope.name> #:ids type) #:field (helper field))))
 
-        (('otherwise) (make <otherwise-node> #:value "otherwise"))
+        (('otherwise) (make <otherwise> #:value "otherwise"))
 
-        (('otherwise value) (make <otherwise-node> #:value value))
+        (('otherwise value) (make <otherwise> #:value value))
 
-        (('reply port "reply") (make <reply-node> #:port.name (helper port)))
-        (('reply port "reply" expression) (make <reply-node> #:port.name (helper port) #:expression (helper expression)))
-        (('reply "reply" expression) (make <reply-node> #:expression (helper expression)))
-        (('reply "reply") (make <reply-node> #:expression (make <literal-node>)))
+        (('reply port "reply") (make <reply> #:port.name (helper port)))
+        (('reply port "reply" expression) (make <reply> #:port.name (helper port) #:expression (helper expression)))
+        (('reply "reply" expression) (make <reply> #:expression (helper expression)))
+        (('reply "reply") (make <reply> #:expression (make <literal>)))
 
-        (('return) (make <return-node>))
+        (('return) (make <return>))
 
-        (('return expression) (make <return-node> #:expression (helper expression)))
+        (('return expression) (make <return> #:expression (helper expression)))
 
         (('root element)
-         (make <root-node> #:elements (make-list? (helper element))))
+         (make <root> #:elements (make-list? (helper element))))
 
         (('file-name file-name) (make <file-name> #:name file-name))
 
@@ -619,49 +619,49 @@ to the AST element."
                                         (loop rest file-name start-pos))))))))
                 (location (match elements
                             ((('file-command file-name location) rest ...)
-                             (make <location-node> #:file-name file-name))
+                             (make <location> #:file-name file-name))
                             (_ #f))))
-           (make <root-node> #:elements lst #:location location)))
+           (make <root> #:elements lst #:location location)))
 
         (('system name ports instances bindings)
-         (make <system-node>
+         (make <system>
            #:name (helper name)
            #:ports (helper ports)
            #:instances (helper instances)
            #:bindings (helper bindings)))
 
-        (('type name) (make <type-node> #:name (helper name)))
+        (('type name) (make <type> #:name (helper name)))
 
-        (('types types ...) (make <types-node> #:elements (helper types)))
+        (('types types ...) (make <types> #:elements (helper types)))
 
-        (('unknown-identifier name) (make <undefined-node> #:name (helper name)))
+        (('unknown-identifier name) (make <undefined> #:name (helper name)))
 
-        (('var name) (make <var-node> #:name (helper name)))
+        (('var name) (make <var> #:name (helper name)))
 
-        (('shared-var port.name name) (make <shared-var-node> #:port.name (helper port.name) #:name (helper name)))
+        (('shared-var port.name name) (make <shared-var> #:port.name (helper port.name) #:name (helper name)))
 
         (('variable type name)
-         (make <variable-node> #:name (helper name) #:type.name (helper type) #:expression (make <literal-node>)))
+         (make <variable> #:name (helper name) #:type.name (helper type) #:expression (make <literal>)))
 
         (('variable type name expression)
-         (make <variable-node> #:name (helper name) #:type.name (helper type) #:expression (helper expression)))
+         (make <variable> #:name (helper name) #:type.name (helper type) #:expression (helper expression)))
 
         (('variables variables ...)
-         (make <variables-node> #:elements (helper variables)))
+         (make <variables> #:elements (helper variables)))
 
         (('expression expression) (helper expression))
         (('expression expression ...) (helper expression))
-        (('group expression) (make <group-node> #:expression (helper expression)))
+        (('group expression) (make <group> #:expression (helper expression)))
         (('minus expression)
          (let* ((right (helper expression))
-                (zero (make <literal-node> #:value 0))
+                (zero (make <literal> #:value 0))
                 (left (clone zero #:location (.location right))))
-           (make <minus-node> #:left left #:right right)))
-        (('not expression) (make <not-node> #:expression (helper expression)))
+           (make <minus> #:left left #:right right)))
+        (('not expression) (make <not> #:expression (helper expression)))
 
-        (('literal "true") (make <literal-node> #:value "true"))
-        (('literal "false") (make <literal-node> #:value "false"))
-        (('literal string) (make <literal-node> #:value (helper string)))
+        (('literal "true") (make <literal> #:value "true"))
+        (('literal "false") (make <literal> #:value "false"))
+        (('literal string) (make <literal> #:value (helper string)))
 
         (('location pos end)
          (let* ((start-line (line-number start-pos))
@@ -669,25 +669,24 @@ to the AST element."
                 (column (column-number line pos))
                 (end-line (line-number end))
                 (end-column (column-number end-line end)))
-           (make <location-node> #:file-name file-name #:line (1+ (- line start-line)) #:column column #:end-line (1+ (- end-line start-line)) #:end-column end-column #:offset (- pos start-pos) #:length (- end pos))))))
+           (make <location> #:file-name file-name #:line (1+ (- line start-line)) #:column column #:end-line (1+ (- end-line start-line)) #:end-column end-column #:offset (- pos start-pos) #:length (- end pos))))))
 
     (define (tree->expression o)
       (match o
-        ((left0 "-" (left1 "-" right1)) (make <minus-node> #:left (make <minus-node> #:left (helper left0) #:right (helper left1)) #:right (helper right1)))
-        ((left0 "-" (left1 "+" right1)) (make <plus-node>  #:left (make <minus-node> #:left (helper left0) #:right (helper left1)) #:right (helper right1)))
-        ((left "||" right) (make <or-node> #:left (helper left) #:right (helper right)))
-        ((left "&&" right) (make <and-node> #:left (helper left) #:right (helper right)))
-        ((left "+" right) (make <plus-node> #:left (helper left) #:right (helper right)))
-        ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
-        ((left "-" right) (make <minus-node> #:left (helper left) #:right (helper right)))
-        ((left "<" right) (make <less-node> #:left (helper left) #:right (helper right)))
-        ((left "<=" right) (make <less-equal-node> #:left (helper left) #:right (helper right)))
-        ((left "==" right) (make <equal-node> #:left (helper left) #:right (helper right)))
-        ((left "!=" right) (make <not-equal-node> #:left (helper left) #:right (helper right)))
-        ((left ">"  right) (make <greater-node> #:left (helper left) #:right (helper right)))
-        ((left ">=" right) (make <greater-equal-node> #:left (helper left) #:right (helper right)))))
+        ((left0 "-" (left1 "-" right1)) (make <minus> #:left (make <minus> #:left (helper left0) #:right (helper left1)) #:right (helper right1)))
+        ((left0 "-" (left1 "+" right1)) (make <plus> #:left (make <minus> #:left (helper left0) #:right (helper left1)) #:right (helper right1)))
+        ((left "||" right) (make <or> #:left (helper left) #:right (helper right)))
+        ((left "&&" right) (make <and> #:left (helper left) #:right (helper right)))
+        ((left "+" right) (make <plus> #:left (helper left) #:right (helper right)))
+        ((left "-" right) (make <minus> #:left (helper left) #:right (helper right)))
+        ((left "-" right) (make <minus> #:left (helper left) #:right (helper right)))
+        ((left "<" right) (make <less> #:left (helper left) #:right (helper right)))
+        ((left "<=" right) (make <less-equal> #:left (helper left) #:right (helper right)))
+        ((left "==" right) (make <equal> #:left (helper left) #:right (helper right)))
+        ((left "!=" right) (make <not-equal> #:left (helper left) #:right (helper right)))
+        ((left ">"  right) (make <greater> #:left (helper left) #:right (helper right)))
+        ((left ">=" right) (make <greater-equal> #:left (helper left) #:right (helper right)))))
 
     (helper o))
 
-  (let ((root-node (file-helper o file-name 0)))
-    (make <root> #:node root-node)))
+  (file-helper o file-name 0))

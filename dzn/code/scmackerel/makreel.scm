@@ -150,24 +150,24 @@
 
 (define-method (makreel:return-variable (o <ast>))
   (let* ((type (ast:type o))
-         (variable (match type
-                     (($ <bool>)
-                      (make <variable>
-                        #:name "return_value"
-                        #:type.name (.name ast:bool)
-                        #:expression (make <literal> #:value "return_value")))
-                     (($ <enum>)
-                      (make <variable>
-                        #:name "return_value"
-                        #:type.name (.name type)
-                        #:expression (make <literal> #:value "return_value")))
-                     (($ <subint>)
-                      (make <variable>
-                        #:name "return_value"
-                        #:type.name (.name ast:int)
-                        #:expression (make <literal> #:value "return_value")))
-                     (_ (pke "XXX TODO makreel:return-variable for" type)))))
-    (clone variable #:parent (or (.parent type) (.parent o)))))
+         (parent (or (.parent type) (.parent o))))
+    (match type
+      (($ <bool>)
+       (graft parent (make <variable>
+                       #:name "return_value"
+                       #:type.name (.name ast:bool)
+                       #:expression (make <literal> #:value "return_value"))))
+      (($ <enum>)
+       (graft parent (make <variable>
+                       #:name "return_value"
+                       #:type.name (.name type)
+                       #:expression (make <literal> #:value "return_value"))))
+      (($ <subint>)
+       (graft parent (make <variable>
+                       #:name "return_value"
+                       #:type.name (.name ast:int)
+                       #:expression (make <literal> #:value "return_value"))))
+      (_ (pke "XXX TODO makreel:return-variable for" type)))))
 
 (define-method (makreel:process-formals (o <ast>))
   (let* ((parameters (makreel:process-parameters o))
@@ -1062,17 +1062,16 @@
 (define-method (makreel:ast->expression (o <shared-field-test>))
   (let* ((variable (.variable o))
          (type (.type variable))
-         (type-name (make <scope.name> #:ids (ast:full-name type)))
-         (enum-literal (make <enum-literal>
-                         #:type.name type-name
-                         #:field (.field o)))
-         (enum-literal (clone enum-literal #:parent o))
+         (type-name (graft o (make <scope.name> #:ids (ast:full-name type))))
+         (enum-literal (graft o (make <enum-literal>
+                                  #:type.name type-name
+                                  #:field (.field o))))
          (name (.name variable))
          (port-name (.port.name o))
          (var (make <shared-var> #:name name #:port.name port-name))
-         (expression (make <equal>
-                       #:left var
-                       #:right enum-literal)))
+         (expression (graft o (make <equal>
+                                #:left var
+                                #:right enum-literal))))
     (makreel:ast->expression expression)))
 
 
@@ -1381,7 +1380,7 @@
              (let* ((reply (make <reply>
                              #:port.name (.name port)
                              #:expression o))
-                    (reply (clone reply #:parent (.parent o)))
+                    (reply (graft (.parent o) reply))
                     (reply (ast->action reply))
                     (reply (sm:invoke reply #:keep-constructor? #t)))
                (sm:sequence*
@@ -1397,9 +1396,9 @@
                                        `(,(sum-state-action port))))))))))
 
 (define-method (assign->sum (model <model>) (o <action>) (variable <formal>))
-  (assign->sum model o (make <variable>
-                         #:name (.name variable)
-                         #:type.name (.type.name variable))))
+  (assign->sum model o (graft o (make <variable>
+                                  #:name (.name variable)
+                                  #:type.name (.type.name variable)))))
 
 (define-method (ast->process (model <interface>) (o <state>) (next <ast>))
   (let* ((members (ast:member* model))
@@ -1435,7 +1434,7 @@
                             (arguments (makreel:process-parens o))))
                 `(,@(if (not void-reply?) '()
                         (let* ((reply (make <reply> #:port.name (.name port)))
-                               (reply (clone reply #:parent (.parent o))))
+                               (reply (graft (.parent o) reply)))
                           `(,(ast->action reply))))
                   ,(cond ((and=> port ast:external?)
                           (sm:goto (name (statement->process-name next))
@@ -1471,8 +1470,10 @@
                     `(,(%switch-context-action port)))
               ,@(if (not void-reply?)
                     `(,(assign->sum model (.action o) (.variable o)))
-                    (let* ((reply (make <reply> #:port.name (.name port)))
-                           (reply (clone reply #:parent (.parent o))))
+                    (let* ((parent (.parent o))
+                           (port-name (.name port))
+                           (reply (make <reply> #:port.name port-name))
+                           (reply (graft parent reply)))
                       `(,(ast->action reply)
                         ,@(if (not (find (compose (cute ast:eq? port <>) .port)
                                          (ast:shared* model))) '()
@@ -1588,7 +1589,8 @@
          (action? (as expression <action>))
          (port (and=> action? .port))
          (expression (makreel:ast->expression expression))
-         (type (and=> (.variable o) .type)))
+         (type (or (and=> (.variable o) .type)
+                   (ast:type (.expression o)))))
     (sm:process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
@@ -2979,7 +2981,7 @@
         `(,@(map (cute semantics-provides <> name) provides)
           ,@(map (cute semantics-requires <> name) requires)))))))
 
-(define-method (semantics-unblocked (o  <component>))
+(define-method (semantics-unblocked (o <component>))
   (let* ((provides (ast:provides-port* o))
          (provides-interfaces (map .type provides))
          (provides-interface (.type (ast:provides-port o)))

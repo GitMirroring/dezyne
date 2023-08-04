@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -236,9 +236,8 @@
 
 (define-method (dzn:statement (o <guard>))
   (cond ((is-a? (.expression o) <otherwise>)
-         (clone (make <otherwise-guard> #:expression (.expression o)
-                      #:statement (.statement o))
-                #:parent (.parent o)))
+         (graft o (make <otherwise-guard> #:expression (.expression o)
+                        #:statement (.statement o))))
         ((ast:literal-true? (.expression o))
          (.statement o))
         ((ast:literal-false? (.expression o))
@@ -305,8 +304,8 @@
   (.variable o))
 
 (define-method (dzn:expression-expand (o <field-test>))
-  (clone (make <enum-literal> #:type.name ((compose .type.name .variable) o) #:field (.field o))
-         #:parent (.parent o)))
+  (graft o (make <enum-literal>
+             #:type.name ((compose .type.name .variable) o) #:field (.field o))))
 
 (define-method (dzn:expression-expand (o <variable>))
   (let ((type ((compose ast:type .expression) o)))

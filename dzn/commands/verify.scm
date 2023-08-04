@@ -32,12 +32,14 @@
 
   #:use-module (ice-9 getopt-long)
 
+  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code language makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
   #:use-module (dzn config)
+  #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn verify pipeline)
   #:export (parse-opts
@@ -112,45 +114,42 @@ Check DZN-FILE for verification errors in Dezyne models
     (when all?
       (format (current-error-port)
               "warning: -a,--all is deprecated, use -k,--keep-going.\n"))
-    (parameterize ((%language "makreel")
+    (parameterize ((%context (%context))
+                   (%language "makreel")
                    (%no-constraint? no-constraint?)
                    (%no-unreachable? no-unreachable?)
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
-
       (let* ((ast (parse options file-name))
-             (model (and model-name (parse:call-with-handle-exceptions
-                                     (lambda _ (ast:get-model ast model-name))
-                                     #:backtrace? debug?
-                                     #:file-name file-name)))
-             (root (makreel:normalize ast)))
+             (model (and model-name
+                         (parse:call-with-handle-exceptions
+                          (lambda _ (ast:get-model ast model-name))
+                          #:backtrace? debug?
+                          #:file-name file-name))))
         (when (and=> model ast:imported?)
           (let ((name (ast:dotted-name model)))
             (format (current-error-port)
                     "~a:error: cannot verify imported model: ~a\n"
-                    (ast:source-file root)
+                    (ast:source-file ast)
                     name)
             (format (current-error-port)
                     "~a:info: ~a imported from here\n"
                     (ast:source-file model)
                     name))
           (exit EXIT_OTHER_FAILURE))
-        (cond
-         (out
-          (let ((formats (verification:formats)))
-            (unless (member out formats)
-              (format #t "formats:~a\n" (string-join (verification:formats)
-                                                     "\n  " 'prefix))
-              (exit EXIT_OTHER_FAILURE))
-            (let* ((model (parse:call-with-handle-exceptions
-                           (lambda _ (ast:get-model ast model-name))
-                           #:backtrace? debug?
-                           #:file-name file-name))
-                   (model-name (ast:dotted-name model)))
-              (verification:partial root model-name #:out out))))
-         (else
-          (exit (verification:verify options root
-                                     #:keep-going? keep-going?
-                                     #:model-name model-name
-                                     #:no-interfaces? no-interfaces?))))))))
+        (let ((root (makreel:normalize ast)))
+          (cond
+           (out
+            (let ((formats (verification:formats)))
+              (unless (member out formats)
+                (format #t "formats:~a\n"
+                        (string-join (verification:formats)
+                                     "\n  " 'prefix))
+                (exit EXIT_OTHER_FAILURE))
+              (verification:partial root model-name #:out out)))
+           (else
+            (exit (verification:verify options root
+                                       #:keep-going? keep-going?
+                                       #:model-name model-name
+                                       #:no-interfaces? no-interfaces?)))))))))

@@ -32,6 +32,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
+  #:use-module (dzn ast util)
   #:use-module (dzn misc)
   #:use-module (dzn vm goops)
   #:export (vm:normalize
@@ -44,32 +45,37 @@
            (tree-map normalize-compound o))
           ((is-a? o <behavior>)
            (tree-map normalize-compound o))
+          ((is-a? o <functions>)
+           (graft o #:elements (map normalize-compound (.elements o))))
+          ((is-a? o <function>)
+           (graft o #:statement (normalize-compound (.statement o))))
           ((and (is-a? o <imperative>)
                 (is-a? (.parent o) <declarative>)
                 wrap-imperative?)
-           (let ((compound (make <compound> #:elements (list o))))
-             (clone compound #:location (.location o))))
+           (graft (.parent o) (make <compound>
+                                #:elements (list o)
+                                #:location (.location o))))
           ((is-a? o <compound>)
            (cond
             ((is-a? (.parent o) <behavior>)
              (let* ((elements (map normalize-compound (.elements o)))
-                    (location (.location o))
-                    (compound (make <initial-compound> #:elements elements
-                                    #:location location)))
-               (clone compound #:location (.location o))))
+                    (location (.location o)))
+               (graft (.parent o) (make <initial-compound>
+                                    #:elements elements
+                                    #:location location))))
             ((ast:declarative? o)
              (let* ((elements (map normalize-compound (.elements o)))
                     (location (.location o))
-                    (compound (make <declarative-compound> #:elements elements
-                                    #:location location)))
+                    (compound (graft (.parent o) (make <declarative-compound>
+                                                   #:elements elements
+                                                   #:location location))))
                (cond ((and (= (length elements) 1)
                            (not wrap-imperative?))
                       (car elements))
                      (else
-                      (clone compound #:location (.location o))))))
+                      compound))))
             ((null? (.elements o))
-             (let ((skip (make <skip>)))
-               (clone skip #:location (.location o))))
+             (graft (.parent o) (make <skip> #:location (.location o))))
             (else
              (let* ((elements (map normalize-compound (.elements o)))
                     (elements (filter
@@ -78,13 +84,12 @@
                                                  (compose pair? .elements)))
                                elements)))
                (cond ((null? elements)
-                      (let ((skip (make <skip>)))
-                        (clone skip #:location (.location o))))
+                      (graft (.parent o) (make <skip> #:location (.location o))))
                      ((and (= (length elements) 1)
                            (not wrap-imperative?))
                       (car elements))
                      (else
-                      (clone o #:elements elements)))))))
+                      (graft o #:elements elements)))))))
           ((is-a? o <declarative>)
            (tree-map normalize-compound o))
           ((is-a? o <namespace>)
@@ -148,7 +153,7 @@
     (match o
       ((and ($ <compound>) (? ast:imperative?))
        (let* ((location (.location o))
-              (block (make <block> #:location location))
+              (block (graft (.parent o) (make <block> #:location location)))
               (statements (ast:statement* o))
               (statements (filter (negate (is? <the-end>)) statements))
               (statements (append (ast:statement* o)
@@ -156,10 +161,11 @@
          (clone o #:elements statements)))
       ((? ast:imperative?)
        (let* ((location (.location o))
-              (block (make <block> #:location location)))
-         (make <compound>
-           #:elements (cons o (if (ast:parent o <blocking>) (cons block r) r))
-           #:location location)))
+              (block (graft (.parent o) (make <block> #:location location)))
+              (elements (cons o (if (ast:parent o <blocking>) (cons block r)
+                                    r))))
+         (graft (.parent o) (make <compound> #:elements elements
+                                  #:location location))))
       (($ <compound>)
        (let* ((statements (ast:statement* o))
               (statements (filter (negate (is? <the-end>)) statements)))
@@ -169,13 +175,12 @@
       (($ <blocking>)
        (clone o #:statement (add-end-of-on (.statement o) r)))
       (($ <declarative-illegal>)
-       (let ((illegal (make <illegal>)))
-         (clone illegal #:parent (.parent o))))))
+       (graft (.parent o) (make <illegal>)))))
 
   (match o
     (($ <on>)
-     (let* ((end-of-on (make <end-of-on> #:location (.location o)))
-            (end-of-on (clone end-of-on #:parent (.statement o)))
+     (let* ((end-of-on (graft (.statement o) (make <end-of-on>
+                                               #:location (.location o))))
             (statement (add-end-of-on (.statement o) (list end-of-on))))
        (clone o #:statement statement)))
     (($ <behavior>)
@@ -195,11 +200,11 @@
 (define (vm:normalize root)
   "Normalizations for the simulator: purge-data, add-explicit-temporaries, annotate-otherwise, transform-end-of-on, set-blocking-reply-port, add-function-return, normalize:compounds."
   ((compose
-    (cut normalize:compounds <> #:wrap-imperative? #t)
-    add-function-return
-    set-blocking-reply-port
-    transform-end-of-on
-    (annotate-otherwise)
-    add-explicit-temporaries
-    purge-data)
+    (with-root (cut normalize:compounds <> #:wrap-imperative? #t))
+    (with-root add-function-return)
+    (with-root set-blocking-reply-port)
+    (with-root transform-end-of-on)
+    (with-root (annotate-otherwise))
+    (with-root add-explicit-temporaries)
+    (with-root purge-data))
    root))

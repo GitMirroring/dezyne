@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -36,38 +36,10 @@
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:use-module (dzn vm runtime)
-  #:export (<block>
-            <end-of-on>
-            <flush-return>
-            <initial-compound>
-            <q-in>
-            <q-out>
-            <q-trigger>
-            <synth-trigger>
-            <trigger-return>
-
-            <program-counter>
+  #:export (<program-counter>
             <state>
             <system-state>
 
-            <acceptances>
-            <blocked-error>
-            <compliance-error>
-            <determinism-error>
-            <deadlock-error>
-            <end-of-trail>
-            <illegal-error>
-            <implicit-illegal-error>
-            <livelock-error>
-            <match-error>
-            <missing-reply-error>
-            <postponed-match>
-            <queue-full-error>
-            <range-error>
-            <refusals-error>
-            <second-reply-error>
-
-            .action
             .blocked
             .collateral
             .collateral-instance
@@ -97,22 +69,7 @@
             external-q->string
             name
             pc:next-id
-            rtc?)
-  #:re-export (.ast
-               .event.name
-               .id
-               .instance
-               .port
-               .port.name
-               .statement
-               .trigger
-               .type
-               .variable
-               .variable.name
-               .variables
-               .value
-               clone
-               write))
+            rtc?))
 
 (define-ast <block> (<imperative>))
 
@@ -238,16 +195,16 @@
       id)))
 
 (define-method (clone (o <state>) . setters)
-  (apply clone-base (cons o setters)))
+  (apply clone-top (cons o setters)))
 
 (define-class <system-state> ()
   (state-list #:getter .state-list #:init-form (list) #:init-keyword #:state-list))
 
 (define-method (clone (o <system-state>) . setters)
-  (apply clone-base (cons o setters)))
+  (apply clone-top (cons o setters)))
 
 (define-method (clone (o <program-counter>) . setters)
-  (apply clone-base (cons o setters)))
+  (apply clone-top (cons o setters)))
 
 (define-method (name (o <runtime:instance>))
   (cond ((and (is-a? (%sut) <runtime:port>)

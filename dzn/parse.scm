@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -29,6 +29,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
+  #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
@@ -36,6 +37,7 @@
   #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn ast)
+  #:use-module (dzn ast accessor)
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast parse)
@@ -46,6 +48,7 @@
   #:use-module (dzn parse peg)
   #:use-module (dzn peg util)
   #:use-module (dzn parse tree)
+  #:use-module (dzn ast util)
 
   #:declarative? #f
 
@@ -276,7 +279,8 @@ and the @var{tree-alist}."
 ;;; Ast.
 ;;;
 (define* (parse:annotate-ast ast)
-  (let ((ast (silence:annotate-functions ast)))
+  (%context (ast:memoize-context ast)) ;set the initial context
+  (let ((ast ((with-root (cute silence:annotate-functions <>)) ast)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print ast (current-error-port)))
     ast))

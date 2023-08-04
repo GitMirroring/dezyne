@@ -394,18 +394,31 @@ std::basic_ostream<Char, Traits> &")
 (define-method (c++:ast->expression (o <shared-field-test>))
   (let* ((variable (.variable o))
          (type (.type variable))
-         (type-name (make <scope.name> #:ids (ast:full-name type)))
-         (enum-literal (make <enum-literal>
-                         #:type.name type-name
-                         #:field (.field o)))
-         (enum-literal (clone enum-literal #:parent o))
+         (type-name (graft o (make <scope.name>
+                               #:ids (ast:full-name type))))
+         (enum-literal (graft o (make <enum-literal>
+                                  #:type.name type-name
+                                  #:field (.field o))))
          (name (.name variable))
          (port-name (.port.name o))
-         (var (make <shared-var> #:name name #:port.name port-name))
-         (expression (make <equal>
-                       #:left var
-                       #:right enum-literal)))
+         (var (graft o (make <shared-var>
+                         #:name name
+                         #:port.name port-name)))
+         (expression (graft o (make <equal>
+                                #:left var
+                                #:right enum-literal))))
     (c++:ast->expression expression)))
+
+(define-method (ast->expression (o <shared-var>))
+  (let ((lst (ast:full-name o)))
+    (string-join lst (%name-infix))))
+
+(define-method (ast->expression (o <shared-variable>))
+  (let* ((name (ast:full-name o))
+         (name (string-join name (%name-infix))))
+    (if (ast:member? o) (sm:member* (%member-prefix) name)
+        name)))
+;; END FIXME
 
 
 ;;;
@@ -1387,7 +1400,8 @@ std::basic_ostream<Char, Traits> &")
            (event (.event.name trigger))
            (direction (ast:direction trigger))
            (formals (ast:formal* trigger))
-           (formals (map (cute clone <> #:name #f) formals))
+           (parent (.parent trigger))
+           (formals (map (cute graft* parent <> #:name #f) formals))
            (formals (map c++:->formal formals))
            (system-port (string-append "c.system." port))
            (meta (string-append system-port ".dzn_meta"))
@@ -1428,7 +1442,8 @@ std::basic_ostream<Char, Traits> &")
            (flush-event (simple-format #f "~a.<flush>" port))
            (flush-string (simple-format #f "~s" flush-event))
            (formals (ast:formal* trigger))
-           (formals (map (cute clone <> #:name #f) formals))
+           (parent (.parent trigger))
+           (formals (map (cute graft* parent <> #:name #f) formals))
            (formals (map c++:->formal formals))
            (port (.port trigger)))
       `(,(sm:assign

@@ -26,8 +26,9 @@
   #:use-module (ice-9 match)
   #:use-module (scmackerel code)
 
-  #:use-module (dzn ast)
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast util)
+  #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code language dzn)
   #:use-module (dzn config)
@@ -310,26 +311,25 @@
                          #:type.name (.type.name (.variable o))
                          #:field (.field o)))
          (var (make <var> #:name (.variable.name o)))
-         (expression (make <equal>
-                       #:left var
-                       #:right enum-literal))
-         (expression (clone expression)))
+         (expression (graft o (make <equal> #:left var #:right enum-literal))))
     (ast->expression expression)))
 
 (define-method (ast->expression (o <shared-field-test>))
   (let* ((variable (.variable o))
          (type (.type variable))
-         (type-name (make <scope.name> #:ids (ast:full-name type)))
+         (type-name (make <scope.name>
+                      #:ids (ast:full-name type)))
          (enum-literal (make <enum-literal>
                          #:type.name type-name
                          #:field (.field o)))
-         (enum-literal (clone enum-literal #:parent o))
          (name (.name variable))
          (port-name (.port.name o))
-         (var (make <shared-var> #:name name #:port.name port-name))
-         (expression (make <equal>
-                       #:left var
-                       #:right enum-literal)))
+         (var (make <shared-var>
+                #:name name
+                #:port.name port-name))
+         (expression (graft o (make <equal>
+                                #:left var
+                                #:right enum-literal))))
     (ast->expression expression)))
 
 (define-method (ast->expression (o <shared-var>))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -112,7 +112,7 @@ to current-output-port."
     (if (not (is-a? value <enum-literal>)) value
         (let* ((enum (.type value))
                (type-name (make <scope.name> #:ids (ast:full-name enum))))
-          (clone value #:type.name type-name))))
+          (graft value #:type.name type-name))))
 
   (define (model-replies)
     (let* ((values (append-map
@@ -121,7 +121,6 @@ to current-output-port."
            (values (delete-duplicates values ast:equal?))
            (values (map root-scope-enum values))
            (root (ast:parent model <root>))
-           (values (map (cute clone <> #:parent root) values))
            (types (map ast:type values))
            (values (map value->string values))
            (types (map type->string types))

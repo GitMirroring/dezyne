@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -26,26 +26,9 @@
   #:use-module (dzn ast)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
-  #:export (<action-reply>
-            <port-pair>
-            <shared-state>
-            <shared-transition>
-            <shared-value>
-            <state>
-            .action
-            .assign
-            .other
-            .prefix
-            .state
-            code:prefix-equal?
+  #:export (code:prefix-equal?
             code:shared-value*)
-  #:re-export (.event.name
-               .from
-               .to
-               .port
-               .port.name
-               .value
-               ast:statement*))
+  #:re-export (.variable.name))
 
 ;;;
 ;;; Ast extension.
@@ -55,7 +38,6 @@
   (other))
 
 (define-method (.port.name (o <port-pair>)) (.name (.port o)))
-(define-method (.other.name (o <port-pair>)) (.name (.other o)))
 
 (define-ast <action-reply> (<statement>)
   (action)

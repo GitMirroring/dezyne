@@ -117,9 +117,13 @@ Parse a Dezyne file and produce an AST
                          (ast:wfc ast)))
                 (ast (if (not model-name) ast
                          (let ((model (ast:get-model ast model-name)))
-                           (ast:filter-model ast model))))
-                (transform (map string->transformation transform)))
-           ((apply compose identity (reverse transform)) ast)))
+                           ((with-root (cute ast:filter-model <> model)) ast))))
+                (transform (map string->transformation transform))
+                (ast (fold (lambda (transform ast)
+                             ((with-root transform) ast))
+                           ast
+                           transform)))
+           ast))
        #:backtrace? debug?
        #:exit? exit?
        #:file-name file-name))))
@@ -186,22 +190,23 @@ Parse a Dezyne file and produce an AST
         (if tree (display tree)
             (exit EXIT_FAILURE))))
      (else
-      (let ((ast (parse options file-name #:exit? #f)))
-        (if (and ast output?)
-            (let* ((file-name (option-ref options 'output "-"))
-                   (locations? (command-line:get 'locations))
-                   (sexp (and (not debug?)
-                              (parameterize ((%locations? locations?))
-                                (ast:serialize ast))))
-                   (width (or (and=> (getenv "COLUMNS") string->number)
-                              79))
-                   (output (with-output-to-string
-                             (if debug? (cut ast:pretty-print ast #:width width)
-                                 (cut pretty-print sexp #:width width)))))
-              (if (equal? file-name "-") (display output)
-                  (with-output-to-file file-name (cut display output))))
-            (when verbose?
-              (if ast (display "parse: no errors found\n")
-                  (display "parse: errors found\n"))))
-        (unless ast
-          (exit EXIT_FAILURE)))))))
+      (parameterize ((%context (%context)))
+        (let ((ast (parse options file-name #:exit? #f)))
+          (if (and ast output?)
+              (let* ((file-name (option-ref options 'output "-"))
+                     (locations? (command-line:get 'locations))
+                     (sexp (and (not debug?)
+                                (parameterize ((%locations? locations?))
+                                  (ast:serialize ast))))
+                     (width (or (and=> (getenv "COLUMNS") string->number)
+                                79))
+                     (output (with-output-to-string
+                               (if debug? (cut ast:pretty-print ast #:width width)
+                                   (cut pretty-print sexp #:width width)))))
+                (if (equal? file-name "-") (display output)
+                    (with-output-to-file file-name (cut display output))))
+              (when verbose?
+                (if ast (display "parse: no errors found\n")
+                    (display "parse: errors found\n"))))
+          (unless ast
+            (exit EXIT_FAILURE))))))))

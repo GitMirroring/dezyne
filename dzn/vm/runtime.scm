@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -269,8 +269,9 @@
   (runtime:other-instance+port instance))
 
 (define* (runtime:get-sut root #:optional (model (ast:get-model root)))
-  (let ((sut (make <instance> #:name "sut" #:type.name (.name model))))
-    (ast->runtime:instance (clone sut #:parent (.parent model)) #f)))
+  (let ((instance (graft model (make <instance>
+                                 #:name "sut" #:type.name (.name model)))))
+    (ast->runtime:instance instance #f)))
 
 (define-method (runtime:runtime-port* (o <runtime:component-model>))
   (map (cut runtime:find-instance <> #:container o)
@@ -335,7 +336,7 @@
 
   (define (invert-direction p)
     (let ((direction (if (eq? (.direction p) 'requires) 'provides 'requires)))
-      (clone p #:direction direction #:external? #f)))
+      (graft p #:direction direction #:external? #f)))
 
   (define (model-instances o)
     (let* ((ast (and=> o .ast))

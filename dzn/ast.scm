@@ -35,6 +35,7 @@
   #:use-module (ice-9 q)
 
   #:use-module (dzn ast accessor)
+  #:use-module (dzn ast context)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast lookup)
@@ -121,12 +122,15 @@
             ast:void-in-triggers
             ast:typed-in-triggers
             ast:wildcard?)
-  #:re-export (.direction
+  #:re-export (%context
+               %root
+               .direction
                .event
                .event.direction
                .function
                .type
                .instance
+               .parent
                .port.name
                .variable
                .variable.name
@@ -173,13 +177,15 @@
                as
                ast-name
                clone
-               deep-clone
+               graft
+               graft*
                drop-<>
                is?
                tree-collect
                tree-collect-filter
                tree-filter
-               tree-map))
+               tree-map
+               with-root))
 
 ;;;
 ;;; Predicates.
@@ -448,13 +454,6 @@
 (define-method (ast:direction (o <action>))
   (.direction (.event o)))
 
-(define-method (trigger-in-component (t <trigger>) (c <component>))
-  (let ((parent (or (and=> (.behavior c) .statement) c)))
-    (clone t #:parent parent)))
-
-(define-method (trigger-in-component (t <trigger>) (c <component-model>))
-  (clone t #:parent c))
-
 (define-method (ast:in-event* o)
   (filter ast:in? (ast:event* o)))
 
@@ -463,11 +462,14 @@
 
 (define-method (port+event->trigger (o <port>) (event <event>))
   (let* ((component (ast:parent o <component-model>))
+         (parent (or (and (is-a? o <component-model>)
+                          (and=> (.behavior component) .statement))
+                     component))
          (formals (ast:rescope (.formals (.signature event)) component)))
-    (make <trigger>
-      #:port.name (.name o)
-      #:event.name (.name event)
-      #:formals formals)))
+    (graft parent (make <trigger>
+                    #:port.name (.name o)
+                    #:event.name (.name event)
+                    #:formals formals))))
 
 (define-method (port->trigger (o <port>) (direction <applicable>))
   (map (cute port+event->trigger o <>)
@@ -476,10 +478,9 @@
 (define-method (component->triggers (o <component-model>)
                                     (port-direction <applicable>)
                                     (event-direction <applicable>))
-  (map (cute trigger-in-component <> o)
-       (append-map
-        (cute port->trigger <> event-direction)
-        (filter port-direction (ast:port* o)))))
+  (append-map
+   (cute port->trigger <> event-direction)
+   (filter port-direction (ast:port* o))))
 
 (define-method (ast:provides-in-triggers (o <component-model>))
   (component->triggers o ast:provides? ast:in?))
@@ -513,19 +514,21 @@
   (append (ast:provides-in-triggers o)
           (ast:requires-out-triggers o)))
 
+(define-method (ast:event->trigger (o <event>))
+  (let* ((interface (ast:parent o <interface>))
+         (formals (ast:rescope ((compose .formals .signature) o) interface))
+         (parent  (.behavior interface)))
+    (graft parent (make <trigger> #:event.name (.name o) #:formals formals))))
+
 (define-method (ast:in-triggers (o <interface>))
-  (map (lambda (event)
-         (let* ((formals (ast:rescope ((compose .formals .signature) event) o))
-                (trigger (make <trigger> #:event.name (.name event) #:formals formals)))
-           (clone trigger #:parent (.behavior o))))
-       (filter ast:in? (ast:event* o))))
+  (map ast:event->trigger (filter ast:in? (ast:event* o))))
 
 (define-method (ast:out-triggers (o <component-model>))
   (append (ast:provides-out-triggers o) (ast:requires-in-triggers o)))
 
 (define-method (ast:void-in-triggers (o <component-model>))
   (filter
-   (lambda (t) (is-a? ((compose .type .signature .event) t) <void>))
+   (compose (is? <void>) .type .signature .event)
    (ast:in-triggers o)))
 
 (define-method (ast:typed-in-triggers (o <component-model>))
@@ -631,8 +634,7 @@
                          (ast:parent o <call>))))
     (and action/call
          (let* ((arguments (ast:argument* action/call))
-                (index (list-index (compose (cute eq? (.node o) <>) .node)
-                                   arguments))
+                (index (list-index (cute eq? <> o) arguments))
                 (event/function ((if (is-a? action/call <action>) .event
                                      .function)
                                  action/call))
@@ -645,8 +647,7 @@
 
 (define-method (ast:formal->index (o <formal>))
   (let* ((formals (.elements (ast:parent o <formals>)))
-         (index (list-index (compose (cute eq? (.node o) <>) .node)
-                            formals)))
+         (index (list-index (cute eq? <> o) formals)))
     index))
 
 (define-method (ast:formal->index (o <argument>))
@@ -704,16 +705,24 @@
     (if void (list void) '()))
    ((as o <enum>)
     (let ((type-name (.name o)))
-      (map (cute make <enum-literal> #:type.name type-name #:field <>)
+      (map (compose (cute graft (.parent o) <>)
+                    (cute make <enum-literal>
+                          #:type.name type-name
+                          #:field <>))
            (ast:field* o))))
    ((as o <bool>)
-    (map (cute make <literal> #:value <>) '("false" "true")))
+    (map (compose (cute graft (%root) <>)
+                  (cute make <literal> #:value <>))
+         '("false" "true")))
    ((as o <subint>)
-    (map (cute make <literal> #:value <>)
-         (iota (1+ (- (.to (.range o)) (.from (.range o))))
-               (.from (.range o)))))
+    (let ((parent (or (.parent o) (%root))))
+      (map (compose (cute graft parent <>)
+                    (cute make <literal> #:value <>))
+           (iota (1+ (- (.to (.range o)) (.from (.range o))))
+                 (.from (.range o))))))
    ((as o <int>)
-    (list (make <literal> #:value 0)))))
+    (let ((parent (or (.parent o) (%root))))
+      (list (graft parent (make <literal> #:value 0)))))))
 
 (define-method (ast:values (o <variable>))
   "Enum values include their type.name, the scope.name part of the
@@ -721,7 +730,10 @@ type.name is determined by the context referring to the type, hence the
 overload for variable."
   (cond
    ((as (ast:type o) <enum>)
-    (map (cute make <enum-literal> #:type.name (.type.name o) #:field <>)
+    (map (compose (cute graft (.parent o) <>)
+                  (cute make <enum-literal>
+                        #:type.name (.type.name o)
+                        #:field <>))
          (ast:field* (ast:type o))))
    (else (ast:values (ast:type o)))))
 
@@ -832,7 +844,9 @@ overload for variable."
   (let ((models (ast:model** root)))
     (cond
      (model-name
-      (let ((model (find (lambda (o) (equal? (ast:dotted-name o) model-name)) models)))
+      (let ((model
+             (find (compose (cute equal? <> model-name) ast:dotted-name)
+                   models)))
         (unless model
           (throw 'error (format #f "No such model: ~s" model-name)))
         model))
@@ -916,7 +930,7 @@ to bottom."
                    (if (and (pair? list1) (pair? list2) (equal? (car list1) (car list2)))
                        (loop (cdr list1) (cdr list2))
                        list1))))
-    (make <scope.name> #:ids scoped)))
+    (graft o (make <scope.name> #:ids scoped))))
 
 (define-method (ast:rescope (o <ast>) (parent <model>))
   (match o
@@ -925,7 +939,8 @@ to bottom."
     ((and ($ <enum-literal>) (= .type.name type.name))
      (clone o #:type.name (rescope-name (.type o) parent)))
     ((and ($ <formals>) (= .elements elements))
-     (clone o #:elements (map (cut ast:rescope <> parent) elements)))
+     (let ((formals (map (cut ast:rescope <> parent) elements)))
+       (clone o #:elements formals)))
     (($ <formal>)
      (clone o #:type.name (rescope-name (.type o) parent)))
     (_ o)))
@@ -1007,7 +1022,7 @@ to bottom."
         (let ((top (q-pop! stack)))
           (hashq-set! on-stack?-table top #f)
           top))
-      (let ((v-key (.node v)))
+      (let ((v-key v))
         (when (not (hashq-ref index-table v-key #f))
           (hashq-set! index-table v-key index)
           (hashq-set! lowlink-table v-key index)
@@ -1015,7 +1030,7 @@ to bottom."
           (push! v-key)
           (for-each
            (lambda (w)
-             (let ((w-key (.node w)))
+             (let ((w-key w))
                (cond ((not (hashq-ref index-table w-key #f))
                       (ast:graph-scc succ* w)
                       (hashq-set! lowlink-table v-key
@@ -1037,7 +1052,7 @@ to bottom."
 (define (ast:graph-cyclic? succ* o)
   (let ((scc (ast:graph-scc succ* o)))
     (or (not (null? (cdr scc)))
-        (find (lambda (s) (eq? (.node o) (.node s))) (succ* o)))))
+        (find (cute eq? <> o) (succ* o)))))
 
 (define-method (ast:recursive? (o <function>))
   (ast:graph-cyclic? ast:function* o))
@@ -1114,15 +1129,14 @@ call steps over the function and returns the next statement."
     (($ <compound>)
      (let* ((elements (ast:statement* o))
             (elements (ast:add-statement* elements statement #:location o)))
-       (clone o #:elements elements)))
+       (graft o #:elements elements)))
     ((h ... t)
      (append o (list (clone statement #:location (.location (.parent t))))))
     ((h ...)
      (append o (list (clone statement #:location (.location location)))))
     (_
      (let* ((location (.location o))
-            (statement (clone statement #:location location))
-            (compound (make <compound>
-                        #:elements (cons o (list statement))
-                        #:location location)))
-       (clone compound #:parent (.parent o))))))
+            (statement (clone statement #:location location)))
+       (graft (.parent o) (make <compound>
+                            #:elements (cons o (list statement))
+                            #:location location))))))
