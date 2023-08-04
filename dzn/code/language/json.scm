@@ -49,7 +49,7 @@
 
 (define-class <json:fieldlist> (<json:field>))
 
-(define-method (json:get-fields (o <ast-node>))
+(define-method (json:get-fields (o <ast>))
   (let* ((names (map slot-definition-name (class-slots (class-of o))))
          (names (if (%locations?)
                     names
@@ -65,21 +65,13 @@
   (string-map (lambda (c) (if (eq? c #\.) #\_ c)) o))
 
 (define-method (json:ast-name (o <top>))
-  (let ((name (ast-name o)))
-    (nodot name)))
+  (nodot (ast-name o)))
 
 (define-method (json:name (o <json:field>))
   (nodot (symbol->string (.name o))))
 
-(define-method (json:get-fields (o <ast>))
-  (json:get-fields (.node o)))
-
-
-(define-method (json:elements (o <ast-list-node>))
-  (map json:value (.elements o)))
-
 (define-method (json:elements (o <ast-list>))
-  (json:elements (.node o)))
+  (map json:value (.elements o)))
 
 (define (unspecified? x) (eq? x *unspecified*))
 
@@ -108,7 +100,7 @@
                    (ast:filter-model root model)))
          (root (if (%locations?) root (remove-location root)))
          (file-name (code:root-file-name root dir ".json"))
-         (generate (cute x:source (.node root))))
+         (generate (cute x:source root)))
     (code:dump generate #:file-name file-name)))
 
 (define* (ast-> ast #:key dir empty-files? model verbose?)

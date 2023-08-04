@@ -27,8 +27,9 @@
   #:use-module (ice-9 hcons)
   #:use-module (ice-9 match)
 
-  #:use-module (dzn ast)
   #:use-module (dzn ast ast)
+  #:use-module (dzn ast util)
+  #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
@@ -840,7 +841,7 @@ until RTC?."
                (defer-qout (make <defer-qout>
                              #:statement statement
                              #:location (.location statement)))
-               (defer-qout (clone defer-qout #:parent (.parent statement)))
+               (defer-qout (graft* (.parent statement) defer-qout))
                (pc (clone pc
                           #:defer (cdr defer)
                           #:running-defer? instance
@@ -888,14 +889,15 @@ until RTC?."
     (define (q-trigger q-trigger)
       (let* ((port-name (.name (.ast other-port)))
              (trigger (.trigger pc))
-             (q-trigger (make <q-trigger>
-                          #:event.name (.event.name q-trigger)
-                          #:port.name port-name
-                          #:location (.location q-trigger))))
-        (clone q-trigger #:parent (.type (.ast other-instance)))))
+             (parent (.type (.ast other-instance))))
+        (graft parent (make <q-trigger>
+                        #:event.name (.event.name q-trigger)
+                        #:port.name port-name
+                        #:location (.location q-trigger)))))
     (let* ((pc trigger (dequeue-external pc instance))
            (q-in (make <q-in> #:trigger trigger))
            (q-in (clone q-in #:location (.location trigger)))
+           (q-in (graft (.parent trigger) q-in))
            (pc (push-pc pc other-instance q-in))
            (q-trigger (q-trigger trigger))
            (pc (enqueue pc trigger other-instance q-trigger))

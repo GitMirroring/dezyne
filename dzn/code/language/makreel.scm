@@ -221,7 +221,7 @@
   (let ((stack (and (or (as o <function>)
                         (ast:parent o <function>))
                     (not (ast:parent o <defer>))
-                    (clone (make <stack>) #:parent o))))
+                    (graft o (make <stack>)))))
     (append (makreel:member* o)
             (makreel:locals o)
             (if (not stack) '()
@@ -253,8 +253,8 @@
     (#f '())))
 
 (define-method (makreel:enum-fields (o <enum>))
-  (map (compose (cut clone <> #:parent o)
-                (cut make <enum-literal> #:type.name (.name o) #:field <>))
+  (map (compose (cute graft o <>)
+                (cute make <enum-literal> #:type.name (.name o) #:field <>))
        (ast:field* o)))
 
 (define-method (makreel:call-continuation*-unmemoized (o <behavior>))
@@ -320,12 +320,13 @@
          (path (ast:path o))
          (key (map .id path))
          (next (assq-ref (%next-alist) model-key))
-         (next (or next -1)))
-    (number->string (or (assoc-ref (%id-alist) key)
-                        (let ((next (1+ next)))
-                          (%id-alist (acons key next (%id-alist)))
-                          (%next-alist (assoc-set! (%next-alist) model-key next))
-                          next)))))
+         (next (or next -1))
+         (next (or (assoc-ref (%id-alist) key)
+                   (let ((next (1+ next)))
+                     (%id-alist (acons key next (%id-alist)))
+                     (%next-alist (assoc-set! (%next-alist) model-key next))
+                     next))))
+    (number->string next)))
 
 (define-method (makreel:process-parens (o <ast>))
   (and (or (pair? (makreel:variables-in-scope o))
@@ -497,7 +498,8 @@
       (((and statement ($ <action>)
              (? ast:requires?) (? ast:blocking?))
         rest ...)
-       (let ((action-reply (make <action-reply> #:action statement)))
+       (let* ((action-reply (make <action-reply> #:action statement))
+              (action-reply (graft (.parent statement) action-reply)))
          (cons* statement action-reply (add-action-reply rest))))
       (((and statement (or ($ <assign>) ($ <variable>))
              (= .expression
@@ -508,7 +510,8 @@
                         (.variable.name statement)))
               (action-reply (make <action-reply>
                               #:action action
-                              #:variable.name name)))
+                              #:variable.name name))
+              (action-reply (graft (.parent action) action-reply)))
          (cons* statement action-reply (add-action-reply rest))))
       ((statement rest ...)
        (cons (add-action-reply statement) (add-action-reply rest)))
@@ -567,9 +570,9 @@
   (match o
     ((? (is? <component>)) o)
     ((? (is? <compound>))
-     (clone o #:elements (makreel:add-state-placeholder (ast:statement* o))))
+     (graft o #:elements (makreel:add-state-placeholder (ast:statement* o))))
     (((and (? (is? <if>)) s) rest ...)
-     (cons (clone s #:expression (.expression s)
+     (cons (graft s #:expression (.expression s)
                   #:then (makreel:add-state-placeholder (.then s))
                   #:else (and=> (.else s) makreel:add-state-placeholder))
            (makreel:add-state-placeholder rest)))
@@ -589,20 +592,20 @@
 transformations."
   (parameterize ((%normalize:short-circuit? makreel:short-circuit?))
     (let ((root ((compose
-                  makreel:add-action-reply
-                  makreel:add-shared-variables
-                  makreel:mark-tail-call
-                  add-function-return
-                  extract-call
-                  makreel:add-state-placeholder
-                  (if (%no-unreachable?) identity tag-imperative-blocks)
-                  normalize:state+illegals
-                  remove-otherwise
-                  makreel:tick-names
-                  add-defer-end
-                  purge-data
-                  (add-explicit-temporaries)
-                  inline-expression-functions)
+                  (with-root makreel:add-action-reply)
+                  (with-root makreel:add-shared-variables)
+                  (with-root makreel:mark-tail-call)
+                  (with-root add-function-return)
+                  (with-root extract-call)
+                  (with-root makreel:add-state-placeholder)
+                  (if (%no-unreachable?) identity (with-root tag-imperative-blocks))
+                  (with-root normalize:state+illegals)
+                  (with-root remove-otherwise)
+                  (with-root makreel:tick-names)
+                  (with-root add-defer-end)
+                  (with-root purge-data)
+                  (with-root (add-explicit-temporaries))
+                  (with-root inline-expression-functions))
                  ast)))
       (when (> (dzn:debugity) 1)
         (debug "normalized root:")
@@ -646,7 +649,7 @@ transformations."
             (shared (makreel:shared* behavior))
             (shared (delete-duplicates shared ast:equal?))
             (shared (map shared-var->shared-variable shared)))
-       (clone o #:elements (append (ast:variable* o) shared))))
+       (graft o #:elements (append (ast:variable* o) shared))))
     ((? (is? <ast>)) (tree-map makreel:add-shared-variables o))
     (_ o)))
 

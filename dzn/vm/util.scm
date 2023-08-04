@@ -32,6 +32,7 @@
   #:use-module (ice-9 string-fun)
 
   #:use-module (dzn ast ast)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -618,21 +619,20 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 ;;;
 
 (define-method (action->trigger (o <runtime:port>) (action <action>))
-  (clone (make <trigger>
-           #:port.name (and (not (.boundary? o)) (.name (.ast o)))
-           #:event.name (.event.name action)
-           #:location (.location action))
-         #:parent (.type (.ast (if (runtime:boundary-port? o) o
-                                   (.container o))))))
+  (let ((parent (.type (.ast (if (runtime:boundary-port? o) o
+                                 (.container o))))))
+    (graft parent (make <trigger>
+                    #:port.name (and (not (.boundary? o)) (.name (.ast o)))
+                    #:event.name (.event.name action)
+                    #:location (.location action)))))
 
 (define-method (trigger->component-trigger (o <runtime:port>) trigger)
   (let* ((port (.ast o))
          (trigger (clone trigger #:port.name (.name port))))
     (let* ((instance (or (.container o) (%sut))) ;injected
            (model (.type (.ast instance)))
-           (location (ast:location model))
-           (trigger (clone trigger #:location location)))
-      (clone trigger #:parent model))))
+           (location (ast:location model)))
+      (graft* model trigger #:location location))))
 
 (define-method (trigger->component-trigger trigger)
   (let* ((port-name (.port.name trigger))
@@ -654,9 +654,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (trigger->port-trigger (o <runtime:port>) (trigger <trigger>))
   (let* ((interface ((compose .type .ast) o))
-         (location (.location interface))
-         (trigger (clone trigger #:port.name #f #:location location)))
-    (clone trigger #:parent interface)))
+         (location (.location interface)))
+    (graft* interface trigger #:port.name #f #:location location)))
 
 (define-method (string->trigger (class <class>) (o <string>))
   "Return (class [PORT-NAME] EVENT-NAME) from O of form [PORT.]EVENT."
@@ -667,10 +666,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                     ((port event) (make class #:port.name port #:event.name event))
                     ((path ... port event) (make <trigger>
                                              #:port.name (string-join (append path (list port)) ".")
-                                             #:event.name event))))
-         (trigger (clone trigger #:location location))
-         (trigger (clone trigger #:parent model)))
-    trigger))
+                                             #:event.name event)))))
+    (graft* model trigger #:location location)))
 
 (define-method (string->trigger (o <string>))
   "Return (trigger [PORT-NAME] EVENT-NAME) from O of form [PORT.]EVENT."
@@ -1065,16 +1062,17 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((orig-pc pc)
          (trigger (and=> (as (.q (get-state pc instance)) <pair>)
                          car))
-         (flush-return (make <flush-return> #:trigger trigger))
-         (flush-return (clone flush-return #:parent (and=> trigger .parent)))
+         (parent (or (and=> trigger .parent) (%root)))
+         (flush-return (graft parent (make <flush-return> #:trigger trigger)))
          (pc (push-pc pc flush-return))
          (pc (clone pc #:instance instance)))
     (cond
      ((pair? (.q (get-state pc)))
-      (let ((pc trigger (dequeue pc)))
-        (let* ((q-out (make <q-out> #:trigger trigger))
-               (q-out (clone q-out #:location (.location trigger))))
-          (push-pc pc trigger instance q-out))))
+      (let* ((pc trigger (dequeue pc))
+             (location (.location trigger))
+             (q-out (make <q-out> #:trigger trigger #:location location))
+             (q-out (graft (.parent trigger) q-out)))
+        (push-pc pc trigger instance q-out)))
      (else
       (let ((deferred pc (pop-deferred pc)))
         (cond ((or (not deferred)
@@ -1235,11 +1233,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                (value (.value value)))
            (and (or (< value (.from range))
                     (> value (.to range)))
-                (let ((parent (.parent (.parent o)))
-                      (error (make <range-error>
-                               #:ast o #:variable o #:value value
-                               #:message "range-error")))
-                  (clone error #:parent parent)))))))
+                (let ((parent (.parent (.parent o))))
+                  (graft parent (make <range-error>
+                                  #:ast o #:variable o #:value value
+                                  #:message "range-error"))))))))
 
 (define-method (assign (pc <program-counter>) variable expression)
   (let* ((name (.name variable))
@@ -1762,6 +1759,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((location (.location o))
          (illegal (make <declarative-illegal> #:location location))
          (trigger (.trigger pc))
-         (triggers (make <triggers> #:elements (list trigger)))
-         (on (make <on> #:statement illegal #:triggers triggers #:location location)))
-    (clone on #:parent o)))
+         (triggers (make <triggers> #:elements (list trigger))))
+    (graft o (make <on> #:statement illegal #:triggers triggers
+                   #:location location))))

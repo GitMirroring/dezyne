@@ -39,6 +39,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
   #:use-module (dzn config)
+  #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn shell-util)
   #:use-module (dzn verify pipeline)
@@ -169,7 +170,8 @@ Check FILEs and DIRECTORYs for verification errors in Dezyne models
     (when all?
       (format (current-error-port)
               "warning: -a,--all is deprecated, use -k,--keep-going.\n"))
-    (parameterize ((%language "makreel")
+    (parameterize ((%context (%context))
+                   (%language "makreel")
                    (%no-constraint? no-constraint?)
                    (%no-unreachable? no-unreachable?)
                    (%queue-size queue-size)

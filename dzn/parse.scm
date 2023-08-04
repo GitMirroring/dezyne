@@ -29,6 +29,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
+  #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
@@ -36,6 +37,7 @@
   #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn ast)
+  #:use-module (dzn ast accessor)
   #:use-module (dzn ast display)
   #:use-module (dzn ast ast)
   #:use-module (dzn ast parse)
@@ -48,6 +50,7 @@
   #:use-module (dzn shell-util)
   #:use-module ((dzn parse tree) #:select (tree:normalize))
   #:use-module (dzn shell-util)
+  #:use-module (dzn ast util)
 
   #:declarative? #f
 
@@ -283,7 +286,8 @@ and the @var{tree-alist}."
 ;;; Ast.
 ;;;
 (define* (parse:annotate-ast ast)
-  (let ((ast (recursive:annotate ast)))
+  (%context (ast:memoize-context ast)) ;set the initial context
+  (let ((ast ((with-root recursive:annotate) ast)))
     (when (> (dzn:debugity) 1)
       (debug "ast:")
       (ast:pretty-print ast (current-error-port)))

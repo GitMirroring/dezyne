@@ -37,22 +37,16 @@
                             (if (member x '(<port> <foreign>))
                                 (symbol-append 'goops: x)
                                 x)))
-  #:export (<ast>
-            <ast-node>
-            define-ast
-            .node
-            .parent
+  #:export (define-ast
+            as
+            is?
 
-            .event.name
             .id
-            .instance.name
             .operator
-            .port.name
+            .variable.name
 
             ast:inevitable
-            ast:optional
-
-            ast:unwrap)
+            ast:optional)
   #:re-export (<top>
                <class> <object>
                <applicable> <procedure>
@@ -68,195 +62,13 @@
                is-a?
                make))
 
-;; FIXME: generate-me
-(export
- .arguments
- .ast
- .behavior
- .bindings
- .blocking
- .blocking?
- .called?
- .column
- .comment
- .direction
- .elements
- .else
- .end-column
- .end-line
- .event.name
- .events
- .expression
- .external?
- .field
- .fields
- .file-name
- .formals
- .from
- .function.name
- .functions
- .guard
- .ids
- .injected?
- .instances
- .invariant
- .last?
- .left
- .length
- .line
- .location
- .message
- .name
- .offset
- .port
- .ports
- .range
- .recursive?
- .right
- .root
- .scope
- .signature
- .statement
- .string
- .then
- .to
- .trigger
- .triggers
- .type.name
- .types
- .value
- .variable.name
- .variables
-
- <action>
- <and>
- <argument>
- <arguments>
- <assign>
- <ast-list>
- <ast-node-list>
- <behavior>
- <binary>
- <binding>
- <bindings>
- <block-comment>
- <blocking-compound>
- <blocking>
- <bool-expr>
- <bool>
- <call>
- <canonical-on>
- <comment>
- <component-model>
- <component>
- <compound>
- <data-expr>
- <data>
- <declarative-compound>
- <declarative-illegal>
- <declarative>
- <direction>
- <end-point>
- <enum-expr>
- <enum-field>
- <enum-literal>
- <enum>
- <equal>
- <error>
- <event>
- <events>
- <expression>
- <extern>
- <field-test>
- <fields>
- <file-name>
- <foreign>
- <formal-binding>
- <formal>
- <formals>
- <function>
- <functions>
- <greater-equal>
- <greater>
- <group>
- <guard>
- <if>
- <illegal>
- <imperative>
- <import>
- <inevitable>
- <info>
- <instance>
- <instances>
- <int-expr>
- <int>
- <interface>
- <less-equal>
- <less>
- <line-comment>
- <literal>
- <local>
- <location>
- <location-end>
- <message>
- <minus>
- <model-scope>
- <model>
- <modeling-event>
- <named>
- <namespace>
- <not-equal>
- <not>
- <on>
- <optional>
- <or>
- <otherwise-guard>
- <otherwise>
- <out-bindings>
- <out-formal>
- <plus>
- <port>
- <ports>
- <range>
- <reply>
- <return>
- <root>
- <scope.name>
- <selection>
- <shell-system>
- <signature>
- <silent-trigger>
- <skip>
- <stack>
- <statement>
- <subint>
- <system>
- <tag>
- <the-end-blocking>
- <the-end>
- <trigger>
- <triggers>
- <type>
- <types>
- <unary>
- <undefined>
- <unspecified>
- <var>
- <variable>
- <variables>
- <void>
- <voidreply>
- <warning>)
-
 (define-syntax define-ast
   (lambda (x)
-    (define (make-node name)
-      (string->symbol (string-append (string-drop-right (symbol->string name) 1) "-node>")))
-    (define (make-getter name)
+    (define (getter-name name)
       (string->symbol (string-append "." (symbol->string name))))
     (define (complete-slot slot)
       (define (create-slot name init-keyword init-value)
-        (let ((getter (datum->syntax x (make-getter (syntax->datum name))))
+        (let ((getter (datum->syntax x (getter-name (syntax->datum name))))
               (keyword (datum->syntax x (symbol->keyword (syntax->datum name)))))
           #`(#,name #:getter #,getter #,init-keyword #,init-value #:init-keyword #,keyword)))
       (syntax-case slot ()
@@ -266,49 +78,25 @@
          (create-slot #'name #:init-form #'form))
         ((name #:init-value value)
          (create-slot #'name #:init-value #'value))))
-    (define ((define-wrapper-getter class) slot)
-      (syntax-case slot ()
-        ((name foo ...)
-         (with-syntax ((getter (datum->syntax x (make-getter (syntax->datum #'name)))))
-           (with-syntax ((export? (not (defined? 'getter))))
-             #`(begin
-                 ;; #,(if #'export?
-                 ;;       (export getter))
-                 (define-method (getter (o #,class))
-                   (make-wrapper ((compose getter .node) o) o))))))))
+    (define (slot->getter-name slot)
+      (let ((name (syntax-case slot ()
+                    ((name) #'name)
+                    ((name #:init-form form) #'name)
+                    ((name #:init-value value) #'name))))
+        (datum->syntax x (getter-name (syntax->datum name)))))
     (syntax-case x ()
       ((_ name supers slot ...)
-       (with-syntax (((slot' ...) (map complete-slot #'(slot ...)))
-                     ((wrapper-method ...) (map (define-wrapper-getter #'name) #'(slot ...)))
-                     (node-supers (datum->syntax x (map make-node (syntax->datum #'supers))))
-                     (node (datum->syntax x (make-node (syntax->datum #'name)))))
+       (with-syntax (((slot' ...) (map complete-slot #'(slot ...))))
          #`(begin
-             (export name node)
-             (define-class node node-supers slot' ...)
-             (define-class name supers)
-             (define-method (node-class- (o name)) node)
-             (define-method (make-wrapper (n node) p) (make name #:parent p #:node n))
-             #,@#'(wrapper-method ...)))))))
+             (export name
+                     #,@(filter (compose not defined? syntax->datum)
+                                (map slot->getter-name #'(slot ...))))
+             (define-class name supers slot' ...)))))))
 
-(define-class <ast> ()
-  (node #:getter .node #:init-value #f #:init-keyword #:node)
-  (parent #:getter .parent #:init-value #f #:init-keyword #:parent))
-
-(define-class <ast-node> ()
-  (comment #:getter .comment #:init-value #f #:init-keyword #:comment))
-
-(define-method (.comment (o <ast>))
-  (.comment (.node o)))
+(define-ast <ast> ())
 
 (define-ast <ast-list> (<ast>)
   (elements #:init-form (list)))
-
-(define-method (.elements (o <ast-list>))
-  (map (lambda (e) (make-wrapper e o)) ((compose .elements .node) o)))
-
-(define-method (make-wrapper (o <top>) p) o)
-(define-method (make-wrapper (o <ast-node>) p) o)
-(define-method (make-wrapper (o <ast-list-node>) p) (make <ast-list> #:parent p #:node o))
 
 (define-ast <location> (<ast>)
   (file-name)
@@ -364,7 +152,7 @@
 (define-ast <ports> (<ast-list>))
 
 (define g-root-id 0)
-(define-method (initialize (o <root-node>) . initargs)
+(define-method (initialize (o <root>) . initargs)
   (let ((root (apply next-method (cons o initargs))))
     (set! g-root-id (.id root))
     root))
@@ -378,8 +166,8 @@
 (define-ast <model> (<scope> <declaration>))
 
 (define-ast <interface> (<model>)
-  (types #:init-form (make <types-node>))
-  (events #:init-form (make <events-node>))
+  (types #:init-form (make <types>))
+  (events #:init-form (make <events>))
   (behavior))
 
 (define-ast <type> (<declaration>))
@@ -391,37 +179,35 @@
   (value))
 
 (define-ast <bool> (<type>))
-(define-method (initialize (o <bool-node>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '("bool"))))))
+(define-method (initialize (o <bool>) . initargs)
+  (next-method o (append (car initargs) (list #:name (make <scope.name> #:ids '("bool"))))))
 
 (define-ast <void> (<type>))
-(define-method (initialize (o <void-node>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '("void"))))))
+(define-method (initialize (o <void>) . initargs)
+  (next-method o (append (car initargs) (list #:name (make <scope.name> #:ids '("void"))))))
 
 (define-ast <int> (<type>))
-(define-method (initialize (o <int-node>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name-node> #:ids '("<int>"))))))
+(define-method (initialize (o <int>) . initargs)
+  (next-method o (append (car initargs) (list #:name (make <scope.name> #:ids '("<int>"))))))
 
 (define-ast <subint> (<int>)
-  (range #:init-form (make <range-node>)))
+  (range #:init-form (make <range>)))
 
 (define-ast <range> (<ast>)
   (from #:init-value 0)
   (to #:init-value 0))
 
 (define-ast <signature> (<locationed>)
-  (type.name #:init-form (make <scope.name-node> #:ids '("void")))
-  (formals #:init-form (make <formals-node>)))
-
-(define void-signature-node (make <signature-node>))
+  (type.name #:init-form (make <scope.name> #:ids '("void")))
+  (formals #:init-form (make <formals>)))
 
 (define-ast <event> (<declaration>)
-  (signature #:init-form (make <signature-node>))
+  (signature #:init-form (make <signature>))
   (direction))
 
 (define-ast <modeling-event> (<event>))
 (define-method (.signature (o <modeling-event>))
-  (make <signature> #:node void-signature-node #:parent o))
+  (make <signature>))
 
 (define-method (.direction (o <modeling-event>)) 'in)
 
@@ -435,19 +221,19 @@
 (define (ast:optional) (make <optional>))
 
 (define-ast <instance> (<declaration> <declarative>)
-  (type.name #:init-form (make <scope.name-node>)))
+  (type.name #:init-form (make <scope.name>)))
 
 (define-ast <port> (<instance>)
   (direction)                           ; symbol 'provides / 'requires
   (blocking?)
   (external?)
-  (formals #:init-form (make <formals-node>))
+  (formals #:init-form (make <formals>))
   (injected?))
 
 (define-ast <trigger> (<scope> <locationed>)
   (port.name)
   (event.name)
-  (formals #:init-form (make <formals-node>)))
+  (formals #:init-form (make <formals>)))
 
 (define-ast <silent-trigger> (<trigger>))
 
@@ -511,7 +297,7 @@
 
 (define-ast <variable> (<declaration> <imperative>)
   (type.name)
-  (expression #:init-form (make <expression-node>)))
+  (expression #:init-form (make <expression>)))
 
 (define-ast <shared-variable> (<shared> <variable>)
   (port.name))
@@ -531,7 +317,7 @@
   (type.name)
   (field))
 
-(define-ast <otherwise> (<expression>) ;; FIXME: make <guard-otherwise/guard-else-node> instead
+(define-ast <otherwise> (<expression>)
   (value #:init-value *unspecified*))
 
 (define-ast <formal> (<declaration> <unary>)
@@ -542,7 +328,7 @@
   (variable.name))
 
 (define-ast <component-model> (<model>)
-  (ports #:init-form (make <ports-node>)))
+  (ports #:init-form (make <ports>)))
 
 (define-ast <foreign> (<component-model>))
 
@@ -550,8 +336,8 @@
   (behavior))
 
 (define-ast <system> (<component-model>)
-  (instances #:init-form (make <instances-node>))
-  (bindings #:init-form (make <bindings-node>)))
+  (instances #:init-form (make <instances>))
+  (bindings #:init-form (make <bindings>)))
 
 (define-ast <shell-system> (<system>))
 
@@ -559,14 +345,15 @@
   (expression))
 
 (define-ast <behavior> (<scope> <declaration>)
-  (types #:init-form (make <types-node>))
-  (variables #:init-form (make <variables-node>))
-  (functions #:init-form (make <functions-node>))
+  (types #:init-form (make <types>))
+  (variables #:init-form (make <variables>))
+  (functions #:init-form (make <functions>))
   (invariant)
-  (statement #:init-form (make <compound-node>)))
+  (statement #:init-form (make <compound>)))
 
 (define-ast <function> (<scope> <declaration>)
-  (signature #:init-form (make <signature-node>))
+  (signature #:init-form (make <signature>))
+  (noisy?)
   (recursive?)
   (called?)
   (statement))
@@ -577,7 +364,7 @@
 (define-ast <action> (<imperative> <unary>)
   (port.name)
   (event.name)
-  (arguments #:init-form (make <arguments-node>)))
+  (arguments #:init-form (make <arguments>)))
 
 (define-ast <defer> (<scope> <imperative>)
   (arguments)
@@ -587,21 +374,21 @@
 
 (define-ast <assign> (<imperative>)
   (variable.name)
-  (expression #:init-form (make <expression-node>)))
+  (expression #:init-form (make <expression>)))
 
 (define-ast <call> (<imperative> <unary>)
   (function.name)
-  (arguments #:init-form (make <arguments-node>))
+  (arguments #:init-form (make <arguments>))
   (last?))
 
 (define-ast <guard> (<declarative>)
-  (expression #:init-form (make <expression-node>))
+  (expression #:init-form (make <expression>))
   (statement))
 
 (define-ast <otherwise-guard> (<guard>))
 
 (define-ast <if> (<imperative> <scope>)
-  (expression #:init-form (make <expression-node>))
+  (expression #:init-form (make <expression>))
   (then)
   (else))
 
@@ -614,7 +401,7 @@
   (statement))
 
 (define-ast <on> (<declarative>)
-  (triggers #:init-form (make <triggers-node>))
+  (triggers #:init-form (make <triggers>))
   (statement))
 
 (define-ast <canonical-on> (<declarative>)
@@ -624,11 +411,11 @@
   (statement))
 
 (define-ast <reply> (<imperative>)
-  (expression #:init-form (make <literal-node>))
+  (expression #:init-form (make <literal>))
   (port.name))
 
 (define-ast <return> (<imperative>)
-  (expression #:init-form (make <literal-node>)))
+  (expression #:init-form (make <literal>)))
 
 (define-ast <stack> (<ast>))
 (define-ast <return-value> (<ast>))
@@ -689,29 +476,8 @@
 (define-method (.id (o <object>))
   (pointer-address (scm->pointer o)))
 
-(define-method (.id (o <ast>))  (.id (.node o)))
+(define (as o c)
+  (and (is-a? o c) o))
 
-(define-method (node-class (class <class>))
-  (node-class- (make class #:node #f #:parent #f)))
-
-(define-method (ast:unwrap o) o)
-(define-method (ast:unwrap (o <ast-node>)) o)
-(define-method (ast:unwrap (o <pair>)) (map ast:unwrap o))
-(define-method (ast:unwrap (o <ast>)) (.node o))
-
-(define-method (get-parent o) #f)
-(define-method (get-parent (o <ast>)) (.parent o))
-
-(define (construct class . setters)
-  (let* ((class-node (node-class class))
-         (node (apply make (cons class-node (map ast:unwrap setters))))
-         (parent (find get-parent setters)))
-    (if (equal? class class-node) node (make class #:node node #:parent parent))))
-
-(define-method (make-instance (class <class>) . initargs)
-  (if (and (member <ast> (class-precedence-list class))
-           (not (memq #:node initargs))
-           (not (memq #:parent initargs))) (apply construct (cons class initargs))
-           (let ((instance (allocate-instance class initargs)))
-             (initialize instance initargs)
-             instance)))
+(define ((is? class) o)
+  (and (is-a? o class) o))

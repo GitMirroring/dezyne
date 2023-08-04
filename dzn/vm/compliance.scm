@@ -27,6 +27,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast ast)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -707,7 +708,7 @@ on TRACE."
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (and (string? event)
                        (not (equal? event "<defer>"))
-                       (clone (string->trigger event) #:parent component))))
+                       (graft* component (string->trigger event)))))
     (check-provides-compliance pc (%sut) trigger trace)))
 
 (define* (check-provides-compliance+ pc event trace)
