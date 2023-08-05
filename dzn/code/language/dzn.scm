@@ -379,7 +379,8 @@ and \"POST\" 'post in GRAMMAR."
     (display "[" port)
     (print-ast (.expression o) port)
     (display "]" port)
-    (unless (is-a? statement <compound>)
+    (when (or (not (is-a? statement <compound>))
+              (null? (ast:statement* statement)))
       (display " " port))
     (print-ast (.statement o) port)))
 
