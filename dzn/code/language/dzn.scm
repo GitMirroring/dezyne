@@ -195,7 +195,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-ast o (current-output-port)))
 
 (define-method (print-ast (o <root>) port)
-  (print-ast (.comment o) port)
+  (and=> (.comment o) (cute print-ast <> port))
   (print-ast-join (dzn:top* o) port "\n"))
 
 (define-method (print-ast (o <namespace>) port)
