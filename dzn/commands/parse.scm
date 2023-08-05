@@ -52,7 +52,8 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((fall-back (single-char #\f))
+          '((comments (single-char #\C))
+            (fall-back (single-char #\f))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (model (single-char #\m) (value #t))
@@ -71,6 +72,7 @@
 Usage: dzn parse [OPTION]... [FILE]...
 Parse a Dezyne file and produce an AST
 
+  -C, --comments         show comments in output AST
   -f, --fall-back        use fall-back parser
   -E, --preprocess       resolve imports and produce content stream
   -h, --help             display this help and exit
@@ -101,9 +103,22 @@ Parse a Dezyne file and produce an AST
     (if parameters? (cute transformation <> parameters)
         transformation)))
 
+(define (serialized-file? file-name)
+  (let* ((port (if (equal? file-name "-") (current-input-port)
+                  (open-input-file file-name)))
+         (line (read-line port 'concat)))
+    (when (and (equal? port (current-input-port))
+               (not (eof-object? line))
+               (not (port-closed? port)))
+      (unread-string line port))
+    (and (string? line)
+         (parse:serialized? line))))
+
 (define* (parse options file-name #:key (exit? #t))
   (let* ((debug? (dzn:command-line:get 'debug #f))
-         (skip-wfc? (dzn:command-line:get 'skip-wfc #f))
+         (serialized? (serialized-file? file-name))
+         (skip-wfc? (or (dzn:command-line:get 'skip-wfc #f)
+                        serialized?))
          (imports (command-line:get 'import))
          (locations? (command-line:get 'locations))
          (model-name (option-ref options 'model #f))
@@ -112,7 +127,8 @@ Parse a Dezyne file and produce an AST
                    (%peg:error (peg:format-display-syntax-error file-name)))
       (parse:call-with-handle-exceptions
        (lambda _
-         (let* ((ast (parse:file->ast file-name #:imports imports))
+         (let* ((ast (if serialized? (parse:serialized->ast file-name)
+                         (parse:file->ast file-name #:imports imports)))
                 (ast (if skip-wfc? ast
                          (ast:wfc ast)))
                 (ast (if (not model-name) ast
@@ -194,17 +210,17 @@ Parse a Dezyne file and produce an AST
         (let ((ast (parse options file-name #:exit? #f)))
           (if (and ast output?)
               (let* ((file-name (option-ref options 'output "-"))
+                     (comments? (command-line:get 'comments))
                      (locations? (command-line:get 'locations))
-                     (sexp (and (not debug?)
-                                (parameterize ((%locations? locations?))
-                                  (ast:serialize ast))))
                      (width (or (and=> (getenv "COLUMNS") string->number)
                                 79))
-                     (output (with-output-to-string
-                               (if debug? (cut ast:pretty-print ast #:width width)
-                                   (cut pretty-print sexp #:width width)))))
-                (if (equal? file-name "-") (display output)
-                    (with-output-to-file file-name (cut display output))))
+                     (output (if (not debug?) (ast:serialize ast)
+                                 (parameterize ((%comments? comments?)
+                                                (%locations? locations?))
+                                   (ast->string ast)))))
+                (if (equal? file-name "-") (pretty-print output #:width width)
+                    (with-output-to-file file-name 
+                      (cut pretty-print output #:width width))))
               (when verbose?
                 (if ast (display "parse: no errors found\n")
                     (display "parse: errors found\n"))))

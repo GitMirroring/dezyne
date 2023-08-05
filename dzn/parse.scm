@@ -41,6 +41,7 @@
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast parse)
+  #:use-module (dzn ast serialize)
   #:use-module (dzn ast silence)
   #:use-module (dzn ast wfc)
   #:use-module (dzn command-line)
@@ -58,6 +59,10 @@
             parse:file->stream
             parse:file->tree
             parse:file->tree-alist
+            parse:preprocessed?
+            parse:serialized?
+            parse:serialized->ast
+            parse:serialized-string->ast
             parse:string->ast
             parse:string->fall-back-tree
             parse:string->tree
@@ -334,6 +339,28 @@ optionally using CONTENT-ALIST of form
          (let ((ast (parse:tree-alist->ast
                      tree-alist #:content-alist content-alist)))
            (parse:annotate-ast ast)))))
+
+
+;;;
+;;; Unserialize.
+;;;
+(define (parse:serialized? string)
+  (string-prefix? "(root (elements" string))
+
+(define (parse:serialized-string->ast string)
+  "Unserialize STRING and return an ast."
+  (unless (parse:serialized? string)
+    (throw 'invalid-input "serialized ast expected, got" string))
+  (let ((ast (ast:unserialize string)))
+    ;; Annotation would already have happened, no?
+    ;; (parse:annotate-ast ast)
+    ;; Maybe only memoize instead?
+    (%context (ast:memoize-context ast)) ;set the initial context
+    ast))
+
+(define (parse:serialized->ast file-name)
+  (let ((string (parse:file->string file-name)))
+    (parse:serialized-string->ast string)))
 
 
 ;;;

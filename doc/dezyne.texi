@@ -3055,6 +3055,10 @@ The @var{option}s can be among the following:
 
 @table @code
 
+@item --comments
+@itemx -C
+Show comments in debug @var{ast}.
+
 @item --preprocess
 @itemx -E
 Resolve imports and produce a content stream.  This pre-processed
@@ -3074,7 +3078,7 @@ List the Dezyne models defined in the file, with their type.
 
 @item --locations
 @itemx -L
-Show locations in output @var{ast}.
+Show locations in debug @var{ast}.
 
 @item --model=@var{model}
 @itemx -m @var{model}

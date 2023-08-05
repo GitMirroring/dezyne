@@ -36,6 +36,7 @@
             dzn:debugity
             dzn:multi-opt
             dzn:verbosity
+            %comments?
             %locations?
             multi-opt
             show-version-and-exit
@@ -43,8 +44,8 @@
 
 (define EXIT_OTHER_FAILURE 2)
 
-(define %locations?
-  (make-parameter #f))
+(define %comments? (make-parameter #f))
+(define %locations? (make-parameter #f))
 
 (define multi-options
   '(import transform))
