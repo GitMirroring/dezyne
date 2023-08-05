@@ -387,7 +387,7 @@ and \"POST\" 'post in GRAMMAR."
 (define-method (print-ast (o <on>) port)
   (let ((statement (.statement o)))
     (display "on " port)
-    (print-ast-join (ast:trigger* o) port ",")
+    (print-ast-join (ast:trigger* o) port ", ")
     (display ":" port)
     (when (or (not (is-a? statement <compound>))
               (null? (ast:statement* statement)))
@@ -400,7 +400,7 @@ and \"POST\" 'post in GRAMMAR."
     (cond
      (port-name
       (simple-format port "~a.~a (" port-name event-name)
-      (print-ast-join (map .name (ast:formal* o)) port ",")
+      (print-ast-join (map .name (ast:formal* o)) port ", ")
       (display ")" port))
      (else
       (display event-name port)))))
@@ -426,7 +426,7 @@ and \"POST\" 'post in GRAMMAR."
     (cond
      (port-name
       (simple-format port "~a.~a (" port-name (.event.name o))
-      (print-ast-join (ast:argument* o) port ",")
+      (print-ast-join (ast:argument* o) port ", ")
       (display ")" port))
      (else
       (simple-format port "~a" (.event.name o))))
@@ -435,7 +435,7 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <call>) port)
   (simple-format port "~a (" (.function.name o))
-  (print-ast-join (ast:argument* o) port ",")
+  (print-ast-join (ast:argument* o) port ", ")
   (display ")" port)
   (when (dzn:statement? o)
     (display ";\n" port)))
