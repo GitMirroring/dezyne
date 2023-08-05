@@ -1,9 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -28,65 +25,46 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 pretty-print)
-  #:use-module ((oop goops)
-                #:select (class-slots slot-definition-name slot-ref))
+  #:use-module ((oop goops) #:select (slot-ref))
 
+  #:use-module (dzn goops display)
+  #:use-module (dzn goops serialize)
   #:use-module (dzn ast goops)
+  #:use-module (dzn ast serialize)
   #:use-module (dzn ast util)
-  #:use-module (dzn command-line)
+  #:use-module (dzn command-line) ;%locations?
+  #:use-module (dzn misc)
+
   #:export (ast:display
-            ast:pretty-print))
+            ast:pretty-print
+            ast->string)
+  #:re-export (write))
 
-;; AST printing
-(define (ast port) (display #\* port))
-(define (ref port) (display #\@ port))
-
-(define-method (sdisplay (o <ast>) port)
-  (display #\space port)
-  (write o port))
-
-(define-method (sdisplay (o <top>) port)
-  (display #\space port)
-  (write o port))
-
-(define-method (sdisplay (o <location>) port)
-  (when (%locations?)
-    (next-method)))
-
-(define-method (display-slots (o <object>) port)
-  (for-each
-   (lambda (slot)
-     (let* ((name (slot-definition-name slot))
-            (value (slot-ref o name)))
-       (when (and value
-                  (not (null? value))
-                  (not (eq? value *unspecified*)))
-         (cond ((and (eq? name 'elements)
-                     (pair? value))
-                (for-each (lambda (x) (sdisplay x port)) value))
-               ((eq? name 'elements)
-                (format port " <<~a>>" value)
-                (format (current-error-port)
-                        "error: expected pair for elements, found: ~a: ~a\n"
-                        (class-name (class-of value)) value))
-               (else (sdisplay value port))))))
-   (class-slots (class-of o))))
+(define (ast:display-skip? o)
+  ((disjoin ast:serialize-skip?
+            (conjoin (is? <comment>)
+                     (negate (const (%comments?))))
+            (conjoin (disjoin (is? <location>)
+                              (is? <file-name>))
+                     (negate (const (%locations?)))))
+   o))
 
 (define-method (write (o <ast>) port)
-  (display "(" port)
-  (display (ast-name o) port)
-  (ast port)
-  (display-slots o port)
-  (display #\) port))
+  (parameterize ((%serialize:skip? ast:display-skip?))
+    (next-method)))
 
 (define ast:display write)
 
+
+;;;
+;;; Entry points.
+;;;
+(define (ast->string ast)
+  (parameterize ((%serialize:skip? ast:display-skip?))
+    (display:serialize ast)))
+
 (define* (ast:pretty-print ast #:optional (port (current-output-port))
                            #:key (width 79))
-  "Turn @var{ast} into a user-friendly list representation and
-pretty-print it to PORT."
-  (pretty-print (with-input-from-string
-                    (with-output-to-string (cut write ast))
-                  read)
-                port
-                #:width width))
+  "Recursively print AST to PORT in a user-friendly debug format."
+  (parameterize ((%serialize:skip? ast:display-skip?))
+    (display:pretty-print ast port #:width width)))
