@@ -240,7 +240,7 @@ and \"POST\" 'post in GRAMMAR."
   (let ((range (.range o)))
     (display "subint " port)
     (print-type o port)
-    (simple-format port "{~a..~a}\n" (.from range) (.to range))))
+    (simple-format port " {~a..~a};\n" (.from range) (.to range))))
 
 (define-method (print-ast (o <interface>) port)
   (simple-format port "interface ~a" (ast:name o))
