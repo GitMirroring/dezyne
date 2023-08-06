@@ -49,15 +49,11 @@
 (define deep-copy* (@@ (dzn ast util) deep-copy*))
 
 (define-method (equal? (a <ast>) (b <ast>))
-  (define comment?
-    (compose (cute eq? <> #:location) car))
   (let ((class-a (class-of a))
         (class-b (class-of b)))
     (and (eq? class-a class-b)
          (let* ((keyword-values-a (ast:keyword+child* a))
-                (keyword-values-a (filter (negate comment?) keyword-values-a))
-                (keyword-values-b (ast:keyword+child* b))
-                (keyword-values-b (filter (negate comment?) keyword-values-b)))
+                (keyword-values-b (ast:keyword+child* b)))
            (equal? keyword-values-a keyword-values-b)))))
 
 (test-begin "ast")
@@ -65,7 +61,7 @@
 (test-assert "dummy"
   #t)
 
-(parameterize ((%peg:locations? #f))
+(parameterize ((%peg:locations? 'none))
   (let* ((test "
 interface ihello
 {
@@ -86,8 +82,7 @@ component hello
   }
 }
 ")
-         (root (parse:string->ast test))
-         (root (tree-filter (negate (is? <location>)) root)))
+         (root (parse:string->ast test)))
 
     (parameterize ((%context (ast:memoize-context root)))
       (let* ((interface (car (tree-collect (is? <interface>) root)))
