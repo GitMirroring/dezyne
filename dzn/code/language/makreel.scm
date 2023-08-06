@@ -33,7 +33,8 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
-  #:use-module (dzn ast context)
+  #:use-module (dzn goops context)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
@@ -119,9 +120,9 @@
 
 (define (makreel:model->makreel root model)
   (let* ((model-name (ast:dotted-name (or model (ast:get-model root))))
-         (root' (tree-filter (disjoin (negate (is? <component>))
-                                      (cute eq? <> model))
-                             root)))
+         (root' (tree:shallow-filter (disjoin (negate (is? <component>))
+                                              (cute eq? <> model))
+                                     root)))
     (parameterize ((%language "makreel")
                    (%model-name model-name))
       (root-> root'))))
@@ -148,10 +149,11 @@
     (map .name parameters)))
 
 (define-method (makreel:defer*-unmemoized (o <ast>))
-  (tree-collect (conjoin (is? <defer>)
-                         (disjoin (negate (cute ast:parent <> <function>))
-                                  (compose is-called? (cute ast:parent <> <function>))))
-                o))
+  (tree-collect
+   (conjoin (is? <defer>)
+            (disjoin (negate (cute tree:ancestor <> <function>))
+                     (compose is-called? (cute tree:ancestor <> <function>))))
+   o))
 
 (define makreel:defer*
   (ast:perfect-funcq makreel:defer*-unmemoized))
@@ -174,11 +176,11 @@
   (string-append (.port.name o) "port_" (.name o)))
 
 (define (reachable calls)
-  (let ((nested direct (partition (cute ast:parent <> <function>) calls)))
+  (let ((nested direct (partition (cute tree:ancestor <> <function>) calls)))
     (let loop ((nested nested) (direct direct))
       (let ((reached rest (partition
                            (lambda (call)
-                             (find (cute eq? (ast:parent call <function>) <>)
+                             (find (cute eq? (tree:ancestor call <function>) <>)
                                    (map .function direct))) nested)))
         (let* ((reached (append reached direct)))
           (if (equal? direct reached) direct
@@ -196,10 +198,10 @@
     calls))
 
 (define (reachable-calls o)
-  ((ast:perfect-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
+  ((ast:perfect-funcq reachable-calls-unmemoized) (tree:ancestor o <root>) o))
 
 (define-method (is-called? (o <function>))
-  (let ((calls (reachable-calls (ast:parent o <behavior>))))
+  (let ((calls (reachable-calls (tree:ancestor o <behavior>))))
     (find (compose (cut equal? <> (.name o)) .function.name) calls)))
 
 (define-method (makreel:called-function* (o <behavior>))
@@ -212,7 +214,7 @@
   (makreel:process-identifier o))
 
 (define-method (makreel:process-index (o <action>))
-  (let ((parent (.parent o)))
+  (let ((parent (tree:parent o)))
     (makreel:process-identifier
      (if (or (is-a? parent <assign>)
              (is-a? parent <variable>)) parent
@@ -223,7 +225,7 @@
 
 (define-method (makreel:locals (o <ast>))
   (if (is-a? o <behavior>) '()
-      (let* ((p (.parent o)))
+      (let* ((p (tree:parent o)))
         (cond ((is-a? p <compound>)
                (let* ((statements (reverse (ast:statement* p)))
                       (prefix (or (and=> (memq o statements) cdr)
@@ -236,15 +238,15 @@
                (makreel:locals p))))))
 
 (define-method (makreel:member* (o <ast>))
-  (ast:member* (ast:parent o <model>)))
+  (ast:member* (tree:ancestor o <model>)))
 
 (define-method (makreel:variables-in-scope (o <model>))
   (ast:member* o))
 
 (define-method (makreel:variables-in-scope (o <ast>))
   (let ((stack (and (or (as o <function>)
-                        (ast:parent o <function>))
-                    (not (ast:parent o <defer>))
+                        (tree:ancestor o <function>))
+                    (not (tree:ancestor o <defer>))
                     (graft o (make <stack>)))))
     (append (makreel:member* o)
             (makreel:locals o)
@@ -294,7 +296,7 @@
          (calls (filter (compose
                          (disjoin not
                                   (cute memq <> called))
-                         (cute ast:parent <> <function>))
+                         (cute tree:ancestor <> <function>))
                         calls)))
     (cons (map (compose car ast:continuation*) calls)
           calls)))
@@ -309,13 +311,13 @@
     (makreel:call-continuation* behavior)))
 
 (define-method (makreel:call-continuation* (o <ast>))
-  (let ((behavior (ast:parent o <behavior>)))
+  (let ((behavior (tree:ancestor o <behavior>)))
     (makreel:call-continuation* behavior)))
 
 (define-method (makreel:stack-empty? (o <call>))
   (or (is-a? o <defer>)
-      (ast:parent o <defer>)
-      (not (ast:parent o <function>))))
+      (tree:ancestor o <defer>)
+      (not (tree:ancestor o <function>))))
 
 
 ;;;
@@ -339,10 +341,10 @@
     (format #f "~a, ~a" (.line location) (.column location))))
 
 (define (makreel:process-identifier o)
-  (let* ((model (ast:parent o <model>))
-         (model-key (.id model))
-         (path (ast:path o))
-         (key (map .id path))
+  (let* ((model (tree:ancestor o <model>))
+         (model-key (tree:id model))
+         (path (tree:path o))
+         (key (map tree:id path))
          (next (assq-ref (%next-alist) model-key))
          (next (or next -1))
          (next (or (assoc-ref (%id-alist) key)
@@ -354,7 +356,7 @@
 
 (define-method (makreel:process-parens (o <ast>))
   (and (or (pair? (makreel:variables-in-scope o))
-           (ast:parent o <function>))
+           (tree:ancestor o <function>))
        '()))
 
 (define-method (makreel:process-parameters (o <ast>))
@@ -402,7 +404,7 @@
               (graft o #:variable.name (string-append (.variable.name o)
                                                       (number->string depth)))))))
 
-  (tree-transform o shadow? add-shadow))
+  (tree:transform o shadow? add-shadow))
 
 (define-method (makreel:tick-names (o <root>))
   "To avoid name collision between input names and the internal names, as
@@ -432,7 +434,7 @@ etc."
                  (keywords-values (apply append keywords-values)))
             (apply graft o keywords-values)))))
 
-  (tree-transform o (negate (is? <root>)) tick-name-fields))
+  (tree:transform o (negate (is? <root>)) tick-name-fields))
 
 (define %count (make-parameter 0))
 (define (Xmakreel:tick-names o)
@@ -447,9 +449,9 @@ etc."
                              (string-append (number->string count) "'"))))))
   (match o
     (($ <root>)
-     (tree-map (tick-names-) o))
+     (tree:shallow-map (tick-names-) o))
     ((? (is? <model>))
-     (clone (tree-map (tick-names-) o)
+     (clone (tree:shallow-map (tick-names-) o)
             #:name ((compose (tick-names-) .name) o)))
     (($ <int>)
      o)
@@ -563,7 +565,7 @@ etc."
                          (statement ((tick-names- names) statement)))
                     (cons statement (loop (cdr statements) names)))))))
     ((? (is? <ast>))
-     (tree-map (tick-names- names) o))
+     (tree:shallow-map (tick-names- names) o))
     (_ o)))
 
 (define* (makreel:add-action-reply o)
@@ -596,7 +598,7 @@ etc."
                               #:action statement
                               #:port.name (.port.name statement)
                               #:event.name (.event.name statement)))
-              (action-reply (graft (.parent statement) action-reply)))
+              (action-reply (graft (tree:parent statement) action-reply)))
          (cons* statement action-reply (add-action-reply rest))))
       (((and statement (or ($ <assign>) ($ <variable>))
              (= .expression
@@ -610,7 +612,7 @@ etc."
                               #:port.name (.port.name action)
                               #:event.name (.event.name action)
                               #:variable.name name))
-              (action-reply (graft (.parent action) action-reply)))
+              (action-reply (graft (tree:parent action) action-reply)))
          (cons* statement action-reply (add-action-reply rest))))
       ((statement rest ...)
        (cons statement (add-action-reply rest)))
@@ -638,7 +640,7 @@ etc."
     (($ <interface>)
      o)
     ((? (is? <ast>))
-     (tree-map makreel:add-action-reply o))
+     (tree:shallow-map makreel:add-action-reply o))
     (_ o)))
 
 (define (makreel:mark-tail-call o)
@@ -654,7 +656,7 @@ etc."
     (($ <location>)
      o)
     ((? (is? <ast>))
-     (tree-map makreel:mark-tail-call o))
+     (tree:shallow-map makreel:mark-tail-call o))
     (_ o)))
 
 (define (makreel:short-circuit? o)
@@ -669,13 +671,13 @@ etc."
 (define (makreel:add-state-placeholder o)
   (match o
     ((and (? (is? <compound>))
-          (? (cute ast:parent <> <interface>))
-          (? (cute ast:parent <> <on>)))
+          (? (cute tree:ancestor <> <interface>))
+          (? (cute tree:ancestor <> <on>)))
      (graft o #:elements (makreel:add-state-placeholder (ast:statement* o))))
     (((and (? (is? <action>)) statement) rest ...)
-     (let* ((trigger (car (ast:trigger* (ast:parent statement <on>))))
+     (let* ((trigger (car (ast:trigger* (tree:ancestor statement <on>))))
             (no-state? (and (ast:modeling? trigger)
-                            (not (tree-find (is? <action>) rest)))))
+                            (not (tree:find (is? <action>) rest)))))
        (if no-state? o
            (cons* statement
                   (make <state>)
@@ -683,7 +685,7 @@ etc."
     (((and (? (is? <statement>)) statement) rest ...)
      (cons statement (makreel:add-state-placeholder rest)))
     ((? (is? <ast>))
-     (tree-map makreel:add-state-placeholder o))
+     (tree:shallow-map makreel:add-state-placeholder o))
     (_ o)))
 
 (define (makreel:normalize ast)
@@ -744,12 +746,12 @@ transformations."
   (match o
     (($ <interface>) o)
     (($ <variables>)
-     (let* ((behavior (ast:parent o <behavior>))
+     (let* ((behavior (tree:ancestor o <behavior>))
             (shared (makreel:shared* behavior))
             (shared (delete-duplicates shared ast:equal?))
             (shared (map shared-reference->shared-variable shared)))
        (graft o #:elements (append (ast:variable* o) shared))))
-    ((? (is? <ast>)) (tree-map makreel:add-shared-variables o))
+    ((? (is? <ast>)) (tree:shallow-map makreel:add-shared-variables o))
     (_ o)))
 
 (define-method (makreel:shared-reference* (o <behavior>))

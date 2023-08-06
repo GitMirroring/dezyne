@@ -33,12 +33,12 @@
   #:use-module (ice-9 regex)
   #:use-module (ice-9 string-fun)
 
-  #:use-module (dzn ast context)
+  #:use-module (dzn goops context)
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast normalize)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn code goops)
   #:use-module (dzn code language makreel)
@@ -186,7 +186,7 @@
   (code:interface-include* o (ast:source-file o)))
 
 (define-method (code:interface-include* (o <foreign>))
-  (code:interface-include* o (ast:source-file (ast:parent o <root>))))
+  (code:interface-include* o (ast:source-file (tree:ancestor o <root>))))
 
 (define (code:component-include* o)
   (let ((source-file (ast:source-file o)))
@@ -258,13 +258,13 @@
     (delete-duplicates types code:type-eq?)))
 
 (define-method (code:port-release o)
-  (let ((trigger (and=> (ast:parent o <on>)
+  (let ((trigger (and=> (tree:ancestor o <on>)
                         (compose car ast:trigger*))))
     (and (or (not trigger)
              (ast:requires? trigger)
              (or (not (ast:equal? (.port o) (.port trigger)))
-                 (ast:parent o <blocking>)
-                 (ast:parent o <blocking-compound>)))
+                 (tree:ancestor o <blocking>)
+                 (tree:ancestor o <blocking-compound>)))
          (code:blocking? o)
          o)))
 
@@ -274,16 +274,16 @@
                            (is? <expression>)
                            (is? <location>)))
           (disjoin (is? <blocking>) (is? <blocking-compound>))
-          (ast:parent o <model>))))
+          (tree:ancestor o <model>))))
 
 (define-method (code:port-release? o)
-  (let ((trigger (and=> (ast:parent o <on>)
+  (let ((trigger (and=> (tree:ancestor o <on>)
                         (compose car ast:trigger*))))
     (and (or (not trigger)
              (ast:requires? trigger)
              (or (not (ast:equal? (.port o) (.port trigger)))
-                 (ast:parent o <blocking>)
-                 (ast:parent o <blocking-compound>)))
+                 (tree:ancestor o <blocking>)
+                 (tree:ancestor o <blocking-compound>)))
          (code:blocking? o))))
 
 (define-method (code:direction (o <event>))
@@ -390,7 +390,7 @@
        file-name))))
 
 (define-method (code:wrap-compound o)
-  (graft (.parent o) (make <compound> #:elements (list o))))
+  (graft (tree:parent o) (make <compound> #:elements (list o))))
 
 (define-method (code:number-formals formals)
   (map (cute clone <> #:name <>)
@@ -401,14 +401,14 @@
       (simple-format #f "_~a" (.name o))))
 
 (define-method (code:on (o <trigger>))
-  "TODO remove code:on and replace use with (ast:parent o <on>)."
-  (or (ast:parent o <on>)
-      (let ((model (ast:parent o <model>)))
+  "TODO remove code:on and replace use with (tree:ancestor o <on>)."
+  (or (tree:ancestor o <on>)
+      (let ((model (tree:ancestor o <model>)))
         (and (is-a? model <component>)
              (let* ((behavior (.behavior model))
                     (trigger (car (tree-collect (cute ast:equal? <> o)
                                                 behavior))))
-               (ast:parent trigger <on>))))))
+               (tree:ancestor trigger <on>))))))
 
 
 ;;;
@@ -423,7 +423,7 @@
 
 (define-method (code:defer-condition (o <defer>))
   (not (or (and=> (.arguments o)(compose null? .elements))
-           (null? (ast:variable* (ast:parent o <component>))))))
+           (null? (ast:variable* (tree:ancestor o <component>))))))
 
 (define-method (code:capture-local (o <defer>))
   (let* ((references (tree-collect (disjoin(is? <assign>)
@@ -433,7 +433,7 @@
                                    (.statement o)))
          (variables (map .variable references))
          (local? (compose (cute eq? <> o)
-                          (cute ast:parent <> <defer>))))
+                          (cute tree:ancestor <> <defer>))))
     (filter (negate (disjoin ast:member? local?))
             variables)))
 
@@ -460,15 +460,16 @@
 (define-method (code:shared-lts-unmemoized (o <interface>))
   (let* ((debugity (dzn:debugity))
          (model-name (ast:dotted-name o))
-         (root (ast:parent o <root>))
-         (root' (makreel:normalize root))
-         (interface' (makreel:get-model root' model-name))
-         (lts (interface->constraint-lts interface')))
-    (when (> debugity 0)
-      (display-lts lts #:port (current-error-port))
-      (for-each (cute write-line <> (current-error-port))
-                (vector->list lts)))
-    lts))
+         (root (tree:ancestor o <root>)))
+    (parameterize ((%context (%context)))
+      (let* ((root' (makreel:normalize root))
+             (interface' (makreel:get-model root' model-name))
+             (lts (interface->constraint-lts interface')))
+        (when (> debugity 0)
+          (display-lts lts #:port (current-error-port))
+          (for-each (cute write-line <> (current-error-port))
+                    (vector->list lts)))
+        lts))))
 
 (define (code:shared-lts o)
   (parameterize ((%context (%context)))
@@ -526,7 +527,7 @@
   (define (to=from edge)
     (= (edge-from edge) (edge-to edge)))
   (let* ((debugity (dzn:debugity))
-         (interface (ast:parent o <interface>))
+         (interface (tree:ancestor o <interface>))
          (lts (code:shared-lts interface))
          (nodes (vector->list lts))
          (edges (append-map node-edges nodes))
@@ -648,7 +649,7 @@
   (filter code:injected-binding? (ast:binding* o)))
 
 (define-method (code:provides+requires-end-point (o <binding>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -715,14 +716,14 @@ and pass it as argument accordingly."
          (let* ((name (make <scope.name> #:ids '("*calling-context*")))
                 (data (make <data> #:value (%calling-context)))
                 (extern (make <extern> #:name name #:value data))
-                (o (tree-map code:add-calling-context o)))
+                (o (tree:shallow-map code:add-calling-context o)))
            (clone o #:elements (cons extern (ast:top* o)))))
         (($ <system>)
          o)
         ((? (%normalize:short-circuit?))
          o)
         ((? (is? <ast>))
-         (tree-map code:add-calling-context o))
+         (tree:shallow-map code:add-calling-context o))
         (_
          o))))
 
@@ -731,7 +732,7 @@ and pass it as argument accordingly."
     ((and ($ <system>)
           (? (compose (cute member <> (%shell))
                       ast:dotted-name)))
-     (graft* (.parent o)
+     (graft* (tree:parent o)
              (make <shell-system>
                #:ports (.ports o)
                #:name (.name o)
@@ -740,7 +741,7 @@ and pass it as argument accordingly."
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <namespace>))
-     (tree-map code:annotate-shells o))
+     (tree:shallow-map code:annotate-shells o))
     (_ o)))
 
 (define (code:normalize- ast)

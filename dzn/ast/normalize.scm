@@ -35,7 +35,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
 
@@ -93,21 +93,21 @@
 (define (temporaries o)
   (define typed-action/call?
     (conjoin (disjoin (is? <action>) (is? <call>))
-             (disjoin .parent (cute throw 'no-parent <>))
+             (disjoin tree:parent (cute throw 'no-parent <>))
              ast:typed?))
   (define add-temporary?
     (conjoin (disjoin (is? <action>)
                       (is? <binary>)
                       (is? <call>))
-             (disjoin .parent (cute throw 'no-parent <>))
+             (disjoin tree:parent (cute throw 'no-parent <>))
              ast:typed?
              (compose pair?
                       (cute tree-collect typed-action/call? <>))
              (disjoin
               (cute as <> <arguments>)
-              (cute ast:parent <> <arguments>)
-              (compose (cute as <> <binary>) .parent)
-              (compose (cute ast:parent <> <binary>) .parent))))
+              (cute tree:ancestor <> <arguments>)
+              (compose (cute as <> <binary>) tree:parent)
+              (compose (cute tree:ancestor <> <binary>) tree:parent))))
   (cond ((is-a? o <call>)
          (tree-collect add-temporary? o))
         ((or (is-a? o <assign>) (is-a? o <variable>))
@@ -180,9 +180,9 @@
         (else
          (match (temporaries o)
            ((h t ...)
-            (let ((p (.parent h)))
-              (and (not (or (as p <and>) (ast:parent p <and>)
-                            (as p <or>) (ast:parent p <or>)))
+            (let ((p (tree:parent h)))
+              (and (not (or (as p <and>) (tree:ancestor p <and>)
+                            (as p <or>) (tree:ancestor p <or>)))
                    h)))
            (_
             #f)))))
@@ -333,14 +333,14 @@
 ;;;
 (define-method (statement->canonical-on (o <compound>))
   (define (imperative->canonical-ons imperative)
-    (let* ((path (ast:path imperative (compose (is? <behavior>) .parent)))
+    (let* ((path (tree:path imperative (compose (is? <behavior>) tree:parent)))
            (blocking (find (is? <blocking>) path))
            (guards (filter (is? <guard>) path))
            (expression (and-expressions (map .expression guards)))
            (guard (make <guard> #:expression expression))
            (on (find (is? <on>) path))
            (triggers (ast:trigger* on))
-           (behavior (ast:parent o <behavior>)))
+           (behavior (tree:ancestor o <behavior>)))
       (define (make-on trigger)
         (graft behavior (make <canonical-on>
                           #:blocking (and (ast:provides? trigger) blocking)
@@ -353,7 +353,7 @@
       (let ((imperatives (tree-collect-filter
                           (conjoin (is? <ast>)
                                    (disjoin ast:declarative?
-                                            (compose ast:declarative? .parent)))
+                                            (compose ast:declarative? tree:parent)))
                           ast:imperative?
                           o)))
         (append-map imperative->canonical-ons imperatives))))
@@ -409,7 +409,7 @@
 ;;; Canonical-on normalizations.
 ;;;
 (define (make-declarative-illegal/illegal trigger)
-  (make (cond ((or (ast:parent trigger <interface>)
+  (make (cond ((or (tree:ancestor trigger <interface>)
                    (ast:provides? trigger))
                <declarative-illegal>)
               (else
@@ -422,7 +422,7 @@
          (guard (simplify-guard guard)))
     (if (ast:literal-false? (.expression guard)) ons
         (let* ((provides? (and=> (.port trigger) ast:provides?))
-               (model (ast:parent trigger <model>))
+               (model (tree:ancestor trigger <model>))
                (location (or (and (pair? ons) (car ons))
                              model))
                (on (graft model (make <canonical-on>
@@ -472,7 +472,7 @@
          (port (.port trigger))
          (statement (.statement o))
          (provides? (and port (ast:provides? port)))
-         (model (ast:parent o <model>))
+         (model (tree:ancestor o <model>))
          (reply? (and (not (ast:typed? trigger))
                       (not (.blocking o))
                       (or (and (is-a? model <interface>)
@@ -491,7 +491,7 @@
 
 (define-method (illegal->declarative-illegal (o <canonical-on>))
   (let ((declarative? (and (ast:illegal? (.statement o))
-                           (or (is-a? (ast:parent o <model>) <interface>)
+                           (or (is-a? (tree:ancestor o <model>) <interface>)
                                (ast:provides? (.trigger o))))))
     (if (not declarative?) o
         (graft o #:statement (make <declarative-illegal>)))))
@@ -525,14 +525,14 @@ guarded occurrences."
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
-     (tree-map normalize:state o))
+     (tree:shallow-map normalize:state o))
     (_
      o)))
 
 (define (normalize:state+illegals o)
   (match o
     (($ <behavior>)
-     (let ((model (ast:parent o <model>)))
+     (let ((model (tree:ancestor o <model>)))
        (clone o
               #:statement
               ((compose
@@ -555,7 +555,7 @@ guarded occurrences."
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
-     (tree-map normalize:state+illegals o))
+     (tree:shallow-map normalize:state+illegals o))
     (_
      o)))
 
@@ -584,14 +584,14 @@ i.e., pushing guards into the body of the trigger."
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
-     (tree-map normalize:event o))
+     (tree:shallow-map normalize:event o))
     (_
      o)))
 
 (define (normalize:event+illegals o)
   (match o
     (($ <behavior>)
-     (let ((model (ast:parent o <model>)))
+     (let ((model (tree:ancestor o <model>)))
        (clone o
               #:statement
               ((compose
@@ -613,7 +613,7 @@ i.e., pushing guards into the body of the trigger."
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
-     (tree-map normalize:event+illegals o))
+     (tree:shallow-map normalize:event+illegals o))
     (_
      o)))
 
@@ -647,7 +647,7 @@ to prevent unintended shadowing
     (define (formal-or-local? o)
       (or (is-a? o <formal>)
           (and (is-a? o <variable>)
-               (not (is-a? (.parent o) <variables>)))))
+               (not (is-a? (tree:parent o) <variables>)))))
     (define (rename-string o)
       (or (assoc-ref mapping o) o))
     (match o
@@ -684,7 +684,7 @@ to prevent unintended shadowing
       ((? (%normalize:short-circuit?))
        o)
       ((? (is? <ast>))
-       (tree-map (rename mapping) o))
+       (tree:shallow-map (rename mapping) o))
       (_
        o)))
 
@@ -693,7 +693,7 @@ to prevent unintended shadowing
          (formals ((compose ast:formal* .signature) event))
          (formals-ok? (or (pair? (ast:formal* trigger))
                           (null? formals)))
-         (model (ast:parent o <model>))
+         (model (tree:ancestor o <model>))
          (o (if formals-ok? o
                 (let* ((formals (clone (.formals trigger) #:elements formals))
                        (trigger (clone trigger #:formals formals)))
@@ -753,28 +753,28 @@ to prevent unintended shadowing
                       (compose (is? <extern>) ast:type))))
   (define (parent-location o)
     (or (.location o)
-        (parent-location (.parent o))))
+        (parent-location (tree:parent o))))
   (define data->skip-or-#f
     (conjoin (is? <statement>)
-             (compose not (is? <variables>) .parent)
-             (compose not (is? <compound>) .parent)
+             (compose not (is? <variables>) tree:parent)
+             (compose not (is? <compound>) tree:parent)
              (compose (cute make <skip> #:location <>)
                       parent-location
-                      .parent)))
+                      tree:parent)))
   ;;add-defer-end
   (define (add-end o)
     (let* ((end (graft o (make <defer-end>)))
            (statement (ast:add-statement* (.statement o) end)))
       (graft o #:statement statement)))
 
-  (tree-transform o `((,data? . ,data->skip-or-#f)
+  (tree:transform o `((,data? . ,data->skip-or-#f)
                       (,(is? <defer>) . ,add-end))))
 
 (define-method (purge-data (o <root>))
   "Remove every `extern' data variable and reference."
   (define (parent-location o)
     (or (.location o)
-        (parent-location (.parent o))))
+        (parent-location (tree:parent o))))
   (let* ((data? (disjoin (is? <extern>)
                          (is? <data-expr>)
                          (conjoin (disjoin (is? <assign>)
@@ -784,12 +784,12 @@ to prevent unintended shadowing
                                            (is? <variable>))
                                   (compose (is? <extern>) ast:type))))
          (data->skip-or-#f (conjoin (is? <statement>)
-                                    (compose not (is? <variables>) .parent)
-                                    (compose not (is? <compound>) .parent)
+                                    (compose not (is? <variables>) tree:parent)
+                                    (compose not (is? <compound>) tree:parent)
                                     (compose (cute make <skip> #:location <>)
                                              parent-location
-                                             .parent))))
-    (tree-transform o data? data->skip-or-#f)))
+                                             tree:parent))))
+    (tree:transform o data? data->skip-or-#f)))
 
 (define-method (add-void-function-return (o <root>))
   "Make implicit returns explicit for void functions."
@@ -800,13 +800,13 @@ to prevent unintended shadowing
       (($ <compound>)
        (clone o #:elements (add-return (ast:statement* o) #:loc o)))
       ((statement ... t)
-       (append o (list (make <return> #:location (.location (.parent t))))))
+       (append o (list (make <return> #:location (.location (tree:parent t))))))
       ((statement ...)
        (append o (list (make <return> #:location (.location loc)))))))
   (define void-function-with-implicit-return?
     (conjoin (is? <function>)
              (compose (is? <void>) ast:type)))
-  (tree-transform o void-function-with-implicit-return? add-return))
+  (tree:transform o void-function-with-implicit-return? add-return))
 
 
 (define-method (extract-call (o <root>))
@@ -822,7 +822,7 @@ to a separate statement, for mCRL2."
         (($ <variable>)
          (let* ((default (ast:default-value o))
                 (variable (clone o #:expression default))
-                (parent (.parent o))
+                (parent (tree:parent o))
                 (assign (graft parent (make <assign>
                                         #:variable.name (.name variable)
                                         #:expression expression))))
@@ -831,7 +831,7 @@ to a separate statement, for mCRL2."
   (define (extract-call+compound o)
     (let* ((statements (extract-assign/variable-call o))
            (compound (make <compound> #:elements statements)))
-      (graft (.parent o) compound)))
+      (graft (tree:parent o) compound)))
 
   (define (compound-extract-call o)
     (let ((elements (append-map
@@ -854,9 +854,9 @@ to a separate statement, for mCRL2."
 
   (define single-call?
     (conjoin assign/variable-call?
-             (compose not (is? <compound>) .parent)))
+             (compose not (is? <compound>) tree:parent)))
 
-  (tree-transform
+  (tree:transform
    o
    `((,single-call? . ,extract-call+compound)
      (,compound-call? . ,compound-extract-call))))
@@ -866,14 +866,14 @@ to a separate statement, for mCRL2."
     (let* ((end (graft o (make <defer-end>)))
            (statement (ast:add-statement* (.statement o) end)))
       (graft o #:statement statement)))
-  (tree-transform o (is? <defer>) add-end))
+  (tree:transform o (is? <defer>) add-end))
 
 (define (formal-dereference o)
-  (let ((model (ast:parent o <model>)))
+  (let ((model (tree:ancestor o <model>)))
     (define (rescope o orig interface-formal)
-      (let* ((o (graft* (.parent interface-formal) o))
+      (let* ((o (graft* (tree:parent interface-formal) o))
              (o (ast:rescope o model)))
-        (graft* (.parent orig) o)))
+        (graft* (tree:parent orig) o)))
     (define (replace-formal-reference o)
       (let* ((interface-formal (.formal o))
              (formal (clone interface-formal #:name (.name o))))
@@ -886,7 +886,7 @@ to a separate statement, for mCRL2."
                        #:type.name (.type.name interface-formal)
                        #:variable.name (.variable.name o))))
         (rescope formal o interface-formal)))
-    (tree-transform
+    (tree:transform
      o
      `((,(is? <formal-reference-binding>) . ,replace-formal-reference-binding)
        (,(is? <formal-reference>) . ,replace-formal-reference)))))
@@ -931,7 +931,7 @@ to a separate statement, for mCRL2."
     (($ <interface>)
      o)
     ((? (is? <ast>))
-     (tree-map (cut add-reply-port <> port block?) o))
+     (tree:shallow-map (cut add-reply-port <> port block?) o))
     (_
      o)))
 
@@ -986,7 +986,7 @@ to a separate statement, for mCRL2."
     (($ <interface>)
      o)
     ((? (is? <ast>))
-     (tree-map (binding-into-blocking locals) o))
+     (tree:shallow-map (binding-into-blocking locals) o))
     (_ o
        )))
 
@@ -1025,7 +1025,7 @@ the same level."
      (let ((behavior (remove-otherwise behavior keep-annotated? statements)))
        (clone o #:behavior behavior)))
     ((? (is? <ast>))
-     (tree-map (cute remove-otherwise <> keep-annotated? statements) o))
+     (tree:shallow-map (cute remove-otherwise <> keep-annotated? statements) o))
     (_
      o)))
 
@@ -1060,13 +1060,13 @@ the same level."
             #:location #f
             #:formals (remove-location (.formals o))))
     (($ <root>)
-     (tree-map remove-location o))
+     (tree:shallow-map remove-location o))
     ((? (is? <namespace>))
-     (tree-map remove-location o))
+     (tree:shallow-map remove-location o))
     ((? (is? <locationed>))
      (clone o #:location #f))
     ((? (is? <ast>))
-     (tree-map remove-location o))
+     (tree:shallow-map remove-location o))
     (_
      o)))
 
@@ -1078,7 +1078,7 @@ the same level."
     (($ <component>)
      (clone o #:behavior #f))
     ((? (is? <namespace>))
-     (tree-map remove-behavior o))
+     (tree:shallow-map remove-behavior o))
     (_
      o)))
 
@@ -1090,9 +1090,9 @@ expressions explicit."
     (cond ((eq? old o)
            reference)
           ((is-a? o <expression>)
-           (tree-map (cute replace-expression old <> reference) o))
+           (tree:shallow-map (cute replace-expression old <> reference) o))
           ((is-a? o <arguments>)
-           (tree-map (cute replace-expression old <> reference) o))
+           (tree:shallow-map (cute replace-expression old <> reference) o))
           (else
            o)))
 
@@ -1100,24 +1100,24 @@ expressions explicit."
     (let* ((expression (.expression o))
            (variable-expression (add-temporary? o))
            (type (ast:type variable-expression))
-           (local-type? (eq? (ast:parent type <model>)
-                             (ast:parent o <model>)))
+           (local-type? (eq? (tree:ancestor type <model>)
+                             (tree:ancestor o <model>)))
            (type-name (cond
                        ((is-a? type <subint>) (.name (ast:type (make <int>))))
                        (local-type? (.name type))
                        (else (make <scope.name> #:ids (ast:full-name type)))))
            (name (temp-name o))
            (location (.location o))
-           (behavior (ast:parent o <behavior>))
-           (parent (or (ast:parent o <statement>)
-                       (ast:parent o <behavior>)))
+           (behavior (tree:ancestor o <behavior>))
+           (parent (or (tree:ancestor o <statement>)
+                       (tree:ancestor o <behavior>)))
            (temporary (make <variable>
                         #:name name
                         #:type.name type-name
                         #:expression variable-expression
                         #:location location))
            (reference (make <reference> #:name name #:location location))
-           (o (tree-map
+           (o (tree:shallow-map
                (cute replace-expression variable-expression <> reference)
                o)))
       (graft parent (make <compound>
@@ -1133,7 +1133,7 @@ expressions explicit."
   (match o
     (($ <if>)
      (let* ((expression (.expression o))
-            (model (ast:parent expression <model>))
+            (model (tree:ancestor expression <model>))
             (split-expression? (or (add-temporary? (.expression o))
                                    (split-complex? (.expression o)))))
        (if split-expression? (let ((o (split+add-temporaries o)))
@@ -1191,7 +1191,7 @@ expressions explicit."
     (($ <component>)
      (clone o #:behavior (add-explicit-temporaries (.behavior o))))
     ((? (is? <ast>))
-     (tree-map add-explicit-temporaries o))
+     (tree:shallow-map add-explicit-temporaries o))
     (_
      o)))
 
@@ -1206,7 +1206,7 @@ explitic temporaries."
 add-explicit-temporaries transformation for splitting argument lists."
 
   (define* (split o #:key not-e)
-    (let* ((parent (.parent o))
+    (let* ((parent (tree:parent o))
            (expression (.expression o))
            (expression (simplify-expression expression))
            (o (graft* parent o #:expression expression)))
@@ -1303,13 +1303,13 @@ add-explicit-temporaries transformation for splitting argument lists."
          o))
     (($ <variable>)
      (if (not (split-complex? o)) o
-         (let* ((parent (.parent o))
+         (let* ((parent (tree:parent o))
                 (expression (.expression o))
                 (expression (simplify-expression expression))
                 (o (graft* parent o #:expression expression))
                 (variable assign (split-variable o))
                 (o (split (graft assign #:expression expression)))
-                (parent (ast:parent o <statement>)))
+                (parent (tree:ancestor o <statement>)))
            (graft parent (make <compound>
                            #:elements (list variable o)
                            #:location (.location o))))))
@@ -1345,24 +1345,24 @@ add-explicit-temporaries transformation for splitting argument lists."
     (($ <component>)
      (clone o #:behavior (split-complex-expressions (.behavior o))))
     ((? (is? <ast>))
-     (tree-map split-complex-expressions o))
+     (tree:shallow-map split-complex-expressions o))
     (_
      o)))
 
 (define* (group-expressions o #:optional (group (list)))
   (match o
     ((? (const (find (cute is-a? o <>) group)))
-     (let* ((parent (.parent o))
-            (o (tree-map (cute group-expressions <> group) o))
+     (let* ((parent (tree:parent o))
+            (o (tree:shallow-map (cute group-expressions <> group) o))
             (o (graft* parent o)))
-       (match (.parent o)
+       (match (tree:parent o)
          (($ <group>) o)
          ((? (is? <expression>)) (make <group> #:expression o))
          (else o))))
     ((and (? (is? <not>))
           (= .expression (and expression (or (? (is? <binary>))
                                              (? (is? <field-test>))))))
-     (let ((expression (tree-map (cute group-expressions <> group) expression)))
+     (let ((expression (tree:shallow-map (cute group-expressions <> group) expression)))
        (graft o #:expression (make <group> #:expression expression))))
     (($ <canonical-on>)
      (let* ((guard (group-expressions (.guard o) group))
@@ -1381,7 +1381,7 @@ add-explicit-temporaries transformation for splitting argument lists."
     (($ <component>)
      (clone o #:behavior (group-expressions (.behavior o) group)))
     ((? (is? <ast>))
-     (tree-map (cute group-expressions <> group) o))
+     (tree:shallow-map (cute group-expressions <> group) o))
     (_
      o)))
 
@@ -1404,14 +1404,14 @@ add-explicit-temporaries transformation for splitting argument lists."
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
-     (tree-map simplify-guard-expressions o))
+     (tree:shallow-map simplify-guard-expressions o))
     (_
      o)))
 
 ;; (define-method (tag-imperative-blocks (o <root>))
 ;;   (define (location o)
 ;;     (or (.location o)
-;;         (location (.parent o))))
+;;         (location (tree:parent o))))
 ;;   (define (add-tag o)
 ;;     (match o
 ;;       ((? ast:illegal?)
@@ -1423,7 +1423,7 @@ add-explicit-temporaries transformation for splitting argument lists."
 ;;        (let* ((location (location o))
 ;;               (tag (make <tag> #:location location))
 ;;               (elements (list tag o)))
-;;          (graft (.parent o) (make <compound>
+;;          (graft (tree:parent o) (make <compound>
 ;;                               #:elements elements
 ;;                               #:location location))))))
 
@@ -1437,7 +1437,7 @@ add-explicit-temporaries transformation for splitting argument lists."
 ;;     (let* ((location (location o))
 ;;            (tag (make <tag> #:location location))
 ;;            (elements (list tag o)))
-;;       (graft (.parent o) (make <compound>
+;;       (graft (tree:parent o) (make <compound>
 ;;                            #:elements elements
 ;;                            #:location location))))
 
@@ -1455,7 +1455,7 @@ add-explicit-temporaries transformation for splitting argument lists."
 ;;            (tag (make <tag> #:location location)))
 ;;       (list o tag)))
 
-;;   (tree-transform o `((,compound? . ,compound:add-tag)
+;;   (tree:transform o `((,compound? . ,compound:add-tag)
 ;;                       (,other? . ,other:add-tag)
 ;;                       (,return? . ,compound:add-return-tag))))
 
@@ -1464,7 +1464,7 @@ add-explicit-temporaries transformation for splitting argument lists."
 code check."
   (define (location o)
     (or (.location o)
-        (location (.parent o))))
+        (location (tree:parent o))))
   (define (add-tag-imperative o)
     (if (ast:imperative? o)
         (match o
@@ -1477,8 +1477,9 @@ code check."
            (let* ((location (location o))
                   (tag (make <tag> #:location location))
                   (elements (list tag o)))
-             (graft (.parent o) (make <compound>
-                                  #:elements elements #:location location)))))
+             (graft (tree:parent o)
+                    (make <compound>
+                      #:elements elements #:location location)))))
         o))
 
   (match o
@@ -1506,5 +1507,5 @@ code check."
     ((? (is? <type>))
      o)
     ((? (is? <ast>))
-     (tree-map tag-imperative-blocks o))
+     (tree:shallow-map tag-imperative-blocks o))
     (_ o)))

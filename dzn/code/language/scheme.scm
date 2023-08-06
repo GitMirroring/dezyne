@@ -56,7 +56,7 @@
   (string-join (ast:full-name o) ":"))
 
 (define-method (scheme:class-name (o <ast>))
-  (scheme:class-name (ast:parent o <model>)))
+  (scheme:class-name (tree:ancestor o <model>)))
 
 ;; Work around a bug that base name of a Guile module cannot include
 ;; dots.  See http://debbugs.gnu.org/cgi/bugreport.cgi?bug=39162
@@ -190,7 +190,7 @@
     (map (cut make <file-name> #:name <>) files)))
 
 (define-method (scheme:use-module (o <model>))
-  (scheme:use-module (ast:parent o <root>)))
+  (scheme:use-module (tree:ancestor o <root>)))
 
 (define-method (scheme:variable/local (o <formal>))
   (if (ast:in? o) o
@@ -228,19 +228,19 @@
 
 (define-method (code:defer-condition (o <defer>))
   (if (not (or (and=> (.arguments o)(compose null? .elements))
-               (null? (ast:variable* (ast:parent o <component>))))) o
+               (null? (ast:variable* (tree:ancestor o <component>))))) o
                '()))
 
 (define (wrap-lonely-variable o)
   (match o
     (($ <variable>)
-     (if (is-a? (.parent o) <compound>) o
+     (if (is-a? (tree:parent o) <compound>) o
          (make <compound> #:elements (list o))))
     (($ <behavior>) (clone o #:statement (wrap-lonely-variable (.statement o))))
     (($ <component>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
     (($ <interface>) (clone o #:behavior (wrap-lonely-variable (.behavior o))))
     ((? (%normalize:short-circuit?)) o)
-    ((? (is? <ast>)) (tree-map wrap-lonely-variable o))
+    ((? (is? <ast>)) (tree:shallow-map wrap-lonely-variable o))
     (_ o)))
 
 (define (scheme:normalize ast)

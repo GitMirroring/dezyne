@@ -122,7 +122,7 @@ to current-output-port."
                     (ast:in-event* model)))
            (values (delete-duplicates values ast:equal?))
            (values (map root-scope-enum values))
-           (root (ast:parent model <root>))
+           (root (tree:ancestor model <root>))
            (types (map ast:type values))
            (values (map value->string values))
            (types (map type->string types))
@@ -132,7 +132,7 @@ to current-output-port."
            types values)))
 
   (let ((name (full-name model))
-        (root (ast:parent model <root>))
+        (root (tree:ancestor model <root>))
         (initial (initial lts))
         (actions (model-actions))
         (replies (model-replies)))
@@ -226,7 +226,7 @@ to current-output-port."
 ;;;
 (define (interface->constraint-lts-unmemoized model)
   "Return constraining LTS from MODEL."
-  (let* ((root (ast:parent model <root>))
+  (let* ((root (tree:ancestor model <root>))
          (aut (verify-pipeline "maut-weak-trace+hide" root model))
          (debugity (dzn:debugity))
          (lts (aut-text->lts aut)))

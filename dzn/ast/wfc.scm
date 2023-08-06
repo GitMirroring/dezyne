@@ -131,7 +131,7 @@
   (append
    (re-definition o)
    (append-map wfc (ast:port* o))
-   (let* ((root (ast:parent o <root>))
+   (let* ((root (tree:ancestor o <root>))
           (basename (ast:base-name root)))
      (if (not (equal? (string-join (ast:full-name o) "_") basename)) '()
          `(,(wfc-error
@@ -158,7 +158,7 @@
       '()))
 
 (define-method (wfc-external (o <port>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (shell? (and (%shell)
                       (member (ast:dotted-name model) (%shell)))))
     (if (or (not shell?) (ast:external? o)) '()
@@ -215,8 +215,8 @@
   (append
    (re-definition o)
    (fields-unique (ast:field* o))
-   (if (and (ast:parent o <model>)
-            (ast:name-equal? (.name (ast:parent o <model>)) (.name o)))
+   (if (and (tree:ancestor o <model>)
+            (ast:name-equal? (.name (tree:ancestor o <model>)) (.name o)))
        `(,(wfc-error
            o
            (format
@@ -243,7 +243,7 @@
    (if (and (ast:provides? o) (ast:injected? o))
        `(,(wfc-error o (format #f "provides port `~a' cannot be injected" (.name o))))
        '())
-   (if (ast:name-equal? (.name (ast:parent o <model>)) (.name o))
+   (if (ast:name-equal? (.name (tree:ancestor o <model>)) (.name o))
        `(,(wfc-error o (format #f "port `~a' must not have the same name as the model it is defined in" (.name o))))
        '())
    (let ((interface (wfc:interface o)))
@@ -287,7 +287,7 @@
             `(,(wfc-error o (format #f "cannot use extern type `~a' as return type" (type-name (.type.name o))))))
            (else '())))
    (append-map wfc (ast:formal* o))
-   (let ((function (ast:parent o <function>)))
+   (let ((function (tree:ancestor o <function>)))
      (if (not function) '()
          (let ((formals (filter (conjoin (disjoin ast:out? ast:inout?)
                                          (negate (compose (is? <extern>) .type)))
@@ -312,8 +312,8 @@
     (append
      (append-map wfc arguments)
      (cond
-      ((and (ast:parent o <component>)
-            (ast:parent o <action>))
+      ((and (tree:ancestor o <component>)
+            (tree:ancestor o <action>))
        =>
        (lambda (ast)
          (let* ((count (length arguments))
@@ -326,7 +326,7 @@
                       `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
                         ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event)))))
                   (append-map (argument-type-check o) arguments formals)))))))
-      ((let ((ast (ast:parent o <call>)))
+      ((let ((ast (tree:ancestor o <call>)))
          (and ast
               (.function ast)
               ast))
@@ -346,8 +346,8 @@
 
 (define-method (wfc (o <formals>))
   (cond
-   ((and (ast:parent o <component>)
-         (ast:parent o <trigger>))
+   ((and (tree:ancestor o <component>)
+         (tree:ancestor o <trigger>))
     =>
     (lambda (ast)
       (let* ((count (length (ast:formal* o)))
@@ -360,7 +360,7 @@
          (if (not event) '()
              (let* ((formals (ast:formal* event))
                     (event-count (length formals))
-                    (on (ast:parent o <on>))
+                    (on (tree:ancestor o <on>))
                     (statement (.statement on))
                     (illegal? (or (is-a? statement <illegal>)
                                   (and (is-a? statement <compound>)
@@ -385,7 +385,7 @@
        '())
    (re-definition o)
    (let ((type (ast:type o))
-         (event (ast:parent o <event>)))
+         (event (tree:ancestor o <event>)))
      (append
       (cond ((not type)
              `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
@@ -412,7 +412,7 @@
 (define %model-blocking? (make-parameter #f))
 
 (define-method (wfc (o <behavior>))
-  (let ((model (ast:parent o <model>)))
+  (let ((model (tree:ancestor o <model>)))
     (if (and (is-a? model <component>) (ast:imported? o)) '()
         (parameterize ((%model-event-types
                         (if (is-a? model <interface>) (ast:return-types model)
@@ -514,7 +514,7 @@
     (and (is-a? o <guard>)
          (is-a? (.expression o) <otherwise>)))
   (define (otherwise o)
-    (let ((compound (ast:parent o <compound>)))
+    (let ((compound (tree:ancestor o <compound>)))
       (if (not compound) '()
           (let ((non-guards (filter (negate (is? <guard>))
                                     (ast:statement* compound)))
@@ -537,7 +537,7 @@
             (if (or otherwise? (pair? wfce)) '()
                 (typed-expression expression <bool>))
             (if otherwise? (otherwise o) '())
-            (if (not (ast:parent o <imperative>)) '()
+            (if (not (tree:ancestor o <imperative>)) '()
                 `(,(wfc-error o "cannot use a guard in imperative context")))
             (if (is-a? (.statement o) <statement>) (wfc (.statement o))
                 `(,(wfc-error o "statement expected"))))))
@@ -548,12 +548,12 @@
 
 (define-method (wfc (o <blocking>))
   (define (blocking o)
-    (let ((model (ast:parent o <model>)))
+    (let ((model (tree:ancestor o <model>)))
       (cond ((is-a? model <interface>)
              `(,(wfc-error o "cannot use blocking in an interface")))
-            ((ast:parent o <blocking>)
+            ((tree:ancestor o <blocking>)
              `(,(wfc-error o "nested blocking used")
-               ,(wfc-info (ast:parent o <blocking>) "within blocking here")))
+               ,(wfc-info (tree:ancestor o <blocking>) "within blocking here")))
             (else '()))))
   (append
    (if (feature-supported? "block") '()
@@ -607,7 +607,7 @@
 (define-method (wfc (o <on>))
   (define (on o)
     (append
-     (let ((parent (ast:parent o <on>)))
+     (let ((parent (tree:ancestor o <on>)))
        (if parent `(,(wfc-error o "nested on used")
                     ,(wfc-info parent "within on here"))
            '()))))
@@ -671,13 +671,13 @@
 
 (define-method (wfc (o <illegal>))
   (define (illegal o)
-    (let ((model (ast:parent o <model>)))
+    (let ((model (tree:ancestor o <model>)))
       (cond
-       ((and (is-a? model <interface>) (ast:parent o <function>))
+       ((and (is-a? model <interface>) (tree:ancestor o <function>))
         `(,(wfc-error o "cannot use illegal in function")))
-       ((and (is-a? model <interface>) (ast:parent o <if>))
+       ((and (is-a? model <interface>) (tree:ancestor o <if>))
         `(,(wfc-error o "cannot use illegal in if-statement")))
-       ((let loop ((compound (.parent o)))
+       ((let loop ((compound (tree:parent o)))
           (and
            compound
            (is-a? compound <compound>)
@@ -686,15 +686,15 @@
             (and
              (let ((statements (ast:statement* compound)))
                (and (> (length statements) 1)
-                    (let* ((statements (filter (negate (cute memq <> (ast:path o)))
+                    (let* ((statements (filter (negate (cute memq <> (tree:path o)))
                                                statements))
                            (statement (car statements)))
                       `(,(wfc-error
                           o "cannot use illegal with imperative statements")
                         ,(wfc-info statement "imperative statement here"))))))
-            (let ((parent (.parent compound)))
+            (let ((parent (tree:parent compound)))
               (loop (or (as parent <compound>)
-                        (ast:parent parent <compound>))))))))
+                        (tree:ancestor parent <compound>))))))))
        (else '()))))
   (append
    (imperative-context o)
@@ -709,7 +709,7 @@
 (define-method (reply-with-port (o <reply>))
   "pre: (.port.name o)"
   (let ((port (.port o))
-        (on (ast:parent o <on>)))
+        (on (tree:ancestor o <on>)))
     (cond ((not port)
            (wfc-port o))
           ((not (is-a? (.type port) <interface>)) '()) ; reported before
@@ -722,8 +722,8 @@
 
 (define-method (reply-without-port (o <reply>))
   "pre: (not (.port.name o))"
-  (let ((model (ast:parent o <model>))
-        (on (ast:parent o <on>)))
+  (let ((model (tree:ancestor o <model>))
+        (on (tree:ancestor o <on>)))
     (cond ((or (not (is-a? model <component>))
                (<= (length (ast:provides-port* model)) 1))
            (if on (reply-in-on o) (wfc-reply-expression o #f)))
@@ -762,7 +762,7 @@
 
 (define-method (wfc (o <return>))
   (define (outer-compound o)
-    (let ((parent (.parent o)))
+    (let ((parent (tree:parent o)))
       (if (is-a? parent <compound>) (outer-compound parent) o)))
   (define (last-statement o)
     (if (is-a? o <compound>)
@@ -770,7 +770,7 @@
           (if (pair? statements) (last statements) o))
         o))
   (let* ((wfce (if (.expression o) (wfc (.expression o)) '()))
-         (function (ast:parent o <function>))
+         (function (tree:ancestor o <function>))
          (function-type (and function (ast:type function)))
          (return-type (and (null? wfce) (ast:type o)))
          (last-statement-block (last-statement (outer-compound o))))
@@ -796,7 +796,7 @@
 
 (define-method (wfc (o <trigger>))
   (let ((port (.port o))
-        (model (ast:parent o <model>)))
+        (model (tree:ancestor o <model>)))
     (append
      (cond ((and (is-a? model <component>) (not port))
             (wfc-port o))
@@ -950,7 +950,7 @@
 
 (define-method (wfc (o <reference>))
   (append
-   (if (ast:member? (ast:parent o <variable>))
+   (if (ast:member? (tree:ancestor o <variable>))
        (let ((class "variable reference"))
          `(,(wfc-error o (format #f "~a in member variable initializer" class))))
        '())
@@ -990,7 +990,7 @@
 ;;;
 (define-method (defined-function (o <call>))
   (if (find (compose (cute ast:equal? (.function.name o) <>) .name)
-            (ast:function* (ast:parent o <behavior>))) '()
+            (ast:function* (tree:ancestor o <behavior>))) '()
             `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
 
 (define (feature-supported? feature)
@@ -1004,14 +1004,14 @@
   (format #f "~a.~a" (.port.name o) (.event.name o)))
 
 (define-method (tail-recursion (o <call>))
-  (let* ((function (ast:parent o <function>))
+  (let* ((function (tree:ancestor o <function>))
          (called (.function o))
          (non-recursive? (or (not function) (not (.recursive? function))
                              (not called) (not (.recursive? called)))))
     (if non-recursive? '()
-        (let* ((assign (or (ast:parent o <assign>)
-                           (ast:parent o <return>)
-                           (ast:parent o <variable>)))
+        (let* ((assign (or (tree:ancestor o <assign>)
+                           (tree:ancestor o <return>)
+                           (tree:ancestor o <variable>)))
                (continuation ((compose car ast:continuation*) o))
                (statement (.statement function))
                (continuation (and (not (eq? continuation statement))
@@ -1051,20 +1051,20 @@
 (define-method (previous-definition (o <declaration>))
   "Allow shadowing, but not in the same scope"
   (let ((name (ast:name o)))
-    (ast:lookup (ast:parent o <scope>) name)))
+    (ast:lookup (tree:ancestor o <scope>) name)))
 
 (use-modules (dzn ast accessor))
 (define (previous-definition-unshadowed o)
   "Disallow shadowing altogether"
   (let ((name (make <scope.name> #:ids (ast:full-name o))))
-    (ast:lookup (ast:parent o <root>) name)))
+    (ast:lookup (tree:ancestor o <root>) name)))
 
 (define (re-definition-error o previous)
   (let ((duplicate? (and previous
                          (not (eq? o previous))
                          (equal? (ast:full-name o) (ast:full-name previous)))))
     (if (not duplicate?) '()
-        (let ((name (if (ast:parent (.parent o) <model>) (ast:name o)
+        (let ((name (if (tree:ancestor o <model>) (ast:name o)
                         (ast:dotted-name o))))
          `(,(wfc-error o (format #f "identifier `~a' defined before" name))
            ,(wfc-info previous (format #f "previous `~a' definition here"
@@ -1112,11 +1112,11 @@
 
 (define-method (reply-in-on (o <reply>))
   "pre: in <on> clause"
-  (let ((on (ast:parent o <on>)))
+  (let ((on (tree:ancestor o <on>)))
     (append-map (cut reply-in-on o <>) (ast:trigger* on))))
 
 (define-method (reply-in-on (o <reply>) (trigger <trigger>))
-  (let* ((component (ast:parent o <component>))
+  (let* ((component (tree:ancestor o <component>))
          (unblock? (and component
                         (ast:requires? trigger)
                         (%model-blocking?)))
@@ -1144,7 +1144,7 @@
 
 (define-method (action (o <action>))
   (let ((event (.event o))
-        (model (ast:parent o <model>)))
+        (model (tree:ancestor o <model>)))
     (append
      (cond ((and (is-a? model <interface>) (not event))
             `(,(wfc-error o (format #f "undefined event `~a'" (.event.name o)))))
@@ -1187,7 +1187,7 @@
                          (let ((port (.port o)))
                            (if (and port (is-a? port <port>)) '()
                                (let* ((component (if (.instance.name o) (.type (.instance o))
-                                                     (ast:parent o <system>)))
+                                                     (tree:ancestor o <system>)))
                                       (cname (type-name (.name component))))
                                  `(,(wfc-error o (format #f "undefined port `~a' for `~a'" (.port.name o) cname))
                                    ,(wfc-info component (format #f "`~a' defined here" cname)))))))))
@@ -1306,7 +1306,7 @@
 (define-method (double-bindings (o <binding>))
   (append
    (double-bindings (.left o) (.right o))
-   (let ((bindings (memq o (ast:binding* (ast:parent o <system>)))))
+   (let ((bindings (memq o (ast:binding* (tree:ancestor o <system>)))))
      (append-map (cute double-bindings o <>) bindings))))
 
 (define-method (double-bindings (o <binding>) (x <binding>))
@@ -1382,7 +1382,7 @@
       (if (null? statements) '()
           (let* ((statement (car statements))
                  (parent-if (or (as statements <if>)
-                                (ast:parent statement <if>)))
+                                (tree:ancestor statement <if>)))
                  (rest (cdr statements))
                  (dupe (find (disjoin
                               (compose
@@ -1390,7 +1390,7 @@
                                (cute as <> <if>))
                               (compose
                                (cute eq? <> parent-if)
-                               (cute ast:parent <> <if>)))
+                               (cute tree:ancestor <> <if>)))
                              rest)))
             (if dupe (cons parent-if (loop (delete dupe rest)))
                 (cons statement rest))))))
@@ -1402,18 +1402,18 @@
         (map (cute wfc-error <> "missing return") missing))))
 
 (define-method (call-context (o <ast>))
-  (let* ((p (.parent o))
+  (let* ((p (tree:parent o))
          (class (ast-name (class-of o))))
     (cond
      ((and (is-a? o <action>) (not (.event o)))
       (let ((name (.event.name o)))
         `(,(wfc-error o (format #f "undefined event `~a'" name)))))
-     ((and (ast:parent o <variable>)
-           (ast:member? (ast:parent o <variable>)))
+     ((and (tree:ancestor o <variable>)
+           (ast:member? (tree:ancestor o <variable>)))
       (let ((class (if (equal? class "reference") "variable reference" class)))
         `(,(wfc-error o (format #f "~a in member variable initializer" class)))))
-     ((and (not (ast:parent o <on>))
-           (not (ast:parent o <function>))
+     ((and (not (tree:ancestor o <on>))
+           (not (tree:ancestor o <function>))
            (not (and (equal? class "compound") (ast:declarative? o))))
       (let ((class (if (equal? class "compound") "imperative compound" class)))
         `(,(wfc-error o (format #f "~a outside on" class)))))
@@ -1431,13 +1431,13 @@
       '()))))
 
 (define-method (imperative-context (o <ast>))
-  (let* ((p (.parent o))
+  (let* ((p (tree:parent o))
          (class (ast-name (class-of o))))
     (cond
      ((ast:member? o) '())
      ((is-a? p <behavior>)  '())
-     ((and (not (ast:parent o <on>))
-           (not (ast:parent o <function>))
+     ((and (not (tree:ancestor o <on>))
+           (not (tree:ancestor o <function>))
            (not (and (equal? class "compound") (ast:declarative? o))))
       (let ((class (if (equal? class "compound") "imperative compound" class)))
         `(,(wfc-error o (format #f "~a outside on" class)))))
@@ -1510,9 +1510,9 @@
           (wfc:requires-out-event* o)))
 
 (define-method (wfc:interface (o <port>))
-  (let ((component (ast:parent o <component-model>)))
+  (let ((component (tree:ancestor o <component-model>)))
     (and component
-         (ast:lookup (.parent component) (.type.name o)))))
+         (ast:lookup (tree:parent component) (.type.name o)))))
 
 
 ;;;

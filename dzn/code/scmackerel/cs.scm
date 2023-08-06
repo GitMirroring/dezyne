@@ -161,7 +161,7 @@
      (arguments arguments))))
 
 (define-method (ast->code (o <reply>))
-  (let ((p (.parent o)))
+  (let ((p (tree:parent o)))
     (cond
      ((or (is-a? p <guard>) (is-a? p <if>))
       (ast->code (code:wrap-compound o)))
@@ -423,7 +423,7 @@
            (out-formals (filter (negate ast:in?) formals))
            (formals (map cs:->formal formals))
            (formal-bindings (filter (is? <formal-binding>) (ast:formal* trigger)))
-           (on (ast:parent trigger <on>))
+           (on (tree:ancestor trigger <on>))
            (parent (or (and=> on .statement)
                        o))
            (out-bindings (graft parent (make <out-bindings>
@@ -491,7 +491,7 @@
               (($ <foreign>)
                (values trigger #f))
               (($ <component>)
-               (let* ((on (ast:parent trigger <on>))
+               (let* ((on (tree:ancestor trigger <on>))
                       (statement (.statement on)))
                  (values trigger (ast->code statement))))))
            (formals (ast:formal* trigger))

@@ -33,27 +33,25 @@
   #:use-module (test dzn automake)
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast context)
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)
+  #:use-module (dzn goops context)
+  #:use-module (dzn goops goops)
+  #:use-module (dzn goops tree)
   #:use-module ((dzn ast) #:select (ast:type))
   #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn parse peg))
 
-(define ast:keyword+child* (@@ (dzn ast context) ast:keyword+child*))
-(define deep-copy (@@ (dzn ast util) deep-copy))
-(define deep-copy* (@@ (dzn ast util) deep-copy*))
-
 (define-method (equal? (a <ast>) (b <ast>))
   (let ((class-a (class-of a))
         (class-b (class-of b)))
     (and (eq? class-a class-b)
-         (let* ((keyword-values-a (ast:keyword+child* a))
-                (keyword-values-b (ast:keyword+child* b)))
+         (let* ((keyword-values-a (keyword+child* a))
+                (keyword-values-b (keyword+child* b)))
            (equal? keyword-values-a keyword-values-b)))))
 
 (test-begin "ast")
@@ -84,7 +82,7 @@ component hello
 ")
          (root (parse:string->ast test)))
 
-    (parameterize ((%context (ast:memoize-context root)))
+    (parameterize ((%context (tree:memoize-context root)))
       (let* ((interface (car (tree-collect (is? <interface>) root)))
              (actions (tree-collect (is? <action>) root))
              (action (last actions))
@@ -92,7 +90,7 @@ component hello
              (port (car (tree-collect (is? <port>) root)))
              (events (tree-collect (is? <event>) root))
              (event (last events))
-             (graft-synth (graft (.parent action)
+             (graft-synth (graft (tree:parent action)
                                  (make <action>
                                    #:port.name (.port.name action)
                                    #:event.name (.event.name action))))
@@ -110,13 +108,13 @@ component hello
           (list interface root)
           (hashq-ref (%context) interface))
 
-        (test-eq "ast:parent interface <root>"
+        (test-eq "tree:ancestor interface <root>"
           root
-          (ast:parent interface <root>))
+          (tree:ancestor interface <root>))
 
-        (test-eq "ast:parent action <root>"
+        (test-eq "tree:ancestor action <root>"
           root
-          (ast:parent action <root>))
+          (tree:ancestor action <root>))
 
         (test-eq ".port action"
           port
@@ -156,24 +154,24 @@ component hello
 
         (let* ((defer (make <defer> #:statement compound))
                (defer-copy (deep-copy defer))
-               (defer-copy* (deep-copy* (.parent compound) defer)))
+               (defer-copy* (tree:copy (tree:parent compound) defer)))
 
-          (test-assert "deep-copy*'d has new id"
-            (not (eq? (.id defer-copy)
-                      (.id defer))))
+          (test-assert "tree:copy'd has new id"
+            (not (eq? (tree:id defer-copy)
+                      (tree:id defer))))
 
-          (test-assert "deep-copy*'d child has new id"
-            (not (eq? (.id compound)
-                      (.id (.statement defer-copy)))))
+          (test-assert "tree:copy'd child has new id"
+            (not (eq? (tree:id compound)
+                      (tree:id (.statement defer-copy)))))
 
           (test-eq "deep-copy'd child's parent"
             defer-copy*
-            (.parent (.statement defer-copy*))))
+            (tree:parent (.statement defer-copy*))))
 
-        (let* ((context (ast:context action))
+        (let* ((context (tree:context action))
                (kloon kloon-root (clone+root action #:event.name "world"))
-               (kloon-context (parameterize ((%context (ast:memoize-context kloon-root)))
-                                (ast:context kloon))))
+               (kloon-context (parameterize ((%context (tree:memoize-context kloon-root)))
+                                (tree:context kloon))))
 
           (test-assert "root and kloon-root not eq?"
             (not (eq? (%root)
@@ -203,10 +201,10 @@ component hello
 interface ihello {in void hello ();}"))
           (data-root (parse:string->ast "\
  extern int $int$; interface ihello {in void hello (int i);}")))
-      (parameterize ((%context (ast:memoize-context data-root)))
-        (test-equal "tree-transform"
+      (parameterize ((%context (tree:memoize-context data-root)))
+        (test-equal "tree:transform"
           mini-root
-          (tree-transform data-root
+          (tree:transform data-root
                           (disjoin (is? <extern>)
                                    (is? <data-expr>)
                                    (conjoin (is? <formal>)

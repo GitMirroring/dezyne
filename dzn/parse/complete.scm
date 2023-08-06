@@ -524,7 +524,7 @@
     ((? (is? 'root))
      %completion-top)
     ((? (is? 'file-name))
-     (complete:root (.tree (.parent context)) (.parent context) offset))
+     (complete:root (.tree (tree:parent context)) (tree:parent context) offset))
     ((? (is? 'import))
      (complete:imports o context #:imports imports))
     ((and (? (is? 'interface))
@@ -577,7 +577,7 @@
              (else
               '()))))
     ((and (? (is? 'direction)) (? complete?))
-     (complete:root (.tree (.parent context)) (.parent context) offset #:debug? debug?))
+     (complete:root (.tree (tree:parent context)) (tree:parent context) offset #:debug? debug?))
     ('type-name
      (complete:type-names context))
     ((? (is? 'type-name))
@@ -629,7 +629,7 @@
              (else
               '()))))
     ((? (is? 'end-point))
-     (complete:root (.tree (.parent context)) (.parent context) offset #:debug? debug?))
+     (complete:root (.tree (tree:parent context)) (tree:parent context) offset #:debug? debug?))
     ((? (is? 'dollars))
      (filter-self context (complete:type context)))
     ((? (is? 'literal))
@@ -650,13 +650,13 @@
            ((parent context 'return)
             (complete:return context))
            (else
-            (complete:root (.tree (.parent context)) (.parent context) offset
+            (complete:root (.tree (tree:parent context)) (tree:parent context) offset
                            #:debug? debug?))))
     ((and (? (is? 'compound-name)) (? complete?))
-     (complete:root (.tree (.parent context)) (.parent context) offset
+     (complete:root (.tree (tree:parent context)) (tree:parent context) offset
                     #:debug? debug?))
     ((and (? (is? 'scope) (? complete?)))
-     (complete:root (.tree (.parent context)) (.parent context) offset
+     (complete:root (.tree (tree:parent context)) (tree:parent context) offset
                     #:debug? debug?))
     ((and (? (is? 'reply)) (? (negate .expression)))
      (complete:reply context))
@@ -771,8 +771,8 @@
              (else
               '()))))
     ((? (is? 'expression))
-     (let ((parent (or (is-a? (and=> (.parent context) .tree) 'if-statement)
-                       (is-a? (and=> (.parent context) .tree) 'guard))))
+     (let ((parent (or (is-a? (and=> (tree:parent context) .tree) 'if-statement)
+                       (is-a? (and=> (tree:parent context) .tree) 'guard))))
        (cond ((and parent
                    (tree:after-location? parent offset))
               '())

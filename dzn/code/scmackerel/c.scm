@@ -231,7 +231,7 @@
           (code:provides+requires-end-point binding))
          (port (.port provides))
          (interface (.type port))
-         (model (ast:parent binding <model>))
+         (model (tree:ancestor binding <model>))
          (instances (code:instance* model)))
     (define (port->connect instance port)
       (sm:call (name (string-append (c:type-name interface) "_connect"))
@@ -300,7 +300,7 @@
                     arguments)))))
 
 (define-method (ast->code (o <call>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (model-name (c:type-name model))
          (name (string-append model-name "_" (.function.name o)))
          (arguments (map ast->expression (ast:argument* o)))
@@ -330,7 +330,7 @@
       (sm:assign* (string-append "dzn_arguments->" name) reference)))
   (let* ((variables (ast:defer-variable* o))
          (locals (code:capture-local o))
-         (model (ast:parent o <model>))
+         (model (tree:ancestor o <model>))
          (model-name (c:type-name model))
          (name (c:defer-name o))
          (arguments-type (c:defer-arguments-name o))
@@ -358,7 +358,7 @@
                               "dzn_defer_closure")))))))
 
 (define-method (ast->code (o <reply>))
-  (let ((p (.parent o)))
+  (let ((p (tree:parent o)))
     (cond
      ((or (is-a? p <guard>) (is-a? p <if>))
       (ast->code (code:wrap-compound o)))
@@ -392,7 +392,7 @@
          (name (if (ast:member? (.variable o)) (string-append "self->" name)
                    name))
          (variable (.variable o))
-         (argument? (ast:parent o <arguments>))
+         (argument? (tree:ancestor o <arguments>))
          (formal (or (as variable <formal>)
                      (and argument? (ast:argument->formal o))))
          (modifier (cond ((and (not formal)
@@ -599,7 +599,7 @@
            (event-name (.event.name trigger))
            (self-info (if (is-a? o <foreign>) "&self->base.dzn_info"
                           "&self->dzn_info"))
-           (root (ast:parent o <root>))
+           (root (tree:ancestor o <root>))
            (pump? (code:pump? root)))
       (list
        (sm:method
@@ -819,7 +819,7 @@
     (let* ((name (c:defer-name defer))
            (variables (ast:defer-variable* defer))
            (locals (code:capture-local defer))
-           (model (ast:parent defer <model>))
+           (model (tree:ancestor defer <model>))
            (model-name (c:type-name model))
            (arguments-type (c:defer-arguments-name o))
            (predicate-type (c:defer-predicate-name defer))
@@ -995,7 +995,7 @@
            (name-string (simple-format #f "~s" name)))
       `(,(sm:variable (type "dzn_meta") (name meta))
         ,(sm:assign* (string-append meta ".name") name-string)
-        ,(sm:assign* (string-append meta ".parent") "&self->dzn_meta")
+        ,(sm:assign* (string-append meta "tree:parent") "&self->dzn_meta")
         ,(sm:call (name (string-append base-name "_init"))
                   (arguments (list
                               ;; FIXME (sm:call (sm:function??) (arguments))
@@ -1206,7 +1206,7 @@
                        (expression (c:malloc "dzn_component")))
          ,(sm:assign* "comp->dzn_info.performs_flush" "global_flush_p")
          ,@(c:tracing-guard
-            `(,(sm:assign* "comp->dzn_meta.parent" 0)
+            `(,(sm:assign* "comp->dzn_metatree:parent" 0)
               ,(sm:assign* "comp->dzn_meta.name" external-string)
               ,@(map out-trigger->init (ast:out-triggers o))))
          ,@(append-map provides->init (ast:provides-port* o))
@@ -1246,7 +1246,7 @@
          ,@(c:tracing-guard
             (list
              (sm:assign* "meta.name" (simple-format #f "~s" "sut"))
-             (sm:assign* "meta.parent" 0)))
+             (sm:assign* "metatree:parent" 0)))
          ,(sm:call (name (string-append model-name "_init"))
                    (arguments '("&sut" "&dzn_locator" "&meta")))
          ,(sm:call (name "dzn_map_init") (arguments '("&event_map")))

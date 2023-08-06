@@ -32,7 +32,7 @@
   #:use-module (ice-9 string-fun)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -987,7 +987,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((orig-pc pc)
          (trigger (and=> (as (.q (get-state pc instance)) <pair>)
                          car))
-         (parent (or (and=> trigger .parent) (%root)))
+         (parent (or (and=> trigger tree:parent) (%root)))
          (flush-return (graft parent (make <flush-return> #:trigger trigger)))
          (pc (push-pc pc flush-return))
          (pc (clone pc #:instance instance)))
@@ -996,7 +996,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
       (let* ((pc trigger (dequeue pc))
              (location (.location trigger))
              (q-out (make <q-out> #:trigger trigger #:location location))
-             (q-out (graft (.parent trigger) q-out)))
+             (q-out (graft (tree:parent trigger) q-out)))
         (push-pc pc trigger instance q-out)))
      (else
       (let ((deferred pc (pop-deferred pc)))
@@ -1155,7 +1155,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                (value (.value value)))
            (and (or (< value (.from range))
                     (> value (.to range)))
-                (let ((parent (.parent (.parent o))))
+                (let ((parent (tree:parent (tree:parent o))))
                   (graft parent (make <range-error>
                                   #:ast o #:variable o #:value value
                                   #:message "range-error"))))))))

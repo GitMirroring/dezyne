@@ -106,7 +106,7 @@
   (ast:port* o))
 
 (define-method (dot:parent-name (o <instance>))
-  (ast:dotted-name (ast:parent o <model>)))
+  (ast:dotted-name (tree:ancestor o <model>)))
 
 
 ;;;

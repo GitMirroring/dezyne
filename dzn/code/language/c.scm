@@ -109,7 +109,7 @@
    "_"))
 
 (define-method (c:closure-name (o <trigger>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (model-name (c:type-name model))
          (formals (ast:formal* o))
          (types (map .type formals))
@@ -148,16 +148,16 @@
      statements)))
 
 (define-method (c:defer* (o <ast>))
-  (c:defer* (ast:parent <behavior> o)))
+  (c:defer* (tree:ancestor <behavior> o)))
 
 (define-method (c:defer-arguments-name (o <model>))
   (string-append "dzn_defer_arguments_" (c:type-name o)))
 
 (define-method (c:defer-arguments-name (o <ast>))
-  (c:defer-arguments-name (ast:parent o <model>)))
+  (c:defer-arguments-name (tree:ancestor o <model>)))
 
 (define-method (c:defer-name (o <defer>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (model-name (c:type-name model))
          (defers (c:defer* model))
          (index (list-index (cute eq? <> o) defers)))

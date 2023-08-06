@@ -27,7 +27,7 @@
   #:use-module (scmackerel code)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code language dzn)
@@ -82,7 +82,7 @@
   (code:->namespace (ast:full-scope o) code))
 
 (define-method (code:->namespace (o <enum>) code)
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (scope (if model model o)))
     (code:->namespace (ast:full-scope scope) code)))
 
@@ -219,7 +219,7 @@
    (arguments (map ast->expression (ast:argument* o)))))
 
 (define-method (ast->code (o <reply>))
-  (let ((p (.parent o)))
+  (let ((p (tree:parent o)))
     (cond
      ((or (is-a? p <guard>) (is-a? p <if>))
       (ast->code (code:wrap-compound o)))

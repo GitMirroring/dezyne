@@ -54,7 +54,7 @@
   (let* ((port-name (.port.name o))
          (port (.port o))
          (interface (if port (.type port)
-                        (ast:parent o <interface>))))
+                        (tree:ancestor o <interface>))))
     (ast:lookup interface (.event.name o))))
 
 (define-method (.variable (o <action-reply>))

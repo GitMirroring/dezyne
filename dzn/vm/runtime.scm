@@ -147,7 +147,7 @@
   (unfold stop? identity .container o))
 
 (define-method (runtime:id-container-path (o <runtime:instance>))
-  (map .id (runtime:container-path o (negate identity))))
+  (map object:id (runtime:container-path o (negate identity))))
 
 (define-method (runtime:instance->string (o <runtime:instance>))
   (let* ((path (runtime:instance->path o))

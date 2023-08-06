@@ -32,7 +32,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:use-module (dzn vm runtime)
@@ -49,6 +49,7 @@
             .deferred
             .external-q
             .handling
+            .id
             .input
             .labels
             .modeling?
@@ -194,17 +195,8 @@
       (set! id (1+ id))
       id)))
 
-(define-method (clone (o <state>) . setters)
-  (apply clone-top (cons o setters)))
-
 (define-class <system-state> ()
   (state-list #:getter .state-list #:init-form (list) #:init-keyword #:state-list))
-
-(define-method (clone (o <system-state>) . setters)
-  (apply clone-top (cons o setters)))
-
-(define-method (clone (o <program-counter>) . setters)
-  (apply clone-top (cons o setters)))
 
 (define-method (name (o <runtime:instance>))
   (cond ((and (is-a? (%sut) <runtime:port>)
@@ -249,7 +241,7 @@
 
 (define-method (write (o <program-counter>) port)
   (display "#<" port)
-  (display (ast-name o) port)
+  (display (constructor-name o) port)
   (when (rtc? o)
     (display " *rtc*: " port)
     (display ((compose ast:dotted-name .type .ast %sut)) port)
@@ -286,7 +278,7 @@
 
 (define-method (write (o <state>) port)
   (display "#<" port)
-  (display (ast-name o) port)
+  (display (constructor-name o) port)
   (display " " port)
   (display ((compose name .instance) o) port)
   (display " " port)
@@ -298,7 +290,7 @@
 
 (define-method (write (o <system-state>) port)
   (display "#<" port)
-  (display (ast-name o) port)
+  (display (constructor-name o) port)
   (display " " port)
   (let* ((states (.state-list o))
          (states (filter (compose not (cute equal? <> '("client"))

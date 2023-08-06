@@ -26,7 +26,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -351,7 +351,7 @@
 (define-method (step (pc <program-counter>) (o <variable>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((pc (assign (push-local pc o) o (.expression o)))
-         (pc (if (is-a? (.parent o) <compound>) pc
+         (pc (if (is-a? (tree:parent o) <compound>) pc
                  (pop-locals pc (list o)))))
     (list (continuation pc o))))
 
@@ -366,7 +366,7 @@
          (pc (cond (previous
                     (let ((error (make <second-reply-error>
                                    #:ast o
-                                   #:previous (.parent previous)
+                                   #:previous (tree:parent previous)
                                    #:message "second-reply")))
                       (%debug "second reply, previous=~a\n" (ast:location->string previous))
                       (clone pc #:status error)))
@@ -383,7 +383,7 @@
                                    stack))
                   (statements (map .statement instance-stack))
                   (blocking? (or (pair? (.blocked pc))
-                                 (any (cute ast:parent <> <blocking>)
+                                 (any (cute tree:ancestor <> <blocking>)
                                       statements)))
                   (ports-eq? (eq? reply-port trigger-port)))
              (and reply-port
@@ -456,7 +456,7 @@
       (let ((pc (continuation pc o))
             (trigger (.trigger pc)))
         (if (ast:requires? trigger) (list pc)
-            (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
+            (let* ((locals (filter (is? <variable>) (ast:statement* (tree:parent o))))
                    (pc (pop-locals pc locals))
                    (instance (.instance pc))
                    (r:port (runtime:port instance (.port trigger))))
@@ -496,7 +496,7 @@
      ((.status pc)
       (list (pop-pc pc)))
      ((ast:out? trigger)
-      (let* ((locals (filter (is? <variable>) (ast:statement* (.parent o))))
+      (let* ((locals (filter (is? <variable>) (ast:statement* (tree:parent o))))
              (pc (pop-locals pc locals)))
         (list (pop-pc pc))))
      (else
@@ -508,7 +508,7 @@
                        #:location (.location o)
                        #:port.name (.port.name (.trigger pc))
                        #:event.name value))
-             (return (graft (.parent o) return))
+             (return (graft (tree:parent o) return))
              (pc (clone pc #:statement return)))
         (list pc))))))
 
@@ -548,10 +548,10 @@
    (else
     (let* ((trigger (.trigger pc))
            (blocking? (and (ast:provides? trigger)
-                           (ast:parent o <blocking>)))
+                           (tree:ancestor o <blocking>)))
            (pc (if (or blocking? (.status pc)) pc
                    (let ((locals (filter (is? <variable>)
-                                         (ast:statement* (.parent o)))))
+                                         (ast:statement* (tree:parent o)))))
                      (pop-locals pc locals))))
            (port (.port o))
            (instance (.instance pc))
@@ -605,7 +605,7 @@
                                 (_ statement))))))
 
 (define-method (continuation (pc <program-counter>) (o <statement>))
-  (let ((parent (.parent o)))
+  (let ((parent (tree:parent o)))
     (match parent
       (($ <compound>) (statement-continuation pc o))
       (($ <if>) (statement-continuation pc parent))
@@ -617,7 +617,7 @@
        '()))))
 
 (define-method (statement-continuation (pc <program-counter>) (o <statement>))
-  (let ((p (.parent o)))
+  (let ((p (tree:parent o)))
     (match p
       (($ <compound>)
        (let ((next (and=> (memq o (ast:statement* p)) cdr)))
@@ -631,10 +631,10 @@
       (($ <defer>)
        (clone pc #:statement #f))
       (($ <defer-qout>)
-       (let* ((p (ast:parent p <compound>))
+       (let* ((p (tree:ancestor p <compound>))
               (pc (if (not p) pc
                       (let* ((variables (get-variables pc))
-                             (model (ast:parent o <model>))
+                             (model (tree:ancestor o <model>))
                              (members (ast:member* model))
                              (locals (drop-right variables (length members))))
                         (pop-locals pc locals)))))
@@ -643,17 +643,17 @@
        '()))))
 
 (define-method (continuation (pc <program-counter>) (o <action>))
-  (match (.parent o)
+  (match (tree:parent o)
     ((and (or ($ <assign>) ($ <variable>)) assign) (clone pc #:statement assign))
     (_ (next-method))))
 
 (define-method (continuation (pc <program-counter>) (o <call>))
-  (match (.parent o)
+  (match (tree:parent o)
     ((and (or ($ <assign>) ($ <variable>)) assign) (clone pc #:statement assign))
     (_ (next-method))))
 
 (define-method (function-return (pc <program-counter>) (o <statement>))
-  (let ((parent (.parent o)))
+  (let ((parent (tree:parent o)))
     (match parent
       (($ <compound>)
        (let* ((statements (memq o (reverse (ast:statement* parent))))

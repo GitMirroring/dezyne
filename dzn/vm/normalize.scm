@@ -32,7 +32,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn misc)
   #:use-module (dzn vm goops)
   #:export (vm:normalize
@@ -42,40 +42,40 @@
   "Remove externeous compound wrapping."
   (define (normalize-compound o)
     (cond ((is-a? o <model>)
-           (tree-map normalize-compound o))
+           (tree:shallow-map normalize-compound o))
           ((is-a? o <behavior>)
-           (tree-map normalize-compound o))
+           (tree:shallow-map normalize-compound o))
           ((is-a? o <functions>)
            (graft o #:elements (map normalize-compound (.elements o))))
           ((is-a? o <function>)
            (graft o #:statement (normalize-compound (.statement o))))
           ((and (is-a? o <imperative>)
-                (is-a? (.parent o) <declarative>)
+                (is-a? (tree:parent o) <declarative>)
                 wrap-imperative?)
-           (graft (.parent o) (make <compound>
-                                #:elements (list o)
-                                #:location (.location o))))
+           (graft (tree:parent o) (make <compound>
+                                    #:elements (list o)
+                                    #:location (.location o))))
           ((is-a? o <compound>)
            (cond
-            ((is-a? (.parent o) <behavior>)
+            ((is-a? (tree:parent o) <behavior>)
              (let* ((elements (map normalize-compound (.elements o)))
                     (location (.location o)))
-               (graft (.parent o) (make <initial-compound>
-                                    #:elements elements
-                                    #:location location))))
+               (graft (tree:parent o) (make <initial-compound>
+                                        #:elements elements
+                                        #:location location))))
             ((ast:declarative? o)
              (let* ((elements (map normalize-compound (.elements o)))
                     (location (.location o))
-                    (compound (graft (.parent o) (make <declarative-compound>
-                                                   #:elements elements
-                                                   #:location location))))
+                    (compound (graft (tree:parent o) (make <declarative-compound>
+                                                       #:elements elements
+                                                       #:location location))))
                (cond ((and (= (length elements) 1)
                            (not wrap-imperative?))
                       (car elements))
                      (else
                       compound))))
             ((null? (.elements o))
-             (graft (.parent o) (make <skip> #:location (.location o))))
+             (graft (tree:parent o) (make <skip> #:location (.location o))))
             (else
              (let* ((elements (map normalize-compound (.elements o)))
                     (elements (filter
@@ -84,19 +84,19 @@
                                                  (compose pair? .elements)))
                                elements)))
                (cond ((null? elements)
-                      (graft (.parent o) (make <skip> #:location (.location o))))
+                      (graft (tree:parent o) (make <skip> #:location (.location o))))
                      ((and (= (length elements) 1)
                            (not wrap-imperative?))
                       (car elements))
                      (else
                       (graft o #:elements elements)))))))
           ((is-a? o <declarative>)
-           (tree-map normalize-compound o))
+           (tree:shallow-map normalize-compound o))
           ((is-a? o <namespace>)
-           (tree-map normalize-compound o))
+           (tree:shallow-map normalize-compound o))
           (else
            o)))
-  (tree-map normalize-compound o))
+  (tree:shallow-map normalize-compound o))
 
 (define* (set-blocking-reply-port o #:optional (port #f) (block? #f)) ;; FIXME: drop block? => #t
   (match o
@@ -107,7 +107,7 @@
      (let* ((requires? (ast:requires? ((compose .port car ast:trigger*) o)))
             (block? (or block? requires?))
             (port (if port port
-                      (if requires? (ast:provides-port (ast:parent o <model>))
+                      (if requires? (ast:provides-port (tree:ancestor o <model>))
                           ((compose .port car ast:trigger*) o)))))
        (clone o #:statement (set-blocking-reply-port (.statement o) port block?))))
     (($ <guard>) (clone o #:statement (set-blocking-reply-port (.statement o) port block?)))
@@ -119,7 +119,7 @@
     (($ <system>) o)
     (($ <foreign>) o)
     (($ <interface>) o)
-    ((? (is? <ast>)) (tree-map (cut set-blocking-reply-port <> port block?) o))
+    ((? (is? <ast>)) (tree:shallow-map (cut set-blocking-reply-port <> port block?) o))
     (_ o)))
 
 (define* ((annotate-otherwise #:optional (statements '())) o) ;; FIXME *unspecified*
@@ -145,7 +145,7 @@
      (if (ast:imperative? o) o
          (clone o #:elements (map (annotate-otherwise statements) statements))))
     (($ <skip>) o)
-    ((? (is? <ast>)) (tree-map (annotate-otherwise statements) o))
+    ((? (is? <ast>)) (tree:shallow-map (annotate-otherwise statements) o))
     (_ o)))
 
 (define (transform-end-of-on o)
@@ -153,19 +153,19 @@
     (match o
       ((and ($ <compound>) (? ast:imperative?))
        (let* ((location (.location o))
-              (block (graft (.parent o) (make <block> #:location location)))
+              (block (graft (tree:parent o) (make <block> #:location location)))
               (statements (ast:statement* o))
               (statements (filter (negate (is? <the-end>)) statements))
               (statements (append (ast:statement* o)
-                                  (if (ast:parent o <blocking>) (cons block r) r))))
+                                  (if (tree:ancestor o <blocking>) (cons block r) r))))
          (clone o #:elements statements)))
       ((? ast:imperative?)
        (let* ((location (.location o))
-              (block (graft (.parent o) (make <block> #:location location)))
-              (elements (cons o (if (ast:parent o <blocking>) (cons block r)
+              (block (graft (tree:parent o) (make <block> #:location location)))
+              (elements (cons o (if (tree:ancestor o <blocking>) (cons block r)
                                     r))))
-         (graft (.parent o) (make <compound> #:elements elements
-                                  #:location location))))
+         (graft (tree:parent o) (make <compound> #:elements elements
+                                      #:location location))))
       (($ <compound>)
        (let* ((statements (ast:statement* o))
               (statements (filter (negate (is? <the-end>)) statements)))
@@ -175,7 +175,7 @@
       (($ <blocking>)
        (clone o #:statement (add-end-of-on (.statement o) r)))
       (($ <declarative-illegal>)
-       (graft (.parent o) (make <illegal>)))))
+       (graft (tree:parent o) (make <illegal>)))))
 
   (match o
     (($ <on>)
@@ -189,7 +189,7 @@
      (clone o #:behavior (transform-end-of-on (.behavior o))))
     (($ <component>)
      (clone o #:behavior (transform-end-of-on (.behavior o))))
-    ((? (is? <ast>)) (tree-map transform-end-of-on o))
+    ((? (is? <ast>)) (tree:shallow-map transform-end-of-on o))
     (_ o)))
 
 

@@ -42,7 +42,7 @@
             tree:get
             tree:graft
             tree:filter
-            tree:map
+            tree:find
             tree:transform))
 
 (define-method (tree:copy (parent <tree>) (o <tree>))
@@ -70,6 +70,27 @@
 ;;;
 ;;; Tree utilities.
 ;;;
+(define-method (tree:find (predicate <applicable>) (o <object>))
+  "Breadth first search of a tree element under O for with PREDICATE."
+  (let* ((actual-keyword-values (keyword+child* o))
+         (children (append-map
+                    (match-lambda
+                          ((keyword (values ...))
+                           values)
+                          ((keyword value)
+                           (list value)))
+                    actual-keyword-values)))
+    (or (any predicate children)
+        (any (cute tree:find predicate <>)
+             (filter (disjoin (is? <string>) (is? <number>) (is? <boolean>))
+                     children)))))
+
+(define-method (tree:find (predicate <applicable>) (o <pair>))
+  (or (any predicate o)
+      (any (cute tree:find predicate <>) o)))
+
+(define-method (tree:find (predicate <applicable>) (o <top>)) (predicate o))
+
 (define-method* (tree:collect (o <object>) (predicate <applicable>) #:key
                               (stop? identity))
   (if (not (stop? o)) '()

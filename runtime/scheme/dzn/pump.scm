@@ -45,18 +45,18 @@
   (canceled #:accessor .canceled #:init-form (list))
   (collateral #:accessor .collateral #:init-form (list))
   (deferred #:accessor .deferred #:init-form (list))
-  (id #:accessor .id #:init-value 0)
+  (id #:accessor tree:id #:init-value 0)
   (prompt-tag #:accessor .prompt-tag #:init-form (make-prompt-tag "pump"))
   (released #:accessor .released #:init-form (list))
   (timers #:accessor .timers #:init-form (list)))
 
 (define-class <coroutine> ()
   (cont #:accessor .cont #:init-form (const #f) #:init-keyword #:cont)
-  (id #:accessor .id #:init-form (%dzn:id) #:init-keyword #:id))
+  (id #:accessor tree:id #:init-form (%dzn:id) #:init-keyword #:id))
 
 (define-method (write (o <coroutine>) port)
   (display "#<coroutine " port)
-  (display (.id o) port)
+  (display (tree:id o) port)
   (display ">" port))
 
 (define-class <deferred> ()
@@ -64,12 +64,12 @@
   (procedure #:accessor .procedure #:init-form (const #f) #:init-keyword #:procedure))
 
 (define-method (next-id (o <dzn:pump>))
-  (set! (.id o) (1+ (.id o)))
-  (.id o))
+  (set! (tree:id o) (1+ (tree:id o)))
+  (tree:id o))
 
 (define-method (set-id (o <dzn:pump>))
   (let* ((id (%dzn:id))
-         (id (if (eq? id -1) (.id o) id)))
+         (id (if (eq? id -1) (tree:id o) id)))
     (if (zero? id) (next-id o)
         id)))
 
@@ -94,7 +94,7 @@
   (define* (worker cont request port #:optional component)
     (define blocked-port
       (match-lambda ((port . coroutine)
-                     (and (eq? (.id coroutine) (.handling? component))
+                     (and (eq? (tree:id coroutine) (.handling? component))
                           port))))
     (%debug "worker! cont: ~a, request:~a, port:~a\n" cont request port)
     (case request
@@ -126,7 +126,7 @@
                 (collateral (map cdr collateral)))
            (for-each (cute enqueue! o .released port <>) collateral))
          (set! (.collateral o) (assoc-remove! (.collateral o) port))
-         (parameterize ((%dzn:id (.id coroutine)))
+         (parameterize ((%dzn:id (tree:id coroutine)))
            (call-with-prompt (.prompt-tag o) (.cont coroutine) worker))
          (loop))
         (_

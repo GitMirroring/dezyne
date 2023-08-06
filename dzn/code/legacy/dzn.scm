@@ -75,7 +75,7 @@
         (ast:full-name (car namespaces)))))
 
 (define-method (dzn:open-namespace (o <ast>))
-  (cdr (reverse (ast:path (ast:parent o <namespace>)))))
+  (cdr (reverse (tree:path (tree:ancestor o <namespace>)))))
 
 (define (dzn:global* o)
   (filter (is? <type>) (ast:top* o)))
@@ -121,13 +121,13 @@
           (ast:type** o)))
 
 (define-method (dzn:model-name (o <ast>))
-  (dzn:model-name (ast:parent o <model>)))
+  (dzn:model-name (tree:ancestor o <model>)))
 
 (define-method (dzn:model-full-name (o <model>))
   (or (ast:full-name o) '()))
 
 (define-method (dzn:model-full-name (o <ast>))
-  (and=> (ast:parent o <model>) dzn:model-full-name ))
+  (and=> (tree:ancestor o <model>) dzn:model-full-name ))
 
 (define-method (dzn:enum-literal (o <enum-literal>))
   (append (dzn:type o) (list (.field o))))
@@ -141,7 +141,7 @@
 
 (define-method (dzn:type (o <type>))
   (let* ((scope (ast:full-scope o))
-         (model-scope (ast:parent o <model>))
+         (model-scope (tree:ancestor o <model>))
          (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
          (common (or (list-index (negate equal?) scope model-scope)
                      (min (length scope) (length model-scope)))))

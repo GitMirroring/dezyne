@@ -121,7 +121,7 @@
     (.name (car (ast:provides-port* component)))))
 
 (define-method (code:port-name (o <binding>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (left (.left o))
          (right (.right o))
          (port (and (code:port-bind? o)
@@ -179,7 +179,7 @@
   (map string-upcase (ast:full-name o)))
 
 (define-method (code:upcase-model-name o)
-  (code:upcase-model-name (ast:parent o <model>)))
+  (code:upcase-model-name (tree:ancestor o <model>)))
 
 
 ;;;
@@ -194,7 +194,7 @@
         (ast:statement* (.statement behavior)))))
 
 (define-method (code:ons (o <port>))
-  (let* ((component (ast:parent o <component>))
+  (let* ((component (tree:ancestor o <component>))
          (behavior (.behavior component))
          (ons (if (not behavior) '()
                   (ast:statement* (.statement behavior)))))
@@ -246,13 +246,13 @@
   (code:return (code:trigger o)))
 
 (define-method (code:port-release o)
-  (let ((trigger (and=> (ast:parent o <on>)
+  (let ((trigger (and=> (tree:ancestor o <on>)
                         (compose car ast:trigger*))))
     (and (or (not trigger)
              (ast:requires? trigger)
              (or (not (ast:equal? (.port o) (.port trigger)))
-                 (ast:parent o <blocking>)
-                 (ast:parent o <blocking-compound>)))
+                 (tree:ancestor o <blocking>)
+                 (tree:ancestor o <blocking-compound>)))
          (code:blocking? o)
          o)))
 
@@ -263,7 +263,7 @@
 
 (define-method (code:default-true (o <defer>))
   (if (or (and=> (.arguments o) (compose null? .elements))
-          (null? (ast:variable* (ast:parent o <component>)))) o
+          (null? (ast:variable* (tree:ancestor o <component>)))) o
           '()))
 
 
@@ -342,7 +342,7 @@
   (let ((enum-fields (map (string->enum-field o)
                           (ast:field* o)
                           (iota (length (ast:field* o))))))
-    (map (cute graft* (.parent o) <>) enum-fields)))
+    (map (cute graft* (tree:parent o) <>) enum-fields)))
 
 (define-method (code:enum-name (o <enum-field>))
   ((compose code:enum-name .type) o))
@@ -374,7 +374,7 @@
           (ast:type** o)))
 
 (define-method (code:global-enum-definer (o <model>))
-  (filter (is? <enum>) (ast:type** (ast:parent o <root>))))
+  (filter (is? <enum>) (ast:type** (tree:ancestor o <root>))))
 
 (define-method (code:enum-literal (o <enum-literal>))
   (cons (code:type-name (.type o)) (list (.field o))))
@@ -382,8 +382,8 @@
 (define-method (code:enum-scope (o <enum-literal>))
   (let* ((enum (.type o))
          (scope (ast:full-scope enum))
-         (model-scope (and=> (ast:parent o <model>) ast:full-name)))
-    (cond ((or (null? scope) (null? model-scope)) (ast:parent enum <root>))
+         (model-scope (and=> (tree:ancestor o <model>) ast:full-name)))
+    (cond ((or (null? scope) (null? model-scope)) (tree:ancestor enum <root>))
           ((equal? scope model-scope) (make <model-scope> #:scope model-scope))
           (else enum))))
 
@@ -404,7 +404,7 @@
   (ast:other-end-point o))
 
 (define-method (code:instance-name (o <binding>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (left (.left o))
          (right (.right o))
          (bind (and (code:port-bind? o)
@@ -464,7 +464,7 @@
   (filter code:port-bind? (filter (negate injected-binding?) (ast:binding* o))))
 
 (define-method (code:bind-provides-required (o <binding>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (left (.left o))
          (left-port (.port left))
          (right (.right o))
@@ -486,7 +486,7 @@
 (define-method (code:type-name (o <binding>))
   ((compose code:type-name
             .type
-            (cute ast:lookup (ast:parent o <model>) <>)
+            (cute ast:lookup (tree:ancestor o <model>) <>)
             injected-instance-name)
    o))
 
@@ -519,9 +519,9 @@
 ;;; Utility
 ;;;
 (define-method (code:class-member? (o <variable>))
-  (let ((p (.parent o)))
+  (let ((p (tree:parent o)))
     (and (is-a? p <variables>)
-         (is-a? (.parent p) <behavior>))))
+         (is-a? (tree:parent p) <behavior>))))
 
 (define-method (code:used-foreigns (o <root>))
   (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model** o)))

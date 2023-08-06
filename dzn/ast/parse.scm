@@ -35,7 +35,7 @@
 
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:export (parse:tree->ast))

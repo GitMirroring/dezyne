@@ -72,9 +72,9 @@
 
 (define-method (cs:defer-variable* (o <defer>))
   (let* ((variables (ast:defer-variable* o))
-         (depth (length (filter (is? <defer>) (ast:path o)))))
+         (depth (length (filter (is? <defer>) (tree:path o)))))
     (map (compose
-          (cute graft (.parent o) <>)
+          (cute graft (tree:parent o) <>)
           (cute make <capture-variable> #:name <> #:type.name <> #:depth depth))
          (map .name variables)
          (map .type.name variables))))

@@ -32,7 +32,7 @@
   #:use-module (ice-9 rdelim)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn code language dzn)
   #:use-module (dzn misc)
@@ -421,7 +421,7 @@
        (pc-arrow? (.instance pc) o)))
 
 (define-method (pc-arrow? (o <runtime:port>) (return <trigger-return>))
-  (let ((on (ast:parent return <on>)))
+  (let ((on (tree:ancestor return <on>)))
     (and on
          (let ((trigger (car (ast:trigger* on))))
            (or (is-a? (%sut) <runtime:port>)
@@ -781,14 +781,14 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                                  (r:other-port (runtime:other-port r:port)))
                             (or (ast:requires? r:other-port)
                                 (eq? r:port r:other-port))))) ; injected
-                 (not (ast:modeling? (car (ast:trigger* (ast:parent statement <on>))))))
+                 (not (ast:modeling? (car (ast:trigger* (tree:ancestor statement <on>))))))
             (let* ((next-statement (.statement next)) ;; XXX statement *after* action
                    (next-instance (.instance next))
                    (port (.port statement))
                    (r:port (if (is-a? pc-instance <runtime:port>) pc-instance
                                (runtime:port pc-instance port)))
                    (r:other-port (runtime:other-port r:port))
-                   (interface (if port (.type port) (ast:parent statement <interface>)))
+                   (interface (if port (.type port) (tree:ancestor statement <interface>)))
                    (component (.type (.ast next-instance)))
                    (port-name (if (or (not r:other-port) (eq? r:port r:other-port)) (injected-port-name component interface)
                                   (.name (.ast r:other-port))))
@@ -808,17 +808,17 @@ the location of the executed <on>-statement."
     (if (null? trace) '()
         (let* ((pc (car trace))
                (trigger (.trigger pc))
-               (model (and trigger (ast:parent trigger <model>)))
+               (model (and trigger (tree:ancestor trigger <model>)))
                (on (and=> (find (conjoin (compose (is? <on>) .statement)
                                          (compose (cute eq? <> model)
-                                                  (cute ast:parent <> <model>)
+                                                  (cute tree:ancestor <> <model>)
                                                   .statement))
                                 trace)
                           .statement))
                (triggers (and on (ast:trigger* on)))
                (on-trigger (and triggers
                                 (find (cute ast:equal? <> trigger) triggers)))
-               (parent (and trigger (.parent trigger)))
+               (parent (and trigger (tree:parent trigger)))
                (trigger (and trigger on-trigger
                              (graft trigger #:location (.location on-trigger))))
                (pc (if (not trigger) pc (clone pc #:trigger trigger))))
@@ -880,7 +880,7 @@ intermediate steps such as assignments, function calls, replies,
                                 (or (and=> (.ast (.status pc)) location-prefix)
                                     (location-prefix ast)))
                               pcs))
-              (model (ast:parent ast <model>))
+              (model (tree:ancestor ast <model>))
               (message (if (is-a? model <component>)
                            (simple-format
                             #f "component ~s is non-deterministic"

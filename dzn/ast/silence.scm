@@ -30,7 +30,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:export (silence:annotate-functions))
@@ -153,6 +153,6 @@
     (($ <component>)
      (clone o #:behavior (silence:annotate-functions (.behavior o))))
     ((? (is? <ast>))
-     (tree-map silence:annotate-functions o))
+     (tree:shallow-map silence:annotate-functions o))
     (_
      o)))

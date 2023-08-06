@@ -23,7 +23,6 @@
 
 dist_%C%_scm_DATA =				\
  %D%/accessor.scm				\
- %D%/context.scm				\
  %D%/display.scm				\
  %D%/equal.scm					\
  %D%/goops.scm					\

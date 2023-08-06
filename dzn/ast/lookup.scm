@@ -38,6 +38,7 @@
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn misc)
 
   #:export (.event
@@ -94,7 +95,7 @@
 (define-method (ast:declaration* (o <namespace>))
   (let* ((full-name (ast:full-name o))
          (namespaces (ast:namespace** (or (as o <root>)
-                                          (ast:parent o <root>))))
+                                          (tree:ancestor o <root>))))
          (namespaces (filter (compose (cute equal? <> full-name) ast:full-name)
                              namespaces)))
     (filter (cute is-a? <> <declaration>)
@@ -162,10 +163,10 @@
 (define-method (ast:has-equal-name a b) #f)
 
 (define-method (ast:statement-prefix (o <ast>))
-  (let ((compound (ast:parent o <compound>)))
+  (let ((compound (tree:ancestor o <compound>)))
     (if (not compound) '()
         (let* ((statements (ast:statement* compound))
-               (path (ast:path o)))
+               (path (tree:path o)))
           (take-while (negate (cute memq <> path)) statements)))))
 
 
@@ -211,7 +212,7 @@
     (and ast (search-or-widen-context scope name ast))))
 
 (define (search-import scope name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
+  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
     ((ast:perfect-funcq search-import-unmemoized) root scope name context)))
 
 (define (search-unmemoized root
@@ -231,12 +232,12 @@
             (any (cute search tail name <>) found))))))
 
 (define (search scope name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
+  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
     ((ast:perfect-funcq search-unmemoized) root scope name context)))
 
 (define (widen-to-parent-unmemoized root
                                     scope name context)
-  (let ((parent (ast:parent context <scope>)))
+  (let ((parent (tree:ancestor context <scope>)))
     (and parent
          (let* ((scope-name (and=> (as context <namespace>) .name))
                 (scope+ (if scope-name (cons scope-name scope) scope)))
@@ -244,7 +245,7 @@
                (search-or-widen-context scope+ name parent))))))
 
 (define (widen-to-parent scope name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
+  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
     ((ast:perfect-funcq widen-to-parent-unmemoized) root scope name context)))
 
 (define (widen-to-imports-unmemoized root scope name context)
@@ -253,7 +254,7 @@
          (any (cute search-import scope name <>) imports))))
 
 (define (widen-to-imports scope name context)
-  (let ((root (or (as context <root>) (ast:parent context <root>))))
+  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
     ((ast:perfect-funcq widen-to-imports-unmemoized) root scope name context)))
 
 (define (search-or-widen-context scope name context)
@@ -275,14 +276,14 @@ null) and return its CONTEXT."
     ast:void)
    (else
     (let* ((global? (ast:global? name))
-           (context (if global? (ast:parent context <root>) context))
+           (context (if global? (tree:ancestor context <root>) context))
            (name scope (ast:name+scope name)))
       (search-or-widen-context scope name context)))))
 
 (define ast:lookup-memoized (ast:perfect-funcq ast:lookup-unmemoized))
 (define-method (ast:lookup (o <ast>) name)
-  (let ((scope (or (as o <scope>) (ast:parent o <scope>)))
-        (root (or (as o <root>) (ast:parent o <root>))))
+  (let ((scope (or (as o <scope>) (tree:ancestor o <scope>)))
+        (root (or (as o <root>) (tree:ancestor o <root>))))
     (ast:lookup-memoized root scope name)))
 (define-method (ast:lookup name)
   (ast:lookup name name))
@@ -299,19 +300,19 @@ null) and return its CONTEXT."
     ((? (is? <compound>))
      (or
       (find name? (filter (is? <variable>) statements))
-      (and (is-a? (.parent o) <compound>)
-           (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
-      (ast:lookup-variable (.parent o) name statements)))
+      (and (is-a? (tree:parent o) <compound>)
+           (ast:lookup-variable (tree:parent o) name (ast:statement-prefix o)))
+      (ast:lookup-variable (tree:parent o) name statements)))
     ((? (is? <defer>))
-     (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
+     (ast:lookup-variable (tree:parent o) name (ast:statement-prefix o)))
     ((? (is? <if>))
      (or
-      (and (is-a? (.parent o) <compound>)
-           (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
-      (ast:lookup-variable (.parent o) name statements)))
+      (and (is-a? (tree:parent o) <compound>)
+           (ast:lookup-variable (tree:parent o) name (ast:statement-prefix o)))
+      (ast:lookup-variable (tree:parent o) name statements)))
     (($ <function>)
      (or (find name? ((compose ast:formal* .signature) o))
-         (ast:lookup-variable (.parent o) name statements)))
+         (ast:lookup-variable (tree:parent o) name statements)))
     (($ <formal>)
      (name? o))
     (($ <formal-binding>)
@@ -323,13 +324,13 @@ null) and return its CONTEXT."
     ((or ($ <on>) ($ <canonical-on>))
      (or (find (cute ast:lookup-variable <> name statements)
                (append-map ast:formal* (ast:trigger* o)))
-         (ast:lookup-variable (.parent o) name statements)))
+         (ast:lookup-variable (tree:parent o) name statements)))
     (($ <variable>)
      (name? o))
-    ((? (lambda (o) (is-a? (.parent o) <variable>)))
-     (ast:lookup-variable ((compose .parent .parent) o) name statements))
+    ((? (lambda (o) (is-a? (tree:parent o) <variable>)))
+     (ast:lookup-variable ((compose tree:parent tree:parent) o) name statements))
     (_
-     (ast:lookup-variable (.parent o) name statements))))
+     (ast:lookup-variable (tree:parent o) name statements))))
 
 (define-method (ast:lookup-variable (o <boolean>) name)
   #f)
@@ -340,7 +341,7 @@ null) and return its CONTEXT."
 (define ast:lookup-variable-memoized (ast:perfect-funcq ast:lookup-variable-unmemoized))
 (define-method (ast:lookup-variable (o <ast>) name)
   (define (path->key o)
-    (string-join (map (compose number->string .id) (ast:path o)) "."))
+    (string-join (map (compose number->string tree:id) (tree:path o)) "."))
   (ast:lookup-variable-memoized (path->key o) o name))
 
 
@@ -349,7 +350,7 @@ null) and return its CONTEXT."
 ;;;
 (define-method (.port (o <trigger>))
   ;;<trigger> opens a new scope, so lookup the port name the parent scope
-  (and (.port.name o) (ast:lookup (.parent o) (.port.name o))))
+  (and (.port.name o) (ast:lookup (tree:parent o) (.port.name o))))
 
 (define-method (.port (o <action>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
@@ -383,7 +384,7 @@ null) and return its CONTEXT."
   (let* ((port-name (.port.name o))
          (port (.port o))
          (interface (if port (.type port)
-                        (ast:parent o <interface>)))
+                        (tree:ancestor o <interface>)))
          (event (ast:lookup interface (.event.name o))))
     (as event <event>)))
 
@@ -391,7 +392,7 @@ null) and return its CONTEXT."
   (let* ((port-name (.port.name o))
          (port (.port o))
          (interface (if (is-a? port <port>) (.type port)
-                        (ast:parent o <interface>))))
+                        (tree:ancestor o <interface>))))
     (cond ((and (not port-name)
                 (equal? (.event.name o) "inevitable"))
            (graft interface (make <inevitable>)))
@@ -415,7 +416,7 @@ null) and return its CONTEXT."
 (define-method (.function (o <call>))
   (and (.function.name o)
        (ast:lookup
-        (and=> (ast:parent o <behavior>) .functions)
+        (and=> (tree:ancestor o <behavior>) .functions)
         (.function.name o))))
 
 (define-method (.variable (o <assign>))
@@ -425,10 +426,10 @@ null) and return its CONTEXT."
   (and=> (.variable.name o) (cute ast:lookup-variable o <>)))
 
 (define-method (.variable (o <formal-binding>))
-  (and=> (.variable.name o) (cute ast:lookup-variable (.parent o) <>)))
+  (and=> (.variable.name o) (cute ast:lookup-variable (tree:parent o) <>)))
 
 (define-method (.variable (o <formal-reference-binding>))
-  (and=> (.variable.name o) (cute ast:lookup-variable (.parent o) <>)))
+  (and=> (.variable.name o) (cute ast:lookup-variable (tree:parent o) <>)))
 
 (define-method (.variable (o <argument>))
   (and=> (.name o) (cute ast:lookup-variable o <>)))
@@ -449,7 +450,7 @@ null) and return its CONTEXT."
          (let ((port (.port o)))
            (and (as port <port>)
                 (or (let ((port+name (string-append (.name port) name)))
-                      (ast:lookup-variable (ast:parent o <behavior>) port+name))
+                      (ast:lookup-variable (tree:ancestor o <behavior>) port+name))
                     (lookup-shared-variable port name)))))))
 
 (define-method (.variable (o <shared-field-test>))
@@ -458,20 +459,20 @@ null) and return its CONTEXT."
          (let ((port (.port o)))
            (and (as port <port>)
                 (or (let ((port+name (string-append (.name port) name)))
-                      (ast:lookup-variable (ast:parent o <behavior>) port+name))
+                      (ast:lookup-variable (tree:ancestor o <behavior>) port+name))
                     (lookup-shared-variable port name)))))))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))
 
 (define-method (.type (o <enum-field>))
-  (or (ast:parent o <enum>)
+  (or (tree:ancestor o <enum>)
       (ast:lookup o (.type.name o))))
 
 (define-method (.formal (o <formal-reference>))
-  (let* ((trigger (ast:parent o <trigger>))
+  (let* ((trigger (tree:ancestor o <trigger>))
          (event (.event trigger))
-         (trigger-formals (ast:formal* (.parent o)))
+         (trigger-formals (ast:formal* (tree:parent o)))
          (index (list-index (cute eq? o <>) (reverse trigger-formals)))
          (event-formals (if (not event) '() (ast:formal* event))))
     (and event
@@ -479,20 +480,20 @@ null) and return its CONTEXT."
          (list-ref (reverse event-formals) index))))
 
 ;; (define-method (.formal (o <formal-reference-binding>))
-;;   (let* ((on (ast:parent o <on>))
+;;   (let* ((on (tree:ancestor o <on>))
 ;;          (trigger (car (ast:trigger* on)))
 ;;          (event (.event trigger))
-;;          (trigger-formals (ast:formal* (.parent o)))
+;;          (trigger-formals (ast:formal* (tree:parent o)))
 ;;          (index (list-index (cute eq? o <>) (reverse trigger-formals)))
 ;;          (formals (ast:formal* event)))
 ;;     (and event (< index (length formals)) (list-ref (reverse formals) index))))
 
 (define-method (.type (o <formal>))
   (let* ((type-name (.type.name o))
-         (scope (or (and=> (ast:parent o <on>) .parent)
-                    (ast:parent o <statement>)
-                    (ast:parent o <behavior>)
-                    (and=> (ast:parent o <scope>) .parent))))
+         (scope (or (and=> (tree:ancestor o <on>) tree:parent)
+                    (tree:ancestor o <statement>)
+                    (tree:ancestor o <behavior>)
+                    (and=> (tree:ancestor o <scope>) tree:parent))))
     (and=> type-name (cut ast:lookup scope <>))))
 
 (define-method (.type (o <formal-reference>))
@@ -509,7 +510,7 @@ null) and return its CONTEXT."
 
 (define-method (.type (o <instance>))
   (let ((name (.type.name o)))
-    (or (ast:lookup (.parent o) name)
+    (or (ast:lookup (tree:parent o) name)
         (ast:lookup o name))))
 
 (define-method (.type (o <port>))
@@ -526,12 +527,12 @@ null) and return its CONTEXT."
     (ast:lookup ((compose .behavior .type .port) o) type-name)))
 
 (define-method (.type (o <enum-literal>))
-  (let* ((parent (or (ast:parent o <shared-field-test>)
-                     (ast:parent o <shared-variable>)))
+  (let* ((parent (or (tree:ancestor o <shared-field-test>)
+                     (tree:ancestor o <shared-variable>)))
          (type-name (.type.name o)))
     (cond (parent
            (let ((type-name (last (.ids type-name))))
              (ast:lookup ((compose .behavior .type .port) parent) type-name)))
           (else
-           (or (ast:parent o <enum>)
+           (or (tree:ancestor o <enum>)
                (ast:lookup o type-name))))))

@@ -28,7 +28,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:use-module (dzn vm compliance)
@@ -164,7 +164,8 @@ valid PCs that are executing an imperative statement."
                                                           (is? <action>)
                                                           <>))))
                                  .statement)
-                        (compose (cute ast:parent <> <component>) .ast .status)))
+                        (compose (cute tree:ancestor <> <component>)
+                                 .ast .status)))
                       pcs)))
     (and
      (every (compose (cute is-a? <> <runtime:component>) .instance) pcs)
@@ -596,9 +597,9 @@ with EVENT as first step, until RTC?."
                                      ((eq? event 'rtc) "*rtc*")
                                      (else (trigger->string event))))
                  (sut (%sut))
-                 (root (ast:parent (.ast sut) <root>))
+                 (root (tree:ancestor (.ast sut) <root>))
                  (key (string-append
-                       (number->string (.id root))
+                       (number->string (object:id root))
                        (parameterize ((%sut #f)) (runtime:dotted-name sut))
                        (pc->string pc)
                        event-string)))
@@ -822,7 +823,7 @@ until RTC?."
                (defer-qout (make <defer-qout>
                              #:statement statement
                              #:location (.location statement)))
-               (defer-qout (graft* (.parent statement) defer-qout))
+               (defer-qout (graft* (tree:parent statement) defer-qout))
                (pc (clone pc
                           #:defer (cdr defer)
                           #:running-defer? instance
@@ -878,7 +879,7 @@ until RTC?."
     (let* ((pc trigger (dequeue-external pc instance))
            (q-in (make <q-in> #:trigger trigger))
            (q-in (clone q-in #:location (.location trigger)))
-           (q-in (graft (.parent trigger) q-in))
+           (q-in (graft (tree:parent trigger) q-in))
            (pc (push-pc pc other-instance q-in))
            (q-trigger (q-trigger trigger))
            (pc (enqueue pc trigger other-instance q-trigger))

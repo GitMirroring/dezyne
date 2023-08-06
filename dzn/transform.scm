@@ -106,7 +106,7 @@ in NAMES."
        (or (and=> (assq (.variable o) alist) cdr)
            o))
       ((? (is? <ast>))
-       (graft o (tree-map (cute substitute-arguments alist <>) o)))
+       (graft o (tree:shallow-map (cute substitute-arguments alist <>) o)))
       (_
        o)))
   (define (substitute-return assign o)
@@ -129,7 +129,7 @@ in NAMES."
       (($ <return>)
        (graft assign #:expression (.expression o)))
       ((? (is? <ast>))
-       (graft o (tree-map (cute substitute-return assign <>) o)))
+       (graft o (tree:shallow-map (cute substitute-return assign <>) o)))
       (_
        o)))
   (define (transform? function)
@@ -204,7 +204,7 @@ in NAMES."
       (($ <foreign>)
        o)
       ((? (is? <ast>))
-       (graft o (tree-map helper o)))
+       (graft o (tree:shallow-map helper o)))
       (_
        o)))
   (helper o))

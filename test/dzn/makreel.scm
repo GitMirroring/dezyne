@@ -30,6 +30,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn code language makreel)
   #:use-module (dzn parse))
 

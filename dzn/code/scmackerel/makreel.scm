@@ -150,7 +150,7 @@
 
 (define-method (makreel:return-variable (o <ast>))
   (let* ((type (ast:type o))
-         (parent (or (.parent type) (.parent o))))
+         (parent (or (tree:parent type) (tree:parent o))))
     (match type
       (($ <bool>)
        (graft parent (make <variable>
@@ -187,7 +187,7 @@
                                           (cute equal? (.variable.name o) <>)
                                           .name)
                                  parameters)))
-         (model (ast:parent o <model>)))
+         (model (tree:ancestor o <model>)))
     (map (match-lambda
            ((and ($ <variable>) variable)
             (sm:formal (type (makreel:type->string (.type variable)))
@@ -214,7 +214,7 @@
 
 (define-method (makreel:shared-process-arguments (o <action>))
   (let* ((port (.port o))
-         (behavior (ast:parent o <behavior>))
+         (behavior (tree:ancestor o <behavior>))
          (shared (filter (compose (cute eq? <> port) .port)
                          (ast:shared* behavior)))
          (interface (.type port)))
@@ -234,7 +234,7 @@
   (string-append (makreel:full-name o) "enum"))
 
 (define-method (makreel:return->value (o <return>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (expression (.expression o))
          (type (ast:type expression)))
     (match type
@@ -1081,7 +1081,7 @@
 ;;; Ast->action.
 ;;;
 (define-method (ast->action (o <trigger>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (interface (if (is-a? model <interface>) model
                         (.type (.port o))))
          (model (if (is-a? model <interface>) model
@@ -1096,7 +1096,7 @@
                  #:keep-constructor? #t)))))
 
 (define-method (ast->action (o <action>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (interface (if (is-a? model <interface>) model
                         (.type (.port o))))
          (model (if (is-a? model <interface>) model
@@ -1107,10 +1107,10 @@
                #:keep-constructor? #t)))
 
 (define-method (ast->action (o <reply>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (model (or (as model <interface>)
                     (.port o)
-                    (let* ((on (ast:parent o <on>))
+                    (let* ((on (tree:ancestor o <on>))
                            (triggers (and=> on ast:trigger*))
                            (trigger (and=> triggers car)))
                       (and trigger
@@ -1273,7 +1273,7 @@
 
 (define-method (ast->process (model <model>) (o <blocking>) (next <ast>))
   (let ((model (or (as model <interface>)
-                   (let* ((on (ast:parent o <on>))
+                   (let* ((on (tree:ancestor o <on>))
                           (trigger (car (ast:trigger* on))))
                      (and (ast:provides? trigger)
                           (.port trigger))))))
@@ -1381,7 +1381,7 @@
              (let* ((reply (make <reply>
                              #:port.name (.name port)
                              #:expression o))
-                    (reply (graft (.parent o) reply))
+                    (reply (graft (tree:parent o) reply))
                     (reply (ast->action reply))
                     (reply (sm:invoke reply #:keep-constructor? #t)))
                (sm:sequence*
@@ -1435,7 +1435,7 @@
                             (arguments (makreel:process-parens o))))
                 `(,@(if (not void-reply?) '()
                         (let* ((reply (make <reply> #:port.name (.name port)))
-                               (reply (graft (.parent o) reply)))
+                               (reply (graft (tree:parent o) reply)))
                           `(,(ast->action reply))))
                   ,(cond ((and=> port ast:external?)
                           (sm:goto (name (statement->process-name next))
@@ -1471,7 +1471,7 @@
                     `(,(%switch-context-action port)))
               ,@(if (not void-reply?)
                     `(,(assign->sum model (.action o) (.variable o)))
-                    (let* ((parent (.parent o))
+                    (let* ((parent (tree:parent o))
                            (port-name (.name port))
                            (reply (make <reply> #:port.name port-name))
                            (reply (graft parent reply)))
@@ -1551,7 +1551,7 @@
                    formal-names
                    (map makreel:ast->expression arguments))
               (list
-               (if (and (.last? o) (ast:parent o <function>)) "s=s"
+               (if (and (.last? o) (tree:ancestor o <function>)) "s=s"
                    (let* ((return (car (ast:continuation* o)))
                           (locals (makreel:locals return))
                           (locals (map .name locals))
@@ -1566,7 +1566,7 @@
                           (model-prefix "stack_empty" model)))))))))))))))
 
 (define-method (ast->process (model <model>) (o <return>) (next <ast>))
-  (let* ((function (ast:parent o <function>))
+  (let* ((function (tree:ancestor o <function>))
          (type (ast:type function))
          (expression (.expression o))
          (expression (makreel:ast->expression expression)))
@@ -1694,7 +1694,7 @@
 (define-method (ast->process (model <interface>) (o <the-end>) (next <ast>))
   (let* ((members (ast:member* model))
          (members (map .name members))
-         (on (ast:parent o <on>))
+         (on (tree:ancestor o <on>))
          (trigger (car (ast:trigger* on))))
     (sm:process
       (name (statement->process-name o))
@@ -1821,12 +1821,12 @@
     (statement->processes model behavior)))
 
 (define-method (defer->processes (o <defer>))
-  (let* ((model (ast:parent o <model>))
+  (let* ((model (tree:ancestor o <model>))
          (statement (.statement o)))
     (statement->processes model statement)))
 
 (define-method (function->processes (o <function>))
-  (let ((model (ast:parent o <model>))
+  (let ((model (tree:ancestor o <model>))
         (statement (.statement o)))
     (statement->processes model statement)))
 
@@ -1851,9 +1851,9 @@
               (lambda (c r)
                 (let* ((type (ast:type c))
                        (locals (makreel:locals r))
-                       (f (and (not (ast:parent r <defer>))
+                       (f (and (not (tree:ancestor r <defer>))
                                (or (is-a? r <function>)
-                                   (ast:parent r <function>))))
+                                   (tree:ancestor r <function>))))
                        (arguments
                         `(,@(map variable->local locals)
                           ,@(if (not f) '()

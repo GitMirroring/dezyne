@@ -29,7 +29,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
-  #:use-module (system foreign)
   #:use-module (ice-9 curried-definitions)
 
   #:use-module ((oop goops)
@@ -37,18 +36,23 @@
                             (if (member x '(<port> <foreign>))
                                 (symbol-append 'goops: x)
                                 x)))
+  #:use-module (dzn goops goops)
+  #:use-module (dzn goops context)
   #:use-module (dzn goops util)
-  #:export (define-ast
 
-             .id
-             .operator
-             .variable.name)
+  #:export (<ast>
+            define-ast
+
+            .operator
+            .variable.name)
   #:re-export (<top>
                <class> <object>
                <applicable> <procedure>
                <boolean> <char> <list> <pair> <null> <string> <symbol>
                <number>
                <unknown>
+
+               <tree> <tree:root>
 
                as
                class-name
@@ -58,38 +62,14 @@
                define-method
                is?
                is-a?
-               make))
+               make
+               object:id
+               tree:id))
 
 (define-syntax define-ast
-  (lambda (x)
-    (define (getter-name name)
-      (string->symbol (string-append "." (symbol->string name))))
-    (define (complete-slot slot)
-      (define (create-slot name init-keyword init-value)
-        (let ((getter (datum->syntax x (getter-name (syntax->datum name))))
-              (keyword (datum->syntax x (symbol->keyword (syntax->datum name)))))
-          #`(#,name #:getter #,getter #,init-keyword #,init-value #:init-keyword #,keyword)))
-      (syntax-case slot ()
-        ((name)
-         (create-slot #'name #:init-value #f))
-        ((name #:init-form form)
-         (create-slot #'name #:init-form #'form))
-        ((name #:init-value value)
-         (create-slot #'name #:init-value #'value))))
-    (define (slot->getter-name slot)
-      (let ((name (syntax-case slot ()
-                    ((name) #'name)
-                    ((name #:init-form form) #'name)
-                    ((name #:init-value value) #'name))))
-        (datum->syntax x (getter-name (syntax->datum name)))))
-    (syntax-case x ()
-      ((_ name supers slot ...)
-       (with-syntax (((slot' ...) (map complete-slot #'(slot ...))))
-         #`(begin
-             (export name
-                     #,@(filter (compose not defined? syntax->datum)
-                                (map slot->getter-name #'(slot ...))))
-             (define-class name supers slot' ...)))))))
+  (syntax-rules ()
+    ((_ name . body)
+     (define-class*-public name . body))))
 
 (define-ast <ast> ())
 
@@ -120,7 +100,7 @@
 
 (define-ast <namespace> (<declaration> <ast-list> <scope>))
 
-(define-ast <root> (<namespace>))
+(define-ast <root> (<namespace> <tree:root>))
 
 (define-ast <scope.name> (<ast>)
   (ids #:init-form (list)))
@@ -152,7 +132,7 @@
 (define g-root-id 0)
 (define-method (initialize (o <root>) . initargs)
   (let ((root (apply next-method (cons o initargs))))
-    (set! g-root-id (.id root))
+    (set! g-root-id (tree:id root))
     root))
 
 (define-ast <triggers> (<ast-list>))
@@ -459,10 +439,3 @@
 (define-ast <out-formal> (<variable>))
 (define-ast <direction> (<named>))
 (define-ast <unspecified> (<ast>))
-
-
-;;;
-;;; Helpers.
-;;;
-(define-method (.id (o <object>))
-  (pointer-address (scm->pointer o)))

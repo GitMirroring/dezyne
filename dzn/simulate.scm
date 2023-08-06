@@ -28,7 +28,7 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
 
-  #:use-module (dzn ast context)
+  #:use-module (dzn goops context)
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
@@ -873,10 +873,10 @@ status."
   (let ((model (ast:get-model root model-name)))
     (if (not model) root
         (let ((models (ast:model** model)))
-          (tree-filter (disjoin (is? <interface>)
-                                (negate (is? <model>))
-                                (cute memq <> models))
-                       root)))))
+          (tree:shallow-filter (disjoin (is? <interface>)
+                                        (negate (is? <model>))
+                                        (cute memq <> models))
+                               root)))))
 
 
 ;;;

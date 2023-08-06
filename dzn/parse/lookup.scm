@@ -140,17 +140,17 @@ null) and return its CONTEXT."
          (find name? (tree:variable* tree)))
         ((? (is? 'compound))
          (or (find name? (filter (is? 'variable) (tree:statement* tree)))
-             (helper name (.parent o))))
+             (helper name (tree:parent o))))
         ((? (is? 'function))
          (or (find name? (tree:formal* tree))
-             (helper name (.parent o))))
+             (helper name (tree:parent o))))
         ((or (? (is? 'formal))
              (is? 'formal-binding))
          (and (equal? (.name tree) name)
               tree))
         ((? (is? 'on))
          (or (find name? (append-map tree:formal* (tree:trigger* tree)))
-             (helper name (.parent o))))
+             (helper name (tree:parent o))))
         ((? (is? 'variable))
          (or (name? tree)
              (tree:lookup-reference name (context:parent context tree:statement?))))
@@ -158,9 +158,9 @@ null) and return its CONTEXT."
          (or (name? tree)
              (tree:lookup-reference name (context:parent context tree:statement?))))
         ((? (cute parent <> 'variable))
-         (helper name (.parent (parent o 'variable))))
+         (helper name (tree:parent (parent o 'variable))))
         ((? tree?)
-         (helper name (.parent o))))))
+         (helper name (tree:parent o))))))
   (let* ((root (find (is? 'root) context))
          (file-name (and=> root .file-name)))
     (and=> (helper name context) (cute tree:add-file-name <> file-name))))
@@ -182,7 +182,7 @@ null) and return its CONTEXT."
          (cond (port
                 (and=> (.type port) (cute context:lookup event-name <>)))
                (else
-                (search '() event-name (.parent context)))))))))
+                (search '() event-name (tree:parent context)))))))))
 
 (define (.function context)
   (let ((tree (.tree context)))
@@ -193,20 +193,20 @@ null) and return its CONTEXT."
   (let ((tree (.tree context)))
     (match tree
       ((? (is? 'end-point))
-       (and=> (.instance-name tree) (cute context:lookup <> (.parent context)))))))
+       (and=> (.instance-name tree) (cute context:lookup <> (tree:parent context)))))))
 
 (define (.port context)
   (let ((tree (.tree context)))
     (match tree
       ((? (is? 'trigger))
        ;;<trigger> opens a new scope, so lookup the port name the parent scope
-       (and=> (.port-name tree) (cute context:lookup <> (.parent context))))
+       (and=> (.port-name tree) (cute context:lookup <> (tree:parent context))))
       ((? (is? 'end-point))
        (let* ((instance (.instance context))
               (component (and=> instance .type)))
          (if component
              (and=> (.port-name tree) (cute context:lookup <> component))
-             (and=> (.port-name tree) (cute context:lookup <> (.parent context)))))))))
+             (and=> (.port-name tree) (cute context:lookup <> (tree:parent context)))))))))
 
 (define (.type context)
   (let ((tree (.tree context)))

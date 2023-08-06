@@ -86,7 +86,7 @@
 ;;;
 (define-method (dzn:full-name (o <type>))
   (let* ((scope (ast:full-scope o))
-         (model-scope (ast:parent o <model>))
+         (model-scope (tree:ancestor o <model>))
          (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
          (common (or (list-index (negate equal?) scope model-scope)
                      (min (length scope) (length model-scope)))))
@@ -120,7 +120,7 @@
     (($ <plus>) "+")))
 
 (define (dzn:statement? o)
-  (let ((parent (.parent o)))
+  (let ((parent (tree:parent o)))
     (or (is-a? parent <blocking>)
         (is-a? parent <compound>)
         (is-a? parent <guard>)

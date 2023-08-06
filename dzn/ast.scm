@@ -35,11 +35,14 @@
   #:use-module (ice-9 q)
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast context)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)
+  #:use-module (dzn goops context)
+  #:use-module (dzn goops goops)
+  #:use-module (dzn goops tree)
+  #:use-module (dzn goops util)
   #:use-module (dzn misc)
 
   #:export (ast:add-statement
@@ -131,7 +134,7 @@
                .function
                .type
                .instance
-               .parent
+               tree:parent
                .port.name
                .variable
                .variable.name
@@ -143,10 +146,10 @@
                ast:equal?
                ast:full-name
                ast:name
-               ast:parent
-               ast:path
                ast:perfect-funcq
                ast:pure-funcq
+               tree:ancestor
+               tree:path
 
                ast:argument*
                ast:binding*
@@ -182,8 +185,8 @@
                is?
                tree-collect
                tree-collect-filter
-               tree-filter
-               tree-map
+               tree:shallow-filter
+               tree:shallow-map
                with-root))
 
 ;;;
@@ -206,8 +209,8 @@
 
 (define-method (ast:declarative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (and (not (is-a? (.parent o) <function>))
-         (or (and (null? statements) (is-a? (.parent o) <behavior>))
+    (and (not (is-a? (tree:parent o) <function>))
+         (or (and (null? statements) (is-a? (tree:parent o) <behavior>))
              (and (pair? statements) ((compose ast:declarative? car) statements))))))
 
 (define (ast:illegal? o)
@@ -225,12 +228,12 @@
 
 (define-method (ast:imperative? (o <compound>))
   (let ((statements (ast:statement* o)))
-    (or (is-a? (.parent o) <function>)
-        (and (null? statements) (not (is-a? (.parent o) <behavior>)))
+    (or (is-a? (tree:parent o) <function>)
+        (and (null? statements) (not (is-a? (tree:parent o) <behavior>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
 
 (define-method (ast:imported? (o <ast>))
-  (not (equal? (ast:source-file o) (ast:source-file (ast:parent o <root>)))))
+  (not (equal? (ast:source-file o) (ast:source-file (tree:ancestor o <root>)))))
 
 (define-method (ast:in? (o <event>))
   (eq? 'in (.direction o)))
@@ -314,7 +317,7 @@
   (and (.injected? o) o))
 
 (define-method (ast:member? (o <variable>))
-  (is-a? (.parent (.parent o)) <behavior>))
+  (is-a? (tree:parent (tree:parent o)) <behavior>))
 
 (define-method (ast:member? (o <top>))
   #f)
@@ -373,7 +376,7 @@
 (define-method (ast:instance? (o <component-model>))
   (define (instance? system)
     (find (compose (cute eq? <> o) .type) (ast:instance* system)))
-  (let* ((root (ast:parent o <root>))
+  (let* ((root (tree:ancestor o <root>))
          (models (ast:model** root))
          (systems (filter (is? <system>) models)))
     (find instance? systems)))
@@ -426,19 +429,19 @@
   (filter ast:injected? (ast:port* o)))
 
 (define-method (ast:injected-port* (o <trigger>))
-  (ast:injected-port* (ast:parent o <component-model>)))
+  (ast:injected-port* (tree:ancestor o <component-model>)))
 
 (define-method (ast:provides-port* (o <component-model>))
   (filter ast:provides? (ast:port* o)))
 
 (define-method (ast:provides-port* (o <port>))
-  (ast:provides-port* (ast:parent o <component-model>)))
+  (ast:provides-port* (tree:ancestor o <component-model>)))
 
 (define-method (ast:requires-port* (o <component-model>))
   (filter ast:requires? (ast:port* o)))
 
 (define-method (ast:requires-port* (o <port>))
-  (ast:requires-port* (ast:parent o <component-model>)))
+  (ast:requires-port* (tree:ancestor o <component-model>)))
 
 (define-method (ast:requires-no-injected-port* (o <component-model>))
   (filter (conjoin (negate ast:injected?) ast:requires?) (ast:port* o)))
@@ -460,7 +463,7 @@
   (filter ast:out? (ast:event* o)))
 
 (define-method (port+event->trigger (o <port>) (event <event>))
-  (let* ((component (ast:parent o <component-model>))
+  (let* ((component (tree:ancestor o <component-model>))
          (parent (or (and (is-a? o <component-model>)
                           (and=> (.behavior component) .statement))
                      component))
@@ -514,7 +517,7 @@
           (ast:requires-out-triggers o)))
 
 (define-method (ast:event->trigger (o <event>))
-  (let* ((interface (ast:parent o <interface>))
+  (let* ((interface (tree:ancestor o <interface>))
          (formals (ast:rescope ((compose .formals .signature) o) interface))
          (parent  (.behavior interface)))
     (graft parent (make <trigger> #:event.name (.name o) #:formals formals))))
@@ -568,7 +571,7 @@
 (define-method (ast:type (o <bool>)) o)
 (define-method (ast:type (o <enum>)) o)
 (define-method (ast:type (o <enum-literal>))
-  (or (ast:parent o <enum>)
+  (or (tree:ancestor o <enum>)
       (.type o)))
 (define-method (ast:type (o <enum-field>))
   (.type o))
@@ -631,8 +634,8 @@
   o)
 
 (define-method (ast:argument->formal (o <expression>))
-  (let ((action/call (or (ast:parent o <action>)
-                         (ast:parent o <call>))))
+  (let ((action/call (or (tree:ancestor o <action>)
+                         (tree:ancestor o <call>))))
     (and action/call
          (let* ((arguments (ast:argument* action/call))
                 (index (list-index (cute eq? <> o) arguments))
@@ -647,7 +650,7 @@
   (ast:argument->formal (.expression o)))
 
 (define-method (ast:formal->index (o <formal>))
-  (let* ((formals (.elements (ast:parent o <formals>)))
+  (let* ((formals (.elements (tree:ancestor o <formals>)))
          (index (list-index (cute eq? <> o) formals)))
     index))
 
@@ -657,10 +660,10 @@
 (define-method (ast:defer-variable* (o <defer>))
   (if (.arguments o) (map .variable (ast:argument* o))
       (filter (negate (is? <shared-variable>))
-              (ast:member* (ast:parent o <model>)))))
+              (ast:member* (tree:ancestor o <model>)))))
 
 (define-method (ast:expression->type (o <expression>))
-  (let ((p (.parent o)))
+  (let ((p (tree:parent o)))
     (define (as-p o class)
       (or (as o class) (as p class)))
     (cond ((as-p o <action>) => (compose .type .signature .event))
@@ -669,10 +672,10 @@
           ((as-p o <reference>) => (compose .type .variable))
           ((as-p o <variable>) => .type)
           ((as-p o <return>)
-           => (compose .type .signature (cute ast:parent <> <function>)))
+           => (compose .type .signature (cute tree:ancestor <> <function>)))
           ((is-a? o <bool-expr>) (make <bool>))
           ((is-a? o <int-expr>) (make <int>))
-          ((ast:parent <expression>) => ast:expression->type)
+          ((tree:ancestor <expression>) => ast:expression->type)
           ((is-a? o <literal>) (ast:literal-value->type (.value o)))
           (else (make <void>)))))
 
@@ -709,7 +712,7 @@
     (if void (list void) '()))
    ((as o <enum>)
     (let ((type-name (.name o)))
-      (map (compose (cute graft (.parent o) <>)
+      (map (compose (cute graft (tree:parent o) <>)
                     (cute make <enum-literal>
                           #:type.name type-name
                           #:field <>))
@@ -719,13 +722,13 @@
                   (cute make <literal> #:value <>))
          '("false" "true")))
    ((as o <subint>)
-    (let ((parent (or (.parent o) (%root))))
+    (let ((parent (or (tree:parent o) (%root))))
       (map (compose (cute graft parent <>)
                     (cute make <literal> #:value <>))
            (iota (1+ (- (.to (.range o)) (.from (.range o))))
                  (.from (.range o))))))
    ((as o <int>)
-    (let ((parent (or (.parent o) (%root))))
+    (let ((parent (or (tree:parent o) (%root))))
       (list (graft parent (make <literal> #:value 0)))))))
 
 (define-method (ast:values (o <variable>))
@@ -734,7 +737,7 @@ type.name is determined by the context referring to the type, hence the
 overload for variable."
   (cond
    ((as (ast:type o) <enum>)
-    (map (compose (cute graft (.parent o) <>)
+    (map (compose (cute graft (tree:parent o) <>)
                   (cute make <enum-literal>
                         #:type.name (.type.name o)
                         #:field <>))
@@ -771,7 +774,7 @@ overload for variable."
   (or (.location o)
       (let* ((elements (.elements o))
              (locations (filter-map .location elements)))
-        (if (null? locations) (ast:location (.parent o))
+        (if (null? locations) (ast:location (tree:parent o))
             (car locations)))))
 
 (define-method (ast:location o) #f)
@@ -789,7 +792,7 @@ overload for variable."
   (basename (ast:source-file o) ".dzn"))
 
 (define-method (ast:source-file (o <ast>))
-  (or (and=> (ast:location o) .file-name) (ast:source-file (.parent o))))
+  (or (and=> (ast:location o) .file-name) (ast:source-file (tree:parent o))))
 
 (define-method (ast:value (o <literal>))
   (.value o))
@@ -836,9 +839,9 @@ overload for variable."
 
 (define-method (ast:filter-model (root <root>) (model <model>))
   (let ((models (ast:model** model)))
-    (tree-filter (disjoin (negate (is? <component-model>))
-                          (cute memq <> models))
-                 root)))
+    (tree:shallow-filter (disjoin (negate (is? <component-model>))
+                                  (cute memq <> models))
+                         root)))
 
 
 ;;;
@@ -878,7 +881,7 @@ to bottom."
         (clone o #:left right #:right left))))
 
 (define-method (ast:other-end-point (o <port>))
-  (let loop ((bindings (ast:binding* (ast:parent o <system>))))
+  (let loop ((bindings (ast:binding* (tree:ancestor o <system>))))
     (and (pair? bindings)
          (let* ((binding (car bindings))
                 (left (.left binding))
@@ -893,7 +896,7 @@ to bottom."
                  (else (loop (cdr bindings))))))))
 
 (define-method (ast:other-end-point (i <instance>) (o <port>))
-  (let ((system (ast:parent i <system>)))
+  (let ((system (tree:ancestor i <system>)))
     (let loop ((bindings (ast:binding* system)))
       (and (pair? bindings)
            (let* ((binding (car bindings))
@@ -1066,14 +1069,14 @@ to bottom."
 returns its statements, an <if> returns both the then and else cases, a
 call steps over the function and returns the next statement."
   (define (statement-continuation o)
-    (let* ((p (.parent o))
+    (let* ((p (tree:parent o))
            (cont (cdr (memq o (ast:statement* p)))))
       (if (pair? cont) (list (car cont))
-          (let ((grandparent (.parent p)))
+          (let ((grandparent (tree:parent p)))
             (match grandparent
               (($ <compound>) (statement-continuation p))
-              (($ <defer>) (list (ast:parent o <behavior>)))
-              ((? (is? <declarative>)) (list (ast:parent o <behavior>)))
+              (($ <defer>) (list (tree:ancestor o <behavior>)))
+              ((? (is? <declarative>)) (list (tree:ancestor o <behavior>)))
               (_  (helper grandparent)))))))
 
   (define (helper o)
@@ -1095,13 +1098,13 @@ call steps over the function and returns the next statement."
       ((and ($ <compound>) (= ast:statement* (? pair?)) (= ast:statement* elements))
        (take elements 1))
       ((? (is? <statement>))
-       (let* ((p (.parent o)))
+       (let* ((p (tree:parent o)))
          (match p
            (($ <compound>) (statement-continuation o))
-           ((? (is? <declarative>)) (list (ast:parent o <behavior>)))
+           ((? (is? <declarative>)) (list (tree:ancestor o <behavior>)))
            (($ <on>) (throw 'programming-error "unexpected on"))
            (_ (helper p)))))
-      (_ (helper (.parent o)))))
+      (_ (helper (tree:parent o)))))
 
   (match o
     (($ <if>) (let ((then (.then o))
@@ -1112,7 +1115,7 @@ call steps over the function and returns the next statement."
     (_ (helper o))))
 
 (define-method (ast:previous-statement (o <statement>))
-  (let ((p (.parent o)))
+  (let ((p (tree:parent o)))
     (match p
       (($ <compound>)
        (match (memq o (reverse (ast:statement* p)))
@@ -1135,12 +1138,12 @@ call steps over the function and returns the next statement."
             (elements (ast:add-statement* elements statement #:location o)))
        (graft o #:elements elements)))
     ((h ... t)
-     (append o (list (clone statement #:location (.location (.parent t))))))
+     (append o (list (clone statement #:location (.location (tree:parent t))))))
     ((h ...)
      (append o (list (clone statement #:location (.location location)))))
     (_
      (let* ((location (.location o))
             (statement (clone statement #:location location)))
-       (graft (.parent o) (make <compound>
-                            #:elements (cons o (list statement))
-                            #:location location))))))
+       (graft (tree:parent o) (make <compound>
+                                #:elements (cons o (list statement))
+                                #:location location))))))

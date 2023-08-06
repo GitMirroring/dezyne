@@ -34,8 +34,10 @@
 
   #:use-module (dzn ast serialize)
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast context)
   #:use-module (dzn ast util)
+  #:use-module (dzn goops context)
+  #:use-module (dzn goops goops)
+  #:use-module (dzn goops tree)
   #:use-module (dzn command-line) ;%locations?
   #:use-module (dzn misc)
   #:use-module (dzn parse)
@@ -43,13 +45,12 @@
 
 ;;(define equal? (@@ (test dzn ast) equal?))
 
-(define ast:keyword+child* (@@ (dzn ast context) ast:keyword+child*))
 (define-method (equal? (a <ast>) (b <ast>))
   (let ((class-a (class-of a))
         (class-b (class-of b)))
     (and (eq? class-a class-b)
-         (let* ((keyword-values-a (ast:keyword+child* a))
-                (keyword-values-b (ast:keyword+child* b)))
+         (let* ((keyword-values-a (keyword+child* a))
+                (keyword-values-b (keyword+child* b)))
            (equal? keyword-values-a keyword-values-b)))))
 
 (define round-trip (compose ast:unserialize
@@ -111,24 +112,24 @@ component hello
       (round-trip mini-root)))
 
   (let* ((hello-root (parse:string->ast hello-text))
-         (interface-action (ast:get hello-root
-                                    (conjoin (is? <action>)
-                                             (cute ast:parent <> <interface>))))
-         (interface-trigger (ast:get hello-root
-                                     (conjoin (is? <trigger>)
-                                              (cute ast:parent <> <interface>))))
-         (interface-on (ast:get hello-root
-                                (conjoin (is? <on>)
-                                         (cute ast:parent <> <interface>))))
-         (component-action (ast:get hello-root
-                                    (conjoin (is? <action>)
-                                             (cute ast:parent <> <component>))))
-         (component-trigger (ast:get hello-root
-                                     (conjoin (is? <trigger>)
-                                              (cute ast:parent <> <component>))))
-         (component-on (ast:get hello-root
-                                (conjoin (is? <on>)
-                                         (cute ast:parent <> <component>)))))
+         (interface-action (tree:get hello-root
+                                     (conjoin (is? <action>)
+                                              (cute tree:ancestor <> <interface>))))
+         (interface-trigger (tree:get hello-root
+                                      (conjoin (is? <trigger>)
+                                               (cute tree:ancestor <> <interface>))))
+         (interface-on (tree:get hello-root
+                                 (conjoin (is? <on>)
+                                          (cute tree:ancestor <> <interface>))))
+         (component-action (tree:get hello-root
+                                     (conjoin (is? <action>)
+                                              (cute tree:ancestor <> <component>))))
+         (component-trigger (tree:get hello-root
+                                      (conjoin (is? <trigger>)
+                                               (cute tree:ancestor <> <component>))))
+         (component-on (tree:get hello-root
+                                 (conjoin (is? <on>)
+                                          (cute tree:ancestor <> <component>)))))
 
     (test-equal "interface-action"
       interface-action

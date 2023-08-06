@@ -71,7 +71,7 @@
             .location
             .name
             .namespace-root
-            .parent
+            tree:parent
             .port-name
             .port-qualifiers
             .ports
@@ -746,7 +746,7 @@ procedure)."
 (define* (tree->context tree #:optional (context '()))
   (cons tree context))
 
-(define (.parent context)
+(define (tree:parent context)
   (and (context? context) (cdr context)))
 
 (define (complete? o)
@@ -764,12 +764,12 @@ procedure)."
   (and (pair? context) (tree? (car context)) context))
 
 (define (context:parent context type)
-  (let loop ((context (.parent context)))
+  (let loop ((context (tree:parent context)))
     (and (context? context)
          (let ((tree (.tree context)))
            (if (is-a? tree type) context
                (and tree
-                    (loop (.parent context))))))))
+                    (loop (tree:parent context))))))))
 
 (define (parent context type)
   (and=> (context:parent context type)
@@ -1171,7 +1171,7 @@ procedure)."
 
   (let loop ((o o))
     (if (not (context? o)) '()
-        (append (helper o) (loop (.parent o))))))
+        (append (helper o) (loop (tree:parent o))))))
 
 (define (tree*->context* accessor)
   (lambda (context)

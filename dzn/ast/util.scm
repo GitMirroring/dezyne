@@ -33,151 +33,83 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 regex)
   #:use-module ((oop goops)
                 #:select (class-slots slot-definition-name slot-ref))
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast context)
+  #:use-module (dzn goops context)
+  #:use-module (dzn goops goops)
+  #:use-module (dzn goops tree)
   #:use-module (dzn ast goops)
   #:use-module (dzn goops util)
   #:use-module (dzn misc)
 
   #:export (ast-name
-            clone
-            clone-top
-            clone+root
-            graft
-            graft*
+            ast:name-keyword+child*
             tree-collect
             tree-collect-filter
-            tree-graft
-            tree-filter
-            tree-find
-            tree-map
-            tree-transform)
-  #:re-export (constructor-name))
+            tree:shallow-filter
+            tree:shallow-map)
+  #:re-export (tree:ancestor))
 
-(define ast:keyword+child* (@@ (dzn ast context) ast:keyword+child*))
-(define ast:child* (@@ (dzn ast context) ast:child*))
-
-;;;
-;;; Clone, graft.
-;;;
-(define-method (keyword-values+mutate? (o <object>) . keyword-values)
-  "Return multiple values; the full list of paired KEYWORD-VALUES to
-create a fresh clone, and #true if any slots need mutation."
-  (define (car-eq? a b)
-    (eq? (car a) (car b)))
-  (let* ((actual-keyword-values (ast:keyword+child* o))
-         (keyword-values
-          (fold (lambda (elem previous)
-                  (if (or (null? previous) (pair? (car previous)))
-                      (cons elem previous)
-                      (cons (list (car previous) elem) (cdr previous))))
-                '()
-                keyword-values))
-         (invalid (lset-difference equal?
-                                   (map car keyword-values)
-                                   (map car actual-keyword-values)))
-         (mutate (lset-difference equal?
-                                  keyword-values
-                                  actual-keyword-values))
-         (missing (lset-difference car-eq?
-                                   actual-keyword-values
-                                   keyword-values))
-         (keyword-values (append missing keyword-values)))
-    (when (pair? invalid)
-      (let ((slots (map car actual-keyword-values)))
-        (error (format #f "invalid keyword arguments in ~a: ~a; slots = ~a\n"
-                       o invalid slots))))
-    (values keyword-values (pair? mutate))))
-
-(define-method (clone-top (o <object>) . keyword-values)
-  "Return fresh clone of O, mutating slots from KEYWORD-VALUES."
-  (let ((paired-keyword-values
-         (apply keyword-values+mutate? o keyword-values))
-        (class (class-of o)))
-    (apply make class (apply append paired-keyword-values))))
-
-(define-method (clone (o <ast>) . keyword-values)
-  (apply clone-top o keyword-values))
-
-(define-method (deep-copy (o <object>))
-  "Make a unique identical copy of O and of its children."
-  (let* ((class (class-of o))
-         (keyword-values (ast:keyword+child* o))
-         (keyword-copies (map (match-lambda
-                                ((keyword (values ...))
-                                 (list keyword (map deep-copy values)))
-                                ((keyword value)
-                                 (list keyword (deep-copy value))))
-                              keyword-values))
-         (keyword-copies (apply append keyword-copies)))
-    (apply make class keyword-copies)))
-
-(define-method (deep-copy (o <top>))
-  "Do not copy objects without children."
-  o)
-
-(define-method (deep-copy* (parent <ast>) (o <ast>))
-  (let ((o (deep-copy o)))
-    (ast:memoize-context o (ast:context parent))
-    o))
-
-(define-method (deep-copy* (parent <ast>) (o <top>))
-  "Do not copy, nor memoize non-<ast> objects without children."
-  o)
-
-(define-method (graft (parent <ast>) (o <ast>))
-  (deep-copy* parent o))
-
-(define-method (graft (o <ast>) . keyword-values)
-  (let ((parent (.parent o)))
-    (unless parent
-      (apply throw 'no-parent "graft without parent" o keyword-values))
-    (deep-copy* parent (apply clone o keyword-values))))
-
-(define-method (graft* (parent <ast>) (o <ast>) . keyword-values)
-  (deep-copy* parent (apply clone o keyword-values)))
-
-
 ;;;
 ;;; Ast utilities.
 ;;;
 (define-method (ast-name (o <class>))
-  (symbol->string (constructor-name o)))
+  (let* ((name (symbol->string (class-name o)))
+         (m (string-match "^<(.*)>$" name)))
+    (match:substring m 1)))
 
 (define-method (ast-name (o <top>))
   (ast-name (class-of o)))
+
+(define-method (ast:name-keyword+child* (o <object>))
+  (let ((keyword-values (keyword+child* o))
+        (name-fields '(#:elements
+                       #:event.name
+                       #:field
+                       #:function.name
+                       #:ids
+                       #:instance.name
+                       #:name
+                       #:port.name
+                       #:type.name
+                       #:variable.name)))
+    (filter (compose (cute memq <> name-fields) car) keyword-values)))
+
+
+;;;
+;;; Tree overrides.
+;;;
+(define-method (tree:ancestor (o <bool>) (type <class>))
+  (and (tree:context o) (next-method)))
+
+(define-method (tree:ancestor (o <int>) (type <class>))
+  (and (tree:context o) (next-method)))
+
+(define-method (tree:ancestor (o <void>) (type <class>))
+  (and (tree:context o) (next-method)))
+
+(define-method (tree:ancestor (o <ast>) (predicate <procedure>))
+  (and=> (tree:parent (tree:context o) predicate)
+         .ast))
 
 
 ;;;
 ;;; Tree utilities.
 ;;;
-(define-method (tree-find (predicate <applicable>) (o <object>))
-  "Breadth first search of a tree element under O for with PREDICATE."
-  (let* ((actual-keyword-values (ast:keyword+child* o))
-         (children (append-map
-                    (match-lambda
-                          ((keyword (values ...))
-                           values)
-                          ((keyword value)
-                           (list value)))
-                    actual-keyword-values)))
-    (or (any predicate children)
-        (any (cute tree-find predicate <>)
-             (filter (disjoin (is? <string>) (is? <number>) (is? <boolean>))
-                     children)))))
+(define-method (tree-collect-filter (filter-predicate <applicable>)
+                                    (predicate <applicable>)
+                                    (o <object>))
+  (tree:collect o predicate #:stop? filter-predicate))
 
-(define-method (tree-find (predicate <applicable>) (o <pair>))
-  (or (any predicate o)
-      (any (cute tree-find predicate <>) o)))
+(define-method (tree-collect (predicate <applicable>) (o <object>))
+  (tree:collect o predicate))
 
-(define-method (tree-find (predicate <applicable>) (o <top>)) (predicate o))
-
-(define-method (tree-map f (o <object>))
+(define-method (tree:shallow-map f (o <object>))
   (let* ((class (class-of o))
-         (actual-keyword-values (ast:keyword+child* o))
+         (actual-keyword-values (keyword+child* o))
          (keyword-values (map (match-lambda
                                 ((keyword (values ...))
                                  (list keyword (map f values)))
@@ -188,91 +120,9 @@ create a fresh clone, and #true if any slots need mutation."
     (if (equal? keyword-values actual-keyword-values) o
         (apply make class keyword-values))))
 
-(define-method (tree-map f (o <top>)) o)
+(define-method (tree:shallow-map f (o <top>)) o)
 
-(define-method (tree-filter f (o <ast>))
+(define-method (tree:shallow-filter f (o <ast>))
   (and (f o) o))
-(define-method (tree-filter f (o <ast-list>))
-  (clone o #:elements (map (cute tree-filter f <>) (filter f (.elements o)))))
-
-(define-method (tree-collect-filter filter-predicate predicate (o <object>))
-  (if (not (filter-predicate o)) '()
-      (let ((children (append-map
-                       (cute tree-collect-filter filter-predicate predicate <>)
-                       (ast:child* o))))
-        (if (predicate o) (cons o children)
-            children))))
-
-(define-method (tree-collect-filter filter-predicate predicate (o <top>))
-  (if (and (filter-predicate o) (predicate o)) (list o) '()))
-
-(define-method (tree-collect predicate o)
-  (tree-collect-filter identity predicate o))
-
-(define-method (tree-graft (o <ast>) (kloon <ast>))
-  "XXX FIXME? Clone O and its ancestors including root returning
-multiple values: the clone and the cloned root."
-  (define (replace orig kloon)
-    (match-lambda
-      ((keyword value)
-       (let ((value (or (and (pair? value)
-                             (map (lambda (v)
-                                    (if (eq? v orig) kloon
-                                        v))
-                                  value))
-                        (and (eq? value orig) kloon)
-                        value)))
-         `(,keyword ,value)))))
-  (define clone-children
-    (match-lambda*
-      ((ancestor (orig . kloon))
-       (let* ((class (class-of ancestor))
-              (keyword-values (ast:keyword+child* ancestor))
-              (keyword-values (map (replace orig kloon) keyword-values))
-              (keyword-values (apply append keyword-values)))
-         `(,ancestor . ,(apply clone ancestor keyword-values))))))
-  (let* ((context (.parent (ast:context o)))
-         (ancestor+root (fold clone-children `(,o . ,kloon) context))
-         (root (match ancestor+root ((ancestor . root) root))))
-    root))
-
-(define-method (clone+root (o <ast>) . keyword-values)
-  "Clone O and its ancestors including root and return multiple values:
-the clone and the cloned root."
-  (let ((kloon (apply clone o keyword-values)))
-    (values kloon (tree-graft o kloon))))
-
-(define-method (tree-transform (o <ast>) predicate transform)
-  (tree-transform o `((,predicate . ,transform))))
-
-(define-method (tree-transform (o <ast>) predicates+transforms)
-  "Transform each element in the tree matching PREDICATE using TRANSFORM.
-Note that TRANSFORM returning #f effectively removes o from the
-tree."
-  (define tree-transform-keyword-value
-    (match-lambda
-      ((keyword (values ...))
-       `(,keyword ,(filter-map
-                    (cute tree-transform <> predicates+transforms)
-                    values)))
-      ((keyword value)
-       `(,keyword ,(tree-transform value predicates+transforms)))))
-  (let ((tree-transform (cute tree-transform <> predicates+transforms)))
-    (let* ((keyword-values (ast:keyword+child* o))
-           (keyword-values'
-            (map tree-transform-keyword-value keyword-values))
-           (parent (.parent o))
-           (o (if (every equal? keyword-values' keyword-values) o
-                  (let* ((class (class-of o))
-                         (keyword-values (apply append keyword-values'))
-                         (o (apply make class keyword-values)))
-                    (if (is-a? o <root>) (ast:memoize-context* o)
-                        (ast:memoize-context* o parent))))))
-      (fold (match-lambda*
-              (((predicate . transform) o)
-               (if (not (predicate o)) o
-                   (transform o))))
-            o predicates+transforms))))
-
-(define-method (tree-transform (o <top>) predicates+transforms)
-  o)
+(define-method (tree:shallow-filter f (o <ast-list>))
+  (clone o #:elements (map (cute tree:shallow-filter f <>) (filter f (.elements o)))))

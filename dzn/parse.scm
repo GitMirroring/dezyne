@@ -49,7 +49,7 @@
   #:use-module (dzn parse peg)
   #:use-module (dzn peg util)
   #:use-module (dzn parse tree)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
 
   #:declarative? #f
 
@@ -284,7 +284,7 @@ and the @var{tree-alist}."
 ;;; Ast.
 ;;;
 (define* (parse:annotate-ast ast)
-  (%context (ast:memoize-context ast)) ;set the initial context
+  (%context (tree:memoize-context ast)) ;set the initial context
   (let ((ast ((with-root (cute silence:annotate-functions <>)) ast)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print ast (current-error-port)))
@@ -355,7 +355,7 @@ optionally using CONTENT-ALIST of form
     ;; Annotation would already have happened, no?
     ;; (parse:annotate-ast ast)
     ;; Maybe only memoize instead?
-    (%context (ast:memoize-context ast)) ;set the initial context
+    (%context (tree:memoize-context ast)) ;set the initial context
     ast))
 
 (define (parse:serialized->ast file-name)

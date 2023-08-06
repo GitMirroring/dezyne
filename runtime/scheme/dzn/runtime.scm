@@ -94,7 +94,7 @@
 (define-class <dzn:component-model> (<dzn:model>)
   (locator #:accessor .locator #:init-form (dzn:runtime-locator) #:init-keyword #:locator)
   (runtime #:accessor .runtime #:init-value #f)
-  (parent #:accessor .parent #:init-value #f #:init-keyword #:parent)
+  (parent #:accessor tree:parent #:init-value #f #:init-keyword #:parent)
   (name #:accessor .name #:init-value "" #:init-keyword #:name))
 
 (define-method (initialize (o <dzn:component-model>) args)
@@ -144,7 +144,7 @@
 (define (dzn:path o)
   (let* ((path (let loop ((o o))
                  (if (not o) '()
-                     (cons o (loop (.parent o))))))
+                     (cons o (loop (tree:parent o))))))
          (path (reverse path)))
     (cons (dzn:type-name (car path)) (map .name (cdr path)))))
 
@@ -257,7 +257,7 @@
     (cond
      ((not o) (string-append "<external>" (if (string-null? p) "" ".") p))
      ((is-a? o <dzn:port>) (path (.self o) pp))
-     ((and (is-a? o <dzn:model>) (.parent o)) (path (.parent o) pp))
+     ((and (is-a? o <dzn:model>) (tree:parent o)) (path (tree:parent o) pp))
      (else pp))))
 
 (define (dzn:trace-qin log i e)

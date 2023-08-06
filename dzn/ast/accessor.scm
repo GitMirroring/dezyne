@@ -33,9 +33,9 @@
 
   #:use-module (ice-9 match)
 
-  #:use-module (dzn ast context)
+  #:use-module (dzn goops context)
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn misc)
 
   #:export (ast:argument*
@@ -69,17 +69,17 @@
   #:re-export (%root
 
                .variable.name
-               .parent
+               tree:parent
 
-               ast:memoize-context
-               ast:parent
-               ast:path))
+               tree:memoize-context
+               tree:ancestor
+               tree:path))
 
 ;;;
 ;;; Direct accessors.
 ;;;
 (define-method (.variable.name (o <action>))
-  (let ((parent (.parent o)))
+  (let ((parent (tree:parent o)))
     (match parent
       (($ <assign>) (.variable.name parent))
       (($ <variable>) (.name parent)))))
@@ -190,13 +190,13 @@
 (define-method (ast:full-name (o <scope.name>))
   (let ((ids (.ids o)))
     (if (pair? (cdr ids)) ids
-        (append (ast:full-name (ast:parent o <scope>))
+        (append (ast:full-name (tree:ancestor o <scope>))
                 (list-head ids 1)))))
 
 (define-method (ast:full-name-extern (o <scope.name>))
   (let ((ids (.ids o)))
     (if (pair? (cdr ids)) ids
-        (append (ast:full-name (ast:parent o <scope>))
+        (append (ast:full-name (tree:ancestor o <scope>))
                 (list-head ids 1)))))
 
 (define-method (ast:full-name (o <named>))
@@ -225,7 +225,7 @@
   (cons (.port.name o) (list (.name o))))
 
 (define-method (ast:full-name (o <declaration>))
-  (let ((scope (ast:parent o <scope>)))
+  (let ((scope (tree:ancestor o <scope>)))
     (cond
      ((not scope)
       #f)
@@ -240,13 +240,13 @@
   '())
 
 (define-method (ast:full-name (o <scope>))
-  (let ((prefix (ast:full-name (ast:parent o <scope>))))
+  (let ((prefix (ast:full-name (tree:ancestor o <scope>))))
     (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
         (append prefix (list (ast:name o)))
         prefix)))
 
 (define-method (ast:full-name (o <namespace>))
-  (append (ast:full-name (ast:parent o <scope>)) (list (ast:name o))))
+  (append (ast:full-name (tree:ancestor o <scope>)) (list (ast:name o))))
 
 (define-method (ast:full-name (o <ast>))
-  (ast:full-name (ast:parent o <scope>)))
+  (ast:full-name (tree:ancestor o <scope>)))
