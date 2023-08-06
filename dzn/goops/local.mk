@@ -24,6 +24,7 @@
 dist_%C%_scm_DATA =				\
  %D%/define-method-star.scm			\
  %D%/display.scm				\
+ %D%/goops.scm					\
  %D%/serialize.scm				\
  %D%/unserialize.scm				\
  %D%/util.scm

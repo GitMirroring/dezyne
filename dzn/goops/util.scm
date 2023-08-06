@@ -21,9 +21,12 @@
 ;;; Code:
 
 (define-module (dzn goops util)
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 regex)
-  #:use-module (oop goops)
-  #:export (constructor-name))
+  #:use-module (dzn goops goops)
+  #:export (as
+            constructor-name
+            is?))
 
 ;;;
 ;;; Utilities.
@@ -47,3 +50,9 @@
 
 (define-method (constructor-name (o <object>))
   (constructor-name (class-of o)))
+
+(define-method (as (o <object>) (c <class>))
+  (and (is-a? o c) o))
+
+(define ((is? class) o)
+  (and (is-a? o class) o))

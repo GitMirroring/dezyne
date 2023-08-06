@@ -37,13 +37,12 @@
                             (if (member x '(<port> <foreign>))
                                 (symbol-append 'goops: x)
                                 x)))
+  #:use-module (dzn goops util)
   #:export (define-ast
-            as
-            is?
 
-            .id
-            .operator
-            .variable.name)
+             .id
+             .operator
+             .variable.name)
   #:re-export (<top>
                <class> <object>
                <applicable> <procedure>
@@ -51,11 +50,13 @@
                <number>
                <unknown>
 
+               as
                class-name
                class-of
                define-class
                define-generic
                define-method
+               is?
                is-a?
                make))
 
@@ -465,9 +466,3 @@
 ;;;
 (define-method (.id (o <object>))
   (pointer-address (scm->pointer o)))
-
-(define (as o c)
-  (and (is-a? o c) o))
-
-(define ((is? class) o)
-  (and (is-a? o class) o))
