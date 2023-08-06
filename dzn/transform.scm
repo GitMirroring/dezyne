@@ -186,7 +186,7 @@ in NAMES."
       (($ <behavior>)
        (let* ((statement (helper (.statement o)))
               (functions (ast:function* o))
-              (calls (tree-collect (is? <call>) statement))
+              (calls (tree:collect statement (is? <call>)))
               (called (map .function calls))
               (functions (filter (conjoin (cute memq <> called)
                                           (negate .recursive?))

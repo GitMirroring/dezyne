@@ -28,7 +28,7 @@
   #:use-module (test dzn automake)
 
   #:use-module (dzn ast goops)
-  #:use-module (dzn ast util)
+  #:use-module (dzn goops tree)
   #:use-module (dzn code language makreel)
   #:use-module (dzn parse))
 
@@ -49,7 +49,7 @@ interface test
 }
 ")
        (ast (parse:string->ast test))
-       (functions (tree-collect (is? <function>) ast)))
+       (functions (tree:collect ast (is? <function>))))
   (test-equal "silent"
     '(#f)
     (map .noisy? functions)))
@@ -73,7 +73,7 @@ interface test
 }
 ")
        (ast (parse:string->ast test))
-       (functions (tree-collect (is? <function>) ast)))
+       (functions (tree:collect ast (is? <function>))))
   (test-equal "silent if"
     '(#f)
     (map .noisy? functions)))
@@ -95,7 +95,7 @@ interface test
 }
 ")
        (ast (parse:string->ast test))
-       (functions (tree-collect (is? <function>) ast)))
+       (functions (tree:collect ast (is? <function>))))
   (test-equal "silent recurse"
     '(#f)
     (map .noisy? functions)))
@@ -116,7 +116,7 @@ interface test
 }
 ")
        (ast (parse:string->ast test))
-       (functions (tree-collect (is? <function>) ast)))
+       (functions (tree:collect ast (is? <function>))))
   (test-equal "noisy action"
     '(#t)
     (map .noisy? functions)))
@@ -137,7 +137,7 @@ interface test
 }
 ")
        (ast (parse:string->ast test))
-       (functions (tree-collect (is? <function>) ast)))
+       (functions (tree:collect ast (is? <function>))))
   (test-equal "noisy assign"
     '(#t)
     (map .noisy? functions)))
@@ -162,7 +162,7 @@ interface test
 }
 ")
        (ast (parse:string->ast test))
-       (functions (tree-collect (is? <function>) ast)))
+       (functions (tree:collect ast (is? <function>))))
   (test-equal "noisy if"
     '(#t)
     (map .noisy? functions)))
@@ -193,7 +193,7 @@ interface test
 }
 ")
        (ast (parse:string->ast test))
-       (functions (tree-collect (is? <function>) ast)))
+       (functions (tree:collect ast (is? <function>))))
   (test-equal "mutual recurse"
     '(#t #t)
     (map .noisy? functions)))

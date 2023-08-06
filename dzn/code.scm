@@ -200,10 +200,9 @@
             (ast:instance* o))))
 
 (define-method (code:pump? (o <component-model>))
-  (and (pair? (tree-collect (disjoin (is? <blocking>)
-                                     (is? <defer>)
-                                     (is? <blocking-compound>))
-                            o))
+  (and (pair? (tree:collect o (disjoin (is? <blocking>)
+                                       (is? <defer>)
+                                       (is? <blocking-compound>))))
        o))
 
 (define-method (code:pump? (o <system>))
@@ -269,12 +268,12 @@
          o)))
 
 (define (code:blocking? o)
-  (pair? (tree-collect-filter
-          (negate (disjoin (is? <imperative>)
-                           (is? <expression>)
-                           (is? <location>)))
+  (pair? (tree:collect
+          (tree:ancestor o <model>)
           (disjoin (is? <blocking>) (is? <blocking-compound>))
-          (tree:ancestor o <model>))))
+          #:stop? (negate (disjoin (is? <imperative>)
+                                   (is? <expression>)
+                                   (is? <location>))))))
 
 (define-method (code:port-release? o)
   (let ((trigger (and=> (tree:ancestor o <on>)
@@ -406,8 +405,8 @@
       (let ((model (tree:ancestor o <model>)))
         (and (is-a? model <component>)
              (let* ((behavior (.behavior model))
-                    (trigger (car (tree-collect (cute ast:equal? <> o)
-                                                behavior))))
+                    (trigger (car (tree:collect behavior
+                                                (cute ast:equal? <> o)))))
                (tree:ancestor trigger <on>))))))
 
 
@@ -426,11 +425,11 @@
            (null? (ast:variable* (tree:ancestor o <component>))))))
 
 (define-method (code:capture-local (o <defer>))
-  (let* ((references (tree-collect (disjoin(is? <assign>)
+  (let* ((references (tree:collect (.statement o)
+                                   (disjoin(is? <assign>)
                                            (is? <argument>)
                                            (is? <field-test>)
-                                           (is? <reference>))
-                                   (.statement o)))
+                                           (is? <reference>))))
          (variables (map .variable references))
          (local? (compose (cute eq? <> o)
                           (cute tree:ancestor <> <defer>))))

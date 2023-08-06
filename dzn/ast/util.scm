@@ -47,8 +47,6 @@
 
   #:export (ast-name
             ast:name-keyword+child*
-            tree-collect
-            tree-collect-filter
             tree:shallow-filter
             tree:shallow-map)
   #:re-export (tree:ancestor))
@@ -99,14 +97,6 @@
 ;;;
 ;;; Tree utilities.
 ;;;
-(define-method (tree-collect-filter (filter-predicate <applicable>)
-                                    (predicate <applicable>)
-                                    (o <object>))
-  (tree:collect o predicate #:stop? filter-predicate))
-
-(define-method (tree-collect (predicate <applicable>) (o <object>))
-  (tree:collect o predicate))
-
 (define-method (tree:shallow-map f (o <object>))
   (let* ((class (class-of o))
          (actual-keyword-values (keyword+child* o))
@@ -124,5 +114,6 @@
 
 (define-method (tree:shallow-filter f (o <ast>))
   (and (f o) o))
+
 (define-method (tree:shallow-filter f (o <ast-list>))
   (clone o #:elements (map (cute tree:shallow-filter f <>) (filter f (.elements o)))))

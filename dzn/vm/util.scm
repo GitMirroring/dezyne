@@ -526,7 +526,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                           (throw 'invalid-input message)))))))
 
 (define (modeling-names-unmemoized o)
-  (let ((modeling (tree-collect (conjoin (is? <trigger>) ast:modeling?) o)))
+  (let ((modeling (tree:collect o (conjoin (is? <trigger>) ast:modeling?))))
     (delete-duplicates (sort (map .event.name modeling) string=?))))
 
 (define-method (modeling-names (o <interface>))

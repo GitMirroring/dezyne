@@ -183,8 +183,7 @@
                graft
                graft*
                is?
-               tree-collect
-               tree-collect-filter
+               tree:collect
                tree:shallow-filter
                tree:shallow-map
                with-root))
@@ -388,7 +387,7 @@
 (define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
 
 (define-method (ast:function* (o <function>))
-  (let* ((calls (tree-collect (is? <call>) o))
+  (let* ((calls (tree:collect o (is? <call>)))
          (functions (filter-map .function calls)))
     (delete-duplicates
      functions
@@ -508,7 +507,7 @@
   (component->triggers o ast:requires? ast:out?))
 
 (define-method (ast:in-triggers (o <component>))
-  (tree-collect (is? <trigger>) (.behavior o)))
+  (tree:collect (.behavior o) (is? <trigger>)))
 
 (define-method (ast:in-triggers (o <component-model>))
   ;; system & foreign

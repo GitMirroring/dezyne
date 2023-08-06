@@ -57,9 +57,6 @@
                             ;; (cute pke "...text..." <>)
                             ast:serialize))
 
-(define-method (ast:get (o <ast>) (predicate <procedure>))
-  (car (tree-collect predicate o)))
-
 (define ihello-text
   "\
 interface ihello

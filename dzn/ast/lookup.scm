@@ -114,7 +114,7 @@
   (append (ast:type* o) (ast:function* o) (ast:variable* o)))
 
 (define-method (ast:declaration* (o <defer>))
-  (tree-collect (is? <variable>) o))
+  (tree:collect o (is? <variable>)))
 
 (define-method (ast:declaration* (o <compound>))
   (ast:variable* o))

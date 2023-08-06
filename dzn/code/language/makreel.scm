@@ -149,11 +149,11 @@
     (map .name parameters)))
 
 (define-method (makreel:defer*-unmemoized (o <ast>))
-  (tree-collect
+  (tree:collect
+   o
    (conjoin (is? <defer>)
             (disjoin (negate (cute tree:ancestor <> <function>))
-                     (compose is-called? (cute tree:ancestor <> <function>))))
-   o))
+                     (compose is-called? (cute tree:ancestor <> <function>))))))
 
 (define makreel:defer*
   (ast:perfect-funcq makreel:defer*-unmemoized))
@@ -187,13 +187,12 @@
               (loop rest reached)))))))
 
 (define (reachable-calls-unmemoized root o)
-  (let* ((calls (tree-collect-filter
-                 (disjoin (is? <behavior>)
-                          (is? <declarative>)
-                          (is? <functions>)
-                          (is? <function>)
-                          (is? <statement>))
-                 (is? <call>) o))
+  (let* ((calls (tree:collect o (is? <call>)
+                              #:stop? (disjoin (is? <behavior>)
+                                               (is? <declarative>)
+                                               (is? <functions>)
+                                               (is? <function>)
+                                               (is? <statement>))))
          (calls (reachable calls)))
     calls))
 
@@ -284,14 +283,12 @@
        (ast:field* o)))
 
 (define-method (makreel:call-continuation*-unmemoized (o <behavior>))
-  (let* ((calls (tree-collect (disjoin
-                               (is? <call>)
-                               (conjoin
-                                (disjoin (is? <variable>)
-                                         (is? <assign>))
-                                (compose (is? <call>)
-                                         .expression)))
-                              o))
+  (let* ((calls (tree:collect o (disjoin (is? <call>)
+                                         (conjoin
+                                          (disjoin (is? <variable>)
+                                                   (is? <assign>))
+                                          (compose (is? <call>)
+                                                   .expression)))))
          (called (makreel:called-function* o))
          (calls (filter (compose
                          (disjoin not
@@ -726,8 +723,8 @@ transformations."
 ;;;
 (define-method (makreel:shared* (o <behavior>))
   (delete-duplicates
-   (tree-collect (disjoin (is? <shared-reference>)
-                          (is? <shared-field-test>)) o)
+   (tree:collect o (disjoin (is? <shared-reference>)
+                            (is? <shared-field-test>)))
    (lambda (a b)
      (and
       (equal? (.port.name a)

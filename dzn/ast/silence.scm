@@ -96,7 +96,7 @@
 (define-method (silence (o <expression>) function-silence)
   (let* ((action/call? (disjoin (is? <action>)
                                 (is? <call>)))
-         (action/call (tree-collect action/call? o)))
+         (action/call (tree:collect o action/call?)))
     (silence action/call function-silence)))
 
 (define-method (silence (o <assign>) function-silence)

@@ -115,17 +115,18 @@ actions."
          (event-alphabet (.event o))))
   (let* ((behavior (.behavior model))
          (compound (.statement behavior))
-         (trigger-lists (tree-collect-filter
-                         (disjoin (is? <declarative>)
-                                  (is? <triggers>))
+         (trigger-lists (tree:collect
+                         compound
                          (is? <triggers>)
-                         compound))
+                         #:stop? (disjoin (is? <declarative>)
+                                          (is? <triggers>))))
          (out-triggers (filter ast:out?
                                (append-map ast:trigger* trigger-lists)))
          (in-actions (filter ast:in?
-                             (tree-collect-filter
-                              (negate (is? <location>)) (is? <action>)
-                              behavior)))
+                             (tree:collect
+                              behavior
+                              (is? <action>)
+                              #:stop? (negate (is? <location>)))))
          (taus (delete-duplicates
                 (append-map events-trigger/action
                             (append out-triggers in-actions))))
@@ -165,10 +166,10 @@ actions."
      "\n")))
 
 (define (model-tags model)
-  (let* ((tags (tree-collect-filter (negate (disjoin (is? <expression>)
-                                                     (is? <location>)))
-                                    (is? <tag>)
-                                    model))
+  (let* ((tags (tree:collect model
+                             (is? <tag>)
+                             #:stop? (negate (disjoin (is? <expression>)
+                                                     (is? <location>)))))
          (tags (map makreel:line-column tags)))
     (delete-duplicates tags)))
 

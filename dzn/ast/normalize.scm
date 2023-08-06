@@ -102,30 +102,30 @@
              (disjoin tree:parent (cute throw 'no-parent <>))
              ast:typed?
              (compose pair?
-                      (cute tree-collect typed-action/call? <>))
+                      (cute tree:collect <> typed-action/call?))
              (disjoin
               (cute as <> <arguments>)
               (cute tree:ancestor <> <arguments>)
               (compose (cute as <> <binary>) tree:parent)
               (compose (cute tree:ancestor <> <binary>) tree:parent))))
   (cond ((is-a? o <call>)
-         (tree-collect add-temporary? o))
+         (tree:collect o add-temporary?))
         ((or (is-a? o <assign>) (is-a? o <variable>))
          (append
-          (tree-collect add-temporary? o)
+          (tree:collect o add-temporary?)
           (map .expression
-               (tree-collect
+               (tree:collect
+                o
                 (conjoin
                  (is? <not>)
-                 (compose pair? (cute tree-collect typed-action/call? <>)))
-                o))))
+                 (compose pair? (cute tree:collect <> typed-action/call?)))))))
         ((is-a? o <if>)
-         (tree-collect typed-action/call? (.expression o)))
+         (tree:collect (.expression o) typed-action/call?))
         ((or (as o <expression>)
              (and (is-a? o <reply>) (.expression o))
              (and (is-a? o <return>) (.expression o)))
          =>
-         (cute tree-collect typed-action/call? <>))
+         (cute tree:collect <> typed-action/call?))
         (else
          '())))
 
@@ -141,30 +141,30 @@
     (compose (cute > <> 1)
              length
              (cute filter (compose pair?
-                                   (cute tree-collect typed-action/call? <>))
+                                   (cute tree:collect <> typed-action/call?))
                    <>)
              ast:argument*))
   (define >1-typed-action/call?
     (compose (cute > <> 1)
              length
-             (cute tree-collect typed-action/call? <>)))
-  (let* ((arguments (tree-collect
+             (cute tree:collect <> typed-action/call?)))
+  (let* ((arguments (tree:collect
+                     o
                      (conjoin (is? <arguments>)
                               (compose (cute > <> 1) length .elements)
-                              >1-typed-action/call?)
-                     o))
+                              >1-typed-action/call?)))
          (arguments (filter >1-argument-typed-action/call? arguments))
          (arguments (append-map ast:argument* arguments))
-         (expressions (tree-collect
+         (expressions (tree:collect
+                       o
                        (conjoin (disjoin (is? <minus>) (is? <plus>))
-                                >1-typed-action/call?)
-                       o))
+                                >1-typed-action/call?)))
          (expressions (append-map
                        (lambda (x)
                          (let ((expressions (list (.left x) (.right x))))
                            (filter
                             (compose pair?
-                                     (cute tree-collect typed-action/call? <>))
+                                     (cute tree:collect <> typed-action/call?))
                             expressions)))
                        expressions)))
     (append arguments expressions)))
@@ -188,7 +188,7 @@
             #f)))))
 
 (define (complex? o)
-  (pair? (tree-collect (disjoin (is? <and>) (is? <or>)) o)))
+  (pair? (tree:collect o (disjoin (is? <and>) (is? <or>)))))
 
 (define (split-complex? o)
   (and (not (%noisy-ordering?))
@@ -244,7 +244,7 @@
 
 (define-method (simplify-expression (o <bool-expr>))
   (define (static? o)
-    (null? (tree-collect (disjoin (is? <action>) (is? <call>)) o)))
+    (null? (tree:collect o (disjoin (is? <action>) (is? <call>)))))
   (match o
     (($ <not>)
      (let* ((expression (.expression o))
@@ -350,12 +350,14 @@
                           #:location (.location on))))
       (map make-on triggers)))
   (if (null? (ast:statement* o)) '()
-      (let ((imperatives (tree-collect-filter
+      (let ((imperatives (tree:collect
+                          o
+                          ast:imperative?
+                          #:stop?
                           (conjoin (is? <ast>)
                                    (disjoin ast:declarative?
-                                            (compose ast:declarative? tree:parent)))
-                          ast:imperative?
-                          o)))
+                                            (compose ast:declarative?
+                                                     tree:parent))))))
         (append-map imperative->canonical-ons imperatives))))
 
 (define-method (canonical-on->guard (o <canonical-on>))
@@ -478,13 +480,13 @@
                       (or (and (is-a? model <interface>)
                                (not (ast:modeling? trigger)))
                           (and provides?
-                               (null? (tree-collect
+                               (null? (tree:collect
+                                       statement
                                        (conjoin
                                         (is? <reply>)
                                         (disjoin (negate .port)
                                                  (compose (cute eq? port <>)
-                                                          .port)))
-                                       statement)))))))
+                                                          .port))))))))))
     (if (not reply?) o
         (let ((statement (ast:add-statement (.statement o) (make <reply>))))
           (clone o #:statement statement)))))
@@ -706,7 +708,7 @@ to prevent unintended shadowing
                         (clone trigger #:formals formals))))
          (formals (map .name ((compose .elements .formals .signature) event)))
          (members (map .name (ast:variable* model)))
-         (locals (map .name (tree-collect (is? <variable>) (.statement o))))
+         (locals (map .name (tree:collect (.statement o) (is? <variable>))))
          (occupied members)
          (fresh (letrec ((fresh (lambda (occupied name)
                                   (if (member name occupied)

@@ -140,11 +140,9 @@
          (functions (ast:function* o))
          (statements (cons statement (map .statement functions))))
     (append-map
-     (cute tree-collect-filter (disjoin (is? <statement>)
-                                        (is? <functions>)
-                                        (is? <function>))
-           (is? <defer>)
-           <>)
+     (cut tree:collect <> (is? <defer>) #:stop? (disjoin (is? <statement>)
+                                                         (is? <functions>)
+                                                         (is? <function>)))
      statements)))
 
 (define-method (c:defer* (o <ast>))

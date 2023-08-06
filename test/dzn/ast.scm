@@ -32,6 +32,7 @@
 
   #:use-module (test dzn automake)
 
+  #:use-module ((dzn ast) #:select (ast:imperative?))
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
@@ -83,13 +84,16 @@ component hello
          (root (parse:string->ast test)))
 
     (parameterize ((%context (tree:memoize-context root)))
-      (let* ((interface (car (tree-collect (is? <interface>) root)))
-             (actions (tree-collect (is? <action>) root))
-             (action (last actions))
-             (compound (car (tree-collect (is? <compound>) root)))
-             (port (car (tree-collect (is? <port>) root)))
-             (events (tree-collect (is? <event>) root))
-             (event (last events))
+      (let* ((interface (tree:get root (is? <interface>)))
+             (in-component? (cute tree:ancestor <> <component>))
+             (action (tree:get root (conjoin (is? <action>) in-component?)))
+             (compound (tree:get root (conjoin (is? <compound>)
+                                               ast:imperative?
+                                               in-component?)))
+             (port (tree:get root (is? <port>)))
+             (event (tree:get root (conjoin (is? <event>)
+                                            (compose (cute equal? <> "world")
+                                                     .name))))
              (graft-synth (graft (tree:parent action)
                                  (make <action>
                                    #:port.name (.port.name action)

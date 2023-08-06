@@ -160,9 +160,9 @@ valid PCs that are executing an imperative statement."
                                   (negate (is? <trigger-return>))
                                   (disjoin (negate (is? <variable>))
                                            (compose null?
-                                                    (cute tree-collect
-                                                          (is? <action>)
-                                                          <>))))
+                                                    (cute tree:collect
+                                                          <>
+                                                          (is? <action>)))))
                                  .statement)
                         (compose (cute tree:ancestor <> <component>)
                                  .ast .status)))
