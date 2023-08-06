@@ -35,6 +35,7 @@
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn code util)
+  #:use-module (dzn goops goops)
   #:use-module (dzn command-line)
   #:use-module (dzn templates)
 
@@ -43,11 +44,11 @@
             json:value
             system-diagram))
 
-(define-class <json:field> ()
-  (name #:getter .name #:init-value #f #:init-keyword #:name)
-  (value #:getter .value #:init-value #f #:init-keyword #:value))
+(define-class* <json:field> ()
+  (name)
+  (value))
 
-(define-class <json:fieldlist> (<json:field>))
+(define-class* <json:fieldlist> (<json:field>))
 
 (define-method (json:get-fields (o <ast>))
   (let* ((names (map slot-definition-name (class-slots (class-of o))))
