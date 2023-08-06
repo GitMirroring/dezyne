@@ -32,6 +32,7 @@
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
+  #:use-module (dzn goops goops)
   #:use-module (dzn goops util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
@@ -40,37 +41,12 @@
             <state>
             <system-state>
 
-            .blocked
-            .collateral
-            .collateral-instance
-            .collateral-released
-            .component-acceptance
-            .defer
-            .deferred
-            .external-q
-            .handling
-            .id
-            .input
-            .labels
-            .modeling?
-            .port-acceptance
-            .previous
-            .q
-            .refusals
-            .released
-            .reply
-            .return
-            .running-defer?
-            .skip-compliance?
-            .state
-            .state-list
-            .status
-            .trail
             ->sexp
             external-q->string
             name
             pc:next-id
-            rtc?))
+            rtc?)
+  #:re-export (.variable.name))
 
 (define-ast <block> (<imperative>))
 
@@ -158,36 +134,36 @@
 (define-method (.variable.name (o <range-error>))
   (.name (.variable o)))
 
-(define-class <program-counter> ()
-  (instance #:getter .instance #:init-value #f #:init-keyword #:instance)
-  (previous #:getter .previous #:init-value #f #:init-keyword #:previous)
-  (return #:getter .return #:init-form #f #:init-keyword #:return)
-  (state #:getter .state #:init-value #f #:init-keyword #:state)
-  (status #:getter .status #:init-value #f #:init-keyword #:status)
-  (statement #:getter .statement #:init-value #f #:init-keyword #:statement)
-  (trail #:getter .trail #:init-value (list) #:init-keyword #:trail)
-  (trigger #:getter .trigger #:init-value #f #:init-keyword #:trigger)
+(define-class*-public <program-counter> ()
+  (instance)
+  (previous)
+  (return)
+  (state)
+  (status)
+  (statement)
+  (trail #:init-form (list))
+  (trigger)
 
-  (defer #:getter .defer #:init-form (list) #:init-keyword #:defer)
-  (running-defer? #:getter .running-defer? #:init-value #f #:init-keyword #:running-defer?)
+  (defer #:init-form (list))
+  (running-defer?)
 
-  (id #:getter .id #:init-value 1 #:init-keyword #:id)
-  (blocked #:getter .blocked #:init-form (list) #:init-keyword #:blocked)
-  (released #:getter .released #:init-form (list) #:init-keyword #:released)
-  (collateral #:getter .collateral #:init-form (list) #:init-keyword #:collateral)
-  (collateral-instance #:getter .collateral-instance #:init-value #f #:init-keyword #:collateral-instance)
-  (collateral-released #:getter .collateral-released #:init-form (list) #:init-keyword #:collateral-released)
-  (external-q #:getter .external-q #:init-form (list) #:init-keyword #:external-q)
+  (id  #:init-value 1)
+  (blocked #:init-form (list))
+  (released #:init-form (list))
+  (collateral #:init-form (list))
+  (collateral-instance)
+  (collateral-released #:init-form (list))
+  (external-q #:init-form (list))
 
-  (skip-compliance? #:getter .skip-compliance? #:init-form #f #:init-keyword #:skip-compliance?))
+  (skip-compliance?))
 
-(define-class <state> ()
-  (instance #:getter .instance #:init-form #f #:init-keyword #:instance)
-  (deferred #:getter .deferred #:init-form #f #:init-keyword #:deferred)
-  (handling #:getter .handling #:init-form #f #:init-keyword #:handling)
-  (q #:getter .q #:init-form (list) #:init-keyword #:q)
-  (reply #:getter .reply #:init-form (list) #:init-keyword #:reply)
-  (variables #:getter .variables #:init-form (list) #:init-keyword #:variables))
+(define-class*-public <state> ()
+  (instance)
+  (deferred)
+  (handling)
+  (q #:init-form (list))
+  (reply #:init-form (list))
+  (variables #:init-form (list)))
 
 (define pc:next-id
   (let ((id 0))
@@ -195,8 +171,8 @@
       (set! id (1+ id))
       id)))
 
-(define-class <system-state> ()
-  (state-list #:getter .state-list #:init-form (list) #:init-keyword #:state-list))
+(define-class*-public <system-state> ()
+  (state-list #:init-form (list)))
 
 (define-method (name (o <runtime:instance>))
   (cond ((and (is-a? (%sut) <runtime:port>)

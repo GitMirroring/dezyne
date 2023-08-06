@@ -27,6 +27,7 @@
   #:use-module (ice-9 poe)
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn goops goops)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
 
@@ -60,17 +61,7 @@
             runtime:runtime-requires-port*
             runtime:requires-instance?
             runtime:system-instance?
-            runtime:system-port?
-            <runtime:component>
-            <runtime:component-model>
-            <runtime:foreign>
-            <runtime:instance>
-            <runtime:port>
-            <runtime:system>
-            <runtime:trigger>
-            <runtime>
-            .container
-            .boundary?))
+            runtime:system-port?))
 
 ;;;
 ;;; Commentary:
@@ -89,11 +80,11 @@
 ;;;
 ;;; Runtime AST.
 ;;;
-(define-class <runtime> ())
-(define-class <runtime:instance> (<runtime>)
-  (ast #:getter .ast #:init-value #f #:init-keyword #:ast) ;; (is? <port) (is? <instance>)
-  (container #:getter .container #:init-value #f #:init-keyword #:container) ;;(is? <runtime:instance>)
-  (boundary? #:getter .boundary? #:init-value #f #:init-keyword #:boundary?))
+(define-class*-public <runtime> ())
+(define-class*-public <runtime:instance> (<runtime>)
+  (ast)                                 ;<ast>
+  (container)                           ;<runtime:instance>
+  (boundary?))
 
 (define-method (runtime:dotted-name (o <runtime:instance>))
   (string-join (runtime:instance->path o) "."))
@@ -106,14 +97,14 @@
   (when (.boundary? o) (display " boundary: #t" port))
   (display ">" port))
 
-(define-class <runtime:component-model> (<runtime:instance>))
-(define-class <runtime:component> (<runtime:component-model>))
-(define-class <runtime:foreign> (<runtime:component-model>))
-(define-class <runtime:system> (<runtime:component-model>))
-(define-class <runtime:port> (<runtime:instance>))
-(define-class <runtime:trigger> (<runtime>)
-  (ast #:getter .ast #:init-value #f #:init-keyword #:ast) ;;<runtime:port>
-  (event.name #:getter .event.name #:init-value #f #:init-keyword #:event.name))
+(define-class*-public <runtime:component-model> (<runtime:instance>))
+(define-class*-public <runtime:component> (<runtime:component-model>))
+(define-class*-public <runtime:foreign> (<runtime:component-model>))
+(define-class*-public <runtime:system> (<runtime:component-model>))
+(define-class*-public <runtime:port> (<runtime:instance>))
+(define-class*-public <runtime:trigger> (<runtime>)
+  (ast)                                 ;<runtime:port>
+  (event.name))
 
 (define-method (ast->runtime:instance (o <port>) c)
   (make <runtime:port> #:ast o #:container c))
