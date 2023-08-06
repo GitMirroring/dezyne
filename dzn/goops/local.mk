@@ -22,10 +22,12 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
+ %D%/context.scm				\
  %D%/define-method-star.scm			\
  %D%/display.scm				\
  %D%/goops.scm					\
  %D%/serialize.scm				\
+ %D%/tree.scm					\
  %D%/unserialize.scm				\
  %D%/util.scm
 

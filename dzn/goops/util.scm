@@ -51,7 +51,7 @@
 (define-method (constructor-name (o <object>))
   (constructor-name (class-of o)))
 
-(define-method (as (o <object>) (c <class>))
+(define-method (as (o <top>) (c <class>))
   (and (is-a? o c) o))
 
 (define ((is? class) o)

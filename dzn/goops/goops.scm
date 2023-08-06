@@ -23,6 +23,8 @@
 (define-module (dzn goops goops)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+
+  #:use-module (system foreign)
   #:use-module (ice-9 match)
   #:use-module (oop goops)
   #:export (child*
@@ -33,7 +35,8 @@
             define-class-public
             define-method-public
             deep-copy
-            keyword+child*)
+            keyword+child*
+            object:id)
   #:re-export (<top>
                <class> <object>
                <applicable> <procedure>
@@ -141,8 +144,11 @@ and with getters .slot0, slot1, .slot2. "
 
 
 ;;;
-;;; Child*, clone, deep-copy.
+;;; Id, child*, clone, deep-copy.
 ;;;
+(define-method (object:id (o <object>))
+  (pointer-address (scm->pointer o)))
+
 (define-method (keyword+child* (o <object>))
   (let* ((class (class-of o))
          (slots (class-slots class))
