@@ -94,7 +94,8 @@
   (define-class* <name> (<super>)
     (slot0)
     (slot1 #init-value 0)
-    (slot2 #init-form (list)))
+    (slot2 #init-form (list))
+    (slot2 #init-thunk (const #t)))
 
 with init-keyword #:slot0 #:slot1 #:slot2
 with initial values #f, 0, and list),
@@ -111,6 +112,8 @@ and with getters .slot0, slot1, .slot2. "
          (create-slot #'name #:init-value #f))
         ((name #:init-form form)
          (create-slot #'name #:init-form #'form))
+        ((name #:init-thunk thunk)
+         (create-slot #'name #:init-thunk #'thunk))
         ((name #:init-value value)
          (create-slot #'name #:init-value #'value))))
     (syntax-case x ()
@@ -125,6 +128,7 @@ and with getters .slot0, slot1, .slot2. "
       (let ((name (syntax-case slot ()
                     ((name) #'name)
                     ((name #:init-form form) #'name)
+                    ((name #:init-thunk thunk) #'name)
                     ((name #:init-value value) #'name))))
         (datum->syntax x (getter-name (syntax->datum name)))))
     (syntax-case x ()
