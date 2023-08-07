@@ -31,6 +31,7 @@
             define-class*
             define-class*-public
             define-class-public
+            define-method-public
             deep-copy
             keyword+child*)
   #:re-export (<top>
@@ -71,6 +72,13 @@
            (export name
                    #,@(filter (compose not defined? syntax->datum)
                               (append-map slot->names #'(slot ...)))))))))
+
+(define-syntax define-method-public
+  (syntax-rules ()
+    ((define-method-public (name . args) . body)
+     (begin
+       (define-method (name . args) . body)
+       (export name)))))
 
 
 ;;;
