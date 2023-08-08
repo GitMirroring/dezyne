@@ -73,6 +73,7 @@ HELLO_TESTS =					\
  %D%/hello_if					\
  %D%/hello_if_action				\
  %D%/hello_import				\
+ %D%/hello_implicit_temporary			\
  %D%/hello_incomplete				\
  %D%/hello_inevitable				\
  %D%/hello_injected				\
