@@ -424,6 +424,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_requires				\
  %D%/illegal_requires_out			\
  %D%/illegal_system_requires			\
+ %D%/implicit_temporary0			\
  %D%/import_cycle				\
  %D%/import_path				\
  %D%/imported.space				\
