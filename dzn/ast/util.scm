@@ -64,8 +64,7 @@
          (getters (map slot-definition-getter slots))
          (changed (setters f names getters))
          (original (setters identity names getters)))
-    (if (equal? original changed) o
-        (apply clone (cons o (apply append changed))))))
+    (apply clone (cons o (apply append changed)))))
 
 (define-method (tree-map f (o <ast-list>))
   (clone o #:elements (map f (.elements o))))
