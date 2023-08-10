@@ -5,6 +5,18 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.5 since 2.17.4
+** Noteworthy bug fixes
+  - A regression introduced in 2.17.4 was fixed.  It was a side-effect
+    of the lookup name performance fix that removed quadratic behavior.
+  - Use of the unreachable code check, which is enabled by default,
+    would add `tag (line, column)' arguments on the `dzn lts' command
+    line, making it more prone to hit the [[https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/command-line-string-limitation][arbitrary 8191 command-line
+    limit]]) when running `dzn verify' on a Windows desktop.  Tags have
+    been moved from the command-line to the verify pipeline; Note, the
+    limit on Windows remains for other user input derived information
+    communicated via the command-line.
+
 * Changes in 2.17.4 since 2.17.3
 ** Verification
   - A new `-T,--timings' option showing detailed timings for the
