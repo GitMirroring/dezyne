@@ -59,7 +59,6 @@
             assert-illegal
             assert-livelock
             assert-nondeterministic
-            assert-unreachable
             aut-text->lts
             cleanup-aut
             cleanup-error
@@ -75,6 +74,7 @@
             lts->traces
             lts-hide
             lts-hide-state
+            lts->tags
             make-shared-string
             node?
             node-edges
@@ -453,16 +453,12 @@
                               (trace lts (car deadlock-nodes)))))
     deadlock-trace))
 
-(define (assert-unreachable lts tags)
-  "Return any TAGS that are not present in LTS."
+(define (lts->tags lts)
+  "Return TAGS present in LTS."
   (let* ((edges (append-map node-edges (vector->list lts)))
          (labels (map edge-label edges))
-         (lts-tages (filter (cut string-prefix? "tag(" <>) labels))
-         (lts-tages (delete-duplicates lts-tages))
-         (missing-tags (filter (negate (cut member <> lts-tages)) tags))
-         (missing-tags (delete-duplicates missing-tags)))
-    (if (null? missing-tags) #f
-        missing-tags)))
+         (tags (delete-duplicates (filter (cut string-prefix? "tag(" <>) labels))))
+    tags))
 
 (define (illegal-nodes lts)
   "States with labels of illegal outgoing edges."

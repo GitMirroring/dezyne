@@ -40,7 +40,6 @@
 
 (define (parse-opts args)
   (let* ((option-spec '((cleanup (single-char #\c))
-                        (unreachable (value #t))
                         (deadlock (single-char #\d))
                         (exclude-illegal)
                         (exclude-tau (value #t))
@@ -51,7 +50,8 @@
                         (deterministic-labels (single-char #\n) (value #t))
                         (prefix (single-char #\p) (value #t))
                         (single-line (single-char #\s))
-                        (tau (single-char #\t) (value #t))))
+                        (tau (single-char #\t) (value #t))
+                        (tags)))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '())))
@@ -61,7 +61,6 @@ Usage: dzn lts [OPTION]... [FILE]...
 Navigate and query an LTS from FILE in Aldebaran (AUT) format.
 
   -c, --cleanup                   rewrite makreel labels to dezyne, optionlly remove PREFIX
-      --unreachable TAG[,TAG...]  report tags from TAGS that are not present in the lts
   -d, --deadlock                  detect deadlock in LTS (after failures introduction)
       --exclude-illegal           remove edges leading to illegal (in combination with
                                     option --failures)
@@ -77,6 +76,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
       --exclude-tau=EVENT[,EVENT...]
                                   exclude given EVENTs from '--tau' list
   -s, --single-line               report an error including trace on a single line
+      --tags                      report all tags found in lts
 ")
       (exit EXIT_SUCCESS))
     options))
@@ -89,11 +89,6 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (cleanup? (option-ref options 'cleanup #f))
          (exclude-tau (option-ref options 'exclude-tau #f))
          (exclude-tau (if exclude-tau (string-split exclude-tau sep) '()))
-         (unreachable (option-ref options 'unreachable #f))
-         (unreachable (match unreachable
-                        ("" '())
-                        ((? string?) (string-split unreachable input-separator))
-                        (_ #f)))
          (files (option-ref options '() '()))
          (file-name (and (pair? files) (car files)))
          (deadlock? (option-ref options 'deadlock #f))
@@ -107,10 +102,16 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (prefix (option-ref options 'prefix #f))
          (single-line? (option-ref options 'single-line #f))
          (output-separator (if single-line? output-separator "\n"))
+         (tags? (option-ref options 'tags #f))
          (tau (option-ref options 'tau #f))
          (tau (if tau (string-split tau sep) '()))
          (tau (cons "tau" tau)))
 
+    (define (tag->line-column tag)
+      (let* ((m (string-match "tag\\(([0-9]+), *([0-9]+)\\)" tag))
+             (line (match:substring m 1))
+             (column (match:substring m 2)))
+        (format #f "~a, ~a" line column)))
     (define (report-result check failure-message pass-message trace)
       (let* ((fail? trace)
              (trace (map edge-label (or trace '())))
@@ -127,28 +128,6 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
             (format #t "~a\n" trace)))
          (else
           (format (current-error-port) "~a\n" pass-message)))))
-    (define (report-result-unreachable check fail-msg ok-msg tags)
-      (define (tag->line-column tag)
-        (let* ((m (string-match "tag\\(([0-9]+), *([0-9]+)\\)" tag))
-               (line (match:substring m 1))
-               (column  (match:substring m 2)))
-          (format #f "~a,~a" line column)))
-      (define (tag< a b)
-        (define (tag->list tag)
-          (map string->number (string-split tag #\,)))
-        (match (cons (tag->list a) (tag->list b))
-          (((line-a column-a) . (line-b column-b))
-           (or (< line-a line-b)
-               (and (= line-a line-b) (< column-a column-b))))))
-      (let ((tags (and tags (sort (map tag->line-column tags) tag<))))
-        (cond ((and single-line? tags)
-               (let ((tags (string-join tags output-separator)))
-                 (format #t "~a:fail:~a\n" check tags)))
-              (tags
-               (format (current-error-port) "~a\n" fail-msg)
-               (format #t "~a\n" (string-join tags "\n")))
-              (single-line?
-               (format #t "~a:ok\n" check)))))
     (cond
      (cleanup?
       (cleanup-aut #:file-name file-name #:prefix prefix))
@@ -180,11 +159,12 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                            "deadlock found:"
                            "No deadlock found."
                            (assert-deadlock lts-failures)))
-          (when unreachable
-            (report-result-unreachable "unreachable"
-                                       "unreachable code found:"
-                                       "No unreachable code found."
-                                       (assert-unreachable lts-hide-state unreachable)))
+          (when tags?
+            (let* ((tags (lts->tags lts))
+                   (tags (string-join (map tag->line-column tags) output-separator)))
+              (when single-line?
+                (format #t "tags:"))
+              (format #t "~a\n" tags)))
           (when failures?
             (let ((lts (if exclude-illegal? (remove-illegal lts-failures)
                            lts-failures)))
