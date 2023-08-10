@@ -102,7 +102,7 @@ Generate exhaustive set of traces for Dezyne model
     text))
 
 (define (model->lts root model file-name)
-  (let* ((lts (verify-pipeline "aut-weak-trace"
+  (let* ((lts (verify-pipeline "aut-weak-trace-stat"
                                root model))
          (lts (lts-hide-internal-labels lts)))
     (when (string-null? (string-trim-right lts))

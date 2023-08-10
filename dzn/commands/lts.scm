@@ -50,6 +50,7 @@
                         (deterministic-labels (single-char #\n) (value #t))
                         (prefix (single-char #\p) (value #t))
                         (single-line (single-char #\s))
+                        (statistics)
                         (tau (single-char #\t) (value #t))
                         (tags)))
          (options (getopt-long args option-spec))
@@ -76,6 +77,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
       --exclude-tau=EVENT[,EVENT...]
                                   exclude given EVENTs from '--tau' list
   -s, --single-line               report an error including trace on a single line
+      --statistics                print on STDERR the number of states and transitions
       --tags                      report all tags found in lts
 ")
       (exit EXIT_SUCCESS))
@@ -101,6 +103,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                                     (string-split deterministic-labels sep)))
          (prefix (option-ref options 'prefix #f))
          (single-line? (option-ref options 'single-line #f))
+         (statistics? (option-ref options 'statistics #f))
          (output-separator (if single-line? output-separator "\n"))
          (tags? (option-ref options 'tags #f))
          (tau (option-ref options 'tau #f))
@@ -129,6 +132,13 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (else
           (format (current-error-port) "~a\n" pass-message)))))
     (cond
+     (statistics?
+      (let loop ((line (read-line (current-input-port) 'concat)))
+        (unless (eof-object? line)
+          (when (string-contains line "des")
+            (simple-format (current-error-port) "statistics: ~a" line))
+          (display line (current-output-port))
+          (loop (read-line (current-input-port) 'concat)))))
      (cleanup?
       (cleanup-aut #:file-name file-name #:prefix prefix))
      (else
