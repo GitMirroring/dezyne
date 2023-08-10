@@ -197,7 +197,7 @@
 (define-method (makreel:process-index (o <behavior>))
   ((compose makreel:process-index .statement) o))
 
-(define-method (makreel:locals-unmemoized root (o <ast>))
+(define-method (makreel:locals (o <ast>))
   (if (is-a? o <behavior>) '()
       (let* ((p (.parent o)))
         (cond ((is-a? p <compound>)
@@ -210,11 +210,6 @@
                ((compose ast:formal* .signature) o))
               (else
                (makreel:locals p))))))
-
-(define-method (makreel:locals (o <ast>))
-  (let* ((model (ast:parent o <model>))
-         (root (ast:parent model <root>)))
-    ((ast:pure-funcq makreel:locals-unmemoized) (list root model) o)))
 
 (define-method (makreel:member* (o <ast>))
   (ast:member* (ast:parent o <model>)))
