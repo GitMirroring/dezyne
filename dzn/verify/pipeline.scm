@@ -172,6 +172,13 @@ actions."
                                    model)))
     (map line-column tags)))
 
+(define (model->tags model)
+  (let ((tags (tree-collect-filter (negate (disjoin (is? <expression>)
+                                                    (is? <location>)))
+                                   (is? <tag>)
+                                   model)))
+    (delete-duplicates (map makreel:line-column tags))))
+
 
 ;;;
 ;;; Verify pipeline.
@@ -329,8 +336,8 @@ actions."
             "--deadlock"
             ,@taus
             "--livelock"
-            ,@(if (%no-unreachable?) '()
-                  `(,(string-append "--unreachable=" tags)))
+            "--tags"
+            ,@(if (%no-unreachable?) '() '("--tags"))
             "-")))
 
 (define in-out:aut->verify-interface-nondet
@@ -349,8 +356,8 @@ actions."
             "--deadlock"
             ,@taus
             "--livelock"
-            ,@(if (%no-unreachable?) '()
-                  `(,(string-append "--unreachable=" tags)))
+            "--tags"
+            ,@(if (%no-unreachable?) '() '("--tags"))
             "--failures"
             "-")))
 
@@ -507,7 +514,8 @@ init for MODEL unless INIT."
       ((assert (and (? (cute string-prefix? "fail:" <>)) fail))
        (cons assert (split-colon fail)))
       (_ line)))
-  (let ((result (map split-colon (string-split result #\newline))))
+  (let* ((lines (string-split result #\newline))
+         (result (map split-colon lines)))
     (map split-fail result)))
 
 (define (semi->newline string)
@@ -523,7 +531,17 @@ init for MODEL unless INIT."
       (("failures" lts)
        (semi->newline lts))
       (_
-       (throw 'programming-error (format #f "no failures lts: ~s, line: ~s\n" line result))))))
+       (throw 'programming-error
+              (format #f "no failures lts: ~s, line: ~s\n" line result))))))
+
+(define (get-tags result)
+  (let ((line (get-line 'tags result)))
+    (match line
+      (("tags" lts)
+       (string-split lts #\;))
+      (_
+       (throw 'programming-error
+              (format #f "no tags: ~s, line: ~s\n" line result))))))
 
 (define (get-trace key result)
   (let ((assert (get-line key result)))
@@ -534,6 +552,19 @@ init for MODEL unless INIT."
        (let ((trace (semi->newline trace)))
          (hide-internal-labels trace)))
       (_ #f))))
+
+(define (assert-unreachable lts-tags model-tags)
+  (define (tag< a b)
+    (define (tag->list tag)
+      (map (compose string->number string-trim-both) (string-split tag #\,)))
+    (match (cons (tag->list a) (tag->list b))
+      (((line-a column-a) . (line-b column-b))
+       (or (< line-a line-b)
+           (and (= line-a line-b) (< column-a column-b))))))
+  (let ((missing (lset-difference equal? model-tags lts-tags)))
+    (if (null? missing)
+        (list "unreachable" "ok")
+        (list "unreachable" "fail" (string-join missing ";")))))
 
 (define (report-ok model assert)
   (let ((verbose? (dzn:command-line:get 'verbose))
@@ -551,7 +582,7 @@ init for MODEL unless INIT."
   (define (tag->message tag)
     (apply format #f "~a:~a:~a: error: code will never be executed"
            (.file-name (.location (.behavior model)))
-           (string-split tag #\,)))
+           (map string-trim-both (string-split tag #\,))))
   (let* ((model-name (makreel:unticked-dotted-name model))
          (unreachable? (eq? assert 'unreachable))
          (trace (filter (negate string-null?) (string-split trace #\newline)))
@@ -638,10 +669,15 @@ init for MODEL unless INIT."
   (and
    (not (command-line:get 'no-interfaces))
    (let* ((model-name (makreel:unticked-dotted-name model))
-          (result (string-append
-                   (verify-pipeline "verify-interface" root model)
-                   (verify-pipeline "verify-interface-nondet" root model)))
-          (result (result-split result))
+          (asserts (verify-pipeline "verify-interface" root model))
+          (asserts (result-split asserts))
+          (nondets (verify-pipeline "verify-interface-nondet" root model))
+          (nondets (result-split nondets))
+          (lts-tags (get-tags asserts))
+          (unreachable (assert-unreachable lts-tags (model->tags model)))
+          (result `(,unreachable
+                    ,@asserts
+                    ,@nondets))
           (deadlock? (get-trace 'deadlock result)))
      (define* (report-assert assert #:key skip?)
        (report assert skip? (get-trace assert result) model))
@@ -696,6 +732,10 @@ init for MODEL unless INIT."
   (let* ((model-name (makreel:unticked-dotted-name model))
          (result status (verify-pipeline (component-stage) root model))
          (result (result-split result))
+         (lts-tags (get-tags result))
+         (unreachable (assert-unreachable lts-tags (model->tags model)))
+         (result `(,unreachable
+                   ,@result))
          (illegal? (get-trace 'illegal result))
          (deadlock? (get-trace 'deadlock result))
          (refinement-trace interface-accepts component-accepts
