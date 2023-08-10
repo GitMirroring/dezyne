@@ -680,7 +680,7 @@
 (define-method (members (o <ast>))
   (members (ast:parent o <model>)))
 
-(define-method (makreel:locals-unmemoized root (o <ast>))
+(define-method (makreel:locals (o <ast>))
   (if (is-a? o <behavior>) '()
       (let* ((p (.parent o)))
         (cond ((is-a? p <compound>)
@@ -691,11 +691,6 @@
                  (makreel:locals p)))
               ((is-a? o <function>) ((compose ast:formal* .signature) o))
               (else (makreel:locals p))))))
-
-(define (makreel:locals o)
-  (let* ((model (ast:parent o <model>))
-         (root (ast:parent model <root>)))
-    ((ast:pure-funcq makreel:locals-unmemoized) (list root model) o)))
 
 (define-method (variables-in-scope (o <model>)) (members o))
 (define-method (variables-in-scope (o <ast>))
