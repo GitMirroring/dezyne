@@ -307,6 +307,7 @@ REGRESSION_TESTS =				\
  %D%/end_of_trail_interface			\
  %D%/end_of_trail_interface_action		\
  %D%/enum_expressions				\
+ %D%/enum_only					\
  %D%/equal_binary				\
  %D%/extern_in_interface			\
  %D%/external_asynchronous_sync			\
