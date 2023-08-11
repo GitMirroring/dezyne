@@ -129,7 +129,8 @@
     (when (pair? wrong)
       (error (format #f "WRONG SETTERS FOUND in ~a: ~a; names = ~a\n"
                      o wrong names)))
-    (apply make (cons class (apply append (append unchanged changed))))))
+    (if (null? changed) o
+        (apply make (cons class (apply append (append unchanged changed)))))))
 
 (define-method (clone-base-unwrap o . setters)
   (let ((setters (if (memq #:parent setters) setters
