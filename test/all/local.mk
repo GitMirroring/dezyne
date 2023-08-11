@@ -180,6 +180,7 @@ REGRESSION_TESTS =				\
  %D%/complex_assign				\
  %D%/complex_data				\
  %D%/complex_expressions			\
+ %D%/complex_expressions0			\
  %D%/complex_int				\
  %D%/complex_member				\
  %D%/complex_not				\
