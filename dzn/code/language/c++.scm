@@ -42,11 +42,12 @@
 ;;;
 (define-method (c++:generate-source? (o <root>))
   (find (conjoin (negate ast:imported?)
-                 (disjoin (is? <interface>) ;; no inline (yet??)
+                 (disjoin (is? <enum>)
+                          (is? <interface>) ;; no inline (yet??)
                           (is? <foreign>)   ;; no inline (yet??
                           (is? <component>)
                           (is? <system>)))
-        (ast:model* o)))
+        (ast:top** o)))
 
 (define-method (c++:ref (o <string>))
   (string-append "&" o))
