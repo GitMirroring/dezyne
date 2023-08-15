@@ -189,7 +189,7 @@ to the AST element."
         ((and (? string?) (? string->number))
          (values (string->number o) #f #f))
 
-        ((left (or "||" "&&" "+" "-" "-" "<" "<=" "==" "!=" ">" ">=") right)
+        ((left (or "||" "&&" "+" "-" "-" "<" "<=" "==" "!=" ">" ">=" "=>") right)
          (values (tree->expression o) #f #f))
 
         ((or "bool" "void")
@@ -694,7 +694,8 @@ to the AST element."
         ((left "==" right) (make <equal-node> #:left (helper left) #:right (helper right)))
         ((left "!=" right) (make <not-equal-node> #:left (helper left) #:right (helper right)))
         ((left ">"  right) (make <greater-node> #:left (helper left) #:right (helper right)))
-        ((left ">=" right) (make <greater-equal-node> #:left (helper left) #:right (helper right)))))
+        ((left ">=" right) (make <greater-equal-node> #:left (helper left) #:right (helper right)))
+        ((left "=>" right) (make <or-node> #:left (make <not-node> #:expression (helper left)) #:right (helper right)))))
 
     (helper o))
 

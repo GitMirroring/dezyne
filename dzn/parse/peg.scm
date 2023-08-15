@@ -291,7 +291,10 @@ imperative-statement
     <-- type-name add-var (ASSIGN expression#)? SEMICOLON#
 
 expression
-  <-- or-expression
+  <-- implies-expression
+
+implies-expression
+  <- or-expression IMPLIES implies-expression# / or-expression
 
 or-expression
   <- and-expression OR or-expression# / and-expression
@@ -368,6 +371,7 @@ LESS                <-  '<'
 LESS-EQUAL          <-  '<='
 GREATER             <-  '>'
 GREATER-EQUAL       <-  '>='
+IMPLIES             <-  '=>'
 PLUS                <-  '+'
 MINUS               <-  '-'
 NOT                 <   '!'
