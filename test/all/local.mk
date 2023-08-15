@@ -456,6 +456,7 @@ REGRESSION_TESTS =				\
  %D%/second_reply_sync				\
  %D%/second_reply_blocking			\
  %D%/shadow_port				\
+ %D%/shadow_shared_enum				\
  %D%/shared_assign				\
  %D%/shared_async_provides			\
  %D%/shared_async_requires			\
