@@ -4,6 +4,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
+;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -50,6 +51,7 @@
             %member-prefix
             %name-infix
             %no-constraint?
+            %no-tags-interface?
             %no-unreachable?
             %shell
             %type-infix
@@ -133,6 +135,9 @@
 
 ;; Infix for printing name elements.
 (define %name-infix (make-parameter "."))
+
+;; Suppress generating tags for interfaces
+(define %no-tags-interface? (make-parameter #f))
 
 ;; Should unreachable-code tags be omitted?
 (define %no-unreachable? (make-parameter #f))

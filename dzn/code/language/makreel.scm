@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2019, 2020 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -653,7 +653,8 @@ transformations."
                  (%member-prefix "")
                  (%name-infix "")
                  (%type-infix "")
-                 (%type-prefix ""))
+                 (%type-prefix "")
+                 (%no-tags-interface? (find (is? <component>) (ast:model** o))))
     (let ((sm (root->scmackerel o)))
       (scmackerel:display sm))))
 

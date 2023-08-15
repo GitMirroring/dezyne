@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -26,11 +27,13 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
+  #:use-module (srfi srfi-9 gnu)
 
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
 
   #:use-module (scmackerel processes)
+  #:use-module (scmackerel records)
 
   #:use-module (dzn ast goops)
   #:use-module (dzn ast)
@@ -47,6 +50,24 @@
 
   #:export (root->scmackerel
             scmackerel:display))
+
+(define-record-type* <sm:tag>
+  sm:tag make-sm:tag
+  sm:tag?
+  (component? sm:tag-component?)
+  (line sm:tag-line)
+  (column sm:tag-colomn)
+  (statement sm:tag-statement))
+
+(define (print-sm:tag tag port)
+  "Write a concise representation of TAG to PORT."
+  (match tag
+    (($ <sm:tag> component? line column statement)
+     (if (and (not component?) (%no-tags-interface?))
+         (simple-format port "~a" statement)
+         (simple-format port "tag(~a, ~a) . ~a" line column statement)))))
+
+(set-record-type-printer! <sm:tag> print-sm:tag)
 
 ;;;
 ;;; Helpers.
@@ -1323,14 +1344,12 @@
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
       (statement
-       (sm:union*
-        (sm:sequence*
-         (sm:invoke %tag-action
-                    (list (.line location) (.column location)))
-         (sm:goto (name name)
-                  (arguments (makreel:process-parens o))))
-        (sm:goto (name (statement->process-name next))
-                 (arguments (makreel:process-parens next))))))))
+       (sm:tag
+        (component? (is-a? model <component>))
+        (line (.line location))
+        (column (.column location))
+        (statement (sm:goto (name (statement->process-name next))
+                            (arguments (makreel:process-parens next)))))))))
 
 (define-method (ast->process (model <model>) (o <reply>) (next <ast>))
   (sm:process
@@ -2208,7 +2227,7 @@
     (let* ((interface (.type o))
            (rename
             (sm:process
-              (name (port-prefix "_rename"))
+              (name (port-prefix "port"))
               (statement
                (sm:rename
                 (process (model-prefix "interface_internal"))
@@ -2226,16 +2245,8 @@
                          (sm:rename-event (from (%state-action interface))
                                           (to (%state-action o)))
                          (sm:rename-event (from (%flush-action interface))
-                                          (to (%flush-action o)))))))))
-           (block
-            (sm:process
-              (name (port-prefix "_port"))
-              (statement
-               (sm:block
-                (process (port-prefix "_rename"))
-                (events (list %tag-action)))))))
-      (list rename
-            block))))
+                                          (to (%flush-action o))))))))))
+      (list rename))))
 
 (define-method (provides-processes (o <component>))
   (let* ((ports (ast:port* o))
@@ -2359,7 +2370,7 @@
             (name "provides_parallel")
             (statement (sm:parallel
                         (processes
-                         `(,@(map (cute port-prefix "_port" <>) provides)
+                         `(,@(map (cute port-prefix "port" <>) provides)
                            ,(sm:goto (name "provides_r2c")
                                      (arguments (list (sm:set*))))))))))
          (provides-comm
@@ -2601,7 +2612,7 @@
             (name (port-prefix "port_internal" o))
             (statement
              (sm:rename
-              (process (port-prefix "_port" o))
+              (process (port-prefix "port" o))
               (events (list
                        (sm:rename-event (from (%internal-action o))
                                         (to (%tau-modeling-action interface)))
@@ -2733,7 +2744,7 @@
                          (arguments (list "[]")))
                 (append
                  (map (lambda (p)
-                        (sm:goto (name (port-prefix "_port" p))))
+                        (sm:goto (name (port-prefix "port" p))))
                       non-external)
                  (map (lambda (p)
                         (sm:goto (name (port-prefix "external" p))))
