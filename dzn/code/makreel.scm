@@ -32,6 +32,7 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 receive)
+  #:use-module (ice-9 regex)
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
@@ -137,7 +138,15 @@
   (makreel:interface-proc-memo o))
 
 (define-method (x:interface-proc-memo (o <component>))
-  (string-join (map makreel:interface-proc-memo (makreel:interface* o)) "\n"))
+  (define (remove-tags text)
+    (if (%no-unreachable?) text
+        (let ((regexp (make-regexp "^.*%% TAG:.*$" regexp/newline)))
+          (regexp-substitute/global
+           #f regexp text 'pre "%% Tagging removed" 'post))))
+  (let* ((interfaces (makreel:interface* o))
+         (lst (map (compose remove-tags makreel:interface-proc-memo)
+                   interfaces)))
+    (string-join lst "\n")))
 
 (define (mcrl2:process-identifier o)
   (let* ((model-key ((compose .id (cute ast:parent <> <model>)) o))
