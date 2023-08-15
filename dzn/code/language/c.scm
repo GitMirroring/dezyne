@@ -60,11 +60,12 @@
 ;;;
 (define-method (c:generate-source? (o <root>))
   (find (conjoin (negate ast:imported?)
-                 (disjoin (is? <interface>)
+                 (disjoin (is? <enum>)
+                          (is? <interface>)
                           (is? <foreign>)
                           (is? <component>)
                           (is? <system>)))
-        (ast:model* o)))
+        (ast:top** o)))
 
 (define-method (c:ref (o <string>))
   (string-append "&" o))
