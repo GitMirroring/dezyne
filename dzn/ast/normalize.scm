@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -647,7 +647,7 @@ to prevent unintended shadowing
        (let ((name (if (formal-or-local? o) (rename-string (.name o))
                        (.name o))))
          (clone o #:name name #:expression ((rename mapping) (.expression o)))))
-      (($ <field-test>) (if (formal-or-local? (.variable o)) (clone o #:variable.name (rename-string (.variable.name o)))
+      (($ <field-test>) (if (formal-or-local? (.variable o)) (clone o #:name (rename-string (.variable.name o)))
                             o))
       (($ <formal>) (clone o #:name (rename-string (.name o))))
       (($ <formal-binding>) (clone o #:name (rename-string (.name o))))

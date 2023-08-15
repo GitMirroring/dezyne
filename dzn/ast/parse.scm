@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -517,10 +517,10 @@ to the AST element."
 
         (('dollars) (make <data-node> #:value *unspecified*))
 
-        (('field-test ('var name _ ...) field) (make <field-test-node> #:variable.name (helper name) #:field (helper field)))
-        (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:variable.name identifier #:field (helper field)))
+        (('field-test ('var name _ ...) field) (make <field-test-node> #:name (helper name) #:field (helper field)))
+        (('field-test ('unknown-identifier identifier _ ...) field) (make <field-test-node> #:name identifier #:field (helper field)))
 
-        (('shared-field-test port.name name field) (make <shared-field-test-node> #:port.name (helper port.name) #:variable.name (helper name) #:field (helper field)))
+        (('shared-field-test port.name name field) (make <shared-field-test-node> #:port.name (helper port.name) #:name (helper name) #:field (helper field)))
 
         (('function type name formals statement)
          (let* ((type location comment (helper type))

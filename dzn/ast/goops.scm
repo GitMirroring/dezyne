@@ -501,21 +501,27 @@
 (define-ast <undefined> (<unary>)
   (name))
 
-(define-ast <shared-var> (<var>)
+(define-ast <shared> (<ast>))
+
+(define-ast <shared-var> (<shared> <var>)
   (port.name))
 
 (define-ast <variable> (<declaration> <imperative> <unary>)
   (type.name)
   (expression #:init-form (make <expression-node>)))
 
-(define-ast <shared-variable> (<variable>)
+(define-ast <shared-variable> (<shared> <variable>)
   (port.name))
 
 (define-ast <field-test> (<unary> <bool-expr>)
-  (variable.name)
+  (name)
   (field))
+;; TODO REMOVEME backwards compatibility function variable.name -> name
+;; when refactoring naming and lookup
+(define-method (.variable.name (o <field-test>))
+  (.name o))
 
-(define-ast <shared-field-test> (<field-test>)
+(define-ast <shared-field-test> (<shared> <field-test>)
   (port.name))
 
 (define-ast <enum-literal> (<unary> <enum-expr>)

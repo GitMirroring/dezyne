@@ -392,11 +392,11 @@
      (clone o #:port.name ((compose (append-tick names) .port.name) o)
             #:name ((compose (append-tick names) .name) o)))
     (($ <field-test>)
-     (clone o #:variable.name ((compose (append-tick names) .variable.name) o)))
+     (clone o #:name ((compose (append-tick names) .variable.name) o)))
     (($ <shared-field-test>)
      (clone o
             #:port.name ((compose (append-tick names) .port.name) o)
-            #:variable.name ((compose (append-tick names) .variable.name) o)))
+            #:name ((compose (append-tick names) .variable.name) o)))
     (($ <formal>)
      (clone o
             #:name ((compose (append-tick names) .name) o)
