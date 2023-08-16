@@ -129,7 +129,10 @@
     (map .name parameters)))
 
 (define-method (makreel:defer*-unmemoized (o <ast>))
-  (tree-collect (is? <defer>) o))
+  (tree-collect (conjoin (is? <defer>)
+                         (disjoin (negate (cute ast:parent <> <function>))
+                                  (compose is-called? (cute ast:parent <> <function>))))
+                o))
 
 (define makreel:defer*
   (ast:perfect-funcq makreel:defer*-unmemoized))
