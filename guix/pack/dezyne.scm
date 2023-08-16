@@ -34,9 +34,9 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages guile)
-  #:use-module (gnu packages maths)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages pth)
+  #:use-module (pack mcrl2)
   #:use-module (pack scmackerel))
 
 (define-public dezyne
@@ -60,7 +60,7 @@
                   guile-json-4
                   guile-readline
                   (libc-utf8-locales-for-target)
-                  mcrl2-minimal
+                  mcrl2-next-minimal
                   pth
                   scmackerel
                   sed))
@@ -84,7 +84,7 @@
               (let* ((bash #$(this-package-input "bash-minimal"))
                      (guile #$(this-package-input "guile-3.0"))
                      (json #$(this-package-input "guile-json"))
-                     (mcrl2 #$(this-package-input "mcrl2-minimal"))
+                     (mcrl2 #$(this-package-input "mcrl2-next-minimal"))
                      (readline #$(this-package-input "guile-readline"))
                      (scmackerel #$(this-package-input "scmackerel"))
                      (sed #$(this-package-input "sed"))
