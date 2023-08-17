@@ -962,9 +962,7 @@ std::basic_ostream<Char, Traits> &")
 
 (define-method (model->header-statements (o <foreign>))
   (let* ((interface-includes (code:interface-include* o))
-         (statements `(,(sm:cpp-system-include* "dzn/locator.hh")
-                       ,(sm:cpp-system-include* "dzn/runtime.hh")
-                       ,@(map c++:file-name->include interface-includes)
+         (statements `(,@(map c++:file-name->include interface-includes)
                        ,@(model->foreign o))))
     (c++:include-guard o statements)))
 
