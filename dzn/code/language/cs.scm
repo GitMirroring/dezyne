@@ -87,7 +87,7 @@
   (simple-format #f "~a~a" (code:capture-name o) (.depth o)))
 
 (define-method (cs:model (o <root>))
-  (let* ((models (ast:model* o))
+  (let* ((models (ast:model** o))
          (models (filter (negate (disjoin (is? <type>)
                                           (is? <namespace>)
                                           ast:imported?))

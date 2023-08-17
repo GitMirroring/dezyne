@@ -871,7 +871,7 @@ status."
 (define* (filter-root root #:key model-name)
   (let ((model (ast:get-model root model-name)))
     (if (not model) root
-        (let* ((models (ast:model* model))
+        (let* ((models (ast:model** model))
                (root (tree-filter (disjoin (is? <interface>)
                                            (negate (is? <model>))
                                            (cute member <> models ast:eq?)) root)))

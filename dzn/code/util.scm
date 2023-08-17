@@ -63,7 +63,7 @@
 (define-method (code:foreign-conflict? (o <root>))
   (let* ((foreigns (filter (conjoin (is? <foreign>)
                                     (negate ast:imported?))
-                           (ast:model* o)))
+                           (ast:model** o)))
          (foreign-bases (map code:base-name foreigns))
          (conflict? (member (ast:base-name o) foreign-bases)))
     (when conflict?

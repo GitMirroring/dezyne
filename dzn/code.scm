@@ -155,7 +155,7 @@
     (.name (ast:provides-port component))))
 
 (define-method (code:model* (o <root>))
-  (let* ((models (ast:model* o))
+  (let* ((models (ast:model** o))
          (models (filter (negate
                           (disjoin (is? <type>) (is? <namespace>)
                                    ast:imported?))
@@ -208,19 +208,19 @@
 
 (define-method (code:pump? (o <root>))
   (let ((components (filter (conjoin (negate ast:imported?) (is? <component>))
-                            (ast:model* o))))
+                            (ast:model** o))))
     (any code:pump? components)))
 
 (define-method (code:public-enum* (o <interface>))
   (filter (is? <enum>) (ast:type* o)))
 
 (define-method (code:public-enum* (o <root>))
-  (filter (is? <enum>) (ast:type* o)))
+  (filter (is? <enum>) (ast:type** o)))
 
 (define-method (code:enum* (o <root>))
   (filter (conjoin (is? <enum>)
                    (negate ast:imported?))
-          (ast:type* o)))
+          (ast:type** o)))
 
 (define-method (code:file-name (o <foreign>))
   (if (ast:imported? o) (next-method)

@@ -118,7 +118,7 @@
                    (negate (is? <bool>))
                    (negate (is? <int>))
                    (negate (is? <void>)))
-          (ast:type* o)))
+          (ast:type** o)))
 
 (define-method (dzn:model-name (o <ast>))
   (dzn:model-name (ast:parent o <model>)))

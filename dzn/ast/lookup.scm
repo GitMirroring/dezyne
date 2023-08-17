@@ -92,8 +92,8 @@
 
 (define-method (ast:declaration* (o <namespace>))
   (let* ((full-name (ast:full-name o))
-         (namespaces (ast:namespace-recursive* (or (as o <root>)
-                                                   (ast:parent o <root>))))
+         (namespaces (ast:namespace** (or (as o <root>)
+                                          (ast:parent o <root>))))
          (namespaces (filter (compose (cute equal? <> full-name) ast:full-name)
                              namespaces)))
     (filter (cute is-a? <> <declaration>)

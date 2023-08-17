@@ -154,13 +154,17 @@
                ast:instance*
                ast:member*
                ast:model*
+               ast:model**
                ast:namespace*
+               ast:namespace**
                ast:port*
                ast:shared*
                ast:statement*
                ast:top*
+               ast:top**
                ast:trigger*
                ast:type*
+               ast:type**
                ast:variable*
                ast:unique-import*
 
@@ -361,7 +365,7 @@
 
 (define-method (ast:instance? (o <component-model>))
   (let* ((root (ast:parent o <root>))
-         (models (ast:model* root))
+         (models (ast:model** root))
          (systems (filter (is? <system>) models)))
     (find (lambda (s)
             (find (lambda (i) (ast:eq? (.type i) o)) (ast:instance* s)))
@@ -772,13 +776,13 @@ overload for variable."
   (let ((ports (ast:port* o)))
     (delete-duplicates (map .type ports) ast:eq?)))
 
-(define-method (ast:model* (o <interface>))
+(define-method (ast:model** (o <interface>))
   (list o))
 
-(define-method (ast:model* (o <component-model>))
+(define-method (ast:model** (o <component-model>))
   (append (ast:interface* o) (list o)))
 
-(define-method (ast:model* (o <system>))
+(define-method (ast:model** (o <system>))
   (let* ((components (ast:component-model* o))
          (components (delete-duplicates components ast:eq?))
          (interfaces (append-map ast:interface* components))
@@ -799,7 +803,7 @@ overload for variable."
   (filter (is? <system>) (ast:instance-model* o)))
 
 (define-method (ast:system* (o <root>))
-  (filter (is? <system>) (ast:model* o)))
+  (filter (is? <system>) (ast:model** o)))
 
 
 ;;;
@@ -807,7 +811,7 @@ overload for variable."
 ;;;
 
 (define-method (ast:filter-model (root <root>) (model <model>))
-  (let ((models (ast:model* model)))
+  (let ((models (ast:model** model)))
     (tree-filter (disjoin (negate (is? <component-model>))
                           (cute member <> models ast:eq?))
                  root)))
@@ -817,7 +821,7 @@ overload for variable."
 ;;; Utility.
 ;;;
 (define* (ast:get-model root #:optional model-name)
-  (let ((models (ast:model* root)))
+  (let ((models (ast:model** root)))
     (cond
      (model-name
       (let ((model (find (lambda (o) (equal? (ast:dotted-name o) model-name)) models)))

@@ -165,7 +165,7 @@ Generate exhaustive set of traces for Dezyne model
                    (%queue-size-external queue-size-external))
       (let* ((ast (parse options file-name))
              (root (makreel:normalize ast))
-             (models (ast:model* root))
+             (models (ast:model** root))
              (components-interfaces
               (append
                (filter (conjoin (is? <component>) .behavior) models)

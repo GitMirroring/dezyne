@@ -95,7 +95,7 @@
 
 (define-method (makreel:get-model (o <root>) model-name)
   "Find model of MODEL-NAME in ROOT.  MODEL-NAME is unticked, ROOT is ticked."
-  (let ((models (ast:model* o)))
+  (let ((models (ast:model** o)))
     (find (compose (cute equal? <> model-name) makreel:unticked-dotted-name) models)))
 
 (define (makreel:model->makreel root model)
@@ -115,10 +115,10 @@
   (define (named? o)
     (equal? (makreel:unticked-dotted-name o) (%model-name)))
   (let ((model (and (%model-name)
-                    (find named? (ast:model* o)))))
+                    (find named? (ast:model** o)))))
     (or model
-        (find (is? <component>) (ast:model* o))
-        (filter (is? <interface>) (ast:model* o)))))
+        (find (is? <component>) (ast:model** o))
+        (filter (is? <interface>) (ast:model** o)))))
 
 
 ;;;
@@ -304,10 +304,10 @@
     (define (named? o)
       (equal? (makreel:unticked-dotted-name o) model-name))
     (let ((model (and model-name
-                      (find named? (ast:model* o)))))
+                      (find named? (ast:model** o)))))
       (or model
-          (find (is? <component>) (ast:model* o))
-          (find (is? <interface>) (ast:model* o))))))
+          (find (is? <component>) (ast:model** o))
+          (find (is? <interface>) (ast:model** o))))))
 
 (define (makreel:init-process process)
   (format #f "init ~a;\n" process))

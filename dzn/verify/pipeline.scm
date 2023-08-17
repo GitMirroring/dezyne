@@ -764,7 +764,7 @@ init for MODEL unless INIT."
 
 (define* (verification:verify options root #:key all? model-name)
   (define (model-names-for-verification root)
-    (let* ((models (ast:model* root))
+    (let* ((models (ast:model** root))
            (components (filter (conjoin (is? <component>) (negate ast:imported?) .behavior) models))
            (component-names (map makreel:unticked-dotted-name components))
            (interfaces (filter (is? <interface>) models))

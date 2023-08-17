@@ -100,7 +100,7 @@
 ;;; Dependency diagram.
 ;;;
 (define-method (dot:dependent (o <root>))
-  (ast:model* o))
+  (ast:model** o))
 
 (define-method (dot:dependency (o <component-model>))
   (ast:port* o))

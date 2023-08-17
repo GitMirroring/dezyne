@@ -48,14 +48,17 @@
             ast:instance*
             ast:member*
             ast:model*
+            ast:model**
             ast:namespace*
-            ast:namespace-recursive*
+            ast:namespace**
             ast:port*
             ast:shared*
             ast:statement*
             ast:top*
+            ast:top**
             ast:trigger*
             ast:type*
+            ast:type**
             ast:variable*
 
             ast:full-name
@@ -80,7 +83,7 @@
 
 (define-method (ast:argument* (o <arguments>)) (.elements o))
 (define-method (ast:binding* (o <bindings>)) (.elements o))
-(define-method (ast:data* (o <root>)) (filter (is? <data>) (ast:top* o)))
+(define-method (ast:data* (o <namespace>)) (filter (is? <data>) (ast:top* o)))
 (define-method (ast:import* (o <root>)) (filter (is? <import>) (ast:top* o)))
 (define-method (ast:statement* (o <compound>)) (.elements o))
 (define-method (ast:statement* (o <declarative-compound>)) (.elements o))
@@ -92,22 +95,22 @@
 (define-method (ast:port* (o <ports>)) (.elements o))
 (define-method (ast:top* (o <namespace>)) (.elements o))
 (define-method (ast:member* (o <behavior>)) (ast:variable* o))
+(define-method (ast:model* (o <namespace>)) (filter (is? <model>) (ast:top* o)))
 (define-method (ast:namespace* (o <namespace>)) (filter (is? <namespace>) (ast:top* o)))
 (define-method (ast:shared* (o <behavior>)) (filter (is? <shared-variable>) (ast:variable* o)))
 (define-method (ast:trigger* (o <triggers>)) (.elements o))
 (define-method (ast:type* (o <types>)) (.elements o))
+(define-method (ast:type* (o <namespace>)) (filter (is? <type>) (ast:top* o)))
 (define-method (ast:variable* (o <variables>)) (.elements o))
 
 
 ;;;
 ;;; Namespace-recursive accessors.
 ;;;
-(define-method (ast:namespace-recursive* (o <root>)) (filter (is? <namespace>) (append (ast:top* o) (append-map ast:namespace-recursive* (ast:namespace* o)))))
-(define-method (ast:namespace-recursive* (o <namespace>)) (filter (is? <namespace>) (append (ast:top* o) (append-map ast:namespace-recursive* (ast:namespace* o)))))
-(define-method (ast:model* (o <root>)) (filter (is? <model>) (append (ast:top* o) (append-map ast:model* (ast:namespace* o)))))
-(define-method (ast:model* (o <namespace>)) (filter (is? <model>) (append (ast:top* o) (append-map ast:model* (ast:namespace* o)))))
-(define-method (ast:type* (o <root>)) (filter (is? <type>) (append (ast:top* o) (append-map ast:type* (ast:namespace* o)))))
-(define-method (ast:type* (o <namespace>)) (filter (is? <type>) (append (ast:top* o) (append-map ast:type* (ast:namespace* o)))))
+(define-method (ast:top** (o <namespace>)) (append (ast:top* o) (append-map ast:top** (ast:namespace* o))))
+(define-method (ast:namespace** (o <namespace>)) (filter (is? <namespace>) (ast:top** o)))
+(define-method (ast:model** (o <namespace>)) (filter (is? <model>) (ast:top** o)))
+(define-method (ast:type** (o <namespace>)) (filter (is? <type>) (ast:top** o)))
 
 (define-method (ast:namespace* (o <scope>)) '())
 

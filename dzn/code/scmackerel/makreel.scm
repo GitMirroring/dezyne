@@ -4199,7 +4199,7 @@
 ;;; Entry point.
 ;;;
 (define (root->scmackerel root)
-  (let* ((models (ast:model* root))
+  (let* ((models (ast:model** root))
          (component (find (is? <component>) models))
          (model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
          (interfaces (if component (filter (is? <interface>) models)
@@ -4228,7 +4228,7 @@
                       (processes
                        (cons (makreel:caption "INTERFACE")
                              (sm:mcrl2-processes mcrl2))))))
-         (enums (filter (is? <enum>) (ast:type* root)))
+         (enums (filter (is? <enum>) (ast:type** root)))
          (enums (map enum->scmackerel enums))
          (illegal-processes (illegal-processes))
          (static-equations

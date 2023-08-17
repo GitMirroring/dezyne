@@ -77,10 +77,10 @@
   (javascript:module-name (.type o)))
 
 (define-method (javascript:require-module (o <root>))
-  (let* ((models (filter ast:imported? (ast:model* o)))
+  (let* ((models (filter ast:imported? (ast:model** o)))
          (modules (map javascript:module-name models))
          (foreigns (map javascript:module-name (code:used-foreigns o)))
-         (components (filter (is? <component>) (ast:model* o))))
+         (components (filter (is? <component>) (ast:model** o))))
     (map (cut make <file-name> #:name <>) (delete-duplicates (append modules foreigns)))))
 
 (define-method (javascript:require-module (o <model>))

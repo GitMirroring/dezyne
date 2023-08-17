@@ -75,7 +75,7 @@
                  (code:event-name (.event o))))
 (define-method (c:enum* (o <root>))
   (let* ((enums (code:enum* o))
-         (models (filter (negate ast:imported?) (ast:model* o)))
+         (models (filter (negate ast:imported?) (ast:model** o)))
          (interfaces (filter (is? <interface>) models))
          (public-enums (append-map code:public-enum* interfaces)))
     (append enums public-enums)))

@@ -1469,5 +1469,5 @@
 ;;;
 (define-method (wfc (o <root>))
   (append
-   (append-map wfc (ast:model* o))
-   (append-map wfc (ast:type* o))))
+   (append-map wfc (ast:model** o))
+   (append-map wfc (ast:type** o))))

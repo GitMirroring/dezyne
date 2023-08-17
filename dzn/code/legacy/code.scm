@@ -89,7 +89,7 @@
 ;;; Top
 ;;;
 (define-method (code:model (o <root>))
-  (let* ((models (ast:model* o))
+  (let* ((models (ast:model** o))
          (models (filter (negate (disjoin (is? <type>) (is? <namespace>)
                                           ast:imported?))
                          models))
@@ -372,10 +372,10 @@
 (define-method (code:global-enum-definer (o <root>))
   (filter (conjoin (is? <enum>)
                    (negate ast:imported?))
-          (ast:type* o)))
+          (ast:type** o)))
 
 (define-method (code:global-enum-definer (o <model>))
-  (filter (is? <enum>) (ast:type* (ast:parent o <root>))))
+  (filter (is? <enum>) (ast:type** (ast:parent o <root>))))
 
 (define-method (code:enum-literal (o <enum-literal>))
   (cons (code:type-name (.type o)) (list (.field o))))
@@ -525,6 +525,6 @@
          (is-a? (.parent p) <behavior>))))
 
 (define-method (code:used-foreigns (o <root>))
-  (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model* o)))
+  (let* ((systems (filter (conjoin (is? <system>) (negate ast:imported?)) (ast:model** o)))
          (models (map .type (append-map ast:instance* systems))))
     (filter (is? <foreign>) models)))
