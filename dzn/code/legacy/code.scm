@@ -364,7 +364,7 @@
   ((compose code:enum-name .variable) o))
 
 (define-method (code:enum-definer (o <interface>))
-  (filter (is? <enum>) (append (ast:type* o) (ast:type* (.behavior o)))))
+  (filter (is? <enum>) (ast:type** o)))
 
 (define-method (code:enum-definer (o <component>))
   (filter (is? <enum>) (ast:type* (.behavior o))))

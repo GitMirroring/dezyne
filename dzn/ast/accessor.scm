@@ -112,6 +112,8 @@
 (define-method (ast:model** (o <namespace>)) (filter (is? <model>) (ast:top** o)))
 (define-method (ast:type** (o <namespace>)) (filter (is? <type>) (ast:top** o)))
 
+(define-method (ast:type** (o <interface>)) (append (ast:type* o) (ast:type* (.behavior o))))
+
 (define-method (ast:namespace* (o <scope>)) '())
 
 

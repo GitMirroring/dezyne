@@ -2152,16 +2152,14 @@
 
 (define-method (interface-types->scmackerel (o <interface>))
   (let* ((behavior (.behavior o))
-         (enums (filter (is? <enum>) (append (ast:type* o)
-                                             (ast:type* behavior))))
+         (enums (filter (is? <enum>) (ast:type** o)))
          (enums (map enum->scmackerel enums)))
     (sm:mcrl2 (types enums))))
 
 (define-method (interface->scmackerel-unmemoized (o <interface>))
   (let* ((model-name (ast:dotted-name o))
          (behavior (.behavior o))
-         (enums (filter (is? <enum>) (append (ast:type* o)
-                                             (ast:type* behavior))))
+         (enums (filter (is? <enum>) (ast:type** o)))
          (enums (map enum->scmackerel enums))
          (behavior-processes (behavior->processes o))
          (functions (makreel:called-function* behavior))
