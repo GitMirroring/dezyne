@@ -640,35 +640,35 @@ status."
         (and queue-full-check?
              (not (is-a? (%sut) <runtime:port>))
              (and=> (check-external-queue-full traces)
-                    (cute report <>
-                          #:eligible '()
-                          #:internal? internal?
-                          #:locations? locations?
-                          #:state? state?
-                          #:trace trace
-                          #:verbose? verbose?)))
+                    (cut report <>
+                         #:eligible '()
+                         #:internal? internal?
+                         #:locations? locations?
+                         #:state? state?
+                         #:trace trace
+                         #:verbose? verbose?)))
         (and interface-determinism-check?
              (not status)
              (is-a? (%sut) <runtime:port>)
              (and=> (check-interface-determinism traces)
-                    (cute report <>
-                          #:eligible '()
-                          #:internal? internal?
-                          #:locations? locations?
-                          #:state? state?
-                          #:trace trace
-                          #:verbose? verbose?)))
+                    (cut report <>
+                         #:eligible '()
+                         #:internal? internal?
+                         #:locations? locations?
+                         #:state? state?
+                         #:trace trace
+                         #:verbose? verbose?)))
         (and interface-livelock-check?
              (not status)
              (is-a? (%sut) <runtime:port>)
              (and=> (check-interface-livelock traces)
-                    (cute report <>
-                          #:eligible '()
-                          #:internal? internal?
-                          #:locations? locations?
-                          #:state? state?
-                          #:trace trace
-                          #:verbose? verbose?)))
+                    (cut report <>
+                         #:eligible '()
+                         #:internal? internal?
+                         #:locations? locations?
+                         #:state? state?
+                         #:trace trace
+                         #:verbose? verbose?)))
         (and refusals-check? (null? traces)
              (any (cute refusals-report from-pcs <> '()) from-pcs))
         (and refusals-check? (pair? traces)
