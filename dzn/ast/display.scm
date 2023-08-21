@@ -89,10 +89,12 @@
 
 (define ast:display write)
 
-(define* (ast:pretty-print ast #:optional (port (current-output-port)))
+(define* (ast:pretty-print ast #:optional (port (current-output-port))
+                           #:key (width 79))
   "Turn @var{ast} into a user-friendly list representation and
 pretty-print it to PORT."
   (pretty-print (with-input-from-string
                     (with-output-to-string (cut write ast))
                   read)
-                port))
+                port
+                #:width width))
