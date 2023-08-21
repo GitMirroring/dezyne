@@ -55,9 +55,11 @@ export DZN_UNINSTALLED
 
 LANG=en_US.UTF-8
 export LANG
-for E in $(set | grep -oE LC_[^=]+); do unset $E; done
+for E in $(set | grep -oE LC_[^=]+ 2> /dev/null); do unset $E; done
 
 EMACSLOADPATH=$abs_top_srcdir/emacs${EMACSLOADPATH:+:}$EMACSLOADPATH
 export EMACSLOADPATH
 
-exec "$@"
+if test -n "$1"; then
+    exec "$@"
+fi
