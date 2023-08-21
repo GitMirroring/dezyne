@@ -56,6 +56,7 @@
       (with-output-to-string (cute write o))
     read))
 
-(define* (display:pretty-print o #:optional (port (current-output-port)))
+(define* (display:pretty-print o #:optional (port (current-output-port))
+                               #:key (width 79))
   "Recursively print O to PORT in a user-friendly debug format."
-  (pretty-print (display:serialize o) port))
+  (pretty-print (display:serialize o) port #:width width))
