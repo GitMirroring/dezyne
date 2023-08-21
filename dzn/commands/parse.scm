@@ -193,9 +193,11 @@ Parse a Dezyne file and produce an AST
                    (sexp (and (not debug?)
                               (parameterize ((%locations? locations?))
                                 (ast:serialize ast))))
+                   (width (or (and=> (getenv "COLUMNS") string->number)
+                              79))
                    (output (with-output-to-string
-                             (if debug? (cute ast:pretty-print ast)
-                                 (cute pretty-print sexp)))))
+                             (if debug? (cut ast:pretty-print ast #:width width)
+                                 (cut pretty-print sexp #:width width)))))
               (if (equal? file-name "-") (display output)
                   (with-output-to-file file-name (cut display output))))
             (when verbose?
