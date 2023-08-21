@@ -357,22 +357,16 @@ actions."
       ,@taus
       "--in1=aut" "--in2=aut" "-" "-")))
 
-(define (in-out:aut->aut+stat options)
-  `(,%dzn "lts" "--statistics" "-"))
-
 (define in-out.pipeline
   `((("dzn"                     "mcrl2")                   . ,in-out:dzn->makreel)
     (("mcrl2"                   "lps")                     . ,in-out:mcrl2->lps)
     (("lps"                     "lpsconstelm")             . ,in-out:lps->lpsconstelm)
     (("lpsconstelm"             "lpsparelm")               . ,in-out:lps->lpsparelm)
-    (("lpsparelm"               "maut-stat")               . ,in-out:lps->aut)
-    (("maut-stat"               "maut")                    . ,in-out:aut->aut+stat)
+    (("lpsparelm"               "maut")                    . ,in-out:lps->aut)
     (("maut"                    "maut-dpweak-bisim")       . ,in-out:aut->aut-dpweak-bisim)
     (("maut"                    "aut")                     . ,in-out:maut->aut)
-    (("maut-dpweak-bisim"       "aut-dpweak-bisim-stat")   . ,in-out:maut->aut)
-    (("aut-dpweak-bisim-stat"   "aut-dpweak-bisim")        . ,in-out:aut->aut+stat)
-    (("maut-weak-trace"         "aut-weak-trace-stat")     . ,in-out:maut->aut)
-    (("maut-weak-trace-stat"    "aut-weak-trace")          . ,in-out:aut->aut+stat)
+    (("maut-dpweak-bisim"       "aut-dpweak-bisim")        . ,in-out:maut->aut)
+    (("maut-weak-trace"         "aut-weak-trace")          . ,in-out:maut->aut)
     (("maut"                    "maut-weak-trace")         . ,in-out:aut->aut-weak-trace)
     (("maut"                    "maut-weak-trace+hide")    . ,in-out:lts-hide-internal-labels)
     (("aut-dpweak-bisim"        "aut-failures")            . ,in-out:aut->aut-failures)
