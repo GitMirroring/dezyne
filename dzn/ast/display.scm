@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2022, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
@@ -89,10 +89,12 @@
 
 (define ast:display write)
 
-(define* (ast:pretty-print ast #:optional (port (current-output-port)))
+(define* (ast:pretty-print ast #:optional (port (current-output-port))
+                           #:key (width 79))
   "Turn @var{ast} into a user-friendly list representation and
 pretty-print it to PORT."
   (pretty-print (with-input-from-string
                     (with-output-to-string (cut write ast))
                   read)
-                port))
+                port
+                #:width width))
