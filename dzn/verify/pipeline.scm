@@ -165,20 +165,18 @@ actions."
      "\n")))
 
 (define (model-tags model)
-  (define (line-column o)
-    (format #f "tag(~a)" (makreel:line-column o)))
-  (let ((tags (tree-collect-filter (negate (disjoin (is? <expression>)
-                                                    (is? <location>)))
-                                   (is? <tag>)
-                                   model)))
-    (map line-column tags)))
+  (let* ((tags (tree-collect-filter (negate (disjoin (is? <expression>)
+                                                     (is? <location>)))
+                                    (is? <tag>)
+                                    model))
+         (tags (map makreel:line-column tags)))
+    (delete-duplicates tags)))
 
-(define (model->tags model)
-  (let ((tags (tree-collect-filter (negate (disjoin (is? <expression>)
-                                                    (is? <location>)))
-                                   (is? <tag>)
-                                   model)))
-    (delete-duplicates (map makreel:line-column tags))))
+(define (makreel:model-tags model)
+  (define (line-column o)
+    (format #f "tag(~a)" o))
+  (let ((tags (model-tags model)))
+    (map (cute format #f "tag(~a)" <>) tags)))
 
 
 ;;;
@@ -654,7 +652,7 @@ init for MODEL unless INIT."
           (nondets (verify-pipeline "verify-interface-nondet" root model))
           (nondets (result-split nondets))
           (lts-tags (get-tags asserts))
-          (unreachable (assert-unreachable lts-tags (model->tags model)))
+          (unreachable (assert-unreachable lts-tags (model-tags model)))
           (result `(,unreachable
                     ,@asserts
                     ,@nondets))
@@ -713,7 +711,7 @@ init for MODEL unless INIT."
          (result status (verify-pipeline (component-stage) root model))
          (result (result-split result))
          (lts-tags (get-tags result))
-         (unreachable (assert-unreachable lts-tags (model->tags model)))
+         (unreachable (assert-unreachable lts-tags (model-tags model)))
          (result `(,unreachable
                    ,@result))
          (illegal? (get-trace 'illegal result))
