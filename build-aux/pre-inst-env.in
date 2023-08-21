@@ -1,7 +1,7 @@
 #! /bin/sh
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 # Copyright © 2018, 2020 Rutger van Beusekom <rutger@dezyne.org>
 #
@@ -55,9 +55,11 @@ export DZN_UNINSTALLED
 
 LANG=en_US.UTF-8
 export LANG
-for E in $(set | grep -oE LC_[^=]+); do unset $E; done
+for E in $(set | grep -oE LC_[^=]+ 2> /dev/null); do unset $E; done
 
 EMACSLOADPATH=$abs_top_srcdir/emacs${EMACSLOADPATH:+:}$EMACSLOADPATH
 export EMACSLOADPATH
 
-exec "$@"
+if test -n "$1"; then
+    exec "$@"
+fi
