@@ -2,7 +2,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-# Copyright © 2020, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2020, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -24,4 +24,5 @@ base=$(basename $1)
 
 mkdir -p $dir/out
 (cd $dir && dzn --skip-wfc parse -E -o- $base.dzn | sed 's,^#dir.*,#dir ".",' > out/$base.dzn)
+export COLUMNS=79
 run-baseline $dir dzn --skip-wfc parse --locations -o- $dir/out/$base.dzn
