@@ -23,5 +23,6 @@ dir=$1
 base=$(basename $1)
 
 mkdir -p $dir/out
+export COLUNMS=79
 (cd $dir && dzn --skip-wfc parse -E -o- $base.dzn | sed 's,^#dir.*,#dir ".",' > out/$base.dzn)
 run-baseline $dir dzn --skip-wfc parse --locations -o- $dir/out/$base.dzn
