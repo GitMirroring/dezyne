@@ -29,6 +29,7 @@
   #:use-module (oop goops)
 
   #:use-module (dzn misc)
+  #:use-module (dzn goops define-method-star)
   #:use-module (dzn goops util)
 
   #:export (%serialize:constructor-name
@@ -119,8 +120,7 @@
     read))
 
 (define-generic pretty-print)
-(define-method (pretty-print (o <object>) (port <port>))
-  (pretty-print (serialize o) port))
-
-(define-method (pretty-print (o <object>))
-  (pretty-print o (current-output-port)))
+(define-method* (pretty-print (o <object>)
+                              #:optional (port (current-output-port))
+                              #:key (width 79))
+  (pretty-print (serialize o) port #:width width))
