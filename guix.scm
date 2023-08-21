@@ -22,11 +22,7 @@
 
 ;;; Commentary:
 ;;
-;; GNU Guix development package.  To build and play, run:
-;;
-;;   guix shell
-;;
-;; To build and install, run:
+;; GNU Guix development package.  To build and install, run:
 ;;
 ;;   guix package -f guix.scm
 ;;
@@ -36,7 +32,15 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix time-machine --commit=0e9429544fd737079b9c1562de3beb48329350a9 -- shell
+;;   guix shell -D -f guix.scm
+;;
+;; or simply
+;;
+;;   guix shell
+;;
+;; To use the canonical commit that has everything prebuilt:
+;;
+;;   guix time-machine --commit=10f3dd0e9e06d71d1bc1615c6a60cc3aa1ad1ff4 -- shell
 ;;
 ;;; Code:
 
