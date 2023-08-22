@@ -427,6 +427,7 @@ REGRESSION_TESTS =				\
  %D%/implicit_temporary0			\
  %D%/implicit_temporary1			\
  %D%/implicit_temporary2			\
+ %D%/implicit_temporary3			\
  %D%/import_cycle				\
  %D%/import_path				\
  %D%/imported.space				\
