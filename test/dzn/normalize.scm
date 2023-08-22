@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -139,7 +139,8 @@
 
   (test-equal "call-a||call-a"
     call-a||call-a
-    (simplify-expression call-a||call-a)))
+    (simplify-expression call-a||call-a))
 
-(test-end)
+  (test-end))
+
 (test-end)
