@@ -1330,7 +1330,7 @@
 (define-method (main-getopt)
   (sm:function
    (type "static bool")
-   (name "getopt")
+   (name "dzn_getopt")
    (formals (list (sm:formal (type "String[]") (name "args"))
                   (sm:formal (type "String") (name "option"))))
    (statement
@@ -1350,12 +1350,12 @@
     (sm:compound*
      (let ((option (simple-format #f "~s" "--flush")))
        (sm:variable (type "bool") (name "flush")
-                    (expression (sm:call (name "getopt")
+                    (expression (sm:call (name "dzn_getopt")
                                          (arguments (list "argv" option))))))
      (let ((call-rdbuf (sm:call (name "new TextWriterTraceListener")
                                 (arguments '("Console.Error"))))
            (option (simple-format #f "~s" "--debug")))
-       (sm:if* (sm:call (name "getopt") (arguments (list "argv" option)))
+       (sm:if* (sm:call (name "dzn_getopt") (arguments (list "argv" option)))
                (sm:compound*
                 (sm:call (name "Debug.Listeners.Add")
                          (arguments (list call-rdbuf))

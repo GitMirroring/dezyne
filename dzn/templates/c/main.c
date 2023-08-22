@@ -114,7 +114,7 @@ illegal_print (void)
 }
 
 int
-getopt (int argc, char const *argv[], char *option)
+dzn_getopt (int argc, char * const argv[], char const *option)
 {
   return (argc > 1) && (strcmp (argv[1], option) == 0);
 }

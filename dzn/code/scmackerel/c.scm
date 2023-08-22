@@ -1233,7 +1233,7 @@
          ,(sm:variable (type "dzn_map") (name "event_map"))
          ,(sm:variable (type "char*") (name "line"))
          ,(sm:assign* "global_flush_p"
-                      (sm:call (name "getopt")
+                      (sm:call (name "dzn_getopt")
                                (arguments `("argc" "argv" ,flush-string))))
          ,(sm:call (name "dzn_locator_init") (arguments '("&dzn_locator")))
          ,(sm:assign* "dzn_locator.illegal" "&illegal_print")
