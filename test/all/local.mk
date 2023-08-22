@@ -527,6 +527,7 @@ REGRESSION_TESTS =				\
  %D%/implicit_illegal_garbage			\
  %D%/implicit_temporary0			\
  %D%/implicit_temporary1			\
+ %D%/implicit_temporary2			\
  %D%/import_cycle				\
  %D%/import_path				\
  %D%/imported.space				\
