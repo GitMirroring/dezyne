@@ -139,7 +139,8 @@
 
   (test-equal "call-a||call-a"
     call-a||call-a
-    (simplify-expression call-a||call-a)))
+    (simplify-expression call-a||call-a))
 
-(test-end)
+  (test-end))
+
 (test-end)
