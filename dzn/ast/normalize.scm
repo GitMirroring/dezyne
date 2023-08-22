@@ -1289,67 +1289,30 @@ add-explicit-temporaries transformation for splitting argument lists."
         (_
          o))))
 
-  (match o
-    (($ <if>)
-     (let* ((then (split-complex-expressions (.then o)))
-            (else (split-complex-expressions (.else o)))
-            (expression (.expression o))
-            (o (graft o
-                      #:expression expression
-                      #:then then
-                      #:else else)))
-       (if (split-complex? o) (split o)
-           o)))
-    ((or ($ <assign>) ($ <call>) ($ <reply>) ($ <return>))
-     (if (split-complex? o) (split o)
-         o))
-    (($ <variable>)
-     (if (not (split-complex? o)) o
-         (let* ((parent (tree:parent o))
-                (expression (.expression o))
-                (expression (simplify-expression expression))
-                (o (graft* parent o #:expression expression))
-                (variable assign (split-variable o))
-                (o (split (graft assign #:expression expression)))
-                (parent (tree:ancestor o <statement>)))
-           (graft parent (make <compound>
-                           #:elements (list variable o)
-                           #:location (.location o))))))
-    ((and ($ <compound>) (? ast:declarative?))
-     (clone o #:elements (map split-complex-expressions (ast:statement* o))))
-    (($ <compound>)
-     (let ((statements
-            (let loop ((statements (ast:statement* o)))
-              (match statements
-                (()
-                 '())
-                ((statement rest ...)
-                 (match statement
-                   (($ <compound>)
-                    (cons (split-complex-expressions statement) (loop rest)))
-                   ((? split-complex?)
-                    (let* ((split (split-complex-expressions statement))
-                           (split (match split
-                                    (($ <compound>) (.elements split))
-                                    (_ (list split)))))
-                      (append split (loop rest))))
-                   (else
-                    (cons statement (loop rest)))))))))
-       (clone o #:elements statements)))
-    (($ <behavior>)
-     (clone o
-            #:functions (split-complex-expressions (.functions o))
-            #:statement (split-complex-expressions (.statement o))))
-    ((? (%normalize:short-circuit?))
-     o)
-    (($ <interface>)
-     (clone o #:behavior (split-complex-expressions (.behavior o))))
-    (($ <component>)
-     (clone o #:behavior (split-complex-expressions (.behavior o))))
-    ((? (is? <ast>))
-     (tree:shallow-map split-complex-expressions o))
-    (_
-     o)))
+  (define split?
+    (conjoin (disjoin (is? <if>)
+                      (is? <assign>)
+                      (is? <reply>)
+                      (is? <return>)
+                      (is? <variable>))
+             split-complex?))
+
+  (define (split+ o)
+    (match o
+      (($ <variable>)
+       (let* ((parent (tree:parent o))
+              (expression (.expression o))
+              (expression (simplify-expression expression))
+              (o (graft* parent o #:expression expression))
+              (variable assign (split-variable o))
+              (o (split (graft assign #:expression expression)))
+              (parent (tree:ancestor o <statement>)))
+         (graft parent (make <compound>
+                         #:elements (list variable o)
+                         #:location (.location o)))))
+      (_ (split o))))
+
+  (tree:transform o split? split+))
 
 (define* (group-expressions o #:optional (group (list)))
   (match o
