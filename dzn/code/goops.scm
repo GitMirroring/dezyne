@@ -37,6 +37,7 @@
             .prefix
             .skip
             .state
+            code:prefix-equal?
             code:shared-value*)
   #:re-export (.event.name
                .from
@@ -136,3 +137,8 @@
 
 (define-method (ast:equal? (a <shared-value>) (b <shared-value>))
   (ast:equal? (.value a) (.value b)))
+
+(define-method (code:prefix-equal? (a <shared-transition>) (b <shared-transition>))
+  (and
+   (equal? (.from a) (.from b))
+   (ast:equal? (.prefix a) (.prefix b))))

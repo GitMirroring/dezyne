@@ -590,9 +590,7 @@ std::basic_ostream<Char, Traits> &")
                                  mismatch skip))
                       (skip (delete-duplicates
                              skip
-                             (lambda (a b)
-                               (and (equal? (.from a) (.from b))
-                                    (ast:equal? (.prefix a) (.prefix b)))))))
+                             code:prefix-equal?)))
                  (append skip transitions))))))
 
     (let* ((interface
@@ -658,7 +656,7 @@ std::basic_ostream<Char, Traits> &")
                        (let* ((shared (code:shared-state o))
                               (events (ast:event* o))
                               (transitions (append-map event->transitions events))
-                              (transitions (delete-duplicates transitions ast:equal?))
+                              (transitions (delete-duplicates transitions code:prefix-equal?))
                               (interface-shared (reverse (code:shared-state o))))
                          `(,(sm:method
                              (struct interface) (type "void") (name "dzn_event")
