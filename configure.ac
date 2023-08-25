@@ -79,7 +79,7 @@ dnl Check for SCMackerel sm:indent.
 GUILE_MODULE_CHECK([have_smackerel_sm_indent],
    [(scmackerel indent)], [sm:indent], [has sm:indent])
 if test "x$have_smackerel_sm_indent" != "xyes"; then
-  AC_MSG_ERROR([SCMackerel's sm:indent is missing; please upgrade to 0.5.1.])
+  AC_MSG_ERROR([SCMackerel's sm:indent is missing; please upgrade to 0.5.2.])
 fi
 
 AC_PATH_PROG([HELP2MAN], [help2man])
