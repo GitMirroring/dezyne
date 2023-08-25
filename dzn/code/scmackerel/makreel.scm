@@ -760,7 +760,7 @@
          (set! cache (acons o result cache))
          result)))))
 
-(define %sm:internal-action
+(define %internal-action
   (let ((cache '()))
     (lambda (o)
       (or
@@ -774,7 +774,7 @@
                                        (type (%modeling o))))))
                 (($ <port>)
                  (sm:action
-                  (inherit (%sm:internal-action (.type o)))
+                  (inherit (%internal-action (.type o)))
                   (prefix (port-prefix "internal" o)))))))
          (set! cache (acons o result cache))
          result)))))
@@ -1055,7 +1055,7 @@
          (event-name (format #f "~a'~a" (ast:direction o) (.event.name o))))
     (cond
      ((ast:modeling? o)
-      (sm:invoke (%sm:internal-action model) (model-prefix (.event.name o) model)))
+      (sm:invoke (%internal-action model) (model-prefix (.event.name o) model)))
      (else
       (sm:invoke (if (ast:in? o) (%in-action model) (%out-action model))
                  (model-prefix event-name interface)
@@ -1861,7 +1861,7 @@
               (sm:sum (var "i")
                       (type (%modeling o))
                       (statement
-                       (sm:sequence* (sm:invoke (%sm:internal-action o) var)
+                       (sm:sequence* (sm:invoke (%internal-action o) var)
                                      (sm:goto (name (model-prefix "reorder_internal"))))))
               (sm:sum (var "i")
                       (type (%state o))
@@ -1949,7 +1949,7 @@
                                 (sm:multi-event (events
                                                  (list (%reply-action o))))))
                 (sm:comm-event (from (sm:multi-event (events
-                                                      (list (%sm:internal-action o))))))
+                                                      (list (%internal-action o))))))
                 (sm:comm-event (from
                                 (sm:multi-event (events
                                                  (list (%end-action o))))))
@@ -2012,7 +2012,7 @@
                       (type (%modeling o))
                       (statement
                        (sm:sequence*
-                        (sm:invoke (%sm:internal-action o) var)
+                        (sm:invoke (%internal-action o) var)
                         (sm:union*
                          (sm:goto (name (model-prefix "semantics_flush")))
                          (sm:sequence*
@@ -2080,7 +2080,7 @@
                 (sm:comm-event (from (sm:multi-event (events
                                                       (list (%out-action o))))))
                 (sm:comm-event (from (sm:multi-event (events
-                                                      (list (%sm:internal-action o))))))
+                                                      (list (%internal-action o))))))
                 (sm:comm-event (from
                                 (sm:multi-event (events
                                                  (list (%reply-action o))))))
@@ -2216,8 +2216,8 @@
                                           (to (%out-action o)))
                          (sm:rename-event (from (%reply-action interface))
                                           (to (%reply-action o)))
-                         (sm:rename-event (from (%sm:internal-action interface))
-                                          (to (%sm:internal-action o)))
+                         (sm:rename-event (from (%internal-action interface))
+                                          (to (%internal-action o)))
                          (sm:rename-event (from (%end-action interface))
                                           (to (%end-action o)))
                          (sm:rename-event (from (%state-action interface))
@@ -2267,7 +2267,7 @@
                                                         (arguments '())))))
                         (sm:sum (type (%modeling interface))
                                 (statement
-                                 (sm:sequence* (sm:invoke (%sm:internal-action p))
+                                 (sm:sequence* (sm:invoke (%internal-action p))
                                                (sm:goto (name "provides_out")
                                                         (arguments '()))))))))
                    provides))))
@@ -2319,7 +2319,7 @@
                                                      (arguments '()))))))))
                         (sm:sum (type (%modeling interface))
                                 (statement
-                                 (sm:sequence* (sm:invoke (%sm:internal-action p))
+                                 (sm:sequence* (sm:invoke (%internal-action p))
                                                (sm:goto (name "provides_out")
                                                         (arguments '())))))
                         (sm:sequence* (%end-action p)
@@ -2377,7 +2377,7 @@
                                           (list (%out-action p))))))
                    (sm:comm-event (from (sm:multi-event
                                          (events
-                                          (list (%sm:internal-action p))))))
+                                          (list (%internal-action p))))))
                    (sm:comm-event (from
                                    (sm:multi-event (events
                                                     (list (%reply-action p))))))
@@ -2578,7 +2578,7 @@
               (sm:if* (simple-format #f "l != [] && ~a (head (l))"
                                      (port-prefix "is" o))
                       (sm:sequence*
-                       (sm:invoke (%sm:internal-action o)
+                       (sm:invoke (%internal-action o)
                                   (model-prefix "inevitable" interface))
                        (sm:invoke (%qout-action o)
                                   ;; XXX WTF "projection?"
@@ -2600,7 +2600,7 @@
              (sm:rename
               (process (port-prefix "_port" o))
               (events (list
-                       (sm:rename-event (from (%sm:internal-action o))
+                       (sm:rename-event (from (%internal-action o))
                                         (to (%tau-modeling-action interface)))
                        (sm:rename-event (from (%end-action o))
                                         (to %tau-void-action))
@@ -2642,7 +2642,7 @@
                             (%in-action o)
                             (%qout-action o)
                             (%reply-action o)
-                            (%sm:internal-action o)
+                            (%internal-action o)
                             (%end-action o)
                             (%flush-action o)
                             (%port-queue-full-action o)))))))
@@ -2777,7 +2777,7 @@
                           (list
                            (%in-action p)
                            (%reply-action p)
-                           (%sm:internal-action p)
+                           (%internal-action p)
                            (%qout-action p)
                            (%end-action p)
                            (%flush-action p)
@@ -2849,7 +2849,7 @@
              (sm:sum (type (%modeling interface))
                      (statement
                       (sm:sequence*
-                       (sm:invoke (%sm:internal-action p))
+                       (sm:invoke (%internal-action p))
                        (%end-action p)
                        (sm:goto (name name)
                                 (arguments '()))))))
@@ -2904,7 +2904,7 @@
         (sm:sum (type (%modeling interface))
                 (statement
                  (sm:sequence*
-                  `(,(sm:invoke (%sm:internal-action p))
+                  `(,(sm:invoke (%internal-action p))
                     ,(%end-action p)
                     ,(sm:union*
                       (list
@@ -3449,7 +3449,7 @@
                 (sm:sum (type (%modeling interface))
                         (statement
                          (sm:sequence*
-                          `(,(sm:invoke (%sm:internal-action p))
+                          `(,(sm:invoke (%internal-action p))
                             ,(%end-action p)
                             ,(sm:goto
                               (name "semantics_blocked")
@@ -3655,7 +3655,7 @@
                                (lambda (p)
                                  (list
                                   (%in-action p)
-                                  (%sm:internal-action p)
+                                  (%internal-action p)
                                   (%end-action p)
                                   (%reply-action p)
                                   (%state-action p)))
@@ -3750,7 +3750,7 @@
                                             (list (%reply-action p))))))
                      (sm:comm-event (from (sm:multi-event
                                            (events
-                                            (list (%sm:internal-action p))))))
+                                            (list (%internal-action p))))))
                      (sm:comm-event (from (sm:multi-event
                                            (events
                                             (list (%qout-action p))))))
@@ -4023,7 +4023,7 @@
                                  (list
                                   (%in-action p)
                                   (%reply-action p)
-                                  (%sm:internal-action p)
+                                  (%internal-action p)
                                   (%end-action p)
                                   (%qout-action p)
                                   (%state-action p)
