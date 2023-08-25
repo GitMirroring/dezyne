@@ -137,10 +137,8 @@
        (else
         (ast->code statement))))
      (else
-      (let ((statement (if (not (is-a? statement <if>)) statement
-                           (code:wrap-compound statement) )))
-        (sm:if* (ast->expression expression)
-                (ast->code statement)))))))
+      (sm:if* (ast->expression expression)
+              (ast->code statement))))))
 
 (define-method (declarative-compound->code (o <compound>))
   (define (guard->code guard code)

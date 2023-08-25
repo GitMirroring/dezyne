@@ -245,10 +245,8 @@ std::basic_ostream<Char, Traits> &")
        (else
         (ast->code statement))))
      (else
-      (let ((statement (if (not (is-a? statement <if>)) statement
-                           (code:wrap-compound statement) )))
-       (sm:if* (c++:ast->expression expression)
-               (ast->code statement)))))))
+      (sm:if* (c++:ast->expression expression)
+              (ast->code statement))))))
 
 ;;; imperative
 (define-method (ast->code (o <blocking-compound>))

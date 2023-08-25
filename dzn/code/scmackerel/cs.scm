@@ -126,10 +126,8 @@
        (else
         (ast->code statement))))
      (else
-      (let ((statement (if (not (is-a? statement <if>)) statement
-                           (code:wrap-compound statement) )))
-        (sm:if* (ast->expression expression)
-                (ast->code statement)))))))
+      (sm:if* (ast->expression expression)
+              (ast->code statement))))))
 
 ;;; imperative
 (define-method (ast->code (o <blocking-compound>))
