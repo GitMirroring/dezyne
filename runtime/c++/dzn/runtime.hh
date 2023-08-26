@@ -297,8 +297,9 @@ void wrap_out (C *component, P &port, E event, char const *name)
   if (!port.dzn_busy) port.dzn_update_state (component->dzn_locator);
   component->dzn_runtime.enqueue
     (port.dzn_meta.provide.component, component,
-     [component, &port, event, name]
+     [component, &port, &os, event, name]
      {
+       trace_qout (os, port.dzn_meta, name);
        event ();
      }, coroutine_id (component->dzn_locator));
   prune_deferred (component->dzn_locator);
