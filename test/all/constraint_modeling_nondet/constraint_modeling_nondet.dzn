@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,7 +35,7 @@ interface ihello
     status s = status.A;
     on hello: reply (s);
     on inevitable: {bye; world; s = status.B;}
-    on inevitable: {bye; cruel; s = status.C;}
+    on inevitable: {bye; bye; cruel; s = status.C;}
   }
 }
 
@@ -60,7 +61,7 @@ component constraint_modeling_nondet
   {
     ihello.status s = ihello.status.A;
     on h.hello (): reply (s);
-    on w.world (): {h.bye (); h.cruel (); s = ihello.status.C;}
-    on w.cruel (): {h.bye (); h.cruel (); s = ihello.status.C;}
+    on w.world (): {h.bye (); h.bye (); h.cruel (); s = ihello.status.C;}
+    on w.cruel (): {h.bye (); h.bye (); h.cruel (); s = ihello.status.C;}
   }
 }
