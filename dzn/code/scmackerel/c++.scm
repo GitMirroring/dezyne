@@ -24,6 +24,7 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
+
   #:use-module (scmackerel code)
   #:use-module (scmackerel header)
 
@@ -549,49 +550,43 @@ std::basic_ostream<Char, Traits> &")
        (string-append "this->dzn_peer->" (.name variable))
        (string-append "this->" (.name variable))))
 
-    (define (remove-non-matching-node transition event-name)
-      (let ((prefix (reverse (ast:statement* (.prefix transition)))))
-        (let loop ((prefix prefix) (result '()))
-          (cond ((null? prefix)
-                 result)
-                ((equal? (.value (car prefix)) event-name)
-                 (loop (cdr prefix) (cons (reverse prefix) result)))
-                (else
-                 (loop (cdr prefix) result))))))
+    (define (non-rtc-transitions transition event)
+      "The runtime library cannot determine run to completion a priori.
+Non-rtc prefixes must not update the state of a port.  This function
+produces those prefixes and marks them with #:skip #true."
+      (let* ((event-name (.name event))
+             (prefix (ast:statement* (.prefix transition)))
+             (rtc? (and (ast:out? event)
+                        (equal? (.value (last prefix)) event-name))))
+        (if rtc? '()
+            (let loop ((prefix prefix))
+              (cond
+               ((or (null? prefix)
+                    (and (ast:in? event)
+                         (>= 2 (length prefix))))
+                '())
+               ((ast:in? event)
+                (let* ((prefix (drop-right prefix 1))
+                       (transition (clone transition
+                                          #:prefix (make <compound>
+                                                     #:elements prefix)
+                                          #:skip #t)))
+                  (cons transition (loop prefix))))
+               ((equal? (.value (last prefix))
+                        event-name)
+                (let ((transition (clone transition
+                                         #:prefix (make <compound>
+                                                    #:elements prefix)
+                                         #:skip #t)))
+                  (cons transition (loop (drop-right prefix 1)))))
+               (else
+                (loop (drop-right prefix 1))))))))
 
     (define (event->transitions event)
-      (let ((transitions (code:shared event)))
-        (cond ((ast:in? event)
-               (append
-                (append-map
-                 (lambda (transition)
-                   (let loop ((prefix ((compose reverse ast:statement* .prefix) transition)))
-                     (if (= 2 (length prefix)) '()
-                         (cons (clone transition
-                                      #:prefix (make <compound>
-                                                 #:elements (reverse (cdr prefix)))
-                                      #:skip #t)
-                               (loop (cdr prefix))))))
-                 (filter (lambda (transition)
-                           (let ((prefix ((compose reverse ast:statement* .prefix) transition)))
-                             (< 2 (length prefix))))
-                         transitions))
-                transitions))
-              (else
-               (let* ((event-name (.name event))
-                      (mismatch (filter (compose not (cute equal? event-name <>)
-                                                 .value last ast:statement* .prefix)
-                                        transitions))
-                      (skip (append-map (cute remove-non-matching-node <> event-name) mismatch))
-                      (skip (map (lambda (mismatch skip)
-                                   (clone mismatch
-                                          #:prefix (make <compound> #:elements skip)
-                                          #:skip #t))
-                                 mismatch skip))
-                      (skip (delete-duplicates
-                             skip
-                             code:prefix-equal?)))
-                 (append skip transitions))))))
+      (let* ((transitions (code:shared event))
+             (non-rtc-transitions
+              (append-map (cute non-rtc-transitions <> event) transitions)))
+        (append non-rtc-transitions transitions)))
 
     (let* ((interface
             (sm:struct
