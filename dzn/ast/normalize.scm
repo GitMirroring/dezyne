@@ -816,13 +816,20 @@ to prevent unintended shadowing
   "Tranform reply into return + side-effects: local or member variable,
 assignment, blocking release."
   (define (has-reply? o)
-    (tree:get o (is? <reply>)))
+    (find (is? <reply>) (ast:statement* o)))
   (define (reply->variable o)
     (if (not (is-a? o <reply>)) o
-        (let ((type (ast:type o)))
+        (let* ((type (pke 'type (ast:type o)))
+               (local-type? (eq? (tree:ancestor type <model>)
+                                 (tree:ancestor o <model>)))
+               (type-name
+                (cond
+                 ((is-a? type <subint>) (.name (ast:type (make <int>))))
+                 (local-type? (.name type))
+                 (else (ast:dotted-name type)))))
           (make <variable>
             #:name ((@ (dzn code) code:reply-var) type)
-            #:type.name (.name type) #:expression (.expression o)))))
+            #:type.name type-name #:expression (.expression o)))))
 
   (define (compound:reply->return o)
     (let* ((statements (ast:statement* o)))
@@ -832,7 +839,7 @@ assignment, blocking release."
                                      (list (make <return>
                                              #:expression (.expression reply))))))
         (_
-         (let* ((reply (find (is? <reply>) statements))
+         (let* ((reply (has-reply? o))
                 (type (ast:type reply))
                 (reference (make <reference>
                              #:name ((@ (dzn code) code:reply-var) type))))
