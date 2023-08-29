@@ -641,25 +641,6 @@ transformations."
   (let ((shared (makreel:shared* o)))
     (delete-duplicates shared ast:equal?)))
 
-(define-method (print-ast (o <shared-var>) port)
-  (let ((lst (ast:full-name o)))
-    (display (string-join lst "") port)))
-
-(define-method (print-ast (o <shared-field-test>) port)
-  (let* ((variable (.variable o))
-         (type (.type variable))
-         (type-name (make <scope.name> #:ids (ast:full-name type)))
-         (enum-literal (make <enum-literal>
-                         #:type.name type-name
-                         #:field (.field o)))
-         (enum-literal (clone enum-literal #:parent (.parent o)))
-         (var (make <var> #:name (makreel:full-name (.variable o))))
-         (expression (make <equal>
-                       #:left var
-                       #:right enum-literal))
-         (expression (clone expression)))
-    (print-ast expression port)))
-
 
 ;;;
 ;;; Entry points.
