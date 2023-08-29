@@ -279,7 +279,7 @@
 (define-method (.port (o <action>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
-(define-method (.port (o <reply>))
+(define-method (.port (o <return>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
 (define-method (.port (o <end-point>))

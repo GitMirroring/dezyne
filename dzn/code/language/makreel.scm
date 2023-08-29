@@ -710,6 +710,7 @@ transformations."
                   (with-root purge-data+add-defer-end)
                   (if (%no-unreachable?) identity (with-root tag-imperative-blocks))
                   ;; (with-root purge-data)
+                  (with-root reply->return)
                   ) ast)))
       (when (> (dzn:debugity) 1)
         (ast:pretty-print root (current-error-port)))

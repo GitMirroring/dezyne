@@ -386,6 +386,7 @@
   (port.name))
 
 (define-ast <return> (<imperative>)
+  (port.name)
   (expression #:init-form (make <literal>)))
 
 (define-ast <stack> (<ast>))

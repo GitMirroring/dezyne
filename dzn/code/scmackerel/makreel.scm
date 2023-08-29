@@ -1106,7 +1106,7 @@
                (model-prefix event-name interface)
                #:keep-constructor? #t)))
 
-(define-method (ast->action (o <reply>))
+(define-method (ast->action (o <return>))
   (let* ((model (tree:ancestor o <model>))
          (model (or (as model <interface>)
                     (.port o)
@@ -1360,16 +1360,6 @@
         (statement (sm:goto (name (statement->process-name next))
                             (arguments (makreel:process-parens next)))))))))
 
-(define-method (ast->process (model <model>) (o <reply>) (next <ast>))
-  (sm:process
-    (name (statement->process-name o))
-    (formals (makreel:process-formals o))
-    (statement
-     (sm:sequence*
-      (ast->action o)
-      (sm:goto (name (statement->process-name next))
-               (arguments (makreel:process-parens next)))))))
-
 (define-method (assign->sum (model <model>) (o <action>) (variable <variable>))
   (let* ((port (.port o))
          (action-type (ast:type o))
@@ -1378,7 +1368,7 @@
          (shared? (find (compose (cute eq? <> port) .port) shared)))
     (sm:sum (type (makreel:reply-type o))
             (statement
-             (let* ((reply (make <reply>
+             (let* ((reply (make <return>
                              #:port.name (.name port)
                              #:expression o))
                     (reply (graft (tree:parent o) reply))
@@ -1570,19 +1560,30 @@
          (type (ast:type function))
          (expression (.expression o))
          (expression (makreel:ast->expression expression)))
-    (sm:process
-      (name (statement->process-name o))
-      (formals (makreel:process-formals o))
-      (statement
-       (sm:sequence*
-        `(,@(makreel:type->out-of-range-processes type expression)
-          ,%return-action
-          ,(sm:goto
-            (name (model-prefix "return" model))
-            (arguments (list
-                        (sm:is*
-                         "return_value"
-                         (makreel:return->value o)))))))))))
+    (cond
+     (function
+      (sm:process
+        (name (statement->process-name o))
+        (formals (makreel:process-formals o))
+        (statement
+         (sm:sequence*
+          `(,@(makreel:type->out-of-range-processes type expression)
+            ,%return-action
+            ,(sm:goto
+              (name (model-prefix "return" model))
+              (arguments (list
+                          (sm:is*
+                           "return_value"
+                           (makreel:return->value o))))))))))
+     (else
+      (sm:process
+        (name (statement->process-name o))
+        (formals (makreel:process-formals o))
+        (statement
+         (sm:sequence*
+          (ast->action o)
+          (sm:goto (name (statement->process-name next))
+                   (arguments (makreel:process-parens next))))))))))
 
 ;;; FIXME: split into interface / component?
 (define-method (ast->process (model <model>) (o <assign>) (next <ast>))

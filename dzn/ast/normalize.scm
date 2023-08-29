@@ -470,7 +470,7 @@
         (let ((statement (ast:add-statement statement (make <the-end>))))
           (clone o #:statement statement)))))
 
-(define-method (add-void-reply (o <canonical-on>))
+(define-method (add-void-return (o <canonical-on>))
   (let* ((trigger (.trigger o))
          (port (.port trigger))
          (statement (.statement o))
@@ -489,7 +489,7 @@
                                                  (compose (cute eq? port <>)
                                                           .port))))))))))
     (if (not reply?) o
-        (let ((statement (ast:add-statement (.statement o) (make <reply>))))
+        (let ((statement (ast:add-statement (.statement o) (make <return>))))
           (clone o #:statement statement)))))
 
 (define-method (illegal->declarative-illegal (o <canonical-on>))
@@ -548,7 +548,7 @@ guarded occurrences."
                 (cut implicit-illegals->explicit-illegals model <>
                      #:make-illegal make-declarative-illegal/illegal)
                 (cute map add-the-end <>)
-                (cute map add-void-reply <>)
+                (cute map add-void-return <>)
                 (cute map illegal->declarative-illegal <>)
                 statement->canonical-on
                 .statement
