@@ -313,6 +313,7 @@ REGRESSION_TESTS =				\
  %D%/double_collateral_blocking_shell		\
  %D%/double_hello_block				\
  %D%/double_inevitable				\
+ %D%/early_reply				\
  %D%/empty_dollars				\
  %D%/end_of_trail				\
  %D%/end_of_trail_action			\
