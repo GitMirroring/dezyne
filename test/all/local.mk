@@ -462,6 +462,7 @@ REGRESSION_TESTS =				\
  %D%/shared_assign				\
  %D%/shared_async_provides			\
  %D%/shared_async_requires			\
+ %D%/shared_block				\
  %D%/shared_defer				\
  %D%/shared_double_inevitable			\
  %D%/shared_enum				\
