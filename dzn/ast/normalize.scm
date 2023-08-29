@@ -57,6 +57,7 @@
             remove-behavior
             remove-location
             remove-otherwise
+            reply->return
             simplify-guard-expressions
             split-complex-expressions
             split-variable
@@ -809,6 +810,36 @@ to prevent unintended shadowing
     (conjoin (is? <function>)
              (compose (is? <void>) ast:type)))
   (tree:transform o void-function-with-implicit-return? add-return))
+
+
+(define-method (reply->return (o <root>))
+  "Tranform reply into return + side-effects: local or member variable,
+assignment, blocking release."
+  (define (has-reply? o)
+    (tree:get o (is? <reply>)))
+  (define (reply->variable o)
+    (if (not (is-a? o <reply>)) o
+        (let ((type (ast:type o)))
+          (make <variable>
+            #:name ((@ (dzn code) code:reply-var) type)
+            #:type.name (.name type) #:expression (.expression o)))))
+
+  (define (compound:reply->return o)
+    (let* ((statements (ast:statement* o)))
+      (match statements
+        ((statements ... (and ($ <reply>) reply))
+         (clone o #:elements (append statements
+                                     (list (make <return>
+                                             #:expression (.expression reply))))))
+        (_
+         (let* ((reply (find (is? <reply>) statements))
+                (type (ast:type reply))
+                (reference (make <reference>
+                             #:name ((@ (dzn code) code:reply-var) type))))
+           (clone o #:elements (append (map reply->variable statements)
+                                       (list (make <return>
+                                               #:expression reference)))))))))
+  (tree:transform o (conjoin (is? <compound>) has-reply?) compound:reply->return))
 
 
 (define-method (extract-call (o <root>))

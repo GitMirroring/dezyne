@@ -57,6 +57,7 @@
                purge-data
                remove-otherwise
                remove-behavior
+               reply->return
                simplify-guard-expressions
                split-complex-expressions
                tag-imperative-blocks
