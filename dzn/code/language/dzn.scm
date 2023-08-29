@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017, 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
@@ -312,7 +312,7 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <event>) port)
   (simple-format port "~a " (.direction o))
-  (print-ast (ast:type o) port)
+  (print-type (ast:type o) port)
   (simple-format port " ~a (" (.name o))
   (print-ast-join (ast:formal* o) port ", ")
   (display ");\n" port))
@@ -353,7 +353,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-brace-close port))
 
 (define-method (print-ast (o <function>) port)
-  (print-ast (ast:type o) port)
+  (print-type (ast:type o) port)
   (simple-format port " ~a (" (.name o))
   (print-ast-join (ast:formal* o) port ", ")
   (display ")" port)
