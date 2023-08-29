@@ -540,7 +540,7 @@ std::basic_ostream<Char, Traits> &")
            (cons (sm:comment* (string-append
                                "//" (number->string (.from transition))
                                ":" (string-join (map .value prefix) ",")))
-                 (if (.skip transition) `(,(sm:return*))
+                 (if (not (.rtc? transition)) `(,(sm:return*))
                      `(,(sm:assign* "dzn_state" state)
                        ,@assignments
                        ,(sm:break)))))))))
@@ -553,7 +553,7 @@ std::basic_ostream<Char, Traits> &")
     (define (non-rtc-transitions transition event)
       "The runtime library cannot determine run to completion a priori.
 Non-rtc prefixes must not update the state of a port.  This function
-produces those prefixes and marks them with #:skip #true."
+produces those prefixes and marks them with #:rtc? #false."
       (let* ((event-name (.name event))
              (prefix (ast:statement* (.prefix transition)))
              (rtc? (and (ast:out? event)
@@ -570,14 +570,14 @@ produces those prefixes and marks them with #:skip #true."
                        (transition (clone transition
                                           #:prefix (make <compound>
                                                      #:elements prefix)
-                                          #:skip #t)))
+                                          #:rtc? #f)))
                   (cons transition (loop prefix))))
                ((equal? (.value (last prefix))
                         event-name)
                 (let ((transition (clone transition
                                          #:prefix (make <compound>
                                                     #:elements prefix)
-                                         #:skip #t)))
+                                         #:rtc? #f)))
                   (cons transition (loop (drop-right prefix 1)))))
                (else
                 (loop (drop-right prefix 1))))))))

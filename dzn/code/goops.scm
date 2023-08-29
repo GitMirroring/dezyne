@@ -35,7 +35,7 @@
             .assign
             .other
             .prefix
-            .skip
+            .rtc?
             .state
             code:prefix-equal?
             code:shared-value*)
@@ -93,7 +93,7 @@
   (from)
   (prefix)
   (to)
-  (skip #:init-value #f))
+  (rtc? #:init-value #t))
 
 (define-ast <shared-state> (<ast>)
   (state)
