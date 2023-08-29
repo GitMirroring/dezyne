@@ -198,6 +198,9 @@
                           (port-prefix "s" port)))
          shared)))
 
+(define-method (makreel:shared-process-arguments (o <action-reply>))
+  (makreel:shared-process-arguments (.action o)))
+
 (define-method (makreel:enum-type (o <enum>))
   (string-append (makreel:full-name o) "enum"))
 
