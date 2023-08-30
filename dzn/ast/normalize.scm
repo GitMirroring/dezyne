@@ -469,10 +469,13 @@
          (the-end (make <the-end>))
          (return-index (list-index (is? <return>) elements)))
     (if (not return-index) (clone o #:elements `(,@elements ,the-end))
-     (clone o #:elements `(,@(take elements (1+ return-index))
-                           ,the-end
-                           ;;,@(drop elements (1- return-index)) ;;TODO FIXME
-                           )))))
+        (clone o #:elements `(,@(take elements (1+ return-index))
+                              ,the-end
+                              ;;,@(drop elements (1- return-index)) ;;TODO FIXME
+                              )))))
+
+(define-method (add-the-end (o <if>))
+  (make <compound> #:elements (list o (make <the-end>))))
 
 (define-method (add-the-end (o <statement>))
   (make <compound> #:elements (list (make <the-end>) o)))
