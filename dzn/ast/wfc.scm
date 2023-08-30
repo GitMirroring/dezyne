@@ -778,7 +778,7 @@
          (last-statement-block (last-statement (outer-compound o))))
     (append wfce
             (cond ((not function)
-                   `(,(wfc-error o "cannot use return outside of function")))
+                   '())
                   ((pair? wfce) '())
                   ((not (equal-type? function-type return-type))
                    `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
