@@ -1424,9 +1424,9 @@
                   ,(sm:goto (name (statement->process-name next))
                             (arguments (makreel:process-parens o))))
                 `(,@(if (not void-reply?) '()
-                        (let* ((reply (make <reply> #:port.name (.name port)))
-                               (reply (graft (tree:parent o) reply)))
-                          `(,(ast->action reply))))
+                        (let* ((return (make <return> #:port.name (.name port)))
+                               (return (graft (tree:parent o) return)))
+                          `(,(ast->action return))))
                   ,(cond ((and=> port ast:external?)
                           (sm:goto (name (statement->process-name next))
                                    (arguments (makreel:process-parens next))))
@@ -1702,8 +1702,8 @@
       (formals (makreel:process-formals o))
       (statement
        (sm:sequence*
-        `(,(if (ast:modeling? trigger) (%end-action model)
-               (%reorder-end-action model))
+        `(,@(if (not (ast:modeling? trigger)) '()
+                `(,(%end-action model)))
           ,(sm:goto (name (statement->process-name next))
                     (arguments (makreel:process-parens next)))))))))
 
@@ -1882,300 +1882,15 @@
 ;;;
 ;;; Interface.
 ;;;
-(define-method (interface-reorder-processes (o <interface>))
-  (let* ((interface-reorder
-          (sm:process
-            (name (model-prefix "reorder"))
-            (statement
-             (sm:union*
-              (sm:sequence*
-               (sm:sum (type (%events o))
-                       (statement
-                        (sm:sequence*
-                         (sm:invoke (%in-action o))
-                         (sm:union*
-                          (sm:sum (var "i")
-                                  (type (%state o))
-                                  (statement
-                                   (sm:sequence*
-                                    (sm:invoke (%state-action o) var)
-                                    (sm:goto
-                                     (name (model-prefix "reorder_reply"))))))
-                          (sm:sum (var "i")
-                                  (type (%replies o))
-                                  (statement
-                                   (sm:sequence* (sm:invoke (%reply-action o) var)
-                                                 (sm:goto (name
-                                                           (model-prefix "reorder_replied"))
-                                                          (arguments (list var))))))
-                          (sm:sequence* (%reorder-end-action o)
-                                        %missing-reply-action
-                                        %sm:delta))))))
-              (sm:sum (var "i")
-                      (type (%modeling o))
-                      (statement
-                       (sm:sequence* (sm:invoke (%internal-action o) var)
-                                     (sm:goto (name (model-prefix "reorder_internal"))))))
-              (sm:sum (var "i")
-                      (type (%state o))
-                      (statement
-                       (sm:sequence* (sm:invoke (%state-action o) var)
-                                     (sm:goto (name name)))))))))
-         (interface-reorder-internal
-          (sm:process
-            (name (model-prefix "reorder_internal"))
-            (statement
-             (sm:union*
-              (sm:sequence*
-               (%end-action o)
-               (sm:goto (name (model-prefix "reorder"))))
-              (sm:sum (var "i")
-                      (type (%state o))
-                      (statement
-                       (sm:sequence*
-                        (sm:invoke (%state-action o) var)
-                        (sm:goto (name name)))))))))
-         (interface-reorder-reply
-          (sm:process
-            (name (model-prefix "reorder_reply"))
-            (statement
-             (sm:union*
-              (sm:sum (var "i")
-                      (type (%replies o))
-                      (statement
-                       (sm:sequence* (sm:invoke (%reply-action o) var)
-                                     (sm:goto (name
-                                               (model-prefix "reorder_replied"))
-                                              (arguments (list var))))))
-              (sm:sum (var "i")
-                      (type (%state o))
-                      (statement
-                       (sm:sequence*
-                        (sm:invoke (%state-action o) var)
-                        (sm:goto (name name)))))))))
-         (interface-reorder-replied
-          (let ((reply "r"))
-            (sm:process
-              (name (model-prefix "reorder_replied"))
-              (formals (list (sm:formal (type (%replies o)) (name reply))))
-              (statement
-               (sm:union*
-                (sm:sequence* (%reorder-end-action o)
-                              (sm:invoke (%reply-reordered-action o) reply)
-                              (sm:goto (name (model-prefix "reorder"))))
-                (sm:sum (var "i")
-                        (type (%replies o))
-                        (statement
-                         (sm:sequence* (sm:invoke (%reply-action o) var)
-                                       %second-reply-action
-                                       %sm:delta)))
-                (sm:sum (var "i")
-                        (type (%state o))
-                        (statement
-                         (sm:sequence* (sm:invoke (%state-action o) var)
-                                       (sm:goto (name name)
-                                                (arguments '()))))))))))
-         (members (ast:variable* o))
+(define-method (interface-processes (o <interface>))
+  (let* ((members (ast:variable* o))
          (member-values (map (compose makreel:ast->expression .expression) members))
-         (member-types (map .type members))
-         (interface-reordered-parallel
-          (sm:process
-            (name (model-prefix "reordered_parallel"))
-            (statement (sm:parallel*
-                        (sm:sequence*
-                         `(,@(append-map makreel:type->out-of-range-processes
-                                         member-types member-values)
-                           ,(sm:goto (name (model-prefix "behavior"))
-                                     (arguments member-values))))
-                        (model-prefix "reorder")))))
-         (interface-reordered-comm
-          (sm:process
-            (name (model-prefix "reordered_comm"))
-            (statement
-             (sm:comm
-              (process interface-reordered-parallel)
-              (events
-               (list
-                (sm:comm-event (from (sm:multi-event (events
-                                                      (list (%in-action o))))))
-                (sm:comm-event (from
-                                (sm:multi-event (events
-                                                 (list (%reply-action o))))))
-                (sm:comm-event (from (sm:multi-event (events
-                                                      (list (%internal-action o))))))
-                (sm:comm-event (from
-                                (sm:multi-event (events
-                                                 (list (%end-action o))))))
-                (sm:comm-event (from (sm:multi-event
-                                      (events
-                                       (list (%reorder-end-action o))))))
-                (sm:comm-event (from (sm:multi-event
-                                      (events
-                                       (list (%state-action o))))))))))))
-         (interface-reordered-allow
-          (sm:process
-            (name (model-prefix "reordered_allow"))
-            (statement
-             (sm:allow
-              (process interface-reordered-comm)
-              (events (list %declarative-illegal-action
-                            %missing-reply-action
-                            %range-error-action
-                            %recurse-action
-                            %return-action
-                            %second-reply-action
-                            %tag-action
-                            %tau-void-action
-                            (%flush-action o)
-                            (%out-action o)
-                            (%reply-reordered-action o)
-                            (%tau-reply-action o)))))))
-         (interface-reordered
-          (sm:process
-            (name (model-prefix "reordered"))
-            (statement
-             (sm:rename
-              (process interface-reordered-allow)
-              (events (cons*
-                       (sm:rename-event (from (sm:transpose-tick (%reply-action o)))
-                                        (to (%tau-reply-action o)))
-                       (sm:rename-event (from (%reply-reordered-action o))
-                                        (to (%reply-action o)))
-                       (sm:rename-event (from (sm:transpose-tick
-                                               (%reorder-end-action o)))
-                                        (to %tau-void-action))
-                       (sm:comm-events (sm:process-statement
-                                        interface-reordered-comm))))))))
-         (interface-semantics
-          (sm:process
-            (name (model-prefix "semantics"))
-            (statement
-             (sm:union*
-              (sm:sum (type (%state o))
-                      (statement
-                       (sm:sequence*
-                        (sm:invoke (%state-action o))
-                        (sm:goto (name name)))))
-              (sm:sum (type (%events o))
-                      (statement
-                       (sm:sequence*
-                        (sm:invoke (%in-action o))
-                        (sm:goto (name (model-prefix "semantics_sync"))))))
-              (sm:sum (var "i")
-                      (type (%modeling o))
-                      (statement
-                       (sm:sequence*
-                        (sm:invoke (%internal-action o) var)
-                        (sm:union*
-                         (sm:goto (name (model-prefix "semantics_flush")))
-                         (sm:sequence*
-                          (%end-action o)
-                          (%end-reordered-action o)
-                          (sm:goto (name (model-prefix "semantics"))))))))))))
-         (interface-semantics-sync
-          (sm:process
-            (name (model-prefix "semantics_sync"))
-            (statement
-             (sm:union*
-              (sm:sequence*
-               (sm:sum (var "i")
-                       (type (%replies o))
-                       (statement
-                        (sm:sequence* (sm:invoke (%reply-action o) var)
-                                      (sm:goto (name (model-prefix "semantics")))))))
-              (sm:sum (type (%events o))
-                      (statement
-                       (sm:sequence*
-                        (sm:invoke (%out-action o))
-                        (sm:goto (name name)))))
-              (sm:sum (type (%state o))
-                      (statement
-                       (sm:sequence*
-                        (sm:invoke (%state-action o))
-                        (sm:goto (name name)))))))))
-         (interface-semantics-flush
-          (sm:process
-            (name (model-prefix "semantics_flush"))
-            (statement
-             (sm:sum (type (%events o))
-                     (statement
-                      (sm:union*
-                       (sm:sequence*
-                        (sm:invoke (%out-action o))
-                        (sm:goto (name name)))
-                       (sm:sequence*
-                        (%end-action o)
-                        (%flush-action o)
-                        (%end-reordered-action o)
-                        (sm:goto (name (model-prefix "semantics"))))
-                       (sm:sum (var "i")
-                               (type (%state o))
-                               (statement
-                                (sm:sequence*
-                                 (sm:invoke (%state-action o) var)
-                                 (sm:goto (name name)))))))))))
-         (interface-parallel
-          (sm:process
-            (name (model-prefix "parallel"))
-            (statement
-             (sm:parallel* (model-prefix "semantics")
-                           (model-prefix "reordered")))))
-         (interface-comm
-          (sm:process
-            (name (model-prefix "comm"))
-            (statement
-             (sm:comm
-              (process interface-parallel)
-              (events
-               (list
-                (sm:comm-event (from (sm:multi-event (events
-                                                      (list (%in-action o))))))
-                (sm:comm-event (from (sm:multi-event (events
-                                                      (list (%out-action o))))))
-                (sm:comm-event (from (sm:multi-event (events
-                                                      (list (%internal-action o))))))
-                (sm:comm-event (from
-                                (sm:multi-event (events
-                                                 (list (%reply-action o))))))
-                (sm:comm-event (from
-                                (sm:multi-event (events
-                                                 (list (%end-action o))))))
-                (sm:comm-event (from
-                                (sm:multi-event (events
-                                                 (list (%state-action o))))))))))))
-         (interface-allow
-          (sm:process
-            (name (model-prefix "allow"))
-            (statement
-             (sm:allow
-              (process interface-comm)
-              (events (list %declarative-illegal-action
-                            %missing-reply-action
-                            %range-error-action
-                            %recurse-action
-                            %return-action
-                            %second-reply-action
-                            %tag-action
-                            %tau-void-action
-                            (%end-reordered-action o)
-                            (%flush-action o)
-                            (%tau-reply-action o)))))))
          (interface-internal
           (sm:process
             (name (model-prefix "interface_internal"))
             (statement
-             (sm:rename
-              (process interface-allow)
-              (events (cons*
-                       (sm:rename-event (from %recurse-action)
-                                        (to %tau-void-action))
-                       (sm:rename-event (from %return-action)
-                                        (to %tau-void-action))
-                       (sm:rename-event (from (sm:transpose-tick (%end-action o)))
-                                        (to %tau-void-action))
-                       (sm:rename-event (from (%end-reordered-action o))
-                                        (to (%end-action o)))
-                       (sm:comm-events (sm:process-statement interface-comm))))))))
+             (sm:goto (name (model-prefix "behavior"))
+                      (arguments member-values)))))
          (interface
           (sm:process
             (name (model-prefix "interface"))
@@ -2186,21 +1901,7 @@
                             (%end-action o)
                             (%flush-action o)
                             (%tau-reply-action o))))))))
-    (list interface-reorder
-          interface-reorder-reply
-          interface-reorder-replied
-          interface-reorder-internal
-          interface-reordered-parallel
-          interface-reordered-comm
-          interface-reordered-allow
-          interface-reordered
-          interface-semantics
-          interface-semantics-sync
-          interface-semantics-flush
-          interface-parallel
-          interface-comm
-          interface-allow
-          interface-internal
+    (list interface-internal
           interface)))
 
 (define-method (interface-types->scmackerel (o <interface>))
@@ -2218,12 +1919,12 @@
          (functions (makreel:called-function* behavior))
          (function-processes (append-map function->processes functions))
          (return-processes (return-processes o))
-         (reorder-processes (interface-reorder-processes o))
+         (interface-processes (interface-processes o))
          (processes `(,@behavior-processes
                       ,(makreel:caption "FUNCTIONS")
                       ,@function-processes
                       ,@return-processes
-                      ,@reorder-processes))
+                      ,@interface-processes))
          (return-type (%return-type o))
          (returns-type (%returns-type o))
          (types `(,%void

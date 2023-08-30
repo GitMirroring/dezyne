@@ -279,6 +279,9 @@
 (define-method (.port (o <action>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
+(define-method (.port (o <reply>)) ;; TODO REMOVEME
+  (and (.port.name o) (ast:lookup o (.port.name o))))
+
 (define-method (.port (o <return>))
   (and (.port.name o) (ast:lookup o (.port.name o))))
 
