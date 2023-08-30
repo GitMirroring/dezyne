@@ -1890,8 +1890,13 @@
           (sm:process
             (name (model-prefix "interface_internal"))
             (statement
-             (sm:goto (name (model-prefix "behavior"))
-                      (arguments member-values)))))
+             (sm:rename
+              (process (sm:goto (name (model-prefix "behavior"))
+                                (arguments member-values)))
+              (events (list (sm:rename-event (from %return-action)
+                                             (to %tau-void-action))
+                            (sm:rename-event (from %recurse-action)
+                                             (to %tau-void-action))))))))
          (interface
           (sm:process
             (name (model-prefix "interface"))
@@ -2146,8 +2151,6 @@
                              %second-reply-action
                              %tag-action
                              %tau-void-action
-                             %return-action
-                             %recurse-action
                              (append
                               (map %tau-reply-action provides-interfaces)
                               (append-map
@@ -2177,8 +2180,6 @@
              (sm:hide
               (process provides-rename)
               (events (cons* %tau-void-action
-                             %return-action
-                             %recurse-action
                              (append-map (lambda (i)
                                            (list (%tau-event-action i)
                                                  (%tau-modeling-action i)
