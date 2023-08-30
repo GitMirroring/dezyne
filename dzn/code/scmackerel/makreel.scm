@@ -1703,7 +1703,8 @@
       (statement
        (sm:sequence*
         `(,@(if (not (ast:modeling? trigger)) '()
-                `(,(%end-action model)))
+                `(,(%flush-action model)
+                  ,(%end-action model)))
           ,(sm:goto (name (statement->process-name next))
                     (arguments (makreel:process-parens next)))))))))
 
