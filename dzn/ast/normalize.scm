@@ -824,7 +824,8 @@ assignment, blocking release."
           ((not (is-a? o <reply>))
            o)
           (else
-           (let* ((type (ast:type o))
+           (let* ((reply-reference (@ (dzn code) code:reply-var))
+                  (type (ast:type o))
                   (local-type? (eq? (tree:ancestor type <model>)
                                     (tree:ancestor o <model>)))
                   (type-name
@@ -837,22 +838,29 @@ assignment, blocking release."
                #:type.name type-name #:expression (.expression o))))))
 
   (define (compound:reply->return o)
-    (let* ((statements (ast:statement* o)))
-      (match statements
-        ((statements ... (and ($ <reply>) reply))
-         (clone o #:elements (append statements
-                                     (list (make <return>
-                                             #:expression (.expression reply))))))
-        (_
-         (let* ((reply (has-reply? o))
-                (type (ast:type reply))
-                (expression (if (is-a? type <void>) (.expression reply)
-                                (make <reference>
-                                  #:name ((@ (dzn code) code:reply-var) type)))))
-           (clone o #:elements (append (filter-map reply->variable statements)
-                                       (list (make <return>
-                                               #:expression expression)))))))))
-  (tree:transform o (conjoin (is? <compound>) has-reply?) compound:reply->return))
+    (match o
+      (($ <reply>)
+       (make <return> #:expression (.expression o)))
+      (($ <compound>)
+       (let* ((reply-reference (@ (dzn code) code:reply-var))
+              (statements (ast:statement* o)))
+         (match statements
+           ((statements ... (and ($ <reply>) reply))
+            (clone o #:elements (append statements
+                                        (list (make <return>
+                                                #:expression (.expression reply))))))
+           (_
+            (let* ((reply (has-reply? o))
+                   (type (ast:type reply))
+                   (expression (if (is-a? type <void>) (.expression reply)
+                                   (make <reference> #:name (reply-reference type)))))
+              (clone o #:elements (append (filter-map reply->variable statements)
+                                          (list (make <return>
+                                                  #:expression expression)))))))))))
+  (tree:transform o
+                  (disjoin (conjoin (is? <compound>) has-reply?)
+                           (is? <reply>))
+                  compound:reply->return))
 
 
 (define-method (extract-call (o <root>))
