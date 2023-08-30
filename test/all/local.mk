@@ -317,6 +317,7 @@ REGRESSION_TESTS =				\
  %D%/double_inevitable				\
  %D%/early_reply				\
  %D%/early_reply_enum				\
+ %D%/early_reply_nondet				\
  %D%/empty_dollars				\
  %D%/end_of_trail				\
  %D%/end_of_trail_action			\
