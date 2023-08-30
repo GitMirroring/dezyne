@@ -2146,6 +2146,8 @@
                              %second-reply-action
                              %tag-action
                              %tau-void-action
+                             %return-action
+                             %recurse-action
                              (append
                               (map %tau-reply-action provides-interfaces)
                               (append-map
@@ -2174,12 +2176,14 @@
             (statement
              (sm:hide
               (process provides-rename)
-              (events (cons %tau-void-action
-                            (append-map (lambda (i)
-                                          (list (%tau-event-action i)
-                                                (%tau-modeling-action i)
-                                                (%tau-reply-action i)))
-                                        interfaces))))))))
+              (events (cons* %tau-void-action
+                             %return-action
+                             %recurse-action
+                             (append-map (lambda (i)
+                                           (list (%tau-event-action i)
+                                                 (%tau-modeling-action i)
+                                                 (%tau-reply-action i)))
+                                         interfaces))))))))
     (list provides-r2c
           provides-out
           provides-parallel
