@@ -49,7 +49,8 @@
             ast:name-keyword+child*
             tree:shallow-filter
             tree:shallow-map)
-  #:re-export (tree:ancestor))
+  #:re-export (tree:ancestor
+               tree:parent))
 
 ;;;
 ;;; Ast utilities.
