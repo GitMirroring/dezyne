@@ -79,6 +79,7 @@ HELLO_TESTS =					\
  %D%/hello_injected				\
  %D%/hello_int					\
  %D%/hello_interface				\
+ %D%/hello_interface_early_return		\
  %D%/hello_local				\
  %D%/hello_local_bool				\
  %D%/hello_locations				\
