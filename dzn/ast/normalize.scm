@@ -828,53 +828,57 @@ to prevent unintended shadowing
 (define-method (reply->return (o <root>))
   "Tranform reply into return + side-effects: local or member variable,
 assignment, blocking release."
+  (define compound-reply?
+    (conjoin (is? <compound>) has-reply?))
+
   (define (has-reply? o)
     (find (is? <reply>) (ast:statement* o)))
-  (define (reply->variable o)
-    (cond ((and (is-a? o <reply>)
-                (is-a? (ast:type (.expression o)) <void>))
-           #f)
-          ((not (is-a? o <reply>))
-           o)
-          (else
-           (let* ((reply-reference (@ (dzn code) code:reply-var))
-                  (type (ast:type o))
-                  (local-type? (eq? (tree:ancestor type <model>)
-                                    (tree:ancestor o <model>)))
-                  (type-name
-                   (cond
-                    ((is-a? type <subint>) (.name (ast:type (make <int>))))
-                    (local-type? (.name type))
-                    (else (ast:dotted-name type)))))
-             (make <variable>
-               #:name ((@ (dzn code) code:reply-var) type)
-               #:type.name type-name #:expression (.expression o))))))
+
+  (define single-reply?
+    (conjoin (is? <reply>) (compose (is? <on>) tree:parent)))
+
+  (define (statement:reply->return o)
+    (make <return> #:expression (.expression o)))
 
   (define (compound:reply->return o)
-    (match o
-      (($ <reply>)
-       (make <return> #:expression (.expression o)))
-      (($ <compound>)
-       (let* ((reply-reference (@ (dzn code) code:reply-var))
-              (statements (ast:statement* o)))
-         (match statements
-           ((statements ... (and ($ <reply>) reply))
-            (clone o #:elements (append statements
-                                        (list (make <return>
-                                                #:expression (.expression reply))))))
-           (_
-            (let* ((reply (has-reply? o))
-                   (type (ast:type reply))
-                   (expression (if (is-a? type <void>) (.expression reply)
-                                   (make <reference> #:name (reply-reference type)))))
-              (clone o #:elements (append (filter-map reply->variable statements)
-                                          (list (make <return>
-                                                  #:expression expression)))))))))))
-  (tree:transform o
-                  (disjoin (conjoin (is? <compound>) has-reply?)
-                           (conjoin (is? <reply>)
-                                    (compose (is? <on>) tree:parent)))
-                  compound:reply->return))
+    (define (reply->variable o)
+      (cond ((and (is-a? o <reply>)
+                  (is-a? (ast:type (.expression o)) <void>))
+             #f)
+            ((not (is-a? o <reply>))
+             o)
+            (else
+             (let* ((reply-reference (@ (dzn code) code:reply-var))
+                    (type (ast:type o))
+                    (local-type? (eq? (tree:ancestor type <model>)
+                                      (tree:ancestor o <model>)))
+                    (type-name
+                     (cond
+                      ((is-a? type <subint>) (.name (ast:type (make <int>))))
+                      (local-type? (.name type))
+                      (else (ast:dotted-name type)))))
+               (make <variable>
+                 #:name (reply-reference type)
+                 #:type.name type-name #:expression (.expression o))))))
+    (let* ((reply-reference (@ (dzn code) code:reply-reference))
+           (statements (ast:statement* o)))
+      (match statements
+        ((statements ... (and ($ <reply>) reply))
+         (clone o #:elements (append statements
+                                     (list (make <return>
+                                             #:expression (.expression reply))))))
+        (_
+         (let* ((reply (has-reply? o))
+                (type (ast:type reply))
+                (expression (if (is-a? type <void>) (.expression reply)
+                                (make <reference> #:name (reply-reference type)))))
+           (clone o #:elements (append (filter-map reply->variable statements)
+                                       (list (make <return>
+                                               #:expression expression)))))))))
+  (tree:transform
+   o
+   `((,single-reply? . ,statement:reply->return)
+     (,compound-reply? . ,compound:reply->return))))
 
 
 (define-method (extract-call (o <root>))
