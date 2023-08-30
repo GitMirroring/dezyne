@@ -55,6 +55,7 @@ HELLO_TESTS =					\
  %D%/hello_cxx20				\
  %D%/hello_data					\
  %D%/hello_defer				\
+ %D%/hello_early_return				\
  %D%/hello_else					\
  %D%/hello_enum					\
  %D%/hello_expression				\
