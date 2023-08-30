@@ -464,10 +464,23 @@
                  triggers)
      modeling)))
 
+(define-method (add-the-end (o <compound>))
+  (let* ((elements (.elements o))
+         (the-end (make <the-end>))
+         (return-index (list-index (is? <return>) elements)))
+    (if (not return-index) (clone o #:elements `(,@elements ,the-end))
+     (clone o #:elements `(,@(take elements (1+ return-index))
+                           ,the-end
+                           ;;,@(drop elements (1- return-index)) ;;TODO FIXME
+                           )))))
+
+(define-method (add-the-end (o <statement>))
+  (make <compound> #:elements (list (make <the-end>) o)))
+
 (define-method (add-the-end (o <canonical-on>))
   (let ((statement (.statement o)))
     (if (ast:illegal? statement) o
-        (let ((statement (ast:add-statement statement (make <the-end>))))
+        (let ((statement (add-the-end statement)))
           (clone o #:statement statement)))))
 
 (define-method (add-void-return (o <canonical-on>))

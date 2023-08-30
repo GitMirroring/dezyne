@@ -1121,6 +1121,8 @@ call steps over the function and returns the next statement."
       (_ (helper (tree:parent o)))))
 
   (match o
+    (($ <the-end>)
+     (list (tree:ancestor o <behavior>)))
     (($ <if>) (let ((then (.then o))
                     (else (.else o)))
                 (list then
