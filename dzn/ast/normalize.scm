@@ -835,32 +835,33 @@ assignment, blocking release."
     (find (is? <reply>) (ast:statement* o)))
 
   (define single-reply?
-    (conjoin (is? <reply>) (compose (is? <on>) tree:parent)))
+    (conjoin (is? <reply>) (compose not (is? <compound>) tree:parent)))
 
   (define (statement:reply->return o)
     (make <return> #:expression (.expression o)))
 
+  (define (reply->variable o)
+    (cond ((and (is-a? o <reply>)
+                (is-a? (ast:type (.expression o)) <void>))
+           #f)
+          ((not (is-a? o <reply>))
+           o)
+          (else
+           (let* ((reply-reference (@ (dzn code) code:reply-var))
+                  (type (ast:type o))
+                  (local-type? (eq? (tree:ancestor type <model>)
+                                    (tree:ancestor o <model>)))
+                  (type-name
+                   (cond
+                    ((is-a? type <subint>) (.name (ast:type (make <int>))))
+                    (local-type? (.name type))
+                    (else (ast:dotted-name type)))))
+             (make <variable>
+               #:name (reply-reference type)
+               #:type.name type-name #:expression (.expression o))))))
+
   (define (compound:reply->return o)
-    (define (reply->variable o)
-      (cond ((and (is-a? o <reply>)
-                  (is-a? (ast:type (.expression o)) <void>))
-             #f)
-            ((not (is-a? o <reply>))
-             o)
-            (else
-             (let* ((reply-reference (@ (dzn code) code:reply-var))
-                    (type (ast:type o))
-                    (local-type? (eq? (tree:ancestor type <model>)
-                                      (tree:ancestor o <model>)))
-                    (type-name
-                     (cond
-                      ((is-a? type <subint>) (.name (ast:type (make <int>))))
-                      (local-type? (.name type))
-                      (else (ast:dotted-name type)))))
-               (make <variable>
-                 #:name (reply-reference type)
-                 #:type.name type-name #:expression (.expression o))))))
-    (let* ((reply-reference (@ (dzn code) code:reply-reference))
+    (let* ((reply-reference (@ (dzn code) code:reply-var))
            (statements (ast:statement* o)))
       (match statements
         ((statements ... (and ($ <reply>) reply))
