@@ -859,7 +859,8 @@ assignment, blocking release."
                                                   #:expression expression)))))))))))
   (tree:transform o
                   (disjoin (conjoin (is? <compound>) has-reply?)
-                           (is? <reply>))
+                           (conjoin (is? <reply>)
+                                    (compose (is? <on>) tree:parent)))
                   compound:reply->return))
 
 
