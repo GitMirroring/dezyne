@@ -191,13 +191,13 @@
   o)
 
 (define-method (->sexp (o <enum-literal>))
-  (string-append (last (.ids (.type.name o))) ":" (.field o)))
+  (string-append (last (ast:name* (.type.name o))) ":" (.field o)))
 
 (define-method (->sexp (o <literal>))
   ((compose ->sexp .value) o))
 
 (define-method (->sexp (o <void>))
-  (last (.ids (.name o))))
+  (last (ast:name* (.name o))))
 
 (define-method (rtc? (pc <program-counter>))
   (or (.status pc)

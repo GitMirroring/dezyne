@@ -394,8 +394,8 @@ std::basic_ostream<Char, Traits> &")
 (define-method (c++:ast->expression (o <shared-field-test>))
   (let* ((variable (.variable o))
          (type (.type variable))
-         (type-name (graft o (make <scope.name>
-                               #:ids (ast:full-name type))))
+         (name* (ast:full-name type))
+         (type-name (ast:name*->name name*))
          (enum-literal (graft o (make <enum-literal>
                                   #:type.name type-name
                                   #:field (.field o))))

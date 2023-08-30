@@ -323,8 +323,7 @@
 (define-method (ast->expression (o <shared-field-test>))
   (let* ((variable (.variable o))
          (type (.type variable))
-         (type-name (make <scope.name>
-                      #:ids (ast:full-name type)))
+         (type-name (ast:dotted-name type))
          (enum-literal (make <enum-literal>
                          #:type.name type-name
                          #:field (.field o)))

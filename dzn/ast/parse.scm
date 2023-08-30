@@ -212,20 +212,16 @@ to the AST element."
 
         (('namespace name root)
          (let* ((name location comment (helper name))
-                (ids (.ids name))
+                (name* (ast:name* name))
                 (elements (helper root)))
            (define (wrap-namespace name result)
-             (let ((name (make <scope.name>
-                           #:ids (list name)
-                           #:comment comment
-                           #:location location))
-                   (elements (or (as result <null>)
+             (let ((elements (or (as result <null>)
                                  (as result <pair>)
                                  (list result))))
                (make <namespace>
                  #:name name
                  #:elements elements)))
-           (fold-right wrap-namespace elements ids)))
+           (fold-right wrap-namespace elements name*)))
 
         (('namespace-root elements ...)
          (map helper elements))
@@ -333,15 +329,15 @@ to the AST element."
 
         (('end-point name "*")
          (let* ((name (helper name))
-                (ids (.ids name))
-                (instance (and (pair? (cdr ids)) (car ids))))
+                (name* (ast:name* name))
+                (instance (and (pair? (cdr name*)) (car name*))))
            (make <end-point> #:instance instance #:port.name "*")))
 
         (('end-point name)
          (let* ((name (helper name))
-                (ids (.ids name))
-                (instance (and (pair? (cdr ids)) (car ids)))
-                (port (if (pair? (cdr ids)) (cadr ids) (car ids))))
+                (name* (ast:name* name))
+                (instance (and (pair? (cdr name*)) (car name*)))
+                (port (if (pair? (cdr name*)) (cadr name*) (car name*))))
            (make <end-point> #:instance.name instance #:port.name port)))
 
         ('ports (make <ports>))
@@ -432,16 +428,20 @@ to the AST element."
         (('direction direction) (helper direction))
 
         (('compound-name name)
-         (make <scope.name> #:ids (list (helper name))))
+         (let ((name* (list (helper name))))
+           (ast:name*->name name*)))
 
         (('compound-name scope name)
-         (make <scope.name> #:ids (append (helper scope) (list (helper name)))))
+         (let ((name* (append (helper scope) (list (helper name)))))
+           (ast:name*->name name*)))
 
         (('compound-name global scope name)
-         (make <scope.name> #:ids (append (helper global) (helper scope) (list (helper name)))))
+         (let ((name* (append (helper global) (helper scope) (list (helper name)))))
+           (ast:name*->name name*)))
 
         (('scoped-name name)
-         (make <scope.name> #:ids (list (helper name))))
+         (let ((name* (list (helper name))))
+           (ast:name*->name name*)))
 
         (('scope name) (make-list? (helper name)))
         (('scope names ...) (helper names))
@@ -581,12 +581,14 @@ to the AST element."
            #:else (helper else)))
 
         (('enum-literal type field)
-         (let ((type (helper type)))
-           (make <enum-literal> #:type.name (make <scope.name> #:ids type) #:field (helper field))))
+         (let* ((type (helper type))
+                (type-name (ast:name*->name type)))
+           (make <enum-literal> #:type.name type-name #:field (helper field))))
 
         (('enum-literal global type field)
-         (let ((type (append (helper global) (helper type))))
-           (make <enum-literal> #:type.name (make <scope.name> #:ids type) #:field (helper field))))
+         (let* ((type (append (helper global) (helper type)))
+                (type-name (ast:name*->name type)))
+           (make <enum-literal> #:type.name type-name #:field (helper field))))
 
         (('otherwise) (make <otherwise> #:value "otherwise"))
 

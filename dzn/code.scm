@@ -704,7 +704,7 @@ and pass it as argument accordingly."
                 (arguments (cons "dzn_cc" arguments)))
            (clone o #:elements arguments)))
         (($ <formals>)
-         (let* ((type-name (make <scope.name> #:ids '("*calling-context*")))
+         (let* ((type-name "*calling-context*")
                 (cc-formal (make <formal>
                              #:name "dzn_cc"
                              #:direction 'inout
@@ -712,7 +712,7 @@ and pass it as argument accordingly."
                 (formals (cons cc-formal (ast:formal* o))))
            (clone o #:elements formals)))
         (($ <root>)
-         (let* ((name (make <scope.name> #:ids '("*calling-context*")))
+         (let* ((name "*calling-context*")
                 (data (make <data> #:value (%calling-context)))
                 (extern (make <extern> #:name name #:value data))
                 (o (tree:shallow-map code:add-calling-context o)))

@@ -87,13 +87,13 @@
 
 (define-ast <locationed> (<ast>)
   (comment)
-  (location))                           ; <location>
+  (location))                           ;<location>
 
 (define-ast <comment> (<locationed>)
   (string))
 
 (define-ast <named> (<locationed>)
-  (name))                               ; symbol or <scope.name>
+  (name))                               ;<string>
 
 (define-ast <declaration> (<named>))
 (define-ast <scope> (<ast>))
@@ -102,9 +102,8 @@
 
 (define-ast <root> (<namespace> <tree:root>))
 
-(define-ast <scope.name> (<ast>)
-  (ids #:init-form (list)))
-
+(define-ast <name> (<ast>) ;REMOVEME??
+  (name))
 
 (define-ast <block-comment> (<comment>))
 (define-ast <line-comment> (<comment>))
@@ -158,15 +157,15 @@
 
 (define-ast <bool> (<type>))
 (define-method (initialize (o <bool>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name> #:ids '("bool"))))))
+  (next-method o (append (car initargs) (list #:name "bool"))))
 
 (define-ast <void> (<type>))
 (define-method (initialize (o <void>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name> #:ids '("void"))))))
+  (next-method o (append (car initargs) (list #:name "void"))))
 
 (define-ast <int> (<type>))
 (define-method (initialize (o <int>) . initargs)
-  (next-method o (append (car initargs) (list #:name (make <scope.name> #:ids '("<int>"))))))
+  (next-method o (append (car initargs) (list #:name "<int>"))))
 
 (define-ast <subint> (<int>)
   (range #:init-form (make <range>)))
@@ -196,7 +195,8 @@
 (define-method (.name (o <optional>)) "optional")
 
 (define-ast <instance> (<declaration> <declarative>)
-  (type.name #:init-form (make <scope.name>)))
+  (type.name;;;FIXME #:init-form (make <scope.name>)
+   ))
 
 (define-ast <port> (<instance>)
   (direction)                           ; symbol 'provides / 'requires

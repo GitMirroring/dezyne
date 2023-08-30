@@ -1324,9 +1324,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     ((? number?) (make <literal> #:value v))
     (_ (let ((enum (string-split (symbol->string v) #\:)))
          (match enum
-           ((ids ... field)
-            (make <enum-literal> #:type.name (make <scope.name> #:ids ids) #:field field))))) ;; FIXME: what about resolving
-    ))
+           ((name* ... field)
+            (make <enum-literal>
+              #:type.name (ast:name*->name name*)
+              #:field field)))))))
 
 
 ;;;

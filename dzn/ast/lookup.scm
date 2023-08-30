@@ -52,6 +52,7 @@
             ast:bool
             ast:int
             ast:void
+
             ast:lookup
             ast:lookup-variable
             ast:perfect-funcq
@@ -77,15 +78,6 @@
 ;;;
 ;;; Accessors.
 ;;;
-(define-method (ast:id* (o <string>))
-  (list o))
-
-(define-method (ast:id* (o <scope.name>))
-  (.ids o))
-
-(define-method (ast:id* (o <named>))
-  (ast:id* (.name o)))
-
 (define-method (ast:declaration* (o <root>))
   (filter (cute is-a? <> <declaration>) (ast:top* o)))
 
@@ -145,11 +137,8 @@
 ;;;
 ;;; Predicates.
 ;;;
-(define-method (ast:global? (o <scope.name>))
-  (match (ast:scope o)
-    (("/" scope ...)
-     #t)
-    (_ #f)))
+(define-method (ast:global? (o <string>))
+  (string-prefix? "." o))
 
 (define-method (ast:global? (o <named>))
   (ast:global? (.name o)))
@@ -187,8 +176,8 @@
        (string->symbol o))
       (((and (? string?) o) ..1)        ;scope
        (string->symbol (string-join o ".")))
-      (($ <scope.name>)                 ;name
-       (object->key (string-join (.ids o) ".")))
+      (($ <name>)                 ;name
+       (object->key (.name o)))
       (_ o)))                           ;eq?-ness already stable.
   (lambda args
     (let* ((key (cons base-func (map object->key args)))
@@ -531,7 +520,7 @@ null) and return its CONTEXT."
                      (tree:ancestor o <shared-variable>)))
          (type-name (.type.name o)))
     (cond (parent
-           (let ((type-name (last (.ids type-name))))
+           (let ((type-name (ast:name type-name)))
              (ast:lookup ((compose .behavior .type .port) parent) type-name)))
           (else
            (or (tree:ancestor o <enum>)

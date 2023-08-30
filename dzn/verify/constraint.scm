@@ -113,7 +113,7 @@ to current-output-port."
   (define (root-scope-enum value)
     (if (not (is-a? value <enum-literal>)) value
         (let* ((enum (.type value))
-               (type-name (make <scope.name> #:ids (ast:full-name enum))))
+               (type-name (ast:dotted-name enum)))
           (graft value #:type.name type-name))))
 
   (define (model-replies)

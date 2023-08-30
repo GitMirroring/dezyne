@@ -10,7 +10,7 @@
                     (end-column 2)
                     (offset 845)
                     (length 100)))
-                (name (scope.name (ids (list "ihello"))))
+                (name "ihello")
                 (events
                   (events
                     (elements
@@ -35,7 +35,7 @@
                                            (end-column 10)
                                            (offset 869)
                                            (length 4)))
-                                       (type.name (scope.name (ids (list "void"))))))
+                                       (type.name "void")))
                                    (direction 'in))
                             (event (location
                                      (location
@@ -58,7 +58,7 @@
                                            (end-column 11)
                                            (offset 889)
                                            (length 4)))
-                                       (type.name (scope.name (ids (list "void"))))))
+                                       (type.name "void")))
                                    (direction 'out))))))
                 (behavior
                   (behavior
@@ -140,7 +140,7 @@
                     (end-column 2)
                     (offset 865)
                     (length 106)))
-                (name (scope.name (ids (list "hello"))))
+                (name "hello")
                 (ports (ports (elements
                                 (list (port (location
                                               (location
@@ -152,7 +152,7 @@
                                                 (offset 885)
                                                 (length 18)))
                                             (name "h")
-                                            (type.name (scope.name (ids (list "ihello"))))
+                                            (type.name "ihello")
                                             (direction 'provides))))))
                 (behavior
                   (behavior
@@ -190,7 +190,7 @@
                                           (end-column 9)
                                           (offset 923)
                                           (length 4)))
-                                      (type.name (scope.name (ids (list "void"))))))
+                                      (type.name "void")))
                                   (statement
                                     (compound
                                       (location

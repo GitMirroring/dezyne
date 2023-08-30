@@ -46,6 +46,8 @@
             ast:formal*
             ast:function*
             ast:import*
+            ast:name*
+            ast:name*->name
             ast:instance*
             ast:member*
             ast:model*
@@ -65,7 +67,8 @@
             ast:full-name
             ast:name
             ast:name+scope
-            ast:scope)
+            ast:scope
+            ast:scoped?)
   #:re-export (%root
 
                .variable.name
@@ -167,18 +170,26 @@
 ;;;
 ;;; Scope and name.
 ;;;
-(define-method (ast:name+scope (o <scope.name>))
-  (match (.ids o)
-    ((scope ... name)
-     (values name scope))))
+(define-method (ast:scoped? (o <string>))
+  (string-index o #\.))
+
+(define-method (ast:name* (o <string>))
+  (string-split o #\.))
+
+(define-method (ast:name* (o <named>))
+  (ast:name* (.name o)))
+
+(define-method (ast:name*->name o)
+  (string-join (filter identity o) "."))
+
+(define-method (ast:name+scope (o <string>))
+  (match (string-split o #\.)
+    ((scope ... name) (values name scope))))
 
 (define-method (ast:name+scope (o <named>))
   (let ((name (.name o)))
     (if name (ast:name+scope name)
         (values #f '()))))
-
-(define-method (ast:name+scope (o <string>))
-  (values o '()))
 
 (define-method (ast:name (o <top>))
   (ast:name+scope o))
@@ -187,23 +198,29 @@
   (let ((name scope (ast:name+scope o)))
     scope))
 
-(define-method (ast:full-name (o <scope.name>))
-  (let ((ids (.ids o)))
-    (if (pair? (cdr ids)) ids
-        (append (ast:full-name (tree:ancestor o <scope>))
-                (list-head ids 1)))))
+(define-method (ast:full-name (o <string>))
+  (let ((name* (ast:name* o)))
+    (if (pair? (cdr name*)) name*
+        (list-head name* 1))))
 
-(define-method (ast:full-name-extern (o <scope.name>))
-  (let ((ids (.ids o)))
-    (if (pair? (cdr ids)) ids
-        (append (ast:full-name (tree:ancestor o <scope>))
-                (list-head ids 1)))))
+(define-method (ast:full-name (o <string>))
+  (ast:name* o))
 
 (define-method (ast:full-name (o <named>))
-  (and=> (.name o) ast:full-name))
+  (let ((name (.name o)))
+    (and name
+         (let ((name* (ast:name* o)))
+           (if (pair? (cdr name*)) name*
+               (append (ast:full-name (tree:ancestor o <scope>))
+                       (list-head name* 1)))))))
 
 (define-method (ast:full-name (o <extern>))
-  (and=> (.name o) ast:full-name-extern))
+  (let ((name (.name o)))
+    (and name
+         (let ((name* (ast:name* o)))
+           (if (pair? (cdr name*)) name*
+               (append (ast:full-name (tree:ancestor o <scope>))
+                       (list-head name* 1)))))))
 
 (define-method (ast:full-name (o <bool>))
   '("bool"))
@@ -241,9 +258,10 @@
 
 (define-method (ast:full-name (o <scope>))
   (let ((prefix (ast:full-name (tree:ancestor o <scope>))))
-    (if (and (is-a? o <named>) (is-a? (.name o) <scope.name>))
-        (append prefix (list (ast:name o)))
-        prefix)))
+    (let ((name (and=> (as o <named>) ast:name)))
+      (if name
+          (append prefix (list name))
+          prefix))))
 
 (define-method (ast:full-name (o <namespace>))
   (append (ast:full-name (tree:ancestor o <scope>)) (list (ast:name o))))

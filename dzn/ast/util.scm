@@ -68,7 +68,6 @@
                        #:event.name
                        #:field
                        #:function.name
-                       #:ids
                        #:instance.name
                        #:name
                        #:port.name

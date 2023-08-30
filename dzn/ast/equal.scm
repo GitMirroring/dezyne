@@ -48,16 +48,7 @@
 ;;; ast:name-equal?
 ;;;
 (define-method (ast:name-equal? (a <string>) (b <string>))
-  (equal? a b))
-
-(define-method (ast:name-equal? (a <scope.name>) (b <string>))
-  (and=> (ast:name a) (cut ast:name-equal? <> b)))
-
-(define-method (ast:name-equal? (b <string>) (a <scope.name>))
-  (ast:name-equal? a b))
-
-(define-method (ast:name-equal? (a <scope.name>) (b <scope.name>))
-  (and (pair? (.ids a)) (pair? (.ids b)) (ast:name-equal? (ast:name a) (ast:name b))))
+  (equal? (ast:name a) (ast:name b)))
 
 (define-method (ast:name-equal? (a <named>) (b <string>))
   (ast:name-equal? (.name a) b))
@@ -88,9 +79,6 @@
 
 (define-method (ast:equal? (a <named>) (b <named>))
   (ast:equal? (.name a) (.name b)))
-
-(define-method (ast:equal? (a <scope.name>) (b <scope.name>))
-  (equal? (.ids a) (.ids b)))
 
 (define-method (ast:equal? (a <enum-literal>) (b <enum-literal>))
   (and (ast:equal? (.type.name a) (.type.name b))

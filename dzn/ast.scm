@@ -145,6 +145,8 @@
 
                ast:equal?
                ast:full-name
+               ast:name*->name
+               ast:scoped?
                ast:name
                ast:perfect-funcq
                ast:pure-funcq
@@ -158,6 +160,7 @@
                ast:field*
                ast:formal*
                ast:function*
+               ast:name*
                ast:import*
                ast:instance*
                ast:member*
@@ -731,9 +734,9 @@
       (list (graft parent (make <literal> #:value 0)))))))
 
 (define-method (ast:values (o <variable>))
-  "Enum values include their type.name, the scope.name part of the
-type.name is determined by the context referring to the type, hence the
-overload for variable."
+  "Enum values include their type.name, the scope part of the type.name is
+determined by the context referring to the type, hence the overload for
+variable."
   (cond
    ((as (ast:type o) <enum>)
     (map (compose (cute graft (tree:parent o) <>)
@@ -796,7 +799,7 @@ overload for variable."
 (define-method (ast:value (o <literal>))
   (.value o))
 (define-method (ast:value (o <enum-literal>))
-  (string-join (append (.ids (.type.name o)) (list (.field o)))))
+  (string-join (append (ast:name* (.type.name o)) (list (.field o)))))
 
 (define-method (ast:interface* (o <component-model>))
   (let ((ports (ast:port* o)))
@@ -935,8 +938,10 @@ to bottom."
          (scoped (let loop ((list1 name) (list2 parent-name))
                    (if (and (pair? list1) (pair? list2) (equal? (car list1) (car list2)))
                        (loop (cdr list1) (cdr list2))
-                       list1))))
-    (graft o (make <scope.name> #:ids scoped))))
+                       list1)))
+         (name (ast:name*->name scoped)))
+    (if (not (is-a? name <ast>)) name
+        (graft o name))))
 
 (define-method (ast:rescope (o <ast>) (parent <model>))
   (match o
@@ -1007,7 +1012,8 @@ to bottom."
                             (cons o (filter (is? <system>)
                                             (map .type (ast:instance* o)))))
                           systems))
-         (systems (topological-sort system-dag ast:name))
+         (systems (topological-sort system-dag
+                                    (lambda (o) (string->symbol (ast:name o)))))
          (systems (filter (cute memq <> models) systems)))
     (append rest systems)))
 

@@ -1107,7 +1107,7 @@ expressions explicit."
            (type-name (cond
                        ((is-a? type <subint>) (.name (ast:type (make <int>))))
                        (local-type? (.name type))
-                       (else (make <scope.name> #:ids (ast:full-name type)))))
+                       (else (ast:dotted-name type))))
            (name (temp-name o))
            (location (.location o))
            (behavior (tree:ancestor o <behavior>))

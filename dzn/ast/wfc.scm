@@ -1058,7 +1058,7 @@
 (use-modules (dzn ast accessor))
 (define (previous-definition-unshadowed o)
   "Disallow shadowing altogether"
-  (let ((name (make <scope.name> #:ids (ast:full-name o))))
+  (let ((name (ast:dotted-name o)))
     (ast:lookup (tree:ancestor o <root>) name)))
 
 (define (re-definition-error o previous)
@@ -1098,19 +1098,16 @@
   "<unknown type>")
 
 (define-method (type-name (o <string>))
-  o)
-
-(define-method (type-name (o <ast>))
-  (or (and=> (ast:full-name o) (cut string-join <> "."))
-      "<unknown type>"))
-
-(define-method (type-name (o <scope.name>))
   (string-join
    (map (match-lambda
           ("/" "")
           (id id))
-        (.ids o))
+        (ast:name* o))
    "."))
+
+(define-method (type-name (o <ast>))
+  (or (and=> (ast:full-name o) (cut string-join <> "."))
+      "<unknown type>"))
 
 (define-method (reply-in-on (o <reply>))
   "pre: in <on> clause"
