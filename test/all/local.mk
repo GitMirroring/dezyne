@@ -627,7 +627,6 @@ PARSER_TESTS =					\
  %D%/wf_eventNotValuedAction			\
  %D%/wf_expressionExpected			\
  %D%/wf_foreign_conflict			\
- %D%/wf_functionReturnNotExpected		\
  %D%/wf_functionReturnValue			\
  %D%/wf_functionTailRecursion			\
  %D%/wf_functionValueDiscarded			\
