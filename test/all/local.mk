@@ -546,6 +546,7 @@ REGRESSION_TESTS =				\
  %D%/unreachable_crosstalk			\
  %D%/unreachable_defer		 		\
  %D%/unreachable_determinism			\
+ %D%/unreachable_early_return			\
  %D%/unreachable_function			\
  %D%/unreachable_if				\
  %D%/unreachable_interface	 		\
