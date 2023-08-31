@@ -206,5 +206,6 @@
     (with-root transform-end-of-on)
     (with-root (annotate-otherwise))
     (with-root add-explicit-temporaries)
-    (with-root purge-data))
+    (with-root purge-data)
+    (with-root reply->return))
    root))
