@@ -259,7 +259,13 @@
 
 (define-method (step (pc <program-counter>) (o <return>))
   (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
-  (let ((pc (clone pc #:return (eval-expression pc (.expression o)))))
+  (let* ((function (tree:ancestor o <function>))
+         (value (eval-expression pc (.expression o)))
+         (pc (if function (clone pc #:return value)
+                 (let ((port-name (or (.port.name o) ;;XXX factor-me-out?
+                                      (.port.name (.trigger pc))
+                                      (.name (.ast (.instance pc))))))
+                   (set-reply pc port-name value)))))
     (list (continuation pc o))))
 
 (define-method (step (pc <program-counter>) (o <action>))
@@ -667,4 +673,6 @@
        (function-return pc parent)))))
 
 (define-method (continuation (pc <program-counter>) (o <return>))
-  (function-return pc o))
+  (let ((function (tree:ancestor o <function>)))
+    (if function (function-return pc o)
+        (next-method))))
