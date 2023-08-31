@@ -1885,14 +1885,22 @@
 ;;;
 (define-method (interface-processes (o <interface>))
   (let* ((members (ast:variable* o))
+         (member-types (map .type members))
          (member-values (map (compose makreel:ast->expression .expression) members))
+         (interface-range
+          (sm:process
+            (name (model-prefix "interface_range"))
+            (statement (sm:sequence*
+                        `(,@(append-map makreel:type->out-of-range-processes
+                                        member-types member-values)
+                          ,(sm:goto (name (model-prefix "behavior"))
+                                    (arguments member-values)))))))
          (interface-internal
           (sm:process
             (name (model-prefix "interface_internal"))
             (statement
              (sm:rename
-              (process (sm:goto (name (model-prefix "behavior"))
-                                (arguments member-values)))
+              (process (sm:goto (name (model-prefix "interface_range"))))
               (events (list (sm:rename-event (from %return-action)
                                              (to %tau-void-action))
                             (sm:rename-event (from %recurse-action)
@@ -1907,7 +1915,8 @@
                             (%end-action o)
                             (%flush-action o)
                             (%tau-reply-action o))))))))
-    (list interface-internal
+    (list interface-range
+          interface-internal
           interface)))
 
 (define-method (interface-types->scmackerel (o <interface>))
