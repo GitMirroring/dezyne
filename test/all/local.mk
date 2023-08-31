@@ -600,6 +600,7 @@ PARSER_TESTS =					\
  %D%/parse_preprocessed_foo			\
  %D%/parse_preprocessed_imported_bar		\
  %D%/parse_preprocessed_imported_baz		\
+ %D%/parse_return_type				\
  %D%/parse.space.lookup				\
  %D%/parse_port_qualifier			\
  %D%/parse_space_duplicate_definition		\
@@ -659,7 +660,6 @@ PARSER_TESTS =					\
  %D%/wf_replyOnType				\
  %D%/wf_replyPort				\
  %D%/wf_replyRequiresPort			\
- %D%/wf_replyTypeMismatch			\
  %D%/wf_subintMinMax				\
  %D%/wf_systemRecursion				\
  %D%/wf_typeerror				\

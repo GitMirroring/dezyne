@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -22,24 +22,23 @@
 //
 // Code:
 
-interface I
+interface ihello
 {
-  in void ia();
+  in void hello ();
 
   behavior
   {
-    on ia: {}
+    on hello: return false;
   }
 }
 
-component wf_replyTypeMismatch
+component parse_return_type
 {
-  provides I pp;
-  requires I rp;
+  provides ihello h;
+  requires ihello w;
 
   behavior
   {
-    void fn() { reply(false); }
-    on pp.ia(): { rp.ia(); fn(); }
+    on h.hello (): {w.hello (); return false;}
   }
 }
