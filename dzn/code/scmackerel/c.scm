@@ -477,7 +477,7 @@
                       (string-join (cons "" (ast:full-name o)) "::")
                       "&")))
     (define (value->init value)
-      (let* ((value (simple-format #f "~s" (.value value))))
+      (let ((value (simple-format #f "~s" (.value value))))
         (sm:generalized-initializer-list* value)))
     (let* ((interface
             (sm:struct
@@ -961,7 +961,7 @@
 ;;;
 (define-method (system->sm:statements-unmemoized (o <system>))
   (define (provides->member port)
-    (let* ((other-end (ast:other-end-point port)))
+    (let ((other-end (ast:other-end-point port)))
       (sm:variable
        (type (string-append (code:type-name (.type port)) "*"))
        (name (.name port))

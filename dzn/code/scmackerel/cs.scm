@@ -437,10 +437,10 @@
            (typed? (not (is-a? type <void>)))
            (reply-var (and typed?
                            (sm:member* (code:reply-var (ast:type trigger)))))
-           (sm:call-slot (sm:call-method
-                          (name (code:event-slot-name trigger))
-                          (arguments arguments)))
-           (sm:call-in/out
+           (call-slot (sm:call-method
+                       (name (code:event-slot-name trigger))
+                       (arguments arguments)))
+           (call-in/out
             (sm:call
              (name (string-append "dzn_runtime.call_" (code:direction event)))
              (arguments
@@ -450,9 +450,9 @@
                    (sm:compound*
                     `(,(ast->code out-bindings)
                       ,(cond ((and typed? (is-a? o <foreign>))
-                              (sm:assign* reply-var sm:call-slot))
+                              (sm:assign* reply-var call-slot))
                              (else
-                              sm:call-slot))
+                              call-slot))
                       ,@(if (ast:out? event) '()
                             `(,(sm:call-method
                                 (name "dzn_runtime.flush")
@@ -476,13 +476,13 @@
           ;; FIXME: This is ridiculous
           `(,@(map cs:sm:formal->temp out-formals)
             ,(cond ((not typed?)
-                    sm:call-in/out)
+                    call-in/out)
                    ((pair? out-formals)
                     (let ((type (code:type-name type)))
                       (sm:variable (type type) (name "dzn_return")
-                                   (expression sm:call-in/out))))
+                                   (expression call-in/out))))
                    (else
-                    (sm:return* sm:call-in/out)))
+                    (sm:return* call-in/out)))
             ,@(map cs:temp->formal out-formals)
             ,@(if (or (not typed?) (null? out-formals)) '()
                   `(,(sm:return* "dzn_return"))))))))))
@@ -838,7 +838,7 @@
              (formals (map cs:->formal formals))
              (type (ast:type trigger))
              (typed? (not (is-a? type <void>)))
-             (sm:call-slot
+             (call-slot
               (sm:call (name
                         (string-append ;;; XXX FIXME code:foo-name
                          (.instance.name other-end)
@@ -847,7 +847,7 @@
                          "."
                          (code:event-name event)))
                        (arguments arguments)))
-             (sm:call-pump
+             (call-pump
               (sm:call
                (name (if (ast:in? event) "this.dzn_pump.shell"
                          "this.dzn_pump.execute"))
@@ -856,8 +856,8 @@
                  (sm:function
                   (statement
                    (sm:compound*
-                    (if (not typed?) sm:call-slot
-                        (sm:return* sm:call-slot))))))))))
+                    (if (not typed?) call-slot
+                        (sm:return* call-slot))))))))))
         (sm:assign*
          (code:event-name trigger)
          (sm:function
@@ -867,13 +867,13 @@
             ;; FIXME: This is ridiculous
             `(,@(map cs:sm:formal->temp out-formals)
               ,(cond ((not typed?)
-                      sm:call-pump)
+                      call-pump)
                      ((pair? out-formals)
                       (let ((type (code:type-name type)))
                         (sm:variable (type type) (name "dzn_return")
-                                     (expression sm:call-pump))))
+                                     (expression call-pump))))
                      (else
-                      (sm:return* sm:call-pump)))
+                      (sm:return* call-pump)))
               ,@(map cs:temp->formal out-formals)
               ,@(if (or (not typed?) (null? out-formals)) '()
                     `(,(sm:return* "dzn_return"))))))))))
@@ -1080,7 +1080,7 @@
            (flush-string (simple-format #f "~s" flush-event))
            (formals (code:formal* trigger))
            (formals (map cs:->formal formals))
-           (sm:call-out
+           (call-out
             (sm:call
              (name "c.dzn_runtime.call_out")
              (arguments
@@ -1115,8 +1115,8 @@
                      (sm:call (name "c.match")
                               (arguments
                                (list (simple-format #f "~s" port-event))))
-                     (if (not (ast:typed? trigger)) sm:call-out
-                         (sm:return* sm:call-out)))))))))
+                     (if (not (ast:typed? trigger)) call-out
+                         (sm:return* call-out)))))))))
   (sm:function
    (type "static void")
    (name "connect_ports")

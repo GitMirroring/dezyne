@@ -783,10 +783,10 @@ produces those prefixes and marks them with #:rtc? #false."
            (typed? (ast:typed? trigger))
            (reply-var (and typed?
                            (sm:member* (code:reply-var (ast:type trigger)))))
-           (sm:call-slot (sm:call-method
-                          (name (code:event-slot-name trigger))
-                          (arguments arguments)))
-           (sm:call-in/out
+           (call-slot (sm:call-method
+                       (name (code:event-slot-name trigger))
+                       (arguments arguments)))
+           (call-in/out
             (sm:call
              (name (string-append "dzn::wrap_" (code:direction event)))
              (arguments
@@ -798,8 +798,8 @@ produces those prefixes and marks them with #:rtc? #false."
                    (sm:compound*
                     `(,@(map port->injected-require-override
                              (ast:injected-port* o))
-                      ,(if (or (not typed?) (not (is-a? o <foreign>))) sm:call-slot
-                           (sm:assign* reply-var sm:call-slot))
+                      ,(if (or (not typed?) (not (is-a? o <foreign>))) call-slot
+                           (sm:assign* reply-var call-slot))
                       ,@(if
                          (ast:out? event) '()
                          `(,@(if
@@ -822,7 +822,7 @@ produces those prefixes and marks them with #:rtc? #false."
         (formals formals)
         (statement
          (sm:compound*
-          (sm:return* sm:call-in/out)))))))
+          (sm:return* call-in/out)))))))
   (define (trigger->method component trigger)
     (let* ((trigger
             statement
@@ -970,7 +970,7 @@ produces those prefixes and marks them with #:rtc? #false."
   (let* ((injected-instances (code:injected-instance* o))
          (injected? (pair? injected-instances)))
     (define (port->pairing port)
-      (let* ((other-end (ast:other-end-point port)))
+      (let ((other-end (ast:other-end-point port)))
         (sm:assign*
          (string-append (.instance.name other-end)
                         "."
@@ -979,7 +979,7 @@ produces those prefixes and marks them with #:rtc? #false."
                             ".dzn_meta.provide.name"))
          (simple-format #f "~s" (.name port)))))
     (define (provides->member port)
-      (let* ((other-end (ast:other-end-point port)))
+      (let ((other-end (ast:other-end-point port)))
         (sm:variable
          (type (string-append (code:type-name (.type port)) "&"))
          (name (.name port))
@@ -1044,10 +1044,6 @@ produces those prefixes and marks them with #:rtc? #false."
              (in-formals (filter ast:in? formals))
              (in-arguments (map .name in-formals))
              (formals (map c++:->formal formals))
-             (sm:call-action (sm:call (name
-                                       (string-append
-                                        (code:event-name trigger)))
-                                      (arguments arguments)))
              (type (ast:type event))
              (type (code:type-name type))
              (typed? (ast:typed? event)))
@@ -1166,7 +1162,7 @@ produces those prefixes and marks them with #:rtc? #false."
         #f "~a.dzn_share_p" (.name port))
        "false"))
     (define (provides->member port)
-      (let* ((other-end (ast:other-end-point port)))
+      (let ((other-end (ast:other-end-point port)))
         (sm:variable
          (type (string-join (cons "" (ast:full-name (.type port))) "::"))
          (name (.name port))
@@ -1227,8 +1223,6 @@ produces those prefixes and marks them with #:rtc? #false."
              (event-name (.name event))
              (formals (code:formal* trigger))
              (arguments (map .name formals))
-             ;; (out-formals (filter (negate ast:in?) formals))
-             ;; (out-arguments (map .name out-formals))
              (in-formals (filter ast:in? formals))
              (in-arguments (map .name in-formals))
              (formals (map c++:->formal formals)))
