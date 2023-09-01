@@ -650,7 +650,7 @@ transformations."
                  (%next-alist '())
 
                  (%language "makreel")
-                 (%member-prefix #f)
+                 (%member-prefix "")
                  (%name-infix "")
                  (%type-infix "")
                  (%type-prefix ""))

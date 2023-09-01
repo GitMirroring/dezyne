@@ -148,7 +148,7 @@
          (formals (code:formal* (.event o)))
          (arguments (code:argument* o))
          (arguments (map ast->expression arguments formals))
-         (action (sm:call (name action-name)
+         (action (sm:call (name (string-append (%member-prefix) action-name))
                           (arguments arguments))))
     action))
 
