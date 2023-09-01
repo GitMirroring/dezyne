@@ -40,10 +40,10 @@
        (sha256
         (base32 #!scmackerel!# "0i9mmplwqh6h0isr6wq0x304d6aks973lx9c1r7bffnvbqkyniv1"))))
     (inputs (list bash-minimal
-                  guile-3.0-latest
+                  guile-3.0
                   guile-readline
                   mcrl2-minimal))
-    (native-inputs (list guile-3.0-latest pkg-config))
+    (native-inputs (list guile-3.0 pkg-config))
     (build-system gnu-build-system)
     (arguments
      (list
@@ -55,15 +55,15 @@
             (lambda _
               (setenv "GUILE_AUTO_COMPILE" "0")))
           (add-after 'install 'install-readmes
-            (lambda* (#:key outputs #:allow-other-keys)
-              (let* ((out (assoc-ref outputs "out"))
-                     (base (string-append #$name "-" #$version))
-                     (doc (string-append out "/share/doc/" base)))
+            (lambda _
+              (let* ((base (string-append #$name "-" #$version))
+                     (doc (string-append #$output "/share/doc/" base)))
                 (mkdir-p doc)
                 (copy-file "NEWS" (string-append doc "/NEWS"))))))))
-    (synopsis "Programming language with verifyable formal semantics")
-    (description "SCMackerel is a library for GNU Guile for creating
-abstract syntax trees (ASTs) for @url{https://mcrl2.org,mCRL2} and other
-languages, such as C, C++, and C#, based on GNU Guix records.")
-    (home-page "https://dezyne.org")
+    (synopsis "AST library in GNU Guile")
+    (description "SCMackerel is a library in GNU Guile to create abstract
+syntax trees (ASTs).  Initially written for @url{https://mcrl2.org,mCRL2} and
+now also supporting other languages, such as C, C++, and C#.  Based on GNU
+Guix records.")
+    (home-page "https://gitlab.com/janneke/scmackerel")
     (license (list license:gpl3+))))
