@@ -264,14 +264,14 @@ std::basic_ostream<Char, Traits> &")
     (sm:call (name (simple-format #f "dzn::call_~a" (.direction event)))
              (arguments
               `("this"
-                ,(.port.name o)
+                ,(string-append (%member-prefix) (.port.name o))
                 ,(simple-format #f "~s" event-name)
                 ,(sm:function
                   (captures '("&"))
                   (statement
                    (sm:compound*
                     (sm:return*
-                     (sm:call (name action-name)
+                     (sm:call (name (string-append (%member-prefix) action-name))
                               (arguments arguments)))))))))))
 
 (define-method (ast->code (o <assign>))
