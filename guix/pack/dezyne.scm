@@ -71,22 +71,20 @@
             (lambda _
               (setenv "GUILE_AUTO_COMPILE" "0")))
           (add-after 'install 'install-readmes
-            (lambda* (#:key outputs #:allow-other-keys)
-              (let* ((out (assoc-ref outputs "out"))
-                     (base (string-append #$name "-" #$version))
-                     (doc (string-append out "/share/doc/" base)))
+            (lambda _
+              (let* ((base (string-append #$name "-" #$version))
+                     (doc (string-append #$output "/share/doc/" base)))
                 (mkdir-p doc)
                 (copy-file "NEWS" (string-append doc "/NEWS")))))
           (add-after 'install 'wrap-binaries
-            (lambda* (#:key inputs outputs #:allow-other-keys)
-              (let* ((out (assoc-ref outputs "out"))
-                     (bash (assoc-ref %build-inputs "bash-minimal"))
-                     (guile (assoc-ref %build-inputs "guile-next"))
-                     (json (assoc-ref %build-inputs "guile-json"))
-                     (mcrl2 (assoc-ref %build-inputs "mcrl2-minimal"))
-                     (readline (assoc-ref %build-inputs "guile-readline"))
-                     (scmackerel (assoc-ref %build-inputs "scmackerel"))
-                     (sed (assoc-ref %build-inputs "sed"))
+            (lambda _
+              (let* ((bash #$(this-package-input "bash-minimal"))
+                     (guile #$(this-package-input "guile-3.0"))
+                     (json #$(this-package-input "guile-json"))
+                     (mcrl2 #$(this-package-input "mcrl2-minimal"))
+                     (readline #$(this-package-input "guile-readline"))
+                     (scmackerel #$(this-package-input "scmackerel"))
+                     (sed #$(this-package-input "sed"))
                      (effective (read
                                  (open-pipe* OPEN_READ
                                              "guile" "-c"
@@ -97,17 +95,17 @@
                                  (string-append sed "/bin")))
                      (scm-dir (string-append "/share/guile/site/" effective))
                      (scm-path
-                      (list (string-append out scm-dir)
+                      (list (string-append #$output scm-dir)
                             (string-append json scm-dir)
                             (string-append readline scm-dir)
                             (string-append scmackerel scm-dir)))
                      (go-dir (string-append "/lib/guile/" effective
                                             "/site-ccache/"))
-                     (go-path (list (string-append out go-dir)
+                     (go-path (list (string-append #$output go-dir)
                                     (string-append json go-dir)
                                     (string-append readline go-dir)
                                     (string-append scmackerel go-dir))))
-                (wrap-program (string-append out "/bin/dzn")
+                (wrap-program (string-append #$output "/bin/dzn")
                   `("PATH" ":" prefix ,path)
                   `("GUILE_AUTO_COMPILE" ":" = ("0"))
                   `("GUILE_LOAD_PATH" ":" prefix ,scm-path)
