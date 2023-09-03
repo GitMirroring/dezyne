@@ -54,8 +54,15 @@ NOWARN_FLAGS=					\
 LIBPTHREAD = -pthread
 DEPEND_CXXFLAGS = -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@'
 TEST_CXXFLAGS = $(DEPEND_CXXFLAGS) $(LIBPTHREAD) $(WARN_FLAGS)
-# FIXME: handwritten code, versioned?  $(IN)/../.. or ?
-CPPFLAGS=-I$(OUT) -I$(OUT)/..  -I$(OUT)/../.. -I$(OUT)/../../c++ -I$(IN) -I$(IN)/.. -I$(abs_top_srcdir)/runtime/c++ -D DZN_VERSION_ASSERT=1
+INCLUDES = -I$(OUT)				\
+ -I$(OUT)/..					\
+ -I$(OUT)/../..					\
+ -I$(OUT)/../../c++				\
+ -I$(IN) -I$(IN)/..				\
+ -I$(abs_top_srcdir)/runtime/c++
+DEFINES = -D DZN_VERSION_ASSERT=1
+CPPFLAGS = $(INCLUDES) $(DEFINES)
+LDFLAGS= -static -L $(abs_top_builddir)/runtime/.libs -ldzn-c++
 GLOBALS_H=$(wildcard $(IN)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
@@ -64,10 +71,6 @@ CALLING_CONTEXT_HH=$(wildcard $(IN)/c++/calling_context.hh)
 ifneq ($(CALLING_CONTEXT_HH),)
 CPPFLAGS:=$(CPPFLAGS) -include $(CALLING_CONTEXT_HH)
 endif
-
-$(OUT)/%.o: $(abs_top_srcdir)/runtime/c++/%.cc
-	mkdir -p $(dir $@)
-	$(COMPILE.cc) $(TEST_CXXFLAGS) -o $@ $<
 
 $(OUT)/%.o: $(IN)/%.cc
 	mkdir -p $(dir $@)
@@ -87,7 +90,7 @@ $(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
 $(OUT)/test: $(patsubst $(OUT)/%.cc, $(OUT)/%.o, $(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cc, %.o,$(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cpp, %.o,$(wildcard $(OUT)/*.cpp))
-$(OUT)/test: $(MAIN_O) $(OUT)/pump.o $(OUT)/runtime.o $(THREAD_POOL_O:%=$(OUT)/%)
+$(OUT)/test: $(MAIN_O) $(abs_top_builddir)/runtime/.libs/libdzn-c++.a
 	mkdir -p $(dir $@)
 	$(LINK.cc) $(TEST_CXXFLAGS) -o $@ $^ $(LDFLAGS)
 

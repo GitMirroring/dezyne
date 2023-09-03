@@ -1,7 +1,7 @@
 #! /bin/sh
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -31,4 +31,6 @@ for E in $(set | grep -oE LC_[^=]+); do unset $E; done
 AUTOHEADER=true
 export AUTOHEADER
 
+set -e
+libtoolize --version
 autoreconf -ifv

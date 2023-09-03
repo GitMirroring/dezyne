@@ -23,6 +23,10 @@
 #
 # Code:
 
+nobase_include_headers =
+lib_LTLIBRARIES =
+version_info = @LIBDZN_INTERFACE_CURRENT@:@LIBDZN_INTERFACE_REVISION@:@LIBDZN_INTERFACE_AGE@
+
 if have_c99
 runtime_c_dzndir = $(pkgdatadir)/runtime/c/dzn
 dist_runtime_c_dzn_DATA =			\
@@ -51,6 +55,21 @@ dist_runtime_c_DATA =				\
  %D%/c/pump.c					\
  %D%/c/queue.c					\
  %D%/c/runtime.c
+
+lib_LTLIBRARIES += %D%/libdzn.la
+%C%_libdzn_la_HEADERS = $(dist_runtime_c_dzn_DATA)
+%C%_libdzn_la_SOURCES = $(dist_runtime_c_DATA)
+
+%C%_libdzn_ladir = $(includedir)/dzn
+nobase_include_headers += $(%C%_libdzn_la_HEADERS)
+
+%C%_libdzn_la_CPPFLAGS = -I $(abs_top_srcdir)/runtime/c
+
+%C%_libdzn_la_LDFLAGS =				\
+ $(PTH_LIBS)					\
+ -version-info $(version_info)			\
+ -export-dynamic -no-undefined			\
+ $(GNU_LD_FLAGS)
 endif
 
 if have_cs
@@ -83,6 +102,21 @@ dist_runtime_cxx_DATA =				\
  %D%/c++/pump.cc				\
  %D%/c++/runtime.cc                             \
  %D%/c++/thread_pool.cc
+
+lib_LTLIBRARIES += %D%/libdzn-c++.la
+%C%_libdzn_c___la_HEADERS = $(dist_runtime_cxx_dzn_DATA)
+%C%_libdzn_c___la_SOURCES = $(dist_runtime_cxx_DATA)
+
+%C%_libdzn_c___ladir = $(includedir)/dzn
+nobase_include_headers += $(%C%_libdzn_c___la_HEADERS)
+
+%C%_libdzn_c___la_CPPFLAGS =			\
+ -I $(abs_top_srcdir)/runtime/c++
+
+%C%_libdzn_c___la_LDFLAGS =			\
+ -version-info $(version_info)			\
+ -export-dynamic -no-undefined			\
+ $(GNU_LD_FLAGS)
 endif
 
 if have_javascript

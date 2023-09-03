@@ -168,6 +168,16 @@ else
    fi
 fi
 
+LT_INIT()
+LIBDZN_INTERFACE_CURRENT=0
+LIBDZN_INTERFACE_REVISION=0
+LIBDZN_INTERFACE_AGE=0
+LIBDZN_INTERFACE="${LIBDZN_INTERFACE_CURRENT}:${LIBDZN_INTERFACE_REVISION}:${LIBDZN_INTERFACE_AGE}"
+AC_SUBST(LIBDZN_INTERFACE_CURRENT)
+AC_SUBST(LIBDZN_INTERFACE_REVISION)
+AC_SUBST(LIBDZN_INTERFACE_AGE)
+AC_SUBST(LIBDZN_INTERFACE)
+
 AC_PATH_PROGS([MCS], [mcs])
 if test "x$MCS" != "x"; then
    all_languages="$all_languages,cs"
@@ -197,8 +207,10 @@ have_cxx11=false
 ;;
 esac
 
+AC_LANG_PUSH([C])
 AC_CHECK_HEADERS([pth.h])
 AC_LIB_HAVE_LINKFLAGS([pth],[],[#include <pth.h>], [pth_init ();])
+AC_LANG_POP()
 case ,${enable_languages}, in
   *,c,*)
 if test "x$courageous" = xno; then

@@ -33,8 +33,13 @@ export GUILE GUILE_TOOLS
 
 GUILE_LOAD_COMPILED_PATH="$abs_top_builddir:$abs_top_builddir/runtime/scheme${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"
 GUILE_LOAD_PATH="$abs_top_builddir:$abs_top_srcdir:$abs_top_srcdir/runtime/scheme${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
-LD_LIBRARY_PATH="$abs_top_builddir${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
-export GUILE_LOAD_COMPILED_PATH GUILE_LOAD_PATH LD_LIBRARY_PATH
+export GUILE_LOAD_COMPILED_PATH GUILE_LOAD_PATH
+
+C_INCLUDE_PATH="$abs_top_builddir/runtime/c:$abs_top_sourcedir/runtime/c${C_INCLUDE_PATH:+:}$C_INCLUDE_PATH"
+CPLUS_INCLUDE_PATH="$abs_top_builddir/runtime/c++:$abs_top_sourcedir/runtime/c++${CPLUS_INCLUDE_PATH:+:}$CPLUS_INCLUDE_PATH"
+LIBRARY_PATH="$abs_top_builddir/runtime/.libs${LIBRARY_PATH:+:}$LIBRARY_PATH"
+LD_LIBRARY_PATH="$abs_top_builddir/runtime/.libs${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
+export C_INCLUDE_PATH CPLUS_INCLUDE_PATH LIBRARY_PATH LD_LIBRARY_PATH
 
 NODE=${NODE-@NODE@}
 export NODE

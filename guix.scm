@@ -70,6 +70,7 @@
                      ("automake" ,automake)
                      ("gettext" ,gnu-gettext)
                      ("help2man" ,help2man)
+                     ("libtool" ,libtool)
                      ("perl" ,perl)
                      ("texinfo" ,texinfo)
                      ,@(package-native-inputs dezyne)))))
