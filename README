@@ -43,6 +43,7 @@ When building from a Git checkout, these additional packages are needed:
   - [[https://gnu.org/software/autoconf/][GNU Autoconf]]
   - [[https://gnu.org/software/automake/][GNU Automake]]
   - [[https://gnu.org/software/gettext/][GNU Gettext]]
+  - [[https://gnu.org/software/libtool][GNU Libtool]]
   - [[https://gnu.org/software/texinfo/][GNU Texinfo]]
   - [[https://gnu.org/software/help2man/][GNU Help2man]] (optional).
 

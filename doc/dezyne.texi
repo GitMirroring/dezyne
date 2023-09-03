@@ -6930,6 +6930,7 @@ in the installation instructions (@pxref{Requirements}).
 @item @url{https://gnu.org/software/autoconf/, GNU Autoconf};
 @item @url{https://gnu.org/software/automake/, GNU Automake};
 @item @url{https://gnu.org/software/gettext/, GNU Gettext};
+@item @url{https://gnu.org/software/libtool/, GNU Libtool};
 @item @url{https://gnu.org/software/texinfo/, GNU Texinfo};
 @item @url{https://gnu.org/software/help2man/, GNU Help2man (optional)}.
 @end itemize
