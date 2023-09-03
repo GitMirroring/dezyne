@@ -29,6 +29,11 @@
 #undef DZN_VERSION_ASSERT
 #endif
 
+#ifndef DZN_THREAD_POOL
+/* Define when using the dzn thread pool. */
+#undef DZN_THREAD_POOL
+#endif
+
 #ifndef HAVE_BOOST_COROUTINE
 /* Define if you have the boost coroutine library. */
 #undef HAVE_BOOST_COROUTINE

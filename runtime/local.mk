@@ -111,7 +111,13 @@ dist_runtime_cxx_DATA =				\
 if have_pthread
 lib_LTLIBRARIES += %D%/libdzn-c++.la
 %C%_libdzn_c___la_HEADERS = $(dist_runtime_cxx_dzn_DATA)
-%C%_libdzn_c___la_SOURCES = $(dist_runtime_cxx_DATA)
+%C%_libdzn_c___la_SOURCES = 			\
+ %D%/c++/pump.cc				\
+ %D%/c++/runtime.cc
+
+if dzn_thread_pool
+%C%_libdzn_c___la_SOURCES += %D%/c++/thread_pool.cc
+endif
 
 %C%_libdzn_c___ladir = $(includedir)/dzn
 

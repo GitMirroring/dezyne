@@ -217,14 +217,29 @@ AX_BOOST_BASE([1.67])
 AC_CHECK_HEADERS([boost/coroutine/all.hpp],
   [have_boost_coroutine=yes
    HAVE_BOOST_COROUTINE=yes
+   dzn_thread_pool=no
    AC_DEFINE_UNQUOTED([HAVE_BOOST_COROUTINE], [1],
    [Define if you have the boost coroutine library.])],
-  [have_boost_coroutine=no])
+  [have_boost_coroutine=no
+   dzn_thread_pool="$have_pthread"])
 AC_LIB_HAVE_LINKFLAGS([boost_coroutine], [],
   [#include <boost/coroutine/all.hpp>],
   [boost::coroutines::stack_traits::default_size ();])
 AC_LANG_POP()
 AC_SUBST(HAVE_BOOST_COROUTINE)
+
+AC_ARG_ENABLE([c++-thread-pool], [AC_HELP_STRING([--disable-c++-thread-pool],
+  [Disable the C++ thread-pool?])],
+  [dzn_thread_pool="$enableval"],
+  [dzn_thread_pool="$dzn_thread_pool"])
+
+if test "x$dzn_thread_pool" = xyes; then
+   DZN_THREAD_POOL=yes
+   AC_DEFINE_UNQUOTED([DZN_THREAD_POOL],
+      [1],
+      [Define when using the dzn thread pool.])
+fi
+AC_SUBST(DZN_THREAD_POOL)
 
 AC_LANG_PUSH([C])
 AC_CHECK_HEADERS([pth.h],[have_pth=yes],[have_pth=no])
@@ -284,6 +299,7 @@ AM_CONDITIONAL([have_cxx11], [test "x$have_cxx11" = xtrue])
 AM_CONDITIONAL([have_boost], [test "x$have_boost" = xtrue])
 AM_CONDITIONAL([have_pth], [test "x$have_pth" = xyes])
 AM_CONDITIONAL([have_pthread], [test "x$have_pthread" = xyes])
+AM_CONDITIONAL([dzn_thread_pool], [test "x$dzn_thread_pool" = xyes])
 AM_CONDITIONAL([have_javascript], [test "x$have_javascript" = xtrue])
 AM_CONDITIONAL([have_scheme], [test "x$have_scheme" = xtrue])
 
@@ -327,5 +343,6 @@ cat <<EOF
 
     Dezyne is configured for languages: $languages
     Use Boost::Coroutine for C++:        $have_boost_coroutine
+    Use C++ thread pool:                 $dzn_thread_pool
     Experimental c++ exception wrappers: $cxx_exception_wrappers
 EOF

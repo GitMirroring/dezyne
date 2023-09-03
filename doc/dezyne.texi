@@ -890,8 +890,7 @@ code})
 @example
 $ dzn code doc/examples/ihello-world.dzn
 $ dzn code --model=hello_world doc/examples/hello-world.dzn
-$ g++ -I runtime/c++ hello-world.cc main.cc \
-  runtime/c++/runtime.cc runtime/c++/pump.cc -lpthread
+$ g++ hello-world.cc main.cc -ldzn-c++
 @end example
 
 When running this executable and feeding it the trail, we get
