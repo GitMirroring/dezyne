@@ -76,6 +76,7 @@ then run this command to import it:
 and rerun the 'gpg --verify' command.
 
 Alternatively, Dezyne can be installed using GNU Guix:
+
   guix pull
   guix install dezyne
 
@@ -89,9 +90,11 @@ NEWS
 ** Build
   - The test runner now has a `--t,--timeout' option, using a 5min
     default.
-** Parser
-  - The toplevel parser functions have been cleaned-up and refactored to
-    allow better showing of timings per stage.
+  - For C and C++, include headers are installed in <includedir>/dzn.
+  - For C, a new libdzn library is built and installed in <libdir>
+    on systems that have GNU pth.
+  - For C++, a new libdzn-c++ library are built and installed in
+    <libdir> on systems that have std::mutex.
 ** Verification
   - A new `-T,--timings' option now shows detailed timings for the
     different stages like: parse, normalization and mCRL2.
@@ -144,3 +147,14 @@ NEWS
     been moved from the command-line to the verify pipeline; Note, the
     limit on Windows remains for other user input derived information
     communicated via the command-line.
+  - Building the C++ pump using the `Boost::Coroutine' library works out
+    of the box again.  This was a regression introduced in 2.16.0.
+  - In the C++ runtime `dzn::thread::defer' has been renamed to
+    `dzn::async' and its definition has been moved to `std-async.cc'.
+  - The `std::async' in the C++ pump has been replaced by `dzn::async'
+    to allow selecting between `std::async' and `dzn::thread::pool' by
+    either linking to `std-async.cc' or `thread-pool.cc' respectively.
+    This allows working around the arbitrary limits in `std::async'
+    observed on some Microsoft systems.
+  - The C++ thread-pool no longer joins threads at destruction, instead
+    it detaches them.
