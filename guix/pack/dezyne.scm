@@ -32,6 +32,7 @@
   #:use-module (guix packages)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages boost)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages pkg-config)
@@ -55,6 +56,7 @@
                              guile-readline
                              scmackerel))
     (inputs (list bash-minimal
+                  boost
                   guile-3.0
                   mcrl2-minimal
                   pth
