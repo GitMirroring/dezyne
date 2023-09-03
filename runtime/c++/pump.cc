@@ -3,7 +3,7 @@
 // Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2015, 2016, 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2015, 2016, 2017, 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iterator>
+#include <thread>
 
 namespace dzn
 {
