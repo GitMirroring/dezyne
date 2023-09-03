@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -26,6 +26,7 @@
 #ifndef DZN_PUMP_HH
 #define DZN_PUMP_HH
 
+#include <dzn/config.hh>
 #include <dzn/coroutine.hh>
 #include <dzn/meta.hh>
 

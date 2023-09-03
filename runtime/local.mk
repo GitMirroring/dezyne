@@ -44,6 +44,7 @@ dist_runtime_c_dzn_DATA =			\
  %D%/c/dzn/runtime.h
 
 dist_noinst_DATA += %D%/c/dzn/config.h.in
+nobase_include_headers += $(dist_runtime_c_dzn_DATA)
 
 runtime_cdir = $(pkgdatadir)/runtime/c
 dist_runtime_c_DATA =				\
@@ -56,12 +57,12 @@ dist_runtime_c_DATA =				\
  %D%/c/queue.c					\
  %D%/c/runtime.c
 
+if have_pth
 lib_LTLIBRARIES += %D%/libdzn.la
 %C%_libdzn_la_HEADERS = $(dist_runtime_c_dzn_DATA)
 %C%_libdzn_la_SOURCES = $(dist_runtime_c_DATA)
 
 %C%_libdzn_ladir = $(includedir)/dzn
-nobase_include_headers += $(%C%_libdzn_la_HEADERS)
 
 %C%_libdzn_la_CPPFLAGS = -I $(abs_top_srcdir)/runtime/c
 
@@ -70,6 +71,7 @@ nobase_include_headers += $(%C%_libdzn_la_HEADERS)
  -version-info $(version_info)			\
  -export-dynamic -no-undefined			\
  $(GNU_LD_FLAGS)
+endif
 endif
 
 if have_cs
@@ -87,6 +89,7 @@ endif
 if have_cxx11
 runtime_cxx_dzndir = $(pkgdatadir)/runtime/c++/dzn
 dist_runtime_cxx_dzn_DATA =			\
+ %D%/c++/dzn/config.hh				\
  %D%/c++/dzn/container.hh			\
  %D%/c++/dzn/context.hh				\
  %D%/c++/dzn/coroutine.hh			\
@@ -95,7 +98,9 @@ dist_runtime_cxx_dzn_DATA =			\
  %D%/c++/dzn/pump.hh				\
  %D%/c++/dzn/runtime.hh
 
-dist_noinst_DATA += %D%/c++/dzn/meta.hh.in
+nobase_include_headers += $(dist_runtime_cxx_dzn_DATA)
+
+dist_noinst_DATA += %D%/c++/dzn/config.hh.in %D%/c++/dzn/meta.hh.in
 
 runtime_cxxdir = $(pkgdatadir)/runtime/c++
 dist_runtime_cxx_DATA =				\
@@ -103,12 +108,12 @@ dist_runtime_cxx_DATA =				\
  %D%/c++/runtime.cc                             \
  %D%/c++/thread_pool.cc
 
+if have_pthread
 lib_LTLIBRARIES += %D%/libdzn-c++.la
 %C%_libdzn_c___la_HEADERS = $(dist_runtime_cxx_dzn_DATA)
 %C%_libdzn_c___la_SOURCES = $(dist_runtime_cxx_DATA)
 
 %C%_libdzn_c___ladir = $(includedir)/dzn
-nobase_include_headers += $(%C%_libdzn_c___la_HEADERS)
 
 %C%_libdzn_c___la_CPPFLAGS =			\
  -I $(abs_top_srcdir)/runtime/c++
@@ -116,7 +121,9 @@ nobase_include_headers += $(%C%_libdzn_c___la_HEADERS)
 %C%_libdzn_c___la_LDFLAGS =			\
  -version-info $(version_info)			\
  -export-dynamic -no-undefined			\
+ $(LIBBOOST_COROUTINE)				\
  $(GNU_LD_FLAGS)
+endif
 endif
 
 if have_javascript

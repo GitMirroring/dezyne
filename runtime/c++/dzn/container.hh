@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2018, 2019, 2020, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -25,6 +25,7 @@
 #ifndef DZN_CONTAINER_HH
 #define DZN_CONTAINER_HH
 
+#include <dzn/config.hh>
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
 #include <dzn/pump.hh>

@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2015, 2016, 2017, 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -25,6 +25,8 @@
 
 #ifndef DZN_COROUTINE_HH
 #define DZN_COROUTINE_HH
+
+#include <dzn/config.hh>
 
 #if HAVE_BOOST_COROUTINE
 #include <boost/coroutine/all.hpp>

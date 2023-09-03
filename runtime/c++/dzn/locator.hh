@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
@@ -24,6 +24,8 @@
 
 #ifndef DZN_LOCATOR_HH
 #define DZN_LOCATOR_HH
+
+#include <dzn/config.hh>
 
 #include <cassert>
 #include <functional>

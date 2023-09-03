@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -24,6 +24,8 @@
 
 #ifndef DZN_META_HH
 #define DZN_META_HH
+
+#include <dzn/config.hh>
 
 #include <algorithm>
 #include <functional>

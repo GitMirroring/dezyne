@@ -207,8 +207,27 @@ have_cxx11=false
 ;;
 esac
 
+AC_DEFINE_UNQUOTED([DZN_VERSION_ASSERT], [1],
+  [Define whether to enable the dzn version assert.])
+AC_SUBST(DZN_VERSION_ASSERT)
+
+AX_PTHREAD([have_pthread=yes], [have_pthread=no])
+AC_LANG_PUSH([C++])
+AX_BOOST_BASE([1.67])
+AC_CHECK_HEADERS([boost/coroutine/all.hpp],
+  [have_boost_coroutine=yes
+   HAVE_BOOST_COROUTINE=yes
+   AC_DEFINE_UNQUOTED([HAVE_BOOST_COROUTINE], [1],
+   [Define if you have the boost coroutine library.])],
+  [have_boost_coroutine=no])
+AC_LIB_HAVE_LINKFLAGS([boost_coroutine], [],
+  [#include <boost/coroutine/all.hpp>],
+  [boost::coroutines::stack_traits::default_size ();])
+AC_LANG_POP()
+AC_SUBST(HAVE_BOOST_COROUTINE)
+
 AC_LANG_PUSH([C])
-AC_CHECK_HEADERS([pth.h])
+AC_CHECK_HEADERS([pth.h],[have_pth=yes],[have_pth=no])
 AC_LIB_HAVE_LINKFLAGS([pth],[],[#include <pth.h>], [pth_init ();])
 AC_LANG_POP()
 case ,${enable_languages}, in
@@ -262,6 +281,9 @@ esac
 AM_CONDITIONAL([have_c99], [test "x$have_c99" = xtrue])
 AM_CONDITIONAL([have_cs], [test "x$have_cs" = xtrue])
 AM_CONDITIONAL([have_cxx11], [test "x$have_cxx11" = xtrue])
+AM_CONDITIONAL([have_boost], [test "x$have_boost" = xtrue])
+AM_CONDITIONAL([have_pth], [test "x$have_pth" = xyes])
+AM_CONDITIONAL([have_pthread], [test "x$have_pthread" = xyes])
 AM_CONDITIONAL([have_javascript], [test "x$have_javascript" = xtrue])
 AM_CONDITIONAL([have_scheme], [test "x$have_scheme" = xtrue])
 
@@ -288,6 +310,7 @@ AM_CONDITIONAL([have_cxx_exception_wrappers], [test "x$have_cxx_exception_wrappe
 # Output
 AUTOHEADER=true
 AC_CONFIG_HEADERS([runtime/c/dzn/config.h])
+AC_CONFIG_HEADERS([runtime/c++/dzn/config.hh])
 AC_CONFIG_FILES([config.make:build-aux/config.make.in])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pre-inst-env:build-aux/pre-inst-env.in],
@@ -303,5 +326,6 @@ AC_OUTPUT
 cat <<EOF
 
     Dezyne is configured for languages: $languages
+    Use Boost::Coroutine for C++:        $have_boost_coroutine
     Experimental c++ exception wrappers: $cxx_exception_wrappers
 EOF

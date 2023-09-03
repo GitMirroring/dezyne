@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017, 2020, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
@@ -24,6 +24,8 @@
 
 #ifndef DZN_CONTEXT_HH
 #define DZN_CONTEXT_HH
+
+#include <dzn/config.hh>
 
 #include <cassert>
 #include <condition_variable>

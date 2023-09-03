@@ -54,6 +54,7 @@ stamp-vti
 /dzn/config.scm
 /pre-inst-env
 /runtime/c/dzn/config.h
+/runtime/c++/dzn/config.hh
 /runtime/c++/dzn/meta.hh
 /libtool
 Makefile

@@ -51,18 +51,19 @@ NOWARN_FLAGS=					\
  -Wno-unused-variable				\
  -Wno-unused-parameter				\
  -Wno-unused-but-set-variable
-LIBPTHREAD = -pthread
 DEPEND_CXXFLAGS = -MMD -MF $(@:%.o=%.d) -MT '$(@:%.o=%.d) $@'
-TEST_CXXFLAGS = $(DEPEND_CXXFLAGS) $(LIBPTHREAD) $(WARN_FLAGS)
+TEST_CXXFLAGS = $(DEPEND_CXXFLAGS) $(PTHREAD_CFLAGS) $(WARN_FLAGS)
 INCLUDES = -I$(OUT)				\
  -I$(OUT)/..					\
  -I$(OUT)/../..					\
  -I$(OUT)/../../c++				\
  -I$(IN) -I$(IN)/..				\
  -I$(abs_top_srcdir)/runtime/c++
-DEFINES = -D DZN_VERSION_ASSERT=1
 CPPFLAGS = $(INCLUDES) $(DEFINES)
-LDFLAGS= -static -L $(abs_top_builddir)/runtime/.libs -ldzn-c++
+LDFLAGS =						\
+ -Wl,-rpath -Wl,$(abs_top_builddir)/runtime/.libs/	\
+  $(abs_top_builddir)/runtime/.libs/libdzn-c++.so	\
+  $(LIBBOOST_COROUTINE)
 GLOBALS_H=$(wildcard $(IN)/globals.h)
 ifneq ($(GLOBALS_H),)
 CPPFLAGS:=$(CPPFLAGS) -include $(GLOBALS_H)
@@ -90,7 +91,7 @@ $(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
 $(OUT)/test: $(patsubst $(OUT)/%.cc, $(OUT)/%.o, $(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cc, %.o,$(wildcard $(OUT)/*.cc))
 $(OUT)/test: $(patsubst %.cpp, %.o,$(wildcard $(OUT)/*.cpp))
-$(OUT)/test: $(MAIN_O) $(abs_top_builddir)/runtime/.libs/libdzn-c++.a
+$(OUT)/test: $(MAIN_O) $(abs_top_builddir)/runtime/.libs/libdzn-c++.so
 	mkdir -p $(dir $@)
 	$(LINK.cc) $(TEST_CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
