@@ -34,6 +34,10 @@ Dezyne currently depends on the following packages:
   - [[https://mcrl2.org][mCRL2]], version 202106.0
   - [[https://gitlab.com/janneke/scmackerel][SCMackerel]], version 0.5.2.
 
+Optionally, for C++11
+
+  - [[https://boost.org][Boost]], for using co-operative co-routines instead of threads.
+
 To run the regression test, these additional packages are needed:
 
   - for C++11: [[https://gcc.gnu.org][GCC's g++]], version 5.4 or later
