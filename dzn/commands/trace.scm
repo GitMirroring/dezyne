@@ -35,6 +35,7 @@
           '((format (single-char #\f) (value #t))
             (help (single-char #\h))
             (internal (single-char #\i))
+            (meta (single-char #\m))
             (locations (single-char #\L))
             (trace (single-char #\t) (value #t))))
          (options (getopt-long args option-spec))
@@ -47,6 +48,7 @@ Convert between different trace formats
   -f, --format=FORMAT    display trace in format FORMAT [event] {code,diagram,event,json,sexp}
   -h, --help             display this help and exit
   -i, --internal         display system-internal events
+  -m, --meta             display meta-events
   -L, --locations        prepend locations to output trace
   -t, --trace=TRACE      use trace TRACE [read from stdin]
 ")
@@ -64,11 +66,13 @@ Convert between different trace formats
          (format (option-ref options 'format "event"))
          (internal? (command-line:get 'internal #f))
          (locations? (command-line:get 'locations #f))
+         (meta? (command-line:get 'meta #f))
          (debug? (dzn:command-line:get 'debug))
          (trace (trace:format-trace trace
                                     #:debug? debug?
                                     #:file-name file-name
                                     #:format format
                                     #:internal? internal?
-                                    #:locations? locations?)))
+                                    #:locations? locations?
+                                    #:meta? meta?)))
     (display trace)))

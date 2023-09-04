@@ -644,11 +644,16 @@ are weak-bisim equivalent"
             (observe `(,@interpreter
                        ,test ,@(if (flush? file-name) '("--flush") '())) input)
           (and (zero? status)
-               (let ((net (trace:format-trace stderr #:format "event")))
+               (let* ((meta? (member language '("c++")))
+                      (net (trace:format-trace stderr #:format "event" #:meta? meta?))
+                      (net (filter-<defer> net))
+                      (net (if meta? net
+                               (filter-<flush> net))))
                  (receive (status stdout stderr)
                      (let* ((input (filter-state input))
-                            (input (filter-<flush> input))
-                            (input (filter-<defer> input)))
+                            (input (filter-<defer> input))
+                            (input (if meta? input
+                                       (filter-<flush> input))))
                        (observe `("bash" "-c"
                                   ,(string-append "diff -ywB"
                                                   ;; ignore foreign/system communications

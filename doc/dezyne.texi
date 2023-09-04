@@ -3278,6 +3278,7 @@ a trace diagram in a browser.
 Display help on invoking @command{dzn trace}, and then exit.
 
 @item --internal
+@itemx -i
 Show communication between components in the system.  When using the
 option @option{--format=diagram} on a system trace, the communication
 between components in the system is hidden by default.
@@ -3285,6 +3286,11 @@ between components in the system is hidden by default.
 @item --locations
 @itemx -L
 Show locations in output.
+
+@item --meta
+@itemx -m
+When using @option{format=event} also show meta-events, such as
+@code{<defer>} and @code{<illegal>}.
 
 @item --trace=@var{trace}
 @itemx -t @var{trace}

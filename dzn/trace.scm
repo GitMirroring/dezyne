@@ -25,6 +25,7 @@
 (define-module (dzn trace)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 regex)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
@@ -1036,23 +1037,28 @@ ws               <   [ \t]
                 activities
                 (append events (list event)))))))))
 
-(define (steps->trail steps)
+(define* (steps->trail steps #:key meta?)
   (define (defer-qout? step)
     (and (message? step)
          (equal? (message-message step) "<defer>")))
+  (define (meta-event? message)
+    (let ((event (message-message message)))
+      (or (string-suffix? "<flush>" event)
+          (string-match "^<[-a-z]+>$" event))))
   (let ((steps (filter (disjoin (conjoin (negate q-out?) external?)
-                                defer-qout?)
+                                defer-qout?
+                                (conjoin (const meta?) message? meta-event?))
                        steps)))
     (map step->event steps)))
 
-(define* (trace:format-trace trace #:key debug? file-name format internal? locations?)
+(define* (trace:format-trace trace #:key debug? file-name format internal? locations? meta?)
   (let* ((structured (trace:trace->structured trace #:file-name file-name #:debug? debug?))
          (merged (merge-communications structured)))
     (cond
      ((equal? format "sexp")
       (map serialize structured))
      ((equal? format "event")
-      (let ((steps (steps->trail merged)))
+      (let ((steps (steps->trail merged #:meta? meta?)))
         (string-join steps "\n" 'suffix)))
      ((equal? format "diagram")
       (let* ((header (find header? structured))
