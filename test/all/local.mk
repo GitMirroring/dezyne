@@ -684,3 +684,8 @@ FULL_TESTS =					\
  $(SEMANTICS_TESTS)				\
  $(PARSER_TESTS)				\
  $(REGRESSION_TESTS)
+
+dzn_exampledir = $(pkgdatadir)/examples
+nodist_dzn_example_DATA =			\
+ %D%/cruise-control/cruise-control.dzn		\
+ %D%/hello/hello.dzn
