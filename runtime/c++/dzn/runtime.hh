@@ -303,6 +303,7 @@ void wrap_out (C *component, P &port, E event, char const *name)
        trace_qout (os, port.dzn_meta, name);
        event ();
      }, coroutine_id (component->dzn_locator));
+  component->dzn_update ();
   prune_deferred (component->dzn_locator);
 }
 
@@ -319,7 +320,6 @@ void call_out (C *component, P &port, const char *name, const E &event)
   auto &os = component->dzn_locator.template get<typename std::ostream> ();
   trace_qin (os, port.dzn_meta, name);
   port.dzn_event (name);
-  if (!port.dzn_busy) port.dzn_update_state (component->dzn_locator);
   return share_trace_wrapper<P> (component->dzn_locator, port, name, true) (event);
 }
 
@@ -333,6 +333,7 @@ void defer (C *component, P &&predicate, const E &event)
            event ();
            component->dzn_runtime.flush (component);
            component->dzn_runtime.handling (component) = 0;
+           component->dzn_update ();
          }));
 }
 //https://cp-algorithms.com/string/string-hashing.html

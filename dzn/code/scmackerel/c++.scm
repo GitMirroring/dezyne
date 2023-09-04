@@ -670,7 +670,9 @@ produces those prefixes and marks them with #:rtc? #false."
                                                        (name "locator"))))
                              (statement
                               (sm:compound*
-                               `(,(sm:if* (sm:not* "dzn_share_p") (sm:return*))
+                               `(,(sm:if* (sm:or* (sm:not* "dzn_share_p")
+                                                  (sm:call (name "dzn_prefix.empty")))
+                                          (sm:return*))
                                  ,@(if (= (dzn:debugity) 0) '()
                                        `(,(sm:call (name "debug") (arguments '("\"update_state\"")))))
                                  ,(sm:switch
@@ -765,6 +767,15 @@ produces those prefixes and marks them with #:rtc? #false."
       (sm:assign* (sm:member* (%member-prefix)
                               (string-append "dzn_locator.get< " type "> ()"))
                   (.name port))))
+  (define (port->update port)
+    (sm:if* (sm:not* (string-append (%member-prefix)
+                                    (.name port)
+                                    ".dzn_busy"))
+            (sm:call (name (string-append (%member-prefix)
+                                          (.name port)
+                                          ".dzn_update_state"))
+                     (arguments `(,(string-append (%member-prefix)
+                                                  "dzn_locator"))))))
   (define (trigger->event-slot trigger)
     (let* ((port (.port trigger))
            (port-name (.name port))
@@ -919,6 +930,12 @@ produces those prefixes and marks them with #:rtc? #false."
                              ,(sm:assign* (sm:member* "dzn_runtime.performs_flush (this)")
                                           "true")))
                      ,@(map trigger->event-slot (ast:in-triggers o))))))
+               ,(sm:method (struct component)
+                           (type "void")
+                           (name "dzn_update")
+                           (statement
+                            (sm:compound*
+                             (map port->update (ast:provides-port* o)))))
                ,@(if (not (is-a? o <foreign>)) '()
                      (list
                       (sm:destructor (struct component)
