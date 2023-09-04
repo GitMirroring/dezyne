@@ -74,8 +74,8 @@ inline void apply (const dzn::meta *m, const std::function<void (const dzn::meta
     }
 }
 
-template <typename Port>
-void connect (Port& provided, Port& required)
+template <typename P, typename R>
+void connect (P& provided, R& required)
 {
   provided.out = required.out;
   required.in = provided.in;
