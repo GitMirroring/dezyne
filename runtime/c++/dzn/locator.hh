@@ -39,9 +39,9 @@ namespace dzn
 {
 struct illegal_handler
 {
-  std::function<void (char const *)> illegal = [] (char const *msg = "")
+  std::function<void (char const *)> illegal = [] (char const *location = "")
   {
-    std::cout << "illegal at: " << msg << std::endl;
+    std::cout << location << (location[0] ? ": " : "") << "<illegal>" << std::endl;
     assert (!"illegal");
   };
   [[noreturn]] void handle (char const *msg = "")
