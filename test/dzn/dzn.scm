@@ -151,6 +151,9 @@ output, and standard error as three values."
 ;;;
 ;;; META
 ;;;
+(define (file->model file-name)
+  (string-map (lambda (c)(if (eq? c #\-) #\_ c)) file-name))
+
 (define (get-meta file-name)
   (let ((META (string-append file-name "/META")))
     (and (file-exists? META)
@@ -319,7 +322,7 @@ output, and standard error as three values."
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
          (fall-back? (fall-back? file-name))
-         (model (or (component? file-name) base-name))
+         (model (or (component? file-name) (file->model base-name)))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
@@ -358,7 +361,7 @@ output, and standard error as three values."
               (includes (append-map (cute list "-I" <>) includes))
               (out (string-append file-name "/out"))
               (out-lang (string-append out "/" language))
-              (model (or (model? file-name) base-name))
+              (model (or (model? file-name) (file->model base-name)))
               (command
                `("dzn" "code"
                  ,@includes
@@ -410,7 +413,7 @@ output, and standard error as three values."
                              '())))
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
-         (model (or (component? file-name) base-name))
+         (model (or (component? file-name) (file->model base-name)))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
@@ -454,7 +457,7 @@ are weak-bisim equivalent"
                              '())))
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
-         (model (or (component? file-name) base-name))
+         (model (or (component? file-name) (file->model base-name)))
          (queue-size (queue-size file-name))
          (language "constrained-component")
          (out (string-append file-name "/out"))
@@ -532,7 +535,7 @@ are weak-bisim equivalent"
                              '())))
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
-         (model (or (component? file-name) base-name))
+         (model (or (component? file-name) (file->model base-name)))
          (queue-size (queue-size file-name))
          (language "constrained-no-compliance")
          (out (string-append file-name "/out"))
@@ -667,7 +670,7 @@ are weak-bisim equivalent"
                              '())))
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
-         (model (or (model? file-name) base-name))
+         (model (or (model? file-name) (file->model base-name)))
          (language "simulate")
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
@@ -744,7 +747,7 @@ are weak-bisim equivalent"
                                     (cute string-split <> #\:))
                              '())))
          (includes (append-map (cute list "-I" <>) includes))
-         (model (or (component? file-name) base-name))
+         (model (or (component? file-name) (file->model base-name)))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
