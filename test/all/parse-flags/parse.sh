@@ -26,6 +26,10 @@ test/all/parse_non_existent_import/parse_non_existent_import.dzn
 test/all/parse_assign_void/parse_assign_void.dzn
 "
 
+function pretty2line () {
+    guile -c '(unless (eof-object? (peek-char)) ((compose write read)))'
+}
+
 set -o pipefail
 for i in $TESTS; do
     echo "parse --fall-back $i"
@@ -35,17 +39,17 @@ for i in $TESTS; do
 
     echo "parse --fall-back --parse-tree $i"
     echo "parse --fall-back --parse-tree $i" 1>&2
-    dzn parse --fall-back --parse-tree -o- $i
+    dzn parse --fall-back --parse-tree -o- $i | pretty2line
     echo "parse --fall-back --parse-tree $i => $?"
 
     echo "--verbose parse parse --parse-tree $i"
     echo "--verbose parse parse --parse-tree $i" 1>&2
-    dzn --verbose parse --parse-tree -o- $i
+    dzn --verbose parse --parse-tree -o- $i | pretty2line
     echo "--verbose parse --parse-tree $i => $?"
 
     echo "parse --parse-tree -o- $i"
     echo "parse --parse-tree -o- $i" 1>&2
-    dzn parse --parse-tree -o- $i
+    dzn parse --parse-tree -o- $i | pretty2line
     echo "parse --parse-tree -o- $i => $?"
 
     echo "parse --preprocess $i"
@@ -65,7 +69,7 @@ for i in $TESTS; do
 
     echo "parse $i -o-"
     echo "parse $i -o-" 1>&2
-    dzn parse -o- $i
+    dzn parse -o- $i | pretty2line
     echo "parse -o- $i => $?"
 done                                                            \
     | sed -e "s,$PWD,<pwd>,"                                    \
