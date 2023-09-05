@@ -108,7 +108,7 @@ dist_runtime_cxx_DATA =				\
  %D%/c++/runtime.cc                             \
  %D%/c++/thread_pool.cc
 
-if have_pthread
+if have_mutex
 lib_LTLIBRARIES += %D%/libdzn-c++.la
 %C%_libdzn_c___la_HEADERS = $(dist_runtime_cxx_dzn_DATA)
 %C%_libdzn_c___la_SOURCES = 			\

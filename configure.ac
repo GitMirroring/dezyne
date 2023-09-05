@@ -214,6 +214,8 @@ AC_SUBST(DZN_VERSION_ASSERT)
 AX_PTHREAD([have_pthread=yes], [have_pthread=no])
 AC_LANG_PUSH([C++])
 AX_BOOST_BASE([1.67])
+AC_CHECK_HEADER([mutex])
+AC_CHECK_TYPE([std::mutex], [have_mutex=yes], [have_mutex=no],[#include <mutex>])
 AC_CHECK_HEADERS([boost/coroutine/all.hpp],
   [have_boost_coroutine=yes
    HAVE_BOOST_COROUTINE=yes
@@ -221,7 +223,7 @@ AC_CHECK_HEADERS([boost/coroutine/all.hpp],
    AC_DEFINE_UNQUOTED([HAVE_BOOST_COROUTINE], [1],
    [Define if you have the boost coroutine library.])],
   [have_boost_coroutine=no
-   dzn_thread_pool="$have_pthread"])
+   dzn_thread_pool="$have_mutex"])
 AC_LIB_HAVE_LINKFLAGS([boost_coroutine], [],
   [#include <boost/coroutine/all.hpp>],
   [boost::coroutines::stack_traits::default_size ();])
@@ -297,6 +299,7 @@ AM_CONDITIONAL([have_c99], [test "x$have_c99" = xtrue])
 AM_CONDITIONAL([have_cs], [test "x$have_cs" = xtrue])
 AM_CONDITIONAL([have_cxx11], [test "x$have_cxx11" = xtrue])
 AM_CONDITIONAL([have_boost], [test "x$have_boost" = xtrue])
+AM_CONDITIONAL([have_mutex], [test "x$have_mutex" = xyes])
 AM_CONDITIONAL([have_pth], [test "x$have_pth" = xyes])
 AM_CONDITIONAL([have_pthread], [test "x$have_pthread" = xyes])
 AM_CONDITIONAL([dzn_thread_pool], [test "x$dzn_thread_pool" = xyes])
