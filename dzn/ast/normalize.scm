@@ -1379,20 +1379,19 @@ code check."
                           (tag (make <tag> #:location location)))
                      (cons* return tag (loop (cons statement rest)))))
                   (((and ($ <if>) if-statement) statement rest ...) (=> failure)
-                   (define (continue-to-statement? return)
-                     (let ((continuation (car (ast:continuation* return))))
-                       (ast:eq? continuation statement)))
-                   (let* ((returns (tree-collect-filter (is? <statement>)
-                                                        (is? <return>)
-                                                        if-statement))
-                          (returns (filter continue-to-statement?
-                                           returns)))
-                     (if (null? returns) (failure)
-                         (let* ((location (location statement))
-                                (tag (make <tag> #:location location)))
-                           (cons* if-statement
-                                  tag
-                                  (loop (cons statement rest)))))))
+                   (let ((returns (tree-collect-filter (is? <statement>)
+                                                       (is? <return>)
+                                                       if-statement)))
+                     (define (continue-to-statement? return)
+                       (let ((continuation (car (ast:continuation* return))))
+                         (ast:eq? continuation statement)))
+                     (let ((returns (filter continue-to-statement? returns)))
+                       (if (null? returns) (failure)
+                           (let* ((location (location statement))
+                                  (tag (make <tag> #:location location)))
+                             (cons* if-statement
+                                    tag
+                                    (loop (cons statement rest))))))))
                   (((and ($ <if>) statement) rest ...)
                    (let* ((then (tag-return-continuation (.then statement)))
                           (else (tag-return-continuation (.else statement)))
