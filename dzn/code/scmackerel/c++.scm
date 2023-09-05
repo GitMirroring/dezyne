@@ -878,6 +878,34 @@ produces those prefixes and marks them with #:rtc? #false."
                        (cute string-append "&" <> ".dzn_meta")
                        .name)
                       ports))))
+  (define (out->method component trigger)
+    (let* ((arguments (map c++:ast->expression
+                           (code:formal* trigger)))
+           (lambda (sm:function
+                    (captures `("this" ,@arguments))
+                    (statement
+                     (sm:compound*
+                      (sm:call
+                       (name (string-append
+                              (.port.name trigger)
+                              ".out."
+                              (.event.name trigger)))
+                       (arguments arguments)))))))
+      (sm:method (struct component)
+                 (type "void")
+                 (name (string-append (.port.name trigger)
+                                      "_"
+                                      (.event.name trigger)))
+                 (formals (map c++:->formal (code:formal* trigger)))
+                 (statement (sm:compound*
+                             `(,(sm:call
+                                 (name "dzn::call_out")
+                                 (arguments `("this"
+                                              ,(.port.name trigger)
+                                              ,(simple-format
+                                                #f "~s"
+                                                (.event.name trigger))
+                                              ,lambda)))))))))
   (let* ((enums (filter (is? <enum>) (code:enum* o)))
          (ports (ast:port* o))
          (check-bindings-list
@@ -937,10 +965,12 @@ produces those prefixes and marks them with #:rtc? #false."
                             (sm:compound*
                              (map port->update (ast:provides-port* o)))))
                ,@(if (not (is-a? o <foreign>)) '()
-                     (list
-                      (sm:destructor (struct component)
-                                     (type "virtual")
-                                     (statement (sm:compound*)))))
+                     `(,(sm:destructor (struct component)
+                                       (type "virtual")
+                                       (statement (sm:compound*)))
+                       ,(sm:protection* "protected")
+                       ,@(map (cute out->method component <>)
+                              (ast:provides-out-triggers o))))
                ,(sm:protection* "private")
                ,@(map (cute trigger->method component <>) (ast:in-triggers o))
                ,@(map (cute function->method component <>) (ast:function* o))))))
