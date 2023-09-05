@@ -679,12 +679,14 @@ are weak-bisim equivalent"
           (and (zero? status)
                (let* ((meta? (member language '("c++")))
                       (net (trace:format-trace stderr #:format "event" #:meta? meta?))
-                      (net (filter-<defer> net))
+                      (net (if meta? net
+                               (filter-<defer> net)))
                       (net (if meta? net
                                (filter-<flush> net))))
                  (receive (status stdout stderr)
                      (let* ((input (filter-state input))
-                            (input (filter-<defer> input))
+                            (input (if meta? input
+                                       (filter-<defer> input)))
                             (input (if meta? input
                                        (filter-<flush> input))))
                        (observe `("bash" "-c"
