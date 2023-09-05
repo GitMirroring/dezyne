@@ -38,14 +38,6 @@
   #:use-module (gnu packages pth)
   #:use-module (pack scmackerel))
 
-(define %source-dir (getcwd))
-
-;; scp kluit.dezyne.org:.../download/dezyne-2.10.0.tar.gz .
-;; guix download ./dezyne-2.10.0.tar.gz
-
-;; This makes `git am 0001-guix-dezyne-Update-to-2.13.2.patch' work.
-(define guile-3.0-latest guile-next)
-
 (define-public dezyne
   (package
     (name "dezyne")
@@ -63,11 +55,11 @@
                              guile-readline
                              scmackerel))
     (inputs (list bash-minimal
-                  guile-3.0-latest
+                  guile-3.0
                   mcrl2-minimal
                   pth
                   sed))
-    (native-inputs (list guile-3.0-latest pkg-config))
+    (native-inputs (list guile-3.0 pkg-config))
     (build-system gnu-build-system)
     (arguments
      (list
