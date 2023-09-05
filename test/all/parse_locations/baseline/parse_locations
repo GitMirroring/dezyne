@@ -1,9 +1,7 @@
 (("root"
   (location
     (("location"
-      (file-name
-        .
-        "test/all/parse_locations/parse_locations.dzn")
+      (file-name . "parse_locations.dzn")
       (line . 24)
       (column . 1)
       (end-line . 34)
@@ -12,14 +10,11 @@
       (length . 101))))
   (("bool" (name . bool)))
   (("void" (name . void)))
-  (("file-name"
-    (name . "test/all/parse_locations/ihello.dzn")))
+  (("file-name" (name . "./ihello.dzn")))
   (("interface"
     (location
       (("location"
-        (file-name
-          .
-          "test/all/parse_locations/ihello.dzn")
+        (file-name . "./ihello.dzn")
         (line . 24)
         (column . 1)
         (end-line . 32)
@@ -33,9 +28,7 @@
        (("event"
          (location
            (("location"
-             (file-name
-               .
-               "test/all/parse_locations/ihello.dzn")
+             (file-name . "./ihello.dzn")
              (line . 26)
              (column . 3)
              (end-line . 26)
@@ -47,9 +40,7 @@
            ("signature"
             (location
               (("location"
-                (file-name
-                  .
-                  "test/all/parse_locations/ihello.dzn")
+                (file-name . "./ihello.dzn")
                 (line . 26)
                 (column . 6)
                 (end-line . 26)
@@ -63,9 +54,7 @@
       ("behavior"
        (location
          (("location"
-           (file-name
-             .
-             "test/all/parse_locations/ihello.dzn")
+           (file-name . "./ihello.dzn")
            (line . 28)
            (column . 3)
            (end-line . 31)
@@ -80,9 +69,7 @@
          ("compound"
           (location
             (("location"
-              (file-name
-                .
-                "test/all/parse_locations/ihello.dzn")
+              (file-name . "./ihello.dzn")
               (line . 29)
               (column . 3)
               (end-line . 31)
@@ -92,9 +79,7 @@
           (("on"
             (location
               (("location"
-                (file-name
-                  .
-                  "test/all/parse_locations/ihello.dzn")
+                (file-name . "./ihello.dzn")
                 (line . 30)
                 (column . 5)
                 (end-line . 30)
@@ -106,9 +91,7 @@
                (("trigger"
                  (location
                    (("location"
-                     (file-name
-                       .
-                       "test/all/parse_locations/ihello.dzn")
+                     (file-name . "./ihello.dzn")
                      (line . 30)
                      (column . 8)
                      (end-line . 30)
@@ -121,24 +104,18 @@
               ("compound"
                (location
                  (("location"
-                   (file-name
-                     .
-                     "test/all/parse_locations/ihello.dzn")
+                   (file-name . "./ihello.dzn")
                    (line . 30)
                    (column . 15)
                    (end-line . 30)
                    (end-column . 17)
                    (offset . 907)
                    (length . 2))))))))))))))
-  (("file-name"
-    (name .
-          "test/all/parse_locations/parse_locations.dzn")))
+  (("file-name" (name . "parse_locations.dzn")))
   (("component"
     (location
       (("location"
-        (file-name
-          .
-          "test/all/parse_locations/parse_locations.dzn")
+        (file-name . "parse_locations.dzn")
         (line . 26)
         (column . 1)
         (end-line . 33)
@@ -150,9 +127,7 @@
             (("port"
               (location
                 (("location"
-                  (file-name
-                    .
-                    "test/all/parse_locations/parse_locations.dzn")
+                  (file-name . "parse_locations.dzn")
                   (line . 28)
                   (column . 3)
                   (end-line . 28)
@@ -167,9 +142,7 @@
       ("behavior"
        (location
          (("location"
-           (file-name
-             .
-             "test/all/parse_locations/parse_locations.dzn")
+           (file-name . "parse_locations.dzn")
            (line . 29)
            (column . 3)
            (end-line . 32)
@@ -184,9 +157,7 @@
          ("compound"
           (location
             (("location"
-              (file-name
-                .
-                "test/all/parse_locations/parse_locations.dzn")
+              (file-name . "parse_locations.dzn")
               (line . 30)
               (column . 3)
               (end-line . 32)
@@ -196,9 +167,7 @@
           (("on"
             (location
               (("location"
-                (file-name
-                  .
-                  "test/all/parse_locations/parse_locations.dzn")
+                (file-name . "parse_locations.dzn")
                 (line . 31)
                 (column . 5)
                 (end-line . 31)
@@ -210,9 +179,7 @@
                (("trigger"
                  (location
                    (("location"
-                     (file-name
-                       .
-                       "test/all/parse_locations/parse_locations.dzn")
+                     (file-name . "parse_locations.dzn")
                      (line . 31)
                      (column . 8)
                      (end-line . 31)
@@ -226,9 +193,7 @@
               ("compound"
                (location
                  (("location"
-                   (file-name
-                     .
-                     "test/all/parse_locations/parse_locations.dzn")
+                   (file-name . "parse_locations.dzn")
                    (line . 31)
                    (column . 19)
                    (end-line . 31)
