@@ -190,8 +190,6 @@ void defer (C *component, P &&predicate, E const &event)
   defer (component->dzn_locator, std::function<bool ()> (predicate),
          std::function<void (size_t)> ([ = ] (size_t coroutine_id)
          {
-           auto &os = component->dzn_locator.template get<typename std::ostream> ();
-           os << "<defer>" << std::endl;
            component->dzn_runtime.handling (component) = coroutine_id;
            event ();
            component->dzn_runtime.flush (component);
