@@ -326,6 +326,7 @@ REGRESSION_TESTS =				\
  %D%/foreign_injected				\
  %D%/foreign_multiple_provides			\
  %D%/foreign_namespace				\
+ %D%/foreign_only				\
  %D%/foreign_optional				\
  %D%/foreign_reply				\
  %D%/foreign_requires				\
