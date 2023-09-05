@@ -1,9 +1,9 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019-2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016-2024 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -231,8 +231,10 @@ void defer (C *component, P &&predicate, E const &statement)
   defer (component->dzn_locator, std::function<bool ()> (predicate),
          std::function<void (size_t)> ([ = ] (size_t coroutine_id)
          {
-           scoped_activity activity (component->dzn_runtime,
-                                     component->dzn_locator, -1);
+           dzn::locator const& locator = component->dzn_locator;
+           auto &os = locator.template get<typename std::ostream> ();
+           os << "<defer>" << std::endl;
+           scoped_activity activity (component->dzn_runtime, locator, -1);
            component->dzn_runtime.defer = true;
            statement ();
            component->dzn_runtime.flush (component, coroutine_id, false);
