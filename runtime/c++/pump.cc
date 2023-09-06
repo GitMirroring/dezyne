@@ -82,7 +82,7 @@ namespace dzn
   pump::pump()
   : unblocked(false)
   , running(true)
-  , task(std::async(std::launch::async, std::ref(*this)))
+  , task(dzn::thread::defer(std::ref(*this)))
   {}
   pump::~pump()
   {
