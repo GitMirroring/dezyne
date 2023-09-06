@@ -92,7 +92,7 @@ namespace dzn
   , running(true)
   , id(0)
   , switch_context()
-  , task(std::async(std::launch::async, std::ref(*this)))
+  , task(dzn::thread::defer(std::ref(*this)))
   {}
   pump::~pump()
   {
