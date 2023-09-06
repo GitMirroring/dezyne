@@ -5,6 +5,20 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.16.5 since 2.16.4
+** Verification
+  - A new `-T,--timings' option showing detailed timings for the
+    different stages like: parsing, normalization and mCRL2 has been
+    backported from 2.18.
+** Noteworthy bug fixes
+  - Building the C++ pump using the Boost::Coroutine library works out
+    of the box again.  This was a regression introduced in 2.16.0.
+  - The `std::async' in the C++ pump has been replaced by
+    `dzn::thread::defer'.  This allows working around the arbitrary
+    limits in `std::async' observed on some Microsoft systems.
+  - The C++ thread-pool no longer joins threads at destruction, instead
+    it detaches them.
+
 * Changes in 2.16.4 since 2.16.3
 ** Commands
   - The different queue sizes: component, defer, external can now be set
@@ -25,8 +39,8 @@
   - A bug was fixed in the verifier for reporting queue-full cases for
     an external port.  As a result, queue-full is now reported during
     the illegal check and not as part of the deadlock check.
-  - The `dzn simulate now exits gracefully when no dezyne model is
-    found.
+  - The `dzn simulate' command now exits gracefully when no dezyne model
+    is found.
 
 * Changes in 2.16.3 since 2.16.2
 ** Noteworthy bug fixes
