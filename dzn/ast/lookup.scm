@@ -100,7 +100,7 @@
             (append-map ast:top* namespaces))))
 
 (define-method (ast:declaration* (o <interface>))
-  (append (ast:type* o) (ast:event* o)))
+  (append (ast:type* o) (ast:event* o) (ast:modeling* o)))
 
 (define-method (ast:declaration* (o <component-model>))
   (ast:port* o))
@@ -387,16 +387,10 @@ null) and return its CONTEXT."
          (port (.port o))
          (interface (if (is-a? port <port>) (.type port)
                         (ast:parent o <interface>))))
-    (cond ((and (not port-name)
-                (equal? (.event.name o) "inevitable"))
-           (graft interface (make <inevitable>)))
-          ((and (not port-name)
-                (equal? (.event.name o) "optional"))
-           (graft interface (make <optional>)))
-          (else (and
-                 interface
-                 (let ((event (ast:lookup interface (.event.name o))))
-                   (as event <event>)))))))
+    (and
+     interface
+     (let ((event (ast:lookup interface (.event.name o))))
+       (as event <event>)))))
 
 (define-method (.event.direction (o <action>))
   ((compose .direction .event) o))

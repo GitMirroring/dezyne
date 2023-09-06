@@ -162,9 +162,16 @@
 
 (define-ast <model> (<scope> <declaration>))
 
+(define-ast <modeling> (<ast-list>))
+(define-method (initialize (o <modeling>) . initargs)
+  (next-method o (append (car initargs)
+                         (list #:elements (list (make <optional>)
+                                                (make <inevitable>))))))
+
 (define-ast <interface> (<model>)
   (types #:init-form (make <types>))
   (events #:init-form (make <events>))
+  (modeling #:init-form (make <modeling>))
   (behavior))
 
 (define-ast <type> (<declaration>))
@@ -209,10 +216,12 @@
 (define-method (.direction (o <modeling-event>)) 'in)
 
 (define-ast <inevitable> (<modeling-event>))
-(define-method (.name (o <inevitable>)) "inevitable")
+(define-method (initialize (o <inevitable>) . initargs)
+  (next-method o (append (car initargs) (list #:name "inevitable"))))
 
 (define-ast <optional> (<modeling-event>))
-(define-method (.name (o <optional>)) "optional")
+(define-method (initialize (o <optional>) . initargs)
+  (next-method o (append (car initargs) (list #:name "optional"))))
 
 (define-ast <instance> (<declaration> <declarative>)
   (type.name #:init-form (make <scope.name>)))

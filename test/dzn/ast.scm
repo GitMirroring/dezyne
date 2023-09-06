@@ -90,7 +90,8 @@ component hello
              (action (last actions))
              (compound (car (tree-collect (is? <compound>) root)))
              (port (car (tree-collect (is? <port>) root)))
-             (events (tree-collect (is? <event>) root))
+             (events (filter (negate (is? <modeling-event>))
+                             (tree-collect (is? <event>) root)))
              (event (last events))
              (graft-synth (graft (.parent action)
                                  (make <action>
