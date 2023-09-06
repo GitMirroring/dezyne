@@ -5,6 +5,14 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.14.1 since 2.14.0
+** Noteworthy bug fixes
+  - The `std::async' in the C++ pump has been replaced by
+    `dzn::thread::defer'.  This allows working around the arbitrary
+    limits in `std::async' observed on some Microsoft systems.
+  - The C++ thread-pool no longer joins threads at destruction, instead
+    it detaches them.
+
 * Changes in 2.14.0 since 2.13.3
 ** Release
   - Dezyne is now released as free software, under the terms of the GNU
