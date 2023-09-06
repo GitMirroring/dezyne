@@ -109,7 +109,7 @@ pump::pump ()
   , paused (false)
   , current_coroutine (0)
   , switch_context ()
-  , task (std::async (std::launch::async, std::ref (*this)))
+  , task (dzn::thread::defer (std::ref (*this)))
 {}
 pump::~pump ()
 {
