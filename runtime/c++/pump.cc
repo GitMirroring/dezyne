@@ -24,6 +24,7 @@
 //
 // Code:
 
+#include <dzn/async.hh>
 #include <dzn/locator.hh>
 #include <dzn/meta.hh>
 #include <dzn/pump.hh>
@@ -109,7 +110,7 @@ pump::pump ()
   , paused (false)
   , current_coroutine (0)
   , switch_context ()
-  , task (dzn::thread::defer (std::ref (*this)))
+  , task (dzn::async (std::ref (*this)))
 {}
 pump::~pump ()
 {

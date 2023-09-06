@@ -235,14 +235,6 @@ AC_ARG_ENABLE([c++-thread-pool], [AC_HELP_STRING([--disable-c++-thread-pool],
   [dzn_thread_pool="$enableval"],
   [dzn_thread_pool="$dzn_thread_pool"])
 
-if test "x$dzn_thread_pool" = xyes; then
-   DZN_THREAD_POOL=yes
-   AC_DEFINE_UNQUOTED([DZN_THREAD_POOL],
-      [1],
-      [Define when using the dzn thread pool.])
-fi
-AC_SUBST(DZN_THREAD_POOL)
-
 AC_LANG_PUSH([C])
 AC_CHECK_HEADERS([pth.h],[have_pth=yes],[have_pth=no])
 AC_LIB_HAVE_LINKFLAGS([pth],[],[#include <pth.h>], [pth_init ();])

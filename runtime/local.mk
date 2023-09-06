@@ -89,6 +89,7 @@ endif
 if have_cxx11
 runtime_cxx_dzndir = $(pkgdatadir)/runtime/c++/dzn
 dist_runtime_cxx_dzn_DATA =			\
+ %D%/c++/dzn/async.hh				\
  %D%/c++/dzn/config.hh				\
  %D%/c++/dzn/container.hh			\
  %D%/c++/dzn/context.hh				\
@@ -106,17 +107,20 @@ runtime_cxxdir = $(pkgdatadir)/runtime/c++
 dist_runtime_cxx_DATA =				\
  %D%/c++/pump.cc				\
  %D%/c++/runtime.cc                             \
- %D%/c++/thread_pool.cc
+ %D%/c++/std-async.cc				\
+ %D%/c++/thread-pool.cc
 
 if have_mutex
 lib_LTLIBRARIES += %D%/libdzn-c++.la
 %C%_libdzn_c___la_HEADERS = $(dist_runtime_cxx_dzn_DATA)
-%C%_libdzn_c___la_SOURCES = 			\
+%C%_libdzn_c___la_SOURCES =			\
  %D%/c++/pump.cc				\
  %D%/c++/runtime.cc
 
 if dzn_thread_pool
-%C%_libdzn_c___la_SOURCES += %D%/c++/thread_pool.cc
+%C%_libdzn_c___la_SOURCES += %D%/c++/thread-pool.cc
+else
+%C%_libdzn_c___la_SOURCES += %D%/c++/std-async.cc
 endif
 
 %C%_libdzn_c___ladir = $(includedir)/dzn

@@ -38,7 +38,7 @@ class pool
 {
   class task;
   friend class task;
-  std::vector<std::shared_ptr<const task> > tasks_;
+  std::vector<std::shared_ptr<task const> > tasks_;
   std::queue<task *> idle_tasks_;
   std::condition_variable con_;
   std::mutex mut_;
@@ -48,17 +48,15 @@ public:
   {
     std::unique_lock<std::mutex> lock (mut_);
     while (! (idle_tasks_.size () == tasks_.size ()))
-      {
-        con_.wait (lock);
-      }
+      con_.wait (lock);
   }
-  std::future<void> defer (const std::function<void ()> &work)
+  std::future<void> async (std::function<void ()> const &work)
   {
     std::unique_lock<std::mutex> lock (mut_);
     if (idle_tasks_.empty ())
       {
         task *pt = new task (*this);
-        tasks_.push_back (std::shared_ptr<const task> (pt));
+        tasks_.push_back (std::shared_ptr<task const> (pt));
         return pt->assign (work);
       }
     else
@@ -73,8 +71,8 @@ public:
     return tasks_.size ();
   }
 private:
-  pool &operator = (const pool &);
-  pool (const pool &);
+  pool &operator = (pool const &);
+  pool (pool const &);
 
   void idle (task *t)
   {
@@ -124,9 +122,7 @@ private:
       do
         {
           while (running_ && !work_)
-            {
-              con_.wait (lock);
-            }
+            con_.wait (lock);
           if (work_)
             {
               std::function<void ()> work;
@@ -141,15 +137,14 @@ private:
       while (running_);
     }
   private:
-    task (const task &);
-    task &operator = (const task &);
+    task (task const &);
+    task &operator = (task const &);
   };
 };
-
-std::future<void> defer (const std::function<void ()> &work)
+}
+std::future<void> async (std::function<void ()> const &work)
 {
   static thread::pool tp;
-  return tp.defer (work);
-}
+  return tp.async (work);
 }
 }

@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -21,17 +21,18 @@
 //
 // Code:
 
-#ifndef DZN_CONFIG_HH
-#define DZN_CONFIG_HH
+#ifndef DZN_ASYNC_HH
+#define DZN_ASYNC_HH
 
-#ifndef DZN_VERSION_ASSERT
-/* Define whether to enable the dzn version assert. */
-#undef DZN_VERSION_ASSERT
+#include <functional>
+#include <future>
+
+// forward declaration of dzn::async as indirection for std::async or
+// dzn::thread::pool::defer
+
+namespace dzn
+{
+std::future<void> async (std::function<void ()> const &);
+}
+
 #endif
-
-#ifndef HAVE_BOOST_COROUTINE
-/* Define if you have the boost coroutine library. */
-#undef HAVE_BOOST_COROUTINE
-#endif
-
-#endif /* DZN_CONFIG_HH */

@@ -31,8 +31,10 @@
 #include <dzn/meta.hh>
 #include <dzn/locator.hh>
 #include <dzn/coroutine.hh>
+
 #include <algorithm>
 #include <cstddef>
+#include <future>
 #include <iostream>
 #include <map>
 #include <queue>

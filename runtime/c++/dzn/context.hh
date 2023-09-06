@@ -26,6 +26,7 @@
 #define DZN_CONTEXT_HH
 
 #include <dzn/config.hh>
+#include <dzn/async.hh>
 
 #include <cassert>
 #include <condition_variable>
@@ -36,26 +37,6 @@
 #include <stdexcept>
 #include <thread>
 #include <iostream>
-
-#ifndef DZN_THREAD_POOL
-// Set to 1 to use thread pool from thread_pool.cc.
-#define DZN_THREAD_POOL 0
-#endif
-
-namespace dzn
-{
-namespace thread
-{
-std::future<void> defer (const std::function<void ()> &);
-
-#if !DZN_THREAD_POOL
-inline std::future<void> defer (const std::function<void ()> &work)
-{
-  return std::async (std::launch::async, work);
-}
-#endif //!DZN_THREAD_POOL
-}
-}
 
 namespace dzn
 {
@@ -96,7 +77,7 @@ public:
     , work ()
     , mutex ()
     , condition ()
-    , future (dzn::thread::defer ([this]
+    , future (dzn::async ([this]
     {
       try
         {
