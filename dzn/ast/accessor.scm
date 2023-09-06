@@ -50,7 +50,6 @@
             ast:member*
             ast:model*
             ast:model**
-            ast:modeling*
             ast:namespace*
             ast:namespace**
             ast:port*
@@ -103,7 +102,6 @@
 (define-method (ast:top* (o <namespace>)) (.elements o))
 (define-method (ast:member* (o <behavior>)) (ast:variable* o))
 (define-method (ast:model* (o <namespace>)) (filter (is? <model>) (ast:top* o)))
-(define-method (ast:modeling* (o <modeling>)) (.elements o))
 (define-method (ast:namespace* (o <namespace>)) (filter (is? <namespace>) (ast:top* o)))
 (define-method (ast:shared* (o <behavior>)) (filter (is? <shared-variable>) (ast:variable* o)))
 (define-method (ast:trigger* (o <triggers>)) (.elements o))
@@ -147,7 +145,6 @@
 (define-method (ast:member* (o <model>)) ((compose ast:member* .behavior) o))
 (define-method (ast:member* (o <foreign>)) '())
 (define-method (ast:member* (o <system>)) '())
-(define-method (ast:modeling* (o <interface>)) ((compose ast:modeling* .modeling) o))
 (define-method (ast:port* (o <component-model>)) ((compose ast:port* .ports) o))
 (define-method (ast:shared* (o <model>)) ((compose ast:shared* .behavior) o))
 (define-method (ast:statement* (o <behavior>)) (list (.statement o)))

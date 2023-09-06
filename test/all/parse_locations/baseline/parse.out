@@ -61,20 +61,6 @@
                           (type.name . void)
                           (formals (formals))))
                       (direction . out)))))
-          (modeling
-            (modeling
-              ((optional
-                 (name . "optional")
-                 (signature
-                   (signature
-                     (type.name . void)
-                     (formals (formals))))))
-              ((inevitable
-                 (name . "inevitable")
-                 (signature
-                   (signature
-                     (type.name . void)
-                     (formals (formals))))))))
           (behavior
             (behavior
               (location
