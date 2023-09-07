@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2020, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -38,26 +38,18 @@ class pool
 {
   class task;
   friend class task;
-  std::vector<std::shared_ptr<task const> > tasks_;
+  std::vector<std::unique_ptr<task> > tasks_;
   std::queue<task *> idle_tasks_;
-  std::condition_variable con_;
   std::mutex mut_;
 public:
   pool () {}
-  ~pool ()
-  {
-    std::unique_lock<std::mutex> lock (mut_);
-    while (! (idle_tasks_.size () == tasks_.size ()))
-      con_.wait (lock);
-  }
   std::future<void> async (std::function<void ()> const &work)
   {
     std::unique_lock<std::mutex> lock (mut_);
     if (idle_tasks_.empty ())
       {
-        task *pt = new task (*this);
-        tasks_.push_back (std::shared_ptr<task const> (pt));
-        return pt->assign (work);
+        tasks_.emplace_back (new task (*this));
+        return tasks_.back ()->assign (work);
       }
     else
       {
@@ -66,7 +58,7 @@ public:
         return fut;
       }
   }
-  size_t capacity () const
+  size_t size () const
   {
     return tasks_.size ();
   }
@@ -78,7 +70,6 @@ private:
   {
     std::unique_lock<std::mutex> lock (mut_);
     idle_tasks_.push (t);
-    if (idle_tasks_.size () == tasks_.size ()) { con_.notify_one (); };
   }
   class task
   {
@@ -103,10 +94,8 @@ private:
       std::unique_lock<std::mutex> lock (mut_);
       running_ = false;
       con_.notify_one ();
-      lock.unlock ();
-      thread_.join ();
+      thread_.detach ();
     }
-    task *self () { return this; }
     std::future<void> assign (std::function<void ()> work)
     {
       std::unique_lock<std::mutex> lock (mut_);
@@ -116,6 +105,8 @@ private:
       con_.notify_one ();
       return promise_.get_future ();
     }
+  private:
+    task *self () { return this; }
     void worker ()
     {
       std::unique_lock<std::mutex> lock (mut_);
@@ -129,22 +120,29 @@ private:
               work_.swap (work);
               lock.unlock ();
               work ();
-              promise_.set_value ();
-              pool_.idle (this);
               lock.lock ();
+              pool_.idle (this);
+              promise_.set_value ();
             }
         }
       while (running_);
     }
-  private:
     task (task const &);
     task &operator = (task const &);
   };
 };
 }
-std::future<void> async (std::function<void ()> const &work)
+static thread::pool &thread_pool ()
 {
   static thread::pool tp;
-  return tp.async (work);
+  return tp;
+}
+std::future<void> async (std::function<void ()> const &work)
+{
+  return thread_pool ().async (work);
+}
+size_t thread_pool_size ()
+{
+  return thread_pool ().size ();
 }
 }
