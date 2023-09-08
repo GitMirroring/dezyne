@@ -270,6 +270,32 @@ override $(srcdir)/doc/version.texi:
 	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
 	mv $@-t $@
 
+# Generate 'stamp-vti' reproducibly using metadata from Git rather
+# than using metadata from the filesystem.
+override $(srcdir)/doc/stamp-vti:
+	$(AM_V_GEN)set -e						\
+	LC_ALL=C; export LC_ALL;					\
+	TZ=UTC0; export TZ;						\
+	timestamp=$$({ git log --pretty=format:%ct -- doc/dezyne.texi	\
+		       || date +%s -r doc/dezyne.texi; }		\
+	                 | sort -n -r | head -n 1);			\
+	dmy=$$(date --date="@$$timestamp" "+%-d %B %Y");		\
+	my=$$(date --date="@$$timestamp" "+%B %Y");			\
+	{ echo "@set UPDATED $$dmy";					\
+	  echo "@set UPDATED-MONTH $$my";				\
+	  echo "@set EDITION $(VERSION)";				\
+	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
+	mv $@-t $@
+
+dist: auto-clean
+auto-clean: maintainer-clean-vti man-clean
+	rm -f configure libtool Makefile.in
+	git clean -fdx -- build-aux
+	./autogen.sh
+	./configure
+man-clean:
+	rm -f $(srcdir)/doc/*.1
+
 # Distribution
 ##############
 
