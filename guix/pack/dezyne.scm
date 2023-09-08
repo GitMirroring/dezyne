@@ -42,7 +42,7 @@
 (define-public dezyne
   (package
     (name "dezyne")
-    (version #!dezyne!# "2.18.0.rc5")
+    (version #!dezyne!# "2.18.0.rc6")
     (source
      (origin
        (method url-fetch)
@@ -51,7 +51,7 @@
                            "dezyne.org/download/dezyne/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!dezyne!# "1qsfzxc66qxyd9jx9j3bnma10wbjp6xg2gf2axlxzypv4pb6kww6"))))
+        (base32 #!dezyne!# "0jfcnwwc60j3fgh2h2m7154qcqph8l0zjx86mqzn0lpil1lhqrc1"))))
     (propagated-inputs (list guile-json-4
                              guile-readline
                              scmackerel))
