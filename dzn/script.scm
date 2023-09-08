@@ -26,6 +26,7 @@
 (define-module (dzn script)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (system repl error-handling)
 
@@ -94,15 +95,18 @@
          (version? (option-ref options 'version #f)))
 
     (define (list-commands dir)
-      (map (cut basename <> ".go")
-           (filter
-            (cute string-contains <> dir)
-            (append-map
-             (cute list-directory <>
-                   (cute string-suffix? ".go" <>))
-             (filter directory-exists?
-                     (map (cute string-append <> "/dzn/commands/")
-                          %load-compiled-path))))))
+      (let* ((uninstalled? (getenv "DZN_UNINSTALLED"))
+             (ext path (if uninstalled? (values ".scm" %load-path)
+                           (values ".go" %load-compiled-path))))
+       (map (cut basename <> ext)
+            (filter
+             (cute string-contains <> dir)
+             (append-map
+              (cute list-directory <>
+                    (cute string-suffix? ext <>))
+              (filter directory-exists?
+                      (map (cute string-append <> "/dzn/commands/")
+                           path)))))))
 
     (when version?
       (show-version-and-exit))
