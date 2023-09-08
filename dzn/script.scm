@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -28,6 +28,7 @@
   #:use-module (system repl error-handling)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
   #:use-module (dzn config)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -50,15 +51,18 @@
 	 (version? (option-ref options 'version #f)))
 
     (define (list-commands dir)
-      (map (cut basename <> ".go")
-           (filter
-            (cute string-contains <> dir)
-            (append-map
-             (cute list-directory <>
-                   (cute string-suffix? ".go" <>))
-             (filter directory-exists?
-                     (map (cute string-append <> "/dzn/commands/")
-                          %load-compiled-path))))))
+      (let* ((uninstalled? (getenv "DZN_UNINSTALLED"))
+             (ext path (if uninstalled? (values ".scm" %load-path)
+                           (values ".go" %load-compiled-path))))
+       (map (cut basename <> ext)
+            (filter
+             (cute string-contains <> dir)
+             (append-map
+              (cute list-directory <>
+                    (cute string-suffix? ext <>))
+              (filter directory-exists?
+                      (map (cute string-append <> "/dzn/commands/")
+                           path)))))))
 
     (when version?
       (show-version-and-exit))
