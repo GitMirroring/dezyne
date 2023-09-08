@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -26,11 +26,13 @@
 (define-module (dzn commands code)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
   #:use-module (dzn config)
   #:use-module (dzn code)
   #:use-module (dzn config)
+  #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
@@ -40,11 +42,14 @@
 
 (define %default-language "c++")
 (define (list-languages dir)
-  (map (cut basename <> ".go")
-       (filter (cute string-contains <> dir)
-               (append-map (cute find-files <> "\\.go$")
-                           (filter directory-exists?
-                                   %load-compiled-path)))))
+  (let* ((uninstalled? (getenv "DZN_UNINSTALLED"))
+         (ext path (if uninstalled? (values ".scm" %load-path)
+                       (values ".go" %load-compiled-path)))
+         (regex (string-append "\\" ext "$")))
+    (map (cut basename <> ext)
+         (filter (cute string-contains <> dir)
+                 (append-map (cute find-files <> regex)
+                             (filter directory-exists? path))))))
 
 (define list-languages (pure-funcq list-languages))
 
