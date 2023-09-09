@@ -200,9 +200,12 @@ dist_man_MANS =					\
  doc/dzn-trace.1				\
  doc/dzn-verify.1
 
-command_go = dzn/config.go dzn/script.go $(dzn_commands_go_DATA)
+# help2man reproducibility
+SOURCE_DATE_EPOCH = $(shell git show HEAD --format=%ct --no-patch 2>/dev/null || echo 0)
+export SOURCE_DATE_EPOCH
 
 if have_help2man
+command_go = dzn/config.go dzn/script.go $(dzn_commands_go_DATA)
 doc/dzn.1: bin/dzn $(command_go)
 	./pre-inst-env help2man --output=$@ bin/dzn
 
