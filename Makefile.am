@@ -199,6 +199,10 @@ dist_man_MANS =					\
  doc/dzn-trace.1				\
  doc/dzn-verify.1
 
+# help2man reproducibility
+SOURCE_DATE_EPOCH = $(shell git show HEAD --format=%ct --no-patch 2>/dev/null || echo 0)
+export SOURCE_DATE_EPOCH
+
 doc/dzn.1:
 	./pre-inst-env help2man --output=$@ bin/dzn
 
