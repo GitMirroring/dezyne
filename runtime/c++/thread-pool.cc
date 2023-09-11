@@ -43,6 +43,10 @@ class pool
   std::mutex mut_;
 public:
   pool () {}
+  ~pool ()
+  {
+    if (idle_tasks_.size () != tasks_.size ()) std::abort ();
+  }
   std::future<void> async (std::function<void ()> const &work)
   {
     std::unique_lock<std::mutex> lock (mut_);
@@ -94,7 +98,8 @@ private:
       std::unique_lock<std::mutex> lock (mut_);
       running_ = false;
       con_.notify_one ();
-      thread_.detach ();
+      lock.unlock ();
+      thread_.join ();
     }
     std::future<void> assign (std::function<void ()> work)
     {
