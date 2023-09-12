@@ -1,0 +1,3 @@
+model: unreachable_multiple_provides
+p2.hello
+<non-compliance>
