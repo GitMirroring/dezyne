@@ -618,7 +618,7 @@ init for MODEL unless INIT."
     (unless (string-null? trace)
       (format #t "model: ~a\n" model-name)
       (format #t "~a\n" trace))
-    #t))
+    (not unreachable?)))
 
 (define (report-skip model assert)
   (let ((verbose? (dzn:command-line:get 'verbose))
