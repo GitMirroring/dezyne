@@ -185,15 +185,21 @@
   (let ((label (edge-label edge)))
     (if (string-contains label %<state>) %<state> label)))
 
-(define-immutable-record-type <node>
+(define-record-type <node> ;REVERTME immutable
   (make-node state edges pred initial? color parent distance cycle)
   node?
   (state node-state)
-  (edges node-edges)         ; list of <edge>
-  (initial? node-initial?)
+  (edges node-edges
+         set-node-edges! ;REMOVEME
+         )         ; list of <edge>
+  (initial? node-initial?
+            set-node-initial?! ;REMOVEME
+            )
 
   (pred node-pred)
-  (color node-color)       ; integer
+  (color node-color
+         set-node-color! ;REMOVEME
+         )       ; integer
   (parent node-parent)     ; edge from parent
   (distance node-distance) ; -1 signifies infinite distance (unreachable)
   (cycle node-cycle))      ; edge to previous node in tau-loop
@@ -839,6 +845,7 @@ from LABELS."
         (step #f #f (initial lts0) (initial lts1) #f)
         (let* ((lts (list->vector (reverse lts)))
               (initial (vector-ref lts 0)))
+          ;;WTF is this?
           (set-node-initial?! lts #t)
           lts)))))
 
