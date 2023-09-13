@@ -59,8 +59,9 @@ component hello_bool
   behavior
   {
     bool b = true;
-    on p2.hello(): {b = r2.hello();}
-    on r2.world(): {b=!b; if (!p2.b) p2.world();}
+    bool bb = true;
+    on p2.hello(): {bb = r2.hello(); b=!b;}
+    [!bb] on r2.world(): { if (!b) { b=!b; p2.world();}}
   }
 }
 
