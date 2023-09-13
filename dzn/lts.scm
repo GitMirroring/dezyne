@@ -98,7 +98,6 @@
             remove-modeling
             remove-state-loops
             remove-tag-edges
-            run-trace
             transform-labels
             write-lts-tmp))
 
@@ -762,9 +761,6 @@ from LABELS."
              (rtc1 (or (node-color node1) (eq? active 'lts0)))
              (blocked (and edge (string-suffix? "<blocked>" (edge-label edge))))
              (rtc (or blocked (and rtc0 rtc1)))
-             (rtc (if (and rtc (or (eq? (node-color node0) 'release)
-                                   (eq? (node-color node1) 'release))) 'release
-                                   rtc))
              (do-step0 (or rtc (not rtc0)))
              (do-step1 (or rtc (not rtc1)))
              (node-key (list state0 state1 do-step0 do-step1 rtc active lts-deadlocked))
@@ -834,29 +830,15 @@ from LABELS."
             (when (> (dzn:debugity) 2)
               (warn "-----------" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
             (set-node-edges! node (filter (negate modelling?) (node-edges node)))
-            (set-node-color! node 'release)
             (when (> (dzn:debugity) 2)
-              (warn "          -" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))
-              (warn (node-state node) ":" 'release)))
+              (warn "          -" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))))
           (when (and (eq? active 'lts0) (find (conjoin common? edge-blocked?) (node-edges node)))
             (when (> (dzn:debugity) 2)
               (warn "!!!!!!!!!!!" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
             (set-node-edges! node (filter edge-blocked? (node-edges node)))
             (set-node-color! node #f)
             (when (> (dzn:debugity) 2)
-              (warn "          !" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))))
-          (when (find (conjoin common? edge-blocked?) (node-edges node))
-            (when (node-color node)
-              (set-node-color! node 'release)
-              (when (> (dzn:debugity) 2)
-                (warn (node-state node) ":" 'release))))
-          (when (eq? (node-color node) 'release)
-            (when (> (dzn:debugity) 2)
-              (warn "release----" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
-            (set-node-edges! node (filter (negate modelling?) (node-edges node)))
-            (when (> (dzn:debugity) 2)
-              (warn "          -" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))))
-          )))
+              (warn "          !" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))))))
 
     (if (zero? size0) lts1
         (begin
@@ -867,55 +849,6 @@ from LABELS."
             (set-node-initial?! initial #t)
             result)))))
 
-
-(define (run-trace lts trace)
-  (let* ((trace (map make-shared-string trace))
-         (done-step-args (make-hash-table))
-         (result-matched '())
-         (result-error ""))
-    (define (line-count result)
-      (length (string-split result #\n)))
-    (define (report-match result)
-      (set! result-matched (cons result result-matched)))
-    (define (report-error result)
-      (when (> (line-count result) (line-count result-error))
-        (set! result-error result)))
-    (define (hide-internal label)
-      (if (or (string-suffix? "<flush>" label)
-              (string-suffix? ".inevitable" label)
-              (string-suffix? ".optional" label)
-              (equal? "<blocked>" label))
-          %tau
-          label))
-    (define (step state trace result)
-      (let ((edges (node-edges (vector-ref lts state))))
-        (define (match-event state event trace result)
-          (let ((edges (filter (compose (cute eq? event <>) hide-internal edge-label) edges)))
-            (if (pair? edges)
-              (for-each
-                (lambda (edge)
-                  (let* ((result-step (format #f "~a: ~a -> ~a\n" (edge-label edge) (edge-from edge) (edge-to edge)))
-                         (result-step (string-append (if (eq? event %tau) "  " "") result-step)))
-                    (step (edge-to edge) trace (string-append result result-step))))
-                edges)
-              #f)))
-        (let* ((key (list state trace))
-               (done (hash-ref done-step-args key #f)))
-          (hash-set! done-step-args key #t)
-          (if done
-            (report-error (format #f "~alivelock in state ~a\n" result state))
-            (if (pair? trace)
-              (let ((res-event (match-event state (car trace) (cdr trace) result))
-                    (res-tau (match-event state %tau trace result)))
-                (when (not (or res-event res-tau))
-                  (report-error (format #f "~ain state ~a event '~a' not found in: ~a\n"
-                                           result state (car trace) (string-join (map edge-label edges) " ")))))
-              (report-match (format #f "~aeligible: ~a\n" result (string-join (map edge-label edges) " "))))))))
-    (step (initial lts) trace "")
-    (if (null? result-matched)
-      (format (current-error-port) "No match found. Longest partial match:\n~a" result-error)
-      (format #t "~a matches found:\n~a" (length result-matched) (apply string-append result-matched)))))
-
 ;;;
 ;;; Trace generation.
 ;;;
