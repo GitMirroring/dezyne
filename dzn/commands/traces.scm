@@ -99,17 +99,16 @@ Generate exhaustive set of traces for Dezyne model
          (text (regexp-substitute/global #f "\"tag[()].[^\"]*\"" text 'pre "\"tau\"" 'post)))
     text))
 
-(define (model->lts root model file-name)
-  (let* ((lts (verify-pipeline "aut-weak-trace"
-                               root model))
+(define (model->lts root model)
+  (let* ((lts (verify-pipeline "aut-weak-trace" root model))
          (lts (lts-hide-internal-labels lts)))
     (when (string-null? (string-trim-right lts))
-      (throw 'error "failed to create LTS"))
+      (error "failed to create LTS for ~a\n" (makreel:unticked-dotted-name model)))
     lts))
 
-(define (model->traces options root model file-name)
+(define (model->traces options root model)
   (let* ((verbose? (dzn:command-line:get 'verbose))
-         (lts (model->lts root model file-name))
+         (lts (model->lts root model))
          (provides-ports (if (is-a? model <interface>) '()
                              (ast:provides-port* model)))
          (provides-in (if (is-a? model <component>)
@@ -191,4 +190,4 @@ Generate exhaustive set of traces for Dezyne model
                         (not (.behavior model))))
                (error "no model with behavior:" model-name))
               (model
-               (model->traces options root model file-name)))))))
+               (model->traces options root model)))))))
