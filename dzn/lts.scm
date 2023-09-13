@@ -149,7 +149,7 @@
     (and initial nr-transitions state-count
          (make-aut-header first-state nr-transitions state-count))))
 
-(define-immutable-record-type <edge>
+(define-record-type <edge> ;REVERTME mutable
   (make-edge- from label to tau? blocked?)
   edge?
   (from edge-from)
@@ -157,7 +157,9 @@
   (to edge-to)
   ;;
   (tau? edge-tau?)
-  (blocked? edge-blocked?))
+  (blocked? edge-blocked?
+            set-edge-blocked?! ;REMOVEME
+            ))
 
 (define (text->edge text)
   (let* ((first-paren 0)
@@ -727,10 +729,9 @@ from LABELS."
        (for-each
         (lambda (edge)
           (let* ((label (edge-label edge))
-                 (blocked? (memq label provides-out-events))
-                 (edge (if (not blocked?) edge
-                           (set-field edge (edge-blocked?) #t))))
+                 (blocked? (memq label provides-out-events)))
             (when blocked?
+              (set-edge-blocked?! edge #t)
               (set-node-color! (vector-ref lts (edge-from edge)) 'blocked))))
         (node-edges node)))
      lts)
