@@ -821,6 +821,15 @@
          (set! cache (acons o result cache))
          result)))))
 
+(define %blocked-action
+  (let ((cache '()))
+    (lambda (o)
+      (or
+       (assq-ref cache o)
+       (let ((result (sm:action (prefix (model-prefix "blocked" o)))))
+         (set! cache (acons o result cache))
+         result)))))
+
 (define %blocking-action
   (let ((cache '()))
     (lambda (o)
@@ -3188,6 +3197,7 @@
                     (sm:union*
                      (sm:sequence*
                       %queue-empty-action
+                      (%blocked-action o)
                       (sm:goto (name "semantics_blocked_rtc") (arguments '())))
                      (sm:sequence*
                       %queue-not-empty-action
@@ -3321,8 +3331,10 @@
        (sm:if* "released != []"
                (sm:goto (name "semantics_reply")
                         (arguments '()))
-               (sm:goto (name "semantics_blocked_rtc")
-                        (arguments '())))))
+               (sm:sequence*
+                (%blocked-action o)
+                (sm:goto (name "semantics_blocked_rtc")
+                         (arguments '()))))))
     (define (handle-blocked-port-reply p name)
       (let ((interface (.type p)))
         (sm:if* (sm:invoke (%nil-predicate interface)
@@ -3678,7 +3690,8 @@
             (statement
              (sm:allow
               (process component-semantics-comm)
-              (events (cons* %constrained-legal-action
+              (events (cons* (%blocked-action o)
+                             %constrained-legal-action
                              %constrained-illegal-action
                              %declarative-illegal-action
                              (%defer-skip-action o)
@@ -3827,7 +3840,8 @@
             (statement
              (sm:allow
               (process component-comm)
-              (events (cons* %constrained-legal-action
+              (events (cons* (%blocked-action o)
+                             %constrained-legal-action
                              %declarative-illegal-action
                              %defer-end-action
                              (%defer-qout-action o)
@@ -3879,9 +3893,9 @@
               (process component-allow)
               (events
                (sm:comm-events (sm:process-statement component-comm)))))))
-         (component
+         (component-blocked
           (sm:process
-            (name "component")
+            (name "component_blocked")
             (statement
              (sm:hide
               (process component-rename)
@@ -3908,11 +3922,19 @@
                                  (list
                                   (%end-action p)
                                   (%switch-context-action p)))
-                               requires)))))))))
+                               requires))))))))
+         (component
+          (sm:process
+            (name "component")
+            (statement
+             (sm:hide
+              (process component-blocked)
+              (events (list (%blocked-action o))))))))
     (list component-parallel
           component-comm
           component-allow
           component-rename
+          component-blocked
           component)))
 
 (define-method (interface-constraint-processes (o <interface>))
@@ -4045,7 +4067,8 @@
             (statement
              (sm:allow
               (process component-constrained-comm)
-              (events (cons* %declarative-illegal-action
+              (events (cons* (%blocked-action o)
+                             %declarative-illegal-action
                              %defer-end-action
                              (%defer-qout-action o)
                              (%defer-skip-action o)
