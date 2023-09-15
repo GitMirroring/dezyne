@@ -975,17 +975,18 @@
                            (ast:parent o <return>)
                            (ast:parent o <variable>)))
                (continuation ((compose car ast:continuation*) o))
-               (function (ast:parent o <function>))
                (statement (.statement function))
                (continuation (and (not (ast:eq? continuation statement))
+                                  (not (is-a? continuation <return>))
                                   continuation)))
-          (cond (assign
-                 `(,(wfc-error o "cannot use typed function in recursion")
-                   ,(wfc-info assign "statement after call")))
-                (continuation
-                 `(,(wfc-error o "cannot use statement after recursive call")
-                   ,(wfc-info continuation "statement after call")))
-                (else '()))))))
+          (cond
+           (assign
+            `(,(wfc-error o "cannot use typed function in recursion")
+              ,(wfc-info assign "statement after call")))
+           (continuation
+            `(,(wfc-error o "cannot use statement after recursive call")
+              ,(wfc-info continuation "statement after call")))
+           (else '()))))))
 
 (define-method (mixing-declarative-imperative (o <compound>))
   (if (ast:declarative? o)
