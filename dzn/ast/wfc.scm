@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -853,8 +853,11 @@
   (format #f "`~a'" string))
 
 (define-method (tail-recursion (o <call>))
-  (let ((function (ast:parent o <function>)))
-    (if (or (not function) (not (.recursive? function))) '()
+  (let* ((function (ast:parent o <function>))
+         (called (.function o))
+         (non-recursive? (or (not function) (not (.recursive? function))
+                             (not called) (not (.recursive? called)))))
+    (if non-recursive? '()
         (let* ((assign (or (ast:parent o <assign>)
                            (ast:parent o <return>)
                            (ast:parent o <variable>)))
