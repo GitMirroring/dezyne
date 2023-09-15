@@ -2,6 +2,7 @@
 //
 // Copyright © 2018, 2019, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -195,6 +196,22 @@ interface Intf11
       f ();
       return;
       bool b = true;  // to be caught dynamically by verify
+    }
+
+    on hello: f ();
+  }
+}
+
+interface Intf12
+{
+  in bool hello ();
+  behavior
+  {
+    void helper () {}
+    void f ()
+    {
+      helper ();
+      f ();
     }
 
     on hello: f ();
