@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -149,6 +149,52 @@ interface Intf8
     void f ()
     {
       f ();
+    }
+
+    on hello: f ();
+  }
+}
+
+interface Intf9
+{
+  in bool hello ();
+  behavior
+  {
+    void f ()
+    {
+      f ();
+      return;
+    }
+
+    on hello: f ();
+  }
+}
+
+interface Intf10
+{
+  in void hello ();
+  behavior
+  {
+    void f ()
+    {
+      if (false) {f (); return;}
+      bool b = false;
+    }
+
+    on hello: f ();
+  }
+}
+
+interface Intf11
+{
+  in bool hello ();
+  behavior
+  {
+    void f ()
+    {
+      f ();
+      return;
+      bool b = true;  // to be caught dynamically by verify
     }
 
     on hello: f ();
