@@ -679,10 +679,13 @@ from LABELS."
 
 (define* (remove-modeling lts #:key ports)
   (let* ((ports (and ports (map make-shared-string ports)))
-         (modeling-labels (and ports (append (map (cute string-append <> ".optional") ports)
-                                             (map (cute string-append <> ".inevitable") ports))))
+         (modeling-labels
+          (and ports
+               (append (map (cute string-append <> ".optional") ports)
+                       (map (cute string-append <> ".inevitable") ports))))
          (modeling-labels (map make-shared-string modeling-labels))
-         (modeling-edge? (if modeling-labels (lambda (e) (memq (edge-label e) modeling-labels)) modeling?))
+         (modeling-edge? (if (not modeling-labels) modeling?
+                             (compose (cute memq <> modeling-labels) edge-label)))
          (modeling-edges (vector-fold
                           (lambda (i edges node)
                             (append (filter modeling-edge? (node-edges node)) edges))
