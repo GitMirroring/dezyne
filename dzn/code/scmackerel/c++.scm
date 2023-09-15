@@ -887,21 +887,20 @@ produces those prefixes and marks them with #:rtc? #false."
                      (sm:compound*
                       (sm:call
                        (name (string-append
-                              (.port.name trigger)
-                              ".out."
-                              (.event.name trigger)))
+                              (%member-prefix)
+                              (code:event-name trigger)))
                        (arguments arguments)))))))
       (sm:method (struct component)
                  (type "void")
-                 (name (string-append (.port.name trigger)
-                                      "_"
-                                      (.event.name trigger)))
+                 (name (code:event-slot-name trigger))
                  (formals (map c++:->formal (code:formal* trigger)))
                  (statement (sm:compound*
                              `(,(sm:call
                                  (name "dzn::call_out")
                                  (arguments `("this"
-                                              ,(.port.name trigger)
+                                              ,(string-append
+                                                (%member-prefix)
+                                                (.port.name trigger))
                                               ,(simple-format
                                                 #f "~s"
                                                 (.event.name trigger))
