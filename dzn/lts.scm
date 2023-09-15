@@ -150,7 +150,7 @@
     (and initial nr-transitions state-count
          (make-aut-header first-state nr-transitions state-count))))
 
-(define-record-type <edge> ;REVERTME mutable
+(define-immutable-record-type <edge>
   (make-edge- from label to tau? blocked?)
   edge?
   (from edge-from)
@@ -158,9 +158,7 @@
   (to edge-to)
   ;;
   (tau? edge-tau?)
-  (blocked? edge-blocked?
-            set-edge-blocked?! ;REMOVEME
-            ))
+  (blocked? edge-blocked?))
 
 (define (text->edge text)
   (let* ((first-paren 0)
@@ -730,20 +728,21 @@ from LABELS."
     lts))
 
 (define* (annotate-collateral-blocked-out lts #:key provides-out-events)
-  (let* ((provides-out-events (map make-shared-string provides-out-events)))
-    (vector-for-each
-     (lambda (i node)
-       (for-each
-        (lambda (edge)
-          (let* ((label (edge-label edge))
-                 (blocked? (memq label provides-out-events)))
-            (when blocked?
-              (set-edge-blocked?! edge #t)
-              (set-node-color! (vector-ref lts (edge-from edge)) 'blocked))))
-        (node-edges node)))
-     lts)
-    (when (> (dzn:debugity) 1)
-      (display-lts-rtc lts #:port (current-error-port)))
+  (let ((provides-out-events (map make-shared-string provides-out-events)))
+    (define (annotate-edge edge)
+      (let* ((label (edge-label edge))
+             (blocked? (memq label provides-out-events)))
+        (if (not blocked?) edge
+            (set-field edge (edge-blocked?) #t))))
+    (define (annotate-node node)
+      (let* ((edges (map annotate-edge (node-edges node)))
+             (blocked? (find edge-blocked? edges)))
+        (set-fields node
+                    ((node-edges) edges)
+                    ((node-color) blocked?))))
+    (let ((lts (vector-map-one annotate-node lts)))
+      (when (> (dzn:debugity) 1)
+        (display-lts-rtc lts #:port (current-error-port))))
     lts))
 
 (define* (compose-parallel lts0 lts1)
