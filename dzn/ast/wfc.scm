@@ -554,6 +554,12 @@
              (name (.variable.name var))
              (type (and=> variable .type)))
         (cond
+         ((is-a? var <shared>)
+          `(,(wfc-error
+              var
+              (format #f "cannot use interface variable `~a' as defer argument"
+                      name))
+            ,(wfc-info variable (format #f "variable `~a' defined here" name))))
          ((not (ast:member? variable))
           `(,(wfc-error var (format
                              #f
