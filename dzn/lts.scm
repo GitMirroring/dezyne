@@ -691,24 +691,42 @@ from LABELS."
                             (append (filter modeling-edge? (node-edges node)) edges))
                           '()
                           lts)))
-    (define (foo edge) ;; FIXME: sensible name
-      (let* ((from (edge-from edge))
-             (start-node (vector-ref lts from))
-             (end-node (vector-ref lts (edge-to edge)))
-             (edges (append
-                     (node-edges start-node)
-                     (map (lambda (edge)
-                            (set-field edge (edge-from) from))
-                          (node-edges end-node)))))
-        (set-node-color! start-node (or (node-color start-node) (node-color end-node)))
-        (set-node-edges! start-node edges)))
 
-    (for-each foo modeling-edges)
-    (vector-map-one
-     (lambda (node)
-       (let ((edges (filter (negate modeling-edge?) (node-edges node))))
-         (set-field node (node-edges) edges)))
-     lts)))
+    ;; FIXME: better create a second vector?
+    ;; or can we do this inline, somehow?
+    (define (collect-start-nodes i start-nodes node)
+      (let* ((edges (node-edges node))
+             (modeling (filter modeling-edge? edges)))
+        (match modeling
+          (() start-nodes)
+          ((edge rest ...)
+           (let* ((from (edge-from edge))
+                  (start-node (vector-ref lts from))
+                  (end-node (vector-ref lts (edge-to edge)))
+                  (start-edges (node-edges start-node))
+                  (end-edges (node-edges end-node))
+                  (end-edges (map (lambda (edge)
+                                    (set-field edge (edge-from) from))
+                                  end-edges))
+                  (edges (append start-edges end-edges))
+                  (start-color (or (node-color start-node)
+                                   (node-color end-node)))
+                  (start-node (set-fields start-node
+                                          ((node-distance) from)
+                                          ((node-edges) edges)
+                                          ((node-color) start-color))))
+             (cons start-node start-nodes))))))
+
+    (let ((start-nodes (vector-fold collect-start-nodes '() lts)))
+      (define (fubar i node) ;; FIXME sensible name
+        (let* ((edges (node-edges node))
+               (edges (filter (negate modeling-edge?) edges))
+               (start-node (find (compose (cute eq? <> i) node-distance)
+                                 start-nodes)))
+          (if (not start-node) (set-field node (node-edges) edges)
+              ;; FIXME: what is distance for, can we leave it set?
+              (set-field start-node (node-distance) #f))))
+      (vector-map fubar lts))))
 
 
 ;;;
