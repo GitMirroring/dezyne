@@ -713,9 +713,9 @@ from LABELS."
    ((boolean? o) (if o "#t" "#f"))
    (else "unknown-type")))
 
-(define* (display-lts-rtc lts #:key port)
+(define* (display-lts-rtc lts #:key (port (current-output-port)))
   (display-lts lts #:port port #:node-info (compose ->string node-color))
-  (if port (display #\newline port) (display #\newline)))
+  (display #\newline port))
 
 (define* (annotate-node-rtc lts #:key incoming-events)
   (let* ((incoming-events (map make-shared-string incoming-events)))
