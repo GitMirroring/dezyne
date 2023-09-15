@@ -383,16 +383,25 @@
           (and (string-prefix? (string-append prefix ".") label)
                (not (or (string-suffix? "<blocking>" label)
                         (string-suffix? "<blocked>" label))))))
+    (define (mark-edge edge)
+      (let* ((label (edge-label edge))
+             (tau? (find (cute common? label <>) alphabet)))
+        (set-field edge (edge-tau?) tau?)))
     (define (mark-edges node)
-      (set-field node (node-edges)
-                 (map
-                  (lambda (edge)
-                    (let* ((label (edge-label edge))
-                           (tau? (find (cute common? label <>) alphabet)))
-                      (when (and tau? (eq? (node-color node) 'blocked))
-                        (set-node-color! node 'rtc))
-                      (set-field edge (edge-tau?) tau?)))
-                  (node-edges node))))
+      (let* ((edges (node-edges node))
+             (edges (map mark-edge edges))
+             (tau? (find edge-tau? edges))
+             (rtc? (and tau?
+                        (eq? (node-color node) 'blocked)
+                        'rtc))
+             (node (if (not rtc?) node
+                       (set-field node (node-color) 'rtc))))
+        ;; FIXME: conditional set-field with set-field,
+        ;; or unconditional set-fields?
+        ;; (set-fields node
+        ;;             ((node-edges) edges)
+        ;;             ((node-color) rtc?))
+        (set-field node (node-edges) edges)))
     (vector-map-one mark-edges lts)))
 
 ;;;;;;;;;;;;;;;;;;
