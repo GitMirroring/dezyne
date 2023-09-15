@@ -794,12 +794,11 @@ from LABELS."
              (node-key (list state0 state1 do-step0 do-step1 rtc active lts-deadlocked))
              (done (hash-ref lts node-key #f))
              (node (or done
-                       (let ((new-node (make-node result-size '() '() #f %white #f -1 #f)))
-                         (set-node-color! new-node rtc)
-                         (hash-set! lts node-key new-node)
+                       (let ((new (make-node result-size '() '() #f rtc #f -1 #f)))
+                         (hash-set! lts node-key new)
                          (set! result-size (1+ result-size))
-                         (set! result (cons new-node result))
-                         new-node))))
+                         (set! result (cons new result))
+                         new))))
         (when (> (dzn:debugity) 2)
           (warn (if from-node (node-state from-node) "*") "->" (node-state node) (if done "" "*") ":"
                 state0 state1 'do0: do-step0 'd01: do-step1 'r0: rtc0 'r1: rtc1 'r: rtc
