@@ -718,14 +718,15 @@ from LABELS."
   (display #\newline port))
 
 (define* (annotate-node-rtc lts #:key incoming-events)
-  (let* ((incoming-events (map make-shared-string incoming-events)))
-    (vector-for-each
-     (lambda (i node)
-       (set-node-color!
-        node
-        (if (find (lambda (e) (memq (edge-label e) incoming-events)) (node-edges node)) 'rtc #f)))
-     lts)
-    lts))
+  (let ((incoming-events (map make-shared-string incoming-events)))
+    (define (annotate-node node)
+      (let* ((edges (node-edges node))
+             (rtc? (and
+                    (find (compose (cute memq <> incoming-events) edge-label)
+                          edges)
+                    'rtc)))
+        (set-field node (node-color) rtc?)))
+    (vector-map-one annotate-node lts)))
 
 (define* (annotate-collateral-blocked-out lts #:key provides-out-events)
   (let ((provides-out-events (map make-shared-string provides-out-events)))
