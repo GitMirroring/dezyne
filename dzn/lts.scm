@@ -191,9 +191,7 @@
   (edges node-edges
          set-node-edges! ;REMOVEME
          )         ; list of <edge>
-  (initial? node-initial?
-            set-node-initial?! ;REMOVEME
-            )
+  (initial? node-initial?)
 
   (pred node-pred)
   (color node-color
@@ -843,11 +841,11 @@ from LABELS."
     (if (zero? size0) lts1
         (begin
           (step #f #f (initial lts0) (initial lts1) #f)
-          (let* ((result (list->vector (reverse result)))
-                 (initial (vector-ref result 0)))
-            ;;WTF is this?
-            (set-node-initial?! initial #t)
-            result)))))
+          (match (reverse result)
+            ((initial rest ...)
+             (let ((initial (set-field initial (node-initial?) #t)))
+               (list->vector (cons initial rest))))
+            (_ #()))))))
 
 ;;;
 ;;; Trace generation.
