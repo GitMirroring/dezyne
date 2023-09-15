@@ -832,40 +832,46 @@ from LABELS."
                                          (node-edges node0))))
                     (for-each (lambda (e) (step node edge (edge-to e) to1 #f)) matches))))))
 
-        (when from-node
-          (set-node-edges!
-           from-node
-           (cons
-            (make-edge
-             (node-state from-node)
-             (edge-label edge)
-             (node-state node)
-             #:tau? (edge-tau? edge)
-             #:blocked? (edge-blocked? edge))
-            (node-edges from-node))))
-        (when (not done)
-          (when do-step0
-            (for-each step0 (node-edges node0)))
-          (when do-step1
-            (for-each step1 (node-edges node1)))
-          (when (null? (node-edges node))
-            (when (> (dzn:debugity) 2)
-              (warn 'DEADLOCK!!!! 'active active))
-            (step node (make-edge (node-state from-node) "tau" (node-state node)) state0 state1 (swap (calc-active active do-step0))
-                  #:lts-deadlocked (calc-active active do-step0)))
-          (when (and lts-deadlocked (find common? (node-edges node)))
-            (when (> (dzn:debugity) 2)
-              (warn "-----------" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
-            (set-node-edges! node (filter (negate modelling?) (node-edges node)))
-            (when (> (dzn:debugity) 2)
-              (warn "          -" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))))
-          (when (and (eq? active 'lts0) (find (conjoin common? edge-blocked?) (node-edges node)))
-            (when (> (dzn:debugity) 2)
-              (warn "!!!!!!!!!!!" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
-            (set-node-edges! node (filter edge-blocked? (node-edges node)))
-            (set-node-color! node #f)
-            (when (> (dzn:debugity) 2)
-              (warn "          !" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))))))
+        (let ((from-node
+               (and from-node
+                    (set-field from-node (node-edges)
+                               (cons
+                                (make-edge
+                                 (node-state from-node)
+                                 (edge-label edge)
+                                 (node-state node)
+                                 #:tau? (edge-tau? edge)
+                                 #:blocked? (edge-blocked? edge))
+                                (node-edges from-node)))))
+              (from (and=> from-node node-state)))
+          (when from-node
+            ;; what the flying fuck??
+            (let ( ;;(lts (if (eq? active 'lts0) lts0 lts1))
+                  (lts (if (eq? active 'lts0) lts1 lts0)))
+              (vector-set! lts from from-node)))
+          (when (not done)
+            (when do-step0
+              (for-each step0 (node-edges node0)))
+            (when do-step1
+              (for-each step1 (node-edges node1)))
+            (when (null? (node-edges node))
+              (when (> (dzn:debugity) 2)
+                (warn 'DEADLOCK!!!! 'active active))
+              (step node (make-edge (node-state from-node) "tau" (node-state node)) state0 state1 (swap (calc-active active do-step0))
+                    #:lts-deadlocked (calc-active active do-step0)))
+            (when (and lts-deadlocked (find common? (node-edges node)))
+              (when (> (dzn:debugity) 2)
+                (warn "-----------" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
+              (set-node-edges! node (filter (negate modelling?) (node-edges node)))
+              (when (> (dzn:debugity) 2)
+                (warn "          -" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))))
+            (when (and (eq? active 'lts0) (find (conjoin common? edge-blocked?) (node-edges node)))
+              (when (> (dzn:debugity) 2)
+                (warn "!!!!!!!!!!!" (node-state node) ":" (length (node-edges node)) ":" (node-edges node)))
+              (set-node-edges! node (filter edge-blocked? (node-edges node)))
+              (set-node-color! node #f)
+              (when (> (dzn:debugity) 2)
+                (warn "          !" (node-state node) ":" (length (node-edges node)) ":" (node-edges node))))))))
 
     (if (zero? size0) lts1
         (begin
