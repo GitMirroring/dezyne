@@ -1,8 +1,0 @@
-port.e
-asyncL.trigger
-asyncL.return
-asyncL.notify
-asyncR.trigger
-asyncR.return
-asyncR.notify
-port.Status:OK
