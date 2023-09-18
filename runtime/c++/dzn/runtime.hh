@@ -302,8 +302,8 @@ void wrap_out (C *component, P &port, E event, char const *name)
      {
        trace_qout (os, port.dzn_meta, name);
        event ();
+       component->dzn_update ();
      }, coroutine_id (component->dzn_locator));
-  component->dzn_update ();
   prune_deferred (component->dzn_locator);
 }
 
