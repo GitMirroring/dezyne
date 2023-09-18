@@ -1,0 +1,11 @@
+(header ((left) ihello provides) ((right) ihello provides) ((sut) compliance_blocking_multiple_provides2 system) ((sut m left) ihello provides) ((sut m right) ihello provides) ((sut m) mux component))
+(state ((left)) ((right)) ((sut m left)) ((sut m right)) ((sut m) (side . Side:None)))
+test/all/compliance_blocking_multiple_provides2/compliance_blocking_multiple_provides2.dzn:60:1: error: non-compliance
+<external>.left.hello -> ...
+... -> sut.m.left.hello
+<non-compliance>
+(state ((left)) ((right)) ((sut m left)) ((sut m right)) ((sut m) (side . Side:None)))
+test/all/compliance_blocking_multiple_provides2/compliance_blocking_multiple_provides2.dzn:60:1: error: non-compliance
+(trail "left.hello" "<non-compliance>")
+(labels "left.hello" "right.hello")
+(eligible)

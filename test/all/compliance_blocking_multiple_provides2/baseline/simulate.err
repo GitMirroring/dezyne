@@ -1,0 +1,2 @@
+test/all/compliance_blocking_multiple_provides2/compliance_blocking_multiple_provides2.dzn:60:1: error: non-compliance
+test/all/compliance_blocking_multiple_provides2/compliance_blocking_multiple_provides2.dzn:46:19: component can omit return of trigger: left.hello
