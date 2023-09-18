@@ -1,6 +1,29 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
 interface iblock
 {
-  in void block();
+  in void block ();
   behavior
   {
     on block: {} // this event blocks
@@ -9,9 +32,9 @@ interface iblock
 
 interface itransaction
 {
-  in void cancel();
-  in void request();
-  out void complete();
+  in void cancel ();
+  in void request ();
+  out void complete ();
   behavior
   {
     bool active = false;
@@ -28,9 +51,9 @@ component transaction_proxy
   behavior
   {
     bool active = false;
-    [!active] on pt.request(): {active = true; rt.request();}
-    [active] on pt.cancel(): {active = false; rt.cancel();}
-    on rt.complete(): {active = false; pt.complete();}
+    [!active] on pt.request (): {active = true; rt.request ();}
+    [active] on pt.cancel (): {active = false; rt.cancel ();}
+    on rt.complete (): {active = false; pt.complete ();}
   }
 }
 
@@ -42,9 +65,9 @@ component cancel_guarantee
   behavior
   {
     bool active = false;
-    [!active] on pt.request(): {active = true; rt.request(); rb.block();}
-    [active] on pt.cancel(): {active = false; rt.cancel();}
-    [active] on rt.complete(): {active = false; pt.complete();}
+    [!active] on pt.request (): {active = true; rt.request (); rb.block ();}
+    [active] on pt.cancel (): {active = false; rt.cancel ();}
+    [active] on rt.complete (): {active = false; pt.complete ();}
   }
 }
 
@@ -54,8 +77,8 @@ component block
   requires itransaction rt;
   behavior
   {
-    blocking on pb.block(): rt.request();
-    on rt.complete(): pb.reply();
+    blocking on pb.block (): rt.request ();
+    on rt.complete (): pb.reply ();
   }
 }
 
