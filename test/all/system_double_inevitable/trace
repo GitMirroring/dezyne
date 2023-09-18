@@ -1,0 +1,12 @@
+h.hello
+w.hello
+w.return
+h.return
+w.cruel
+w.world
+w.<flush>
+w.bye
+w.return
+h.cruel
+h.world
+h.<flush>

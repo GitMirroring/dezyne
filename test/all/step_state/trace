@@ -1,0 +1,25 @@
+(state ((ph)) ((sut hi) (b . true)) ((sut wi)  (b . false) (i . 1)) ((pw)))
+ph.hello
+pw.cruel
+pw.return
+ph.return
+ph.hello
+pw.world
+pw.return
+ph.return
+ph.hello
+pw.whats
+pw.return
+ph.return
+ph.hello
+pw.up
+pw.return
+ph.return
+ph.hello
+pw.doc
+pw.return
+ph.return
+ph.hello
+pw.goodbye
+pw.return
+ph.return
