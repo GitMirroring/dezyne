@@ -476,6 +476,7 @@ REGRESSION_TESTS =				\
  %D%/shared_out_sync_requires			\
  %D%/shared_requires				\
  %D%/shared_state_defer				\
+ %D%/shared_type_lookup				\
  %D%/shared_variable				\
  %D%/shell_injected				\
  %D%/simplify_guards				\
