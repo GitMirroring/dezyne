@@ -510,8 +510,7 @@ null) and return its CONTEXT."
          (type-name (.type.name o)))
     (cond (parent
            (let ((type-name (last (.ids type-name))))
-             (or (ast:lookup (ast:parent o <behavior>) type-name)
-                 (ast:lookup ((compose .behavior .type .port) parent) type-name))))
+             (ast:lookup ((compose .behavior .type .port) parent) type-name)))
           (else
            (or (ast:parent o <enum>)
                (ast:lookup o type-name))))))
