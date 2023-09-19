@@ -507,6 +507,7 @@ REGRESSION_TESTS =				\
  %D%/system_reply_bool				\
  %D%/system_reply_enum				\
  %D%/system_shared				\
+ %D%/system_shared_defer			\
  %D%/unreachable_constraint			\
  %D%/unreachable_crosstalk			\
  %D%/unreachable_defer		 		\
