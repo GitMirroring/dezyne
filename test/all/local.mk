@@ -470,6 +470,7 @@ REGRESSION_TESTS =				\
  %D%/shared_double_inevitable			\
  %D%/shared_enum				\
  %D%/shared_field_test				\
+ %D%/shared_glue				\
  %D%/shared_nondet				\
  %D%/shared_out_sync_provides			\
  %D%/shared_out_sync_requires			\
