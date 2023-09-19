@@ -73,6 +73,7 @@ int main ()
 
   sut.p.out.world = [&] (int)
   {
+    std::lock_guard<std::mutex> lock (mutex);
     assert (trace[event] == "p.world");
     ++event;
   };
