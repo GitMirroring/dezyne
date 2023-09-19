@@ -241,9 +241,7 @@ struct runtime_wrapper
       {
         if (component->dzn_runtime.handling (component)
             || port_blocked_p (component->dzn_locator, &port))
-          {
-            collateral_block (component->dzn_locator, component);
-          }
+          collateral_block (component->dzn_locator, component);
 
         component->dzn_runtime.reset_skip_block (component);
       }
@@ -318,7 +316,7 @@ auto call_in (C *component, P &port, const char *name, const E &event) -> declty
 template <typename C, typename P, typename E>
 void call_out (C *component, P &port, const char *name, const E &event)
 {
-  if (port.dzn_peer) return  event ();
+  if (port.dzn_peer) return event ();
   auto &os = component->dzn_locator.template get<typename std::ostream> ();
   trace_qin (os, port.dzn_meta, name);
   port.dzn_event (name);
