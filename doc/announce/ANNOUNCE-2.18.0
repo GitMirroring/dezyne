@@ -98,6 +98,9 @@ NEWS
 ** Verification
   - A new `-T,--timings' option now shows detailed timings for the
     different stages like: parse, normalization and mCRL2.
+  - The compliance check is no longer skipped when the unreachable code
+    check reports errors.
+  - The `-j,--jitty' flag has been removed.
 ** Code
   - C++ implements directly referring to the state values of its port.
   - Lambda capture lists explicitly refer to `this' since C++20
@@ -122,6 +125,13 @@ NEWS
   - The pretty printer (code --language=dzn) now also supports most
     synthesized AST elements which is especially useful in combination
     with transformations (`-t,--transform').
+  - When generating code for a thread-safe shell system, i.e., using
+    `-s,--shell', the well-formedness check will now assert that
+    its outer requires ports are marked `external'.
+  - For languages `json' and `makreel', the `-o,--output' option is now
+    honored too.
+  - The `-s,--shell' option can now be used multiple times.
+  - The `--language=json' output no longer implicitly remove behaviors.
 ** Noteworthy bug fixes
   - A verification bug was fixed that would erroneously report a
     deadlock for non-determinstic interface constraints.
@@ -158,3 +168,21 @@ NEWS
     observed on some Microsoft systems.
   - The C++ thread-pool no longer joins threads at destruction, instead
     it detaches them.
+  - The well-formedness check now allows using an early return in a
+    tail-recursive function.
+  - The well-formedness check now allows statements after a
+    non-recursive call in a recursive function.
+  - A bug leading to stray verification errors was fixed for two
+    triggers using the same imperative statement.
+  - The simulator now correctly reports a queue-full error for a
+    non-compliant component where an unbounded defer is only restricted
+    by its interface constraint.
+  - The C++ thread-pool now respects its resource dependencies by
+    declaring members in the proper order to allow problem/error free
+    destruction.
+  - The well-formedness check now reports a guard statement used in an
+    imperative context.
+  - A bug has been fixed in the C++ code generator for a system in a
+    namespace, using a component instance from another namespace.
+  - A well-formedness check has been added to for `return' to be the
+    final statement of a block.
