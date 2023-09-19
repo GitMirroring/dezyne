@@ -1,0 +1,12 @@
+h.hello
+h.return
+h.bye
+h.world
+h.return
+h.hello
+h.return
+<defer>
+h.world
+h.bye
+h.world
+h.return
