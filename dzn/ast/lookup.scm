@@ -334,7 +334,9 @@ null) and return its CONTEXT."
 
 (define ast:lookup-variable-memoized (ast:pure-funcq ast:lookup-variable-unmemoized))
 (define-method (ast:lookup-variable (o <ast>) name)
-  (ast:lookup-variable-memoized (ast:parent o <root>) o name))
+  (define (path->key o)
+    (string-join (map (compose number->string .id) (ast:path o)) "."))
+  (ast:lookup-variable-memoized (path->key o) o name))
 
 
 ;;;
