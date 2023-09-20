@@ -130,7 +130,7 @@
                ast:name
                ast:parent
                ast:path
-               ast:pure-funcq
+               ast:perfect-funcq
 
                ast:argument*
                ast:binding*

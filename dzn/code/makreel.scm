@@ -437,7 +437,7 @@
     calls))
 
 (define (reachable-calls o)
-  ((ast:pure-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
+  ((ast:perfect-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
 
 (define-method (no-tail-call (o <call>))
   (not (.last? o)))
