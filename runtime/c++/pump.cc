@@ -108,7 +108,11 @@ namespace dzn
   , paused(false)
   , current_coroutine(0)
   , switch_context()
+#if HAVE_BOOST_COROUTINE
+  , task(std::async(std::launch::async, std::ref(*this)))
+#else
   , task(dzn::thread::defer(std::ref(*this)))
+#endif
   {}
   pump::~pump()
   {
