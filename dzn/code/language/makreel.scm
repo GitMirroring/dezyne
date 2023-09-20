@@ -177,7 +177,7 @@
     calls))
 
 (define (reachable-calls o)
-  ((ast:pure-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
+  ((ast:perfect-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
 
 (define-method (is-called? (o <function>))
   (let ((calls (reachable-calls (ast:parent o <behavior>))))
