@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -758,6 +758,12 @@ until RTC?."
                (traces (run-to-completion pc 'rtc))
                (blocked traces
                         (partition (compose blocked-on-boundary? car) traces))
+               (collateral-blocked? (or (blocked-on-boundary? pc)
+                                        (and instance
+                                             (get-handling pc instance)
+                                             (blocked-port pc instance))))
+               (traces (if collateral-blocked? traces
+                           (append-map (cute run-flush <> instance) traces)))
                (traces (map (cute rewrite-trace-head
                                   (cute clone <> #:running-defer? #f) <>)
                             traces))
