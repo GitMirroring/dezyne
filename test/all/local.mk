@@ -421,6 +421,7 @@ REGRESSION_TESTS =				\
  %D%/requires_twice				\
  %D%/resolve_formal				\
  %D%/resolve_member				\
+ %D%/reuse_body				\
  %D%/second_reply				\
  %D%/second_reply_sync				\
  %D%/second_reply_blocking			\
