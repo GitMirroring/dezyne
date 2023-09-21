@@ -1,0 +1,35 @@
+(header ((h) ihello provides) ((sut) queuefull_constraint_defer component))
+(state ((h) (idle . true)) ((sut)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)))
+(trail "h.hello" "h.return")
+<external>.h.bye -> ...
+... -> sut.h.bye
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . true)) ((sut)))
+(trail "h.bye" "h.return")
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)))
+(trail "h.hello" "h.return")
+<external>.h.bye -> ...
+... -> sut.h.bye
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . true)) ((sut)))
+(trail "h.bye" "h.return")
+test/all/queuefull_constraint_defer/queuefull_constraint_defer.dzn:47:20: error: queue-full in component "queuefull_constraint_defer"
+<external>.h.hello -> ...
+... -> sut.h.hello
+<queue-full>
+(state ((h) (idle . true)) ((sut)))
+test/all/queuefull_constraint_defer/queuefull_constraint_defer.dzn:47:20: error: queue-full in component "queuefull_constraint_defer"
+(trail "h.hello" "<queue-full>")
+(labels "h.hello" "h.bye" "<defer>")
+(eligible)
