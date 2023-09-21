@@ -51,7 +51,7 @@ class main
       sut.r.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.mp.r.hello -> <external>.r.hello");
-        sut.mp.r.out_port.world();
+        sut.r.out_port.world();
         System.Console.Error.WriteLine("sut.mp.r.return -> <external>.r.return");
       };
       sut.left.in_port.hello ();

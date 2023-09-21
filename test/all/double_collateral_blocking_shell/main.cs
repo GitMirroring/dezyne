@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021,2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,26 +38,26 @@ class main
     using (double_collateral_blocking_shell sut
       = new double_collateral_blocking_shell (locator, "sut"))
     {
-      sut.la.meta.require.name = "la";
-      sut.la.meta.require.port = sut.la;
-      sut.ra.meta.require.name = "ra";
-      sut.ra.meta.require.port = sut.ra;
+      sut.leftw.meta.require.name = "leftw";
+      sut.leftw.meta.require.port = sut.leftw;
+      sut.rightw.meta.require.name = "rightw";
+      sut.rightw.meta.require.port = sut.rightw;
 
       bool toggle = true;
-      sut.la.in_port.ping = () =>
+      sut.leftw.in_port.hello = () =>
       {
-        System.Console.Error.WriteLine("sut.lbp.async.ping -> <external>.la.ping");
+        System.Console.Error.WriteLine("sut.lbp.async.hello -> <external>.leftw.hello");
         System.Threading.Thread.Sleep(toggle ? 200 : 100);
-        sut.la.out_port.pong();
-        System.Console.Error.WriteLine("sut.lbp.async.return <- <external>.la.return");
+        sut.leftw.out_port.world();
+        System.Console.Error.WriteLine("sut.lbp.async.return <- <external>.leftw.return");
       };
 
-      sut.ra.in_port.ping = () =>
+      sut.rightw.in_port.hello = () =>
       {
-        System.Console.Error.WriteLine("sut.rbp.async.ping -> <external>.ra.ping");
+        System.Console.Error.WriteLine("sut.rbp.async.hello -> <external>.rightw.hello");
         System.Threading.Thread.Sleep(toggle ? 200 : 100);
-        sut.ra.out_port.pong();
-        System.Console.Error.WriteLine("sut.rbp.async.return <- <external>.ra.return");
+        sut.rightw.out_port.world();
+        System.Console.Error.WriteLine("sut.rbp.async.return <- <external>.rightw.return");
       };
 
       for(int i = 0; i < 2; ++i)

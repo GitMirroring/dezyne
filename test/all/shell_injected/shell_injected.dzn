@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2019, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -40,7 +40,7 @@ interface IRelaxed
   behavior
   {
     on e: {}
-    on optional: f;
+    on e: f;
   }
 }
 
@@ -55,13 +55,13 @@ interface IStrict
     bool idle = true;
 
     [idle] on e: { idle = false; }
-    [!idle] on inevitable: { f; idle = false; }
+    [!idle] on inevitable: { f; idle = true; }
   }
 }
 
 component TopArmor
 {
-  provides IRelaxed r;
+  provides IStrict r;
   requires IStrict s;
 
   requires injected ILogger l;
@@ -71,7 +71,6 @@ component TopArmor
     bool idle = true;
     [idle] {
       on r.e(): { idle = false; s.e(); }
-      on s.f(): { l.log($"foo"$); }
     }
     [!idle] {
       on r.e(): { l.log($"foo"$); }
@@ -83,7 +82,7 @@ component TopArmor
 component BottomArmor
 {
   provides IStrict s;
-  requires IRelaxed r;
+  requires external IRelaxed r;
 
   requires injected ILogger l;
 
@@ -115,8 +114,8 @@ component C
 
 component shell_injected
 {
-  provides IRelaxed p;
-  requires IRelaxed r;
+  provides IStrict p;
+  requires external IRelaxed r;
 
   system
   {

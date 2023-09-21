@@ -2,7 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,9 +43,7 @@ interface iworld
   out void world ();
 
   behavior {
-    bool idle = true;
-    on hello: idle = !idle;
-    [!idle] on inevitable: {world; idle = true;}
+    on hello: world;
   }
 }
 
@@ -76,7 +74,7 @@ component mux
 component blocked
 {
   provides blocking ihello h;
-  requires blocking iworld w;
+  requires external blocking iworld w;
 
   behavior
   {
@@ -90,7 +88,7 @@ component collateral_blocking_backdoor
 {
   provides blocking ihello left;
   provides blocking ihello right;
-  requires blocking iworld w;
+  requires external blocking iworld w;
 
   system
   {

@@ -40,21 +40,24 @@ main ()
   bool once_left = true;
 
   sut.eleft.in.hello = [&] {};
-  sut.eright.in.hello = [&] {};
-
   sut.rleft.in.hello = [&]
   {
-    std::this_thread::sleep_for (std::chrono::milliseconds (100));
-    if (once_left) {once_left = false; sut.eleft.out.world ();}
-    std::this_thread::sleep_for (std::chrono::milliseconds (100));
-    sut.rleft.out.world ();
-    std::this_thread::sleep_for (std::chrono::milliseconds (100));
+    std::thread([&]
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds (100));
+      if (once_left) {once_left = false; sut.eleft.out.world ();}
+      sut.rleft.out.world ();
+    }).detach ();
   };
+
+  sut.eright.in.hello = [&] {};
   sut.rright.in.hello = [&]
   {
-    std::this_thread::sleep_for (std::chrono::milliseconds (200));
-    sut.rright.out.world ();
-    std::this_thread::sleep_for (std::chrono::milliseconds (100));
+    std::thread([&]
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds (100));
+      sut.rright.out.world ();
+    }).detach ();
   };
 
   std::thread t ([&]
@@ -62,11 +65,10 @@ main ()
     std::this_thread::sleep_for (std::chrono::milliseconds (50));
     sut.pright.in.hello ();
   });
+
   sut.pleft.in.hello ();
 
   t.join ();
-
-  sut.dzn_pump.wait ();
 
   return 0;
 }

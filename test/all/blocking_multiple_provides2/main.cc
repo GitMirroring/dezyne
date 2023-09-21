@@ -44,24 +44,23 @@ int main ()
 
   sut.w_left.in.hello = [&]
   {
-    std::thread ([&]{
-      std::this_thread::sleep_for (std::chrono::milliseconds (100));
-      sut.w_left.out.world ();
-    }).detach ();
+    std::this_thread::sleep_for (std::chrono::milliseconds (100));
+    sut.w_left.out.world ();
   };
 
   sut.w_right.in.hello = [&]
   {
-    std::thread ([&]{
-      std::this_thread::sleep_for (std::chrono::milliseconds (150));
-      sut.w_right.out.world ();
-    }).detach ();
+    std::this_thread::sleep_for (std::chrono::milliseconds (150));
+    sut.w_right.out.world ();
   };
 
-  std::thread ([&]
+  std::thread t ([&]
   {
-    sut.h_left.in.hello ();
-  }).detach ();
-  std::this_thread::sleep_for (std::chrono::milliseconds (50));
-  sut.h_right.in.hello ();
+    std::this_thread::sleep_for (std::chrono::milliseconds (50));
+    sut.h_right.in.hello ();
+  });
+
+  sut.h_left.in.hello ();
+
+  t.join ();
 }

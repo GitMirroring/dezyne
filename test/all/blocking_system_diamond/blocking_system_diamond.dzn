@@ -2,7 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,10 +40,7 @@ interface iworld
 
   behavior
   {
-    bool idle = false;
-
-    on hello: idle = true;
-    [idle] on inevitable: {world; idle=false;}
+    on hello: world;
   }
 }
 
@@ -62,7 +59,7 @@ component fork_event
 component block
 {
   provides blocking ihello p;
-  requires iworld r;
+  requires blocking iworld r;
 
   behavior
   {
@@ -73,25 +70,25 @@ component block
 
 component resource
 {
-  provides iworld p_left;
-  provides iworld p_right;
-  requires iworld r_left;
-  requires iworld r_right;
+  provides blocking iworld p_left;
+  provides blocking iworld p_right;
+  requires external iworld r_left;
+  requires external iworld r_right;
 
   behavior
   {
-    on p_left.hello (): r_left.hello ();
-    on p_right.hello (): r_right.hello ();
-    on r_left.world (): p_left.world ();
-    on r_right.world (): p_right.world ();
+    on p_left.hello (): blocking r_left.hello ();
+    on p_right.hello (): blocking r_right.hello ();
+    on r_left.world (): {p_left.world (); p_left.reply ();}
+    on r_right.world (): {p_right.world (); p_right.reply ();}
   }
 }
 
 component blocking_system_diamond
 {
   provides blocking ihello p;
-  requires iworld r_left;
-  requires iworld r_right;
+  requires external iworld r_left;
+  requires external iworld r_right;
 
   system
   {

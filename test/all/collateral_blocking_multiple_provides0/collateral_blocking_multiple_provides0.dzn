@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -32,7 +32,7 @@ interface ihello
   }
 }
 
-interface iworlds
+interface iworld
 {
   in void hello();
   out void world();
@@ -43,28 +43,11 @@ interface iworlds
   }
 }
 
-interface iworlda
-{
-  in void hello();
-  out void world();
-
-  behavior
-  {
-    bool idle = true;
-    [idle] on hello: idle = false;
-    [!idle]
-    {
-      on hello: illegal;
-      on inevitable: {idle = true; world;}
-    }
-  }
-}
-
 component multiple_provides
 {
   provides blocking ihello left;
   provides blocking ihello right;
-  requires blocking iworlds r;
+  requires blocking iworld r;
 
   behavior
   {
@@ -83,8 +66,8 @@ component multiple_provides
 
 component block
 {
-  provides blocking iworlds p;
-  requires iworlda r;
+  provides blocking iworld p;
+  requires external iworld r;
 
   behavior
   {
@@ -97,7 +80,7 @@ component collateral_blocking_multiple_provides0
 {
   provides blocking ihello left;
   provides blocking ihello right;
-  requires iworlda r;
+  requires external iworld r;
 
   system
   {

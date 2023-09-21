@@ -2,7 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -61,8 +61,8 @@ component Top
 component Blocked
 {
   provides blocking ihello h;
-  requires blocking iworld w0;
-  requires blocking iworld w1;
+  requires external iworld w0;
+  requires external iworld w1;
 
   behavior
   {
@@ -79,8 +79,8 @@ component Blocked
 component collateral_blocking_shell
 {
   provides blocking ihello h;
-  requires blocking iworld w0;
-  requires blocking iworld w1;
+  requires external iworld w0;
+  requires external iworld w1;
 
   system
   {

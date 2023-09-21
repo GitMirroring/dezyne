@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -97,12 +97,47 @@ component blocking_bottom
   }
 }
 
+component adapter
+{
+  provides blocking iworld h;
+  requires blocking ihello b;
+  requires external iworld w;
+  behavior
+  {
+    on h.hello (): {b.hello (); w.hello ();}
+    on w.world (): h.world ();
+  }
+}
+
+component blocker
+{
+  provides blocking ihello b;
+  behavior
+  {
+    blocking on b.hello (): defer b.reply ();
+  }
+}
+
+component external_adapter
+{
+  provides blocking iworld h;
+  requires external iworld w;
+  system
+  {
+    adapter adapt;
+    h <=> adapt.h;
+    blocker block;
+    adapt.b <=> block.b;
+    adapt.w <=> w;
+  }
+}
+
 component collateral_blocking_bridges
 {
   provides blocking ihello h;
-  requires blocking iworld top_w;
-  requires blocking iworld middle_w;
-  requires blocking iworld bottom_w;
+  requires external iworld top_w;
+  requires external iworld middle_w;
+  requires external iworld bottom_w;
   system
   {
     blocking_top top;
@@ -112,12 +147,18 @@ component collateral_blocking_bridges
 
     h <=> top.h;
     top.w <=> proxy.h;
-    proxy.w <=> top_w;
+    external_adapter top_adapter;
+    proxy.w <=> top_adapter.h;
+    top_adapter.w <=> top_w;
 
     top.p <=> middle.h;
-    middle.w <=> middle_w;
+    external_adapter middle_adapter;
+    middle.w <=> middle_adapter.h;
+    middle_adapter.w <=> middle_w;
 
     middle.p <=> bottom.h;
-    bottom.w <=> bottom_w;
+    external_adapter bottom_adapter;
+    bottom.w <=> bottom_adapter.h;
+    bottom_adapter.w <=> bottom_w;
   }
 }

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -39,13 +39,7 @@ interface iworld
 
   behavior
   {
-    bool idle = true;
-    [idle] on hello: idle = false;
-    [!idle]
-    {
-      on hello: illegal;
-      on inevitable: {idle = true; world;}
-    }
+    on hello: world;
   }
 }
 
@@ -88,7 +82,7 @@ component mux
 component block
 {
   provides blocking ihello hello;
-  requires iworld world;
+  requires external iworld world;
 
   behavior
   {
@@ -102,7 +96,7 @@ component collateral_blocking_multiple_provides
   provides blocking ihello left;
   provides blocking ihello right;
 
-  requires iworld world;
+  requires external iworld world;
 
   system
   {

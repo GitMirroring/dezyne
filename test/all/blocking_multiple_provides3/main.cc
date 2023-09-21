@@ -39,14 +39,10 @@ int main ()
   dzn::locator locator;
   dzn::runtime runtime;
   blocking_multiple_provides3 sut (locator.set (runtime));
-  dzn::pump pump;
-  locator.set (pump);
 
   sut.r.in.hello = [&]
   {
-    sut.mp.r.out.world (); //side step going through pump, since we are
-    //already executing on the pump and the
-    //interface of r is synchronous
+    sut.r.out.world ();
   };
 
   sut.left.in.hello ();

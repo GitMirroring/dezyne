@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,56 +32,50 @@ interface ihello
   }
 }
 
-interface iasync
+interface iworld
 {
-  in void ping();
-  out void pong();
+  in void hello();
+  out void world();
 
   behavior
   {
-    bool idle = true;
-    [idle] on ping: idle = false;
-    [!idle]
-    {
-      on ping: illegal;
-      on inevitable: {idle = true; pong;}
-    }
+    on hello: world;
   }
 }
 
 component proxy
 {
   provides blocking ihello h;
-  requires blocking ihello w;
+  requires blocking ihello b;
 
   behavior
   {
-    on h.hello(): w.hello();
+    on h.hello(): b.hello();
   }
 }
 
 component left_blocking_proxy
 {
   provides blocking ihello h;
-  requires blocking iasync async;
-  requires blocking ihello w;
+  requires external iworld w;
+  requires blocking ihello b;
 
   behavior
   {
-    on h.hello(): blocking {async.ping();}
-    on async.pong(): {w.hello(); h.reply();}
+    on h.hello(): blocking {w.hello();}
+    on w.world(): {b.hello(); h.reply();}
   }
 }
 
 component right_blocking_proxy
 {
   provides blocking ihello h;
-  requires blocking iasync async;
+  requires external iworld w;
 
   behavior
   {
-    on h.hello(): blocking {async.ping();}
-    on async.pong(): h.reply();
+    on h.hello(): blocking {w.hello();}
+    on w.world(): h.reply();
   }
 }
 
@@ -109,8 +103,8 @@ component double_collateral_blocking_shell
   provides blocking ihello left;
   provides blocking ihello right;
 
-  requires blocking iasync la;
-  requires blocking iasync ra;
+  requires external iworld leftw;
+  requires external iworld rightw;
 
   system
   {
@@ -118,18 +112,18 @@ component double_collateral_blocking_shell
     left <=> lp.h;
 
     left_blocking_proxy lbp;
-    lp.w <=> lbp.h;
-    lbp.async <=> la;
+    lp.b <=> lbp.h;
+    lbp.w <=> leftw;
 
     mux m;
-    lbp.w <=> m.left;
+    lbp.b <=> m.left;
 
     proxy rp;
     right <=> rp.h;
-    rp.w <=> m.right;
+    rp.b <=> m.right;
 
     right_blocking_proxy rbp;
     m.hello <=> rbp.h;
-    rbp.async <=> ra;
+    rbp.w <=> rightw;
   }
 }

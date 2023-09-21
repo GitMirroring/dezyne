@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -108,11 +108,46 @@ component blocked
   }
 }
 
+component adapter
+{
+  provides blocking iworld h;
+  requires blocking ihello b;
+  requires external iworld w;
+  behavior
+  {
+    on h.hello (): {b.hello (); w.hello ();}
+    on w.world (): h.world ();
+  }
+}
+
+component blocker
+{
+  provides blocking ihello b;
+  behavior
+  {
+    blocking on b.hello (): defer b.reply ();
+  }
+}
+
+component external_adapter
+{
+  provides blocking iworld h;
+  requires external iworld w;
+  system
+  {
+    adapter adapt;
+    h <=> adapt.h;
+    blocker block;
+    adapt.b <=> block.b;
+    adapt.w <=> w;
+  }
+}
+
 component collateral_blocking_reorder
 {
   provides blocking ihello p;
-  requires blocking iworld r;
-  requires blocking iworld e;
+  requires external iworld r;
+  requires external iworld e;
 
   system
   {
@@ -121,10 +156,14 @@ component collateral_blocking_reorder
 
     proxy_release release;
     top.e <=> release.p;
-    release.e <=> e;
+    external_adapter adapt_release;
+    release.e <=> adapt_release.h;
+    adapt_release.w <=> e;
 
     blocked bottom;
     top.r <=> bottom.p;
-    bottom.r <=> r;
+    external_adapter adapt_bottom;
+    bottom.r <=> adapt_bottom.h;
+    adapt_bottom.w <=> r;
   }
 }

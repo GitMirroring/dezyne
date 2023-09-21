@@ -157,11 +157,21 @@
       (and=> (.behavior o) wfc)
       '()))
 
+(define-method (wfc-external (o <port>))
+  (let* ((model (ast:parent o <model>))
+         (shell? (equal? (ast:dotted-name model) (%shell))))
+    (if (or (not shell?) (ast:external? o)) '()
+        `(,(wfc-error
+            o
+            (format #f "outer shell port `~a' must be declared external"
+                    (.name o)))))))
+
 (define-method (wfc-skeleton (o <system>))
   (append
    (re-definition o)
    (append-map wfc (ast:port* o))
-   (append-map wfc (ast:instance* o))))
+   (append-map wfc (ast:instance* o))
+   (append-map wfc-external (ast:requires-port* o))))
 
 (define-method (wfc (o <system>))
   (or (as (wfc-skeleton o) <pair>)
@@ -938,7 +948,7 @@
          (supported? (or (member (%language) '("dzn" "makreel"))
                          (not (unspecified? value)))))
     (if supported? '()
-        `(,(wfc-error o (simple-format #f "Unspecified dollar escaped data"))))))
+        `(,(wfc-error o (format #f "Unspecified dollar escaped data"))))))
 
 (define-method (wfc (o <extern>))
   (append

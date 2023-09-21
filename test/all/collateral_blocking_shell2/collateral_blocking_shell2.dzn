@@ -2,7 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -45,12 +45,9 @@ interface iworld
   out void bye ();
 
   behavior {
-    bool idle = true;
-    [idle] on hello: idle = !idle;
-    [!idle] on inevitable: {world; idle = true;}
+    on hello: world;
     on cruel: bye;
-
-}
+  }
 }
 
 extern Exception $int$;
@@ -69,7 +66,6 @@ component Blocked
       waiting = true;
     }
 
-    [waiting] on h.cruel(): h.reply(true); // This should never happen because waiting is only true while blocked
     [!waiting] on h.cruel(): h.reply(false); // So any cruel() call should return false
 
     on w.world (): {
@@ -82,14 +78,12 @@ component Blocked
 component Bottom
 {
   provides blocking iworld p;
-  requires blocking iworld r;
+  requires external blocking iworld r;
 
   behavior
   {
-    bool idle = true;
-    [idle] on p.hello(): {idle = false; r.hello();}
-    on r.world(): {idle = true; p.world();}
-
+    on p.hello(): blocking r.hello();
+    on r.world(): {p.world(); p.reply ();}
     on p.cruel(): p.bye();
   }
 }
@@ -97,7 +91,7 @@ component Bottom
 component collateral_blocking_shell2
 {
   provides blocking ihello h;
-  requires blocking iworld w;
+  requires external blocking iworld w;
 
   system
   {

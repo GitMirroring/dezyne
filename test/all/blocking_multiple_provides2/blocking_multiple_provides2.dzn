@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -39,12 +39,7 @@ interface iworld
 
   behavior
   {
-    bool idle = true;
-    [idle] on hello: idle = false;
-    [!idle]
-    {
-      on inevitable: {idle = true; world;}
-    }
+    on hello: world;
   }
 }
 
@@ -52,8 +47,8 @@ component double_hello_block
 {
   provides blocking ihello h_left;
   provides blocking ihello h_right;
-  requires iworld w_left;
-  requires iworld w_right;
+  requires external iworld w_left;
+  requires external iworld w_right;
 
   behavior
   {
@@ -69,8 +64,8 @@ component blocking_multiple_provides2
 {
   provides blocking ihello h_left;
   provides blocking ihello h_right;
-  requires iworld w_left;
-  requires iworld w_right;
+  requires external iworld w_left;
+  requires external iworld w_right;
 
   system
   {

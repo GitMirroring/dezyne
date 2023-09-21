@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -56,15 +56,11 @@ interface iworld
 
   behavior
   {
-    bool idle = true;
-    [idle] {
-      on hello_void: {idle = false;}
-      on hello_bool: {idle = false; reply(true);}
-      on hello_int: {idle = false; reply(0);}
-      on hello_enum: {idle = false; reply(Enum.OK);}
-      on hello_enum: {reply(Enum.NOK);}
-    }
-    [!idle] on inevitable: {idle = true; world;}
+    on hello_void: world;
+    on hello_bool: {world; reply(true);}
+    on hello_int: {world; reply(0);}
+    on hello_enum: {world; reply(Enum.OK);}
+    on hello_enum: {reply(Enum.NOK);}
   }
 }
 
@@ -86,7 +82,7 @@ component proxy
 component blocked
 {
   provides blocking ihello bottom_p;
-  requires blocking iworld bottom_r;
+  requires external iworld bottom_r;
 
   behavior
   {
@@ -111,7 +107,7 @@ component blocked
 component blocking_shell
 {
   provides blocking ihello p;
-  requires blocking iworld r;
+  requires external iworld r;
 
   system
   {

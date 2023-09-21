@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -68,21 +68,26 @@ class main
       };
       sut.rleft.in_port.hello = () =>
       {
-        Console.Error.WriteLine("sut.left.r.hello -> <external>.rleft.hello");
-        Thread.Sleep(100);
-        if(once_left) {once_left = false; sut.eleft.out_port.world();}
-        Thread.Sleep(100);
-        sut.rleft.out_port.world();
-        Thread.Sleep(100);
-        Console.Error.WriteLine("sut.left.r.return -> <external>.rleft.return");
+          Console.Error.WriteLine("sut.left.r.hello -> <external>.rleft.hello");
+          var trl = new System.Threading.Thread (() =>
+          {
+              System.Threading.Thread.Sleep(100);
+              if(once_left) {once_left = false; sut.eleft.out_port.world();}
+              sut.rleft.out_port.world();
+          });
+          trl.Start();
+          Console.Error.WriteLine("sut.left.r.return -> <external>.rleft.return");
       };
       sut.rright.in_port.hello = () =>
       {
-        Console.Error.WriteLine("sut.right.r.hello -> <external>.rright.hello");
-        Thread.Sleep(200);
-        sut.rright.out_port.world();
-        Thread.Sleep(100);
-        Console.Error.WriteLine("sut.right.r.return -> <external>.rright.return");
+          Console.Error.WriteLine("sut.right.r.hello -> <external>.rright.hello");
+          var trr = new System.Threading.Thread (() =>
+          {
+              System.Threading.Thread.Sleep(100);
+              sut.rright.out_port.world();
+          });
+          trr.Start();
+          Console.Error.WriteLine("sut.right.r.return -> <external>.rright.return");
       };
       var t = new Thread (() =>
       {
@@ -93,8 +98,8 @@ class main
       sut.pleft.in_port.hello();
       t.Join();
 
-      dzn.pump pump = sut.dzn_locator.get<dzn.pump>();
-      pump.wait ();
+      // dzn.pump pump = sut.dzn_locator.get<dzn.pump>();
+      // pump.wait ();
     }
   }
 }

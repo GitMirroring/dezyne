@@ -39,15 +39,15 @@ int main ()
   double_collateral_blocking_shell sut (locator.set (runtime));
 
   bool toggle = true;
-  sut.la.in.ping = [&]
+  sut.leftw.in.hello = [&]
   {
     std::this_thread::sleep_for (std::chrono::milliseconds (toggle ? 200 : 100));
-    sut.la.out.pong ();
+    sut.leftw.out.world ();
   };
-  sut.ra.in.ping = [&]
+  sut.rightw.in.hello = [&]
   {
     std::this_thread::sleep_for (std::chrono::milliseconds (toggle ? 200 : 100));
-    sut.ra.out.pong ();
+    sut.rightw.out.world ();
   };
 
   for (size_t i = 0; i < 2; ++i)

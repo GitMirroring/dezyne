@@ -34,25 +34,23 @@
 int
 main ()
 {
+  //dzn::debug.rdbuf (std::clog.rdbuf ());
+
   dzn::locator loc;
   dzn::runtime rt;
   loc.set (rt);
 
   collateral_blocking_reorder sut (loc);
 
-  bool once = true;
+  bool idle = true;
 
-  sut.r.in.hello = [&]
-  {
-    std::thread ([&]{
-      if (once) {once = false; sut.e.out.world ();}
-      sut.r.out.world ();
-    }).detach ();
-  };
   sut.e.in.hello = [&] {};
 
-  sut.p.in.hello ();
+  sut.r.in.hello = [&] {
+    if (idle) sut.e.out.world ();
+    idle = !idle;
+    sut.r.out.world ();
+  };
 
-  dzn::pump &pump = sut.dzn_locator.get<dzn::pump> ();
-  pump.wait ();
+  sut.p.in.hello ();
 }

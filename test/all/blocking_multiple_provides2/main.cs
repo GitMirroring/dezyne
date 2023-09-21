@@ -51,29 +51,27 @@ class main
       sut.w_left.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.bmp.w_left.hello -> <external>.w_left.hello");
-        new System.Threading.Thread (() =>
-        {
-          System.Threading.Thread.Sleep(100);
-          sut.w_left.out_port.world();
-        }).Start();
+        System.Threading.Thread.Sleep(100);
+        sut.w_left.out_port.world();
+        System.Threading.Thread.Sleep(100);
         System.Console.Error.WriteLine("sut.bmp.w_left.return -> <external>.w_left.return");
       };
       sut.w_right.in_port.hello = () =>
       {
         System.Console.Error.WriteLine("sut.bmp.w_right.hello -> <external>.w_right.hello");
-        new System.Threading.Thread (() =>
-        {
-          System.Threading.Thread.Sleep(150);
-          sut.w_right.out_port.world();
-        }).Start();
+        System.Threading.Thread.Sleep(150);
+        sut.w_right.out_port.world();
         System.Console.Error.WriteLine("sut.bmp.w_right.return -> <external>.w_right.return");
       };
-      new System.Threading.Thread (() =>
+      System.Threading.Thread t = new System.Threading.Thread(() =>
       {
-        sut.h_left.in_port.hello ();
-      }).Start();
-      System.Threading.Thread.Sleep(50);
-      sut.h_right.in_port.hello ();
+        System.Threading.Thread.Sleep(100);
+        sut.h_right.in_port.hello ();
+      });
+      t.Start();
+
+      sut.h_left.in_port.hello ();
+      t.Join();
     }
   }
 }

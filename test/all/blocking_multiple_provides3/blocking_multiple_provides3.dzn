@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -45,6 +45,29 @@ interface iworld
   }
 }
 
+component adapter
+{
+  provides blocking iworld h;
+  requires external iworld w;
+  behavior
+  {
+    on h.hello (): blocking w.hello ();
+    on w.world (): {h.world (); h.reply ();}
+  }
+}
+
+component external_adapter
+{
+  provides blocking iworld h;
+  requires external iworld w;
+  system
+  {
+    adapter adapt;
+    h <=> adapt.h;
+    adapt.w <=> w;
+  }
+}
+
 component multiple_provides
 {
   provides blocking ihello left;
@@ -59,7 +82,7 @@ component multiple_provides
     [side.None]
     {
       blocking on left.hello(): {side = Side.Left; r.hello();}
-      blocking on right.hello(): {r.hello(); side = Side.Right;}
+      blocking on right.hello(): {side = Side.Right; r.hello();}
     }
     [side.Left] on r.world(): {side = Side.None; left.reply();}
     [side.Right] on r.world(): {side = Side.None; right.reply();}
@@ -70,12 +93,14 @@ component blocking_multiple_provides3
 {
   provides blocking ihello left;
   provides blocking ihello right;
-  requires iworld r;
+  requires external iworld r;
   system
   {
     left  <=> mp.left;
     right <=> mp.right;
     multiple_provides mp;
-    mp.r <=> r;
+    external_adapter adapt;
+    mp.r <=> adapt.h;
+    adapt.w <=> r;
   }
 }
