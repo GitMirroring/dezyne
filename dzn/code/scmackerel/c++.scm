@@ -1084,6 +1084,7 @@ produces those prefixes and marks them with #:rtc? #false."
                        (code:end-point->string end-point)
                        ")")))
     (let* ((instances (code:instance* o))
+           (port-instances (filter (compose ast:provides-port .type) instances))
            (bindings (code:component-binding* o))
            (injected-bindings (code:injected-binding* o))
            (ports (ast:port* o))
@@ -1146,7 +1147,7 @@ produces those prefixes and marks them with #:rtc? #false."
                      ,(requires->assignment (ast:requires-port* o))
                      ,(children->assignment (ast:instance* o))
                      ,@(append-map instance->assignments injected-instances)
-                     ,@(append-map instance->assignments instances)
+                     ,@(append-map instance->assignments port-instances)
                      ,@(map c++:binding->connect bindings))))))))))
       (code:->namespace o system))))
 
