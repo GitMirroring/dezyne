@@ -5,10 +5,25 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* Changes in 2.17.6 since 2.17.5
+* Changes in 2.17.7 since 2.17.6
 ** Noteworthy bug fixes
   - Building the C++ pump using the Boost::Coroutine library works out
     of the box again..  This was a regression introduced in 2.16.0.
+  - The well-formedness check now allows using an early return in a
+    tail-recursive function.
+  - The well-formedness check now allows statements after a
+    non-recursive call in a recursive function.
+  - A bug leading to stray verification errors was fixed for two
+    triggers using the same imperative statement.
+  - The simulator now correctly reports a queue-full error for a
+    non-compliant component where an unbounded defer is only restricted
+    by its interface constraint.
+  - The C++ thread-pool now respects its resource dependencies by
+    declaring members in the proper order to allow problem/error free
+    destruction.
+
+* Changes in 2.17.6 since 2.17.5
+** Noteworthy bug fixes
   - The `std::async' in the C++ pump has been replaced by
     `dzn::thread::defer'.  This allows working around the arbitrary
     limits in `std::async' observed on some Microsoft systems.
