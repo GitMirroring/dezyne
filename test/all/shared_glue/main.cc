@@ -30,10 +30,6 @@ main ()
   dzn::runtime runtime;
   shared_glue sut (locator.set (runtime));
 
-  sut.dzn_meta.name = "shared_glue";
-  sut.h.dzn_meta.require.name = "h";
-  sut.w.dzn_meta.provide.name = "w";
-
   sut.h.out.world = [&] {};
   sut.w.in.hello = [&] {};
   sut.w.in.bye = sut.w.out.world;
