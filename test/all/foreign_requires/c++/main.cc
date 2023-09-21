@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,9 +36,6 @@ main ()
   locator.set (runtime);
 
   foreign_requires sut (locator);
-  sut.dzn_meta.name = "sut";
-  sut.c.w0.dzn_meta.provide.name = "w0";
-  sut.c.w1.dzn_meta.provide.name = "w1";
 
   sut.w0.in.hello = sut.w0.out.world;
   sut.w1.in.hello = sut.w1.out.world;

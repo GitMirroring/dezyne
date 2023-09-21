@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -38,8 +38,6 @@ int main ()
   dzn::locator locator;
   dzn::runtime runtime;
   collateral_blocking_multiple_provides sut (locator.set (runtime));
-  sut.dzn_meta.name = "sut";
-  sut.world.dzn_meta.provide.name = "world";
 
   sut.world.in.hello = [&]
   {

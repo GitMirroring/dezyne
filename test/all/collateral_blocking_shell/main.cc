@@ -2,7 +2,7 @@
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -41,9 +41,6 @@ main ()
   dzn::runtime runtime;
   locator.set (runtime);
   collateral_blocking_shell sut (locator);
-  sut.dzn_meta.name = "sut";
-  sut.w0.dzn_meta.provide.name = "w0";
-  sut.w1.dzn_meta.provide.name = "w1";
 
   bool cruel = false;
   sut.w0.in.hello = [&]

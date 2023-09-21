@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -61,14 +61,6 @@ main (int argc, char const *argv[])
   dzn::runtime runtime;
   locator.set (runtime);
   sync_out_reply_binding sut (locator);
-
-  sut.dzn_meta.name = "sut";
-
-  sut.h.dzn_meta.require.name = "h";
-  sut.h.dzn_meta.require.port = &sut.h;
-
-  sut.w.dzn_meta.provide.name = "w";
-  sut.w.dzn_meta.provide.port = &sut.w;
 
   sut.w.in.hello = [&]
   {

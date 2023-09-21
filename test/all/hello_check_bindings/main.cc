@@ -2,6 +2,7 @@
 //
 // Copyright © 2017 Jvaneerd <J.vaneerd@student.fontys.nl>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,9 +35,8 @@ int main ()
   dzn::locator l;
   dzn::runtime rt;
   l.set (rt);
-
   hello_check_bindings unbound_in_event (l);
-  unbound_in_event.dzn_meta.name = "unbound_in_event";
+
   unbound_in_event.p.out.world = [] { };
   try
     {
@@ -44,13 +44,13 @@ int main ()
     }
   catch (dzn::binding_error const& e)
     {
-      std::string expected_event = "unbound_in_event.r.in.hello";
+      std::string expected_event = "hello_check_bindings.r.in.hello";
       std::string actual_error (e.what ());
       assert (actual_error.find (expected_event) != std::string::npos);
   }
 
   hello_check_bindings unbound_out_event (l);
-  unbound_out_event.dzn_meta.name = "unbound_out_event";
+
   unbound_out_event.r.in.hello = [] { };
   try
     {
@@ -58,13 +58,13 @@ int main ()
     }
   catch (dzn::binding_error const& e)
     {
-      std::string expected_event = "unbound_out_event.p.out.world";
+      std::string expected_event = "hello_check_bindings.p.out.world";
       std::string actual_error (e.what ());
       assert (actual_error.find (expected_event) != std::string::npos);
     }
 
   hello_check_bindings no_unbound_events (l);
-  no_unbound_events.dzn_meta.name = "no_unbound_events";
+
   no_unbound_events.p.out.world = [] { };
   no_unbound_events.r.in.hello = [] { };
   try

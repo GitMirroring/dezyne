@@ -1,7 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,7 +36,6 @@ main ()
   dzn::runtime rt;
   loc.set (rt);
   blocking_double_release sut (loc);
-  sut.dzn_meta.name = "sut";
 
   auto f0 = std::async (std::launch::async, sut.block0.in.hello);
   std::this_thread::sleep_for (std::chrono::milliseconds (100));

@@ -2,7 +2,7 @@
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -39,9 +39,6 @@ main ()
   loc.set (rt);
 
   collateral_blocking_reorder sut (loc);
-  sut.dzn_meta.name = "sut";
-  sut.r.dzn_meta.provide.name = "r";
-  sut.e.dzn_meta.provide.name = "e";
 
   bool once = true;
 

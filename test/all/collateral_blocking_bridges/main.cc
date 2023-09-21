@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -51,16 +51,6 @@ main ()
   dzn::runtime runtime;
   locator.set (runtime);
   collateral_blocking_bridges sut (locator);
-  sut.dzn_meta.name = "sut";
-
-  sut.top_w.dzn_meta.provide.name = "top_w";
-  sut.top_w.dzn_meta.provide.port = &sut.top_w;
-
-  sut.middle_w.dzn_meta.provide.name = "middle_w";
-  sut.middle_w.dzn_meta.provide.port = &sut.middle_w;
-
-  sut.bottom_w.dzn_meta.provide.name = "bottom_w";
-  sut.bottom_w.dzn_meta.provide.port = &sut.bottom_w;
 
   sut.top_w.in.hello = [&] {};
   sut.middle_w.in.hello = [&] {};

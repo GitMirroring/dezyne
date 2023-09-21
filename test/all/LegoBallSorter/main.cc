@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -211,8 +211,6 @@ int main ()
   LegoBallSorter sut (l);
   dzn::pump pump;
   l.set (pump);
-
-  sut.dzn_meta.name = "sut";
 
   dzn::fill_event_map (sut, event_map);
 

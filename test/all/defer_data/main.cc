@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022, 2023, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -60,11 +61,6 @@ main (int argc, char const *argv[])
   defer_data sut (locator);
   dzn::pump pump;
   locator.set (pump);
-
-  sut.dzn_meta.name = "sut";
-
-  sut.h.dzn_meta.require.name = "h";
-  sut.h.dzn_meta.require.port = &sut.h;
 
   sut.h.out.world = [&] (int) {};
 

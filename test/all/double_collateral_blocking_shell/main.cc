@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,13 +34,9 @@ int main ()
 {
   std::cin.ignore (std::numeric_limits<std::streamsize>::max ());
 
-  //dzn::debug.rdbuf(std::clog.rdbuf ());
   dzn::locator locator;
   dzn::runtime runtime;
   double_collateral_blocking_shell sut (locator.set (runtime));
-  sut.dzn_meta.name = "sut";
-  sut.la.dzn_meta.provide.name = "la";
-  sut.ra.dzn_meta.provide.name = "ra";
 
   bool toggle = true;
   sut.la.in.ping = [&]

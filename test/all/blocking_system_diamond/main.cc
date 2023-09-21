@@ -2,7 +2,7 @@
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,9 +40,6 @@ main ()
   dzn::runtime runtime;
   locator.set (runtime);
   blocking_system_diamond sut (locator);
-  sut.dzn_meta.name = "sut";
-  sut.r_left.dzn_meta.provide.name = "r_left";
-  sut.r_right.dzn_meta.provide.name = "r_right";
 
   sut.r_left.in.hello = [&] () {};
   sut.r_right.in.hello = [&] () {};

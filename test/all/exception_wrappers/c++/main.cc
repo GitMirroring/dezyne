@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 //
 // This file is part of Dezyne.
@@ -33,9 +33,6 @@ int main ()
   dzn::locator l;
 
   exception_wrappersWrapper sut (l.set (r));
-  sut.impl.dzn_meta.name = "sut";
-  sut.impl.h.dzn_meta.require.name = "h";
-  sut.impl.w.dzn_meta.provide.name = "w";
 
   sut.w.in.hello = [] {throw std::logic_error ("foo");};
   sut.h.out.world = [] {throw std::logic_error ("bar");};

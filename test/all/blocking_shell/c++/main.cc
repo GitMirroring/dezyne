@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -47,9 +47,6 @@ int main ()
   dzn::locator locator;
   dzn::runtime runtime;
   blocking_shell sut (locator.set (runtime));
-  sut.dzn_meta.name = "sut";
-  sut.p.dzn_meta.require.name = "p";
-  sut.r.dzn_meta.provide.name = "r";
 
   int output = 0;
   std::map<std::string, std::function<void ()>> provides =

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -41,10 +41,6 @@ int main ()
   blocking_multiple_provides2 sut (locator.set (runtime));
   dzn::pump pump;
   locator.set (pump);
-
-  sut.dzn_meta.name = "sut";
-  sut.w_left.dzn_meta.provide.name = "w_left";
-  sut.w_right.dzn_meta.provide.name = "w_right";
 
   sut.w_left.in.hello = [&]
   {

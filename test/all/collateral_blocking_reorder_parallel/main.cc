@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -36,11 +36,6 @@ main ()
   //dzn::debug.rdbuf(std::clog.rdbuf ());
   dzn::locator locator;
   collateral_blocking_reorder_parallel sut (locator);
-  sut.dzn_meta.name = "sut";
-  sut.eleft.dzn_meta.provide.name = "eleft";
-  sut.eright.dzn_meta.provide.name = "eright";
-  sut.rleft.dzn_meta.provide.name = "rleft";
-  sut.rright.dzn_meta.provide.name = "rright";
 
   bool once_left = true;
 

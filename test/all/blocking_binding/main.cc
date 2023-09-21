@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2019, 2020, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -63,14 +63,6 @@ main (int argc, char const *argv[])
   blocking_binding sut (locator);
   dzn::pump pump;
   locator.set (pump);
-
-  sut.dzn_meta.name = "sut";
-
-  sut.h.dzn_meta.require.name = "h";
-  sut.h.dzn_meta.require.port = &sut.h;
-
-  sut.w.dzn_meta.provide.name = "w";
-  sut.w.dzn_meta.provide.port = &sut.w;
 
   sut.w.in.hello = [&] {};
 

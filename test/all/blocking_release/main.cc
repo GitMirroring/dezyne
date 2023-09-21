@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -53,17 +53,6 @@ main ()
   blocking_release sut (locator);
   dzn::pump pump;
   locator.set (pump);
-
-  sut.dzn_meta.name = "sut";
-
-  sut.block.dzn_meta.require.name = "block";
-  sut.block.dzn_meta.require.port = &sut.block;
-
-  sut.release.dzn_meta.require.name = "release";
-  sut.release.dzn_meta.require.port = &sut.release;
-
-  sut.w.dzn_meta.provide.name = "w";
-  sut.w.dzn_meta.provide.port = &sut.w;
 
   sut.w.in.hello = [] () {};
 

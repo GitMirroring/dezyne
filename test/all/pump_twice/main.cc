@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -35,8 +35,7 @@ int main ()
       dzn::runtime runtime;
       dzn::pump pump;
       pump_twice sut (locator.set (runtime).set (pump));
-      sut.dzn_meta.name = "sut";
-      sut.h.dzn_meta.require.name = "h";
+
       sut.h.out.world = [&] {};
       dzn::shell (pump, [&] {sut.h.in.hello ();});
       pump.wait ();

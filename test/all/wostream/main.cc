@@ -33,8 +33,6 @@ main ()
   dzn::locator locator;
   dzn::runtime runtime;
   wostream w (locator.set (runtime));
-  w.dzn_meta.name = "sut";
-  w.h.dzn_meta.require.name = "h";
   std::wostringstream wos;
   wos << w.h.in.hello () << std::endl;
 }

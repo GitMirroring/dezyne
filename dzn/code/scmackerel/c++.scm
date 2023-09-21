@@ -735,14 +735,14 @@ produces those prefixes and marks them with #:rtc? #false."
      (type (code:type-name (.type port)))
      (name (.name port))
      (expression (simple-format
-                  #f "{{~s,&~a,this,&dzn_meta},{\"\",0,0,0}}" name name))))
+                  #f "{{~s,&~a,this,&dzn_meta},{~s,0,0,0}}" name name name))))
   (define (requires->member port)
     (sm:variable
      (type (code:type-name (.type port)))
      (name (.name port))
      (expression (simple-format
                   #f
-                  "{{\"\",0,0,0},{~s,&~a,this,&dzn_meta}}" name name))))
+                  "{{~s,0,0,0},{~s,&~a,this,&dzn_meta}}" name name name))))
   (define (requires->external port)
     (sm:assign*
      (simple-format

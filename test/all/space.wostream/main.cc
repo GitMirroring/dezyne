@@ -57,7 +57,6 @@ main ()
   dzn::locator locator;
   dzn::runtime runtime;
   space::wostream w (locator.set (runtime));
-  w.dzn_meta.name = "sut";
-  w.h.dzn_meta.require.name = "h";
+
   return space::test (w);
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -51,20 +51,6 @@ main ()
   collateral_blocking_double_release sut (locator);
   dzn::pump pump;
   locator.set (pump);
-
-  sut.dzn_meta.name = "sut";
-
-  sut.block0.dzn_meta.require.name = "block0";
-  sut.block0.dzn_meta.require.port = &sut.block0;
-
-  sut.block1.dzn_meta.require.name = "block1";
-  sut.block1.dzn_meta.require.port = &sut.block1;
-
-  sut.release.dzn_meta.require.name = "release";
-  sut.release.dzn_meta.require.port = &sut.release;
-
-  sut.w.dzn_meta.provide.name = "w";
-  sut.w.dzn_meta.provide.port = &sut.w;
 
   sut.w.in.hello = [&] {};
   sut.w.in.cruel = [&] {};

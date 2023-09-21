@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,7 +37,6 @@ main ()
   l.set (rt);
 
   foreign_optional sut (l);
-  sut.dzn_meta.name = "sut";
 
   sut.c.h.out.world = [] {};
   sut.f.w_hello ();
