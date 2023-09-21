@@ -1,0 +1,11 @@
+model: queuefull_constraint_defer
+h.hello
+h.return
+h.bye
+h.return
+h.hello
+h.return
+h.bye
+h.return
+h.hello
+<queue-full>

@@ -405,6 +405,7 @@ REGRESSION_TESTS =				\
  %D%/pump_twice					\
  %D%/queue_size_four				\
  %D%/queuefull_component1			\
+ %D%/queuefull_constraint_defer			\
  %D%/queuefull_external				\
  %D%/queuefull_external2			\
  %D%/range_action				\

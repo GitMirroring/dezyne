@@ -1,0 +1,50 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// This model leads to a defer queue full, since defer does not capture
+// shared state, it is not canceled by the bye.  As a result a sequence
+// of: hello, bye, hello, hello hits the default queue size limit of 2.
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  in void bye ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    on bye: idle = true;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+component queuefull_constraint_defer
+{
+  provides ihello h;
+  behavior
+  {
+    on h.hello (): defer h.world ();
+    on h.bye (): {}
+  }
+}
