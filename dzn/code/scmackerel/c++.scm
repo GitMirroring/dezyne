@@ -1078,34 +1078,6 @@ produces those prefixes and marks them with #:rtc? #false."
                          (cute string-append "&" <> ".dzn_meta")
                          .name)
                         instances))))
-    (define (trigger->event-slot trigger)
-      (let* ((port (.port trigger))
-             (other-end (ast:other-end-point port))
-             (port-name (.name port))
-             (event (.event trigger))
-             (direction (symbol->string (.direction event)))
-             (event-name (.name event))
-             (formals (code:formal* trigger))
-             (arguments (map .name formals))
-             (in-formals (filter ast:in? formals))
-             (in-arguments (map .name in-formals))
-             (formals (map c++:->formal formals))
-             (type (ast:type event))
-             (type (code:type-name type))
-             (typed? (ast:typed? event)))
-        (sm:assign*
-         (string-append
-          (.instance.name other-end)
-          "."
-          (.port.name other-end)
-          "."
-          (code:event-name event))
-         (sm:call (name "std::ref")
-                  (arguments
-                   `(,(string-append
-                       "this->" port-name
-                       "." direction
-                       "." event-name)))))))
     (define (binding->injected-initializer binding)
       (let ((end-point (code:instance-end-point binding)))
         (string-append ".set ("
@@ -1175,9 +1147,7 @@ produces those prefixes and marks them with #:rtc? #false."
                      ,(children->assignment (ast:instance* o))
                      ,@(append-map instance->assignments injected-instances)
                      ,@(append-map instance->assignments instances)
-                     ,@(map c++:binding->connect bindings)
-                     ,@(map trigger->event-slot (ast:provides-out-triggers o))
-                     ,@(map trigger->event-slot (ast:requires-in-triggers o)))))))))))
+                     ,@(map c++:binding->connect bindings))))))))))
       (code:->namespace o system))))
 
 (define-method (system->statements (o <system>))
