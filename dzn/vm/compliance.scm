@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -117,6 +117,7 @@ format."
                               trace-suffix))))
          (status (.status (car trace)))
          (error? (and (is-a? status <error>)
+                      (not (is-a? status <queue-full-error>))
                       (not (is-a? status <illegal-error>))
                       (not (is-a? status <implicit-illegal-error>))))
          (trace (if merged? trace
