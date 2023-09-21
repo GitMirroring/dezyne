@@ -920,7 +920,7 @@ produces those prefixes and marks them with #:rtc? #false."
                  (expression
                   (simple-format #f
                                  "{~s,~s,0,{},{},{~a}}"
-                                 ""
+                                 name
                                  name
                                  (string-join check-bindings-list ", ")))
                  (name "dzn_meta"))
@@ -1099,7 +1099,7 @@ produces those prefixes and marks them with #:rtc? #false."
                    (expression
                     (simple-format #f
                                    "{~s,~s,0,{},{},{~a}}"
-                                   ""
+                                   name
                                    name
                                    (string-join check-bindings-list ", ")))
                    (name "dzn_meta"))
@@ -1311,7 +1311,7 @@ produces those prefixes and marks them with #:rtc? #false."
                    (expression
                     (simple-format #f
                                    "{~s,~s,0,{},{},{~a}}"
-                                   ""
+                                   name
                                    name
                                    (string-join check-bindings-list ", ")))
                    (name "dzn_meta"))
