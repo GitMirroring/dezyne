@@ -1,0 +1,2 @@
+;;; -*- scheme -*-
+((skip ("c" "cs" "scheme" "javascript" "simulate")))

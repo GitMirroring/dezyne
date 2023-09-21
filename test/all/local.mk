@@ -168,6 +168,7 @@ REGRESSION_TESTS =				\
  %D%/calling_context				\
  %D%/clash_event_name				\
  %D%/clash_port_variable			\
+ %D%/closed_system_foreigns				\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_double_release		\
