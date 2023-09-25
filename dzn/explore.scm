@@ -55,8 +55,17 @@
 (define-method (process-external (pc <program-counter>))
   (let ((queues (.external-q pc)))
     (if (null? queues) '()
-        (let ((instances (map car queues)))
-          (append-map (cute run-external-q pc <>) instances)))))
+        (let* ((r:ports (map car queues))
+               (traces (append-map (cute run-external-q pc <>) r:ports)))
+          (define external-flush
+            (match-lambda
+              ((r:port trigger rest ...)
+               (let* ((r:component-port (runtime:other-port r:port))
+                      (instance (.container r:component-port))
+                      (trigger (trigger->component-trigger r:port trigger))
+                      (event (trigger->string trigger)))
+                 (append-map (cute run-requires-flush <> event) traces)))))
+          (append-map external-flush queues)))))
 
 (define (run-to-completion** pc event)
   (let* ((pc (clone pc #:instance #f #:trail '()))

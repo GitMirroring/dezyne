@@ -108,9 +108,10 @@
                              #:message message))))
      ((let* ((r:other-port (runtime:other-port r:port))
              (blocked (append (.blocked pc) (.collateral pc)))
+             (blocked (map (compose rtc-block-pc cdr) blocked))
+             (blocked (filter .instance blocked))
              (ports (map (compose runtime:other-port
-                                  trigger-runtime-port
-                                  rtc-block-pc cdr)
+                                  trigger-runtime-port)
                          blocked)))
         (or (assq r:port (.blocked pc))
             (and (ast:provides? trigger)

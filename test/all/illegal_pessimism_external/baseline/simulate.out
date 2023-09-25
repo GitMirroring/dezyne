@@ -20,12 +20,16 @@ sut.w.return <- ...
 <external>.h.return <- ...
 (state ((h) (s . S:C)) ((sut) (s . S:C)) ((w) (s . S:C)))
 (trail "h.bye" "w.bye" "w.return" "h.return")
+... <- <external>.w.cruel
+sut.<q> <- ...
+(state ((h) (s . S:C)) ((sut) (s . S:C) (*q* w.cruel)) ((w) (s . S:C)))
+(trail "w.cruel")
 test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:87:3: error: illegal
 ... <- sut.<q>
 sut.w.cruel <- ...
 <illegal>
 (state ((h) (s . S:C)) ((sut) (s . S:C)) ((w) (s . S:C)))
 test/all/illegal_pessimism_external/illegal_pessimism_external.dzn:87:3: error: illegal
-(trail "w.cruel" "<illegal>")
+(trail "<illegal>")
 (labels "h.hello" "h.bye" "w.cruel" "w.world")
 (eligible)

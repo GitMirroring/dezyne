@@ -317,6 +317,10 @@ p     external_multiple_out1     r
 .<--------------:                .
 (state ((p) (state . status:A)) ((sut) (idle . false)) ((r)))
 .               :                .
+.               :               a.
+.               :<---------------.
+(state ((p) (state . status:A)) ((sut) (idle . false) (*q* r.a)) ((r)))
+.               :                .
 .               :a               .
 .               :<-              .
 .               :                .
@@ -324,13 +328,17 @@ p     external_multiple_out1     r
 .<--------------:                .
 (state ((p) (state . status:B)) ((sut) (idle . false)) ((r)))
 .               :                .
+.               :               b.
+.               :<---------------.
+(state ((p) (state . status:B)) ((sut) (idle . false) (*q* r.b)) ((r)))
+.               :                .
 .               :b               .
 .               :<-              .
 .               :                .
 .              b:                .
 .<--------------:                .
 (state ((p) (state . status:IDLE)) ((sut) (idle . true)) ((r)))
-(trail r.b p.b)
+(trail p.b)
 (state ((p) (state . status:IDLE)) ((sut) (idle . true)) ((r)))
 (labels p.e r.a r.b)
 (eligible p.e)
@@ -352,9 +360,16 @@ p     external_multiple_out2     r
 .<--------------:                .
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r)))
 .               :                .
+.               :               a.
+.               :<---------------.
+(state ((p) (idle . false)) ((sut) (idle . false) (*q* r.a)) ((r)))
+.               :                .
 .               :a               .
 .               :<-              .
-(state ((p) (idle . false)) ((sut) (idle . false)) ((r)))
+.               :                .
+.               :               b.
+.               :<---------------.
+(state ((p) (idle . false)) ((sut) (idle . false) (*q* r.b)) ((r)))
 .               :                .
 .               :b               .
 .               :<-              .
@@ -365,7 +380,7 @@ p     external_multiple_out2     r
 .              b:                .
 .<--------------:                .
 (state ((p) (idle . true)) ((sut) (idle . true)) ((r)))
-(trail r.b p.a p.b)
+(trail p.a p.b)
 (state ((p) (idle . true)) ((sut) (idle . true)) ((r)))
 (labels p.e r.a r.b)
 (eligible p.e)
@@ -387,9 +402,16 @@ p     external_multiple_out3     r
 .<--------------:                .
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . false)))
 .               :                .
+.               :               a.
+.               :<---------------.
+.               :                .
 .               :a               .
 .               :<-              .
 (state ((p) (idle . false)) ((sut) (idle . false)) ((r) (idle . true)))
+.               :                .
+.               :               b.
+.               :<---------------.
+(state ((p) (idle . false)) ((sut) (idle . false) (*q* r.b)) ((r) (idle . true)))
 .               :                .
 .               :b               .
 .               :<-              .
@@ -400,7 +422,7 @@ p     external_multiple_out3     r
 .              b:                .
 .<--------------:                .
 (state ((p) (idle . true)) ((sut) (idle . true)) ((r) (idle . true)))
-(trail r.b p.a p.b)
+(trail p.a p.b)
 (state ((p) (idle . true)) ((sut) (idle . true)) ((r) (idle . true)))
 (labels p.e r.a r.b)
 (eligible p.e)
@@ -424,11 +446,17 @@ p indirect_blocking_multiple_external_out r1 r2
 .                    :                 return.
 .                    :<----------------------.
 .                    :                    .  .
+.                    :                   b.  .
+.                    :<-------------------.  .
+.                    :                    .  .
 .                    :b                   .  .
 .                    :<-                  .  .
 .                    :                    .  .
 .                   b:                    .  .
 .<-------------------:                    .  .
+.                    :                    .  .
+.                    :                    . b.
+.                    :<----------------------.
 .                    :                    .  .
 .                    :b                   .  .
 .                    :<-                  .  .

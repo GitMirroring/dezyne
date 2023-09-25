@@ -20,12 +20,16 @@ sut.w.return <- ...
 <external>.h.return <- ...
 (state ((h) (s . S:D)) ((sut) (s . S:C)) ((w) (s . S:D)))
 (trail "h.bye" "w.bye" "w.return" "h.return")
+... <- <external>.w.world
+sut.<q> <- ...
+(state ((h) (s . S:D)) ((sut) (s . S:C) (*q* w.world)) ((w) (s . S:D)))
+(trail "w.world")
 test/all/illegal_external_inevitable/illegal_external_inevitable.dzn:64:3: error: illegal
 ... <- sut.<q>
 sut.w.world <- ...
 <illegal>
 (state ((h) (s . S:D)) ((sut) (s . S:C)) ((w) (s . S:D)))
 test/all/illegal_external_inevitable/illegal_external_inevitable.dzn:64:3: error: illegal
-(trail "w.world" "<illegal>")
+(trail "<illegal>")
 (labels "h.hello" "h.bye" "w.world" "w.cruel")
 (eligible)

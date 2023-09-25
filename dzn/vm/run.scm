@@ -54,6 +54,7 @@
             run-external-q
             run-external-modeling
             run-requires
+            run-requires-flush
             run-silent
             run-to-completion
             run-to-completion*
@@ -652,11 +653,22 @@ until RTC?."
     (append-map (cute run-external-modeling pc <>) ports)))
 
 (define-method (run-external-modeling (pc <program-counter>) event)
+  (define (event-executed? port-instance trace)
+    (let ((status (.status (car trace)))
+          (trail (map cdr (trace->trail trace))))
+      (or (is-a? status <queue-full-error>)
+          (let* ((pc (car trace))
+                 (pc trigger (dequeue-external pc port-instance)))
+            (and trigger
+                 (let ((trigger (trigger->component-trigger port-instance
+                                                            trigger)))
+                   (equal? (trigger->string trigger) event)))))))
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (clone (string->trigger event) #:parent component))
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
-         (traces (run-external-modeling pc port-instance)))
+         (traces (run-external-modeling pc port-instance))
+         (traces (filter (cute event-executed? port-instance <>) traces)))
     (map car traces)))
 
 (define-method (run-interface (pc <program-counter>) (event <string>))
@@ -684,6 +696,27 @@ until RTC?."
                        (filter event-executed? traces))))
         traces)))))
 
+(define-method (run-requires-flush (pc <program-counter>) event)
+  (let* ((component ((compose .type .ast) (%sut)))
+         (trigger (string->trigger event))
+         (trigger (clone trigger #:parent component))
+         (port-name (.port.name trigger))
+         (port-instance (runtime:port-name->instance port-name))
+         (component-port (runtime:other-port port-instance))
+         (component-trigger (trigger->component-trigger component-port
+                                                        trigger))
+         (instance (.container component-port))
+         (collateral-blocked? (or (blocked-on-boundary? pc)
+                                  (and instance
+                                       (get-handling pc instance)
+                                       (blocked-port pc instance))))
+         (traces (if collateral-blocked? (list (list pc))
+                     (run-flush pc instance))))
+    traces))
+
+(define-method (run-requires-flush trace event)
+  (extend-trace trace (cute run-requires-flush <> event)))
+
 (define-method (run-requires (pc <program-counter>) event)
   (define (event-executed? port-instance trace)
     (let ((status (.status (car trace)))
@@ -698,7 +731,8 @@ until RTC?."
                       (equal? (trigger->string trigger) event)))))))
   (%debug "run-requires... ~s\n" event)
   (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
+         (trigger (string->trigger event))
+         (trigger (clone trigger #:parent component))
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
          (interface ((compose .type .ast) port-instance))
@@ -710,19 +744,8 @@ until RTC?."
          (traces (filter (cute event-executed? port-instance <>) traces))
          (traces (filter-match-error traces))
          (errors (filter (compose .status car) traces)))
-
     (if (pair? errors) errors
-        (let* ((component-port (runtime:other-port port-instance))
-               (component-trigger (trigger->component-trigger component-port
-                                                              trigger))
-               (instance (.container component-port))
-               (collateral-blocked? (or (blocked-on-boundary? pc)
-                                        (and instance
-                                             (get-handling pc instance)
-                                             (blocked-port pc instance))))
-               (traces (if collateral-blocked? traces
-                           (append-map (cute run-flush <> instance) traces))))
-          traces))))
+        (append-map (cute run-requires-flush <> event) traces))))
 
 (define-method (run-defer-event (pc <program-counter>) event)
   (%debug "run-defer-event ~a pc: ~s\n" event pc)
@@ -789,12 +812,26 @@ until RTC?."
   (extend-trace trace flush-defer))
 
 (define-method (run-external-q (pc <program-counter>) (instance <runtime:port>))
-  (let* ((pc trigger (dequeue-external pc instance))
-         (q-out (make <q-out> #:trigger trigger))
-         (q-out (clone q-out #:location (.location trigger)))
-         (q-out-pc (clone pc #:instance (%sut) #:statement q-out))
-         (traces (run-to-completion pc trigger)))
-    (map (lambda (t) (append t (list q-out-pc))) traces)))
+  (let* ((other-port (runtime:other-port instance))
+         (other-instance (.container other-port)))
+    (define (q-trigger q-trigger)
+      (let* ((port-name (.name (.ast other-port)))
+             (trigger (.trigger pc))
+             (q-trigger (make <q-trigger>
+                          #:event.name (.event.name q-trigger)
+                          #:port.name port-name
+                          #:location (.location q-trigger))))
+        (clone q-trigger #:parent (.type (.ast other-instance)))))
+    (let* ((pc trigger (dequeue-external pc instance))
+           (q-in (make <q-in> #:trigger trigger))
+           (q-in (clone q-in #:location (.location trigger)))
+           (pc (push-pc pc other-instance q-in))
+           (q-trigger (q-trigger trigger))
+           (pc (enqueue pc trigger other-instance q-trigger))
+           (q-in-pc pc)
+           (pc (clone pc #:statement #f))
+           (trace (list pc q-in-pc)))
+      (list trace))))
 
 (define-method (run-external (pc <program-counter>) event)
   (%debug "run-external ~a pc: ~s\n" event pc)
@@ -825,10 +862,15 @@ until RTC?."
    ((is-a? (%sut) <runtime:port>)
     (run-interface pc event))
    ((external-trigger-in-q? pc event)
-    (run-external pc event))
+    (let ((pc (clone pc #:trail (cons event (.trail pc)))))
+      (run-external pc event)))
+   ((and (external-trigger? event)
+         (trigger-in-q? pc event))
+    (run-requires-flush pc event))
    ((external-trigger? event)
-    (let ((pcs (cons pc (run-external-modeling pc event))))
-      (append-map (cute run-external <> event) pcs)))
+    (let* ((pcs (cons pc (run-external-modeling pc event)))
+           (traces (append-map (cute run-external <> event) pcs)))
+      (append-map (cute run-requires-flush <> event) traces)))
    ((requires-trigger? event)
     (let* ((defer? (and (pair? (.defer pc))
                         (not (%strict?))))

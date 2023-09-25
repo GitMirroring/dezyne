@@ -20,14 +20,18 @@ sut.w.return <- ...
 <external>.h.return <- ...
 (state ((h) (state . State:Busy) (once . true)) ((sut) (state . State:Busy)) ((w) (state . State:Busy) (once . true)))
 (trail "h.bye" "w.bye" "w.return" "h.return")
+... <- <external>.w.cruel
+sut.<q> <- ...
+(state ((h) (state . State:Busy) (once . true)) ((sut) (state . State:Busy) (*q* w.cruel)) ((w) (state . State:Busy) (once . false)))
+(trail "w.cruel")
 test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:73:21: error: non-compliance
 ... <- sut.<q>
 sut.w.cruel <- ...
 ... <- sut.h.cruel
 <external>.h.cruel <- ...
 <non-compliance>
-(state ((h) (state . State:Busy) (once . true)) ((sut) (state . State:Busy)) ((w) (state . State:Busy) (once . false)))
+(state ((h) (state . State:Busy) (once . true)) ((sut) (state . State:Busy) (*q* w.cruel)) ((w) (state . State:Busy) (once . false)))
 test/all/compliance_external_inevitable/compliance_external_inevitable.dzn:73:21: error: non-compliance
-(trail "w.cruel" "h.cruel" "<non-compliance>")
+(trail "h.cruel" "<non-compliance>")
 (labels "h.hello" "h.bye" "w.cruel" "w.world")
 (eligible)

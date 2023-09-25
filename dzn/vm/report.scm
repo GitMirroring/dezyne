@@ -152,6 +152,12 @@
 (define-method (pc-event? (o <runtime:component>) (trigger <q-trigger>))
   #f)
 
+(define-method (pc-event? (o <runtime:port>) (q-in <q-in>))
+  #t)
+
+(define-method (pc-event? (o <runtime:component>) (q-in <q-in>))
+  #t)
+
 (define-method (pc-event? (o <runtime:port>) (action <action>))
   (or (ast:in? action)
       (is-a? (%sut) <runtime:port>)
@@ -168,8 +174,7 @@
 (define-method (pc-event? (o <runtime:component>) (q-out <q-out>))
   (let* ((trigger (.trigger q-out))
          (port (.port trigger)))
-    (or (ast:provides? port)
-        (ast:external? port))))
+    (ast:provides? port)))
 
 (define-method (pc-event? (pc <program-counter>) (o <trigger-return>))
   (and (not (is-a? (.event (.trigger pc)) <modeling-event>))
@@ -265,6 +270,14 @@
 
 (define-method (pc->event (o <runtime:component>) (defer-qout <defer-qout>))
   (cons defer-qout "<defer>"))
+
+(define-method (pc->event (o <runtime:component>) (q-in <q-in>))
+  (let* ((trigger (.trigger q-in))
+         (port (.port trigger))
+         (r:port (runtime:port o port))
+         (r:other-port (and r:port (runtime:other-port r:port)))
+         (trigger (trigger->component-trigger r:other-port trigger)))
+    (cons q-in (trigger->string trigger))))
 
 (define-method (pc->event (o <runtime:component>) (q-out <q-out>))
   (let ((trigger (.trigger q-out)))
@@ -382,9 +395,6 @@
 (define-method (pc-arrow? (o <runtime:component>) (trigger <q-trigger>))
   #f)
 
-(define-method (pc-arrow? (o <runtime:component>) (q-in <q-in>))
-  #t)
-
 (define-method (pc-arrow? (o <runtime:port>) (action <action>))
   (or (ast:in? action)
       (is-a? (%sut) <runtime:port>)
@@ -488,6 +498,11 @@
 (define-method (pc->arrow (o <runtime:component>) (defer-qout <defer-qout>))
   (cons defer-qout
         (format #f "<defer>")))
+
+(define-method (pc->arrow (o <runtime:port>) (q-in <q-in>))
+  (cons q-in
+        (let ((trigger (.trigger q-in)))
+          (format #f "... <- ~a.~a" (runtime:instance->string o) (.event.name trigger)))))
 
 (define-method (pc->arrow (o <runtime:component>) (q-in <q-in>))
   (cons q-in (format #f "~a.<q> <- ..." (runtime:instance->string o))))
@@ -718,6 +733,19 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                                      #:instance r:other-port
                                      #:statement action)))
               (loop (cdr trace) (cons* pc action-pc result))))
+           ((and (is-a? statement <q-in>)
+                 (is-a? pc-instance <runtime:component>))
+            (let* ((trigger (.trigger statement))
+                   (port (.port trigger))
+                   (r:port (runtime:port pc-instance port))
+                   (r:other-port (and r:port (runtime:other-port r:port)))
+                   (other-port (.ast r:other-port))
+                   (other-interface (.type other-port))
+                   (trigger (clone trigger #:port.name #f))
+                   (qin (clone statement #:trigger trigger))
+                   (qin (clone qin #:parent other-interface))
+                   (qin-pc (clone pc #:instance r:other-port #:statement qin)))
+              (loop (cdr trace) (cons* qin-pc pc result))))
            ((and (is-a? statement <q-out>)
                  (is-a? pc-instance <runtime:component>))
             (let* ((trigger (.trigger statement))

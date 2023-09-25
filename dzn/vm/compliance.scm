@@ -274,7 +274,9 @@ Return a list of traces, possibly marked with <compliance-error>."
 
   (let* ((event (and=> trigger trigger->string))
          (blocking? (find (compose pair? .blocked) trace))
-         (sut-trace (if (or (not trigger) (not blocking?)) trace
+         (foo? (or (not trigger) (not (.port trigger)) (not blocking?)))
+         (drop? (and trigger (.port trigger) blocking?))
+         (sut-trace (if (not drop?) trace
                         (drop-prefix pc trigger trace)))
          (internal? (and (is-a? (%sut) <runtime:system>)
                          (not (eq? instance (%sut)))))

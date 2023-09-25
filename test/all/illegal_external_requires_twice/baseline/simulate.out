@@ -14,12 +14,16 @@ sut.r.return <- ...
 <external>.p.return <- ...
 (state ((p) (idle . false)) ((sut) (s . S:B)) ((q)) ((r)))
 (trail "p.e" "q.e" "q.return" "r.e" "r.return" "p.return")
+... <- <external>.q.a
+sut.<q> <- ...
+(state ((p) (idle . false)) ((sut) (s . S:B) (*q* q.a)) ((q)) ((r)))
+(trail "q.a")
 test/all/illegal_external_requires_twice/illegal_external_requires_twice.dzn:51:3: error: illegal
 ... <- sut.<q>
 sut.q.a <- ...
 <illegal>
 (state ((p) (idle . false)) ((sut) (s . S:B)) ((q)) ((r)))
 test/all/illegal_external_requires_twice/illegal_external_requires_twice.dzn:51:3: error: illegal
-(trail "q.a" "<illegal>")
+(trail "<illegal>")
 (labels "p.e" "q.a" "r.a")
 (eligible)

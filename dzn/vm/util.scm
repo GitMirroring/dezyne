@@ -127,6 +127,7 @@
             string->value
             trace-head:eq?
             trigger->component-trigger
+            trigger-in-q?
             trigger->system-trigger
             trigger->port-trigger
             trigger->string
@@ -423,6 +424,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
      (string-append (ast:name (.type.name o)) ":" (.field o)))
     (($ <literal>)
      (label->string (.value o)))
+    (($ <q-out>)
+     (trigger->string (.trigger o)))
     ((? (is? <trigger>))
      (trigger->string o))
     (($ <trigger-return>)
@@ -1461,8 +1464,23 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (and (requires-trigger? event)
        (find (match-lambda
                ((port trigger tail ...)
-                (equal? (trigger->string trigger) event)))
+                (let ((trigger (trigger->component-trigger port trigger)))
+                  (equal? event (trigger->string trigger)))))
              (.external-q pc))))
+
+(define-method (trigger-in-q? (pc <program-counter>) event)
+  (and (external-trigger? event)
+       (let* ((trigger (string->trigger event))
+              (r:port (runtime:port-name->instance (.port.name trigger)))
+              (r:component-port (runtime:other-port r:port))
+              (instance (.container r:component-port))
+              (state (get-state pc instance))
+              (q (.q state)))
+         (match q
+           ((trigger rest ...)
+            (let ((trigger (trigger->component-trigger r:port trigger)))
+              (equal? event (trigger->string trigger))))
+           (() #f)))))
 
 (define-method (return-trigger? event)
   (and (string? event)
