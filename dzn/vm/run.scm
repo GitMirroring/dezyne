@@ -208,7 +208,7 @@ with a TRACE that has BLOCKED still set to this port."
      (let ((blocked-port (and (pair? blocked) (caar blocked)))
            (blocked-pc (and (pair? blocked) (cdar blocked))))
        (and
-        (not (ast:eq? statement (and=>  blocked-pc .statement)))
+        (not (ast:eq? statement (and=> blocked-pc .statement)))
         (or (and (is-a? (%sut) <runtime:system>)
                  (> (length (ast:provides-port* (runtime:%sut-model))) 1))
             (requires-modeling-armed? pc))
@@ -861,7 +861,8 @@ until RTC?."
                        (.container (runtime:other-port instance))))
          (traces (run-to-completion pc 'rtc))
          (traces (map (cute rewrite-trace-head
-                            (cute clone <> #:instance instance) <>)
+                            (cute clone <> #:instance instance)
+                            <>)
                       traces))
          (done traces
                (partition

@@ -184,9 +184,9 @@
                                   (negate
                                    (cute equal? <> "<defer>")))))
                         trail))
-         (loop  (and loop-index (call-with-values
-                                    (cute split-at trail loop-index)
-                                  (lambda (a b) b))))
+         (loop (and loop-index (call-with-values
+                                   (cute split-at trail loop-index)
+                                 (lambda (a b) b))))
          (trail (if loop (append trail loop loop)
                     trail)))
     trail))
@@ -287,7 +287,7 @@ under certain conditions; type `,show c' for details.
           %package-name))
 
 (define %warranty-info
-  (format #f  "~a is distributed WITHOUT ANY WARRANTY.  The following sections
+  (format #f "~a is distributed WITHOUT ANY WARRANTY.  The following sections
 from the GNU General Public License, version 3, should make that clear.
 
   15. Disclaimer of Warranty.
@@ -874,12 +874,12 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 ;;; Q and flush
 ;;;
 
-(define-method (enqueue (pc <program-counter>)  (ast <ast>) (instance <runtime:component>) (trigger <trigger>))
+(define-method (enqueue (pc <program-counter>) (ast <ast>) (instance <runtime:component>) (trigger <trigger>))
   (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<enqueue>" (trigger->string trigger))
   (let* ((state (get-state pc instance))
          (q (.q state)))
     (if (= (length q) (%queue-size))
-        (let ((error (make <queue-full-error> #:ast ast  #:instance instance
+        (let ((error (make <queue-full-error> #:ast ast #:instance instance
                            #:message "queue-full")))
           (clone pc #:status error))
         (set-deferred (set-state pc (clone state #:q (append q (list trigger)))) instance))))

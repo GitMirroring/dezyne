@@ -638,7 +638,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                  ((is-status? <compliance-error>) (last result))
                  (is-a? statement <action>)
                  (not (.component-acceptance (.status (last result))))
-                 (.port-acceptance  (.status (last result))))
+                 (.port-acceptance (.status (last result))))
             (let* ((last-pc (last result))
                    (status (.status last-pc))
                    (r:port (.port status))
@@ -682,7 +682,7 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (other-interface (.type other-port))
                    (action (clone action #:parent other-interface))
                    (action-pc (clone pc #:instance r:other-port #:statement action)))
-              (loop (cdr trace) (cons*  pc action-pc result))))
+              (loop (cdr trace) (cons* pc action-pc result))))
            ((and next
                  (is-a? statement <action>)
                  (ast:out? statement)
@@ -861,7 +861,7 @@ intermediate steps such as assignments, function calls, replies,
          (string-join
           (map (cut format #f "~aerror: ~a\n" <> message) locations) "")))
       (($ <queue-full-error>)
-       (let* ((model ((compose  ast:dotted-name .type .ast .instance) status))
+       (let* ((model ((compose ast:dotted-name .type .ast .instance) status))
               (location (location-prefix (.ast status))))
          (format #f "~aerror: queue-full in component ~s\n" location model)))
       (($ <range-error>)
