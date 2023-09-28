@@ -498,13 +498,13 @@ void pump::prune_deferred ()
                   deferred.end ());
 }
 void pump::handle (size_t identifier, size_t milliseconds,
-                   const std::function<void ()> &event, size_t rank)
+                   const std::function<void ()> &event)
 {
   assert (event);
   assert (std::find_if (timers.begin (), timers.end (),
                         [identifier] (const std::pair<deadline, std::function<void ()>> &pair)
                         { return pair.first.id == identifier; }) == timers.end ());
-  timers.emplace (deadline (identifier, milliseconds, rank), event);
+  timers.emplace (deadline (identifier, milliseconds), event);
 }
 void pump::remove (size_t identifier)
 {

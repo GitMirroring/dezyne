@@ -38,6 +38,7 @@
 #include <mutex>
 #include <queue>
 #include <set>
+#include <thread>
 #include <vector>
 
 namespace dzn
@@ -62,18 +63,12 @@ struct pump
   {
     size_t id;
     std::chrono::steady_clock::time_point t;
-    size_t rank;
-    deadline (size_t id, size_t ms, size_t rank)
+    deadline (size_t id, size_t ms)
       : id (id)
       , t (std::chrono::steady_clock::now () + std::chrono::milliseconds (ms))
-      , rank (rank)
     {}
     bool expired () const {return t <= std::chrono::steady_clock::now ();}
-    bool operator < (const deadline &d) const { return rank_less (d); }
-  private:
-    bool rank_less (const deadline &d) const
-    {return (rank < d.rank) || (rank == d.rank && time_less (d));}
-    bool time_less (const deadline &d) const
+    bool operator < (const deadline &d) const
     {return t < d.t || (t == d.t && id < d.id);}
   };
 
@@ -108,8 +103,7 @@ struct pump
   void operator () (std::function<void ()> &&);
   void defer (std::function<bool ()> &&, std::function<void (size_t)> &&);
   void prune_deferred ();
-  void handle (size_t, size_t, const std::function<void ()> &,
-               size_t rank = std::numeric_limits<size_t>::max ());
+  void handle (size_t, size_t, const std::function<void ()> &);
   void remove (size_t);
 private:
   bool timers_expired () const;
