@@ -1,6 +1,14 @@
 p.e
+sut.logger.log.log
+sut.logger.log.return
 r.e
 r.return
-p.return
+sut.watchdog.w.set
+sut.watchdog.w.return
 r.f
+sut.watchdog.w.cancel
+sut.watchdog.w.return
+sut.logger.log.log
+sut.logger.log.return
 p.f
+p.return

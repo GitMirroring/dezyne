@@ -32,10 +32,33 @@ component Logger
   // behavior {}
 }
 
+interface IWatchdog
+{
+  in void set ();
+  in void cancel ();
+  out void timeout ();
+
+  behavior
+  {
+    bool idle = true;
+    on cancel: idle = true;
+    [idle] on set: idle = false;
+    [!idle]
+    {
+      on inevitable: timeout;
+    }
+  }
+}
+
+component Watchdog
+{
+  provides IWatchdog w;
+}
+
 interface IRelaxed
 {
-  in void e();
-  out void f();
+  in void e ();
+  out void f ();
 
   behavior
   {
@@ -47,35 +70,28 @@ interface IRelaxed
 
 interface IStrict
 {
-  in void e();
-  out void f();
+  in void e ();
+  out void f ();
 
   behavior
   {
     bool idle = true;
-
-    [idle] on e: { idle = false; }
+    on e: { idle = false; }
     [!idle] on inevitable: { f; idle = true; }
   }
 }
 
 component TopArmor
 {
-  provides IStrict r;
+  provides blocking IRelaxed r;
   requires IStrict s;
 
   requires injected ILogger l;
 
   behavior
   {
-    bool idle = true;
-    [idle] {
-      on r.e(): { idle = false; s.e(); }
-    }
-    [!idle] {
-      on r.e(): { l.log($"foo"$); }
-      on s.f(): { idle = true; r.f(); }
-    }
+    on r.e (): blocking s.e ();
+    on s.f (): {r.reply (); r.f ();}
   }
 }
 
@@ -83,19 +99,18 @@ component BottomArmor
 {
   provides IStrict s;
   requires external IRelaxed r;
-
-  requires injected ILogger l;
+  requires IWatchdog w;
 
   behavior
   {
     bool idle = true;
-    [idle] {
-      on s.e(): { idle = false; r.e(); }
-      on r.f(): { l.log($"foo"$); }
-    }
+    [idle] on s.e (): {idle = false; r.e (); w.set ();}
     [!idle] {
-      on s.e(): { l.log($"foo"$); }
-      on r.f(): { idle = true; s.f(); }
+      on s.e (): {if (w.idle) w.set ();}
+      on r.f (): {
+        if (!w.idle) {idle = true; w.cancel (); s.f ();}
+      }
+      on w.timeout (): {w.cancel (); s.f ();}
     }
   }
 }
@@ -104,17 +119,18 @@ component C
 {
   provides IStrict p;
   requires IStrict r;
+  requires injected ILogger l;
 
   behavior
   {
-    on p.e(): r.e();
-    on r.f(): p.f();
+    on p.e (): {l.log ($"foo"$); r.e ();}
+    on r.f (): {l.log ($"bar"$); p.f ();}
   }
 }
 
 component shell_injected
 {
-  provides IStrict p;
+  provides blocking IRelaxed p;
   requires external IRelaxed r;
 
   system
@@ -123,11 +139,13 @@ component shell_injected
     TopArmor top;
     C c;
     BottomArmor bottom;
+    Watchdog watchdog;
 
     p <=> top.r;
     top.s <=> c.p;
     c.r <=> bottom.s;
     bottom.r <=> r;
     logger.log <=> *;
+    bottom.w <=> watchdog.w;
   }
 }
