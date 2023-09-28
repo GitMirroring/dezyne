@@ -1123,7 +1123,7 @@ produces those prefixes and marks them with #:rtc? #false."
                                    (arguments
                                     (list
                                      (string-append
-                                      "locator.clone ()"
+                                      "dzn_locator.clone ()"
                                       (string-join
                                        (map binding->injected-initializer
                                             injected-bindings)
@@ -1336,7 +1336,7 @@ produces those prefixes and marks them with #:rtc? #false."
                                    (arguments
                                     (list
                                      (string-append
-                                      "locator.clone ()"
+                                      "dzn_locator.clone ()"
                                       (string-join
                                        (map binding->injected-initializer
                                             injected-bindings)
