@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -102,12 +102,10 @@ namespace dzn
     {
       public int id;
       public DateTime t;
-      public int rank;
-      public Deadline(int id, DateTime t, int rank)
+      public Deadline(int id, DateTime t)
       {
         this.id = id;
         this.t = t;
-        this.rank = rank;
       }
       public bool expired()
       {
@@ -115,11 +113,9 @@ namespace dzn
       }
       public int CompareTo(Object o)
       {
-        Deadline d = (Deadline)o;
-        if(rank == d.rank && t == d.t && id == d.id) return 0;
-        if(rank < d.rank
-           || rank == d.rank && t < d.t
-           || rank == d.rank && t == d.t && id < d.id) return -1;
+        Deadline d = (Deadline) o;
+        if(t == d.t && id == d.id) return 0;
+        if(t < d.t || t == d.t && id < d.id) return -1;
         return 1;
       }
     };
@@ -482,12 +478,8 @@ namespace dzn
     }
     public void handle(int id, int ms, Action e)
     {
-      handle(id, ms, e, int.MaxValue);
-    }
-    public void handle(int id, int ms, Action e, int rank)
-    {
       Debug.Assert(this.timers.Where(kv => kv.Key.id == id).Count() == 0);
-      this.timers.Add(new Deadline(id, DateTime.Now.AddMilliseconds(ms), rank), e);
+      this.timers.Add(new Deadline(id, DateTime.Now.AddMilliseconds(ms)), e);
     }
     public void remove(int id)
     {
