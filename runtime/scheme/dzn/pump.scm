@@ -1,6 +1,6 @@
 ;;; dzn-runtime -- Dezyne runtime library
 ;;;
-;;; Copyright © 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of dzn-runtime.
 ;;;
@@ -151,8 +151,8 @@
 (define-method (dzn:pump (o <dzn:pump>) (event <procedure>))
   (dzn:pump o event (const #t)))
 
-(define-method (dzn:handle (o <dzn:pump>) x deadline event rank) ;; FIXME: deadline ignored
-  (set! (.timers o) (acons rank (cons x event) (.timers o)))
+(define-method (dzn:handle (o <dzn:pump>) x deadline event) ;; FIXME: deadline ignored
+  (set! (.timers o) (acons deadline (cons x event) (.timers o)))
   (%debug "dzn:handle: timers: ~a\n" (.timers o)))
 
 (define-method (dzn:remove (o <dzn:pump>) x)
