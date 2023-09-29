@@ -323,7 +323,6 @@ actions."
             "--deadlock"
             ,@taus
             "--livelock"
-            "--tags"
             ,@(if (%no-unreachable?) '() '("--tags"))
             "-")))
 
@@ -343,7 +342,6 @@ actions."
             "--deadlock"
             ,@taus
             "--livelock"
-            "--tags"
             ,@(if (%no-unreachable?) '() '("--tags"))
             "--failures"
             "-")))
