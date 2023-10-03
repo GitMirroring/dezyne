@@ -1,0 +1,69 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import Motor.dzn;
+import TouchSensor.dzn;
+import LightSensor.dzn;
+
+component Brick2
+{
+  provides IMove motorA;
+  provides IMove motorB;
+
+  provides ITouchSense touch6;
+  provides ITouchSense touch7;
+  provides ITouchSense touch8;
+
+  requires imotor aA; // reject
+  requires imotor aB; // accept
+
+  requires itouch s2; // stage x home
+  requires itouch s3; // reject
+  requires itouch s4; // accept
+
+  system
+  {
+    // NxtBrick brick2; // OUTPUT
+    Motor motor_A; // reject
+    Motor motor_B; // accept
+
+    motorA <=> motor_A.ctrl; // reject
+    motorB <=> motor_B.ctrl; // accept
+
+    motor_A.hw <=> aA; // reject
+    motor_B.hw <=> aB; // accept
+
+    TouchSensor touch_6; // stage x home
+    TouchSensor touch_7; // reject
+    TouchSensor touch_8; // accept
+
+    touch6 <=> touch_6.ctrl; // stage x home
+    touch7 <=> touch_7.ctrl; // reject
+    touch8 <=> touch_8.ctrl; // accept
+
+    touch_6.hw <=> s2; // stage x home
+    touch_7.hw <=> s3; // reject
+    touch_8.hw <=> s4; // accept
+  }
+}

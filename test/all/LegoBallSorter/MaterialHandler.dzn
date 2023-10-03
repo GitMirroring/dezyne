@@ -4,7 +4,7 @@
 // Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,26 +27,11 @@
 
 import IFeed.dzn;
 import ITransfer.dzn;
+import IHandle.dzn;
 
 import Inspector.dzn;
 import Conveyor.dzn;
 
-interface IHandleRobust
-{
-  in void calibrate();
-  out void calibrated();
-  in void stop();
-  in void operate(); // start next batch
-  out void finished(); // batch finished
-  behavior
-  {
-    on calibrate:{}
-    on stop: {}
-    on operate: {}
-    on optional: calibrated;
-    on optional: finished;
-  }
-}
 
 component Armor
 {

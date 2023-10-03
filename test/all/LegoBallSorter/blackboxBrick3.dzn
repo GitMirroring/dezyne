@@ -1,9 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,40 +22,23 @@
 //
 // Code:
 
+import IMove.dzn;
+import ITouchSense.dzn;
 import ILightSense.dzn;
 
-component LightSensor
+component Brick3
 {
-  provides ILightSense ctrl;
-  requires ilight hw;
+  provides IMove motorA;
+  provides IMove motorC;
 
-  system
-  {
-    timer pollTimer;
-    LightSense bhv;
+  provides ILightSense light1;
+  provides ITouchSense touch9;
+  provides ITouchSense touch10;
 
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.sensor <=> hw;
-  }
-}
+  requires imotor aA; // stage x
+  requires imotor aC; // stage y
 
-component LightSense
-{
-  provides ILightSense ctrl;
-  requires ilight sensor;
-  requires itimer timer;
-  behavior {
-    on ctrl.measure(): {
-      timer.create($100$);
-      sensor.turnon();
-    }
-    on ctrl.cancel(): { timer.cancel(); sensor.turnoff();}
-    on timer.timeout(): {
-      ilight.status st = sensor.detect();
-      sensor.turnoff();
-      if (st.accept) ctrl.accept();
-      else ctrl.reject();
-    }
-  }
+  requires ilight s1; // light
+  requires itouch s2; // stage y end
+  requires itouch s3; // stage y home
 }

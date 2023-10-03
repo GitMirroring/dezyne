@@ -1,8 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -24,40 +22,48 @@
 //
 // Code:
 
-import ILightSense.dzn;
+import Motor.dzn;
+import TouchSensor.dzn;
 
-component LightSensor
+component Brick3
 {
-  provides ILightSense ctrl;
-  requires ilight hw;
+  provides IMove motorA;
+  provides IMove motorC;
+
+  provides ILightSense light1;
+  provides ITouchSense touch9;
+  provides ITouchSense touch10;
+
+  requires imotor aA; // stage x
+  requires imotor aC; // stage y
+
+  requires ilight s1; // light
+  requires itouch s2; // stage y end
+  requires itouch s3; // stage y home
 
   system
   {
-    timer pollTimer;
-    LightSense bhv;
+    // NxtBrick brick3; // STAGE
+    Motor motor_A; // stage x
+    Motor motor_C; // stage y
 
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.sensor <=> hw;
-  }
-}
+    motorA <=> motor_A.ctrl;
+    motorC <=> motor_C.ctrl;
 
-component LightSense
-{
-  provides ILightSense ctrl;
-  requires ilight sensor;
-  requires itimer timer;
-  behavior {
-    on ctrl.measure(): {
-      timer.create($100$);
-      sensor.turnon();
-    }
-    on ctrl.cancel(): { timer.cancel(); sensor.turnoff();}
-    on timer.timeout(): {
-      ilight.status st = sensor.detect();
-      sensor.turnoff();
-      if (st.accept) ctrl.accept();
-      else ctrl.reject();
-    }
+    motor_A.hw <=> aA;
+    motor_C.hw <=> aC;
+
+    LightSensor light_1;
+    TouchSensor touch_9; // stage y end
+    TouchSensor touch_10; // stage y home
+
+    light1 <=> light_1.ctrl;
+    light_1.hw <=> s1;
+
+    touch9 <=> touch_9.ctrl;
+    touch_9.hw <=> s2;
+
+    touch10 <=> touch_10.ctrl;
+    touch_10.hw <=> s3;
   }
 }

@@ -1,0 +1,77 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import Motor.dzn;
+import TouchSensor.dzn;
+
+component Brick1
+{
+  provides IMove motorA;
+  provides IMove motorB;
+  provides IMove motorC;
+  provides ITouchSense touch1;
+  provides ITouchSense touch2;
+  provides ITouchSense touch3;
+  provides ITouchSense touch4;
+
+  requires imotor aA; // robot trolley
+  requires imotor aB; // input
+  requires imotor aC; // feeder
+
+  requires itouch s1; // stage x home
+  requires itouch s2; // input
+  requires itouch s3; // robot truck home
+  requires itouch s4; // feeder retracted switch
+
+  system
+  {
+    // NxtBrick brick1; // INPUT
+    Motor motor_A; // robot trolley
+    Motor motor_B; // input
+    Motor motor_C; // feeder
+
+    motorA <=> motor_A.ctrl;
+    motorB <=> motor_B.ctrl;
+    motorC <=> motor_C.ctrl;
+
+    motor_A.hw <=> aA;
+    motor_B.hw <=> aB;
+    motor_C.hw <=> aC;
+
+    TouchSensor touch_1; // stage x home
+    TouchSensor touch_2; // input
+    TouchSensor touch_3; // robot truck home
+    TouchSensor touch_4; // feeder retracted switch
+
+    touch1 <=> touch_1.ctrl;
+    touch2 <=> touch_2.ctrl;
+    touch3 <=> touch_3.ctrl;
+    touch4 <=> touch_4.ctrl;
+
+    touch_1.hw <=> s1;
+    touch_2.hw <=> s2;
+    touch_3.hw <=> s3;
+    touch_4.hw <=> s4;
+  }
+}

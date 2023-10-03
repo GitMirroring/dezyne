@@ -3,13 +3,13 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
 // Dezyne is free software: you can redistribute it and/or modify it
 // under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
+// published byo the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 //
 // Dezyne is distributed in the hope that it will be useful, but
@@ -24,11 +24,18 @@
 //
 // Code:
 
-import BallSorter.dzn;
-import Brick1.dzn;
-import Brick2.dzn;
-import Brick3.dzn;
-import Brick4.dzn;
+//import BallSorter.dzn;
+import blackboxBallSorter.dzn;
+//import Brick1.dzn;
+import blackboxBrick1.dzn;
+//import Brick2.dzn;
+import blackboxBrick2.dzn;
+//import Brick3.dzn;
+import blackboxBrick3.dzn;
+//import Brick4.dzn;
+import blackboxBrick4.dzn;
+
+import IHandle.dzn;
 
 component LegoBallSorter
 {

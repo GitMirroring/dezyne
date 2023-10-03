@@ -1,8 +1,8 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,42 +22,35 @@
 //
 // Commentary:
 //
+// This component starts in either the pressed or the released state,
+// then with time it repeatedly toggles its state.
+//
 // Code:
 
-import ILightSense.dzn;
+import lego.dzn;
 
-component LightSensor
+interface ITouchSense
 {
-  provides ILightSense ctrl;
-  requires ilight hw;
+  in itouch.status enable();
+  out void pressed();
+  out void released();
+  in void disable();
 
-  system
+  behavior
   {
-    timer pollTimer;
-    LightSense bhv;
+    itouch.status state = itouch.status.none;
 
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.sensor <=> hw;
-  }
-}
-
-component LightSense
-{
-  provides ILightSense ctrl;
-  requires ilight sensor;
-  requires itimer timer;
-  behavior {
-    on ctrl.measure(): {
-      timer.create($100$);
-      sensor.turnon();
+    [state.none]
+    {
+      on enable: {state = itouch.status.pressed; reply(state);}
+      on enable: {state = itouch.status.released; reply(state);}
+      on disable: {}
     }
-    on ctrl.cancel(): { timer.cancel(); sensor.turnoff();}
-    on timer.timeout(): {
-      ilight.status st = sensor.detect();
-      sensor.turnoff();
-      if (st.accept) ctrl.accept();
-      else ctrl.reject();
+    [!state.none]
+    {
+      on disable: state = itouch.status.none;
+      [state.released] on inevitable: {state = itouch.status.pressed; pressed;}
+      [state.pressed] on inevitable: {state = itouch.status.released; released;}
     }
   }
 }

@@ -24,40 +24,21 @@
 //
 // Code:
 
-import ILightSense.dzn;
+import lego.dzn;
 
-component LightSensor
+interface ILightSense
 {
-  provides ILightSense ctrl;
-  requires ilight hw;
-
-  system
-  {
-    timer pollTimer;
-    LightSense bhv;
-
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.sensor <=> hw;
-  }
-}
-
-component LightSense
-{
-  provides ILightSense ctrl;
-  requires ilight sensor;
-  requires itimer timer;
+  in void measure();
+  in void cancel();
+  out void accept();
+  out void reject();
   behavior {
-    on ctrl.measure(): {
-      timer.create($100$);
-      sensor.turnon();
-    }
-    on ctrl.cancel(): { timer.cancel(); sensor.turnoff();}
-    on timer.timeout(): {
-      ilight.status st = sensor.detect();
-      sensor.turnoff();
-      if (st.accept) ctrl.accept();
-      else ctrl.reject();
+    bool settling = false;
+    on cancel: settling = false;
+    [!settling] on measure: settling = !settling;
+    [settling] {
+      on inevitable: { accept; settling = !settling; }
+      on inevitable: { reject; settling = !settling; }
     }
   }
 }

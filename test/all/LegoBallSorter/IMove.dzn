@@ -25,51 +25,35 @@
 // Code:
 
 import lego.dzn;
-import IMove.dzn;
 
-component Motor
+interface IMove
 {
-  provides IMove ctrl;
-  requires imotor hw;
+  extern imove_boolean $Boolean$;
+  extern imove_position_t $Integer$;
+  extern imove_milliseconds_t $Integer$;
+  extern imove_power_t $Byte$; // [0,100]
 
-  system
-  {
-    timer pollTimer;
-    Move bhv;
+  in void move(imove_power_t power, imove_position_t position);  //regulated, absolute position
+  out void arrived();
 
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.motor <=> hw;
-  }
-}
-
-component Move
-{
-  provides IMove ctrl;
-  requires itimer timer;
-  requires imotor motor;
+  in void run(imove_power_t power, imove_boolean invert);        //unregulated
+  in void stop(); // brake
+  in void coast();
+  in void zero();
+  in void position(out imove_position_t pos);
 
   behavior
   {
-    itimer.milliseconds_t time = $(config.get("Duration::PollInterval"))$;
-    imotor.position_t destination;
-
-    on ctrl.move(power, position): {
-        destination = position;
-        timer.create(time);
-        motor.move(power, destination);
-      }
-    on ctrl.zero(): motor.zero();
-
-    on timer.timeout(): {
-      imotor.result_t arrive = motor.at(destination);
-
-      if (arrive == imotor.result_t.yes) ctrl.arrived();
-      else                               timer.create(time);
+    bool moving = false;
+    [moving] on inevitable: {moving = false; arrived;}
+    [!moving]
+    {
+      on move: { moving = true; }
+      on zero: {}
     }
-    on ctrl.run(power, invert): motor.run(power, invert);
-    on ctrl.stop(): {motor.stop(); timer.cancel();}
-    on ctrl.coast(): {motor.coast(); timer.cancel();}
-    on ctrl.position(pos): motor.position(pos);
+    on run: {}
+    on stop: {moving = false;}
+    on coast: {moving = false;}
+    on position: {}
   }
 }

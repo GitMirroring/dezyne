@@ -1,0 +1,75 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
+// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import Motor.dzn;
+import TouchSensor.dzn;
+
+component Brick4
+{
+  provides IMove motorA;
+  provides IMove motorB;
+  provides IMove motorC;
+
+  provides ITouchSense touch11;
+  provides ITouchSense touch12;
+  provides ITouchSense touch13;
+
+  requires imotor aA; // robot hoist
+  requires imotor aB; // robot gripper
+  requires imotor aC; // robot truck
+
+  requires itouch s1;
+  requires itouch s2; // extender home
+  requires itouch s3; // hoist home
+
+  system
+  {
+    // NxtBrick brick4; // ROBOT
+    Motor motor_A;
+    Motor motor_B;
+    Motor motor_C;
+
+    motorA <=> motor_A.ctrl;
+    motor_A.hw <=> aA;
+
+    motorB <=> motor_B.ctrl;
+    motor_B.hw <=> aB;
+
+    motorC <=> motor_C.ctrl;
+    motor_C.hw <=> aC;
+
+    TouchSensor touch_11;
+    TouchSensor touch_12;
+    TouchSensor touch_13;
+
+    touch11 <=> touch_11.ctrl;
+    touch_11.hw <=> s1;
+
+    touch12 <=> touch_12.ctrl;
+    touch_12.hw <=> s2;
+
+    touch13 <=> touch_13.ctrl;
+    touch_13.hw <=> s3;
+  }
+}
