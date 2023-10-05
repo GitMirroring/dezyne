@@ -436,6 +436,7 @@ REGRESSION_TESTS =				\
  %D%/multiple_provides				\
  %D%/name.space					\
  %D%/no_return					\
+ %D%/no_unreachable				\
  %D%/param_shadow				\
  %D%/port_shadow_interface			\
  %D%/pump_twice					\

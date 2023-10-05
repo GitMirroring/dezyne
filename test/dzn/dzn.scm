@@ -181,6 +181,9 @@ output, and standard error as three values."
 (define (flush? file-name)
   (get-meta-flag file-name 'flush))
 
+(define (no-unreachable? file-name)
+  (get-meta-flag file-name 'no-unreachable))
+
 (define (queue-size file-name)
   (let ((alist (get-meta file-name)))
     (and alist
@@ -323,6 +326,7 @@ output, and standard error as three values."
          (includes (append-map (cute list "-I" <>) includes))
          (fall-back? (fall-back? file-name))
          (model (or (component? file-name) (file->model base-name)))
+         (no-unreachable? (no-unreachable? file-name))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
          (queue-size-external (queue-size-external file-name))
@@ -334,6 +338,8 @@ output, and standard error as three values."
               `("dzn" "--verbose" "verify"
                 ,@includes
                 "--all"
+                ,@(if (not no-unreachable?) '()
+                      `("--no-unreachable"))
                 ,@(if (not queue-size) '()
                       `("-q" ,(number->string queue-size)))
                 ,@(if (not queue-size-defer) '()
