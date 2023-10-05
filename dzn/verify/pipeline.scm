@@ -515,9 +515,7 @@ init for MODEL unless INIT."
     (match line
       (("tags" lts)
        (string-split lts #\;))
-      (_
-       (throw 'programming-error
-              (format #f "no tags: ~s, line: ~s\n" line result))))))
+      (_ #f))))
 
 (define (get-trace key result)
   (let ((assert (get-line key result)))
