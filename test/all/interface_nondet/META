@@ -1,5 +1,4 @@
 ;;; -*- scheme -*-
 ((skip ("build"))
  (comment
-   (("build" "interface model: cannot build.")))
- (no-interface-determinism? #t))
+   (("build" "interface model: cannot build."))))
