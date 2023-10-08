@@ -38,9 +38,9 @@ class pool
 {
   class task;
   friend class task;
-  std::vector<std::unique_ptr<task> > tasks_;
-  std::queue<task *> idle_tasks_;
   std::mutex mut_;
+  std::queue<task *> idle_tasks_;
+  std::vector<std::unique_ptr<task> > tasks_;
 public:
   pool () {}
   ~pool ()
@@ -81,16 +81,16 @@ private:
     bool running_;
     std::function<void ()> work_;
     std::promise<void> promise_;
-    std::mutex mut_;
     std::condition_variable con_;
+    std::mutex mut_;
     std::thread thread_;
   public:
     task (pool &p)
       : pool_ (p)
       , running_ (true)
       , work_ ()
-      , mut_ ()
       , con_ ()
+      , mut_ ()
       , thread_ (std::bind (&task::worker, self ()))
     {}
     ~task ()
