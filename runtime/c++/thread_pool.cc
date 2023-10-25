@@ -40,17 +40,20 @@ namespace dzn
       friend class task;
       std::mutex mut_;
       std::queue<task*> idle_tasks_;
-      std::vector<std::shared_ptr<task const> > tasks_;
+      std::vector<std::unique_ptr<task> > tasks_;
     public:
       pool() {}
-      std::future<void> defer(const std::function<void()>& work)
+      ~pool()
+      {
+        if (idle_tasks_.size() != tasks_.size()) std::abort();
+      }
+      std::future<void> defer(std::function<void()> const &work)
       {
         std::unique_lock<std::mutex> lock(mut_);
         if(idle_tasks_.empty())
         {
-          task *pt = new task(*this);
-          tasks_.push_back(std::shared_ptr<const task>(pt));
-          return pt->assign(work);
+          tasks_.emplace_back(new task(*this));
+          return tasks_.back()->assign(work);
         }
         else
         {
@@ -58,6 +61,10 @@ namespace dzn
           idle_tasks_.pop();
           return fut;
         }
+      }
+      size_t size() const
+      {
+        return tasks_.size();
       }
     private:
       pool& operator = (const pool&);
@@ -91,7 +98,8 @@ namespace dzn
           std::unique_lock<std::mutex> lock(mut_);
           running_ = false;
           con_.notify_one();
-          thread_.detach();
+          lock.unlock();
+          thread_.join();
         }
         std::future<void> assign(std::function<void()> work)
         {
@@ -120,8 +128,8 @@ namespace dzn
               lock.unlock();
               work();
               lock.lock();
-              promise_.set_value();
               pool_.idle(this);
+              promise_.set_value();
             }
           }
           while(running_);
