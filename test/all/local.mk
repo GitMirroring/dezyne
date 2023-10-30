@@ -677,6 +677,7 @@ XFAIL_PARSE =					\
  %D%/comment_traceability
 
 XFAIL_VERIFY =					\
+ %D%/blocking_defer				\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/external_blocking_livelock
