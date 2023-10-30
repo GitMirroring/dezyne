@@ -104,13 +104,14 @@ component BottomArmor
   behavior
   {
     bool idle = true;
-    [idle] on s.e (): {idle = false; r.e (); w.set ();}
+    bool watchdog = false;
+    [idle] on s.e (): {idle = false; r.e (); watchdog = true; w.set ();}
     [!idle] {
-      on s.e (): {if (w.idle) w.set ();}
+      on s.e (): {if (!watchdog) w.set (); watchdog = true;}
       on r.f (): {
-        if (!w.idle) {idle = true; w.cancel (); s.f ();}
+        if (watchdog) {idle = true; watchdog = false; w.cancel (); s.f ();}
       }
-      on w.timeout (): {w.cancel (); s.f ();}
+      on w.timeout (): {watchdog = false; w.cancel (); s.f ();}
     }
   }
 }
