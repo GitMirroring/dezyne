@@ -195,7 +195,7 @@ interface Intf11
     {
       f ();
       return;
-      bool b = true;  // to be caught dynamically by verify
+      bool b = true;
     }
 
     on hello: f ();

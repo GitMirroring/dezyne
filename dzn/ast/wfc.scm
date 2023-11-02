@@ -749,10 +749,19 @@
                                     reply-type-name)))))))))
 
 (define-method (wfc (o <return>))
+  (define (outer-compound o)
+    (let ((parent (.parent o)))
+      (if (is-a? parent <compound>) (outer-compound parent) o)))
+  (define (last-statement o)
+    (if (is-a? o <compound>)
+        (let ((statements (.elements o)))
+          (if (pair? statements) (last statements) o))
+        o))
   (let* ((wfce (if (.expression o) (wfc (.expression o)) '()))
          (function (ast:parent o <function>))
          (function-type (and function (ast:type function)))
-         (return-type (and (null? wfce) (ast:type o))))
+         (return-type (and (null? wfce) (ast:type o)))
+         (last-statement-block (last-statement (outer-compound o))))
     (append wfce
             (cond ((not function)
                    `(,(wfc-error o "cannot use return outside of function")))
@@ -761,6 +770,9 @@
                    `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
                                            (type-name function-type)
                                            (type-name return-type)))))
+                  ((not (ast:eq? last-statement-block o))
+                   `(,(wfc-error ((compose car ast:continuation*) o)
+                                 (format #f "code will never be executed"))))
                   (else '())))))
 
 (define-method (wfc (o <the-end>))

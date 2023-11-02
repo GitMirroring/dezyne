@@ -3,6 +3,7 @@ test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:48:5: error: missing 
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:54:9: error: missing return
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:66:12: error: missing return
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:81:9: error: missing return
+test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:88:7: error: code will never be executed
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:97:13: error: missing return
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:104:9: error: missing return
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:110:7: error: missing return
