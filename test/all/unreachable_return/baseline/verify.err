@@ -1,0 +1,2 @@
+test/all/unreachable_return/unreachable_return.dzn:44:7: error: code will never be executed
+test/all/unreachable_return/unreachable_return.dzn:55:9: error: code will never be executed

@@ -464,6 +464,7 @@ REGRESSION_TESTS =				\
  %D%/unreachable_function			\
  %D%/unreachable_if				\
  %D%/unreachable_interface	 		\
+ %D%/unreachable_return				\
  %D%/unreachable_shared				\
  %D%/unused_assign				\
  %D%/unused_event				\

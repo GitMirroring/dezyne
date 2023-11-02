@@ -16,3 +16,4 @@ test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:130:14: error: ca
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:130:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:134:14: error: cannot use valued function in recursion
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:134:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:198:7: error: code will never be executed
