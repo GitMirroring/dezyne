@@ -109,14 +109,22 @@ private:
   bool timers_expired () const;
 };
 
+#if __cplusplus > 201402L
+template <typename L, typename ... Args, typename = typename std::enable_if<std::is_void<typename std::invoke_result<L, Args ...>::type>::value>::type>
+#else
 template <typename L, typename ... Args, typename = typename std::enable_if<std::is_void<typename std::result_of<L (Args ...)>::type>::value>::type>
+#endif
 void shell (dzn::pump &pump, L && l, Args && ...args)
 {
   std::promise<void> p;
   pump ([&] {l (std::forward<Args> (args)...); p.set_value ();});
   return p.get_future ().get ();
 }
+#if __cplusplus > 201402L
+template < typename L, typename ... Args, typename = typename std::enable_if < !std::is_void<typename std::invoke_result<L,Args ...>::type>::value >::type >
+#else
 template < typename L, typename ... Args, typename = typename std::enable_if < !std::is_void<typename std::result_of<L (Args ...)>::type>::value >::type >
+#endif
 auto shell (dzn::pump &pump, L && l, Args && ...args) -> decltype (l (std::forward<Args> (args)...))
 {
   std::promise<decltype (l (std::forward<Args> (args)...))> p;

@@ -156,7 +156,11 @@ struct runtime
   void flush (dzn::component *, size_t);
   bool async (dzn::component *, dzn::component *);
   void enqueue (dzn::component *, dzn::component *, const std::function<void ()> &, size_t);
+#if __cplusplus > 201402L
+  template <typename F, typename = typename std::enable_if<std::is_void<typename std::invoke_result<F>::type>::value>::type>
+#else
   template <typename F, typename = typename std::enable_if<std::is_void<typename std::result_of<F ()>::type>::value>::type>
+#endif
   void handle (dzn::component *component, F && f, size_t coroutine_id)
   {
     size_t &handle = handling (component);
@@ -165,7 +169,11 @@ struct runtime
     assert (handle != 0);
     f ();
   }
+#if __cplusplus > 201402L
+  template < typename F, typename = typename std::enable_if < !std::is_void<typename std::invoke_result<F>::type>::value >::type >
+#else
   template < typename F, typename = typename std::enable_if < !std::is_void<typename std::result_of<F ()>::type>::value >::type >
+#endif
   inline auto handle (dzn::component *component, F && f, size_t coroutine_id) -> decltype (f ())
   {
     size_t &handle = handling (component);
@@ -201,12 +209,20 @@ struct share_trace_wrapper
       }
     else trace_qout (os, port.dzn_meta, event_name);
   }
+#if __cplusplus > 201402L
+  template <typename E, typename = typename std::enable_if<std::is_void<typename std::invoke_result<E>::type>::value>::type>
+#else
   template <typename E, typename = typename std::enable_if<std::is_void<typename std::result_of<E ()>::type>::value>::type>
+#endif
   void operator () (E && event)
   {
     event ();
   }
+#if __cplusplus > 201402L
+  template < typename E, typename = typename std::enable_if < !std::is_void<typename std::invoke_result<E>::type>::value >::type >
+#else
   template < typename E, typename = typename std::enable_if < !std::is_void<typename std::result_of<E ()>::type>::value >::type >
+#endif
   auto operator () (E && event) -> decltype (event ())
   {
     return handle_reply (event);
@@ -249,12 +265,20 @@ struct runtime_wrapper
     this->os << *component << std::endl;
 #endif
   }
+#if __cplusplus > 201402L
+  template <typename E, typename = typename std::enable_if<std::is_void<typename std::invoke_result<E>::type>::value>::type>
+#else
   template <typename E, typename = typename std::enable_if<std::is_void<typename std::result_of<E ()>::type>::value>::type>
+#endif
   void operator () (E && event)
   {
     component->dzn_runtime.handle (component, event, coroutine_id (component->dzn_locator));
   }
+#if __cplusplus > 201402L
+  template < typename E, typename = typename std::enable_if < !std::is_void<typename std::invoke_result<E>::type>::value >::type >
+#else
   template < typename E, typename = typename std::enable_if < !std::is_void<typename std::result_of<E ()>::type>::value >::type >
+#endif
   auto operator () (E && event) -> decltype (event ())
   {
     return component->dzn_runtime.handle (component, event, coroutine_id (component->dzn_locator));
