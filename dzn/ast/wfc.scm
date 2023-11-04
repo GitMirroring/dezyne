@@ -532,6 +532,8 @@
             (if (or otherwise? (pair? wfce)) '()
                 (typed-expression expression <bool>))
             (if otherwise? (otherwise o) '())
+            (if (not (ast:parent o <imperative>)) '()
+                `(,(wfc-error o "cannot use a guard in imperative context")))
             (if (is-a? (.statement o) <statement>) (wfc (.statement o))
                 `(,(wfc-error o "statement expected"))))))
 
