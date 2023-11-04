@@ -1,0 +1,1 @@
+test/all/parse_imperative_guard/parse_imperative_guard.dzn:38:32: error: cannot use a guard in imperative context
