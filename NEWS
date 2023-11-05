@@ -5,6 +5,16 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.8 since 2.17.7
+** Noteworthy bug fixes
+  - The well-formedness check now reports a guard statement used in an
+    imperative context.
+  - A bug has been fixed in the C++ code generator for a system in a
+    namespace, using a component instance from another namespace.
+  - The performance of the unreachable code check has been improved.
+  - A well-formedness check has been added to for `return' to be the
+    final statement of a block.
+
 * Changes in 2.17.7 since 2.17.6
 ** Noteworthy bug fixes
   - Building the C++ pump using the Boost::Coroutine library works out
