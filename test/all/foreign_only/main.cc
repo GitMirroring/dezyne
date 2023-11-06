@@ -42,7 +42,13 @@ event_map (dzn::container< ::foreign, std::function<void ()>>& c)
       ,   {"port.hello",[&] ()
             {
               c.match ("port.hello");
-              c.system.port.in.hello (123,0.123);
+              c.system.port.in.hello (0, 1);
+              c.match ("port.return");
+            }}
+      ,   {"port.cruel",[&] ()
+            {
+              c.match ("port.cruel");
+              c.system.port.in.cruel ();
               c.match ("port.return");
             }}
       ,   {"port.bye",[&] ()
@@ -75,4 +81,4 @@ main (int argc, char const* argv[])
   connect_ports (c);
   c (event_map (c));
 }
-// version 2.18.0.rc4.44-eff468a
+// version 2.18.0.rc5.70-dfe40

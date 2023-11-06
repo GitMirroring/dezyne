@@ -19,16 +19,24 @@
 
 #include "foreign_only.hh"
 
+#include <dzn/pump.hh>
 #include <dzn/runtime.hh>
 
 struct foreign: public skel::foreign
 {
-  foreign (const dzn::locator& l)
-    : skel::foreign (l)
+  foreign (dzn::locator const& locator)
+    : skel::foreign (locator)
   {}
   void port_hello (int i, double d)
   {
     port_world (i, d);
+  }
+  void port_cruel ()
+  {
+    dzn_locator.get<dzn::pump> ().handle(reinterpret_cast<size_t>(this), 0, [this]
+    {
+      this->port_world (0, 0);
+    });
   }
   void port_bye () {}
 };
