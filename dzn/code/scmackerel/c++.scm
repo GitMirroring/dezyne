@@ -889,7 +889,9 @@ produces those prefixes and marks them with #:rtc? #false."
                        (name (string-append
                               (%member-prefix)
                               (code:event-name trigger)))
-                       (arguments arguments)))))))
+                       (arguments arguments))
+                      (sm:call
+                       (name "dzn_update")))))))
       (sm:method (struct component)
                  (type "void")
                  (name (code:event-slot-name trigger))
