@@ -429,6 +429,7 @@ REGRESSION_TESTS =				\
  %D%/shell_injected				\
  %D%/simple.space				\
  %D%/simplify_guards				\
+ %D%/space.foreign				\
  %D%/space.import_interface_shadow		\
  %D%/space.interface_shadow			\
  %D%/space.space				\

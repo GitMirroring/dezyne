@@ -1,0 +1,6 @@
+;;; -*- scheme -*-
+((skip ("c:build"
+        "cs:build"
+        "javascript:build"
+        "scheme:build"))
+ (comment "partial namespace"))
