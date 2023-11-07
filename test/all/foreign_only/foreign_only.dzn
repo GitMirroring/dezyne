@@ -31,17 +31,21 @@ extern double $double$;
 interface foreign_only
 {
   in void hello (int i, double d);
-  in void cruel ();
+  out void cruel ();
   out void world (int i, double d);
   in void bye ();
   behavior
   {
     bool idle = true;
     [idle] {
+      on hello: {idle = false; cruel; world;}
+      on hello: {idle = false; cruel;}
       on hello: {idle = false; world;}
-      on cruel: idle = false;
+      on hello: idle = false;
     }
     [!idle] {
+      on inevitable: {idle = true; cruel; world;}
+      on inevitable: {idle = true; cruel;}
       on inevitable: {idle = true; world;}
       on bye: idle = true;
     }

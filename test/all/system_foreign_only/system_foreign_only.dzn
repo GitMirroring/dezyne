@@ -34,6 +34,7 @@ component proxy
   behavior
   {
     on p.hello (i,d): r.hello (i,d);
+    on r.cruel (): p.cruel ();
     on r.world (i,d): p.world (i,d);
     on p.bye (): r.bye ();
   }

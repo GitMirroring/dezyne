@@ -24,19 +24,46 @@
 
 struct foreign: public skel::foreign
 {
+  int scenario;
   foreign (dzn::locator const& locator)
     : skel::foreign (locator)
+    , scenario (0)
   {}
   void port_hello (int i, double d)
   {
-    port_world (i, d);
-  }
-  void port_cruel ()
-  {
-    dzn_locator.get<dzn::pump> ().handle(reinterpret_cast<size_t>(this), 0, [this]
-    {
-      this->port_world (0, 0);
-    });
+    switch (scenario++)
+      {
+      case 0:
+      port_world (i, d);
+      break;
+    case 1:
+      dzn_locator.get<dzn::pump> ().handle (reinterpret_cast<size_t> (this), 0, [this,i,d]
+      {
+        this->port_cruel (); this->port_world (i, d);
+      });
+      break;
+    case 2:
+      port_cruel ();
+      port_world (i, d);
+      break;
+    case 3:
+      dzn_locator.get<dzn::pump> ().handle (reinterpret_cast<size_t> (this), 0, [this]
+      {
+        this->port_cruel ();
+      });
+      break;
+    case 4:
+      port_world (i, d);
+      break;
+    case 5:
+      dzn_locator.get<dzn::pump> ().handle (reinterpret_cast<size_t> (this), 0, [this,i,d]
+      {
+        this->port_world (i, d);
+      });
+      break;
+    default:
+      assert (!"trace mismatch");
+    }
   }
   void port_bye () {}
 };

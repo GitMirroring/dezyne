@@ -26,6 +26,10 @@ static void
 connect_ports (dzn::container< ::foreign, std::function<void ()>>& c)
 {
   dzn::debug.rdbuf () && dzn::debug << c.dzn_meta.name << std::endl;
+  c.system.port.out.cruel = [&] ()
+    {
+      c.match ("port.cruel");
+    };
   c.system.port.out.world = [&] (int, double)
     {
       c.match ("port.world");
@@ -43,12 +47,6 @@ event_map (dzn::container< ::foreign, std::function<void ()>>& c)
             {
               c.match ("port.hello");
               c.system.port.in.hello (0, 1);
-              c.match ("port.return");
-            }}
-      ,   {"port.cruel",[&] ()
-            {
-              c.match ("port.cruel");
-              c.system.port.in.cruel ();
               c.match ("port.return");
             }}
       ,   {"port.bye",[&] ()
