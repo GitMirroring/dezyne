@@ -45,6 +45,7 @@
   #:use-module (srfi srfi-43)
 
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 

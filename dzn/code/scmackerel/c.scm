@@ -505,7 +505,7 @@
         ,connect))))
 
 (define-method (interface->statements (o <interface>))
-  ((perfect-funcq interface->sm:statements-unmemoized) o))
+  ((ast:perfect-funcq interface->sm:statements-unmemoized) o))
 
 (define-method (model->header-statements (o <interface>))
   (c:include-guard o `(,(c:typedef o)
@@ -924,7 +924,7 @@
             (defer-arguments-struct)))))
 
 (define-method (component-model->statements (o <component-model>))
-  ((perfect-funcq component-model->sm:statements-unmemoized) o))
+  ((ast:perfect-funcq component-model->sm:statements-unmemoized) o))
 
 (define-method (model->header-statements (o <component>))
   (let ((interface-includes (code:interface-include* o)))
@@ -1048,7 +1048,7 @@
             ,@(append-map c:injected-binding->connect injected-bindings))))))))
 
 (define-method (system->statements (o <system>))
-  ((perfect-funcq system->sm:statements-unmemoized) o))
+  ((ast:perfect-funcq system->sm:statements-unmemoized) o))
 
 (define-method (model->header-statements (o <system>))
   (let* ((component-includes (code:component-include* o))

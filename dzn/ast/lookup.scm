@@ -52,6 +52,8 @@
             ast:void
             ast:lookup
             ast:lookup-variable
+            ast:perfect-funcq
+            ast:pure-funcq
             ast:unique-import*))
 
 ;;;
@@ -167,6 +169,39 @@
 
 
 ;;;
+;;; ast:pure-funcq
+;;;
+(define funcq-hash (@@ (ice-9 poe) funcq-hash))
+(define funcq-assoc (@@ (ice-9 poe) funcq-assoc))
+(define funcq-memo (@@ (ice-9 poe) funcq-memo))
+(define funcq-buffer (@@ (ice-9 poe) funcq-buffer))
+(define not-found (list 'not-found))
+
+(define ((ast:funcq funcq-memo) base-func)
+  (define (object->key o)
+    "Return a stable, i.e., memoizable key for O."
+    (match o
+      ((? string?)                      ;name
+       (string->symbol o))
+      (((and (? string?) o) ..1)        ;scope
+       (string->symbol (string-join o ".")))
+      (($ <scope.name>)                 ;name
+       (object->key (string-join (.ids o) ".")))
+      (_ o)))                           ;eq?-ness already stable.
+  (lambda args
+    (let* ((key (cons base-func (map object->key args)))
+           (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
+      (funcq-buffer key)
+      (if (not (eq? cached not-found)) cached
+          (let ((val (apply base-func args)))
+            (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
+            val)))))
+
+(define ast:perfect-funcq (ast:funcq (make-hash-table 1021)))
+(define ast:pure-funcq (ast:funcq funcq-memo))
+
+
+;;;
 ;;; Lookup.
 ;;;
 (define (search-import-unmemoized root scope name import)
@@ -176,7 +211,7 @@
 
 (define (search-import scope name context)
   (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((perfect-funcq search-import-unmemoized) root scope name context)))
+    ((ast:perfect-funcq search-import-unmemoized) root scope name context)))
 
 (define (search-unmemoized root
                            scope name context)
@@ -196,7 +231,7 @@
 
 (define (search scope name context)
   (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((perfect-funcq search-unmemoized) root scope name context)))
+    ((ast:perfect-funcq search-unmemoized) root scope name context)))
 
 (define (widen-to-parent-unmemoized root
                                     scope name context)
@@ -209,7 +244,7 @@
 
 (define (widen-to-parent scope name context)
   (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((perfect-funcq widen-to-parent-unmemoized) root scope name context)))
+    ((ast:perfect-funcq widen-to-parent-unmemoized) root scope name context)))
 
 (define (widen-to-imports-unmemoized root scope name context)
   (and context (is-a? context <root>)
@@ -218,7 +253,7 @@
 
 (define (widen-to-imports scope name context)
   (let ((root (or (as context <root>) (ast:parent context <root>))))
-    ((perfect-funcq widen-to-imports-unmemoized) root scope name context)))
+    ((ast:perfect-funcq widen-to-imports-unmemoized) root scope name context)))
 
 (define (search-or-widen-context scope name context)
   (or (search scope name context)
@@ -243,7 +278,7 @@ null) and return its CONTEXT."
            (name scope (ast:name+scope name)))
       (search-or-widen-context scope name context)))))
 
-(define ast:lookup-memoized (perfect-funcq ast:lookup-unmemoized))
+(define ast:lookup-memoized (ast:perfect-funcq ast:lookup-unmemoized))
 (define-method (ast:lookup (o <ast>) name)
   (let ((scope (or (as o <scope>) (ast:parent o <scope>)))
         (root (or (as o <root>) (ast:parent o <root>))))
@@ -297,7 +332,7 @@ null) and return its CONTEXT."
 (define (ast:lookup-variable-unmemoized root o name)
   (ast:lookup-variable o name (ast:statement-prefix o)))
 
-(define ast:lookup-variable-memoized (perfect-funcq ast:lookup-variable-unmemoized))
+(define ast:lookup-variable-memoized (ast:perfect-funcq ast:lookup-variable-unmemoized))
 (define-method (ast:lookup-variable (o <ast>) name)
   (define (path->key o)
     (string-join (map (compose number->string .id) (ast:path o)) "."))

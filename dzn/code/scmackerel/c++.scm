@@ -754,7 +754,7 @@ std::basic_ostream<Char, Traits> &")
         ,@to-enum))))
 
 (define-method (interface->statements (o <interface>))
-  ((perfect-funcq interface->sm:statements-unmemoized) o))
+  ((ast:perfect-funcq interface->sm:statements-unmemoized) o))
 
 (define-method (model->header-statements (o <interface>))
   (c++:include-guard o (interface->statements o)))
@@ -993,7 +993,7 @@ std::basic_ostream<Char, Traits> &")
     (code:->namespace o component)))
 
 (define-method (component-model->statements (o <component-model>))
-  ((perfect-funcq component-model->sm:statements-unmemoized) o))
+  ((ast:perfect-funcq component-model->sm:statements-unmemoized) o))
 
 (define-method (model->header-statements (o <component>))
   (let ((interface-includes (code:interface-include* o)))
@@ -1160,7 +1160,7 @@ std::basic_ostream<Char, Traits> &")
       (code:->namespace o system))))
 
 (define-method (system->statements (o <system>))
-  ((perfect-funcq system->sm:statements-unmemoized) o))
+  ((ast:perfect-funcq system->sm:statements-unmemoized) o))
 
 (define-method (model->header-statements (o <system>))
   (let* ((component-includes (code:component-include* o))
@@ -1370,7 +1370,7 @@ std::basic_ostream<Char, Traits> &")
       (code:->namespace o shell))))
 
 (define-method (shell-system->statements (o <system>))
-  ((perfect-funcq shell-system->sm:statements-unmemoized) o))
+  ((ast:perfect-funcq shell-system->sm:statements-unmemoized) o))
 
 (define-method (model->header-statements (o <shell-system>))
   (let* ((component-includes (code:component-include* o))

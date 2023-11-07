@@ -2239,7 +2239,7 @@
     (sm:mcrl2 (types types) (processes processes))))
 
 (define interface->scmackerel
-  (perfect-funcq interface->scmackerel-unmemoized))
+  (ast:perfect-funcq interface->scmackerel-unmemoized))
 
 (define-method (model->scmackerel (o <interface>))
   (makreel:proc-list (.behavior o))
