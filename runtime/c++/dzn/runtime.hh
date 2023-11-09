@@ -372,8 +372,8 @@ inline std::uint32_t hash (const std::vector<char const *> &r, std::uint32_t h)
   for (auto s : r)
     while (*s)
       {
-        h = h + (*s++ - b) * pow;
         pow *= p;
+        h = h + (*s++ - b) * pow;
       }
   return h;
 }
