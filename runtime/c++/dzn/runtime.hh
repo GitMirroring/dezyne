@@ -367,8 +367,15 @@ inline std::uint32_t hash (const std::vector<char const *> &r, std::uint32_t h)
   constexpr std::uint32_t b = 47;
   // smallest prime encompassing [0-9a-zA-Z] numerically
   constexpr std::uint32_t p = 79;
+  std::string n = std::to_string(h);
+  char const* s = n.c_str();
   std::uint32_t pow = 1;
-  h *= p;
+  h = 0;
+  while (*s)
+    {
+      pow *= p;
+      h = h + (*s++ - b) * pow;
+    }
   for (auto s : r)
     while (*s)
       {

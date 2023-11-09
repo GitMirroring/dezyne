@@ -495,10 +495,12 @@ std::basic_ostream<Char, Traits> &")
     (define (value->init value)
       (simple-format #f "~s" (.value value)))
 
-    (define (dzn:hash s h)
+    (define (dzn:hash r h)
       (let ((overflow 4294967296)
             (b 47)
-            (p 79))
+            (p 79)
+            (h.pow (cons 0 1))
+            (r (cons (number->string h) r)))
         (car
          (fold
           (lambda (s h.pow)
@@ -513,7 +515,8 @@ std::basic_ostream<Char, Traits> &")
                           overflow)))
                  (cons h pow)))
              h.pow s))
-          (cons (* h p) 1) s))))
+          h.pow r))))
+
 
     (define (event->sm:switch-case transition interface-shared)
       (let* ((prefix (.prefix transition))
