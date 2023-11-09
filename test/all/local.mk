@@ -338,6 +338,7 @@ REGRESSION_TESTS =				\
  %D%/generalized_integer			\
  %D%/generalized_integer_temporaries		\
  %D%/hash_collision				\
+ %D%/hash_collision2				\
  %D%/hello_blocking_asynchronous_sync_out	\
  %D%/hello_blocking_multiple_out		\
  %D%/hello_check_bindings			\
