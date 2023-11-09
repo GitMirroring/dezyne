@@ -1,0 +1,50 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// This model leads to a duplicate case label in the interface switch
+// statement, due to a hash collision caused by not increasing the pow
+// value after initial use in the hash function.
+//
+// Code:
+
+interface ihello
+{
+  in void _3 ();
+  in void _1 ();
+
+  behavior
+  {
+    bool idle = true;
+    [idle]  on _3: {idle = !idle;}
+    [!idle] on _1: {idle = !idle;}
+  }
+}
+
+component hash_collision
+{
+  provides ihello h;
+
+  behavior
+  {
+    on h._3 (): {}
+    on h._1 (): {}
+  }
+}
