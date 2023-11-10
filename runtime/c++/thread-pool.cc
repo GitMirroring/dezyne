@@ -142,7 +142,7 @@ static thread::pool &thread_pool ()
   static thread::pool tp;
   return tp;
 }
-std::future<void> async (std::function<void ()> const &work)
+std::future<void> std_async (std::function<void ()> const &work)
 {
   return thread_pool ().async (work);
 }

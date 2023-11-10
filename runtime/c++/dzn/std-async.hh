@@ -21,8 +21,8 @@
 //
 // Code:
 
-#ifndef DZN_ASYNC_HH
-#define DZN_ASYNC_HH
+#ifndef DZN_STD_ASYNC_HH
+#define DZN_STD_ASYNC_HH
 
 #include <functional>
 #include <future>
@@ -32,7 +32,7 @@
 
 namespace dzn
 {
-std::future<void> async (std::function<void ()> const &);
+std::future<void> std_async (std::function<void ()> const &);
 }
 
 #endif

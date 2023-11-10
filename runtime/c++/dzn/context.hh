@@ -26,7 +26,7 @@
 #define DZN_CONTEXT_HH
 
 #include <dzn/config.hh>
-#include <dzn/async.hh>
+#include <dzn/std-async.hh>
 
 #include <cassert>
 #include <condition_variable>
@@ -77,7 +77,7 @@ public:
     , work ()
     , mutex ()
     , condition ()
-    , future (dzn::async ([this]
+    , future (dzn::std_async ([this]
     {
       try
         {
