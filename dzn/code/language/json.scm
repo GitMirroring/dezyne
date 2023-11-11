@@ -101,7 +101,8 @@
 ;;; Entry points.
 ;;;
 (define* (system-diagram root #:key dir model)
-  (let* ((root (ast:filter-model root model))
+  (let* ((root (if (not model) root
+                   (ast:filter-model root model)))
          (root (remove-behavior root))
          (root (if (%locations?) root (remove-location root))))
     (x:source (.node root))))
