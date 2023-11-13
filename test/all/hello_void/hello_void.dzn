@@ -1,0 +1,51 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Different void replies
+//
+// Code:
+
+interface ihello
+{
+  in void hello1 ();
+  in void hello2 ();
+  in void hello3 ();
+  in void hello4 ();
+  in void hello5 ();
+  behaviour
+  {
+    on hello1,hello2,hello3,hello4,hello5: {}
+  }
+}
+
+component hello_void
+{
+  provides blocking ihello h;
+  requires ihello w;
+  behavior
+  {
+    on h.hello1 (): {}
+    on h.hello2 (): reply();
+    on h.hello3 (): {w.hello3 (); reply();}
+    on h.hello4 (): reply(w.hello4 ());
+    blocking on h.hello5 (): reply(w.hello5 ());
+  }
+}
