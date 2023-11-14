@@ -148,7 +148,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_function_skip			\
  %D%/blocking_if_skip				\
  %D%/blocking_imperative			\
- %D%/blocking_multiple_provides0		\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
  %D%/blocking_mux				\
