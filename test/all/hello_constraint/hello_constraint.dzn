@@ -28,12 +28,17 @@ interface ihello
 {
   in void hello ();
   in void bye ();
+  out void world ();
 
   behaviour
   {
     bool idle = true;
     [idle] on hello: idle = false;
-    [!idle] on bye: idle = true;
+    [!idle]
+    {
+      on inevitable: {idle = true; world;}
+      on bye: idle = true;
+    }
   }
 }
 
@@ -44,6 +49,7 @@ component hello_constraint
   behavior
   {
     on h.hello (): w.hello ();
+    on w.world (): h.world ();
     on h.bye (): w.bye ();
   }
 }
