@@ -34,6 +34,7 @@
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
+  #:use-module (dzn code util)
   #:use-module (dzn command-line)
   #:use-module (dzn templates)
 
@@ -104,8 +105,10 @@
   (let* ((root (if (not model) root
                    (ast:filter-model root model)))
          (root (remove-behavior root))
-         (root (if (%locations?) root (remove-location root))))
-    (x:source (.node root))))
+         (root (if (%locations?) root (remove-location root)))
+         (file-name (code:root-file-name root dir ".json"))
+         (generate (cute x:source (.node root))))
+    (code:dump generate #:file-name file-name)))
 
 (define* (ast-> ast #:key dir model)
   (let ((model (ast:get-model ast model)))

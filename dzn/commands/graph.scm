@@ -150,6 +150,7 @@ Generate graph from a Dezyne model
                                  #:returns? returns?))
           (else (code ast
                       #:ast-> 'system-diagram
+                      #:dir "-"
                       #:model model
                       #:language language
                       #:locations? locations?)))))
