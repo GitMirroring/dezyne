@@ -159,7 +159,8 @@
 
 (define-method (wfc-external (o <port>))
   (let* ((model (ast:parent o <model>))
-         (shell? (equal? (ast:dotted-name model) (%shell))))
+         (shell? (and (%shell)
+                      (member (ast:dotted-name model) (%shell)))))
     (if (or (not shell?) (ast:external? o)) '()
         `(,(wfc-error
             o

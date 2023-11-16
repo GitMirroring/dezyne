@@ -125,7 +125,7 @@ Languages: ~a
                                                        (%queue-size-external)))
          (no-constraint? (command-line:get 'no-constraint))
          (no-unreachable? (command-line:get 'no-unreachable))
-         (shell (option-ref options 'shell #f)))
+         (shell (multi-opt options 'shell)))
     (parameterize ((%calling-context calling-context)
                    (%no-constraint? no-constraint?)
                    (%language language)

@@ -738,7 +738,7 @@
 
 (define (code:annotate-shells o)
   (let ((shell? (and (is-a? o <system>)
-                     (equal? (%shell) (string-join (ast:full-name o) ".")))))
+                     (member (ast:dotted-name o) (%shell)))))
     (if (not shell?) o
         (let ((shell (make <shell-system>
                        #:ports (.ports o)

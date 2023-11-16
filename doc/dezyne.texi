@@ -2784,8 +2784,8 @@ For other language backends, this options is ignored.
 
 @item --shell=@var{model}
 @itemx -s @var{model}
-Generate thread-safe system shell for model @var{model}.
-@xref{Thread-safe Shell}.
+Generate thread-safe system shell for model @var{model}.  This option
+can be used multiple times.  @xref{Thread-safe Shell}.
 
 @end table
 
