@@ -126,11 +126,11 @@
     (let ((root (cs:normalize root)))
       (let ((generator (sm:indenter (cute print-code-ast root)))
             (file-name (code:root-file-name root dir ".cs")))
-        (code:dump root generator #:file-name file-name))
+        (code:dump generator #:file-name file-name))
 
       (when model
         (let ((model (ast:get-model root model)))
           (when (is-a? model <component-model>)
             (let ((generator (sm:indenter (cute print-main-ast model)))
                   (file-name (code:source-file-name "main" dir ".cs")))
-              (code:dump root generator #:file-name file-name))))))))
+              (code:dump generator #:file-name file-name))))))))

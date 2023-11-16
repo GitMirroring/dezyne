@@ -121,4 +121,4 @@
     (let* ((generator (sm:indenter (cute x:header root)))
            (base (basename (ast:source-file root) ".dzn"))
            (file-name (code:source-file-name base dir "_exception_forwarding.hh")))
-      (code:dump root generator #:file-name file-name))))
+      (code:dump generator #:file-name file-name))))

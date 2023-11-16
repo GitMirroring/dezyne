@@ -606,4 +606,4 @@ and \"POST\" 'post in GRAMMAR."
   "Entry point."
   (let ((file-name (code:root-file-name root dir ".dzn"))
         (generator (sm:indenter (cute print-ast root) #:gnu? #f)))
-    (code:dump root generator #:file-name file-name)))
+    (code:dump generator #:file-name file-name)))

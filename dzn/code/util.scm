@@ -48,7 +48,7 @@
   (let ((base (basename (ast:source-file root) ".dzn")))
     (code:source-file-name base dir ext)))
 
-(define* (code:dump root generate #:key file-name)
+(define* (code:dump generate #:key file-name)
   (cond
    ((equal? file-name "-")
     (generate))

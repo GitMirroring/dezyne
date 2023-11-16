@@ -183,16 +183,16 @@
     (let ((root (code:normalize+determinism root)))
       (let ((generator (sm:indenter (cute print-header-ast root)))
             (file-name (code:root-file-name root dir ".h")))
-        (code:dump root generator #:file-name file-name))
+        (code:dump generator #:file-name file-name))
 
       (when (c:generate-source? root)
         (let ((generator (sm:indenter (cute print-code-ast root)))
               (file-name (code:root-file-name root dir ".c")))
-          (code:dump root generator #:file-name file-name)))
+          (code:dump generator #:file-name file-name)))
 
       (when model
         (let ((model (ast:get-model root model)))
           (when (is-a? model <component-model>)
             (let ((generator (sm:indenter (cute print-main-ast model)))
                   (file-name (code:source-file-name "main" dir ".c")))
-              (code:dump root generator #:file-name file-name))))))))
+              (code:dump generator #:file-name file-name))))))))
