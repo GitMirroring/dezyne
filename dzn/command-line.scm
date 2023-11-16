@@ -101,7 +101,11 @@
       0))
 
 (define (dzn:verbosity)
-  (dzn:multi-opt 'debug))
+  (or (and (pair? (command-line))
+           (member ((compose basename car command-line))
+                   '("dzn" ".dzn-real"))
+           (and=> (dzn:multi-opt 'verbose) length))
+      0))
 
 (define* (command:command-line #:optional (options (dzn:options)))
   (option-ref options '() '()))

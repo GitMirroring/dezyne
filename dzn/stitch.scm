@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2022, 2023, 2024 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -35,6 +35,7 @@
   #:use-module (dzn command-line) ;dzn:debugity
   #:use-module (dzn lts)
   #:use-module (dzn misc)
+  #:use-module (dzn pipe)
   #:use-module (dzn verify pipeline)
 
   #:export (model->lts))
@@ -52,9 +53,12 @@
             "Stitching ~a as ~a to the blob...\n"
             (makreel:unticked-dotted-name (.type instance))
             (makreel:unticked-dotted-name instance)))
-  (let* ((result (compose-parallel
-                  (mark-common blob #:alphabet alphabet)
-                  (mark-common lts #:alphabet alphabet))))
+  (let* (;;(lts-text0 (warn 'lts0 (with-output-to-string (cut display-lts blob))))
+         ;;(lts-text1 (warn 'lts1 (with-output-to-string (cut display-lts lts))))
+         (result (if #t (compose-parallel-external blob lts alphabet)
+                        (compose-parallel
+                          (mark-common blob #:alphabet alphabet)
+                          (mark-common lts #:alphabet alphabet)))))
     (when verbose?
       (format (current-error-port) "...done\n"))
     (when (> (dzn:debugity) 1)
@@ -177,7 +181,7 @@
                  (provides (filter (compose (cute ast:equal? <> instance)
                                             .instance .right)
                                    internal))
-                 (alphabet (map (compose instance-name .right) requires))
+                 (alphabet (map (cute string-append <> ".") (map (compose instance-name .right) requires)))
                  (provide-ports (map (compose .port .right) provides))
                  (lts (instance->lts instance #:ports provide-ports))
                  (requires-ports (map (compose instance-name .left) requires))
@@ -207,9 +211,26 @@
          (todo (map cons instances
                     (map (compose length requires-bindings) instances)))
          (blob (stitch #() bottom-instances #:todo todo)))
-    (log-debug 'rename-ports
-      (cute rename-ports blob))))
+    (log-debug 'rename-ports (cute rename-ports blob))))
 
+(define (compose-parallel-external lts0 lts1 common-events)
+  (if (zero? (vector-length lts0))
+    lts1
+    (let* ((incoming-events0 (incoming-events-lts lts0))
+           (incoming-events1 (incoming-events-lts lts1))
+           (incoming-events2 (lset-difference equal? (append incoming-events0 incoming-events1) common-events))
+           (option-incoming-events0 (string-append "--in-actions-first=" (string-join incoming-events0 ",")))
+           (option-incoming-events1 (string-append "--in-actions-second=" (string-join incoming-events1 ",")))
+           (option-common-events (string-append "--common-actions=" (string-join common-events ",")))
+           (lts-text0 (with-output-to-string (cut display-lts lts0)))
+           (lts-text1 (with-output-to-string (cut display-lts lts1)))
+           (result status (pipeline->string
+                            (list `("/home/paul/mCRL2-build/stage/bin/ltsparallel" "--in1=aut" "--in2=aut" 
+                             ,option-incoming-events0 ,option-incoming-events1 ,option-common-events
+                             "-" "-" "-"))
+                            #:input (string-append lts-text0 "\n\x04\n" lts-text1)))
+           (lts (annotate-node-rtc (aut-text->lts result) #:incoming-events incoming-events2)))
+        lts)))
 
 ;;;
 ;;; Entry point.

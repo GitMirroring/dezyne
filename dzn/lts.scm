@@ -75,6 +75,7 @@
             edge-from
             edge-to
             edge?
+            incoming-events-lts
             initial
             lts->alphabet
             lts->nodes
@@ -381,7 +382,7 @@
   (let ((alphabet (map make-shared-string alphabet)))
     (define (common? label prefix)
       (or (eq? prefix label)
-          (and (string-prefix? (string-append prefix ".") label)
+          (and (string-prefix? prefix label)
                (not (or (string-suffix? "<blocking>" label)
                         (string-suffix? "<blocked>" label))))))
     (define (mark-edge edge)
@@ -729,6 +730,29 @@ from LABELS."
               (set-field start-node (node-distance) #f))))
       (vector-map fubar lts))))
 
+(define* (remove-modeling lts #:key ports)
+  (let* ((ports (and ports (map make-shared-string ports)))
+         (modeling-labels
+          (and ports
+               (append (map (cute string-append <> ".optional") ports)
+                       (map (cute string-append <> ".inevitable") ports))))
+         (modeling-labels (map make-shared-string modeling-labels))
+         (modeling-edge? (if (not modeling-labels) modeling?
+                             (compose (cute memq <> modeling-labels) edge-label))))
+  (define (relay-modeling-edges i node)
+    (let* ((state (node-state node))
+           (edges (node-edges node))
+           (modeling-edges (filter modeling-edge? edges))
+           (non-modeling-edges (filter (negate modeling-edge?) edges))
+           (nodes-relay (map (lambda (edge) (vector-ref lts (edge-to edge) )) modeling-edges))
+           (relayed-edges (map (lambda (edge) (set-field edge (edge-from) state)) (append-map node-edges nodes-relay)))
+           (rtc-relayed (or (node-color node) (any node-color nodes-relay))))
+      (set-fields node
+                 ((node-edges) (append non-modeling-edges relayed-edges))
+                 ((node-color) rtc-relayed))))
+  (vector-map relay-modeling-edges lts)))
+
+
 
 ;;;
 ;;; System composition.
@@ -757,6 +781,13 @@ from LABELS."
         (set-field node (node-color) rtc?)))
     (vector-map-one annotate-node lts)))
 
+(define (incoming-events-lts lts)
+  (define (node-incoming-events node)
+    (if (node-color node)
+        (map edge-label (node-edges node))
+        '()))
+  (delete %tau (delete-duplicates (append-map node-incoming-events (vector->list lts)))))
+
 (define* (annotate-collateral-blocked-out lts #:key provides-out-events)
   (let ((provides-out-events (map make-shared-string provides-out-events)))
     (define (annotate-edge edge)
@@ -783,6 +814,10 @@ from LABELS."
     (define (common? edge) (edge-tau? edge))
     (define (blocked-in-call? node)
       (and (not (node-color node)) (find common? (node-edges node))))
+    (define (report-size size)
+      (when (equal? 0 (modulo size 1000))
+        (when (> (dzn:verbosity) 1)
+          (display (format #f "  ~a\n" size) (current-error-port)))))
     (define* (step from-node edge state0 state1 active #:key lts-deadlocked)
       (let* ((node0 (vector-ref lts0 state0))
              (node1 (vector-ref lts1 state1))
@@ -798,6 +833,7 @@ from LABELS."
                        (let ((new (make-node result-size '() '() #f rtc #f -1 #f)))
                          (hash-set! lts node-key new)
                          (set! result-size (1+ result-size))
+                         (report-size result-size)
                          (set! result (cons new result))
                          new))))
         (when (> (dzn:debugity) 2)
