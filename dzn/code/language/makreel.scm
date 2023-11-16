@@ -41,6 +41,7 @@
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code scmackerel makreel)
+  #:use-module (dzn code util)
   #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -659,9 +660,12 @@ transformations."
       (scmackerel:display sm))))
 
 (define* (ast-> ast #:key dir model)
-  (let ((root (makreel:normalize ast))
-        (init (command-line:get 'init)))
-    (if model (makreel:model->makreel root (makreel:get-model root model))
-        (root-> root))
-    (when init
-      (display (makreel:init-process init)))))
+  (let* ((root (makreel:normalize ast))
+         (init (command-line:get 'init))
+         (file-name (code:root-file-name root dir ".mcrl2")))
+    (define (generate)
+      (if model (makreel:model->makreel root (makreel:get-model root model))
+          (root-> root))
+      (when init
+        (display (makreel:init-process init))))
+    (code:dump generate #:file-name file-name)))
