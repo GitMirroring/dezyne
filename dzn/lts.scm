@@ -98,6 +98,7 @@
             remove-modeling
             remove-state-loops
             remove-tag-edges
+            run-trace
             transform-labels
             write-lts-tmp))
 
@@ -875,6 +876,58 @@ from LABELS."
              (let ((initial (set-field initial (node-initial?) #t)))
                (list->vector (cons initial rest))))
             (_ #()))))))
+
+;;;
+;;; Run trace on lts.
+;;;
+(define (run-trace lts trace)
+  (define (hide-internal label)
+    (if (or (string-suffix? "<flush>" label)
+            (string-suffix? ".inevitable" label)
+            (string-suffix? ".optional" label)
+            (equal? "<blocked>" label))
+        %tau
+        label))
+  (let* ((trace (map make-shared-string trace))
+         (trace (filter (compose not (cute eq? %tau <>) hide-internal) trace))
+         (done-step-args (make-hash-table))
+         (result-matched '())
+         (result-error ""))
+    (define (line-count result)
+      (length (string-split result #\n)))
+    (define (report-match result)
+      (set! result-matched (cons result result-matched)))
+    (define (report-error result)
+      (when (> (line-count result) (line-count result-error))
+        (set! result-error result)))
+    (define (step state trace result)
+      (let ((edges (node-edges (vector-ref lts state))))
+        (define (match-event state event trace result)
+          (let ((edges (filter (compose (cute eq? event <>) hide-internal edge-label) edges)))
+            (if (pair? edges)
+              (for-each
+                (lambda (edge)
+                  (let* ((indent (if (eq? event %tau) "  " ""))
+                         (result-step (format #f "~a~a: ~a -> ~a\n" indent (edge-label edge) (edge-from edge) (edge-to edge))))
+                    (step (edge-to edge) trace (string-append result result-step))))
+                edges)
+              #f)))
+        (let* ((key (list state trace))
+               (done (hash-ref done-step-args key #f)))
+          (hash-set! done-step-args key #t)
+          (if done
+            (report-error (format #f "~alivelock in state ~a\n" result state))
+            (let ((res-event (if (pair? trace) (match-event state (car trace) (cdr trace) result) #f))
+                  (res-tau (match-event state %tau trace result)))
+              (when (and (not (or res-event res-tau)) (pair? trace))
+                (report-error (format #f "~ain state ~a event '~a' not found in: ~a\n"
+                                          result state (car trace) (string-join (map edge-label edges) " "))))
+              (when (and (not res-tau) (null? trace))
+                (report-match (format #f "~aeligible: ~a\n" result (string-join (map edge-label edges) " ")))))))))
+    (step (initial lts) trace "")
+    (if (null? result-matched)
+      (format (current-error-port) "No match found. Longest partial match:\n~a" result-error)
+      (format #t "~a matches found:\n~a" (length result-matched) (string-join result-matched "\n")))))
 
 ;;;
 ;;; Trace generation.
