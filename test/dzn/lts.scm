@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2019, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -251,6 +251,40 @@
          (not (eq? #f (assert-nondeterministic nondet-lts-4 '("pp'in(I'in'ia)")))))))
 (test-assert (test:assert-nondeterministic))
 
+(define (test:run-trace)
+  (define test-lts-run-trace
+    (make-lts 0
+              10
+              (list (make-edge 0 "aap" 1)
+                    (make-edge 0 "aap" 8)
+                    (make-edge 1 "noot" 8)
+                    (make-edge 1 "noot" 2)
+                    (make-edge 2 "tau" 3)
+                    (make-edge 3 "mies" 4)
+                    (make-edge 3 "tau" 5)
+                    (make-edge 5 "mies" 6)
+                    (make-edge 6 "mies" 7)
+                    (make-edge 7 "tau" 8)
+                    (make-edge 8 "wim" 9))))
+    (define (run trace)
+      (with-output-to-string (cute run-trace test-lts-run-trace trace)))
+    (define (run-error trace)
+      (with-error-to-string (cute run-trace test-lts-run-trace trace)))
+    (define (compare actual expected)
+      (let ((res (equal? actual expected)))
+        (when (not res)
+          (format #t "diff:\nactual:\n~a\n====\nexpected:\n~a\n====\n" actual expected))
+        res))
+    (and (compare
+           (run (list "aap"))
+           "2 matches found:\naap: 0 -> 1\neligible: noot noot\n\naap: 0 -> 8\neligible: wim\n")
+         (compare (run (list "aap" "noot"))
+           "2 matches found:\naap: 0 -> 1\nnoot: 1 -> 8\neligible: wim\n\naap: 0 -> 1\nnoot: 1 -> 2\n  tau: 2 -> 3\n  tau: 3 -> 5\neligible: mies\n")
+         (compare (run (list "aap" "noot" "mies"))
+           "2 matches found:\naap: 0 -> 1\nnoot: 1 -> 2\n  tau: 2 -> 3\n  tau: 3 -> 5\nmies: 5 -> 6\neligible: mies\n\naap: 0 -> 1\nnoot: 1 -> 2\n  tau: 2 -> 3\nmies: 3 -> 4\neligible: \n")
+         (compare (run-error (list "aap" "mies"))
+           "No match found. Longest partial match:\naap: 0 -> 1\nin state 1 event 'mies' not found in: noot noot\n")))
+(test-assert (test:run-trace))
 
 (define (test:main)
   (main '("command" "--livelock"
