@@ -49,7 +49,7 @@
     (display #\newline (current-error-port)))
   (when verbose?
     (format (current-error-port)
-            "Stitching ~a as ~a  to the blob...\n"
+            "Stitching ~a as ~a to the blob...\n"
             (makreel:unticked-dotted-name (.type instance))
             (makreel:unticked-dotted-name instance)))
   (let* ((result (compose-parallel
@@ -61,7 +61,8 @@
       (display "par:\n" (current-error-port))
       (display-lts-rtc result #:port (current-error-port))
       (display #\newline (current-error-port)))
-    (write-lts-tmp (mark-common result #:alphabet alphabet))
+    (when (> (dzn:debugity) 0)
+      (write-lts-tmp (mark-common result #:alphabet alphabet)))
     result))
 
 (define-method (instance-name (instance <instance>) port-name)
@@ -131,9 +132,9 @@
          (sutify (instance-name (.right binding))
                  (.instance (.right binding)))))
        (else identity)))
-    (define (transform-label label)
+    (define transform-label
       (let ((transformations (map transform-binding bindings)))
-        ((apply compose transformations) label)))
+        (apply compose transformations)))
     (transform-labels transform-label lts))
   (define (hide-binding binding lts)
     (hide lts #:hide-prefix (instance-name (.right binding))))
