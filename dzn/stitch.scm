@@ -106,6 +106,13 @@
   (let ((port-name (makreel:unticked-name port)))
     (map (cute string-append port-name "." <>) (list "optional" "inevitable"))))
 
+(define (log-debug msg thunk)
+  (let ((debug? #t)) ;;(dzn:command-line:get 'debug #f)))
+    (when debug? (format (current-error-port) "~a...\n" msg))
+    (let ((res (thunk)))
+      (when debug? (format (current-error-port) "...done\n"))
+      res)))
+
 (define* (stitch root ports instances bindings #:key verbose?)
   (define (requires-bindings instance)
     (let ((bindings (filter (compose (cute ast:equal? <> instance)
@@ -139,13 +146,15 @@
   (define (hide-binding binding lts)
     (hide lts #:hide-prefix (instance-name (.right binding))))
   (define (hide-bindings bindings lts)
-    (fold hide-binding lts bindings))
+    (log-debug 'hide-bindings
+      (cute fold hide-binding lts bindings)))
   (define (rename-binding binding lts)
     (let ((from (instance-name (.left binding)))
           (to (instance-name (.right binding))))
       (rename lts #:from from #:to to)))
   (define (rename-bindings bindings lts)
-    (fold rename-binding lts bindings))
+    (log-debug 'rename-bindings
+      (cute fold rename-binding lts bindings)))
   (define* (instance->lts instance #:key ports)
     (let* ((events (append-map (cut port-events <> #:predicate ast:out?)
                                ports))
@@ -172,7 +181,7 @@
                  (provide-ports (map (compose .port .right) provides))
                  (lts (instance->lts instance #:ports provide-ports))
                  (requires-ports (map (compose instance-name .left) requires))
-                 (lts (remove-modeling lts #:ports requires-ports))
+                 (lts (log-debug 'remove-modeling (cute remove-modeling lts #:ports requires-ports)))
                  (lts (rename-bindings requires lts))
                  (blob (compose-par instance blob lts #:alphabet alphabet
                                     #:verbose? verbose?))
@@ -198,7 +207,8 @@
          (todo (map cons instances
                     (map (compose length requires-bindings) instances)))
          (blob (stitch #() bottom-instances #:todo todo)))
-    (rename-ports blob)))
+    (log-debug 'rename-ports
+      (cute rename-ports blob))))
 
 
 ;;;

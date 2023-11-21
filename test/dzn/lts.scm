@@ -275,8 +275,7 @@
         (when (not res)
           (format #t "diff:\nactual:\n~a\n====\nexpected:\n~a\n====\n" actual expected))
         res))
-    (and (compare
-           (run (list "aap"))
+    (and (compare (run (list "aap"))
            "2 matches found:\naap: 0 -> 1\neligible: noot noot\n\naap: 0 -> 8\neligible: wim\n")
          (compare (run (list "aap" "noot"))
            "2 matches found:\naap: 0 -> 1\nnoot: 1 -> 8\neligible: wim\n\naap: 0 -> 1\nnoot: 1 -> 2\n  tau: 2 -> 3\n  tau: 3 -> 5\neligible: mies\n")
