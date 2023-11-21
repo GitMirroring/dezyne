@@ -1,0 +1,36 @@
+(header ((h) ihello provides) ((sut) determinism_optional component) ((w) iworld requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+test/all/determinism_optional/determinism_optional.dzn:69:5: error: component "determinism_optional" is non-deterministic
+test/all/determinism_optional/determinism_optional.dzn:68:5: error: component "determinism_optional" is non-deterministic
+... <- <external>.w.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.world <- ...
+sut.w.bye -> ...
+... -> <external>.w.bye
+... <- <external>.w.cruel
+sut.<q> <- ...
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.<q>
+sut.w.cruel <- ...
+... <- sut.h.cruel
+<external>.h.cruel <- ...
+<postponed-match>
+<non-deterministic>
+(state ((h) (idle . false)) ((sut)) ((w) (idle . true)))
+test/all/determinism_optional/determinism_optional.dzn:69:5: error: component "determinism_optional" is non-deterministic
+test/all/determinism_optional/determinism_optional.dzn:68:5: error: component "determinism_optional" is non-deterministic
+(trail "w.world" "w.bye" "w.cruel" "w.return" "h.cruel" "<postponed-match>" "<non-deterministic>")
+(labels "h.hello" "h.bye" "w.cruel" "w.world")
+(eligible)

@@ -299,6 +299,7 @@ REGRESSION_TESTS =				\
  %D%/defer_typed_call				\
  %D%/determinism_deadlock			\
  %D%/determinism_modeling			\
+ %D%/determinism_optional			\
  %D%/determinism_silent				\
  %D%/dollars					\
  %D%/double_collateral_blocking_shell		\
