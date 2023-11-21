@@ -61,7 +61,7 @@
             <livelock-error>
             <match-error>
             <missing-reply-error>
-            <postponed-match-error>
+            <postponed-match>
             <queue-full-error>
             <range-error>
             <refusals-error>

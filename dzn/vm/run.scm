@@ -149,7 +149,18 @@
   "Return #t when TRACES are a nondeterministic set, i.e.: at least two
 valid PCs that are executing an imperative statement."
   (let* ((pcs (map car traces))
-         (pcs (filter (negate .status) pcs)))
+         (pcs (filter (negate (is-status? <error>)) pcs))
+         (pcs (filter (disjoin (negate (is-status? <postponed-match>))
+                               (compose (conjoin
+                                         (negate (is? <action>))
+                                         (negate (is? <reply>))
+                                         (disjoin (negate (is? <variable>))
+                                                  (compose null?
+                                                           (cute tree-collect
+                                                                 (is? <action>)
+                                                                 <>))))
+                                        .statement))
+                      pcs)))
     (and
      (every (compose (cute is-a? <> <runtime:component>) .instance) pcs)
      (let ((declarative imperative
@@ -507,6 +518,10 @@ PC until RTC?."
         =>
         (lambda (traces)
           (cond
+           ((and (not (%exploring?))
+                 (non-deterministic? traces))
+            (let ((traces (filter-implicit-illegal traces)))
+              (map mark-determinism-error traces)))
            ((or (= (length traces) 1)
                 (= (length (choice-labels traces)) 1))
             (reset-posponed-match traces))
