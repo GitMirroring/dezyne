@@ -71,45 +71,41 @@ int main ()
   sut.p.out.world = [&] (int)
   {
     std::lock_guard<std::mutex> lock (mutex);
-    assert (trace[event] == "p.world");
-    ++event;
+    const std::string &next = trace[event++];
+    assert (next == "p.world");
   };
   sut.r.in.hello_void = [&]
   {
     std::lock_guard<std::mutex> lock (mutex);
-    assert (trace[event] == "r.hello_void");
-    ++event;
-    ++event;
+    const std::string &next = trace[event++];
+    assert (next == "r.hello_void");
+    const std::string &r = trace[event++];
+    assert (r == "r.return");
   };
   sut.r.in.hello_bool = [&]
   {
-    std::cout << "hiero 2" << std::endl;
     std::lock_guard<std::mutex> lock (mutex);
-    assert (trace[event] == "r.hello_bool");
-    ++event;
-    const std::string &tmp = trace[event];
-    ++event;
+    const std::string &next = trace[event++];
+    assert (next == "r.hello_bool");
+    const std::string &tmp = trace[event++];
     const auto &result = tmp.substr (tmp.rfind ('.') + 1);
-    std::cout << "main reply " << result << std::endl;
     return dzn::to_bool (result);
   };
   sut.r.in.hello_int = [&]
   {
     std::lock_guard<std::mutex> lock (mutex);
-    assert (trace[event] == "r.hello_int");
-    ++event;
-    const std::string &tmp = trace[event];
-    ++event;
+    const std::string &next = trace[event++];
+    assert (next == "r.hello_int");
+    const std::string &tmp = trace[event++];
     const auto &result = tmp.substr (tmp.rfind ('.') + 1);
     return dzn::to_int (result);
   };
   sut.r.in.hello_enum = [&] (int, int &)
   {
     std::lock_guard<std::mutex> lock (mutex);
-    assert (trace[event] == "r.hello_enum");
-    ++event;
-    const std::string &tmp = trace[event];
-    ++event;
+    const std::string &next = trace[event++];
+    assert (next == "r.hello_enum");
+    const std::string &tmp = trace[event++];
     const auto &result = tmp.substr (tmp.rfind ('.') + 1);
     return dzn::to_Enum (result);
   };
@@ -121,19 +117,17 @@ int main ()
              std::back_inserter (trace));
 
   std::unique_lock<std::mutex> lock (mutex);
-
   while (event < trace.size ())
     {
       auto pit = provides.find (trace[event]);
       if (pit != provides.end ())
         {
-          sync.push (std::async (std::launch::async, [ &, pit]
+          ++event;
+          sync.push (std::async (std::launch::async, [&, pit]
           {
             pit->second ();
             std::unique_lock<std::mutex> lock (mutex);
-            ++event;
           }));
-          ++event;
           lock.unlock ();
         }
       else
@@ -141,11 +135,14 @@ int main ()
           auto rit = requires.find (trace[event]);
           if (rit != requires.end ())
             {
-              rit->second ();
               ++event;
+              rit->second ();
             }
+          else
+            ++event;
           lock.unlock ();
         }
+      std::this_thread::sleep_for (std::chrono::milliseconds (100));
       lock.lock ();
     }
   while (sync.size ())
