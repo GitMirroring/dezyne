@@ -74,6 +74,7 @@
             get-variables
             graft-locals
             in-event?
+            instance-rtc-trigger
             is-status?
             label->string
             label?
@@ -652,6 +653,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (rtc-port (pc <program-counter>))
   (and=> (rtc-trigger pc) .port))
+
+(define-method (instance-rtc-trigger (pc <program-counter>))
+  (let* ((instance (.instance pc))
+         (pcs (pc->stack pc))
+         (pcs (filter (compose (cute eq? <> instance) .instance) pcs))
+         (triggers (filter-map .trigger pcs)))
+    (and (pair? triggers)
+         (last triggers))))
 
 
 ;;;

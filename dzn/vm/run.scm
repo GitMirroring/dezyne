@@ -346,6 +346,16 @@ program-counters produced by taking a step."
              => list)
             (else
              (let* ((o (.statement pc))
+                    (instance (.instance pc))
+                    (update-state?
+                     (and (is-a? instance <runtime:component>)
+                          (is-a? o <action>)
+                          (ast:out? o)))
+                    (pc (if (not update-state?) pc
+                            (let ((trigger (instance-rtc-trigger pc))
+                                  (port (.port o)))
+                              (update-shared-state pc instance port trigger
+                                                   trace))))
                     (observable? (or (is-a? o <action>)
                                      (is-a? o <q-out>)
                                      (is-a? o <trigger-return>)))
@@ -369,7 +379,6 @@ program-counters produced by taking a step."
                                 (map (cute clone <> #:trail (.trail pc)) pcs))
                                (else
                                 (map (mark-pc input pc) pcs))))
-                    (instance (.instance pc))
                     (internal-compliance?
                      (and (is-a? (%sut) <runtime:system>)
                           (not (is-a? (%sut) <runtime:port>))

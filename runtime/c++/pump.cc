@@ -55,14 +55,22 @@ size_t coroutine_id (const dzn::locator &locator)
 }
 void port_block (const dzn::locator &locator, dzn::component *component, void *port)
 {
+  dzn::debug.rdbuf () && dzn::debug << "port_block " << component
+                                    << " " << port << std::endl;
   locator.get<dzn::pump> ().block (locator.get<dzn::runtime> (), component, port);
 }
 void port_release (const dzn::locator &locator, dzn::component *component, void *port)
 {
+  dzn::debug.rdbuf () && dzn::debug << "port_release " << component
+                                    << " " << port << std::endl;
   locator.get<dzn::pump> ().release (locator.get<dzn::runtime> (), component, port);
 }
 void collateral_block (const dzn::locator &locator, dzn::component *component)
 {
+  dzn::debug.rdbuf () && dzn::debug << "pump::handling "
+                                    << locator.get<dzn::runtime>().handling (component)
+                                    << std::endl;
+  dzn::debug.rdbuf () && dzn::debug << "collateral_block " << component << std::endl;
   locator.get<dzn::pump> ().collateral_block (locator.get<dzn::runtime> (), component);
 }
 bool port_blocked_p (const dzn::locator &locator, void *port)

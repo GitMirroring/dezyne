@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,13 +31,6 @@ Foreign::Foreign (const dzn::locator &dzn_locator)
 , w ({{"w", &w, this, &dzn_meta}, {"", 0, 0, 0}})
 {
   dzn_meta.require = {};
-  w.in.world = [&] ()
-  {
-    return dzn::wrap_in (this, this->w, [ = ] ()
-    {
-      return w_world ();
-    }, "world");
-  };
+  w.in.world = [&] {};
+  w.in.world.set (this, &w, "world");
 }
-
-void Foreign::w_world () {}

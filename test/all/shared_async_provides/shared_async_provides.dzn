@@ -31,7 +31,7 @@ interface ihello
     bool idle = true;
 
     [idle] on hello: idle = false;
-    [!idle] on inevitable: {world; idle = true;}
+    [!idle] on inevitable: {idle = true; world;}
   }
 }
 
@@ -66,8 +66,8 @@ component shared_async_provides
     {
       idle = true;
       h.world ();
-      check ();
       h_idle = true;
+      check ();
     }
   }
 }

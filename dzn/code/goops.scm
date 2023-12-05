@@ -31,6 +31,7 @@
             <shared-state>
             <shared-transition>
             <shared-value>
+            <state>
             .action
             .assign
             .other
@@ -62,6 +63,8 @@
   (port.name)
   (event.name)
   (variable.name))
+
+(define-ast <state> (<statement>))
 
 (define-method (.port (o <action-reply>))
   (and (.port.name o) (ast:lookup o (.port.name o))))

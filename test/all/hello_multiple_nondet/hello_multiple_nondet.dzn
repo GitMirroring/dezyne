@@ -36,8 +36,8 @@ interface ihello
     [idle] on hello: idle = false;
     [!idle]
     {
-      on inevitable: {cruel; idle = true;}
-      on optional: {cruel; world; idle = true;}
+      on inevitable: {idle = true; cruel;}
+      on optional: {idle = true; cruel; world;}
     }
   }
 }

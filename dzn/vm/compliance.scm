@@ -39,7 +39,8 @@
   #:export (%compliance-check?
             check-provides-compliance
             check-provides-compliance*
-            internal-check-compliance))
+            internal-check-compliance
+            update-shared-state))
 
 ;;; Commentary:
 ;;;
@@ -235,6 +236,61 @@ provides port, mark the trace as <fork-error>, otherwise return false."
                                              #:message "non-compliance"))))
                   (list (cons pc trace))))))))
 
+(define (run-provides-modeling pc port-instance event)
+  (%debug "run-provides-modeling... ~a\n" event)
+  (let* ((ipc (clone pc #:instance port-instance #:statement #f))
+         (interface ((compose .type .ast) port-instance))
+         (modeling-names (modeling-names interface)))
+    (parameterize ((%sut port-instance)
+                   (%exploring? #t)
+                   (%strict? #f))
+      (append-map (cute run-to-completion ipc <>) modeling-names))))
+
+(define (run-provides-port pc port-instance event)
+  (%debug "run-provides-port... ~a ~a\n" port-instance event)
+  (let* ((ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
+         (ipc (reset-reply ipc port-instance)))
+    (%debug "  ipc: ~a\n" ipc)
+    (parameterize ((%sut port-instance)
+                   (%exploring? #t))
+      (run-to-completion ipc event))))
+
+(define (port-acceptance-equal? a b)
+  (and (equal? (and=> (caar a) trigger->string)
+               (and=> (caar b) trigger->string))
+       (equal? (cadr a) (cadr b))))
+
+(define* (compliance-first-non-match sut-trail port-instance port-trace
+                                     #:key blocked? provides-trigger?)
+  (define (non-matching-pair? a b)
+    (and (not (equal? (cdr a)
+                      ((compose last (cut string-split <> #\.) cdr) b)))
+         (cons a b)))
+
+  (let* ((port-trail (parameterize ((%sut port-instance))
+                       (trace->trail port-trace)))
+         (port-length (length port-trail))
+         (sut-length (length sut-trail))
+         (port-next (and (> port-length sut-length)
+                         (and=> (list-ref port-trail sut-length) cdr)))
+         (truncate? (and provides-trigger?
+                         blocked?
+                         (not (equal? port-next "<illegal>"))))
+         (port-trail (if (not truncate?) port-trail
+                         ;; Check prefix only as long as trace is blocked
+                         (list-head port-trail (min (length port-trail)
+                                                    (length sut-trail)))))
+         (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
+         (port-name ((compose .name .ast) port-instance))
+         (events (map (compose last (cut string-split <> #\.) cdr) sut-trail))
+         (foo (%debug "      sut trail : ~s\n\n" events)))
+    (or (any non-matching-pair? port-trail sut-trail)
+        (let ((port-length (length port-trail))
+              (sut-length (length sut-trail)))
+          (cond ((< port-length sut-length) (cons '(#f) (list-ref sut-trail port-length)))
+                ((> port-length sut-length) (list (list-ref port-trail sut-length) #f))
+                (else #f))))))
+
 (define-method (check-provides-compliance (pc <program-counter>)
                                           (instance <runtime:instance>)
                                           trigger trace)
@@ -307,35 +363,10 @@ Return a list of traces, possibly marked with <compliance-error>."
               (if (not internal?) (runtime:port-name->instance port-name)
                   (runtime:port instance port))))
 
-        (define (port-event? e)
-          (and (string? e)
-               (match (string-split e #\.)
-                 (('state state) #f)
-                 ((port event) (and (equal? port port-name) event))
-                 (_ #f))))
-
-        (define (run-provides-modeling ipc port-instance)
-          (%debug "run-provides-modeling... ~a\n" event)
-          (let* ((ipc (clone pc #:instance port-instance #:statement #f))
-                 (interface ((compose .type .ast) port-instance))
-                 (modeling-names (modeling-names interface)))
-            (parameterize ((%sut port-instance)
-                           (%exploring? #t)
-                           (%strict? #f))
-              (append-map (cute run-to-completion ipc <>) modeling-names))))
-
-        (define (run-provides-port pc event)
-          (%debug "run-provides-port... ~a ~a\n" port-instance event)
-          (%debug "  pc: ~a\n" pc)
-          (parameterize ((%sut port-instance)
-                         (%exploring? #t))
-            (run-to-completion pc event)))
-
         (%debug "check-provides-compliance... ~s: ~a [~a]\n" port-name event port-event)
-        (let* ((ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
-               (ipc (reset-reply ipc port-instance))
-               (port-traces (if port-event (run-provides-port ipc port-event)
-                                (run-provides-modeling ipc port-instance)))
+        (let* ((port-traces
+                (if port-event (run-provides-port pc port-instance port-event)
+                    (run-provides-modeling pc port-instance event)))
                (port-prefix (format #f "~a." port-name))
                (sut-trail (filter (compose (disjoin
                                             (cute equal? <> "<illegal>")
@@ -346,49 +377,20 @@ Return a list of traces, possibly marked with <compliance-error>."
                               (or (pair? (.blocked (car trace)))
                                   (find blocked-on-boundary? trace)))))
 
-          (define (port-trace->trail trace)
-            (parameterize ((%sut port-instance)) (trace->trail trace)))
-
           (define (first-non-match port-trace)
-            (define (non-matching-pair? a b)
-              (and (not (equal? (cdr a) ((compose last (cut string-split <> #\.) cdr) b))) (cons a b)))
-
-            (let* ((port-trail (port-trace->trail port-trace))
-                   (port-length (length port-trail))
-                   (sut-length (length sut-trail))
-                   (port-next (and (> port-length sut-length)
-                                   (and=> (list-ref port-trail sut-length) cdr)))
-                   (truncate? (and provides-trigger?
-                                   blocked?
-                                   (not (equal? port-next "<illegal>"))))
-                   (port-trail (if (not truncate?) port-trail
-                                   ;; Check prefix only as long as trace is blocked
-                                   (list-head port-trail (min (length port-trail)
-                                                              (length sut-trail)))))
-                   (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
-                   (port-name ((compose .name .ast) port-instance))
-                   (events (map (compose last (cut string-split <> #\.) cdr) sut-trail))
-                   (foo (%debug "      sut trail : ~s\n\n" events)))
-              (or (any non-matching-pair? port-trail sut-trail)
-                  (let ((port-length (length port-trail))
-                        (sut-length (length sut-trail)))
-                    (cond ((< port-length sut-length) (cons '(#f) (list-ref sut-trail port-length)))
-                          ((> port-length sut-length) (list (list-ref port-trail sut-length) #f))
-                          (else #f))))))
-
-          (define (port-acceptance-equal? a b)
-            (and (equal? (and=> (caar a) trigger->string)
-                         (and=> (caar b) trigger->string))
-                 (equal? (cadr a) (cadr b))))
+            (compliance-first-non-match sut-trail port-instance port-trace
+                                        #:blocked? blocked?
+                                        #:provides-trigger? provides-trigger?))
 
           (define (event-on-trail? event-name trace)
-            (let* ((trail (port-trace->trail trace))
+            (let* ((trail (parameterize ((%sut port-instance))
+                            (trace->trail trace)))
                    (trail (map cdr trail)))
               (member event-name trail)))
 
           (when (> (dzn:debugity) 0)
-            (%debug "sut-trail:~s\n" (map cdr sut-trail))
-            (%debug "port-traces[~s]:\n" (length port-traces))
+            (%debug "[c] sut-trail:~s\n" (map cdr sut-trail))
+            (%debug "[c] port-traces[~s]:\n" (length port-traces))
             (parameterize ((%sut port-instance))
               (display-trails port-traces)))
 
@@ -530,6 +532,106 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (or (check-provides-fork-and-zip #f trace)
                        (check-requires-provides-fork trace)))
               (fold check-compliance (list trace) ports))))))
+
+(define-method (update-shared-state (pc <program-counter>)
+                                    (instance <runtime:instance>)
+                                    port trigger trace)
+  "Return PC with updated provides port state after last out-event found
+on TRACE."
+
+  (let* ((event (and=> trigger trigger->string))
+         (orig-pc pc)
+         (pc (reset-replies pc))
+         (pc (clone pc #:instance #f))
+         (internal? (and (is-a? (%sut) <runtime:system>)
+                         (not (eq? instance (%sut)))))
+         (sut-trail (if (not internal?) (trace->trail trace)
+                        (trace->component-trail trace)))
+         (component (runtime:ast-model instance))
+         (provides-event (any (conjoin
+                               (compose (cute eq? <> instance) .instance)
+                               (compose (is? <initial-compound>) .statement)
+                               .trigger)
+                              (reverse trace)))
+         (event-name (and event (.event.name (string->trigger event))))
+         (provides-event (and provides-event
+                              (equal? (.event.name provides-event)
+                                      event-name)
+                              provides-event))
+         (provides-trigger? (or (and=> (as provides-event <trigger>) ast:provides?)
+                                (provides-trigger? event)))
+         (port-event (and provides-trigger? (.event.name trigger))))
+
+    (let* ((r:port (runtime:port instance port))
+           (port-name (if (not internal?) (.name port)
+                          (trace-name r:port)))
+           (port-instance
+            (if (not internal?) (runtime:port-name->instance port-name)
+                (runtime:port instance port))))
+
+      (define (truncate actions trace)
+        (let* ((trace (reverse trace))
+               (trace
+                (let loop ((trace trace) (actions actions))
+                  (if (zero? actions) '()
+                      (match trace
+                        (() '())
+                        (((and pc (= .statement (? (is? <action>)))) rest ...)
+                         (cons pc (loop rest (1- actions))))
+                        ((pc rest ...)
+                         (cons pc (loop rest actions)))))))
+               (actions (filter (compose (is? <action>) .statement)
+                                trace)))
+          (reverse trace)))
+
+      (%debug "update-port-state... ~s: ~a [~a]\n" port-name event port-event)
+      (let* ((port-traces
+              (if port-event (run-provides-port pc port-instance port-event)
+                  (run-provides-modeling pc port-instance event)))
+             (port-prefix (format #f "~a." port-name))
+             (sut-trail (filter (compose (disjoin
+                                          (cute equal? <> "<illegal>")
+                                          (cute string-prefix? port-prefix <>))
+                                         cdr)
+                                sut-trail))
+             (actions (filter (compose (conjoin (is? <action>)
+                                                (compose (cute ast:eq? <> port)
+                                                         .port))
+                                       .statement)
+                              trace))
+             (actions (length actions))
+             (port-traces (map (cute truncate actions <>) port-traces))
+             (blocked? (and (pair? trace)
+                            (or (pair? (.blocked (car trace)))
+                                (find blocked-on-boundary? trace)))))
+
+        (define (first-non-match port-trace)
+          (compliance-first-non-match sut-trail port-instance port-trace
+                                      #:blocked? blocked?
+                                      #:provides-trigger? provides-trigger?))
+
+        (when (> (dzn:debugity) 0)
+          (%debug "[u] sut-trail:~s\n" (map cdr sut-trail))
+          (%debug "[u] port-traces[~s]:\n" (length port-traces))
+          (parameterize ((%sut port-instance))
+            (display-trails port-traces)))
+
+        (let ((port-traces
+               non-compliances
+               (partition (negate first-non-match) port-traces)))
+          (cond
+           ((pair? port-traces)
+            (%debug "  [u] exit 0\n")
+            (let* ((port-trace (car port-traces))
+                   (port-pc (car port-trace))
+                   (port-pc (clone pc #:state (.state port-pc)))
+                   (pc (car trace))
+                   (pc (update-state pc port-instance port-pc))
+                   (pc (clone pc #:instance instance)))
+              pc))
+           (else
+            (%debug "  [u] exit 1\n")
+            orig-pc)))))))
 
 (define-method (check-provides-compliance (pc <program-counter>) event trace)
   (let* ((component ((compose .type .ast) (%sut)))

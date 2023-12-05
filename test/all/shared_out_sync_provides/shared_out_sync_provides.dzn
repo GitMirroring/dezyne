@@ -31,8 +31,8 @@ interface ihello
   {
     bool echo_world = true;
 
-    [echo_world] on hello: {echo_world = false; world;}
-    [!echo_world] on hello: {echo_world = true; cruel;}
+    [echo_world] on hello: {world; echo_world = false;}
+    [!echo_world] on hello: {cruel; echo_world = true;}
   }
 }
 

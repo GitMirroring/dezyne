@@ -908,7 +908,9 @@ from LABELS."
       "("
       (number->string (edge-from edge))
       ",\""
-      (edge-label edge)
+      (let ((label (edge-label edge)))
+        (if (pair? label) (string-join label)
+            label))
       "\","
       (number->string (edge-to edge))
       ")"

@@ -36,6 +36,7 @@
                                       slot-definition-name slot-ref))
 
   #:use-module (dzn ast goops)
+  #:use-module (dzn misc)
 
   #:export (as
             ast-name
@@ -47,11 +48,31 @@
             tree-collect
             tree-collect-filter
             tree-filter
+            tree-find
             tree-map))
 
 ;;;
 ;;; Utilities.
 ;;;
+(define-method (tree-find (predicate <applicable>) (o <top>))
+  "Breadth first search of a tree element under O matching PREDICATE"
+  (define (child* o)
+    (let* ((class (class-of o))
+           (slots (class-slots class))
+           (names (map slot-definition-name slots))
+           (children (map (cute slot-ref o <>) names)))
+      children))
+  (let ((children (child* o)))
+    (or (any predicate children)
+        (any (cute tree-find predicate <>)
+             (filter (disjoin (is? <string>) (is? <number>) (is? <boolean>))
+                     children)))))
+
+(define-method (tree-find (predicate <applicable>) (o <pair>))
+  (or (any predicate o)
+      (any (cute tree-find predicate <>) o)))
+
+
 (define-method (tree-map f o) o)
 
 (define-method (tree-map f (o <ast>))

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,13 +33,10 @@ struct foreign: public dzn::component
   dzn::locator const &dzn_locator;
   ::library::iworld w;
   foreign (const dzn::locator &);
-  void dzn_check_bindings () const;
   friend std::ostream &operator << (std::ostream &os, foreign const &)
   {
     return os << "[" << "]" ;
   }
-private:
-  void w_world ();
 };
 };
 

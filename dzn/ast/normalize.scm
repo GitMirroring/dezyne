@@ -397,11 +397,18 @@
                (port ((compose .port car ast:trigger*) on))
                (provides? (and port (ast:provides? port)))
                (model (ast:parent on <model>))
-               (reply? (or (and (is-a? model <interface>)
-                                (not modeling?))
-                           provides?))
-               (reply (if reply? (list (make <reply>)) '()))
                (statement (triple-statement t))
+               (reply?
+                (or (and (is-a? model <interface>)
+                         (not modeling?))
+                    (and provides?
+                         (null? (tree-collect
+                                 (conjoin
+                                  (is? <reply>)
+                                  (disjoin (negate .port)
+                                           (compose (cute ast:eq? port <>)
+                                                    .port))) statement)))))
+               (reply (if reply? (list (make <reply>)) '()))
                (elements (if (is-a? statement <compound>)
                              (ast:statement* statement)
                              (list statement)))

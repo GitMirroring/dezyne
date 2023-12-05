@@ -86,7 +86,8 @@
                (sm:return* (simple-format #f "~s" "")))))
             (sm:function
              (name "to_string")
-             (type "std::string")
+             (type "template <>
+std::string")
              (formals (list (sm:formal (type enum-type)
                                        (name "v"))))
              (statement
@@ -261,18 +262,8 @@ std::basic_ostream<Char, Traits> &")
          (action-name (code:event-name o))
          (arguments (code:argument* o))
          (arguments (map c++:ast->expression arguments)))
-    (sm:call (name (simple-format #f "dzn::call_~a" (.direction event)))
-             (arguments
-              `("this"
-                ,(string-append (%member-prefix) (.port.name o))
-                ,(simple-format #f "~s" event-name)
-                ,(sm:function
-                  (captures '("&"))
-                  (statement
-                   (sm:compound*
-                    (sm:return*
-                     (sm:call (name (string-append (%member-prefix) action-name))
-                              (arguments arguments)))))))))))
+    (sm:call (name (string-append (%member-prefix) action-name))
+             (arguments arguments))))
 
 (define-method (ast->code (o <assign>))
   (let* ((variable (.variable o))
@@ -329,11 +320,13 @@ std::basic_ostream<Char, Traits> &")
       (let* ((type (ast:type o))
              (reply-port (.port o))
              (port-name (.name reply-port))
-             (out-binding (string-append (%member-prefix)
-                                         (code:out-binding (.port o)))))
+             (out-binding (string-append "(*" (%member-prefix)
+                                         (code:out-binding (.port o)) ")")))
         (sm:statements*
          `(,@(if (is-a? type <void>) '()
-                 `(,(sm:assign* (sm:member* (%member-prefix) (code:reply-var type))
+                 `(,(sm:assign*
+                     (sm:member* (string-append "*" (%member-prefix))
+                                 (code:reply-var type))
                                 (c++:ast->expression (.expression o)))))
            ,(sm:if* out-binding (sm:call (name out-binding)))
            ,(sm:assign* out-binding "nullptr")
@@ -359,7 +352,8 @@ std::basic_ostream<Char, Traits> &")
   (let ((formals (ast:formal* o)))
     (if (null? formals) (sm:statement*)
         (sm:assign*
-         (sm:member* (%member-prefix) (code:out-binding (.port o)))
+         (sm:member* (string-append "*" (%member-prefix))
+                     (code:out-binding (.port o)))
          (sm:function
           (captures '("&"))
           (statement
@@ -437,11 +431,11 @@ std::basic_ostream<Char, Traits> &")
     (let ((type (code:type-name (ast:type event)))
           (formals (code:formal* event)))
       (sm:variable
-       (type (string-append "std::function< "
+       (type (simple-format #f "dzn::~a::event<~a>"
+                            (code:direction event)
                             (sm:code->string
                              (sm:call (name type)
-                                      (arguments (map c++:->formal formals))))
-                            ">"))
+                                      (arguments (map c++:->formal formals))))))
        (name (.name event)))))
   (define (event->check-binding event)
     (let ((event-name (code:event-name event)))
@@ -469,10 +463,8 @@ std::basic_ostream<Char, Traits> &")
                                  (map event->slot (ast:out-event* o)))))
                              (name "out"))
                ,(sm:variable (type "bool") (name "dzn_share_p") (expression "true"))
-               ,(sm:variable (type "std::vector<char const*>") (name "dzn_prefix") (expression ""))
+               ,(sm:variable (type "char const*") (name "dzn_label") (expression "\"\""))
                ,(sm:variable (type "int") (name "dzn_state") (expression ""))
-               ,(sm:variable (type (string-append name "*")) (name "dzn_peer") (expression ""))
-               ,(sm:variable (type "bool") (name "dzn_busy") (expression ""))
                ,@(map code:member->variable (ast:member* o))))))
          (interface& (string-append
                       (string-join (cons "" (ast:full-name o)) "::")
@@ -548,164 +540,159 @@ std::basic_ostream<Char, Traits> &")
                        ,@assignments
                        ,(sm:break)))))))))
 
-    (define (synchronize->member variable)
-      (sm:assign*
-       (string-append "this->dzn_peer->" (.name variable))
-       (string-append "this->" (.name variable))))
-
-    (define (non-rtc-transitions transition event)
-      "The runtime library cannot determine run to completion a priori.
-Non-rtc prefixes must not update the state of a port.  This function
-produces those prefixes and marks them with #:rtc? #false."
-      (let* ((event-name (.name event))
-             (prefix (ast:statement* (.prefix transition)))
-             (rtc? (and (ast:out? event)
-                        (equal? (.value (last prefix)) event-name))))
-        (if rtc? '()
-            (let loop ((prefix prefix))
-              (cond
-               ((or (null? prefix)
-                    (and (ast:in? event)
-                         (>= 2 (length prefix))))
-                '())
-               ((ast:in? event)
-                (let* ((prefix (drop-right prefix 1))
-                       (transition (clone transition
-                                          #:prefix (make <compound>
-                                                     #:elements prefix)
-                                          #:rtc? #f)))
-                  (cons transition (loop prefix))))
-               ((equal? (.value (last prefix))
-                        event-name)
-                (let ((transition (clone transition
-                                         #:prefix (make <compound>
-                                                    #:elements prefix)
-                                         #:rtc? #f)))
-                  (cons transition (loop (drop-right prefix 1)))))
-               (else
-                (loop (drop-right prefix 1))))))))
-
     (define (event->transitions event)
-      (let* ((transitions (code:shared event))
-             (non-rtc-transitions
-              (append-map (cute non-rtc-transitions <> event) transitions)))
-        (append non-rtc-transitions transitions)))
+      (let* ((transitions (code:shared event)))
+        transitions))
 
-    (let* ((interface
+    (let* ((type (string-join (cons "" (ast:full-name o)) "::"))
+           (type& (string-append type "&"))
+           (connect
+            (sm:namespace*
+             "dzn"
+             (sm:function
+              (name "connect")
+              (inline? #t)
+              (type "inline void")
+              (formals (list (sm:formal (type type&)
+                                        (name "provide"))
+                             (sm:formal (type type&)
+                                        (name "require"))))
+              (statement
+               (sm:compound*
+                `(,@(map (lambda (o)
+                           (sm:assign*
+                            (string-append "provide.out." (.name o))
+                            (string-append "require.out." (.name o))))
+                         (ast:out-event* o))
+                  ,@(map (lambda (o)
+                           (sm:assign*
+                            (string-append "require.in." (.name o))
+                            (string-append "provide.in." (.name o))))
+                         (ast:in-event* o))
+                  ,(sm:assign* "provide.dzn_meta.require"
+                               "require.dzn_meta.require")
+                  ,(sm:assign* "require.dzn_meta.provide"
+                               "provide.dzn_meta.provide")
+                  ,(sm:assign* "provide.dzn_share_p"
+                               "require.dzn_share_p = provide.dzn_share_p && require.dzn_share_p")))))))
+           (interface
             (sm:struct
               (inherit interface)
               (methods
-               `(,(sm:constructor (struct interface)
-                                  (formals (list (sm:formal (type "dzn::port::meta const&")
-                                                            (name "m"))))
-                                  (statement
-                                   (sm:compound*
-                                    (if (= (dzn:debugity) 0) '()
-                                        (sm:call (name "debug")
-                                                 (arguments (list "\"ctor\"")))))))
+               `(,(sm:constructor
+                   (struct interface)
+                   (formals (list (sm:formal (type "dzn::port::meta const&")
+                                             (name "m"))))
+                   (statement
+                    (sm:compound*
+                     (if (= (dzn:debugity) 0) '()
+                         (sm:call (name "debug")
+                                  (arguments (list "\"ctor\"")))))))
                  ,(sm:destructor (struct interface)
                                  (type "virtual")
                                  (statement "= default;"))
                  ,@(if (= (dzn:debugity) 0) '()
                        `(,(sm:method
                            (struct interface) (type "void") (name "debug")
-                           (formals (list (sm:formal (type "std::string&&") (name "label"))))
                            (statement
                             (sm:compound*
-                             (sm:variable (type "std::string")
-                                          (name "tmp")
-                                          (expression
-                                           (sm:conditional*
-                                            "this->dzn_meta.provide.component"
-                                            (sm:call (name "dzn::path")
-                                                     (arguments '("this->dzn_meta.provide.meta")))
-                                            (sm:call (name "dzn::path")
-                                                     (arguments '("this->dzn_meta.require.meta"))))))
+                             (sm:statement*
+                              "std::cout << \" => \" << dzn_state << std::endl"))))))
+                 ,@(if (= (dzn:debugity) 0) '()
+                       `(,(sm:method
+                           (struct interface) (type "void") (name "debug")
+                           (formals (list (sm:formal (type "std::string&&")
+                                                     (name "label"))))
+                           (statement
+                            (sm:compound*
+                             (sm:variable
+                              (type "std::string")
+                              (name "tmp")
+                              (expression
+                               (sm:conditional*
+                                "this->dzn_meta.provide.component"
+                                (sm:call
+                                 (name "dzn::path")
+                                 (arguments '("this->dzn_meta.provide.meta")))
+                                (sm:call
+                                 (name "dzn::path")
+                                 (arguments
+                                  '("this->dzn_meta.require.meta"))))))
                              (sm:statement* "std::cout << tmp << \".\";")
-                             (sm:assign* "tmp"
-                                         (sm:conditional*
-                                          (sm:call (name "this->dzn_meta.provide.name.size")
-                                                   (arguments '()))
-                                          "this->dzn_meta.provide.name"
-                                          "this->dzn_meta.require.name"))
-                             (sm:statement* "std::cout << tmp << \" \" << label << \": \" << dzn_state << \" prefix: \"")
-                             (sm:call (name "std::copy")
-                                      (arguments
-                                       (list
-                                        (sm:call (name "dzn_prefix.begin")
-                                                 (arguments '()))
-                                        (sm:call (name "dzn_prefix.end")
-                                                 (arguments '()))
-                                        (sm:call (name "std::ostream_iterator<std::string>")
-                                                 (arguments '("std::cout" "\",\""))))))
-                             (sm:statement* "std::cout << std::endl"))))))
+                             (sm:assign*
+                              "tmp"
+                              (sm:conditional*
+                               (sm:call (name "this->dzn_meta.provide.name.size")
+                                        (arguments '()))
+                               "this->dzn_meta.provide.name"
+                               "this->dzn_meta.require.name"))
+                             (sm:statement*
+                              "std::cout << tmp << \" \" << label << \": \" << dzn_state << \" prefix: \" << dzn_label << std::endl"))))))
                  ,@(if (%no-constraint?)
                        `(,(sm:method
                            (struct interface) (type "void") (name "dzn_event")
-                           (formals (list (sm:formal (type "char const*") (name "event"))))
+                           (formals (list (sm:formal (type "char const*")
+                                                     (name "event"))))
                            (statement
                             (sm:compound*)))
                          ,(sm:method
-                           (struct interface) (type "void") (name "dzn_update_state")
-                           (formals (list (sm:formal (type "dzn::locator const&")
-                                                     (name "locator"))))
+                           (struct interface) (type "void")
+                           (name "dzn_update_state")
+                           (formals (list (sm:formal
+                                           (type "dzn::locator const&")
+                                           (name "locator"))))
                            (statement
                             (sm:compound*))))
                        (let* ((shared (code:shared-state o))
                               (events (ast:event* o))
-                              (transitions (append-map event->transitions events))
-                              (transitions (delete-duplicates transitions code:prefix-equal?))
-                              (interface-shared (reverse (code:shared-state o))))
+                              (transitions (append-map event->transitions
+                                                       events))
+                              (transitions (delete-duplicates transitions
+                                                              code:prefix-equal?)))
                          `(,(sm:method
-                             (struct interface) (type "void") (name "dzn_event")
-                             (formals (list (sm:formal (type "char const*") (name "event"))))
+                             (struct interface) (type "void")
+                             (name "dzn_event")
+                             (formals (list (sm:formal (type "char const*")
+                                                       (name "event"))))
                              (statement
                               (sm:compound*
                                `(,(sm:if* (sm:not* "dzn_share_p") (sm:return*))
-                                 ,(sm:call (name "dzn_prefix.push_back")
-                                           (arguments '("event")))
-                                 ,(sm:call (name "dzn_sync"))
+                                 ,(sm:assign* "dzn_label" "event")
                                  ,@(if (= (dzn:debugity) 0) '()
-                                       `(,(sm:call (name "debug") (arguments '("\"dzn_event\"")))))))))
+                                       `(,(sm:call
+                                           (name "debug")
+                                           (arguments '("\"dzn_event\"")))))))))
                            ,(sm:method
-                             (struct interface) (type "void") (name "dzn_update_state")
-                             (formals (list (sm:formal (type "dzn::locator const&")
-                                                       (name "locator"))))
+                             (struct interface) (type "void")
+                             (name "dzn_update_state")
+                             (formals (list
+                                       (sm:formal (type "dzn::locator const&")
+                                                  (name "locator"))))
                              (statement
                               (sm:compound*
                                `(,(sm:if* (sm:or* (sm:not* "dzn_share_p")
-                                                  (sm:call (name "dzn_prefix.empty")))
+                                                  (sm:not* "dzn_label"))
                                           (sm:return*))
                                  ,@(if (= (dzn:debugity) 0) '()
-                                       `(,(sm:call (name "debug") (arguments '("\"update_state\"")))))
+                                       `(,(sm:call (name "debug")
+                                                   (arguments
+                                                    '("\"update_state\"")))))
                                  ,(sm:switch
                                    (expression
                                     (sm:call
                                      (name "dzn::hash")
-                                     (arguments `("dzn_prefix" "dzn_state"))))
+                                     (arguments `("dzn_label" "dzn_state"))))
                                    (cases
                                     `(,@(map (cute event->sm:switch-case <>
-                                                   interface-shared)
+                                                   shared)
                                              transitions)
                                       ,(sm:switch-case
                                         (label "default")
                                         (statement
-                                         (sm:statement* "locator.get<dzn::illegal_handler> ().handle (LOCATION)"))))))
-                                 ,(sm:call (name "dzn_prefix.clear"))
-                                 ,(sm:call (name "dzn_sync")))))))))
-                 ,(sm:method
-                   (struct interface) (type "void") (name "dzn_sync")
-                   (statement
-                    (sm:compound*
-                     (sm:if* (sm:and* (sm:not-equal* "this->dzn_peer" "nullptr")
-                                      (sm:not-equal* "this->dzn_peer" "this"))
-                             (sm:compound*
-                              `(,@(if (= (dzn:debugity) 0) '()
-                                      `(,(sm:call (name "debug") (arguments '("\"sync\"")))))
-                                ,(sm:assign* "dzn_peer->dzn_prefix" "this->dzn_prefix")
-                                ,(sm:assign* "dzn_peer->dzn_state" "this->dzn_state")
-                                ,(sm:assign* "dzn_peer->dzn_busy" "this->dzn_busy")
-                                ,@(map (compose synchronize->member) (ast:member* o))))))))
+                                         (sm:statement*
+                                          "locator.get<dzn::illegal_handler> ().handle (LOCATION)"))))))
+                                 ,@(if (= (dzn:debugity) 0) '()
+                                       `(,(sm:call (name "debug")))))))))))
                  ,(sm:method
                    (struct interface) (type "void") (name "dzn_check_bindings")
                    (statement
@@ -716,6 +703,7 @@ produces those prefixes and marks them with #:rtc? #false."
            (sm:enum-to-string (append-map c++:enum->to-string public-enums))
            (to-enum (append-map c++:enum->to-enum public-enums)))
       `(,@(code:->namespace o interface)
+        ,connect
         ,@sm:enum-to-string
         ,@to-enum))))
 
@@ -756,14 +744,14 @@ produces those prefixes and marks them with #:rtc? #false."
      (type (code:type-name (.type port)))
      (name (.name port))
      (expression (sm:member* (simple-format #f "dzn_locator.get< ~a> ()" type)))))
-  (define (port->out-binding port)
-    (sm:variable
-     (type "std::function<void ()>")
-     (name (code:out-binding port))))
   (define (type->reply-variable o)
     (sm:variable
-     (type (code:type-name o))
+     (type (string-append (code:type-name o) "*"))
      (name (code:reply-var o))))
+  (define (port->out-binding port)
+    (sm:variable
+     (type "std::function<void ()>*")
+     (name (code:out-binding port))))
   (define (port->injected-require-override port)
     (let* ((type (.type port))
            (type (code:type-name type)))
@@ -771,18 +759,16 @@ produces those prefixes and marks them with #:rtc? #false."
                               (string-append "dzn_locator.get< " type "> ()"))
                   (.name port))))
   (define (port->update port)
-    (sm:if* (sm:not* (string-append (%member-prefix)
-                                    (.name port)
-                                    ".dzn_busy"))
-            (sm:call (name (string-append (%member-prefix)
-                                          (.name port)
-                                          ".dzn_update_state"))
-                     (arguments `(,(string-append (%member-prefix)
-                                                  "dzn_locator"))))))
+    (sm:call (name (string-append (%member-prefix)
+                                  (.name port)
+                                  ".dzn_update_state"))
+             (arguments `(,(string-append (%member-prefix)
+                                          "dzn_locator")))))
   (define (trigger->event-slot trigger)
     (let* ((port (.port trigger))
            (port-name (.name port))
            (event (.event trigger))
+           (direction (code:direction event))
            (event-name (.name event))
            (event-name-string (simple-format #f "~s" event-name))
            (formals (code:formal* trigger))
@@ -790,53 +776,52 @@ produces those prefixes and marks them with #:rtc? #false."
            (in-formals (filter ast:in? formals))
            (in-arguments (map .name in-formals))
            (formals (map c++:->formal formals))
-           (out-binding (code:out-binding port))
-           (this-out-binding (code:member out-binding))
-           (type (ast:type trigger))
-           (type (code:type-name type))
+           (return-type (ast:type trigger))
+           (type (code:type-name return-type))
            (typed? (ast:typed? trigger))
-           (reply-var (and typed?
-                           (sm:member* (code:reply-var (ast:type trigger)))))
            (call-slot (sm:call-method
                        (name (code:event-slot-name trigger))
-                       (arguments arguments)))
-           (call-in/out
-            (sm:call
-             (name (string-append "dzn::wrap_" (code:direction event)))
-             (arguments
-              `("this"
-                ,(sm:member* port-name)
-                ,(sm:function
-                  (captures (cons* "&" "this" in-arguments))
-                  (statement
-                   (sm:compound*
-                    `(,@(map port->injected-require-override
-                             (ast:injected-port* o))
-                      ,(if (or (not typed?) (not (is-a? o <foreign>))) call-slot
-                           (sm:assign* reply-var call-slot))
-                      ,@(if
-                         (ast:out? event) '()
-                         `(,@(if
-                              (is-a? o <foreign>) '()
-                              `(,(sm:call
-                                  (name "this->dzn_runtime.flush")
-                                  (arguments
-                                   (list
-                                    "this"
-                                    (sm:call (name "dzn::coroutine_id")
-                                             (arguments '("this->dzn_locator"))))))
-                                ,(sm:if* out-binding (sm:call (name out-binding)))
-                                ,(sm:assign* out-binding "nullptr")))
-                           ,(sm:return (expression reply-var))))))))
-                ,event-name-string)))))
+                       (arguments arguments))))
       (sm:assign*
-       (code:event-name trigger)
+       (sm:member* (%member-prefix) (code:event-name trigger))
        (sm:function
         (captures '("this"))
         (formals formals)
         (statement
          (sm:compound*
-          (sm:return* call-in/out)))))))
+          `(,@(map port->injected-require-override
+                   (ast:injected-port* o))
+            ,@(if (not (ast:provides? port)) '()
+               `(,(sm:assign*
+                   (sm:member* (%member-prefix) (code:out-binding port))
+                   (sm:member* (string-append "&" (%member-prefix))
+                               (string-append (code:event-name trigger)
+                                              ".dzn_out_binding")))))
+            ,@(if (not typed?) `(,call-slot)
+                  `(,(sm:assign*
+                      (sm:member* (%member-prefix) (code:reply-var return-type))
+                      (sm:member* (string-append "&"(%member-prefix))
+                                  (simple-format #f "~a.in.~a.reply"
+                                                 port-name event-name)))
+                    ,@(if (is-a? o <foreign>) `(,(sm:return* call-slot))
+                          `(,call-slot
+                            ,(sm:return*
+                              (sm:member*
+                               (%member-prefix)
+                               (simple-format #f "~a.in.~a.reply"
+                                              port-name event-name))))))))))))))
+  (define (event-set trigger/action)
+    (let* ((port (.port trigger/action))
+           (port-name (.name port))
+           (event (.event trigger/action))
+           (direction (code:direction event))
+           (event-name (.name event))
+           (event-name-string (simple-format #f "~s" event-name)))
+      (sm:call-method
+       (name (simple-format #f "~a.~a.~a.set" port-name direction event-name))
+       (arguments `("this"
+                    ,(string-append "&" port-name)
+                    ,event-name-string)))))
   (define (trigger->method component trigger)
     (let* ((trigger
             statement
@@ -849,10 +834,11 @@ produces those prefixes and marks them with #:rtc? #false."
                       (statement (.statement on)))
                  (values trigger (ast->code statement))))))
            (formals (code:formal* trigger))
-           (type (ast:type trigger)))
+           (return-type (ast:type trigger)))
       (sm:method (struct component)
                  (type (if (not (is-a? o <foreign>)) "void"
-                           (string-append "virtual " (code:type-name type))))
+                           (string-append "virtual "
+                                          (code:type-name return-type))))
                  (name (code:event-slot-name trigger))
                  (formals (map c++:->formal formals))
                  (statement statement))))
@@ -892,24 +878,18 @@ produces those prefixes and marks them with #:rtc? #false."
                        (name (string-append
                               (%member-prefix)
                               (code:event-name trigger)))
-                       (arguments arguments))
-                      (sm:call
-                       (name "dzn_update")))))))
+                       (arguments arguments)))))))
       (sm:method (struct component)
                  (type "void")
                  (name (code:event-slot-name trigger))
                  (formals (map c++:->formal (code:formal* trigger)))
-                 (statement (sm:compound*
-                             `(,(sm:call
-                                 (name "dzn::call_out")
-                                 (arguments `("this"
-                                              ,(string-append
-                                                (%member-prefix)
-                                                (.port.name trigger))
-                                              ,(simple-format
-                                                #f "~s"
-                                                (.event.name trigger))
-                                              ,lambda)))))))))
+                 (statement
+                  (sm:compound*
+                   (sm:call
+                    (name (string-append
+                           (%member-prefix)
+                           (code:event-name trigger)))
+                    (arguments arguments)))))))
   (let* ((enums (filter (is? <enum>) (code:enum* o)))
          (ports (ast:port* o))
          (check-bindings-list
@@ -939,8 +919,7 @@ produces those prefixes and marks them with #:rtc? #false."
                  (expression "locator"))
                ,@(map code:member->variable (ast:member* o))
                ,@(map type->reply-variable (code:reply-types o))
-               ,@(if (is-a? o <foreign>) '()
-                     (map port->out-binding (ast:provides-port* o)))
+               ,@(map port->out-binding (ast:provides-port* o))
                ,@(map provides->member (ast:provides-port* o))
                ,@(map requires->member (ast:requires-no-injected-port* o))
                ,@(map injected->member (ast:injected-port* o))))))
@@ -961,13 +940,9 @@ produces those prefixes and marks them with #:rtc? #false."
                                            (ast:injected-port* o))
                              ,(sm:assign* (sm:member* "dzn_runtime.performs_flush (this)")
                                           "true")))
-                     ,@(map trigger->event-slot (ast:in-triggers o))))))
-               ,(sm:method (struct component)
-                           (type "void")
-                           (name "dzn_update")
-                           (statement
-                            (sm:compound*
-                             (map port->update (ast:provides-port* o)))))
+                     ,@(map trigger->event-slot (ast:in-triggers o))
+                     ,@(map event-set (append (ast:in-triggers o) (ast:out-triggers o)))
+                     ))))
                ,@(if (not (is-a? o <foreign>)) '()
                      `(,(sm:destructor (struct component)
                                        (type "virtual")
@@ -1063,12 +1038,7 @@ produces those prefixes and marks them with #:rtc? #false."
              (meta (string-append name ".dzn_meta."))
              (name-string (simple-format #f "~s" name)))
         `(,(sm:assign* (string-append meta "parent") "&dzn_meta")
-          ,(sm:assign* (string-append meta "name") name-string)
-          ,@(if (not (injected-instance? instance)) '()
-                (let ((meta (simple-format #f "~a.~a.dzn_meta." name port-name)))
-                  (list
-                   (sm:assign* (string-append meta "require.name")
-                               name-string)))))))
+          ,(sm:assign* (string-append meta "name") name-string))))
     (define (requires->assignment ports)
       (sm:assign* "dzn_meta.require"
                   (sm:generalized-initializer-list*
@@ -1179,28 +1149,32 @@ produces those prefixes and marks them with #:rtc? #false."
   (let* ((injected-instances (code:injected-instance* o))
          (injected? (pair? injected-instances)))
     (define (port->external port)
-      (sm:assign*
-       (simple-format
-        #f "~a.dzn_share_p" (.name port))
-       "false"))
+      (map
+       (lambda (event)
+         (sm:assign*
+          (simple-format
+           #f "~a.~a.~a.dzn_shell_p"
+           (.name port)
+           (.direction event)
+           (.name event))
+          "true"))
+       (append
+        (ast:in-event* port)
+        (ast:out-event* port))))
     (define (provides->member port)
       (let ((other-end (ast:other-end-point port)))
         (sm:variable
          (type (string-join (cons "" (ast:full-name (.type port))) "::"))
          (name (.name port))
-         (expression (sm:member*
-                      (string-append (.instance.name other-end)
-                                     "."
-                                     (.port.name other-end)))))))
+         (expression
+          "{}"))))
     (define (requires->member port)
       (let ((other-end (ast:other-end-point port)))
         (sm:variable
          (type (string-join (cons "" (ast:full-name (.type port))) "::"))
          (name (.name port))
-         (expression (sm:member*
-                      (string-append (.instance.name other-end)
-                                     "."
-                                     (.port.name other-end)))))))
+         (expression
+          "{}"))))
     (define (injected-instance? instance)
       (member instance injected-instances ast:eq?))
     (define (instance->member instance)
@@ -1364,8 +1338,8 @@ produces those prefixes and marks them with #:rtc? #false."
                                            (name "locator"))))
                  (statement
                   (sm:compound*
-                   `(,@(map port->external (ast:provides-port* o))
-                     ,@(map port->external (ast:requires-port* o))
+                   `(,@(append-map port->external (ast:provides-port* o))
+                     ,@(append-map port->external (ast:requires-port* o))
                      ,@(map provides->init (ast:provides-port* o))
                      ,@(map requires->init (ast:requires-port* o))
                      ,@(map trigger->event-slot (ast:provides-in-triggers o))
@@ -1436,8 +1410,9 @@ produces those prefixes and marks them with #:rtc? #false."
                (sm:assign (variable "tmp")
                           (expression "tmp.substr (pos)"))
                (sm:return* (return-expression trigger)))))))
-      (sm:assign (variable (string-append "c.system." (code:event-name trigger)))
-                 (expression function))))
+      (sm:assign
+       (variable (string-append "c.system." (code:event-name trigger)))
+       (expression function))))
   (define (trigger-out-event->assign trigger)
     (let* ((port (.port.name trigger))
            (event (.event.name trigger))
@@ -1451,16 +1426,21 @@ produces those prefixes and marks them with #:rtc? #false."
            (formals (map (cute clone <> #:name #f) formals))
            (formals (map c++:->formal formals))
            (port (.port trigger)))
-      (sm:assign (variable (string-append "c.system." (code:event-name trigger)))
-                 (expression
-                  (sm:function
-                   (captures '("&"))
-                   (formals formals)
-                   (statement
-                    (sm:compound*
-                     (sm:call (name "c.match")
-                              (arguments
-                               (list (simple-format #f "~s" port-event)))))))))))
+      `(,(sm:assign (variable (string-append "c.system."
+                                             (code:event-name trigger)
+                                             ".skip_queue"))
+                    (expression "true"))
+        ,(sm:assign
+          (variable (string-append "c.system." (code:event-name trigger)))
+          (expression
+           (sm:function
+            (captures '("&"))
+            (formals formals)
+            (statement
+             (sm:compound*
+              (sm:call (name "c.match")
+                       (arguments
+                        (list (simple-format #f "~s" port-event))))))))))))
   (sm:function
    (type "static void")
    (name "connect_ports")
@@ -1469,10 +1449,12 @@ produces those prefixes and marks them with #:rtc? #false."
    (statement
     (sm:compound*
      (cons*
-      (sm:statement* "dzn::debug.rdbuf () && dzn::debug << c.dzn_meta.name << std::endl")
+      (sm:statement*
+       "dzn::debug.rdbuf () && dzn::debug << c.dzn_meta.name << std::endl")
       (append
        (map trigger-in-event->assign (ast:out-triggers-in-events o))
-       (map trigger-out-event->assign (ast:out-triggers-out-events o))))))))
+       (append-map trigger-out-event->assign
+                   (ast:out-triggers-out-events o))))))))
 
 (define-method (main-event-map (o <component-model>) container)
   (define (provides->init port)
@@ -1687,6 +1669,7 @@ produces those prefixes and marks them with #:rtc? #false."
      (sm:call (name (simple-format #f "~a c" container))
               (arguments '("flush")))
      (sm:call (name "connect_ports") (arguments '("c")))
+     (sm:call (name "dzn::check_bindings") (arguments '("c.system")))
      (sm:call (name "c") (arguments '("event_map (c)")))))))
 
 
@@ -1701,7 +1684,7 @@ produces those prefixes and marks them with #:rtc? #false."
                     `(,(code:generated-comment o)
                       ,@(if (not comment) '()
                             (list (sm:comment* comment)))
-                      ,(sm:cpp-system-include* "dzn/meta.hh")
+                      ,(sm:cpp-system-include* "dzn/runtime.hh")
                       ,(sm:namespace* "dzn"
                                       (sm:statement* "struct locator")
                                       (sm:statement* "struct runtime"))

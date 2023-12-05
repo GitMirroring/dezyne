@@ -37,6 +37,7 @@
   #:use-module (dzn ast equal)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
@@ -575,6 +576,22 @@
     (_
      #f)))
 
+(define (makreel:add-state-placeholder o)
+  (match o
+    ((and (? (is? <compound>))
+          (? (cute ast:parent <> <interface>))
+          (? (cute ast:parent <> <on>)))
+     (clone o #:elements (makreel:add-state-placeholder (ast:statement* o))))
+    (((and (? (is? <action>)) statement) rest ...)
+     (if (and (ast:modeling? (car (ast:trigger* (ast:parent statement <on>))))
+              (not (tree-find (is? <action>) rest))) o
+         (cons* statement (make <state>) (makreel:add-state-placeholder rest))))
+    (((and (? (is? <statement>)) statement) rest ...)
+     (cons statement (makreel:add-state-placeholder rest)))
+    ((? (is? <ast>))
+     (tree-map makreel:add-state-placeholder o))
+    (_ o)))
+
 (define (makreel:normalize ast)
   "Normalize:state, add explicit illegals, and other mCRL2-specific
 transformations."
@@ -591,6 +608,7 @@ transformations."
                   add-explicit-temporaries
                   add-defer-end
                   (if (%no-unreachable?) identity tag-imperative-blocks)
+                  makreel:add-state-placeholder
                   purge-data
                   ) ast)))
       (when (> (dzn:debugity) 1)

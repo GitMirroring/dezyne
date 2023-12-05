@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2019 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2019, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,8 +40,6 @@ struct Foreign: public dzn::component
   {
     return os;
   }
-private:
-  void w_world ();
 };
 
 #endif // FOREIGN_HH

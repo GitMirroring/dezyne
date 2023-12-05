@@ -361,13 +361,17 @@
                         (.name (.ast instance))))
          (previous (get-reply pc port-name))
          (value (eval-expression pc (.expression o)))
-         (pc (if (not previous) (continuation (set-reply pc port-name value) o)
-                 (let ((error (make <second-reply-error>
-                                #:ast o
-                                #:previous (.parent previous)
-                                #:message "second-reply")))
-                   (%debug "second reply, previous=~a\n" (ast:location->string previous))
-                   (clone pc #:status error))))
+         (pc (cond (previous
+                    (let ((error (make <second-reply-error>
+                                   #:ast o
+                                   #:previous (.parent previous)
+                                   #:message "second-reply")))
+                      (%debug "second reply, previous=~a\n" (ast:location->string previous))
+                      (clone pc #:status error)))
+                   ((is-a? value <void>)
+                    (continuation pc o))
+                   (else
+                    (continuation (set-reply pc port-name value) o))))
          (reply-port (.port o))
          (trigger (.trigger pc)))
     (cond ((let* ((trigger-port (.port trigger))
@@ -551,14 +555,6 @@
            (instance (.instance pc))
            (value (and port (get-reply pc (.name port))))
            (pc (cond
-                ((and (not blocking?)
-                      (is-a? (ast:type value) <void>))
-                 (let ((error (make <second-reply-error>
-                                #:ast o
-                                #:previous (.parent value)
-                                #:message "second-reply")))
-                   (%debug "second reply, previous=~a\n" (ast:location->string value))
-                   (clone pc #:status error)))
                 ((not blocking?)
                  pc)
                 (else

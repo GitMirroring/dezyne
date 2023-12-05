@@ -1396,6 +1396,24 @@
                          #:name (.name variable)
                          #:type.name (.type.name variable))))
 
+(define-method (ast->process (model <interface>) (o <state>) (next <ast>))
+  (let* ((members (ast:member* model))
+         (members (map .name members)))
+    (sm:process
+      (name (statement->process-name o))
+      (formals (makreel:process-formals o))
+      (statement
+       (sm:union*
+        (sm:goto (name (statement->process-name next))
+                 (arguments (makreel:process-parens next)))
+        (sm:sequence*
+         (sm:invoke (%state-action model)
+                    (if (null? members) (model-prefix "Void" model)
+                        (string-join members ", "))
+                    #:keep-constructor? (pair? members))
+         (sm:goto (name name)
+                  (arguments (makreel:process-parens o)))))))))
+
 (define-method (ast->process (model <model>) (o <action>) (next <ast>))
   (let* ((port (.port o))
          (void-reply? (and (ast:in? o)
@@ -1414,24 +1432,24 @@
                         (let* ((reply (make <reply> #:port.name (.name port)))
                                (reply (clone reply #:parent (.parent o))))
                           `(,(ast->action reply))))
-                  ,(if (or (not (and (is-a? model <component>) (ast:in? o)))
-                           (ast:external? port))
-                       (sm:goto (name (statement->process-name next))
-                                (arguments (makreel:process-parens next)))
-                       (if (not (find (compose (cute ast:eq? port <>) .port)
-                                      (ast:shared* model)))
-                           (sm:goto (name (statement->process-name next))
-                                    (arguments
-                                     (makreel:process-parens next)))
-                           (sum-state-action
-                            port
-                            (sm:goto (name (statement->process-name next))
-                                     (arguments
-                                      (cond ((or (ast:out? o)
-                                                 (null? (ast:shared* model)))
-                                             (makreel:process-parens next))
-                                            (else
-                                             (makreel:shared-process-arguments o))))))))))))))))
+                  ,(cond ((and=> port ast:external?)
+                          (sm:goto (name (statement->process-name next))
+                                   (arguments (makreel:process-parens next))))
+                         ((find (compose (cute ast:eq? port <>) .port)
+                                (ast:shared* model))
+                          (sum-state-action
+                           port
+                           (sm:goto
+                            (name (statement->process-name next))
+                            (arguments
+                             (cond ((null? (ast:shared* model))
+                                    (makreel:process-parens next))
+                                   (else
+                                    (makreel:shared-process-arguments o)))))))
+                         (else
+                          (sm:goto (name (statement->process-name next))
+                                   (arguments
+                                    (makreel:process-parens next)))))))))))))
 
 (define-method (ast->process (model <component>) (o <action-reply>) (next <ast>))
   (let* ((port (.port o))
@@ -2837,8 +2855,12 @@
             (statement
              (sm:sequence*
               (sm:invoke (%out-action p) #:keep-constructor? #t)
-              (sm:goto (name name)
-                       (arguments '())))))))
+              (sm:union*
+               (sm:goto (name name)
+                        (arguments '()))
+               (sum-state-action
+                p (sm:goto (name name)
+                           (arguments '())))))))))
 
 (define-method (qout-actions (p <port>) name)
   (let ((interface (.type p)))
@@ -3521,10 +3543,18 @@
                 (statement
                  (sm:sequence*
                   (sm:invoke (%out-action p) #:keep-constructor? #t)
-                  (sm:goto (name name)
-                           (arguments
-                            (list
-                             (sm:is* "port" (port-prefix "port" p))))))))))
+                  (if (not (find (compose (cute ast:eq? p <>) .port)
+                                      (ast:shared* o)))
+                      (sm:goto (name name)
+                               (arguments
+                                (list
+                                 (sm:is* "port" (port-prefix "port" p)))))
+                      (sum-state-action
+                       p (sm:goto
+                          (name name)
+                          (arguments
+                           (list
+                            (sm:is* "port" (port-prefix "port" p))))))))))))
     ;; XXX switch-context-actions but goto
     ;; semantics_async_switch_context with switch=h'port
     (define (switch-context-actions+switch=p p name)

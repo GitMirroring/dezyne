@@ -34,7 +34,7 @@ namespace dzn
 std::ostream debug (nullptr);
 runtime::runtime () {}
 
-void trace (std::ostream &os, port::meta const &meta, const char *event_name)
+void trace_in (std::ostream &os, port::meta const &meta, const char *event_name)
 {
   if (!os.rdbuf ())
     return;
@@ -128,7 +128,8 @@ void runtime::flush (dzn::component *component, size_t coroutine_id)
         {
           std::function<void ()> event = q.front ();
           q.pop ();
-          handle (component, event, coroutine_id);
+          handling (component) = coroutine_id;
+          event ();
           handling (component) = 0;
         }
       if (deferred (component))
@@ -142,22 +143,25 @@ void runtime::flush (dzn::component *component, size_t coroutine_id)
         }
     }
 }
-bool runtime::async (dzn::component *source, dzn::component *target)
+bool runtime::queue_p (dzn::component *source, dzn::component *target)
 {
-  return ! (source && performs_flush (source)) && !handling (target);
+  return (source && performs_flush (source))
+    || handling (target);
 }
 void runtime::enqueue (dzn::component *source, dzn::component *target,
                        const std::function<void ()> &event, size_t coroutine_id)
 {
-  if (async (source, target))
-    {
-      handle (target, event, coroutine_id);
-      flush (target, coroutine_id);
-    }
-  else
+  if (queue_p (source, target))
     {
       deferred (source) = target;
       queue (target).push (event);
+    }
+  else
+    {
+      handling (target) = coroutine_id;
+      event ();
+      handling (target) = 0;
+      flush (target, coroutine_id);
     }
 }
 }

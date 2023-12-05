@@ -58,6 +58,8 @@
     (match o
       (($ <literal>)
        o)
+      (($ <action>)
+       (ast:type o))
       (($ <shared-var>)
        (let ((port (runtime:other-port (runtime:port (.instance pc) (.port o)))))
          (eval-expression pc (assoc-ref (.variables (get-state pc port)) (.name o)))))

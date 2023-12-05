@@ -18,7 +18,7 @@ sut.r.world <- ...
 ... <- sut.h.world
 <external>.h.world <- ...
 <deadlock>
-(state ((h) (idle . false)) ((sut) (s . S:A)) ((l)) ((r) (idle . true)))
+(state ((h) (idle . true)) ((sut) (s . S:A)) ((l)) ((r) (idle . true)))
 test/all/deadlock_reply/deadlock_reply.dzn:69:42: error: deadlock
 (trail "r.world" "h.world" "<deadlock>")
 (labels "h.hello" "h.cruel" "l.world" "r.world")
