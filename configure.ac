@@ -217,13 +217,15 @@ AX_BOOST_BASE([1.67])
 AC_CHECK_HEADER([mutex])
 AC_CHECK_TYPE([std::mutex], [have_mutex=yes], [have_mutex=no],[#include <mutex>])
 AC_CHECK_HEADERS([boost/coroutine/all.hpp],
-  [have_boost_coroutine=yes
-   HAVE_BOOST_COROUTINE=yes
-   dzn_thread_pool=no
-   AC_DEFINE_UNQUOTED([HAVE_BOOST_COROUTINE], [1],
-   [Define if you have the boost coroutine library.])],
+  [have_boost_coroutine=$want_boost
+   HAVE_BOOST_COROUTINE=$want_boost
+   dzn_thread_pool=no],
   [have_boost_coroutine=no
    dzn_thread_pool="$have_mutex"])
+if test "x$have_boost_coroutine" = "xyes"; then
+   AC_DEFINE_UNQUOTED([HAVE_BOOST_COROUTINE], [1],
+      [Define if you have the boost coroutine library.])
+fi
 AC_LIB_HAVE_LINKFLAGS([boost_coroutine], [],
   [#include <boost/coroutine/all.hpp>],
   [boost::coroutines::stack_traits::default_size ();])
