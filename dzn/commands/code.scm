@@ -83,7 +83,6 @@
 Usage: dzn code [OPTION]... DZN-FILE
 Generate code for Dezyne models in DZN-FILE
 
-  -B, --no-blocking           assume system without collateral blocking
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
   -C, --no-constraint         do not use a constraining process
   -D, --no-non-compliance     do not generate constraint-any processes
