@@ -104,7 +104,6 @@
 (define* (system-diagram root #:key dir model)
   (let* ((root (if (not model) root
                    (ast:filter-model root model)))
-         (root (remove-behavior root))
          (root (if (%locations?) root (remove-location root)))
          (file-name (code:root-file-name root dir ".json"))
          (generate (cute x:source (.node root))))
