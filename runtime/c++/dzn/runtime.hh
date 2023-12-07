@@ -194,7 +194,6 @@ struct event<R (Args...)>
 {
   std::function <void ()> dzn_out_binding;
   bool dzn_shell_p;
-  bool dzn_share_p;
   R reply;
   void* port;
   std::function <void (char const*)> port_update;
@@ -210,7 +209,6 @@ struct event<R (Args...)>
   std::function<R (Args...)> f;
   event ()
     : dzn_shell_p (false)
-    , dzn_share_p (true)
     , reply ()
     , port ()
     , port_update ([] (char const*){})
@@ -301,7 +299,7 @@ struct event<R (Args...)>
         collateral_block (*dzn_locator, dzn_port_meta->provide.component);
       dzn_runtime->reset_skip_block (component);
       trace_in (*os, *dzn_port_meta, name);
-      if (dzn_share_p) port_update (name);
+      port_update (name);
       write_state ();
       dzn_runtime->handling (component) = coroutine_id (*dzn_locator);
 
@@ -313,7 +311,7 @@ struct event<R (Args...)>
 
       std::string reply_string = ::dzn::to_string (reply);
       trace_out (*os, *dzn_port_meta, reply_string.c_str ());
-      if (dzn_share_p) port_update (reply_string.c_str ());
+      port_update (reply_string.c_str ());
       write_state ();
       prune_deferred (*dzn_locator);
       dzn_runtime->handling (component) = 0;
@@ -335,7 +333,6 @@ struct event<void (Args...)>
 {
   std::function <void ()> dzn_out_binding;
   bool dzn_shell_p;
-  bool dzn_share_p;
   void* port;
   std::function <void (char const*)> port_update;
   dzn::port::meta* dzn_port_meta;
@@ -350,7 +347,6 @@ struct event<void (Args...)>
   std::function<void (Args...)> f;
   event ()
     : dzn_shell_p (false)
-    , dzn_share_p (true)
     , port ()
     , port_update ([] (char const*){})
     , dzn_port_meta ()
@@ -444,7 +440,7 @@ struct event<void (Args...)>
         collateral_block (*dzn_locator, dzn_port_meta->provide.component);
       dzn_runtime->reset_skip_block (component);
       trace_in (*os, *dzn_port_meta, name);
-      if (dzn_share_p) port_update (name);
+      port_update (name);
       write_state ();
       dzn_runtime->handling (component) = coroutine_id (*dzn_locator);
 
@@ -453,7 +449,7 @@ struct event<void (Args...)>
       dzn_runtime->flush (dzn_port_meta->provide.component,
                                 coroutine_id (*dzn_locator));
       trace_out (*os, *dzn_port_meta, "return");
-      if (dzn_share_p) port_update ("return");
+      port_update ("return");
       write_state ();
       prune_deferred (*dzn_locator);
       dzn_runtime->handling (component) = 0;
@@ -478,7 +474,6 @@ struct event<void (Args...)>
 {
   bool skip_queue;
   bool dzn_shell_p;
-  bool dzn_share_p;
   void* port;
   std::function <void (char const*)> port_update;
   dzn::port::meta* dzn_port_meta;
@@ -494,7 +489,6 @@ struct event<void (Args...)>
   event ()
     : skip_queue (false)
     , dzn_shell_p (false)
-    , dzn_share_p (true)
     , port ()
     , port_update ([] (char const*){})
     , dzn_port_meta ()
@@ -561,7 +555,7 @@ struct event<void (Args...)>
       assert (dzn_runtime);
 
       trace_qin (*os, *dzn_port_meta, name);
-      if (dzn_share_p) port_update (name);
+      port_update (name);
       write_state ();
 
       if (skip_queue) f (args...);
