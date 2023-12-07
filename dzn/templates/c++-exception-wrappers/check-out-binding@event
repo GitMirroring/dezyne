@@ -1,1 +1,0 @@
-if (! #.direction .#.name) throw dzn::binding_error(meta, "#.direction .#.name");

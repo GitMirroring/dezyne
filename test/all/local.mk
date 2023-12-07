@@ -536,14 +536,6 @@ REGRESSION_TESTS =				\
  %D%/unused_interface_type			\
  %D%/wostream
 
-if have_cxx_exception_wrappers
-REGRESSION_TESTS +=				\
- %D%/exception_wrappers
-else
-EXTRA_DIST +=					\
- %D%/exception_wrappers
-endif
-
 PARSER_TESTS =					\
  %D%/parse-flags				\
  %D%/parse_assign_void				\

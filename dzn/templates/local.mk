@@ -30,12 +30,6 @@ dist_nocompile_%C%_scm_DATA =			\
  %D%/dzn.scm					\
  %D%/json.scm
 
-if have_cxx_exception_wrappers
-dist_nocompile_%C%_scm_DATA += %D%/c++-exception-wrappers.scm
-else
-dist_noinst_DATA += %D%/c++-exception-wrappers.scm
-endif
-
 if have_javascript
 dist_nocompile_%C%_scm_DATA += %D%/javascript.scm
 else
@@ -63,7 +57,6 @@ dist_%C%_c_DATA =				\
 
 EXTRA_DIST +=					\
  %D%/README					\
- %D%/c++-exception-wrappers			\
  %D%/dot					\
  %D%/javascript					\
  %D%/json					\
