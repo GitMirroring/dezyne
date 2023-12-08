@@ -1426,11 +1426,7 @@ std::basic_ostream<Char, Traits> &")
            (formals (map (cute clone <> #:name #f) formals))
            (formals (map c++:->formal formals))
            (port (.port trigger)))
-      `(,(sm:assign (variable (string-append "c.system."
-                                             (code:event-name trigger)
-                                             ".skip_queue"))
-                    (expression "true"))
-        ,(sm:assign
+      `(,(sm:assign
           (variable (string-append "c.system." (code:event-name trigger)))
           (expression
            (sm:function
@@ -1463,7 +1459,7 @@ std::basic_ostream<Char, Traits> &")
            (meta (simple-format #f "~a.dzn_meta.require" system-port)))
       (list
        (sm:assign (variable (simple-format #f "~a.component" meta))
-                  (expression "&c"))
+                  (expression "nullptr"))
        (sm:assign (variable (simple-format #f "~a.meta" meta))
                   (expression "&c.dzn_meta"))
        (sm:assign (variable (simple-format #f "~a.name" meta))

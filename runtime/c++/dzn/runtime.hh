@@ -472,7 +472,6 @@ struct event;
 template <typename...Args>
 struct event<void (Args...)>
 {
-  bool skip_queue;
   bool dzn_shell_p;
   void* port;
   std::function <void (char const*)> port_update;
@@ -487,8 +486,7 @@ struct event<void (Args...)>
 
   std::function<void (Args...)> f;
   event ()
-    : skip_queue (false)
-    , dzn_shell_p (false)
+    : dzn_shell_p (false)
     , port ()
     , port_update ([] (char const*){})
     , dzn_port_meta ()
@@ -558,7 +556,7 @@ struct event<void (Args...)>
       port_update (name);
       write_state ();
 
-      if (skip_queue) f (args...);
+      if (!dzn_port_meta->require.component) f (args...);
       else
         {
           bool receive = component == dzn_port_meta->provide.component;
