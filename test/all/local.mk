@@ -99,6 +99,7 @@ HELLO_TESTS =					\
  %D%/hello_usuk					\
  %D%/hello_void					\
  %D%/helloworld					\
+ %D%/ihello_mock				\
  %D%/illegal_component0				\
  %D%/illegal_interface_incomplete		\
  %D%/inline-functions				\
