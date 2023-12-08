@@ -482,6 +482,26 @@ PC until RTC?."
            (traces (filter (compose (cute equal? input <>) observable car) traces)))
       (loop (append-map extend-trace traces))))
 
+  (define (interface-non-deterministic? traces)
+    (let ((traces (filter (compose (is? <action>) .ast .status car) traces)))
+      (match traces
+        (((pc0 tail0 ...) (pcs tails ...) ...)
+         (define (state-equal? pc0 pc1)
+           (let ((variables0 (get-variables pc0 (%sut)))
+                 (variables1 (get-variables pc1(%sut))))
+             (ast:equal? variables0 variables1)))
+         (find (negate (cute state-equal? pc <>)) pcs))
+        (() #f))))
+
+  (define (interface-mark-determinism-error trace)
+    (match trace
+      ((pc-postponed pc trace ...)
+       (let* ((error (make <determinism-error>
+                       #:ast (.statement pc)
+                       #:message "non-deterministic"))
+              (pc (clone pc #:status error)))
+         (cons pc trace)))))
+
   (define (mark-end-of-trail traces)
     (define (set-end-of-trail labels pc)
       (let* ((statement (.statement pc))
@@ -534,6 +554,10 @@ PC until RTC?."
            ((or (= (length traces) 1)
                 (= (length (choice-labels traces)) 1))
             (reset-posponed-match traces))
+           ((and (is-a? (%sut) <runtime:port>)
+                 (%strict?)
+                 (interface-non-deterministic? traces))
+            (map interface-mark-determinism-error traces))
            ((and (not (%exploring?)) (interactive?))
             (choose-postponed-match traces))
            (else
