@@ -588,6 +588,27 @@ std::basic_ostream<Char, Traits> &")
                      (if (= (dzn:debugity) 0) '()
                          (sm:call (name "debug")
                                   (arguments (list "\"ctor\"")))))))
+                 ,(sm:constructor
+                   (inline? #t)
+                   (type "template <typename Component>\n")
+                   (struct interface)
+                   (formals (list (sm:formal (type "dzn::port::meta const&")
+                                             (name "m"))
+                                  (sm:formal (type "Component*")
+                                             (name "that"))))
+                   (statement
+                    (sm:compound*
+                     (map
+                      (lambda (event)
+                        (let* ((direction (code:direction event))
+                               (event-name (.name event))
+                               (event-name-string (simple-format #f "~s"
+                                                                 event-name)))
+                          (sm:call (name (string-append direction "."
+                                                        event-name ".set"))
+                                   (arguments `("that", "this",
+                                                event-name-string)))))
+                          (ast:event* o)))))
                  ,(sm:destructor (struct interface)
                                  (type "virtual")
                                  (statement "= default;"))
@@ -726,14 +747,14 @@ std::basic_ostream<Char, Traits> &")
      (type (code:type-name (.type port)))
      (name (.name port))
      (expression (simple-format
-                  #f "{{~s,&~a,this,&dzn_meta},{~s,0,0,0}}" name name name))))
+                  #f "{{~s,&~a,this,&dzn_meta},{~s,0,0,0}},this" name name name))))
   (define (requires->member port)
     (sm:variable
      (type (code:type-name (.type port)))
      (name (.name port))
      (expression (simple-format
                   #f
-                  "{{~s,0,0,0},{~s,&~a,this,&dzn_meta}}" name name name))))
+                  "{{~s,0,0,0},{~s,&~a,this,&dzn_meta}},this" name name name))))
   (define (requires->external port)
     (sm:assign*
      (simple-format
@@ -810,18 +831,6 @@ std::basic_ostream<Char, Traits> &")
                                (%member-prefix)
                                (simple-format #f "~a.in.~a.reply"
                                               port-name event-name))))))))))))))
-  (define (event-set trigger/action)
-    (let* ((port (.port trigger/action))
-           (port-name (.name port))
-           (event (.event trigger/action))
-           (direction (code:direction event))
-           (event-name (.name event))
-           (event-name-string (simple-format #f "~s" event-name)))
-      (sm:call-method
-       (name (simple-format #f "~a.~a.~a.set" port-name direction event-name))
-       (arguments `("this"
-                    ,(string-append "&" port-name)
-                    ,event-name-string)))))
   (define (trigger->method component trigger)
     (let* ((trigger
             statement
@@ -940,9 +949,7 @@ std::basic_ostream<Char, Traits> &")
                                            (ast:injected-port* o))
                              ,(sm:assign* (sm:member* "dzn_runtime.performs_flush (this)")
                                           "true")))
-                     ,@(map trigger->event-slot (ast:in-triggers o))
-                     ,@(map event-set (append (ast:in-triggers o) (ast:out-triggers o)))
-                     ))))
+                     ,@(map trigger->event-slot (ast:in-triggers o))))))
                ,@(if (not (is-a? o <foreign>)) '()
                      `(,(sm:destructor (struct component)
                                        (type "virtual")
