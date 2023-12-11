@@ -39,5 +39,5 @@ main ()
   foreign_optional sut (l);
 
   sut.c.h.out.world = [] {};
-  sut.f.w_hello ();
+  sut.f.w.in.hello ();
 }

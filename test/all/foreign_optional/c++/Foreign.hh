@@ -32,7 +32,6 @@ struct Foreign: public skel::Foreign
   {}
   void w_hello ()
   {
-    std::clog << "sut.f.w.world\n";
     w.out.world ();
   }
 };
