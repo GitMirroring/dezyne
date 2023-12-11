@@ -226,27 +226,36 @@ struct event<R (Args...)>
   template <typename Component, typename Interface>
   void set (Component* c, Interface* i, char const* n)
   {
-    port = i;
-    port_update = [i,c] (char const* s)
+    this->port = i;
+    this->port_update = [i,c] (char const* s)
     {
       i->dzn_label = s;
       i->dzn_update_state (c->dzn_locator);
     };
-    dzn_port_meta = &i->dzn_meta;
-    component = c;
-    write_state = []{};
-    dzn_meta = &c->dzn_meta;
-    dzn_locator = &c->dzn_locator;
-    dzn_runtime = &c->dzn_runtime;
-    os = &dzn_locator->get<std::ostream> ();
-    name = n;
+    this->dzn_port_meta = &i->dzn_meta;
+    this->component = c;
+    this->write_state = []{};
+    this->dzn_meta = &c->dzn_meta;
+    this->dzn_locator = &c->dzn_locator;
+    this->dzn_runtime = &c->dzn_runtime;
+    this->os = &dzn_locator->get<std::ostream> ();
+    this->name = n;
   }
   operator bool () const
   {
-    return static_cast<bool> (f);
+    return static_cast<bool> (this->f);
   }
   event& operator = (event const& that)
   {
+    assert (that.port);
+    assert (that.port_update);
+    assert (that.dzn_port_meta);
+    assert (that.component);
+    assert (that.write_state);
+    assert (that.dzn_meta);
+    assert (that.dzn_locator);
+    assert (that.dzn_runtime);
+
     std::function<R (Args...)> g (that.f);
     this->f = [g,this] (Args...args)
     {
@@ -266,7 +275,7 @@ struct event<R (Args...)>
         }
         ~RAII ()
         {
-          reply_string = ::dzn::to_string (that->reply);
+          this->reply_string = ::dzn::to_string (that->reply);
           that->port_update (this->reply_string.c_str ());
         }
       } raii (this);
@@ -283,42 +292,42 @@ struct event<R (Args...)>
   {
     this->f = [f,this] (Args ... args) -> decltype (f (args...))
     {
-      if (dzn_shell_p) return f (args...);
+      if (this->dzn_shell_p) return f (args...);
 
-      assert (port);
-      assert (port_update);
-      assert (dzn_port_meta);
-      assert (component);
-      assert (write_state);
-      assert (dzn_meta);
-      assert (dzn_locator);
-      assert (dzn_runtime);
+      assert (this->port);
+      assert (this->port_update);
+      assert (this->dzn_port_meta);
+      assert (this->component);
+      assert (this->write_state);
+      assert (this->dzn_meta);
+      assert (this->dzn_locator);
+      assert (this->dzn_runtime);
 
-      if (dzn_runtime->handling (dzn_port_meta->provide.component)
-          || port_blocked_p (*dzn_locator, port))
-        collateral_block (*dzn_locator, dzn_port_meta->provide.component);
-      dzn_runtime->reset_skip_block (component);
-      trace_in (*os, *dzn_port_meta, name);
-      port_update (name);
-      write_state ();
-      dzn_runtime->handling (component) = coroutine_id (*dzn_locator);
+      if (this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
+          || port_blocked_p (*this->dzn_locator, this->port))
+        collateral_block (*this->dzn_locator, this->dzn_port_meta->provide.component);
+      this->dzn_runtime->reset_skip_block (this->component);
+      trace_in (*this->os, *this->dzn_port_meta, this->name);
+      this->port_update (this->name);
+      this->write_state ();
+      this->dzn_runtime->handling (this->component) = coroutine_id (*this->dzn_locator);
 
-      reply = f (args...);
+      this->reply = f (args...);
 
       // possibly overwrites reply
-      dzn_runtime->flush (dzn_port_meta->provide.component,
-                                coroutine_id (*dzn_locator));
+      this->dzn_runtime->flush (this->dzn_port_meta->provide.component,
+                                coroutine_id (*this->dzn_locator));
 
-      std::string reply_string = ::dzn::to_string (reply);
-      trace_out (*os, *dzn_port_meta, reply_string.c_str ());
-      port_update (reply_string.c_str ());
-      write_state ();
-      prune_deferred (*dzn_locator);
-      dzn_runtime->handling (component) = 0;
+      std::string reply_string = ::dzn::to_string (this->reply);
+      trace_out (*this->os, *this->dzn_port_meta, reply_string.c_str ());
+      this->port_update (reply_string.c_str ());
+      this->write_state ();
+      prune_deferred (*this->dzn_locator);
+      this->dzn_runtime->handling (this->component) = 0;
 
-      if (dzn_out_binding) dzn_out_binding ();
+      if (this->dzn_out_binding) this->dzn_out_binding ();
 
-      return reply;
+      return this->reply;
     };
     return *this;
   }
@@ -363,24 +372,24 @@ struct event<void (Args...)>
   template <typename Component, typename Interface>
   void set (Component* c, Interface* i, char const* n)
   {
-    port = i;
-    port_update = [i,c] (char const* s)
+    this->port = i;
+    this->port_update = [i,c] (char const* s)
     {
       i->dzn_label = s;
       i->dzn_update_state (c->dzn_locator);
     };
-    dzn_port_meta = &i->dzn_meta;
-    component = c;
-    write_state = []{};
-    dzn_meta = &c->dzn_meta;
-    dzn_locator = &c->dzn_locator;
-    dzn_runtime = &c->dzn_runtime;
-    os = &dzn_locator->get<std::ostream> ();
-    name = n;
+    this->dzn_port_meta = &i->dzn_meta;
+    this->component = c;
+    this->write_state = []{};
+    this->dzn_meta = &c->dzn_meta;
+    this->dzn_locator = &c->dzn_locator;
+    this->dzn_runtime = &c->dzn_runtime;
+    this->os = &dzn_locator->get<std::ostream> ();
+    this->name = n;
   }
   operator bool () const
   {
-    return static_cast<bool> (f);
+    return static_cast<bool> (this->f);
   }
   event& operator = (event const& that)
   {
@@ -426,34 +435,34 @@ struct event<void (Args...)>
     {
       if (dzn_shell_p) return f (args...);
 
-      assert (port);
-      assert (port_update);
-      assert (dzn_port_meta);
-      assert (component);
-      assert (write_state);
-      assert (dzn_meta);
-      assert (dzn_locator);
-      assert (dzn_runtime);
+      assert (this->port);
+      assert (this->port_update);
+      assert (this->dzn_port_meta);
+      assert (this->component);
+      assert (this->write_state);
+      assert (this->dzn_meta);
+      assert (this->dzn_locator);
+      assert (this->dzn_runtime);
 
-      if (dzn_runtime->handling (dzn_port_meta->provide.component)
-          || port_blocked_p (*dzn_locator, port))
-        collateral_block (*dzn_locator, dzn_port_meta->provide.component);
-      dzn_runtime->reset_skip_block (component);
-      trace_in (*os, *dzn_port_meta, name);
-      port_update (name);
-      write_state ();
-      dzn_runtime->handling (component) = coroutine_id (*dzn_locator);
+      if (this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
+          || port_blocked_p (*this->dzn_locator, this->port))
+        collateral_block (*this->dzn_locator, this->dzn_port_meta->provide.component);
+      this->dzn_runtime->reset_skip_block (this->component);
+      trace_in (*this->os, *this->dzn_port_meta, this->name);
+      this->port_update (this->name);
+      this->write_state ();
+      this->dzn_runtime->handling (this->component) = coroutine_id (*this->dzn_locator);
 
       f (args...);
 
-      dzn_runtime->flush (dzn_port_meta->provide.component,
-                                coroutine_id (*dzn_locator));
-      trace_out (*os, *dzn_port_meta, "return");
-      port_update ("return");
-      write_state ();
-      prune_deferred (*dzn_locator);
-      dzn_runtime->handling (component) = 0;
-      if (dzn_out_binding) dzn_out_binding ();
+      this->dzn_runtime->flush (this->dzn_port_meta->provide.component,
+                                coroutine_id (*this->dzn_locator));
+      trace_out (*this->os, *this->dzn_port_meta, "return");
+      this->port_update ("return");
+      this->write_state ();
+      prune_deferred (*this->dzn_locator);
+      this->dzn_runtime->handling (this->component) = 0;
+      if (this->dzn_out_binding) this->dzn_out_binding ();
     };
     return *this;
   }
@@ -483,8 +492,8 @@ struct event<void (Args...)>
   dzn::runtime* dzn_runtime;
   std::ostream* os;
   char const* name;
-
   std::function<void (Args...)> f;
+
   event ()
     : dzn_shell_p (false)
     , port ()
@@ -503,24 +512,24 @@ struct event<void (Args...)>
   template <typename Component, typename Interface>
   void set (Component* c, Interface* i, char const* n)
   {
-    port = i;
-    port_update = [this,i,c] (char const* s)
+    this->port = i;
+    this->port_update = [this,i,c] (char const* s)
     {
       i->dzn_label = s;
       i->dzn_update_state (c->dzn_locator);
     };
-    dzn_port_meta = &i->dzn_meta;
-    component = c;
-    write_state = []{};
-    dzn_meta = &c->dzn_meta;
-    dzn_locator = &c->dzn_locator;
-    dzn_runtime = &c->dzn_runtime;
-    os = &dzn_locator->get<std::ostream> ();
-    name = n;
+    this->dzn_port_meta = &i->dzn_meta;
+    this->component = c;
+    this->write_state = []{};
+    this->dzn_meta = &c->dzn_meta;
+    this->dzn_locator = &c->dzn_locator;
+    this->dzn_runtime = &c->dzn_runtime;
+    this->os = &dzn_locator->get<std::ostream> ();
+    this->name = n;
   }
   operator bool () const
   {
-    return static_cast<bool> (f);
+    return static_cast<bool> (this->f);
   }
   event& operator = (event const& that)
   {
@@ -541,40 +550,40 @@ struct event<void (Args...)>
   {
     this->f = [f,this] (Args...args)
     {
-      if (dzn_shell_p) return f (args...);
+      if (this->dzn_shell_p) return f (args...);
 
-      assert (port);
-      assert (port_update);
-      assert (dzn_port_meta);
-      assert (component);
-      assert (write_state);
-      assert (dzn_meta);
-      assert (dzn_locator);
-      assert (dzn_runtime);
+      assert (this->port);
+      assert (this->port_update);
+      assert (this->dzn_port_meta);
+      assert (this->component);
+      assert (this->write_state);
+      assert (this->dzn_meta);
+      assert (this->dzn_locator);
+      assert (this->dzn_runtime);
 
-      trace_qin (*os, *dzn_port_meta, name);
-      port_update (name);
-      write_state ();
+      trace_qin (*this->os, *this->dzn_port_meta, this->name);
+      this->port_update (this->name);
+      this->write_state ();
 
-      if (!dzn_port_meta->require.component) f (args...);
+      if (!this->dzn_port_meta->require.component) f (args...);
       else
         {
-          bool receive = component == dzn_port_meta->provide.component;
-          dzn_runtime->enqueue
-            (receive ? component : dzn_port_meta->provide.component,
-             receive ? dzn_port_meta->require.component : component,
+          bool receive = this->component == this->dzn_port_meta->provide.component;
+          this->dzn_runtime->enqueue
+            (receive ? this->component : this->dzn_port_meta->provide.component,
+             receive ? this->dzn_port_meta->require.component : this->component,
              [f,this,args...]
              {
-               trace_qout (*os, *dzn_port_meta, name);
-               write_state ();
+               trace_qout (*this->os, *this->dzn_port_meta, this->name);
+               this->write_state ();
                f (args...);
-             }, coroutine_id (*dzn_locator));
+             }, coroutine_id (*this->dzn_locator));
         }
-      prune_deferred (*dzn_locator);
+      prune_deferred (*this->dzn_locator);
     };
     return *this;
   }
-  auto operator () (Args...args) const -> decltype (this->f (args...))
+  void operator () (Args...args) const
   {
     return this->f (args...);
   }
