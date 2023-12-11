@@ -125,7 +125,13 @@ endif
 
 %C%_libdzn_c___ladir = $(includedir)/dzn
 
+WARN_FLAGS=					\
+ -Wall						\
+ -Wextra					\
+ -Werror
+
 %C%_libdzn_c___la_CPPFLAGS =			\
+ $(WARN_FLAGS)					\
  -I $(abs_top_srcdir)/runtime/c++
 
 %C%_libdzn_c___la_LDFLAGS =			\
