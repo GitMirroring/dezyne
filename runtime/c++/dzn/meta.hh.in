@@ -65,7 +65,7 @@ int const version_patch = @VERSION_PATCH@;
       } require;
     };
     template <typename Port>
-    void* other(Port& port)
+    void* other (Port& port)
     {
       return (&port == port.dzn_meta.provide.port)
         ? port.dzn_meta.require.port : port.dzn_meta.provide.port;
@@ -79,7 +79,7 @@ int const version_patch = @VERSION_PATCH@;
     const meta* parent;
     std::vector<const port::meta*> require;
     std::vector<const meta*> children;
-    std::vector<std::function<void()>> ports_connected;
+    std::vector<std::function<void ()>> ports_connected;
   };
 
   struct component_meta
@@ -87,19 +87,22 @@ int const version_patch = @VERSION_PATCH@;
     meta dzn_meta;
   };
 
-  inline std::string path(const meta* m, std::string p = std::string())
+  inline std::string path (meta const* m, std::string p = std::string ())
   {
-    p = p.empty() ? p : "." + p;
-    if(!m) return "<external>" + p;
-    if(!m->parent) return m->name + p;
-    return path(m->parent, m->name + p);
+    p = p.empty () ? p : "." + p;
+    if (!m) return "<external>" + p;
+    if (!m->parent) return m->name + p;
+    return path (m->parent, m->name + p);
   }
 
   struct binding_error: public std::runtime_error
   {
-    binding_error(const port::meta& m, const std::string& msg)
-    : std::runtime_error("not connected: " + path(m.provide.component ? m.provide.meta : m.require.meta,
-                                                  m.provide.component ? m.provide.name : m.require.name) + "." + msg)
+    binding_error (const port::meta& m, const std::string& msg)
+    : std::runtime_error
+      ("not connected: "
+       + path (m.provide.component ? m.provide.meta : m.require.meta,
+               m.provide.component ? m.provide.name : m.require.name)
+       + "." + msg)
     {}
   };
 }

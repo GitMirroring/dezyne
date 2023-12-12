@@ -58,16 +58,16 @@ private:
   struct type_info
   {
     const std::type_info *type;
-    type_info (const std::type_info &t)
+    type_info (std::type_info const& t)
       : type (&t)
     {}
-    bool operator < (const type_info &that) const
+    bool operator < (type_info const& that) const
     {
       return type->before (*that.type);
     }
   };
   std::map<std::pair<Key, type_info>, const void *> services;
-  locator (const locator &) = default;
+  locator (locator const&) = default;
 public:
   locator (locator &&) = default;
   locator ()
@@ -86,7 +86,7 @@ public:
     return *this;
   }
   template <typename T>
-  T *try_get (const Key &key = Key ()) const
+  T *try_get (Key const& key = Key ()) const
   {
     auto it = services.find (std::make_pair (key, type_info (typeid (T))));
     if (it != services.end () && it->second)
@@ -94,7 +94,7 @@ public:
     return nullptr;
   }
   template <typename T>
-  T &get (const Key &key = Key ()) const
+  T &get (Key const& key = Key ()) const
   {
     if (T *t = try_get<T> (key))
       return *t;

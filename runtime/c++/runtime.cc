@@ -34,7 +34,8 @@ namespace dzn
 std::ostream debug (nullptr);
 runtime::runtime () {}
 
-void trace_in (std::ostream &os, port::meta const &meta, const char *event_name)
+void
+trace_in (std::ostream &os, port::meta const &meta, const char *event_name)
 {
   if (!os.rdbuf ())
     return;
@@ -42,7 +43,8 @@ void trace_in (std::ostream &os, port::meta const &meta, const char *event_name)
      << path (meta.provide.meta, meta.provide.name) << "." << event_name << std::endl;
 }
 
-void trace_out (std::ostream &os, port::meta const &meta, const char *event_name)
+void
+trace_out (std::ostream &os, port::meta const &meta, const char *event_name)
 {
   if (!os.rdbuf ())
     return;
@@ -50,7 +52,8 @@ void trace_out (std::ostream &os, port::meta const &meta, const char *event_name
      << path (meta.provide.meta, meta.provide.name) << "." << event_name << std::endl;
 }
 
-void trace_qin (std::ostream &os, port::meta const &meta, const char *event_name)
+void
+trace_qin (std::ostream &os, port::meta const &meta, const char *event_name)
 {
   if (!os.rdbuf ())
     return;
@@ -62,7 +65,8 @@ void trace_qin (std::ostream &os, port::meta const &meta, const char *event_name
        << path (meta.provide.meta, meta.provide.name) << "." << event_name << std::endl;
 }
 
-void trace_qout (std::ostream &os, port::meta const &meta, const char *event_name)
+void
+trace_qout (std::ostream &os, port::meta const &meta, const char *event_name)
 {
   if (!os.rdbuf ())
     return;
@@ -73,52 +77,62 @@ void trace_qout (std::ostream &os, port::meta const &meta, const char *event_nam
      << path (meta.require.meta, "<q>") << std::endl;
 }
 
-bool runtime::external (dzn::component *component)
+bool
+runtime::external (dzn::component *component)
 {
   return (states.find (component) == states.end ());
 }
 
-size_t &runtime::handling (dzn::component *component)
+size_t &
+runtime::handling (dzn::component *component)
 {
   return states[component].handling;
 }
 
-size_t &runtime::blocked (dzn::component *component)
+size_t &
+runtime::blocked (dzn::component *component)
 {
   return states[component].blocked;
 }
 
-dzn::component *&runtime::deferred (dzn::component *component)
+dzn::component *&
+runtime::deferred (dzn::component *component)
 {
   return states[component].deferred;
 }
 
-std::queue<std::function<void ()> > &runtime::queue (dzn::component *component)
+std::queue<std::function<void ()> > &
+runtime::queue (dzn::component *component)
 {
   return states[component].queue;
 }
 
-bool &runtime::performs_flush (dzn::component *component)
+bool &
+runtime::performs_flush (dzn::component *component)
 {
   return states[component].performs_flush;
 }
 
-bool runtime::skip_block (dzn::component *component, void *port)
+bool
+runtime::skip_block (dzn::component *component, void *port)
 {
   return states.at (component).skip == port;
 }
 
-void runtime::set_skip_block (dzn::component *component, void *port)
+void
+runtime::set_skip_block (dzn::component *component, void *port)
 {
   states[component].skip = port;
 }
 
-void runtime::reset_skip_block (dzn::component *component)
+void
+runtime::reset_skip_block (dzn::component *component)
 {
   states.at (component).skip = nullptr;
 }
 
-void runtime::flush (dzn::component *component, size_t coroutine_id)
+void
+runtime::flush (dzn::component *component, size_t coroutine_id)
 {
   handling (component) = 0;
   if (!external (component))
@@ -143,12 +157,16 @@ void runtime::flush (dzn::component *component, size_t coroutine_id)
         }
     }
 }
-bool runtime::queue_p (dzn::component *source, dzn::component *target)
+
+bool
+runtime::queue_p (dzn::component *source, dzn::component *target)
 {
   return (source && performs_flush (source))
     || handling (target);
 }
-void runtime::enqueue (dzn::component *source, dzn::component *target,
+
+void
+runtime::enqueue (dzn::component *source, dzn::component *target,
                        const std::function<void ()> &event, size_t coroutine_id)
 {
   if (queue_p (source, target))

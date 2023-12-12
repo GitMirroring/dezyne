@@ -38,34 +38,45 @@
 namespace dzn
 {
 static std::list<coroutine>::iterator find_self (std::list<coroutine> &coroutines);
-void defer (const dzn::locator &locator, std::function<bool ()> &&predicate,
+void
+defer (const dzn::locator &locator, std::function<bool ()> &&predicate,
             std::function<void (size_t)> &&event)
 {
   locator.get<dzn::pump> ().defer (std::move (predicate), std::move (event));
 }
-void prune_deferred (const dzn::locator &locator)
+
+void
+prune_deferred (const dzn::locator &locator)
 {
   if (auto pump = locator.try_get<dzn::pump> ())
     pump->prune_deferred ();
 }
-size_t coroutine_id (const dzn::locator &locator)
+
+size_t
+coroutine_id (const dzn::locator &locator)
 {
   auto pump = locator.try_get<dzn::pump> ();
   return !pump ? 1 : pump->coroutine_id ();
 }
-void port_block (const dzn::locator &locator, dzn::component *component, void *port)
+
+void
+port_block (const dzn::locator &locator, dzn::component *component, void *port)
 {
   dzn::debug.rdbuf () && dzn::debug << "port_block " << component
                                     << " " << port << std::endl;
   locator.get<dzn::pump> ().block (locator.get<dzn::runtime> (), component, port);
 }
-void port_release (const dzn::locator &locator, dzn::component *component, void *port)
+
+void
+port_release (const dzn::locator &locator, dzn::component *component, void *port)
 {
   dzn::debug.rdbuf () && dzn::debug << "port_release " << component
                                     << " " << port << std::endl;
   locator.get<dzn::pump> ().release (locator.get<dzn::runtime> (), component, port);
 }
-void collateral_block (const dzn::locator &locator, dzn::component *component)
+
+void
+collateral_block (const dzn::locator &locator, dzn::component *component)
 {
   dzn::debug.rdbuf () && dzn::debug << "pump::handling "
                                     << locator.get<dzn::runtime>().handling (component)
@@ -73,13 +84,16 @@ void collateral_block (const dzn::locator &locator, dzn::component *component)
   dzn::debug.rdbuf () && dzn::debug << "collateral_block " << component << std::endl;
   locator.get<dzn::pump> ().collateral_block (locator.get<dzn::runtime> (), component);
 }
-bool port_blocked_p (const dzn::locator &locator, void *port)
+
+bool
+port_blocked_p (const dzn::locator &locator, void *port)
 {
   dzn::pump *pump = locator.try_get<dzn::pump> ();
   return pump ? pump->blocked_p (port) : false;
 }
 
-static std::list<coroutine>::iterator find_self (std::list<coroutine> &coroutines)
+static std::list<coroutine>::iterator
+find_self (std::list<coroutine> &coroutines)
 {
   auto coroutine_p = [] (const dzn::coroutine & coroutine)
   {return coroutine.port == nullptr && !coroutine.finished;};
@@ -94,14 +108,16 @@ static std::list<coroutine>::iterator find_self (std::list<coroutine> &coroutine
   return std::find_if (coroutines.begin (), coroutines.end (), coroutine_p);
 }
 
-static std::list<coroutine>::iterator find_blocked (std::list<coroutine> &coroutines,
+static std::list<coroutine>::iterator
+find_blocked (std::list<coroutine> &coroutines,
                                                     void *port)
 {
   return std::find_if (coroutines.begin (), coroutines.end (),
                        [port] (dzn::coroutine & c) {return c.port == port;});
 }
 
-static void remove_finished_coroutines (std::list<coroutine> &coroutines)
+static void
+remove_finished_coroutines (std::list<coroutine> &coroutines)
 {
   coroutines.remove_if ([] (dzn::coroutine & c)
   {
@@ -120,15 +136,20 @@ pump::pump ()
   , switch_context ()
   , task (dzn::std_async (std::ref (*this)))
 {}
+
 pump::~pump ()
 {
   stop ();
 }
-bool pump::blocked_p (void *port)
+
+bool
+pump::blocked_p (void *port)
 {
   return find_blocked (coroutines, port) != coroutines.end ();
 }
-void pump::stop ()
+
+void
+pump::stop ()
 {
   debug.rdbuf () &&debug << "pump::stop" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
@@ -140,33 +161,43 @@ void pump::stop ()
       task.wait ();
     }
 }
-void pump::wait ()
+
+void
+pump::wait ()
 {
   debug.rdbuf () &&debug << "pump::wait" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
   idle.wait (lock, [this] {return queue.empty () && deferred.empty ();});
 }
-void pump::pause ()
+
+void
+pump::pause ()
 {
   debug.rdbuf () &&debug << "pump::pause" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
   paused = true;
 }
-void pump::resume ()
+
+void
+pump::resume ()
 {
   debug.rdbuf () &&debug << "pump::resume" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
   paused = false;
   condition.notify_one ();
 }
-void pump::flush ()
+
+void
+pump::flush ()
 {
   debug.rdbuf () &&debug << "pump::flush" << std::endl;
   resume ();
   std::this_thread::sleep_for (std::chrono::milliseconds (100));
   pause ();
 }
-void pump::operator () ()
+
+void
+pump::operator () ()
 {
   try
     {
@@ -257,15 +288,21 @@ void pump::operator () ()
       std::terminate ();
     }
 }
-bool pump::timers_expired () const
+
+bool
+pump::timers_expired () const
 {
   return timers.size () && timers.begin ()->first.expired ();
 }
-size_t pump::coroutine_id ()
+
+size_t
+pump::coroutine_id ()
 {
   return find_self (coroutines)->id;
 }
-void pump::create_context ()
+
+void
+pump::create_context ()
 {
   coroutines.emplace_back (++current_coroutine, [&]
   {
@@ -296,7 +333,9 @@ void pump::create_context ()
       }
   });
 }
-void pump::context_switch ()
+
+void
+pump::context_switch ()
 {
   if (switch_context.size ())
     {
@@ -306,7 +345,9 @@ void pump::context_switch ()
       context ();
     }
 }
-void pump::collateral_block (dzn::runtime &runtime, dzn::component *component)
+
+void
+pump::collateral_block (dzn::runtime &runtime, dzn::component *component)
 {
   auto self = find_self (coroutines);
   debug.rdbuf () &&debug << "[" << self->id << "] collateral_block"
@@ -334,7 +375,9 @@ void pump::collateral_block (dzn::runtime &runtime, dzn::component *component)
   debug.rdbuf () &&debug << "[" << self->id << "] collateral_unblock"
                          << std::endl;
 }
-void pump::collateral_release (std::list<coroutine>::iterator self)
+
+void
+pump::collateral_release (std::list<coroutine>::iterator self)
 {
   debug.rdbuf () &&debug << "[" << self->id << "] collateral_release"
                          << std::endl;
@@ -372,7 +415,9 @@ void pump::collateral_release (std::list<coroutine>::iterator self)
       unblocked.clear ();
     }
 }
-void pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
+
+void
+pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
 {
   auto self = find_self (coroutines);
   runtime.blocked (component) = self->id;
@@ -421,7 +466,9 @@ void pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
   runtime.reset_skip_block (component);
   runtime.blocked (component) = 0;
 }
-bool pump::collateral_release_skip_block (dzn::component *component)
+
+bool
+pump::collateral_release_skip_block (dzn::component *component)
 {
   bool have_collateral = false;
   collateral_blocked.reverse ();
@@ -479,33 +526,43 @@ void pump::release (dzn::runtime &runtime, dzn::component *component, void *port
     assert (!"we must never return here!!!");
   });
 }
-void pump::operator () (const std::function<void ()> &event)
+
+void
+pump::operator () (const std::function<void ()> &event)
 {
   assert (event);
   std::lock_guard<std::mutex> lock (mutex);
   queue.push (event);
   condition.notify_one ();
 }
-void pump::operator () (std::function<void ()> &&event)
+
+void
+pump::operator () (std::function<void ()> &&event)
 {
   assert (event);
   std::lock_guard<std::mutex> lock (mutex);
   queue.push (std::move (event));
   condition.notify_one ();
 }
-void pump::defer (std::function<bool ()> &&predicate,
-                  std::function<void (size_t)> &&event)
+
+void
+pump::defer (std::function<bool ()> &&predicate,
+             std::function<void (size_t)> &&event)
 {
   deferred.emplace_back (std::move (predicate), std::move (event));
 }
-void pump::prune_deferred ()
+
+void
+pump::prune_deferred ()
 {
   deferred.erase (std::remove_if (deferred.begin (), deferred.end (),
                                   [] (const typename decltype (deferred)::value_type & e)
                                   {return !e.first ();}),
                   deferred.end ());
 }
-void pump::handle (size_t identifier, size_t milliseconds,
+
+void
+pump::handle (size_t identifier, size_t milliseconds,
                    const std::function<void ()> &event)
 {
   assert (event);
@@ -514,7 +571,9 @@ void pump::handle (size_t identifier, size_t milliseconds,
                         { return pair.first.id == identifier; }) == timers.end ());
   timers.emplace (deadline (identifier, milliseconds), event);
 }
-void pump::remove (size_t identifier)
+
+void
+pump::remove (size_t identifier)
 {
   auto it = std::find_if (timers.begin (), timers.end (),
                           [identifier] (const typename decltype (timers)::value_type & pair)

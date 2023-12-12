@@ -50,15 +50,39 @@ namespace dzn
 {
 template <typename T>
 std::string to_string (T t);
-inline std::string to_string (bool b) {return b ? "true" : "false";}
-inline std::string to_string (int i) {return std::to_string (i);}
-inline void to_void (std::string const &) {}
-inline int to_int (std::string s) {return std::stoi (s);}
-inline bool to_bool (std::string s) {return s == "true";}
+inline std::string
+to_string (bool b)
+{
+  return b ? "true" : "false";
+}
+
+inline std::string
+to_string (int i)
+{
+  return std::to_string (i);
+}
+
+inline void
+to_void (std::string const &)
+{
+}
+
+inline int
+to_int (std::string s)
+{
+  return std::stoi (s);
+}
+
+inline bool
+to_bool (std::string s)
+{
+  return s == "true";
+}
 
 extern std::ostream debug;
 
-inline std::string component_to_string (dzn::component *c)
+inline std::string
+component_to_string (dzn::component *c)
 {
   return c ? reinterpret_cast<component_meta *> (c)->dzn_meta.name : "<external>";
 }
@@ -69,7 +93,8 @@ void trace_qout (std::ostream &, port::meta const &, char const *);
 void trace_in (std::ostream &, port::meta const &, char const *);
 void trace_out (std::ostream &, port::meta const &, char const *);
 
-inline void apply (dzn::meta const *m, const std::function<void (dzn::meta const *)> &f)
+inline void
+apply (dzn::meta const *m, const std::function<void (dzn::meta const *)> &f)
 {
   f (m);
   for (auto c : m->children)
@@ -78,7 +103,8 @@ inline void apply (dzn::meta const *m, const std::function<void (dzn::meta const
     }
 }
 
-inline void check_bindings (dzn::meta const *c)
+inline void
+check_bindings (dzn::meta const *c)
 {
   apply (c, [] (dzn::meta const * m)
   {
@@ -86,12 +112,14 @@ inline void check_bindings (dzn::meta const *c)
   });
 }
 
-inline void check_bindings (dzn::component &c)
+inline void
+check_bindings (dzn::component &c)
 {
   check_bindings (&reinterpret_cast<component_meta const *> (&c)->dzn_meta);
 }
 
-inline void dump_tree (std::ostream &os, dzn::meta const *c)
+inline void
+dump_tree (std::ostream &os, dzn::meta const *c)
 {
   apply (c, [&] (dzn::meta const * m)
   {
@@ -99,7 +127,8 @@ inline void dump_tree (std::ostream &os, dzn::meta const *c)
   });
 }
 
-inline void dump_tree (dzn::component const &c)
+inline void
+dump_tree (dzn::component const &c)
 {
   dump_tree (std::clog, &reinterpret_cast<component_meta const *> (&c)->dzn_meta);
 }
@@ -160,8 +189,10 @@ void defer (C *component, P &&predicate, E const &event)
            component->dzn_runtime.handling (component) = 0;
          }));
 }
+
 //https://cp-algorithms.com/string/string-hashing.html
-inline std::uint32_t hash (char const* l, std::uint32_t h)
+inline std::uint32_t
+hash (char const* l, std::uint32_t h)
 {
   // numeric base for beginning of [0-9a-zA-Z] - 1, i.e. '0' = 48 - 1
   constexpr std::uint32_t b = 47;

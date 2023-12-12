@@ -26,7 +26,8 @@
 
 namespace dzn
 {
-std::future<void> std_async (std::function<void ()> const &work)
+std::future<void>
+std_async (std::function<void ()> const &work)
 {
   return std::async (std::launch::async, work);
 }

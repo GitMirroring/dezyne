@@ -96,7 +96,7 @@ public:
               if (this->rel) this->rel ();
             }
         }
-      catch (const forced_unwind &)
+      catch (forced_unwind const&)
         {
           debug.rdbuf () &&debug << "ignoring forced_unwind" << std::endl;
         }
@@ -115,8 +115,8 @@ public:
   {}
   context (context &&) = delete;
   context &operator= (context &&) = delete;
-  context (const context &) = delete;
-  context &operator= (const context &) = delete;
+  context (context const&) = delete;
+  context &operator= (context const&) = delete;
   ~context ()
   {
     std::unique_lock<std::mutex> lock (mutex);
