@@ -497,6 +497,7 @@ REGRESSION_TESTS =				\
  %D%/space.space				\
  %D%/space.wostream				\
  %D%/state_deadlock				\
+ %D%/stateful_injected				\
  %D%/step_state					\
  %D%/stress_comment				\
  %D%/sync_out_reply_binding			\

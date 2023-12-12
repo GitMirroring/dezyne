@@ -1,0 +1,88 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+
+interface ihello
+{
+  in void hello ();
+  in bool cruel ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] {
+      on hello: {}
+      on cruel: reply (true);
+    }
+  }
+}
+
+component hello
+{
+  provides ihello h;
+  requires injected ihello w;
+  behavior
+  {
+    on h.hello (): w.hello ();
+    on h.cruel (): reply (w.cruel ());
+  }
+}
+
+component cruel
+{
+  provides ihello h;
+  behavior
+  {
+    on h.hello (): {}
+    on h.cruel (): reply (true);
+  }
+}
+
+component mux
+{
+  provides ihello h;
+  requires ihello left;
+  requires ihello right;
+  behavior
+  {
+    on h.hello (): {left.hello (); right.hello ();}
+    on h.cruel (): {bool b = left.cruel (); b = right.cruel () || b; reply (b);}
+  }
+}
+
+component stateful_injected
+{
+  provides ihello h;
+  system
+  {
+    mux m;
+    hello left;
+    hello right;
+    cruel c;
+
+    h <=> m.h;
+    m.left <=> left.h;
+    m.right <=> right.h;
+    c.h <=> *;
+  }
+}
