@@ -1156,19 +1156,6 @@ std::basic_ostream<Char, Traits> &")
 (define-method (shell-system->sm:statements-unmemoized (o <shell-system>))
   (let* ((injected-instances (code:injected-instance* o))
          (injected? (pair? injected-instances)))
-    (define (port->external port)
-      (map
-       (lambda (event)
-         (sm:assign*
-          (simple-format
-           #f "~a.~a.~a.dzn_shell_p"
-           (.name port)
-           (.direction event)
-           (.name event))
-          "true"))
-       (append
-        (ast:in-event* port)
-        (ast:out-event* port))))
     (define (provides->member port)
       (let ((other-end (ast:other-end-point port)))
         (sm:variable
@@ -1346,9 +1333,7 @@ std::basic_ostream<Char, Traits> &")
                                            (name "locator"))))
                  (statement
                   (sm:compound*
-                   `(,@(append-map port->external (ast:provides-port* o))
-                     ,@(append-map port->external (ast:requires-port* o))
-                     ,@(map provides->init (ast:provides-port* o))
+                   `(,@(map provides->init (ast:provides-port* o))
                      ,@(map requires->init (ast:requires-port* o))
                      ,@(map trigger->event-slot (ast:provides-in-triggers o))
                      ,@(map trigger->event-slot (ast:requires-out-triggers o))

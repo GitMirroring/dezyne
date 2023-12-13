@@ -224,7 +224,7 @@ template <typename R, typename...Args>
 struct event<R (Args...)>
 {
   std::function <void ()> dzn_out_binding;
-  bool dzn_shell_p;
+  bool dzn_strict_p;
   R reply;
   void* port;
   std::function <void (char const*)> port_update;
@@ -239,7 +239,7 @@ struct event<R (Args...)>
 
   std::function<R (Args...)> f;
   event ()
-    : dzn_shell_p (false)
+    : dzn_strict_p (false)
     , reply ()
     , port ()
     , port_update ([] (char const*){})
@@ -257,6 +257,7 @@ struct event<R (Args...)>
   template <typename Component, typename Interface>
   void set (Component* c, Interface* i, char const* n)
   {
+    this->dzn_strict_p = true;
     this->port = i;
     this->port_update = [i,c] (char const* s)
     {
@@ -323,7 +324,7 @@ struct event<R (Args...)>
   {
     this->f = [f,this] (Args ... args) -> decltype (f (args...))
     {
-      if (this->dzn_shell_p) return f (args...);
+      if (!this->dzn_strict_p) return f (args...);
 
       assert (this->port);
       assert (this->port_update);
@@ -372,7 +373,7 @@ template <typename...Args>
 struct event<void (Args...)>
 {
   std::function <void ()> dzn_out_binding;
-  bool dzn_shell_p;
+  bool dzn_strict_p;
   void* port;
   std::function <void (char const*)> port_update;
   dzn::port::meta* dzn_port_meta;
@@ -386,7 +387,7 @@ struct event<void (Args...)>
 
   std::function<void (Args...)> f;
   event ()
-    : dzn_shell_p (false)
+    : dzn_strict_p (false)
     , port ()
     , port_update ([] (char const*){})
     , dzn_port_meta ()
@@ -403,6 +404,7 @@ struct event<void (Args...)>
   template <typename Component, typename Interface>
   void set (Component* c, Interface* i, char const* n)
   {
+    this->dzn_strict_p = true;
     this->port = i;
     this->port_update = [i,c] (char const* s)
     {
@@ -464,7 +466,7 @@ struct event<void (Args...)>
   {
     this->f = [f,this] (Args... args) -> decltype (f (args...))
     {
-      if (dzn_shell_p) return f (args...);
+      if (!dzn_strict_p) return f (args...);
 
       assert (this->port);
       assert (this->port_update);
@@ -512,7 +514,7 @@ struct event;
 template <typename...Args>
 struct event<void (Args...)>
 {
-  bool dzn_shell_p;
+  bool dzn_strict_p;
   void* port;
   std::function <void (char const*)> port_update;
   dzn::port::meta* dzn_port_meta;
@@ -526,7 +528,7 @@ struct event<void (Args...)>
   std::function<void (Args...)> f;
 
   event ()
-    : dzn_shell_p (false)
+    : dzn_strict_p (false)
     , port ()
     , port_update ([] (char const*){})
     , dzn_port_meta ()
@@ -543,6 +545,7 @@ struct event<void (Args...)>
   template <typename Component, typename Interface>
   void set (Component* c, Interface* i, char const* n)
   {
+    this->dzn_strict_p = true;
     this->port = i;
     this->port_update = [this,i,c] (char const* s)
     {
@@ -564,6 +567,15 @@ struct event<void (Args...)>
   }
   event& operator = (event const& that)
   {
+    assert (that.port);
+    assert (that.port_update);
+    assert (that.dzn_port_meta);
+    assert (that.component);
+    assert (that.write_state);
+    assert (that.dzn_meta);
+    assert (that.dzn_locator);
+    assert (that.dzn_runtime);
+
     std::function<void (Args...)> g (that.f);
     this->f = [g,this] (Args...args)
     {
@@ -581,7 +593,7 @@ struct event<void (Args...)>
   {
     this->f = [f,this] (Args...args)
     {
-      if (this->dzn_shell_p) return f (args...);
+      if (!this->dzn_strict_p) return f (args...);
 
       assert (this->port);
       assert (this->port_update);
