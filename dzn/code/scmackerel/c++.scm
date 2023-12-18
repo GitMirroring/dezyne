@@ -904,8 +904,7 @@ std::basic_ostream<Char, Traits> &")
       (sm:method (struct component)
                  (type "void")
                  (name (code:event-slot-name trigger))
-<<<<<<< HEAD
-                 (formals (map c++:->formal (code:formal* trigger)))
+                 (formals (map c++:->formal (ast:formal* trigger)))
                  (statement
                   (sm:compound*
                    (sm:call
@@ -913,20 +912,6 @@ std::basic_ostream<Char, Traits> &")
                            (%member-prefix)
                            (code:event-name trigger)))
                     (arguments arguments)))))))
-=======
-                 (formals (map c++:->formal (ast:formal* trigger)))
-                 (statement (sm:compound*
-                             `(,(sm:call
-                                 (name "dzn::call_out")
-                                 (arguments `("this"
-                                              ,(string-append
-                                                (%member-prefix)
-                                                (.port.name trigger))
-                                              ,(simple-format
-                                                #f "~s"
-                                                (.event.name trigger))
-                                              ,lambda)))))))))
->>>>>>> c4e3e61d14 (DRAFT code: Change code:add-calling-context into a regular normalization.)
   (let* ((enums (filter (is? <enum>) (code:enum* o)))
          (ports (ast:port* o))
          (check-bindings-list
