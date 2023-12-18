@@ -24,41 +24,38 @@
 
 interface ihello
 {
-  in bool hello ();
-  out void cruel ();
+  in bool hello();
 
   behavior
   {
     bool b = false;
-    on hello:
-      {
-        // for 2.18
-        b = !b;
-        if (b) reply (true);
-        else {cruel; reply (false);}
-        // early return
-        // if (b) return true;
-        // cruel;
-        // return false;
-    }
+    on hello: {b = !b; reply (b);}
   }
 }
 
 component hello_bool
 {
   provides ihello h;
+  requires iworld w;
 
   behavior
   {
-    on h.hello ():
+    bool b = false;
+    on h.hello():
       {
-        // for 2.18
-        if (!h.b) reply (true);
-        else {h.cruel (); reply (false);}
-        // early_return
-        // if (!h.b) return true;
-        // h.cruel ();
-        // return false;
+        b = w.world();
+        reply (b);
       }
+  }
+}
+
+interface iworld
+{
+  in bool world();
+
+  behavior
+  {
+    bool b = false;
+    on world: {b = !b; reply (b);}
   }
 }
