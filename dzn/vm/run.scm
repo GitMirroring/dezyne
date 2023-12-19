@@ -150,16 +150,20 @@
 valid PCs that are executing an imperative statement."
   (let* ((pcs (map car traces))
          (pcs (filter (negate (is-status? <error>)) pcs))
-         (pcs (filter (disjoin (negate (is-status? <postponed-match>))
-                               (compose (conjoin
-                                         (negate (is? <action>))
-                                         (negate (is? <reply>))
-                                         (disjoin (negate (is? <variable>))
-                                                  (compose null?
-                                                           (cute tree-collect
-                                                                 (is? <action>)
-                                                                 <>))))
-                                        .statement))
+         (pcs (filter (disjoin
+                       (negate (is-status? <postponed-match>))
+                       (conjoin
+                        (compose (conjoin
+                                  (negate (is? <action>))
+                                  (negate (is? <reply>))
+                                  (negate (is? <trigger-return>))
+                                  (disjoin (negate (is? <variable>))
+                                           (compose null?
+                                                    (cute tree-collect
+                                                          (is? <action>)
+                                                          <>))))
+                                 .statement)
+                        (compose (cute ast:parent <> <component>) .ast .status)))
                       pcs)))
     (and
      (every (compose (cute is-a? <> <runtime:component>) .instance) pcs)
