@@ -430,6 +430,7 @@ REGRESSION_TESTS =				\
  %D%/interface_enum				\
  %D%/interface_int				\
  %D%/interface_missing_reply			\
+ %D%/interface_nondet2				\
  %D%/iteration					\
  %D%/label_instance_mismatch			\
  %D%/livelock_nondet				\
