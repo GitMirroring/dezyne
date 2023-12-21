@@ -118,6 +118,13 @@ check_bindings (dzn::component &c)
   check_bindings (&reinterpret_cast<component_meta const *> (&c)->dzn_meta);
 }
 
+template <typename Foreign>
+inline void
+check_bindings (Foreign const& f)
+{
+  check_bindings (&f.dzn_meta);
+}
+
 inline void
 dump_tree (std::ostream &os, dzn::meta const *c)
 {
