@@ -64,6 +64,8 @@ main ()
     }).detach ();
   };
 
+  dzn::check_bindings (sut);
+
   std::clog << "hello happy\n";
   sut.h.in.hello ();
   cruel = true;

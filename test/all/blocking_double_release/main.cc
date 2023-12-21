@@ -37,6 +37,8 @@ main ()
   loc.set (rt);
   blocking_double_release sut (loc);
 
+  dzn::check_bindings (sut);
+
   auto f0 = std::async (std::launch::async, sut.block0.in.hello);
   std::this_thread::sleep_for (std::chrono::milliseconds (100));
   auto f1 = std::async (std::launch::async, sut.block1.in.hello);

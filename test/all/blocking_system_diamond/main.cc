@@ -44,6 +44,8 @@ main ()
   sut.r_left.in.hello = [&] () {};
   sut.r_right.in.hello = [&] () {};
 
+  dzn::check_bindings (sut);
+
   // 1: run through left to bottom and block
   auto f = std::async (std::launch::async, sut.p.in.hello);
   std::this_thread::sleep_for (std::chrono::milliseconds (100));

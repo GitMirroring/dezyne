@@ -56,6 +56,8 @@ main ()
 
   sut.r.in.hello = [&] {};
 
+  dzn::check_bindings (sut);
+
   // Let's pick just one trace of the 8 traces...
   std::string trace = read ();
   if (0);

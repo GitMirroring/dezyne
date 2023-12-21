@@ -43,6 +43,8 @@ main ()
 
   sut.w.in.hello = [&] {};
 
+  dzn::check_bindings (sut);
+
   // 1: run through left top to bottom and block
   auto f0 = std::async (std::launch::async, sut.left.in.hello);
   std::this_thread::sleep_for (std::chrono::milliseconds (100));

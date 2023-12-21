@@ -44,12 +44,15 @@ main ()
       , dzn_locator ()
     {}
   };
-  component c;
-  ihello_mock port ({{"sut",&port,&c,&c.dzn_meta},{"sut",0,0,0}}, &c);
+  component sut;
+  ihello_mock port ({{"sut",&port,&sut,&sut.dzn_meta},{"sut",0,0,0}}, &sut);
+  sut.dzn_meta.ports_connected.emplace_back([&]{port.dzn_check_bindings();});
 
   port.in.hello = [&]{hello = true; port.out.cruel ();};
   port.out.cruel = [&]{cruel = true;};
   port.out.world = [&]{world = true;};
+
+  dzn::check_bindings (sut);
 
   port.in.hello ();
 

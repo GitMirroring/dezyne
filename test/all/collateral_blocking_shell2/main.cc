@@ -62,6 +62,8 @@ main ()
     sut.w.out.bye ();
   };
 
+  dzn::check_bindings (sut);
+
   sut.h.in.hello ();
 
   f1.wait ();

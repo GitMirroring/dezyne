@@ -64,6 +64,8 @@ main (int argc, char const *argv[])
 
   sut.h.out.world = [&] (int) {};
 
+  dzn::check_bindings (sut);
+
   std::string trace = read ();
   if (0);
   // trace

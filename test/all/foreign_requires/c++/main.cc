@@ -33,12 +33,14 @@ main ()
 
   dzn::locator locator;
   dzn::runtime runtime;
-  locator.set (runtime);
+  foreign_requires sut (locator.set (runtime));
 
-  foreign_requires sut (locator);
-
+  sut.h.out.world = []{};
   sut.w0.in.hello = sut.w0.out.world;
   sut.w1.in.hello = sut.w1.out.world;
+
+  dzn::check_bindings (sut);
+
   sut.f.w0_world ();
   sut.f.w1_world ();
 }

@@ -45,6 +45,8 @@ int main ()
     sut.world.out.world ();
   };
 
+  dzn::check_bindings (sut);
+
   sut.left.in.hello ();
   auto f1 = std::async (std::launch::async, [&] {sut.right.in.hello ();});
   std::this_thread::sleep_for (std::chrono::milliseconds (50));

@@ -56,6 +56,8 @@ main ()
 
   sut.w.in.hello = [] () {};
 
+  dzn::check_bindings (sut);
+
   std::string trace = read ();
   if (0);
   // trace

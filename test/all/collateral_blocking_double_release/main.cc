@@ -55,6 +55,8 @@ main ()
   sut.w.in.hello = [&] {};
   sut.w.in.cruel = [&] {};
 
+  dzn::check_bindings (sut);
+
   // Let's just pick one trace
   std::string trace = read ();
   if (0);

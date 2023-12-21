@@ -45,6 +45,8 @@ int main ()
     sut.r.out.world ();
   };
 
+  dzn::check_bindings (sut);
+
   sut.left.in.hello ();
   sut.right.in.hello ();
 }

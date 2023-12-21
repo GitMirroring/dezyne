@@ -54,6 +54,8 @@ int main ()
     sut.w_right.out.world ();
   };
 
+  dzn::check_bindings (sut);
+
   std::thread t ([&]
   {
     std::this_thread::sleep_for (std::chrono::milliseconds (50));

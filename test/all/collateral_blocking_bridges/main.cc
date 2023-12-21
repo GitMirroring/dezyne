@@ -56,6 +56,8 @@ main ()
   sut.middle_w.in.hello = [&] {};
   sut.bottom_w.in.hello = [&] {};
 
+  dzn::check_bindings (sut);
+
   auto f = std::async (std::launch::async, sut.h.in.hello); // 1: run through top to middle and block
   std::this_thread::sleep_for (std::chrono::milliseconds (100));
   std::string trace = read ();

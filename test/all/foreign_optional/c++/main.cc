@@ -37,7 +37,9 @@ main ()
   l.set (rt);
 
   foreign_optional sut (l);
-
   sut.c.h.out.world = [] {};
+
+  dzn::check_bindings (sut);
+
   sut.f.w.in.hello ();
 }

@@ -50,6 +50,8 @@ int main ()
     sut.rightw.out.world ();
   };
 
+  dzn::check_bindings (sut);
+
   for (size_t i = 0; i < 2; ++i)
     {
       auto f1 = std::async (std::launch::async, [&]

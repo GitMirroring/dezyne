@@ -52,5 +52,7 @@ main ()
     sut.r.out.world ();
   };
 
+  dzn::check_bindings (sut);
+
   sut.p.in.hello ();
 }

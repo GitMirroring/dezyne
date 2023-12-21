@@ -35,8 +35,10 @@ int main ()
       dzn::runtime runtime;
       dzn::pump pump;
       pump_twice sut (locator.set (runtime).set (pump));
-
       sut.h.out.world = [&] {};
+
+      dzn::check_bindings (sut);
+
       dzn::shell (pump, [&] {sut.h.in.hello ();});
       pump.wait ();
     }

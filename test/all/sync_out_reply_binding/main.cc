@@ -72,6 +72,8 @@ main (int argc, char const *argv[])
     sut.w.out.world_void ();
   };
 
+  dzn::check_bindings (sut);
+
   std::string trace = read ();
   if (0);
   // trace

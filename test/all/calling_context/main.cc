@@ -46,6 +46,8 @@ main ()
     else {assert (cc == 123); cc = 456;}
   };
 
+  dzn::check_bindings (sut);
+
   int cc = 0;
 
   sut.h.in.hello (cc, 123);

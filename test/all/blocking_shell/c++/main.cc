@@ -110,6 +110,8 @@ int main ()
     return dzn::to_Enum (result);
   };
 
+  dzn::check_bindings (sut);
+
   std::queue<std::future<void>> sync;
 
   std::copy (std::istream_iterator<std::string> (std::cin),

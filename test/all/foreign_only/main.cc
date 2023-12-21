@@ -77,6 +77,9 @@ main (int argc, char const* argv[])
   if (dzn_getopt (argc, argv, "--debug")) dzn::debug.rdbuf (std::clog.rdbuf ());
   dzn::container< ::foreign, std::function<void ()>> c (flush);
   connect_ports (c);
+
+  dzn::check_bindings (c);
+
   c (event_map (c));
 }
 // version 2.18.0.rc5.70-dfe40

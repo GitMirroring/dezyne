@@ -42,6 +42,8 @@ main ()
   sut.h.out.cruel = [&]{cruel = true;};
   sut.h.out.world = [&]{world = true;};
 
+  dzn::check_bindings (sut);
+
   sut.h.in.hello ();
 
   assert (hello);

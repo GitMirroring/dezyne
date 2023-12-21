@@ -34,6 +34,8 @@ main ()
   sut.w.in.hello = [&] {};
   sut.w.in.bye = sut.w.out.world;
 
+  dzn::check_bindings (sut);
+
   sut.h.in.hello ();
   sut.w.out.world ();
   sut.h.in.bye ();
