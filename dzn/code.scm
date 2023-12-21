@@ -585,11 +585,21 @@
           (to (edge-to edge))
           (prefix (edge->prefix edge)))
       (make <shared-transition> #:from from #:prefix prefix #:to to)))
+  (define (to=from edge)
+    (= (edge-from edge) (edge-to edge)))
   (let* ((debugity (dzn:debugity))
          (interface (ast:parent o <interface>))
          (lts (code:shared-lts interface))
          (nodes (vector->list lts))
          (edges (append-map node-edges nodes))
+         (illegal-node-ids (map edge-from
+                                (filter (conjoin (compose (cute equal? <>
+                                                                "declarative_illegal")
+                                                          edge-label)
+                                                 to=from) edges)))
+         (edges (filter (compose not
+                                 (cute member <> illegal-node-ids)
+                                 edge-to) edges))
          (edges (filter (compose not (disjoin state? illegal?) edge-label) edges))
          (transitions (map edge->transition edges)))
     transitions))
