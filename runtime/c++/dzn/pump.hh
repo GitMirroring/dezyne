@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017, 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2021, 2022, 2024 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -113,19 +113,26 @@ namespace dzn
   private:
     bool timers_expired() const;
   };
-
-  template <typename L, typename ... Args, typename = typename std::enable_if<std::is_void<typename std::result_of<L(Args ...)>::type>::value>::type>
-  void shell(dzn::pump& pump, L&& l, Args&& ...args)
+#if __cplusplus > 201402L
+  template <typename F, typename...Args, typename = typename std::enable_if<std::is_void<typename std::invoke_result<F,Args...>::type>::value>::type>
+#else
+  template <typename F, typename...Args, typename = typename std::enable_if<std::is_void<typename std::result_of<F(Args...)>::type>::value>::type>
+#endif
+  void shell(dzn::pump& pump, F&& f, Args&& ...args)
   {
     std::promise<void> p;
-    pump([&]{l(std::forward<Args>(args)...); p.set_value();});
+    pump([&]{f(std::forward<Args>(args)...); p.set_value();});
     return p.get_future().get();
   }
-  template <typename L, typename ... Args, typename = typename std::enable_if<!std::is_void<typename std::result_of<L(Args ...)>::type>::value>::type>
-  auto shell(dzn::pump& pump, L&& l, Args&& ...args) -> decltype(l(std::forward<Args>(args)...))
+#if __cplusplus > 201402L
+  template <typename F, typename...Args, typename = typename std::enable_if<!std::is_void<typename std::invoke_result<F,Args...>::type>::value>::type>
+#else
+  template <typename F, typename...Args, typename = typename std::enable_if<!std::is_void<typename std::result_of<F(Args...)>::type>::value>::type>
+#endif
+  auto shell(dzn::pump& pump, F&& f, Args&& ...args) -> decltype(f(std::forward<Args>(args)...))
   {
-    std::promise<decltype(l(std::forward<Args>(args)...))> p;
-    pump([&]{p.set_value(l(std::forward<Args>(args)...));});
+    std::promise<decltype(f(std::forward<Args>(args)...))> p;
+    pump([&]{p.set_value(f(std::forward<Args>(args)...));});
     return p.get_future().get();
   }
 }

@@ -3,7 +3,7 @@
 // Copyright © 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -36,6 +36,7 @@
 #include <queue>
 #include <tuple>
 #include <vector>
+
 
 // Set to 1 for experimental state tracing feature.
 #ifndef DZN_STATE_TRACING
@@ -126,7 +127,11 @@ namespace dzn
     }
     void flush(dzn::component*, size_t);
     void enqueue(dzn::component*, dzn::component*, const std::function<void()>&, size_t);
+#if __cplusplus > 201402L
+    template <typename F, typename = typename std::enable_if<std::is_void<typename std::invoke_result<F>::type>::value>::type>
+#else
     template <typename F, typename = typename std::enable_if<std::is_void<typename std::result_of<F()>::type>::value>::type>
+#endif
     void handle(dzn::component* component, F&& f, size_t coroutine_id)
     {
       size_t& handle = handling(component);
@@ -135,7 +140,11 @@ namespace dzn
       assert(handle != 0);
       f();
     }
+#if __cplusplus > 201402L
+    template <typename F, typename = typename std::enable_if<!std::is_void<typename std::invoke_result<F>::type>::value>::type>
+#else
     template <typename F, typename = typename std::enable_if<!std::is_void<typename std::result_of<F()>::type>::value>::type>
+#endif
     inline auto handle(dzn::component* component, F&& f, size_t coroutine_id) -> decltype(f())
     {
       size_t& handle = handling(component);
@@ -171,13 +180,21 @@ namespace dzn
       os << *component << std::endl;
 #endif
     }
-    template <typename L, typename = typename std::enable_if<std::is_void<typename std::result_of<L()>::type>::value>::type>
-    void operator()(L&& event)
+#if __cplusplus > 201402L
+    template <typename F, typename = typename std::enable_if<std::is_void<typename std::invoke_result<F>::type>::value>::type>
+#else
+    template <typename F, typename = typename std::enable_if<std::is_void<typename std::result_of<F()>::type>::value>::type>
+#endif
+    void operator()(F&& event)
     {
       component->dzn_rt.handle(component, event, coroutine_id(component->dzn_locator));
     }
-    template <typename L, typename = typename std::enable_if<!std::is_void<typename std::result_of<L()>::type>::value>::type>
-    auto operator()(L&& event) -> decltype(event())
+#if __cplusplus > 201402L
+    template <typename F, typename = typename std::enable_if<!std::is_void<typename std::invoke_result<F>::type>::value>::type>
+#else
+    template <typename F, typename = typename std::enable_if<!std::is_void<typename std::result_of<F()>::type>::value>::type>
+#endif
+    auto operator()(F&& event) -> decltype(event())
     {
       auto value = component->dzn_rt.handle(component, event, coroutine_id(component->dzn_locator));
       reply = to_string(value);
