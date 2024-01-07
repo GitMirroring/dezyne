@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021, 2022, Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -270,6 +270,7 @@ REGRESSION_TESTS =				\
  %D%/defer_double				\
  %D%/defer_empty_selection			\
  %D%/defer_local				\
+ %D%/defer_local_field_test			\
  %D%/defer_locals				\
  %D%/defer_loop					\
  %D%/defer_if					\
