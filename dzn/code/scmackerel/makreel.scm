@@ -1363,7 +1363,6 @@
 
 (define-method (assign->sum (model <model>) (o <action>) (variable <variable>))
   (let* ((port (.port o))
-         (interface (.type port))
          (action-type (ast:type o))
          (variable-type (ast:type variable))
          (shared (ast:shared* model))
@@ -1386,10 +1385,7 @@
                   ,@(if (or (ast:external? port)
                             (not (find (compose (cute ast:eq? port <>) .port)
                                        (ast:shared* model)))) '()
-                                       `(,(sm:sum (type (%state interface))
-                                                  (var (port-prefix "s" port))
-                                                  (statement
-                                                   (sm:invoke (%state-action port) var))))))))))))
+                                       `(,(sum-state-action port))))))))))
 
 (define-method (assign->sum (model <model>) (o <action>) (variable <formal>))
   (assign->sum model o (make <variable>
