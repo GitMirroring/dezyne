@@ -1,0 +1,17 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: proxy: check: deterministic: ok
+verify: proxy: check: illegal: ok
+verify: proxy: check: deadlock: ok
+verify: proxy: check: unreachable: ok
+verify: proxy: check: livelock: ok
+verify: proxy: check: compliance: ok
+verify: mux: check: deterministic: ok
+verify: mux: check: illegal: ok
+verify: mux: check: deadlock: ok
+verify: mux: check: unreachable: ok
+verify: mux: check: livelock: ok
+verify: mux: check: compliance: fail
+error: component mux is non-compliant with interface(s) of provides port(s)

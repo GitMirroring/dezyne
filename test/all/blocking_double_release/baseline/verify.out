@@ -1,0 +1,6 @@
+model: mux_left
+left_block.hello
+<non-compliance>
+model: mux_right
+right_block.hello
+<non-compliance>
