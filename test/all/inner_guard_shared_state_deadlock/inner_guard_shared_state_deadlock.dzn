@@ -1,0 +1,77 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  in bool bye ();
+
+  out void cruel ();
+
+  behavior
+  {
+    bool idle = true;
+
+    [idle] on hello: idle = false;
+    on bye:
+    {
+      [!idle] {reply (true); idle = true; cruel;}
+      [!idle] reply (false);
+    }
+  }
+}
+
+interface icruel
+{
+  in bool cruel ();
+
+  behavior
+  {
+    on cruel:
+    {
+      [true] reply (true);
+      [true] reply (false);
+    }
+  }
+}
+
+
+component inner_guard_shared_state_deadlock
+{
+  provides ihello h;
+  requires icruel c;
+  behavior
+  {
+    on h.hello (): [h.idle] {}
+    on h.bye ():
+    {
+      if (c.cruel ())
+      {
+        h.cruel ();
+        reply (true);
+      }
+      else
+        reply (false);
+    }
+  }
+}
