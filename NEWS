@@ -5,6 +5,21 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.17.9 since 2.17.8
+** Code
+  - The C++ code generator now caters for pedantically strict C++20
+    compilers.
+** Noteworthy bug fixes
+  - In the generated (C++) code, a local enum variable used only in as a
+    field test in a defer statement could be captured by reference and
+    go out of scope.
+  - The `--language=json' output now also succeeds for files without any
+    dezyne model.
+  - The well-formedness check now also reports redefinition errors for
+    names in a namespace.
+  - A bug in the location calculation was fixed that would lead to a
+    quadratic performance problem for large files (over 10,000 lines).
+
 * Changes in 2.17.8 since 2.17.7
 ** Noteworthy bug fixes
   - The well-formedness check now reports a guard statement used in an
@@ -1078,7 +1093,7 @@
 
 * legalese
 
-Copyright © 2017,2018,2019,2020,2021,2022,2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2017,2018,2019,2020,2021,2022,2023,2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2017,2018,2019,2020,2021,2022,2023 Rutger van Beusekom <rutger@dezyne.org>
 Copyright © 2018,2019 Rob Wieringa <rma.wieringa@gmail.com>
 
