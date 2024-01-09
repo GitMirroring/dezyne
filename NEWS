@@ -5,6 +5,39 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.18.1 since 2.18.0
+** Code
+  - C++ runtime facilitates shared-state strictness through the
+    dzn_strict_p boolean, which is explicityly set to true by the
+    generated code, and therefore false by default.  Note that the
+    default case is aimed at thread safe shell systems, which do not
+    support shared state on their boundary events.
+  - Shared state enables the generated code to enforce the behavior of
+    each interface.  Any event which is illegal from the interface point
+    of view will now instantly trigger an illegal assert at runtime.
+  - In the C++ runtime the timer handling behavior has been changed to
+    prevent infinite timer loops using a 0 timeout delay.
+** Noteworthy bug fixes
+  - The simulator again allows observable non-determinism in interfaces;
+    disallowing this was a regression introduced in 2.18.0.
+  - The dezyne version is now also added to installed C and C++ headers.
+  - In the generated (C++) code, a local enum variable used only as a
+    field test in a defer statement is now captured by value and
+    can no longer go out of scope.
+  - A bug was fixed in the verifyer that would erroneously flag a
+    deadlock when using nested guarding.
+  - During verification of a component, interface models are verified
+    only once.
+  - The C++ runtime now has a specialization of dzn::check_bindings
+    specifically for foreign components.
+  - The well-formedness check now also reports redefinition errors for
+    names in a namespace.
+  - A bug in the location calculation was fixed that would lead to a
+    quadratic performance problem for large files (over 10,000 lines).
+  - A bug in the simulator that would erroneously flag a
+    <non-compliance> error for a non-deterministic interface has been
+    fixed; this was a regression introduced in 2.18.0.
+
 * Changes in 2.18.0 since 2.17.3
 ** Language
   - A component can now directly refer to the state values of its ports
@@ -132,7 +165,7 @@
 ** Verification
   - The error on failing the determinism check is no longer ambiguous by
     removing "due to overlapping guards" from the message.
-** Simulate
+** Simulation
   - The error on failing the determinism check is no longer ambiguous by
     removing "due to overlapping guards" from the message.
 ** Noteworthy bug fixes
@@ -1115,7 +1148,7 @@
 
 * legalese
 
-Copyright © 2017,2018,2019,2020,2021,2022,2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2017,2018,2019,2020,2021,2022,2023,2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2017,2018,2019,2020,2021,2022,2023 Rutger van Beusekom <rutger@dezyne.org>
 Copyright © 2018,2019 Rob Wieringa <rma.wieringa@gmail.com>
 
