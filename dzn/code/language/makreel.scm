@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2020, 2023 Paul Hoogendijk <paul@dezyne.org>
@@ -602,13 +602,13 @@ transformations."
                   makreel:mark-tail-call
                   add-function-return
                   extract-call
+                  makreel:add-state-placeholder
                   normalize:state+illegals
                   remove-otherwise
                   makreel:tick-names
                   add-explicit-temporaries
                   add-defer-end
                   (if (%no-unreachable?) identity tag-imperative-blocks)
-                  makreel:add-state-placeholder
                   purge-data
                   ) ast)))
       (when (> (dzn:debugity) 1)
