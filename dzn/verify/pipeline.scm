@@ -3,7 +3,7 @@
 ;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -641,29 +641,6 @@ init for MODEL unless INIT."
   (if all? (fold (cut or <> <>) #f (map (cut <>) l))
       (fold (lambda (e res) (or res (e))) #f l)))
 
-(define (mcrl2:verify-interface-asserts model root)
-  (and
-   (not (command-line:get 'no-interfaces))
-   (let* ((model-name (makreel:unticked-dotted-name model))
-          (asserts (verify-pipeline "verify-interface" root model))
-          (asserts (result-split asserts))
-          (nondets (verify-pipeline "verify-interface-nondet" root model))
-          (nondets (result-split nondets))
-          (lts-tags (get-tags asserts))
-          (unreachable (assert-unreachable lts-tags (model-tags model)))
-          (result `(,unreachable
-                    ,@asserts
-                    ,@nondets))
-          (deadlock? (get-trace 'deadlock result)))
-     (define* (report-assert assert #:key skip?)
-       (report assert skip? (get-trace assert result) model))
-     (reduce-or (command-line:get 'all)
-                `(,(cute report-assert 'deadlock)
-                  ,@(if (%no-unreachable?) '()
-                        `(,(cut report-assert 'unreachable #:skip? deadlock?)))
-                  ,(cute report-assert 'livelock)
-                  ,(cute report-assert 'deterministic))))))
-
 (define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))
          (lines (and output (string-split output #\newline)))
@@ -703,6 +680,29 @@ init for MODEL unless INIT."
       ;; XXX Avoid "no verification errors found"
       (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
     (values trace interface-accepts component-accepts)))
+
+(define (mcrl2:verify-interface-asserts model root)
+  (and
+   (not (command-line:get 'no-interfaces))
+   (let* ((model-name (makreel:unticked-dotted-name model))
+          (asserts (verify-pipeline "verify-interface" root model))
+          (asserts (result-split asserts))
+          (nondets (verify-pipeline "verify-interface-nondet" root model))
+          (nondets (result-split nondets))
+          (lts-tags (get-tags asserts))
+          (unreachable (assert-unreachable lts-tags (model-tags model)))
+          (result `(,unreachable
+                    ,@asserts
+                    ,@nondets))
+          (deadlock? (get-trace 'deadlock result)))
+     (define* (report-assert assert #:key skip?)
+       (report assert skip? (get-trace assert result) model))
+     (reduce-or (command-line:get 'all)
+                `(,(cute report-assert 'deadlock)
+                  ,@(if (%no-unreachable?) '()
+                        `(,(cut report-assert 'unreachable #:skip? deadlock?)))
+                  ,(cute report-assert 'livelock)
+                  ,(cute report-assert 'deterministic))))))
 
 (define (mcrl2:verify-component-asserts model root)
   (let* ((model-name (makreel:unticked-dotted-name model))
