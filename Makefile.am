@@ -395,6 +395,30 @@ update-hash: $(DIST_ARCHIVES)
 		-e 's,base32 #!dezyne!# "[^"]*"),base32 #!dezyne!# "$(shell $(GUIX) hash $<)"),' \
 		-e 's,version #!dezyne!# "[^"]*"),version #!dezyne!# "$(PACKAGE_VERSION)"),' \
 	guix/pack/dezyne.scm
+
+guix_pack_file = guix/pack/$(PACKAGE).scm
+TEMP_NAME := $(shell mktemp --dry-run --tmpdir $(PACKAGE).XXXXXXXXXX)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+COMMIT := $(shell git show --format=%H --no-patch)
+REVISION := $(shell grep -E 'revision "[0-9]+"' $(guix_pack_file) 2>/dev/null	\
+  | grep -Eo '[0-9]+')
+REVISION+1 := $(shell echo $$(( $(REVISION) + 1)))
+GIT_VERSION := $(shell test -e ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2>/dev/null) || cat ${srcdest}.tarball-version || echo 0.0)
+
+update-git-hash:
+	git diff --exit-code HEAD
+	git clone --branch=$(BRANCH) .git $(TEMP_NAME)
+	sed -i										\
+	    -e 's,(commit "[^"]*"),(commit "$(COMMIT)"),'				\
+	    -e 's,(revision "[^"]*"),(revision "$(REVISION+1)"),'			\
+	    -e 's,(base32 "[^"]*"),(base32 "'$$(guix hash -rx $(TEMP_NAME))'"),'	\
+	    $(guix_pack_file)
+	rm -rf $(TEMP_NAME)
+
+release-git: update-git-hash
+	git commit -m 'guix: Update to $(COMMIT).'			\
+	    -m '* $(guix_pack_file) ($(PACKAGE)): Update to $(COMMIT).'	\
+	    $(guix_pack_file)
 else
 $(warning update-hash: no Guix)
 endif
