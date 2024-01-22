@@ -584,8 +584,9 @@ PARSER_TESTS =					\
  %D%/parse_preprocessed_foo			\
  %D%/parse_preprocessed_imported_bar		\
  %D%/parse_preprocessed_imported_baz		\
- %D%/parse_port_qualifier			\
  %D%/parse.space.lookup				\
+ %D%/parse_port_qualifier			\
+ %D%/parse_space_duplicate_definition		\
  %D%/parse_unknown_enum				\
  %D%/wf_actionNotInOnEvent			\
  %D%/wf_actionValueDiscarded			\
