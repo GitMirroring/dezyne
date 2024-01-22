@@ -1,0 +1,3 @@
+test/all/parse_space_duplicate_definition/parse_space_duplicate_definition.dzn:29:1: error: identifier `space.hello' defined before
+test/all/parse_space_duplicate_definition/hello.dzn:27:1: info: previous `space.hello' definition here
+test/all/parse_space_duplicate_definition/parse_space_duplicate_definition.dzn:31:3: error: port `hello' must not have the same name as the model it is defined in
