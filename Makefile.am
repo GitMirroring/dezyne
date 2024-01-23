@@ -263,6 +263,7 @@ override $(srcdir)/doc/version.texi:
 	LC_ALL=C; export LC_ALL;					\
 	TZ=UTC0; export TZ;						\
 	timestamp=$$({ git log --pretty=format:%ct -- doc/dezyne.texi	\
+		       2>/dev/null					\
 		       || date +%s -r doc/dezyne.texi; }		\
 	                 | sort -n -r | head -n 1);			\
 	dmy=$$(date --date="@$$timestamp" "+%-d %B %Y");		\
@@ -280,6 +281,7 @@ override $(srcdir)/doc/stamp-vti:
 	LC_ALL=C; export LC_ALL;					\
 	TZ=UTC0; export TZ;						\
 	timestamp=$$({ git log --pretty=format:%ct -- doc/dezyne.texi	\
+		       2>/dev/null					\
 		       || date +%s -r doc/dezyne.texi; }		\
 	                 | sort -n -r | head -n 1);			\
 	dmy=$$(date --date="@$$timestamp" "+%-d %B %Y");		\
@@ -398,12 +400,12 @@ update-hash: $(DIST_ARCHIVES)
 
 guix_pack_file = guix/pack/$(PACKAGE).scm
 TEMP_NAME := $(shell mktemp --dry-run --tmpdir $(PACKAGE).XXXXXXXXXX)
-BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-COMMIT := $(shell git show --format=%H --no-patch)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
+COMMIT := $(shell git show --format=%H --no-patch 2>/dev/null)
 REVISION := $(shell grep -E 'revision "[0-9]+"' $(guix_pack_file) 2>/dev/null	\
   | grep -Eo '[0-9]+')
 REVISION+1 := $(shell echo $$(( $(REVISION) + 1)))
-GIT_VERSION := $(shell test -e ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2>/dev/null) || cat ${srcdest}.tarball-version || echo 0.0)
+GIT_VERSION := $(shell test -e ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2>/dev/null) || cat ${srcdest}.tarball-version 2>/dev/null || echo 0.0)
 
 update-git-hash:
 	git diff --exit-code HEAD
