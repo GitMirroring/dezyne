@@ -1212,22 +1212,61 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (lambda _
       (serialize o (current-output-port)))))
 
+(define* ((merge-port-state state-list) component)
+
+  (define (variables-prefixed-with-name port)
+    (map (match-lambda
+           ((variable . value)
+            (cons (string-append ((compose .name .ast .instance) port)
+                                 "."
+                                 variable) value)))
+         (.variables port)))
+
+  (let ((ports (filter (compose (cute eq? (.instance component) <>)
+                                .container .instance)
+                       state-list)))
+    (clone component
+           #:variables (append
+                        (append-map variables-prefixed-with-name ports)
+                        (.variables component)))))
+
 (define-method (serialize (o <system-state>) port)
   (let* ((state-list (.state-list o))
-         (state-list (filter (compose
-                              (disjoin
-                               (negate (is? <runtime:port>))
-                               (conjoin (negate runtime:%sut-port?)
-                                        (negate runtime:system-port?)))
-                              .instance)
-                             state-list)))
+         (provides-boundary (filter (compose
+                                     (conjoin
+                                      runtime:boundary-port?
+                                      (compose ast:provides? .ast))
+                                     .instance)
+                                    state-list))
+         (requires-boundary (filter (compose
+                                     (conjoin
+                                      runtime:boundary-port?
+                                      (compose ast:requires? .ast))
+                                     .instance)
+                                    state-list))
+         (components (filter (compose (is? <runtime:component>)
+                                      .instance)
+                             state-list))
+         (components (map (merge-port-state state-list) components))
+         (interface (if (pair? components) '()
+                        (filter (compose (is? <runtime:port>)
+                                         .instance)
+                                state-list)))
+         (state-list (append interface
+                             provides-boundary
+                             components
+                             requires-boundary)))
     (define (serialize-state o)
       (unless (eq? o (car state-list))
         (display " " port))
       (serialize o port))
-    (display "(state " port)
-    (for-each serialize-state state-list)
-    (display ")" port)))
+    (cond
+     ((null? state-list)
+      (display "(state)" port))
+     (else
+      (display "(state " port)
+      (for-each serialize-state state-list)
+      (display ")" port)))))
 
 (define-method (serialize (o <state>) port)
   (let ((path ((compose runtime:instance->path .instance) o)))
@@ -1245,8 +1284,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 
 (define-method (serialize-header (o <system-state>) port)
   (let ((instances (filter (disjoin (negate (is? <runtime:port>))
-                                    (conjoin (negate runtime:%sut-port?)
-                                             (negate runtime:system-port?)))
+                                    runtime:boundary-port?)
                            (%instances))))
     (define (display-instance o)
       (unless (eq? o (car instances))
