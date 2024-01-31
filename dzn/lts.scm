@@ -687,57 +687,6 @@ from LABELS."
                        (map (cute string-append <> ".inevitable") ports))))
          (modeling-labels (map make-shared-string modeling-labels))
          (modeling-edge? (if (not modeling-labels) modeling?
-                             (compose (cute memq <> modeling-labels) edge-label)))
-         (modeling-edges (vector-fold
-                          (lambda (i edges node)
-                            (append (filter modeling-edge? (node-edges node)) edges))
-                          '()
-                          lts)))
-
-    ;; FIXME: better create a second vector?
-    ;; or can we do this inline, somehow?
-    (define (collect-start-nodes i start-nodes node)
-      (let* ((edges (node-edges node))
-             (modeling (filter modeling-edge? edges)))
-        (match modeling
-          (() start-nodes)
-          ((edge rest ...)
-           (let* ((from (edge-from edge))
-                  (start-node (vector-ref lts from))
-                  (end-node (vector-ref lts (edge-to edge)))
-                  (start-edges (node-edges start-node))
-                  (end-edges (node-edges end-node))
-                  (end-edges (map (lambda (edge)
-                                    (set-field edge (edge-from) from))
-                                  end-edges))
-                  (edges (append start-edges end-edges))
-                  (start-color (or (node-color start-node)
-                                   (node-color end-node)))
-                  (start-node (set-fields start-node
-                                          ((node-distance) from)
-                                          ((node-edges) edges)
-                                          ((node-color) start-color))))
-             (cons start-node start-nodes))))))
-
-    (let ((start-nodes (vector-fold collect-start-nodes '() lts)))
-      (define (fubar i node) ;; FIXME sensible name
-        (let* ((edges (node-edges node))
-               (edges (filter (negate modeling-edge?) edges))
-               (start-node (find (compose (cute eq? <> i) node-distance)
-                                 start-nodes)))
-          (if (not start-node) (set-field node (node-edges) edges)
-              ;; FIXME: what is distance for, can we leave it set?
-              (set-field start-node (node-distance) #f))))
-      (vector-map fubar lts))))
-
-(define* (remove-modeling lts #:key ports)
-  (let* ((ports (and ports (map make-shared-string ports)))
-         (modeling-labels
-          (and ports
-               (append (map (cute string-append <> ".optional") ports)
-                       (map (cute string-append <> ".inevitable") ports))))
-         (modeling-labels (map make-shared-string modeling-labels))
-         (modeling-edge? (if (not modeling-labels) modeling?
                              (compose (cute memq <> modeling-labels) edge-label))))
   (define (relay-modeling-edges i node)
     (let* ((state (node-state node))
@@ -751,7 +700,6 @@ from LABELS."
                  ((node-edges) (append non-modeling-edges relayed-edges))
                  ((node-color) rtc-relayed))))
   (vector-map relay-modeling-edges lts)))
-
 
 
 ;;;

@@ -214,6 +214,9 @@
     (log-debug 'rename-ports (cute rename-ports blob))))
 
 (define (compose-parallel-external lts0 lts1 common-events)
+  (when (> (dzn:debugity) 0)
+    (write-lts-tmp lts0)
+    (write-lts-tmp lts1))
   (if (zero? (vector-length lts0))
     lts1
     (let* ((incoming-events0 (incoming-events-lts lts0))
@@ -225,9 +228,9 @@
            (lts-text0 (with-output-to-string (cut display-lts lts0)))
            (lts-text1 (with-output-to-string (cut display-lts lts1)))
            (result status (pipeline->string
-                            (list `("/home/paul/mCRL2-build/stage/bin/ltsparallel" "--in1=aut" "--in2=aut" 
+                            (warn 'command (list `("/home/paul/mCRL2-build/stage/bin/ltsparallel" "--in1=aut" "--in2=aut"
                              ,option-incoming-events0 ,option-incoming-events1 ,option-common-events
-                             "-" "-" "-"))
+                             "-" "-" "-")))
                             #:input (string-append lts-text0 "\n\x04\n" lts-text1)))
            (lts (annotate-node-rtc (aut-text->lts result) #:incoming-events incoming-events2)))
         lts)))
