@@ -83,6 +83,7 @@
 (define (parse-opts args)
   (let* ((option-spec
           '((debug (single-char #\d))
+            (external (single-char #\e))
             (help (single-char #\h))
             (repl (single-char #\R))
             (skip-wfc (single-char #\p))
@@ -141,6 +142,7 @@
         (format port "\
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -d, --debug            enable debug ouput
+  -e. --external
   -h, --help             display this help
   -p, --skip-wfc         use plain PEG, skip well-formedness checking
   -v, --verbose          be more verbose, show progress

@@ -53,12 +53,18 @@
             "Stitching ~a as ~a to the blob...\n"
             (makreel:unticked-dotted-name (.type instance))
             (makreel:unticked-dotted-name instance)))
+  (when (> (dzn:debugity) 0)
+    (write-lts-tmp blob)
+    (write-lts-tmp lts))
   (let* (;;(lts-text0 (warn 'lts0 (with-output-to-string (cut display-lts blob))))
          ;;(lts-text1 (warn 'lts1 (with-output-to-string (cut display-lts lts))))
-         (result (if #t (compose-parallel-external blob lts alphabet)
-                        (compose-parallel
-                          (mark-common blob #:alphabet alphabet)
-                          (mark-common lts #:alphabet alphabet)))))
+         (result (if (dzn:command-line:get 'external)
+                     (compose-parallel-external blob lts alphabet)
+                     (compose-parallel
+                       (mark-common blob #:alphabet alphabet)
+                       (mark-common lts #:alphabet alphabet)))))
+    (when (> (dzn:debugity) 0)
+      (write-lts-tmp result))
     (when verbose?
       (format (current-error-port) "...done\n"))
     (when (> (dzn:debugity) 1)
@@ -214,9 +220,6 @@
     (log-debug 'rename-ports (cute rename-ports blob))))
 
 (define (compose-parallel-external lts0 lts1 common-events)
-  (when (> (dzn:debugity) 0)
-    (write-lts-tmp lts0)
-    (write-lts-tmp lts1))
   (if (zero? (vector-length lts0))
     lts1
     (let* ((incoming-events0 (incoming-events-lts lts0))
