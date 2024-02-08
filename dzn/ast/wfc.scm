@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
@@ -930,22 +930,25 @@
 
 (define-method (previous-definition (o <declaration>))
   "Allow shadowing, but not in the same scope"
-  (let* ((name (ast:name o)))
+  (let ((name (ast:name o)))
     (ast:lookup (ast:parent o <scope>) name)))
 
+(use-modules (dzn ast accessor))
 (define (previous-definition-unshadowed o)
   "Disallow shadowing altogether"
-  (let* ((name (ast:name o)))
+  (let ((name (make <scope.name> #:ids (ast:full-name o))))
     (ast:lookup (ast:parent o <root>) name)))
 
 (define (re-definition-error o previous)
-  (if (or (not previous)
-          (ast:eq? o previous)
-          (not (equal? (ast:full-name o) (ast:full-name previous)))) '()
-          `(,(wfc-error o (format #f "identifier `~a' defined before"
-                                  (ast:name o)))
-            ,(wfc-info previous (format #f "previous `~a' definition here"
-                                        (ast:name previous))))))
+  (let ((duplicate? (and previous
+                         (not (ast:eq? o previous))
+                         (equal? (ast:full-name o) (ast:full-name previous)))))
+    (if (not duplicate?) '()
+        (let ((name (if (ast:parent (.parent o) <model>) (ast:name o)
+                        (ast:dotted-name o))))
+         `(,(wfc-error o (format #f "identifier `~a' defined before" name))
+           ,(wfc-info previous (format #f "previous `~a' definition here"
+                                       name)))))))
 
 (define-method (assign (o <ast>))
   (or (as (wfc (.expression o)) <pair>)
