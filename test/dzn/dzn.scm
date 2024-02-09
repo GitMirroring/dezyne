@@ -3,7 +3,7 @@
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -788,7 +788,7 @@ are weak-bisim equivalent"
           (and (zero? status)
                (let* ((makreel-lts-file (string-append out "/traces/" base-name ".aut"))
                       (lts-file (string-append out-lang "/" base-name ".aut"))
-                      (taus '("<deadlock>" "<livelock>" "<state>"))
+                      (taus '("<deadlock>" "<livelock>" "<non-compliance>" "<state>"))
                       (modeling (list-matches
                                  "\"([^\"]*[.](inevitable|optional))\""
                                  stdout))

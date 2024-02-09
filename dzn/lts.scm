@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -793,7 +793,7 @@ from LABELS."
      tag-literal        <   'tag'
      tau-literal        <   'tau'
      tau-void           <   'tau_void'
-     illegal            <-- 'illegal' / 'declarative_illegal' / 'constrained_illegal'
+     illegal            <-- 'illegal' / 'declarative_illegal' / 'constrained_illegal' / 'non_compliance'
      error              <--  queue-full / range-error / reply-error / missing-reply / second-reply
      queue-full         <-  'queue_full' / port-name tick port- 'queue_full'
      range-error        <-  'range_error'

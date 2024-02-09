@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -324,6 +324,7 @@
 (define %queue-not-empty-action (sm:action (prefix "queue_not_empty")))
 (define %queue-full-action (sm:action (prefix "queue_full")))
 (define %missing-reply-action (sm:action (prefix "missing_reply")))
+(define %non-compliant-action (sm:action (prefix "non_compliance")))
 (define %second-reply-action (sm:action (prefix "second_reply")))
 (define %range-error-action (sm:action (prefix "range_error")))
 (define %recurse-action (sm:action (prefix "recurse")))
@@ -1782,6 +1783,10 @@
    (sm:process (name "Declarative_Illegal")
                (statement
                 (sm:sequence* %declarative-illegal-action
+                              (sm:goto (name name)))))
+   (sm:process (name "Non_Compliance")
+               (statement
+                (sm:sequence* %non-compliant-action
                               (sm:goto (name name)))))))
 
 (define-method (statement->processes (model <model>) (statement <ast>))
@@ -3818,6 +3823,7 @@
                              (%defer-skip-action o)
                              %illegal-action
                              %missing-reply-action
+                             %non-compliant-action
                              %queue-full-action
                              %range-error-action
                              %recurse-action
@@ -4034,6 +4040,7 @@
                              (%defer-skip-action o)
                              %illegal-action
                              %missing-reply-action
+                             %non-compliant-action
                              %queue-empty-action
                              %queue-full-action
                              %queue-not-empty-action

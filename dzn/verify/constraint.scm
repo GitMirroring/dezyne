@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -152,18 +152,13 @@ to current-output-port."
                (reply-events (filter reply? events))
                (events (lset-union equal? seen events))
                (action? (action? event))
-               (reply? (reply? event))
                (replies (if (> (length reply-events) 1) '()
-                            replies))
+                            (filter (negate (cute member <> events)) replies)))
                (actions (if (> (length action-events) 1) '()
-                            actions))
-               (actions+replies (append actions replies))
-               (actions+replies
-                (filter (negate (cute member <> events))
-                        actions+replies))
+                            (filter (negate (cute member <> events)) actions)))
                (any? (and (not (command-line:get 'no-non-compliance))
                           (not first?)
-                          (or action? reply?)))
+                          (or action? (reply? event))))
                (fork? (or any? (pair? transitions)))
                (error? (error? event)))
           (when first?
@@ -184,8 +179,11 @@ to current-output-port."
                    (print-tree next))))
           (when any?
             (for-each
-             (cute format #t "\n + ~a . ~aconstraint_any" <> name)
-             actions+replies))
+             (cute format #t "\n + ~a . non_compliance . ~aconstraint_any" <> name)
+             actions)
+            (for-each
+             (cute format #t "\n + ~a . non_compliance . ~aconstraint_any" <> name)
+             replies))
           (when (pair? transitions)
             (format #t "\n")
             (when (not first?)
