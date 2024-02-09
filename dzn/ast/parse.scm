@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2023 Paul Hoogendijk <paul@dezyne.org>
@@ -46,16 +46,20 @@
   (define (make-list? o) (if (pair? o) o
                              (list o)))
 
-  (define newlines ;; --> (vector (pos1 . pos2) (pos2+1 . pos3) ...) where posi is position of newline
-    (let* ((last (string-length string))
-           (lines (let loop ((current-pos 0) (result '()))
-                    (let ((index (string-index string #\newline current-pos last)))
-                      (if (not index) result
-                          (loop (1+ index) (append result (list index)))))))
-           (lines (let loop ((start 0) (todo lines) (result '()))
-                    (if (null? todo) (cons (cons start last) result)
-                        (loop (1+ (car todo)) (cdr todo) (cons (cons start (car todo)) result))))))
-      (list->vector (reverse lines))))
+  (define (text->lines-offsets string)
+    "Return a vector of pairs from STRING
+
+    #((0 . end-1) (start-2 . end-2) (start-n . end-n))
+
+where start-<n> is the position of newline."
+    (let ((lines (let loop ((start 0))
+                   (let ((pos (string-index string #\newline start)))
+                     (if (not pos) `((,start . ,start))
+                         (cons `(,start . ,pos)
+                               (loop (1+ pos))))))))
+      (list->vector lines)))
+
+  (define newlines (text->lines-offsets string))
 
   (define (compare-pos pos nl)
     (cond ((< (cdr pos) (car nl)) -1)
