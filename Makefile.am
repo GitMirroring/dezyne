@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 # Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -115,7 +115,7 @@ AM_V_GUILEC = $(AM_V_GUILEC_@AM_V@)
 AM_V_GUILEC_ = $(AM_V_GUILEC_@AM_DEFAULT_V@)
 AM_V_GUILEC_0 = @echo "  GUILEC  " $@;
 
-%.go:	%.scm
+%.go:	%.scm | $(filter %.scm,$(BUILT_SOURCES))
 	$(AM_V_GUILEC)GUILE_AUTO_COMPILE=0				\
 	$(GUILE_TOOLS) compile --target="$(host)" $(GUILEC_FLAGS)	\
 	-o "$@" "$<"
