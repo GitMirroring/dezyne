@@ -171,7 +171,7 @@ REGRESSION_TESTS =				\
  %D%/calling_context				\
  %D%/clash_event_name				\
  %D%/clash_port_variable			\
- %D%/closed_system_foreigns				\
+ %D%/closed_system_foreigns			\
  %D%/collateral_blocking_backdoor		\
  %D%/collateral_blocking_bridges		\
  %D%/collateral_blocking_double_release		\
@@ -249,6 +249,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_provides_int			\
  %D%/compliance_provides_out			\
  %D%/compliance_reply_bool			\
+ %D%/compliance_reply_illegal			\
  %D%/compliance_requires_illegal		\
  %D%/compliance_single_to_multiple		\
  %D%/compliance_sync_action			\
@@ -467,7 +468,7 @@ REGRESSION_TESTS =				\
  %D%/requires_twice				\
  %D%/resolve_formal				\
  %D%/resolve_member				\
- %D%/reuse_body				\
+ %D%/reuse_body					\
  %D%/second_reply				\
  %D%/second_reply_sync				\
  %D%/second_reply_blocking			\

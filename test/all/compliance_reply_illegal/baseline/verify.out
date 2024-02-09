@@ -1,0 +1,13 @@
+model: compliance_reply_illegal
+h.hello
+w.hello
+w.return
+h.return
+h.world
+w.world
+w.false
+h.false
+<non-compliance>
+h.hello
+w.hello
+<illegal>

@@ -1,0 +1,27 @@
+(header ((h) ihello provides) ((sut) compliance_reply_illegal component) ((w) iworld requires))
+(state ((h) (x . true) (idle . true)) ((sut)) ((w) (idle . true) (x . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (x . true) (idle . false)) ((sut)) ((w) (idle . false) (x . true)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+test/all/compliance_reply_illegal/compliance_reply_illegal.dzn:72:5: error: non-compliance
+<external>.h.world -> ...
+... -> sut.h.world
+sut.w.world -> ...
+... -> <external>.w.world
+... <- <external>.w.false
+sut.w.false <- ...
+... <- sut.h.false
+<external>.h.true <- ...
+<non-compliance>
+(state ((h) (x . true) (idle . false)) ((sut)) ((w) (idle . false) (x . true)))
+test/all/compliance_reply_illegal/compliance_reply_illegal.dzn:72:5: error: non-compliance
+(trail "h.world" "w.world" "w.false" "h.false" "<non-compliance>")
+(labels "h.hello" "h.world")
+(eligible)

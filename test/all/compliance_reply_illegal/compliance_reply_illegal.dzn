@@ -1,0 +1,74 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Rutger (regtur) van Beusekom <regtur@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// This model reports an illegal instead of a non-compliance, because
+// the non-compliant behavior, i.e. the reply(false), puts the interface
+// constraint into the any state, allowing the component to trigger an
+// illegal in the requires interface, while the the reply(false) is the
+// cause of the problem.
+//
+// A possible solution to this phenomenon could be to make the reply
+// value illegal in the constraint behavior.
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  in bool world ();
+  behavior
+  {
+    bool x = true;
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on world:
+    {
+      [x] {idle = true; reply (idle);}
+    }
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  in bool world ();
+  behavior
+  {
+    bool idle = true;
+    bool x = true;
+    [idle] on hello: idle = false;
+    [!idle] on world: {
+      [x] {idle = true; reply (true);}
+      [x] reply (false);
+    }
+  }
+}
+
+component compliance_reply_illegal
+{
+  provides ihello h;
+  requires iworld w;
+  behavior
+  {
+    on h.hello (): w.hello ();
+    on h.world (): reply (w.world ());
+  }
+}

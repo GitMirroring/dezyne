@@ -1,0 +1,3 @@
+test/all/compliance_reply_illegal/compliance_reply_illegal.dzn:72:5: error: non-compliance
+test/all/compliance_reply_illegal/compliance_reply_illegal.dzn:72:5: component performs: h.false
+test/all/compliance_reply_illegal/compliance_reply_illegal.dzn:42:13: port expects: true
