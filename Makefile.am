@@ -92,6 +92,7 @@ ALL_GO =
 include dzn/peg/local.mk
 include dzn/parse/local.mk
 include dzn/goops/local.mk
+include dzn/tree/local.mk
 include dzn/ast/local.mk
 include dzn/code/local.mk
 include dzn/code/language/local.mk

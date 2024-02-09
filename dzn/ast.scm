@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -35,14 +35,16 @@
   #:use-module (ice-9 q)
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)
-  #:use-module (dzn goops context)
   #:use-module (dzn goops goops)
-  #:use-module (dzn goops tree)
   #:use-module (dzn goops util)
+  #:use-module (dzn tree accessor)
+  #:use-module (dzn tree context)
+  #:use-module (dzn tree tree)
+  #:use-module (dzn tree util)
   #:use-module (dzn misc)
 
   #:export (ast:add-statement
@@ -56,13 +58,11 @@
             ast:default-value
             ast:defer-variable*
             ast:direction
-            ast:dotted-name
             ast:expression->type
             ast:external?
             ast:false
             ast:filter-model
             ast:formal->index
-            ast:full-scope
             ast:get-model
             ast:graph-cyclic?
             ast:illegal?
@@ -127,15 +127,26 @@
             ast:wildcard?)
   #:re-export (%context
                %root
+               %symbol-table
+               ;; .comment
+               ;; .column
                .direction
+               ;; .end-column
+               ;; .end-line
                .event
                .event.direction
                .formal
                .function
+               ;; .file-name
+               ;; .length
+               ;; .line
+               ;; .location
+               ;; .name
                .type
                .instance
-               tree:parent
+               ;; .offset
                .port.name
+               ;; .string
                .variable
                .variable.name
 
@@ -145,22 +156,25 @@
 
                ast:equal?
                ast:full-name
-               ast:name*->name
-               ast:scoped?
-               ast:name
+               ast:name-equal?
                ast:perfect-funcq
                ast:pure-funcq
                tree:ancestor
                tree:path
+               tree:name*->name
+               tree:scoped?
+               tree:name
+               tree:parent
 
                ast:argument*
                ast:binding*
                ast:data*
+               ast:dotted-name
                ast:event*
                ast:field*
                ast:formal*
+               ast:full-scope
                ast:function*
-               ast:name*
                ast:import*
                ast:instance*
                ast:member*
@@ -178,6 +192,7 @@
                ast:type**
                ast:variable*
                ast:unique-import*
+               tree:name*
 
                as
                ast-name
@@ -233,6 +248,9 @@
     (or (is-a? (tree:parent o) <function>)
         (and (null? statements) (not (is-a? (tree:parent o) <behavior>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
+
+(define-method (ast:imported? (o <root>))
+  #f)
 
 (define-method (ast:imported? (o <ast>))
   (not (equal? (ast:source-file o) (ast:source-file (tree:ancestor o <root>)))))
@@ -400,18 +418,6 @@
 ;;;
 ;;; Algorithmic accessors.
 ;;;
-(define-method (ast:dotted-name (o <list>))
-  (string-join o "."))
-
-(define-method (ast:dotted-name (o <ast>))
-  (string-join (ast:full-name o) "."))
-
-(define-method (ast:full-scope (o <ast>))
-  (drop-right (ast:full-name o) 1))
-
-(define-method (ast:full-scope (o <root>))
-  '())
-
 (define-method (ast:full-scope (o <field-test>))
   ((compose ast:full-scope .type .variable) o))
 
@@ -766,7 +772,7 @@ variable."
 (define-method (ast:return-values (o <trigger>))
   (ast:return-values (.event o)))
 
-(define-method (ast:location (o <locationed>))
+(define-method (ast:location (o <tree:locationed>))
   (.location o))
 
 (define-method (ast:location (o <root>))
@@ -796,10 +802,13 @@ variable."
 (define-method (ast:source-file (o <ast>))
   (or (and=> (ast:location o) .file-name) (ast:source-file (tree:parent o))))
 
+(define-method (ast:source-file (o <root>))
+  (and=> (ast:location o) .file-name))
+
 (define-method (ast:value (o <literal>))
   (.value o))
 (define-method (ast:value (o <enum-literal>))
-  (string-join (append (ast:name* (.type.name o)) (list (.field o)))))
+  (string-join (append (tree:name* (.type.name o)) (list (.field o)))))
 
 (define-method (ast:interface* (o <component-model>))
   (let ((ports (ast:port* o)))
@@ -939,7 +948,7 @@ to bottom."
                    (if (and (pair? list1) (pair? list2) (equal? (car list1) (car list2)))
                        (loop (cdr list1) (cdr list2))
                        list1)))
-         (name (ast:name*->name scoped)))
+         (name (tree:name*->name scoped)))
     (if (not (is-a? name <ast>)) name
         (graft o name))))
 
@@ -1013,7 +1022,7 @@ to bottom."
                                             (map .type (ast:instance* o)))))
                           systems))
          (systems (topological-sort system-dag
-                                    (lambda (o) (string->symbol (ast:name o)))))
+                                    (lambda (o) (string->symbol (tree:name o)))))
          (systems (filter (cute memq <> models) systems)))
     (append rest systems)))
 

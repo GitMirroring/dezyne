@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -22,11 +22,10 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/define-method-star.scm			\
- %D%/display.scm				\
- %D%/goops.scm					\
- %D%/serialize.scm				\
- %D%/unserialize.scm				\
+ %D%/accessor.scm				\
+ %D%/context.scm				\
+ %D%/lookup.scm					\
+ %D%/tree.scm					\
  %D%/util.scm
 
 dist_nocompile_%C%_scm_DATA =

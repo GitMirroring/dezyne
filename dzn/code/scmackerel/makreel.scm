@@ -35,7 +35,7 @@
   #:use-module (scmackerel processes)
   #:use-module (scmackerel records)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn ast lookup)
   #:use-module (dzn code)
@@ -1218,7 +1218,7 @@
                                    (simple-format
                                     #f "~a=~a (~a)"
                                     (makreel:full-name v)
-                                    (model-prefix (ast:name v) interface)
+                                    (model-prefix (tree:name v) interface)
                                     (port-prefix "s" p))))
                                (filter (compose (cute eq? port <>) .port)
                                        (ast:shared* model)))))
@@ -1328,7 +1328,7 @@
                                        (simple-format
                                         #f "~a=~a (~a)"
                                         (makreel:full-name v)
-                                        (model-prefix (ast:name v) interface)
+                                        (model-prefix (tree:name v) interface)
                                         (port-prefix "s" p))))
                                    (filter (compose (cute eq? port <>) .port)
                                            (ast:shared* model))))))))))))))))

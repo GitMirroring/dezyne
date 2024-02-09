@@ -27,7 +27,7 @@
   #:use-module (scmackerel c)
   #:use-module (scmackerel c-header)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code goops)
@@ -116,7 +116,7 @@
 (define-method (c:enum->to-string (o <enum>))
   (let ((enum-type (code:type-name o)))
     (define (field->sm:switch-case field)
-      (let ((str (simple-format #f "~a:~a" (ast:name o) field)))
+      (let ((str (simple-format #f "~a:~a" (tree:name o) field)))
         (sm:switch-case
          (expression (simple-format #f "~a_~a" enum-type field))
          (statement (sm:return* (simple-format #f "~s" str))))))
@@ -134,7 +134,7 @@
 (define-method (c:enum->to-enum (o <enum>))
   (let ((enum-name (string-join (ast:full-name o) "_"))
         (enum-type (code:type-name o))
-        (short-name (ast:name o)))
+        (short-name (tree:name o)))
     (define (field->if field else)
       (let* ((value (simple-format #f "~a_~a" enum-type field))
              (str (simple-format #f "~a:~a" short-name field))

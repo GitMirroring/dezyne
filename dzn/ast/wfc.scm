@@ -27,8 +27,8 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast equal)
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
   #:use-module (dzn code)
@@ -86,8 +86,8 @@
     (wfc-error
      event
      (format #f "event `~a' is not used in behavior of interface `~a'"
-             (ast:name event)
-             (ast:name o))))
+             (tree:name event)
+             (tree:name o))))
   (let* ((events (ast:event* o))
          (behavior (.behavior o))
          (triggers/actions (tree:collect
@@ -274,7 +274,7 @@
            (format
             #f
             "type `~a' cannot be used for `~a' parameter `~a' in function `~a'"
-            (ast:name (.type.name formal))
+            (tree:name (.type.name formal))
             (.direction formal)
             (.name formal)
             (.name function))))
@@ -862,7 +862,8 @@
       (let ((expr-type (ast:type o)))
         (cond
          ((and (not expr-type)
-               (not (is-a? o <named>)))
+               (not (is-a? o <named>))
+               (not (is-a? o <reference>)))
           `(,(wfc-error o (format #f "typed expression expected `~a'" (ast-name o)))))
          ((not expr-type)
           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name o)))))
@@ -1052,7 +1053,7 @@
 
 (define-method (previous-definition (o <declaration>))
   "Allow shadowing, but not in the same scope"
-  (let ((name (ast:name o)))
+  (let ((name (tree:name o)))
     (ast:lookup (tree:ancestor o <scope>) name)))
 
 (use-modules (dzn ast accessor))
@@ -1066,7 +1067,7 @@
                          (not (eq? o previous))
                          (equal? (ast:full-name o) (ast:full-name previous)))))
     (if (not duplicate?) '()
-        (let ((name (if (tree:ancestor o <model>) (ast:name o)
+        (let ((name (if (tree:ancestor o <model>) (tree:name o)
                         (ast:dotted-name o))))
          `(,(wfc-error o (format #f "identifier `~a' defined before" name))
            ,(wfc-info previous (format #f "previous `~a' definition here"
@@ -1083,7 +1084,9 @@
          ((and (not assign-type) (is-a? variable <variable>))
           `(,(wfc-error o (format #f "unknown type name `~a'"
                                   (type-name (.type.name variable))))))
-         ((and (not expression-type) (is-a? expression <named>))
+         ((and (not expression-type)
+               (or (is-a? expression <named>)
+                   (is-a? expression <reference>)))
           `(,(wfc-error o (format #f "undefined identifier `~a'" (.name expression)))))
          ((and (is-a? o <variable>) (is-a? expression-type <void>))
           (if (is-a? assign-type <extern>) '()
@@ -1102,7 +1105,7 @@
    (map (match-lambda
           ("/" "")
           (id id))
-        (ast:name* o))
+        (tree:name* o))
    "."))
 
 (define-method (type-name (o <ast>))

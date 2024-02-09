@@ -26,7 +26,7 @@
 
   #:use-module (ice-9 curried-definitions)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
   #:use-module (dzn code)
@@ -391,7 +391,7 @@
   ((compose code:enum-short-name .type) o))
 
 (define-method (code:enum-short-name (o <enum>))
-  (ast:name o))
+  (tree:name o))
 
 (define-method (code:enum-short-name (o <enum-literal>))
   (code:enum-short-name (.type o)))

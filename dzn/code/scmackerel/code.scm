@@ -26,8 +26,8 @@
   #:use-module (ice-9 match)
   #:use-module (scmackerel code)
 
-  #:use-module (dzn ast goops)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn ast ast)
+  #:use-module (dzn tree util)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code language dzn)
@@ -62,12 +62,12 @@
 
 (define-method (code:enum->enum (o <enum>))
   (sm:enum
-   (name (ast:name o))
+   (name (tree:name o))
    (fields (map (cute string-append name "_" <>) (ast:field* o)))))
 
 (define-method (code:enum->sm:enum-struct (o <enum>))
   (sm:enum-struct
-   (name (ast:name o))
+   (name (tree:name o))
    (fields (ast:field* o))))
 
 (define-method (code:->namespace (o <list>) code)

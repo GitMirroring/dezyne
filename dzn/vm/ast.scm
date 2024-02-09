@@ -23,7 +23,7 @@
 ;;; Code:
 
 (define-module (dzn vm ast)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
   #:use-module (dzn vm goops)

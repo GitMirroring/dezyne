@@ -20,7 +20,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn goops tree)
+(define-module (dzn tree util)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
@@ -28,11 +28,12 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
-  #:use-module (dzn misc)
-  #:use-module (dzn goops context)
   #:use-module (dzn goops define-method-star)
   #:use-module (dzn goops goops)
   #:use-module (dzn goops util)
+  #:use-module (dzn tree context)
+  #:use-module (dzn tree tree)
+  #:use-module (dzn misc)
 
   #:export (clone+root
             graft

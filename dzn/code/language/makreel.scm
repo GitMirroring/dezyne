@@ -33,11 +33,11 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
-  #:use-module (dzn goops context)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn tree context)
+  #:use-module (dzn tree util)
   #:use-module (dzn ast display)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast equal)
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast util)
   #:use-module (dzn ast)
@@ -104,10 +104,10 @@
   (.name o))
 
 (define-method (makreel:name (o <subint>))
-  (untick (ast:name o)))
+  (untick (tree:name o)))
 
 (define-method (makreel:name (o <named>))
-  (untick (ast:name o)))
+  (untick (tree:name o)))
 
 (define-method (makreel:name (o <string>))
   ;;FIXME: for enum field
@@ -413,8 +413,8 @@ etc."
   (define (tick o)
     (match o
       ((or "/" "bool" "void" "<int>" "optional" "inevitable") o)
-      ((and (? string?) (not (? ast:scoped?))) (string-append o "'"))
-      ((? string?) (ast:name*->name (map tick (ast:name* o))))
+      ((and (? string?) (not (? tree:scoped?))) (string-append o "'"))
+      ((? string?) (tree:name*->name (map tick (tree:name* o))))
       (((? string?) ...) (map tick o))
       (_ o)))
 
@@ -458,16 +458,16 @@ etc."
     (($ <void>)
      o)
     ((and ($ <string>)
-          (or (= ast:name* '("<int>"))
-              (= ast:name* '("void"))
-              (= ast:name* '("bool"))))
+          (or (= tree:name* '("<int>"))
+              (= tree:name* '("void"))
+              (= tree:name* '("bool"))))
      o)
     ((? (is? <type>))
      (clone o #:name ((compose (tick-names-) .name) o)))
     (($ <string>)
-     (let* ((name* (ast:name* o))
+     (let* ((name* (tree:name* o))
             (name* (map append-tick name*)))
-       (ast:name*->name name*)))
+       (tree:name*->name name*)))
     (($ <port>)
      (clone o
             #:name ((compose (append-tick) .name) o)

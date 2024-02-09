@@ -30,7 +30,7 @@
 
   #:use-module (ice-9 match)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast lookup)
   #:use-module (dzn goops goops)
   #:use-module (dzn goops util)
@@ -191,13 +191,13 @@
   o)
 
 (define-method (->sexp (o <enum-literal>))
-  (string-append (last (ast:name* (.type.name o))) ":" (.field o)))
+  (string-append (last (tree:name* (.type.name o))) ":" (.field o)))
 
 (define-method (->sexp (o <literal>))
   ((compose ->sexp .value) o))
 
 (define-method (->sexp (o <void>))
-  (last (ast:name* (.name o))))
+  (last (tree:name* (.name o))))
 
 (define-method (rtc? (pc <program-counter>))
   (or (.status pc)

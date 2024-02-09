@@ -34,11 +34,14 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast equal)
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast util)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn tree accessor)
+  #:use-module (dzn tree lookup)
+  #:use-module (dzn tree tree)
+  #:use-module (dzn tree util)
   #:use-module (dzn misc)
 
   #:export (.event
@@ -193,68 +196,8 @@
 ;;;
 ;;; Lookup.
 ;;;
-(define (search-import-unmemoized root scope name import)
-  (let* ((file-name (.name import))
-         (ast       (and file-name ((%file-name->ast) file-name))))
-    (and ast (search-or-widen-context scope name ast))))
-
-(define (search-import scope name context)
-  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
-    ((ast:perfect-funcq search-import-unmemoized) root scope name context)))
-
-(define (search-unmemoized root
-                           scope name context)
-  (let* ((global? (and (pair? scope) (equal? "/" (car scope))))
-         (scope (if (not (and global? (is-a? context <root>))) scope
-                    (filter (match-lambda ("/" #f) (o o)) scope)))
-         (global? (and (pair? scope) (equal? "/" (car scope))))
-         (target (if (null? scope) name (car scope)))
-         (found (filter (cute ast:name-equal? <> target)
-                        (ast:declaration* context))))
-    (and (pair? found)
-         (match scope
-           (()
-            (car found))
-           ((scope tail ...)
-            (any (cute search tail name <>) found))))))
-
-(define (search scope name context)
-  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
-    ((ast:perfect-funcq search-unmemoized) root scope name context)))
-
-(define (widen-to-parent-unmemoized root
-                                    scope name context)
-  (let ((parent (tree:ancestor context <scope>)))
-    (and parent
-         (let* ((scope-name (and=> (as context <namespace>) .name))
-                (scope+ (if scope-name (cons scope-name scope) scope)))
-           (or (search-or-widen-context scope name parent)
-               (search-or-widen-context scope+ name parent))))))
-
-(define (widen-to-parent scope name context)
-  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
-    ((ast:perfect-funcq widen-to-parent-unmemoized) root scope name context)))
-
-(define (widen-to-imports-unmemoized root scope name context)
-  (and context (is-a? context <root>)
-       (let ((imports (ast:unique-import* context)))
-         (any (cute search-import scope name <>) imports))))
-
-(define (widen-to-imports scope name context)
-  (let ((root (or (as context <root>) (tree:ancestor context <root>))))
-    ((ast:perfect-funcq widen-to-imports-unmemoized) root scope name context)))
-
-(define (search-or-widen-context scope name context)
-  (or (search scope name context)
-      (widen-to-parent scope name context)
-      (widen-to-imports scope name context)))
-
-(define (ast:lookup-unmemoized root context name)
-  "Find NAME (a 'name or 'compound-name) depth first in CONTEXT (a context? or
-null) and return its CONTEXT."
+(define-method (ast:lookup (o <ast>) name)
   (cond
-   ((not context)
-    #f)
    ((ast:name-equal? name (.name ast:bool))
     ast:bool)
    ((ast:name-equal? name (.name ast:int))
@@ -262,16 +205,10 @@ null) and return its CONTEXT."
    ((ast:name-equal? name (.name ast:void))
     ast:void)
    (else
-    (let* ((global? (ast:global? name))
-           (context (if global? (tree:ancestor context <root>) context))
-           (name scope (ast:name+scope name)))
-      (search-or-widen-context scope name context)))))
+    (let ((scope (or (as o <scope>) (tree:ancestor o <scope>)))
+          (root (or (as o <root>) (tree:ancestor o <root>))))
+      (tree:lookup scope name)))))
 
-(define ast:lookup-memoized (ast:perfect-funcq ast:lookup-unmemoized))
-(define-method (ast:lookup (o <ast>) name)
-  (let ((scope (or (as o <scope>) (tree:ancestor o <scope>)))
-        (root (or (as o <root>) (tree:ancestor o <root>))))
-    (ast:lookup-memoized root scope name)))
 (define-method (ast:lookup name)
   (ast:lookup name name))
 
@@ -518,7 +455,7 @@ null) and return its CONTEXT."
                      (tree:ancestor o <shared-variable>)))
          (type-name (.type.name o)))
     (cond (parent
-           (let ((type-name (ast:name type-name)))
+           (let ((type-name (tree:name type-name)))
              (ast:lookup ((compose .behavior .type .port) parent) type-name)))
           (else
            (or (tree:ancestor o <enum>)

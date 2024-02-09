@@ -28,9 +28,9 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
 
-  #:use-module (dzn goops context)
+  #:use-module (dzn tree context)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast display)
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn config)

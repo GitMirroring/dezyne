@@ -233,7 +233,7 @@
 (define (type-equal? o type)
   (assert-type o tree:type?)
   (assert-type type tree:type?)
-  (tree:name-equal? (.name o) (.name type)))
+  (ast:name-equal? (.name o) (.name type)))
 
 (define (context:type-equal? o type)
   (assert-type type 'bool 'enum 'extern 'int 'void)

@@ -23,9 +23,9 @@
 
 dist_%C%_scm_DATA =				\
  %D%/accessor.scm				\
+ %D%/ast.scm					\
  %D%/display.scm				\
  %D%/equal.scm					\
- %D%/goops.scm					\
  %D%/lookup.scm					\
  %D%/normalize.scm				\
  %D%/parse.scm					\

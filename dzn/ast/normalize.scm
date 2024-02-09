@@ -34,8 +34,8 @@
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
 
-  #:use-module (dzn ast goops)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn ast ast)
+  #:use-module (dzn tree util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
 
@@ -1065,7 +1065,7 @@ the same level."
      (tree:shallow-map remove-location o))
     ((? (is? <namespace>))
      (tree:shallow-map remove-location o))
-    ((? (is? <locationed>))
+    ((? (is? <tree:locationed>))
      (clone o #:location #f))
     ((? (is? <ast>))
      (tree:shallow-map remove-location o))

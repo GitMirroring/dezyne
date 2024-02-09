@@ -33,9 +33,9 @@
 
   #:use-module (ice-9 match)
 
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast goops)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn tree util)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:export (parse:tree->ast))
@@ -145,7 +145,7 @@ to the AST element."
         (((and (? symbol?) type) body ... (and ('location pos end) location))
          (let* ((ast x comment (strip (cons type body)))
                 (location (and location (tree->ast location)))
-                (ast (if (and location (is-a? ast <locationed>))
+                (ast (if (and location (is-a? ast <tree:locationed>))
                          (clone ast #:location location)
                          ast)))
            (values ast location comment)))
@@ -153,7 +153,7 @@ to the AST element."
         (((and (? symbol?) type) body ... (and ('comment c ...) comment))
          (let* ((comment (strip comment))
                 (ast (tree->ast (cons type body) comment)))
-           (cond ((is-a? ast <locationed>)
+           (cond ((is-a? ast <tree:locationed>)
                   (clone ast #:comment comment))
                  ((is-a? ast <pair>)
                   (cons comment ast))
@@ -212,7 +212,7 @@ to the AST element."
 
         (('namespace name root)
          (let* ((name location comment (helper name))
-                (name* (ast:name* name))
+                (name* (tree:name* name))
                 (elements (helper root)))
            (define (wrap-namespace name result)
              (let ((elements (or (as result <null>)
@@ -329,13 +329,13 @@ to the AST element."
 
         (('end-point name "*")
          (let* ((name (helper name))
-                (name* (ast:name* name))
+                (name* (tree:name* name))
                 (instance (and (pair? (cdr name*)) (car name*))))
            (make <end-point> #:instance instance #:port.name "*")))
 
         (('end-point name)
          (let* ((name (helper name))
-                (name* (ast:name* name))
+                (name* (tree:name* name))
                 (instance (and (pair? (cdr name*)) (car name*)))
                 (port (if (pair? (cdr name*)) (cadr name*) (car name*))))
            (make <end-point> #:instance.name instance #:port.name port)))
@@ -429,19 +429,19 @@ to the AST element."
 
         (('compound-name name)
          (let ((name* (list (helper name))))
-           (ast:name*->name name*)))
+           (tree:name*->name name*)))
 
         (('compound-name scope name)
          (let ((name* (append (helper scope) (list (helper name)))))
-           (ast:name*->name name*)))
+           (tree:name*->name name*)))
 
         (('compound-name global scope name)
          (let ((name* (append (helper global) (helper scope) (list (helper name)))))
-           (ast:name*->name name*)))
+           (tree:name*->name name*)))
 
         (('scoped-name name)
          (let ((name* (list (helper name))))
-           (ast:name*->name name*)))
+           (tree:name*->name name*)))
 
         (('scope name) (make-list? (helper name)))
         (('scope names ...) (helper names))
@@ -582,12 +582,12 @@ to the AST element."
 
         (('enum-literal type field)
          (let* ((type (helper type))
-                (type-name (ast:name*->name type)))
+                (type-name (tree:name*->name type)))
            (make <enum-literal> #:type.name type-name #:field (helper field))))
 
         (('enum-literal global type field)
          (let* ((type (append (helper global) (helper type)))
-                (type-name (ast:name*->name type)))
+                (type-name (tree:name*->name type)))
            (make <enum-literal> #:type.name type-name #:field (helper field))))
 
         (('otherwise) (make <otherwise> #:value "otherwise"))

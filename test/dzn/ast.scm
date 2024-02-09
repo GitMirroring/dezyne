@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -33,15 +33,15 @@
   #:use-module (test dzn automake)
 
   #:use-module ((dzn ast) #:select (ast:imperative?))
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)
-  #:use-module (dzn goops context)
+  #:use-module (dzn tree context)
   #:use-module (dzn goops goops)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn tree util)
   #:use-module ((dzn ast) #:select (ast:type))
   #:use-module (dzn misc)
   #:use-module (dzn parse)

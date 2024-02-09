@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -33,9 +33,11 @@
 
   #:use-module (ice-9 match)
 
-  #:use-module (dzn goops context)
-  #:use-module (dzn ast goops)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn ast ast)
+  #:use-module (dzn tree accessor)
+  #:use-module (dzn tree context)
+  #:use-module (dzn tree tree)
+  ;;#:use-module (dzn tree util)
   #:use-module (dzn misc)
 
   #:export (ast:argument*
@@ -46,8 +48,6 @@
             ast:formal*
             ast:function*
             ast:import*
-            ast:name*
-            ast:name*->name
             ast:instance*
             ast:member*
             ast:model*
@@ -64,11 +64,9 @@
             ast:type**
             ast:variable*
 
+            ast:dotted-name
             ast:full-name
-            ast:name
-            ast:name+scope
-            ast:scope
-            ast:scoped?)
+            ast:full-scope)
   #:re-export (%root
 
                .variable.name
@@ -168,48 +166,20 @@
 
 
 ;;;
-;;; Scope and name.
+;;; Full name
 ;;;
-(define-method (ast:scoped? (o <string>))
-  (string-index o #\.))
-
-(define-method (ast:name* (o <string>))
-  (string-split o #\.))
-
-(define-method (ast:name* (o <named>))
-  (ast:name* (.name o)))
-
-(define-method (ast:name*->name o)
-  (string-join (filter identity o) "."))
-
-(define-method (ast:name+scope (o <string>))
-  (match (string-split o #\.)
-    ((scope ... name) (values name scope))))
-
-(define-method (ast:name+scope (o <named>))
-  (let ((name (.name o)))
-    (if name (ast:name+scope name)
-        (values #f '()))))
-
-(define-method (ast:name (o <top>))
-  (ast:name+scope o))
-
-(define-method (ast:scope (o <top>))
-  (let ((name scope (ast:name+scope o)))
-    scope))
-
 (define-method (ast:full-name (o <string>))
-  (let ((name* (ast:name* o)))
+  (let ((name* (tree:name* o)))
     (if (pair? (cdr name*)) name*
         (list-head name* 1))))
 
 (define-method (ast:full-name (o <string>))
-  (ast:name* o))
+  (tree:name* o))
 
 (define-method (ast:full-name (o <named>))
   (let ((name (.name o)))
     (and name
-         (let ((name* (ast:name* o)))
+         (let ((name* (tree:name* o)))
            (if (pair? (cdr name*)) name*
                (append (ast:full-name (tree:ancestor o <scope>))
                        (list-head name* 1)))))))
@@ -217,7 +187,7 @@
 (define-method (ast:full-name (o <extern>))
   (let ((name (.name o)))
     (and name
-         (let ((name* (ast:name* o)))
+         (let ((name* (tree:name* o)))
            (if (pair? (cdr name*)) name*
                (append (ast:full-name (tree:ancestor o <scope>))
                        (list-head name* 1)))))))
@@ -229,7 +199,7 @@
   '("data"))
 
 (define-method (ast:full-name (o <int>))
-  (if (and (is-a? o <subint>) (ast:name o)) (next-method)
+  (if (and (is-a? o <subint>) (tree:name o)) (next-method)
       '("<int>")))
 
 (define-method (ast:full-name (o <void>))
@@ -249,7 +219,7 @@
      ((and (is-a? o <named>) (not (.name o)))
       #f)
      ((is-a? o <named>)
-      (append (ast:full-name scope) (list (ast:name o))))
+      (append (ast:full-name scope) (list (tree:name o))))
      (else
       (ast:full-name scope)))))
 
@@ -258,13 +228,25 @@
 
 (define-method (ast:full-name (o <scope>))
   (let ((prefix (ast:full-name (tree:ancestor o <scope>))))
-    (let ((name (and=> (as o <named>) ast:name)))
+    (let ((name (and=> (as o <named>) tree:name)))
       (if name
           (append prefix (list name))
           prefix))))
 
 (define-method (ast:full-name (o <namespace>))
-  (append (ast:full-name (tree:ancestor o <scope>)) (list (ast:name o))))
+  (append (ast:full-name (tree:ancestor o <scope>)) (list (tree:name o))))
 
 (define-method (ast:full-name (o <ast>))
   (ast:full-name (tree:ancestor o <scope>)))
+
+(define-method (ast:dotted-name (o <list>))
+  (string-join o "."))
+
+(define-method (ast:dotted-name (o <ast>))
+  (string-join (ast:full-name o) "."))
+
+(define-method (ast:full-scope (o <ast>))
+  (drop-right (ast:full-name o) 1))
+
+(define-method (ast:full-scope (o <root>))
+  '())

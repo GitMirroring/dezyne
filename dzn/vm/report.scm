@@ -31,8 +31,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
 
-  #:use-module (dzn ast goops)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn ast ast)
+  #:use-module (dzn tree util)
   #:use-module (dzn ast)
   #:use-module (dzn code language dzn)
   #:use-module (dzn misc)
@@ -1012,7 +1012,7 @@ intermediate steps such as assignments, function calls, replies,
          (string-join
           (list
            (format #f "~ainfo: ~a `~a' defined here\n" (location-prefix variable) (ast-name variable) name)
-           (format #f "~ainfo: of type `~a' defined here\n" (location-prefix type) (ast:name type)))
+           (format #f "~ainfo: of type `~a' defined here\n" (location-prefix type) (tree:name type)))
           "")))
       (($ <second-reply-error>)
        (let* ((previous (.previous status))

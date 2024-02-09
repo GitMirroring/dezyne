@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -30,8 +30,10 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn tree accessor)
+  #:use-module (dzn tree tree)
 
   #:export (ast:equal?
             ast:empty-namespace?
@@ -48,7 +50,10 @@
 ;;; ast:name-equal?
 ;;;
 (define-method (ast:name-equal? (a <string>) (b <string>))
-  (equal? (ast:name a) (ast:name b)))
+  (equal? (tree:name a) (tree:name b)))
+
+(define-method (ast:name-equal? (a <named>) (b <named>))
+  (ast:name-equal? (.name a) (.name b)))
 
 (define-method (ast:name-equal? (a <named>) (b <string>))
   (ast:name-equal? (.name a) b))
@@ -78,6 +83,9 @@
        (equal? (ast:full-name a) (ast:full-name b))))
 
 (define-method (ast:equal? (a <named>) (b <named>))
+  (ast:equal? (.name a) (.name b)))
+
+(define-method (ast:equal? (a <reference>) (b <reference>))
   (ast:equal? (.name a) (.name b)))
 
 (define-method (ast:equal? (a <enum-literal>) (b <enum-literal>))

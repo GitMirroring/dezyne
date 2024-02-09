@@ -38,10 +38,10 @@
                 #:select (class-slots slot-definition-name slot-ref))
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn goops context)
+  #:use-module (dzn tree context)
   #:use-module (dzn goops goops)
-  #:use-module (dzn goops tree)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn tree util)
+  #:use-module (dzn ast ast)
   #:use-module (dzn goops util)
   #:use-module (dzn misc)
 

@@ -32,7 +32,7 @@
 
   ;; #:use-module (ice-9 curried-definitions)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code language dzn)
   #:use-module (dzn misc)
@@ -218,7 +218,7 @@
   (.signature o))
 
 (define-method (dzn:signature (o <port>))
-  (list ((compose ast:name .type) o) "t"))
+  (list ((compose tree:name .type) o) "t"))
 
 
 ;;;

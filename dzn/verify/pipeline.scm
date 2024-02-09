@@ -33,7 +33,7 @@
   #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code language makreel)

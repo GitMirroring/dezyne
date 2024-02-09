@@ -31,8 +31,8 @@
   #:use-module (ice-9 regex)
   #:use-module (ice-9 string-fun)
 
-  #:use-module (dzn ast goops)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn ast ast)
+  #:use-module (dzn tree util)
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -436,7 +436,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (($ <action>)
      (trigger->string o))
     (($ <enum-literal>)
-     (string-append (ast:name (.type.name o)) ":" (.field o)))
+     (string-append (tree:name (.type.name o)) ":" (.field o)))
     (($ <literal>)
      (label->string (.value o)))
     (($ <q-out>)
@@ -518,10 +518,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((value (last (string-split o #\.)))
          (enum (string-split value #\:)))
     (match enum
-      ((name field) (or (and (equal? (ast:name type) name)
+      ((name field) (or (and (equal? (tree:name type) name)
                              (member field (ast:field* type))
                              (make <enum-literal> #:type.name (.name type) #:field field))
-                        (let ((message (format #f "invalid enum value: ~s [~s]\n" o (map (cut string-append (ast:name type) ":" <>) (ast:field* type)))))
+                        (let ((message (format #f "invalid enum value: ~s [~s]\n" o (map (cut string-append (tree:name type) ":" <>) (ast:field* type)))))
                           (display message (current-error-port))
                           (throw 'invalid-input message)))))))
 
@@ -1326,7 +1326,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (match enum
            ((name* ... field)
             (make <enum-literal>
-              #:type.name (ast:name*->name name*)
+              #:type.name (tree:name*->name name*)
               #:field field)))))))
 
 

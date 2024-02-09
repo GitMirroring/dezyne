@@ -66,7 +66,7 @@
   (pure-funcq
    (lambda (scope name context)
      (let* ((target (if (null? scope) name (car scope)))
-            (found (filter (compose (cute tree:name-equal? <> target) .name)
+            (found (filter (compose (cute ast:name-equal? <> target) .name)
                            (tree:declaration* (.tree context)))))
        (and (pair? found)
             (let* ((found (match scope
@@ -116,9 +116,9 @@ null) and return its CONTEXT."
      (cond
       ((not context)
        '())
-      ((tree:name-equal? (.name name) (.name tree:bool))
+      ((ast:name-equal? (.name name) (.name tree:bool))
        context:bool)
-      ((tree:name-equal? (.name name) (.name tree:void))
+      ((ast:name-equal? (.name name) (.name tree:void))
        context:void)
       (else
        (let* ((context (if (.global name) (context:parent context 'root) context))
@@ -133,7 +133,7 @@ null) and return its CONTEXT."
 (define (tree:lookup-reference name context)
   (define (helper name o)
     (define (name? o)
-      (and (tree:name-equal? (.name o) name) o))
+      (and (ast:name-equal? (.name o) name) o))
     (let ((tree (.tree o)))
       (match tree
         ((? (is? 'behavior-statements))
@@ -232,14 +232,14 @@ null) and return its CONTEXT."
 
 (define (resolve-interface o name context)
   (assert-type o 'port)
-  (or (and (tree:name-equal? name (slot o 'compound-name))
+  (or (and (ast:name-equal? name (slot o 'compound-name))
            (tree:lookup name context))
       (tree:lookup (slot o 'compound-name) context)))
 
 (define (resolve-port o name context)
   (assert-type o 'illegal-trigger 'trigger 'action 'interface-action 'reply)
   (let ((port-name (.port-name o)))
-    (cond ((and port-name (tree:name-equal? name port-name))
+    (cond ((and port-name (ast:name-equal? name port-name))
            (tree:lookup port-name context))
           (else #f))))
 
@@ -247,20 +247,20 @@ null) and return its CONTEXT."
   (assert-type o 'illegal-trigger 'trigger 'action 'interface-action)
   (let* ((port-name (.port-name o))
          (event-name (.event-name o)))
-    (cond ((and port-name (tree:name-equal? name port-name))
+    (cond ((and port-name (ast:name-equal? name port-name))
            (tree:lookup port-name context))
-          ((and port-name (tree:name-equal? name event-name))
+          ((and port-name (ast:name-equal? name event-name))
            (let* ((port (tree:lookup port-name context))
                   (interface-name (and port (slot port 'compound-name)))
                   (interface (and interface-name (resolve-interface port interface-name context))))
              (and interface (tree:lookup event-name (list interface)))))
-          ((and (not port-name) (tree:name-equal? name event-name))
+          ((and (not port-name) (ast:name-equal? name event-name))
            (tree:lookup event-name context))
           (else #f))))
 
 (define (resolve-instance o name context)
   (assert-type o 'instance 'port)
-  (and (tree:name-equal? name (slot o 'compound-name))
+  (and (ast:name-equal? name (slot o 'compound-name))
        (tree:lookup name context)))
 
 (define (resolve-reference o name context)
@@ -275,7 +275,7 @@ null) and return its CONTEXT."
     (cond
      ((not enum) #f)
      ((equal? field name)
-      (find (cute tree:name-equal? <> field) (tree:field* enum)))
+      (find (cute ast:name-equal? <> field) (tree:field* enum)))
      (else enum))))
 
 (define (resolve-field-test o name context)
@@ -289,7 +289,7 @@ null) and return its CONTEXT."
     (cond
      ((not enum) #f)
      ((equal? field name)
-      (find (cute tree:name-equal? <> field) (tree:field* enum)))
+      (find (cute ast:name-equal? <> field) (tree:field* enum)))
      (else enum))))
 
 (define (resolve-type o name context)
@@ -301,21 +301,21 @@ null) and return its CONTEXT."
   (assert-type o 'end-point)
   (let* ((instance-name (.instance-name o))
          (port-name (.port-name o)))
-    (cond ((and instance-name (tree:name-equal? name instance-name))
+    (cond ((and instance-name (ast:name-equal? name instance-name))
            (tree:lookup instance-name context))
-          ((and instance-name (tree:name-equal? name port-name))
+          ((and instance-name (ast:name-equal? name port-name))
            (let* ((instance (tree:lookup instance-name context))
                   (component-name (and instance (slot instance 'compound-name)))
                   (component (and component-name (resolve-instance instance component-name context))))
              (and component (tree:lookup port-name (list component)))))
-          ((and (not instance-name) (tree:name-equal? name port-name))
+          ((and (not instance-name) (ast:name-equal? name port-name))
            (tree:lookup port-name context))
           (else #f))))
 
 (define (resolve-call o name context)
   (assert-type o 'call)
   (let ((function-name (.function-name o)))
-    (cond ((and function-name (tree:name-equal? name function-name))
+    (cond ((and function-name (ast:name-equal? name function-name))
            (tree:lookup function-name context))
           (else #f))))
 

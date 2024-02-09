@@ -37,19 +37,20 @@
   #:use-module (ice-9 pretty-print)
 
   #:use-module (dzn ast)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast accessor)
   #:use-module (dzn ast display)
-  #:use-module (dzn ast goops)
   #:use-module (dzn ast parse)
   #:use-module (dzn ast serialize)
   #:use-module (dzn ast silence)
   #:use-module (dzn ast wfc)
+  #:use-module (dzn ast util)
   #:use-module (dzn command-line)
+  #:use-module (dzn tree util)
   #:use-module (dzn misc)
   #:use-module (dzn parse peg)
   #:use-module (dzn peg util)
-  #:use-module (dzn parse tree)
-  #:use-module (dzn goops tree)
+  #:use-module ((dzn parse tree) #:select (tree:normalize))
 
   #:declarative? #f
 
@@ -283,8 +284,35 @@ and the @var{tree-alist}."
 ;;;
 ;;; Ast.
 ;;;
-(define* (parse:annotate-ast ast)
-  (%context (tree:memoize-context ast)) ;set the initial context
+(define (parse:merge-namespaces o)
+  "Recursively merge separate namespaces with same name of O into one."
+  (match o
+    ((? (is? <namespace>))
+     (let ((elements
+            (let loop ((elements (.elements o)))
+              (match elements
+                (() '())
+                (((and ($ <namespace>) namespace) . rest)
+                 (let* ((dupes
+                         rest
+                         (partition (conjoin
+                                     (is? <namespace>)
+                                     (cute ast:name-equal? <> namespace))
+                                    rest))
+                        (elements (append (.elements namespace)
+                                          (append-map .elements dupes)))
+                        (namespace (clone namespace #:elements elements))
+                        (namespace (parse:merge-namespaces namespace)))
+                   (cons namespace (loop rest))))
+                ((element . rest)
+                 (cons element (loop rest)))))))
+       (clone o #:elements elements)))
+    (_ o)))
+
+(define (parse:annotate-ast ast)
+  (let ((context symbol-table (tree:memoize-context ast)))
+    (%context context)
+    (%symbol-table symbol-table))
   (let ((ast ((with-root (cute silence:annotate-functions <>)) ast)))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print ast (current-error-port)))
@@ -328,7 +356,8 @@ optionally using CONTENT-ALIST of form
   "Parse FILE-NAME and return an ast."
   (let* ((tree-alist content-alist (parse:file->tree-alist+content-alist
                                     file-name #:imports imports))
-         (ast (parse:tree-alist->ast tree-alist #:content-alist content-alist)))
+         (ast (parse:tree-alist->ast tree-alist #:content-alist content-alist))
+         (ast (parse:merge-namespaces ast)))
     (parse:annotate-ast ast)))
 
 (define (parse:string->ast string)
@@ -336,8 +365,9 @@ optionally using CONTENT-ALIST of form
   (let* ((content-alist (parse:string->content-alist string))
          (tree-alist (parse:content-alist->tree-alist content-alist)))
     (and (pair? tree-alist)
-         (let ((ast (parse:tree-alist->ast
-                     tree-alist #:content-alist content-alist)))
+         (let* ((ast (parse:tree-alist->ast
+                      tree-alist #:content-alist content-alist))
+                (ast (parse:merge-namespaces ast)))
            (parse:annotate-ast ast)))))
 
 

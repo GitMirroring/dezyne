@@ -25,7 +25,7 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn ast goops)
+(define-module (dzn ast ast)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
@@ -37,8 +37,9 @@
                                 (symbol-append 'goops: x)
                                 x)))
   #:use-module (dzn goops goops)
-  #:use-module (dzn goops context)
   #:use-module (dzn goops util)
+  #:use-module (dzn tree context)
+  #:use-module (dzn tree tree)
 
   #:export (<ast>
             define-ast
@@ -52,7 +53,19 @@
                <number>
                <unknown>
 
-               <tree> <tree:root>
+               <tree> <tree:root> <tree:locationed>
+
+               .comment
+               .column
+               .end-column
+               .end-line
+               .file-name
+               .length
+               .line
+               .location
+               .name
+               .offset
+               .string
 
                as
                class-name
@@ -71,32 +84,23 @@
     ((_ name . body)
      (define-class*-public name . body))))
 
-(define-ast <ast> ())
+(define-ast <ast> (<tree>))
+
+(define-ast <comment> (<ast> <tree:comment>))
+(define-ast <location> (<ast> <tree:location>))
+;;(define-ast <tree:locationed> (<ast> <tree:locationed>))
+(define-ast <named> (<ast> <tree:named>))
+
+;; (define-ast <named> (<tree:locationed>)
+;;   (name))                               ; symbol or <scope.name>
+
+
+(define-ast <scope> (<ast> <tree:scope>))
 
 (define-ast <ast-list> (<ast>)
   (elements #:init-form (list)))
 
-(define-ast <location> (<ast>)
-  (file-name)
-  (line)
-  (column)
-  (end-line)
-  (end-column)
-  (offset)
-  (length))
-
-(define-ast <locationed> (<ast>)
-  (comment)
-  (location))                           ;<location>
-
-(define-ast <comment> (<locationed>)
-  (string))
-
-(define-ast <named> (<locationed>)
-  (name))                               ;<string>
-
 (define-ast <declaration> (<named>))
-(define-ast <scope> (<ast>))
 
 (define-ast <namespace> (<declaration> <ast-list> <scope>))
 
@@ -105,11 +109,11 @@
 (define-ast <block-comment> (<comment>))
 (define-ast <line-comment> (<comment>))
 
-(define-ast <statement> (<locationed>))
+(define-ast <statement> (<ast> <tree:locationed>))
 (define-ast <declarative> (<statement>))
 (define-ast <imperative> (<statement>))
 
-(define-ast <arguments> (<ast-list> <locationed>))
+(define-ast <arguments> (<ast-list> <tree:locationed>))
 (define-ast <bindings> (<ast-list>))
 (define-ast <compound> (<scope> <ast-list> <statement>))
 (define-ast <blocking-compound> (<compound>)
@@ -171,7 +175,7 @@
   (from #:init-value 0)
   (to #:init-value 0))
 
-(define-ast <signature> (<locationed>) ;; instance
+(define-ast <signature> (<ast> <tree:locationed>) ;; instance
   (type.name #:init-form (make <void>))
   (formals #:init-form (make <formals>)))
 
@@ -192,8 +196,7 @@
 (define-method (.name (o <optional>)) "optional")
 
 (define-ast <instance> (<declaration> <declarative>)
-  (type.name;;;FIXME #:init-form (make <scope.name>)
-   ))
+  (type.name))
 
 (define-ast <port> (<instance>)
   (direction)                           ; symbol 'provides / 'requires
@@ -202,14 +205,14 @@
   (formals #:init-form (make <formals>))
   (injected?))
 
-(define-ast <trigger> (<scope> <locationed>)
+(define-ast <trigger> (<scope> <tree:locationed>)
   (port.name)
   (event.name)
   (formals #:init-form (make <formals>)))
 
 (define-ast <silent-trigger> (<trigger>))
 
-(define-ast <expression> (<locationed>))
+(define-ast <expression> (<ast> <tree:locationed>))
 
 (define-ast <binary> (<expression>)
   (left #:init-value *unspecified*)
@@ -256,7 +259,7 @@
 (define-ast <data> (<data-expr>)
   (value))
 
-(define-ast <reference> (<named> <unary>))
+(define-ast <reference> (<tree:reference> <unary>))
 
 (define-ast <undefined> (<unary>)
   (name))
@@ -392,7 +395,7 @@
   (left)
   (right))
 
-(define-ast <end-point> (<locationed>)
+(define-ast <end-point> (<ast> <tree:locationed>)
   (instance.name)
   (port.name))
 

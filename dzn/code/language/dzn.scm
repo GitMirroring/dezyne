@@ -35,7 +35,7 @@
 
   #:use-module (scmackerel indent)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code goops)
   #:use-module (dzn code util)
@@ -78,7 +78,7 @@
   (and=> (.comment o) dzn:comment))
 
 (define-method (dzn:model-name (o <model>))
-  (ast:name o))
+  (tree:name o))
 
 
 ;;;
@@ -231,7 +231,7 @@ and \"POST\" 'post in GRAMMAR."
   (display "};\n" port))
 
 (define-method (print-ast (o <extern>) port)
-  (simple-format port "extern ~a " (ast:name o))
+  (simple-format port "extern ~a " (tree:name o))
   (print-ast (.value o) port)
   (display ";\n" port))
 
@@ -245,7 +245,7 @@ and \"POST\" 'post in GRAMMAR."
     (simple-format port " {~a..~a};\n" (.from range) (.to range))))
 
 (define-method (print-ast (o <interface>) port)
-  (simple-format port "interface ~a" (ast:name o))
+  (simple-format port "interface ~a" (tree:name o))
   (print-newline port)
   (print-brace-open port)
   (for-each (cute print-ast <> port) (ast:type* o))
@@ -256,7 +256,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-newline port))
 
 (define-method (print-ast (o <component>) port)
-  (simple-format port "component ~a" (ast:name o))
+  (simple-format port "component ~a" (tree:name o))
   (print-newline port)
   (print-brace-open port)
   (for-each (cute print-ast <> port) (ast:port* o))
@@ -266,7 +266,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-newline port))
 
 (define-method (print-ast (o <foreign>) port)
-  (simple-format port "component ~a" (ast:name o))
+  (simple-format port "component ~a" (tree:name o))
   (print-newline port)
   (print-brace-open port)
   (for-each (cute print-ast <> port) (ast:port* o))
@@ -274,7 +274,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-newline port))
 
 (define-method (print-ast (o <system>) port)
-  (simple-format port "component ~a" (ast:name o))
+  (simple-format port "component ~a" (tree:name o))
   (print-newline port)
   (print-brace-open port)
   (for-each (cute print-ast <> port) (ast:port* o))
@@ -289,7 +289,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-newline port))
 
 (define-method (print-ast (o <instance>) port)
-  (display (ast:name (.type o)) port)
+  (display (tree:name (.type o)) port)
   (display " " port)
   (display (.name o) port)
   (display ";\n" port))

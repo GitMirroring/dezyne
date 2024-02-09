@@ -26,7 +26,7 @@
 
   #:use-module (ice-9 pretty-print)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn code goops)
   #:use-module (dzn vm goops)
   #:use-module (dzn command-line) ;%locations?
@@ -43,7 +43,7 @@
 ;; dzn/ast/goops.scm
 (define-unserialize-class <ast-list>)
 (define-unserialize-class <location>)
-(define-unserialize-class <locationed>)
+(define-unserialize-class <tree:locationed>)
 (define-unserialize-class <comment>)
 (define-unserialize-class <named>)
 (define-unserialize-class <declaration>)

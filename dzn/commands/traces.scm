@@ -31,7 +31,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 regex)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code)
   #:use-module (dzn code language makreel)

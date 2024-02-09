@@ -33,11 +33,11 @@
   #:use-module (ice-9 peg)
   #:use-module (ice-9 peg codegen)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast util)
   #:use-module (dzn goops goops)
   #:use-module (dzn goops util)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn tree util)
   #:use-module (dzn misc)
 
   #:export (define-templates-base

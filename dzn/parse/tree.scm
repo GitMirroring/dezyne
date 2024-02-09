@@ -102,7 +102,7 @@
             tree:in?
             tree:location?
             tree:model?
-            tree:name-equal?
+            ast:name-equal?
             tree:out?
             tree:port-qualifier?
             tree:provides?
@@ -140,7 +140,7 @@
             tree:interface*
             tree:list-model*
             tree:model*
-            tree:namespace*
+            ast:namespace*
             tree:port*
             tree:port-qualifier*
             tree:statement*
@@ -692,7 +692,7 @@ procedure)."
     (_ #f)))
 
 (define (tree:type-equal? a b)
-  (tree:name-equal? (.type-name a)  (.type-name b)))
+  (ast:name-equal? (.type-name a)  (.type-name b)))
 
 (define (tree:location? o)
   ((is? 'location) o))
@@ -700,7 +700,7 @@ procedure)."
 (define (has-location? o)
   (and (pair? o) (slot o 'location)))
 
-(define (tree:name-equal? a b)
+(define (ast:name-equal? a b)
   (and a b
        (assert-type a string? 'name 'compound-name 'scope)
        (assert-type b string? 'name 'compound-name 'scope)
@@ -950,7 +950,7 @@ procedure)."
        (()
         '())))))
 
-(define (tree:namespace* o)
+(define (ast:namespace* o)
   (filter (is? 'namespace) (tree:top* o)))
 
 (define (tree:component* o)

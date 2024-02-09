@@ -27,20 +27,22 @@
 ;;;
 ;;; Code:
 
-(define-module (dzn goops context)
+(define-module (dzn tree context)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
 
   #:use-module (dzn goops goops)
   #:use-module (dzn goops util)
+  #:use-module (dzn tree accessor)
+  #:use-module (dzn tree tree)
   #:use-module (dzn misc)
 
   #:export (%root
             %context
-            <tree>
-            <tree:root>
+            %symbol-table
             context:parent
             tree:ancestor
             tree:context
@@ -52,16 +54,17 @@
             with-root))
 
 ;;;
-;;; Types and parameters.
+;;; Parameters.
 ;;;
-(define-class* <tree> (<object>))
-(define-class* <tree:root> (<tree>))
 
 ;; The context table.
 (define %context (make-parameter #f))
 
 ;; The current root.
 (define (%root) (hashq-ref (%context) 'root))
+
+;; The symbol table.
+(define %symbol-table (make-parameter #f))
 
 
 ;;;
@@ -79,23 +82,47 @@
 (define-method (tree:id (o <tree>))
   (object:id o))
 
-(define-method (tree:memoize-context (o <tree>) context)
+(define-method (tree:memoize-context (o <tree>) (scope <tree:scope>) context)
   "Fill context lookup table from O down."
-  (let ((context (cons o context)))
+  (when (and (is-a? o <tree:named>)
+             (not (is-a? o <tree:reference>)))
+    (let ((name (match (tree:name* o)
+                  ((scope ... name) name)
+                  (name name)))
+          (context (match context
+                     (() o)
+                     ((context . rest) context))))
+      (when name
+        (let ((key (cons (tree:id scope) name)))
+          (unless (hash-ref (%symbol-table) key)
+            (hash-set! (%symbol-table) key o))))))
+  (let ((context (cons o context))
+        (scope (if (is-a? o <tree:scope>) o
+                   scope)))
     (hashq-set! (%context) o context)
-    (for-each (cute tree:memoize-context <> context)
+    (for-each (cute tree:memoize-context <> scope context)
               (filter (is? <tree>) (child* o)))))
+
+(define-method (tree:memoize-context (o <tree>) context)
+  (let ((scope (find (is? <tree:scope>) context)))
+    (tree:memoize-context o scope context)))
 
 (define-method (tree:memoize-context (root <tree:root>))
   "Create new context lookup hash table for ROOT in %context."
-  (parameterize ((%context (make-hash-table 512)))
-    (tree:memoize-context root '())
+  (parameterize ((%context (make-hash-table 512))
+                 (%symbol-table (make-hash-table 512)))
+    (tree:memoize-context root root '())
     (hashq-set! (%context) 'root root)
-    (%context)))
+    (values (%context) (%symbol-table))))
 
 (define-method (tree:memoize-context* (o <tree>) (parent <tree>))
   "Add O to context lookup table using context of PARENT."
   (hashq-set! (%context) o (cons o (tree:context parent)))
+  (when (is-a? o <tree:named>)
+    (let ((name (match (tree:name* o)
+                  ((scope ... name) name)
+                  (name name))))
+      (hash-set! (%symbol-table) name o)))
   o)
 
 (define-method (tree:memoize-context* (o <tree:root>))
@@ -110,9 +137,11 @@
   "Apply procedure on the ROOT, memoize all contexts under the new ROOT
 and maintain them in %CONTEXT, dropping the previous contexts.  This
 method is a convenience wrapper around tree:memoize-context for a ROOT."
-  (lambda (root)
-    (let ((root (procedure root)))
-      (%context (tree:memoize-context root))
+    (lambda (root)
+    (let* ((root (procedure root))
+           (context symbol-table (tree:memoize-context root)))
+      (%context context)
+      (%symbol-table symbol-table)
       root)))
 
 

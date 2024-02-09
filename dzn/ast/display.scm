@@ -29,9 +29,9 @@
 
   #:use-module (dzn goops display)
   #:use-module (dzn goops serialize)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast serialize)
-  #:use-module (dzn goops tree)
+  #:use-module (dzn tree util)
   #:use-module (dzn command-line) ;%locations?
   #:use-module (dzn misc)
 
