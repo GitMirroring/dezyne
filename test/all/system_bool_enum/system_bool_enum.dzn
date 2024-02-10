@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -44,7 +45,6 @@ component hello_enum
     enum E {W,T,F};
     E e = E.W;
     [e.W] on p1.hello(): {e=E.T; r1.hello();}
-    [e.W] on r1.world(): e = E.F;
     [e.T] on r1.world(): {e=E.F; p1.world();}
     [e.T] on p1.hello(): {e=E.W; r1.hello();}
     [e.F] on p1.hello(): {e=E.T; r1.hello();}
@@ -60,7 +60,7 @@ component hello_bool
   {
     bool b = true;
     on p2.hello(): {b = r2.hello();}
-    [!b] on r2.world(): {b=!b; p2.world();}
+    on r2.world(): {b=!b; if (!p2.b) p2.world();}
   }
 }
 

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,6 +31,6 @@ interface iworld
   {
     bool b = true;
     on world: b = false;
-    [!b] on optional: {b = true; howdy;}
+    [!b] on inevitable: {b = true; howdy;}
   }
 }

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -46,6 +47,7 @@ component hello
   behavior
   {
     [th.idle] on th.hello (): tw.hello ();
+    on tw.cruel (): th.cruel ();
     [!th.idle] on th.bye (): tw.bye ();
     [!th.idle] on tw.world (): th.world ();
   }
@@ -59,6 +61,7 @@ component world
   behavior
   {
     [bh.idle] on bh.hello (): bw.hello ();
+    on bw.cruel (): bh.cruel ();
     [!bh.idle] on bh.bye (): bw.bye ();
     [!bh.idle] on bw.world (): bh.world ();
   }
