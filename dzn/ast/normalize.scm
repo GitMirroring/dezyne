@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -392,22 +392,22 @@
        ((or typed-trigger? blocking?)
         (add-the-end t))
        (else
-        (let* ((event ((compose .event car ast:trigger*) on))
-               (modeling? (is-a? event <modeling-event>))
+        (let* ((trigger ((compose car ast:trigger*) on))
                (port ((compose .port car ast:trigger*) on))
                (provides? (and port (ast:provides? port)))
                (model (ast:parent on <model>))
                (statement (triple-statement t))
                (reply?
                 (or (and (is-a? model <interface>)
-                         (not modeling?))
+                         (not (ast:modeling? trigger)))
                     (and provides?
                          (null? (tree-collect
                                  (conjoin
                                   (is? <reply>)
                                   (disjoin (negate .port)
                                            (compose (cute ast:eq? port <>)
-                                                    .port))) statement)))))
+                                                    .port)))
+                                 statement)))))
                (reply (if reply? (list (make <reply>)) '()))
                (elements (if (is-a? statement <compound>)
                              (ast:statement* statement)
