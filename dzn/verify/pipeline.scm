@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
@@ -552,9 +552,10 @@ init for MODEL unless INIT."
 
 (define (report-fail model assert trace)
   (define (remove-flushes trace)
-    (filter (negate (cut string-contains <> "<flush>")) trace))
+    (filter (negate (cute string-contains <> "<flush>")) trace))
   (define (drop-queue-full-tail trace)
-    (append (take-while (negate (cut equal? "<queue-full>" <>)) trace) (list "<queue-full>")))
+    (append (take-while (negate (cute equal? "<queue-full>" <>)) trace)
+            (list "<queue-full>")))
   (define (tag->message tag)
     (apply format #f "~a:~a:~a: error: code will never be executed"
            (.file-name (.location (.behavior model)))
@@ -638,19 +639,21 @@ init for MODEL unless INIT."
 ;;;
 
 (define (reduce-or all? l)
-  (if all? (fold (cut or <> <>) #f (map (cut <>) l))
+  (if all? (fold (cut or <> <>) #f (map (cute <>) l))
       (fold (lambda (e res) (or res (e))) #f l)))
 
 (define (mcrl2:verify-compliance root model)
   (let* ((output status (verify-pipeline "verify-compliance" root model))
          (lines (and output (string-split output #\newline)))
-         (stdout-status (and lines (filter (cut string-prefix? "result: " <>) lines)))
+         (stdout-status (and lines
+                             (filter (cute string-prefix? "result: " <>) lines)))
          (stdout-status (and (pair? stdout-status) (car stdout-status)))
          (status (if (and (zero? status)
                           stdout-status
                           (string=? stdout-status "result: true"))
                      0 1))
-         (trace (and lines (find (cut string-prefix? "counter_example_weak_failures_refinement: " <>) lines)))
+         (trace (and lines
+                     (find (cute string-prefix? "counter_example_weak_failures_refinement: " <>) lines)))
          (trace (and trace (substring trace (1+ (string-index trace #\:)))))
          (trace (and trace (string-trim-both trace)))
 
@@ -658,7 +661,8 @@ init for MODEL unless INIT."
          (trace (and trace (hide-illegal-labels trace)))
 
          (trace (and trace (if (string-null? trace) trace (string-append trace "\n"))))
-         (component-accepts (and lines (find (cut string-prefix? "left-acceptance: " <>) lines)))
+         (component-accepts (and lines
+                                 (find (cute string-prefix? "left-acceptance: " <>) lines)))
          (component-accepts (and component-accepts (substring component-accepts (+ 2 (string-contains component-accepts ": ")))))
 
          (component-accepts (and component-accepts (hide-internal-labels component-accepts)))
@@ -666,7 +670,8 @@ init for MODEL unless INIT."
 
          (component-accepts (and component-accepts (string-split component-accepts #\newline)))
          (component-accepts (and component-accepts (sort component-accepts string<?)))
-         (interface-accepts (and lines (filter (cut string-prefix? "right-acceptance: " <>) lines)))
+         (interface-accepts (and lines
+                                 (filter (cute string-prefix? "right-acceptance: " <>) lines)))
          (interface-accepts (and (pair? interface-accepts) (car interface-accepts)))
          (interface-accepts (and interface-accepts (substring interface-accepts (+ 2 (string-contains interface-accepts ": ")))))
 
