@@ -46,7 +46,6 @@
 (define-unserialize-class <locationed>)
 (define-unserialize-class <comment>)
 (define-unserialize-class <named>)
-(define-unserialize-class <name>)
 (define-unserialize-class <declaration>)
 (define-unserialize-class <scope>)
 (define-unserialize-class <namespace>)

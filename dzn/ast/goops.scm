@@ -102,9 +102,6 @@
 
 (define-ast <root> (<namespace> <tree:root>))
 
-(define-ast <name> (<ast>) ;REMOVEME??
-  (name))
-
 (define-ast <block-comment> (<comment>))
 (define-ast <line-comment> (<comment>))
 

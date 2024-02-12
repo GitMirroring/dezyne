@@ -92,11 +92,6 @@ component hello
 (parameterize ((%peg:locations? 'none)
                (%locations? #t))
 
-  (let ((name-ast (make <name> #:name "void")))
-    (test-equal "name"
-      name-ast
-      (round-trip name-ast)))
-
   (let ((void-ast (make <void>)))
     (test-equal "void"
       void-ast

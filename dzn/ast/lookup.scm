@@ -176,8 +176,6 @@
        (string->symbol o))
       (((and (? string?) o) ..1)        ;scope
        (string->symbol (string-join o ".")))
-      (($ <name>)                 ;name
-       (object->key (.name o)))
       (_ o)))                           ;eq?-ness already stable.
   (lambda args
     (let* ((key (cons base-func (map object->key args)))
