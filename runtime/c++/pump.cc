@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2015, 2016, 2017, 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
@@ -39,28 +39,28 @@ namespace dzn
 {
 static std::list<coroutine>::iterator find_self (std::list<coroutine> &coroutines);
 void
-defer (const dzn::locator &locator, std::function<bool ()> &&predicate,
+defer (dzn::locator const& locator, std::function<bool ()> &&predicate,
             std::function<void (size_t)> &&event)
 {
   locator.get<dzn::pump> ().defer (std::move (predicate), std::move (event));
 }
 
 void
-prune_deferred (const dzn::locator &locator)
+prune_deferred (dzn::locator const& locator)
 {
   if (auto pump = locator.try_get<dzn::pump> ())
     pump->prune_deferred ();
 }
 
 size_t
-coroutine_id (const dzn::locator &locator)
+coroutine_id (dzn::locator const& locator)
 {
   auto pump = locator.try_get<dzn::pump> ();
   return !pump ? 1 : pump->coroutine_id ();
 }
 
 void
-port_block (const dzn::locator &locator, dzn::component *component, void *port)
+port_block (dzn::locator const& locator, dzn::component *component, void *port)
 {
   dzn::debug.rdbuf () && dzn::debug << "port_block " << component
                                     << " " << port << std::endl;
@@ -68,7 +68,7 @@ port_block (const dzn::locator &locator, dzn::component *component, void *port)
 }
 
 void
-port_release (const dzn::locator &locator, dzn::component *component, void *port)
+port_release (dzn::locator const& locator, dzn::component *component, void *port)
 {
   dzn::debug.rdbuf () && dzn::debug << "port_release " << component
                                     << " " << port << std::endl;
@@ -76,7 +76,7 @@ port_release (const dzn::locator &locator, dzn::component *component, void *port
 }
 
 void
-collateral_block (const dzn::locator &locator, dzn::component *component)
+collateral_block (dzn::locator const& locator, dzn::component *component)
 {
   dzn::debug.rdbuf () && dzn::debug << "pump::handling "
                                     << locator.get<dzn::runtime>().handling (component)
@@ -86,7 +86,7 @@ collateral_block (const dzn::locator &locator, dzn::component *component)
 }
 
 bool
-port_blocked_p (const dzn::locator &locator, void *port)
+port_blocked_p (dzn::locator const& locator, void *port)
 {
   dzn::pump *pump = locator.try_get<dzn::pump> ();
   return pump ? pump->blocked_p (port) : false;
@@ -95,7 +95,7 @@ port_blocked_p (const dzn::locator &locator, void *port)
 static std::list<coroutine>::iterator
 find_self (std::list<coroutine> &coroutines)
 {
-  auto coroutine_p = [] (const dzn::coroutine & coroutine)
+  auto coroutine_p = [] (dzn::coroutine const& coroutine)
   {return coroutine.port == nullptr && !coroutine.finished;};
 
 #ifndef NDEBUG
@@ -235,7 +235,8 @@ pump::operator () ()
             lock.lock ();
           }
 
-        while (timers_expired ())
+        auto now = std::chrono::steady_clock::now ();
+        while (timers_expired (now))
           {
             auto f (timers.begin ()->second);
             timers.erase (timers.begin ());
@@ -290,9 +291,9 @@ pump::operator () ()
 }
 
 bool
-pump::timers_expired () const
+pump::timers_expired (std::chrono::steady_clock::time_point const& now) const
 {
-  return timers.size () && timers.begin ()->first.expired ();
+  return timers.size () && timers.begin ()->first.expired (now);
 }
 
 size_t
@@ -312,7 +313,7 @@ pump::create_context ()
         debug.rdbuf () &&debug << "[" << self->id << "] create context"
                                << std::endl;
         context_switch ();
-        while (running || queue.size () || timers_expired ())
+        while (running || queue.size () || timers_expired (std::chrono::steady_clock::now ()))
           {
             worker ();
             if (unblocked.size ()) collateral_release (self);
@@ -320,7 +321,7 @@ pump::create_context ()
           }
         exit ();
       }
-    catch (const forced_unwind &)
+    catch (forced_unwind const&)
       {
         debug.rdbuf () &&debug << "ignoring forced_unwind"
                                << std::endl;
@@ -382,7 +383,7 @@ pump::collateral_release (std::list<coroutine>::iterator self)
   debug.rdbuf () &&debug << "[" << self->id << "] collateral_release"
                          << std::endl;
 
-  auto predicate = [this] (const coroutine & c)
+  auto predicate = [this] (coroutine const& c)
   {
     return std::find (unblocked.begin (),
                       unblocked.end (),
@@ -438,7 +439,7 @@ pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
       auto it = std::find_if
         (collateral_blocked.begin (),
          collateral_blocked.end (),
-         [this] (const dzn::coroutine & coroutine)
+         [this] (dzn::coroutine const& coroutine)
          {
            return std::find (unblocked.begin (), unblocked.end (),
                              coroutine.port) != unblocked.end ();
@@ -556,7 +557,7 @@ void
 pump::prune_deferred ()
 {
   deferred.erase (std::remove_if (deferred.begin (), deferred.end (),
-                                  [] (const typename decltype (deferred)::value_type & e)
+                                  [] (typename decltype (deferred)::value_type const& e)
                                   {return !e.first ();}),
                   deferred.end ());
 }

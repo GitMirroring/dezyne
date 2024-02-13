@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017, 2019, 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2021, 2022, 2024 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -67,8 +67,8 @@ struct pump
       : id (id)
       , t (std::chrono::steady_clock::now () + std::chrono::milliseconds (ms))
     {}
-    bool expired () const {return t <= std::chrono::steady_clock::now ();}
-    bool operator < (const deadline &d) const
+    bool expired (std::chrono::steady_clock::time_point const& now) const {return t <= now;}
+    bool operator < (deadline const& d) const
     {return t < d.t || (t == d.t && id < d.id);}
   };
 
@@ -106,7 +106,7 @@ struct pump
   void handle (size_t, size_t, std::function<void ()> const&);
   void remove (size_t);
 private:
-  bool timers_expired () const;
+  bool timers_expired (std::chrono::steady_clock::time_point const& now) const;
 };
 
 #if __cplusplus > 201402L
