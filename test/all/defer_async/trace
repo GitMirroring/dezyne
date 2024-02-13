@@ -1,0 +1,10 @@
+h.hello
+h.return
+h.cancel
+h.return
+h.hello
+h.return
+<defer>
+h.world
+h.cancel
+h.return

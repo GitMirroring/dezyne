@@ -1,0 +1,91 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Rutger (regtur) van Beusekom <rutger.van.beusekom@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Use defer to mimick the previous async interface modulo the ack priority.
+//
+// Code:
+
+interface ihello
+{
+  in void hello();
+  in void cancel();
+  out void world();
+
+  behavior
+  {
+    bool idle = true;
+
+    [idle] on hello: idle = false;
+    on cancel: idle = true;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+
+interface iasync
+{
+  in void req ();
+  in void clr ();
+  out void ack ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on req: idle = false;
+    on clr: idle = true;
+    [!idle] on inevitable: {idle = true; ack;}
+  }
+}
+
+component hello
+{
+  provides ihello h;
+  requires iasync async;
+  behavior
+  {
+    on h.hello (): async.req ();
+    on async.ack (): h.world ();
+    on h.cancel (): async.clr ();
+  }
+}
+
+component async_defer
+{
+  provides iasync async;
+
+  behavior
+  {
+    bool toggle = true;
+    on async.req (): defer async.ack ();
+    on async.clr (): toggle = !toggle;
+  }
+}
+
+component defer_async
+{
+  provides ihello h;
+  system
+  {
+    hello hello_;
+    async_defer async_;
+    h <=> hello_.h;
+    hello_.async <=> async_.async;
+  }
+}

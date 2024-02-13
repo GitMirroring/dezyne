@@ -277,6 +277,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_reply				\
  %D%/deadlock_reply_modeling			\
  %D%/defer_after_call				\
+ %D%/defer_async				\
  %D%/defer_blocking				\
  %D%/defer_calls				\
  %D%/defer_cancel				\
