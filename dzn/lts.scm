@@ -52,8 +52,12 @@
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn peg)
-  #:export (%<declarative-illegal>
+  #:export (%<blocking>
+            %<blocked>
+            %<declarative-illegal>
             %<illegal>
+            %inevitable
+            %optional
             %tau
             add-failures
             annotate-collateral-blocked-out
@@ -123,6 +127,8 @@
             string)))))
 
 (define %<ack> (make-shared-string "<ack>"))
+(define %<blocking> (make-shared-string "<blocking>"))
+(define %<blocked> (make-shared-string "<blocked>"))
 (define %<declarative-illegal> (make-shared-string "<declarative-illegal>"))
 (define %<defer> (make-shared-string "<defer>"))
 (define %<flush> (make-shared-string "<flush>"))

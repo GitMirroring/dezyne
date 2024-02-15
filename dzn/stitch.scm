@@ -40,6 +40,79 @@
 
   #:export (model->lts))
 
+
+(define (untick o)
+  (if (string-suffix? "'" o) (string-drop-right o 1) o))
+
+(define (unticked-dotted-name o)
+  (string-join (map untick (ast:full-name o)) "."))
+
+(define (remove-qout label)
+  (if (string-contains label ".qout.") %tau label))
+
+(define (fullname instance portname)
+  (string-append (unticked-dotted-name instance) "." (untick portname)))
+
+(define-method (instance-name (instance <instance>) port-name)
+  (string-append (makreel:unticked-dotted-name instance)
+                 "."
+                 (makreel:unticked-name port-name)))
+
+(define-method (instance-name (end-point <end-point>))
+  (instance-name (.instance end-point) (.port.name end-point)))
+
+(define (sutify label instance)
+  (let* ((system (tree:ancestor instance <system>))
+         (name (makreel:unticked-dotted-name system))
+         (prefix (1+ (string-length name)))
+         (label (substring label prefix)))
+   (string-append "sut." label)))
+
+
+(define* (add-instance-name lts #:key instance)
+  (let ((name (makreel:unticked-dotted-name instance)))
+    (define (transform-label label)
+      (cond
+       ((string-prefix? "sut." label)
+        (let* ((label (substring label (string-length "sut.")))
+               (label (string-append name "." label)))
+          (make-shared-string (sutify label instance))))
+       ((string-index label #\.)
+        (make-shared-string (string-append name "." label)))
+       (else
+        label)))
+    (transform-labels transform-label lts)))
+
+
+(define (model-name->model model-name models)
+  (find (lambda (m) (equal? (makreel:unticked-dotted-name m) model-name)) models))
+
+(define* (port-events port #:key (predicate identity))
+  (let* ((interface (.type port))
+         (port-name (makreel:unticked-name port))
+         (events (ast:event* interface))
+         (events (filter predicate events))
+         (event-names (map .name events)))
+    (map (cute string-append port-name "." <>) event-names)))
+
+(define (port-modeling-triggers port)
+  (let ((port-name (makreel:unticked-name port)))
+    (map (cute string-append port-name "." <>) (list "optional" "inevitable"))))
+
+
+(define (log-debug msg thunk)
+  (let ((debug? (dzn:command-line:get 'debug #f)))
+    (when debug? (format (current-error-port) "~a...\n" msg))
+    (let ((res (thunk)))
+      (when debug? (format (current-error-port) "...done\n"))
+      res)))
+
+(define* (stitch root models model-name #:key verbose?)
+  (let* ((model (or (and model-name (model-name->model model-name models))
+                    (last (filter (cute is-a? <> <system>) models))
+                    (last (filter (cute is-a? <> <component>) models)))))
+    (model->lts root model verbose?)))
+
 (define* (compose-par instance blob lts #:key alphabet verbose?)
   (when (> (dzn:debugity) 1)
     (display "blob:\n" (current-error-port))
@@ -71,153 +144,9 @@
       (display "par:\n" (current-error-port))
       (display-lts-rtc result #:port (current-error-port))
       (display #\newline (current-error-port)))
-    (when (> (dzn:debugity) 0)
-      (write-lts-tmp (mark-common result #:alphabet alphabet)))
+   ;; (when (> (dzn:debugity) 0)
+   ;;   (write-lts-tmp (mark-common result #:alphabet alphabet)))
     result))
-
-(define-method (instance-name (instance <instance>) port-name)
-  (string-append (makreel:unticked-dotted-name instance)
-                 "."
-                 (makreel:unticked-name port-name)))
-
-(define-method (instance-name (end-point <end-point>))
-  (instance-name (.instance end-point) (.port.name end-point)))
-
-(define (sutify label instance)
-  (let* ((system (tree:ancestor instance <system>))
-         (name (makreel:unticked-dotted-name system))
-         (prefix (1+ (string-length name)))
-         (label (substring label prefix)))
-   (string-append "sut." label)))
-
-(define* (add-instance-name lts #:key instance)
-  (let ((name (makreel:unticked-dotted-name instance)))
-    (define (transform-label label)
-      (cond
-       ((string-prefix? "sut." label)
-        (let* ((label (substring label (string-length "sut.")))
-               (label (string-append name "." label)))
-          (make-shared-string (sutify label instance))))
-       ((string-index label #\.)
-        (make-shared-string (string-append name "." label)))
-       (else
-        label)))
-    (transform-labels transform-label lts)))
-
-(define* (port-events port #:key (predicate identity))
-  (let* ((interface (.type port))
-         (port-name (makreel:unticked-name port))
-         (events (ast:event* interface))
-         (events (filter predicate events))
-         (event-names (map .name events)))
-    (map (cute string-append port-name "." <>) event-names)))
-
-(define (port-modeling-triggers port)
-  (let ((port-name (makreel:unticked-name port)))
-    (map (cute string-append port-name "." <>) (list "optional" "inevitable"))))
-
-(define (log-debug msg thunk)
-  (let ((debug? #t)) ;;(dzn:command-line:get 'debug #f)))
-    (when debug? (format (current-error-port) "~a...\n" msg))
-    (let ((res (thunk)))
-      (when debug? (format (current-error-port) "...done\n"))
-      res)))
-
-(define* (stitch root ports instances bindings #:key verbose?)
-  (define (requires-bindings instance)
-    (let ((bindings (filter (compose (cute ast:equal? <> instance)
-                                     .instance .left)
-                            bindings)))
-      (filter (compose (disjoin not
-                                (compose  not (is? <foreign>) .type))
-                       .instance .right)
-              bindings)))
-  (define (rename-ports lts)
-    (define (transform-binding binding)
-      (cond
-       ((not (.instance (.right binding)))
-        (rename-label
-         (instance-name (.left binding))
-         (makreel:unticked-name (.port.name (.right binding)))))
-       ((not (.instance (.left binding)))
-        (rename-label
-         (instance-name (.right binding))
-         (makreel:unticked-name (.port.name (.left binding)))))
-       ((is-a? (.type (.instance (.right binding))) <foreign>)
-        (rename-label
-         (instance-name (.left binding))
-         (sutify (instance-name (.right binding))
-                 (.instance (.right binding)))))
-       (else identity)))
-    (define transform-label
-      (let ((transformations (map transform-binding bindings)))
-        (apply compose transformations)))
-    (transform-labels transform-label lts))
-  (define (hide-binding binding lts)
-    (hide lts #:hide-prefix (instance-name (.right binding))))
-  (define (hide-bindings bindings lts)
-    (log-debug 'hide-bindings
-      (cute fold hide-binding lts bindings)))
-  (define (rename-binding binding lts)
-    (let ((from (instance-name (.left binding)))
-          (to (instance-name (.right binding))))
-      (rename lts #:from from #:to to)))
-  (define (rename-bindings bindings lts)
-    (log-debug 'rename-bindings
-      (cute fold rename-binding lts bindings)))
-  (define* (instance->lts instance #:key ports)
-    (let* ((events (append-map (cut port-events <> #:predicate ast:out?)
-                               ports))
-           (lts (model->lts root (.type instance) verbose?))
-           (lts (annotate-collateral-blocked-out
-                 lts #:provides-out-events events)))
-      (add-instance-name lts #:instance instance)))
-  (define* (stitch-instance instance blob #:key todo)
-    (let* ((instance-node instance)
-           (instance-todo (and=> (assoc instance todo ast:node-eq?)
-                                 cdr))
-           (todo (acons instance (1- instance-todo)
-                        (alist-delete instance todo ast:node-eq?))))
-      (if (> instance-todo 1) (values blob todo)
-          (let* ((requires (requires-bindings instance))
-                 (requires (filter (compose .instance .right) requires))
-                 (internal (filter (conjoin (compose .instance .left)
-                                            (compose .instance .right))
-                                   bindings))
-                 (provides (filter (compose (cute ast:equal? <> instance)
-                                            .instance .right)
-                                   internal))
-                 (alphabet (map (cute string-append <> ".") (map (compose instance-name .right) requires)))
-                 (provide-ports (map (compose .port .right) provides))
-                 (lts (instance->lts instance #:ports provide-ports))
-                 (requires-ports (map (compose instance-name .left) requires))
-                 (lts (log-debug 'remove-modeling (cute remove-modeling lts #:ports requires-ports)))
-                 (lts (rename-bindings requires lts))
-                 (blob (compose-par instance blob lts #:alphabet alphabet
-                                    #:verbose? verbose?))
-                 (blob (hide-bindings requires blob))
-                 (provides (map (compose .instance .left) provides)))
-            (stitch blob provides #:todo todo)))))
-  (define* (stitch blob instances #:key todo)
-    (let loop ((blob blob) (instances instances) (todo todo))
-      (match instances
-        (() (values blob todo))
-        ((instance instances ...)
-         (let ((blob todo (stitch-instance instance blob #:todo todo)))
-           (loop blob instances todo))))))
-
-  (let* ((bottom-bindings (filter (compose not .instance .right) bindings))
-         (bottom-instances (filter (compose null? requires-bindings)
-                                   instances))
-         (bottom-instances (filter (compose not (is? <foreign>) .type)
-                                   bottom-instances))
-         (bottom-instances (append
-                            (map (compose .instance .left) bottom-bindings)
-                            bottom-instances))
-         (todo (map cons instances
-                    (map (compose length requires-bindings) instances)))
-         (blob (stitch #() bottom-instances #:todo todo)))
-    (log-debug 'rename-ports (cute rename-ports blob))))
 
 (define (compose-parallel-external lts0 lts1 common-events)
   (if (zero? (vector-length lts0))
@@ -237,17 +166,10 @@
                             #:input (string-append lts-text0 "\n\x04\n" lts-text1)))
            (lts (annotate-node-rtc (aut-text->lts result) #:incoming-events incoming-events2)))
         lts)))
-
+
 ;;;
 ;;; Entry point.
 ;;;
-(define-method (model->lts root (model <interface>) verbose?)
-  (let ((lts (verify-pipeline "aut-weak-trace" root model)))
-    (when (string-null? (string-trim-right lts))
-      (error "failed to create LTS for interface ~a\n"
-             (makreel:unticked-dotted-name model)))
-    (aut-text->lts lts)))
-
 (define-method (model->lts root (model <component>) verbose?)
   (define (remove-qout label)
     (if (string-contains label ".qout.") %tau label))
@@ -275,6 +197,13 @@
             (cut display-lts lts))))
       lts)))
 
+(define-method (model->lts root (model <interface>) verbose?)
+  (let ((lts (verify-pipeline "aut-weak-trace" root model)))
+    (when (string-null? (string-trim-right lts))
+      (error "failed to create LTS for interface ~a\n"
+             (makreel:unticked-dotted-name model)))
+    (aut-text->lts lts)))
+
 (define-method (model->lts root (model <foreign>) verbose?) ;; HACK; TODO FIXME
   (let ((lts (verify-pipeline "aut-weak-trace" root (.type (ast:provides-port model)))))
     (when (string-null? (string-trim-right lts))
@@ -284,9 +213,95 @@
 
 (define-method (model->lts root (system <system>) verbose?)
   (let* ((instances (ast:instance* system))
-         (ports (ast:port* system))
          (bindings (map ast:normalize (ast:binding* system)))
-         (stitch? (and (pair? ports)
-                       (pair? instances))))
-    (if (not stitch?) #()
-        (stitch root ports instances bindings #:verbose? verbose?))))
+         (instance-provides-binding-count (make-hash-table)))
+    (define (get-top-bindings)
+      (filter (lambda (b) (not (.instance (.left b)))) bindings))
+    (define (get-provides-bindings instance)
+      (filter (lambda (b) (ast:equal? (.instance (.right b)) instance))
+              bindings))
+    (define (get-requires-bindings instance)
+      (filter (lambda (b) (and (ast:equal? (.instance (.left b)) instance)
+                               (.instance (.right b))
+                               (not (is-a? (.type (.instance (.right b))) <foreign>))))
+              bindings))
+    (define (rename-ports lts)
+      (define (transform-binding binding)
+        (cond
+        ((not (.instance (.left binding)))
+          (rename-label
+          (instance-name (.right binding))
+          (makreel:unticked-name (.port.name (.left binding)))))
+        ((not (.instance (.right binding)))
+          (rename-label
+          (instance-name (.left binding))
+          (makreel:unticked-name (.port.name (.right binding)))))
+        ((is-a? (.type (.instance (.right binding))) <foreign>)
+          (rename-label
+          (instance-name (.left binding))
+          (sutify (instance-name (.right binding))
+                  (.instance (.right binding)))))
+        (else identity)))
+      (define transform-label
+        (let ((transformations (map transform-binding bindings)))
+          (apply compose transformations)))
+      (transform-labels transform-label lts))
+    (define (hide-binding binding lts)
+      (hide lts #:hide-prefix (instance-name (.left binding))))
+    (define (hide-bindings bindings lts)
+      (log-debug 'hide-bindings
+        (cute fold hide-binding lts bindings)))
+    (define (rename-binding binding lts)
+      (let ((from (instance-name (.right binding)))
+            (to (instance-name (.left binding))))
+        (rename lts #:from from #:to to)))
+    (define (rename-bindings bindings lts)
+      (log-debug 'rename-bindings
+        (cute fold rename-binding lts bindings)))
+    (define* (instance->lts instance #:key ports)
+      (let* ((lts (model->lts root (.type instance) verbose?)))
+        (add-instance-name lts #:instance instance)))
+
+    (define (stitch lts instance-bindings)
+      (fold
+        (lambda (binding lts)
+          (let* ((subinstance (.instance (.right binding)))
+                 (provides-binding-count (1- (hash-ref instance-provides-binding-count subinstance)))
+                 (provides-bindings (get-provides-bindings subinstance))
+                 (provides-internal-bindings (filter (compose .instance .left) provides-bindings)))
+            (hash-set! instance-provides-binding-count subinstance provides-binding-count)
+            (if (not (equal? provides-binding-count 0))
+              lts
+              (stitch
+                (hide-bindings
+                  provides-internal-bindings
+                  (compose-par
+                    subinstance
+                    (log-debug 'Remove-modeling
+                      (cute remove-modeling
+                        lts
+                        #:ports
+                          (map
+                            (lambda (binding)
+                              (fullname (.instance (.left binding)) (.port.name (.left binding))))
+                            provides-internal-bindings)))
+                    (rename-bindings
+                      provides-internal-bindings
+                      (instance->lts subinstance))
+                    #:alphabet
+                      (map
+                        (lambda (binding)
+                          (fullname (.instance (.left binding)) (.port.name (.left binding))))
+                        provides-internal-bindings)
+                    #:verbose? verbose?))
+                (get-requires-bindings subinstance)))))
+       lts
+       instance-bindings))
+
+    (for-each (lambda (i) (hash-set! instance-provides-binding-count i (length (get-provides-bindings i)))) instances)
+    (log-debug 'Rename-ports
+      (cute rename-ports
+        (if (null? instances)
+            (vector)
+            (let* ((top-bindings (get-top-bindings)))
+              (stitch (vector) top-bindings)))))))
