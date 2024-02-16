@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2017, 2020 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2015, 2017, 2020, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -30,6 +30,7 @@
 
   #:export (alist->hash-table
             conjoin
+            delete-adjacent-duplicates
             disjoin
             display-join
             hash-table->alist
@@ -166,3 +167,16 @@ and \"POST\" 'post in GRAMMAR."
         (loop (cdr lst))))
     (when (and post (pair? lst))
       (display post port))))
+
+(define (delete-adjacent-duplicates lst =)
+  "When LST is sorted all duplicates are adjacent one another.
+This procedure recursively drops an element from the list when it equals
+the next element."
+  (let loop ((lst lst))
+    (match lst
+      (() lst)
+      ((head) lst)
+      ((head next . rest)
+       (let ((tail (cons next rest)))
+         (if (= head next) (loop tail)
+             (cons head (loop tail))))))))
