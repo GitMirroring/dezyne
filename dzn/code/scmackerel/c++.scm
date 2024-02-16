@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -544,6 +544,15 @@ std::basic_ostream<Char, Traits> &")
       (let* ((transitions (code:shared event)))
         transitions))
 
+    (define (transition< a b)
+      (or (< (.from a) (.from b))
+          (and (= (.from a) (.from b))
+               (every (lambda (a b)
+                        (string<? (.value a)
+                                  (.value b)))
+                      (ast:statement* (.prefix a))
+                      (ast:statement* (.prefix b))))))
+
     (let* ((type (string-join (cons "" (ast:full-name o)) "::"))
            (type& (string-append type "&"))
            (connect
@@ -608,7 +617,7 @@ std::basic_ostream<Char, Traits> &")
                                                         event-name ".set"))
                                    (arguments `("that", "this",
                                                 event-name-string)))))
-                          (ast:event* o)))))
+                      (ast:event* o)))))
                  ,(sm:destructor (struct interface)
                                  (type "virtual")
                                  (statement "= default;"))
@@ -668,8 +677,10 @@ std::basic_ostream<Char, Traits> &")
                               (events (ast:event* o))
                               (transitions (append-map event->transitions
                                                        events))
-                              (transitions (delete-duplicates transitions
-                                                              code:prefix-equal?)))
+                              (transitions (sort transitions transition<))
+                              (transitions (delete-adjacent-duplicates
+                                            transitions
+                                            code:prefix-equal?)))
                          `(,(sm:method
                              (struct interface) (type "void")
                              (name "dzn_event")
