@@ -99,11 +99,11 @@ struct pump
   void create_context ();
   void context_switch ();
   void release (runtime &, dzn::component *, void *);
-  void operator () (const std::function<void ()> &);
+  void operator () (std::function<void ()> const&);
   void operator () (std::function<void ()> &&);
   void defer (std::function<bool ()> &&, std::function<void (size_t)> &&);
   void prune_deferred ();
-  void handle (size_t, size_t, const std::function<void ()> &);
+  void handle (size_t, size_t, std::function<void ()> const&);
   void remove (size_t);
 private:
   bool timers_expired () const;

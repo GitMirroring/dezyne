@@ -67,7 +67,7 @@ struct container: public component
     , system (dzn_locator.set (dzn_runtime).set (pump))
     , pump ()
   {
-    dzn_locator.get<illegal_handler> ().illegal = [] (const char *location = "") {std::clog << location << (location[0] ? ":0: " : "") << "<illegal>" << std::endl; std::exit (0);};
+    dzn_locator.get<illegal_handler> ().illegal = [] (char const* location = "") {std::clog << location << (location[0] ? ":0: " : "") << "<illegal>" << std::endl; std::exit (0);};
     dzn_runtime.performs_flush (this) = flush;
     system.dzn_meta.name = "sut";
   }
@@ -80,7 +80,7 @@ struct container: public component
     if (p && p != &pump) pump ([p] {p->stop ();});
     pump.wait ();
   }
-  void perform (const std::string &str)
+  void perform (std::string const& str)
   {
     if (std::count (str.begin (), str.end (), '.') > 1
         || str == "<defer>")
@@ -108,7 +108,7 @@ struct container: public component
       }
     pump.resume ();
   }
-  void match (const std::string &perform)
+  void match (std::string const& perform)
   {
     std::string expect = trail_expect ();
     if (expect != perform)

@@ -282,7 +282,7 @@ pump::operator () ()
       assert (coroutines.size () < 3);
       assert (coroutines.size () == 1);
     }
-  catch (const std::exception &exception)
+  catch (std::exception const& exception)
     {
       debug.rdbuf () &&debug << "oops: " << exception.what () << std::endl;
       std::terminate ();
@@ -325,7 +325,7 @@ pump::create_context ()
         debug.rdbuf () &&debug << "ignoring forced_unwind"
                                << std::endl;
       }
-    catch (const std::exception &e)
+    catch (std::exception const& e)
       {
         debug.rdbuf () &&debug << "oops: " << e.what ()
                                << std::endl;
@@ -528,7 +528,7 @@ void pump::release (dzn::runtime &runtime, dzn::component *component, void *port
 }
 
 void
-pump::operator () (const std::function<void ()> &event)
+pump::operator () (std::function<void ()> const& event)
 {
   assert (event);
   std::lock_guard<std::mutex> lock (mutex);
@@ -563,11 +563,11 @@ pump::prune_deferred ()
 
 void
 pump::handle (size_t identifier, size_t milliseconds,
-                   const std::function<void ()> &event)
+                   std::function<void ()> const& event)
 {
   assert (event);
   assert (std::find_if (timers.begin (), timers.end (),
-                        [identifier] (const std::pair<deadline, std::function<void ()>> &pair)
+                        [identifier] (std::pair<deadline, std::function<void ()>> const &pair)
                         { return pair.first.id == identifier; }) == timers.end ());
   timers.emplace (deadline (identifier, milliseconds), event);
 }
@@ -576,7 +576,7 @@ void
 pump::remove (size_t identifier)
 {
   auto it = std::find_if (timers.begin (), timers.end (),
-                          [identifier] (const typename decltype (timers)::value_type & pair)
+                          [identifier] (typename decltype (timers)::value_type const& pair)
                           { return pair.first.id == identifier; });
   if (it != timers.end ()) timers.erase (it);
 }

@@ -97,7 +97,7 @@ int const version_patch = @VERSION_PATCH@;
 
   struct binding_error: public std::runtime_error
   {
-    binding_error (const port::meta& m, const std::string& msg)
+    binding_error (port::meta const& m, const std::string& msg)
     : std::runtime_error
       ("not connected: "
        + path (m.provide.component ? m.provide.meta : m.require.meta,
