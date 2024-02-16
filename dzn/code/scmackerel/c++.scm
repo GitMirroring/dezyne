@@ -36,6 +36,7 @@
   #:use-module (dzn code language dzn)
   #:use-module (dzn code language c++)
   #:use-module (dzn command-line)
+  #:use-module (dzn lts)
   #:use-module (dzn misc)
   #:export (c++:call-check-bindings
             c++:event-method
@@ -485,7 +486,7 @@ std::basic_ostream<Char, Traits> &")
                 else)))
 
     (define (value->init value)
-      (simple-format #f "~s" (.value value)))
+      (simple-format #f "~s" value))
 
     (define (dzn:hash r h)
       (let ((overflow 4294967296)
@@ -511,15 +512,14 @@ std::basic_ostream<Char, Traits> &")
 
 
     (define (event->sm:switch-case transition interface-shared)
-      (let* ((prefix (.prefix transition))
-             (prefix (ast:statement* prefix))
+      (let* ((prefix (edge-label transition))
              (initializer-list (sm:code->string
                                 (sm:generalized-initializer-list*
-                                 (map value->init prefix))))
-             (state (simple-format #f "~a" (.to transition)))
+                                 `(,(value->init prefix)))))
+             (state (simple-format #f "~a" (edge-to transition)))
              (assignments (and=>
                            (find
-                            (compose (cute eq? (.to transition) <>)
+                            (compose (cute eq? (edge-to transition) <>)
                                      .state)
                             interface-shared)
                            (compose ast:statement* .assign)))
@@ -527,31 +527,32 @@ std::basic_ostream<Char, Traits> &")
         (sm:switch-case
          (expression (string-append
                       (number->string
-                       (dzn:hash (map .value prefix)
-                                 (.from transition)))
+                       (dzn:hash `(,prefix)
+                                 (edge-from transition)))
                       "u"))
          (statement
           (sm:statements*
            (cons (sm:comment* (string-append
-                               "//" (number->string (.from transition))
-                               ":" (string-join (map .value prefix) ",")))
-                 (if (not (.rtc? transition)) `(,(sm:return*))
-                     `(,(sm:assign* "dzn_state" state)
-                       ,@assignments
-                       ,(sm:break)))))))))
+                               "//" (number->string (edge-from transition))
+                               ":" prefix))
+                 `(,(sm:assign* "dzn_state" state)
+                   ,@assignments
+                   ,(sm:break))))))))
 
     (define (event->transitions event)
       (let* ((transitions (code:shared event)))
         transitions))
 
     (define (transition< a b)
-      (or (< (.from a) (.from b))
-          (and (= (.from a) (.from b))
-               (every (lambda (a b)
-                        (string<? (.value a)
-                                  (.value b)))
-                      (ast:statement* (.prefix a))
-                      (ast:statement* (.prefix b))))))
+      (or (< (edge-from a) (edge-from b))
+          (and (= (edge-from a) (edge-from b))
+               (string<? (edge-label a)
+                         (edge-label b)))))
+
+    (define (transition= a b)
+      (and
+       (= (edge-from a) (edge-from b))
+       (string=? (edge-label a) (edge-label b))))
 
     (let* ((type (string-join (cons "" (ast:full-name o)) "::"))
            (type& (string-append type "&"))
@@ -680,7 +681,7 @@ std::basic_ostream<Char, Traits> &")
                               (transitions (sort transitions transition<))
                               (transitions (delete-adjacent-duplicates
                                             transitions
-                                            code:prefix-equal?)))
+                                            transition=)))
                          `(,(sm:method
                              (struct interface) (type "void")
                              (name "dzn_event")

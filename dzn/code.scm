@@ -23,6 +23,7 @@
 
 (define-module (dzn code)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
@@ -505,7 +506,7 @@
 (define out-regexp (make-regexp ".*'out'([^)]*)\\)"))
 (define bool-regexp (make-regexp ".*'Bool\\(([^)]*)\\)"))
 (define void-regexp (make-regexp ".*'Void\\(([^)]*)\\)"))
-(define event-regexp (make-regexp "\\(([^)]*)\\)"))
+(define enum-regexp (make-regexp "\\(([^)]*)\\)"))
 (define variable-value-regexp (make-regexp "'variables\\(([^)]*)\\)"))
 
 (define-method (code:shared-lts-unmemoized (o <interface>))
@@ -527,45 +528,24 @@
 (define-method (code:shared (o <event>))
   "Return a list of transitions for event O from the interface LTS"
   (define (trigger? o)
-    (and (string? o)
-         (and=> (regexp-exec trigger-regexp o)
-                (cute match:substring <> 1))))
-  (define (modeling? o)
-    (and (string? o)
-         (string-contains o "'internal(")))
+    (and=> (regexp-exec trigger-regexp o)
+           (cute match:substring <> 1)))
   (define (action? o)
-    (and (string? o)
-         (and=> (regexp-exec action-regexp o)
-                (cute match:substring <> 1))))
+    (and=> (regexp-exec action-regexp o)
+           (cute match:substring <> 1)))
   (define (reply? o)
-    (and (string? o)
-         (and=> (regexp-exec reply-regexp o)
-                (cute match:substring <> 1))))
+    (and=> (regexp-exec reply-regexp o)
+           (cute match:substring <> 1)))
   (define (state? o)
-    (and (string? o)
-         (or
-          (and=> (regexp-exec state-regexp1 o)
-                 (cute match:substring <> 1))
-          (and=> (regexp-exec state-regexp2 o)
-                 (cute match:substring <> 1)))))
+    (or
+     (and=> (regexp-exec state-regexp2 o)
+            (cute match:substring <> 1))
+     (and=> (regexp-exec state-regexp1 o)
+            (cute match:substring <> 1))))
   (define (illegal? o)
-    (equal? o "declarative_illegal"))
-  (define (match-event edge)
-    (let* ((label (edge-label edge))
-           (labels (if (pair? label) label (list label))))
-      (match labels
-        (((and (? trigger?) trigger) tail ...)
-         (string-contains trigger (string-append "in'" (.name o))))
-        (((and (? action?) trigger) tail ...)
-         (or (string-contains trigger (string-append "out'" (.name o)))
-             (find (conjoin
-                    action?
-                    (cute string-contains <>
-                          (string-append "out'" (.name o))))
-                   tail)))
-        (_
-         #f))))
-  (define (makreel->event o)
+    (string=? o "declarative_illegal"))
+
+  (define (makreel->enum o)
     (match (string-split o #\')
       ((scope ... enum field)
        (string-append enum ":" field))
@@ -580,23 +560,15 @@
                (cute match:substring <> 1))
         (and (regexp-exec void-regexp event)
              "return")
-        (and=> (regexp-exec event-regexp event)
-               (compose makreel->event
+        (and=> (regexp-exec enum-regexp event)
+               (compose makreel->enum
                         (cute match:substring <> 1)))
         ;; HACK for debugging
         (pke "EVENT NOT FOUND" event)))
-  (define (edge->prefix edge)
-    (let* ((label (edge-label edge))
-           (labels (if (pair? label) label (list label)))
-           (events (filter-map (disjoin trigger? action? reply?) labels))
-           (events (map event->prefix events))
-           (values (map (cute make <shared-value> #:value <>) events)))
-      (make <compound> #:elements values)))
   (define (edge->transition edge)
-    (let ((from (edge-from edge))
-          (to (edge-to edge))
-          (prefix (edge->prefix edge)))
-      (make <shared-transition> #:from from #:prefix prefix #:to to)))
+    (let* ((label ((disjoin trigger? action? reply?) (edge-label edge)))
+           (label (event->prefix label)))
+      (set-field edge (edge-label) label)))
   (define (to=from edge)
     (= (edge-from edge) (edge-to edge)))
   (let* ((debugity (dzn:debugity))
@@ -605,14 +577,18 @@
          (nodes (vector->list lts))
          (edges (append-map node-edges nodes))
          (illegal-node-ids (map edge-from
-                                (filter (conjoin (compose (cute equal? <>
-                                                                "declarative_illegal")
-                                                          edge-label)
+                                (filter (conjoin
+                                         (compose (cute equal? <>
+                                                        "declarative_illegal")
+                                                  edge-label)
                                                  to=from) edges)))
          (edges (filter (compose not
                                  (cute member <> illegal-node-ids)
                                  edge-to) edges))
-         (edges (filter (compose not (disjoin state? illegal?) edge-label) edges))
+         (edges (filter (compose not
+                                 (conjoin string? (disjoin state? illegal?))
+                                 edge-label)
+                        edges))
          (transitions (map edge->transition edges)))
     transitions))
 
