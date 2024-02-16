@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
@@ -496,6 +496,18 @@
 ;;;
 ;;; Shared state.
 ;;;
+(define trigger-regexp (make-regexp "'in\\(([^)]*\\))\\)"))
+(define action-regexp (make-regexp "'out\\(([^)]*\\))\\)"))
+(define reply-regexp (make-regexp "'reply\\(([^)]*\\))\\)"))
+(define state-regexp1 (make-regexp "'state\\(([^)]*\\))\\)"))
+(define state-regexp2 (make-regexp "'state\\(([^)]*)\\)"))
+(define in-regexp (make-regexp ".*'in'([^)]*)\\)"))
+(define out-regexp (make-regexp ".*'out'([^)]*)\\)"))
+(define bool-regexp (make-regexp ".*'Bool\\(([^)]*)\\)"))
+(define void-regexp (make-regexp ".*'Void\\(([^)]*)\\)"))
+(define event-regexp (make-regexp "\\(([^)]*)\\)"))
+(define variable-value-regexp (make-regexp "'variables\\(([^)]*)\\)"))
+
 (define-method (code:shared-lts-unmemoized (o <interface>))
   (let* ((debugity (dzn:debugity))
          (model-name (ast:dotted-name o))
@@ -516,25 +528,25 @@
   "Return a list of transitions for event O from the interface LTS"
   (define (trigger? o)
     (and (string? o)
-         (and=> (string-match "'in\\(([^)]*\\))\\)" o)
+         (and=> (regexp-exec trigger-regexp o)
                 (cute match:substring <> 1))))
   (define (modeling? o)
     (and (string? o)
          (string-contains o "'internal(")))
   (define (action? o)
     (and (string? o)
-         (and=> (string-match "'out\\(([^)]*\\))\\)" o)
+         (and=> (regexp-exec action-regexp o)
                 (cute match:substring <> 1))))
   (define (reply? o)
     (and (string? o)
-         (and=> (string-match "'reply\\(([^)]*\\))\\)" o)
+         (and=> (regexp-exec reply-regexp o)
                 (cute match:substring <> 1))))
   (define (state? o)
     (and (string? o)
          (or
-          (and=> (string-match "'state\\(([^)]*\\))\\)" o)
+          (and=> (regexp-exec state-regexp1 o)
                  (cute match:substring <> 1))
-          (and=> (string-match "'state\\(([^)]*)\\)" o)
+          (and=> (regexp-exec state-regexp2 o)
                  (cute match:substring <> 1)))))
   (define (illegal? o)
     (equal? o "declarative_illegal"))
@@ -560,15 +572,15 @@
       (_
        o)))
   (define (event->prefix event) ;; XXX vouw in trigger?, action?, reply?
-    (or (and=> (string-match ".*'in'([^)]*)\\)" event)
+    (or (and=> (regexp-exec in-regexp event)
                (cute match:substring <> 1))
-        (and=> (string-match ".*'out'([^)]*)\\)" event)
+        (and=> (regexp-exec out-regexp event)
                (cute match:substring <> 1))
-        (and=> (string-match ".*'Bool\\(([^)]*)\\)" event)
+        (and=> (regexp-exec bool-regexp event)
                (cute match:substring <> 1))
-        (and (string-match ".*'Void\\(([^)]*)\\)" event)
+        (and (regexp-exec void-regexp event)
              "return")
-        (and=> (string-match "\\(([^)]*)\\)" event)
+        (and=> (regexp-exec event-regexp event)
                (compose makreel->event
                         (cute match:substring <> 1)))
         ;; HACK for debugging
@@ -611,9 +623,9 @@
     (define (state? o)
       (and (string? o)
            (or
-            (and=> (string-match "'state\\(([^)]*\\))\\)" o)
+            (and=> (regexp-exec state-regexp1 o)
                    (cute match:substring <> 1))
-            (and=> (string-match "'state\\(([^)]*)\\)" o)
+            (and=> (regexp-exec state-regexp2 o)
                    (cute match:substring <> 1)))))
     (define (edge->assign edge)
       (let* ((label (edge-label edge))
@@ -622,7 +634,7 @@
         (and (pair? variables)
              state
              (let* ((from (edge-from edge))
-                    (values (and=> (string-match "'variables\\(([^)]*)\\)" state)
+                    (values (and=> (regexp-exec variable-value-regexp state)
                                    (cute match:substring <> 1)))
                     (values (if values (string-split values #\,) '()))
                     (values (map string-trim values))
