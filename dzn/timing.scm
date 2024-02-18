@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -35,6 +35,7 @@
             display-duration
             display-runtime
             display-nonzero-runtime
+            *let*
             measure-duration
             seconds-between-stamps))
 
