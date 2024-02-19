@@ -1254,7 +1254,8 @@ from LABELS."
           (display out-line))
         (loop (read-line input-port 'concat))))))
 
-(define* (display-lts lts #:key (separator "\n") (port (current-output-port)))
+(define* (display-lts lts #:key (separator "\n") (port (current-output-port))
+                      node-info mark-common)
   (define (display-edge edge)
     (display
      (string-append
@@ -1264,9 +1265,12 @@ from LABELS."
       (let ((label (edge-label edge)))
         (if (pair? label) (string-join label)
             label))
+      (if (and mark-common (edge-tau? edge)) "*" "")
       "\","
       (number->string (edge-to edge))
       ")"
+      (if node-info " " "")
+      (if node-info (node-info (vector-ref lts (edge-from edge))) "")
       separator)
      port))
   (let ((edges (append-map node-edges (vector->list lts))))
