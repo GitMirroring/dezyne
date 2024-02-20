@@ -1,0 +1,474 @@
+Upstream status: Not presented upstream.
+
+From 7c8e9e2d333e45c3baff39321a49f9df29f41d9a Mon Sep 17 00:00:00 2001
+From: Paul Hoogendijk <paul@dezyne.org>
+Date: Tue, 28 Nov 2023 18:13:43 +0100
+Subject: [PATCH] Add first version of new tool ltsparallel.
+
+---
+ .../user_manual/tools/release/ltsparallel.rst |   8 +
+ tools/release/CMakeLists.txt                  |   1 +
+ tools/release/ltsparallel/CMakeLists.txt      |   6 +
+ tools/release/ltsparallel/ltsparallel.cpp     | 410 ++++++++++++++++++
+ 4 files changed, 425 insertions(+)
+ create mode 100644 doc/sphinx/user_manual/tools/release/ltsparallel.rst
+ create mode 100644 tools/release/ltsparallel/CMakeLists.txt
+ create mode 100644 tools/release/ltsparallel/ltsparallel.cpp
+
+diff --git a/doc/sphinx/user_manual/tools/release/ltsparallel.rst b/doc/sphinx/user_manual/tools/release/ltsparallel.rst
+new file mode 100644
+index 000000000..1f4c7f75c
+--- /dev/null
++++ b/doc/sphinx/user_manual/tools/release/ltsparallel.rst
+@@ -0,0 +1,8 @@
++.. index:: ltsparallel
++
++.. _tool-ltsparallel
++
++ltsparallel
++===========
++
++The tool ``ltsparallel`` ... TODO
+diff --git a/tools/release/CMakeLists.txt b/tools/release/CMakeLists.txt
+index a93d5235b..3d0d92d6d 100644
+--- a/tools/release/CMakeLists.txt
++++ b/tools/release/CMakeLists.txt
+@@ -26,6 +26,7 @@ set(MCRL2_TOOLS
+   ltsconvert
+   ltsgraph
+   ltsinfo
++  ltsparallel
+   ltspbisim
+   ltspcompare
+   ltsview
+diff --git a/tools/release/ltsparallel/CMakeLists.txt b/tools/release/ltsparallel/CMakeLists.txt
+new file mode 100644
+index 000000000..ba46c5e7f
+--- /dev/null
++++ b/tools/release/ltsparallel/CMakeLists.txt
+@@ -0,0 +1,6 @@
++add_mcrl2_tool(ltsparallel
++  SOURCES
++    ltsparallel.cpp
++  DEPENDS
++    mcrl2_lts
++)
+diff --git a/tools/release/ltsparallel/ltsparallel.cpp b/tools/release/ltsparallel/ltsparallel.cpp
+new file mode 100644
+index 000000000..c821be631
+--- /dev/null
++++ b/tools/release/ltsparallel/ltsparallel.cpp
+@@ -0,0 +1,410 @@
++// Author(s): Paul Hoogendijk
++// Copyright: see the accompanying file COPYING or copy at
++// https://github.com/mCRL2org/mCRL2/blob/master/COPYING
++//
++// Distributed under the Boost Software License, Version 1.0.
++// (See accompanying file LICENSE_1_0.txt or copy at
++// http://www.boost.org/LICENSE_1_0.txt)
++//
++/// \file ltsparallel.cpp
++
++#define NAME "ltsparallel"
++#define AUTHOR "Paul Hoogendijk"
++
++#include "mcrl2/utilities/input_tool.h"
++
++#include "mcrl2/lts/lts_algorithm.h"
++#include "mcrl2/lts/lts_io.h"
++
++#include <algorithm>
++
++using namespace mcrl2::lts;
++using namespace mcrl2::lts::detail;
++using namespace mcrl2::utilities::tools;
++using namespace mcrl2::utilities;
++using namespace mcrl2::core;
++using namespace mcrl2::log;
++
++struct t_tool_options
++{
++  std::string     name_for_first  = "";
++  std::string     name_for_second = "";
++  std::string     name_for_out = " ";
++  lts_type        format_for_first = lts_none;
++  lts_type        format_for_second = lts_none;
++  lts_type        format_for_out = lts_none;
++  std::vector<std::string> tau_actions;   // Actions with these labels must be considered equal to tau.
++  bool structured_output = false;
++  bool enable_preprocessing = true;
++};
++
++class t_step_args
++{
++  lts_aut_t::states_size_type state0 = -1;
++  lts_aut_t::states_size_type state1 = -1;
++};
++
++typedef  input_tool ltsparallel_base;
++class ltsparallel_tool : public ltsparallel_base
++{
++  private:
++    t_tool_options tool_options;
++
++    void check_preconditions()
++    {
++      if (tool_options.name_for_first.empty() && tool_options.name_for_second.empty())
++      {
++        throw mcrl2::runtime_error("too few file arguments");
++      }
++    }
++
++  public:
++    ltsparallel_tool() :
++      ltsparallel_base(NAME,AUTHOR,
++                      "compute the synchronised parallel composition of two LTSs",
++                      ".."
++                      "If INFILE1 is not supplied, stdin is used. "
++                      "If INFILE1 and/or INFILE2 is '-', stdin is used. "
++                      "Reading two LTSs via stdin is only supported for the 'aut' format, these LTSs must be separated by an EOT character (\\x04).\n"
++                      "\n"
++                      "The input formats are determined by the contents of INFILE1 and INFILE2. "
++                      "Options --in1 and --in2 can be used to force the input format of INFILE1 and INFILE2, respectively. "
++                      "The output format is determined by the extension of OUTFILE."
++                      "The supported formats are:\n"
++                      + mcrl2::lts::detail::supported_lts_formats_text()
++                     )
++    {
++    }
++
++  private:
++
++    bool lts_parallel(void)
++    {
++      typedef lts_aut_t::states_size_type state_t;
++      state_t NO_STATE = (state_t)-1;
++      typedef lts_aut_t::labels_size_type label_t;
++
++      lts_aut_t l0,l1;
++      lts_aut_t l2;
++
++      l0.load(tool_options.name_for_first);
++      l1.load(tool_options.name_for_second);
++
++      l0.record_hidden_actions(tool_options.tau_actions);
++      l1.record_hidden_actions(tool_options.tau_actions);
++
++      outgoing_transitions_per_state_t l0_succ(l0.get_transitions(),l0.num_states(),true);
++      outgoing_transitions_per_state_t l1_succ(l1.get_transitions(),l1.num_states(),true);
++      
++      std::unordered_map<state_t, state_t> l2_states;
++      state_t l2_size = 0;
++
++      std::vector<label_t> label_l0_to_l2_map = std::vector(l0.num_action_labels(), (label_t)0);
++      std::vector<label_t> label_l1_to_l2_map = std::vector(l1.num_action_labels(), (label_t)0);
++      std::vector<bool> l2_label_common = { false };
++
++      std::vector<bool> l0_rtc = std::vector(l0.num_states(), true); // TODO: Add option for specifying in comming events
++      std::vector<bool> l1_rtc = std::vector(l1.num_states(), true); // TODO: Add option for specifying in comming events
++
++      auto l2_add_label = [&](std::string label) 
++      {
++        std::size_t l;
++        for (l = 0; l < l2.num_action_labels(); ++l)
++        {
++          if (l2.action_label(l)==label) break;
++        }
++        if (l==l2.num_action_labels()){
++          l2.set_num_action_labels(l+1);
++          l2.set_action_label(l, action_label_string(label));
++          l2_label_common.push_back(false);
++        }
++        else
++        {
++          std::cout << "Label \"" << l2.action_label(l) << "\" is common." << std::endl;
++          l2_label_common[l] = true; // TODO: Add option for it specifying common labels
++        }
++        return l;
++      };
++
++     for (label_t l = 0; l < l0.num_action_labels(); ++l)
++      {
++        label_l0_to_l2_map[l] = l2_add_label(l0.action_label(l));
++      }
++
++    for (label_t l = 0; l < l1.num_action_labels(); ++l)
++      {
++        label_l1_to_l2_map[l] = l2_add_label(l1.action_label(l));
++      }
++
++      auto calc_index = [&](state_t state0, state_t state1) { return state0 + state1 * l0.num_states();};
++
++      std::function<void(state_t, label_t, state_t, state_t)>  step;
++
++      auto step0 = [&] (transition trans0, 
++                        state_t to_state2, state_t state1 // locals from step
++                        )
++      {
++        std::cout << "step0(trans0=(" << trans0.from() << ",\"" << l0.action_labels()[trans0.label()] << "\"," << trans0.to()  << "), to_state2=" << to_state2 << ", state1=" << state1 << ")" << std::endl;
++        label_t label0 = label_l0_to_l2_map[trans0.label()];
++        if (!l2_label_common[label0])
++        {
++          std::cout << "l0 step:" << std::endl;
++          step(to_state2, label0, trans0.to(), state1);
++        }
++        else 
++        {
++          for(size_t trans1_index=l1_succ.lowerbound(state1); trans1_index<l1_succ.upperbound(state1); ++trans1_index)
++          {
++            transition trans1 = l1.get_transitions()[trans1_index];
++            label_t label1 = label_l1_to_l2_map[trans1.label()];
++            if (label0 == label1)
++            {
++              std::cout << "common step:" << std::endl;
++              step (to_state2, label_l0_to_l2_map[label0], trans0.to(), trans1.to());
++            }
++          }
++        }
++      };
++
++      auto step1 = [&] (transition trans1, 
++                        state_t to_state2, state_t state0, bool include_common // locals from step
++                        )
++      {
++        std::cout << "step1(trans1=(" << trans1.from() << ",\"" << l1.action_labels()[trans1.label()] << "\"," << trans1.to()  << "), to_state2=" << to_state2 << ", state0=" << state0 << ")" << std::endl;
++        label_t label1 = label_l1_to_l2_map[trans1.label()];
++        if (!l2_label_common[label1]) 
++        {
++          std::cout << "l1 step:" << std::endl;
++          step(to_state2, label1, state0, trans1.to());
++        }
++        else {
++          if (include_common) 
++          {
++            for(size_t trans0_index=l0_succ.lowerbound(state0); trans0_index<l0_succ.upperbound(state0); ++trans0_index)
++            {
++              transition trans0 = l0.get_transitions()[trans0_index];
++              label_t label0 = label_l0_to_l2_map[trans0.label()];
++              if (label0 == label1)
++              {
++                std::cout << "common step:" << std::endl;
++                step (to_state2, label1, trans0.to(), trans1.to());
++              }
++            }
++          }
++        }
++      };
++
++      step = [&] (state_t from_state2, label_t label2, state_t state0, state_t state1) {
++        std::cout << "step(from_state2=" << from_state2 << ", label=\"" << l2.action_labels()[label2] << "\", state0=" << state0 << ", state1=" << state1 << ")" << std::endl;
++        state_t to_state2 = -1;
++        state_t index = calc_index(state0, state1);
++        bool rtc0 = l0_rtc[state0];
++        bool rtc1 = l1_rtc[state1];
++        bool rtc = rtc0 and rtc1;
++        bool done = false;
++        if (auto search = l2_states.find(index); search != l2_states.end())
++        {
++          to_state2 = search->second;
++          done = true;
++        }
++        else {
++          to_state2 = l2_size;
++          l2_states[index] = to_state2;
++          l2_size++;
++          done = false;
++          std::cout << "New state " << to_state2 << "=(" << state0 << "," << state1 << ")" << std::endl;
++        }
++
++        if (from_state2!=NO_STATE) 
++        {
++          l2.add_transition(transition(from_state2, label2, to_state2));
++        }
++
++        if (!done) 
++        {
++          if (rtc || !rtc0) 
++          {
++            for(size_t t=l0_succ.lowerbound(state0); t<l0_succ.upperbound(state0); ++t)
++            {
++              step0(l0.get_transitions()[t], to_state2, state1);
++            }
++          }
++          if (rtc || !rtc1) 
++          {
++            for(size_t t=l1_succ.lowerbound(state1); t<l1_succ.upperbound(state1); ++t)
++            {
++              step1(l1.get_transitions()[t], to_state2, state0, !(rtc ||!rtc0));
++            }
++          }
++        }
++      };
++
++      mCRL2log(verbose) << "computing sychronised parallel composition..." << std::endl;
++
++      step(NO_STATE, 0, l0.initial_state(), l1.initial_state());
++      l2.set_num_states(l2_size);
++      l2.set_initial_state(0);
++      l2.save(tool_options.name_for_out);
++
++      return true; // The tool terminates in a correct way.
++    }
++
++  public:
++    bool run() override
++    {
++      check_preconditions();
++
++      if (tool_options.format_for_first==lts_none)
++      {
++        tool_options.format_for_first = guess_format(tool_options.name_for_first);
++      }
++
++      if (tool_options.format_for_second==lts_none)
++      {
++        tool_options.format_for_second = guess_format(tool_options.name_for_second);
++      }
++
++      if (tool_options.format_for_first!=tool_options.format_for_second)
++      {
++        throw mcrl2::runtime_error("The input labelled transition systems have different types");
++      }
++
++      switch (tool_options.format_for_first)
++      {
++        case lts_none:
++          mCRL2log(mcrl2::log::warning) << "No input format is specified. Assuming .aut format.\n";
++          [[fallthrough]];
++        case lts_aut:
++        case lts_aut_probabilistic:
++        {
++          return lts_parallel();
++        }
++        case lts_lts:
++        case lts_lts_probabilistic:
++        case lts_dot:
++        case lts_fsm:
++        case lts_fsm_probabilistic:
++        {
++          throw mcrl2::runtime_error("Reading the given format is not supported.");
++        }
++      }
++
++      return true;
++    }
++
++  protected:
++    std::string synopsis() const override
++    {
++      return "[OPTION]... [INFILE1] INFILE2";
++    }
++
++    void check_positional_options(const command_line_parser& parser) override
++    {
++      if (3 < parser.arguments.size())
++      {
++        parser.error("too many file arguments");
++      }
++    }
++
++    void set_tau_actions(std::vector <std::string>& tau_actions, std::string const& act_names)
++    {
++      std::string::size_type lastpos = 0, pos;
++      while ((pos = act_names.find(',',lastpos)) != std::string::npos)
++      {
++        tau_actions.push_back(act_names.substr(lastpos,pos-lastpos));
++        lastpos = pos+1;
++      }
++      tau_actions.push_back(act_names.substr(lastpos));
++    }
++
++    void add_options(interface_description& desc) override
++    {
++      ltsparallel_base::add_options(desc);
++
++      desc.
++      add_option("in1", make_mandatory_argument("FORMAT"),
++                 "use FORMAT as the format for INFILE1 (or stdin)", 'i').
++      add_option("in2", make_mandatory_argument("FORMAT"),
++                 "use FORMAT as the format for INFILE2", 'j').
++      add_option("tau", make_mandatory_argument("ACTNAMES"),
++                 "consider actions with a name in the comma separated list ACTNAMES to "
++                 "be internal (tau) actions in addition to those defined as such by "
++                 "the input");
++      desc.add_hidden_option("structured-output",
++                 "generate counter examples on stdout");
++      desc.add_hidden_option("no-preprocessing",
++                        "disable preprocessing applied to the input LTSs for refinement checking",'\0');
++    }
++
++    void parse_options(const command_line_parser& parser) override
++    {
++      ltsparallel_base::parse_options(parser);
++
++      if (parser.has_option("no-preprocessing"))
++      {
++        tool_options.enable_preprocessing = false;
++      }
++
++      if (parser.has_option("tau"))
++      {
++        set_tau_actions(tool_options.tau_actions, parser.option_argument("tau"));
++      }
++
++      tool_options.structured_output = parser.has_option("structured-output");
++
++      if (parser.arguments.size() == 1)
++      {
++        tool_options.name_for_second = parser.arguments[0];
++      }
++      else if (parser.arguments.size() == 2)
++      {
++        tool_options.name_for_first  = parser.arguments[0];
++        tool_options.name_for_second = parser.arguments[1];
++      }
++      else if (parser.arguments.size() == 3)
++      {
++        tool_options.name_for_first  = parser.arguments[0];
++        tool_options.name_for_second = parser.arguments[1];
++        tool_options.name_for_out = parser.arguments[2];
++      } // else something strange going on, caught in check_preconditions()
++
++      if (parser.has_option("in1"))
++      {
++        tool_options.format_for_first = mcrl2::lts::detail::parse_format(parser.option_argument("in1"));
++
++        if (tool_options.format_for_first == lts_none)
++        {
++          mCRL2log(warning) << "format '" << parser.option_argument("in1") <<
++                    "' is not recognised; option ignored" << std::endl;
++        }
++      }
++      else if (!tool_options.name_for_first.empty())
++      {
++        tool_options.format_for_first = mcrl2::lts::detail::guess_format(tool_options.name_for_first);
++      }
++      else
++      {
++        mCRL2log(warning) << "cannot detect format from stdin and no input format specified; assuming aut format" << std::endl;
++        tool_options.format_for_first = lts_aut;
++      }
++      if (parser.has_option("in2"))
++      {
++        tool_options.format_for_second = mcrl2::lts::detail::parse_format(parser.option_argument("in2"));
++
++        if (tool_options.format_for_second == lts_none)
++        {
++          mCRL2log(warning) << "format '" << parser.option_argument("in2") <<
++                    "' is not recognised; option ignored" << std::endl;
++        }
++      }
++      else if (!tool_options.name_for_first.empty())
++      {
++        tool_options.format_for_second = mcrl2::lts::detail::guess_format(tool_options.name_for_second);
++      }
++    }
++};
++
++int main(int argc, char** argv)
++{
++  return ltsparallel_tool().execute(argc,argv);
++}
+-- 
+2.41.0
+

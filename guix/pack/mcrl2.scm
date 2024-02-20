@@ -38,6 +38,7 @@
               (uri (string-append
                     "https://www.mcrl2.org/download/release/mcrl2-"
                     version ".tar.gz"))
+              (patches (search-patches "mcrl2-ltsparallel.patch"))
               (sha256
                (base32
                 "147002dl3gq2jsk5gcmvw7hj3mfxrpgxwcfda5mfrj26rcxw48fc"))))

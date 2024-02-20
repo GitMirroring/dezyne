@@ -39,6 +39,7 @@ EXTRA_DIST =					\
  build-aux/gitlog-to-changelog			\
  build-aux/update-semantics.sh			\
  guix.scm					\
+ guix/mcrl2-ltsparallel.patch			\
  guix/pack/dezyne.scm				\
  guix/pack/mcrl2.scm
 
