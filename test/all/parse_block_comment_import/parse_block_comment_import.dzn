@@ -20,12 +20,7 @@
 /*
 import foo.dzn;
 */
-interface parse_block_comment_import
+component parse_block_comment_import
 {
-  in void hello ();
-  behavior
-  {
-    on hello: {}
-  }
-
+  system {}
 }
