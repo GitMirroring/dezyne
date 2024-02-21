@@ -38,8 +38,8 @@ interface itransaction
   behavior
   {
     bool active = false;
+    on cancel: active = false;
     [!active] on request: active = true;
-    [active] on cancel: active = false;
     [active] on inevitable: {active = false; complete;}
   }
 }
@@ -51,8 +51,8 @@ component transaction_proxy
   behavior
   {
     bool active = false;
+    on pt.cancel (): {active = false; rt.cancel ();}
     [!active] on pt.request (): {active = true; rt.request ();}
-    [active] on pt.cancel (): {active = false; rt.cancel ();}
     on rt.complete (): {active = false; pt.complete ();}
   }
 }
@@ -65,9 +65,9 @@ component cancel_guarantee
   behavior
   {
     bool active = false;
+    on pt.cancel (): {active = false; rt.cancel ();}
     [!active] on pt.request (): {active = true; rt.request (); rb.block ();}
-    [active] on pt.cancel (): {active = false; rt.cancel ();}
-    [active] on rt.complete (): {active = false; pt.complete ();}
+    [active] on rt.complete (): defer {active = false; pt.complete ();}
   }
 }
 
