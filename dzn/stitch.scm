@@ -99,6 +99,9 @@
   (let ((port-name (makreel:unticked-name port)))
     (map (cute string-append port-name "." <>) (list "optional" "inevitable"))))
 
+(define* (port-return-values port)
+  (let ((port-name (makreel:unticked-name port)))
+    (map (cute string-append port-name "." <>) (ast:return-values port))))
 
 (define (log-debug msg thunk)
   (let ((debug? (dzn:command-line:get 'debug #f)))
@@ -187,8 +190,13 @@
            (triggers (append-map (cut port-events <> #:predicate ast:in?)
                                  provides))
            (requires (ast:requires-port* model))
+           (requires-blocking (filter ast:blocking? requires))
+
            (modeling (append-map port-modeling-triggers requires))
-           (events (append triggers modeling))
+           (return-values (append-map port-return-values requires-blocking))
+           (requires-out (append-map (cut port-events <> #:predicate ast:in?)
+                                     requires-blocking))
+           (events (append triggers modeling return-values requires-out))
            (lts (annotate-node-rtc lts #:incoming-events events)))
       (when #t ;; debug?
         (let* ((model-name (makreel:unticked-dotted-name model))
