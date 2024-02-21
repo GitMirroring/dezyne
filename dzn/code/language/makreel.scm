@@ -313,6 +313,11 @@
     ((continuations . calls)
      (values continuations calls))))
 
+(define-method (makreel:call-continuation* (o <behavior>))
+  (match (makreel:call-continuation*-unmemoized o)
+    ((continuations . calls)
+     (values continuations calls))))
+
 (define-method (makreel:call-continuation* (o <model>))
   (let ((behavior (.behavior o)))
     (makreel:call-continuation* behavior)))
