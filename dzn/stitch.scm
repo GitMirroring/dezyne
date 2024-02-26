@@ -253,8 +253,9 @@
                   (.instance (.right binding)))))
         (else identity)))
       (define transform-label
-        (let ((transformations (map transform-binding bindings)))
-          (apply compose transformations)))
+        (if (null? bindings) identity
+            (let ((transformations (map transform-binding bindings)))
+              (apply compose transformations))))
       (transform-labels transform-label lts))
     (define (hide-binding binding lts)
       (hide lts #:hide-prefix (instance-name (.left binding))))

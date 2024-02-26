@@ -310,13 +310,14 @@
                                        next-frontier
                                        edges)))
              (annotate-parent-it lts (cdr curr-frontier) next-frontier)))))
-  (let* ((initial-state (initial lts))
-         (initial-node (vector-ref lts initial-state))
-         (initial-node (set-fields initial-node
-                                   ((node-distance) 0)
-                                   ((node-parent) #f))))
-    (vector-set! lts initial-state initial-node)
-    (annotate-parent-it lts (list initial-state) '())))
+  (if (zero? (vector-length lts)) lts
+      (let* ((initial-state (initial lts))
+             (initial-node (vector-ref lts initial-state))
+             (initial-node (set-fields initial-node
+                                       ((node-distance) 0)
+                                       ((node-parent) #f))))
+        (vector-set! lts initial-state initial-node)
+        (annotate-parent-it lts (list initial-state) '()))))
 
 (define (iota-distance-sorted lts)
   (sort (iota (vector-length lts))
@@ -1034,8 +1035,10 @@ from LABELS."
            (dir (cond ((equal? out "-") #f)
                       ((equal? out "") "./")
                       (else (simple-format #f "~a/" out)))))
-      (generate-traces initial lts provides-ports provides-in dir base
-                       #:verbose? verbose?))))
+      (if (zero? (vector-length lts))
+         '()
+         (generate-traces initial lts provides-ports provides-in dir base
+                          #:verbose? verbose?)))))
 
 (define (lts->rtc-lts lts)
   (define (clear-node-edges node)

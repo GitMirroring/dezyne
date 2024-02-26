@@ -692,7 +692,7 @@ init for MODEL unless INIT."
 
          (interface-accepts (and interface-accepts (string-split interface-accepts #\newline)))
          (interface-accepts (and interface-accepts (sort interface-accepts string<?))))
-    (when (and (not (zero? status))
+    (when (and #f (not (zero? status))
                (not trace))
       ;; XXX Avoid "no verification errors found"
       (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))

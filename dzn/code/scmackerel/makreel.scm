@@ -2308,102 +2308,105 @@
                                           (type provides-ports-set))))
                 (statement
                  (sm:union*
-                  (append-map
-                   (lambda (p)
-                     (let ((interface (.type p)))
-                       (list
-                        (sm:sum (type (%actions interface))
-                                (statement
-                                 (sm:sequence* (sm:invoke (%in-action p)
-                                                          #:keep-constructor? #t)
-                                               (sm:goto (name "provides_out")
-                                                        (arguments '())))))
-                        (sm:sum (type (%modeling interface))
-                                (statement
-                                 (sm:sequence* (sm:invoke (%internal-action p))
-                                               (sm:goto (name "provides_out")
-                                                        (arguments '()))))))))
-                   provides))))
+                  `(,%sm:delta
+                    ,@(append-map
+                      (lambda (p)
+                       (let ((interface (.type p)))
+                        (list
+                         (sm:sum (type (%actions interface))
+                                 (statement
+                                  (sm:sequence* (sm:invoke (%in-action p)
+                                                           #:keep-constructor? #t)
+                                                (sm:goto (name "provides_out")
+                                                         (arguments '())))))
+                         (sm:sum (type (%modeling interface))
+                                 (statement
+                                  (sm:sequence* (sm:invoke (%internal-action p))
+                                                (sm:goto (name "provides_out")
+                                                         (arguments '()))))))))
+                      provides)))))
               (sm:process
                 (name "provides_r2c")
                 (formals (list (sm:formal (name "ports")
                                           (type provides-ports-set))))
                 (statement
                  (sm:union*
-                  (append-map
-                   (lambda (p)
-                     (let ((interface (.type p)))
-                       (list
-                        (sm:sum (type (%actions interface))
-                                (statement
-                                 (sm:sequence*
-                                  (sm:invoke (%in-action p)
-                                             #:keep-constructor? #t)
-                                  (sm:union*
-                                   (sm:sequence* "tau" (%blocking-action p))
-                                   "tau")
-                                  (sm:goto (name name)
-                                           (arguments
-                                            (list
-                                             (sm:plus*
-                                              "ports"
-                                              (sm:set* (port-prefix "port" p)))))))))
-                        (sm:if* (sm:in* (port-prefix "port" p) "ports")
-                                (sm:sequence*
-                                 "tau"
-                                 (sm:union*
-                                  (sm:sum (type (%replies interface))
-                                          (statement
-                                           (sm:sequence*
-                                            (sm:invoke (%reply-action p))
-                                            (sm:goto (name name)
-                                                     (arguments
-                                                      (list
-                                                       (sm:minus*
-                                                        "ports"
-                                                        (sm:set* (port-prefix "port" p)))))))))
-                                  (sm:sum (type (%actions interface))
-                                          (statement
-                                           (sm:sequence*
-                                            (sm:invoke (%out-action p)
-                                                       (sm:construct
-                                                        (%out-action interface)))
-                                            (sm:goto (name name)
-                                                     (arguments '()))))))))
-                        (sm:sum (type (%modeling interface))
-                                (statement
-                                 (sm:sequence* (sm:invoke (%internal-action p))
-                                               (sm:goto (name "provides_out")
-                                                        (arguments '())))))
-                        (sm:sequence* (%end-action p)
-                                      (sm:goto (name name)
-                                               (arguments '()))))))
-                   provides))))))
+                  `(,%sm:delta
+                    ,@(append-map
+                      (lambda (p)
+                        (let ((interface (.type p)))
+                         (list
+                          (sm:sum (type (%actions interface))
+                                  (statement
+                                   (sm:sequence*
+                                    (sm:invoke (%in-action p)
+                                               #:keep-constructor? #t)
+                                    (sm:union*
+                                     (sm:sequence* "tau" (%blocking-action p))
+                                     "tau")
+                                    (sm:goto (name name)
+                                             (arguments
+                                              (list
+                                               (sm:plus*
+                                                "ports"
+                                                (sm:set* (port-prefix "port" p)))))))))
+                          (sm:if* (sm:in* (port-prefix "port" p) "ports")
+                                  (sm:sequence*
+                                   "tau"
+                                   (sm:union*
+                                    (sm:sum (type (%replies interface))
+                                            (statement
+                                             (sm:sequence*
+                                              (sm:invoke (%reply-action p))
+                                              (sm:goto (name name)
+                                                       (arguments
+                                                        (list
+                                                         (sm:minus*
+                                                          "ports"
+                                                          (sm:set* (port-prefix "port" p)))))))))
+                                    (sm:sum (type (%actions interface))
+                                            (statement
+                                             (sm:sequence*
+                                              (sm:invoke (%out-action p)
+                                                         (sm:construct
+                                                          (%out-action interface)))
+                                              (sm:goto (name name)
+                                                       (arguments '()))))))))
+                          (sm:sum (type (%modeling interface))
+                                  (statement
+                                   (sm:sequence* (sm:invoke (%internal-action p))
+                                                 (sm:goto (name "provides_out")
+                                                          (arguments '())))))
+                          (sm:sequence* (%end-action p)
+                                        (sm:goto (name name)
+                                                 (arguments '()))))))
+                      provides)))))))
          (provides-out
           (sm:process
             (name "provides_out")
             (formals (list (sm:formal (name "ports") (type provides-ports-set))))
             (statement
              (sm:union*
-              (append-map
-               (lambda (p)
-                 (let ((interface (.type p)))
-                   (list
-                    (sm:sum (type (%replies interface))
-                            (statement
-                             (sm:sequence* (sm:invoke (%reply-action p))
-                                           (sm:goto (name "provides_r2c")
-                                                    (arguments '())))))
-                    (sm:sequence* (%end-action p)
-                                  (sm:goto (name "provides_r2c")
-                                           (arguments '())))
-                    (sm:sum (type (%actions interface))
-                            (statement
-                             (sm:sequence* (sm:invoke (%out-action p)
-                                                      #:keep-constructor? #t)
-                                           (sm:goto (name name)
-                                                    (arguments '()))))))))
-               provides)))))
+              `(,%sm:delta
+                ,@(append-map
+                   (lambda (p)
+                    (let ((interface (.type p)))
+                     (list
+                      (sm:sum (type (%replies interface))
+                              (statement
+                               (sm:sequence* (sm:invoke (%reply-action p))
+                                             (sm:goto (name "provides_r2c")
+                                                      (arguments '())))))
+                      (sm:sequence* (%end-action p)
+                                    (sm:goto (name "provides_r2c")
+                                             (arguments '())))
+                      (sm:sum (type (%actions interface))
+                              (statement
+                               (sm:sequence* (sm:invoke (%out-action p)
+                                                        #:keep-constructor? #t)
+                                             (sm:goto (name name)
+                                                      (arguments '()))))))))
+                   provides))))))
          (provides-parallel
           (sm:process
             (name "provides_parallel")
