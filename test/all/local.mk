@@ -138,6 +138,7 @@ REGRESSION_TESTS =				\
  %D%/assign_formal				\
  %D%/bool_expressions				\
  %D%/blocking-local-state-diagram		\
+ %D%/blocking_annotation			\
  %D%/blocking_binding				\
  %D%/blocking_bottom_system			\
  %D%/blocking_cancel_race			\
