@@ -168,9 +168,6 @@
 (define makreel:defer*
   (ast:perfect-funcq makreel:defer*-unmemoized))
 
-(define makreel:defer*
-  makreel:defer*-unmemoized)
-
 (define-method (makreel:defer-skip? (o <model>))
   (and (is-a? o <component>)
        (pair? (makreel:defer* o))))
