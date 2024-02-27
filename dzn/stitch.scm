@@ -100,10 +100,14 @@
     (map (cute string-append port-name "." <>) (list "optional" "inevitable"))))
 
 (define* (port-return-values port)
-  (define (strip-literal o)
-    (if (is-a? o <literal>) (.value o) o))
+  (define (->string o)
+    (cond
+      ((is-a? o <literal>) (->string (.value o)))
+      ((is-a? o <enum-literal>) (string-append (ast:name (.type.name o)) ":" (.field o)))
+      ((number? o) (number->string o))
+      (else o)))
   (let ((port-name (makreel:unticked-name port)))
-    (map (cute string-append port-name "." <>) (map strip-literal (ast:return-values port)))))
+    (map (cute string-append port-name "." <>) (map ->string (ast:return-values port)))))
 
 (define (log-debug msg thunk)
   (let ((debug? (dzn:command-line:get 'debug #f)))
