@@ -1,4 +1,6 @@
+model: compliance_provides_bool
+p.hello
+<non-compliance>
 model: compliance_system_provides_bool
 pp.hello
-pp.false
 <non-compliance>

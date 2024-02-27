@@ -59,7 +59,7 @@ component adapter
 component external_adapter
 {
   provides blocking iworld h;
-  requires external iworld w;
+  requires iworld w;
   system
   {
     adapter adapt;
@@ -93,13 +93,13 @@ component blocking_multiple_provides3
 {
   provides blocking ihello left;
   provides blocking ihello right;
-  requires external iworld r;
+  requires iworld r;
   system
   {
     left  <=> mp.left;
     right <=> mp.right;
     multiple_provides mp;
-    external_adapter adapt;
+    adapter adapt;
     mp.r <=> adapt.h;
     adapt.w <=> r;
   }

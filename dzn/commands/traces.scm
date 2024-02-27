@@ -106,8 +106,8 @@ Generate exhaustive set of traces for Dezyne model
 
  (define (special-event->tau label)
    (if (or (memq label (list %inevitable %optional))
-           (string-prefix? "<state>" label)
            (string-prefix? "tag(" label)
+           (string-contains label "<state>" )
            (string-suffix? "<blocking>" label)
            (string-suffix? "<blocked>" label)
            (string-suffix? ".optional" label)

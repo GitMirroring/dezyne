@@ -169,7 +169,7 @@
            (lts-text0 (with-output-to-string (cut display-lts lts0)))
            (lts-text1 (with-output-to-string (cut display-lts lts1)))
            (result status (pipeline->string
-                            (warn 'command (list `("/home/paul/mCRL2-build/stage/bin/ltsparallel" "--in1=aut" "--in2=aut"
+                            (warn 'command (list `("/home/paul/mCRL2-build/stage/bin/ltsparallel" "-d" "--in1=aut" "--in2=aut"
                              ,option-incoming-events0 ,option-incoming-events1 ,option-common-events
                              "-" "-" "-")))
                             #:input (string-append lts-text0 "\n\x04\n" lts-text1)))
@@ -306,7 +306,7 @@
                     #:alphabet
                       (map
                         (lambda (binding)
-                          (fullname (.instance (.left binding)) (.port.name (.left binding))))
+                          (string-append (fullname (.instance (.left binding)) (.port.name (.left binding))) "."))
                         provides-internal-bindings)
                     #:verbose? verbose?))
                 (get-requires-bindings subinstance)))))
