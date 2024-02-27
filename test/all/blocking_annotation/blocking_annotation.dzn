@@ -58,11 +58,11 @@ component blocking_annotated
 {
   provides blocking itransaction pt;
   requires itransaction rt;
-  requires blocking iblock rb;
+  requires blocking iblock rr;
   behavior
   {
     bool active = false;
-    [!active] on pt.request (): {active = true; rt.request (); rb.block ();}
+    [!active] on pt.request (): {active = true; rt.request (); rr.block ();}
     [active] on rt.complete (): defer {active = false; pt.complete ();}
   }
 }
@@ -71,7 +71,7 @@ component blocking_annotation
 {
   provides blocking itransaction pt;
   requires itransaction rt;
-  requires iblock rr;
+  requires blocking iblock rr;
   system
   {
     pt <=> annotated.pt;
@@ -79,6 +79,6 @@ component blocking_annotation
     annotated.rt <=> transaction.pt;
     transaction_proxy transaction;
     transaction.rt <=> rt;
-    annotated.rb <=> rr; 
+    annotated.rr <=> rr;
   }
 }

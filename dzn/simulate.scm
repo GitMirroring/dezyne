@@ -353,6 +353,9 @@ or false."
     (match event
       (('state state ...)
        (run-state pc state))
+      ("<defer>"
+       ;; FIXME ./pre-inst-env dzn simulate -m blocking_annotation test/all/blocking_annotation/blocking_annotation.dzn -t 'pt.request,rt.complete,rr.return,pt.return,<defer>'
+       (run-flush pc (cadr (filter (is? <runtime:component>) (%instances)))))
       ((? string?)
        (let* ((traces (run-to-completion*-context-switch pc event))
               (traces (if (pair? traces) traces
