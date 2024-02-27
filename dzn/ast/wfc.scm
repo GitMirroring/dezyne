@@ -1260,11 +1260,12 @@
           ((and
             (.port left)
             (.port right)
-            (ast:provides? (.port left))
             (.blocking? (.port left))
             (not (.blocking? (.port right))))
-           `(,(wfc-error (.port left) (format #f "superfluous blocking annotation on provides port `~a'"
-                                              (.port.name left)))))
+           `(,(wfc-error o (format #f "cannot bind blocking port `~a' to non-blocking port `~a'"
+                                   (.port.name left) (.port.name right)))
+             ,(wfc-info (.port left) (format #f "blocking port `~a' defined here" (.port.name left)))
+             ,(wfc-info (.port right) (format #f "non-blocking port `~a' defined here" (.port.name right)))))
           (else '()))))
 
 (define-method (binding-type (o <system>))
