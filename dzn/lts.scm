@@ -154,7 +154,10 @@
   (let* ((label (make-shared-string label))
          (tau? (or tau?
                    (eq? %tau label)
-                   (string-prefix? "<external>." label))))
+                   ;; XXX label can now also be a list!?
+                   ;; ("ihello'in(ihello'action(ihello'in'hello))" "ihello'reply(ihello'Void(void))")
+                   (and (string? label)
+                        (string-prefix? "<external>." label)))))
     (make-edge- from label to tau?)))
 
 (define (clone-edge e)
