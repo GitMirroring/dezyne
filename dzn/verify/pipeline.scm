@@ -211,10 +211,6 @@ actions."
    (lambda (root model)
      (with-output-to-string (cute makreel:model->makreel root model)))))
 
-(define root+model->makreel
-  (lambda (root model)
-    (with-output-to-string (cute makreel:model->makreel root model))))
-
 (define (in-out:dzn->makreel options)
   (let* ((root (options-root options))
          (model (options-model options))
@@ -482,9 +478,6 @@ to (current-output-port)."
 
 (define memoizing-verify-pipeline
   (perfect-funcq 1024 verify-pipeline-wrapper))
-
-(define memoizing-verify-pipeline
-  verify-pipeline-wrapper)
 
 (define* (verify-pipeline out root model #:key (init (get-init model)))
   "Create a verify pipeline to produce OUT from MODEL.  Use standard
