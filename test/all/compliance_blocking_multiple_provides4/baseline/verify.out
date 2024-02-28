@@ -1,3 +1,6 @@
+model: mux
+left.hello
+<non-compliance>
 model: compliance_blocking_multiple_provides4
 left.hello
 <non-compliance>
