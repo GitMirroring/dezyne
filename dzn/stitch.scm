@@ -103,7 +103,7 @@
   (define (->string o)
     (cond
       ((is-a? o <literal>) (->string (.value o)))
-      ((is-a? o <enum-literal>) (string-append (tree:name (.type.name o)) ":" (.field o)))
+      ((is-a? o <enum-literal>) (string-append (untick (tree:name (.type.name o))) ":" (.field o)))
       ((number? o) (number->string o))
       (else o)))
   (let ((port-name (makreel:unticked-name port)))

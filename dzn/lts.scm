@@ -743,24 +743,6 @@ from LABELS."
         '()))
   (delete %tau (delete-duplicates (append-map node-incoming-events (vector->list lts)))))
 
-(define* (annotate-collateral-blocked-out lts #:key provides-out-events)
-  (let ((provides-out-events (map make-shared-string provides-out-events)))
-    (define (annotate-edge edge)
-      (let* ((label (edge-label edge))
-             (blocked? (memq label provides-out-events)))
-        (if (not blocked?) edge
-            (set-field edge (edge-blocked?) #t))))
-    (define (annotate-node node)
-      (let* ((edges (map annotate-edge (node-edges node)))
-             (blocked? (find edge-blocked? edges)))
-        (set-fields node
-                    ((node-edges) edges)
-                    ((node-color) blocked?))))
-    (let ((lts (vector-map-one annotate-node lts)))
-      (when (> (dzn:debugity) 1)
-        (display-lts-rtc lts #:port (current-error-port))))
-    lts))
-
 (define* (compose-parallel lts0 lts1)
   (let* ((size0 (vector-length lts0))
          (lts (make-hash-table))
