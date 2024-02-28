@@ -53,7 +53,7 @@ component collateral_blocking_backdoor_bypass
 {
   provides blocking ihello left;
   provides blocking ihello right;
-  requires iworld w;
+  requires blocking iworld w;
 
   provides ibypass pbypass;
   requires ibypass rbypass;
