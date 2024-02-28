@@ -45,7 +45,7 @@ interface iworld
   }
 }
 
-component fork
+component vork
 {
   provides blocking iworld p;
   requires blocking ihello r_left;
@@ -55,7 +55,7 @@ component fork
   {
     bool idle = true;
     [idle] on p.hello (): {r_right.hello (); r_left.hello (); idle = false; }
-    on r_right.world (): { p.world (); idle = true; }
+    on r_right.world (): defer { p.world (); idle = true; }
     on r_left.world (): {}
   }
 }
@@ -93,7 +93,7 @@ component collateral_blocking_out
 
   system
   {
-    fork top;
+    vork top;
     block left;
     proxy right;
 
