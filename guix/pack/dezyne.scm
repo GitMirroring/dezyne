@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
@@ -39,14 +39,14 @@
 (define-public dezyne
   (package
     (name "dezyne")
-    (version #!dezyne!# "2.17.8")
+    (version #!dezyne!# "2.17.9")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://dezyne.org/download/dezyne/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!dezyne!# "0m5cnymcyg7k1jhp4xjpvpay7ia72xdzyjnjg0spsr4p7fy7yql4"))))
+        (base32 #!dezyne!# "100i5igwk04iwa8hm6x2cx5jk7ajhy837bcbsbvp6m2sjzcfmjl1"))))
     (inputs (list bash-minimal
                   guile-3.0
                   guile-json-4
