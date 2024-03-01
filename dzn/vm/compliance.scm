@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -425,8 +425,8 @@ Return a list of traces, possibly marked with <compliance-error>."
                      (pc (car trace))
                      (pcs (map (cute update-state pc port-instance <>)
                                port-pcs))
-                     (traces (map (lambda (pc trace) (cons pc (cdr trace)))
-                                  pcs traces)))
+                     (tail (cdr trace))
+                     (traces (map (cute cons <> tail) pcs)))
                 (map (cute zip trigger <> <>) traces port-traces)))
              ((and (%compliance-check?)
                    (null? non-compliances)
