@@ -3,7 +3,7 @@
 #+TITLE: Tentative Dezyne Road Map
 
 Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-Copyright © 2020, 2021, 2022 Jan Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 
   Copying and distribution of this file, with or without modification,
@@ -63,6 +63,10 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - replace dzn traces with dzn test, i.e. LTS-based testing
   - refactor node/parent
     + Finish and merge wip-parent
+  - external debugging
+    + Finish and merge wip-external (DEADLOCKS!)
+  - ast/tree cleanup, serialization
+    + Finish and merge wip-serialize
   - Prefer reporting shorter compliance traces over longer illegal
     traces (prefix any with compliance)
   - Use shared state from provides ports for defer. This requires
