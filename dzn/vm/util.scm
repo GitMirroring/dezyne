@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
@@ -368,9 +368,22 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (let ((ports (filter
                   (conjoin runtime:boundary-port?
                            runtime:other-port
-                           (negate (compose (is? <runtime:foreign>)
-                                            .container
-                                            runtime:other-port)))
+                           (disjoin
+                            (negate (compose (is? <runtime:foreign>)
+                                             .container
+                                             runtime:other-port))
+                            (conjoin ast:provides?
+                                     (compose runtime:boundary-port?
+                                              runtime:other-port)
+                                     ;; XXX Bug in %instances?
+                                     (compose ast:requires?
+                                              runtime:other-port))
+                            (conjoin ast:requires?
+                                     (compose runtime:boundary-port?
+                                              runtime:other-port)
+                                     ;; XXX Bug in %instances?
+                                     (compose ast:provides?
+                                              runtime:other-port))))
                   (%instances))))
       (append-map
        (lambda (p)
