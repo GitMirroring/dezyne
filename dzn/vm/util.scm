@@ -442,9 +442,24 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (let ((ports (filter
                   (conjoin runtime:boundary-port?
                            runtime:other-port
-                           (negate (compose (is? <runtime:foreign>)
-                                            .container
-                                            runtime:other-port)))
+                           (disjoin
+                            (negate (compose (is? <runtime:foreign>)
+                                             .container
+                                             runtime:other-port))
+                            ;; when a port belongs to a foreign component
+                            ;; it is like a boundary port when it is
+                            ;; connected to another components port
+                            ;; in the complementary direction (provides/requires)
+                            (conjoin ast:provides?
+                                     (compose runtime:boundary-port?
+                                              runtime:other-port)
+                                     (compose ast:requires?
+                                              runtime:other-port))
+                            (conjoin ast:requires?
+                                     (compose runtime:boundary-port?
+                                              runtime:other-port)
+                                     (compose ast:provides?
+                                              runtime:other-port))))
                   (%instances))))
       (append-map
        (lambda (p)
