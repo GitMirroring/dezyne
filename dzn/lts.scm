@@ -758,10 +758,6 @@ from LABELS."
     (define* (step from-node edge state0 state1)
       (let* ((node0 (vector-ref lts0 state0))
              (node1 (vector-ref lts1 state1))
-             ;;(rtc0 (or (node-color node0) (eq? active 'lts1)))
-             ;;(rtc1 (or (node-color node1) (eq? active 'lts0)))
-             ;;(blocked (and edge (string-suffix? "<blocked>" (edge-label edge))))
-             ;;(rtc (or blocked (and rtc0 rtc1)))
              (rtc0 (node-color node0))
              (rtc1 (node-color node1))
              (rtc (and rtc0 rtc1))
@@ -815,7 +811,10 @@ from LABELS."
           (when do-step0
             (for-each step0 (node-edges node0)))
           (when do-step1
-            (for-each step1 (node-edges node1))))))
+            (for-each step1 (node-edges node1))))
+        (when (null? (node-edges node))
+          (for-each step0 (node-edges node0))
+          (for-each step1 (node-edges node1)))))
 
     (if (zero? size0) lts1
         (begin
