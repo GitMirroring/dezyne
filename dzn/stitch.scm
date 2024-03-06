@@ -279,7 +279,7 @@
     (format (current-error-port) "Generating LTS for component type ~a...\n"
             (makreel:unticked-dotted-name model)))
   (let ((lts (verify-pipeline "aut-weak-trace" root model
-                              #:init "component_blocked")))
+                              #:init "component")))
     (when (string-null? (string-trim-right lts))
       (error "failed to create LTS for component ~a\n"
              (makreel:unticked-dotted-name model)))
@@ -293,7 +293,7 @@
 
            (modeling (append-map port-modeling-triggers requires))
            (return-values (append-map port-return-values requires-blocking))
-           (requires-out (append-map (cut port-events <> #:predicate ast:in?)
+           (requires-out (append-map (cut port-events <> #:predicate ast:out?)
                                      requires-blocking))
            (events (append triggers modeling return-values requires-out))
            (lts (annotate-node-rtc lts #:incoming-events events)))
