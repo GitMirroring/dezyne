@@ -23,7 +23,15 @@
 
 (define-module (dzn find)
   #:use-module (ice-9 format)
-  #:use-module (srfi srfi-1)
+  #:use-module ((srfi srfi-1)
+                ;; maybe a toplevel name `find' isn't the best idea
+                #:select (append-map
+                          delete-duplicates
+                          drop-right
+                          drop-while
+                          last
+                          lset-difference
+                          (find . srfi-1:find)))
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
   #:use-module (srfi srfi-71)
@@ -76,7 +84,9 @@
   (values result status)))
 
 (define (model-name->model model-name models)
-  (find (lambda (m) (equal? (makreel:unticked-dotted-name m) model-name)) models))
+  (srfi-1:find
+   (compose (cute equal? <> model-name) makreel:unticked-dotted-name)
+   models))
 
 (define (hide-internal-labels trace)
   (filter
@@ -85,16 +95,19 @@
            (not (string-contains event ".qout."))
            (not (string-contains event "<state>"))
            (not (string-contains event "tag("))
-           (not (find (cute string-suffix? <> event) '(".optional" ".inevitable" ".<flush>")))))
+           (not (srfi-1:find (cute string-suffix? <> event)
+                             '(".optional" ".inevitable" ".<flush>")))))
     trace))
 
 (define (collect-labels lts)
-  (delete-duplicates (append-map (compose (cute map edge-label <>) node-edges) (vector->list lts)) eq?))
+  (let ((labels (append-map (compose (cute map edge-label <>) node-edges)
+                            (vector->list lts))))
+    (delete-duplicates labels eq?)))
 
 (define* (find root models model-name trace lts #:key verbose?)
   (let* ((model (or (and model-name (model-name->model model-name models))
-                    (find (cute is-a? <> <system>) (reverse models))
-                    (find (cute is-a? <> <component>) (reverse models))))
+                    (srfi-1:find (cute is-a? <> <system>) (reverse models))
+                    (srfi-1:find (cute is-a? <> <component>) (reverse models))))
          (lts (if lts lts (model->lts root model verbose?)))
          (lts (remove-state-loops lts))
          (lts-events (collect-labels lts))
@@ -104,11 +117,13 @@
          (spec (trace->spec trace trace-events))
          (output status (perform-compliance lts spec hide-events))
          (lines (and output (string-split output #\newline)))
-         (result (and lines (find (cut string-prefix? "result: " <>) lines)))
+         (result (and lines (srfi-1:find (cute string-prefix? "result: " <>) lines)))
          (match (string-suffix? "false" result))
-         (acceptance (and lines (find (cut string-prefix? "right-acceptance: " <>) lines)))
+         (acceptance (and lines
+                          (srfi-1:find (cute string-prefix? "right-acceptance: " <>) lines)))
          (last-event (last trace))
-         (trace (and lines (find (cut string-prefix? "counter_example_weak_failures_refinement: " <>) lines)))
+         (trace (and lines
+                     (srfi-1:find (cute string-prefix? "counter_example_weak_failures_refinement: " <>) lines)))
          (trace (or (and trace (substring trace (1+ (string-index trace #\:)))) ""))
          (trace (string-split (string-trim-both trace) #\;))
          (trace (hide-internal-labels trace))
