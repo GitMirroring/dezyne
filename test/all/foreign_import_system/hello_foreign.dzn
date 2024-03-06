@@ -31,7 +31,8 @@ interface ihello
 
   behavior
   {
-    on hello: {}
+    on hello: reply(false);
+    on hello: reply(false);
     on optional: goodbye;
   }
 }
