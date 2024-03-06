@@ -707,7 +707,8 @@ XFAIL_VERIFY =					\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
  %D%/empty_system				\
- %D%/external_blocking_livelock
+ %D%/external_blocking_livelock \
+ %D%/foreign_multiple_provides
 
 XFAIL_SIMULATE =				\
  %D%/compliance_livelock
