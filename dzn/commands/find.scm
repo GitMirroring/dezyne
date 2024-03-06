@@ -43,11 +43,11 @@
     (when help?
       (format #t "\
 Usage: dzn find [OPTION]... [FILE]
-Produce a concrete trace with matches the given trace possibly containing *'s
+Find a concrete trace with matches the given trace possibly containing *s
   -h, --help                  display this help and exit
   -m, --model=MODEL           the model MODEL to be used
   -l, --lts=FILE              don't generate lts but use lts from FILE.
-  -t, --trace                 the requested trace to match
+  -t, --trace=TRACE           find trace TRACE
 ")
       (exit EXIT_SUCCESS))
     options))
@@ -59,12 +59,16 @@ Produce a concrete trace with matches the given trace possibly containing *'s
          (lts (option-ref options 'lts #f))
          (model-name (option-ref options 'model #f))
          (trace (option-ref options 'trace #f))
-         (trace (if trace (string-split (string-trim-both trace) (char-set #\, #\; #\space)) '()))
+         (trace (if (not trace) '()
+                    (string-split (string-trim-both trace)
+                                  (char-set #\, #\; #\space))))
          (file-name (car files))
          (ast (parse options file-name))
-         (root (parameterize ((%no-unreachable? #t)) (makreel:normalize ast)))
+         (root (parameterize ((%no-unreachable? #t))
+                 (makreel:normalize ast)))
          (models (ast:model* root))
-         (trace (find root models model-name trace lts #:verbose? verbose?)))
+         (trace (find:find root models model-name trace lts
+                           #:verbose? verbose?)))
     (if trace
         (display trace)
         (display "No match found for given trace.\n" (current-error-port)))))

@@ -23,15 +23,7 @@
 
 (define-module (dzn find)
   #:use-module (ice-9 format)
-  #:use-module ((srfi srfi-1)
-                ;; maybe a toplevel name `find' isn't the best idea
-                #:select (append-map
-                          delete-duplicates
-                          drop-right
-                          drop-while
-                          last
-                          lset-difference
-                          (find . srfi-1:find)))
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
   #:use-module (srfi srfi-71)
@@ -42,7 +34,7 @@
   #:use-module (dzn lts)
   #:use-module (dzn pipe)
   #:use-module (dzn stitch)
-  #:export (find))
+  #:export (find:find))
 
 (define (trace->transitions trace trace-events)
   (define (expand-label i label)
@@ -74,7 +66,11 @@
   (let* ((taus (string-join taus ","))
          (taus (if (string-null? taus) '()
                    (list (string-append "--tau=" taus)))))
-    `("ltscompare" "--quiet" "--counter-example" "--structured-output" "-pweak-failures"
+    `("ltscompare"
+      "--quiet"
+      "--counter-example"
+      "--structured-output"
+      "-pweak-failures"
       ,@taus
       "--in1=aut" "--in2=aut" "-" "-")))
 
@@ -84,7 +80,7 @@
   (values result status)))
 
 (define (model-name->model model-name models)
-  (srfi-1:find
+  (find
    (compose (cute equal? <> model-name) makreel:unticked-dotted-name)
    models))
 
@@ -95,7 +91,7 @@
            (not (string-contains event ".qout."))
            (not (string-contains event "<state>"))
            (not (string-contains event "tag("))
-           (not (srfi-1:find (cute string-suffix? <> event)
+           (not (find (cute string-suffix? <> event)
                              '(".optional" ".inevitable" ".<flush>")))))
     trace))
 
@@ -104,10 +100,10 @@
                             (vector->list lts))))
     (delete-duplicates labels eq?)))
 
-(define* (find root models model-name trace lts #:key verbose?)
+(define* (find:find root models model-name trace lts #:key verbose?)
   (let* ((model (or (and model-name (model-name->model model-name models))
-                    (srfi-1:find (cute is-a? <> <system>) (reverse models))
-                    (srfi-1:find (cute is-a? <> <component>) (reverse models))))
+                    (find (cute is-a? <> <system>) (reverse models))
+                    (find (cute is-a? <> <component>) (reverse models))))
          (lts (if lts lts (model->lts root model verbose?)))
          (lts (remove-state-loops lts))
          (lts-events (collect-labels lts))
@@ -117,21 +113,29 @@
          (spec (trace->spec trace trace-events))
          (output status (perform-compliance lts spec hide-events))
          (lines (and output (string-split output #\newline)))
-         (result (and lines (srfi-1:find (cute string-prefix? "result: " <>) lines)))
+         (result (and lines (find (cute string-prefix? "result: " <>) lines)))
          (match (string-suffix? "false" result))
          (acceptance (and lines
-                          (srfi-1:find (cute string-prefix? "right-acceptance: " <>) lines)))
+                          (find (cute string-prefix?
+                                      "right-acceptance: " <>)
+                                lines)))
          (last-event (last trace))
          (trace (and lines
-                     (srfi-1:find (cute string-prefix? "counter_example_weak_failures_refinement: " <>) lines)))
-         (trace (or (and trace (substring trace (1+ (string-index trace #\:)))) ""))
+                     (find
+                      (cute string-prefix?
+                            "counter_example_weak_failures_refinement: "
+                            <>) lines)))
+         (trace (or (and trace (substring trace (1+ (string-index trace #\:))))
+                    ""))
          (trace (string-split (string-trim-both trace) #\;))
          (trace (hide-internal-labels trace))
          (trace (if acceptance trace (drop-right trace 1)))
-         (trace (reverse (drop-while (negate (cute equal? last-event <>)) (reverse trace)))))
-  (when (pair? not-lts-events)
-    (format
-      (current-error-port)
-      "warning: the following events are not present in the LTS: ~a\n"
-      (string-join not-lts-events ",")))
-  (and match (string-join trace "\n" 'suffix))))
+         (trace (reverse (drop-while (negate (cute equal? last-event <>))
+                                     (reverse trace)))))
+    (when (pair? not-lts-events)
+      (format
+       (current-error-port)
+       "warning: the following events are not present in the LTS: ~a\n"
+       (string-join not-lts-events ",")))
+    (and match
+         (string-join trace "\n" 'suffix))))
