@@ -313,12 +313,17 @@
              (makreel:unticked-dotted-name model)))
     (aut-text->lts lts)))
 
-(define-method (model->lts root (model <foreign>) verbose?) ;; HACK; TODO FIXME
-  (let ((lts (verify-pipeline "aut-weak-trace" root (.type (ast:provides-port model)))))
+(define-method (model->lts root (model <foreign>) verbose?)
+  (let ((port-name (makreel:unticked-name (ast:provides-port model)))
+        (lts (verify-pipeline "aut-weak-trace" root (.type (ast:provides-port model)))))
+    (define (append-port-name label)
+      (cond
+        ((eq? label %tau) label)
+        (else (make-shared-string (string-append port-name "." label)))))
     (when (string-null? (string-trim-right lts))
       (error "failed to create LTS for foreign ~a\n"
              (makreel:unticked-dotted-name model)))
-    (aut-text->lts lts)))
+    (remove-modeling (transform-labels append-port-name (remove-state-loops (aut-text->lts lts))) #:ports (list port-name))))
 
 (define-method (model->lts root (system <system>) verbose?)
   (let* ((instances (ast:instance* system))
@@ -331,8 +336,8 @@
               bindings))
     (define (get-requires-bindings instance)
       (filter (lambda (b) (and (ast:equal? (.instance (.left b)) instance)
-                               (.instance (.right b))
-                               (not (is-a? (.type (.instance (.right b))) <foreign>))))
+                               (.instance (.right b))))
+                               ;;(not (is-a? (.type (.instance (.right b))) <foreign>))))
               bindings))
     (define (rename-ports lts)
       (define (transform-binding binding)
@@ -345,11 +350,11 @@
           (rename-label
           (instance-name (.left binding))
           (makreel:unticked-name (.port.name (.right binding)))))
-        ((is-a? (.type (.instance (.right binding))) <foreign>)
-          (rename-label
-          (instance-name (.left binding))
-          (sutify (instance-name (.right binding))
-                  (.instance (.right binding)))))
+;;        ((is-a? (.type (.instance (.right binding))) <foreign>)
+;;          (rename-label
+;;          (instance-name (.left binding))
+;;          (sutify (instance-name (.right binding))
+;;                  (.instance (.right binding)))))
         (else identity)))
       (define transform-label
         (if (null? bindings) identity

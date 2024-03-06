@@ -2192,7 +2192,6 @@
               (process interface-internal)
               (events (list %tau-void-action
                             (%end-action o)
-                            (%flush-action o)
                             (%tau-reply-action o))))))))
     (list interface-reorder
           interface-reorder-reply

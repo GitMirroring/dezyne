@@ -128,7 +128,7 @@ actions."
          (state-taus (map (compose (cute string-append <> ".<state>")
                                    makreel:name)
                           (ast:port* model)))
-         (taus `("sut" "tag" "<blocked>" "<defer>" ,@state-taus ,@taus)))
+         (taus `("tag" "<blocked>" "<defer>" ,@state-taus ,@taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)
@@ -353,7 +353,7 @@ actions."
 (define (in-out:dzn->aut-system options)
   (let* ((root (options-root options))
          (model (options-model options))
-         (lts (rename (model->lts root model #f) #:from "sut" #:to "sut(")))
+         (lts (model->lts root model #f)))
   (cute display-lts lts)))
 
 (define (in-out:aut+provides-aut->verify-compliance options)

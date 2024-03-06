@@ -802,6 +802,7 @@ are weak-bisim equivalent"
                       (lts-file (string-append out-lang "/" base-name ".aut"))
                       (taus '("<blocked>""<deadlock>" "<livelock>"
                               "<non-compliance>" "<state>"))
+                      (stdout (regexp-substitute/global #f "\"sut[.][^\"]*\"" stdout 'pre "\"tau\"" 'post))
                       (modeling (list-matches
                                  "\"([^\"]*[.](inevitable|optional))\""
                                  stdout))
