@@ -2,6 +2,7 @@
 //
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Paul (Pee) Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,12 +28,13 @@ namespace library
   interface ihello
     {
       in void hello();
+      out void goodbye();
 
-     behavior
-     {
-       on hello: {}
-       on optional: goodbye;
-     }
+      behavior
+      {
+        on hello: {}
+        on optional: goodbye;
+      }
     }
 
   component foreign
@@ -50,12 +52,6 @@ namespace library
         {
           on h.hello(): w.world();
         }
-    }
-
-  component foreign
-    {
-      provides iworld w;
-      // behavior {}
     }
 
   interface iworld
