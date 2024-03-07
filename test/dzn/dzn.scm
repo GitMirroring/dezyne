@@ -214,7 +214,8 @@ output, and standard error as three values."
 
 (define (component? file-name)
   (or (get-meta-option file-name 'component)
-      (model? file-name)))
+      (and (not (component-unset? file-name))
+           (model? file-name))))
 
 (define (component-unset? file-name)
   (and=> (get-meta-entry file-name 'component)
@@ -315,7 +316,7 @@ output, and standard error as three values."
          (includes (filter directory-exists? includes))
          (includes (append-map (cute list "-I" <>) includes))
          (fall-back? (fall-back? file-name))
-         (model (or (component? file-name) (file->model base-name)))
+         (model (component? file-name))
          (no-unreachable? (no-unreachable? file-name))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
@@ -337,7 +338,7 @@ output, and standard error as three values."
                 ,@(if (not queue-size-external) '()
                       `("--queue-size-external"
                         ,(number->string queue-size-external)))
-                ,@(if (component-unset? file-name) '()
+                ,@(if (not model) '()
                       `("--model" ,model))
                 ,dzn-name))))
     (or (skip? file-name "verify")

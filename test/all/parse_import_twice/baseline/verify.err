@@ -1,1 +1,4 @@
-test/all/parse_import_twice/parse_import_twice.dzn:error:No such model: "parse_import_twice"
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
