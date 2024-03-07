@@ -3423,7 +3423,7 @@ verification of all its @code{interface} models and behavioral
 Do not use a constraining process.
 
 @item --no-interfaces
-Do not verify a model's interfaces.
+Do not verify interfaces.
 
 @item --no-non-compliance
 @itemx -D

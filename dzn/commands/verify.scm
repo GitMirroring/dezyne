@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -98,8 +98,9 @@ Check DZN-FILE for verification errors in Dezyne models
          (debug? (dzn:command-line:get 'debug #f))
          (out (option-ref options 'out #f))
          (model-name (option-ref options 'model #f))
-         (no-unreachable? (command-line:get 'no-unreachable))
          (no-constraint? (command-line:get 'no-constraint))
+         (no-interfaces? (command-line:get 'no-interfaces))
+         (no-unreachable? (command-line:get 'no-unreachable))
          (queue-size (option-ref options 'queue-size (%queue-size)))
          (queue-size-defer (option-ref options 'queue-size-defer
                                        (%queue-size-defer)))
@@ -144,4 +145,5 @@ Check DZN-FILE for verification errors in Dezyne models
               (verification:partial root model-name #:out out))))
          (else
           (exit (verification:verify options root #:all? all?
-                                     #:model-name model-name))))))))
+                                     #:model-name model-name
+                                     #:no-interfaces? no-interfaces?))))))))
