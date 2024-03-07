@@ -52,6 +52,7 @@
             (import (single-char #\I) (value #t))
             (keep-going (single-char #\k))
             (model (single-char #\m) (value #t))
+            (no-components)
             (no-constraint (single-char #\C))
             (no-interfaces)
             (no-non-compliance (single-char #\D))
@@ -81,6 +82,7 @@ Check DZN-FILE for verification errors in Dezyne models
   -I, --import=DIR+        add DIR to import path
   -k, --keep-going         keep going after finding an error
   -m, --model=MODEL        restrict verification to model MODEL
+      --no-components      skip behavioral component verification
       --no-interfaces      skip interface verification
       --out=FORMAT         produce output FORMAT (use \"help\" for a list)
   -U, --no-unreachable     skip the unreachable code check
@@ -103,6 +105,7 @@ Check DZN-FILE for verification errors in Dezyne models
          (keep-going? (option-ref options 'keep-going #f))
          (out (option-ref options 'out #f))
          (model-name (option-ref options 'model #f))
+         (no-components? (command-line:get 'no-components))
          (no-constraint? (command-line:get 'no-constraint))
          (no-interfaces? (command-line:get 'no-interfaces))
          (no-unreachable? (command-line:get 'no-unreachable))
@@ -152,4 +155,5 @@ Check DZN-FILE for verification errors in Dezyne models
             (exit (verification:verify options root
                                        #:keep-going? keep-going?
                                        #:model-name model-name
+                                       #:no-components? no-components?
                                        #:no-interfaces? no-interfaces?)))))))))

@@ -3430,6 +3430,9 @@ verification of all its @code{interface} models and behavioral
 @itemx -C
 Do not use a constraining process.
 
+@item --no-components
+Do not verify behavioral components.
+
 @item --no-interfaces
 Do not verify interfaces.
 
