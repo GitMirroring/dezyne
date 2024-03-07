@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -23,35 +23,42 @@
 //
 // Code:
 
-interface ihello {
-  in void hello();
-  in void cruel();
+interface ihello
+{
+  in void hello ();
+  in void cruel ();
   behavior {
     on hello: {}
     on cruel: {}
   }
 }
 
-interface iworld {
-  out void world();
-  behavior {
+interface iworld
+  {
+  out void world ();
+  behavior
+  {
     on inevitable: world;
   }
 }
 
-component hello_block {
+component hello_block
+  {
   provides blocking ihello h;
   requires iworld w;
-  behavior {
+  behavior
+  {
     bool blocked=false;
-    [!blocked] {
-      on h.hello(): blocking blocked=true;
-      on w.world(): {}
+    [!blocked]
+    {
+      on h.hello (): blocking blocked=true;
+      on w.world (): {}
     }
-    [blocked] {
-      on w.world(): {h.reply (); blocked=false;}
+    [blocked]
+    {
+      on w.world (): {blocked=false; h.return;}
       on h.hello (): illegal;
     }
-    on h.cruel(): {}
+    on h.cruel (): {}
   }
 }
