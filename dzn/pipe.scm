@@ -103,9 +103,12 @@ that the pipeline produced as a string, and a sum of the output stati of
 the pipeline COMMANDS."
   (define (pipeline-with-input commands input)
     (let ((output-port input-port pids (pipeline commands)))
-      (sigaction SIGINT (lambda (flag)
-                          (map (cute kill <> SIGINT) pids)
-                          (exit 1)))
+      (for-each
+       (lambda (signal)
+         (sigaction signal (lambda (flag)
+                             (map (cute kill <> signal) pids)
+                             (exit 1))))
+       (list SIGALRM SIGINT))
       (display input output-port)
       (close output-port)
       (let ((stdout (read-string input-port)))
@@ -132,9 +135,12 @@ of the output stati of the pipeline COMMANDS."
   (define (pipeline-with-input commands input)
     (let ((output-port input-port pids
                        (pipeline commands #:output-port (current-output-port))))
-      (sigaction SIGINT (lambda (flag)
-                          (map (cute kill <> SIGINT) pids)
-                          (exit 1)))
+      (for-each
+       (lambda (signal)
+         (sigaction signal (lambda (flag)
+                             (map (cute kill <> signal) pids)
+                             (exit 1))))
+       (list SIGALRM SIGINT))
       (display input output-port)
       (close output-port)
       (false-if-exception (close input-port))
