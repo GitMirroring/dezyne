@@ -65,6 +65,8 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish and merge wip-parent
   - external debugging
     + Finish and merge wip-external (DEADLOCKS!)
+  - early return / deprecate reply
+    + Finish and merge wip-return
   - ast/tree cleanup, serialization
     + Finish and merge wip-serialize
   - Prefer reporting shorter compliance traces over longer illegal
