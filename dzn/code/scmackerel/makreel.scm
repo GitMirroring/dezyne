@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -68,6 +68,14 @@
          (simple-format port "tag(~a, ~a) . ~a" line column statement)))))
 
 (set-record-type-printer! <sm:tag> print-sm:tag)
+
+(define (dummy-tag-process)
+  ;; FIXME: Cater for sm:tag being used as a stealth ACT, possibly
+  ;; failing to declare TAG as ACT.
+  (sm:process
+    (name "dzn_dummy_tag_process")
+    (statement
+     (sm:invoke %tag-action (list 0 0)))))
 
 ;;;
 ;;; Helpers.
@@ -4247,6 +4255,7 @@
   (let* ((models (ast:model** root))
          (component (find (is? <component>) models))
          (model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
+         (act-processes (list (dummy-tag-process)))
          (interfaces (if component (filter (is? <interface>) models)
                          (filter (conjoin
                                   (is? <interface>)
@@ -4290,7 +4299,8 @@
        (append (sm:mcrl2-types mcrl2)
                enums))
       (processes
-       (append illegal-processes
+       (append act-processes
+               illegal-processes
                (sm:mcrl2-processes mcrl2)
                (list (makreel:version-comment)))))))
 
