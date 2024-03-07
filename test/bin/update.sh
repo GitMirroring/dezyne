@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 #
 # This file is part of Dezyne.
@@ -60,10 +60,10 @@ fi
 if $verify; then
     model=$(grep -Eo '[(]model [^)]*' $dir/META | cut -d' ' -f 2 | tr -d '"')
     if [ -z "$model" ]; then
-        model="--model $base"
-    elif [ $model = '#f' ]; then
         model=
-    else
+    elif [ "$model" = '#f' ]; then
+        model=
+    elif [ -n $model ]; then
         model="--model $model"
     fi
     determinism=$(grep -Eo 'no-interface-determinism[?] #t' $dir/META | cut -d' ' -f 2 | tr -d '"')
