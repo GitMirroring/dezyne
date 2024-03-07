@@ -181,6 +181,9 @@ output, and standard error as three values."
 (define (flush? file-name)
   (get-meta-flag file-name 'flush))
 
+(define (no-components? file-name)
+  (get-meta-flag file-name 'no-components))
+
 (define (no-unreachable? file-name)
   (get-meta-flag file-name 'no-unreachable))
 
@@ -327,6 +330,7 @@ output, and standard error as three values."
          (includes (append-map (cute list "-I" <>) includes))
          (fall-back? (fall-back? file-name))
          (model (component? file-name))
+         (no-components? (no-components? file-name))
          (no-unreachable? (no-unreachable? file-name))
          (queue-size (queue-size file-name))
          (queue-size-defer (queue-size-defer file-name))
@@ -339,6 +343,8 @@ output, and standard error as three values."
               `("dzn" "--verbose" "verify"
                 ,@includes
                 "--keep-going"
+                ,@(if (not no-components?) '()
+                      `("--no-components"))
                 ,@(if (not no-unreachable?) '()
                       `("--no-unreachable"))
                 ,@(if (not queue-size) '()
