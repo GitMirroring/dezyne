@@ -3401,8 +3401,7 @@ The @var{option}s can be among the following:
 
 @item --all
 @itemx -a
-Show all errors, i.e., keep going after finding an error.  By default,
-verification stops after finding a verification error.
+This is a deprecated alias for @option{-k,--keep-going}.
 
 @item --help
 @itemx -h
@@ -3411,6 +3410,11 @@ Display help on invoking @command{dzn verify}, and then exit.
 @item --import=@var{dir}
 @itemx -I @var{dir}
 Add directory @var{dir} to the import path.
+
+@item --keep-going
+@itemx -k
+Show all errors, i.e., keep going after finding an error.  By default,
+verification stops after finding a verification error.
 
 @item --model=@var{model}
 @itemx -m @var{model}

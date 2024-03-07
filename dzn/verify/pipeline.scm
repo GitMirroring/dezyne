@@ -647,8 +647,8 @@ init for MODEL unless INIT."
 ;;; Verify model.
 ;;;
 
-(define (reduce-or all? l)
-  (if all? (fold (cut or <> <>) #f (map (cute <>) l))
+(define (reduce-or keep-going? l)
+  (if keep-going? (fold (cut or <> <>) #f (map (cute <>) l))
       (fold (lambda (e res) (or res (e))) #f l)))
 
 (define (mcrl2:verify-compliance root model)
@@ -695,7 +695,7 @@ init for MODEL unless INIT."
       (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
     (values trace interface-accepts component-accepts)))
 
-(define (mcrl2:verify-interface-asserts model root)
+(define* (mcrl2:verify-interface-asserts model root #:key keep-going?)
   (let* ((model-name (makreel:unticked-dotted-name model))
          (asserts (verify-pipeline "verify-interface" root model))
          (asserts (result-split asserts))
@@ -709,14 +709,14 @@ init for MODEL unless INIT."
          (deadlock? (get-trace 'deadlock result)))
     (define* (report-assert assert #:key skip?)
       (report assert skip? (get-trace assert result) model))
-    (reduce-or (command-line:get 'all)
+    (reduce-or keep-going?
                `(,(cute report-assert 'deadlock)
                  ,@(if (%no-unreachable?) '()
                        `(,(cut report-assert 'unreachable #:skip? deadlock?)))
                  ,(cute report-assert 'livelock)
                  ,(cute report-assert 'deterministic)))))
 
-(define (mcrl2:verify-component-asserts model root)
+(define* (mcrl2:verify-component-asserts model root #:key keep-going?)
   (let* ((model-name (makreel:unticked-dotted-name model))
          (result status (verify-pipeline (component-stage) root model))
          (result (result-split result))
@@ -733,7 +733,7 @@ init for MODEL unless INIT."
     (define (extend-trace trace accepts)
       (if accepts (string-append trace (car accepts) "\n")
           trace))
-    (reduce-or (command-line:get 'all)
+    (reduce-or keep-going?
                `(,(cute report-assert 'deterministic)
                  ,(cute report-assert 'illegal)
                  ,(cute report-assert 'deadlock)
@@ -745,19 +745,23 @@ init for MODEL unless INIT."
                        #:skip? (or illegal? deadlock?)
                        #:trace refinement-trace)))))
 
-(define (mcrl2:verify-interface root model)
-  (mcrl2:verify-interface-asserts model root))
+(define* (mcrl2:verify-interface root model #:key keep-going?)
+  (mcrl2:verify-interface-asserts model root #:keep-going? keep-going?))
 
-(define (mcrl2:verify-component root model)
+(define* (mcrl2:verify-component root model #:key keep-going?)
   (let ((component model))
-    (reduce-or (command-line:get 'all)
-               (list (cut mcrl2:verify-component-asserts component root)))))
+    (reduce-or keep-going?
+               (list (cut mcrl2:verify-component-asserts component root
+                          #:keep-going? keep-going?)))))
 
-(define (mcrl2:verify root model-name)
+(define* (mcrl2:verify root model-name #:key keep-going?)
   (let ((model (makreel:get-model root model-name)))
-    (cond ((is-a? model <interface>) (mcrl2:verify-interface root model))
-          ((is-a? model <component>) (mcrl2:verify-component root model))
-          (else #f))))
+    (cond ((is-a? model <interface>)
+           (mcrl2:verify-interface root model #:keep-going? keep-going?))
+          ((is-a? model <component>)
+           (mcrl2:verify-component root model #:keep-going? keep-going?))
+          (else
+           #f))))
 
 
 ;;;
@@ -768,7 +772,7 @@ init for MODEL unless INIT."
   (let ((model (makreel:get-model root model-name)))
     (unmemoized-verify-pipeline out root model #:stdout? #t)))
 
-(define* (verification:verify options root #:key all? model-name
+(define* (verification:verify options root #:key keep-going? model-name
                               no-interfaces?)
   (define (model-names-for-verification root)
     (let* ((models (ast:model** root))
@@ -786,8 +790,9 @@ init for MODEL unless INIT."
           (append interface-names component-names))))
   (let ((model-names (model-names-for-verification root)))
     (let loop ((model-names model-names) (error? #f))
-      (if (or (and (not all?) error?) (null? model-names)) (if error? 1 0)
+      (if (or (and (not keep-going?) error?) (null? model-names)) (if error? 1 0)
           (let* ((model-name (car model-names))
-                 (this-error? (mcrl2:verify root model-name))
+                 (this-error? (mcrl2:verify root model-name
+                                            #:keep-going? keep-going?))
                  (error? (or error? this-error?)))
             (loop (cdr model-names) error?))))))

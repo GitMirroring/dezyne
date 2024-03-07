@@ -348,7 +348,7 @@ output, and standard error as three values."
                 ,dzn-name)
               `("dzn" "--verbose" "verify"
                 ,@includes
-                "--all"
+                "--keep-going"
                 ,@(if (not no-unreachable?) '()
                       `("--no-unreachable"))
                 ,@(if (not queue-size) '()

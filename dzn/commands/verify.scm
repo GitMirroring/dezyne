@@ -48,6 +48,7 @@
           '((all (single-char #\a))
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
+            (keep-going (single-char #\k))
             (model (single-char #\m) (value #t))
             (no-constraint (single-char #\C))
             (no-interfaces)
@@ -70,10 +71,11 @@
 Usage: dzn verify [OPTION]... DZN-FILE
 Check DZN-FILE for verification errors in Dezyne models
 
-  -a, --all                keep going after first error
+  -a, --all                keep going after first error DEPRECATED
   -C, --no-constraint      do not use a constraining process
   -h, --help               display this help and exit
   -I, --import=DIR+        add DIR to import path
+  -k, --keep-going         keep going after finding an error
   -m, --model=MODEL        restrict verification to model MODEL
       --no-interfaces      skip interface verification
       --out=FORMAT         produce output FORMAT (use \"help\" for a list)
@@ -94,6 +96,7 @@ Check DZN-FILE for verification errors in Dezyne models
          (file-name (car files))
          (all? (option-ref options 'all #f))
          (debug? (dzn:command-line:get 'debug #f))
+         (keep-going? (option-ref options 'keep-going #f))
          (out (option-ref options 'out #f))
          (model-name (option-ref options 'model #f))
          (no-constraint? (command-line:get 'no-constraint))
@@ -104,6 +107,9 @@ Check DZN-FILE for verification errors in Dezyne models
                                        (%queue-size-defer)))
          (queue-size-external (option-ref options 'queue-size-external
                                           (%queue-size-external))))
+    (when all?
+      (format (current-error-port)
+              "warning: -a,--all is deprecated, use -k,--keep-going.\n"))
     (parameterize ((%language "makreel")
                    (%no-constraint? no-constraint?)
                    (%no-unreachable? no-unreachable?)
@@ -142,6 +148,7 @@ Check DZN-FILE for verification errors in Dezyne models
                    (model-name (ast:dotted-name model)))
               (verification:partial root model-name #:out out))))
          (else
-          (exit (verification:verify options root #:all? all?
+          (exit (verification:verify options root
+                                     #:keep-going? keep-going?
                                      #:model-name model-name
                                      #:no-interfaces? no-interfaces?))))))))

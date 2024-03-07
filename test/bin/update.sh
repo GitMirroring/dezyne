@@ -79,9 +79,9 @@ if $verify; then
     fi
 
     mkdir -p $dir/baseline
-    ./pre-inst-env dzn -v verify -a $model $determinism \
-        $queue_size_external $dir/$base.dzn             \
-        > $dir/baseline/verify.out                      \
+    ./pre-inst-env dzn -v verify --keep-going $model $determinism       \
+        $queue_size_external $dir/$base.dzn                             \
+        > $dir/baseline/verify.out                                      \
         2> $dir/baseline/verify.err
 fi
 
