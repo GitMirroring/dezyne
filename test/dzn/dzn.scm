@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
@@ -331,13 +331,14 @@ output, and standard error as three values."
                 ,@(if (not no-unreachable?) '()
                       `("--no-unreachable"))
                 ,@(if (not queue-size) '()
-                      `("-q" ,(number->string queue-size)))
+                      `("--queue-size" ,(number->string queue-size)))
                 ,@(if (not queue-size-defer) '()
                       `("--queue-size-defer" ,(number->string queue-size-defer)))
                 ,@(if (not queue-size-external) '()
                       `("--queue-size-external"
                         ,(number->string queue-size-external)))
-                ,@(if (component-unset? file-name) '() `("-m" ,model))
+                ,@(if (component-unset? file-name) '()
+                      `("--model" ,model))
                 ,dzn-name))))
     (or (skip? file-name "verify")
         (run-baseline file-name command
@@ -361,10 +362,11 @@ output, and standard error as three values."
               (command
                `("dzn" "code"
                  ,@includes
-                 "-l" ,language
-                 "-o" ,out-lang
-                 "-m" ,model
-                 ,@(if (thread-safe-shell? file-name) `("-s" ,base-name) '())
+                 "--language" ,language
+                 "--output" ,out-lang
+                 "--model" ,model
+                 ,@(if (thread-safe-shell? file-name) `("--shell" ,base-name)
+                       '())
                  ,@(code-options file-name)
                  ,dzn-name)))
          (or (error-model? file-name)
@@ -387,7 +389,10 @@ output, and standard error as three values."
                  (lambda (dzn-file)
                    (receive (status stdout stderr)
                        (observe
-                        `("dzn" "code" ,@includes "-l" ,language "-o" ,out-lang
+                        `("dzn" "code"
+                          ,@includes
+                          "--language" ,language
+                          "--output" ,out-lang
                           ,@(code-options file-name)
                           ,dzn-file) input)
                      (zero? status)))
@@ -424,12 +429,12 @@ output, and standard error as three values."
             (observe
              `("dzn" "traces"
                ,@includes
-               "-m" ,model
-               "-o" ,out-lang
+               "--model" ,model
+               "--output" ,out-lang
                ,@(if (null? handwritten-traces) '("--traces") '())
                ,@(if (flush? file-name) '("--flush") '())
                ,@(if (not queue-size) '()
-                     `("-q" ,(number->string queue-size)))
+                     `("--queue-size" ,(number->string queue-size)))
                ,@(if (not queue-size-defer) '()
                      `("--queue-size-defer" ,(number->string queue-size-defer)))
                ,@(if (not queue-size-external) '()
@@ -467,7 +472,7 @@ are weak-bisim equivalent"
              (pipeline->string
               `(("dzn" "parse"
                  ,@includes
-                 "-m" ,model
+                 "--model" ,model
                  "--list-models"
                  ,dzn-name)))))
         (and (zero? status)
@@ -483,8 +488,10 @@ are weak-bisim equivalent"
                 `("dzn" "traces"
                   "--lts"
                   ,@includes
-                  "-m" ,model
-                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  "--model" ,model
+                  ,@(if (not queue-size) '()
+                        `("--queue-size"
+                          ,(number->string queue-size)))
                   ,dzn-name)
                 input))
               (status-unconstrained
@@ -493,10 +500,12 @@ are weak-bisim equivalent"
                (observe
                 `("dzn" "traces"
                   "--lts"
-                  "-C"
+                  "--no-constraint"
                   ,@includes
-                  "-m" ,model
-                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  "--model" ,model
+                  ,@(if (not queue-size) '()
+                        `("--queue-size"
+                          ,(number->string queue-size)))
                   ,dzn-name)
                 input)))
           (with-output-to-file constrained
@@ -545,7 +554,7 @@ are weak-bisim equivalent"
              (pipeline->string
               `(("dzn" "parse"
                  ,@includes
-                 "-m" ,model
+                 "--model" ,model
                  "--list-models"
                  ,dzn-name)))))
         (and (zero? status)
@@ -561,8 +570,9 @@ are weak-bisim equivalent"
                 `("dzn" "traces"
                   "--lts"
                   ,@includes
-                  "-m" ,model
-                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  "--model" ,model
+                  ,@(if (not queue-size) '()
+                        `("--queue-size" ,(number->string queue-size)))
                   ,dzn-name)
                 input))
               (status-no-compliance
@@ -571,10 +581,11 @@ are weak-bisim equivalent"
                (observe
                 `("dzn" "traces"
                   "--lts"
-                  "-D"
+                  "--no-non-compliance"
                   ,@includes
-                  "-m" ,model
-                  ,@(if queue-size `("-q" ,(number->string queue-size)) '())
+                  "--model" ,model
+                  ,@(if (not queue-size) '()
+                        `("--queue-size" ,(number->string queue-size)))
                   ,dzn-name)
                 input)))
           (with-output-to-file constrained
@@ -691,7 +702,7 @@ are weak-bisim equivalent"
         (observe `("dzn" "simulate"
                    ,@includes
                    ,@(if (not queue-size) '()
-                         `("-q" ,(number->string queue-size)))
+                         `("--queue-size" ,(number->string queue-size)))
                    ,@(if (not queue-size-defer) '()
                          `("--queue-size-defer"
                            ,(number->string queue-size-defer)))
@@ -701,7 +712,7 @@ are weak-bisim equivalent"
                    "--format" ,trace-format
                    ,@(if (non-strict? file-name) '() '("--strict"))
                    ,@(simulate-flags file-name)
-                   "-m" ,model
+                   "--model" ,model
                    ,dzn-name)
                  input)
 
@@ -770,13 +781,13 @@ are weak-bisim equivalent"
              `("dzn" "graph" "--backend=lts"
                ,@includes
                ,@(if (not queue-size) '()
-                     `("-q" ,(number->string queue-size)))
+                     `("--queue-size" ,(number->string queue-size)))
                ,@(if (not queue-size-defer) '()
                      `("--queue-size-defer" ,(number->string queue-size-defer)))
                ,@(if (not queue-size-external) '()
                      `("--queue-size-external"
                        ,(number->string queue-size-external)))
-               "-m" ,model
+               "--model" ,model
                ,dzn-name)
              input)
           (and (zero? status)
