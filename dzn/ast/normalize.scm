@@ -841,7 +841,9 @@ assignment, blocking release."
     (conjoin (is? <reply>) (compose not (is? <compound>) tree:parent)))
 
   (define (statement:reply->return o)
-    (make <return> #:expression (.expression o)))
+    (make <return>
+      #:expression (.expression o)
+      #:port.name (.port.name o)))
 
   (define (reply->variable o)
     (cond ((and (is-a? o <reply>)
@@ -870,7 +872,8 @@ assignment, blocking release."
         ((statements ... (and ($ <reply>) reply))
          (clone o #:elements (append statements
                                      (list (make <return>
-                                             #:expression (.expression reply))))))
+                                             #:expression (.expression reply)
+                                             #:port.name (.port.name reply))))))
         (_
          (let* ((reply (has-reply? o))
                 (type (ast:type reply))
@@ -878,7 +881,8 @@ assignment, blocking release."
                                 (make <reference> #:name (reply-reference type)))))
            (clone o #:elements (append (filter-map reply->variable statements)
                                        (list (make <return>
-                                               #:expression expression)))))))))
+                                               #:expression expression
+                                               #:port.name (.port.name reply))))))))))
   (tree:transform
    o
    `((,single-reply? . ,statement:reply->return)
