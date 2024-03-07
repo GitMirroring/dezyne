@@ -279,7 +279,7 @@ imperative-statement
     <-- (name DOT)? REPLY PAREN-OPEN# expression? PAREN-CLOSE# SEMICOLON#
 
   return
-    <-- RETURN expression? SEMICOLON#
+    <-- (name DOT)? RETURN expression? SEMICOLON#
 
   variable
     <-- type-name add-reference (ASSIGN expression#)? SEMICOLON#

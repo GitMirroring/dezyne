@@ -600,8 +600,14 @@ to the AST element."
         (('reply "reply") (make <reply> #:expression (make <literal>)))
 
         (('return) (make <return>))
-
-        (('return expression) (make <return> #:expression (helper expression)))
+        (('return (and expression ('expression e ...)))
+         (make <return> #:expression (helper expression)))
+        (('return (and port ('name p ...)))
+         (make <return> #:port (helper port)))
+        (('return port expression)
+         (make <return>
+           #:expression (helper expression)
+               #:port.name (helper port)))
 
         (('root element)
          (make <root> #:elements (make-list? (helper element))))
