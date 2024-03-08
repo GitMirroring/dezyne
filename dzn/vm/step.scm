@@ -661,7 +661,13 @@
       (_
        (function-return pc parent)))))
 
+(define-method (on-return (pc <program-counter>) (o <statement>))
+  (if (is-a? o <end-of-on>) pc
+      (let ((pc (continuation pc o)))
+        (on-return pc (.statement pc)))))
+
 (define-method (continuation (pc <program-counter>) (o <return>))
   (let ((function (tree:ancestor o <function>)))
     (if function (function-return pc o)
-        (next-method))))
+        (let ((pc (next-method)))
+          (on-return pc (.statement pc))))))
