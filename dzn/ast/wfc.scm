@@ -765,7 +765,7 @@
                                     reply-type-name)))))))))
 
 (define-method (wfc-reply-expression (o <reply>) port)
-  (wfc-reply-expression o port #:name "reply"))
+  (wfc-reply/return-expression o port #:name "reply"))
 
 (define-method (wfc (o <return>))
   (define (outer-compound o)
