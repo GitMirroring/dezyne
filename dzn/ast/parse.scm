@@ -603,11 +603,11 @@ to the AST element."
         (('return (and expression ('expression e ...)))
          (make <return> #:expression (helper expression)))
         (('return (and port ('name p ...)))
-         (make <return> #:port (helper port)))
+         (make <return> #:port.name (helper port)))
         (('return port expression)
          (make <return>
            #:expression (helper expression)
-               #:port.name (helper port)))
+           #:port.name (helper port)))
 
         (('root element)
          (make <root> #:elements (make-list? (helper element))))
