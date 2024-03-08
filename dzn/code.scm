@@ -510,8 +510,7 @@
         (and=> (regexp-exec enum-regexp event)
                (compose makreel->enum
                         (cute match:substring <> 1)))
-        ;; HACK for debugging
-        (pke "EVENT NOT FOUND" event)))
+        (throw 'programming-error (format #f "event not found ~s\n" event))))
   (define (edge->transition edge)
     (let* ((label ((disjoin trigger? action? reply? flush?) (edge-label edge)))
            (label (event->prefix label)))
