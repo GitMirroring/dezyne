@@ -852,6 +852,7 @@ assignment, blocking release."
           ((not (is-a? o <reply>))
            o)
           (else
+           ;; XXX AST must not depend on CODE!
            (let* ((reply-reference (@ (dzn code) code:reply-var))
                   (type (ast:type o))
                   (local-type? (eq? (tree:ancestor type <model>)
