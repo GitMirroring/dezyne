@@ -743,7 +743,7 @@
                            ", ")))))))
           (else (reply-in-on o)))))
 
-(define-method (wfc-reply-expression (o <reply>) port)
+(define* (wfc-reply/return-expression o port #:key name)
   (let* ((expression (.expression o))
          (error? (and expression (pair? (wfc expression)))))
     (if error? '() ;; reported before
@@ -755,12 +755,17 @@
           (cond
            ((pair? matching-types) '())
            (port
-            `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a' for port `~a'"
+            `(,(wfc-error o (format #f "type mismatch: no event with ~a type `~a' for port `~a'"
+                                    name
                                     reply-type-name (.name port)))
               ,(wfc-info port "port defined here")))
            (else
-            `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a'"
+            `(,(wfc-error o (format #f "type mismatch: no event with ~a type `~a'"
+                                    name
                                     reply-type-name)))))))))
+
+(define-method (wfc-reply-expression (o <reply>) port)
+  (wfc-reply-expression o port #:name "reply"))
 
 (define-method (wfc (o <return>))
   (define (outer-compound o)
@@ -776,18 +781,21 @@
          (function-type (and function (ast:type function)))
          (return-type (and (null? wfce) (ast:type o)))
          (last-statement-block (last-statement (outer-compound o))))
-    (append wfce
-            (cond ((not function)
-                   '())
-                  ((pair? wfce) '())
-                  ((not (equal-type? function-type return-type))
-                   `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
-                                           (type-name function-type)
-                                           (type-name return-type)))))
-                  ((not (eq? last-statement-block o))
-                   `(,(wfc-error ((compose car ast:continuation*) o)
-                                 (format #f "code will never be executed"))))
-                  (else '())))))
+    (append
+     wfce
+     (cond ((not function)
+            (wfc-reply/return-expression o (.port o) #:name "return"))
+           ((.port o)
+            `(,(wfc-error o (format #f "cannot use <port>.return in function"))))
+           ((pair? wfce) '())
+           ((not (equal-type? function-type return-type))
+            `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
+                                    (type-name function-type)
+                                    (type-name return-type)))))
+           ((not (eq? last-statement-block o))
+            `(,(wfc-error ((compose car ast:continuation*) o)
+                          (format #f "code will never be executed"))))
+           (else '())))))
 
 (define-method (wfc (o <the-end>))
   '())
