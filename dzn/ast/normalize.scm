@@ -474,11 +474,8 @@
                               ;;,@(drop elements (1- return-index)) ;;TODO FIXME
                               )))))
 
-(define-method (add-the-end (o <if>))
-  (make <compound> #:elements (list o (make <the-end>))))
-
 (define-method (add-the-end (o <statement>))
-  (make <compound> #:elements (list (make <the-end>) o)))
+  (make <compound> #:elements (list o (make <the-end>))))
 
 (define-method (add-the-end (o <canonical-on>))
   (let ((statement (.statement o)))
