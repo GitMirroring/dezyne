@@ -1,1 +1,4 @@
+test/all/wf_replyFunctionMultiplePort/wf_replyFunctionMultiplePort.dzn:28:15: warning: reply is deprecated, please update to return.
+test/all/wf_replyFunctionMultiplePort/wf_replyFunctionMultiplePort.dzn:29:15: warning: reply is deprecated, please update to return.
 test/all/wf_replyFunctionMultiplePort/wf_replyFunctionMultiplePort.dzn:38:7: error: must specify a provides-port with reply
+test/all/wf_replyFunctionMultiplePort/wf_replyFunctionMultiplePort.dzn:38:7: warning: reply is deprecated, please update to return.

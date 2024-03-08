@@ -1,1 +1,6 @@
+test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:36:15: warning: reply is deprecated, please update to return.
+test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:37:15: warning: reply is deprecated, please update to return.
+test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:46:26: warning: reply is deprecated, please update to return.
+test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:47:26: warning: reply is deprecated, please update to return.
 test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:48:30: error: must specify a provides-port with reply on requires out-trigger: `sensor.activated'
+test/all/wf_replyOnOutEventMultiplePort/wf_replyOnOutEventMultiplePort.dzn:48:30: warning: reply is deprecated, please update to return.

@@ -1,3 +1,5 @@
+test/all/second_reply_sync/second_reply_sync.dzn:43:33: warning: reply is deprecated, please update to return.
+test/all/second_reply_sync/second_reply_sync.dzn:44:33: warning: reply is deprecated, please update to return.
 verify: ihello: check: deadlock: ok
 verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok

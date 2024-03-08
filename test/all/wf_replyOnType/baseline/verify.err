@@ -1,2 +1,5 @@
+test/all/wf_replyOnType/wf_replyOnType.dzn:28:15: warning: reply is deprecated, please update to return.
+test/all/wf_replyOnType/wf_replyOnType.dzn:29:15: warning: reply is deprecated, please update to return.
 test/all/wf_replyOnType/wf_replyOnType.dzn:36:23: error: type mismatch: expected `bool', found: `<int>'
 test/all/wf_replyOnType/wf_replyOnType.dzn:26:3: info: event defined here
+test/all/wf_replyOnType/wf_replyOnType.dzn:36:23: warning: reply is deprecated, please update to return.

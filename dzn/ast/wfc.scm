@@ -706,7 +706,9 @@
   (append
    (imperative-context o)
    (if (.expression o) (wfc (.expression o)) '())
-   (if (.port.name o) (reply-with-port o) (reply-without-port o))))
+   (if (.port.name o) (reply-with-port o) (reply-without-port o))
+   (list
+    (wfc-warning o "reply is deprecated, please update to return."))))
 
 (define-method (reply-with-port (o <reply>))
   "pre: (.port.name o)"

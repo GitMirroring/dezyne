@@ -1,1 +1,4 @@
+test/all/wf_replyOnPort/wf_replyOnPort.dzn:28:15: warning: reply is deprecated, please update to return.
+test/all/wf_replyOnPort/wf_replyOnPort.dzn:29:15: warning: reply is deprecated, please update to return.
 test/all/wf_replyOnPort/wf_replyOnPort.dzn:37:24: error: port `start2' does not match with trigger port `start1'
+test/all/wf_replyOnPort/wf_replyOnPort.dzn:37:24: warning: reply is deprecated, please update to return.
