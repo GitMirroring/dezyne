@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,24 +28,24 @@ enum M {E,F,G};
 
 interface icruel
 {
-  in M mode();
+  in M mode ();
 
   behavior
   {
-    on mode: reply(M.E);
-    on mode: reply(M.F);
-    on mode: reply(M.G);
+    on mode: return M.E;
+    on mode: return M.F;
+    on mode: return M.G;
   }
 }
 
 
 interface ihello
 {
-  in bool hello();
-  in void bye();
+  in bool hello ();
+  in void bye ();
 
-  out void cruel();
-  out void world();
+  out void cruel ();
+  out void world ();
 
   behavior
   {
@@ -55,8 +55,8 @@ interface ihello
 
     [s.A]
     {
-      on hello: {s = S.A; reply(false);}
-      on hello: {s = S.B; reply(true);}
+      on hello: {s = S.A; return false;}
+      on hello: {s = S.B; return true;}
     }
     [s.B]
     {
@@ -71,18 +71,18 @@ interface ihello
 
 interface iworld
 {
-  in bool hello();
-  in void bye();
+  in bool hello ();
+  in void bye ();
 
-  out void world();
+  out void world ();
 
   behavior
   {
     bool idle = true;
     [idle]
     {
-      on hello: {idle = false; reply(true);}
-      on hello: reply(false);
+      on hello: {idle = false; return true;}
+      on hello: return false;
     }
     [!idle]
     {
@@ -104,36 +104,32 @@ component state_diagram
     S s = S.A;
     M m = M.E;
 
-    [s.A] on h.hello():
+    [s.A] on h.hello ():
     {
       s = S.B;
-      m = c.mode();
-      if (w1.hello())
+      m = c.mode ();
+      if (w1.hello ())
       {
-        if(w2.hello())
-        {
-          reply(true);
-        }
+        if (w2.hello ())
+          return true;
         else
-        {
-          reply(true);
-        }
+          return true;
       }
-      else if(m.E)
+      else if (m.E)
       {
         s = S.A;
-        reply(false);
+        return false;
       }
-      else reply(true);
+      else return true;
     }
     [s.B]
     {
-      on w1.world(), w2.world(): {s = S.C; h.cruel();}
+      on w1.world (), w2.world (): {s = S.C; h.cruel ();}
     }
     [s.C]
     {
-      on w1.world(), w2.world(): {s = S.A; h.world();}
+      on w1.world (), w2.world (): {s = S.A; h.world ();}
     }
-    [!s.A] on h.bye(): {s = S.A; w1.bye(); w2.bye();}
+    [!s.A] on h.bye (): {s = S.A; w1.bye (); w2.bye ();}
   }
 }
