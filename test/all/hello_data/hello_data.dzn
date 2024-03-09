@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,7 +25,7 @@ extern int $int$;
 
 interface ihello
 {
-  in void hello(int i, int j);
+  in void hello (int i, int j);
 
   behavior
   {
@@ -41,21 +41,22 @@ component hello_data
   behavior
   {
     int member;
-    on h.hello(i, j): {
+    on h.hello (i, j):
+    {
       int k = $0$;
       k = $1$;
       member = k;
-      bool b = w.world(i, member);
+      bool b = w.world (i, member);
     }
   }
 }
 
 interface iworld
 {
-  in bool world(int i, int j);
+  in bool world (int i, int j);
 
   behavior
   {
-    on world: reply(true);
+    on world: return true;
   }
 }
