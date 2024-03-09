@@ -2,7 +2,7 @@
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -41,7 +41,7 @@ component compliance_blocking_multiple_provides
   {
     bool blocked = false;
     blocking on block.hello (): blocked = true;
-    [blocked] on release.hello (): {blocked = false; block.reply ();}
+    [blocked] on release.hello (): {blocked = false; block.return;}
     [!blocked] on release.hello (): {}
   }
 }
