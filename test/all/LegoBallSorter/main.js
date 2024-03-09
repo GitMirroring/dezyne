@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -78,7 +78,7 @@ function log_typed(prefix, event, event_map, string_to_value, value_to_string) {
     console.error(prefix + value_to_string[r]);
     return r;
   }
-  throw 'runtime error: "' + s + '" is not a reply value'
+  throw 'runtime error: "' + s + '" is not a return value'
 }
 
 function LegoBallSorter_fill_event_map(m)

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -48,8 +48,8 @@ interface imotor
     on coast: {}
     on zero: {}
     on position: {}
-    on at: reply(result_t.yes);
-    on at: reply(result_t.no);
+    on at: return result_t.yes;
+    on at: return result_t.no;
   }
 }
 
@@ -59,8 +59,8 @@ interface itouch
   in status detect();
   behavior
   {
-    on detect: reply(status.pressed);
-    on detect: reply(status.released);
+    on detect: return status.pressed;
+    on detect: return status.released;
   }
 }
 
@@ -76,7 +76,7 @@ interface ilight
   {
     on turnon: {}
     on turnoff: {}
-    on detect: reply(status.accept);
-    on detect: reply(status.reject);
+    on detect: return status.accept;
+    on detect: return status.reject;
   }
 }

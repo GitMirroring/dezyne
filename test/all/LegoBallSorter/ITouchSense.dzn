@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -42,8 +42,8 @@ interface ITouchSense
 
     [state.none]
     {
-      on enable: {state = itouch.status.pressed; reply(state);}
-      on enable: {state = itouch.status.released; reply(state);}
+      on enable: {state = itouch.status.pressed; return state;}
+      on enable: {state = itouch.status.released; return state;}
       on disable: {}
     }
     [!state.none]

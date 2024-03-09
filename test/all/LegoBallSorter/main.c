@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2022, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2022, 2023, 2024 Jan Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -126,8 +126,8 @@ int log_typed (char *prefix, char *event, map *event_map, int (*string_to_value)
       fprintf (stderr, "%s%s\n", prefix, value_to_string (r));
       return r;
     }
-  fprintf (stderr, "\"%s\": is not a reply value\n", s);
-  assert (!"not a reply value");
+  fprintf (stderr, "\"%s\": is not a return value\n", s);
+  assert (!"not a return value");
   return 0;
 }
 

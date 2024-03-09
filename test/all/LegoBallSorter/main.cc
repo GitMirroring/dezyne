@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -94,7 +94,7 @@ R log_typed (std::string prefix, std::string event, event_map &event_map, R (*st
       std::clog << prefix << value_to_string (r) << std::endl;
       return r;
     }
-  throw std::runtime_error ("\"" + s + "\" is not a reply value");
+  throw std::runtime_error ("\"" + s + "\" is not a return value");
 }
 
 void fill_event_map (LegoBallSorter &m, event_map &e)
