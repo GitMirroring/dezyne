@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,11 +30,11 @@ extern float $float$;
 
 interface ihello
 {
-  in int hello(float f);
+  in int hello (float f);
 
   behavior
   {
-    on hello: reply(0);
+    on hello: return 0;
   }
 }
 
@@ -43,7 +43,7 @@ component hello
   provides ihello h;
   behavior
   {
-    on h.hello(i): reply (0);
+    on h.hello (i): return 0;
   }
 }
 
@@ -52,13 +52,13 @@ component cruel
   provides ihello h;
   behavior
   {
-    on h.hello(i): {
+    on h.hello (i): {
       bool b = false;
       bool b = false;           // duplicate
       {bool b = false;}         // shadowing
       if (true) b = false;      // shadowing
       else b = false;           // shadowing
-      reply (0);
+      return 0;
     }
   }
 }
@@ -73,6 +73,6 @@ component ihello
   provides ihello ihello;
   behavior
   {
-    on ihello.hello(i): reply (0);
+    on ihello.hello (i): return 0;
   }
 }
