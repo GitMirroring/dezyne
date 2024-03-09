@@ -54,7 +54,7 @@ component blocking_defer
   behavior
   {
     on h.hello (): {}
-    blocking on h.bye (): defer {c.cruel (); h.reply ();}
+    blocking on h.bye (): defer {c.cruel (); h.return;}
     on c.hello (): {}
     on c.bye (): {}
   }
