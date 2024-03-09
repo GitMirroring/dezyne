@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -64,7 +64,7 @@ component block
   behavior
   {
     on p.hello (): blocking r.hello ();
-    on r.world (): p.reply ();
+    on r.world (): p.return;
   }
 }
 
@@ -79,8 +79,8 @@ component resource
   {
     on p_left.hello (): blocking r_left.hello ();
     on p_right.hello (): blocking r_right.hello ();
-    on r_left.world (): {p_left.world (); p_left.reply ();}
-    on r_right.world (): {p_right.world (); p_right.reply ();}
+    on r_left.world (): {p_left.world (); p_left.return;}
+    on r_right.world (): {p_right.world (); p_right.return;}
   }
 }
 
