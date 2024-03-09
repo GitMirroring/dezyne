@@ -33,15 +33,15 @@ interface Idata_full
   in Status er (in xint i);
   in Status eer (in xint i, in xint j);
 
-  in void eo(out xint i);
-  in void eoo(out xint i, out xint j);
-  in void eio(in xint i, out xint j);
-  in void eio2(inout xint i);
+  in void eo (out xint i);
+  in void eoo (out xint i, out xint j);
+  in void eio (in xint i, out xint j);
+  in void eio2 (inout xint i);
 
-  in Status eor(out xint i);
-  in Status eoor(out xint i, out xint j);
-  in Status eior(in xint i, out xint j);
-  in Status eio2r(inout xint i);
+  in Status eor (out xint i);
+  in Status eoor (out xint i, out xint j);
+  in Status eior (in xint i, out xint j);
+  in Status eio2r (inout xint i);
 
   out void a0 ();
   out void a (xint i);
@@ -51,7 +51,7 @@ interface Idata_full
   behavior
   {
     on e0: a6;
-    on e0r: {a0;reply(Status.Yes);}
+    on e0r: {a0;return Status.Yes;}
     on e:
     {
       a;
@@ -61,23 +61,23 @@ interface Idata_full
     {
       a;
       aa;
-      reply(Status.Yes);
+      return Status.Yes;
     }
     on eer:
     {
       a;
       aa;
-      reply(Status.No);
+      return Status.No;
     }
     on eo:{}
     on eoo:{}
     on eio:{}
     on eio2:{}
 
-    on eor: { reply(Status.Yes); }
-    on eoor: { reply(Status.Yes); }
-    on eior: { reply(Status.Yes); }
-    on eio2r: { reply(Status.Yes); }
+    on eor: return Status.Yes;
+    on eoor: return Status.Yes;
+    on eior: return Status.Yes;
+    on eio2r: return Status.Yes;
   }
 }
 
@@ -101,19 +101,19 @@ component data_full_
       return Idata_full.Status.Yes;
     }
 
-    // void fun(inout Idata_full.xint i) // TODO inout function
+    // void fun (inout Idata_full.xint i) // TODO inout function
     // {
     //   i = $789$;
     // }
 
     // Idata_full.xint xfunx (Idata_full.xint xi, Idata_full.xint xj)
     // {
-    //   return $(xi + xj) / 2$;
+    //   return $ (xi + xj) / 2$;
     // }
 
-    on port.e0(): { port.a6($0$,$1$,$2$,$3$,$4$,$5$); }
+    on port.e0 (): { port.a6 ($0$,$1$,$2$,$3$,$4$,$5$); }
 
-    on port.e0r(): {port.a0();reply(Idata_full.Status.Yes);}
+    on port.e0r (): {port.a0 ();return Idata_full.Status.Yes;}
 
     on port.e (pi):
     {
@@ -134,34 +134,33 @@ component data_full_
       port.a (mi);
       port.aa (mi, pi);
 
-      if(true) {
-        reply(Idata_full.Status.Yes);
-      } else {
-        reply(s);
-      }
+      if (true)
+        return Idata_full.Status.Yes;
+      else
+        return s;
     }
     on port.eer (i,j):
     {
       Idata_full.Status s = Idata_full.Status.No;
       port.a (j);
       port.aa (j, i);
-      reply(s);
+      return s;
     }
-    on port.eo(i): { i = $234$; }
-    on port.eoo(i,j): { i = $123$; j = $456$; }
-    on port.eio(i,j): { j = i; }
-    // on port.eio2(i): { i = $i + 123$; } // parameter in $: Ok for C++ but C: *i
-    // on port.eio2(i): { Idata_full.xint t = i; i = $t + 123$; } // Ok for C, C++; not portable to javascript
-    //on port.eio2(i): { Idata_full.xint t = i; i = $123 + 123$; } // Ok for C, C++, Python, Javascript, not portable to Scheme
-    on port.eio2(i): { Idata_full.xint t = i; i = $246$; }
+    on port.eo (i): { i = $234$; }
+    on port.eoo (i,j): { i = $123$; j = $456$; }
+    on port.eio (i,j): { j = i; }
+    // on port.eio2 (i): { i = $i + 123$; } // parameter in $: Ok for C++ but C: *i
+    // on port.eio2 (i): { Idata_full.xint t = i; i = $t + 123$; } // Ok for C, C++; not portable to javascript
+    //on port.eio2 (i): { Idata_full.xint t = i; i = $123 + 123$; } // Ok for C, C++, Python, Javascript, not portable to Scheme
+    on port.eio2 (i): { Idata_full.xint t = i; i = $246$; }
 
-    on port.eor(i): { i = $234$; reply(Idata_full.Status.Yes); }
-    on port.eoor(i,j): { i = $123$; j = $456$; reply(Idata_full.Status.Yes); }
-    on port.eior(i,j): { j = i; reply(Idata_full.Status.Yes); }
-    // on port.eio2r(i): { i = $i + 123$; reply(Idata_full.Status.Yes); } // parameter in $: Ok for C++ but C: *i
-    // on port.eio2r(i): { Idata_full.xint t = i; i = $t + 123$; reply(Idata_full.Status.Yes); }
-    //on port.eio2r(i): { Idata_full.xint t = i; i = $123 + 123$; reply(Idata_full.Status.Yes); }
-    on port.eio2r(i): { Idata_full.xint t = i; i = $246$; reply(Idata_full.Status.Yes); }
+    on port.eor (i): { i = $234$; return Idata_full.Status.Yes; }
+    on port.eoor (i,j): { i = $123$; j = $456$; return Idata_full.Status.Yes; }
+    on port.eior (i,j): { j = i; return Idata_full.Status.Yes; }
+    // on port.eio2r (i): { i = $i + 123$; return Idata_full.Status.Yes; } // parameter in $: Ok for C++ but C: *i
+    // on port.eio2r (i): { Idata_full.xint t = i; i = $t + 123$; return Idata_full.Status.Yes; }
+    //on port.eio2r (i): { Idata_full.xint t = i; i = $123 + 123$; return Idata_full.Status.Yes; }
+    on port.eio2r (i): { Idata_full.xint t = i; i = $246$; return Idata_full.Status.Yes; }
   }
 }
 
@@ -175,33 +174,33 @@ component proxy
     void outfunc (out Idata_full.xint i)
     {
       Idata_full.xint j = $0$;
-      bottom.eo(j);
+      bottom.eo (j);
       i = j;
     }
     void deferfunc (Idata_full.xint i)
     {
-      top.a(i);
+      top.a (i);
     }
-    on top.e0(): bottom.e0();
-    on top.e0r(): reply (bottom.e0r());
-    on top.e(pi): bottom.e(pi);
-    on top.er(pi): reply (bottom.er (pi));
-    on top.eer(i,j): reply (bottom.eer(i,j));
+    on top.e0 (): bottom.e0 ();
+    on top.e0r (): return bottom.e0r ();
+    on top.e (pi): bottom.e (pi);
+    on top.er (pi): return bottom.er (pi);
+    on top.eer (i,j): return bottom.eer (i,j);
 
-    on top.eo(i): outfunc(i);
-    on top.eoo(i,j): bottom.eoo(i,j);
-    on top.eio(i,j): bottom.eio(i,j);
-    on top.eio2(i): bottom.eio2(i);
+    on top.eo (i): outfunc (i);
+    on top.eoo (i,j): bottom.eoo (i,j);
+    on top.eio (i,j): bottom.eio (i,j);
+    on top.eio2 (i): bottom.eio2 (i);
 
-    on top.eor(i): reply (bottom.eor(i));
-    on top.eoor(i,j): reply (bottom.eoor(i,j));
-    on top.eior(i,j): reply (bottom.eior(i,j));
-    on top.eio2r(i): reply (bottom.eio2r(i));
+    on top.eor (i): return bottom.eor (i);
+    on top.eoor (i,j): return bottom.eoor (i,j);
+    on top.eior (i,j): return bottom.eior (i,j);
+    on top.eio2r (i): return bottom.eio2r (i);
 
-    on bottom.a0(): top.a0();
-    on bottom.a6(A0,A1,A2,A3,A4,A5): top.a6(A0,A1,A2,A3,A4,A5);
-    on bottom.a(i): deferfunc(i);
-    on bottom.aa(i,j): top.aa(i,j);
+    on bottom.a0 (): top.a0 ();
+    on bottom.a6 (A0,A1,A2,A3,A4,A5): top.a6 (A0,A1,A2,A3,A4,A5);
+    on bottom.a (i): deferfunc (i);
+    on bottom.aa (i,j): top.aa (i,j);
   }
 }
 
