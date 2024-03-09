@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,9 +44,9 @@ component hello_void
   behavior
   {
     on h.hello1 (): {}
-    on h.hello2 (): reply();
-    on h.hello3 (): {w.hello3 (); reply();}
-    on h.hello4 (): reply(w.hello4 ());
-    blocking on h.hello5 (): reply(w.hello5 ());
+    on h.hello2 (): return;
+    on h.hello3 (): {w.hello3 (); return;}
+    on h.hello4 (): return w.hello4 ();
+    blocking on h.hello5 (): return w.hello5 ();
   }
 }
