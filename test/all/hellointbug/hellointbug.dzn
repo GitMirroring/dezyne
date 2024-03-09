@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,11 +24,11 @@
 subint int {0..1};
 interface ihello
 {
-  in int hello();
+  in int hello ();
 
   behavior
   {
-    on hello: reply (0);
+    on hello: return 0;
   }
 }
 
@@ -39,20 +39,20 @@ component hellointbug
 
   behavior
   {
-    on h.hello():
+    on h.hello ():
       {
-        int i = w.world();
-        reply (i);
+        int i = w.world ();
+        return i;
       }
   }
 }
 
 interface iworld
 {
-  in int world();
+  in int world ();
 
   behavior
   {
-    on world: reply (0);
+    on world: return 0;
   }
 }
