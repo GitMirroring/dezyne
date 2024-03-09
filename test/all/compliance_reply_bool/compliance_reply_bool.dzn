@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,9 +29,9 @@ interface ihello
 
   behavior
   {
-    on hello: reply (true);
-    on bye: reply (true);
-    on bye: reply (false);
+    on hello: return true;
+    on bye: return true;
+    on bye: return false;
   }
 }
 
@@ -43,9 +43,9 @@ component compliance_reply_bool
   behavior
   {
     bool bb = false;
-    [!bb] on h.hello (): {bb = true; bool b = w.bye(); reply (true);}
-    [bb] on h.hello (): {bool b = w.bye(); reply (b);}
+    [!bb] on h.hello (): {bb = true; bool b = w.bye (); return true;}
+    [bb] on h.hello (): {bool b = w.bye (); return b;}
 
-    on h.bye (): {bool b = w.bye(); reply (false);}
+    on h.bye (): {bool b = w.bye (); return false;}
   }
 }
