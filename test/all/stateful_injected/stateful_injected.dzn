@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,9 +31,10 @@ interface ihello
   {
     bool idle = true;
     [idle] on hello: idle = false;
-    [!idle] {
+    [!idle]
+    {
       on hello: {}
-      on cruel: reply (true);
+      on cruel: return true;
     }
   }
 }
@@ -44,7 +46,7 @@ component hello
   behavior
   {
     on h.hello (): w.hello ();
-    on h.cruel (): reply (w.cruel ());
+    on h.cruel (): return w.cruel ();
   }
 }
 
@@ -54,7 +56,7 @@ component cruel
   behavior
   {
     on h.hello (): {}
-    on h.cruel (): reply (true);
+    on h.cruel (): return true;
   }
 }
 
@@ -66,7 +68,7 @@ component mux
   behavior
   {
     on h.hello (): {left.hello (); right.hello ();}
-    on h.cruel (): {bool b = left.cruel (); b = right.cruel () || b; reply (b);}
+    on h.cruel (): {bool b = left.cruel (); b = right.cruel () || b; return b;}
   }
 }
 
