@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -42,7 +42,7 @@ component deadlock_blocking_guard
     on pp.ia(): blocking
       {
         [deadlock] {}
-        [otherwise] {pp.reply(); deadlock = true;}
+        [otherwise] {deadlock = true; pp.return;}
       }
   }
 }
