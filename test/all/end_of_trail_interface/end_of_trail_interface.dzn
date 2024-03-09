@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -28,7 +28,7 @@ interface end_of_trail_interface
 
   behavior
   {
-    on hello: reply (false);
-    on hello: reply (true);
+    on hello: return false;
+    on hello: return true;
   }
 }
