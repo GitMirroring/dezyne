@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,11 +26,11 @@ enum Result {Bye, Cruel, World};
 
 interface ihello
 {
-  in Result hello();
+  in Result hello ();
 
   behavior
   {
-    on hello: reply(Result.World);
+    on hello: return Result.World;
   }
 }
 
@@ -38,6 +39,6 @@ component wostream
   provides ihello h;
   behavior
   {
-    on h.hello(): reply(Result.World);
+    on h.hello (): return Result.World;
   }
 }
