@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,7 +26,7 @@ extern int $int$;
 
 interface ihello
 {
-  in void hello(int i);
+  in void hello (int i);
 
   behavior
   {
@@ -41,24 +41,26 @@ component hellofundata
 
   behavior
   {
-    void func(int i, int j, bool b) {
+    void func (int i, int j, bool b)
+    {
       int k = i;
     }
 
-    on h.hello(i): {
+    on h.hello (i):
+    {
       int l = $0$;
-      func($0$, l, true);
-      bool b = w.world(i);
+      func ($0$, l, true);
+      bool b = w.world (i);
     }
   }
 }
 
 interface iworld
 {
-  in bool world(int i);
+  in bool world (int i);
 
   behavior
   {
-    on world: reply(true);
+    on world: return true;
   }
 }
