@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,11 +24,11 @@
 interface ihello
 {
   enum e {aa,bb};
-  in e hello();
+  in e hello ();
 
   behavior
   {
-    on hello: reply (e.aa);
+    on hello: return e.aa;
   }
 }
 
@@ -40,11 +40,11 @@ component hellobool
   behavior
   {
     ihello.e e = ihello.e.bb;
-    on h.hello():
+    on h.hello ():
       {
-        //ihello.e e = w.hello();
-        ihello.e e1 = w.hello();
-        reply (e1);
+        //ihello.e e = w.hello ();
+        ihello.e e1 = w.hello ();
+        return e1;
       }
   }
 }
