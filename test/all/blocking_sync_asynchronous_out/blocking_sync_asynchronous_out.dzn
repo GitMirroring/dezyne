@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -66,6 +67,6 @@ component blocking_sync_asynchronous_out
   {
     blocking on p.hello (): r0.hello ();
     on r0.world (): r1.hello ();
-    on r1.world (): p.reply ();
+    on r1.world (): p.return;
   }
 }
