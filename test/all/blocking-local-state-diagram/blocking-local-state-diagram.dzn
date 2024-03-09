@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,8 +29,8 @@ interface ihello
 
   behavior
   {
-    on hello: reply (false);
-    on cruel: reply (false);
+    on hello: return false;
+    on cruel: return false;
   }
 }
 
@@ -64,8 +64,8 @@ component blocking_local_state_diagram
     [blocked] on r.world ():
     {
       bool c = false;
-      p.reply (false);
       blocked = false;
+      p.return false;
     }
   }
 }
