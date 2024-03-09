@@ -1,5 +1,5 @@
 model: deadlock_blocking_optional
-p.e
-r.e
+p.hello
+r.hello
 r.return
 <deadlock>
