@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,74 +22,74 @@
 //
 // Code:
 
-interface I1
+interface ihello
 {
-  in void e();
+  in void hello ();
 
   behavior
   {
-    on e: {}
+    on hello: {}
   }
 }
 
-interface I2
+interface iworld
 {
-  out void f();
+  out void world ();
 
   behavior
   {
-    on inevitable: f;
+    on inevitable: world;
   }
 }
 
 component A
 {
-  provides blocking I1 p;
-  requires blocking I1 r1;
-  requires blocking I2 r2;
+  provides blocking ihello p;
+  requires blocking ihello r1;
+  requires blocking iworld r2;
 
   behavior
   {
-    on p.e(): r1.e();
-    on r2.f(): r1.e();
+    on p.hello (): r1.hello ();
+    on r2.world (): r1.hello ();
   }
 }
 
 interface I3
 {
-  in void e();
-  out void f();
+  in void hello ();
+  out void world ();
 
   behavior
   {
     bool pending = false;
     [!pending]
     {
-      on e: pending = true;
+      on hello: pending = true;
     }
     [otherwise]
     {
-      on inevitable: {pending = false; f;}
+      on inevitable: {pending = false; world;}
     }
   }
 }
 
 component Blocked
 {
-  provides blocking I1 p;
+  provides blocking ihello p;
   requires blocking I3 r;
 
   behavior
   {
-    blocking on p.e(): {r.e();}
-    on r.f(): p.reply();
+    blocking on p.hello (): {r.hello ();}
+    on r.world (): p.return;
   }
 }
 
 component blocking_system
 {
-  provides blocking I1 p;
-  requires blocking I2 r2;
+  provides blocking ihello p;
+  requires blocking iworld r2;
   requires blocking I3 r3;
 
   system
