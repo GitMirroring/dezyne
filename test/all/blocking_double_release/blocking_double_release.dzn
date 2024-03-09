@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +24,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     on hello: {}
@@ -38,9 +39,9 @@ component mux_left
   behavior
   {
     bool blocked = false;
-    blocking on left_block.hello(): blocked = true;
-    [blocked] on left_release.hello(): {blocked = false; left_block.reply();}
-    [!blocked] on left_release.hello(): {}
+    blocking on left_block.hello (): blocked = true;
+    [blocked] on left_release.hello (): {blocked = false; left_block.return;}
+    [!blocked] on left_release.hello (): {}
   }
 }
 
@@ -52,9 +53,9 @@ component mux_right
   behavior
   {
     bool blocked = false;
-    blocking on right_block.hello(): blocked = true;
-    [blocked] on right_release.hello(): {blocked = false; right_block.reply();}
-    [!blocked] on right_release.hello(): {}
+    blocking on right_block.hello (): blocked = true;
+    [blocked] on right_release.hello (): {blocked = false; right_block.return;}
+    [!blocked] on right_release.hello (): {}
   }
 }
 
@@ -65,7 +66,7 @@ component arbiter
   requires blocking ihello right;
   behavior
   {
-    on h.hello(): {left.hello(); right.hello();}
+    on h.hello (): {left.hello (); right.hello ();}
   }
 }
 
