@@ -1,2 +1,8 @@
+test/all/parse_out_binding/parse_out_binding.dzn:40:26: warning: formal binding (<-) is deprecated
+
+test/all/parse_out_binding/parse_out_binding.dzn:41:26: warning: formal binding (<-) is deprecated
+
 test/all/parse_out_binding/parse_out_binding.dzn:41:26: error: formal binding `i' is not a data member variable
+test/all/parse_out_binding/parse_out_binding.dzn:42:26: warning: formal binding (<-) is deprecated
+
 test/all/parse_out_binding/parse_out_binding.dzn:42:26: error: formal binding `b' is not a data member variable

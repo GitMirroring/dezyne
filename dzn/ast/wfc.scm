@@ -398,11 +398,13 @@
        (else '()))))))
 
 (define-method (wfc (o <formal-reference-binding>))
-  (let ((variable (.variable o)))
-    (if (is-a? (ast:type variable) <extern>) '()
-        `(,(wfc-error
-            o (format #f "formal binding `~a' is not a data member variable"
-                      (.variable.name o)))))))
+  (cons
+   (wfc-warning o (format #f "formal binding (<-) is deprecated\n"))
+   (let ((variable (.variable o)))
+     (if (is-a? (ast:type variable) <extern>) '()
+         `(,(wfc-error
+             o (format #f "formal binding `~a' is not a data member variable"
+                       (.variable.name o))))))))
 
 (define-method (model-blocking? (o <model>))
   (and (is-a? o <component>)
