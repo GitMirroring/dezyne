@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,20 +43,20 @@ component parse_unknown_enum
     {
       h.world ();
       if (true);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
-      else if (true) reply (ihello.Unknown.a);
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
+      else if (true) return ihello.Unknown.a;
     }
     on h.hello (): f ();
   }
