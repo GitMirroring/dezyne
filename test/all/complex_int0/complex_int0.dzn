@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,7 +31,7 @@ interface ihello
 
   behavior
   {
-    on hello: {inc;add;inc;dec;add;inc;inc;reply (0);}
+    on hello: {inc;add;inc;dec;add;inc;inc;return 0;}
   }
 }
 
@@ -54,7 +54,7 @@ component complex_int0
       i = add (inc (i), -1);
       i = add (inc (i), dec (j));
       i = inc (i) - inc (i);
-      reply (i);
+      return i;
     }
   }
 }
