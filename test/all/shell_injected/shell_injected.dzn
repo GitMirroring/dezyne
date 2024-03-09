@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2024f Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -91,7 +91,7 @@ component TopArmor
   behavior
   {
     on r.e (): blocking s.e ();
-    on s.f (): {r.reply (); r.f ();}
+    on s.f (): {r.f ();r.return;}
   }
 }
 
