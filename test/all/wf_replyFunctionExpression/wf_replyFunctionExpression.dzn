@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,18 +23,18 @@
 // Code:
 
 interface Start {
-  in bool start();
+  in bool start ();
   behavior {
-    on start: reply(false);
-    on start: reply(true);
+    on start: return false;
+    on start: return true;
   }
 }
 
 interface Action {
   enum E {E1, E2};
-  in E action();
+  in E action ();
   behavior {
-    on action: reply(E.E1);
+    on action: return E.E1;
   }
 }
 
@@ -42,9 +42,9 @@ component Test {
   provides Start start;
   requires Action action;
   behavior {
-    void func() {
-      reply(Action.E.E1);
+    void func () {
+      return Action.E.E1;
     }
-    on start.start(): func();
+    on start.start (): func ();
   }
 }
