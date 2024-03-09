@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,7 +26,8 @@ interface ihello
 {
   in void hello ();
 
-  behavior {
+  behavior
+  {
     on hello: {}
   }
 }
@@ -35,36 +37,39 @@ interface iworld
   in void hello ();
   out void world ();
 
-  behavior {
+  behavior
+  {
     bool idle = true;
     on hello: idle = !idle;
     [!idle] on inevitable: {world; idle = true;}
   }
 }
 
-interface ibypass {
+interface ibypass
+{
   in void hello ();
   out void world ();
 
-  behavior {
+  behavior
+  {
     on hello: {}
     on inevitable: world;
   }
 
 }
 
-component compliance_fork_blocking_bypass {
+component compliance_fork_blocking_bypass
+{
   provides blocking ihello block;
   provides blocking ibypass bypassp;
 
   requires iworld world;
   requires ibypass bypassr;
 
-  behavior {
-    on block.hello (): blocking {
-      world.hello ();
-    }
-    on world.world (): block.reply();
+  behavior
+  {
+    on block.hello (): blocking world.hello ();
+    on world.world (): block.return;
 
     on bypassr.world (): bypassp.world ();
     on bypassp.hello (): bypassr.hello ();
