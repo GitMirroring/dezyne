@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,14 +22,13 @@
 //
 // Code:
 
-
 interface ihello
 {
-  in bool hello();
+  in bool hello ();
 
   behavior
   {
-    on hello: reply(true);
+    on hello: return true;
   }
 }
 
@@ -39,6 +39,6 @@ component compliance_failures_reply
 
   behavior
   {
-    on h.hello(): h.reply(w.hello());
+    on h.hello (): h.return w.hello ();
   }
 }
