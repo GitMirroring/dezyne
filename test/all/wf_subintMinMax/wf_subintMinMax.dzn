@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,9 +25,9 @@ subint iglob {3..2};
 
 interface I {
   subint iintf {-5..-15};
-  in iintf e();
+  in iintf e ();
   behavior {
-    on e: reply(0);
+    on e: return 0;
   }
 }
 
@@ -36,6 +36,6 @@ component C {
   behavior {
     subint icomp {4..-5};
     icomp i = 0;
-    on p.e(): reply(i);
+    on p.e (): return i;
   }
 }
