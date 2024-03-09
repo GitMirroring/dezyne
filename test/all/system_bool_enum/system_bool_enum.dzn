@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -24,8 +24,8 @@
 
 interface ihello
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -44,10 +44,10 @@ component hello_enum
   {
     enum E {W,T,F};
     E e = E.W;
-    [e.W] on p1.hello(): {e=E.T; r1.hello();}
-    [e.T] on r1.world(): {e=E.F; p1.world();}
-    [e.T] on p1.hello(): {e=E.W; r1.hello();}
-    [e.F] on p1.hello(): {e=E.T; r1.hello();}
+    [e.W] on p1.hello (): {e=E.T; r1.hello ();}
+    [e.T] on r1.world (): {e=E.F; p1.world ();}
+    [e.T] on p1.hello (): {e=E.W; r1.hello ();}
+    [e.F] on p1.hello (): {e=E.T; r1.hello ();}
   }
 }
 
@@ -59,21 +59,21 @@ component hello_bool
   behavior
   {
     bool b = true;
-    on p2.hello(): {b = r2.hello();}
-    on r2.world(): {b=!b; if (!p2.b) p2.world();}
+    on p2.hello (): {b = r2.hello ();}
+    on r2.world (): {b=!b; if (!p2.b) p2.world ();}
   }
 }
 
 interface ihello_nondet
 {
-  in bool hello();
-  out void world();
+  in bool hello ();
+  out void world ();
 
   behavior
   {
     bool b = true;
-    on hello: {b = true; reply(true);}
-    on hello: {b = false; reply(false);}
+    on hello: {b = true; return true;}
+    on hello: {b = false; return false;}
     [!b] on inevitable: {b=!b; world;}
   }
 }
