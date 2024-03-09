@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +28,7 @@ interface ihello
 
   behaviour
   {
-    on hello: reply (true);
+    on hello: return true;
     on optional: world;
   }
 }
@@ -60,15 +60,15 @@ component hello_hello_block
 
     void h_reply (bool b)
     {
-      h.reply (b);
+      h.return b;
     }
 
     [s.A] on h.hello (): {h_reply (true);s = status.B;}
-    [s.B] on h.hello (): {w.hello (); s = status.C; h.reply (true);}
+    [s.B] on h.hello (): {w.hello (); s = status.C; h.return true;}
     [s.C]
     {
       blocking on h.hello (): pending = true;
-      [pending] on w.world (): {h.reply (true); s = status.B; pending = false;}
+      [pending] on w.world (): {s = status.B; pending = false; h.return true;}
       [!pending] on w.world (): s = status.B;
     }
   }
