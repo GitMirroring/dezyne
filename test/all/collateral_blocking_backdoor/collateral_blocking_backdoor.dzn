@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -32,7 +32,8 @@ interface ihello
 {
   in void hello ();
 
-  behavior {
+  behavior
+  {
     on hello: {}
   }
 }
@@ -42,7 +43,8 @@ interface iworld
   in void hello ();
   out void world ();
 
-  behavior {
+  behavior
+  {
     on hello: world;
   }
 }
@@ -80,7 +82,7 @@ component blocked
   {
     bool idle = true;
     [idle] blocking on h.hello (): {w.hello (); idle = false;}
-    on w.world (): {idle = true; h.reply ();}
+    on w.world (): {idle = true; h.return;}
   }
 }
 
