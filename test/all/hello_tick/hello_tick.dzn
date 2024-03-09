@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,11 +24,11 @@
 interface ihello
 {
   enum r {t,f};
-  in r hello();
+  in r hello ();
 
   behavior
   {
-    on hello: reply (r.f);
+    on hello: return r.f;
   }
 }
 
@@ -41,22 +41,22 @@ component hello_tick
   {
     enum r {f,t};
 
-    on h.hello():
+    on h.hello ():
       {
-        ihello.r s = w.world();
+        ihello.r s = w.world ();
         ihello.r t = ihello.r.f;
         ihello.r u = s;
-        reply (s);
+        return s;
       }
   }
 }
 
 interface iworld
 {
-  in ihello.r world();
+  in ihello.r world ();
 
   behavior
   {
-    on world: reply (ihello.r.f);
+    on world: return ihello.r.f;
   }
 }
