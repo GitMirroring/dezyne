@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,23 +21,26 @@
 //
 // Code:
 
-namespace name {
-
-  interface I {
+namespace name
+{
+  interface ihello
+  {
     enum Bool {f,t};
-    in Bool e();
-    out void a();
-    behavior {
-      on e: {a;reply(Bool.t);}
+    in Bool hello ();
+    out void world ();
+    behavior
+    {
+      on hello: {world;return Bool.t;}
     }
   }
 
-  component space {
-    provides I i;
-    behavior {
-      I.Bool state = I.Bool.t;
-      on i.e(): {i.a();reply(I.Bool.t);}
+  component space
+  {
+    provides ihello i;
+    behavior
+    {
+      ihello.Bool state = ihello.Bool.t;
+      on i.hello (): {i.world ();return ihello.Bool.t;}
     }
   }
-
 }
