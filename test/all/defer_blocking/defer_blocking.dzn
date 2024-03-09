@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,8 +24,8 @@
 
 interface ihello
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -39,6 +39,6 @@ component defer_blocking
 
   behavior
   {
-    blocking on h.hello(): defer {h.world(); h.reply();}
+    blocking on h.hello (): defer {h.world (); h.return;}
   }
 }
