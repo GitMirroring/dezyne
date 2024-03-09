@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,11 +24,11 @@
 
 interface I
 {
-  in bool e();
+  in bool e ();
 
   behavior
   {
-    on e: reply(true);
+    on e: return true;
   }
 }
 
@@ -38,9 +38,9 @@ component reply_expression
 
   behavior
   {
-    on i.e(): {
+    on i.e (): {
       bool b = false;
-      reply(!b);
+      return !b;
     }
   }
 }
