@@ -2,6 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +25,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -34,8 +35,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -52,11 +53,11 @@ component double_hello_block
 
   behavior
   {
-    blocking on h_left.hello(): w_left.hello();
-    blocking on h_right.hello(): w_right.hello();
+    blocking on h_left.hello (): w_left.hello ();
+    blocking on h_right.hello (): w_right.hello ();
 
-    on w_left.world(): h_left.reply();
-    on w_right.world(): h_right.reply();
+    on w_left.world (): h_left.return;
+    on w_right.world (): h_right.return;
   }
 }
 
