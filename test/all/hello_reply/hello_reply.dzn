@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -24,11 +24,11 @@
 
 interface ihello
 {
-  in bool hello();
+  in bool hello ();
 
   behavior
   {
-    on hello: reply(true);
+    on hello: return true;
   }
 }
 
@@ -41,15 +41,15 @@ component hello_reply
 
   behavior
   {
-    on h.hello(): {w.hello(); reply(true);}
-    on w.world(): t.add();
+    on h.hello (): {w.hello (); return true;}
+    on w.world (): t.add ();
   }
 }
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -59,7 +59,7 @@ interface iworld
 
 interface itrivial
 {
-  in void add();
+  in void add ();
 
   behavior
   {
