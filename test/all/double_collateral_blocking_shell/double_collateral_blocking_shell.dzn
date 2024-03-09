@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -24,7 +24,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -34,8 +34,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -50,7 +50,7 @@ component proxy
 
   behavior
   {
-    on h.hello(): b.hello();
+    on h.hello (): b.hello ();
   }
 }
 
@@ -62,8 +62,8 @@ component left_blocking_proxy
 
   behavior
   {
-    on h.hello(): blocking {w.hello();}
-    on w.world(): {b.hello(); h.reply();}
+    on h.hello (): blocking {w.hello ();}
+    on w.world (): {b.hello (); h.return;}
   }
 }
 
@@ -74,8 +74,8 @@ component right_blocking_proxy
 
   behavior
   {
-    on h.hello(): blocking {w.hello();}
-    on w.world(): h.reply();
+    on h.hello (): blocking {w.hello ();}
+    on w.world (): h.return;
   }
 }
 
@@ -87,8 +87,8 @@ component mux
   requires blocking ihello hello;
   behavior
   {
-    on left.hello(): hello.hello();
-    on right.hello(): hello.hello();
+    on left.hello (): hello.hello ();
+    on right.hello (): hello.hello ();
   }
 }
 
