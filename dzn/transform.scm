@@ -34,6 +34,7 @@
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn code)
+  #:use-module (dzn code normalize)
   #:use-module (dzn code language makreel)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)

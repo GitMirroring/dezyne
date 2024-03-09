@@ -32,6 +32,7 @@
   #:use-module (dzn ast ast)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
+  #:use-module (dzn code normalize)
   #:use-module (dzn tree util)
   #:use-module (dzn misc)
   #:use-module (dzn vm goops)

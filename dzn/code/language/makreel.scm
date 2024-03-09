@@ -43,6 +43,7 @@
   #:use-module (dzn ast)
   #:use-module (dzn code goops)
   #:use-module (dzn code language dzn)
+  #:use-module (dzn code normalize)
   #:use-module (dzn code scmackerel makreel)
   #:use-module (dzn code util)
   #:use-module (dzn code)
