@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2024 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -35,8 +36,8 @@ interface ihello
     [idle] on hello: idle = false;
     on bye:
     {
-      [!idle] {reply (true); idle = true; cruel;}
-      [!idle] reply (false);
+      [!idle] {idle = true; cruel;return true;}
+      [!idle] return false;
     }
   }
 }
@@ -49,8 +50,8 @@ interface icruel
   {
     on cruel:
     {
-      [true] reply (true);
-      [true] reply (false);
+      [true] return true;
+      [true] return false;
     }
   }
 }
@@ -68,10 +69,10 @@ component inner_guard_shared_state_deadlock
       if (c.cruel ())
       {
         h.cruel ();
-        reply (true);
+        return true;
       }
       else
-        reply (false);
+        return false;
     }
   }
 }
