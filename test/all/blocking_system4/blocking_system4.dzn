@@ -22,70 +22,70 @@
 //
 // Code:
 
-interface IBlocked
+interface ihello
 {
   enum Status{OK};
-  in Status e();
+  in Status hello ();
 
   behavior
   {
-    on e: reply(Status.OK);
+    on hello: return Status.OK;
   }
 }
 
-interface IAsync
+interface iworld
 {
-  in void trigger();
-  out void notify();
+  in void hello ();
+  out void world ();
 
   behavior
   {
     bool pending = false;
-    on trigger:
+    on hello:
     {
       [!pending] pending = true;
       [pending] illegal;
     }
     on inevitable:
     {
-      [pending]{pending = false; notify;}
+      [pending]{pending = false; world;}
     }
   }
 }
 
 component DoubleBlocked
 {
-  provides blocking IBlocked provided;
+  provides blocking ihello provided;
 
-  requires blocking IBlocked blockedL;
-  requires blocking IBlocked blockedR;
+  requires blocking ihello blockedL;
+  requires blocking ihello blockedR;
 
   behavior
   {
-    on provided.e(): {IBlocked.Status r = blockedL.e(); r = blockedR.e(); reply(r);}
+    on provided.hello (): {ihello.Status r = blockedL.hello (); r = blockedR.hello (); return r;}
   }
 }
 
 component Blocked
 {
-  provides blocking IBlocked provided;
+  provides blocking ihello provided;
 
-  requires blocking IAsync required;
+  requires blocking iworld required;
 
   behavior
   {
-    blocking on provided.e(): required.trigger();
+    blocking on provided.hello (): required.hello ();
 
-    on required.notify(): provided.reply(IBlocked.Status.OK);
+    on required.world (): provided.return ihello.Status.OK;
   }
 }
 
 component blocking_system4
 {
-  provides blocking IBlocked port;
+  provides blocking ihello port;
 
-  requires blocking IAsync asyncL;
-  requires blocking IAsync asyncR;
+  requires blocking iworld asyncL;
+  requires blocking iworld asyncR;
 
   system
   {
