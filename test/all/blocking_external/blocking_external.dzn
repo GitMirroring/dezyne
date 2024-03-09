@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,11 +22,13 @@
 //
 // Code:
 
-interface ihello {
-  in void hello();
-  in void cancel();
-  out void world();
-  behavior {
+interface ihello
+{
+  in void hello ();
+  in void cancel ();
+  out void world ();
+  behavior
+  {
     bool idle = true;
 
     [idle] on hello: idle = false;
@@ -37,12 +40,14 @@ interface ihello {
   }
 }
 
-interface iworld {
-  in void hello();
-  in void cancel();
-  out void world();
-  out void canceled();
-  behavior {
+interface iworld
+{
+  in void hello ();
+  in void cancel ();
+  out void world ();
+  out void canceled ();
+  behavior
+  {
     bool idle = true;
 
     on cancel: {idle = true; canceled;}
@@ -55,17 +60,18 @@ component blocking_external {
   provides blocking ihello h;
   requires external iworld w;
 
-  behavior {
+  behavior
+  {
     bool idle = true;
     [idle]
-    {  on h.hello():    {idle = false; w.hello();}
-       on w.world():    {}
-       on w.canceled(): h.reply();
+    {  on h.hello ():    {idle = false; w.hello ();}
+       on w.world ():    {}
+       on w.canceled (): h.return;
     }
     [!idle]
     {
-      blocking on h.cancel(): {idle = true; w.cancel();}
-      on w.world():           {idle = true; h.world();}
+      blocking on h.cancel (): {idle = true; w.cancel ();}
+      on w.world ():           {idle = true; h.world ();}
     }
   }
 }
