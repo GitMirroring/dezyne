@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,50 +21,66 @@
 //
 // Code:
 
-namespace inner {
-  namespace foo {
-    interface I {
+namespace inner
+{
+  namespace foo
+  {
+    interface I
+    {
       enum Bool {f,t};
       in Bool e();
       out void a();
-      behavior {
-        on e: {a;reply(Bool.t);}
+      behavior
+      {
+        on e: {a;return Bool.t;}
       }
     }
   }
-  component space {
+
+  component space
+  {
     provides foo.I inner;
-    behavior {
+    behavior
+    {
       foo.I.Bool inner_state = foo.I.Bool.t;
-      on inner.e(): {inner.a();reply (inner_state);}
+      on inner.e(): {inner.a();return inner_state;}
     }
   }
-  component ranger {
+
+  component ranger
+  {
     provides .foo.I fooi;
-    behavior {
+    behavior
+    {
       .foo.I.Bool foo_state = .foo.I.Bool.T;
-      on fooi.e(): {fooi.a();reply (foo_state);}
+      on fooi.e(): {fooi.a();return foo_state;}
     }
   }
 }
 
-namespace foo {
-  interface I {
+namespace foo
+{
+  interface I
+  {
     enum Bool {F,T};
     in Bool e();
     out void a();
-    behavior {
-      on e: {a;reply (Bool.T);}
+    behavior
+    {
+      on e: {a;return Bool.T;}
     }
   }
 }
 
-namespace bar {
-  component c {
+namespace bar
+{
+  component c
+  {
     provides foo.I i;
-    behavior {
+    behavior
+    {
       foo.I.Bool state = foo.I.Bool.T;
-      on i.e(): {i.a();reply (state);}
+      on i.e(): {i.a();return state;}
     }
   }
 }
