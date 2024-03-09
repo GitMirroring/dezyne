@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,18 +24,18 @@
 
 interface ihello
 {
-  in void hello();
-  in bool wait();
-  in bool bye();
-  out void world();
+  in void hello ();
+  in bool wait ();
+  in bool bye ();
+  out void world ();
 
   behavior
   {
     bool idle = true;
     [idle] on hello: idle = false;
     [!idle] {
-      on wait: {idle = true; reply(idle);}
-      on bye: reply(idle);
+      on wait: {idle = true; return idle;}
+      on bye: return idle;
       on inevitable: {idle = true; world;}
     }
   }
@@ -50,15 +50,17 @@ component blocking_function_reply2
   {
     bool idle = true;
     bool wait = false;
-    [idle] on p.hello(): {idle = false; r.hello();}
-    [!idle && !wait] {
-      on p.bye(): f();
-      blocking on p.wait(): wait = true;
-      on r.world(): {idle = true; p.world();}
+    [idle] on p.hello (): {idle = false; r.hello ();}
+    [!idle && !wait]
+    {
+      on p.bye (): return f ();
+      blocking on p.wait (): wait = true;
+      on r.world (): {idle = true; p.world ();}
     }
-    [!idle && wait] {
-      on r.world(): {idle = true; wait = false; p.reply(true);}
+    [!idle && wait]
+    {
+      on r.world (): {idle = true; wait = false; p.return true;}
     }
-    void f() {reply(idle);}
+    bool f () {return idle;}
   }
 }
