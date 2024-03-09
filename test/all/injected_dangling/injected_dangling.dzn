@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +24,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -34,12 +34,12 @@ interface ihello
 
 interface iconfig
 {
-  in bool test();
+  in bool test ();
 
   behavior
   {
-    on test: reply(true);
-    on test: reply(false);
+    on test: return true;
+    on test: return false;
   }
 }
 
@@ -50,7 +50,7 @@ component hello
 
   behavior
   {
-    on h.hello(): bool b = c.test();
+    on h.hello (): bool b = c.test ();
   }
 }
 
