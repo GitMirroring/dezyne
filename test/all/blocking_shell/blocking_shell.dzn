@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2017, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,37 +30,37 @@ subint Int {0..1};
 
 interface ihello
 {
-  in void hello_void();
-  in bool hello_bool();
-  in Int hello_int();
-  in Enum hello_enum(int i, out int j);
-  out void world(int i);
+  in void hello_void ();
+  in bool hello_bool ();
+  in Int hello_int ();
+  in Enum hello_enum (int i, out int j);
+  out void world (int i);
 
   behavior
   {
-    on hello_void: {world;}
-    on hello_bool: {world; reply(true);}
-    on hello_int: {world; reply(0);}
-    on hello_enum: {world; reply(Enum.OK);}
-    on hello_enum: {reply(Enum.NOK);}
+    on hello_void: world;
+    on hello_bool: {world; return true;}
+    on hello_int: {world; return 0;}
+    on hello_enum: {world; return Enum.OK;}
+    on hello_enum: return Enum.NOK;
   }
 }
 
 interface iworld
 {
-  in void hello_void();
-  in bool hello_bool();
-  in Int hello_int();
-  in Enum hello_enum(int i, out int j);
-  out void world(int i);
+  in void hello_void ();
+  in bool hello_bool ();
+  in Int hello_int ();
+  in Enum hello_enum (int i, out int j);
+  out void world (int i);
 
   behavior
   {
     on hello_void: world;
-    on hello_bool: {world; reply(true);}
-    on hello_int: {world; reply(0);}
-    on hello_enum: {world; reply(Enum.OK);}
-    on hello_enum: {reply(Enum.NOK);}
+    on hello_bool: {world; return true;}
+    on hello_int: {world; return 0;}
+    on hello_enum: {world; return Enum.OK;}
+    on hello_enum: return Enum.NOK;
   }
 }
 
@@ -71,11 +71,11 @@ component proxy
 
   behavior
   {
-    on top_p.hello_void(): {top_r.hello_void();}
-    on top_p.hello_bool(): {bool b = top_r.hello_bool(); reply(b);}
-    on top_p.hello_int(): {Int i = top_r.hello_int(); reply(i);}
-    on top_p.hello_enum(i,j): {Enum r = top_r.hello_enum(i,j); reply(r);}
-    on top_r.world(i): top_p.world(i);
+    on top_p.hello_void (): {top_r.hello_void ();}
+    on top_p.hello_bool (): {bool b = top_r.hello_bool (); return b;}
+    on top_p.hello_int (): {Int i = top_r.hello_int (); return i;}
+    on top_p.hello_enum (i,j): {Enum r = top_r.hello_enum (i,j); return r;}
+    on top_r.world (i): top_p.world (i);
   }
 }
 
@@ -93,14 +93,14 @@ component blocked
     Int i = 1;
     Enum r = Enum.NOK;
 
-    on bottom_p.hello_void(): blocking {type = TYPE.VOID; bottom_r.hello_void();}
-    on bottom_p.hello_bool(): blocking {type = TYPE.BOOL; b = bottom_r.hello_bool();}
-    on bottom_p.hello_int(): blocking {type = TYPE.INT; i = bottom_r.hello_int();}
-    on bottom_p.hello_enum(i,j): blocking {type = TYPE.ENUM; r = bottom_r.hello_enum(i,j); if(r.NOK) reply(r);}
-    [type.VOID] on bottom_r.world(i): {bottom_p.world(i); bottom_p.reply();}
-    [type.BOOL] on bottom_r.world(i): {bottom_p.world(i); bottom_p.reply(true);}
-    [type.INT]  on bottom_r.world(j): {bottom_p.world(j); bottom_p.reply(i); i = 1;}
-    [type.ENUM] on bottom_r.world(j): {bottom_p.world(j); bottom_p.reply(r);}
+    on bottom_p.hello_void (): blocking {type = TYPE.VOID; bottom_r.hello_void ();}
+    on bottom_p.hello_bool (): blocking {type = TYPE.BOOL; b = bottom_r.hello_bool ();}
+    on bottom_p.hello_int (): blocking {type = TYPE.INT; i = bottom_r.hello_int ();}
+    on bottom_p.hello_enum (i,j): blocking {type = TYPE.ENUM; r = bottom_r.hello_enum (i,j); if (r.NOK) return r;}
+    [type.VOID] on bottom_r.world (i): {bottom_p.world (i); bottom_p.return;}
+    [type.BOOL] on bottom_r.world (i): {bottom_p.world (i); bottom_p.return true;}
+    [type.INT]  on bottom_r.world (j): {bottom_p.world (j); Int r = i; i = 1; bottom_p.return r;}
+    [type.ENUM] on bottom_r.world (j): {bottom_p.world (j); bottom_p.return r;}
   }
 }
 

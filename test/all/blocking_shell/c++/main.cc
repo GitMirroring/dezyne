@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,16 +31,6 @@
 #include <queue>
 #include <string>
 #include <vector>
-
-bool is_reply (const std::string &s)
-{
-  if (s.empty ()) return false;
-  const std::string &v = s.substr (s.find ('.') + 1);
-  return s.find (':') != std::string::npos
-         || v == "return" || v == "true" || v == "false"
-         || std::find_if (s.begin (), s.end (),
-  [] (unsigned char c) { return !std::isdigit (c); }) == s.end ();
-}
 
 int main ()
 {
