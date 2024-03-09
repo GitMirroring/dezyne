@@ -4912,7 +4912,7 @@ prefix      ::= <blocking?> <guards> <on>
 @menu
 * Component On::                Defining what happens on a trigger.
 * Blocking::                    Implementing a synchronous call on decoupled events.
-* Formal Binding::              Parameter assignment in blocking or synchronous out context.
+* Formal Binding::              Deprecated.
 * Joining Activities::          A full blocking example.
 @end menu
 
@@ -5057,6 +5057,10 @@ It does @emph{not} apply to @code{imperative-statement2}.
 
 @node Formal Binding
 @subsubsection Formal Binding
+
+@quotation Note
+@code{formal binding} is deprecated.
+@end quotation
 
 A formal binding @emph{binds} a member variable to an @code{out} or
 @code{inout} formal parameter.  At the moment of the @code{reply}, the
