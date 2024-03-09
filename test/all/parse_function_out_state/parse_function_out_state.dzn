@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger (regtur) van Beusekom rutger@dezyne.org
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,8 +27,8 @@
 
 interface ihello
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
   behavior
   {
     on hello: world;
@@ -36,10 +37,10 @@ interface ihello
 
 interface iworld
 {
-  in bool hello();
+  in bool hello ();
   behavior
   {
-    on hello: reply(true);
+    on hello: return true;
   }
 }
 
@@ -50,10 +51,10 @@ component parse_function_out_state
 
   behavior
   {
-    on h.hello(): {bool b = false; f(b); if(b) h.world();}
-    void f(out bool b)
+    on h.hello (): {bool b = false; f (b); if (b) h.world ();}
+    void f (out bool b)
     {
-      b = w.hello();
+      b = w.hello ();
     }
   }
 }
