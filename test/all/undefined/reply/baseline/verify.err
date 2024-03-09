@@ -1,1 +1,1 @@
-test/all/undefined/reply/reply.dzn:27:17: error: undefined identifier `b'
+test/all/undefined/reply/reply.dzn:27:18: error: undefined identifier `b'
