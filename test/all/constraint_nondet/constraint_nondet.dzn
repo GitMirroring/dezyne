@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -36,8 +36,8 @@ interface ihello
 
     [s.A]
     {
-      on hello: {s = status.B; reply (s);}
-      on hello: {s = status.C; reply (s);}
+      on hello: {s = status.B; return s;}
+      on hello: {s = status.C; return s;}
       on bye: {}
     }
     [!s.A] on bye: s = status.A;
@@ -51,7 +51,7 @@ component constraint_nondet
 
   behavior
   {
-    on h.hello (): reply (w.hello ());
+    on h.hello (): return w.hello ();
     on h.bye (): w.bye ();
   }
 }
