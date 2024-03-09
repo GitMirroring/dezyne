@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -28,11 +28,12 @@ interface ihello
   in bool hello ();
   in bool cruel ();
 
-  behavior {
-    on hello: reply(true);
-    on hello: reply(false);
-    on cruel: reply(true);
-    on cruel: reply(false);
+  behavior
+  {
+    on hello: return true;
+    on hello: return false;
+    on cruel: return true;
+    on cruel: return false;
   }
 }
 
@@ -44,7 +45,8 @@ interface iworld
   in void cruel ();
   out void bye ();
 
-  behavior {
+  behavior
+  {
     on hello: world;
     on cruel: bye;
   }
@@ -61,16 +63,18 @@ component Blocked
   {
     bool waiting = false;
 
-    blocking on h.hello (): {
+    blocking on h.hello ():
+    {
       w.hello ();
       waiting = true;
     }
 
-    [!waiting] on h.cruel(): h.reply(false); // So any cruel() call should return false
+    [!waiting] on h.cruel (): h.return false; // So any cruel () call should return false
 
-    on w.world (): {
+    on w.world ():
+    {
       waiting = false;
-      h.reply(true);
+      h.return true;
     }
   }
 }
@@ -82,9 +86,9 @@ component Bottom
 
   behavior
   {
-    on p.hello(): blocking r.hello();
-    on r.world(): {p.world(); p.reply ();}
-    on p.cruel(): p.bye();
+    on p.hello (): blocking r.hello ();
+    on r.world (): {p.world (); p.return;}
+    on p.cruel (): p.bye ();
   }
 }
 
