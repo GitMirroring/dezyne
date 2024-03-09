@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +30,7 @@ interface ihello
   {
     bool dummy = false;
     bool state = true;
-    on hello: {state = !state; reply (state);}
+    on hello: {state = !state; return state;}
   }
 }
 
@@ -39,6 +40,6 @@ component shared_assign
   requires ihello w;
   behavior
   {
-    on h.hello (): {bool b = false; b = w.hello (); reply (w.state);}
+    on h.hello (): {bool b = false; b = w.hello (); return w.state;}
   }
 }
