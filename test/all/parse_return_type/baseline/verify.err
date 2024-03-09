@@ -1,2 +1,4 @@
-test/all/parse_return_type/parse_return_type.dzn:31:15: error: type mismatch: no event with return type `bool'
-test/all/parse_return_type/parse_return_type.dzn:42:33: error: type mismatch: no event with return type `bool'
+test/all/parse_return_type/parse_return_type.dzn:31:15: error: type mismatch: expected `void', found: `bool'
+test/all/parse_return_type/parse_return_type.dzn:27:3: info: event defined here
+test/all/parse_return_type/parse_return_type.dzn:42:33: error: type mismatch: expected `void', found: `bool'
+test/all/parse_return_type/parse_return_type.dzn:27:3: info: event defined here

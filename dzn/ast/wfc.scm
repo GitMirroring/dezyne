@@ -769,6 +769,9 @@
 (define-method (wfc-reply-expression (o <reply>) port)
   (wfc-reply/return-expression o port #:name "reply"))
 
+(define-method (wfc-return-expression (o <return>) port)
+  (wfc-reply/return-expression o port #:name "return"))
+
 (define-method (wfc (o <return>))
   (define (outer-compound o)
     (let ((parent (tree:parent o)))
@@ -782,22 +785,30 @@
          (function (tree:ancestor o <function>))
          (function-type (and function (ast:type function)))
          (return-type (and (null? wfce) (ast:type o)))
-         (last-statement-block (last-statement (outer-compound o))))
+         (last-statement-block (last-statement (outer-compound o)))
+         (on (tree:ancestor o <on>))
+         (port (.port o)))
     (append
      wfce
-     (cond ((not function)
-            (wfc-reply/return-expression o (.port o) #:name "return"))
-           ((.port o)
-            `(,(wfc-error o (format #f "cannot use <port>.return in function"))))
-           ((pair? wfce) '())
-           ((not (equal-type? function-type return-type))
-            `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
-                                    (type-name function-type)
-                                    (type-name return-type)))))
-           ((not (eq? last-statement-block o))
-            `(,(wfc-error ((compose car ast:continuation*) o)
-                          (format #f "code will never be executed"))))
-           (else '())))))
+     (cond
+      ((and port
+            (ast:requires? port))
+       `(,(wfc-error o (format #f "cannot use requires port `~a' in return"
+                               (.name port)))
+         ,(wfc-info port "port defined here")))
+      ((and (.port.name o) (not port))
+       (wfc-port o))
+      (on (return-in-on o))
+      ((and function port)
+       `(,(wfc-error o (format #f "cannot use <port>.return in function"))))
+      ((not (equal-type? function-type return-type))
+       `(,(wfc-error o (format #f "type mismatch: expected `~a', found: `~a'"
+                               (type-name function-type)
+                               (type-name return-type)))))
+      ((not (eq? last-statement-block o))
+       `(,(wfc-error ((compose car ast:continuation*) o)
+                     (format #f "code will never be executed"))))
+      (else '())))))
 
 (define-method (wfc (o <the-end>))
   '())
@@ -1125,9 +1136,14 @@
 (define-method (reply-in-on (o <reply>))
   "pre: in <on> clause"
   (let ((on (tree:ancestor o <on>)))
-    (append-map (cut reply-in-on o <>) (ast:trigger* on))))
+    (append-map (cute reply/return-in-on o <>) (ast:trigger* on))))
 
-(define-method (reply-in-on (o <reply>) (trigger <trigger>))
+(define-method (return-in-on (o <return>))
+  "pre: in <on> clause"
+  (let ((on (tree:ancestor o <on>)))
+    (append-map (cute reply/return-in-on o <>) (ast:trigger* on))))
+
+(define-method (reply/return-in-on o (trigger <trigger>))
   (let* ((component (tree:ancestor o <component>))
          (unblock? (and component
                         (ast:requires? trigger)
@@ -1152,7 +1168,8 @@
                                        (type-name reply-type)))
                  ,(wfc-info event "event defined here"))
                '()))
-          (else (wfc-reply-expression o port)))))
+          ((is-a? o <reply>) (wfc-reply-expression o port))
+          (else (wfc-return-expression o port)))))
 
 (define-method (action (o <action>))
   (let ((event (.event o))
