@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -25,9 +25,9 @@
 extern long $long$;
 interface Sensor {
   enum Status { OK, NOK };
-  in Status activate(long l);
+  in Status activate (long l);
   behavior {
-    on activate: { reply(Status.OK); }
+    on activate: return Status.OK;
   }
 }
 component SensorComp {
@@ -37,11 +37,10 @@ component SensorComp {
     long l = $0.0$;
     Sensor.Status s = Sensor.Status.OK;
     bool b= true;
-    on sensor1.activate(l): {
-      Sensor.Status s2 = sensor2.activate(b <- l);
-      if (s2 == Sensor.Status.OK) { }
-      reply(s2);
+    on sensor1.activate (l): {
+      Sensor.Status s2 = sensor2.activate (b <- l);
+      if (s2 == Sensor.Status.OK) {}
+      return s2;
     }
   }
 }
-
