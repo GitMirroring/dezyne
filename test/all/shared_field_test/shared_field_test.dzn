@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,7 +30,7 @@ interface ihello
   {
     bool idle = true;
     S s = S.A;
-    on hello: {reply (s); if (s.A) s = S.B; else s = S.A;}
+    on hello: {S r=s; if (s.A) s = S.B; else s = S.A; return r;}
   }
 }
 
@@ -40,6 +40,6 @@ component shared_field_test
 
   behavior
   {
-    on h.hello (): if (h.s.A) reply (ihello.S.A); else reply (ihello.S.B);
+    on h.hello (): if (h.s.A) return ihello.S.A; else return ihello.S.B;
   }
 }
