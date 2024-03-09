@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -53,7 +53,7 @@ component shared_block
   behavior
   {
     on h.hello (): blocking {w.hello (); if (w.idle) illegal;}
-    on w.world (): {h.reply (); if (!w.idle) illegal;}
+    on w.world (): {if (!w.idle) illegal;h.return;}
     on h.cruel (): {}
   }
 }
