@@ -20,9 +20,9 @@
 // Commentary:
 //
 // This model reports an illegal instead of a non-compliance, because
-// the non-compliant behavior, i.e. the reply(false), puts the interface
+// the non-compliant behavior, i.e. the return false, puts the interface
 // constraint into the any state, allowing the component to trigger an
-// illegal in the requires interface, while the the reply(false) is the
+// illegal in the requires interface, while the the return false is the
 // cause of the problem.
 //
 // A possible solution to this phenomenon could be to make the reply
@@ -41,7 +41,7 @@ interface ihello
     [idle] on hello: idle = false;
     [!idle] on world:
     {
-      [x] {idle = true; reply (idle);}
+      [x] {idle = true; return idle;}
     }
   }
 }
@@ -55,9 +55,10 @@ interface iworld
     bool idle = true;
     bool x = true;
     [idle] on hello: idle = false;
-    [!idle] on world: {
-      [x] {idle = true; reply (true);}
-      [x] reply (false);
+    [!idle] on world:
+    {
+      [x] {idle = true; return true;}
+      [x] return false;
     }
   }
 }
@@ -69,6 +70,6 @@ component compliance_reply_illegal
   behavior
   {
     on h.hello (): w.hello ();
-    on h.world (): reply (w.world ());
+    on h.world (): return w.world ();
   }
 }
