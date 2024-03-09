@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,11 +27,11 @@
 
 interface ihello
 {
-  in bool hello();
+  in bool hello ();
 
   behavior
   {
-    on hello: reply(true);
+    on hello: return true;
   }
 }
 
@@ -40,11 +41,11 @@ component assign_formal
   requires ihello w;
   behavior
   {
-    bool f(bool b)
+    bool f (bool b)
     {
-      b = w.hello();
+      b = w.hello ();
       return b;
     }
-    on h.hello(): { reply(f(false)); }
+    on h.hello (): {return f (false);}
   }
 }
