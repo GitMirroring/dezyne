@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,12 +24,12 @@
 
 interface ihello
 {
-  in bool hello();
+  in bool hello ();
 
   behavior
   {
     bool b = false;
-    on hello: {b = !b; reply (b);}
+    on hello: {b = !b; return b;}
   }
 }
 
@@ -41,21 +41,21 @@ component hello_bool
   behavior
   {
     bool b = false;
-    on h.hello():
+    on h.hello ():
       {
-        b = w.world();
-        reply (b);
+        b = w.world ();
+        return b;
       }
   }
 }
 
 interface iworld
 {
-  in bool world();
+  in bool world ();
 
   behavior
   {
     bool b = false;
-    on world: {b = !b; reply (b);}
+    on world: {b = !b; return b;}
   }
 }
