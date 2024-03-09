@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,10 +37,10 @@ interface ihello
     [i<1] on inc: i=i+1;
     [0<i] on dec: i=i-1;
 
-    on get0: reply (false);
-    on get0: reply (true);
-    on get1: reply (false);
-    on get1: reply (true);
+    on get0: return false;
+    on get0: return true;
+    on get1: return false;
+    on get1: return true;
   }
 }
 
@@ -50,8 +50,8 @@ interface iworld
 
   behavior
   {
-    on hello: reply (0);
-    on hello: reply (1);
+    on hello: return 0;
+    on hello: return 1;
   }
 }
 
@@ -84,7 +84,7 @@ component constraint_nondet2
     }
     [i<1] on h.inc (): {i=i+1; f ();}
     [0<i] on h.dec (): {i=i-1; f ();}
-    on h.get0 (): reply (i==0);
-    on h.get1 (): reply (i==1);
+    on h.get0 (): return i==0;
+    on h.get1 (): return i==1;
   }
 }
