@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -22,31 +22,35 @@
 //
 // Code:
 
-
-namespace r {
-  namespace r {
-    interface ihello {
+namespace r
+{
+  namespace r
+  {
+    interface ihello
+    {
       enum r {t,f};
       in void hello ();
-      behavior {
+      behavior
+      {
         on hello: {}
-        }
       }
     }
+  }
 }
 
-namespace r.r.iworld {
+namespace r.r.iworld
+{
   enum r {t,f};
 }
 
 interface ihello
 {
   enum r {t,f};
-  in .r.r.ihello.r hello();
+  in .r.r.ihello.r hello ();
 
   behavior
   {
-    on hello: reply (.r.r.ihello.r.f);
+    on hello: return .r.r.ihello.r.f;
   }
 }
 
@@ -59,23 +63,23 @@ component hello_namespace_shadow
   {
     enum R {f,t};
 
-    on h.hello():
+    on h.hello ():
       {
-        r.r.ihello.r r1 = w.world();
+        r.r.ihello.r r1 = w.world ();
         r.r.iworld.r t = r.r.iworld.r.f;
         r.r.ihello.r q = r1;
         r.r.ihello.r s = r1;
-        reply (r1);
+        return r1;
       }
   }
 }
 
 interface iworld
 {
-  in r.r.ihello.r world();
+  in r.r.ihello.r world ();
 
   behavior
   {
-    on world: reply (r.r.ihello.r.f);
+    on world: return r.r.ihello.r.f;
   }
 }
