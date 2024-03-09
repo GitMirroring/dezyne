@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -73,7 +74,7 @@ component blocking_skip_race
     on w.world ():
     {
       c.hello ();
-      h.reply ();
+      h.return;
     }
     on c.cruel ():
     {
