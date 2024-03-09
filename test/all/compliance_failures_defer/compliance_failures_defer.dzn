@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger (regtur) van Beusekom <rutger.van.beusekom@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,9 +24,9 @@
 
 interface ihello
 {
-  in void hello();
-  in void cancel();
-  out void world();
+  in void hello ();
+  in void cancel ();
+  out void world ();
 
   behavior
   {
@@ -39,11 +40,11 @@ interface ihello
 
 interface icruel
 {
-  in bool cruel();
+  in bool cruel ();
   behavior
   {
-    on cruel: reply(true);
-    on cruel: reply(false);
+    on cruel: return true;
+    on cruel: return false;
   }
 }
 
@@ -54,7 +55,7 @@ component compliance_failures_defer
   behavior
   {
     bool idle = true;
-    [idle] on h.hello (): {idle = false; defer if (c.cruel()) h.world();}
+    [idle] on h.hello (): {idle = false; defer if (c.cruel ()) h.world ();}
     on h.cancel (): idle = true;
   }
 }
