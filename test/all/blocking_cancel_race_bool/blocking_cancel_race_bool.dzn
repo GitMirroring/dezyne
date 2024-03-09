@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -25,9 +25,9 @@
 
 interface itransaction
 {
-  in void cancel();
-  in void request();
-  out void complete();
+  in void cancel ();
+  in void request ();
+  out void complete ();
   behavior
   {
     bool active = false;
@@ -39,11 +39,11 @@ interface itransaction
 
 interface iblock
 {
-  in bool block();
+  in bool block ();
   behavior
   {
-    on block: reply(true);
-    on block: reply(false);
+    on block: return true;
+    on block: return false;
   }
 }
 
@@ -56,11 +56,11 @@ component blocking_cancel_race_bool
   {
     bool active = false;
     bool race = false;
-    [!active] on pt.request(): {active = true; rt.request(); bool b = rb.block(); race = true; rt.cancel();}
-    on pt.cancel(): {active = false; rt.cancel();}
+    [!active] on pt.request (): {active = true; rt.request (); bool b = rb.block (); race = true; rt.cancel ();}
+    on pt.cancel (): {active = false; rt.cancel ();}
     [active]
     {
-      [race] on rt.complete(): race = false;
+      [race] on rt.complete (): race = false;
     }
   }
 }
