@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,9 +29,9 @@ interface ihello
 
   behavior
   {
-    on hello: reply (true);
-    on hello: {cruel; reply (true);}
-    on hello: {world; reply (true);}
+    on hello: return true;
+    on hello: {cruel; return true;}
+    on hello: {world; return true;}
   }
 }
 
@@ -40,6 +40,6 @@ component compliance_provides_bool
   provides ihello h;
   behavior
   {
-    on h.hello (): reply (false);
+    on h.hello (): return false;
   }
 }
