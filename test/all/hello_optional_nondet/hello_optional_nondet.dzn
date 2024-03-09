@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,7 +33,7 @@ interface hello_optional_nondet
   {
     bool idle = true;
     bool hidden = true;
-    [idle] on hello: {idle = false; reply (false);}
+    [idle] on hello: {idle = false; return false;}
     [!idle] on optional: bye;
     [!idle] on inevitable: cruel;
     [!idle] on inevitable: {world; hidden=false;}
