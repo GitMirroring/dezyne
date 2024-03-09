@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +24,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -34,8 +34,8 @@ interface ihello
 
 interface icruel
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -47,8 +47,8 @@ interface icruel
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -71,14 +71,14 @@ component proxy_block
   {
     bool idle = true;
                         //async      sync
-    [idle] on p.hello(): {e.hello(); r.hello();}
-    [!idle] on p.hello(): {}
+    [idle] on p.hello (): {e.hello (); r.hello ();}
+    [!idle] on p.hello (): {}
 
-    [!idle] on e.world(): {r.hello(); idle = true;}
-    [idle] on e.world(): idle = false;
+    [!idle] on e.world (): {r.hello (); idle = true;}
+    [idle] on e.world (): idle = false;
 
-    [!idle] on r.world(): {r.hello(); idle = true;}
-    [idle] on r.world(): idle = false;
+    [!idle] on r.world (): {r.hello (); idle = true;}
+    [idle] on r.world (): idle = false;
   }
 }
 
@@ -90,8 +90,8 @@ component proxy_release
   behavior
   {
     bool idle = true;
-    [idle] on p.hello(): {e.hello(); idle = false;}
-    [!idle] on e.world(): {p.world(); idle = true;}
+    [idle] on p.hello (): {e.hello (); idle = false;}
+    [!idle] on e.world (): {p.world (); idle = true;}
   }
 }
 
@@ -103,8 +103,8 @@ component blocked
   behavior
   {
     bool idle = true;
-    blocking on p.hello(): {r.hello(); idle = !idle;}
-    on r.world(): {p.reply(); if (!idle) p.world();}
+    blocking on p.hello (): {r.hello (); idle = !idle;}
+    on r.world (): {if (!idle) p.world (); p.return;}
   }
 }
 
@@ -125,7 +125,7 @@ component blocker
   provides blocking ihello b;
   behavior
   {
-    blocking on b.hello (): defer b.reply ();
+    blocking on b.hello (): defer b.return;
   }
 }
 
