@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@gnu.org>
 //
 // This file is part of Dezyne.
@@ -33,8 +33,8 @@ interface ihello
   {
     enum S {A,B};
     S s = S.A;
-    [s.A] on hello: {s = S.B; reply(R.A);}
-    [s.B] on hello: {s = S.A; reply(R.B);}
+    [s.A] on hello: {s = S.B; return R.A;}
+    [s.B] on hello: {s = S.A; return R.B;}
   }
 }
 
@@ -47,8 +47,8 @@ component shadow_shared_enum
   {
     on h.hello ():
     {
-      if (h.s.A && w.s.A) reply (w.hello());
-      else reply (w.hello());
+      if (h.s.A && w.s.A) return w.hello ();
+      else return w.hello ();
     }
   }
 }
