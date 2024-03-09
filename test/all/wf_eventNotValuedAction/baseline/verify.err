@@ -1,2 +1,2 @@
-test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:32:17: error: cannot use in-event `a' as action
-test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:29:2: info: event `a' defined here
+test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:31:19: error: cannot use in-event `a' as action
+test/all/wf_eventNotValuedAction/wf_eventNotValuedAction.dzn:28:3: info: event `a' defined here
