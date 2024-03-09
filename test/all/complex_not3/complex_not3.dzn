@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -29,7 +29,7 @@ interface ihello
 
   behavior
   {
-    on hello: {one;reply (true);}
+    on hello: {one;return true;}
   }
 }
 
@@ -42,7 +42,7 @@ component complex_not3
 
     on h.hello ():
     {
-      reply ((!(one () == true) && true));
+      return (!(one () == true) && true);
     }
   }
 }
