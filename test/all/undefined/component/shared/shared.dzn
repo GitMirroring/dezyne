@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -44,6 +44,6 @@ component shared
     on h.hello (): bool b = h.foo;
     on h.hello (): {bool b = false; b = h.foo;}
     on h.hello (): if (h.foo) {}
-    on h.hello (): reply (h.foo);
+    on h.hello (): return h.foo;
   }
 }
