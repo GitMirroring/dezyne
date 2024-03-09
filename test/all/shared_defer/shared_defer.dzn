@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,20 +24,22 @@
 
 interface ihello
 {
-  in bool hello();
-  out void world();
-  in void bye();
+  in bool hello ();
+  out void world ();
+  in void bye ();
 
   behavior
   {
     bool idle = true;
-    [idle] {
-      on hello: {idle = false; reply(true);}
-      on hello: reply(false);
+    [idle]
+    {
+      on hello: {idle = false; return true;}
+      on hello: return false;
       on bye: {}
     }
-    [!idle] {
-      on hello: reply(false);
+    [!idle]
+    {
+      on hello: return false;
       on bye: idle = true;
       on inevitable: {idle = true; world;}
     }
@@ -45,11 +48,11 @@ interface ihello
 
 interface iworld
 {
-  in bool hello();
+  in bool hello ();
   behavior
   {
-    on hello: reply(true);
-    on hello: reply(false);
+    on hello: return true;
+    on hello: return false;
   }
 }
 
@@ -60,18 +63,18 @@ component shared_defer
   behavior
   {
     bool idle = true;
-    [h.idle] on h.hello():
+    [h.idle] on h.hello ():
     {
-      if (w.hello())
+      if (w.hello ())
       {
-        reply(true);
         idle = false;
-        defer {idle = true; h.world();}
+        defer {idle = true; h.world ();}
+        return true;
       }
-      else reply(false);
+      else return false;
     }
-    [!h.idle] on h.hello(): reply(false);
+    [!h.idle] on h.hello (): return false;
 
-    on h.bye(): idle = true;
+    on h.bye (): idle = true;
   }
 }
