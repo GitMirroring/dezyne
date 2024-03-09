@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,8 +24,8 @@
 
 interface ihello
 {
-  in void hello();
-  in void cruel();
+  in void hello ();
+  in void cruel ();
   behavior
   {
     on hello: {}
@@ -35,8 +35,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
   behavior
   {
     on hello: world;
@@ -46,28 +46,28 @@ interface iworld
 interface isilly
 {
   enum E1 {A,B,C,D,E,F};
-  in E1 hello();
+  in E1 hello ();
 
   enum E2 {A,B,C,D,E,F};
-  in E2 world();
+  in E2 world ();
 
-  in void cruel();
+  in void cruel ();
 
    behavior
    {
-     on hello: reply(E1.A);
-     on hello: reply(E1.B);
-     on hello: reply(E1.C);
-     on hello: reply(E1.D);
-     on hello: reply(E1.E);
-     on hello: reply(E1.F);
+     on hello: return E1.A;
+     on hello: return E1.B;
+     on hello: return E1.C;
+     on hello: return E1.D;
+     on hello: return E1.E;
+     on hello: return E1.F;
 
-     on world: reply(E2.A);
-     on world: reply(E2.B);
-     on world: reply(E2.C);
-     on world: reply(E2.D);
-     on world: reply(E2.E);
-     on world: reply(E2.F);
+     on world: return E2.A;
+     on world: return E2.B;
+     on world: return E2.C;
+     on world: return E2.D;
+     on world: return E2.E;
+     on world: return E2.F;
    }
 }
 
@@ -82,13 +82,13 @@ component livelock_synchronous_illegal
     isilly.E1 m1 = isilly.E1.A;
     isilly.E2 m2 = isilly.E2.A;
 
-    on h.hello(): w.hello();
-    on h.cruel(): d.cruel();
-    on w.world():
+    on h.hello (): w.hello ();
+    on h.cruel (): d.cruel ();
+    on w.world ():
     {
-      m1 = d.hello();
-      w.hello();
-      m2 = d.world();
+      m1 = d.hello ();
+      w.hello ();
+      m2 = d.world ();
     }
   }
 }
