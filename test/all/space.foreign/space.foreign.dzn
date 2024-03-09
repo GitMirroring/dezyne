@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,7 +32,7 @@ namespace S
     behavior
     {
       on e: {}
-      on f: reply (R.r);
+      on f: return R.r;
     }
   }
 
@@ -44,7 +44,7 @@ namespace S
     behavior
     {
       on p.e (): r.e ();
-      on p.f (): reply (I.R.r);
+      on p.f (): return I.R.r;
     }
   }
 
