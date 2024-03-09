@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,7 +27,7 @@ interface ihello
 
   behavior
   {
-    on hello: reply (true);
+    on hello: return true;
   }
 }
 
@@ -43,6 +43,6 @@ component implicit_temporary2
       return w.hello ();
     }
 
-    on h.hello (): reply (foo () && w.hello ());
+    on h.hello (): return foo () && w.hello ();
   }
 }
