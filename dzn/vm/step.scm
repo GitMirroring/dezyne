@@ -554,26 +554,24 @@
            (port (.port o))
            (instance (.instance pc))
            (value (and port (get-reply pc (.name port))))
-           (pc (cond
-                ((not blocking?)
-                 pc)
-                (else
-                 (let* ((r:port (runtime:port instance port))
-                        (blocked (.blocked pc))
-                        (blocked? (assq-ref blocked r:port))
-                        (blocked (if (not blocked?) blocked
-                                     (alist-delete r:port blocked)))
-                        (collateral (.collateral pc))
-                        (collateral-released (.collateral-released pc))
-                        (collateral-released
-                         (if (not (assq-ref collateral r:port)) collateral-released
-                             (append collateral-released (list r:port))))
-                        (released (.released pc))
-                        (released (delete r:port released)))
-                   (clone pc
-                          #:blocked blocked
-                          #:released released
-                          #:collateral-released collateral-released)))))
+           (pc (if (not blocking?) pc
+                   (let* ((r:port (runtime:port instance port))
+                          (blocked (.blocked pc))
+                          (blocked? (assq-ref blocked r:port))
+                          (blocked (if (not blocked?) blocked
+                                       (alist-delete r:port blocked)))
+                          (collateral (.collateral pc))
+                          (collateral-released (.collateral-released pc))
+                          (collateral? (assq-ref collateral r:port))
+                          (collateral-released
+                           (if (not collateral?) collateral-released
+                               (append collateral-released (list r:port))))
+                          (released (.released pc))
+                          (released (delete r:port released)))
+                     (clone pc
+                            #:blocked blocked
+                            #:released released
+                            #:collateral-released collateral-released))))
            (reset-blocked-on-boundary?
             (and (blocked-on-boundary? pc)
                  (eq? instance (blocked-on-boundary? pc))))
