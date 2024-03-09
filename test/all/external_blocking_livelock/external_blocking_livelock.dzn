@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,7 +24,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -34,9 +34,9 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
-  out void cruel();
+  in void hello ();
+  out void world ();
+  out void cruel ();
 
   behavior
   {
@@ -52,8 +52,8 @@ component external_blocking_livelock
 
   behavior
   {
-    blocking on h.hello(): w.hello();
-    on w.world(): h.reply();
-    on w.cruel(): w.hello();
+    blocking on h.hello (): w.hello ();
+    on w.world (): h.return;
+    on w.cruel (): w.hello ();
   }
 }
