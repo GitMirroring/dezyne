@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -31,7 +31,7 @@ interface ihello
 
   behavior
   {
-    on hello: {one;two;foo;reply (false);}
+    on hello: {one;two;foo;return false;}
   }
 }
 
@@ -49,7 +49,7 @@ component complex_assign2
     {
       bool x = true;
       x = foo (one () || two ());
-      reply (x);
+      return x;
     }
   }
 }
