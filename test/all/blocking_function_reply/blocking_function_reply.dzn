@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -19,9 +19,10 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
-interface I
+
+interface ihello
 {
- in void block();
+ in void block ();
 
  behavior
  {
@@ -29,10 +30,10 @@ interface I
  }
 }
 
-interface R
+interface iworld
 {
-  in void ping();
-  out void pong();
+  in void ping ();
+  out void pong ();
 
   behavior
   {
@@ -42,18 +43,17 @@ interface R
 
 component blocking_function_reply
 {
-  provides blocking I p;
-  requires R r;
+  provides blocking ihello p;
+  requires iworld r;
 
   behavior
   {
-    void unblock()
+    void unblock ()
     {
-      reply();
     }
 
-    blocking on p.block(): r.ping();
+    blocking on p.block (): r.ping ();
 
-    on r.pong(): unblock();
+    on r.pong (): return unblock ();
   }
 }
