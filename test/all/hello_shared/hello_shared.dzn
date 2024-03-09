@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +28,7 @@ interface ihello
   behavior
   {
     bool idle = true;
-    on hello: {reply (idle); idle = !idle;}
+    on hello: {idle = !idle;return !idle;}
   }
 }
 
@@ -38,6 +38,6 @@ component hello_shared
 
   behavior
   {
-    on h.hello (): reply (h.idle);
+    on h.hello (): return h.idle;
   }
 }
