@@ -1,1 +1,2 @@
-test/all/undefined/return/return.dzn:28:14: error: undefined identifier `b'
+test/all/undefined/return/return.dzn:30:14: error: undefined identifier `b'
+test/all/undefined/return/return.dzn:30:7: error: type mismatch: expected `bool', found: `<unknown type>'
